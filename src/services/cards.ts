@@ -418,11 +418,71 @@ export interface BellPressingOptions {
   now?: Date;
 }
 
+export interface BellStreak {
+  /** Consecutive UTC days this wallet has rung, today included. */
+  days: number;
+  /** Day 7, 14, 21…: a pack at full odds (the first pass's streak rule). */
+  pack?: SignedPackRecord;
+  /** Day 30: Bellringer II, once. */
+  bellringer_ii?: SignedCardRecord;
+}
+
 export interface BellPressings {
   pressing: SignedCardRecord;
   /** Two packs for a current Regular (first pass), full odds. */
   packs: SignedPackRecord[];
   regular: boolean;
+  /** Present when the ringer sent a wallet: the streak, and what it handed out today. */
+  streak?: BellStreak;
+}
+
+interface StreakRecord {
+  last: string;
+  days: number;
+  /** The last day a streak reward was handed out, so a repeat ring on the same day hands nothing twice. */
+  rewarded?: string;
+}
+
+export const STREAK_PACK_EVERY = 7;
+export const STREAK_BELLRINGER_II_DAY = 30;
+
+function dayBefore(date: string): string {
+  const at = new Date(`${date}T00:00:00Z`);
+  at.setUTCDate(at.getUTCDate() - 1);
+  return utcDate(at);
+}
+
+/**
+ * THE STREAK (first pass, "bell": day 7 a pack, day 30 Bellringer II),
+ * keyed on the wallet the ringer sent, never on the name or the IP
+ * the bell itself counts. A ring on the day after the last ring
+ * extends the run; a gap resets it to one. The rewards land on the
+ * day the run reaches them and never twice for one day.
+ */
+async function advanceStreak(env: Env, wallet: string, seedDate: string, now: Date, patronNumber: number): Promise<BellStreak> {
+  const key = KV_KEYS.paywallStreak(wallet.toLowerCase());
+  const current = await kvGetJson<StreakRecord>(env.COUNTERS, key, "json");
+  const days = current?.last === seedDate ? current.days : current?.last === dayBefore(seedDate) ? current.days + 1 : 1;
+  const alreadyRewarded = current?.last === seedDate && current.rewarded === seedDate;
+  const streak: BellStreak = { days };
+  if (!alreadyRewarded) {
+    if (days % STREAK_PACK_EVERY === 0) {
+      streak.pack = await openPack(env, { certId: `bell:streak:${seedDate}:${wallet.toLowerCase()}:${days}`, patronNumber, payer: wallet, now, source: "bell" });
+    }
+    if (days === STREAK_BELLRINGER_II_DAY) {
+      const pressed = await earnedPressing(env, { key: "bellringer-ii", certId: `bell:streak:${seedDate}:${wallet.toLowerCase()}:30`, patronNumber, payer: wallet, now });
+      if (pressed) streak.bellringer_ii = pressed;
+    }
+  }
+  const next: StreakRecord = { last: seedDate, days, ...(streak.pack || streak.bellringer_ii || alreadyRewarded ? { rewarded: seedDate } : {}) };
+  await kvPut(env.COUNTERS, key, JSON.stringify(next));
+  return streak;
+}
+
+/** Whether a wallet has ever pressed a set entry (so the Room a first ring earns is pressed once). */
+async function holds(env: Env, wallet: string, key: string): Promise<boolean> {
+  const { rows } = await readBinder(env, wallet);
+  return rows.some((row) => row.key === key);
 }
 
 /**
@@ -437,13 +497,25 @@ export async function bellPressing(env: Env, who: string, options: BellPressingO
   await publishSeedRecord(env, seedDate, now);
   const seed = await seedFor(env, seedDate);
   const commit = await commitOf(seed);
-  const drawn = await drawSlot(seed, who.toLowerCase(), seedDate, 0, { salt: "bell", wheel: ["common"] });
-  const pressing = await press(env, { entry: drawn.card, source: "bell", date: now.toISOString(), commit, ...(options.wallet ? { holder: options.wallet } : {}) });
+  // The first ring from a wallet earns the Bellringer Room (the action
+  // presses it, once); every ring after that hands out one common.
+  const firstRing = options.wallet ? !(await holds(env, options.wallet, "bellringer")) : false;
+  const drawn = firstRing
+    ? null
+    : await drawSlot(seed, who.toLowerCase(), seedDate, 0, { salt: "bell", wheel: ["common"] });
+  const pressing = await press(env, {
+    entry: drawn ? drawn.card : entryByKey(CURRENT_SEASON, "bellringer")!,
+    source: drawn ? "bell" : "earned",
+    date: now.toISOString(),
+    commit,
+    ...(options.wallet ? { holder: options.wallet } : {}),
+  });
   await filePressing(env, pressing);
   let regular = false;
   const packs: SignedPackRecord[] = [];
+  let pass: Awaited<ReturnType<typeof getPass>> | null = null;
   if (options.passId) {
-    const pass = await getPass(env, options.passId).catch(() => null);
+    pass = await getPass(env, options.passId).catch(() => null);
     regular = Boolean(pass && passIsCurrent(pass));
     if (regular) {
       for (let n = 1; n <= 2; n += 1) {
@@ -459,7 +531,8 @@ export async function bellPressing(env: Env, who: string, options: BellPressingO
       }
     }
   }
-  return { pressing, packs, regular };
+  const streak = options.wallet ? await advanceStreak(env, options.wallet, seedDate, now, pass?.patron_number ?? 0) : undefined;
+  return { pressing, packs, regular, ...(streak ? { streak } : {}) };
 }
 
 /* ── earned ───────────────────────────────────────────────────────── */

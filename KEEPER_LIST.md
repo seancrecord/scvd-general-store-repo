@@ -771,8 +771,10 @@ Merging is your press; these are why it waits.
   it never presses until a round reaches it, and the card says so.
 - **RULE — rule 15 vs the Season 2 `mint_to_chain` door.** A token.
   Rule 15 says no token, permanently. Nothing built toward it.
-- **RULE — Cairn's consent.** In the set at rare, on no wheel until
-  consent is on record; one field flips it.
+- **DONE — the Ally anonymized** on your word: The Neighbour, no
+  likeness, no name, cites /neighbours, rides the rare pool. Bell
+  streaks built the same day (first ring Bellringer, day 7 a pack,
+  day 30 Bellringer II), and every card in the count now draws.
 - **RULE — the card face as PNG.** The Worker has no browser and no
   fonts. Cloudflare Browser Rendering (a paid binding), or resvg-wasm
   plus two font files (~2.5 MB). Until then the face is SVG and the
@@ -805,11 +807,10 @@ Merging is your press; these are why it waits.
 - **LOOK — the unfurl.** Paste one real `/p/{id}` into X and Slack.
   The share sheet is the product; if the sentence on the right does
   not read at timeline size, the post copy is the thing to redraw.
-- **LOOK — the Herd.** Eleven of the twelve Herd animals, the jar,
-  the Tab and Cairn press as "not yet pressed" silhouettes; every
-  other card borrows the drawing of the thing it depicts. The plan
-  wanted all twelve Herd drawn at ship. Art is the long pole it
-  named, and it is yours or an artist's.
+- **LOOK — the Herd, drawn.** All twelve, the jar, the Tab and CV
+  now press with single-ink plates of my hand; the Ally is the one
+  silhouette. Every one is a path in `src/store/plates.ts` and yours
+  to redraw the day you have a better one.
 
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 

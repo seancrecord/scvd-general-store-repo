@@ -879,6 +879,7 @@ const FREE_TOOLS: McpTool[] = [
         message: str("What the bell said."),
         count: { type: "number", description: "Total rings, all time." },
         pressing: { type: "object", description: "On a fresh ring: one common card, signed, with its page and verify URLs. Absent on a repeat." },
+        streak: { type: "object", description: "With a wallet: consecutive days rung; a pack every seventh day, Bellringer II on the thirtieth." },
       },
       required: ["message", "count"],
     },

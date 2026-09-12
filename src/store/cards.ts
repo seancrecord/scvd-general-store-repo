@@ -282,8 +282,14 @@ export const SEASON_ONE: Season = {
     { no: 0, key: "twenty-three", name: "Twenty-Three", type: "event", rarity: "rare", obtained: "hand", print_cap: 23, post: "Twenty-Three. Dated. 23 of us.", line: "Twenty on Base, three on Solana. The month it stopped being zero.", cite: "/rails" },
   ],
   allies: [
-    /** Cairn: pack, WITH CONSENT. None on record; consent false keeps it out of every draw (first pass rule 5). */
-    { no: 0, key: "cairn", name: "Cairn", type: "ally", rarity: "rare", obtained: "pack", consent: false, post: "Cairn. Pays the door and sees settlement. We send an unpaid GET and see the challenge.", line: "Complementary methods. Comparing notes. Growing the space.", cite: "/neighbours" },
+    /**
+     * THE NEIGHBOUR, anonymized (the keeper, 2026-09-12): no likeness,
+     * no name, no consent to ask for. An independent observatory that
+     * pays the door and sees settlement while we send an unpaid GET
+     * and see the challenge; the arrangement is on /neighbours, the
+     * card names nobody. In the rare pool like any pack drop.
+     */
+    { no: 0, key: "the-neighbour", name: "The Neighbour", type: "ally", rarity: "rare", obtained: "pack", post: "Pulled The Neighbour. Pays the door where we knock. Compares notes. Never named.", line: "Another observatory, two streets over. They pay and see settlement; we knock and see the challenge. Complementary methods, and the space grows.", cite: "/neighbours" },
   ],
 } as const;
 

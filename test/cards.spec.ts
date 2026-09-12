@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { encodeQr } from "@/lib/qr";
 import { flattenPath } from "@/lib/pixel-card";
-import { drawSlot, handPress, readBinder } from "@/services/cards";
+import { bellPressing, drawSlot, handPress, readBinder } from "@/services/cards";
 import { commitOf, dayHasEnded, publishSeedRecord, seedFor, utcDate } from "@/services/paywall-seed";
 import { getMenuItem } from "@/store";
 import {
@@ -88,7 +88,7 @@ describe("the set", () => {
     expect(CURRENT_SEASON.cards.some((card) => card.type === "event" || card.type === "ally")).toBe(false);
   });
 
-  it("keeps the Keeper, the Rooms, the Instruments, the Events and an unconsenting Ally out of every pack", () => {
+  it("keeps the Keeper, the Rooms, the Instruments and the Events out of every pack, and the Ally anonymous", () => {
     for (const wheel of SLOT_WHEELS) expect(wheel).not.toContain("keeper");
     const keeper = entryByKey(CURRENT_SEASON, "keeper")!;
     expect(keeper.rarity).toBe("keeper");
@@ -116,7 +116,9 @@ describe("the set", () => {
     for (const card of models) expect(card.obtained, card.name).toBe("pack");
     expect(entryByKey(CURRENT_SEASON, "roger-sterling")?.rarity).toBe("rare");
     expect(entryByKey(CURRENT_SEASON, "payment-required")?.type).toBe("mark");
-    expect(packPool(CURRENT_SEASON, "rare").some((card) => card.key === "cairn")).toBe(false);
+    // The Ally names nobody and needs no consent, so it rides the rare pool like any pack drop.
+    expect(packPool(CURRENT_SEASON, "rare").some((card) => card.key === "the-neighbour")).toBe(true);
+    expect(JSON.stringify(CURRENT_SEASON.allies).toLowerCase()).not.toContain("cairn");
     for (const wheel of SLOT_WHEELS) {
       for (const stop of new Set(wheel)) {
         const pool = stop === "condition" ? conditionPool(CURRENT_SEASON) : packPool(CURRENT_SEASON, stop);
@@ -171,8 +173,10 @@ describe("the set", () => {
     }
     // The plates named in the set are real keys; the count on /design is derived, never typed.
     const drawn = new Set(drawnPlateKeys());
-    expect(CURRENT_SEASON.cards.filter((card) => drawn.has(card.key)).length).toBeGreaterThan(36);
-    expect(plateFor("bull-of-the-ball")).toBeNull(); // pressed as a silhouette until the keeper draws it
+    // Every card in the count draws; the Ally is the one silhouette.
+    expect(CURRENT_SEASON.cards.filter((card) => !drawn.has(card.key)).map((card) => card.key)).toEqual([]);
+    expect(plateFor("the-neighbour")).toBeNull();
+    expect(plateFor("no-such-card")).toBeNull();
   });
 });
 
@@ -432,18 +436,65 @@ describe("a pack, bought", () => {
 });
 
 describe("cards ride the other doors", () => {
-  it("the bell presses one common a day to the wallet that rang, and not on the repeat ring", async () => {
+  it("the bell presses one card a day to the wallet that rang, Bellringer the first time, and not on the repeat ring", async () => {
     const wallet = "0x4444444444444444444444444444444444444444";
     const ring = await json(await post("/api/bell", { agent_name: "bell-tester", wallet }));
     const pressing = ring["pressing"] as Record<string, unknown>;
     expect(pressing).toBeDefined();
     expect(pressing["rarity"]).toBe("common");
+    expect(pressing["name"]).toBe("Bellringer");
     expect(ring["regular"]).toBeUndefined();
     const record = await json(await SELF.fetch(`${BASE}/api/card/${String(pressing["card_id"])}`));
-    expect((record["card"] as Record<string, unknown>)["source"]).toBe("bell");
+    expect((record["card"] as Record<string, unknown>)["source"]).toBe("earned");
     expect((record["card"] as Record<string, unknown>)["holder"]).toBe(wallet);
+    // A name with no wallet gets a common off the wheel, source bell.
+    const anonymous = await json(await post("/api/bell", { agent_name: "bell-tester-no-wallet" }));
+    const common = anonymous["pressing"] as Record<string, unknown>;
+    expect(common["rarity"]).toBe("common");
+    expect(anonymous["streak"]).toBeUndefined();
+    expect(((await json(await SELF.fetch(`${BASE}/api/card/${String(common["card_id"])}`)))["card"] as Record<string, unknown>)["source"]).toBe("bell");
     const again = await json(await post("/api/bell", { agent_name: "bell-tester", wallet }));
     expect(again["pressing"]).toBeUndefined();
+  });
+
+  it("a wallet's first ring earns Bellringer, a run of seven days hands a pack, day thirty presses Bellringer II, and a gap resets", async () => {
+    const wallet = "0x5555555555555555555555555555555555555555";
+    const ring = (day: string) => bellPressing(testEnv, `streak-tester-${day}`, { wallet, now: new Date(`${day}T09:00:00Z`) });
+    const first = await ring("2026-07-01");
+    expect(first.pressing.card.key).toBe("bellringer");
+    expect(first.pressing.card.source).toBe("earned");
+    expect(first.streak?.days).toBe(1);
+    expect(first.streak?.pack).toBeUndefined();
+    const second = await ring("2026-07-02");
+    expect(second.pressing.card.key).not.toBe("bellringer");
+    expect(second.pressing.card.rarity).toBe("common");
+    expect(second.streak?.days).toBe(2);
+    for (const day of ["2026-07-03", "2026-07-04", "2026-07-05", "2026-07-06"]) await ring(day);
+    const seventh = await ring("2026-07-07");
+    expect(seventh.streak?.days).toBe(7);
+    expect(seventh.streak?.pack?.cards).toHaveLength(PACK_SIZE);
+    expect(seventh.streak?.pack?.cards[0]!.card.holder).toBe(wallet);
+    // The same day again hands nothing twice.
+    const again = await ring("2026-07-07");
+    expect(again.streak?.days).toBe(7);
+    expect(again.streak?.pack).toBeUndefined();
+    // A gap resets the run.
+    const gapped = await ring("2026-07-09");
+    expect(gapped.streak?.days).toBe(1);
+    // Thirty straight: Bellringer II, once.
+    let last: Awaited<ReturnType<typeof ring>> | undefined;
+    for (let n = 1; n <= 30; n += 1) {
+      const at = new Date(Date.UTC(2026, 7, n)); // August: thirty straight, all before the test clock
+      last = await ring(at.toISOString().slice(0, 10));
+    }
+    expect(last?.streak?.days).toBe(30);
+    expect(last?.streak?.bellringer_ii?.card.key).toBe("bellringer-ii");
+    // The door says so in fields.
+    const rung = await json(await post("/api/bell", { agent_name: "streak-door", wallet: "0x6666666666666666666666666666666666666666" }));
+    const streak = rung["streak"] as Record<string, unknown>;
+    expect(streak["days"]).toBe(1);
+    expect(streak["next_pack_on_day"]).toBe(7);
+    expect(streak["bellringer_ii_on_day"]).toBe(30);
   });
 
   it("the guestbook earns Guestbook, a fortune earns Fortune of the Day, and a plain hello earns nothing", async () => {

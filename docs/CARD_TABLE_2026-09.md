@@ -37,8 +37,9 @@ reasoning, named as desk reasoning.
    Charge, Testnet Catch), Place 1 (Hurricane Junction), Mark 2 (The
    Dinosaur, 402 Payment Required), Model 5 — plus 4 Events (First Organic Settlement, First Solana
    Settlement, The Loaner, Twenty-Three; dropped by hand, never
-   pulled) and 1 Ally (Cairn; pack-obtainable WITH CONSENT, and with
-   none on record it is in the set and out of every draw). The Keeper
+   pulled) and 1 Ally (The Neighbour: anonymized at the keeper's word,
+   no likeness and no name, so no consent to ask for, and in the rare
+   pool like any pack drop). The Keeper
    and CV are the season's two one-of-ones: Rooms at rarity Keeper,
    one print each, the window only, and the cap holds on the hand
    press too. Ladder
@@ -109,9 +110,14 @@ reasoning, named as desk reasoning.
    Gone on a service audit, Testnet Catch on a settlement
    attestation, Double Charge on any purchase with an idempotency
    key); each burn is a signed record beside the pressing. Three or
-   more Conditions and the binder is "under the weather".
-8. **Not built, and why (§4):** bell streaks (day 7, day 30 and
-   Bellringer II are week two in the plan's own calendar), holder
+   more Conditions and the binder is "under the weather". The streak
+   (STANDING, 2026-09-12): keyed on the wallet the ringer sends, a
+   wallet's first ring earns the Bellringer Room, every ring after
+   hands a common, day 7 and every seventh day a pack at full odds,
+   day 30 Bellringer II, a gap resets, nothing twice in one day; the
+   bell answers with `streak` {days, next_pack_on_day, pack?,
+   bellringer_ii?}.
+8. **Not built, and why (§4):** holder
    perks (the plan's discounts collide with the pricing charter's
    one-price clause — a ruling, §6), Broken Tier's clear and the
    three reserved Conditions (they need a passport read the wallet
@@ -207,7 +213,7 @@ the economy; the subtitle. Handoff → first pass (this pass): every
 card renamed to the plan's names and lines; Rooms and Instruments
 moved from pack drops to earned-only; the plain-purchase common
 removed; the Keeper moved from Ally to Room and the Ally became
-Cairn (consent-gated); Doors from three capped at an assumed 250 to
+an anonymous Neighbour; Doors from three capped at an assumed 250 to
 four capped at their observation count; the window from "a fresh
 pressing off one of five packs" to "one of five pressings, moved";
 the twelve-hour pick lock; the credit desk with burn and redeem;
@@ -249,10 +255,6 @@ the pixel engine already draws the engraved hand.
 
 ## 4. Not built, each with its reason (OPEN or PROPOSED)
 
-- **Bell streaks** (day 7 a pack, day 30 Bellringer II). The plan's
-  own calendar puts streaks in week two; the bell ledger keys on a
-  name, and a streak needs a wallet-keyed day count. PROPOSED, one
-  counter and one rule.
 - **Holder perks** (5% off with a Rail holo, a Door card's free
   preflight, the Keeper's free window pick). The pricing charter
   says one price to every buyer; a holder discount breaks that
@@ -320,8 +322,9 @@ already. OPEN.
    shelf copy, the storefront lines, the declined-positions sentence
    tightened by 63 characters, the guide's Paywall paragraph, the
    skill paragraph, the credit desk's challenge text. Ink or kill.
-8. **RULE — Cairn's consent.** The Ally is in the set at rare and on
-   no wheel until consent is on record; one field flips it.
+8. **DONE — the Ally anonymized.** "Idk if we can use Cairn's
+   likeness like that or even want to." The Neighbour names nobody,
+   cites the arrangement page, and rides the rare pool.
 
 ## 7. NFT: no, for v1 (the handoff's §6, and rule 15)
 
@@ -348,7 +351,7 @@ unbuilt on purpose.
 
 Art: 46 plates drawn as single-ink silhouettes, aliased to the
 plan's names; 46 of the 60 press with a plate. The eleven Herd
-animals besides the T-Rex, the jar, the Tab and Cairn press as
+animals besides the T-Rex, the jar, the Tab and the Ally pressed as
 silhouettes labelled "not yet pressed". The plan wanted the twelve
 Herd drawn at ship; that is the one place this build is honestly
 short of it.

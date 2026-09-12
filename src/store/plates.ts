@@ -147,6 +147,22 @@ const PLATES: Record<string, Plate> = {
   "wrong-network": { d: "M46 20h8v70h-8z M36 10h28v46H36z M42 16v34h16V16z M50 22a5 5 0 1 0 0.1 0z M50 38a5 5 0 1 0 0.1 0z M30 90h40v4H30z" },
   "replay-accepted": { d: "M50 10a22 22 0 1 0 0.1 0z M50 18a14 14 0 1 1-0.1 0z M46 40h8v48h-8z M54 66h14v6H54z M54 78h10v6H54z" },
   "delivered-nothing": { d: "M14 30h64a8 8 0 0 1 8 8v40a8 8 0 0 1-8 8H14z M22 38v40h56V38z" },
+  // ── the Herd (2026-09-12, drawn): single ink, holes for eyes and markings, no overlaps (the fill is evenodd) ──
+  "bull-of-the-ball": { d: "M14 46h48v30H14z M18 76h8v14h-8z M50 76h8v14h-8z M62 32h26a6 6 0 0 1 6 6v18H62z M64 32c-6-10-14-14-20-12 6 0 12 4 16 12z M90 32c4-10 10-14 16-12-6 0-10 4-12 12z M78 42a2.5 2.5 0 1 0 0.1 0z M8 52c-4 6-4 14 0 20l4-2c-3-5-3-11 0-16z" },
+  "long-tooth": { d: "M12 52c0-12 10-22 22-22h26v46H12z M16 76h8v12h-8z M46 76h8v12h-8z M60 26h26a6 6 0 0 1 6 6v20H60z M62 26l4-12 8 12z M84 26l-4-12-8 12z M78 36a2.5 2.5 0 1 0 0.1 0z M70 52l3 14 3-14z M84 52l3 14 3-14z M12 52c-6 2-8 8-6 14l4-1c-1-4 0-8 2-11z" },
+  "old-poly": { d: "M20 60a30 24 0 0 1 60 0z M38 46h8v8h-8z M54 46h8v8h-8z M46 36h8v6h-8z M14 60h72v6H14z M86 52h8a5 5 0 0 1 0 10h-8z M22 66h10v10H22z M68 66h10v10H68z M6 60l8 2-8 4z" },
+  "stego-ledger": { d: "M18 62c0-16 14-28 32-28s32 12 32 28v14H18z M26 76h8v12h-8z M64 76h8v12h-8z M28 34l6-16 6 16z M42 32l6-18 6 18z M56 32l6-18 6 18z M70 34l6-16 6 16z M82 58h8a6 6 0 0 1 0 12h-8z M18 62c-8 4-12 10-12 18l6-2c0-6 3-10 8-12z" },
+  "402-the-chicken": { d: "M30 58c0-14 12-24 26-24 16 0 28 10 28 24v10H30z M56 20a10 10 0 0 1 20 0v14H56z M58 10l4-6 4 6 4-6 4 6z M76 26l10 4-10 4z M66 22a2 2 0 1 0 0.1 0z M46 68h4v12h-4z M62 68h4v12h-4z M40 80h14v3H40z M58 80h14v3H58z M30 58c-8-8-8-20 0-26 2 8 4 14 8 18z" },
+  "giraffe-lookout": { d: "M44 92V30h10v62z M40 14h22a6 6 0 0 1 6 6v10H40z M46 14l2-8 2 8z M56 14l2-8 2 8z M46 40h4v6h-4z M46 52h4v6h-4z M14 70a12 12 0 0 1 12-12h18v22H14z M18 80h6v12h-6z M34 80h6v12h-6z M24 64h6v6h-6z M36 66h5v5h-5z" },
+  "mammoth-backlog": { d: "M14 68c0-24 16-40 38-40s36 16 36 40v12H14z M22 80h10v12H22z M56 80h10v12H56z M70 50a3 3 0 1 0 0.1 0z M88 60c8 4 10 14 6 24l-4-2c3-8 2-14-4-18z M40 28l4-10 4 10z M52 26l4-10 4 10z M74 80c6 0 12 4 14 10h-4c-2-4-6-6-10-6z" },
+  "croc-custody": { d: "M4 56h64a8 8 0 0 1 8 8v8H4z M76 56h20v8H76z M78 64h2v4h-2z M84 64h2v4h-2z M90 64h2v4h-2z M60 50h8v6h-8z M12 56l4-6 4 6z M24 56l4-6 4 6z M36 56l4-6 4 6z M48 56l4-6 4 6z M14 72h8v8h-8z M52 72h8v8h-8z M4 56c-2 6 0 12 4 16h4c-3-4-4-10-2-16z" },
+  "sloth-standing": { d: "M6 18h88v6H6z M34 24h8v10h-8z M58 24h8v10h-8z M38 34c0-4 4-6 12-6s12 2 12 6v40c0 8-6 14-12 14s-12-6-12-14z M45 40a2 2 0 1 0 0.1 0z M55 40a2 2 0 1 0 0.1 0z M48 48h4v2h-4z M40 88l-4 8h4z M60 88l4 8h-4z" },
+  "ptero-preflight": { d: "M4 52c14-16 30-18 44-8 14-10 30-8 44 8-14-6-30-4-44 6-14-10-30-12-44-6z M44 44h12v20l-6 10-6-10z M44 44l-4-14 12-4 10 6-6 4z M62 28l20-8-14 12z" },
+  "elephant-anchor": { d: "M14 64c0-20 14-34 34-34 22 0 36 14 36 34v14H14z M26 48a10 12 0 1 0 20 0a10 12 0 1 0-20 0z M70 54a2.5 2.5 0 1 0 0.1 0z M84 60c8 6 10 16 6 26l-5-1c3-8 2-16-4-22z M24 78h10v12H24z M66 78h10v12H66z" },
+  // ── the jar, the Tab, and CV's own plate ──
+  "blessing-from-the-jar": { d: "M28 30h44v52a8 8 0 0 1-8 8H36a8 8 0 0 1-8-8z M30 20h40v8H30z M40 14h20v6H40z M36 42h28v4H36z M36 52h20v4H36z M36 62h24v4H36z" },
+  "the-tab": { d: "M26 8h48v74l-6-6-6 6-6-6-6 6-6-6-6 6-6-6-6 6z M34 20h32v4H34z M34 30h24v4H34z M34 40h32v4H34z M34 50h16v4H34z M34 62h32v4H34z" },
+  cv: { d: "M8 40a6 6 0 0 1 6-6h72a6 6 0 0 1 6 6v30a6 6 0 0 1-6 6H14a6 6 0 0 1-6-6z M44 26h12v8H44z M20 46h30v6H20z M20 58h48v4H20z M56 44h20v10H56z" },
   // ── the second reading (2026-09-12): the cat, the models ──
   "roger-sterling": { d: "M22 78c-4-14 2-30 14-36l2-14 10 8h18l10-8 2 14c12 6 18 22 14 36z M34 42a4 4 0 1 0 0.1 0z M62 42a4 4 0 1 0 0.1 0z M46 52h8l-4 5z M80 60c8-6 14 0 12 8s-8 12-16 8l2-4c6 2 10 0 10-4s-4-6-8-2z M28 78h44v6H28z" },
   "the-reasoner": { d: "M26 26h48v48H26z M34 34v32h32V34z M42 42h16v16H42z M46 8h8v18h-8z M46 74h8v18h-8z M8 46h18v8H8z M74 46h18v8H74z" },
@@ -168,8 +184,8 @@ const PLATES: Record<string, Plate> = {
  * both Bellringers, the train for the Tagger, the pass for the
  * Regular, the passport for Stale Passport), and a Condition reuses
  * the plate of the thing that went wrong, since the yellow rides on
- * top. Herd animals other than the T-Rex and the cat, the jar, the Tab,
- * and the Ally have no drawing yet and press as labelled silhouettes.
+ * top. Every card in the count now has a drawing; the Ally has none and
+ * presses as a labelled silhouette.
  */
 const ALIASES: Record<string, string> = {
   // rooms
@@ -210,7 +226,6 @@ const ALIASES: Record<string, string> = {
   "double-charge": "replay-accepted",
   "testnet-catch": "wrong-network",
   // the second reading
-  cv: "practice-counter",
   "payment-required": "the-402",
   // events
   "first-organic-settlement": "settlement-attestation",
