@@ -686,6 +686,8 @@ adminRoutes.get("/admin/glance", async (c) => {
     ["Open alarms", String(glance.open_alerts)],
     ["Sales this month", String(glance.organic_settlements)],
     ["Take this month", `$${glance.take_usdc.toFixed(2)}`],
+    ["Sales all-time (the storefront's number)", String(glance.organic_sales_all_time ?? "—")],
+    ["…of which carry a certificate", String(glance.with_certificate_all_time ?? "—")],
   ];
   return c.html(
     shell(

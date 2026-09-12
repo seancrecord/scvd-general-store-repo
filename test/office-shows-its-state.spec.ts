@@ -150,7 +150,7 @@ describe("the desk's numbers name their window", () => {
     expect(response.status).toBe(200);
     const html = await response.text();
     const month = new Date().toISOString().slice(0, 7);
-    expect(html).toContain(`${month}:`);
+    expect(html).toContain(`${month} so far:`);
     expect(html).toContain("All-time:");
     expect(html).toContain("The month line above resets when the calendar turns");
   });

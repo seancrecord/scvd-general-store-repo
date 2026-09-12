@@ -78,10 +78,20 @@ export interface Glance {
   pending_reviews: number;
   /** Alert rows currently standing. */
   open_alerts: number;
-  /** Settles this month from wallets the house does not control. */
+  /**
+   * Settles this month from wallets the house does not control — the
+   * till's count for the current month, after the reclassification
+   * ledger, the same derivation the desk's month line uses. Until
+   * 2026-09-12 this field held the ALL-TIME certificate count under a
+   * monthly label, which is how the keeper read 94 as a month.
+   */
   organic_settlements: number;
-  /** The month's take, organic, in USDC. */
+  /** The month's organic revenue in USDC, off the till, after the reclassification ledger. */
   take_usdc: number;
+  /** Organic sales all-time as the storefront counts them (the till), beside the certificates the take counts. */
+  organic_sales_all_time: number;
+  /** Of those, how many carry a certificate: the take's row count. */
+  with_certificate_all_time: number;
   /**
    * THE DESK'S HEADLINE TABLE, CACHED WHOLE.
    *
@@ -154,6 +164,14 @@ export async function writeGlance(env: Env): Promise<Glance> {
     readDesk(env),
   ]);
 
+  const month = desk.month_ledger.month;
+  const reclass = desk.month_reclass?.months[month];
+  const monthSettles = Math.max(
+    0,
+    Object.values(desk.month_ledger.items).reduce((sum, row) => sum + row.settled, 0) -
+      (reclass?.settles ?? 0),
+  );
+  const monthUsdc = Math.max(0, desk.month_ledger.revenueUsdc - (reclass?.usdc ?? 0));
   const glance: Glance = {
     computed_at: new Date().toISOString(),
     pending_orders: orders.filter((order) => order.status === "queued").length,
@@ -163,8 +181,10 @@ export async function writeGlance(env: Env): Promise<Glance> {
         .length +
       refunds.filter((refund) => refund.status === "refund_pending").length,
     open_alerts: alerts.length,
-    organic_settlements: take.total.organic_sales,
-    take_usdc: take.total.organic_usdc,
+    organic_settlements: monthSettles,
+    take_usdc: monthUsdc,
+    organic_sales_all_time: stats.organic_settlements,
+    with_certificate_all_time: take.total.organic_sales,
     take,
     all_time: {
       organic: stats.organic_settlements,
