@@ -1,3 +1,4 @@
+import { AUDIT_REPORT_VERDICT, GOOD_BUYER_REPORT_VERDICT, LAUNCH_REPORT_VERDICT, ONPAGE_REPORT_VERDICT, RECONCILIATION_REPORT_VERDICT } from "@/lib/report-verdicts";
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
 import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
@@ -908,15 +909,10 @@ const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
  * should be able to check without trusting the publisher.
  */
 /**
- * THE SIGNED-ARTIFACT RECORD, AS A FACTORY, because five doors serve
- * the same envelope with a different payload inside it.
- *
- * /api/service-audit, /api/good-buyer, /api/launch-check,
- * /api/reconciliation and /api/bitcoin-anchor each store
- * `{ <payload>: Signed…, cert_id, created_at }` and each route adds
- * the same two closing fields. Writing that shape five times is five
- * chances for one of them to drift; deriving it once means a reader
- * who learns one of these doors has learned all five.
+ * THE SIGNED-ARTIFACT RECORD, AS A FACTORY. The instruments share
+ * signature metadata, not verdict vocabularies. Most public envelopes
+ * expose cert_id; Launch Check exposes a certificate URL instead. The
+ * schema describes the served response, not its private storage row.
  *
  * THE PAYLOAD IS DESCRIBED, NOT ENUMERATED. Every signed observation
  * carries `signature`, `public_key` and `signature_covers` — that is
@@ -929,6 +925,8 @@ const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
 function signedArtifactSchema(options: {
   payloadKey: string;
   payloadDescription: string;
+  verdict?: OpenApiObject;
+  certificateKey?: "cert_id" | "certificate";
   /**
    * NOT ALWAYS `created_at`. The reconciliation record stores
    * `stored_at`, and a factory that assumed otherwise would have
@@ -939,9 +937,10 @@ function signedArtifactSchema(options: {
   extras?: Record<string, OpenApiObject>;
 }): OpenApiObject {
   const timestampKey = options.timestampKey ?? "created_at";
+  const certificateKey = options.certificateKey ?? "cert_id";
   return {
     type: "object",
-    required: [options.payloadKey, "cert_id", timestampKey, "how_to_verify"],
+    required: [options.payloadKey, certificateKey, timestampKey, "how_to_verify"],
     properties: {
       [options.payloadKey]: {
         type: "object",
@@ -964,16 +963,15 @@ function signedArtifactSchema(options: {
             type: "string",
             description: "The published criteria this observation was rendered under.",
           },
-          verdict: {
-            type: "string",
-            enum: ["ready", "not_ready", "unreachable", "refused"],
-          },
+          ...(options.verdict ? { verdict: options.verdict } : {}),
         },
       },
-      cert_id: {
+      [certificateKey]: {
         type: "string",
-        description:
-          "The certificate minted by the purchase. GET /api/verify/{cert_id} — free, forever, no account — and its attests field carries this record's evidence_hash.",
+        ...(certificateKey === "certificate" ? { format: "uri" } : {}),
+        description: certificateKey === "certificate"
+          ? "The free verification URL for the certificate binding this report's evidence_hash."
+          : "The certificate minted by the purchase. GET /api/verify/{cert_id} — free, forever, no account — and its attests field carries this record's evidence_hash.",
       },
       [timestampKey]: { type: "string", format: "date-time" },
       how_to_verify: {
@@ -5715,9 +5713,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 "The signed reading a purchase minted: the accepts that door served verbatim, the buyer's declared client configuration recorded as their claim, and the replay — which accept a stock client selects, or the stage that made it refuse. Free to read forever. The accepts print as served, so the selection re-derives from the artifact without trusting us.",
             ),
             signedArtifactSchema({
+              verdict: GOOD_BUYER_REPORT_VERDICT,
               payloadKey: "reading",
               payloadDescription:
-                "The signed good-buyer reading: what this wallet's settled purchases looked like at one moment.",
+                "The signed payment dry run: the target's observed payment terms and a replay using the buyer's declared client configuration. No payment is made by this simulation.",
             }),
           ),
           parameters: [pathParam("reading_id", "From the purchase response; starts gbuy_.")],
@@ -5731,6 +5730,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 "The signed point-in-time audit a purchase minted: verdict, every check, criteria version, evidence hash, verification steps. Free to read forever; the badge rendering is at /badges/audit/{audit_id}.svg.",
             ),
             signedArtifactSchema({
+              verdict: AUDIT_REPORT_VERDICT,
               payloadKey: "audit",
               payloadDescription:
                 "The signed point-in-time audit: what one endpoint answered at one moment, against published criteria.",
@@ -5825,6 +5825,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 "The authorized-vs-taken observation a purchase minted, with the signed statement of WHICH ceiling was observed — on-chain or asserted.",
             ),
             signedArtifactSchema({
+              verdict: RECONCILIATION_REPORT_VERDICT,
               payloadKey: "reconciliation",
               payloadDescription:
                 "The signed settlement reconciliation: what the chain said about a settlement this store was asked to confirm.",
@@ -6593,6 +6594,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "The signed page report an onpage_audit purchase produced, with its cert binding and verification steps. Served free, forever.",
             ),
             signedArtifactSchema({
+              verdict: ONPAGE_REPORT_VERDICT,
               payloadKey: "audit",
               payloadDescription:
                 "The signed on-page report: what one page served a machine reader at one moment, scripts never run.",
@@ -6829,6 +6831,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "The signed stage-by-stage record of one real purchase attempt a launch_check purchase produced — settled or refused, from the buyer's side — with its cert binding and verification steps. Served free, forever.",
             ),
             signedArtifactSchema({
+              verdict: LAUNCH_REPORT_VERDICT,
+              certificateKey: "certificate",
               payloadKey: "check",
               payloadDescription:
                 "The signed launch check: one purchase attempt against the buyer's exact endpoint. payment_attempt records the nonce, rail, amount and expiry when an authorization was prepared. Its settlement can remain unknown: an interrupted response or expired authorization does not prove no money moved. Recovery retains the original attempt without issuing another payment.",
