@@ -9,7 +9,7 @@ const BASE = "https://scvd.store";
  * THE FIXTURES, SERVED, AND THE CITE LINE (2026-09-04, roadmap C7).
  * What this file holds:
  *
- *   - the served sets are the three directories exactly: a fixture
+ *   - the served sets are the directories exactly: a fixture
  *     added to the tree without a URL, or a URL with no file behind it,
  *     fails here;
  *   - every entry's bytes hash to the sha256 the index prints beside
@@ -24,6 +24,7 @@ const BASE = "https://scvd.store";
 const raw = {
   ...(import.meta.glob("./fixtures/doors/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("./fixtures/mpp/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+  ...(import.meta.glob("./fixtures/settlement-responses/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("../verifier/fixtures/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("./fixtures/402index/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("./fixtures/x402scan/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
@@ -36,6 +37,7 @@ const names = (directory: string) =>
 const tree: Record<string, string[]> = {
   doors: names("doors"),
   mpp: names("mpp"),
+  "settlement-responses": names("settlement-responses"),
   verifier: names("verifier/fixtures"),
   "402index": names("402index"),
   x402scan: names("x402scan"),

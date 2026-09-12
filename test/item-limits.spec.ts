@@ -126,7 +126,14 @@ describe("the specimen on the page is the JSON, byte for byte", () => {
     expect(String(sa.sample.scope)).toContain("does not attest that goods or services were delivered");
     const lc = (await (await SELF.fetch(`${BASE}/samples/launch-check.json`)).json()) as Record<string, any>;
     expect(lc.sample.verdict).toBe("settled");
-    expect(lc.sample.stages.length).toBe(7);
+    // The specimen walks the stages a clean door produces, replay
+    // included, and the replay reading beside them agrees with the
+    // stage it summarises (battery v3, 2026-09-12).
+    const stageNames = lc.sample.stages.map((stage: { stage: string }) => stage.stage);
+    expect(stageNames).toContain("settle");
+    expect(stageNames.at(-1)).toBe("replay");
+    expect(lc.sample.replay).toEqual({ outcome: "refused", status: 409, names_settlement: true });
+    expect(lc.sample.replay_served).toBe(false);
   });
 
   it("an unknown specimen name lists the ones that exist", async () => {

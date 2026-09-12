@@ -1,0 +1,18 @@
+{
+  "name": "settled-amount-not-atomic",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "amount is optional and, when present, atomic units as a digit string. '0.005' is a decimal a reader cannot compare to a quote without guessing the decimals. Settled, with the amount check failed.",
+  "expect_failed": [
+    "amount-atomic"
+  ],
+  "expect_outcome": "settled",
+  "must_not_conclude": [],
+  "payment_response": "eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NyIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsInBheWVyIjoiMHg0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0IiwiYW1vdW50IjoiMC4wMDUifQ==",
+  "decoded": {
+    "success": true,
+    "transaction": "0x5e775e775e775e775e775e775e775e775e775e775e775e775e775e775e775e77",
+    "network": "eip155:8453",
+    "payer": "0x4444444444444444444444444444444444444444",
+    "amount": "0.005"
+  }
+}

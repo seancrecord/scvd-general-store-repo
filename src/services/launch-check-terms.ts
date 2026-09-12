@@ -37,8 +37,17 @@ export const FIELD_SPEND_CAP_USD = 0.05;
  * with body-placed offers behind a header challenge was told it
  * carried none. v2 reads both placements and asserts absence only
  * over both.
+ *
+ * v3, 2026-09-12 (the x402 spec thread's receiver obligation): the
+ * replay stage changed meaning. v2 read every non-2xx on the replay
+ * as a correct refusal — a 402 carrying fresh terms included — and
+ * every 2xx as the goods served again. v3 reads the answer four ways
+ * (served again, re-delivered, re-challenged, refused, or unknown)
+ * and says whether it named the original settlement, in a signed
+ * `replay` object beside the tri-state `replay_served`. A v2 record's
+ * "refused, correctly" therefore means "not a 2xx" and nothing finer.
  */
-export const LAUNCH_CHECK_BATTERY = "launch-check-v2";
+export const LAUNCH_CHECK_BATTERY = "launch-check-v3";
 
 /**
  * THE LONGEST AUTHORIZATION THIS STORE WILL EVER SIGN (ledger I2).

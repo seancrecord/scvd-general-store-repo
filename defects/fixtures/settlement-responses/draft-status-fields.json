@@ -1,0 +1,22 @@
+{
+  "name": "draft-status-fields",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "settlement_pending carrying the draft status vocabulary from x402-foundation/x402#3325 (status, statusAnchor) beside it. This battery checks the merged spec only: unknown fields are ignored, the §9 code decides, and the reading is unresolved. When the vocabulary merges, a later battery version reads the fields.",
+  "expect_failed": [],
+  "expect_outcome": "unresolved",
+  "must_not_conclude": [
+    "failed"
+  ],
+  "payment_response": "eyJzdWNjZXNzIjpmYWxzZSwiZXJyb3JSZWFzb24iOiJzZXR0bGVtZW50X3BlbmRpbmciLCJ0cmFuc2FjdGlvbiI6IjB4NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NyIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsInN0YXR1cyI6InBlbmRpbmciLCJzdGF0dXNBbmNob3IiOnsia2luZCI6InRyYW5zYWN0aW9uIiwicmVmIjoiMHg1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3In19",
+  "decoded": {
+    "success": false,
+    "errorReason": "settlement_pending",
+    "transaction": "0x5e775e775e775e775e775e775e775e775e775e775e775e775e775e775e775e77",
+    "network": "eip155:8453",
+    "status": "pending",
+    "statusAnchor": {
+      "kind": "transaction",
+      "ref": "0x5e775e775e775e775e775e775e775e775e775e775e775e775e775e775e775e77"
+    }
+  }
+}

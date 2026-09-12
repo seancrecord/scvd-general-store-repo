@@ -1,0 +1,20 @@
+{
+  "name": "success-with-error-reason",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "success true beside an errorReason, which §5.3.2 says is omitted on success. The response contradicts itself; a reader must not pick the half it prefers. Unresolved.",
+  "expect_failed": [
+    "error-reason-on-success"
+  ],
+  "expect_outcome": "unresolved",
+  "must_not_conclude": [
+    "settled",
+    "failed"
+  ],
+  "payment_response": "eyJzdWNjZXNzIjp0cnVlLCJlcnJvclJlYXNvbiI6InVuZXhwZWN0ZWRfc2V0dGxlX2Vycm9yIiwidHJhbnNhY3Rpb24iOiIweDVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzciLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMifQ==",
+  "decoded": {
+    "success": true,
+    "errorReason": "unexpected_settle_error",
+    "transaction": "0x5e775e775e775e775e775e775e775e775e775e775e775e775e775e775e775e77",
+    "network": "eip155:8453"
+  }
+}

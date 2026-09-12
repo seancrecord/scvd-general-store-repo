@@ -130,7 +130,7 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /notice/:host",
   "GET /profiles/:host",
   "GET /samples/:slug{[a-z0-9-]+\\.json}",
-  "GET /fixtures/:set{[a-z0-9]+}/:file{[a-z0-9.-]+\\.json}",
+  "GET /fixtures/:set{[a-z0-9-]+}/:file{[a-z0-9.-]+\\.json}",
   "GET /ledger/:file{[0-9]{4}-W[0-9]{2}\\.json}",
   "GET /ledger/:week{[0-9]{4}-W[0-9]{2}}",
   "GET /case/:case_id",

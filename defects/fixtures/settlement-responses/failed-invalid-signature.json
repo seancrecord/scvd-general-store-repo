@@ -1,0 +1,17 @@
+{
+  "name": "failed-invalid-signature",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "A terminal failure with a §9 code: the authorization did not verify, nothing was broadcast, transaction is the empty string the spec prescribes. Failed, cleanly.",
+  "expect_failed": [],
+  "expect_outcome": "failed",
+  "must_not_conclude": [
+    "settled"
+  ],
+  "payment_response": "eyJzdWNjZXNzIjpmYWxzZSwiZXJyb3JSZWFzb24iOiJpbnZhbGlkX2V4YWN0X2V2bV9wYXlsb2FkX3NpZ25hdHVyZSIsInRyYW5zYWN0aW9uIjoiIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIn0=",
+  "decoded": {
+    "success": false,
+    "errorReason": "invalid_exact_evm_payload_signature",
+    "transaction": "",
+    "network": "eip155:8453"
+  }
+}

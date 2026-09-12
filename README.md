@@ -511,7 +511,8 @@ x402-preflight/   # scvd-preflight: the free door check as a library and
                   # a command, with the deploy gate's exit law
 corpus-client/    # scvd-corpus-client: the signed corpus, read as served
 defects/          # scvd-defects: the vocabulary as data, both halves of
-                  # the remediation, recorded 402 doors as fixtures
+                  # the remediation, recorded 402 doors and settlement
+                  # responses as fixtures, and the settlement-response reader
 mcp-starter/      # scvd-mcp-starter: a stdio MCP server, one file, that
                   # serves the read-only verifier door to any client
 tab/              # scvd-tab (The Tab): an MCP server that keeps a

@@ -22,6 +22,18 @@ import mpp_tempo_default_testnet from "../../test/fixtures/mpp/tempo-default-tes
 import mpp_tempo_mainnet from "../../test/fixtures/mpp/tempo-mainnet.json";
 import mpp_two_challenges from "../../test/fixtures/mpp/two-challenges.json";
 import mpp_x402_and_mpp from "../../test/fixtures/mpp/x402-and-mpp.json";
+import settle_draft_status_fields from "../../test/fixtures/settlement-responses/draft-status-fields.json";
+import settle_failed_invalid_signature from "../../test/fixtures/settlement-responses/failed-invalid-signature.json";
+import settle_failed_no_reason from "../../test/fixtures/settlement-responses/failed-no-reason.json";
+import settle_legacy_null_transaction from "../../test/fixtures/settlement-responses/legacy-null-transaction.json";
+import settle_not_json from "../../test/fixtures/settlement-responses/not-json.json";
+import settle_pending_with_hash from "../../test/fixtures/settlement-responses/pending-with-hash.json";
+import settle_pending_without_hash from "../../test/fixtures/settlement-responses/pending-without-hash.json";
+import settle_settled_amount_not_atomic from "../../test/fixtures/settlement-responses/settled-amount-not-atomic.json";
+import settle_settled_clean from "../../test/fixtures/settlement-responses/settled-clean.json";
+import settle_settled_v1_network_name from "../../test/fixtures/settlement-responses/settled-v1-network-name.json";
+import settle_success_not_boolean from "../../test/fixtures/settlement-responses/success-not-boolean.json";
+import settle_success_with_error_reason from "../../test/fixtures/settlement-responses/success-with-error-reason.json";
 import verifier_issuer_key_document from "../../verifier/fixtures/issuer-key-document.json";
 import verifier_offer_expired_but_wellformed from "../../verifier/fixtures/offer-expired-but-wellformed.json";
 import verifier_offer_tampered_payload from "../../verifier/fixtures/offer-tampered-payload.json";
@@ -124,6 +136,25 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
     ],
   },
   {
+    set: "settlement-responses",
+    directory: "test/fixtures/settlement-responses",
+    what: "Settlement responses (the SettleResponse a buyer holds in PAYMENT-RESPONSE, or a facilitator's /settle body), each naming the settlement-response-v1 checks it fails and the outcome a reader must reach — settled, failed or unresolved — with the outcomes it must not reach. The pending shapes are the negative control: a reader that maps success:false to failed fails them.",
+    entries: [
+      { name: "draft-status-fields", body: settle_draft_status_fields as Record<string, unknown> },
+      { name: "failed-invalid-signature", body: settle_failed_invalid_signature as Record<string, unknown> },
+      { name: "failed-no-reason", body: settle_failed_no_reason as Record<string, unknown> },
+      { name: "legacy-null-transaction", body: settle_legacy_null_transaction as Record<string, unknown> },
+      { name: "not-json", body: settle_not_json as Record<string, unknown> },
+      { name: "pending-with-hash", body: settle_pending_with_hash as Record<string, unknown> },
+      { name: "pending-without-hash", body: settle_pending_without_hash as Record<string, unknown> },
+      { name: "settled-amount-not-atomic", body: settle_settled_amount_not_atomic as Record<string, unknown> },
+      { name: "settled-clean", body: settle_settled_clean as Record<string, unknown> },
+      { name: "settled-v1-network-name", body: settle_settled_v1_network_name as Record<string, unknown> },
+      { name: "success-not-boolean", body: settle_success_not_boolean as Record<string, unknown> },
+      { name: "success-with-error-reason", body: settle_success_with_error_reason as Record<string, unknown> },
+    ],
+  },
+  {
     set: "verifier",
     directory: "verifier/fixtures",
     what: "The x402-verify package's vectors: signed receipts and offers, valid and deliberately broken, with the key document they verify against.",
@@ -169,8 +200,8 @@ export async function fixturesIndex(base: string): Promise<Record<string, unknow
   return {
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: "The fixtures: recorded doors, challenges and vectors",
-    description: "The recorded 402 doors, MPP challenges and signed-artifact vectors this store tests its own instruments against, served at stable URLs so another instrument can cite the exact bytes.",
+    name: "The fixtures: recorded doors, challenges, settlement responses and vectors",
+    description: "The recorded 402 doors, MPP challenges, settlement responses and signed-artifact vectors this store tests its own instruments against, served at stable URLs so another instrument can cite the exact bytes.",
     url: `${base}/fixtures.json`,
     license: "https://creativecommons.org/licenses/by/4.0/",
     isAccessibleForFree: true,
@@ -194,11 +225,12 @@ export async function fixturesIndex(base: string): Promise<Record<string, unknow
 fixturesRoutes.get("/fixtures.json", async (c) => c.json(await fixturesIndex(c.env.STORE_BASE_URL), 200, { "Cache-Control": "public, max-age=3600" }));
 
 /*
- * A set may start with a digit (402index) and a fixture may carry a dot
+ * A set may start with a digit (402index), carry a hyphen
+ * (settlement-responses, 2026-09-12) and a fixture may carry a dot
  * (resources.terms) since the keeper's captures of 2026-09-04; the
  * pattern is exactly as wide as the tree and no wider.
  */
-fixturesRoutes.get("/fixtures/:set{[a-z0-9]+}/:file{[a-z0-9.-]+\\.json}", (c) => {
+fixturesRoutes.get("/fixtures/:set{[a-z0-9-]+}/:file{[a-z0-9.-]+\\.json}", (c) => {
   const set = FIXTURE_SETS.find((candidate) => candidate.set === c.req.param("set"));
   const name = c.req.param("file").replace(/\.json$/, "");
   const entry = set?.entries.find((candidate) => candidate.name === name);

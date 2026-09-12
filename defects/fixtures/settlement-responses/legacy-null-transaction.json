@@ -1,0 +1,19 @@
+{
+  "name": "legacy-null-transaction",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "The legacy timeout shape a facilitator operator reported on the spec thread: {success:false, transaction:null} on a broadcast whose confirmation timed out. transaction is not a string, so the response cannot say whether anything moved. A reader must not read it as a failed payment; it is unresolved until the chain is asked.",
+  "expect_failed": [
+    "transaction-string",
+    "network-caip2"
+  ],
+  "expect_outcome": "unresolved",
+  "must_not_conclude": [
+    "failed"
+  ],
+  "payment_response": "eyJzdWNjZXNzIjpmYWxzZSwidHJhbnNhY3Rpb24iOm51bGwsIm5ldHdvcmsiOiJiYXNlIn0=",
+  "decoded": {
+    "success": false,
+    "transaction": null,
+    "network": "base"
+  }
+}
