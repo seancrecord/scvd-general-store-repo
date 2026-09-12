@@ -38,6 +38,11 @@ const ID = "aura_walk";
  *      from the menu and the copy is checked against it.
  */
 
+/**
+ * The quote comes from a valid ask; the paid request may then carry a
+ * different, bad input. An unsigned ask that SUPPLIES a bad input is
+ * refused before terms (house rule 62.2), so the two are separated.
+ */
 async function paid(path: string, quotePath = path): Promise<Response> {
   const challenge = await SELF.fetch(`${BASE}${quotePath}`);
   expect(challenge.status).toBe(402);
@@ -161,15 +166,15 @@ describe("keeper-time answers to two doors now", () => {
 });
 
 describe("the door", () => {
-  it("answers valid buyer inputs with the 402 and the refund promise", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/${ID}?url=https://door.example/api/x`);
+  it("answers the free knock with the 402 and the refund promise", async () => {
+    const response = await SELF.fetch(`${BASE}/api/buy/${ID}`);
     expect(response.status).toBe(402);
     const body = (await response.json()) as Record<string, unknown>;
     expect(String(body["refund_promise"])).toContain("168 hours");
   });
 
   it("refuses the paid request without a door, before any money moves", async () => {
-    const response = await paid(`/api/buy/${ID}`, `/api/buy/${ID}?url=https://door.example/api/x`);
+    const response = await paid(`/api/buy/${ID}`);
     expect(response.status).toBe(400);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["charged"]).toBe(false);

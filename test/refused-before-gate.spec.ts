@@ -16,7 +16,7 @@ beforeAll(() => {
   installFacilitatorMock();
 });
 
-/** Quoted asks may land via waitUntil; refused asks are recorded before returning. */
+/** The bare-quote ask lands via waitUntil, inside the request, not before it. */
 async function funnelRowFor(item: string) {
   return vi.waitFor(async () => {
     const row = (await auditFunnel(testEnv)).items.find((r) => r.item === item);
@@ -88,9 +88,9 @@ describe("a signed request refused for a missing input is a decline", () => {
     expect(declines.some((r) => r.reason === "local:input_invalid:tx_hash")).toBe(true);
   });
 
-  it("refuses an unsigned incomplete purchase without booking a wallet decline", async () => {
+  it("books nothing for a bare price-ask, which was never a wallet", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation`, { headers: OUTSIDE });
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(402);
     const { declines } = await readDeclines(testEnv);
     expect(declines.filter((r) => r.item === "settlement_attestation")).toEqual([]);
   });
@@ -107,11 +107,11 @@ describe("a signed request refused for a missing input is a decline", () => {
 });
 
 describe("an ask that could not have bought is marked as such", () => {
-  it("stamps the missing input on the HTTP ask row without offering payment terms", async () => {
+  it("stamps the missing input on the HTTP ask row, beside the terms it was quoted", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation`, { headers: OUTSIDE });
-    expect(response.status).toBe(400);
-    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
-    expect(await response.json()).toMatchObject({ charged: false, input_field: "tx_hash" });
+    expect(response.status).toBe(402);
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(true);
+    expect(await response.json()).toMatchObject({ required_params: ["tx_hash"] });
     const row = await funnelRowFor("settlement_attestation");
     expect(row.asks_organic).toBe(1);
     expect(row.asks_locked).toBe(1);

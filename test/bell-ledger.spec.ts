@@ -1,5 +1,5 @@
 import { SELF } from "cloudflare:test";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
 /**
@@ -45,14 +45,23 @@ describe("the bell ledger", () => {
     });
     expect(mcpRing.status).toBe(200);
 
-    const ledger = await SELF.fetch(`${BASE}/admin/bell`, {
-      headers: adminAuth,
-    });
-    expect(ledger.status).toBe(200);
-    const html = await ledger.text();
-    expect(html).toContain("The bell, ring by ring");
-    expect(html).toContain("clawhub-skill");
-    expect(html).toContain("curious-agent/1.0");
-    expect(html).toContain("<td>mcp</td>");
+    // The ring's bookkeeping is deferred past the response and, since
+    // 2026-09-11, goes through the counter ledger before it reaches
+    // KV; read the page until both rings are on it, as window-shopping
+    // does for the almanac's porch row.
+    await vi.waitFor(
+      async () => {
+        const ledger = await SELF.fetch(`${BASE}/admin/bell`, {
+          headers: adminAuth,
+        });
+        expect(ledger.status).toBe(200);
+        const html = await ledger.text();
+        expect(html).toContain("The bell, ring by ring");
+        expect(html).toContain("clawhub-skill");
+        expect(html).toContain("curious-agent/1.0");
+        expect(html).toContain("<td>mcp</td>");
+      },
+      { timeout: 2000, interval: 25 },
+    );
   });
 });

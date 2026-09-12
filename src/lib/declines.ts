@@ -96,6 +96,18 @@ export interface DeclineReport {
   /** Reason string -> how many times, intent-bearing declines only. */
   by_reason: Record<string, number>;
   /**
+   * THE RAILS ASKED FOR AND NOT OFFERED (2026-09-11). A payment signed
+   * for a network absent from the challenge books as
+   * `local:requirement_mismatch:network:<caip-2>`, and this tallies
+   * those by chain, intent-bearing rows only. It is the one demand
+   * signal the store has for a rail it does not run: PAYMENT_RAILS.md
+   * grows an accepted scheme only for a named counterparty, and until
+   * this column existed the counterparty walked away unrecorded. A
+   * buyer whose client read the accepts and never signed is still
+   * invisible; x402 v2 carries no "I would have paid on X".
+   */
+  rails_asked_for: Record<string, number>;
+  /**
    * Declines recorded with no reason attached. The verify-side reason
    * is remembered in-isolate by nonce, so a cross-isolate retry can
    * lose it; a high count here means the instrument is the problem,
@@ -187,6 +199,18 @@ const PREFLIGHT_FIELD_READINGS: Readonly<Record<string, string>> = {
     "the nonce is not a 32-byte hex string (0x and exactly 64 hex characters, random per authorization). A 16-byte nonce, a decimal counter and a UUID all land here.",
 };
 
+const RAIL_ASKED_FOR_PREFIX = "local:requirement_mismatch:network:";
+
+/** The chain a wrong-network decline named, as the code carries it. */
+export function railAskedFor(reason: string): string | undefined {
+  const bare = reason.startsWith("settle:") ? reason.slice(7) : reason;
+  if (!bare.startsWith(RAIL_ASKED_FOR_PREFIX)) {
+    return undefined;
+  }
+  const wanted = bare.slice(RAIL_ASKED_FOR_PREFIX.length);
+  return wanted.length > 0 ? wanted : undefined;
+}
+
 export function readReason(raw: string): {
   fault: DeclineFault;
   reading: string;
@@ -198,6 +222,13 @@ export function readReason(raw: string): {
   // as a facilitator verdict it never was.
   if (reason.startsWith("local:requirement_mismatch")) {
     const field = reason.split(":")[2] ?? "";
+    if (field === "network") {
+      const wanted = railAskedFor(raw) ?? "a network we could not read";
+      return {
+        fault: "buyer",
+        reading: `The client signed for ${wanted}, a network the challenge did not offer. Nothing is wrong with the signature and nothing here is ours to fix: this is a buyer who wanted to pay on a rail the store does not run. The rails intake rule wants exactly this — a named counterparty an existing rail does not serve — so count it, and if one chain recurs across DIFFERENT clients, that is the case for the rail.`,
+      };
+    }
     if (field === "resource") {
       return {
         fault: "ours",
@@ -532,6 +563,7 @@ export async function readDeclines(
     infrastructure_count: 0,
     infrastructure_clients: [],
     by_reason: {},
+    rails_asked_for: {},
     unspecified: 0,
   };
   const clients = new Set<string>();
@@ -583,6 +615,10 @@ export async function readDeclines(
     }
     report.outside_count += 1;
     report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
+    const wanted = railAskedFor(raw);
+    if (wanted) {
+      report.rails_asked_for[wanted] = (report.rails_asked_for[wanted] ?? 0) + 1;
+    }
     clients.add(who);
   };
 

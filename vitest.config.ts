@@ -68,10 +68,14 @@ export default defineConfig({
          */
         durableObjects: {
           BOUNTY_CLAIM_LOCKS: { className: "BountyClaimLocks", scriptName: undefined },
+          // The counters run the real serialized ledger in the suite too.
+          COUNTER_LEDGER: { className: "CounterLedger", scriptName: undefined, useSQLite: true },
         },
         bindings: {
           // A plain (nonexistent) wallet address, not a token contract.
           PAY_TO_ADDRESS: "0x1111111111111111111111111111111111111111",
+          // The ledger follows KV when a test wipes or seeds a key under it (services/counter-ledger.ts).
+          COUNTER_LEDGER_FOLLOW_KV: "1",
           // A test-only IndexNow key; the route serves it back, nothing pings.
           INDEXNOW_KEY: "0123456789abcdef0123456789abcdef",
           // Empty = no CDP JWT generation; tests mock the facilitator.

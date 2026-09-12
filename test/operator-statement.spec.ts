@@ -148,7 +148,7 @@ describe("the row", () => {
 
 describe("the door", () => {
   it("refuses a missing address and an unknown rail before any money moves", async () => {
-    const bare = await SELF.fetch(`${BASE}/api/buy/operator_statement`);
+    const bare = await paid("/api/buy/operator_statement");
     expect(bare.status).toBe(400);
     expect(((await bare.json()) as Record<string, unknown>)["charged"]).toBe(false);
     const rail = await SELF.fetch(`${BASE}/api/buy/operator_statement?wallet=${WALLET}&network=eip155:56`);

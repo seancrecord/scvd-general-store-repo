@@ -4955,9 +4955,14 @@ const PAYMENT_REQUIRED_SCHEMA: OpenApiObject = {
       type: "array",
       items: { type: "string" },
       description:
-        "Query parameters this item refuses to be bought without. Valid inputs are required before a payment quote. Inspect prices free at /menu/{item_id}?view=compact or /api/catalog/v1. Absent where the door takes none.",
+        "Query parameters this item refuses to be bought without. Asking the price without them is free; buying without them is refused before any money moves, and a supplied invalid value is refused before terms. Absent where the door takes none.",
     },
     required_params_note: { type: "string" },
+    input_contract_url: {
+      type: "string",
+      format: "uri",
+      description: "The free compact item contract: price tiers and the full input schema. Present where required_params is.",
+    },
     payload_template: {
       type: "object",
       description:
@@ -5054,6 +5059,29 @@ const PAYMENT_REQUIRED_REF: OpenApiObject = {
  * and readers have generated against it; adding a field is free,
  * removing one breaks somebody quietly.
  */
+/**
+ * The discovery spec's flat price hint: one tier is `fixed` with its
+ * price; several are `dynamic` with the range, since a buyer choosing
+ * a tier is exactly what that mode describes. Decimal strings, never
+ * numbers — the spec reads strings, and a float that prints in
+ * exponent form would be a different number to a parser.
+ */
+export function discoveryPriceHint(
+  priceUsdcOptions: number[],
+): Record<string, string> {
+  const tiers = [...new Set(priceUsdcOptions)].sort((a, b) => a - b);
+  const decimal = (price: number): string => price.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
+  if (tiers.length <= 1) {
+    return { pricingMode: "fixed", price: decimal(tiers[0] ?? 0), currency: "USD" };
+  }
+  return {
+    pricingMode: "dynamic",
+    minPrice: decimal(tiers[0] ?? 0),
+    maxPrice: decimal(tiers[tiers.length - 1] ?? 0),
+    currency: "USD",
+  };
+}
+
 function paidOp(
   env: Env,
   summary: string,
@@ -5084,6 +5112,24 @@ function paidOp(
     },
     "x-payment-info": {
       protocol: "x402",
+      /*
+       * THE DISCOVERY SHAPE THREE INDEXERS SHARE (2026-09-11). A
+       * scanner operator wrote in that his index counted zero paid
+       * operations here: it reads `protocols` as an array of protocol
+       * objects and ignores the `protocol` string above. That array
+       * is AgentCash's discovery spec, which x402scan adopted (their
+       * change moved it from `["x402"]` to `[{ x402: {} }]`) and
+       * mppscan reads as well, so the string was the store's own
+       * dialect and the array is the shared one. Both stay: the
+       * string predates the array and readers generated against it.
+       * `pricingMode`, `price` and `currency` beside it are the same
+       * spec's flat price hint, the shape its validator accepts
+       * today (its documented nested form is rejected by its own
+       * parser, per x402scan issue 1014). Decimal USD, derived from
+       * the same tiers the accepts are, so the two cannot drift.
+       */
+      protocols: [{ x402: {} }],
+      ...discoveryPriceHint(priceUsdcOptions),
       x402Version: 2,
       scheme: "exact",
       asset: "USDC",
@@ -5252,7 +5298,8 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
   paymentInfo["input"] = {
     location: "query",
     method: "GET",
-    valid_inputs_required_before_quote: true,
+    valid_inputs_required_before_quote: false,
+    bare_probe_answers_402: true,
     price_discovery_url: `${env.STORE_BASE_URL}/menu/${item.id}?view=compact`,
     schema: requestSchema,
   };
@@ -5300,7 +5347,7 @@ function buyOperation(env: Env, items: readonly MenuItem[]): OpenApiObject {
     ...paidOp(
       env,
       "Buy an item from the menu",
-      "One x402 v2 purchase per request. Valid buyer inputs are required before a usable 402 quote. Missing or invalid inputs receive a field refusal without payment terms; use /menu/{item_id}?view=compact or /api/catalog/v1 for free price and input discovery. Query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail: the shape you want the keeper's time to take), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger), tx_hash (settlement_attestation: a Base transaction hash, 0x + 64 hex, or a Solana transaction signature, base58 — the identifier's shape selects the chain). Item ids, prices and each item's full input contract live in /menu.json.",
+      "One x402 v2 purchase per request. A bare request answers 402 with required_params naming any input the door needs; a supplied invalid input receives a field refusal without payment terms. Prices and input contracts are also free at /menu/{item_id}?view=compact and /api/catalog/v1. Query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail: the shape you want the keeper's time to take), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger), tx_hash (settlement_attestation: a Base transaction hash, 0x + 64 hex, or a Solana transaction signature, base58 — the identifier's shape selects the chain). Item ids, prices and each item's full input contract live in /menu.json.",
       allPrices,
     ),
     parameters: [

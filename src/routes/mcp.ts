@@ -808,8 +808,17 @@ async function callPurchaseTool(
     : null;
   if (refusal && !retained) {
     const paying = paymentMeta !== undefined && paymentMeta !== null;
-    // Both doors refuse missing inputs before quoting. Keep that ask in the
-    // funnel, tagged with what it lacked; it is not evidence of issued terms.
+    /**
+     * THE LOCKED DOOR, on this door's terms. The HTTP door quotes a
+     * 402 to a bare ask and stamps the ask row with the inputs it
+     * lacked (payment-gate, the locked-door work); this door refuses
+     * BEFORE quoting, so the same ask never reaches its 402 — and a
+     * funnel that only counted 402s would lose every MCP caller who
+     * asked without the one thing the shelf needed. So the bare ask
+     * refused for a missing required input is booked as the ask it
+     * was, stamped the same way, and the row reads the same
+     * whichever door it came through.
+     */
     if (!paying && missing.length > 0) {
       await recordChallengeIssued(c.env, `/api/buy/${item.id}`, {
         ...mcpSignals(c),

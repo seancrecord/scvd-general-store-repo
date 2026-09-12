@@ -28,7 +28,11 @@ export function checkoutContract(base: string) {
     amount_unit: "atomic",
     asset_decimals: USDC_DECIMALS,
     automatic_renewal: false,
-    valid_inputs_required_before_quote: true,
+    // A bare GET of buy_url answers 402 with required_params in the
+    // body (the probe rule). Inputs that ARE supplied are validated
+    // before terms, signed or not.
+    valid_inputs_required_before_quote: false,
+    bare_probe_answers_402: true,
     price_discovery_url: `${base}/api/catalog/v1`,
     request_header: "PAYMENT-SIGNATURE",
     legacy_header_alias: "X-PAYMENT",
@@ -41,7 +45,7 @@ export function checkoutContract(base: string) {
     mcp_idempotency_key: "x402/idempotency-key",
     steps: [
       "Choose an item and supply its required inputs. The input contract and its MCP URL describe that item alone.",
-      "HTTP: GET buy_url with valid query parameters to receive a 402; PAYMENT-REQUIRED is base64 JSON. Missing or invalid inputs receive a field refusal without payment terms. Read price_discovery_url free to inspect prices and required inputs before composing a purchase.",
+      "HTTP: GET buy_url with those query parameters. The 402 PAYMENT-REQUIRED header is base64 JSON. Asking the price costs nothing: a bare GET answers 402 too, naming required_params in the body. Supplied inputs are validated before terms, so an invalid one gets a field refusal, not a quote.",
       "A payment-capable client selects an offered network and exact amount within your budget. Copy the atomic amount unchanged; do not multiply by a million. Without a supported wallet/payment client, stop before signing.",
       "Retry the same request and inputs with the signed v2 payload in PAYMENT-SIGNATURE. Set the Idempotency-Key header to the quote body’s idempotency.suggested_key to protect retries. X-PAYMENT is an alias for the same v2 payload, not v1 support.",
       "MCP: at the item's mcp_url, tools/list gives one buy tool. Its unpaid result has isError:true and the challenge in structuredContent. Retry with payment in params._meta['x402/payment'] and the quote result._meta['x402/idempotency-key'] in params._meta['x402/idempotency-key'].",

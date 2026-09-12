@@ -37,10 +37,15 @@ import type { CertificateRecord, Env } from "@/types";
  *     purchases was meant to equal the founding settle plus the
  *     unattributed ones. It paged twice in a week and both times the
  *     cause was a lost read-modify-write on a shared KV key — the
- *     keeper's ruling of 2026-09-04 says that is not a books defect —
- *     and the count could not name a wallet either way. The three
- *     figures still sit on the books check, as floors with the
- *     certificates read beside them; they just no longer wake anyone.
+ *     keeper's ruling of 2026-09-04 said that was not a books defect —
+ *     and the count could not name a wallet either way. On 2026-09-11
+ *     the ruling moved: a script bought 66 times and the storefront
+ *     lost thirteen, and the public tally has to be right. The
+ *     counters now have one serialized writer and the hourly raise
+ *     lifts any that fall short of the records, so the three figures
+ *     are expected to agree; the books check says a difference should
+ *     clear within the hour and is real if it does not. It still does
+ *     not page: the raise is the response, and the page names it.
  *
  *  2. THE RAIL TALLY NEVER OVERSHOOTS THE ORGANIC COUNT. The public
  *     path handles overshoot by dropping the split — absent is honest

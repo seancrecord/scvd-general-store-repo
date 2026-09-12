@@ -122,6 +122,10 @@ export interface OfficePageData {
    * the kind of claim this store spends its time refusing.
    */
   takeReadAt?: string | null;
+  /** Whether every bump goes through the counter ledger on this deployment. */
+  countersSerialized?: boolean;
+  /** The hourly raise's last pass: when, and how many counters it lifted. */
+  lastRaise?: { at: string; raised: number } | null;
   /** Settle counters against payer rows, all-time on both sides. */
   reconciliation: SettleReconciliation | null;
   /**
@@ -280,6 +284,35 @@ function trendHtml(ledger: MonthLedger): string {
  * second copy of the store's money table, which is the exact defect
  * class this repo spends its time closing.
  */
+/**
+ * HOW TO READ THE MONEY NUMBERS (2026-09-11, the keeper: "I need this
+ * to be very explicit"). One wallet bought 66 times in an afternoon,
+ * ten seconds apart, and the desk showed three different counts of
+ * it. All three are on this page on purpose; this box says which one
+ * to believe.
+ */
+export function howToReadTheMoneyHtml(
+  takeReadAt: string | null,
+  serialized: boolean,
+  lastRaise: { at: string; raised: number } | null,
+): string {
+  const tallyState = serialized
+    ? `Since 2026-09-11 every bump goes through one serialized writer (the counter ledger), so a burst of a thousand sales lands as a thousand.`
+    : `<strong style="color:#8c2f1b">This deployment has no counter ledger binding, so bumps are back on KV read-add-write and a burst can lose counts.</strong>`;
+  const raiseState = lastRaise
+    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "nothing was short" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.`
+    : `No raise has run on this deployment yet.`;
+  return `<div style="border:1px solid #999;padding:0.6em 0.9em;margin:0.5em 0 1em;background:#fbfaf6">
+    <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. They are supposed to agree, and when they do not, the certificates and the per-settle records are right.</strong></p>
+    <ol style="margin:0;padding-left:1.4em">
+      <li><strong>Certificates and per-settle records</strong> — one per sale, written when it settled; neither can lose one. <em>The take</em> on the desk and <a href="/admin/buyers">the buyers page</a> count certificates. <strong>This is the true number.</strong></li>
+      <li><strong>Till counters</strong> — the storefront's settle count, the month line above, and the "row says N" on the buyers page. ${tallyState} Every hour the raise lifts any counter still short of its records (organic only, never lowered), so these go up to where they belong on their own. ${raiseState} Detail at <a href="/admin/raise-log">/admin/raise-log</a>.
+        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0 0"><button type="submit">Raise every short counter to its records now</button></form></li>
+      <li><strong>The take on the desk</strong> — the certificates, counted once an hour and cached (last read ${takeReadAt ? escapeHtml(takeReadAt) : "on the last hourly round"}). Up to an hour behind the shelf; catches up by itself. Counted this second at <a href="/admin/take">/admin/take</a>.</li>
+    </ol>
+  </div>`;
+}
+
 export function takeSectionHtml(
   take: TakeSummary | null,
   allTime: { organic: number; house: number } | null,
@@ -305,7 +338,7 @@ export function takeSectionHtml(
     if (diff > 0) {
       return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The difference — ${diff} — is settles that minted no certificate, listed by item under <a href="#no-certificate">settled at the till, no certificate</a> below. Same books, two honest counts, and now both on the page.</small></p>`;
     }
-    return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}). Penny pages cannot explain a negative gap — this is worth chasing.</strong></small></p>`;
+    return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}).</strong> Penny pages cannot explain a negative gap. What can: a run of sales seconds apart, where the till's tally misses counts (ruled a floor, 2026-09-04). The certificates are right; the storefront's number is ${take.total.organic_sales - allTime.organic} low and will stay low, because a missed count never comes back on its own.</small></p>`;
   })();
   const money = (value: number): string => `$${value.toFixed(2)}`;
   const rows = take.lines
@@ -904,6 +937,7 @@ export function renderOfficePage(data: OfficePageData): string {
   const body = `
   <section>
     <h2>The take — all-time</h2>
+    ${howToReadTheMoneyHtml(data.takeReadAt ?? null, data.countersSerialized ?? false, data.lastRaise ?? null)}
     ${
       data.take
         ? `${takeSectionHtml(data.take, data.allTime)}
@@ -975,7 +1009,7 @@ export function renderOfficePage(data: OfficePageData): string {
         ? `<p>Not checked here \u2014 the chain walk runs at <a href="/admin/reconciliation">the books check</a>, which is where its verdicts belong. This page no longer pays for one to print a sentence about it.</p>`
         : data.reconciliation.unexplained === 0
           ? `<p><strong style="color:#2f6b2f">They do.</strong> Full verdicts — counters, chain, deliveries, alarms — at <a href="/admin/reconciliation">the books check</a>.</p>`
-          : `<p><strong>They differ by ${Math.abs(data.reconciliation.unexplained)}</strong> — a lost increment on a shared key, read as a floor, not an alarm (ruled 2026-09-04). The three witnesses and the arithmetic are at <a href="/admin/reconciliation">the books check</a>.</p>`
+          : `<p><strong>They differ by ${Math.abs(data.reconciliation.unexplained)}</strong>. Since 2026-09-11 every counter has one serialized writer and the hourly raise lifts any counter short of its records, so a difference here should clear within the hour; one that outlives the next raise is real and worth chasing. The three witnesses and the arithmetic are at <a href="/admin/reconciliation">the books check</a>; the last raise is at <a href="/admin/raise-log">/admin/raise-log</a>.</p>`
     }
   </section>
 

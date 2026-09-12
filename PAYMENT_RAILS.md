@@ -37,7 +37,15 @@ Two independently-growing lists, never entangled:
 1. **Accepted payment schemes** grow by one entry only when a real,
    named counterparty proves an existing entry doesn't serve them —
    never preemptively because a player is big. (This gate already
-   ruled correctly once: `gokite-aa` stayed out.)
+   ruled correctly once: `gokite-aa` stayed out.) Since 2026-09-11 the
+   counterparty has a place to appear: a payment signed for a network
+   the challenge did not offer books as
+   `local:requirement_mismatch:network:<caip-2>` and the decline desk
+   tallies those by chain under "rails asked for and not offered."
+   Before that, the books kept the first mismatched field
+   alphabetically — `asset` — and the chain never left the 402 body.
+   What the desk still cannot see: a client that read the accepts,
+   found nothing it could sign, and never sent a payment.
 2. **Discovery registry listings** grow additively — metadata
    registrations, never payment-flow changes. Tracked separately,
    shipped independently.
@@ -253,6 +261,15 @@ in TASKS.md.
 
 
 ## Part E — the cross-protocol re-read, 2026-08-30. THE PART B GATE IS RE-POSED, NOT RE-RULED.
+
+**When a second protocol lights (2026-09-11 note).** Every paid
+operation in `openapi.json` declares `x-payment-info.protocols`,
+the discovery shape AgentCash, x402scan and mppscan share, and today
+it reads `[{ x402: {} }]`. The day MPP or any other protocol becomes
+payable here, add its object to that array in `paidOp()`
+(`src/routes/openapi.ts`); `test/openapi-discovery-shape.spec.ts`
+pins the array to exactly `[{ x402: {} }]` and will fail until it is
+updated, so the reminder is a test, not a memory.
 
 Part B ruled MPP to WAIT-AND-SEE on 2026-08-04 and named its own two
 reopening conditions: a named counterparty asking to pay that way, OR

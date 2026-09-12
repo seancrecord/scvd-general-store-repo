@@ -249,6 +249,7 @@ export const EVERY_ROOM: readonly { href: string; label: string }[] = [
   { href: "/admin/deliveries", label: "Deliveries (money in vs goods out)" },
   { href: "/admin/settlement-unknown", label: "Settlements the store could not read" },
   { href: "/admin/glance", label: "The glance" },
+  { href: "/admin/raise-log", label: "The raise log (every counter lifted to its records, last pass)" },
   { href: "/admin/growth.json", label: "Growth, as JSON (every month, every block)" },
   { href: "/admin/peers.json", label: "The peers, as JSON (every week read)" },
   { href: "/admin/events", label: "Item events" },

@@ -8,6 +8,7 @@ import { sendAlert } from "@/lib/alerts";
 // module, so the pair erases to no runtime cycle.
 import { isNoiseFloor, readReason, type DeclineFault } from "@/lib/declines";
 import { houseWallets, inferChannel, isHouseTraffic } from "@/lib/channel";
+import { counterLedger } from "@/lib/counter-ledger";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
@@ -157,6 +158,20 @@ async function bumpBy(env: Env, key: string, amount: number): Promise<void> {
    * whether a lost count may cost the caller their answer (it may not
    * — see the catches in payment-gate.ts).
    */
+  /*
+   * ONE WRITER (2026-09-11). Read-add-write on KV lost counts under a
+   * burst — a wallet buying every ten seconds put the storefront's
+   * organic tally below the certificate count. Every bump now goes
+   * through the counter ledger (services/counter-ledger.ts), which
+   * serializes the add and mirrors the value to this same key, so
+   * every reader stays as it was. The KV path below is the fail-open
+   * for a deployment without the binding.
+   */
+  const ledger = counterLedger(env, key);
+  if (ledger) {
+    await ledger.add(key, amount);
+    return;
+  }
   const current = await withKvRetry(() => env.COUNTERS.get(key));
   await kvPut(
     env.COUNTERS,
@@ -1078,6 +1093,16 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
    * goes down first now; the legacy key is deleted only once it has.
    */
   let foldedLegacyKey: string | undefined;
+  const ledger = counterLedger(env, key);
+  if (ledger) {
+    // The same fold, serialized: the ledger holds the row's truth and
+    // mirrors it here, so two settles seconds apart both count.
+    const legacy =
+      legacyKey !== key ? await kvGetJson<PayerRecord>(env.COUNTERS, legacyKey, "json") : null;
+    await ledger.touchPayer(key, canonical, now, legacy ?? null);
+    if (legacy) await env.COUNTERS.delete(legacyKey);
+    return;
+  }
   if (legacyKey !== key) {
     const legacy = await kvGetJson<PayerRecord>(env.COUNTERS, legacyKey, "json");
     if (legacy) {

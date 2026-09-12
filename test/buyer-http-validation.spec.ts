@@ -5,6 +5,27 @@ import { doors } from "@/lib/doors-app";
 import { installLaborAdmissionHarness, laborNetworks, signLabor, transfers } from "./helpers/labor-admission";
 import { items, baseline, request, object, testEnv, facilitator, BASE, call, shelves, type Obj } from "./helpers/buyer-harness";
 installLaborAdmissionHarness();
+
+/**
+ * THE PROBE RULE, AND THE HALF OF BUY-002 THAT SURVIVES IT (2026-09-11).
+ *
+ * PR #636 validated every unsigned request before terms. Within fifteen
+ * minutes x402-list's checker — bare probe, expects 402 — counted 7 of
+ * 32 doors alive and marked the store degraded; the store's own
+ * preflight would have failed the same 25 doors on status-402. So:
+ *
+ *   PROBE     — unsigned and missing a required input: 402, always,
+ *               with required_params and input_contract_url beside the
+ *               signable terms. Every item, both Workers.
+ *   COMPOSED  — every required input supplied, signed or not: validated
+ *               in full before terms. Garbage gets a field refusal and
+ *               no offer, so a client never signs terms it cannot use.
+ *   SIGNED    — a missing input still fails before verification.
+ *
+ * House rule 62 is held here. Rule 46: watched red against the #636
+ * tree before it was trusted.
+ */
+
 async function get(surface: "store" | "doors", path: string, headers?: HeadersInit): Promise<Response> {
   if (surface === "store") return request(path, { headers });
   // The real doors Worker lacks the field wallet. Reads needing that private
@@ -17,37 +38,48 @@ async function get(surface: "store" | "doors", path: string, headers?: HeadersIn
   return response;
 }
 const urlFor = (id: string, args: Obj) => `/api/buy/${id}?${new URLSearchParams(Object.entries(args).map(([key, value]) => [key, String(value)]))}`;
-for (const menu of MENU_ITEMS) for (const surface of ["store", "doors"] as const) for (const mode of ["omitted", "empty", "whitespace"] as const) {
-  it(`${menu.id} ${surface} ${mode}: required buyer inputs precede usable HTTP payment terms`, async () => {
+
+for (const menu of MENU_ITEMS) for (const surface of ["store", "doors"] as const) {
+  it(`${menu.id} ${surface}: a bare probe answers 402 and names what the door needs`, async () => {
     const item = items.find(row => row.id === menu.id)!, required = item.spec.inputs.required ?? [];
-    if (!required.length) {
-      const freeOfRequiredInputs = await get(surface, urlFor(item.id, {}));
-      expect(freeOfRequiredInputs.status).toBe(402);
-      return;
+    const verifies = facilitator.verifyCalls, response = await get(surface, `/api/buy/${menu.id}`), body = object(await response.json());
+    expect(response.status, menu.id).toBe(402);
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(true);
+    if (required.length) {
+      expect(body.required_params).toEqual(required);
+      expect(typeof body.required_params_note).toBe("string");
+      expect(body.input_contract_url).toBe(`${BASE}/menu/${menu.id}?view=compact`);
+    } else {
+      expect(body.required_params).toBeUndefined();
     }
+    expect(facilitator.verifyCalls).toBe(verifies); expect(transfers).toBe(0);
+  });
+}
+
+for (const menu of MENU_ITEMS) for (const surface of ["store", "doors"] as const) for (const mode of ["omitted", "empty", "whitespace"] as const) {
+  it(`${menu.id} ${surface} ${mode}: a required input left blank is still a probe, not a purchase`, async () => {
+    const item = items.find(row => row.id === menu.id)!, required = item.spec.inputs.required ?? [];
+    if (!required.length) return;
     for (const field of required) {
       const args = { ...baseline(item) };
       if (mode === "omitted") delete args[field]; else args[field] = mode === "empty" ? "" : " \t\n ";
       const verifies = facilitator.verifyCalls, response = await get(surface, urlFor(item.id, args)), body = object(await response.json());
-      expect(response.status, `${item.id}.${field}`).toBe(400);
-      expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
-      expect(response.headers.has("X-PAYMENT-REQUIRED")).toBe(false);
-      expect(body.accepts).toBeUndefined();
-      expect(body).toMatchObject({ charged: false, input_field: field });
-      expect(typeof body.code).toBe("string");
-      expect(body.input_contract_url).toBe(`${BASE}/menu/${item.id}?view=compact`);
+      expect(response.status, `${item.id}.${field}`).toBe(402);
+      expect(response.headers.has("PAYMENT-REQUIRED")).toBe(true);
+      expect(body.required_params).toContain(field);
       expect(facilitator.verifyCalls).toBe(verifies); expect(transfers).toBe(0);
     }
   });
 }
+
 for (const menu of MENU_ITEMS) for (const surface of ["store", "doors"] as const) {
-  it(`${menu.id} ${surface}: free discovery leads to a valid request before a quote`, async () => {
+  it(`${menu.id} ${surface}: the free contract says a bare probe is answered, and a composed valid request is quoted`, async () => {
     const response = await request(`/menu/${menu.id}?view=compact`), contract = object(await response.json());
     expect(response.status).toBe(200);
     expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
     expect(contract.price_usdc).toBe(menu.price_usdc);
     expect(contract.price_discovery_url).toBe(`${BASE}/menu/${menu.id}?view=compact`);
-    expect(object(contract.checkout)).toMatchObject({ valid_inputs_required_before_quote: true, price_discovery_url: `${BASE}/api/catalog/v1` });
+    expect(object(contract.checkout)).toMatchObject({ bare_probe_answers_402: true, valid_inputs_required_before_quote: false, price_discovery_url: `${BASE}/api/catalog/v1` });
     const schema = object(contract.input_schema);
     const item = items.find(row => row.id === menu.id)!;
     expect(schema.required).toEqual(item.spec.inputs.required);
@@ -69,15 +101,20 @@ const malformed = [
   ["spot_check", "host", "https://buyer.example/path"],
 ] as const;
 for (const [id, field, value] of malformed) for (const surface of ["store", "doors"] as const) {
-  it(`${id} ${surface}: malformed nonempty ${field} never produces payment terms`, async () => {
+  it(`${id} ${surface}: a supplied malformed ${field} is not a probe and never produces payment terms`, async () => {
     const item = items.find(row => row.id === id)!;
     const response = await get(surface, urlFor(id, { ...baseline(item), [field]: value }));
     expect(response.status).toBe(400);
     expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
-    expect(await response.json()).toMatchObject({ charged: false, input_field: field, input_contract_url: `${BASE}/menu/${id}?view=compact` });
+    expect(response.headers.has("X-PAYMENT-REQUIRED")).toBe(false);
+    const body = object(await response.json());
+    expect(body.accepts).toBeUndefined();
+    expect(body).toMatchObject({ charged: false, input_field: field, input_contract_url: `${BASE}/menu/${id}?view=compact` });
+    expect(typeof body.code).toBe("string");
     expect(facilitator.verifyCalls).toBe(0); expect(transfers).toBe(0);
   });
 }
+
 for (const network of laborNetworks()) for (const surface of ["store", "doors"] as const) for (const header of ["PAYMENT-SIGNATURE", "X-PAYMENT"] as const) {
   it(`${surface} ${network} ${header}: signed missing inputs fail before verification on canonical and trailing-slash paths`, async () => {
     const item = items.find(row => row.id === "context_anchor")!, args = baseline(item);

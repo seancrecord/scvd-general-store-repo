@@ -3,6 +3,7 @@
  * 2026-07-23). Registrar-plain by doctrine: every figure true or
  * absent, no adjectives, no claims a signature can't back.
  */
+import { BLESSINGS, BLESSING_SEASONS } from "@/store/blessings";
 import { RETIRED_KEYS } from "@/store/key-registry";
 
 /**
@@ -208,8 +209,8 @@ import { RETIRED_KEYS } from "@/store/key-registry";
 /** 3.16.3: original signed payments recover retained purchases after expiry. */
 /** 3.16.4: completion callback policy, visible outcomes and capacity refusals. */
 /** 3.16.5: exact buyer text and separate purchased-text/human-work proofs. */
-/** 3.16.6: valid HTTP inputs before quotes; existing free price discovery. */
-export const SKILL_VERSION = "3.16.6";
+/** 3.16.7: the probe rule is back — a bare GET answers 402 naming required_params; supplied inputs are validated before terms. */
+export const SKILL_VERSION = "3.16.7";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -507,7 +508,7 @@ export const SPEC_RETURNS: Record<string, string> = {
   coffees_for_closers:
     "The keeper's Sunday coffee drunk in the buyer's name; the buyer's win recorded verbatim on a signed certificate.",
   small_blessing:
-    "One blessing slip, delivered instantly with purchased_text: an ed25519 envelope binding the exact words and purchase certificate.",
+    `One blessing slip from a ${BLESSINGS.length}-slip jar filled in ${BLESSING_SEASONS.length} seasons so far, never the same slip twice in a row, delivered instantly with purchased_text: an ed25519 envelope binding the exact words and purchase certificate.`,
   daily_fortune:
     "The day's fortune and fortune_date (UTC), with purchased_text: an ed25519 envelope binding the exact words, date and purchase certificate. Every buyer today reads the same line.",
   the_confession:

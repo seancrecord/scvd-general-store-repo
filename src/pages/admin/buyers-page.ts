@@ -53,6 +53,12 @@ export function renderBuyersPage(report: BuyersReport): string {
     </table>`}
     <p><small>"row says N" beside a count is the payer row on the counters disagreeing with the certificates on the shelf —
     the row-level detail the books check cannot give, by address. A row of 0 means the wallet has certificates and no row at all.</small></p>
+    <div style="border:1px solid #999;padding:0.6em 0.9em;margin:0.5em 0 1em;background:#fbfaf6">
+      <p style="margin:0 0 0.4em"><strong>Which number is right: the certificate count. Always.</strong> A certificate is minted per sale and cannot go missing.
+      The payer row is a tally on the counters that misses counts when one wallet buys seconds apart (it happened 2026-09-11: 66 certificates, row said 51).
+      Since 2026-09-11 the row is written by one serialized writer so this cannot recur, and the hourly raise lifts any row still short of its records. The button below runs that raise now; it never lowers anything and is safe to press twice.</p>
+      <form method="post" action="/admin/repair/raise-counters" style="margin:0"><button type="submit">Raise every short counter and payer row to its records now</button></form>
+    </div>
   </section>
   <section>
     <h2>Presented, and turned away</h2>
