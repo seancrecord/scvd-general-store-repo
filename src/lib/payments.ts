@@ -1,7 +1,7 @@
 import { commissionGuidance } from "@/lib/buyer-guidance";
 import type { ObservationCheckpoint } from "@/services/purchase-observation";
 import { publicationCheckout } from "@/lib/publication-checkout";
-import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
+import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, basePayTo, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
 export { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
 import { createFacilitatorConfig } from "@coinbase/x402";
 import {
@@ -395,11 +395,18 @@ function storeServiceMetadata(
 export const SIGNING_WINDOW_SECONDS = 300;
 
 export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
+  // EIP-55 on every EVM rail, Base included, so the two Workers quote
+  // one spelling of the wallet however each secret was typed (see
+  // evmAddress in lib/payment-networks.ts). A PAY_TO_ADDRESS that is
+  // not an address at all still goes out as it came: the till would
+  // not sell on it either way, and hiding that behind a null would
+  // turn a misconfiguration into a silent empty shelf.
+  const base = basePayTo(env) ?? env.PAY_TO_ADDRESS;
   const accepts: PaymentOption[] = tiersUsdc.map((tierUsdc) => ({
     scheme: "exact",
     network: BASE_NETWORK,
     price: `$${tierUsdc}`,
-    payTo: env.PAY_TO_ADDRESS,
+    payTo: base,
     // Set on every accept, on every rail, so the library's `|| 300`
     // can never bind again. See SIGNING_WINDOW_SECONDS.
     maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,

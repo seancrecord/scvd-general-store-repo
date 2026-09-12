@@ -1,4 +1,5 @@
 import type { Env } from '@/types';
+import { getAddress } from 'viem';
 
 /** Shared by the checkout and its descriptions; no SDK or request state here. */
 export const BASE_NETWORK = 'eip155:8453';
@@ -9,8 +10,7 @@ export const SOLANA_NETWORK = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
 export type PaymentNetworkConfig = Pick<Env, 'PAY_TO_ADDRESS' | 'POLYGON_PAY_TO' | 'SOLANA_PAY_TO' | 'ARBITRUM_PAY_TO' | 'WORLD_PAY_TO'>;
 
 export function polygonPayTo(env: PaymentNetworkConfig): string | null {
-  const address = env.POLYGON_PAY_TO?.trim();
-  return address && /^0x[0-9a-fA-F]{40}$/.test(address) ? address : null;
+  return evmAddress(env.POLYGON_PAY_TO);
 }
 
 export function solanaPayTo(env: PaymentNetworkConfig): string | null {
@@ -24,14 +24,42 @@ export function arbitrumPayTo(env: PaymentNetworkConfig): string | null {
 export function worldPayTo(env: PaymentNetworkConfig): string | null {
   return evmAddress(env.WORLD_PAY_TO);
 }
+export function basePayTo(env: PaymentNetworkConfig): string | null {
+  return evmAddress(env.PAY_TO_ADDRESS);
+}
+
+/**
+ * ONE SPELLING OF EVERY EVM PAY-TO, WHATEVER CASE THE SECRET WAS TYPED IN
+ * (2026-09-12, the x402-list re-capture).
+ *
+ * The same wallet was entered lowercase on the doors Worker and
+ * checksummed on the store, and until 2026-09-11 nobody could tell:
+ * the doors Worker answered every unpaid knock. Then launch_check and
+ * opening_day moved to the store, and the shelf answered the same
+ * question two ways — 30 doors quoting 0xdd35… on Polygon and World, 2
+ * doors quoting 0xDD35…. x402-list diffs the whole accepts[] on every
+ * probe and filed the difference as a payTo ROTATION (its change feed,
+ * 02:38 UTC 09-12), re-captured the envelope, and its EIP-712
+ * signability check has read unknown since. A directory cannot be
+ * asked to know two spellings are one wallet; the answer is to have
+ * one. EIP-55 is the spelling the SDK already uses for every asset
+ * address beside it, so it is the one used here. The regex still
+ * refuses anything that is not forty hex digits; getAddress is only
+ * ever handed a string it accepts, and the catch is belt and braces.
+ */
 function evmAddress(raw?: string): string | null {
   const address = raw?.trim();
-  return address && /^0x[0-9a-fA-F]{40}$/.test(address) ? address : null;
+  if (!address || !/^0x[0-9a-fA-F]{40}$/.test(address)) return null;
+  try {
+    return getAddress(address);
+  } catch {
+    return null;
+  }
 }
 
 /** A bank walk must never borrow the receiving wallet of a different chain. */
 export function evmCheckoutPayTo(env: PaymentNetworkConfig, key: string): string | null {
-  if (key === 'base') return evmAddress(env.PAY_TO_ADDRESS);
+  if (key === 'base') return basePayTo(env);
   if (key === 'polygon') return polygonPayTo(env);
   if (key === 'arbitrum') return arbitrumPayTo(env);
   if (key === 'world') return worldPayTo(env);

@@ -189,7 +189,7 @@ describe("byte parity: the unpaid knock", () => {
     let challenged = 0;
     for (const item of MENU_ITEMS) {
       const answer = await bothAnswerAlike(`/api/buy/${item.id}`, { headers: JSON_ACCEPT },
-        ["launch_check", "opening_day"].includes(item.id) ? { handOver: "passed" } : {});
+        {});
       if (answer.status === 402) {
         challenged += 1;
         expect(answer.headers["payment-required"], item.id).toBeTruthy();

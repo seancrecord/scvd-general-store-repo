@@ -124,9 +124,25 @@ export const handOverFirst: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // These validations use store-only capabilities: the field wallet, or
   // an operator fixture and its store-owned rate limiter. The doors Worker
   // must not mistake a secret it never receives for a closed store shelf.
+  //
+  // ONLY THE KNOCK THAT REACHES THEM (2026-09-12, the found-count read).
+  // All three capabilities are reached from checkPurchaseArgs, which runs
+  // for a knock that SUPPLIED its target. A bare probe runs
+  // checkPurchaseInputSafety instead and never asks whether the field
+  // wallet exists, so handing it over woke the store's 4.29 MB isolate to
+  // answer a question the doors Worker had already answered thirty times
+  // in the same burst. x402-list probes all 32 doors at once every
+  // fifteen minutes and counts what answers in time: every check of
+  // 2026-09-12 that found 31 doors instead of 32 took 430 ms or more,
+  // every check that found all 32 took 403 ms or less, and the door
+  // missing from the 19:26 UTC check was opening_day — one of these two.
+  // The predicate is now the one a2a_repair_kit already used: hand over
+  // when the target is present, which is exactly when the store-only
+  // capability is consulted. It errs toward handing over, since a blank
+  // url is a probe the store will answer anyway.
   const itemPath = c.req.path.replace(/\/+$/, "");
-  if (["/api/buy/launch_check", "/api/buy/opening_day"].includes(itemPath) ||
-    (itemPath === "/api/buy/a2a_repair_kit" && new URL(c.req.url).searchParams.has("url"))) return handToStore(c, "passed");
+  if (["/api/buy/launch_check", "/api/buy/opening_day", "/api/buy/a2a_repair_kit"].includes(itemPath) &&
+    new URL(c.req.url).searchParams.has("url")) return handToStore(c, "passed");
   if (c.req.raw.body !== null && !c.req.raw.bodyUsed) {
     pristine.set(c.req.raw, c.req.raw.clone());
   }
