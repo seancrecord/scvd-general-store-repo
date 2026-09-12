@@ -128,6 +128,19 @@ export const FEATURES: readonly Feature[] = [
       "/corpus/asked.json",
       // The capture a sealed row commits to, by digest (2026-09-10).
       "/corpus/{sequence}/evidence/{host}.json",
+      /**
+       * THE REPLAY KIT (2026-09-12) files here rather than under a
+       * room of its own, and the proposition above is why: this room
+       * says the store publishes observations AND THE CHECKS THAT
+       * REPRODUCE THEM, and a replay kit is that check for one paid
+       * call — the offer, the settlement, the response hash and the
+       * refusal, assembled so a scorer or a marketplace can run the
+       * store's own arithmetic without asking us to be honest. A
+       * reader who opens any door on this row is the reader who wants
+       * this one. Named in START_HERE and in how_to_call beside the
+       * verify grip it extends, so the register matches the page.
+       */
+      "/api/replay/{cert_id}",
     ],
     named_on: ["/criteria"],
     opened: SCORERS_OPENED,

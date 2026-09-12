@@ -197,6 +197,27 @@ Declared on /attestation as its own class. Its signature proves the
 store assembled these parts on this read; it makes no part truer than
 that part's own signature and the chain already do.
 
+Where it is filed, and why that took two tries. The door shipped
+listed only on the served /skill.md, because house rule 60.1 wants
+every openapi.json path to belong to a feature, a feature wants a
+room, and a room wants a line in llms.txt — which has 25 characters
+left against the llmstxt.org budget of 30,000. Inventing a room to
+carry a facet of the verify surface would have obeyed the rule and
+missed it. The door belongs to the SCORERS row instead: that room's
+proposition already says the store publishes observations and the
+checks that reproduce them, and a replay kit is that check for one
+paid call. So it is in openapi.json under the scorers feature, and
+named on the scorers page in all four places a reader of that room
+looks — the shell grip, the MCP grip, the five answers beside the
+verify line it extends, and the paragraph a human reads.
+
+STILL OWED, and written here so it is not rediscovered: /llms.txt is
+25 characters under its budget and 17,261 of its 29,975 — 58 per cent
+— is one section enumerating every door inline. The next door that
+needs listing there cannot be. The fix is to move that enumeration
+into the area files the index already points at, which is its own
+change with its own blast radius.
+
 ## What would catch it going stale
 
 - The cert-shape tests extend to the new optional fields and to the
