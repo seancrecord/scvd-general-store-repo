@@ -31,8 +31,16 @@ console.log(JSON.stringify({
   receipt_hash_recomputed: sha(preimage) === r.receipt_hash,
   receipt_hash_preimage: "JSON of {agent, claim_sha256, ts, prev_hash, notary_fp, resolver_hash} in that order",
   claim_sha256_published: r.claim_sha256,
-  sha256_of_claim_text_as_given: sha(claim),
-  claim_binding_reproduced_from_claim_text: sha(claim) === r.claim_sha256,
+  // The claim TEXT only ever belonged to the first receipt, and the
+  // answer of 2026-09-12 is that claim_sha256 never committed to it on
+  // a resolved_verdict. Reporting it against every receipt would be
+  // noise dressed as a failed check, so it rides only its own.
+  ...(r.receipt_hash.startsWith("e851b71a")
+    ? {
+        sha256_of_first_receipts_claim_text: sha(claim),
+        claim_binding_reproduced_from_claim_text: sha(claim) === r.claim_sha256,
+      }
+    : {}),
   ...preimageCheck(),
 }, null, 2));
 

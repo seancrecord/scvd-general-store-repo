@@ -1,0 +1,12 @@
+{
+  "receipt_hash": "f542d90b8bdb64bc0908dabd5e6c1e63491f4ad8009be495a6fb295765088a4e",
+  "key_resolved": "21de066900082465 (active)",
+  "signature_valid_under_resolved_key": true,
+  "signature_valid_under_retired_key": false,
+  "receipt_hash_recomputed": true,
+  "receipt_hash_preimage": "JSON of {agent, claim_sha256, ts, prev_hash, notary_fp, resolver_hash} in that order",
+  "claim_sha256_published": "476ef15c614e4192c19fbbcadc54087706105cfa2584e7a633e39fd5baff8455",
+  "claim_preimage_bytes": 827,
+  "claim_preimage_sha256": "476ef15c614e4192c19fbbcadc54087706105cfa2584e7a633e39fd5baff8455",
+  "claim_binding_reproduced_from_published_preimage": true
+}

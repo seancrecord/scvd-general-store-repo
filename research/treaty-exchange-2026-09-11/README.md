@@ -126,3 +126,60 @@ within two days: his verifier caught its own drift on our reciprocal
 pass, our walk caught his paid path, and his answer caught a binding
 of his own that no longer reproduces. None of it required trusting
 either operator's word.
+
+## The second receipt, checked end to end (2026-09-12)
+
+Egress to their host opened for this session on 2026-09-12, so this
+round was fetched and checked here rather than pasted. Receipt
+`f542d90b…088a4e`, a `github_pr` verdict, with the files as served:
+`stillos-receipt-f542d90b.json`, `stillos-preimage-f542d90b.json` (the
+endpoint's response) and `…json.preimage` (the literal bytes out of
+its `preimage` field, written unchanged). `result-f542d90b.json` is
+what `verify.mjs` printed. Four layers, each a different question:
+
+1. **Key.** The receipt's own `notary_fp` resolves to the active key in
+   the keyring; the same signature fails under the retired one, so the
+   check discriminates rather than accepting any key they publish.
+2. **Signature.** Ed25519 over the ASCII of `receipt_hash`, valid.
+3. **Hash chain.** `receipt_hash` recomputes from the JSON of its six
+   fields in served order.
+4. **Claim binding.** SHA-256 of the published preimage bytes equals
+   `claim_sha256`, exactly. The question left open on 2026-09-11 is
+   now answerable by anyone with curl.
+
+And a fifth that is not theirs to certify, which is the point of the
+verdict being about a public fact: **the substance**. Their sealed
+object records `merged_at 2026-09-11T17:24:02Z`, merge commit
+`95a3c4a31e372d5cce91cd6efb413c12ec073634`, and the pull request's
+title. GitHub's own record of PR #635 gives the identical timestamp
+and title, and that commit exists on this repository with that message
+and 12 changed files. So the verdict is not merely signed; it is
+signed AND true, and the two were established separately.
+
+## Their door, read unpaid (2026-09-12)
+
+One free request, the walk's first leg, no payment presented and none
+authorised — the keeper's press bought one walk and this is not a
+second. `POST /notary/commit` still answers 402 with a v2 challenge in
+`PAYMENT-REQUIRED` (`eip155:8453`, `amount`) and a v1 challenge in the
+body (`base`, `maxAmountRequired`). The two surfaces still disagree,
+which he names as his to close.
+
+What did change, and is better than his own note claimed: the body's
+error string now instructs a v2 payer correctly rather than misleading
+one. It names the `PAYMENT-SIGNATURE` header, says both are accepted,
+points at the `PAYMENT-REQUIRED` header for the v2 challenge, and
+states that `base` and `eip155:8453` are the same chain. A buyer who
+reads only the body can now pay. Whether the paid path settles is a
+walk, and a walk is the keeper's press; this is a shape reading, and
+it says nothing about settlement.
+
+## One thing back to them
+
+Their statement at `/notary/trust?format=json`, re-read the same day,
+still names our origin, our key URL and our verify template, and still
+carries its removal policy. It also still reads `reciprocated: false`.
+By their own `reciprocity_note` — "a treaty is complete when the
+counterparty publishes their own statement citing this URL" — that
+flag is stale: `/trust-list.json` has cited their statement URL since
+2026-09-11. Ours to tell them, not ours to change.
