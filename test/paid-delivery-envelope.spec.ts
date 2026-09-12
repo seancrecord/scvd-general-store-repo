@@ -1,7 +1,9 @@
-import { SELF } from "cloudflare:test";
-import { beforeAll, describe, expect, it } from "vitest";
+import { SELF, env } from "cloudflare:test";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature } from "./helpers/payment";
+import { setOutTheWindow } from "./helpers/paywall";
+import type { Env } from "@/types";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { MENU_ITEMS } from "@/store";
 
@@ -9,6 +11,11 @@ const BASE = "https://scvd.store";
 
 beforeAll(() => {
   installMultiPurchaseFacilitatorMock();
+});
+// The window pick is walkable only with something in the window, and
+// one buyer walks it more than once here: set out again before each.
+beforeEach(async () => {
+  await setOutTheWindow(env as unknown as Env);
 });
 
 /**

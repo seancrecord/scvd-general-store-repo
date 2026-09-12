@@ -766,9 +766,12 @@ Merging is your press; these are why it waits.
   fonts. Cloudflare Browser Rendering (a paid binding), or resvg-wasm
   plus two font files (~2.5 MB). Until then the face is SVG and the
   share sheet — the asset that stops the scroll — is PNG already.
-- **RULE — the OpenAPI warning budget.** 700,000 → 750,000 in
-  `src/store/reader-limits.ts` with the reason beside it. Keep,
-  lower, or thin per item.
+- **RULE — two budgets moved.** The OpenAPI warning budget 700,000
+  → 750,000 in `src/store/reader-limits.ts`, and the MCP tools/list
+  ceiling 140,000 → 152,000 bytes in
+  `test/mcp-tool-catalog-budget.spec.ts` (two free tools, two items,
+  one published refusal; measured 147,028 with the descriptions cut
+  first). Each carries its reason beside it. Keep, lower, or thin.
 - **RULE — rule 7.** Every card name, line and post sentence in
   `src/store/cards.ts` (your words, with the three cuts); the pack
   and window-pick copy; the credit desk's challenge sentence; the

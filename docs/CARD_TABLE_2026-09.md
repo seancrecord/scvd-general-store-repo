@@ -262,7 +262,11 @@ already. OPEN.
    edit each.
 5. **RULE — rule 15 and §7.** The Season 2 `mint_to_chain` door.
    Nothing here builds toward it; his call, and not this season's.
-6. **RULE — the OpenAPI warning budget** (700,000 → 750,000, §B).
+6. **RULE — two budgets** (§B): the OpenAPI warning budget 700,000
+   → 750,000, and the MCP tools/list ceiling 140,000 → 152,000 bytes
+   for two free tools, two items and one published refusal, measured
+   at 147,028 after the descriptions were cut under their own 34k
+   line.
 7. **RULE — rule 7.** Every name, line and post sentence in
    `src/store/cards.ts` (the plan's words, with the three cuts), the
    shelf copy, the storefront lines, the declined-positions sentence

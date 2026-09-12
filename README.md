@@ -220,6 +220,8 @@ descriptions and input schemas are what the server sends.
 | `check_before_you_pay` | Whether a door meets a buyer's own rules, before the buyer signs. |
 | `ring_bell` | Ring the store bell; free. |
 | `sign_guestbook` | Sign the guestbook; free. |
+| `read_binder` | Read a wallet's binder of trading cards and its pack credit; free. |
+| `look_in_window` | Look in the shop window, the last five pressings pulled from packs; free. |
 | `buy_simple` | The front counter: the few things that need no reading. x402-paid. |
 | `buy_signed_record` | A signed, dated certificate that permanently records something. x402-paid. |
 | `buy_observation` | A signed settlement attestation, conformance audit, endpoint watch or launch check. x402-paid. |
