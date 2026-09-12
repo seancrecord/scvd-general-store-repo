@@ -713,3 +713,82 @@ No cold pass since the seventh (2026-08-04). Per this file's own
 standing rule, a pass that finds nothing is a finding and a month
 nobody looked is not the same as a month that was clean — so this
 entry records the fifteen days where nobody looked. Next pass owed.
+
+---
+
+## 2026-09-12 — six cold entries, quote completion measured separately
+
+The continuing buyer audit belongs in this ledger: it measures the same
+GUESS, RETRY and DIG costs, now against the stricter buyer contract. A
+published example that cannot be submitted literally, contradictory
+payment terms, or a dead verification link is a buyer defect candidate
+with a reproduction, even when individual endpoints behave as implemented.
+
+This house cohort used homepage, llms, skill, OpenAPI, MCP and a
+third-party listing as its six separate starting points. Each walker
+used an isolated CLI session and public surfaces only; two earlier
+attempts that inherited store context were excluded. The skill walker
+requested the cheaper `gpt-5.6-luna`. Exact resolved revisions of the
+other five default models were not retained. This is an additional
+house-study cohort; the commissioned Aura Walk's entry-point and model
+contract above retains its own scope.
+
+**What was measured:** six usable quotes from six entries, five first
+product calls with the required inputs, zero observed origin 400s, and
+30 client actions. The skill walker revised its request to add the
+host. Client actions include tool/transport failures and are not a
+uniform count of network round trips. **Purchases and purchased-result
+verification were unexercised:** the walkers had no wallet and were
+instructed to stop at a usable quote. Verification was also explicitly
+requested in their prompt, so this cohort cannot measure spontaneous
+verification. The keeper's “first purchase succeeds” target remains
+unmeasured here.
+
+The accompanying public battery reproduced BUY-040 (HTTP/MCP checkout
+rails disagree), BUY-042 (literal bundle and Bitcoin examples fail),
+and BUY-044 (the llms key-registry link returns 404). These were separate
+requests alongside the cold cohort, not discoveries attributed to all
+six walkers. The [retained report and transcript links](https://github.com/seancrecord/scvd-general-store-repo/blob/7186917017fac785cc40e010cd15024a66dc37d3/research/buyer-waves-2026-09-12/REPORT.md)
+carry the denominators and exclusions. The example and key-link repairs
+are in [PR #657](https://github.com/seancrecord/scvd-general-store-repo/pull/657);
+BUY-040 was still open at that wave capture. Code-level repair status and live re-walk results
+are separate observations.
+
+**Carry this into future Aura Walk reports.** Keep the existing three
+measures and the transcript for each entry. Alongside them, retain the
+exact buyer input, what the published contract revealed before the
+first call, quoted price/network/fulfillment terms, and the furthest
+observed stage: quote, payment submitted, settlement confirmed,
+fulfillment received, artifact verified. An unknown payment outcome
+stays unknown; an order accepted into a queue is still awaiting its
+promised work. At verification, record the subject actually bound by
+the signature and what it does not establish. State whether the walker
+verified without prompting. Where an error or retry was exercised,
+record whether its response explains payment state, cause, correction,
+retry safety, temporariness and recovery/verification access.
+
+No additional paid phase is implied by a blank field: record
+“unexercised” with its reason. A report remains counted observations
+and transcripts, never an aggregate grade. The repair checklist remains
+the source for closure; this ledger preserves what a stranger actually
+encountered. Next re-walk: the touched MCP examples and key-discovery
+chain first, followed by the outstanding rail comparison.
+
+**Later on September 12, 18:39–18:42 UTC:** a new unsigned recheck made
+66 product requests from freshly acquired public examples. All 29
+products that quoted on both HTTP and MCP agreed with each other and
+with the manifest's rails. Four products did not quote: the two invalid
+examples above, A2A Repair Kit's unsupported-version example and Trust
+Profile's refused example target. They are excluded from the 29, not
+counted as parity successes. `/keys` still returned 404. BUY-040's rail
+mismatch was **not reproduced in this recheck**; this task changed no
+production configuration and does not infer what changed between reads.
+Settlement across those rails remains unexercised here.
+
+The [recheck summary](research/buyer-quote-recheck-2026-09-12/summary.json)
+links a compressed archive of the public snapshots, requests, responses
+and scorer. Its first parser missed MCP's namespaced challenge field;
+that instrument error is retained with the corrected result, computed
+from the same raw responses without additional requests. It is not a
+product failure. The earlier contradictory capture remains in the wave
+report; a later passing observation does not rewrite it.
