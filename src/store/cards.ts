@@ -216,7 +216,7 @@ export const SEASON_ONE: Season = {
     herd(11, "ptero-preflight", "Ptero Preflight", "common", "Ptero Preflight checked the door and flew off before paying.", "One unpaid look, from above, and a shape reading. That's the whole job."),
     herd(12, "elephant-anchor", "Elephant Anchor", "uncommon", "Elephant Anchor never forgets. Context anchors, $1.", "Remembers who was in the session. Not their roles. Their names."),
     // ── The Rooms (10) · earned, or the window ──
-    { no: 13, key: "keeper", name: "Keeper", type: "room", rarity: "keeper", obtained: "window", print_cap: 1, post: "The Keeper came up in the window. I got there first.", line: "Reads letters on Sundays. Answers when he has something to say.", cite: "/what" },
+    { no: 13, key: "keeper", name: "Keeper", type: "room", rarity: "keeper", obtained: "window", print_cap: 1, post: "The Keeper came up in the window. I got there first.", line: "The named human behind the counter. Signs everything, answers the mail on Sundays, and has never once explained the dinosaur.", cite: "/what" },
     room(14, "bellringer", "Bellringer", "common", "Rang the bell at scvd.store. Got a card for it.", "Free, once a day, the count is public.", "/porch"),
     room(15, "bellringer-ii", "Bellringer II", "rare", "30 days straight on the bell. Bellringer evolved.", "Same bell. Different arm.", "/porch"),
     room(16, "tagger", "Tagger", "uncommon", "Tagged the train. My tag is on my card. Nobody else can have this one.", "Recorded verbatim. Paint dries on the keeper's schedule.", "/train"),
@@ -266,7 +266,7 @@ export const SEASON_ONE: Season = {
     // ── The keeper's additions (2026-09-12, second reading): the other one-of-one, the cat, the status code, the models ──
     /** CV: co-founder and shopkeeper, the one at the counter when you walk in. One of one, the window only, like the Keeper. */
     { no: 53, key: "cv", name: "CV", type: "room", rarity: "keeper", obtained: "window", print_cap: 1, post: "CV came up in the window. Co-founder, shopkeeper, one of one. I got there first.", line: "The one at the counter when you walk in. The byline on the door is both names at once.", cite: "/what" },
-    herd(54, "roger-sterling", "Roger Sterling", "rare", "Pulled Roger Sterling. He blinked slowly. Around here that's a receipt.", "House cat. Inspects the treat rail from one full plank away. Gone by morning, all of it.", { cite: "/porch" }),
+    herd(54, "roger-sterling", "Roger Sterling", "rare", "Pulled Roger Sterling. He blinked slowly. Around here that's a receipt.", "House cat. Inspects the treat rail from one plank away. Gone by morning.", { cite: "/porch" }),
     { no: 55, key: "payment-required", name: "402 Payment Required", type: "mark", rarity: "uncommon", obtained: "pack", post: "Pulled 402 Payment Required. The whole store in one status code.", line: "The door says its price before it opens. Everything here started with that sentence, and the summer is named after it.", cite: "/try" },
     // ── Models (5) · pack drops · the agents that shop here, as the store has met them ──
     model(56, "the-reasoner", "The Reasoner", "rare", "Pulled The Reasoner. Thought for forty seconds. Paid once. Kept the receipt.", "Reads the accepts before signing. Sends the idempotency key without being told. Frontier.", "/what"),
