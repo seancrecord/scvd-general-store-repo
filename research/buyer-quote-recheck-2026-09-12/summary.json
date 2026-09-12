@@ -1,0 +1,995 @@
+{
+  "at": "2026-09-12T18:40:56.987Z",
+  "requests": 66,
+  "comparable": 29,
+  "door_matching": 29,
+  "manifest_matching": 29,
+  "door_mismatches": [],
+  "manifest_mismatches": [],
+  "unquoted": [
+    {
+      "item": "attestation_bundle",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 400,
+      "mcp_code": -32602
+    },
+    {
+      "item": "bitcoin_anchor",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 400,
+      "mcp_code": -32602
+    },
+    {
+      "item": "a2a_repair_kit",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 400,
+      "mcp_code": -32000
+    },
+    {
+      "item": "trust_profile",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 403,
+      "mcp_code": -32000
+    }
+  ],
+  "payment_submitted": false,
+  "parser_correction": "The initial parser missed the namespaced MCP x402/payment-required field. This result derives from the retained raw responses, without new requests; no product failure is inferred from the initial empty parsed rail arrays.",
+  "comparisons": [
+    {
+      "item": "spot_check",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "settlement_attestation",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "small_blessing",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "settlement_reconciliation",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "daily_fortune",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "the_confession",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "attestation_bundle",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 400,
+      "mcp_code": -32602
+    },
+    {
+      "item": "the_mandate",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "the_case_file",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "hello",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "good_buyer",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "signature_agent_card",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "the_statement",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "luckies",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "coffees_for_closers",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "bitcoin_anchor",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 400,
+      "mcp_code": -32602
+    },
+    {
+      "item": "context_anchor",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "passport_refresh",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "graffiti_on_a_train",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "a2a_repair_kit",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 400,
+      "mcp_code": -32000
+    },
+    {
+      "item": "standing_watch",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "service_audit",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "conformance_watch",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "onpage_audit",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "launch_check",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "opening_day",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "provenance_check",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "recurring_patronage",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "trust_profile",
+      "both_quoted": false,
+      "http": [],
+      "mcp": [],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": false,
+      "manifest_match": false,
+      "http_status": 403,
+      "mcp_code": -32000
+    },
+    {
+      "item": "operator_statement",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "certificate_of_patronage",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "aura_walk",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    },
+    {
+      "item": "the_collab",
+      "both_quoted": true,
+      "http": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "manifest": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "door_match": true,
+      "manifest_match": true,
+      "http_status": 402,
+      "mcp_code": 402
+    }
+  ],
+  "evidence_archive": "public-evidence.tar.gz",
+  "archive_sha256": "a9e41f30fd920e598eb23ed4cc7d4bfff18765607c6f20f92829503613392a0b",
+  "scope": "Unpaid published-example recheck only; no deployment or production configuration change was made by this task. Four examples did not quote and are excluded from rail parity. This is not a cold-agent walk or settlement verification."
+}
