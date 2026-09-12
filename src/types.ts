@@ -627,6 +627,14 @@ export interface Certificate {
    * existed. Absence is not_observed, not a conflict.
    */
   saw?: string;
+  /**
+   * sha256 of the JCS form of the accepted x402 terms — scheme,
+   * network, asset, payTo, amount — read from the requirements the
+   * gate verified and settled (discovery/receipt-surface.ts). Absent
+   * on the free shelf, on certificates minted before 2026-09-12, and
+   * wherever the door could not name the terms it settled.
+   */
+  quote?: string;
 }
 
 /** The one thing a cross-reference is allowed to assert in v0. */

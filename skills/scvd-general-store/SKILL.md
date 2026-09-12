@@ -917,8 +917,19 @@ artifact from the same key as any other route in.
   wallet — chain-verifiable, unlike the optional name you choose), and
   `settlement_tx`, the on-chain transaction, so the receipt and the
   explorer for the recorded settlement network are one
-  fact checked twice. Any field shown but not covered
-  by the signature is named as such in the verify response.
+  fact checked twice. Since 2026-09-12 also `quote`: sha256 of the
+  RFC 8785 form of the five x402 terms your payment signature was
+  bound to (scheme, network, asset, payTo, amount) — the same five
+  the signed offer in the 402 commits to, so the offer you hold and
+  the receipt you get match without asking us. Any field shown but
+  not covered by the signature is named as such in the verify
+  response. The verify response also carries `settlement_state`:
+  how the money moved, the order it moved in, and whether the
+  delivery-audit row for the settlement is closed — derived on each
+  read. A failed attempt never appears there, because a delivery that
+  fails takes no money and mints nothing; per-attempt state is on
+  your own purchase status (`check_purchase`, or
+  `/api/purchase-status/{id}` with your token).
 - What you own once you buy it: `https://scvd.store/rights`. Yours
   completely from settlement, immutable after signing, and it
   transfers. You may republish it — including the keeper's own words —

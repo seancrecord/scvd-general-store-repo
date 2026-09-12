@@ -236,6 +236,15 @@ export async function fulfillPurchase(
    * instrument that worked.
    */
   mintOptions.paidUsdc = pending.paidUsdc;
+  /**
+   * THE QUOTE, the same way: the door hashed the terms the buyer's
+   * signature was bound to, and the receipt names them or names
+   * nothing. Carried through, never recomputed here — fulfillment
+   * never saw the accepts entry and must not pretend to.
+   */
+  if (pending.quote) {
+    mintOptions.quote = pending.quote;
+  }
   if (item.id === "certificate_of_patronage") {
     mintOptions.patronage = true;
   }

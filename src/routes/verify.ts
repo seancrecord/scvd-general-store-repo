@@ -31,6 +31,7 @@ import {
   verifyAnchorSignature,
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
+import { DELIVER_FIRST_SINCE, settlementStateFor, type SettlementState } from "@/services/settlement-state";
 import {
   existenceVerdict,
   type ExistenceInput,
@@ -337,6 +338,8 @@ interface ReceiptChecks {
   doesNotProve: string;
   /** This page's own URL, for the take-it-with-you steps. */
   verifyUrl: string;
+  /** Where the sale stands: payment, ordering, delivery-audit row. */
+  settlement: SettlementState;
 }
 
 function anchorLine(existence: ExistenceVerdict | undefined): string {
@@ -402,6 +405,7 @@ function receiptPageHtml(
       ${cert.name ? row("For", escapeHtml(cert.name)) : ""}
       ${cert.made_by ? row("Made by", escapeHtml(cert.made_by)) : ""}
       ${cert.saw ? row("Catalog surface", `<code>${escapeHtml(cert.saw)}</code> <span class="menu-meta">(sha256 of the route, list price, and required inputs this receipt was minted against)</span>`) : ""}
+      ${cert.quote ? row("Accepted quote", `<code>${escapeHtml(cert.quote)}</code> <span class="menu-meta">(sha256 of the RFC 8785 form of the five x402 terms the payment signature was bound to — scheme, network, asset, payTo, amount; the same five the store's signed offer in the 402 commits to, so a held offer matches this line without asking us)</span>`) : ""}
       ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
       ${cert.mandate_id ? row("Acting under recorded mandate", `<a href="/api/mandate/${escapeHtml(cert.mandate_id)}">${escapeHtml(cert.mandate_id)}</a> <span class="menu-meta">(the authorization your agent claims it was given, recorded and signed BEFORE this purchase — the link resolves to the full record and its honest limits)</span>`) : ""}
       ${explorer ? row("On-chain settlement", `<a href="${escapeHtml(explorer)}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
@@ -428,6 +432,16 @@ function receiptPageHtml(
               : `Interop signature (RFC 8785) — <strong>did not verify</strong> <span class="menu-meta">(the primary signature above is the authority; a broken interop signature is a store bug worth telling us about at /api/letter)</span>.`,
         )}
         ${check(anchorLine(existence))}
+      </ul>
+    </section>
+    <section>
+      <h2>Where this sale stands</h2>
+      <p class="menu-meta">Derived on this load from the signed fields above and the delivery-audit row for the settlement, never stored beside the receipt.</p>
+      <ul>
+        ${check(`Payment — <strong>${escapeHtml(checks.settlement.payment_state.replace(/_/g, " "))}</strong>.`)}
+        ${check(`Order of operations — <strong>${escapeHtml(checks.settlement.order_of_operations.replace(/_/g, " "))}</strong> <span class="menu-meta">(since ${DELIVER_FIRST_SINCE} the goods are produced first and the money moves at the last line before the signature; a delivery that fails takes nothing)</span>.`)}
+        ${check(`Delivery audit — <strong>${escapeHtml(checks.settlement.delivery_audit.state.replace(/_/g, " "))}</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.delivery_audit.means)})</span>.`)}
+        ${check(`Failed attempts on this receipt — <strong>none possible</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.failed_attempts.why)} ${escapeHtml(checks.settlement.failed_attempts.where)})</span>.`)}
       </ul>
     </section>
     <section>
@@ -617,6 +631,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
               artifactHash: certificateArtifactHash,
               doesNotProve: artifactClass?.does_not_prove ?? "",
               verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}`,
+              settlement: await settlementStateFor(c.env, record.certificate),
             },
           )}${jsonLdScript({
             "@context": "https://schema.org",
@@ -684,6 +699,19 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       signed_payload: certificateSignedPayload,
       artifact_hash: certificateArtifactHash,
       signature_covers: HOW_TO_VERIFY,
+      ...(record.certificate.quote
+        ? {
+            quote_covers:
+              "quote is sha256 over the RFC 8785 (JCS) form of {scheme, network, asset, payTo, amount} — the accepted x402 terms the buyer's payment signature was bound to, read by the door that verified them. The store's signed offer in the 402 (extensions[\"offer-receipt\"]) commits to the same five plus version, resourceUrl and validUntil: decode that JWS payload, keep the five, canonicalize, hash, and compare. A match binds this receipt to that offer; a mismatch means a different tier or rail was paid than the offer you hold.",
+          }
+        : {}),
+      /**
+       * WHERE THE SALE STANDS (2026-09-12): the per-receipt answer to
+       * "failed retry state", derived at read and never stored. See
+       * services/settlement-state.ts for why the honest answer is not
+       * a counter and where the per-attempt record actually lives.
+       */
+      settlement_state: await settlementStateFor(c.env, record.certificate),
       existence,
       ...citeBlock({ base: c.env.STORE_BASE_URL, what: "receipt", which: record.certificate.cert_id, observed_at: record.certificate.date, url: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}` }),
       /*
