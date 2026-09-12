@@ -1,0 +1,8 @@
+{
+  "observed_on": "2026-09-12 UTC",
+  "method": "Configuration presence only; no secrets retained; not a funding check.",
+  "evm_signer_configured": true,
+  "solana_signer_configured": false,
+  "total_spend_ceiling": "awaiting user",
+  "product_specific_inputs": "review required"
+}

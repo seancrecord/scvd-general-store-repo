@@ -1,0 +1,16 @@
+{
+  "id": "bef437cf-fec4-4a91-865c-ec4f48bd333f",
+  "source": "wrangler",
+  "strategy": "percentage",
+  "author_email": "seancrecord@gmail.com",
+  "annotations": {
+    "workers/triggered_by": "deployment"
+  },
+  "versions": [
+    {
+      "version_id": "0b0da9f9-d343-4112-bed6-8c412747f293",
+      "percentage": 100
+    }
+  ],
+  "created_on": "2026-09-12T00:57:32.205359Z"
+}

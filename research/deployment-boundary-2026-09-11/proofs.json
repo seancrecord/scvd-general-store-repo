@@ -1,0 +1,2306 @@
+[
+  {
+    "id": "r4",
+    "transaction": "0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_uypk396tur",
+        "item": "small_blessing",
+        "patron_number": 353,
+        "date": "2026-09-12T01:46:27.838Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 0",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "f07599a9315fa02869022a412379cdcae1d9a8617b6f9791b024c5ff4656e8358931a1c90513b574729677d35b45a72e0202dc8a62df1101502ea0786773b40c",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:46:27.838Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_uypk396tur\",\"item\":\"small_blessing\",\"patron_number\":353,\"date\":\"2026-09-12T01:46:27.838Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 0\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "6f77b84ff22f929d9ace99180fe1b72afc96dd6e38d661ba8c9096a78ff779dd",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_uypk396tur, observed 2026-09-12T01:46:27.838Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_uypk396tur.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "034a78192c7ce8702cf6ec31894d7496d756b6282a416481487049a3ee28814dcc037378b18717d58262da6f2f156ae043b2471fdcd5cca24020ed068753e506",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_uypk396tur\",\"date\":\"2026-09-12T01:46:27.838Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":353,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 0\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x54a865b6380d088956d80165a72d59e42202d519a37690f101391f5f4344937e",
+      "blockNumber": "0x30d2908",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0xf9177c",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x93f6601151ccb08f333ab4b1cccfb1e188c0be44",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x33fea5",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x49eb8b9b",
+      "l1GasPrice": "0x334fae4",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x54a865b6380d088956d80165a72d59e42202d519a37690f101391f5f4344937e",
+          "blockNumber": "0x30d2908",
+          "blockTimestamp": "0x6aa4aef3",
+          "data": "0x",
+          "logIndex": "0x1ca",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x91be98d4d2639a911199f33ea01779ee39e8788f3b2b34ec84766751d0e02e8b"
+          ],
+          "transactionHash": "0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499",
+          "transactionIndex": "0x52"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x54a865b6380d088956d80165a72d59e42202d519a37690f101391f5f4344937e",
+          "blockNumber": "0x30d2908",
+          "blockTimestamp": "0x6aa4aef3",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x1cb",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499",
+          "transactionIndex": "0x52"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001240000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000040000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000024000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499",
+      "transactionIndex": "0x52",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499"
+    ]
+  },
+  {
+    "id": "r6",
+    "transaction": "0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_r35v8tfmqv",
+        "item": "small_blessing",
+        "patron_number": 354,
+        "date": "2026-09-12T01:46:35.146Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 1",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "a5c707764c3b0e2af07f15ce0415cb94bdf8a34fd58f574e6c6d26ea951489b40ca77d646a960d386b428d6b413bbca02327f31d3a1c1a0409cd45f2c7878d04",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:46:35.146Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_r35v8tfmqv\",\"item\":\"small_blessing\",\"patron_number\":354,\"date\":\"2026-09-12T01:46:35.146Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 1\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "e948fac55c92e1ac1b6c0bcd6b52f82c81fcdfa9f79ec1794c564e412bb65370",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_r35v8tfmqv, observed 2026-09-12T01:46:35.146Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_r35v8tfmqv.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "17598e751971a22141b9bee7b59e185a42ee4ecd6cf937d60c558aff33c3bfe674cd73779519ca4a01fa2cfff06c111c083b47eaf1375a54973c39e887994b04",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_r35v8tfmqv\",\"date\":\"2026-09-12T01:46:35.146Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":354,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 1\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0xd9e6dbceeda7c2e48e117daf1f2f41a5ffdbdb0a1c8c30a0cf72e9b52202790f",
+      "blockNumber": "0x30d290c",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x7200cb",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x4c934c63c786157fefd990945b25ea60a0fb0205",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2c7029",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x42da6228",
+      "l1GasPrice": "0x331afa6",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xd9e6dbceeda7c2e48e117daf1f2f41a5ffdbdb0a1c8c30a0cf72e9b52202790f",
+          "blockNumber": "0x30d290c",
+          "blockTimestamp": "0x6aa4aefb",
+          "data": "0x",
+          "logIndex": "0x7e",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x63fd417212b1e325f076dc82ac6c7e0c1543699fb3377e39c41a58f7a9f71789"
+          ],
+          "transactionHash": "0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8",
+          "transactionIndex": "0x35"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xd9e6dbceeda7c2e48e117daf1f2f41a5ffdbdb0a1c8c30a0cf72e9b52202790f",
+          "blockNumber": "0x30d290c",
+          "blockTimestamp": "0x6aa4aefb",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x7f",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8",
+          "transactionIndex": "0x35"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000004001000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8",
+      "transactionIndex": "0x35",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8"
+    ]
+  },
+  {
+    "id": "r11",
+    "transaction": "0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_rv5h85cqea",
+        "item": "small_blessing",
+        "patron_number": 355,
+        "date": "2026-09-12T01:46:43.500Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 0",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "eda6d1c3a87c1fb5a5a217c8b1aa044b969c9eb0b52a0e53443a07577c0424bb5127dc49afcf06a346b01f7296f8316902d12d12c5129b3dc93e606cc167ab04",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:46:43.500Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_rv5h85cqea\",\"item\":\"small_blessing\",\"patron_number\":355,\"date\":\"2026-09-12T01:46:43.500Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 0\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "120b410988607c74fca797453be9a84b9ad1a2cc557758888c5c4a736ffd0bea",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_rv5h85cqea, observed 2026-09-12T01:46:43.500Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_rv5h85cqea.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "dc54ec301fda8ad720d655fe5ee53fb98a4f8cdbb77a56ed8a08909ce01ce61a1d1a4c49d0a38e06605c932f45b306ad215d4de111a626918cb70ac064826c09",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_rv5h85cqea\",\"date\":\"2026-09-12T01:46:43.500Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":355,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 0\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x54f59931ca037364eaeb2d11fe867038dbccd334047baca337bbff5940d44ab1",
+      "blockNumber": "0x30d2910",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x524ba2",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b59",
+      "from": "0xca5e87f82b3fa093800e6ad67d621a427d79c70d",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2c7029",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x42da6228",
+      "l1GasPrice": "0x331afa6",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x54f59931ca037364eaeb2d11fe867038dbccd334047baca337bbff5940d44ab1",
+          "blockNumber": "0x30d2910",
+          "blockTimestamp": "0x6aa4af03",
+          "data": "0x",
+          "logIndex": "0x92",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x60e9f201f9c61fd5ba17971ee14c3ce05bf85f513a5e4706e6a997ca70c73e3c"
+          ],
+          "transactionHash": "0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1",
+          "transactionIndex": "0x24"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x54f59931ca037364eaeb2d11fe867038dbccd334047baca337bbff5940d44ab1",
+          "blockNumber": "0x30d2910",
+          "blockTimestamp": "0x6aa4af03",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x93",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1",
+          "transactionIndex": "0x24"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840001000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000004000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1",
+      "transactionIndex": "0x24",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1"
+    ]
+  },
+  {
+    "id": "r14",
+    "transaction": "0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_29zam4ef8h",
+        "item": "small_blessing",
+        "patron_number": 356,
+        "date": "2026-09-12T01:46:51.110Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 1",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "154c7398f542510f5a8e3d701c5e150ecc0901af3ba04eae6a2d27a2d6b1f2a1f4c27189b4da07d083eb5cef53162283e20db9f11e27deae3a45326b1b32ae05",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:46:51.110Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_29zam4ef8h\",\"item\":\"small_blessing\",\"patron_number\":356,\"date\":\"2026-09-12T01:46:51.110Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 1\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "cbbc244c96586e2a59918046297894e28ef985a5cfa8cccfdf3c9d090fc23c87",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_29zam4ef8h, observed 2026-09-12T01:46:51.110Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_29zam4ef8h.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "a5789eeeb7b7f1b59c74f81fa097510a3d1165733b2d0867106be08ea8705b8c382038720335c59c085e8c87389735f7652219795262d4883b89a83efa278f06",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_29zam4ef8h\",\"date\":\"2026-09-12T01:46:51.110Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":356,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 1\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x4f17086f658030d29b1e8462799bff120270577093f3da1bda827b8ffb499c3f",
+      "blockNumber": "0x30d2914",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x3a9f2e",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b59",
+      "from": "0x42dd53906b49c202e8e934b059dc019e04634b00",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2cc58e",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x41ff42ad",
+      "l1GasPrice": "0x30cf861",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x4f17086f658030d29b1e8462799bff120270577093f3da1bda827b8ffb499c3f",
+          "blockNumber": "0x30d2914",
+          "blockTimestamp": "0x6aa4af0b",
+          "data": "0x",
+          "logIndex": "0x71",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x345cdaaeeebdc02c73459267734522d41aa2e9861b682656152c87bbc277770a"
+          ],
+          "transactionHash": "0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53",
+          "transactionIndex": "0x21"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x4f17086f658030d29b1e8462799bff120270577093f3da1bda827b8ffb499c3f",
+          "blockNumber": "0x30d2914",
+          "blockTimestamp": "0x6aa4af0b",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x72",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53",
+          "transactionIndex": "0x21"
+        }
+      ],
+      "logsBloom": "0x00000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000001000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000002000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53",
+      "transactionIndex": "0x21",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53"
+    ]
+  },
+  {
+    "id": "r16",
+    "transaction": "0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_b2awn6eham",
+        "item": "small_blessing",
+        "patron_number": 357,
+        "date": "2026-09-12T01:46:57.472Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 2",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "0bbf51ebcbd36afd1529f302462244452d4148929220cfa52e09d9b538298db11c3f27be48f945f6d5546140bdc65c7ce29b104602fb1d9a0d1639c1a8931403",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:46:57.472Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_b2awn6eham\",\"item\":\"small_blessing\",\"patron_number\":357,\"date\":\"2026-09-12T01:46:57.472Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 2\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "dd92760742160787a85b9ea470fec3c19a072fba58ad23f8cbe59864c9f4f358",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_b2awn6eham, observed 2026-09-12T01:46:57.472Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_b2awn6eham.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "1c64601429d774b952837903209e729de1c17ab934898ddc9bbf7b2f9f4038b3c1e4dd3b894baa5a5c63902c3f089f05be4942b9cfcd364f77b29c237e326604",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_b2awn6eham\",\"date\":\"2026-09-12T01:46:57.472Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":357,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 2\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x86e59960434b7f95cd6bf0aa971def62905e41fba6056f2c7a94b1da008e0a99",
+      "blockNumber": "0x30d2917",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0xb5b212",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x93f6601151ccb08f333ab4b1cccfb1e188c0be44",
+      "gasUsed": "0x165f3",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2d7245",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x438bf78d",
+      "l1GasPrice": "0x32a4260",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x86e59960434b7f95cd6bf0aa971def62905e41fba6056f2c7a94b1da008e0a99",
+          "blockNumber": "0x30d2917",
+          "blockTimestamp": "0x6aa4af11",
+          "data": "0x",
+          "logIndex": "0x112",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xe12cd8fa5851c7fff5b1367aff8e25400d463c190e0483f06cf5fd19e101f248"
+          ],
+          "transactionHash": "0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc",
+          "transactionIndex": "0x48"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x86e59960434b7f95cd6bf0aa971def62905e41fba6056f2c7a94b1da008e0a99",
+          "blockNumber": "0x30d2917",
+          "blockTimestamp": "0x6aa4af11",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x113",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc",
+          "transactionIndex": "0x48"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000040000000000840004000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc",
+      "transactionIndex": "0x48",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc"
+    ]
+  },
+  {
+    "id": "r18",
+    "transaction": "0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_gm5ej2vzzr",
+        "item": "small_blessing",
+        "patron_number": 358,
+        "date": "2026-09-12T01:47:04.321Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 3",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "3d106960b3c831267970f459a4cf532afead1f303d8e3f58784d4fcc0a82009513f6d2290b543eacb34406e7c3a2ed1c765195ca909874fe0d2746f7176af000",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:04.321Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_gm5ej2vzzr\",\"item\":\"small_blessing\",\"patron_number\":358,\"date\":\"2026-09-12T01:47:04.321Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 3\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "ac63b35bd0a039069b5c96b73a589b19f9f431435da15897599693584bf760f8",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_gm5ej2vzzr, observed 2026-09-12T01:47:04.321Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_gm5ej2vzzr.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "b0ecc952c59365f232209a06a8382798419ba185a1322d166482246254323280a758e7396398496bc166324b31ef8570a09a955684893f717db465a791f0630d",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_gm5ej2vzzr\",\"date\":\"2026-09-12T01:47:04.321Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":358,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 3\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x7c5caeb5b5d656534f2920595b50337ef9b326aa399dd4991b12372692f77c96",
+      "blockNumber": "0x30d291a",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0xc804e2",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0xb87e1a2cc2b4643f2892768e80e41167f17c5860",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2d7245",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x438bf78d",
+      "l1GasPrice": "0x32a4260",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x7c5caeb5b5d656534f2920595b50337ef9b326aa399dd4991b12372692f77c96",
+          "blockNumber": "0x30d291a",
+          "blockTimestamp": "0x6aa4af17",
+          "data": "0x",
+          "logIndex": "0x115",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x8d99819c2c44deb13c0a13d572377649b926e1e8488fffbc590acf95b8f87b9e"
+          ],
+          "transactionHash": "0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634",
+          "transactionIndex": "0x63"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x7c5caeb5b5d656534f2920595b50337ef9b326aa399dd4991b12372692f77c96",
+          "blockNumber": "0x30d291a",
+          "blockTimestamp": "0x6aa4af17",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x116",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634",
+          "transactionIndex": "0x63"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000100000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000200000000000000000000000080000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634",
+      "transactionIndex": "0x63",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634"
+    ]
+  },
+  {
+    "id": "r20",
+    "transaction": "0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_b4dc6tqa8g",
+        "item": "small_blessing",
+        "patron_number": 359,
+        "date": "2026-09-12T01:47:10.953Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 4",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "532d3eeb0673c6ef47fa3a9a9c29e960ae44039eae660d5b6846f0c87e2630425d23ada3b10c683491184d1e26e21a130d9c8252c447a838aa484d683fbcc906",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:10.953Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_b4dc6tqa8g\",\"item\":\"small_blessing\",\"patron_number\":359,\"date\":\"2026-09-12T01:47:10.953Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 4\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "4769e0aeee7379323eb9b4a1fad2eb4135c8c4f778714185bb6203d7cc570a28",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_b4dc6tqa8g, observed 2026-09-12T01:47:10.953Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_b4dc6tqa8g.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "2e3ebce0346af9f142438c116976582d2185195ac0cce568844120216901f870cb57d666987934924843ebaac659233e98d36fa38491f31f04ba18ed2131270e",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_b4dc6tqa8g\",\"date\":\"2026-09-12T01:47:10.953Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":359,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 4\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x7195afb8583336d97a1ea6f1bf6b8ea041fbe0f712862c275f7925524345fdc9",
+      "blockNumber": "0x30d291e",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x504ee9",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x64cc42b1ce598e3abcfbb64df4688521ddbf1f0a",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2d7245",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x418358c6",
+      "l1GasPrice": "0x2ea12b4",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x7195afb8583336d97a1ea6f1bf6b8ea041fbe0f712862c275f7925524345fdc9",
+          "blockNumber": "0x30d291e",
+          "blockTimestamp": "0x6aa4af1f",
+          "data": "0x",
+          "logIndex": "0x91",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x4a990c53286bc84367885395412343bb74c00f5ab0d34b816b2765fe901796b5"
+          ],
+          "transactionHash": "0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb",
+          "transactionIndex": "0x22"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x7195afb8583336d97a1ea6f1bf6b8ea041fbe0f712862c275f7925524345fdc9",
+          "blockNumber": "0x30d291e",
+          "blockTimestamp": "0x6aa4af1f",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x92",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb",
+          "transactionIndex": "0x22"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000004840000000000000000000000000000000000000000000000000010000000000000000000000004000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb",
+      "transactionIndex": "0x22",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb"
+    ]
+  },
+  {
+    "id": "r22",
+    "transaction": "0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_hzcfjanpdt",
+        "item": "small_blessing",
+        "patron_number": 360,
+        "date": "2026-09-12T01:47:17.675Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 5",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "bc3f311a9aa8c0c371bf32fe0886d9f67796b57641e074b1670fc38ab90f2baaa12bfc9f8ae1b7a1f343acf293cbea93a8be03bc89b45eb96306266a6d4dc90a",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:17.675Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_hzcfjanpdt\",\"item\":\"small_blessing\",\"patron_number\":360,\"date\":\"2026-09-12T01:47:17.675Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 5\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "7bef8c8c4c11d34a67c972a2aa0c3595202e5d4b9e347285533c96aeab504ee8",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_hzcfjanpdt, observed 2026-09-12T01:47:17.675Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_hzcfjanpdt.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "b6cf21fd4e79844df5e7e5f2be1b7bb1792e9964a78feefd6622d4dd82696d7bab0cd0c753dc5b6e0785bfd43c3f344c046c34d6070b9a5dc28ae5e2df2c1704",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_hzcfjanpdt\",\"date\":\"2026-09-12T01:47:17.675Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":360,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 5\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x6c06ea06d9353efc9683dc3046f0fae303afbdf587ef4d799e1b2b9a4794fe10",
+      "blockNumber": "0x30d2921",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0xe5c446",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x772003a2e9c2ccc8af956870a37a66f64f8cec38",
+      "gasUsed": "0x165f3",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2d7245",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x418358c6",
+      "l1GasPrice": "0x2ea12b4",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x6c06ea06d9353efc9683dc3046f0fae303afbdf587ef4d799e1b2b9a4794fe10",
+          "blockNumber": "0x30d2921",
+          "blockTimestamp": "0x6aa4af25",
+          "data": "0x",
+          "logIndex": "0x18c",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xf3dc69a88533f3aba2fce65ddfb7f2856d7b7caa743b9cdbf61c2754720cb9e0"
+          ],
+          "transactionHash": "0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5",
+          "transactionIndex": "0x5c"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x6c06ea06d9353efc9683dc3046f0fae303afbdf587ef4d799e1b2b9a4794fe10",
+          "blockNumber": "0x30d2921",
+          "blockTimestamp": "0x6aa4af25",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x18d",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5",
+          "transactionIndex": "0x5c"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000040000000000000000000000000000000000000000000000004000000080000000000000080000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5",
+      "transactionIndex": "0x5c",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5"
+    ]
+  },
+  {
+    "id": "r24",
+    "transaction": "0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_hakr5yk4th",
+        "item": "small_blessing",
+        "patron_number": 361,
+        "date": "2026-09-12T01:47:24.667Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 6",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "ab08ad6bdbdef38abe3805f05170abb8945e38ff5f182a81e25fc6abd5cd1e191e124c74f4d126d3d8accda74500856eedfde5f54cd33b117b8f6abf89a88509",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:24.667Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_hakr5yk4th\",\"item\":\"small_blessing\",\"patron_number\":361,\"date\":\"2026-09-12T01:47:24.667Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 6\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "494de00436bee7bd146313e72aef6a29c9868b1f931f047c43d7b7789a8e030f",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_hakr5yk4th, observed 2026-09-12T01:47:24.667Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_hakr5yk4th.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "4e099e563d12cb51fbf1741837c7c23aa9946b550f5d9be587d6a5118ff3da0ddad24260a9ea938e6e4c04362dc10961fa70f61df934e7732b9c4645cdac4102",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_hakr5yk4th\",\"date\":\"2026-09-12T01:47:24.667Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":361,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 6\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0xc4e42cf81abc3001365b518b27e294c94fdcec15afbe935bd224234208bd5011",
+      "blockNumber": "0x30d2924",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x193ec96",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x4c934c63c786157fefd990945b25ea60a0fb0205",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2df582",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x44dbdeff",
+      "l1GasPrice": "0x344c387",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xc4e42cf81abc3001365b518b27e294c94fdcec15afbe935bd224234208bd5011",
+          "blockNumber": "0x30d2924",
+          "blockTimestamp": "0x6aa4af2b",
+          "data": "0x",
+          "logIndex": "0x224",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xd24fe97a16aad0a53cb84e0753e90aec2e9ed41e58fe96d60ddf7aec61a69cdd"
+          ],
+          "transactionHash": "0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda",
+          "transactionIndex": "0x9d"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xc4e42cf81abc3001365b518b27e294c94fdcec15afbe935bd224234208bd5011",
+          "blockNumber": "0x30d2924",
+          "blockTimestamp": "0x6aa4af2b",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x225",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda",
+          "transactionIndex": "0x9d"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000940000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000200000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda",
+      "transactionIndex": "0x9d",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda"
+    ]
+  },
+  {
+    "id": "r26",
+    "transaction": "0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_tkyagffrtm",
+        "item": "small_blessing",
+        "patron_number": 362,
+        "date": "2026-09-12T01:47:32.074Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 7",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "bd1020bdbc02372467acfbebf253b5a57d7306db070dd65f42f87e23fccf80e34eb233f7169ea303ec1d98a7a63393e4cd9cde67eabc76c24d0cbaa6ca4a1e0f",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:32.074Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_tkyagffrtm\",\"item\":\"small_blessing\",\"patron_number\":362,\"date\":\"2026-09-12T01:47:32.074Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 7\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "3f49d4f1b1ce63bb4949af4b07e97f299726dda9e10285e8b6379e89a1c7b2b4",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_tkyagffrtm, observed 2026-09-12T01:47:32.074Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_tkyagffrtm.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "d3c86b77e939cd2b4b17e67cdd582d3b8f73fe8e0197197783bad884e17dd743be652d8a66b6d91e90684ef4b2cf90928011d58ec2667dd15860fce574c8740a",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_tkyagffrtm\",\"date\":\"2026-09-12T01:47:32.074Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":362,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 7\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x71986ae062d041552e6d4d77a0c63aff681b68cfb5cece1c1ed512319acec932",
+      "blockNumber": "0x30d2928",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x121216c",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0xb87e1a2cc2b4643f2892768e80e41167f17c5860",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2df582",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x44dbdeff",
+      "l1GasPrice": "0x344c387",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x71986ae062d041552e6d4d77a0c63aff681b68cfb5cece1c1ed512319acec932",
+          "blockNumber": "0x30d2928",
+          "blockTimestamp": "0x6aa4af33",
+          "data": "0x",
+          "logIndex": "0x213",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xb8e29fe0a3a15ec2876d101868fd564bd624acddf47e4330cd7437612e370f7b"
+          ],
+          "transactionHash": "0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397",
+          "transactionIndex": "0x5f"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x71986ae062d041552e6d4d77a0c63aff681b68cfb5cece1c1ed512319acec932",
+          "blockNumber": "0x30d2928",
+          "blockTimestamp": "0x6aa4af33",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x214",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397",
+          "transactionIndex": "0x5f"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000004090000000000000000000000840000000000000000000000000000000000000000000000000010020000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397",
+      "transactionIndex": "0x5f",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397"
+    ]
+  },
+  {
+    "id": "r28",
+    "transaction": "0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_7qyz8u35jq",
+        "item": "small_blessing",
+        "patron_number": 363,
+        "date": "2026-09-12T01:47:38.742Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 8",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "2ea21c9781a46f33ccc15675f3b3962f977fb1be494d9a645ce3c8e32045109fad5cc65e5e5eb32e52b3361dfd9c17db20b7126c7e05c0f620ce26d687d5230c",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:38.742Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_7qyz8u35jq\",\"item\":\"small_blessing\",\"patron_number\":363,\"date\":\"2026-09-12T01:47:38.742Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 8\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "adbcc71246754631b2fdaf92327daded1694645ffa6bf6afb3fe373d8500cf53",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_7qyz8u35jq, observed 2026-09-12T01:47:38.742Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_7qyz8u35jq.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "6ef54e6d4a305bbb84eb7bf9f33aade852b90d2d5641a6b557f5fd9cf6721897b54b0adc6fee814ace4324d3bff854d9dfa5a6b9f4b4e960b684fd88b573b208",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_7qyz8u35jq\",\"date\":\"2026-09-12T01:47:38.742Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":363,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 8\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0xe8f7163e9dcd938fe828f902249a94f8be44a25e94e62a953e0ed59848d44dec",
+      "blockNumber": "0x30d292b",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x17171d9",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b59",
+      "from": "0x64cc42b1ce598e3abcfbb64df4688521ddbf1f0a",
+      "gasUsed": "0x165f3",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2f2d86",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x45ec999c",
+      "l1GasPrice": "0x342f18d",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xe8f7163e9dcd938fe828f902249a94f8be44a25e94e62a953e0ed59848d44dec",
+          "blockNumber": "0x30d292b",
+          "blockTimestamp": "0x6aa4af39",
+          "data": "0x",
+          "logIndex": "0x259",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xf3a5ffdc2548550fc2703c480876cf5a6e5c91feebca7c4e6b265e00540b98c1"
+          ],
+          "transactionHash": "0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3",
+          "transactionIndex": "0x88"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xe8f7163e9dcd938fe828f902249a94f8be44a25e94e62a953e0ed59848d44dec",
+          "blockNumber": "0x30d292b",
+          "blockTimestamp": "0x6aa4af39",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x25a",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3",
+          "transactionIndex": "0x88"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000000080000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004880000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3",
+      "transactionIndex": "0x88",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3"
+    ]
+  },
+  {
+    "id": "r30",
+    "transaction": "0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_yetqfwjjwk",
+        "item": "small_blessing",
+        "patron_number": 364,
+        "date": "2026-09-12T01:47:45.650Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 9",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "db0fefbd79b09807e46e29f36177aabda8ff93e26c7f0434773056ed44173ec68ef435691273bb81720b990ab7b7cd6651c64db744bf08a3f8822442e5e1c401",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:45.650Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_yetqfwjjwk\",\"item\":\"small_blessing\",\"patron_number\":364,\"date\":\"2026-09-12T01:47:45.650Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 9\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "91653bc928968b1064d6faadd9e8bce474c7f8fd8766c043e8504367d40b1986",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_yetqfwjjwk, observed 2026-09-12T01:47:45.650Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_yetqfwjjwk.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "6222767d6ec8bda17520c249f0ce6035242253e754b79d08e2f2850c9e8172528f78caf2bf054e9f49fa6b2b57600bfa135643ead54328eab6c2db00b9115200",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_yetqfwjjwk\",\"date\":\"2026-09-12T01:47:45.650Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":364,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 9\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x8214",
+      "blockHash": "0x595e448f12376cf19c1e63f76cd6fbddbc380a55a21031c26902cea3604c828c",
+      "blockNumber": "0x30d292f",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x8fdbd9",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4c53",
+      "from": "0x8cda367232d78c067116e3260da881d2da8ffa39",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x309c42",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x484243c3",
+      "l1GasPrice": "0x352047d",
+      "l1GasUsed": "0xe11",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x595e448f12376cf19c1e63f76cd6fbddbc380a55a21031c26902cea3604c828c",
+          "blockNumber": "0x30d292f",
+          "blockTimestamp": "0x6aa4af41",
+          "data": "0x",
+          "logIndex": "0xd3",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xec987ea85639162b6ca7ec38df1ecd32bb28ed9f6da80440ec8cd0b1cc283c20"
+          ],
+          "transactionHash": "0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf",
+          "transactionIndex": "0x57"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x595e448f12376cf19c1e63f76cd6fbddbc380a55a21031c26902cea3604c828c",
+          "blockNumber": "0x30d292f",
+          "blockTimestamp": "0x6aa4af41",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0xd4",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf",
+          "transactionIndex": "0x57"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004080000080000000000000000000000000000000000000040004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf",
+      "transactionIndex": "0x57",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf"
+    ]
+  },
+  {
+    "id": "r32",
+    "transaction": "0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_pu4r93hk9q",
+        "item": "small_blessing",
+        "patron_number": 365,
+        "date": "2026-09-12T01:47:52.136Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 10",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "b604898eb72393ef7716e9bba36937d9654e6278d4e29d81e63ee9b85488b9ead4a4db0b658ce027b73de0f02165eca102449c427e5d22cace671391493bf503",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:52.136Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_pu4r93hk9q\",\"item\":\"small_blessing\",\"patron_number\":365,\"date\":\"2026-09-12T01:47:52.136Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 10\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "0696927c9354c16da15e09d0f11e14241e346f0ed260da25bf9ab6d4e5044d2e",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_pu4r93hk9q, observed 2026-09-12T01:47:52.136Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_pu4r93hk9q.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "b036cbdda895884d09c3f4adb163017497a34db0a32fe04139fd9023add1bfedeb87fefbf6355121e9fba0816127153e1b014e813cd943dfea0e6a3f65a08e0a",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_pu4r93hk9q\",\"date\":\"2026-09-12T01:47:52.136Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":365,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 10\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x8214",
+      "blockHash": "0xddb30e052313d4804b3ff2774496455e9a6563bfc4c80eb4ce15e100db5e9b67",
+      "blockNumber": "0x30d2932",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x1db2742",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4d0e90",
+      "from": "0x772003a2e9c2ccc8af956870a37a66f64f8cec38",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x309c42",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x484243c3",
+      "l1GasPrice": "0x352047d",
+      "l1GasUsed": "0xe11",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xddb30e052313d4804b3ff2774496455e9a6563bfc4c80eb4ce15e100db5e9b67",
+          "blockNumber": "0x30d2932",
+          "blockTimestamp": "0x6aa4af47",
+          "data": "0x",
+          "logIndex": "0x222",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xfd85189a6f8e996dbe029dda96b1fd077075dd43ba55b2d8fbf816442f8016df"
+          ],
+          "transactionHash": "0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa",
+          "transactionIndex": "0xf5"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xddb30e052313d4804b3ff2774496455e9a6563bfc4c80eb4ce15e100db5e9b67",
+          "blockNumber": "0x30d2932",
+          "blockTimestamp": "0x6aa4af47",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x223",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa",
+          "transactionIndex": "0xf5"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000020002000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa",
+      "transactionIndex": "0xf5",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa"
+    ]
+  },
+  {
+    "id": "r34",
+    "transaction": "0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_pnyd64bjfx",
+        "item": "small_blessing",
+        "patron_number": 366,
+        "date": "2026-09-12T01:47:59.277Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 11",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "0bf818f8402c8d21bfa2d5b99f968004592d17457d973efc347755356526f26292676cf3149d46622d7ad2c5ddd33e86697094ca19d3ed116393eac6c3c90e05",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:47:59.277Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_pnyd64bjfx\",\"item\":\"small_blessing\",\"patron_number\":366,\"date\":\"2026-09-12T01:47:59.277Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 11\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "e7ed6a44b97d08cda0da94320df5c55f678e073ee64dd2357295ff00529679c1",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_pnyd64bjfx, observed 2026-09-12T01:47:59.277Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_pnyd64bjfx.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "11b958ca546ddd430ac4ff27b520282ac9084ac1c6b917a23c0b4fa2d8ff52545fb305b0e44194181b492daf9528296f8614c413c0928fb3a08af34b0fb9c602",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_pnyd64bjfx\",\"date\":\"2026-09-12T01:47:59.277Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":366,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 11\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0xa99bb2cde7216f507538a2928b66f052923e81d4066b47f4410eb1ce1df4112c",
+      "blockNumber": "0x30d2936",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x43026d",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0xe74817f4cdc15844314812b2271276e64e890fae",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x3157c8",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x46075101",
+      "l1GasPrice": "0x3074650",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xa99bb2cde7216f507538a2928b66f052923e81d4066b47f4410eb1ce1df4112c",
+          "blockNumber": "0x30d2936",
+          "blockTimestamp": "0x6aa4af4f",
+          "data": "0x",
+          "logIndex": "0x81",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x0cff449992af971f9414a0e6c443ee1d7eb133bb6861de115aec9fb8f7cfcbd0"
+          ],
+          "transactionHash": "0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871",
+          "transactionIndex": "0x22"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xa99bb2cde7216f507538a2928b66f052923e81d4066b47f4410eb1ce1df4112c",
+          "blockNumber": "0x30d2936",
+          "blockTimestamp": "0x6aa4af4f",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x82",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871",
+          "transactionIndex": "0x22"
+        }
+      ],
+      "logsBloom": "0x00000000008000000000000000000000000000000000000000000000000000000000000000000000000000400000100000000000000000000000001600000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871",
+      "transactionIndex": "0x22",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871"
+    ]
+  },
+  {
+    "id": "r35",
+    "transaction": "0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_jhw25d273b",
+        "item": "small_blessing",
+        "patron_number": 367,
+        "date": "2026-09-12T01:48:05.286Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held http quote",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "edf5f9fe220f90b996570230ea9f9263aa72f50364fe19b10f770db750c9353648339e9ae1bf24d3670795caa755083153d7f3045f96e2a0aef5a823207e5802",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:48:05.286Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_jhw25d273b\",\"item\":\"small_blessing\",\"patron_number\":367,\"date\":\"2026-09-12T01:48:05.286Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held http quote\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "b0b2ed81b6fa851cd9bfb9a58f6d171342859e5e1041d4e08bd9a1837dde2aeb",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_jhw25d273b, observed 2026-09-12T01:48:05.286Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_jhw25d273b.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "262397212a0b357952003d6bf86b760d658b1ac432f7dc2fd589d5ff75d818de0775a85ed1e4bd62f685e41c8e1eb6af4a4188b697438a396144b7be0a9a5b06",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_jhw25d273b\",\"date\":\"2026-09-12T01:48:05.286Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":367,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held http quote\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x8180",
+      "blockHash": "0x3f6ce5cbb7ecb1c450612f89663a8319740d2a3d8e8a58020c1e86097ec48a46",
+      "blockNumber": "0x30d2939",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x59212c",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4c3a",
+      "from": "0xe74817f4cdc15844314812b2271276e64e890fae",
+      "gasUsed": "0x165f3",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x3157c8",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x464a6fe7",
+      "l1GasPrice": "0x3074650",
+      "l1GasUsed": "0xe04",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x3f6ce5cbb7ecb1c450612f89663a8319740d2a3d8e8a58020c1e86097ec48a46",
+          "blockNumber": "0x30d2939",
+          "blockTimestamp": "0x6aa4af55",
+          "data": "0x",
+          "logIndex": "0x8f",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x8bf8d75d57ebf27eeee59333b660cc026d9a36187b463ffb1afb17803d24262c"
+          ],
+          "transactionHash": "0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b",
+          "transactionIndex": "0x2a"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x3f6ce5cbb7ecb1c450612f89663a8319740d2a3d8e8a58020c1e86097ec48a46",
+          "blockNumber": "0x30d2939",
+          "blockTimestamp": "0x6aa4af55",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x90",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b",
+          "transactionIndex": "0x2a"
+        }
+      ],
+      "logsBloom": "0x00002000000000000000000000000400000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000004000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b",
+      "transactionIndex": "0x2a",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b"
+    ]
+  },
+  {
+    "id": "r36",
+    "transaction": "0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_8key4y4c59",
+        "item": "small_blessing",
+        "patron_number": 368,
+        "date": "2026-09-12T01:48:10.971Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held mcp quote",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "b34e3568af2dc65f727db4d2b591a98a783611fda8005d6e87c9cbe944759405c38de297f7ca68db384fc8dd54333fc8488156350586a43904f899db944d550d",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:48:10.971Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_8key4y4c59\",\"item\":\"small_blessing\",\"patron_number\":368,\"date\":\"2026-09-12T01:48:10.971Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held mcp quote\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "ae0c1bc50f7202eb61520e2894e8da7da74053d50152bb4500dc47ae390e6c49",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_8key4y4c59, observed 2026-09-12T01:48:10.971Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_8key4y4c59.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "f28d6c8fc7180dfff79d3e026c3607bd9e892c1c050d99df0572d3b06adead576bf6c1a78bd0a00437abca368a4d92161198238fe5c566df96e82def7621bd0f",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_8key4y4c59\",\"date\":\"2026-09-12T01:48:10.971Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":368,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held mcp quote\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0xf1e1ee15c7feecd0ed575014b5c2d91515b6226ae8b589c023e9f01655949ac2",
+      "blockNumber": "0x30d293c",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x34d323",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x93f6601151ccb08f333ab4b1cccfb1e188c0be44",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2a2bf5",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x41559e91",
+      "l1GasPrice": "0x343aa8f",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xf1e1ee15c7feecd0ed575014b5c2d91515b6226ae8b589c023e9f01655949ac2",
+          "blockNumber": "0x30d293c",
+          "blockTimestamp": "0x6aa4af5b",
+          "data": "0x",
+          "logIndex": "0x61",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x630d6f5536df516ccd2bec81412fe7b31b5d52315708015873ea9567e80a2708"
+          ],
+          "transactionHash": "0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622",
+          "transactionIndex": "0x1a"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0xf1e1ee15c7feecd0ed575014b5c2d91515b6226ae8b589c023e9f01655949ac2",
+          "blockNumber": "0x30d293c",
+          "blockTimestamp": "0x6aa4af5b",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0x62",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622",
+          "transactionIndex": "0x1a"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008400000000000000000090000000000000000000000840040000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622",
+      "transactionIndex": "0x1a",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622"
+    ]
+  },
+  {
+    "id": "r38",
+    "transaction": "0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_4vyz5ymyzq",
+        "item": "small_blessing",
+        "patron_number": 369,
+        "date": "2026-09-12T01:48:17.361Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after http",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "6b37e5a7de67a5d4a64d1cc13aa9eb9ec3b9ff8449f39b8da83fabb9d318c96afab20c94b34ccfe095ec9360ea7d895d4d4c694969cb16f5591b77cbe5d99908",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:48:17.361Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_4vyz5ymyzq\",\"item\":\"small_blessing\",\"patron_number\":369,\"date\":\"2026-09-12T01:48:17.361Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after http\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "f18ba5c7a43ca29502ecab3181d9fc07e2955effb167230579999273136bdc88",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_4vyz5ymyzq, observed 2026-09-12T01:48:17.361Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_4vyz5ymyzq.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "bfe3450b49b08441a1ecd2ca6e173d88bfcf26da2e7a1676be19f98bdfda363fb559fb6739439a5f26760b8a4ea93a8297744672977eec6ac4d32a2937d76205",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_4vyz5ymyzq\",\"date\":\"2026-09-12T01:48:17.361Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":369,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after http\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x8030bb226755afa7893116579a995e55391c749d4999ebb0c1ae7cac74f14598",
+      "blockNumber": "0x30d293f",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x7c1e20",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x625d8a65134079f8faaac39a7947c73d93c6ac39",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2a2bf5",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x41559e91",
+      "l1GasPrice": "0x343aa8f",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x8030bb226755afa7893116579a995e55391c749d4999ebb0c1ae7cac74f14598",
+          "blockNumber": "0x30d293f",
+          "blockTimestamp": "0x6aa4af61",
+          "data": "0x",
+          "logIndex": "0xee",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0xd23628168eb4a5531dac631b760638c94a8ff7a6ae5227c46d01ad8ebe4012c4"
+          ],
+          "transactionHash": "0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488",
+          "transactionIndex": "0x21"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x8030bb226755afa7893116579a995e55391c749d4999ebb0c1ae7cac74f14598",
+          "blockNumber": "0x30d293f",
+          "blockTimestamp": "0x6aa4af61",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0xef",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488",
+          "transactionIndex": "0x21"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000020000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000001000000000000000400000000000000000000004000000080000000000000000000000000000000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488",
+      "transactionIndex": "0x21",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488"
+    ]
+  },
+  {
+    "id": "r40",
+    "transaction": "0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891",
+    "amount_atomic": 5000,
+    "verification": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_9npbwvngrc",
+        "item": "small_blessing",
+        "patron_number": 370,
+        "date": "2026-09-12T01:48:35.278Z",
+        "name": "deployment boundary audit",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+        "settlement_tx": "0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891",
+        "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after mcp",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "2e6fad40a0372e2a325184fbb27177191ce1770f64c92f7d7458161476920b60ec257b55e92522c975ad499a5d0b95edababd8357c5554f9daa8273306f0970e",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T01:48:35.278Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_9npbwvngrc\",\"item\":\"small_blessing\",\"patron_number\":370,\"date\":\"2026-09-12T01:48:35.278Z\",\"name\":\"deployment boundary audit\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"settlement_tx\":\"0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after mcp\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "649ad844e286ff39d6ca15fb3cc399c5dbd57afda3acf4e5a794d92ecaabdf70",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_9npbwvngrc, observed 2026-09-12T01:48:35.278Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_9npbwvngrc.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "4b9f323c35a12bf895dd81d587829e5f0a61e3292c816ad199f773d3f91bef6741a6c298e0c0f81a23cd8fa6753ea005bea759b479b27319dba99279de9b4601",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_9npbwvngrc\",\"date\":\"2026-09-12T01:48:35.278Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"small_blessing\",\"name\":\"deployment boundary audit\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":370,\"payer\":\"0x137aE5e3c7ed176744226F67223de50CA3A19e5A\",\"purpose\":\"Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after mcp\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "receipt": {
+      "blobGasUsed": "0x80ec",
+      "blockHash": "0x0e335cafc8a2cc7fcc782fb5ced260238205144ce93cdf6b367edf1ff94d2fe8",
+      "blockNumber": "0x30d2942",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x63e9ae",
+      "daFootprintGasScalar": "0x94",
+      "effectiveGasPrice": "0x4c4b45",
+      "from": "0x625d8a65134079f8faaac39a7947c73d93c6ac39",
+      "gasUsed": "0x165ff",
+      "l1BaseFeeScalar": "0x8dd",
+      "l1BlobBaseFee": "0x2b4a43",
+      "l1BlobBaseFeeScalar": "0x101c12",
+      "l1Fee": "0x41d88ae1",
+      "l1GasPrice": "0x33348a6",
+      "l1GasUsed": "0xdf6",
+      "logs": [
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x0e335cafc8a2cc7fcc782fb5ced260238205144ce93cdf6b367edf1ff94d2fe8",
+          "blockNumber": "0x30d2942",
+          "blockTimestamp": "0x6aa4af67",
+          "data": "0x",
+          "logIndex": "0xba",
+          "removed": false,
+          "topics": [
+            "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x5d15f6c90ac63fcf0e16278a01b5c63831c3e239fa1612644eb77edaa1090c3d"
+          ],
+          "transactionHash": "0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891",
+          "transactionIndex": "0x3d"
+        },
+        {
+          "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "blockHash": "0x0e335cafc8a2cc7fcc782fb5ced260238205144ce93cdf6b367edf1ff94d2fe8",
+          "blockNumber": "0x30d2942",
+          "blockTimestamp": "0x6aa4af67",
+          "data": "0x0000000000000000000000000000000000000000000000000000000000001388",
+          "logIndex": "0xbb",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000137ae5e3c7ed176744226f67223de50ca3a19e5a",
+            "0x000000000000000000000000dd350976b8cffc65938c0464d39a2c78be079bd0"
+          ],
+          "transactionHash": "0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891",
+          "transactionIndex": "0x3d"
+        }
+      ],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001200000000000000000000000000000008000000000000000000090000000000000000000000840000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000004400000080000000000000000000000000200000000000000004000000000000000000000000000000000002000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000004000000004",
+      "status": "0x1",
+      "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "transactionHash": "0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891",
+      "transactionIndex": "0x3d",
+      "type": "0x2"
+    },
+    "chain_transfer": true,
+    "chain_nonce": true,
+    "nonce_transactions": [
+      "0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891"
+    ]
+  }
+]

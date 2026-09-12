@@ -1,0 +1,17 @@
+{
+  "id": "7b34199b-07cd-4ac6-9ac2-5942ea206381",
+  "source": "wrangler",
+  "strategy": "percentage",
+  "author_email": "seancrecord@gmail.com",
+  "annotations": {
+    "workers/message": "Buyer audit 22: rollout",
+    "workers/triggered_by": "deployment"
+  },
+  "versions": [
+    {
+      "version_id": "b8f5c59d-eddb-4350-a242-51d8358e912c",
+      "percentage": 100
+    }
+  ],
+  "created_on": "2026-09-12T01:46:40.478039Z"
+}

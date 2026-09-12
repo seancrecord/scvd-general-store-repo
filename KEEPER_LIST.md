@@ -1411,3 +1411,8 @@ Do not relitigate without you.
 ## HOLD
 
 Empty. Next paste lands here.
+
+## Buyer-wave decisions — September 12, 2026 UTC
+
+- **RULE — total live-audit spending ceiling.** Public Wave 1 work spent nothing. The retained full-shelf grid sums to $3,040.430 at minimums across 163 offered item/rail pairs; the nine architecture representatives add $158.059 for one rail, before cheap retry/concurrency cases and any capacity constraints. Decide the aggregate ceiling and whether to include the human commissions. The exact unspent plan and evidence are in `research/BUYER_RUN_ORDER.md`.
+- **TEST — Solana buyer availability.** No Solana buyer key/file was configured for this wave run. Provide a locally configured, funded test signer for the authorized live rail; do not send secret material in chat. A configured EVM buyer alone cannot exercise Solana settlement. Builds and remaining audit instrumentation are on ROADMAP B-WAVES.

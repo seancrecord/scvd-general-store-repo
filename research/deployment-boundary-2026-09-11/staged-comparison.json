@@ -1,0 +1,34 @@
+{
+  "old": "0b0da9f9-d343-4112-bed6-8c412747f293",
+  "new": "b8f5c59d-eddb-4350-a242-51d8358e912c",
+  "runtime_equal": true,
+  "bindings_equal": true,
+  "all_module_bytes_identical": true,
+  "uploaded_modules": [
+    {
+      "name": "13ac905f07cbe77f782df59ca04411e0fd558561-a2a-runner.md",
+      "bytes": 83962,
+      "sha256": "ef64bf5fe4e3ab5d989f1524e14fe6a7c71625491404a8db2ccd5ae6f7a28cc5",
+      "equal": true
+    },
+    {
+      "name": "index.js",
+      "bytes": 4241469,
+      "sha256": "4cef6befae7879ce1a7ebf19995ea8962ebb5403fa2eb9bf2435603cc33d3304",
+      "equal": true
+    },
+    {
+      "name": "acc836f4ff622502f728f75f0a70c980e27f79c2-till.js",
+      "bytes": 49617,
+      "sha256": "51922c6f6b9e1d58a885f0a11683e2252001705cc9ba5cacc277dc2ae645e112",
+      "equal": true
+    },
+    {
+      "name": "0a5c7a22bcbe5f6544768bf817e20917feb9461c-purchase.js",
+      "bytes": 7826,
+      "sha256": "bea8713fa2b45519fbc7541f68226888e9077415d4220b8dd932fd326ef40118",
+      "equal": true
+    }
+  ],
+  "old_doors": "8849e2e3-4bb3-4bd8-97f5-2464ea95cb70"
+}

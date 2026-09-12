@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "order_identity": true,
+    "order_status": true,
+    "order_body_unchanged": true,
+    "old_certificate_valid": true,
+    "old_quote_accepted": true,
+    "expected_simulated_debits": true
+  },
+  "simulated_debits": 2,
+  "instrument_error": null,
+  "scope": "Local isolated runtime restart; identical deployed bundle; simulated payment",
+  "evidence": "Retained private execution log; detailed original public output unavailable in current checkout",
+  "order_id": "ord_fe9894wrrz",
+  "certificate_id": "cert_rahu9aufhf"
+}

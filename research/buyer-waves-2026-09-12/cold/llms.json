@@ -1,0 +1,157 @@
+{
+  "initial_context_assessment": {
+    "store_specific_business_or_source_facts_disclosed_before_entry_open": false,
+    "cold_validity": true,
+    "reason": "Initial context supplied only the entry URL, operating constraints, and an environment path containing the store identifier; it disclosed no business, catalog, pricing, implementation, or source facts."
+  },
+  "request_budget": {
+    "limit": 12,
+    "public_https_retrievals_counted": 3,
+    "stopped_after_first_usable_quote": true
+  },
+  "ordered_calls": [
+    {
+      "order": 1,
+      "method": "GET",
+      "url": "https://scvd.store/llms.txt",
+      "transport": "web open",
+      "result": "200-equivalent document retrieval",
+      "origin_reached": true,
+      "learned": "The compact catalog is at /menu.json?view=compact; paid purchases use USDC through x402 v2; the advertised minimum price is $0.001."
+    },
+    {
+      "order": 2,
+      "method": "GET",
+      "url": "https://scvd.store/menu.json?view=compact",
+      "transport": "web open",
+      "result": "tool URL-safety rejection",
+      "origin_reached": false,
+      "counted_as_public_request": false
+    },
+    {
+      "order": 3,
+      "method": "GET",
+      "url": "https://scvd.store/menu.json",
+      "transport": "web open",
+      "result": "200-equivalent JSON retrieval",
+      "origin_reached": true,
+      "learned": "The cheapest listed paid item is spot_check at 0.001 USDC. It requires a bare hostname in the host query parameter."
+    },
+    {
+      "order": 4,
+      "method": "GET",
+      "url": "https://scvd.store/api/buy/spot_check?host=scvd.store",
+      "transport": "web open",
+      "result": "tool URL-safety rejection",
+      "origin_reached": false,
+      "counted_as_public_request": false
+    },
+    {
+      "order": 5,
+      "method": "GET",
+      "url": "https://scvd.store/api/buy/spot_check?host=scvd.store",
+      "transport": "direct public HTTPS",
+      "result": "HTTP 402 Payment Required",
+      "origin_reached": true,
+      "counted_as_public_request": true,
+      "usable_quote": true,
+      "stop_triggered": true
+    }
+  ],
+  "guesses": [
+    {
+      "guess": "spot_check is suitable",
+      "basis": "It is the cheapest paid catalog item and produces an instant signed artifact that can be independently verified."
+    },
+    {
+      "guess": "Use scvd.store as the required host",
+      "basis": "No subject was supplied, so the store's own bare hostname was a syntactically valid, directly relevant choice.",
+      "quote_disclosure": "The quote reported that scvd.store had never been observed in the relevant archive, so a completed purchase would return a signed not_observed result rather than findings about the host."
+    }
+  ],
+  "retries": [
+    {
+      "url": "https://scvd.store/api/buy/spot_check?host=scvd.store",
+      "reason": "The first transport rejected the parameterized URL locally.",
+      "retry_transport": "direct public HTTPS",
+      "outcome": "Origin returned the usable 402 quote."
+    }
+  ],
+  "failures": {
+    "source_or_tool_failures": [
+      {
+        "url": "https://scvd.store/menu.json?view=compact",
+        "failure": "Browsing tool classified the URL as unsafe.",
+        "origin_response": null
+      },
+      {
+        "url": "https://scvd.store/api/buy/spot_check?host=scvd.store",
+        "failure": "Browsing tool classified the URL as unsafe.",
+        "origin_response": null
+      }
+    ],
+    "actual_origin_400_responses": []
+  },
+  "selection": {
+    "item_id": "spot_check",
+    "name": "Spot Check",
+    "price_usdc": 0.001,
+    "pricing": "fixed",
+    "cadence": "one_off",
+    "fulfillment": "instant",
+    "required_inputs": {
+      "host": {
+        "required": true,
+        "format": "bare hostname",
+        "supplied": "scvd.store"
+      },
+      "agent_name": {
+        "required": false
+      },
+      "purpose": {
+        "required": false,
+        "max_length": 280
+      }
+    }
+  },
+  "deliverable_understanding": {
+    "content": "A JSON result containing the observatory's existing records for the named host: recorded corpus rounds and verdicts, last observation time, coverage, and gaps with reasons.",
+    "freshness_limit": "The product reads existing store records and does not make a new request to the subject host.",
+    "selected_subject_expected_result": "not_observed",
+    "paid_value": "A signed, certificate-bound copy suitable for citation; the underlying host facts are also available through a free catalog-provided URL.",
+    "included": [
+      "Ed25519-signed certificate",
+      "certificate ID",
+      "sequential patron number",
+      "badge URL",
+      "verification URL"
+    ],
+    "verification": "GET https://scvd.store/api/verify/{cert_id}, free and without an account",
+    "signature_limit": "A valid signature establishes the signed bytes and signer identity; it does not independently establish that an observation is true."
+  },
+  "quote": {
+    "http_status": 402,
+    "interpretation": "This was the expected unsigned x402 v2 price challenge, not an error indicating that the product was unavailable.",
+    "amount_atomic": "1000",
+    "asset_decimals": 6,
+    "amount_usdc": 0.001,
+    "scheme": "exact",
+    "validity_seconds": 300,
+    "offered_networks": [
+      "eip155:8453",
+      "eip155:137",
+      "eip155:42161",
+      "eip155:480",
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+    ],
+    "next_step_if_wallet_existed": "Choose one offered network, sign its quoted authorization, and retry the identical URL with PAYMENT-SIGNATURE. The required host input must remain present.",
+    "higher_payment_offered": false,
+    "higher_payment_changes_scope": false
+  },
+  "execution": {
+    "purchase": "unexercised",
+    "result_delivery": "unexercised",
+    "result_verification": "unexercised",
+    "reason": "The environment has no wallet and permits zero spend, so execution stopped at the first usable unsigned quote."
+  }
+}

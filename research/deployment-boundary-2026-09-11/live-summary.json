@@ -1,0 +1,18 @@
+{
+  "completed": true,
+  "paid_requests": 18,
+  "maximum_usdc": 0.1,
+  "maximum_exposed_usdc": 0.09,
+  "max_client_inflight": 1,
+  "final_version": [
+    {
+      "version_id": "b8f5c59d-eddb-4350-a242-51d8358e912c",
+      "percentage": 100
+    }
+  ],
+  "old_quote_ids": [
+    "r7",
+    "r8"
+  ],
+  "at": "2026-09-12T01:48:40.467Z"
+}
