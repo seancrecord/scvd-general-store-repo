@@ -102,6 +102,11 @@ function hexToBytes(hex: string): Uint8Array {
  * (retired count + 1), permanently, matching did.json exactly because
  * both derive from the same registry.
  */
+/** The kid an offer, a receipt or a replay kit names — exported for the kit. */
+export async function offerKid(env: Env): Promise<string> {
+  return kidFor(env);
+}
+
 async function kidFor(env: Env): Promise<string> {
   const publicKey = await cachedPublicKeyHex(env.SIGNING_KEY);
   const keyNumber = retiredKeysFor(publicKey).length + 1;

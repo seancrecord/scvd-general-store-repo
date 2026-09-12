@@ -1,0 +1,47 @@
+{
+  "ledger": "research/field-run-2026-09-12/ledger.jsonl",
+  "blocks": [
+    51194216,
+    51194217
+  ],
+  "wallet": "0x404018C829a4e5AC5F703D1eB0B942Ae7852017F",
+  "version": 2,
+  "ledger_fingerprint": "71fa796c1802803fc6f6afa2b898e9647189ace521abf9219d1ec75b3431a6b8",
+  "scope": {
+    "network": "eip155:8453",
+    "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "wallet": "0x404018C829a4e5AC5F703D1eB0B942Ae7852017F",
+    "from_block": 51194216,
+    "to_block": 51194217,
+    "complete": true
+  },
+  "rows": [
+    {
+      "index": 0,
+      "url": "https://stillosdigitalholdings.com/notary/commit",
+      "method": "POST",
+      "network": "eip155:8453",
+      "response_status": 402,
+      "response_with_body": false,
+      "payment_submitted": true,
+      "candidate_transfers": 0,
+      "receipt_claims_success": false,
+      "settlement": "no_transfer_in_window",
+      "free_delivery_in_window": false
+    }
+  ],
+  "transfers": [],
+  "chain_count": 0,
+  "matched": 0,
+  "settled_with_delivery": 0,
+  "settled_without_delivery": 0,
+  "free_deliveries_in_window": 0,
+  "unknown_attempts": 0,
+  "unmatched_transfers": [],
+  "chain_atomic": "0",
+  "chain_usdc": "0.000000",
+  "matched_atomic": "0",
+  "matched_usdc": "0.000000",
+  "unmatched_atomic": "0",
+  "unmatched_usdc": "0.000000"
+}

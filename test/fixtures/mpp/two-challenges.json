@@ -1,6 +1,8 @@
 {
   "name": "two-challenges",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "Two Payment challenges on one 402 (evm and tempo mainnet), joined the way the Workers runtime joins repeated header values. Both parse; the checks judge every challenge.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

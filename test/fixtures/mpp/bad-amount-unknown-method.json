@@ -1,6 +1,8 @@
 {
   "name": "bad-amount-unknown-method",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "amount as a decimal and a method with no draft: the price field a buyer reads is wrong, and no client can build a credential.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

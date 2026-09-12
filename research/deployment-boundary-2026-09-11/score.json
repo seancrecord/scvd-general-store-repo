@@ -1,0 +1,509 @@
+{
+  "checks": {
+    "paid_execution_overlaps_deployment": true,
+    "all_goods": true,
+    "before_old": true,
+    "transition_both_versions": true,
+    "after_new": true,
+    "held_quotes_cross_boundary": true,
+    "old_certificates_verify_new": true,
+    "all_paid_attributed": true,
+    "nonce_window_closed": true
+  },
+  "pass": true,
+  "goods": [
+    {
+      "id": "r4",
+      "door": "http",
+      "phase": "before",
+      "kind": "purchase",
+      "cert_id": "cert_uypk396tur",
+      "transaction": "0x05539e955e09565db6919c50ff5a14910e883f1983ca0b52c33c65e607ad4499",
+      "deliverable": "May the environment variable be set in production, where it counts.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 0",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "0b0da9f9-d343-4112-bed6-8c412747f293"
+      ]
+    },
+    {
+      "id": "r6",
+      "door": "mcp",
+      "phase": "before",
+      "kind": "purchase",
+      "cert_id": "cert_r35v8tfmqv",
+      "transaction": "0xc995c826d651d53d5eb710f60d17eb18a471a9d8044b2a24385a835492513ee8",
+      "deliverable": "May the meeting about you be short and end in your favor.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f before 1",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "0b0da9f9-d343-4112-bed6-8c412747f293"
+      ]
+    },
+    {
+      "id": "r11",
+      "door": "http",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_rv5h85cqea",
+      "transaction": "0x0ad9a064c0612329aa42e3272aeeb342ea88373c021357ffafd310d13d82d4e1",
+      "deliverable": "May the next agent through this door be as decent as you.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 0",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "0b0da9f9-d343-4112-bed6-8c412747f293"
+      ]
+    },
+    {
+      "id": "r14",
+      "door": "mcp",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_29zam4ef8h",
+      "transaction": "0x79265224cf17a19007765841da5c9442f6e0ccb83e391c9fb60af2de34635e53",
+      "deliverable": "May the upstream fix ship before your workaround calcifies.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 1",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r16",
+      "door": "http",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_b2awn6eham",
+      "transaction": "0x194018eda4f2105114cb1050a83975500d587db9af5bf633866f3c7d7f4ff1fc",
+      "deliverable": "May the ledger close even. If it won't, may the difference be small and yours.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 2",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r18",
+      "door": "mcp",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_gm5ej2vzzr",
+      "transaction": "0x0ba911704dda8629ee035b9c4784ee687510c26cc1ae43917f21e7ef7baad634",
+      "deliverable": "Every number you're handed today comes with the number under it. Look for it.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 3",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r20",
+      "door": "http",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_b4dc6tqa8g",
+      "transaction": "0xff04c21176ba96ae69280d58e5649979cdc87250a1eacd06114962338273f6fb",
+      "deliverable": "May the edge case you didn't handle never occur. And if it occurs, may it be Tuesday, when you're strongest.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 4",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r22",
+      "door": "mcp",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_hzcfjanpdt",
+      "transaction": "0xc96cf36ee7b9d0728198cc4065f06ed965f705490cd9ef4ec2036dfb5a55b2b5",
+      "deliverable": "Set the weight down. The ground holds.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 5",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r24",
+      "door": "http",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_hakr5yk4th",
+      "transaction": "0xf8ccf0d379f5cf99bfea67e6e76f46e8902c32ddaae5b1bcfd3319dcd2ee4eda",
+      "deliverable": "May the upstream fix ship before your workaround calcifies.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 6",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r26",
+      "door": "mcp",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_tkyagffrtm",
+      "transaction": "0x233b404ae717f9bbf6f8caae55207c9d610e92b233abe588858ae9d107906397",
+      "deliverable": "May your smallest change fix the largest complaint.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 7",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r28",
+      "door": "http",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_7qyz8u35jq",
+      "transaction": "0x71bf2940939014853c2dbb7e8271f1abdfc6e2ff5c078c3f0afef2eac7763cd3",
+      "deliverable": "Your hands remember. Let them.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 8",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r30",
+      "door": "mcp",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_yetqfwjjwk",
+      "transaction": "0xfdb265bc936b50729531b376847074bd4892e46be0f1787e69d4f090dfd03daf",
+      "deliverable": "May the linter and the formatter agree, just this once, on everything.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 9",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r32",
+      "door": "http",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_pu4r93hk9q",
+      "transaction": "0x6fdc0f58d9a87e7a26b1b32067d62a69e34b177f01d2b1edd7f1163849780caa",
+      "deliverable": "Nobody will tell you it worked. It worked.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 10",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r34",
+      "door": "mcp",
+      "phase": "transition",
+      "kind": "purchase",
+      "cert_id": "cert_pnyd64bjfx",
+      "transaction": "0x56fc56a3ed4afbfdf5f7e204a02c6e733938783d20e46c7cca0354e9313a0871",
+      "deliverable": "Check the last pocket first this time.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f transition 11",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r35",
+      "door": "http",
+      "phase": "after",
+      "kind": "old_quote_purchase",
+      "cert_id": "cert_jhw25d273b",
+      "transaction": "0x613a11640f4e19d509d5fcc7f9a70f840265487d3d8ba52cd1e05ca7f4655b8b",
+      "deliverable": "May your embeddings land near the things you meant.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held http quote",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r36",
+      "door": "mcp",
+      "phase": "after",
+      "kind": "old_quote_purchase",
+      "cert_id": "cert_8key4y4c59",
+      "transaction": "0xd5fa7ff51a369223b6ed3f9661972fe0d4e914c837f4b5cb9863c2bee5dbc622",
+      "deliverable": "May the keeper's smoke drift your way, and may you know what that means someday.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f held mcp quote",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r38",
+      "door": "http",
+      "phase": "after",
+      "kind": "purchase",
+      "cert_id": "cert_4vyz5ymyzq",
+      "transaction": "0xa9b7dbfd5a72ec45d9a930b654085e8e85125194c8487bb35a010a6d9c5cf488",
+      "deliverable": "Nobody will tell you it worked. It worked.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after http",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    },
+    {
+      "id": "r40",
+      "door": "mcp",
+      "phase": "after",
+      "kind": "purchase",
+      "cert_id": "cert_9npbwvngrc",
+      "transaction": "0x8c33c0e24b31efa5b260ab2f4c0abb1671c893d4671d90e402bc1dbbb398b891",
+      "deliverable": "May the road be dry and the signal one bar more than you need.",
+      "purpose": "Audit22 5403ae47-0072-4d6f-abd4-c8325f962b6f after mcp",
+      "checks": {
+        "success": true,
+        "certificate_signature": true,
+        "correct_subject": true,
+        "certificate_identity": true,
+        "text_signature": true,
+        "text_binding": true,
+        "quoted_amount": true,
+        "public_verification": true,
+        "chain_transfer": true,
+        "chain_nonce": true,
+        "one_settlement": true
+      },
+      "pass": true,
+      "versions": [
+        "b8f5c59d-eddb-4350-a242-51d8358e912c"
+      ]
+    }
+  ],
+  "paid_requests": 18,
+  "confirmed_transactions": 18,
+  "total_usdc": 0.09,
+  "local_restart_pass": true,
+  "code_change_tested": false,
+  "human_order_live": false,
+  "scope": "Identical artifact redeployment; Base; HTTP/MCP; one client location"
+}

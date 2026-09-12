@@ -1,0 +1,20 @@
+{
+  "live_acceptance": "all 9 exercised checks pass",
+  "scorer_tests": {
+    "passed": 13,
+    "failed": 0
+  },
+  "local_restart": {
+    "passed": 6,
+    "failed": 0,
+    "simulated_debits": 2
+  },
+  "typecheck": "passed",
+  "live_tokens_public": 0,
+  "temporary_log_tails": "both stopped successfully",
+  "authorization_window_closed": true,
+  "last_authorization_expiry_utc": "2026-09-12T01:53:20+00:00",
+  "scan_end_block_utc": "2026-09-12T01:53:33+00:00",
+  "canvas": "syntax transpilation passed; host render not verified",
+  "full_suite": "not run; audit-only changes; no commit"
+}

@@ -1,0 +1,225 @@
+{
+  "scope": "SHA-256 of saved evidence and benchmark sources at this checkpoint; not a seller signature or immutability guarantee.",
+  "files": [
+    {
+      "path": "research/BUYER_RUN_ORDER.md",
+      "bytes": 9807,
+      "sha256": "8bedbde6b92ff9bf529cd11afb724c12bd492fe0116af80aafcb5aa4a609fe4d"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/LOG_ADDITIONS.md",
+      "bytes": 11031,
+      "sha256": "cb2591a840f95e479adfabcf9cecdc82cc95a401f28336b5bda4075ca26e6946"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/REPORT.md",
+      "bytes": 12238,
+      "sha256": "f0c468fc78a48e42ae532f61227201ed1c674a0ae98a21b678f299726154ea9d"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/a2a.snapshot",
+      "bytes": 4227,
+      "sha256": "fcde49febd47fa33f7d782f1b62e88b78d29a3d3ceeaad152c472ca1c9ed5c07"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/buyer-inputs.template.json",
+      "bytes": 1353,
+      "sha256": "123c06c59e412e87a4206226ff02e35fa09dba3fd0df772d9e02568cbcff1936"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/catalog.json",
+      "bytes": 47634,
+      "sha256": "087cd98e4897ff55a3348cf03a6edcc70c88f12f413b85e50136b26d84b50604"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/home.events.jsonl",
+      "bytes": 508754,
+      "sha256": "e6401d7996d27d16b186897db726fac9ff29f22575e774a40e8e7836c4488443"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/home.json",
+      "bytes": 2302,
+      "sha256": "fb674d88facffb3e6f4552b8e38c63da558d93241121d4548552d3c630abb517"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/listing.events.jsonl",
+      "bytes": 343422,
+      "sha256": "57fbe10925d7d896abdb722e346a5ae2276882d35fe1411447893574222168d9"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/listing.json",
+      "bytes": 4773,
+      "sha256": "08f1a28b4b4776227cbaa8a956f492000b006e15bf1b6090281e4e911e5ab99e"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/llms.events.jsonl",
+      "bytes": 40781,
+      "sha256": "722844172d1d8d4bf5b2ce6bb5d776f8b4c48d41ad794248abfae688cef4efd5"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/llms.json",
+      "bytes": 5922,
+      "sha256": "53bcd76264e27f258da117da8f43f3f2b99e8de527d9e7e45e2666807a05fe71"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/mcp.events.jsonl",
+      "bytes": 217144,
+      "sha256": "b0717313003dad63eb5f8e70ac2ea4e365d2156c240e8e81f1e7b89cf7b78783"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/mcp.json",
+      "bytes": 7382,
+      "sha256": "9b7d2dc1c1d8e29688335d6d09af5af953b66b22768d0bf568c076a52fc5abb8"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/method.json",
+      "bytes": 729,
+      "sha256": "4a5d665ec9b3dcdb3ae4aa450c9b4a74cb60f8352cba90e46207de7271c2a10d"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/openapi.events.jsonl",
+      "bytes": 41412,
+      "sha256": "a8ae63dee8e1e9863136714057e7711ba7ecaa333a74e4925dd2bc6e01b6a1c8"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/openapi.json",
+      "bytes": 4763,
+      "sha256": "b470f220b6c4ff55a12fefffcb2a4e272652bc1613ee851f083be19b836e37c8"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/reviewed-metrics.json",
+      "bytes": 2813,
+      "sha256": "3e5bebd25fdafbd455b1241439f0d8acfa2c1a058d5f6f683113adcfea06be75"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/skill.events.jsonl",
+      "bytes": 104793,
+      "sha256": "172c9ecbd9092c702b7e748e4f359a097378b67b4125cb3ff3804a002b393cb2"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/cold/skill.json",
+      "bytes": 3008,
+      "sha256": "a77568283eb9102bb1146671ce2a8bae51eb56b0dc89cce7268fb548d7d6648a"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/collector-tests.tap",
+      "bytes": 2393,
+      "sha256": "273ed57c31ea70c67f2ffb9ba7313681e1ad89fe988cc7811164997558dbf0f5"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/comparison.json",
+      "bytes": 1868,
+      "sha256": "e7793e08c57da0174ee96da8eda371a1f29b91b733c34fab008e89604b0f9f23"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/error-examples.json",
+      "bytes": 1234797,
+      "sha256": "c9f6529660b6519771d6a0764d4c9a58eeebdc332bc719b9419ed36ed4e03c6f"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/home.snapshot",
+      "bytes": 156596,
+      "sha256": "8521cbfdbae6120db1d0bf386b8f5a6969bd5d7295c2de54e1ed3acda6538904"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/links.json",
+      "bytes": 881308,
+      "sha256": "e80ce292f2ea72ac3e1816cb371c1f9131f4277fed6bb3099680d7324bdcd51e"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/llms.snapshot",
+      "bytes": 30878,
+      "sha256": "bfeeaa71c9a85ea2b3f71071eacfac2087a66716c1b820327e464228cb2a299e"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/manifest.snapshot",
+      "bytes": 305078,
+      "sha256": "3306305067d0773ae3ea566f65e36edf0373cb844a60e311bb67bd82d304d5b7"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/mcp.snapshot",
+      "bytes": 139325,
+      "sha256": "42b726c9424dca5629f87477c1eb9c109e68a233e149c24bef5bf3c291c8204a"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/menu.snapshot",
+      "bytes": 291644,
+      "sha256": "4063eb96834ec8f5eb2cd70c8b4ccf073ccf7e96891212a9be5c35551cac4e72"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/openapi.snapshot",
+      "bytes": 690358,
+      "sha256": "9f603b24730a1cd7f710ea2f59ca2a18eacca2ba437f2a9571adea5b48299d11"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/prepayment.json",
+      "bytes": 4145572,
+      "sha256": "d8f11b15eb20ea05d9f4a8af8ee967299700cb1d5a92c905f4e3bd4ea8961df6"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/readiness.json",
+      "bytes": 284,
+      "sha256": "f6237ff3e031f8c7e458d85898e3b372456974f00a65166413f6ded82d213e23"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/run-controls.json",
+      "bytes": 995,
+      "sha256": "9350804764a3c115a806b76a4cfdf1cdf168ae3154aadbead2adcb44b2d53371"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/score.json",
+      "bytes": 34926,
+      "sha256": "76e8d619ed1bede9ee4c30c715d41d0cfe20ce43170bd5c9438e99bc8119ee64"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/shelf-quote-grid.json",
+      "bytes": 18058,
+      "sha256": "8a819880600053858edb72f04933d99ab4b40c3b52fccd86358591983f5acb18"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/skill.snapshot",
+      "bytes": 33669,
+      "sha256": "40d8d1444ebc603a22de1e998a21e56a9beb4a1cab784d51e0d5bc1a87887b4e"
+    },
+    {
+      "path": "research/buyer-waves-2026-09-12/wave-plan.json",
+      "bytes": 4208,
+      "sha256": "971bfb0ae5c90947f7075ee3be2fd8868dc8adbadcf555504dc991c6bcd73c5d"
+    },
+    {
+      "path": "scripts/buyer-cold-isolated.mjs",
+      "bytes": 2747,
+      "sha256": "a682f22db3145a96a635f4d687a4a308f0c2d935bcd16762fa96d49294349a05"
+    },
+    {
+      "path": "scripts/buyer-run-evidence.test.mjs",
+      "bytes": 5662,
+      "sha256": "287d4d9ee2bb1cc0022f327c4e39f76e5aa5efd3502de9c2c475b3741966baef"
+    },
+    {
+      "path": "scripts/buyer-wave-one.mjs",
+      "bytes": 7251,
+      "sha256": "0b726bde6fe8a39fc0885d81230da0bf929c982a8e5a2bc811cabc38fc36b283"
+    },
+    {
+      "path": "scripts/buyer-wave-score.mjs",
+      "bytes": 7089,
+      "sha256": "94aa518eee68a170bf0a9a06ab2db0c2c278551dfe1973c5d3051247e4de043f"
+    },
+    {
+      "path": "scripts/buyer-wave-snapshot.mjs",
+      "bytes": 1529,
+      "sha256": "f70cd1ed616da0e7152d5dfa228982bff454a608977aa576a89abef5ab697d05"
+    },
+    {
+      "path": "scripts/lib/buyer-run-evidence.mjs",
+      "bytes": 7590,
+      "sha256": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f"
+    },
+    {
+      "path": "scripts/shopping-run.mjs",
+      "bytes": 29426,
+      "sha256": "7a51d58eb601dd1e89abb2dd4a9512e1990c9d5bacaa16430af1618a600732f0"
+    }
+  ]
+}

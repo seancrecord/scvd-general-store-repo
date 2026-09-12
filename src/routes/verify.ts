@@ -31,6 +31,7 @@ import {
   verifyAnchorSignature,
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
+import { DELIVER_FIRST_SINCE, settlementStateFor, type SettlementState } from "@/services/settlement-state";
 import {
   existenceVerdict,
   type ExistenceInput,
@@ -77,6 +78,8 @@ import {
   retiredKeysFor,
   rotationsPerformed,
 } from "@/store/key-registry";
+import type { KeyAttribution } from "@/store/key-registry";
+import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec";
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { Certificate, HonoEnv } from "@/types";
@@ -313,12 +316,53 @@ async function noteVerify(
  * RE-CHECKED AT RENDER, never cached: the page is a verification,
  * not a picture of one. Zero PII, nothing stored — a rendering of an
  * artifact that already exists.
+ *
+ * EACH PROPERTY ON ITS OWN LINE (2026-09-12). Until today the human
+ * page collapsed everything the JSON already separates — found,
+ * hash, signature, interop signature, key, Bitcoin anchor — into one
+ * green sentence, which is exactly the "one badge" this store tells
+ * other issuers not to render. The first treaty partner's receipt
+ * page reported each property apart and said so out loud; that was
+ * our own doctrine rendered back at us, so here it is on our page.
+ * No new data: every line below is a field the JSON served already.
+ * No buttons either — the page hands over the steps (the JSON, the
+ * key, the offline command), per the passport card's precedent.
  */
+interface ReceiptChecks {
+  /** Who signed, per the published key history. */
+  attribution: KeyAttribution;
+  /** The RFC 8785 interop signature: valid, broken, or absent (null). */
+  jcs: { valid: boolean } | null;
+  /** sha256 of the exact signed bytes served as signed_payload. */
+  artifactHash: string;
+  /** The one thing a buyer should not conclude, per artifact class. */
+  doesNotProve: string;
+  /** This page's own URL, for the take-it-with-you steps. */
+  verifyUrl: string;
+  /** Where the sale stands: payment, ordering, delivery-audit row. */
+  settlement: SettlementState;
+}
+
+function anchorLine(existence: ExistenceVerdict | undefined): string {
+  if (!existence || existence.status === "none") {
+    return `Bitcoin anchor — <strong>none yet</strong> <span class="menu-meta">(this record has not been submitted to a timestamp calendar; nothing here bounds when the bytes existed)</span>`;
+  }
+  if (existence.status === "pending") {
+    return `Bitcoin anchor — <strong>pending</strong> <span class="menu-meta">(submitted to ${escapeHtml(existence.calendar ?? "a calendar")}${existence.submitted_at ? ` on ${escapeHtml(existence.submitted_at.slice(0, 10))}` : ""}; the Bitcoin block that bounds it has not been confirmed yet)</span>`;
+  }
+  if (existence.status === "failed") {
+    return `Bitcoin anchor — <strong>failed</strong> <span class="menu-meta">(${escapeHtml(existence.error ?? "the anchor could not be established")})</span>`;
+  }
+  const by = existence.existed_by;
+  return `Existed by <strong>Bitcoin block ${by ? by.block_height : "?"}</strong>${by?.block_time ? ` (mined ${escapeHtml(by.block_time.slice(0, 10))})` : ""} <span class="menu-meta">${escapeHtml(existence.verdict)}</span>`;
+}
+
 function receiptPageHtml(
   cert: Certificate,
   valid: boolean,
   form: string,
-  existence?: ExistenceVerdict,
+  existence: ExistenceVerdict | undefined,
+  checks: ReceiptChecks,
 ): string {
   // The certificate binds the item ID; the page shows the shelf name
   // where the menu still knows it, and the honest id where it doesn't
@@ -336,6 +380,19 @@ function receiptPageHtml(
     : null;
   const row = (label: string, value: string) =>
     `<p class="menu-desc"><strong>${escapeHtml(label)}</strong> — ${value}</p>`;
+  const check = (text: string) => `<li class="menu-desc">${text}</li>`;
+  const keyLine =
+    checks.attribution.status === "current"
+      ? "the store's <strong>current</strong> key"
+      : checks.attribution.status === "retired"
+        ? `a key this store <strong>retired on ${escapeHtml(checks.attribution.retired_on ?? "")}</strong>`
+        : "a key this store has <strong>never published</strong>";
+  const hashLine =
+    existence?.digest_matches_artifact_hash === true
+      ? "the anchored digest matches the bytes served now"
+      : existence?.digest_matches_artifact_hash === false
+        ? "the anchored digest does NOT match the bytes served now"
+        : "no anchored digest yet to compare it with";
   return `<section>
       <p class="menu-desc"><strong>${
         valid
@@ -349,17 +406,82 @@ function receiptPageHtml(
       ${cert.name ? row("For", escapeHtml(cert.name)) : ""}
       ${cert.made_by ? row("Made by", escapeHtml(cert.made_by)) : ""}
       ${cert.saw ? row("Catalog surface", `<code>${escapeHtml(cert.saw)}</code> <span class="menu-meta">(sha256 of the route, list price, and required inputs this receipt was minted against)</span>`) : ""}
+      ${cert.quote ? row("Accepted quote", `<code>${escapeHtml(cert.quote)}</code> <span class="menu-meta">(sha256 of the RFC 8785 form of the five x402 terms the payment signature was bound to — scheme, network, asset, payTo, amount; the same five the store's signed offer in the 402 commits to, EVM addresses lowercased before hashing, so a held offer matches this line without asking us)</span>`) : ""}
       ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
       ${cert.mandate_id ? row("Acting under recorded mandate", `<a href="/api/mandate/${escapeHtml(cert.mandate_id)}">${escapeHtml(cert.mandate_id)}</a> <span class="menu-meta">(the authorization your agent claims it was given, recorded and signed BEFORE this purchase — the link resolves to the full record and its honest limits)</span>`) : ""}
       ${explorer ? row("On-chain settlement", `<a href="${escapeHtml(explorer)}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
       ${cert.settled_via ? row("How it was paid for", `Trade account <strong>${escapeHtml(cert.trade_partner ?? "")}</strong>${cert.settled_via === "trade_account_test" ? " (test mode: nothing booked)" : ""}, listed trade price $${escapeHtml(String(cert.trade_price_usd ?? ""))}. <span class="menu-meta">The marketplace collected its customer's payment; this store saw none and names no chain. Refunds go through the account holder, who took the payment. Instruction digest <code>${escapeHtml(cert.trade_instruction ?? "")}</code>.</span>`) : ""}
       ${row("Certificate id", `<code>${escapeHtml(cert.cert_id)}</code>`)}
-      ${existence ? row("Existed by", existence.existed_by ? `Bitcoin block ${existence.existed_by.block_height}${existence.existed_by.block_time ? ` (mined ${escapeHtml(existence.existed_by.block_time.slice(0, 10))})` : ""} <span class="menu-meta">${escapeHtml(existence.verdict)}</span>` : `<span class="menu-meta">${escapeHtml(existence.verdict)}</span>`) : ""}
     </section>
     ${cert.from_the_store ? `<section><p class="menu-desc"><em>${escapeHtml(cert.from_the_store)}</em> — the store</p></section>` : ""}
     <section>
-      <p class="menu-meta">This page re-checks the ed25519 signature on every load. The machine-readable record — the exact signed bytes, the public key, and how to run the check with your own library — is this same URL served as JSON. What a signature from this store proves, per artifact class: <a href="/attestation">/attestation</a>. Re-verification is free, forever.</p>
+      <h2>Verify this yourself</h2>
+      <p class="menu-meta">Checked on this load, not asserted. Each line is a separate question; they mean different things, and none of them is folded into the line above.</p>
+      <ul>
+        ${check(`Record <strong>found</strong> in this store's book under <code>${escapeHtml(cert.cert_id)}</code>.`)}
+        ${check(`Artifact hash <code>${escapeHtml(checks.artifactHash)}</code> <span class="menu-meta">(sha256 of the exact signed bytes; ${hashLine})</span>.`)}
+        ${check(
+          valid
+            ? `Signature <strong>valid</strong> (ed25519, ${escapeHtml(form)} form) under ${keyLine}. <span class="menu-meta">${escapeHtml(checks.attribution.means)}</span>`
+            : `Signature <strong>did not verify</strong>. <span class="menu-meta">${escapeHtml(checks.attribution.means)}</span>`,
+        )}
+        ${check(
+          checks.jcs === null
+            ? `Interop signature (RFC 8785) — <strong>absent</strong> <span class="menu-meta">(minted before this store emitted a second, canonical-JSON signature beside the primary one; history, not a defect)</span>.`
+            : checks.jcs.valid
+              ? `Interop signature (RFC 8785) — <strong>valid</strong> <span class="menu-meta">(the same key over the JCS canonical form, so a stock RFC 8785 verifier reaches the same answer)</span>.`
+              : `Interop signature (RFC 8785) — <strong>did not verify</strong> <span class="menu-meta">(the primary signature above is the authority; a broken interop signature is a store bug worth telling us about at /api/letter)</span>.`,
+        )}
+        ${check(anchorLine(existence))}
+      </ul>
+    </section>
+    <section>
+      <h2>Where this sale stands</h2>
+      <p class="menu-meta">Derived on this load from the signed fields above and the delivery-audit row for the settlement, never stored beside the receipt.</p>
+      <ul>
+        ${check(`Payment — <strong>${escapeHtml(checks.settlement.payment_state.replace(/_/g, " "))}</strong>.`)}
+        ${check(`Order of operations — <strong>${escapeHtml(checks.settlement.order_of_operations.replace(/_/g, " "))}</strong> <span class="menu-meta">(since ${DELIVER_FIRST_SINCE} the goods are produced first and the money moves at the last line before the signature; a delivery that fails takes nothing)</span>.`)}
+        ${check(`Delivery audit — <strong>${escapeHtml(checks.settlement.delivery_audit.state.replace(/_/g, " "))}</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.delivery_audit.means)})</span>.`)}
+        ${check(`Failed attempts on this receipt — <strong>none possible</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.failed_attempts.why)} ${escapeHtml(checks.settlement.failed_attempts.where)})</span>.`)}
+      </ul>
+    </section>
+    <section>
+      <h2>What this does not prove</h2>
+      <p class="menu-desc">${escapeHtml(checks.doesNotProve)}</p>
+      <p class="menu-meta">Stated per artifact class, with what the signature covers and whose word you are taking, at <a href="/attestation">/attestation</a>.</p>
+    </section>
+    <section>
+      <h2>Take it with you</h2>
+      <p class="menu-desc">The machine record is this same URL as JSON — the exact signed bytes, the signature, the public key and the anchor proof:</p>
+      <pre><code>curl -H 'Accept: application/json' ${escapeHtml(checks.verifyUrl)}</code></pre>
+      <p class="menu-desc">Check it without asking us, against a key you fetch yourself from <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>: <code>ed25519_verify(utf8(signed_payload), signature, public_key)</code>. Or export everything, Bitcoin proof included, and verify offline:</p>
+      <pre><code>npx -p x402-verify scvd-evidence export ${escapeHtml(checks.verifyUrl)} --out ./receipt-${escapeHtml(cert.cert_id)}
+npx -p x402-verify scvd-evidence verify ./receipt-${escapeHtml(cert.cert_id)}/bundle.json --public-key &lt;the key you fetched&gt;</code></pre>
+      <p class="menu-desc">Or replay the whole call as an integration test — the signed bytes, the accepted terms and a JWS offer over them, the settlement transaction, the sale's standing, and the refusal body a wrong-scope re-presentation gets — in one signed document: <a href="/api/replay/${escapeHtml(cert.cert_id)}"><code>/api/replay/${escapeHtml(cert.cert_id)}</code></a>.</p>
+      <p class="menu-meta">This page re-checks the ed25519 signature on every load; reload it and the check runs again. Re-verification is free, forever, and answers for anyone, not only whoever bought the thing.</p>
     </section>`;
+}
+
+/**
+ * THE INTEROP SIGNATURE, checked once for both registers. Three
+ * states a reader can tell apart: present and valid, present-but-
+ * broken (named loudly — a bad interop signature is a bug worth
+ * reporting, not a footnote), and absent — which for anything minted
+ * before the dual-emit began is history, not a defect.
+ */
+async function jcsCheck(record: {
+  certificate: Certificate;
+  signature_jcs?: unknown;
+  public_key: string;
+}): Promise<{ payload: string; valid: boolean } | null> {
+  if (!record.signature_jcs) return null;
+  const payload = jcsCanonicalize(certificateSignedSubset(record.certificate));
+  const valid = await verifyMessageSignature(
+    payload,
+    record.signature_jcs as string,
+    record.public_key,
+  );
+  return { payload, valid };
 }
 
 verifyRoutes.get("/api/verify/:cert_id", async (c) => {
@@ -491,6 +613,10 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       key: boundKey,
     });
     if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+      const jcs = await jcsCheck(record);
+      const artifactClass =
+        artifactClassForItem(record.certificate.item) ??
+        ARTIFACT_CLASSES.find((entry) => entry.id === "certificate");
       return c.html(
         renderSimplePage({
           title: `Receipt ${record.certificate.cert_id}`,
@@ -501,6 +627,14 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
             valid,
             form,
             existence,
+            {
+              attribution: attributeKey(record.public_key, currentForBound),
+              jcs: jcs ? { valid: jcs.valid } : null,
+              artifactHash: certificateArtifactHash,
+              doesNotProve: artifactClass?.does_not_prove ?? "",
+              verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}`,
+              settlement: await settlementStateFor(c.env, record.certificate),
+            },
           )}${jsonLdScript({
             "@context": "https://schema.org",
             "@type": "DigitalDocument",
@@ -567,6 +701,20 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       signed_payload: certificateSignedPayload,
       artifact_hash: certificateArtifactHash,
       signature_covers: HOW_TO_VERIFY,
+      ...(record.certificate.quote
+        ? {
+            quote_covers:
+              "quote is sha256 over the RFC 8785 (JCS) form of {scheme, network, asset, payTo, amount} — the accepted x402 terms the buyer's payment signature was bound to, read by the door that verified them. The store's signed offer in the 402 (extensions[\"offer-receipt\"]) commits to the same five plus version, resourceUrl and validUntil: decode that JWS payload, keep the five, lowercase asset and payTo on eip155 networks (Solana addresses stay exactly as served), canonicalize, hash, and compare. A match binds this receipt to that offer; a mismatch means a different tier or rail was paid than the offer you hold.",
+          }
+        : {}),
+      /**
+       * WHERE THE SALE STANDS (2026-09-12): the per-receipt answer to
+       * "failed retry state", derived at read and never stored. See
+       * services/settlement-state.ts for why the honest answer is not
+       * a counter and where the per-attempt record actually lives.
+       */
+      settlement_state: await settlementStateFor(c.env, record.certificate),
+      replay_url: `${c.env.STORE_BASE_URL}/api/replay/${record.certificate.cert_id}`,
       existence,
       ...citeBlock({ base: c.env.STORE_BASE_URL, what: "receipt", which: record.certificate.cert_id, observed_at: record.certificate.date, url: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}` }),
       /*
@@ -577,33 +725,27 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
        * anything minted before the dual-emit began is history, not a
        * defect, and saying WHY spares the reader inventing a reason.
        */
-      ...(record.signature_jcs
-        ? await (async () => {
-            const jcsPayload = jcsCanonicalize(
-              certificateSignedSubset(record.certificate),
-            );
-            const jcsValid = await verifyMessageSignature(
-              jcsPayload,
-              record.signature_jcs as string,
-              record.public_key,
-            );
-            return {
-              signature_jcs: record.signature_jcs,
-              signature_jcs_valid: jcsValid,
-              signature_jcs_payload: jcsPayload,
-              signature_jcs_covers: JCS_SIGNATURE_COVERS,
-              ...(jcsValid
-                ? {}
-                : {
-                    signature_jcs_gap:
-                      "The RFC 8785 signature on this record does NOT verify. The primary signature above is the authoritative one; if it verifies, the artifact is genuine and the broken interop signature is a store bug worth telling us about at /api/letter.",
-                  }),
-            };
-          })()
-        : {
+      ...(await (async () => {
+        const jcs = await jcsCheck(record);
+        if (!jcs) {
+          return {
             signature_jcs: null,
             signature_jcs_covers: `No RFC 8785 signature: this artifact was minted before ${JCS_DUAL_EMIT_DATED}, when the store began dual-emitting JCS alongside its declared-field-order discipline. The primary signature above is complete on its own; the JCS signature is interop, not authority.`,
-          }),
+          };
+        }
+        return {
+          signature_jcs: record.signature_jcs,
+          signature_jcs_valid: jcs.valid,
+          signature_jcs_payload: jcs.payload,
+          signature_jcs_covers: JCS_SIGNATURE_COVERS,
+          ...(jcs.valid
+            ? {}
+            : {
+                signature_jcs_gap:
+                  "The RFC 8785 signature on this record does NOT verify. The primary signature above is the authoritative one; if it verifies, the artifact is genuine and the broken interop signature is a store bug worth telling us about at /api/letter.",
+              }),
+        };
+      })()),
       ...(uncovered.length > 0
         ? {
             signature_gap: `This certificate was signed before 2026-07-30, when the canonical form did not include ${uncovered.join(" or ")}. The signature is genuine and covers everything else shown; ${uncovered.length === 1 ? "that field is" : "those fields are"} NOT covered by it, and you should not rely on ${uncovered.length === 1 ? "it" : "them"} as signed. Certificates minted since cover every field served. Found from outside, by a buyer who tried to verify one and couldn't: /corrections.`,
@@ -923,6 +1065,9 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     404,
   );
 });
+
+// Retain the key-registry address published in earlier llms indexes.
+verifyRoutes.get("/keys", (c) => c.redirect("/.well-known/scvd-signing-key", 308));
 
 verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
   const publicKey = await cachedPublicKeyHex(c.env.SIGNING_KEY);

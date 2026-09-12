@@ -1,6 +1,8 @@
 {
   "name": "session-intent-unregistered",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "intent=session, advertised by implementers with no draft: the check passes (seen in the wild), the advisory says a buyer holding only the registry cannot pay it.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

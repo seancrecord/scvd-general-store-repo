@@ -1,0 +1,87 @@
+{
+  "spot_check": {
+    "host": null
+  },
+  "settlement_attestation": {
+    "tx_hash": null
+  },
+  "small_blessing": {},
+  "settlement_reconciliation": {
+    "tx_hash": null
+  },
+  "daily_fortune": {},
+  "the_confession": {
+    "confession": null
+  },
+  "attestation_bundle": {
+    "tx_hashes": null
+  },
+  "the_mandate": {
+    "mandate": null
+  },
+  "the_case_file": {
+    "tx_hash": null
+  },
+  "hello": {},
+  "good_buyer": {
+    "url": null
+  },
+  "signature_agent_card": {
+    "url": null
+  },
+  "the_statement": {
+    "wallet": null
+  },
+  "luckies": {},
+  "coffees_for_closers": {
+    "win": null
+  },
+  "bitcoin_anchor": {
+    "digest": null
+  },
+  "context_anchor": {
+    "summary": null
+  },
+  "passport_refresh": {
+    "url": null
+  },
+  "graffiti_on_a_train": {
+    "tag": null
+  },
+  "a2a_repair_kit": {
+    "url": null
+  },
+  "standing_watch": {
+    "url": null
+  },
+  "service_audit": {
+    "url": null
+  },
+  "conformance_watch": {
+    "url": null
+  },
+  "onpage_audit": {
+    "url": null
+  },
+  "launch_check": {
+    "url": null
+  },
+  "opening_day": {
+    "url": null
+  },
+  "provenance_check": {
+    "address": null
+  },
+  "recurring_patronage": {},
+  "trust_profile": {
+    "url": null
+  },
+  "operator_statement": {
+    "wallet": null
+  },
+  "certificate_of_patronage": {},
+  "aura_walk": {
+    "url": null
+  },
+  "the_collab": {}
+}

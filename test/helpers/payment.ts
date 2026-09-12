@@ -83,12 +83,14 @@ export function pendingPaymentStub(
     payer?: string;
     network?: string;
     transaction?: string;
+    quote?: string;
   } = {},
 ): {
   paidUsdc: number;
   tipUsdc: number;
   payer?: string;
   network?: string;
+  quote?: string;
   settleCalls: number;
   settle: () => Promise<Record<string, unknown>>;
 } {
@@ -97,6 +99,7 @@ export function pendingPaymentStub(
     tipUsdc: overrides.tipUsdc ?? 0,
     ...(overrides.payer ? { payer: overrides.payer } : {}),
     ...(overrides.network ? { network: overrides.network } : {}),
+    ...(overrides.quote ? { quote: overrides.quote } : {}),
     settleCalls: 0,
     settle: async () => {
       stub.settleCalls += 1;

@@ -1,0 +1,57 @@
+[
+  {
+    "phase": "stage-zero-percent",
+    "started_at": "2026-09-12T01:46:17.157Z",
+    "versions": [
+      "0b0da9f9-d343-4112-bed6-8c412747f293@100",
+      "b8f5c59d-eddb-4350-a242-51d8358e912c@0"
+    ],
+    "completed_at": "2026-09-12T01:46:20.645Z",
+    "observed": {
+      "id": "79985af1-fa69-4fdf-bafb-94975e2811ce",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "author_email": "seancrecord@gmail.com",
+      "annotations": {
+        "workers/message": "Buyer audit 22: stage-zero-percent",
+        "workers/triggered_by": "deployment"
+      },
+      "versions": [
+        {
+          "version_id": "0b0da9f9-d343-4112-bed6-8c412747f293",
+          "percentage": 100
+        },
+        {
+          "version_id": "b8f5c59d-eddb-4350-a242-51d8358e912c",
+          "percentage": 0
+        }
+      ],
+      "created_on": "2026-09-12T01:46:18.891937Z"
+    }
+  },
+  {
+    "phase": "rollout",
+    "started_at": "2026-09-12T01:46:39.022Z",
+    "versions": [
+      "b8f5c59d-eddb-4350-a242-51d8358e912c@100"
+    ],
+    "completed_at": "2026-09-12T01:46:41.830Z",
+    "observed": {
+      "id": "7b34199b-07cd-4ac6-9ac2-5942ea206381",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "author_email": "seancrecord@gmail.com",
+      "annotations": {
+        "workers/message": "Buyer audit 22: rollout",
+        "workers/triggered_by": "deployment"
+      },
+      "versions": [
+        {
+          "version_id": "b8f5c59d-eddb-4350-a242-51d8358e912c",
+          "percentage": 100
+        }
+      ],
+      "created_on": "2026-09-12T01:46:40.478039Z"
+    }
+  }
+]

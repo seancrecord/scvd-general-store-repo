@@ -36,3 +36,17 @@ spec; normalize before lookup.
   invoice. Uncaptured here: settlement needs a Lightning wallet. The 402
   contract: `{"error":"Payment Required","message":"CSV export requires L402
   payment. Add ?l402=require to any API endpoint…"}`.
+
+## Provenance, in the corpus vocabulary (2026-09-12)
+
+Every served row at `/fixtures.json` carries `proves`, `source`,
+`captured_at` and `last_verified_at`, the four fields the conformance
+corpus on x402-foundation/x402#3396 reads. Wrapped fixtures (doors, mpp,
+settlement-responses) declare `source` and `captured_at` inside the
+file; a raw capture cannot carry a field without changing the bytes it
+is, so 402index inherits from its set and each x402scan body reads the
+stamp off the `.terms.json` captured beside it. `source` is one of
+simulated, observed, derived. A constructed shape says `captured_at:
+null`. `last_verified_at` is the deploy that serves the index, because
+every set is replayed by the spec its row names on every push; a build
+with no version metadata says null rather than a typed date.

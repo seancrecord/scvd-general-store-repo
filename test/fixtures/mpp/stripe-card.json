@@ -1,6 +1,8 @@
 {
   "name": "stripe-card",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "A card door on stripe: no recipient is required for this method, and the check says so.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

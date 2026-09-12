@@ -66,6 +66,18 @@ function fakeSeller(
      */
     acceptsReplay?: boolean;
     /**
+     * THE RECEIVER-SIDE DEFECT (battery v3, 2026-09-12). The x402
+     * spec thread measured seven of ten money paths answering an
+     * already-settled payment with a FRESH 402 — so a buyer who lost
+     * the first response signs, and pays, again. Set this to be one
+     * of the seven.
+     */
+    rechallengesOnReplay?: boolean;
+    /** Answer the replay with the ORIGINAL purchase naming its settlement: a paid retry, not a new sale. */
+    redeliversOnReplay?: boolean;
+    /** Refuse the replay naming the settlement that spent the nonce. */
+    refusalNamesSettlement?: boolean;
+    /**
      * A HOSTILE WINDOW. The spec lets a seller name
      * maxTimeoutSeconds and this store took it at face value, so a
      * door could mint an authorization against the field wallet good
@@ -143,11 +155,42 @@ function fakeSeller(
         status: 400,
       });
     }
-    if (spent.has(payment) && !opts.acceptsReplay) {
-      // The correct answer: this authorization is spent.
-      return new Response(JSON.stringify({ error: "payment already used" }), {
-        status: 402,
-      });
+    if (spent.has(payment)) {
+      if (opts.rechallengesOnReplay) {
+        // A new challenge for a payment already taken.
+        return new Response("{}", {
+          status: 402,
+          headers: { "PAYMENT-REQUIRED": btoa(JSON.stringify(challenge)) },
+        });
+      }
+      if (opts.redeliversOnReplay) {
+        // The same purchase handed back, naming what paid for it.
+        return new Response(JSON.stringify({ goods: "the thing", paid_retry: true }), {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+            "PAYMENT-RESPONSE": btoa(JSON.stringify({ transaction: SELLER_TX })),
+          },
+        });
+      }
+      if (opts.acceptsReplay) {
+        // Served again as a NEW sale: goods, and nothing naming a
+        // settlement, because none happened.
+        return new Response(JSON.stringify({ goods: "the thing" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      // The correct answer: this authorization is spent. No terms
+      // ride on it, so it is a refusal and not a new challenge.
+      return new Response(
+        JSON.stringify(
+          opts.refusalNamesSettlement
+            ? { error: "payment already used", transaction: SELLER_TX }
+            : { error: "payment already used" },
+        ),
+        { status: 402 },
+      );
     }
     spent.add(payment);
     return new Response(JSON.stringify({ goods: "the thing" }), {
@@ -262,6 +305,10 @@ describe("the walk engine, stage by stage", () => {
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
     expect(replay.ok).toBe(true);
     expect(replay.detail).toContain("refused, correctly");
+    // v3 reads the refusal finer: no new terms, and this one names
+    // nothing about what spent the nonce.
+    expect(check.replay).toEqual({ outcome: "refused", status: 402, names_settlement: false });
+    expect(replay.detail).toContain("nonce-unbound-from-settlement");
     // BYTE-IDENTICAL is the whole test: a fresh authorization would
     // prove nothing, because a second nonce is a second payment.
     expect(log.requests[2]?.payment).toBe(log.requests[1]?.payment);
@@ -279,6 +326,7 @@ describe("the walk engine, stage by stage", () => {
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
     expect(replay.ok).toBe(false);
     expect(replay.detail).toContain("SERVED AGAIN");
+    expect(check.replay).toEqual({ outcome: "served_again", status: 200, names_settlement: false });
     /*
      * AND WE ARE NOT BILLED TWICE. The authorization's nonce is spent
      * on first settlement, so no second transfer can reach the seller
@@ -300,6 +348,7 @@ describe("the walk engine, stage by stage", () => {
     });
     expect(check.verdict).toBe("payment_refused");
     expect(check.replay_served).toBeNull();
+    expect(check.replay).toBeUndefined();
     expect(check.stages.some((stage) => stage.stage === "replay")).toBe(false);
   });
 
@@ -325,9 +374,80 @@ describe("the walk engine, stage by stage", () => {
     });
     expect(check.verdict).toBe("settled");
     expect(check.replay_served).toBeNull();
+    expect(check.replay).toEqual({ outcome: "unknown", status: null, names_settlement: null });
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
     expect(replay.ok).toBe(false);
     expect(replay.detail).toContain("could not complete");
+  });
+
+  /**
+   * THE REPLAY, READ FOUR WAYS (battery v3, 2026-09-12). v2 read every
+   * non-2xx on the replay as "refused, correctly" — a 402 carrying
+   * fresh terms included — which credited exactly the door the x402
+   * spec thread measured in seven of ten money paths: the one that
+   * answers a spent authorization with a new challenge and gets paid
+   * twice. And it read every 2xx as the goods given away, which is
+   * what this store's own till would have been called for handing the
+   * same purchase back.
+   */
+  it("reads a fresh challenge on the replay as the double charge, not as a refusal", async () => {
+    const log: SellerLog = { requests: [] };
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(log, { rechallengesOnReplay: true }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("settled");
+    expect(check.replay).toEqual({ outcome: "rechallenged", status: 402, names_settlement: false });
+    // Not served, so the coarse flag is false — and that is exactly why
+    // the coarse flag was not enough.
+    expect(check.replay_served).toBe(false);
+    const replay = check.stages.find((stage) => stage.stage === "replay")!;
+    expect(replay.ok).toBe(false);
+    expect(replay.detail).toContain("RE-CHALLENGED");
+    // We signed nothing new: the walk never answers a challenge twice.
+    expect(log.requests).toHaveLength(3);
+    expect(check.paid_usd).toBe(0.005);
+  });
+
+  it("reads a 2xx naming the original settlement as the same purchase handed back", async () => {
+    const log: SellerLog = { requests: [] };
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(log, { redeliversOnReplay: true }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("settled");
+    expect(check.replay).toEqual({ outcome: "redelivered", status: 200, names_settlement: true });
+    expect(check.replay_served).toBe(false);
+    const replay = check.stages.find((stage) => stage.stage === "replay")!;
+    expect(replay.ok).toBe(true);
+    expect(replay.detail).toContain("re-delivered");
+    expect(replay.detail).not.toContain("SERVED AGAIN");
+  });
+
+  it("reads a refusal that names the settlement as clear of the nonce-unbound class", async () => {
+    const log: SellerLog = { requests: [] };
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(log, { refusalNamesSettlement: true }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.replay).toEqual({ outcome: "refused", status: 402, names_settlement: true });
+    const replay = check.stages.find((stage) => stage.stage === "replay")!;
+    expect(replay.ok).toBe(true);
+    expect(replay.detail).not.toContain("nonce-unbound-from-settlement");
+  });
+
+  it("the replay reading rides inside the signed bytes", async () => {
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller({ requests: [] }, { rechallengesOnReplay: true }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    const keys = Object.keys(check);
+    expect(keys.indexOf("replay")).toBeGreaterThanOrEqual(0);
+    expect(keys.indexOf("replay")).toBeLessThan(keys.indexOf("signature"));
   });
 
   it("records a refusal as the seller's answer, money never counted", async () => {
@@ -774,6 +894,21 @@ describe("the replay finding reaches the person who paid for it", () => {
     const { launchCheckNote } = await import("@/store/copy/deliverables");
     const note = launchCheckNote("settled", false);
     expect(note).not.toContain("took it again");
+    expect(note).toContain("paying stranger");
+  });
+
+  it("leads with the double charge when the door re-challenged the settled payment", async () => {
+    const { launchCheckNote } = await import("@/store/copy/deliverables");
+    const note = launchCheckNote("settled", false, "confirmed", "rechallenged");
+    expect(note).toContain("asked us to pay again");
+    expect(note).toContain("second charge");
+    expect(note).not.toContain("took it again");
+  });
+
+  it("keeps the ordinary settled note when the door handed the same purchase back", async () => {
+    const { launchCheckNote } = await import("@/store/copy/deliverables");
+    const note = launchCheckNote("settled", false, "confirmed", "redelivered");
+    expect(note).not.toContain("pay again");
     expect(note).toContain("paying stranger");
   });
 

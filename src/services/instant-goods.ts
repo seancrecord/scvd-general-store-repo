@@ -416,6 +416,7 @@ async function deliverGoods(
             verdict: walk.verdict,
             paid_usd: walk.paid_usd,
             replay_served: walk.replay_served,
+            ...(walk.replay ? { replay: walk.replay } : {}),
             ...(walk.tx_hash ? { tx_hash: walk.tx_hash } : {}),
             check_url: `/api/launch-check/${walk.check_id}`,
           },
@@ -656,14 +657,16 @@ async function deliverGoods(
           walk.verdict,
           walk.replay_served,
           walk.tx_hash_status,
+          walk.replay?.outcome ?? null,
         ),
         extras: {
           check_id: walk.check_id,
           verdict: walk.verdict,
           paid_usd: walk.paid_usd,
           // Top-level so a machine reading extras never has to dig
-          // into `check` for the one finding that costs money.
+          // into `check` for the two findings that cost money.
           replay_served: walk.replay_served,
+          ...(walk.replay ? { replay: walk.replay } : {}),
           ...(walk.tx_hash ? { tx_hash: walk.tx_hash } : {}),
           check: walk,
           check_url: `/api/launch-check/${walk.check_id}`,

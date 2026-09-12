@@ -174,3 +174,8 @@ the 402, so it cannot verify the fix it was offered for. His door is
 `POST /notary/commit` at $0.10, body `{agent, claim}`; the walkabout
 runner learned per-target method and body for it (PR #647), and the
 walk is the keeper's one-time press at his own override words.
+
+The walk ran on 2026-09-12: v2 challenge in his header, v1 in his body,
+payment presented as v2 and refused for want of the v1 header, no money
+moved. The record is `research/field-run-2026-09-12/`; the reading is in
+`research/treaty-exchange-2026-09-11/README.md`.

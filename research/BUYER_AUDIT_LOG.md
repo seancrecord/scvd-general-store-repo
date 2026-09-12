@@ -364,6 +364,26 @@ Local repair commit: `0b61e5fc`. Original reproduction and repair scope follow.
 
 Repair: derive payment state from each error's contract. Safe refusals remain false, `delivery_failed` is true, and `invalid_settlement_receipt` is explicitly null. Publish the new code on MCP purchase tools as well as HTTP listings. Three discovery regressions were observed red before these changes; all pass afterward in `test/settlement-receipt-integrity.spec.ts`. This fixes discovery metadata; it does not close the separate runtime response-serialization defect BUY-038.
 
+## September 12 — discovery repair batch
+
+Audit evidence is committed as `71869170` in [PR #655](https://github.com/seancrecord/scvd-general-store-repo/pull/655). Repairs below start from current main `5b66fe97` on `codex/buyer-discovery-repairs`. They are local changes, not deployed fixes. No payment or production configuration change was made.
+
+### BUY-042 — literal MCP purchase examples
+
+**Local repair implemented and verified; deployment pending.** The live MCP bundle example still says `tx_hashes: "tx hashes"`. The Bitcoin example now has all 64 digest characters, but retains the forbidden `sha256:` prefix: submitting it unchanged still fails the actual purchase validator. A complete-looking value is not a valid worked call.
+
+Both clustered and single-item MCP purchase tools now take their required example values from the existing HTTP/Bazaar worked inputs. Optional inputs remain omitted. `test/buyer-discovery-entry.spec.ts` copies the served bundle and Bitcoin examples literally through both MCP payment profiles and requires usable payment terms, with no signed payment. The broader guard checks every advertised shelf membership against the actual input validator; external A2A readiness and capacity are deliberately separate, not called successful purchases. The guide's byte snapshot was updated only after restoring the old source reproduced the previous snapshot.
+
+### BUY-044 — key-registry discovery
+
+**Local repair implemented and verified; deployment pending.** A fresh unsigned live read still returned 404 for `/keys`. The llms index now links to the existing signing-key document, which contains the current key and retired-key history. The old `/keys` address redirects permanently to that document so previously saved discovery links recover too. The route-discovery and visit-count inventories explicitly classify it as a compatibility redirect to the already listed and counted registry. Regression checks follow the published llms link, require JSON/current/history fields, and follow the old address without payment or an account.
+
+### BUY-040 — checkout rail mismatch remains open
+
+**Reproduced live on September 12; not repaired in this batch.** An unsigned Signed Hello HTTP quote offered Base, Polygon, Arbitrum, World and Solana; the same item through the discovered `buy_simple` MCP tool offered all except Arbitrum. Both routes already derive rails from payment configuration, and the doors deployment documentation already requires matching optional checkout settings. This is evidence to investigate the deployed Workers' configuration, not justification to hard-code a network or claim that a local unit test repaired the live mismatch. Broader shelf/rail revalidation remains pending.
+
+Validation evidence for this batch: all 11 final buyer checks failed on original source and passed with the repair, including the broader guard for examples outside the two reproduced products. The related run passed all 78 tests across eight files. The full application run completed 686 files: 13,460 passed, one existing skip, and two failures naming the new `/keys` route in the discovery and visit-count inventories. Both inventories now explain the compatibility redirect; their reruns passed all six tests. Application source stayed unchanged throughout the full run; only those two test inventories changed after the failures were observed. This was not an uninterrupted green full run, and no unresolved failure remains. Typecheck, documentation checks and both Worker dry-run bundles passed. No prior finding is silently closed by these local checks.
+
 ## Coverage to retain and extend
 
 The [input-survival report](buyer-input-survival-2026-09-06.md) records the full tested denominator, passing controls and limitations. The initial `#481` URL/bundle subjects survive; the detector was demonstrated red by temporarily dropping the mapper's URL and restoring it. First scheduled observations and human-order completion/polling/callbacks also run locally.
@@ -398,3 +418,21 @@ The human-order recovery increment extends the journal to unstocked human-queue 
 The BUY-017 catalogue-intent increment retains original requests and selected terms before settlement, coordinates identical attempts, and provides a private status handle through HTTP and MCP. Thirty-two public fault/status/discovery controls fail without the repair; signed local fixtures cover all five checkout rails. The capture and status substeps are checked off in [the repair checklist](BUYER_REPAIR_CHECKLIST.md). Reconciliation-driven fulfillment, non-catalogue capture and the other SEV-1 recovery obligations remain open; see [the progress record](buyer-repair-progress-2026-09-06.md).
 
 Final validation and the three text-only follow-up corrections are recorded in the canonical checklist. The completed sweep covers the merged #621/#624 tree; earlier interrupted runs are retained as evidence, not substituted for that sweep. No production transaction or customer inventory was performed.
+
+## Deployment-boundary audit — September 11–12, 2026 (#22)
+
+**No new BUY defect observed in the exercised control.** Eighteen live half-cent Base purchases through HTTP and MCP delivered their original, correctly bound signed goods for 0.09 USDC during a controlled deployment. Execution-version logs show an old-version paid request overlapping the deployment and new-version requests afterward. Both retained old quotes bought successfully on the new store version; both pre-deployment certificates verified afterward. The isolated two-runtime human-order control retained the entire queued-order response and verified its certificate with two simulated debits.
+
+**Scope remains partial:** identical deployed module bytes and runtime/bindings; one client location; Base only; the doors Worker did not change; real human labor and changed-code/schema compatibility were not exercised. This run does not close earlier defects. Evidence and the authorization-window close are scored in [the full report](deployment-boundary-2026-09-11/REPORT.md) and [repeatable benchmark](BUYER_DEPLOYMENT_BOUNDARY.md).
+
+Enhancements: **E22-01**, carry the benchmark across an actual approved functional/schema release; **E22-02**, independently roll the doors/store pair with old catalog and input contracts outstanding; **E22-03**, add attributed multi-region and additional-rail coverage under explicit spending caps; **E22-04**, carry an existing consented live human commission through release, completion and polling. Build follow-through is filed as **B22** in ROADMAP.md.
+
+## Four-wave buyer run — September 12, 2026 UTC
+
+**Wave 1 partial; 0 USDC newly spent. Waves 2–4 not executed in this run.** 529 prepayment requests, 341 direct link fetches, 198 structural comparisons and six isolated cold-to-quote walks. Existing findings reproduced: **BUY-040** (27 of 29 comparable HTTP/MCP quote rail sets differ), **BUY-042** (literal bundle/anchor examples fail), **BUY-044** (`/keys` linked from llms returns 404). No new BUY ID and no earlier closure. 177 typed invalid MCP requests refused; 216 probe-URL requests refused; 98 quoted minima match. HTTP missing-input price quotes are documented behavior, not typed-MCP parity failures.
+
+Six replacement CLI agents reached usable quotes; five supplied required inputs on the first product call. The cheaper skill reader needed a host revision. Two initial in-process attempts inherited SCVD facts and are excluded. No wallet was supplied to the cold cohort: purchase and purchased-artifact verification remain unexercised, and explicitly prompted verification cannot measure spontaneity. Full semantic discovery, recursive crawl and every-error coverage remain incomplete.
+
+Enhancements **EW-01**: provenance-aware public collection, scorer and per-product offer grid; **EW-02**: independent six-entry cold launcher with cheaper-model entry and trace review; **EW-03**: private buyer-grade shopping journal, bounded payment submissions, chain/artifact checks and mandatory product/recipient review; **EW-04**: four-wave acceptance and advancement record. Collector controls: 14 pass, two late fixes witnessed red first; typecheck and no-spend dry run pass. New collector live path remains unvalidated. Build follow-through: **B-WAVES**, ROADMAP.md.
+
+Current quoted full-shelf grid: 33 items, 163 offered item/rail pairs, **$3,040.430** minimum arithmetic cost, unspent and not a capacity reservation. Nine architecture representatives: $158.059 on one rail, unspent. Aggregate spending ceiling and locally configured funded Solana buyer remain outstanding. [Full report](buyer-waves-2026-09-12/REPORT.md), [run order](BUYER_RUN_ORDER.md), [exact log additions](buyer-waves-2026-09-12/LOG_ADDITIONS.md).

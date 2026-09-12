@@ -122,5 +122,6 @@ export { becomingRoutes } from "@/routes/becoming";
 export { luckyRoutes } from "@/routes/luckies";
 export { cardRoutes } from "@/routes/cards";
 export { verifyRoutes } from "@/routes/verify";
+export { replayRoutes } from "@/routes/replay";
 export { badgeRoutes } from "@/routes/badges";
 export { adminRoutes } from "@/routes/admin";

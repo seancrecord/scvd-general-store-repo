@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {scoreRun,parseTail} from './buyer-deployment-score.mjs';
+const root='research/deployment-boundary-2026-09-11/';const read=n=>JSON.parse(fs.readFileSync(root+n+'.json'));
+const baseline=()=>({responses:read('responses'),events:read('version-events'),proofs:read('proofs'),comparison:read('staged-comparison'),local:read('local-runtime'),timeline:read('deployment-timeline'),chain:{...read('chain-final'),authorization_window_closed:true}});
+test('captured semantic and version evidence passes with a closed observation window',()=>assert.equal(scoreRun(baseline()).pass,true));
+test('timestamps without actual revision evidence cannot pass',()=>{const d=baseline();d.events=[];assert.equal(scoreRun(d).pass,false);});
+test('only one revision during transition cannot pass',()=>{const d=baseline();for(const e of d.events)e.version=d.comparison.new;assert.equal(scoreRun(d).checks.transition_both_versions,false);});
+test('wrong submitted subject fails despite a valid certificate',()=>{const d=baseline();d.responses.find(r=>r.paid).args.purpose='different purchase';assert.equal(scoreRun(d).checks.all_goods,false);});
+test('changed purchased words fail',()=>{const d=baseline();d.responses.find(r=>r.paid).body.deliverable='replacement';assert.equal(scoreRun(d).checks.all_goods,false);});
+test('missing goods fail even if money moved',()=>{const d=baseline();d.responses.find(r=>r.paid).body={};assert.equal(scoreRun(d).checks.all_goods,false);});
+test('two settlements for a nonce fail',()=>{const d=baseline();d.proofs[0].nonce_transactions.push('0xextra');assert.equal(scoreRun(d).checks.all_goods,false);});
+test('expired-window evidence is required',()=>{const d=baseline();d.chain.authorization_window_closed=false;assert.equal(scoreRun(d).pass,false);});
+test('quote acquired after the boundary cannot satisfy held-quote coverage',()=>{const d=baseline();const r=d.responses.find(r=>r.kind==='old_quote_purchase');d.responses.find(q=>q.id===r.quote_id).phase='after';assert.equal(scoreRun(d).checks.held_quotes_cross_boundary,false);});
+test('new signature alone does not verify the original certificate',()=>{const d=baseline();d.proofs[0].verification.signature='00'.repeat(64);assert.equal(scoreRun(d).checks.all_goods,false);});
+test('local controls never count as live human order or changed code',()=>{const r=scoreRun(baseline());assert.equal(r.human_order_live,false);assert.equal(r.code_change_tested,false);});
+test('tail parser preserves concatenated JSON with braces in strings',()=>assert.deepEqual(parseTail('CLI\n{"s":"brace } and \\""}\n{"n":2}'),[{s:'brace } and "'},{n:2}]));
+
+test('a phase label without execution overlap cannot pass',()=>{const d=baseline();for(const e of d.events)e.wall_ms=0;assert.equal(scoreRun(d).checks.paid_execution_overlaps_deployment,false);});

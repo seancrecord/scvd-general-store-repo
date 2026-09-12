@@ -1,0 +1,80 @@
+TAP version 13
+# Subtest: all buyer evidence allows a pass
+ok 1 - all buyer evidence allows a pass
+  ---
+  duration_ms: 1.963834
+  ...
+# Subtest: HTTP success without chain evidence remains incomplete
+ok 2 - HTTP success without chain evidence remains incomplete
+  ---
+  duration_ms: 0.317542
+  ...
+# Subtest: valid receipt with unreviewed good remains incomplete
+ok 3 - valid receipt with unreviewed good remains incomplete
+  ---
+  duration_ms: 0.257792
+  ...
+# Subtest: unreviewed recipient cannot pass
+ok 4 - unreviewed recipient cannot pass
+  ---
+  duration_ms: 0.180042
+  ...
+# Subtest: wrong subject fails despite valid cryptography
+ok 5 - wrong subject fails despite valid cryptography
+  ---
+  duration_ms: 0.22975
+  ...
+# Subtest: tampered signature fails
+ok 6 - tampered signature fails
+  ---
+  duration_ms: 0.267083
+  ...
+# Subtest: a replacement signed result is not original verification
+ok 7 - a replacement signed result is not original verification
+  ---
+  duration_ms: 0.264083
+  ...
+# Subtest: first paid request is not a retry even when journaled before sending
+ok 8 - first paid request is not a retry even when journaled before sending
+  ---
+  duration_ms: 8.249334
+  ...
+# Subtest: EVM collector rejects transfer to wrong recipient
+ok 9 - EVM collector rejects transfer to wrong recipient
+  ---
+  duration_ms: 1.33575
+  ...
+# Subtest: Solana collector requires correct mint and both owner balance changes
+ok 10 - Solana collector requires correct mint and both owner balance changes
+  ---
+  duration_ms: 0.831333
+  ...
+# Subtest: known invalid signature fails even while recipient review is pending
+ok 11 - known invalid signature fails even while recipient review is pending
+  ---
+  duration_ms: 0.374041
+  ...
+# Subtest: body-only quotes are retained when optional header is absent
+ok 12 - body-only quotes are retained when optional header is absent
+  ---
+  duration_ms: 0.536625
+  ...
+# Subtest: spending guard counts unresolved submissions and refuses automatic repayment
+ok 13 - spending guard counts unresolved submissions and refuses automatic repayment
+  ---
+  duration_ms: 0.316291
+  ...
+# Subtest: spending guard rejects a rail or offer it did not quote
+ok 14 - spending guard rejects a rail or offer it did not quote
+  ---
+  duration_ms: 0.102917
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 252.573541

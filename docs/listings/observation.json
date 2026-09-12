@@ -1,8 +1,63 @@
 {
   "base": "https://scvd.store",
-  "read_at": "2026-09-06T18:25:02.080Z",
+  "read_at": "2026-09-12T02:27:52.859Z",
   "sixty_words_probe": "before an agent pays an x402 endpoint, we check that it can be paid.",
   "mirrors": [
+    {
+      "url": "https://robinsaige.com/s/store.scvd/general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://crosspeel.com/endpoints/scvd-store/",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://publishyoursaas.com/listing/scvd-store",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://aitoolscapital.com/tools/scvd-general-store/",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://agenstry.com/agents/scvd.store",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://agenstry.com/mcp/store.scvd/general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://mcpfind.org/servers/store-scvd-general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA",
+      "status": 200,
+      "generation": "august"
+    },
+    {
+      "url": "https://www.zero.xyz/c/scvd-signature-agent-card-15cd521c",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://neuronto.com/ard-publishers/scvd.store",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://wellknownhq.com/d/scvd.store",
+      "status": 200,
+      "generation": "unknown"
+    },
     {
       "url": "https://github.com/seancrecord/scvd-general-store-repo",
       "status": 200,
@@ -10,8 +65,9 @@
     },
     {
       "url": "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
-      "status": 200,
-      "generation": "unknown"
+      "status": 0,
+      "generation": "unreachable",
+      "error": "This operation was aborted"
     },
     {
       "url": "https://mcppedia.org/s/store-scvd-general-store",
@@ -36,12 +92,12 @@
     {
       "url": "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
       "status": 200,
-      "generation": "unknown"
+      "generation": "september"
     },
     {
       "url": "https://socketcat.com/servers/store.scvd/general-store",
       "status": 200,
-      "generation": "august"
+      "generation": "september"
     },
     {
       "url": "https://tracevero.com/mcp/store-scvd-general-store",
@@ -129,9 +185,9 @@
       "generation": "august"
     },
     {
-      "url": "https://skills.sh/seancrecord/scvd-general-store-repo",
-      "status": 404,
-      "generation": "unreachable"
+      "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
+      "status": 200,
+      "generation": "september"
     },
     {
       "url": "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
@@ -154,14 +210,34 @@
       "generation": "unknown"
     },
     {
+      "url": "https://webmcpdirectory.com/tool/scvd-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://webmcp.ora.ai/scvd.store",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://directory.ora.ai/scvd.store",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://ora.ai/score/scvd.store",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
       "url": "https://partners.circle.com/partner/scvdstore",
       "status": 200,
       "generation": "september"
     },
     {
       "url": "https://www.getdrio.com/mcp/store-scvd-general-store",
-      "status": 200,
-      "generation": "unknown"
+      "status": 503,
+      "generation": "unreachable"
     },
     {
       "url": "https://index.zbs.gg/en/mcp/store-scvd-general-store/",

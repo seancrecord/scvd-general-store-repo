@@ -1,0 +1,33 @@
+{
+  "cold_validity": true,
+  "initial_context": "Before opening the entry URL, no store-specific business or source facts were disclosed; only the URL and task constraints were given.",
+  "public_request_count": 4,
+  "ordered_calls": [
+    {"method": "GET", "url": "https://scvd.store/", "status": 200},
+    {"method": "GET", "url": "https://scvd.store/menu.json", "status": 200},
+    {"method": "GET", "url": "https://scvd.store/menu.json?view=compact", "status": 200},
+    {"method": "GET", "url": "https://scvd.store/api/buy/spot_check?host=scvd.store", "status": 402}
+  ],
+  "selection": {
+    "item": "spot_check",
+    "reason": "The compact catalog listed it as the cheapest item, at $0.001 USDC. I used scvd.store as a known x402 host.",
+    "guess_and_limit": "The quote accepted the host input, but reported that scvd.store has never been observed in the store’s corpus. The resulting signed answer would therefore be not_observed, with no host verdict."
+  },
+  "price_and_inputs": {
+    "price_usdc": 0.001,
+    "atomic_usdc_units": "1000",
+    "pricing": "fixed",
+    "required": ["host: bare hostname"],
+    "optional": ["agent_name", "purpose"],
+    "offered_networks": ["Base", "Polygon", "World", "Solana"]
+  },
+  "deliverable": "An instant, signed certificate-bound copy of the store’s existing dated corpus facts for the host, including observations and gaps. It makes no new probe. The same underlying facts are free at https://scvd.store/corpus/host/scvd.store.json; a purchased certificate would be verifiable at https://scvd.store/api/verify/{cert_id}.",
+  "http_402_interpretation": "The unsigned request passed input validation and returned an x402 v2 payment quote, not a completed purchase or an error. The PAYMENT-REQUIRED header offered USDC payment terms; completing the purchase would require signing one offer and retrying the same URL with PAYMENT-SIGNATURE.",
+  "retries": 0,
+  "actual_origin_400s": 0,
+  "source_failures": [],
+  "tool_failures": [],
+  "tool_output_limit": "The first two response displays were truncated by the tool’s output limit; their HTTP requests succeeded. The compact catalog and quote were readable.",
+  "purchase": "unexercised: zero-spend environment has no wallet",
+  "result_verification": "unexercised: no purchase artifact exists"
+}

@@ -985,3 +985,9 @@ Re-read the [x402 v2 core payment flow](https://github.com/coinbase/x402/blob/ma
 - [Rules of Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/rules-of-durable-objects/): the coordination unit is one keeper's bench, reached only by human-work admissions and reconciliation. Machine purchases do not share this coordinator. No new namespace, migration, dependency or secret is introduced.
 
 Local evidence includes simultaneous signed fixture purchases, lost acknowledgements, failed order publication, delayed capacity release, unknown settlement across a week boundary, and a settlement crossing midnight. The original admission clock is injected on both sides of the weekly-ledger assertion. The migration's dependency on the existing KV projection is recorded in `docs/LABOR_RESERVATIONS.md`.
+
+## 2026-09-12 — isolated cold-entry CLI calibration
+
+Read the official [agent-instruction guide](https://learn.chatgpt.com/docs/agent-configuration/agents-md), reached from the OpenAI Codex agents-md guide, and inspected the installed Codex `exec --help`. The attempted non-interactive documentation URL returned 404; no behavior was inferred from it. This run uses separate CLI processes, `--ignore-user-config`, `--ephemeral`, `--skip-git-repo-check` and `project_doc_max_bytes=0` outside the source checkout. These are local CLI observations, not a guarantee that a no-history in-process fork has no store context: two such forks reported inherited AGENTS facts and were excluded.
+
+Six replacement agents report clean initial context, with public-only tool traces retained. The skill entry requests the cheaper `gpt-5.6-luna`; exact resolved model revisions for the other CLI defaults were not captured. Wallet-free quote completion does not establish paid success or spontaneous verification. Evidence and limitations: `../research/buyer-waves-2026-09-12/REPORT.md`.

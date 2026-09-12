@@ -429,10 +429,13 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
       { stage: "screen", ok: true, detail: "payTo screened against the on-chain sanctions oracle: not listed." },
       { stage: "payment", ok: true, detail: "EIP-3009 authorization signed by the field wallet and presented in the PAYMENT-SIGNATURE header." },
       { stage: "settle", ok: true, detail: "The till answered 200 with a PAYMENT-RESPONSE naming a settlement transaction." },
-      { stage: "delivery", ok: true, detail: "A JSON body arrived with the goods; the same payment presented again was refused, so nothing reached the seller twice." },
+      { stage: "delivery", ok: true, detail: "A JSON body arrived with the goods." },
+      { stage: "replay", ok: true, detail: "refused, correctly: HTTP 409 on a replay of the already-settled payment, and no new payment challenge. It names the settlement transaction the first response named." },
     ],
     paid_usd: SAMPLE_PAID_USD,
     pay_to: SAMPLE_PAY_TO,
+    replay_served: false,
+    replay: { outcome: "refused", status: 409, names_settlement: true },
     tx_hash: SAMPLE_TX_HASH,
     tx_hash_status: "confirmed_on_chain",
     tx_verification: {
@@ -453,7 +456,7 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
     env,
     "launch_check",
     price,
-    "A free, unsigned sample of the Launch Check — one real purchase attempt at one x402 endpoint, from the store's declared field wallet, recorded stage by stage. Every field below is the field a buyer gets; this walk is constructed to show a door that settles cleanly, so the seven stages read in order.",
+    "A free, unsigned sample of the Launch Check — one real purchase attempt at one x402 endpoint, from the store's declared field wallet, recorded stage by stage. Every field below is the field a buyer gets; this walk is constructed to show a door that settles cleanly and answers the replay correctly, so the stages read in order.",
     NOT_SIGNED,
     walk,
   );

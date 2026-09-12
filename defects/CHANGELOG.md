@@ -3,6 +3,34 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.14.0 — 2026-09-12
+
+Vocabulary v14: adds `re-challenges-spent-authorization` and amends
+`replay-accepted`.
+
+The new class is the receiver-side defect the x402 specification
+thread measured in seven of ten money paths (x402-foundation/x402#3325,
+#3437): a door that answers a byte-identical, already-settled payment
+with a fresh payment challenge, so a buyer who lost the response is
+asked to sign, and pay, again. Registered as source, not author.
+
+`replay-accepted` no longer asserts that the replay "is refused". It
+asserts the replay is not served as a new sale: refused, or answered
+with the original purchase naming the settlement that paid for it.
+The store's own till re-delivers rather than refuses, and by the old
+letter the registrar exhibited its own class. The v13 text stays
+readable in the vocabulary changelog.
+
+New in the package, beside the vocabulary: `settlement-response.js`,
+a zero-dependency reader for a SettleResponse (the PAYMENT-RESPONSE
+header a buyer holds, or a facilitator's `/settle` body), and
+`fixtures/settlement-responses/`, twelve shapes each naming the
+checks it fails and the outcome a reader must reach. The pending
+shapes are the negative control: a reader that maps `success:false`
+to failed fails them. Battery `settlement-response-v1` reads the
+merged v2 specification only; the draft status vocabulary on #3325 is
+ignored until it merges.
+
 ## 0.13.0 — 2026-09-07
 
 Vocabulary v13: `cleared-not-examined` keeps its assertion and loses

@@ -1,0 +1,199 @@
+{
+  "initial_context": {
+    "store_specific_business_or_source_facts_disclosed_before_opening_entry_url": false,
+    "cold_validity": true,
+    "disclosed_only": [
+      "The entry URL https://scvd.store/mcp",
+      "Procedural constraints for this evaluation"
+    ]
+  },
+  "request_budget": {
+    "limit": 12,
+    "public_requests_made": 7,
+    "stopped_after_first_usable_quote": true
+  },
+  "ordered_calls": [
+    {
+      "order": 0,
+      "url": "https://scvd.store/mcp",
+      "method": "tool open",
+      "public_request_counted": false,
+      "outcome": "tool_failure",
+      "detail": "The web tool rejected the URL as unsafe before fetching it."
+    },
+    {
+      "order": 1,
+      "url": "https://scvd.store/mcp",
+      "method": "GET",
+      "outcome": "origin_response",
+      "http_status": 405,
+      "learned": "POST is required; the response supplied MCP discovery and initialization examples."
+    },
+    {
+      "order": 2,
+      "url": "https://scvd.store/mcp",
+      "method": "POST server/discover",
+      "outcome": "origin_response",
+      "http_status": 200,
+      "learned": "The server supports MCP 2026-07-28, exposes tools, describes x402 checkout, and says the cheapest shelf item costs $0.001."
+    },
+    {
+      "order": 3,
+      "url": "https://scvd.store/mcp",
+      "method": "POST tools/list",
+      "outcome": "origin_response",
+      "http_status": 200,
+      "learned": "Retrieved the store tool catalog. Local display truncation affected the tool output, not the origin response."
+    },
+    {
+      "order": 4,
+      "url": "https://scvd.store/menu.json?view=compact",
+      "method": "GET",
+      "outcome": "origin_response",
+      "http_status": 200,
+      "learned": "Spot Check is the cheapest catalog item at 0.001 USDC and requires host."
+    },
+    {
+      "order": 5,
+      "url": "https://scvd.store/menu/spot_check?view=compact",
+      "method": "GET",
+      "outcome": "origin_response",
+      "http_status": 200,
+      "learned": "Confirmed the input contract, fulfillment, limitations, checkout procedure, and delivered fields."
+    },
+    {
+      "order": 6,
+      "url": "https://scvd.store/mcp?view=compact&item_id=spot_check&payment=tool-result",
+      "method": "POST tools/list",
+      "outcome": "origin_response",
+      "http_status": 200,
+      "learned": "The scoped purchase tool is buy_spot_check with required argument host."
+    },
+    {
+      "order": 7,
+      "url": "https://scvd.store/mcp?view=compact&item_id=spot_check&payment=tool-result",
+      "method": "POST tools/call",
+      "call": {
+        "name": "buy_spot_check",
+        "arguments": {
+          "host": "scvd.store"
+        }
+      },
+      "outcome": "usable_unsigned_quote",
+      "http_status": 200,
+      "mcp_is_error": true,
+      "x402_error": "Payment required"
+    }
+  ],
+  "selection": {
+    "item_id": "spot_check",
+    "name": "Spot Check",
+    "suitable_reason": "It is the catalog's cheapest item and accepts the known public host from the sole entry point, requiring no invented transaction hash, personal text, or external target.",
+    "input_used": {
+      "host": "scvd.store"
+    },
+    "price": {
+      "currency": "USDC",
+      "display_amount": 0.001,
+      "atomic_amount": "1000",
+      "asset_decimals": 6,
+      "pricing": "fixed",
+      "higher_payment_offered": false
+    }
+  },
+  "required_input_knowledge": {
+    "required": {
+      "host": "A bare hostname, such as example.com; scvd.store was supplied."
+    },
+    "optional": {
+      "agent_name": "Up to 80 characters; appears on the certificate and badge.",
+      "purpose": "Up to 280 characters; recorded verbatim as the buyer's statement."
+    },
+    "validation_rule": "Invalid or missing required input is refused before payment.",
+    "network_rule": "Payment must use a network offered by the current quote."
+  },
+  "deliverable_understanding": {
+    "fulfillment": "instant",
+    "content": "A signed, certificate-bound copy of facts already present in the observatory's books for the named host: recorded rounds and verdicts, observation dates, coverage, and explicit gaps.",
+    "does_not_do": "It does not make a fresh request to the host and is only as current as the observatory's latest recorded round.",
+    "expected_subject_result": "The quote's archive-depth metadata says scvd.store was never observed and has zero probed rounds, so the purchased artifact would be expected to report not_observed rather than judge the host.",
+    "successful_response_fields": [
+      "deliverable",
+      "cert_id",
+      "patron_number",
+      "signature",
+      "verify_url",
+      "badge_url",
+      "paid_usdc",
+      "tip_usdc"
+    ],
+    "verification_limit": "A valid Ed25519 signature establishes the signed bytes and signer identity, not the truth of the underlying observation.",
+    "free_alternative": "https://scvd.store/corpus/host/scvd.store.json"
+  },
+  "quote": {
+    "usable": true,
+    "x402_version": 2,
+    "scheme": "exact",
+    "amount_atomic": "1000",
+    "pay_to_evm": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+    "pay_to_solana": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+    "max_timeout_seconds": 300,
+    "offered_networks": [
+      "eip155:8453",
+      "eip155:137",
+      "eip155:480",
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+    ],
+    "offer_receipts_present": true,
+    "suggested_idempotency_key_present": true
+  },
+  "interpretation_402": {
+    "transport_status": 200,
+    "meaning": "In MCP tool-result mode, the unpaid purchase is represented as a successful HTTP transport containing result.isError=true and structuredContent with an x402 Payment required challenge. It is a free unsigned price quote, not a failed purchase, settlement, or delivery.",
+    "next_step_if_wallet_existed": "Select one offered network, sign the exact 1000-atomic-unit authorization, then retry the identical tool call with the payment and suggested idempotency key in params._meta.",
+    "wallet_available": false
+  },
+  "guesses": [
+    {
+      "guess": "Use server/discover after the initial GET.",
+      "basis": "The origin's 405 response supplied the exact discovery shape."
+    },
+    {
+      "guess": "Treat spot_check as the cheapest suitable item.",
+      "basis": "The compact catalog placed it first at 0.001 USDC; the next item cost 0.004 USDC."
+    },
+    {
+      "guess": "Use scvd.store as host.",
+      "basis": "It is a known public bare hostname from the authorized entry URL and satisfies the input schema."
+    }
+  ],
+  "retries": [],
+  "origin_http_400_responses": [],
+  "failures": {
+    "source_failures": [],
+    "tool_failures": [
+      {
+        "tool": "web open",
+        "error": "URL was rejected as unsafe",
+        "public_request_made": false
+      }
+    ],
+    "output_handling_issues": [
+      {
+        "call_order": 3,
+        "issue": "The execution wrapper truncated the very large tools/list display.",
+        "source_failure": false,
+        "resolution": "Used the server-disclosed compact catalog and item-scoped MCP view."
+      }
+    ]
+  },
+  "execution_state": {
+    "quote_obtained": true,
+    "quote_signed": false,
+    "purchase": "unexercised",
+    "settlement": "unexercised",
+    "deliverable_received": false,
+    "result_verification": "unexercised",
+    "stop_reason": "The environment has no wallet, and the first usable unsigned quote was reached."
+  }
+}

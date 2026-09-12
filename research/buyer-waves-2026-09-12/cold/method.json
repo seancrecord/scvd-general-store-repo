@@ -1,0 +1,12 @@
+{
+  "method": "Fresh ephemeral CLI processes outside the repository; user config ignored; project_doc_max_bytes=0; no conversation fork; no wallets; prompt limited to one entry URL and evaluation constraints",
+  "requested_models": {
+    "skill": "gpt-5.6-luna",
+    "other_entries": "CLI default, exact model revision not captured"
+  },
+  "cold_context": "all six report no initial store-specific facts; invocation and tool traces retained",
+  "earlier_in_process_attempts": "two fork_turns=none controls inherited repository instructions and are excluded",
+  "paid_completion": "unexercised",
+  "unprompted_verification": "not measurable: task itself explicitly requested verification",
+  "calls_include_tool_failures": true
+}

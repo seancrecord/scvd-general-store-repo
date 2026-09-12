@@ -74,7 +74,9 @@ function watchHistoryHtml(
     <h2>What we saw, hour by hour</h2>
     ${
       history.probes.length === 0
-        ? `<p class="menu-desc">Nothing observed yet. The first probe lands on the store's next hourly rounds; this page fills in as the week goes.</p>`
+        ? history.complete
+          ? `<p class="menu-desc">No observations were recorded during this watch. Its term has ended; missed hours are counted above.</p>`
+          : `<p class="menu-desc">Nothing observed yet. The first probe lands on the store's next hourly rounds; this page fills in as the week goes.</p>`
         : `<table border="1" cellpadding="6">
       <tr><th>when (UTC)</th><th>verdict</th><th>status</th><th>latency</th><th>checks that failed</th></tr>
       ${rows}

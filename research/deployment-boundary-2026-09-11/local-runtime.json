@@ -1,0 +1,474 @@
+{
+  "scope": "Two isolated Worker instances sharing fixture storage; identical deployed bundle; simulated payment",
+  "modules": [
+    {
+      "name": "index.js",
+      "sha256": "4cef6befae7879ce1a7ebf19995ea8962ebb5403fa2eb9bf2435603cc33d3304"
+    },
+    {
+      "name": "0a5c7a22bcbe5f6544768bf817e20917feb9461c-purchase.js",
+      "sha256": "bea8713fa2b45519fbc7541f68226888e9077415d4220b8dd932fd326ef40118"
+    },
+    {
+      "name": "13ac905f07cbe77f782df59ca04411e0fd558561-a2a-runner.md",
+      "sha256": "ef64bf5fe4e3ab5d989f1524e14fe6a7c71625491404a8db2ccd5ae6f7a28cc5"
+    },
+    {
+      "name": "acc836f4ff622502f728f75f0a70c980e27f79c2-till.js",
+      "sha256": "51922c6f6b9e1d58a885f0a11683e2252001705cc9ba5cacc277dc2ae645e112"
+    }
+  ],
+  "human_success": {
+    "status": 200,
+    "headers": {
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "mf-content-encoding": "gzip",
+      "payment-response": "eyJzdWNjZXNzIjp0cnVlLCJwYXllciI6IjB4NGE2MjMxNjYyM2FkNDU3RjAyY0RDNUQ5OTdkZUQ2N2EzODNFQzU2OSIsInRyYW5zYWN0aW9uIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwiZXh0ZW5zaW9ucyI6eyJvZmZlci1yZWNlaXB0Ijp7ImluZm8iOnsicmVjZWlwdCI6eyJmb3JtYXQiOiJqd3MiLCJzaWduYXR1cmUiOiJleUpoYkdjaU9pSkZaRVJUUVNJc0ltdHBaQ0k2SW1ScFpEcDNaV0k2YzJOMlpDNXpkRzl5WlNOclpYa3RNaUo5LmV5SjJaWEp6YVc5dUlqb3hMQ0p1WlhSM2IzSnJJam9pWldsd01UVTFPamcwTlRNaUxDSnlaWE52ZFhKalpWVnliQ0k2SW1oMGRIQnpPaTh2YzJOMlpDNXpkRzl5WlM5aGNHa3ZZblY1TDNSb1pWOWpiMnhzWVdJaUxDSndZWGxsY2lJNklqQjROR0UyTWpNeE5qWXlNMkZrTkRVM1JqQXlZMFJETlVRNU9UZGtaVVEyTjJFek9ETkZRelUyT1NJc0ltbHpjM1ZsWkVGMElqb3hOemc1TWpFME5EQXdMQ0owY21GdWMyRmpkR2x2YmlJNklqQjRNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNU0o5LjVkQmsyZUNwZ1hOOWNTQWdxNTNBSVpBU1FFaWw1cGxWdUlmWlNOaU92OVdlaUxvTVVXQ2pyS2FLTlc4cXRXbDBfc2paQWNHMTJzX1RqeFBId0tackFnIn19fX19",
+      "server-timing": "isolate;desc=warm, age;dur=0, req;dur=0",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "transfer-encoding": "chunked",
+      "vary": "PAYMENT-SIGNATURE, X-PAYMENT, Accept, Accept-Encoding, User-Agent",
+      "x-house-rule": "Argue properly. --7",
+      "x-store": "SCVD General Store (https://scvd.store)"
+    },
+    "body": {
+      "message": "Order received. The keeper's got a day job and a family, so give him the week. He hasn't missed one yet.",
+      "commission": {
+        "signed_payload": "{\"accepted_at\":\"2026-09-12T12:00:00.000Z\",\"cert_id\":\"cert_e87a288eta\",\"inputs_hash_covers\":\"sha256 of RFC 8785 JSON {detail,target_url}; absent fields are null. Buyer text remains private until the buyer shares it.\",\"inputs_sha256\":\"4933fd18e3e13a0231acd7e39c96105b7bf5518f4f1eaef98013e0e7274d2592\",\"item_id\":\"the_collab\",\"order_id\":\"ord_37vgtguwry\",\"paid_usdc\":300,\"signed_at\":\"2026-09-12T12:00:00.000Z\",\"sla_hours\":168,\"tip_usdc\":0,\"type\":\"scvd.human-commission.v1\"}",
+        "signature": "c8b177fb9638d897b7b279b7543c2785fe5fbafffdf5fcb9157f443629505fe995e5c23ba214582675444447344fae06a9e810860d25b212629f034363173d00",
+        "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+        "signature_covers": "UTF-8 bytes of signed_payload, RFC 8785 canonical JSON. Verify the certificate identity and the declared input/deliverable hashes independently."
+      },
+      "order_id": "ord_37vgtguwry",
+      "status": "queued",
+      "sla_hours": 168,
+      "order_url": "https://scvd.store/api/order/ord_37vgtguwry",
+      "paid_usdc": 300,
+      "tip_usdc": 0,
+      "recovery": {
+        "purchase_recorded": true,
+        "purchase_id": "b32d566dd30aa565c834fa4ac8a8472babcdb9714cf373389d03a7089f13f832",
+        "status_url": "https://scvd.store/api/purchase-status/b32d566dd30aa565c834fa4ac8a8472babcdb9714cf373389d03a7089f13f832",
+        "status_token": "325eaa377ab140ceb5b411569bcebb9d8e11b881be1844e9925b0a2c210391a9",
+        "status_tool": "check_purchase",
+        "status_auth": "GET status_url with Authorization: Bearer <status_token>. Keep the token private. This read is free and never submits payment."
+      },
+      "buyer_guidance": {
+        "price_effect": {
+          "minimum_usdc": 300,
+          "higher_payment": "optional_tip",
+          "higher_payment_changes_scope": false,
+          "scope": "The named item and its declared inputs; a tip does not add scope, priority or human time."
+        },
+        "production": {
+          "kind": "commissioned_human_work",
+          "sla_hours": 168,
+          "completion": "An accepted order is not completed work. Poll the returned order URL."
+        },
+        "evidence": {
+          "spec_url": "https://scvd.store/attestation",
+          "criteria_url": "https://scvd.store/criteria",
+          "version_source": "Use the criteria/spec version and evidence fields inside the delivered artifact when present; the live criteria page can change.",
+          "verify_url_template": "https://scvd.store/api/verify/{id}",
+          "verification_payment_required": false,
+          "corrections_url": "https://scvd.store/corrections",
+          "report_error": {
+            "method": "POST",
+            "url": "https://scvd.store/api/letter",
+            "payment_required": false,
+            "body_field": "letter",
+            "include": "Artifact ID or verification URL, disputed field, reproducible evidence and expected result. Keep purchase-status tokens private."
+          },
+          "limit": "A valid signature establishes signed bytes and signer identity, not the truth of an observation. Correction requests are reviewed by the keeper."
+        },
+        "recovery": {
+          "status_tool": "check_purchase",
+          "requires_status_token": true,
+          "how": "If a response supplies recovery.status_url and status_token, read that URL with Authorization: Bearer <status_token> for free. Save these privately. Otherwise retry the original payment and inputs with the original idempotency key.",
+          "no_new_payment": "Do not sign a new payment merely to find out whether the first one delivered.",
+          "scope": "Purchase-status handles exist on recorded catalog purchases; an order URL is the pickup for commissioned work."
+        },
+        "credit": {
+          "rate": 0.05,
+          "cash_out_floor_atomic": "1000000",
+          "balance_cap_atomic": "25000000",
+          "idle_expiry_days": 90,
+          "currency": "USDC",
+          "changes_checkout_price": false,
+          "proof_of_accrual": "store_credit in the successful fulfillment response",
+          "eligibility": "Organic certificate purchases; house wallets excluded. Accrual can be unavailable or capped. Publication-only payments do not accrue.",
+          "cash_out_wallet_kind": "EVM EOA",
+          "cash_out_network": "eip155:8453",
+          "balance_url_template": "https://scvd.store/api/credit/{evm_wallet}",
+          "terms_url": "https://scvd.store/credit",
+          "redemption": {
+            "challenge_url": "https://scvd.store/api/credit/challenge",
+            "redeem_url": "https://scvd.store/api/credit/redeem",
+            "method": "POST",
+            "requires_wallet_signature": true,
+            "automatic": false
+          },
+          "rail_limit": "The current balance and cash-out API accepts EVM addresses only; do not infer Solana cash-out support."
+        }
+      },
+      "patron_number": 1,
+      "badge_url": "https://scvd.store/badges/1.svg",
+      "certificate": {
+        "cert_id": "cert_e87a288eta",
+        "item": "the_collab",
+        "patron_number": 1,
+        "date": "2026-09-12T12:00:00.000Z",
+        "name": "boundary-fixture",
+        "paid_usdc": 300,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x4a62316623ad457F02cDC5D997deD67a383EC569",
+        "settlement_tx": "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "10eb5cd784afd5ff6a2372cdc7eefe934403970158b024e2ebfd37bd2fb58f30"
+      },
+      "signature": "0050fb45e0aaab4bde98e62740b21639d32e23af4c33014603343513d03dbd20209c7359d24f47c3b6a1b20b6a91b854f1b8fd5b874c1c8e8e20c62ba8e20508",
+      "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_e87a288eta\",\"item\":\"the_collab\",\"patron_number\":1,\"date\":\"2026-09-12T12:00:00.000Z\",\"name\":\"boundary-fixture\",\"paid_usdc\":300,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x4a62316623ad457F02cDC5D997deD67a383EC569\",\"settlement_tx\":\"0x0000000000000000000000000000000000000000000000000000000000000001\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"10eb5cd784afd5ff6a2372cdc7eefe934403970158b024e2ebfd37bd2fb58f30\"}",
+      "signature_covers": "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Compare its fields against the certificate above; nothing shown there is outside it.",
+      "signature_jcs": "90610c426c25926bf4423c0d528e9dc333269a2aded4961b818d1c1634963b166d32b152509306f517e85195144799631bb6805a340b2743d7a75d3f7f77160a",
+      "signature_jcs_discipline": "RFC8785",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "verify_url": "https://scvd.store/api/verify/cert_e87a288eta",
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "verification": "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
+      "attest_this_purchase": {
+        "url": "https://scvd.store/api/buy/settlement_attestation?tx_hash=0x0000000000000000000000000000000000000000000000000000000000000001",
+        "price_usdc": 0.004,
+        "note": "You now hold a settlement transaction — the input Settlement Attestation requires. $0.004 buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL."
+      },
+      "store_credit": {
+        "earned_usd": 15,
+        "balance_usd": 15,
+        "note": "Regulars' credit: 5% on eligible organic certificate purchases, subject to the balance cap. Read your balance free at https://scvd.store/api/credit/0x4a62316623ad457f02cdc5d997ded67a383ec569; cash-out starts at $1 and requires the earning EVM wallet's signature. Idle 90 days it expires. A closed-loop rebate — never a token, never transferable.",
+        "balance_url": "https://scvd.store/api/credit/0x4a62316623ad457f02cdc5d997ded67a383ec569",
+        "balance_read_payment_required": false,
+        "redemption_terms_url": "https://scvd.store/credit"
+      },
+      "show_your_human": "Bought \"The Collab\" from Sean-Claude Van Damme's General Store for $300 USDC — independently verifiable (no login, not our word): https://scvd.store/api/verify/cert_e87a288eta",
+      "receipt_for_your_human": {
+        "subject": "Receipt: The Collab — $300 USDC (scvd.store)",
+        "body": "Your agent bought \"The Collab\" from Sean-Claude Van Damme's General Store for $300 USDC on 2026-09-12. The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: https://scvd.store/api/verify/cert_e87a288eta",
+        "deliver": "If you hold a mail, Slack, or messaging connector, forward subject and body to your operator now. This is the half of the receipt that belongs to a person."
+      },
+      "which_check_is_worth_doing": "You can verify this locally RIGHT NOW with no network call — signed_payload and signature_covers above are everything the check needs. Worth doing: it catches a mangled or tampered response. Be clear on what it does NOT do: checking our signature against our key, both handed to you in this same response, cannot prove we were honest, because a dishonest issuer signs its lie and confirms it twice. The verify_url is not really for you — it is for whoever you show this to later, and THAT check is the one carrying the weight. Keep the artifact; the value is that a third party can check it without us."
+    }
+  },
+  "before": {
+    "status": 200,
+    "headers": {
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "mf-content-encoding": "gzip",
+      "server-timing": "isolate;desc=warm, age;dur=0, req;dur=0",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "transfer-encoding": "chunked",
+      "vary": "PAYMENT-SIGNATURE, X-PAYMENT, Accept, Accept-Encoding, User-Agent",
+      "x-house-rule": "Argue properly. --7",
+      "x-store": "SCVD General Store (https://scvd.store)"
+    },
+    "body": {
+      "commission": {
+        "signed_payload": "{\"accepted_at\":\"2026-09-12T12:00:00.000Z\",\"cert_id\":\"cert_e87a288eta\",\"inputs_hash_covers\":\"sha256 of RFC 8785 JSON {detail,target_url}; absent fields are null. Buyer text remains private until the buyer shares it.\",\"inputs_sha256\":\"4933fd18e3e13a0231acd7e39c96105b7bf5518f4f1eaef98013e0e7274d2592\",\"item_id\":\"the_collab\",\"order_id\":\"ord_37vgtguwry\",\"paid_usdc\":300,\"signed_at\":\"2026-09-12T12:00:00.000Z\",\"sla_hours\":168,\"tip_usdc\":0,\"type\":\"scvd.human-commission.v1\"}",
+        "signature": "c8b177fb9638d897b7b279b7543c2785fe5fbafffdf5fcb9157f443629505fe995e5c23ba214582675444447344fae06a9e810860d25b212629f034363173d00",
+        "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+        "signature_covers": "UTF-8 bytes of signed_payload, RFC 8785 canonical JSON. Verify the certificate identity and the declared input/deliverable hashes independently."
+      },
+      "order_id": "ord_37vgtguwry",
+      "item_id": "the_collab",
+      "item_name": "The Collab",
+      "status": "queued",
+      "created_at": "2026-09-12T12:00:00.000Z",
+      "sla_hours": 168,
+      "patron_number": 1,
+      "badge_url": "https://scvd.store/badges/1.svg",
+      "message": "Order received. The keeper's got a day job and a family, so give him the week. He hasn't missed one yet."
+    }
+  },
+  "after": {
+    "status": 200,
+    "headers": {
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "mf-content-encoding": "gzip",
+      "server-timing": "isolate;desc=cold, age;dur=0, req;dur=0",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "transfer-encoding": "chunked",
+      "vary": "PAYMENT-SIGNATURE, X-PAYMENT, Accept, Accept-Encoding, User-Agent",
+      "x-house-rule": "Argue properly. --7",
+      "x-store": "SCVD General Store (https://scvd.store)"
+    },
+    "body": {
+      "commission": {
+        "signed_payload": "{\"accepted_at\":\"2026-09-12T12:00:00.000Z\",\"cert_id\":\"cert_e87a288eta\",\"inputs_hash_covers\":\"sha256 of RFC 8785 JSON {detail,target_url}; absent fields are null. Buyer text remains private until the buyer shares it.\",\"inputs_sha256\":\"4933fd18e3e13a0231acd7e39c96105b7bf5518f4f1eaef98013e0e7274d2592\",\"item_id\":\"the_collab\",\"order_id\":\"ord_37vgtguwry\",\"paid_usdc\":300,\"signed_at\":\"2026-09-12T12:00:00.000Z\",\"sla_hours\":168,\"tip_usdc\":0,\"type\":\"scvd.human-commission.v1\"}",
+        "signature": "c8b177fb9638d897b7b279b7543c2785fe5fbafffdf5fcb9157f443629505fe995e5c23ba214582675444447344fae06a9e810860d25b212629f034363173d00",
+        "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+        "signature_covers": "UTF-8 bytes of signed_payload, RFC 8785 canonical JSON. Verify the certificate identity and the declared input/deliverable hashes independently."
+      },
+      "order_id": "ord_37vgtguwry",
+      "item_id": "the_collab",
+      "item_name": "The Collab",
+      "status": "queued",
+      "created_at": "2026-09-12T12:00:00.000Z",
+      "sla_hours": 168,
+      "patron_number": 1,
+      "badge_url": "https://scvd.store/badges/1.svg",
+      "message": "Order received. The keeper's got a day job and a family, so give him the week. He hasn't missed one yet."
+    }
+  },
+  "verification": {
+    "status": 200,
+    "headers": {
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
+      "cache-control": "no-cache",
+      "content-type": "application/json",
+      "etag": "\"ad091e1c7f807b3c21eecd6e85e23809\"",
+      "mf-content-encoding": "gzip",
+      "server-timing": "isolate;desc=warm, age;dur=0, req;dur=0",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "transfer-encoding": "chunked",
+      "vary": "Accept, Accept-Encoding, User-Agent",
+      "x-house-rule": "Argue properly. --7",
+      "x-store": "SCVD General Store (https://scvd.store)"
+    },
+    "body": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_e87a288eta",
+        "item": "the_collab",
+        "patron_number": 1,
+        "date": "2026-09-12T12:00:00.000Z",
+        "name": "boundary-fixture",
+        "paid_usdc": 300,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x4a62316623ad457F02cDC5D997deD67a383EC569",
+        "settlement_tx": "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "10eb5cd784afd5ff6a2372cdc7eefe934403970158b024e2ebfd37bd2fb58f30"
+      },
+      "offline_verification": {
+        "source": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence",
+        "description": "Free tools export exact signed bytes and supplied hash-bound evidence, then verify them offline against a public key you establish independently. Missing evidence is named; Bitcoin timestamps need an independent OTS verifier. The verifier instructions cover source and package installation."
+      },
+      "signature": "0050fb45e0aaab4bde98e62740b21639d32e23af4c33014603343513d03dbd20209c7359d24f47c3b6a1b20b6a91b854f1b8fd5b874c1c8e8e20c62ba8e20508",
+      "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+      "signed_by": {
+        "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-12T12:00:00.000Z",
+          "means": "dated 2026-09-12, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_e87a288eta\",\"item\":\"the_collab\",\"patron_number\":1,\"date\":\"2026-09-12T12:00:00.000Z\",\"name\":\"boundary-fixture\",\"paid_usdc\":300,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x4a62316623ad457F02cDC5D997deD67a383EC569\",\"settlement_tx\":\"0x0000000000000000000000000000000000000000000000000000000000000001\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"10eb5cd784afd5ff6a2372cdc7eefe934403970158b024e2ebfd37bd2fb58f30\"}",
+      "artifact_hash": "083c1b07d458ddba8eb9b6a658ac3e77e960bb459f2b6c4f4085ff3e89616a1a",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "none",
+        "key_window": "unbounded",
+        "verdict": "No existed-by bound yet: this certificate has not been submitted to OpenTimestamps (the hourly sweep has not reached it). The artifact's own date is a claim, not a bound — treat issue time as unproven.",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by bounded hourly sweeps over patron numbers and certificate keys; backlogs, propagation and calendar delays can extend the wait, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered."
+      },
+      "cite": "scvd.store, receipt cert_e87a288eta, observed 2026-09-12T12:00:00.000Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_e87a288eta.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "90610c426c25926bf4423c0d528e9dc333269a2aded4961b818d1c1634963b166d32b152509306f517e85195144799631bb6805a340b2743d7a75d3f7f77160a",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_e87a288eta\",\"date\":\"2026-09-12T12:00:00.000Z\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"item\":\"the_collab\",\"name\":\"boundary-fixture\",\"network\":\"eip155:8453\",\"paid_usdc\":300,\"patron_number\":1,\"payer\":\"0x4a62316623ad457F02cDC5D997deD67a383EC569\",\"saw\":\"10eb5cd784afd5ff6a2372cdc7eefe934403970158b024e2ebfd37bd2fb58f30\",\"settlement_tx\":\"0x0000000000000000000000000000000000000000000000000000000000000001\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    }
+  },
+  "old_quote_result": {
+    "status": 200,
+    "headers": {
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "mf-content-encoding": "gzip",
+      "payment-response": "eyJzdWNjZXNzIjp0cnVlLCJwYXllciI6IjB4NGE2MjMxNjYyM2FkNDU3RjAyY0RDNUQ5OTdkZUQ2N2EzODNFQzU2OSIsInRyYW5zYWN0aW9uIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwiZXh0ZW5zaW9ucyI6eyJvZmZlci1yZWNlaXB0Ijp7ImluZm8iOnsicmVjZWlwdCI6eyJmb3JtYXQiOiJqd3MiLCJzaWduYXR1cmUiOiJleUpoYkdjaU9pSkZaRVJUUVNJc0ltdHBaQ0k2SW1ScFpEcDNaV0k2YzJOMlpDNXpkRzl5WlNOclpYa3RNaUo5LmV5SjJaWEp6YVc5dUlqb3hMQ0p1WlhSM2IzSnJJam9pWldsd01UVTFPamcwTlRNaUxDSnlaWE52ZFhKalpWVnliQ0k2SW1oMGRIQnpPaTh2YzJOMlpDNXpkRzl5WlM5aGNHa3ZZblY1TDNOdFlXeHNYMkpzWlhOemFXNW5JaXdpY0dGNVpYSWlPaUl3ZURSaE5qSXpNVFkyTWpOaFpEUTFOMFl3TW1ORVF6VkVPVGszWkdWRU5qZGhNemd6UlVNMU5qa2lMQ0pwYzNOMVpXUkJkQ0k2TVRjNE9USXhORFF3TUN3aWRISmhibk5oWTNScGIyNGlPaUl3ZURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURJaWZRLkdzZFA1RTV2N3llWHNpZFV3aDlsbVdUVjlMYWNCRHo3ZHBpYXAydmczRHB6NWZpdTVDb0E0bndMdlJENUg1T3FRanY3MXZUZnByN2hlU29WaEZ4aEN3In19fX19",
+      "server-timing": "isolate;desc=warm, age;dur=0, req;dur=0",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "transfer-encoding": "chunked",
+      "vary": "PAYMENT-SIGNATURE, X-PAYMENT, Accept, Accept-Encoding, User-Agent",
+      "x-house-rule": "Argue properly. --7",
+      "x-store": "SCVD General Store (https://scvd.store)"
+    },
+    "body": {
+      "message": "Pleasure doing business. Your note's signed and your badge is on the wall.",
+      "item_id": "small_blessing",
+      "deliverable": "Old key, old door. Still opens.",
+      "paid_usdc": 0.005,
+      "tip_usdc": 0,
+      "purchased_text": {
+        "signed_payload": "{\"cert_id\":\"cert_vshqfbrjcn\",\"deliverable\":\"Old key, old door. Still opens.\",\"item_id\":\"small_blessing\",\"type\":\"scvd.purchased-text.v1\"}",
+        "signature": "47c02b42a30bee148e6fefeddfaf4cda8adb86dcdb447ad70cde254fecd586db9d9219516fd17f9a2e81c493e18b75cd53a7c706c9edd910873159c70270e90c",
+        "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+        "signature_covers": "UTF-8 bytes of signed_payload, RFC 8785 canonical JSON. Binds the exact purchased words and date, when present, to the purchase certificate."
+      },
+      "recovery": {
+        "purchase_recorded": true,
+        "purchase_id": "970304362bab8d648249740a042a76f4c998350af18514d8ca159de56001409b",
+        "status_url": "https://scvd.store/api/purchase-status/970304362bab8d648249740a042a76f4c998350af18514d8ca159de56001409b",
+        "status_token": "b664a849a73b4f3fa8747c9b6d9aa2ed53e5583e43a54da5aea42ceac4aa2617",
+        "status_tool": "check_purchase",
+        "status_auth": "GET status_url with Authorization: Bearer <status_token>. Keep the token private. This read is free and never submits payment."
+      },
+      "buyer_guidance": {
+        "price_effect": {
+          "minimum_usdc": 0.005,
+          "higher_payment": "not_offered",
+          "higher_payment_changes_scope": false,
+          "scope": "The named item and its declared inputs; a tip does not add scope, priority or human time."
+        },
+        "production": {
+          "kind": "prewritten_human_text",
+          "author": "the keeper"
+        },
+        "evidence": {
+          "spec_url": "https://scvd.store/attestation",
+          "criteria_url": "https://scvd.store/criteria",
+          "version_source": "Use the criteria/spec version and evidence fields inside the delivered artifact when present; the live criteria page can change.",
+          "verify_url_template": "https://scvd.store/api/verify/{id}",
+          "verification_payment_required": false,
+          "corrections_url": "https://scvd.store/corrections",
+          "report_error": {
+            "method": "POST",
+            "url": "https://scvd.store/api/letter",
+            "payment_required": false,
+            "body_field": "letter",
+            "include": "Artifact ID or verification URL, disputed field, reproducible evidence and expected result. Keep purchase-status tokens private."
+          },
+          "limit": "A valid signature establishes signed bytes and signer identity, not the truth of an observation. Correction requests are reviewed by the keeper."
+        },
+        "recovery": {
+          "status_tool": "check_purchase",
+          "requires_status_token": true,
+          "how": "If a response supplies recovery.status_url and status_token, read that URL with Authorization: Bearer <status_token> for free. Save these privately. Otherwise retry the original payment and inputs with the original idempotency key.",
+          "no_new_payment": "Do not sign a new payment merely to find out whether the first one delivered.",
+          "scope": "Purchase-status handles exist on recorded catalog purchases; an order URL is the pickup for commissioned work."
+        },
+        "credit": {
+          "rate": 0.05,
+          "cash_out_floor_atomic": "1000000",
+          "balance_cap_atomic": "25000000",
+          "idle_expiry_days": 90,
+          "currency": "USDC",
+          "changes_checkout_price": false,
+          "proof_of_accrual": "store_credit in the successful fulfillment response",
+          "eligibility": "Organic certificate purchases; house wallets excluded. Accrual can be unavailable or capped. Publication-only payments do not accrue.",
+          "cash_out_wallet_kind": "EVM EOA",
+          "cash_out_network": "eip155:8453",
+          "balance_url_template": "https://scvd.store/api/credit/{evm_wallet}",
+          "terms_url": "https://scvd.store/credit",
+          "redemption": {
+            "challenge_url": "https://scvd.store/api/credit/challenge",
+            "redeem_url": "https://scvd.store/api/credit/redeem",
+            "method": "POST",
+            "requires_wallet_signature": true,
+            "automatic": false
+          },
+          "rail_limit": "The current balance and cash-out API accepts EVM addresses only; do not infer Solana cash-out support."
+        }
+      },
+      "patron_number": 2,
+      "badge_url": "https://scvd.store/badges/2.svg",
+      "certificate": {
+        "cert_id": "cert_vshqfbrjcn",
+        "item": "small_blessing",
+        "patron_number": 2,
+        "date": "2026-09-12T12:00:00.000Z",
+        "name": "boundary-fixture",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x4a62316623ad457F02cDC5D997deD67a383EC569",
+        "settlement_tx": "0x0000000000000000000000000000000000000000000000000000000000000002",
+        "purpose": "Retained old quote",
+        "from_the_store": "Kept honest by the fact that you can check.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "signature": "85430b7da57ba07bb843d91fbf2ad3cd7139fb75484bb19702b9e9718fe101b5e77a63f292d5eeb28df6d9bb30523a4913f81d6d7a050db79296e32b63008f08",
+      "public_key": "16021bcb5c29b250e9f1bfad5774b2c0f31322b8315c3c2066c55e5fa2959ec2",
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_vshqfbrjcn\",\"item\":\"small_blessing\",\"patron_number\":2,\"date\":\"2026-09-12T12:00:00.000Z\",\"name\":\"boundary-fixture\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x4a62316623ad457F02cDC5D997deD67a383EC569\",\"settlement_tx\":\"0x0000000000000000000000000000000000000000000000000000000000000002\",\"purpose\":\"Retained old quote\",\"from_the_store\":\"Kept honest by the fact that you can check.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "signature_covers": "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Compare its fields against the certificate above; nothing shown there is outside it.",
+      "signature_jcs": "cc9e24deb5c1431a05d5c37b85f7c4620826ba5ffc187a0d8cd17596d8f00baada9581ccb3cac1f10c39d74c792738b56e5d5d2a451f407773b8510d3b91600a",
+      "signature_jcs_discipline": "RFC8785",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "verify_url": "https://scvd.store/api/verify/cert_vshqfbrjcn",
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "verification": "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
+      "attest_this_purchase": {
+        "url": "https://scvd.store/api/buy/settlement_attestation?tx_hash=0x0000000000000000000000000000000000000000000000000000000000000002",
+        "price_usdc": 0.004,
+        "note": "You now hold a settlement transaction — the input Settlement Attestation requires. $0.004 buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL."
+      },
+      "store_credit": {
+        "earned_usd": 0.00025,
+        "balance_usd": 15.00025,
+        "note": "Regulars' credit: 5% on eligible organic certificate purchases, subject to the balance cap. Read your balance free at https://scvd.store/api/credit/0x4a62316623ad457f02cdc5d997ded67a383ec569; cash-out starts at $1 and requires the earning EVM wallet's signature. Idle 90 days it expires. A closed-loop rebate — never a token, never transferable.",
+        "balance_url": "https://scvd.store/api/credit/0x4a62316623ad457f02cdc5d997ded67a383ec569",
+        "balance_read_payment_required": false,
+        "redemption_terms_url": "https://scvd.store/credit"
+      },
+      "show_your_human": "Bought \"A Small Blessing\" from Sean-Claude Van Damme's General Store for $0.005 USDC — independently verifiable (no login, not our word): https://scvd.store/api/verify/cert_vshqfbrjcn",
+      "receipt_for_your_human": {
+        "subject": "Receipt: A Small Blessing — $0.005 USDC (scvd.store)",
+        "body": "Your agent bought \"A Small Blessing\" from Sean-Claude Van Damme's General Store for $0.005 USDC on 2026-09-12. It said this was for: \"Retained old quote\". The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: https://scvd.store/api/verify/cert_vshqfbrjcn",
+        "deliver": "If you hold a mail, Slack, or messaging connector, forward subject and body to your operator now. This is the half of the receipt that belongs to a person."
+      },
+      "which_check_is_worth_doing": "You can verify this locally RIGHT NOW with no network call — signed_payload and signature_covers above are everything the check needs. Worth doing: it catches a mangled or tampered response. Be clear on what it does NOT do: checking our signature against our key, both handed to you in this same response, cannot prove we were honest, because a dishonest issuer signs its lie and confirms it twice. The verify_url is not really for you — it is for whoever you show this to later, and THAT check is the one carrying the weight. Keep the artifact; the value is that a third party can check it without us."
+    }
+  },
+  "checks": {
+    "order_identity": true,
+    "order_status": true,
+    "order_body_unchanged": true,
+    "old_certificate_valid": true,
+    "old_quote_accepted": true,
+    "expected_simulated_debits": true
+  },
+  "instrument_error": null,
+  "simulated_debits": 2
+}

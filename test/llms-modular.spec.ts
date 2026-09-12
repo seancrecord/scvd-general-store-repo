@@ -926,8 +926,21 @@ const BASE = "https://scvd.store";
 // the binder, the day seed), the door list names /design, the shelf
 // gained the pack and the window pick, and the declined-positions
 // sentence names two more browser tools. Verified the same way.
+// 2026-09-12: MCP purchase examples now use the HTTP/Bazaar worked inputs.
+// Restoring the pre-repair MCP catalogue and llms source reproduced the prior
+// digest; the new buyer tests submit the published examples without editing.
+// 2026-09-12, the merge: two more link texts on the catalog line
+// shortened (sites /ask answers for, agentic discovery) — the merged
+// index landed nine characters over the convention's 30,000, and a
+// link text that repeats its own URL is the cheapest honest thing to
+// cut. No section changed.
+// 2026-09-12, the merge: the Paywall branch and main met. Both had
+// re-pinned this digest for their own reasons — the card table on one
+// side, the MCP worked inputs on the other — so the pin below is the
+// merged guide, reproduced from the merged tree and from neither half
+// alone. Both notes above stand; this one says why there is a third.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d9efac27b1810c2f0984c24ad9891768399801a553acfdedf45207567bfb4b1b";
+  "bda58d44fe994ef02167239485404ffc01184deb3b624654a7b600789274d4df";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

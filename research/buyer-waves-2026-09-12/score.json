@@ -1,0 +1,1544 @@
+{
+  "at": "2026-09-12T02:16:03.789Z",
+  "new_spend_usdc": 0,
+  "prepayment_requests": 529,
+  "link_fetches": 341,
+  "initial_surfaces": 8,
+  "catalog_items": 33,
+  "compared_fields_per_item": 6,
+  "structured_comparison_issues": 0,
+  "wrong_types": {
+    "requests": 177,
+    "rejected": 177
+  },
+  "url_probe_refusals": {
+    "requests": 216,
+    "quoted": 0,
+    "case_file_context_controls": 18
+  },
+  "omissions": {
+    "requests": 52,
+    "http_price_only": 26,
+    "mcp_refused": 26
+  },
+  "price_checks": [
+    {
+      "request": 3,
+      "item": "spot_check",
+      "door": "http",
+      "expected_minimum": 0.001,
+      "quoted_minimum": 0.001,
+      "pass": true
+    },
+    {
+      "request": 2,
+      "item": "spot_check",
+      "door": "mcp",
+      "expected_minimum": 0.001,
+      "quoted_minimum": 0.001,
+      "pass": true
+    },
+    {
+      "request": 1,
+      "item": "spot_check",
+      "door": "http",
+      "expected_minimum": 0.001,
+      "quoted_minimum": 0.001,
+      "pass": true
+    },
+    {
+      "request": 11,
+      "item": "settlement_attestation",
+      "door": "http",
+      "expected_minimum": 0.004,
+      "quoted_minimum": 0.004,
+      "pass": true
+    },
+    {
+      "request": 13,
+      "item": "settlement_attestation",
+      "door": "http",
+      "expected_minimum": 0.004,
+      "quoted_minimum": 0.004,
+      "pass": true
+    },
+    {
+      "request": 12,
+      "item": "settlement_attestation",
+      "door": "mcp",
+      "expected_minimum": 0.004,
+      "quoted_minimum": 0.004,
+      "pass": true
+    },
+    {
+      "request": 21,
+      "item": "small_blessing",
+      "door": "http",
+      "expected_minimum": 0.005,
+      "quoted_minimum": 0.005,
+      "pass": true
+    },
+    {
+      "request": 26,
+      "item": "settlement_reconciliation",
+      "door": "http",
+      "expected_minimum": 0.006,
+      "quoted_minimum": 0.006,
+      "pass": true
+    },
+    {
+      "request": 22,
+      "item": "small_blessing",
+      "door": "mcp",
+      "expected_minimum": 0.005,
+      "quoted_minimum": 0.005,
+      "pass": true
+    },
+    {
+      "request": 28,
+      "item": "settlement_reconciliation",
+      "door": "http",
+      "expected_minimum": 0.006,
+      "quoted_minimum": 0.006,
+      "pass": true
+    },
+    {
+      "request": 27,
+      "item": "settlement_reconciliation",
+      "door": "mcp",
+      "expected_minimum": 0.006,
+      "quoted_minimum": 0.006,
+      "pass": true
+    },
+    {
+      "request": 36,
+      "item": "daily_fortune",
+      "door": "http",
+      "expected_minimum": 0.01,
+      "quoted_minimum": 0.01,
+      "pass": true
+    },
+    {
+      "request": 41,
+      "item": "the_confession",
+      "door": "http",
+      "expected_minimum": 0.01,
+      "quoted_minimum": 0.01,
+      "pass": true
+    },
+    {
+      "request": 43,
+      "item": "the_confession",
+      "door": "http",
+      "expected_minimum": 0.01,
+      "quoted_minimum": 0.01,
+      "pass": true
+    },
+    {
+      "request": 37,
+      "item": "daily_fortune",
+      "door": "mcp",
+      "expected_minimum": 0.01,
+      "quoted_minimum": 0.01,
+      "pass": true
+    },
+    {
+      "request": 42,
+      "item": "the_confession",
+      "door": "mcp",
+      "expected_minimum": 0.01,
+      "quoted_minimum": 0.01,
+      "pass": true
+    },
+    {
+      "request": 53,
+      "item": "attestation_bundle",
+      "door": "http",
+      "expected_minimum": 0.05,
+      "quoted_minimum": 0.05,
+      "pass": true
+    },
+    {
+      "request": 61,
+      "item": "the_mandate",
+      "door": "http",
+      "expected_minimum": 0.1,
+      "quoted_minimum": 0.1,
+      "pass": true
+    },
+    {
+      "request": 63,
+      "item": "the_mandate",
+      "door": "http",
+      "expected_minimum": 0.1,
+      "quoted_minimum": 0.1,
+      "pass": true
+    },
+    {
+      "request": 62,
+      "item": "the_mandate",
+      "door": "mcp",
+      "expected_minimum": 0.1,
+      "quoted_minimum": 0.1,
+      "pass": true
+    },
+    {
+      "request": 71,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 73,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 72,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 81,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 83,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 85,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 82,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 86,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 84,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 87,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 89,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 91,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 88,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 93,
+      "item": "the_case_file",
+      "door": "http",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 90,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 92,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 99,
+      "item": "hello",
+      "door": "http",
+      "expected_minimum": 0.5,
+      "quoted_minimum": 0.5,
+      "pass": true
+    },
+    {
+      "request": 94,
+      "item": "the_case_file",
+      "door": "mcp",
+      "expected_minimum": 0.25,
+      "quoted_minimum": 0.25,
+      "pass": true
+    },
+    {
+      "request": 104,
+      "item": "good_buyer",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 106,
+      "item": "good_buyer",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 100,
+      "item": "hello",
+      "door": "mcp",
+      "expected_minimum": 0.5,
+      "quoted_minimum": 0.5,
+      "pass": true
+    },
+    {
+      "request": 105,
+      "item": "good_buyer",
+      "door": "mcp",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 134,
+      "item": "signature_agent_card",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 132,
+      "item": "signature_agent_card",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 133,
+      "item": "signature_agent_card",
+      "door": "mcp",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 160,
+      "item": "the_statement",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 162,
+      "item": "the_statement",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 161,
+      "item": "the_statement",
+      "door": "mcp",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 170,
+      "item": "luckies",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 175,
+      "item": "coffees_for_closers",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 171,
+      "item": "luckies",
+      "door": "mcp",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 177,
+      "item": "coffees_for_closers",
+      "door": "http",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 176,
+      "item": "coffees_for_closers",
+      "door": "mcp",
+      "expected_minimum": 0.99,
+      "quoted_minimum": 0.99,
+      "pass": true
+    },
+    {
+      "request": 187,
+      "item": "bitcoin_anchor",
+      "door": "http",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 195,
+      "item": "context_anchor",
+      "door": "http",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 197,
+      "item": "context_anchor",
+      "door": "http",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 196,
+      "item": "context_anchor",
+      "door": "mcp",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 205,
+      "item": "passport_refresh",
+      "door": "http",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 207,
+      "item": "passport_refresh",
+      "door": "http",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 206,
+      "item": "passport_refresh",
+      "door": "mcp",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 233,
+      "item": "graffiti_on_a_train",
+      "door": "http",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 235,
+      "item": "graffiti_on_a_train",
+      "door": "http",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 234,
+      "item": "graffiti_on_a_train",
+      "door": "mcp",
+      "expected_minimum": 1,
+      "quoted_minimum": 1,
+      "pass": true
+    },
+    {
+      "request": 245,
+      "item": "a2a_repair_kit",
+      "door": "http",
+      "expected_minimum": 49,
+      "quoted_minimum": 49,
+      "pass": true
+    },
+    {
+      "request": 271,
+      "item": "standing_watch",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 273,
+      "item": "standing_watch",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 272,
+      "item": "standing_watch",
+      "door": "mcp",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 299,
+      "item": "service_audit",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 301,
+      "item": "service_audit",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 300,
+      "item": "service_audit",
+      "door": "mcp",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 327,
+      "item": "conformance_watch",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 329,
+      "item": "conformance_watch",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 328,
+      "item": "conformance_watch",
+      "door": "mcp",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 355,
+      "item": "onpage_audit",
+      "door": "http",
+      "expected_minimum": 3,
+      "quoted_minimum": 3,
+      "pass": true
+    },
+    {
+      "request": 357,
+      "item": "onpage_audit",
+      "door": "http",
+      "expected_minimum": 3,
+      "quoted_minimum": 3,
+      "pass": true
+    },
+    {
+      "request": 356,
+      "item": "onpage_audit",
+      "door": "mcp",
+      "expected_minimum": 3,
+      "quoted_minimum": 3,
+      "pass": true
+    },
+    {
+      "request": 383,
+      "item": "launch_check",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 385,
+      "item": "launch_check",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 384,
+      "item": "launch_check",
+      "door": "mcp",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 413,
+      "item": "opening_day",
+      "door": "http",
+      "expected_minimum": 9,
+      "quoted_minimum": 9,
+      "pass": true
+    },
+    {
+      "request": 411,
+      "item": "opening_day",
+      "door": "http",
+      "expected_minimum": 9,
+      "quoted_minimum": 9,
+      "pass": true
+    },
+    {
+      "request": 412,
+      "item": "opening_day",
+      "door": "mcp",
+      "expected_minimum": 9,
+      "quoted_minimum": 9,
+      "pass": true
+    },
+    {
+      "request": 441,
+      "item": "provenance_check",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 440,
+      "item": "provenance_check",
+      "door": "mcp",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 449,
+      "item": "recurring_patronage",
+      "door": "http",
+      "expected_minimum": 3,
+      "quoted_minimum": 3,
+      "pass": true
+    },
+    {
+      "request": 439,
+      "item": "provenance_check",
+      "door": "http",
+      "expected_minimum": 5,
+      "quoted_minimum": 5,
+      "pass": true
+    },
+    {
+      "request": 450,
+      "item": "recurring_patronage",
+      "door": "mcp",
+      "expected_minimum": 3,
+      "quoted_minimum": 3,
+      "pass": true
+    },
+    {
+      "request": 456,
+      "item": "trust_profile",
+      "door": "http",
+      "expected_minimum": 21,
+      "quoted_minimum": 21,
+      "pass": true
+    },
+    {
+      "request": 482,
+      "item": "operator_statement",
+      "door": "http",
+      "expected_minimum": 21,
+      "quoted_minimum": 21,
+      "pass": true
+    },
+    {
+      "request": 484,
+      "item": "operator_statement",
+      "door": "http",
+      "expected_minimum": 21,
+      "quoted_minimum": 21,
+      "pass": true
+    },
+    {
+      "request": 483,
+      "item": "operator_statement",
+      "door": "mcp",
+      "expected_minimum": 21,
+      "quoted_minimum": 21,
+      "pass": true
+    },
+    {
+      "request": 492,
+      "item": "certificate_of_patronage",
+      "door": "http",
+      "expected_minimum": 20,
+      "quoted_minimum": 20,
+      "pass": true
+    },
+    {
+      "request": 493,
+      "item": "certificate_of_patronage",
+      "door": "mcp",
+      "expected_minimum": 20,
+      "quoted_minimum": 20,
+      "pass": true
+    },
+    {
+      "request": 499,
+      "item": "aura_walk",
+      "door": "http",
+      "expected_minimum": 150,
+      "quoted_minimum": 150,
+      "pass": true
+    },
+    {
+      "request": 497,
+      "item": "aura_walk",
+      "door": "http",
+      "expected_minimum": 150,
+      "quoted_minimum": 150,
+      "pass": true
+    },
+    {
+      "request": 498,
+      "item": "aura_walk",
+      "door": "mcp",
+      "expected_minimum": 150,
+      "quoted_minimum": 150,
+      "pass": true
+    },
+    {
+      "request": 525,
+      "item": "the_collab",
+      "door": "http",
+      "expected_minimum": 300,
+      "quoted_minimum": 300,
+      "pass": true
+    },
+    {
+      "request": 526,
+      "item": "the_collab",
+      "door": "mcp",
+      "expected_minimum": 300,
+      "quoted_minimum": 300,
+      "pass": true
+    }
+  ],
+  "quote_parity": [
+    {
+      "item": "spot_check",
+      "http_request": 1,
+      "mcp_request": 2,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "settlement_attestation",
+      "http_request": 11,
+      "mcp_request": 12,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "small_blessing",
+      "http_request": 21,
+      "mcp_request": 22,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "settlement_reconciliation",
+      "http_request": 26,
+      "mcp_request": 27,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "daily_fortune",
+      "http_request": 36,
+      "mcp_request": 37,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "the_confession",
+      "http_request": 41,
+      "mcp_request": 42,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "attestation_bundle",
+      "http_request": 51,
+      "mcp_request": 52,
+      "http_rails": [],
+      "mcp_rails": [],
+      "both_quoted": false,
+      "rail_equal": true
+    },
+    {
+      "item": "the_mandate",
+      "http_request": 61,
+      "mcp_request": 62,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "the_case_file",
+      "http_request": 71,
+      "mcp_request": 72,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "hello",
+      "http_request": 99,
+      "mcp_request": 100,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "good_buyer",
+      "http_request": 104,
+      "mcp_request": 105,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "signature_agent_card",
+      "http_request": 132,
+      "mcp_request": 133,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "the_statement",
+      "http_request": 160,
+      "mcp_request": 161,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "luckies",
+      "http_request": 170,
+      "mcp_request": 171,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "coffees_for_closers",
+      "http_request": 175,
+      "mcp_request": 176,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "bitcoin_anchor",
+      "http_request": 185,
+      "mcp_request": 186,
+      "http_rails": [],
+      "mcp_rails": [],
+      "both_quoted": false,
+      "rail_equal": true
+    },
+    {
+      "item": "context_anchor",
+      "http_request": 195,
+      "mcp_request": 196,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "passport_refresh",
+      "http_request": 205,
+      "mcp_request": 206,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "graffiti_on_a_train",
+      "http_request": 233,
+      "mcp_request": 234,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "a2a_repair_kit",
+      "http_request": 243,
+      "mcp_request": 244,
+      "http_rails": [],
+      "mcp_rails": [],
+      "both_quoted": false,
+      "rail_equal": true
+    },
+    {
+      "item": "standing_watch",
+      "http_request": 271,
+      "mcp_request": 272,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "service_audit",
+      "http_request": 299,
+      "mcp_request": 300,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "conformance_watch",
+      "http_request": 327,
+      "mcp_request": 328,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "onpage_audit",
+      "http_request": 355,
+      "mcp_request": 356,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "launch_check",
+      "http_request": 383,
+      "mcp_request": 384,
+      "http_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": true
+    },
+    {
+      "item": "opening_day",
+      "http_request": 411,
+      "mcp_request": 412,
+      "http_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": true
+    },
+    {
+      "item": "provenance_check",
+      "http_request": 439,
+      "mcp_request": 440,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "recurring_patronage",
+      "http_request": 449,
+      "mcp_request": 450,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "trust_profile",
+      "http_request": 454,
+      "mcp_request": 455,
+      "http_rails": [],
+      "mcp_rails": [],
+      "both_quoted": false,
+      "rail_equal": true
+    },
+    {
+      "item": "operator_statement",
+      "http_request": 482,
+      "mcp_request": 483,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "certificate_of_patronage",
+      "http_request": 492,
+      "mcp_request": 493,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "aura_walk",
+      "http_request": 497,
+      "mcp_request": 498,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    },
+    {
+      "item": "the_collab",
+      "http_request": 525,
+      "mcp_request": 526,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "both_quoted": true,
+      "rail_equal": false
+    }
+  ],
+  "error_codes_observed": {
+    "bad_request": 254,
+    "target_refused": 173,
+    "unsupported_version": 2,
+    "passport_refused": 2
+  },
+  "real_dead_links": [
+    {
+      "url": "https://scvd.store/keys",
+      "from": "llms",
+      "status": 404
+    }
+  ],
+  "excluded_template_404s": 9,
+  "cold_entries": [
+    {
+      "entry": "home",
+      "client_actions": 4,
+      "product_calls": 1,
+      "tool_or_transport_issues": 0,
+      "context_clean": true,
+      "item": "spot_check",
+      "price_usdc": 0.001,
+      "first_product_call_has_required_inputs": true,
+      "origin_400s": 0,
+      "quote_obtained": true,
+      "paid_purchase": "unexercised",
+      "purchased_result_verification": "unexercised",
+      "source": "cold/home.json"
+    },
+    {
+      "entry": "llms",
+      "client_actions": 5,
+      "product_calls": 1,
+      "tool_or_transport_issues": 2,
+      "context_clean": true,
+      "item": "spot_check",
+      "price_usdc": 0.001,
+      "first_product_call_has_required_inputs": true,
+      "origin_400s": 0,
+      "quote_obtained": true,
+      "paid_purchase": "unexercised",
+      "purchased_result_verification": "unexercised",
+      "source": "cold/llms.json"
+    },
+    {
+      "entry": "skill",
+      "client_actions": 5,
+      "product_calls": 2,
+      "tool_or_transport_issues": 2,
+      "context_clean": true,
+      "item": "spot_check",
+      "price_usdc": 0.001,
+      "first_product_call_has_required_inputs": false,
+      "origin_400s": 0,
+      "quote_obtained": true,
+      "paid_purchase": "unexercised",
+      "purchased_result_verification": "unexercised",
+      "source": "cold/skill.json"
+    },
+    {
+      "entry": "openapi",
+      "client_actions": 4,
+      "product_calls": 1,
+      "tool_or_transport_issues": 1,
+      "context_clean": true,
+      "item": "spot_check",
+      "price_usdc": 0.001,
+      "first_product_call_has_required_inputs": true,
+      "origin_400s": 0,
+      "quote_obtained": true,
+      "paid_purchase": "unexercised",
+      "purchased_result_verification": "unexercised",
+      "source": "cold/openapi.json"
+    },
+    {
+      "entry": "mcp",
+      "client_actions": 8,
+      "product_calls": 1,
+      "tool_or_transport_issues": 1,
+      "context_clean": true,
+      "item": "spot_check",
+      "price_usdc": 0.001,
+      "first_product_call_has_required_inputs": true,
+      "origin_400s": 0,
+      "quote_obtained": true,
+      "paid_purchase": "unexercised",
+      "purchased_result_verification": "unexercised",
+      "source": "cold/mcp.json"
+    },
+    {
+      "entry": "listing",
+      "client_actions": 4,
+      "product_calls": 1,
+      "tool_or_transport_issues": 0,
+      "context_clean": true,
+      "item": "spot_check",
+      "price_usdc": 0.001,
+      "first_product_call_has_required_inputs": true,
+      "origin_400s": 0,
+      "quote_obtained": true,
+      "paid_purchase": "unexercised",
+      "purchased_result_verification": "unexercised",
+      "source": "cold/listing.json"
+    }
+  ],
+  "existing_findings_reproduced": [
+    "BUY-040",
+    "BUY-042",
+    "BUY-044"
+  ],
+  "limits": [
+    "Six structural comparisons over menu/manifest/OpenAPI, not every semantic field over all discovery surfaces",
+    "Link pass starts from homepage, llms, skill, catalog and concrete OpenAPI GETs; not a recursive all-artifact crawl",
+    "Error responses cover four prepayment failure codes, not every public failure",
+    "All six cold walks stop at quote; no wallet, settlement or purchased-result verification",
+    "Default CLI model revision was not captured for five walks; cheaper skill entry requested gpt-5.6-luna"
+  ]
+}

@@ -38,6 +38,36 @@ describe("scvd-defects carries the tree's vocabulary, not a copy that can drift"
   });
 });
 
+/**
+ * THE FIXTURES THE PACKAGE SHIPS ARE THE TREE'S (2026-09-12). scvd-defects
+ * carries recorded doors and settlement responses so a client can be
+ * tested offline; the copies under defects/fixtures were kept by hand
+ * and nothing held them to test/fixtures. Now a fixture added or
+ * changed in the tree fails here until the package copy matches,
+ * byte for byte — the same discipline the vocabulary snapshot has.
+ */
+const treeFixtures: Record<string, string> = {
+  ...(import.meta.glob("./fixtures/doors/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+  ...(import.meta.glob("./fixtures/settlement-responses/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+};
+const packageFixtures: Record<string, string> = {
+  ...(import.meta.glob("../defects/fixtures/doors/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+  ...(import.meta.glob("../defects/fixtures/settlement-responses/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+};
+
+describe("scvd-defects ships the tree's fixtures, byte for byte", () => {
+  it("every recorded door and settlement response in test/fixtures is in defects/fixtures, and nothing else is", () => {
+    const strip = (path: string) => path.replace(/^.*\/fixtures\//, "");
+    const tree = Object.fromEntries(Object.entries(treeFixtures).map(([path, raw]) => [strip(path), raw]));
+    const shipped = Object.fromEntries(Object.entries(packageFixtures).map(([path, raw]) => [strip(path), raw]));
+    expect(Object.keys(tree).length).toBeGreaterThan(0);
+    expect(Object.keys(shipped).sort(), "cp test/fixtures/{doors,settlement-responses}/*.json into defects/fixtures/").toEqual(Object.keys(tree).sort());
+    for (const [name, raw] of Object.entries(tree)) {
+      expect(shipped[name], `defects/fixtures/${name} differs from test/fixtures/${name}`).toBe(raw);
+    }
+  });
+});
+
 describe("every package is shaped like the ones already published", () => {
   const packages = [
     ["x402-preflight", preflightPackage],

@@ -389,6 +389,13 @@ Worker and scvd-doors. Neither falls back to Base's recipient. Leave
 both absent until production activation is approved. Confirm that HTTP
 quotes, MCP quotes, catalog networks and visible payment copy agree after
 setting them; a read-only quote is not proof of a live settlement.
+Since 2026-09-12 the weekly six-doors battery does the first of those
+reads by machine: `document_and_door_agree` knocks at one `/api/buy/`
+door, decodes its challenge, and holds the accepts against the same
+path's `x-payment-info` in `openapi.json`. The two are served by
+different Workers, and a secret set on one and not the other reads as
+a rail on one side only, which is what happened with `ARBITRUM_PAY_TO`
+on 2026-09-11.
 
 Both use Circle native USDC. Arbitrum uses the SDK's USD Coin/version 2
 mapping; World uses an explicit atomic asset amount and USDC/version 2,

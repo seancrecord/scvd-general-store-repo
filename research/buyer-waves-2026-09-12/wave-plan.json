@@ -1,0 +1,144 @@
+{
+  "order": [
+    {
+      "wave": 1,
+      "title": "Public contracts and cold entry",
+      "status": "partial; known defects reproduced",
+      "spend_usdc": 0
+    },
+    {
+      "wave": 2,
+      "title": "Cheap real settlement",
+      "status": "not started in this wave run; funded Solana signer unavailable; spending ceiling pending",
+      "item": "spot_check",
+      "required_rails": [
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ]
+    },
+    {
+      "wave": 3,
+      "title": "Representative fulfillment architectures",
+      "status": "planned; real fulfillment not exercised",
+      "representatives": [
+        {
+          "architecture": "simple instant generated good",
+          "id": "small_blessing",
+          "price_usdc": 0.005,
+          "required_inputs": [],
+          "planned_only": true
+        },
+        {
+          "architecture": "buyer-text-dependent good",
+          "id": "the_confession",
+          "price_usdc": 0.01,
+          "required_inputs": [
+            "confession"
+          ],
+          "planned_only": true
+        },
+        {
+          "architecture": "URL probe",
+          "id": "signature_agent_card",
+          "price_usdc": 0.99,
+          "required_inputs": [
+            "url"
+          ],
+          "planned_only": true
+        },
+        {
+          "architecture": "chain lookup",
+          "id": "settlement_attestation",
+          "price_usdc": 0.004,
+          "required_inputs": [
+            "tx_hash"
+          ],
+          "planned_only": true
+        },
+        {
+          "architecture": "multiple transaction bundle",
+          "id": "attestation_bundle",
+          "price_usdc": 0.05,
+          "required_inputs": [
+            "tx_hashes"
+          ],
+          "planned_only": true
+        },
+        {
+          "architecture": "periodic/watch product",
+          "id": "standing_watch",
+          "price_usdc": 5,
+          "required_inputs": [
+            "url"
+          ],
+          "planned_only": true
+        },
+        {
+          "architecture": "human queue",
+          "id": "aura_walk",
+          "price_usdc": 150,
+          "required_inputs": [
+            "url"
+          ],
+          "planned_only": true
+        },
+        {
+          "architecture": "external anchoring",
+          "id": "bitcoin_anchor",
+          "price_usdc": 1,
+          "required_inputs": [
+            "digest"
+          ],
+          "planned_only": true
+        },
+        {
+          "architecture": "stateful append/publication",
+          "id": "graffiti_on_a_train",
+          "price_usdc": 1,
+          "required_inputs": [
+            "tag"
+          ],
+          "planned_only": true
+        }
+      ],
+      "minimum_one_rail_usdc": 158.059
+    },
+    {
+      "wave": 4,
+      "title": "Every current item and live-offered rail",
+      "status": "planned; budget, inputs, capacity and earlier coverage remain",
+      "items": 33,
+      "http_quoted_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "minimum_per_rail_usdc": 610.886,
+      "offered_item_rail_pairs": 163,
+      "minimum_by_rail_usdc": {
+        "eip155:137": 610.886,
+        "eip155:42161": 596.886,
+        "eip155:480": 610.886,
+        "eip155:8453": 610.886,
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": 610.886
+      },
+      "arithmetic_all_quoted_rails_usdc": 3040.43,
+      "qualification": "Arithmetic planning total, not a fulfillable quote. Recheck live capacity and each offer. Does not include repeat scenarios or prior waves."
+    }
+  ],
+  "prior_live_evidence": {
+    "deployment": "../deployment-boundary-2026-09-11/REPORT.md",
+    "scope": "18 Base Small Blessing purchases, $0.09, identical-code rollout; not Spot Check, Polygon or Solana coverage"
+  },
+  "readiness": {
+    "observed_on": "2026-09-12 UTC",
+    "method": "Configuration presence only; no secrets retained; not a funding check.",
+    "evm_signer_configured": true,
+    "solana_signer_configured": false,
+    "total_spend_ceiling": "awaiting user",
+    "product_specific_inputs": "review required"
+  }
+}

@@ -1,6 +1,8 @@
 {
   "name": "accepts-empty",
   "recorded": "2026-08-26, hand-built",
+  "source": "simulated",
+  "captured_at": null,
   "why": "The challenge offers a buyer nothing to sign against.",
   "expect_failed": [
     "accepts"

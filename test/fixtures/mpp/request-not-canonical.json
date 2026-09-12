@@ -1,6 +1,8 @@
 {
   "name": "request-not-canonical",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "The request decodes to a JSON object whose bytes are not its RFC 8785 form (pretty-printed, keys unsorted). A client that hashes the request for challenge binding gets a different hash.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

@@ -1,0 +1,8 @@
+{
+  "run_id": "5403ae47-0072-4d6f-abd4-c8325f962b6f",
+  "old_store_version": "0b0da9f9-d343-4112-bed6-8c412747f293",
+  "old_doors_version": "8849e2e3-4bb3-4bd8-97f5-2464ea95cb70",
+  "maximum_usdc": 0.1,
+  "mode": "Controlled new version of currently deployed artifact; identical code",
+  "human_order_scope": "Isolated Worker restart with simulated payment"
+}

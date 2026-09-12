@@ -2,11 +2,12 @@ import "dotenv/config";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { createPublicClient, http, formatUnits } from "viem";
-import { base, polygon } from "viem/chains";
+import { base, polygon, arbitrum, worldchain } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
 import { DEFAULT_MAX_AMOUNT_PER_PAYMENT } from "@x402/core/client";
 import { ExactEvmScheme } from "@x402/evm";
+import {newAttempt,recordRoundTrip,assessAttempt,collectEvmReceipt,collectSolanaReceipt,checkSubmission} from './lib/buyer-run-evidence.mjs';
 
 /**
  * The EVM rails, one map: same buyer key, same ExactEvmScheme, same
@@ -27,6 +28,8 @@ const EVM_RAILS = {
     chain: polygon,
     usdc: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
   },
+  arbitrum: {label:arbitrum.name,network:`eip155:${arbitrum.id}`,chain:arbitrum},
+  world: {label:worldchain.name,network:`eip155:${worldchain.id}`,chain:worldchain},
 };
 const ERC20_BALANCE_ABI = [
   {
@@ -63,6 +66,11 @@ const ERC20_BALANCE_ABI = [
  *   SKIP        comma-separated item ids to leave on the shelf
  *   DRY_RUN=1   print the plan and the total, buy nothing
  *   YES=1       skip the confirmation prompt
+ *   BUYER_GRADE=1      retain buyer evidence; incomplete review cannot pass
+ *   MAX_TOTAL_USDC     required per-run ceiling in buyer-grade mode
+ *   BUYER_INPUTS_FILE  JSON item-id → reviewed argument values
+ *   BUYER_JOURNAL      new private journal path, never overwritten
+ *   RAIL              base, polygon, arbitrum, world, or solana
  *
  * The wallet needs USDC on the chosen rail for the total (the plan prints it)
  * plus nothing else; x402 uses gasless EIP-3009 transfers.
@@ -75,6 +83,13 @@ const STORE_URL = process.env.STORE_URL ?? "https://scvd.store";
 /** The client's stock per-payment cap, as the package writes it ("$1"). Never retyped. */
 const CLIENT_DEFAULT_CAP = String(DEFAULT_MAX_AMOUNT_PER_PAYMENT);
 const RECEIPTS_FILE = "shopping-run-receipts.json";
+// Buyer-grade runs retain their evidence even if a response is ambiguous.
+// Product/recipient review remains incomplete until somebody actually does it.
+const BUYER_GRADE = process.env.BUYER_GRADE === '1';
+const BUYER_JOURNAL = process.env.BUYER_JOURNAL ?? 'shopping-run-buyer-receipts.json';
+const buyerInputs=process.env.BUYER_INPUTS_FILE?JSON.parse(readFileSync(process.env.BUYER_INPUTS_FILE,'utf8')):{};
+const buyerJournal=[];let activeBuyerAttempt=null;
+const saveBuyerJournal=()=>{if(BUYER_GRADE)writeFileSync(BUYER_JOURNAL,JSON.stringify(buyerJournal,null,2),{mode:0o600});};
 
 /** Item-specific required/useful parameters. The spec's inputs, honored. */
 const ITEM_PARAMS = {
@@ -281,6 +296,24 @@ if (process.env.DRY_RUN) {
   process.exit(0);
 }
 
+if(BUYER_GRADE){
+  const ceiling=Number(process.env.MAX_TOTAL_USDC);
+  if(!Number.isFinite(ceiling)||ceiling<=0||total>ceiling)fail('Buyer-grade runs require MAX_TOTAL_USDC at least the displayed total. No payment submitted.');
+  if(existsSync(BUYER_JOURNAL))fail('Buyer journal already exists. Resolve its purchases before starting a fresh journal; do not overwrite ambiguous payment evidence.');
+  const missing=items.flatMap(item=>{const supplied={...(ITEM_PARAMS[item.id]??{}),...(buyerInputs[item.id]??{})};return (item.spec?.inputs?.required??item.required_params??[]).filter(key=>supplied[key]===undefined||supplied[key]===null||supplied[key]==='').map(key=>`${item.id}.${key}`);});
+  if(missing.length)fail(`Buyer inputs are incomplete: ${missing.join(', ')}. Set BUYER_INPUTS_FILE to reviewed inputs from the live contracts. Nothing signed.`);
+}
+
+// New rails obtain the asset from an actual offer, not a duplicated address
+// table. The SDK's native-asset spend controls still gate signing separately.
+if(evmRail&&!evmRail.usdc){
+  const response=await fetch(`${STORE_URL}/api/buy/${items[0].id}`,{signal:AbortSignal.timeout(20000)});
+  const wire=response.headers.get('payment-required');let quote;try{quote=wire?JSON.parse(Buffer.from(wire,'base64')):await response.json();}catch{fail('Cannot decode the selected rail quote. Nothing signed.');}
+  const offer=quote?.accepts?.find(o=>o.network===evmRail.network);
+  if(!offer||!/^0x[0-9a-f]{40}$/i.test(offer.asset))fail('Selected rail has no usable live asset offer. Nothing signed.');
+  evmRail.usdc=offer.asset;
+}
+
 // Know thy wallet before the till does: whose key, and is it funded?
 const buyerAccount = evmRail ? privateKeyToAccount(privateKey) : null;
 let balanceUsdc = null;
@@ -357,13 +390,15 @@ if (!process.env.YES) {
   }
 }
 
+if(BUYER_GRADE)writeFileSync(BUYER_JOURNAL,'[]\n',{mode:0o600,flag:'wx'});
+
 // Diagnostic tap: notice whether a signed payment actually rode the retry.
 // IMPORTANT: the x402 wrapper retries with a fully-built Request OBJECT as
 // the first argument (no init). Any wrapper that rebuilds headers from init
 // silently strips PAYMENT-SIGNATURE off the retry — twice now this comment
 // is a headstone. Normalize through new Request() and mutate ITS headers.
 let lastRequestPaid = false;
-const houseFetch = (input, init) => {
+const houseFetch = async (input, init) => {
   const request = new Request(input, init);
   // Only when we have one: setting it to "undefined" would send a
   // header that says house and proves nothing.
@@ -371,7 +406,16 @@ const houseFetch = (input, init) => {
     request.headers.set("X-House", houseSecret);
   }
   lastRequestPaid = request.headers.has("PAYMENT-SIGNATURE");
-  return fetch(request);
+  const startedAt=new Date().toISOString();
+  if(activeBuyerAttempt){request.headers.set('Idempotency-Key',activeBuyerAttempt.idempotency_key);if(lastRequestPaid){activeBuyerAttempt.selected_terms=checkSubmission(activeBuyerAttempt,buyerJournal,request.headers.get('PAYMENT-SIGNATURE'),Number(process.env.MAX_TOTAL_USDC));activeBuyerAttempt.original_payment_authorization=request.headers.get('PAYMENT-SIGNATURE');activeBuyerAttempt.payment_submitted=true;saveBuyerJournal();}}
+  try{
+    const response=await fetch(request,BUYER_GRADE?{signal:AbortSignal.any([request.signal,AbortSignal.timeout(45000)])}:undefined);
+    if(activeBuyerAttempt){await recordRoundTrip(activeBuyerAttempt,request,response,startedAt);saveBuyerJournal();}
+    return response;
+  }catch(error){
+    if(activeBuyerAttempt){activeBuyerAttempt.payment_submitted ||= lastRequestPaid;activeBuyerAttempt.round_trips.push({method:request.method,url:request.url,sent_at:startedAt,received_at:new Date().toISOString(),payment_submitted:lastRequestPaid,transport_error:error.name});activeBuyerAttempt.ambiguous=lastRequestPaid;saveBuyerJournal();}
+    throw error;
+  }
 };
 // x402 v2.19 client shape: schemes registered per network, signer inside.
 // Registering ONLY the chosen rail's scheme is what selects the rail: the
@@ -428,13 +472,16 @@ for (const item of items) {
     agent_name: "the keeper, walking his own shelves",
     source: "shopping-run",
     ...(ITEM_PARAMS[item.id] ?? {}),
+    ...(buyerInputs[item.id] ?? {}),
   });
   const url = `${STORE_URL}/api/buy/${item.id}?${params}`;
+  if(BUYER_GRADE){activeBuyerAttempt=newAttempt(item,Object.fromEntries(params),evmRail?.network??SOLANA_MAINNET);activeBuyerAttempt.idempotency_key=crypto.randomUUID();buyerJournal.push(activeBuyerAttempt);saveBuyerJournal();}
   process.stdout.write(`→ ${item.id} ... `);
   try {
     lastRequestPaid = false;
     const response = await fetchWithPayFor(item)(url);
     const body = await response.json();
+    if(activeBuyerAttempt){activeBuyerAttempt.store_result={http_status:response.status,body};activeBuyerAttempt.artifact=body;saveBuyerJournal();}
     if (!response.ok) {
       failed += 1;
       const diagnosis =
@@ -464,6 +511,7 @@ for (const item of items) {
         decline_body: body,
         payment_response_header: paymentResponseHeader,
       });
+      if(activeBuyerAttempt){activeBuyerAttempt.acceptance=assessAttempt(activeBuyerAttempt);saveBuyerJournal();if(lastRequestPaid&&body.charged!==false){activeBuyerAttempt.ambiguous=true;saveBuyerJournal();writeFileSync(RECEIPTS_FILE,JSON.stringify(receipts,null,2));console.log('Paid refusal needs reconciliation. Stopping this buyer-grade run.');break;}}
       continue;
     }
     // The signed RECEIPT rides the settlement response's
@@ -487,9 +535,13 @@ for (const item of items) {
       receiptJws = null;
     }
     const certId = body.certificate?.cert_id ?? body.cert_id;
-    const verify = certId
-      ? await (await fetch(`${STORE_URL}/api/verify/${certId}`)).json()
-      : null;
+    let verify=null;
+    if(certId){const check={method:'GET',url:`${STORE_URL}/api/verify/${certId}`,purpose:'certificate verification',payment_submitted:false,sent_at:new Date().toISOString()};if(activeBuyerAttempt)activeBuyerAttempt.round_trips.push(check);try{const result=await fetch(check.url,{signal:AbortSignal.timeout(20000)});check.status=result.status;verify=await result.json();}catch(error){check.transport_error=error.name;throw error;}finally{check.received_at=new Date().toISOString();saveBuyerJournal();}}
+    if(activeBuyerAttempt){
+      activeBuyerAttempt.verification_result=verify;
+      activeBuyerAttempt.chain_result=await (evmRail?collectEvmReceipt(activeBuyerAttempt,evmRail.chain.rpcUrls.default.http[0]):collectSolanaReceipt(activeBuyerAttempt,process.env.SOLANA_RPC_URL??'https://api.mainnet-beta.solana.com')).catch(e=>({state:'unobserved',reason:e.name}));
+      activeBuyerAttempt.acceptance=assessAttempt(activeBuyerAttempt);saveBuyerJournal();
+    }
     bought += 1;
     console.log(
       `✔ $${body.paid_usdc} patron #${body.patron_number}` +
@@ -544,6 +596,7 @@ for (const item of items) {
       deliverable: body.deliverable,
     });
   } catch (error) {
+    if(activeBuyerAttempt){activeBuyerAttempt.error=String(error);activeBuyerAttempt.acceptance=assessAttempt(activeBuyerAttempt);saveBuyerJournal();}
     failed += 1;
     console.log(`✖ ${String(error).slice(0, 120)}`);
     if (/spendControls/.test(String(error))) {
@@ -558,9 +611,13 @@ for (const item of items) {
     receipts.push({ item: item.id, at: new Date().toISOString(), ok: false, error: String(error) });
   }
   writeFileSync(RECEIPTS_FILE, JSON.stringify(receipts, null, 2));
+  if(activeBuyerAttempt?.ambiguous){console.log('Paid request outcome ambiguous. Buyer-grade run stopped; recover the original purchase before continuing.');break;}
   // Patron numbers claim by readback; give KV a beat between buys.
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const waitStarted=Date.now();await new Promise((resolve) => setTimeout(resolve, 1500));
+  if(activeBuyerAttempt){activeBuyerAttempt.waits.push({reason:'scheduled inter-purchase storage pause; not a performance target',elapsed_ms:Date.now()-waitStarted});activeBuyerAttempt.finished_at=new Date().toISOString();saveBuyerJournal();}
 }
+
+if(BUYER_GRADE){const passed=buyerJournal.filter(a=>a.acceptance.state==='pass').length;console.log(`Buyer acceptance: ${passed}/${buyerJournal.length} passed. Unreviewed subject, goods and recipient evidence remain incomplete in ${BUYER_JOURNAL}.`);if(passed!==buyerJournal.length)process.exitCode=2;}
 
 console.log(
   `\nDone: ${bought} bought, ${failed} failed. Receipts in ${RECEIPTS_FILE}.`,

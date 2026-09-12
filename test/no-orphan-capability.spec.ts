@@ -47,6 +47,7 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/terms": "redirect to a real room; listing it would double-count the destination",
   "/x402-test": "301 to /try, kept so old links keep working; /try is the listed door",
   "/index.html": "301 to /, the front door every surface lists; the 1990s guess for it, seen in the crawler 404s of 2026-09",
+  "/keys": "308 to /.well-known/scvd-signing-key, the current and historical key registry already listed on the discovery surfaces; retained so older published links continue to resolve",
   /*
    * /agent is not in this map and does not need to be: the walk's
    * substring probe already accounts for it via /agents.md, which

@@ -158,9 +158,11 @@ async function collect() {
     get("https://registry.modelcontextprotocol.io/v0/servers?search=scvd"),
   ]);
   const rooms = await sweepRooms(sitemap.text, base, get);
+  const challenge = await knock(openapi.json);
   return {
     home,
     openapi,
+    challenge,
     apiCatalog,
     x402,
     llms,
@@ -177,6 +179,53 @@ async function collect() {
     // compares two real strings instead of a keyword against a hope.
     serverJson: readServerJson(),
   };
+}
+
+/**
+ * One knock at a paid door, no payment, to read the challenge it sends.
+ *
+ * The door is chosen from the document itself: the first concrete
+ * /api/buy/ path that declares a 402. The PAYMENT-REQUIRED header is
+ * the x402 v2 terms, base64 JSON; decoded here so the criterion can
+ * hold its accepts[] against the document's. A door that answers
+ * anything but a decodable 402 is `unknown` to the reader, never a
+ * finding — this is a comparison, and it needs both sides.
+ */
+async function knock(openapiJson) {
+  const paths = openapiJson?.paths ?? {};
+  const path = Object.keys(paths).find(
+    (candidate) =>
+      candidate.startsWith("/api/buy/") &&
+      !candidate.includes("{") &&
+      paths[candidate]?.get?.responses?.["402"],
+  );
+  if (!path) {
+    return { ok: false, status: 0, error: "openapi.json names no concrete /api/buy/ door with a 402 to knock at" };
+  }
+  try {
+    const response = await fetch(`${base}${path}`, {
+      headers: { "user-agent": "scvd-doors-check/1.0 (+https://scvd.store)" },
+    });
+    await response.text();
+    const header = response.headers.get("payment-required");
+    let json = null;
+    if (header) {
+      try {
+        json = JSON.parse(Buffer.from(header, "base64").toString("utf8"));
+      } catch {
+        json = null;
+      }
+    }
+    if (response.status !== 402) {
+      return { ok: false, status: response.status, path, error: `${path} answered ${response.status}, not a challenge` };
+    }
+    if (!json) {
+      return { ok: false, status: 402, path, error: `${path} answered 402 without a decodable PAYMENT-REQUIRED header` };
+    }
+    return { ok: true, status: 402, path, json };
+  } catch (error) {
+    return { ok: false, status: 0, path, error: String(error?.message ?? error) };
+  }
 }
 
 /** server.json, or null — an unreadable manifest is `unknown`, not a finding. */

@@ -925,6 +925,21 @@ Merging is your press; these are why it waits.
 
 ### Presses waiting (2026-09-03, evening)
 
+- **SEND the reply to David at Slidingbox (2026-09-12).** His two
+  notes of 09-12 answered the welcome: the passport rows for
+  slidingbox.ai (W33–W36 listed-not-walked, coverage suspect) and
+  an unlisted door, `GET https://slidingbox.ai/v1/verify?resource=`
+  on eip155:8453. Both checked. The rows were right and the gap was
+  ours: the feed read was capped at 100 rows in W33–W34 and
+  page-capped through W36 (each row said so), repaired 09-04, and
+  W37 walked him. The verify door answered a well-formed 402 to our
+  free preflight at 2026-09-12T17:50Z. A revisit gap in the long
+  walk (bank written, never read back) is fixed on the branch; it
+  did not touch his rows. Draft is in the session chat, not on a
+  flag; copy taste is yours (rule 7). His blocklist claim is
+  CONFIRMED (Spamhaus DBL, read 09-12) — the LOOK is under Walks,
+  and the reply should say so plainly.
+
 - **RECORD THE LISTINGS AND ROSTER BASELINES — after PR 525 merges.**
   The Saturday job gained a third battery that re-reads all forty-nine
   venue rows served at `/.well-known/trust.json`, and it has nothing to
@@ -1311,6 +1326,29 @@ Merging is your press; these are why it waits.
   passes) and the FORTE tier (they pay one real call;
   `settlement_attestation` at $0.004 is the cheapest
   target). Both are asks through the same owner flow.
+  ⚑ 2026-09-12: their EIP-712 row went pass → unknown on
+  the 04:30 UTC re-capture. Cause on our side, not theirs:
+  the doors Worker's POLYGON/ARBITRUM/WORLD_PAY_TO were
+  typed lowercase, the store's checksummed, and the store
+  has no ARBITRUM_PAY_TO at all — so once launch_check and
+  opening_day moved to the store (09-11) the shelf quoted
+  one wallet two ways and one rail on 30 doors only. Code
+  now checksums every EVM pay-to (one spelling on both
+  Workers), and the bare probe of those two doors no longer
+  wakes the store at all — their own history had every check
+  that found 31 doors taking 430 ms or more and every check
+  that found all 32 taking 403 ms or less (#660,
+  research/x402-list-found-count-2026-09-12.md). CLOSED the
+  same day, checked on the wire after the deploy: the store
+  carries ARBITRUM_PAY_TO (its /rails names eip155:42161),
+  all 32 doors offer four EVM rails, all 160 EVM entries
+  carry ONE spelling of the wallet, and
+  `npm run doors:live -- --doors=https://scvd.store` reads
+  33 of 33 doors agreeing with discovery — it read 2 of 33
+  before. Nothing here is yours. Their next feePayer
+  rotation re-captures the envelope on its own; the EIP-712
+  row should read pass again on that capture, and if it does
+  not, the cause is new and not this one.
 - **OpenAI / Claude MCP hosts.** LOOK: what they require
   to list vs what we already declare. Do not start a
   second WebMCP note.
@@ -1410,6 +1448,44 @@ Merging is your press; these are why it waits.
 
 ### Walks
 
+- **URI blocklist LOOK (2026-09-12).** David at Slidingbox could
+  not reply to the welcome: his provider (Namecheap Private Email,
+  code JFE040005) refused to relay any mail carrying `scvd.store`,
+  and the send went through once he cut the quoted note. That is
+  a sender-side URI-blocklist refusal and it never reaches us as a
+  bounce. Read 09-12: SURBL clean by DNS, URIBL "NOT Listed" on
+  its own lookup page, and your Spamhaus reputation panel reads
+  -7.3 (human 0, identity 0, infra -2.25, malware 0, smtp -5).
+  CONFIRMED the same evening: the checker reads "scvd.store has
+  1 listing — Domain Blocklist (DBL)". That is the list Namecheap's
+  filter reads, so David's refusal is explained exactly. Your
+  hand: the "Why is this domain listed?" panel names two causes,
+  poor sending reputation or a hijacked site, and only the first
+  fits (the site is ours and serving). Its "More Info" button
+  carries the delisting request; DBL removal is self-service
+  there once the cause has stopped. The mail records
+  are not the cause: SPF names Resend's SES path, DKIM is
+  published at `resend._domainkey`, DMARC is `p=reject`. What is
+  left is the profile David named — a domain registered 07-21
+  appearing in cold notes with six links to itself and an `<img>`
+  snippet. The DBL is a list of DOMAINS SEEN IN MAIL, not of
+  senders: the notes you send by hand from Gmail with scvd.store
+  links in them count exactly as the Resend wire's do, so the
+  pause covers both hands. Until the listing clears, no note that
+  carries the domain goes out from any address (the wire's
+  default is already the pause); after it does, a plain-text
+  note with one link and no chip snippet is the cheaper shape.
+  THE PBL ROW IS A DIFFERENT ANIMAL and not ours to fix: the
+  Spamhaus PBL lists IP RANGES, never domains, and
+  `136.48.0.0/12` is on it as POLICY — an ISP range not permitted
+  to deliver unauthenticated mail straight to a recipient's MX.
+  Every ordinary consumer range is on it by design; it is not an
+  accusation and it has no bearing on the DBL listing. It would
+  only bite if a mail server ran on that IP, and none does: Gmail
+  and Resend both relay from their own authenticated addresses.
+  Read it and let it be. Tell David the DBL listing was
+  confirmed — he asked for nothing, and it is the kind of reply
+  the store owes.
 - **Findability afternoon.** Run the batch 4 queries
   (attic). Write who appears. Google still blank for
   `scvd.store` / "SCVD general store." No new `/x402/`
@@ -1465,14 +1541,12 @@ Merging is your press; these are why it waits.
   (`research/treaty-exchange-2026-09-11/`); one binding did not
   reproduce and is a question on the issue. RULED 09-11: the credit
   key declined — a key skips the 402 and cannot verify the fix.
-  1. TEST — walk his door once, your words as the override. Pull
-     the branch of #647 (per-target method and body), then on your
-     machine with `FIELD_WALLET_KEY` in `.env`:
-     `node scripts/walkabout.mjs walk --targets stillos.json
-     --per-item 0.10 --override "maybe not regularly but the one
-     time"`, then `reconcile` and `report` on
-     `research/field-run-2026-09-11/ledger.jsonl`. The targets file
-     is in the session; commit the run folder after.
+  WALKED 09-12, your press, ten cents authorised, nothing moved:
+  his header speaks v2, his body v1, and his paid path reads only
+  the v1 `X-PAYMENT` header, so a v2 buyer following his header
+  cannot pay (`research/field-run-2026-09-12/`). Back to him on the
+  issue with the ledger line. If he fixes it and asks, a second walk
+  is a second press.
   Not your hand: the §7 read on x402 #3220/#3376 is still owed to
   him from a session that can reach those PRs.
 - **Key succession.** Gate is physical: a second seed,
@@ -1531,3 +1605,8 @@ Merging is your press; these are why it waits.
 ## HOLD
 
 Empty. Next paste lands here.
+
+## Buyer-wave decisions — September 12, 2026 UTC
+
+- **RULE — total live-audit spending ceiling.** Public Wave 1 work spent nothing. The retained full-shelf grid sums to $3,040.430 at minimums across 163 offered item/rail pairs; the nine architecture representatives add $158.059 for one rail, before cheap retry/concurrency cases and any capacity constraints. Decide the aggregate ceiling and whether to include the human commissions. The exact unspent plan and evidence are in `research/BUYER_RUN_ORDER.md`.
+- **TEST — Solana buyer availability.** No Solana buyer key/file was configured for this wave run. Provide a locally configured, funded test signer for the authorized live rail; do not send secret material in chat. A configured EVM buyer alone cannot exercise Solana settlement. Builds and remaining audit instrumentation are on ROADMAP B-WAVES.

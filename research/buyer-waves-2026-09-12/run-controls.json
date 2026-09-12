@@ -1,0 +1,28 @@
+{
+  "wave_spend_usdc": 0,
+  "prepayment_started_at": "2026-09-12T01:58:44.661Z",
+  "last_direct_link_response_at": "2026-09-12T01:59:23.717Z",
+  "initial_snapshots": {
+    "count": 8,
+    "provenance_limit": "Collected successfully with status 200 in the live tool run; no separate acquisition timestamp/header ledger was retained. Do not infer per-snapshot times from later request records."
+  },
+  "collector_tests": {
+    "command": "node --test scripts/buyer-run-evidence.test.mjs",
+    "passed": 14,
+    "test_output": "collector-tests.tap",
+    "live_payment_exercised": false
+  },
+  "script_syntax_checks": "pass",
+  "canvas_transpile_syntax": "pass; host rendering not independently inspected",
+  "dry_run": {
+    "command": "DRY_RUN=1 BUYER_GRADE=1 node scripts/shopping-run.mjs",
+    "exit_code": 0,
+    "paid": false
+  },
+  "full_application_suite_run": false,
+  "commit_push_or_deploy": false,
+  "repository_typecheck": {
+    "command": "npm run typecheck",
+    "exit_code": 0
+  }
+}
