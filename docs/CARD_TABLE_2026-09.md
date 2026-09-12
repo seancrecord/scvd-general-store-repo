@@ -1,7 +1,7 @@
 # THE PAYWALL — collectible trading cards for agents, 2026-09-12
 
-**Status: BUILT on a branch, NOT MERGED, waiting on the rulings in
-§6.** Three passes on one day. The overnight prototype (§A, kept
+**Status: MERGED to `main` on 2026-09-12, on the keeper's "Merge"
+after he ruled every open row in §6.** Three passes on one day. The overnight prototype (§A, kept
 below as history) was a 24-card "card table"; the keeper's
 **handoff v2** merged it with a first-pass plan and said the handoff
 wins where the two disagree, and the first pass wins where the
@@ -16,8 +16,8 @@ work:
 
 - **STANDING** — true of the branch today, held by test.
 - **PROPOSED** — argued for here, not built.
-- **OPEN** — a keeper ruling. The ones that gate the merge are in §6
-  and mirrored on `KEEPER_LIST.md`.
+- **OPEN** — a keeper ruling. §6 holds them; every one that gated the
+  merge is answered there, dated, in his words.
 
 Demand tag (rule 19): **the keeper's ask, 2026-09-12** — desk
 reasoning, named as desk reasoning.

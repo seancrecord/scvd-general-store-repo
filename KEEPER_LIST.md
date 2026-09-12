@@ -732,8 +732,9 @@ Do not relitigate without you.
 ### The Paywall (2026-09-12, first pass reconciled, `docs/CARD_TABLE_2026-09.md`)
 
 Built on `claude/compassionate-planck-6pba4v` to your handoff and
-then to the first-pass plan in full, green locally, not merged.
-Merging is your press; these are why it waits.
+then to the first-pass plan in full, dark-teamed, and MERGED to
+`main` on your "Merge", 2026-09-12. Everything below is the record of
+what you ruled and what is still yours to look at.
 
 - **RULED, rule 22 (2026-09-12): "the first."** Honest randomness
   with custody. The room stays paid, the shelf item stays on, and
