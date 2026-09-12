@@ -207,6 +207,15 @@ export function renderToolsPage(data: ToolsPageData): string {
 
 
   <section>
+    <h2>The Keeper card</h2>
+    <p>What this is for: the one card of Keeper rarity, never in a pack, pressed by your hand to a wallet you name. Each press is a new print number; the ledger counts them. The pressing lands in that wallet's binder and hangs at its own page.</p>
+    <form method="POST" action="/admin/paywall/press">
+      <input type="text" name="wallet" placeholder="0x… or a base58 Solana address" required>
+      <button type="submit">Press one</button>
+    </form>
+  </section>
+
+  <section>
     <h2>The lucky shelf</h2>
     <p>What this is for: a buyer writes in about how their lucky performed (write-ins ride the Mailbox), and you promote or bench it here by id. Rare by nature. The record re-signs and the card re-inks; the bench is real.</p>
     <p>Every lucky issued, with its current status, is on <a href="/admin/counter">the counter</a>; this lever moves one by id.</p>

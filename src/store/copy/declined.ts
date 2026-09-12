@@ -45,7 +45,11 @@ export function declinedPositions(base: string): DeclinedPosition[] {
     },
     {
       heading: "WebMCP and MCP Apps, exactly as far as they go",
-      body: `WebMCP: ${base}/webmcp.js registers ${browserTools.length} free instruments (${browserTools.join(", ")}), derived from MCP, plus quote_store_purchase (free) and complete_store_purchase (consequential). The latter submits only a payment already signed by the buyer's wallet/client; it never signs or retries by itself. MCP Apps remain ${uiResourceCatalog().length} display-only cards, with no payment tools attached. Browser availability depends on WebMCP support and permissions; without a compatible signer, an agent can browse but cannot pay. ${base}/mcp.md describes the doors.`,
+      // Tightened 2026-09-12 by 63 characters ("derived from MCP" and the
+      // availability clause) when read_binder and look_in_window joined
+      // the browser surface and this sentence carried the developers area
+      // file over its 30,000 budget. ⚑ Keeper's pen on the wording.
+      body: `WebMCP: ${base}/webmcp.js registers ${browserTools.length} free instruments (${browserTools.join(", ")}), plus quote_store_purchase (free) and complete_store_purchase (consequential). The latter submits only a payment already signed by the buyer's wallet/client; it never signs or retries by itself. MCP Apps remain ${uiResourceCatalog().length} display-only cards, with no payment tools attached. Without WebMCP support and a compatible signer, an agent can browse but cannot pay. ${base}/mcp.md describes the doors.`,
     },
     {
       heading: "x402 is the protocol here; UCP, ACP, AP2 and MPP are not",

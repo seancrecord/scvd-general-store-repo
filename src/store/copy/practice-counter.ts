@@ -231,6 +231,7 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // settlement, a real signature, a real artifact at the end — with
   // nothing riding on it if the first attempt goes wrong.
   "luckies",
-  "card_pack",
+  "pack",
+  "window_pick",
   "coffees_for_closers",
 ] as const;

@@ -129,7 +129,7 @@ const UNKNOWN = ["######", "#....#", "#....#", "#....#", "#....#", "#....#", "#.
  * to one side. This is the whole difference between type that looks
  * printed and type that looks tiled.
  */
-class Surface {
+export class Surface {
   readonly ink: Float32Array;
 
   constructor(readonly width: number, readonly height: number) {
@@ -358,7 +358,7 @@ export function fitLine(
   return { text: "", cell };
 }
 
-function drawText(
+export function drawText(
   surface: Surface,
   text: string,
   centreX: number,
@@ -405,6 +405,13 @@ export function flattenPath(
    * handled ones — a pattern that matches only what it supports skips
    * an arc silently and lets the following coordinates fall into the
    * previous command, which draws a wrong shape and says nothing.
+   *
+   * GREW ON 2026-09-12 for the Paywall's plates: H/V, S/Q/T, and
+   * elliptical arcs, flattened by the endpoint-to-centre conversion
+   * in the SVG spec's appendix. And a bug went with it: the close
+   * command consumed the token AFTER it, so every subpath that
+   * followed a Z was dropped — the dinosaur's eye never made it onto
+   * the passport card. It does now.
    */
   const tokens = d.match(/-?\d*\.?\d+(?:[eE][-+]?\d+)?|[A-Za-z]/g) ?? [];
   const rings: [number, number][][] = [];
@@ -413,11 +420,19 @@ export function flattenPath(
   let y = 0;
   let startX = 0;
   let startY = 0;
+  let lastCx: number | null = null;
+  let lastCy: number | null = null;
+  let lastQx: number | null = null;
+  let lastQy: number | null = null;
   let index = 0;
   let command = "";
   const next = (): number => Number(tokens[index++]);
   const push = (px: number, py: number): void => {
     ring.push(map(px, py));
+  };
+  const closeRing = (): void => {
+    if (ring.length > 2) rings.push(ring);
+    ring = [];
   };
   const cubic = (x1: number, y1: number, x2: number, y2: number, ex: number, ey: number): void => {
     const STEPS = 14;
@@ -429,46 +444,133 @@ export function flattenPath(
         u * u * u * y + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * ey,
       );
     }
+    lastCx = x2;
+    lastCy = y2;
+    x = ex;
+    y = ey;
+  };
+  const quad = (x1: number, y1: number, ex: number, ey: number): void => {
+    const STEPS = 10;
+    for (let i = 1; i <= STEPS; i += 1) {
+      const t = i / STEPS;
+      const u = 1 - t;
+      push(u * u * x + 2 * u * t * x1 + t * t * ex, u * u * y + 2 * u * t * y1 + t * t * ey);
+    }
+    lastQx = x1;
+    lastQy = y1;
+    x = ex;
+    y = ey;
+  };
+  const arc = (rx: number, ry: number, rotation: number, large: number, sweep: number, ex: number, ey: number): void => {
+    if (rx === 0 || ry === 0 || (x === ex && y === ey)) {
+      push(ex, ey);
+      x = ex;
+      y = ey;
+      return;
+    }
+    const phi = (rotation * Math.PI) / 180;
+    const cosPhi = Math.cos(phi);
+    const sinPhi = Math.sin(phi);
+    const dx = (x - ex) / 2;
+    const dy = (y - ey) / 2;
+    const x1 = cosPhi * dx + sinPhi * dy;
+    const y1 = -sinPhi * dx + cosPhi * dy;
+    let arx = Math.abs(rx);
+    let ary = Math.abs(ry);
+    const lambda = (x1 * x1) / (arx * arx) + (y1 * y1) / (ary * ary);
+    if (lambda > 1) {
+      arx *= Math.sqrt(lambda);
+      ary *= Math.sqrt(lambda);
+    }
+    const sign = large === sweep ? -1 : 1;
+    const numerator = arx * arx * ary * ary - arx * arx * y1 * y1 - ary * ary * x1 * x1;
+    const denominator = arx * arx * y1 * y1 + ary * ary * x1 * x1;
+    const coefficient = sign * Math.sqrt(Math.max(0, numerator / denominator));
+    const cx1 = (coefficient * arx * y1) / ary;
+    const cy1 = (-coefficient * ary * x1) / arx;
+    const cx = cosPhi * cx1 - sinPhi * cy1 + (x + ex) / 2;
+    const cy = sinPhi * cx1 + cosPhi * cy1 + (y + ey) / 2;
+    const angle = (ux: number, uy: number, vx: number, vy: number): number => {
+      const dot = ux * vx + uy * vy;
+      const len = Math.hypot(ux, uy) * Math.hypot(vx, vy);
+      let a = Math.acos(Math.max(-1, Math.min(1, dot / len)));
+      if (ux * vy - uy * vx < 0) a = -a;
+      return a;
+    };
+    const theta1 = angle(1, 0, (x1 - cx1) / arx, (y1 - cy1) / ary);
+    let delta = angle((x1 - cx1) / arx, (y1 - cy1) / ary, (-x1 - cx1) / arx, (-y1 - cy1) / ary);
+    if (!sweep && delta > 0) delta -= 2 * Math.PI;
+    if (sweep && delta < 0) delta += 2 * Math.PI;
+    const STEPS = Math.max(4, Math.ceil(Math.abs(delta) / (Math.PI / 12)));
+    for (let i = 1; i <= STEPS; i += 1) {
+      const t = theta1 + (delta * i) / STEPS;
+      const px = arx * Math.cos(t);
+      const py = ary * Math.sin(t);
+      push(cosPhi * px - sinPhi * py + cx, sinPhi * px + cosPhi * py + cy);
+    }
     x = ex;
     y = ey;
   };
   while (index < tokens.length) {
     const token = tokens[index]!;
     if (/[A-Za-z]/.test(token)) {
-      if (!/[MmLlCcZz]/.test(token)) {
+      if (!/[MmLlHhVvCcSsQqTtAaZz]/.test(token)) {
         throw new Error(`pixel-card: unsupported path command ${token}`);
       }
       command = token;
       index += 1;
+      if (command === "Z" || command === "z") {
+        closeRing();
+        x = startX;
+        y = startY;
+        continue;
+      }
     }
-    switch (command) {
-      case "M":
-      case "m": {
-        if (ring.length > 2) rings.push(ring);
-        ring = [];
+    const rel = command === command.toLowerCase();
+    const upper = command.toUpperCase();
+    if (upper !== "C" && upper !== "S") {
+      lastCx = null;
+      lastCy = null;
+    }
+    if (upper !== "Q" && upper !== "T") {
+      lastQx = null;
+      lastQy = null;
+    }
+    switch (upper) {
+      case "M": {
+        closeRing();
         const nx = next();
         const ny = next();
-        x = command === "m" ? x + nx : nx;
-        y = command === "m" ? y + ny : ny;
+        x = rel ? x + nx : nx;
+        y = rel ? y + ny : ny;
         startX = x;
         startY = y;
         push(x, y);
         // A run of pairs after a moveto is an implicit lineto.
-        command = command === "m" ? "l" : "L";
+        command = rel ? "l" : "L";
         break;
       }
-      case "L":
-      case "l": {
+      case "L": {
         const nx = next();
         const ny = next();
-        x = command === "l" ? x + nx : nx;
-        y = command === "l" ? y + ny : ny;
+        x = rel ? x + nx : nx;
+        y = rel ? y + ny : ny;
         push(x, y);
         break;
       }
-      case "C":
-      case "c": {
-        const rel = command === "c";
+      case "H": {
+        const nx = next();
+        x = rel ? x + nx : nx;
+        push(x, y);
+        break;
+      }
+      case "V": {
+        const ny = next();
+        y = rel ? y + ny : ny;
+        push(x, y);
+        break;
+      }
+      case "C": {
         const x1 = (rel ? x : 0) + next();
         const y1 = (rel ? y : 0) + next();
         const x2 = (rel ? x : 0) + next();
@@ -478,20 +580,48 @@ export function flattenPath(
         cubic(x1, y1, x2, y2, ex, ey);
         break;
       }
-      case "Z":
-      case "z": {
-        if (ring.length > 2) rings.push(ring);
-        ring = [];
-        x = startX;
-        y = startY;
-        index += 1;
+      case "S": {
+        const x1 = lastCx === null ? x : 2 * x - lastCx;
+        const y1 = lastCy === null ? y : 2 * y - lastCy;
+        const x2 = (rel ? x : 0) + next();
+        const y2 = (rel ? y : 0) + next();
+        const ex = (rel ? x : 0) + next();
+        const ey = (rel ? y : 0) + next();
+        cubic(x1, y1, x2, y2, ex, ey);
+        break;
+      }
+      case "Q": {
+        const x1 = (rel ? x : 0) + next();
+        const y1 = (rel ? y : 0) + next();
+        const ex = (rel ? x : 0) + next();
+        const ey = (rel ? y : 0) + next();
+        quad(x1, y1, ex, ey);
+        break;
+      }
+      case "T": {
+        const x1 = lastQx === null ? x : 2 * x - lastQx;
+        const y1 = lastQy === null ? y : 2 * y - lastQy;
+        const ex = (rel ? x : 0) + next();
+        const ey = (rel ? y : 0) + next();
+        quad(x1, y1, ex, ey);
+        break;
+      }
+      case "A": {
+        const rx = next();
+        const ry = next();
+        const rotation = next();
+        const large = next();
+        const sweep = next();
+        const ex = (rel ? x : 0) + next();
+        const ey = (rel ? y : 0) + next();
+        arc(rx, ry, rotation, large, sweep, ex, ey);
         break;
       }
       default:
         throw new Error(`pixel-card: unsupported path command ${command || token}`);
     }
   }
-  if (ring.length > 2) rings.push(ring);
+  closeRing();
   return rings;
 }
 
@@ -748,6 +878,39 @@ export function renderCardPng(content: CardContent): Uint8Array {
     ] as [number, number, number];
   });
   return encodePngIndexed(W, H, indices, palette, 4);
+}
+
+/**
+ * TWO INKS ON ONE PLATE (the Paywall's share sheet, 2026-09-12). The
+ * passport card is one ink on one paper; a share sheet wants one rail
+ * colour beside the cream. Two coverage surfaces, one palette: eight
+ * steps field-to-ink, eight steps field-to-accent, still four bits a
+ * pixel. Where both inks touched a pixel the heavier one wins, which
+ * at the sizes these are set is never visible.
+ */
+export function renderTwoInkPng(
+  ink: Surface,
+  accent: Surface,
+  colours: { field: readonly [number, number, number]; ink: readonly [number, number, number]; accent: readonly [number, number, number] },
+): Uint8Array {
+  const width = ink.width;
+  const height = ink.height;
+  const indices = new Uint8Array(width * height);
+  for (let i = 0; i < indices.length; i += 1) {
+    const a = ink.ink[i]!;
+    const b = accent.ink[i]!;
+    indices[i] = b > a ? 8 + Math.round(b * 7) : Math.round(a * 7);
+  }
+  const ramp = (to: readonly [number, number, number]): [number, number, number][] =>
+    Array.from({ length: 8 }, (_, step) => {
+      const t = step / 7;
+      return [
+        Math.round(colours.field[0] + (to[0] - colours.field[0]) * t),
+        Math.round(colours.field[1] + (to[1] - colours.field[1]) * t),
+        Math.round(colours.field[2] + (to[2] - colours.field[2]) * t),
+      ] as [number, number, number];
+    });
+  return encodePngIndexed(width, height, indices, [...ramp(colours.ink), ...ramp(colours.accent)], 4);
 }
 
 export const CARD_WIDTH = W;

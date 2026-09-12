@@ -921,8 +921,13 @@ const BASE = "https://scvd.store";
 // 2026-09-12, same day: the card table paragraph's three URL templates
 // moved into code spans, so a URL scanner never sees a brace outside
 // backticks (test/markdown-discoverability.spec.ts). Same verification.
+// 2026-09-12, the Paywall (handoff v2): the card table paragraph became
+// the Paywall paragraph (/design, the pack, the window pick, the bell,
+// the binder, the day seed), the door list names /design, the shelf
+// gained the pack and the window pick, and the declined-positions
+// sentence names two more browser tools. Verified the same way.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "da254b74ae3a76dfaaada8cced79778f1af0bafd5f6b705be0d76eac26c98a90";
+  "c7e5ae7a8aca7ede17c6877e027fa222e3c3eb6a9d0c0c04201a8c3da65e6fe6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

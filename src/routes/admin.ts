@@ -86,6 +86,8 @@ import {
   parseLuckyStrength,
   setLuckyStatus,
 } from "@/services/luckies";
+import { handPress } from "@/services/cards";
+import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import { luckyNote } from "@/store/copy";
 import { listConfessions, setConfessionStatus } from "@/services/confessions";
 import { listTags, setTagStatus } from "@/services/train";
@@ -3745,6 +3747,17 @@ adminRoutes.post("/admin/luckies/move", async (c) => {
     return c.text("No lucky by that id in custody.", 404);
   }
   return c.redirect("/admin/tools");
+});
+
+/** The Keeper card, one at a time, by his hand, to a wallet he names. */
+adminRoutes.post("/admin/paywall/press", async (c) => {
+  const form = await c.req.parseBody();
+  const wallet = sanitizeText(form["wallet"], 64);
+  if (!wallet || !(isWalletAddress(wallet) || isSolanaWalletAddress(wallet))) {
+    return c.text("A hand press takes the holder's wallet: a 0x address or a base58 Solana address.", 400);
+  }
+  const pressed = await handPress(c.env, wallet);
+  return c.redirect(`/p/${pressed.card.card_id}`);
 });
 
 adminRoutes.post("/admin/guestbook/delete", async (c) => {

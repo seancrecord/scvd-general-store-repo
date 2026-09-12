@@ -1,46 +1,86 @@
 import { inkParamsFromSignature } from "@/lib/ink";
+import { encodeQr, qrSvg } from "@/lib/qr";
 import { escapeHtml } from "@/lib/sanitize";
-import { fnv1a } from "@/services/luckies";
-import { dinoMark } from "@/services/favicon";
 import {
   CARD_LINES,
+  CONDITION_YELLOW,
+  CREAM,
   CURRENT_SEASON,
+  PAPER_BLACK,
+  RAIL_COLOURS,
   RARITY_LINES,
   RARITY_ORDER,
   SPECIMEN_CARD,
+  TYPE_LINES,
   seasonById,
   type CardEntry,
 } from "@/store/cards";
-import { STORE_METADATA } from "@/store/metadata";
-import type { CardRarity, CardRecord } from "@/types";
+import { plateFor } from "@/store/plates";
+import type { CardRarity, CardRecord, CardType } from "@/types";
 
 /**
- * THE CARD, DRAWN. 5:7 like a real card, forest-black ground like the
- * passport chip (the keeper on the cream face: "I want premium"), a
- * foil frame whose metal is the rarity, and in the picture window a
- * SIGIL rather than a drawing: a rosette derived from the card's own
- * name, so every printing of "The Bell" carries the same mark and no
- * two entries in the set share one. No photograph and no illustration
- * of an object, because a drawing would be an invention and the card
- * is a record. The rarity stamp lands by hand, seeded by the record's
- * signature (lib/ink.ts): same signature, same card, forever.
+ * THE CARD FACE, 1000×1400 (handoff v2 §2–3): letterpress plate,
+ * phosphor data layer. Four layers, bottom to top —
+ *
+ *   1. PAPER. Near-black with a faint stock grain. The rarity changes
+ *      the stock: common is flat, uncommon carries an inner hairline,
+ *      rare a visible deckle edge, holo a cream-to-white shimmer band,
+ *      keeper is cream paper with black ink — the one inverted card.
+ *   2. PLATE. The field-guide drawing, single ink, from store/plates.
+ *      A condition is its plate with something visibly wrong in
+ *      yellow. An undrawn entry is its silhouette, labelled.
+ *   3. DATA. Monospace, small, one rail colour (store items cream):
+ *      the card id, the print number, the verify URL, the date, the
+ *      seed commit, and a real QR of the verify URL along the foot.
+ *      Holo gets a scanline over the data layer. Nowhere else.
+ *   4. LABEL. Name in the serif display, type under it, one italic
+ *      line, rarity diamonds. No eyebrows beyond the header lockup.
+ *
+ * The stamp of the rarity lands by hand, seeded by the signature
+ * (lib/ink.ts), so a pressing's face is stable forever.
  */
 
-const WIDTH = 360;
-const HEIGHT = 504;
+const W = 1000;
+const H = 1400;
 
-const FIELD = "#0F1A13";
-const FIELD_DEEP = "#08110B";
-const CREAM = "#F0E6CF";
-const FADED = "#9DA58F";
+const SERIF = "Georgia, 'Times New Roman', serif";
+const MONO = "'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 
-/** The foil per tier: a flat metal for the low tiers, a gradient for the high. */
-const FOIL: Record<CardRarity, { a: string; b: string; ink: string }> = {
-  common: { a: "#D9D2BE", b: "#B9B19C", ink: "#E5E0D0" },
-  uncommon: { a: "#D08A46", b: "#9C5A22", ink: "#E4A76B" },
-  rare: { a: "#C9D6E4", b: "#7F93A8", ink: "#D6E2EE" },
-  legendary: { a: "#F6DC8C", b: "#B8860B", ink: "#F3D27A" },
+const TYPE_SILHOUETTE: Record<CardType, string> = {
+  herd: "M20 70c0-20 12-34 30-34s30 14 30 34l-6 4H26z",
+  room: "M18 46l32-26 32 26v34H18z",
+  instrument: "M50 14a30 30 0 1 0 0.1 0z M46 44h8v42h-8z",
+  place: "M48 10h4v80h-4z M20 22h50v14H20z M80 46H30v14h50z",
+  mark: "M50 12l38 38-38 38-38-38z",
+  rail: "M10 60h80v8H10z M22 20h8v40h-8z M70 20h8v40h-8z",
+  door: "M22 90V34a28 28 0 0 1 56 0v56z",
+  condition: "M20 20h60v60H20z",
+  event: "M50 12l11 24 26 3-19 18 5 26-23-13-23 13 5-26-19-18 26-3z",
+  ally: "M50 14a16 16 0 1 0 0.1 0z M26 84c0-18 10-30 24-30s24 12 24 30z",
 };
+
+export interface FaceOptions {
+  card: CardRecord;
+  signature: string;
+  verifyUrl: string;
+}
+
+interface FaceBody {
+  entry: CardEntry;
+  seasonName: string;
+  subtitle: string;
+  setSize: number;
+  specimen?: boolean;
+  cardId?: string;
+  printNo?: number;
+  printCap?: number;
+  date?: string;
+  commit?: string;
+  signature?: string;
+  verifyUrl?: string;
+  /** What the QR carries. The specimen's points at the room. */
+  qrText: string;
+}
 
 /** Greedy word wrap; SVG text doesn't do it for us. */
 function wrapText(text: string, maxChars: number, maxLines: number): string[] {
@@ -60,191 +100,209 @@ function wrapText(text: string, maxChars: number, maxLines: number): string[] {
   if (lines.length > maxLines) {
     const kept = lines.slice(0, maxLines);
     const last = kept[maxLines - 1] ?? "";
-    kept[maxLines - 1] =
-      last.length > maxChars - 1 ? `${last.slice(0, maxChars - 1)}…` : `${last}…`;
+    kept[maxLines - 1] = last.length > maxChars - 1 ? `${last.slice(0, maxChars - 1)}…` : `${last}…`;
     return kept;
   }
   return lines;
 }
 
-function textLines(lines: string[], startY: number, step: number, attrs: string): string {
-  return lines
-    .map(
-      (line, index) =>
-        `<text x="${WIDTH / 2}" y="${startY + index * step}" text-anchor="middle" ${attrs}>${escapeHtml(line)}</text>`,
-    )
-    .join("\n  ");
+export function accentFor(entry: Pick<CardEntry, "type" | "rail">): string {
+  if (entry.rail) return RAIL_COLOURS[entry.rail];
+  return CREAM;
 }
 
-/**
- * THE SIGIL. A rosette of nested polygons whose point count, turn and
- * ring count come off the card's name, so it is the same on every
- * printing and different on every entry. Higher tiers get more rings;
- * the legendary tier gets the dinosaur behind it, faint.
- */
-export function sigil(name: string, rarity: CardRarity, cx: number, cy: number, radius: number, ink: string): string {
-  const seed = fnv1a(`sigil:${name}`);
-  const points = 5 + (seed % 5); // 5..9
-  const turn = ((seed >>> 8) % 360) * (Math.PI / 180);
-  const rings = 2 + RARITY_ORDER.indexOf(rarity); // 2..5
-  const parts: string[] = [];
-  for (let ring = 0; ring < rings; ring += 1) {
-    const r = radius * (1 - ring * (0.72 / rings));
-    const offset = turn + ring * (Math.PI / points);
-    const coords: string[] = [];
-    for (let index = 0; index < points; index += 1) {
-      const angle = offset + (index * 2 * Math.PI) / points;
-      coords.push(`${(cx + r * Math.cos(angle)).toFixed(2)},${(cy + r * Math.sin(angle)).toFixed(2)}`);
-    }
-    // Alternate rings are drawn as stars (every other vertex) so the
-    // rosette reads as one ornament rather than stacked plates.
-    const star = ring % 2 === 1 && points >= 5;
-    const order = star ? coords.filter((_, index) => index % 2 === 0).concat(coords.filter((_, index) => index % 2 === 1)) : coords;
-    parts.push(
-      `<polygon points="${order.join(" ")}" fill="none" stroke="${ink}" stroke-width="${(1.4 - ring * 0.2).toFixed(2)}" opacity="${(0.9 - ring * 0.12).toFixed(2)}"/>`,
-    );
+/** The plate, or the labelled silhouette, into a box. */
+function plateSvg(entry: CardEntry, box: { x: number; y: number; size: number }, ink: string, labelInk: string): string {
+  const plate = plateFor(entry.key);
+  const scale = box.size / 100;
+  if (plate) {
+    const transform = plate.transform ? ` transform="${plate.transform}"` : "";
+    return `<g transform="translate(${box.x} ${box.y}) scale(${scale.toFixed(4)})"><path d="${plate.d}" fill="${ink}" fill-rule="evenodd"${transform}/></g>`;
   }
-  parts.push(`<circle cx="${cx}" cy="${cy}" r="${(radius * 0.08).toFixed(2)}" fill="${ink}"/>`);
-  return parts.join("\n    ");
+  return `<g transform="translate(${box.x} ${box.y}) scale(${scale.toFixed(4)})"><path d="${TYPE_SILHOUETTE[entry.type]}" fill="#262626" fill-rule="evenodd"/></g>
+  <text x="${W / 2}" y="${box.y + box.size + 44}" text-anchor="middle" font-family="${MONO}" font-size="22" letter-spacing="4" fill="${labelInk}">${escapeHtml(CARD_LINES.notYetPressed.toUpperCase())}</text>`;
 }
 
-function pips(rarity: CardRarity, y: number, ink: string): string {
-  const count = RARITY_ORDER.indexOf(rarity) + 1;
-  const gap = 14;
-  const startX = WIDTH / 2 - ((count - 1) * gap) / 2;
+/** Something visibly wrong, in yellow: the condition's mark over its plate. */
+function conditionMark(box: { x: number; y: number; size: number }): string {
+  const x0 = box.x + box.size * 0.12;
+  const x1 = box.x + box.size * 0.88;
+  const y0 = box.y + box.size * 0.12;
+  const y1 = box.y + box.size * 0.88;
+  return `<g stroke="${CONDITION_YELLOW}" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.92">
+    <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}"/>
+    <line x1="${x1}" y1="${y0}" x2="${x0}" y2="${y1}"/>
+  </g>`;
+}
+
+function diamonds(rarity: CardRarity, cx: number, y: number, ink: string): string {
+  const count = Math.max(1, RARITY_ORDER.indexOf(rarity) + 1);
+  const gap = 34;
+  const startX = cx - ((count - 1) * gap) / 2;
   const marks: string[] = [];
-  for (let index = 0; index < count; index += 1) {
-    const x = startX + index * gap;
-    marks.push(`<polygon points="${x},${y - 5} ${x + 5},${y} ${x},${y + 5} ${x - 5},${y}" fill="${ink}"/>`);
+  for (let i = 0; i < count; i += 1) {
+    const x = startX + i * gap;
+    marks.push(`<polygon points="${x},${y - 11} ${x + 11},${y} ${x},${y + 11} ${x - 11},${y}" fill="${ink}"/>`);
   }
   return marks.join("");
 }
 
-export interface CardArtOptions {
-  card: CardRecord;
-  signature: string;
-  verifyUrl: string;
+/** The deckle: a rough cream edge just inside the frame, for rare stock. */
+function deckle(seed: number): string {
+  const points: string[] = [];
+  const inset = 22;
+  const step = 18;
+  let n = seed;
+  const jitter = (): number => {
+    n = (Math.imul(n, 1664525) + 1013904223) >>> 0;
+    return ((n >>> 8) % 9) - 4;
+  };
+  for (let x = inset; x <= W - inset; x += step) points.push(`${x},${inset + jitter()}`);
+  for (let y = inset; y <= H - inset; y += step) points.push(`${W - inset + jitter()},${y}`);
+  for (let x = W - inset; x >= inset; x -= step) points.push(`${x},${H - inset + jitter()}`);
+  for (let y = H - inset; y >= inset; y -= step) points.push(`${inset + jitter()},${y}`);
+  return `<polygon points="${points.join(" ")}" fill="none" stroke="${CREAM}" stroke-width="2.5" opacity="0.75"/>`;
 }
 
-interface CardBody {
-  entry: CardEntry;
-  seasonName: string;
-  setSize: number;
-  specimen?: boolean;
-  cardId?: string;
-  date?: string;
-  signature?: string;
-  verifyUrl?: string;
-}
-
-export function renderCardSvg(options: CardArtOptions): string {
-  const season = seasonById(options.card.season);
-  return renderCard({
+export function renderCardFace(options: FaceOptions): string {
+  const { card } = options;
+  const season = seasonById(card.season) ?? CURRENT_SEASON;
+  return renderFace({
     entry: {
-      no: options.card.card_no,
-      name: options.card.name,
-      rarity: options.card.rarity,
-      kind: options.card.kind,
-      line: options.card.line,
-      cite: options.card.cite,
+      no: card.card_no,
+      key: card.key,
+      name: card.name,
+      type: card.type,
+      rarity: card.rarity,
+      ...(card.rail ? { rail: card.rail } : {}),
+      line: card.line,
+      cite: card.cite,
+      ...(card.print_cap !== undefined ? { print_cap: card.print_cap } : {}),
     },
-    seasonName: season?.name ?? options.card.season,
-    setSize: season?.cards.length ?? 0,
-    cardId: options.card.card_id,
-    date: options.card.date,
+    seasonName: season.name,
+    subtitle: season.subtitle,
+    setSize: season.cards.length,
+    cardId: card.card_id,
+    printNo: card.print_no,
+    ...(card.print_cap !== undefined ? { printCap: card.print_cap } : {}),
+    date: card.date,
+    ...(card.commit ? { commit: card.commit } : {}),
     signature: options.signature,
     verifyUrl: options.verifyUrl,
+    qrText: options.verifyUrl,
   });
 }
 
-export function renderSampleCardSvg(): string {
-  return renderCard({ entry: SPECIMEN_CARD, seasonName: CURRENT_SEASON.name, setSize: CURRENT_SEASON.cards.length, specimen: true });
+export function renderSpecimenFace(base: string): string {
+  return renderFace({
+    entry: SPECIMEN_CARD,
+    seasonName: CURRENT_SEASON.name,
+    subtitle: CURRENT_SEASON.subtitle,
+    setSize: CURRENT_SEASON.cards.length,
+    specimen: true,
+    qrText: `${base}/design`,
+  });
 }
 
-function renderCard(body: CardBody): string {
+function renderFace(body: FaceBody): string {
   const { entry } = body;
-  const foil = FOIL[entry.rarity];
-  const ink = inkParamsFromSignature(body.signature);
-  const town = STORE_METADATA.location.split(",")[0] ?? "Oak City";
-  const gradientId = `foil-${entry.rarity}`;
-  const numberLine = body.specimen ? "No. —" : `No. ${String(entry.no).padStart(2, "0")} / ${body.setSize}`;
+  const inverted = entry.rarity === "keeper";
+  const paper = inverted ? CREAM : PAPER_BLACK;
+  const ink = inverted ? PAPER_BLACK : CREAM;
+  const accent = inverted ? PAPER_BLACK : accentFor(entry);
+  const faded = inverted ? "#4a4437" : "#8f8878";
+  const stamp = inkParamsFromSignature(body.signature);
+  const window = { x: 90, y: 150, w: 820, h: 700 };
+  const plateBox = { x: window.x + (window.w - 560) / 2, y: window.y + (window.h - 560) / 2, size: 560 };
 
-  const nameLines = wrapText(entry.name, 20, 2);
-  const lineLines = wrapText(entry.line, 40, 4);
+  const nameLines = wrapText(entry.name, 22, 2);
+  const flavour = wrapText(entry.line, 46, 3);
+  const nameY = 940;
+  const nameSize = nameLines.length > 1 ? 52 : 60;
+  const typeY = nameY + (nameLines.length - 1) * 58 + 40;
+  const flavourY = typeY + 46;
+  // The stamp never wanders into the data layer: it floats under the
+  // flavour but stops above the strip, whatever the name wrapped to.
+  const diamondsY = Math.min(flavourY + flavour.length * 34 + 12, H - 300);
 
-  // The picture window and everything under it lay out from the top.
-  const windowTop = 84;
-  const windowHeight = 190;
-  const windowBottom = windowTop + windowHeight;
-  const nameY = windowBottom + 34;
-  const nameSvg = textLines(nameLines, nameY, 24, `font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${CREAM}"`);
-  const kindY = nameY + (nameLines.length - 1) * 24 + 18;
-  const lineY = kindY + 20;
-  const lineSvg = textLines(lineLines, lineY, 14, `font-family="Georgia, serif" font-style="italic" font-size="10.5" fill="${CREAM}" opacity="0.92"`);
-  const stampY = 442;
+  const numberLine = body.specimen ? "No. — / —" : `No. ${String(entry.no).padStart(2, "0")} / ${body.setSize}`;
+  const printLine = body.specimen
+    ? "no print number"
+    : body.printCap !== undefined
+      ? `print ${body.printNo} of ${body.printCap}`
+      : `print ${body.printNo}`;
 
-  const legendaryMark =
-    entry.rarity === "legendary"
-      ? dinoMark(WIDTH / 2 - 66, windowTop + windowHeight / 2 - 66, 132, foil.ink, 0.13)
-      : "";
-  const sheen =
-    entry.rarity === "legendary" || entry.rarity === "rare"
-      ? `<rect x="0" y="0" width="${WIDTH}" height="${HEIGHT}" fill="url(#sheen)" rx="14" opacity="0.35"/>`
-      : "";
+  // The machine strip: a real QR of the verify URL, bottom-left, and the data beside it.
+  const qr = encodeQr(body.qrText);
+  const qrCell = Math.floor(150 / qr.size);
+  const qrSize = qrCell * qr.size;
+  const qrX = 90;
+  const qrY = H - 90 - qrSize;
+  const dataX = qrX + qrSize + 28;
+  const dataLines = body.specimen
+    ? [CARD_LINES.specimenMark, "no signature · no print", body.qrText]
+    : [
+        `${body.cardId} · ${printLine}`,
+        `${(body.date ?? "").slice(0, 10)} · commit ${(body.commit ?? "").slice(0, 16)}…`,
+        body.verifyUrl ?? "",
+      ];
+  const dataSvg = dataLines
+    .map((line, i) => `<text x="${dataX}" y="${qrY + 26 + i * 30}" font-family="${MONO}" font-size="19" fill="${accent}" opacity="0.95">${escapeHtml(line)}</text>`)
+    .join("\n  ");
 
-  const footer = body.specimen
-    ? `<text x="${WIDTH / 2}" y="470" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="9.5" fill="${FADED}">${escapeHtml(CARD_LINES.specimenFootnote)}</text>
-  <text x="${WIDTH / 2}" y="483" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="9.5" fill="${FADED}">${escapeHtml(CARD_LINES.specimenFootnote2)}</text>`
-    : `<text x="${WIDTH / 2}" y="470" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${FADED}">code: ${escapeHtml(body.cardId ?? "")}</text>
-  <a xlink:href="${escapeHtml(body.verifyUrl ?? "")}" href="${escapeHtml(body.verifyUrl ?? "")}">
-    <text x="${WIDTH / 2}" y="483" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(body.verifyUrl ?? "")}</text>
-  </a>`;
+  const stock =
+    entry.rarity === "uncommon"
+      ? `<rect x="34" y="34" width="${W - 68}" height="${H - 68}" rx="18" fill="none" stroke="${ink}" stroke-width="1" opacity="0.5"/>`
+      : entry.rarity === "rare"
+        ? deckle(parseInt((body.signature ?? "7").slice(0, 6), 16) || 7)
+        : entry.rarity === "holo"
+          ? `<rect x="0" y="0" width="${W}" height="${H}" rx="28" fill="url(#holo)"/>`
+          : "";
+  const scanlines = entry.rarity === "holo" ? `<rect x="${qrX - 10}" y="${qrY - 16}" width="${W - 160}" height="${qrSize + 32}" fill="url(#scan)" opacity="0.45"/>` : "";
   const specimenWatermark = body.specimen
-    ? `<text x="${WIDTH / 2}" y="${HEIGHT / 2}" text-anchor="middle" transform="rotate(-24 ${WIDTH / 2} ${HEIGHT / 2})" font-family="Georgia, serif" font-weight="bold" font-size="56" letter-spacing="6" fill="${CREAM}" opacity="0.14">${escapeHtml(CARD_LINES.specimenMark)}</text>`
+    ? `<text x="${W / 2}" y="${window.y + window.h / 2 + 40}" text-anchor="middle" transform="rotate(-24 ${W / 2} ${window.y + window.h / 2})" font-family="${SERIF}" font-weight="bold" font-size="150" letter-spacing="14" fill="${ink}" opacity="0.16">${escapeHtml(CARD_LINES.specimenMark)}</text>`
     : "";
-  const custodyParts = [CARD_LINES.custodyLine, town];
-  if (body.date) custodyParts.push(body.date.slice(0, 10));
-  const label = body.specimen ? "Sample trading card" : `Trading card: ${entry.name}, ${RARITY_LINES[entry.rarity].toLowerCase()}`;
+  const label = body.specimen ? "Sample card" : `${entry.name}, ${RARITY_LINES[entry.rarity].toLowerCase()} ${TYPE_LINES[entry.type].toLowerCase()} card`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="${escapeHtml(label)}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(label)}">
   <defs>
-    <linearGradient id="${gradientId}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${foil.a}"/>
-      <stop offset="0.5" stop-color="${foil.b}"/>
-      <stop offset="1" stop-color="${foil.a}"/>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.07"/></feComponentTransfer>
+    </filter>
+    <linearGradient id="holo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0.30" stop-color="${CREAM}" stop-opacity="0"/>
+      <stop offset="0.46" stop-color="${CREAM}" stop-opacity="0.16"/>
+      <stop offset="0.50" stop-color="#FFFFFF" stop-opacity="0.26"/>
+      <stop offset="0.54" stop-color="${CREAM}" stop-opacity="0.16"/>
+      <stop offset="0.70" stop-color="${CREAM}" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0.35" stop-color="${CREAM}" stop-opacity="0"/>
-      <stop offset="0.5" stop-color="${CREAM}" stop-opacity="0.18"/>
-      <stop offset="0.65" stop-color="${CREAM}" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="window" cx="0.5" cy="0.45" r="0.7">
-      <stop offset="0" stop-color="#1B2E22"/>
-      <stop offset="1" stop-color="${FIELD_DEEP}"/>
-    </radialGradient>
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="2" fill="${ink}" opacity="0.18"/>
+    </pattern>
   </defs>
-  <rect width="${WIDTH}" height="${HEIGHT}" fill="url(#${gradientId})" rx="14"/>
-  <rect x="7" y="7" width="${WIDTH - 14}" height="${HEIGHT - 14}" fill="${FIELD}" rx="10"/>
-  <rect x="13" y="13" width="${WIDTH - 26}" height="${HEIGHT - 26}" fill="none" stroke="${foil.ink}" stroke-width="0.75" stroke-dasharray="1 3" stroke-dashoffset="${ink.hairlineOffset}" rx="8" opacity="0.7"/>
-  ${sheen}
-  <text x="${WIDTH / 2}" y="40" text-anchor="middle" font-family="Georgia, serif" font-size="9" letter-spacing="3" fill="${foil.ink}">SEAN-CLAUDE VAN DAMME'S GENERAL STORE</text>
-  <text x="${WIDTH / 2}" y="58" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" letter-spacing="2.5" fill="${FADED}">${escapeHtml(CARD_LINES.seasonLabel)} • ${escapeHtml(body.seasonName.toUpperCase())}</text>
-  <line x1="40" y1="70" x2="${WIDTH - 40}" y2="70" stroke="${foil.ink}" stroke-width="0.8" opacity="0.8"/>
-  <rect x="28" y="${windowTop}" width="${WIDTH - 56}" height="${windowHeight}" fill="url(#window)" stroke="${foil.ink}" stroke-width="1.2" rx="6"/>
-  <g>
-    ${legendaryMark}
-    ${sigil(entry.name, entry.rarity, WIDTH / 2, windowTop + windowHeight / 2, 74, foil.ink)}
-  </g>
+  <rect width="${W}" height="${H}" rx="28" fill="${paper}"/>
+  <rect width="${W}" height="${H}" rx="28" filter="url(#grain)" fill="${ink}"/>
+  ${stock}
+  <rect x="24" y="24" width="${W - 48}" height="${H - 48}" rx="20" fill="none" stroke="${ink}" stroke-width="3"/>
+  <text x="${W / 2}" y="76" text-anchor="middle" font-family="${SERIF}" font-size="22" letter-spacing="7" fill="${ink}">${escapeHtml(CARD_LINES.headerLockup)}</text>
+  <text x="${W / 2}" y="112" text-anchor="middle" font-family="${SERIF}" font-style="italic" font-size="21" letter-spacing="3" fill="${faded}">${escapeHtml(body.subtitle)}</text>
+  <rect x="${window.x}" y="${window.y}" width="${window.w}" height="${window.h}" rx="10" fill="none" stroke="${ink}" stroke-width="1.5" opacity="0.7"/>
+  ${plateSvg(entry, plateBox, ink, faded)}
+  ${entry.type === "condition" ? conditionMark(plateBox) : ""}
   ${specimenWatermark}
-  <text x="${WIDTH - 36}" y="${windowBottom - 10}" text-anchor="end" font-family="Georgia, serif" font-size="9" letter-spacing="1.5" fill="${foil.ink}" opacity="0.9">${escapeHtml(numberLine)}</text>
-  ${nameSvg}
-  <text x="${WIDTH / 2}" y="${kindY}" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" letter-spacing="3" fill="${FADED}">${escapeHtml(entry.kind.toUpperCase())}</text>
-  ${lineSvg}
-  <g transform="rotate(${ink.rotationDeg.toFixed(2)} ${WIDTH / 2} ${stampY})" opacity="${ink.inkOpacity}">
-    ${pips(entry.rarity, stampY - 16, foil.ink)}
-    <text x="${WIDTH / 2}" y="${stampY + 2}" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="12" letter-spacing="4" fill="${foil.ink}">${escapeHtml(body.specimen ? CARD_LINES.specimenMark : RARITY_LINES[entry.rarity])}</text>
+  <text x="${window.x + window.w - 22}" y="${window.y + window.h - 22}" text-anchor="end" font-family="${MONO}" font-size="20" letter-spacing="3" fill="${accent}">${escapeHtml(numberLine)}</text>
+  ${nameLines.map((line, i) => `<text x="${W / 2}" y="${nameY + i * 58}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="${nameSize}" fill="${ink}">${escapeHtml(line)}</text>`).join("\n  ")}
+  <text x="${W / 2}" y="${typeY}" text-anchor="middle" font-family="${SERIF}" font-size="22" letter-spacing="6" fill="${faded}">${escapeHtml(TYPE_LINES[entry.type].toUpperCase())}${entry.rail ? ` · ${escapeHtml(entry.rail.toUpperCase())}` : ""}</text>
+  ${flavour.map((line, i) => `<text x="${W / 2}" y="${flavourY + i * 34}" text-anchor="middle" font-family="${SERIF}" font-style="italic" font-size="26" fill="${ink}" opacity="0.92">${escapeHtml(line)}</text>`).join("\n  ")}
+  <g transform="rotate(${stamp.rotationDeg.toFixed(2)} ${W / 2} ${diamondsY})" opacity="${stamp.inkOpacity}">
+    ${diamonds(entry.rarity, W / 2, diamondsY, accent)}
+    <text x="${W / 2}" y="${diamondsY + 44}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="24" letter-spacing="8" fill="${accent}">${escapeHtml(body.specimen ? CARD_LINES.specimenMark : RARITY_LINES[entry.rarity])}</text>
   </g>
-  <text x="${WIDTH / 2}" y="${stampY + 16}" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" letter-spacing="1.5" fill="${FADED}">${escapeHtml(custodyParts.join(" • "))}</text>
-  ${footer}
+  ${scanlines}
+  ${qrSvg(qr, qrX, qrY, qrCell, accent)}
+  ${dataSvg}
+  <text x="${W - 90}" y="${H - 96}" text-anchor="end" font-family="${MONO}" font-size="17" letter-spacing="2" fill="${faded}">${escapeHtml(body.specimen ? CARD_LINES.specimenFootnote : CARD_LINES.custodyLine)}</text>
 </svg>`;
 }

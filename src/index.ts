@@ -3,6 +3,7 @@ import { withPatientKv } from "@/lib/kv-retry";
 import type { Context } from "hono";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { Hono } from "hono";
+import { publishSeedRecord, utcDate } from "@/services/paywall-seed";
 import {
   adminRoutes,
   almanacRoutes,
@@ -23,6 +24,7 @@ import {
   agentsMdRoutes,
   luckyRoutes,
   cardRoutes,
+  windowAdmission,
   mcpRoutes,
   openapiRoutes,
   patronageRoutes,
@@ -281,6 +283,7 @@ app.route("/", ledgerRoutes);
 app.route("/", mcpWardRoutes);
 app.route("/", botAuthRoutes);
 app.route("/", botAuthLandingRoutes);
+app.route("/", windowAdmission);
 app.route("/", buyRoutes);
 app.route("/", commissionRoutes);
 app.route("/", tabPoolRoutes);
@@ -531,6 +534,14 @@ const worker: ExportedHandler<Env> = {
   // (kv-retry.ts): nobody is waiting on a walk, so it can sit out the
   // kind of blip that has now killed three of them.
   scheduled: (event, env, ctx) => withPatientKv(async () => {
+    /*
+     * THE DAY SEED'S COMMIT (the Paywall, 2026-09-12): written within
+     * the half hour after every UTC midnight, so the commit's
+     * published_at is on the record before most of the day's pulls;
+     * a pull on a day the cron has not reached writes it too. Never
+     * throws into the round that follows.
+     */
+    await publishSeedRecord(env, utcDate()).catch(() => undefined);
     if (event.cron === "0 11 * * SUN") {
       /**
        * THE COLD EXPORT rides the same press as the ward round

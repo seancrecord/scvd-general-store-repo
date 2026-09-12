@@ -87,7 +87,7 @@ export function packNote(options: {
   return [
     `Pack opened: ${pulls}.`,
     `Every card is signed and hangs at its own page; the pack record answers at ${options.packUrl}.`,
-    `The odds you drew on, with their denominators, are on the table at ${options.tableUrl}; the draw is recomputable from your certificate id.`,
+    `The odds you drew on, with their denominators, are on the table at ${options.tableUrl}; the seed the draw used is published there the morning after, and the whole pull recomputes from public inputs.`,
     "A card entitles the holder to a card.",
   ].join(" ");
 }

@@ -5,6 +5,8 @@ import { metricsMonth } from "@/lib/metrics";
 import { bellLine, VOICE } from "@/store";
 import type { Env } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
+import { bellPressing } from "@/services/cards";
+import type { SignedCardRecord } from "@/types";
 
 /**
  * The bell, rung from any door. HTTP or MCP, same bell. One ring per
@@ -18,6 +20,8 @@ export interface BellResult {
   count: number;
   /** When the ring resets, so a scheduled visitor can plan around us. */
   cadence?: Cadence;
+  /** One common a day off the bell (the Paywall, 2026-09-12); absent on a repeat ring. */
+  pressing?: SignedCardRecord;
 }
 
 /** Rings that counted this month: `metric:<month>:bell:rings`. */
@@ -66,5 +70,12 @@ export async function ringBell(env: Env, who: string): Promise<BellResult> {
    * never waits on it.
    */
   await bumpMonthlyRings(env).catch(() => undefined);
-  return { message: bellLine(count), count, ...(cadence ? { cadence } : {}) };
+  /*
+   * THE BELL PRESSES A CARD (handoff v2 §5): one common a day to
+   * whoever rings, drawn by the same seed with the salt "bell". A
+   * pressing that fails to sign or file never breaks the ring — the
+   * bell rang first, and it says so without the card.
+   */
+  const pressing = await bellPressing(env, who).catch(() => undefined);
+  return { message: bellLine(count), count, ...(cadence ? { cadence } : {}), ...(pressing ? { pressing } : {}) };
 }

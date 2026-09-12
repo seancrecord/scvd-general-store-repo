@@ -960,34 +960,50 @@ export interface SignedLuckyRecord {
 }
 
 /**
- * THE CARD TABLE (2026-09-12). A card is one printing of one entry in
- * a season's set, pulled from a pack. Rarity is the wheel's word for
- * how often a slot lands on that tier; the odds are published on
- * /cards beside the fraction they come from. Signed at issue; nothing
- * on a card ever changes after, so there is no status to re-sign.
+ * THE PAYWALL (handoff v2, 2026-09-12). A pressing is one printing of
+ * one entry in a season's set: drawn from a pack, the bell or the
+ * shop window, or earned on another purchase; signed at issue; given
+ * a print number by the ledger atomically. Nothing on a pressing
+ * changes after issue, so there is no status to re-sign — the one
+ * structural difference from a lucky.
  */
-export type CardRarity = "common" | "uncommon" | "rare" | "legendary";
+export type CardRarity = "common" | "uncommon" | "rare" | "holo" | "keeper";
+export type CardType =
+  | "herd" | "room" | "instrument" | "place" | "mark" | "rail" | "door" | "condition" | "event" | "ally";
+export type CardRail = "base" | "solana" | "polygon";
+/** Where a pressing came from. */
+export type PressingSource = "pack" | "bell" | "window" | "earned" | "hand";
 
 export interface CardRecord {
   card_id: string;
-  /** The season the set belongs to ("s1"). */
   season: string;
-  /** Position in the season's set, 1-based; the number printed on the card. */
+  /** Position in the set, 1-based; 0 for an Event or the Ally. */
   card_no: number;
+  /** The set entry's stable key. */
+  key: string;
   name: string;
+  type: CardType;
   rarity: CardRarity;
-  /** What kind of thing the card depicts: a place, an instrument, a hand, a mark. */
-  kind: string;
-  /** The one line on the face. */
+  rail?: CardRail;
   line: string;
   /** A path on this store where the thing depicted actually lives. */
   cite: string;
-  /** Which of the pack's slots this card came out of, 1-based. */
-  slot: number;
-  pack_id: string;
+  /** Print number, 1-based, handed out atomically per entry. */
+  print_no: number;
+  /** The entry's real cap, when it has one. */
+  print_cap?: number;
+  source: PressingSource;
+  /** For a pack pressing: which slot, and which pack. */
+  slot?: number;
+  pack_id?: string;
+  /** The certificate the pressing rode on, when it rode on one. */
+  cert_id?: string;
+  /** The day's seed commit the draw was made under; absent for a hand press. */
+  commit?: string;
   date: string;
-  cert_id: string;
-  patron_number: number;
+  patron_number?: number;
+  /** The paying wallet, when the draw had one; keys the binder. */
+  holder?: string;
 }
 
 export interface SignedCardRecord {
@@ -996,13 +1012,23 @@ export interface SignedCardRecord {
   public_key: string;
 }
 
-/** The pack: five signed cards and a signed manifest naming them. */
+/**
+ * The pack: five signed cards and a signed manifest binding the day's
+ * seed commit, the draw inputs and the resulting card ids — so the
+ * morning after the seed is revealed, anyone can redo the whole pull.
+ */
 export interface PackRecord {
   pack_id: string;
   season: string;
   card_ids: string[];
-  date: string;
+  /** sha256 of the day seed the draw used. */
+  commit: string;
+  /** The seed's day, YYYY-MM-DD UTC. */
+  seed_date: string;
+  /** The wallet and certificate the HMAC took as input; "none" where the certificate carried no payer. */
+  payer: string;
   cert_id: string;
+  date: string;
   patron_number: number;
 }
 
@@ -1011,6 +1037,15 @@ export interface SignedPackRecord {
   cards: SignedCardRecord[];
   signature: string;
   public_key: string;
+}
+
+/** The day seed's public record: the commit at once, the seed the day after. */
+export interface SeedRecord {
+  date: string;
+  commit: string;
+  /** The 32-byte seed, hex, once the day has ended. */
+  seed?: string;
+  published_at: string;
 }
 
 export type RefundStatus = "refund_pending" | "refund_paid";

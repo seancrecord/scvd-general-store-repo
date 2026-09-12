@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { sanitizeText } from "@/lib/sanitize";
 import { ringBell } from "@/services/bell";
+import { pressingSummary } from "@/services/instant-goods";
 import { isRecord, type HonoEnv } from "@/types";
 
 /**
@@ -22,5 +23,6 @@ bellRoutes.post("/api/bell", async (c) => {
     c.req.header("X-Forwarded-For") ||
     "a-mysterious-stranger";
   const result = await ringBell(c.env, who);
-  return c.json(result);
+  const { pressing, ...rest } = result;
+  return c.json({ ...rest, ...(pressing ? { pressing: pressingSummary(c.env.STORE_BASE_URL, pressing.card) } : {}) });
 });

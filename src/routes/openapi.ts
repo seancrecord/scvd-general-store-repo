@@ -5866,26 +5866,28 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       /**
-       * THE CARD TABLE (2026-09-12): one card, one pack, one binder.
-       * The odds and the set are on the room's own twin (/cards with
-       * Accept: application/json), not a door of their own.
+       * THE PAYWALL (2026-09-12): a pressing, a pack, a binder, the day
+       * seed, the set and the window. The odds are on the room's own
+       * twin (/design with Accept: application/json).
        */
       "/api/card/{card_id}": {
         get: {
           ...returns(
             freeOp(
               "A trading card's signed record, served forever",
-              "The card as pulled: set position, name, tier, the line, the path it cites, its slot and pack. Odds and set at /cards.",
+              "The pressing: set position, key, name, type, tier, the line, the path it cites, print number, source, slot, pack and seed commit. Odds and set at /design.",
             ),
             signedCardSchema({
               payloadKey: "card",
               payloadDescription: "The card, as pulled and signed.",
               extras: {
-                card_url: { type: "string", format: "uri" },
+                face_url: { type: "string", format: "uri" },
                 share_url: { type: "string", format: "uri" },
-                image_url: { type: "string", format: "uri" },
+                page_url: { type: "string", format: "uri" },
+                verify_id: { type: "string" },
                 pack_url: { type: "string", format: "uri" },
                 cite_url: { type: "string", format: "uri" },
+                post: { type: "string" },
               },
             }),
           ),
@@ -5897,21 +5899,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ...returns(
             freeOp(
               "A pack's signed manifest and its five cards",
-              "The manifest names the five card ids and is signed on its own; each card rides the response as a signed record. `draw` recomputes the pull from cert_id and the wheels on /cards.",
+              "The manifest binds the day's seed commit, the payer, the certificate and the five card ids, and is signed on its own; each card rides the response as a signed record. The seed at seed_url, the morning after, lets anyone redo the pull.",
             ),
             signedCardSchema({
               payloadKey: "pack",
-              payloadDescription: "The manifest: pack_id, season, card_ids, date, cert_id, patron_number.",
+              payloadDescription: "The manifest: pack_id, season, card_ids, commit, seed_date, payer, cert_id, date, patron_number.",
               extras: {
                 cards: { type: "array", items: { type: "object" } },
-                draw: { type: "array", items: { type: "object" } },
+                seed_url: { type: "string", format: "uri" },
               },
             }),
           ),
           parameters: [pathParam("pack_id", "From the purchase response; starts pack_.")],
         },
       },
-      "/api/cards/binder/{wallet}": {
+      "/api/paywall/binder/{wallet}": {
         get: {
           ...returns(
             freeOp(
@@ -5931,6 +5933,66 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           parameters: [pathParam("wallet", "A 0x address or a base58 Solana address.")],
         },
+      },
+      "/api/paywall/seed/{date}": {
+        get: {
+          ...returns(
+            freeOp(
+              "The day seed: its commit at once, the seed itself the day after",
+              "Signed. sha256(seed) equals commit. HMAC-SHA256(seed, payer || cert_id || slot) recomputes every pull of that day from the inputs on its pack record. 400 for a day that has not started; a running day answers the commit alone.",
+            ),
+            {
+              type: "object",
+              required: ["record", "signature", "public_key", "revealed"],
+              properties: {
+                record: { type: "object", properties: { date: { type: "string" }, commit: { type: "string" }, seed: { type: "string" }, published_at: { type: "string" } } },
+                signature: { type: "string" },
+                public_key: { type: "string" },
+                revealed: { type: "boolean" },
+                how_to_check: { type: "string" },
+              },
+            },
+          ),
+          parameters: [pathParam("date", "A UTC day, YYYY-MM-DD, since the table opened.")],
+        },
+      },
+      "/api/paywall/set": {
+        get: returns(
+          freeOp(
+            "The season's set as JSON",
+            "Every card in the count, the Events and the Ally: name, type, rarity, rail, the line, the path it cites, whether its plate is drawn, how many have been pressed, and the cap where one exists.",
+          ),
+          {
+            type: "object",
+            required: ["season", "cards", "events", "ally"],
+            properties: {
+              season: { type: "object" },
+              cards: { type: "array", items: { type: "object" } },
+              events: { type: "array", items: { type: "object" } },
+              ally: { type: "object" },
+              plates_drawn: { type: "integer" },
+              specimen_url: { type: "string", format: "uri" },
+            },
+          },
+        ),
+      },
+      "/api/paywall/window": {
+        get: returns(
+          freeOp(
+            "The shop window: the last five packs opened store-wide",
+            "Free to look at. A window pick (GET /api/buy/window_pick) takes one card of those on show, chosen by the day seed, at half a pack.",
+          ),
+          {
+            type: "object",
+            required: ["window", "size"],
+            properties: {
+              window: { type: "array", items: { type: "object" } },
+              size: { type: "integer" },
+              pick_url: { type: "string", format: "uri" },
+              note: { type: "string" },
+            },
+          },
+        ),
       },
       "/api/lucky/{lucky_id}": {
         get: {

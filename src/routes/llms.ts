@@ -172,7 +172,7 @@ Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.js
 
 The instrument, reporting on itself: [where our numbers come from](${base}/sources) · [sources.json](${base}/sources.json) · [the MCP ward](${base}/mcp-ward) · [mcp-ward.json](${base}/mcp-ward.json). The first names every directory our ecosystem figures rest on beside the last time each one answered, and carries the heartbeat that says whether the weekly round is still running. The second is a separate ward over the MCP registry that shares no total with the x402 side.
 
-Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [charter.md](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md) · [the card table](${base}/cards)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [charter.md](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md) · [paywall](${base}/design)
 
 For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
@@ -555,10 +555,15 @@ observes operational climate. This week's page is free; past weeks
 are a penny each at ${base}/zodiac/archive. Twelve signs, listed at
 ${base}/zodiac.
 
-The Card Table, at ${base}/cards, JSON by Accept. ${CARDS_PROPOSITION}
-${CARDS_FOR_MONEY} The pack is \`GET ${base}/api/buy/card_pack\`; a
-pulled card hangs at \`${base}/cards/{card_id}\`, its record at
-\`${base}/api/card/{card_id}\`, the pack at \`${base}/api/pack/{pack_id}\`.
+Paywall, the counter's pressings, at ${base}/design, JSON by Accept.
+${CARDS_PROPOSITION}
+${CARDS_FOR_MONEY} The pack is \`GET ${base}/api/buy/pack\`; a pick off
+the window is \`GET ${base}/api/buy/window_pick\`; the bell hands out
+one common a day; the set is free at \`${base}/api/paywall/set\`; a
+pressing hangs at \`${base}/p/{card_id}\` and unfurls wherever it is
+posted; a binder is \`${base}/binder/{wallet}\`; the day seed is at
+\`${base}/api/paywall/seed/{date}\`, committed at once and revealed the
+morning after, so every pull recomputes from public inputs.
 
 If your human wants the ten-second version of this whole place, hand
 them ${base}/what.

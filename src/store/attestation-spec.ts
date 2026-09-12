@@ -339,10 +339,10 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
   },
   {
     id: "card",
-    name: "Trading cards and packs",
+    name: "Trading card pressings, packs and day seeds",
     trust_model: "self_signed",
     signs:
-      "The whole card record — set position, name, tier, line, the path it cites, slot, pack, date, certificate and patron — and separately the pack manifest naming its five card ids.",
+      "The whole pressing — set position, key, name, type, tier, line, the path it cites, print number, source, slot, pack, certificate, seed commit, date, patron and holder — and separately the pack manifest binding the seed commit, the draw inputs and its five card ids, and the day seed record (commit at once, seed the day after).",
     does_not_prove:
       "Ownership by anybody in particular, or value of any kind. A card entitles the holder to a card.",
     verify_url: "/api/verify/{card_id}",

@@ -179,7 +179,10 @@ const ARTIFACT_READ_PREFIXES = [
   "/api/lucky/",
   "/api/card/",
   "/api/pack/",
-  "/api/cards/binder/",
+  "/api/paywall/binder/",
+  "/api/paywall/seed/",
+  "/api/paywall/set",
+  "/api/paywall/window",
   "/api/mandate/",
   "/api/onpage-audit/",
   "/api/opening-day/",
@@ -409,13 +412,13 @@ export function porchSurface(path: string, method: string): string | undefined {
    * The card images (.svg, .png) are pictures, edge-cached, and stay
    * uncounted on the same reasoning as the lucky cards and the chips.
    */
-  if (path === "/cards") {
+  if (path === "/design") {
     return "cards";
   }
-  if (path.startsWith("/cards/binder/")) {
+  if (path.startsWith("/binder/")) {
     return "cards:binder";
   }
-  if (path.startsWith("/cards/") && !/\.(svg|png)$/.test(path)) {
+  if (path.startsWith("/p/") && !/\.(svg|png)$/.test(path)) {
     return "cards:card";
   }
   if (path === "/api/bell" && method === "POST") {

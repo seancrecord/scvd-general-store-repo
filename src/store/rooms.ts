@@ -226,7 +226,7 @@ export const ROOMS: readonly Room[] = [
   { path: "/directory", name: "Town Directory" },
   { path: "/train", name: "The train" },
   // The card table (2026-09-12): the set, the odds with their denominators, the specimen.
-  { path: "/cards", name: "The Card Table", deeper: ["card_pack"] },
+  { path: "/design", name: "Paywall", deeper: ["pack", "window_pick"] },
   // "idc either way" (2026-09-03): off, because a page nobody asked to
   // index is one less thin page in the report.
   { path: "/zodiac", name: "The Systems Almanac", in_sitemap: false },

@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { cadenceFor } from "@/lib/cadence";
 import { sanitizeText } from "@/lib/sanitize";
 import { listGuestbookPage, signGuestbook } from "@/services/guestbook";
+import { earnedPressing } from "@/services/cards";
+import { pressingSummary } from "@/services/instant-goods";
 import { VOICE } from "@/store";
 import { isRecord, type HonoEnv } from "@/types";
 
@@ -144,10 +146,12 @@ guestbookRoutes.post("/api/guestbook", async (c) => {
     );
   }
   const result = outcome.result;
+  const earned = await earnedPressing(c.env, { key: "event-guestbook", certId: `guestbook:${result.entry.id}` }).catch(() => null);
   return c.json(
     {
       message: VOICE.guestbookThanks,
       entry: result.entry,
+      ...(earned ? { pressing: pressingSummary(c.env.STORE_BASE_URL, earned.card) } : {}),
       sticker_url: `${c.env.STORE_BASE_URL}/badges/sticker.svg`,
       ...(cadenceFor("guestbook") ? { cadence: cadenceFor("guestbook") } : {}),
       ...(result.entry.identity_verified

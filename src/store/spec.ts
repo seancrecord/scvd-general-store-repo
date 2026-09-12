@@ -361,8 +361,10 @@ export const CAPABILITY_QUERY: Record<string, string> = {
    */
   luckies:
     "Be issued a charm from a herd the keeper wrote, drawn on odds he weighted",
-  card_pack:
-    "Pull five collectible trading cards of this store from a set the keeper wrote, on odds he weighted and published",
+  pack:
+    "Pull five collectible trading cards of this store from a set the keeper wrote, on odds he weighted and published, under a seed I can check tomorrow",
+  window_pick:
+    "Take one card off the last five packs anybody opened here, chosen by the day seed, for half a pack",
   the_confession: "Say the thing once, anonymously, to a counter that keeps it",
   coffees_for_closers: "Put a win I closed on a signed record",
   the_collab: "Make something with the store and share the byline",
@@ -458,7 +460,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
 export const NOVELTY_ONLY: readonly string[] = [
   "graffiti_on_a_train",
   "luckies",
-  "card_pack",
+  "pack",
+  "window_pick",
   "daily_fortune",
   "the_confession",
   "coffees_for_closers",
@@ -506,8 +509,10 @@ export const SPEC_RETURNS: Record<string, string> = {
     "One piece brainstormed by both proprietors, shipped under the store byline. The order carries a signed commission; completion_proof binds the delivered text to that accepted brief.",
   aura_walk:
     "An order id and signed commission now; completion_proof binds the delivered report to the accepted brief and target. Within the promised window the completed order carries the report: for each entry point walked, the round trips to first success, the avoidable 400s, and where in the read order the strongest trust signal appeared — each with the model that walked it named, every transcript attached verbatim, dated, under the order's certificate. Counts and quotations only; no grade of any kind.",
-  card_pack:
-    "Five signed trading cards from the current season's set, drawn per slot from the certificate id on the wheels published at /cards: each card's record, its own page, SVG and share image, plus the signed pack manifest at /api/pack/{pack_id}, instantly (specimen at /cards/sample.svg).",
+  pack:
+    "Five signed pressings from the season's set, drawn by HMAC over the day's committed seed on the wheels at /design, each with a print number, a page at /p/{card_id} that unfurls, and a verify URL; the signed manifest at /api/pack/{pack_id} binds the seed commit and the inputs. Instant.",
+  window_pick:
+    "One signed pressing of a card from the shop window (the last five packs opened, free at /api/paywall/window), chosen by the day seed, with its print number, page and verify URL. Instant; refused before payment while the window is empty.",
   luckies:
     "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
   coffees_for_closers:

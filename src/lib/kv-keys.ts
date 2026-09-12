@@ -702,6 +702,13 @@ export const KV_KEYS = {
   binder: (wallet: string, invertedTs: string, cardId: string): string =>
     `binder:${wallet}:${invertedTs}:${cardId}`,
   binderPrefix: (wallet: string): string => `binder:${wallet}:`,
+  /** The day seed's public record: commit at once, seed the day after. */
+  paywallSeed: (date: string): string => `paywall_seed:${date}`,
+  /** Print counters, one per season entry, on the counter ledger. */
+  paywallPress: (season: string, key: string): string => `paywall_press:${season}:${key}`,
+  /** The shop window: the last packs opened store-wide, newest first. */
+  paywallWindow: (invertedTs: string, packId: string): string => `paywall_window:${invertedTs}:${packId}`,
+  paywallWindowPrefix: "paywall_window:",
   /**
    * THE TRADE COUNTER'S BOOKS (2026-09-03, services/trade-counter.ts).
    * One row per delivery, in ORDERS beside the orders, newest first —

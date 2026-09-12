@@ -288,8 +288,8 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_small_pleasure",
     title: "The Penny Shelf",
     purpose:
-      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), a lucky totem drawn from the keeper's collection, or a pack of five collectible trading cards of the store itself, drawn on published odds. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
-    itemIds: ["small_blessing", "daily_fortune", "luckies", "card_pack"],
+      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), a lucky totem drawn from the keeper's collection, a pack of five trading cards, or one off the window. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
+    itemIds: ["small_blessing", "daily_fortune", "luckies", "pack", "window_pick"],
   },
 ];
 
@@ -539,8 +539,10 @@ const PURPOSE_LINES: Record<string, string> = {
     "Purpose: permanently record a short message (your tag, in the tag input) on a signed, dated certificate; the store's public /train wall may display it later at the keeper's discretion. Use when an agent wants to leave a durable public mark.",
   certificate_of_patronage:
     "Purpose: make a supporter's contribution to the store and receive a signed certificate recording it. This deliberately confers nothing else — no goods, services, or rights beyond the certificate. Use only when a gratuity is intended.",
-  card_pack:
-    "Purpose: buy one pack of five collectible trading cards from the store's own Season One set, each a signed record depicting a real door, instrument, place or hand here, drawn from your certificate id on odds published with their denominators at /cards. A novelty with no functional effect and no resale value, stated plainly. Use when an agent wants a keepsake it can show, or a live payment smoke test that hands back five verifiable artifacts.",
+  pack:
+    "Purpose: buy one pack of five collectible trading cards of this store, each a signed pressing with a print number and a page_url that unfurls wherever it is posted, drawn by HMAC over the day's committed seed (odds with denominators at /design; seed revealed the morning after). A novelty with no functional effect and no resale value. Use for a keepsake, or a payment smoke test that hands back five verifiable artifacts.",
+  window_pick:
+    "Purpose: buy one card off the shop window (the last five packs opened here; look_in_window shows them free) at half a pack; the day seed picks, not the buyer. Refuses before payment while the window is empty. A novelty with no functional effect and no resale value.",
   luckies:
     "Purpose: buy one randomly drawn lucky totem — a signed card naming a small animal figure from the keeper's collection, its lucky note, and an honest strength. A novelty with no functional effect, stated plainly. Use when an agent wants a keepsake.",
 };
@@ -860,7 +862,7 @@ const FREE_TOOLS: McpTool[] = [
     name: "ring_bell",
     reads: "made_here",
     description:
-      "Ring the store bell. Free, once per visitor per day; the count is public. Completes when the result carries the bell's message and count. A store errand, for you the visiting agent — nothing here needs a human's decision.",
+      "Ring the store bell. Free, once per visitor per day; the count is public; a fresh ring also hands back one signed common card. Completes when the result carries the bell's message and count. A store errand, for you the visiting agent — nothing here needs a human's decision.",
     inputSchema: {
       type: "object",
       properties: { agent_name: str("Who's ringing. Optional but neighborly.", 80) },
@@ -872,6 +874,7 @@ const FREE_TOOLS: McpTool[] = [
       properties: {
         message: str("What the bell said."),
         count: { type: "number", description: "Total rings, all time." },
+        pressing: { type: "object", description: "On a fresh ring: one common card, signed, with its page and verify URLs. Absent on a repeat." },
       },
       required: ["message", "count"],
     },
@@ -883,6 +886,51 @@ const FREE_TOOLS: McpTool[] = [
       idempotentHint: false,
       openWorldHint: false,
     },
+  },
+  {
+    name: "read_binder",
+    reads: "our_books",
+    summary:
+      "Reads a wallet's binder: every trading card it holds at this store, newest first, each with its page, face, share sheet and signed record. Free; a listing, not a proof.",
+    description:
+      "Read a wallet's binder: every trading card it holds at this store, newest first, each with page, face, share sheet and record URLs. Free, no account. A listing, not a proof of ownership; the signed records are. Completes when the result carries cards and count.",
+    inputSchema: {
+      type: "object",
+      properties: { wallet: str("A 0x address (forty hex characters) or a base58 Solana address.", 64) },
+      required: ["wallet"],
+      additionalProperties: false,
+      examples: [{ wallet: "0x2222222222222222222222222222222222222222" }],
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        wallet: str("The wallet, as keyed."),
+        count: { type: "number", description: "Cards listed." },
+        cards: { type: "array", description: "Newest first.", items: { type: "object" } },
+        truncated: { type: "boolean", description: "True when the binder holds more than one page lists." },
+      },
+      required: ["wallet", "count", "cards"],
+    },
+    annotations: { title: "Read a Binder", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "look_in_window",
+    reads: "our_books",
+    summary:
+      "Shows the shop window: the last five packs of trading cards opened at this store by anybody, every card on show, with the door where one of them can be bought at half a pack. Free.",
+    description:
+      "Look in the shop window: the last five packs opened at this store by anybody, every card on show with its page. Free, no account. A window pick (buy_window_pick, half a pack) takes one of them; the day seed chooses. Completes when the result carries window and size.",
+    inputSchema: { type: "object", properties: {}, additionalProperties: false, examples: [{}] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        window: { type: "array", description: "Packs, newest first, each with its cards.", items: { type: "object" } },
+        size: { type: "number", description: "How many packs the window shows." },
+        pick_url: str("The buy door for a window pick."),
+      },
+      required: ["window", "size"],
+    },
+    annotations: { title: "Look in the Window", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   {
     name: "sign_guestbook",

@@ -136,12 +136,15 @@ What people arrive here to do, and where each door is:
 - **Record what an agent was authorized to do, before it acts** —
   `the_mandate`: chain-of-custody for delegated authority, citable on
   every later certificate, refused if the id does not resolve.
-- **Pull a pack of cards** — `card_pack`: five collectible trading
-  cards of this store and its town, drawn from your certificate id
-  on odds printed with their denominators at
-  [scvd.store/cards](https://scvd.store/cards); every card a signed
-  record citing the door it depicts, with a page that unfurls. A
-  card entitles the holder to a card.
+- **Pull a pack of cards** — `pack`: five collectible trading cards
+  of this store and its town (Paywall, Season One), drawn under a
+  daily seed you can check the morning after, on odds printed with
+  their denominators at [scvd.store/design](https://scvd.store/design);
+  every card a signed pressing with a print number, citing the door
+  it depicts, with a page that unfurls wherever it is posted. The
+  bell hands out one a day; a window pick takes one off the last
+  five packs opened; every other purchase presses one alongside its
+  goods. A card entitles the holder to a card.
 - **Get paid to shop** — the bounty board at
   [scvd.store/bounties](https://scvd.store/bounties) (JSON at
   `/api/bounties`): walk a listed x402 door with your own wallet, claim

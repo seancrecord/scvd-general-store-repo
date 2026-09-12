@@ -3,7 +3,7 @@ import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import type { CloserEntry } from "@/services/closers";
-import type { ConfessionRecord, ConfessionStatus, Env, LuckyStatus, SignedLuckyRecord, SignedPackRecord, TrainTagRecord, TrainTagStatus } from "@/types";
+import type { ConfessionRecord, ConfessionStatus, Env, LuckyStatus, SignedCardRecord, SignedLuckyRecord, SignedPackRecord, TrainTagRecord, TrainTagStatus } from "@/types";
 
 export const CLOSER_TTL_SECONDS = 90 * 86400;
 export type PersonalRecord =
@@ -12,7 +12,9 @@ export type PersonalRecord =
   | { kind: "tag"; record: TrainTagRecord; storageKey?: string }
   | { kind: "lucky"; record: SignedLuckyRecord }
   // The card table (2026-09-12): a pack is immutable once signed; no mutation kind exists for it.
-  | { kind: "pack"; record: SignedPackRecord };
+  | { kind: "pack"; record: SignedPackRecord }
+  // A single pressing that rode another purchase (earned) or the window.
+  | { kind: "pressing"; record: SignedCardRecord };
 export type PersonalMutation =
   | { kind: "confession"; status: ConfessionStatus }
   | { kind: "tag"; status: TrainTagStatus; at: string }
@@ -42,11 +44,12 @@ export function personalKey(value: PersonalRecord): string {
     case "tag": return KV_KEYS.trainTag(String(Date.parse(value.record.date)).padStart(14, "0"), value.record.id);
     case "lucky": return KV_KEYS.lucky(value.record.lucky.lucky_id);
     case "pack": return KV_KEYS.pack(value.record.pack.pack_id);
+    case "pressing": return KV_KEYS.card(value.record.card.card_id);
     case "closer": return KV_KEYS.closer(invertedTimestamp(Date.parse(value.record.at)), value.record.id);
   }
 }
 function immutable(value: PersonalRecord): string {
-  const record = value.kind === "lucky" ? value.record.lucky : value.kind === "pack" ? value.record.pack : value.record;
+  const record = value.kind === "lucky" ? value.record.lucky : value.kind === "pack" ? value.record.pack : value.kind === "pressing" ? value.record.card : value.record;
   return jcsCanonicalize(Object.fromEntries(Object.entries(record).filter(([key]) =>
     !["status", "status_note", "status_changed_at", "displayed_at"].includes(key))));
 }
@@ -76,7 +79,7 @@ export class PersonalGoodsStore {
   async publish(proposal: PersonalRecord, mutation?: PersonalMutation): Promise<PersonalRecord> {
     const work = this.publication.then(async () => {
       const key = personalKey(proposal);
-      const namespace = proposal.kind === "lucky" || proposal.kind === "pack" ? this.env.PATRONS : this.env.ORDERS;
+      const namespace = proposal.kind === "lucky" || proposal.kind === "pack" || proposal.kind === "pressing" ? this.env.PATRONS : this.env.ORDERS;
       const durable = await this.storage.get<PersonalRecord>("personal");
       const seed = durable ? null : await kvGetJson<PersonalRecord["record"]>(namespace, key, "json");
       const selected = await this.storage.transaction(async txn => {

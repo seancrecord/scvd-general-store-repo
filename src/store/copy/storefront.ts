@@ -53,9 +53,15 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   },
   {
     // ⚑ Keeper's pen: drafted 2026-09-12 with the card table, not inked.
-    id: "card_pack",
+    id: "pack",
     name: "a pack of cards",
-    line: "Five cards of this store and its town, three commons and two off the wheel. The odds are on the table. Nobody buys one back.",
+    line: "Five cards of this store and its town, three commons and two off the wheel. The odds are on the table, the seed is committed. Nobody buys one back.",
+  },
+  {
+    // ⚑ Keeper's pen: drafted 2026-09-12 with the window, not inked.
+    id: "window_pick",
+    name: "a window pick",
+    line: "One card off the last five packs anybody opened. Look first, it's free. The seed picks, not you.",
   },
   {
     id: "hello",

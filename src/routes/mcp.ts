@@ -63,6 +63,9 @@ import {
 import { sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
+import { earnedPressing, readBinder, readWindow, WINDOW_SIZE } from "@/services/cards";
+import { pressingSummary } from "@/services/instant-goods";
+import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import { getCertificate } from "@/services/certificates";
 import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
@@ -538,7 +541,31 @@ export async function callFreeTool(
     const rung = await ringBell(c.env, who);
     // Same porch row an HTTP ring writes; this door used to ring silently.
     deferBookkeeping(c, recordPorchVisit(c.env, "bell", mcpSignals(c)));
-    return { message: rung.message, count: rung.count };
+    return { message: rung.message, count: rung.count, ...(rung.pressing ? { pressing: pressingSummary(c.env.STORE_BASE_URL, rung.pressing.card) } : {}) };
+  }
+  if (name === "read_binder") {
+    const wallet = typeof args["wallet"] === "string" ? args["wallet"].trim() : "";
+    const keyed = isWalletAddress(wallet) ? wallet.toLowerCase() : isSolanaWalletAddress(wallet) ? wallet : "";
+    if (!keyed) return "read_binder needs a wallet: a 0x address (forty hex characters) or a base58 Solana address.";
+    const base = c.env.STORE_BASE_URL;
+    const { rows, truncated } = await readBinder(c.env, keyed);
+    deferBookkeeping(c, recordPorchVisit(c.env, "cards:binder", mcpSignals(c)));
+    return {
+      wallet: keyed,
+      count: rows.length,
+      truncated,
+      cards: rows.map((row) => ({ ...row, page_url: `${base}/p/${row.card_id}`, face_url: `${base}/p/${row.card_id}.svg`, share_url: `${base}/p/${row.card_id}.png`, record_url: `${base}/api/card/${row.card_id}` })),
+    };
+  }
+  if (name === "look_in_window") {
+    const base = c.env.STORE_BASE_URL;
+    const window = await readWindow(c.env);
+    deferBookkeeping(c, recordPorchVisit(c.env, "cards:window", mcpSignals(c)));
+    return {
+      window: window.map((pack) => ({ ...pack, pack_url: `${base}/api/pack/${pack.pack_id}`, cards: pack.cards.map((card) => ({ ...card, page_url: `${base}/p/${card.card_id}` })) })),
+      size: WINDOW_SIZE,
+      pick_url: `${base}/api/buy/window_pick`,
+    };
   }
   if (name === "sign_guestbook") {
     const verifiedIdentity =
@@ -567,9 +594,11 @@ export async function callFreeTool(
       c,
       recordPorchVisit(c.env, "guestbook:write", mcpSignals(c)),
     );
+    const earned = await earnedPressing(c.env, { key: "event-guestbook", certId: `guestbook:${outcome.result.entry.id}` }).catch(() => null);
     return {
       message: "Noted and appreciated. Take a sticker on your way out.",
       entry_id: outcome.result.entry.id,
+      ...(earned ? { pressing: pressingSummary(c.env.STORE_BASE_URL, earned.card) } : {}),
       sticker_url: `${c.env.STORE_BASE_URL}/badges/sticker.svg`,
       ...(outcome.result.entry.identity_verified
         ? {

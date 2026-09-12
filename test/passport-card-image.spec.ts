@@ -131,9 +131,13 @@ describe("the mark, and the ground it sits on (2026-09-06)", () => {
 
   it("refuses a path command it cannot draw rather than guessing a shape", async () => {
     const { flattenPath } = await import("@/lib/pixel-card");
-    // Arcs and quadratics are not implemented; a silent wrong shape on
-    // the store's own mark is worse than a build that stops.
-    expect(() => flattenPath("M0 0 A 5 5 0 0 1 10 10", (x, y) => [x, y])).toThrow();
+    // Arcs and quadratics joined the flattener on 2026-09-12 for the
+    // Paywall's plates; a command nobody draws (the Catmull-Rom "R"
+    // that never made the spec) still stops the build rather than
+    // guess a shape on the store's own mark.
+    expect(() => flattenPath("M0 0 R 5 5 10 10", (x, y) => [x, y])).toThrow();
+    // And an arc now flattens to a real ring rather than throwing.
+    expect(flattenPath("M50 10a40 40 0 1 0 0.1 0z", (x, y) => [x, y])[0]!.length).toBeGreaterThan(10);
   });
 
   it("draws on the dark ground the chip uses, not the old cream", async () => {

@@ -105,6 +105,9 @@ describe("the storefront", () => {
       // A quarter (2026-09-02): the case file, between the dime and the
       // fifty-cent hello.
       "the_case_file",
+      // The window pick (2026-09-12): half a pack, so it sits between the
+      // quarter and the fifty-cent hello.
+      "window_pick",
       "hello",
       /*
        * THE $0.99 BLOCK, new on 2026-08-28 and the shelf's own rule
@@ -134,9 +137,9 @@ describe("the storefront", () => {
       "signature_agent_card",
       "the_statement",
       "luckies",
-      // The card table (2026-09-12): the second $0.99 novelty, listed
-      // after the lucky it sits beside on the aisle.
-      "card_pack",
+      // The Paywall (2026-09-12): the pack, the second $0.99 novelty,
+      // listed after the lucky it sits beside on the aisle.
+      "pack",
       "coffees_for_closers",
       // $1 ties hold LADDER order (stable sort): the anchor was listed
       // above the context anchor on the utility shelf, so it leads.

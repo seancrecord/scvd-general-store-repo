@@ -1,29 +1,88 @@
-# THE CARD TABLE — collectible trading cards for agents, 2026-09-12
+# THE PAYWALL — collectible trading cards for agents, 2026-09-12
 
-**Status: BUILT on a branch, NOT MERGED, waiting on three rulings.**
-Opened on the keeper's ask, verbatim: "i wanna start selling
-collectible trading cards and building that out based on rarity,
-shareability across twitter and relevance. not sure the exact focus
-but we will need cool designs and lots of 'packs' and seasons.
-basically copy pokemon pocket tcg model on a smaller scale and
-selling to agents in our world."
+**Status: BUILT on a branch, NOT MERGED, waiting on the rulings in
+§6.** Two passes on one day. The overnight prototype (§A, kept below
+as history) was a 24-card "card table"; the keeper's **handoff v2**
+then merged it with a first-pass plan and said where the two
+disagree the handoff wins. This paper now describes the handoff
+build. Where the handoff defers to the first-pass plan
+(`paywall-season-1-first-pass.md`) — the odds table, Conditions and
+burn rules, holder perks, streaks, the credit line — that document
+was NOT in either repository, on `main`, or in Drive when this was
+built, so every number it would have settled is an assumption here
+and is named as one.
 
 Same split as every paper here, so advice never blurs into shipped
 work:
 
 - **STANDING** — true of the branch today, held by test.
 - **PROPOSED** — argued for here, not built.
-- **OPEN** — a keeper ruling. The three that gate the merge are in §6
+- **OPEN** — a keeper ruling. The ones that gate the merge are in §6
   and mirrored on `KEEPER_LIST.md`.
 
 Demand tag (rule 19): **the keeper's ask, 2026-09-12** — desk
-reasoning, named as desk reasoning. No ledger 404 and no stranger
-asked for cards. The Gretzky rubric (rule 19, amended 2026-08-07) is
-scored in §7 so the forecast is a forecast and not a hunch.
+reasoning, named as desk reasoning.
 
 ---
 
-## 0. The short version
+## 0. The short version (handoff v2, as built)
+
+1. **The set (STANDING).** Season One, *Summer of 402 · Oak City*:
+   52 cards in the count — Herd 12, Room 10, Instrument 8, Place 2,
+   Mark 1, Rail 11 (Base 5, Solana 3, Polygon 3), Door 3, Condition 5
+   — plus 4 Events (earned, never pulled) and the Ally (The Keeper,
+   rarity Keeper, never in a pack, pressed by hand from
+   `/admin/tools`). Ladder Common / Uncommon / Rare / Holo / Keeper.
+   Every card cites a path on this store; a test walks every cite.
+   `src/store/cards.ts`.
+2. **The draw (STANDING).** Commit-reveal, daily, per handoff §4 —
+   with one refinement stated in §2: the seed is DERIVED from a
+   domain-separated HMAC of the signing secret and the date rather
+   than generated and stored, so there is no midnight race and no
+   way to pick a friendlier seed after seeing pulls. The commit is
+   published at once (the half-hourly cron writes it; a first pull
+   writes it too), the seed the day after, both signed, at
+   `/api/paywall/seed/{date}`. Every pull is
+   HMAC-SHA256(seed_d, payer || cert_id || slot); the pack manifest
+   binds the commit, the inputs and the five card ids and is signed.
+   Print caps step within the tier; a capped tier falls back to
+   common. Idempotency-Key returns the same pack; none charges again.
+3. **Print numbers (STANDING).** Atomic on the counter ledger
+   (`COUNTER_LEDGER`, one writer); a KV floor where the deployment
+   has none (the test pool). Doors cap at 250 (assumption); nothing
+   else caps.
+4. **The faces (STANDING).** Card face 1000×1400 as SVG: paper,
+   plate, data layer, label — the handoff's four layers, with the
+   rarity stock (deckle on rare, shimmer band on holo, inverted
+   Keeper), a REAL QR of the verify URL on the machine strip
+   (`src/lib/qr.ts`, dependency-free, decoded by an independent
+   reader for versions 1–6 in the scratchpad), the rail colour on
+   the data layer, yellow only on Conditions. Share sheet 1200×675
+   as PNG through the pixel engine with a second ink for the accent:
+   the card at 55% on the left, the post copy giant on the right,
+   rarity, No. x/52, print, the page URL. `/p/{card_id}` carries the
+   OG tags, so a posted link unfurls anywhere.
+5. **The economy (STANDING).** `pack` $0.99 (P is his call); the
+   bell presses one common a day to whoever rings; `window_pick`
+   $0.49 takes one of the last five packs opened, chosen by the seed,
+   and refuses before payment while the window is empty; every other
+   instant purchase presses a common alongside its goods, and the
+   guestbook, the train and the pass press their Events. Binder per
+   wallet at `/binder/{wallet}` and as a signed-record listing at
+   `/api/paywall/binder/{wallet}`; `read_binder` and `look_in_window`
+   as free MCP and WebMCP tools.
+6. **Not built, and why (§4):** the "two packs for a Regular" bell
+   rule (the bell has no wallet to prove a pass with), paying for a
+   pick with credit (the credit desk redeems to a wallet and has no
+   debit), Condition burn rules and holder perks and streaks (the
+   first-pass plan defines them; without it any rule here would be
+   invented), the Bounty Event hook (the claims desk is a separate
+   flow), the PNG card face (needs a rasteriser with fonts — §5),
+   the boot-on-hover motion on /design, and NFTs (§7).
+
+---
+
+## A. The overnight prototype (history, superseded by the handoff)
 
 1. **What shipped (STANDING).** One shelf item, `card_pack`, $0.99,
    instant, in the novelty aisle beside the luckies. Five cards a
@@ -64,7 +123,152 @@ scored in §7 so the forecast is a forecast and not a hunch.
 
 ---
 
-## 1. What a card is (STANDING)
+## 1. What changed from the prototype, by the handoff's own list
+
+Kept: the header lockup and season line; Places and Marks as types;
+the "one printing, signed at issue" footer, the verify URL on the
+face, the `card_` id namespace, the No. x / N counter; the Specimen;
+rarity diamonds as a count glyph. Changed: 24 → 52 (+4 Events, +1
+Ally); Legendary → Holo, Keeper added; Tradition → Room, and Rail,
+Door, Condition, Event, Ally added; the polygon sigils are gone,
+replaced by the plate system (`src/store/plates.ts`, 46 drawn, the
+rest silhouettes labelled "not yet pressed" — the Herd animals
+other than the T-Rex are the undrawn ones, the long pole the
+handoff named); the economy above; the subtitle.
+
+## 2. Randomisation an agent can check (STANDING, one refinement)
+
+The handoff's §4, step by step, and where this build differs:
+
+| handoff | built |
+| --- | --- |
+| generate a 32-byte seed_d at 00:00 UTC | DERIVE seed_d = HMAC(HMAC(signing secret, "paywall:master"), "paywall:seed:" + date). No generation, no storage race, no cron the pulls wait on; the store could not choose a seed after seeing pulls even if it wanted to. |
+| publish commit_d at /api/paywall/seed/{date}, signed | as specified; the half-hourly cron writes the signed record at the first tick after midnight, a first pull writes it too, and the record's published_at is the dated evidence |
+| draw = HMAC-SHA256(seed_d, payer_wallet ‖ cert_id ‖ slot_index) | as specified, `drawSlot` in `src/services/cards.ts`; bytes 0..3 over 2^32 walk the wheel, bytes 4..7 mod tier size pick the card |
+| caps: step to the next index in the tier; capped tier → common | as specified |
+| publish seed_d the next day; recompute every pull | as specified; `revealed: true` on the door once the UTC day has ended |
+| pack cert binds commit_d, inputs, card ids in its evidence hash | the PACK MANIFEST (signed) binds them and names the cert; the cert is minted before the draw because the draw takes cert_id as input, so the binding is one level up, not inside the cert's own hash |
+| Idempotency-Key required; same key same pack | the store's existing mechanism (16–128 chars); a repeat with the same key returns the original; no key charges again |
+| bell: same HMAC, slot 0, salt "bell" | as specified, keyed by who rang and the day |
+| window picks: same seed, the 5 window ids as input | as specified, salt "window" |
+
+The doctrine sentence on /design and in the guide: *Signed at issue.
+Drawn by a seed you can check. Printed once.*
+
+## 3. Share formats (STANDING)
+
+| asset | size | how |
+| --- | --- | --- |
+| card face | 1000×1400 SVG at `/p/{id}.svg` | four layers, rarity stock, real QR strip; the page and the binder show it |
+| share sheet | 1200×675 PNG at `/p/{id}.png` | the pixel engine with a second ink; every unfurl on the store comes off one desk |
+| page | `/p/{id}` | OG and twitter tags point at the share sheet; JSON by Accept |
+
+The face is SVG rather than the handoff's static PNG: the store runs
+on Workers with no browser and no font rasteriser, and a PNG face
+with a serif display needs one (§5). The share sheet is PNG because
+the pixel engine already draws the engraved hand.
+
+## 4. Not built, each with its reason (OPEN or PROPOSED)
+
+- **Two packs for a current Regular on the bell.** The bell is keyed
+  on a name or an IP; it cannot prove a wallet holds a pass. Needs
+  the wallet-signature admission the bounty board uses. OPEN.
+- **Paying for a window pick with credit.** The credit desk banks 5%
+  and redeems to the wallet that earned it; it has no debit, and
+  adding one is a payment-path change (rule 41). OPEN.
+- **Conditions: burn rules and holder perks; streaks.** Defined in the
+  first-pass plan, which was not available. The `source` column on a
+  pressing and the Event type are laid out so a burn or a perk is a
+  column, not a migration of meaning. OPEN until the plan surfaces.
+- **The Bounty Event.** The claims desk closes bounties on its own
+  path; the Event card exists in the set and presses nowhere yet.
+- **`/design` motion.** Static; the "boots" data layer on hover is a
+  script, and rule 17's property test applies. PROPOSED.
+- **The PNG card face.** §5.
+
+## 5. The face as PNG needs a ruling
+
+The handoff says both assets are static PNG, "Puppeteer as before".
+This store is a Worker: no Chromium, no fonts. Two roads, both his:
+(a) Cloudflare Browser Rendering (a paid binding; `wrangler.jsonc`
+gains a `browser` binding and the face renders through it from the
+same SVG); (b) `@resvg/resvg-wasm` in the bundle with two font files
+(a serif and a mono, about 2.5 MB together; a new dependency on a
+rendering path, AT_SCALE rule 6). Until then the face is SVG, which
+every browser, the binder, the page and the download render, and
+the share sheet — the asset that actually stops the scroll — is PNG
+already. OPEN.
+
+## 6. The rulings (OPEN), in the order the merge needs them
+
+1. **RULE — rule 22.** Five draws a pack on published, derived,
+   recomputable odds under a committed seed: honest randomness with
+   custody, or gacha by shape? The handoff adds a daily bell card, a
+   window pick and a card on every purchase; the prototype's paper
+   argued against two of those and the handoff overrules it, which is
+   his to do. Recommended: merge as built.
+2. **RULE — rule 41.** Paid random draws are loot boxes in several
+   jurisdictions (Belgium, the Netherlands, Japan, the UK code).
+   Nothing here is cashable or tradeable, nothing is bought back, the
+   odds and the seed are public. Lawyer before merge or the week
+   after? Recommended: the week after.
+3. **RULE — rule 15 and §7.** The handoff leaves a door open for a
+   Season 2 `mint_to_chain` (ERC-1155 on Base, holder pays). Rule 15
+   says no token, no NFT-as-investment, permanently. A mirror token
+   with the cert as the canonical record is the nearest thing to
+   compliant, and it is still a token. Nothing here builds toward it;
+   the ledger has no chain_ref column and adding one later is one
+   field. His call, and not this season's.
+4. **RULE — the numbers the first-pass plan would have set.** P =
+   $0.99, the pick at half, Door caps of 250, the wheels as printed,
+   52 not 60, Places = Hurricane Junction and Node 21 (Oak City stays
+   the subtitle), Mark = the Dinosaur, QR not barcode on the strip
+   (it scans on a phone; the barcode reads more letterpress and is
+   one renderer swap). All assumptions, all one edit each.
+5. **RULE — the OpenAPI warning budget** (700,000 → 750,000, §B).
+6. **RULE — rule 7.** Every name, line and post sentence in
+   `src/store/cards.ts`, the shelf copy, the storefront lines, the
+   declined-positions sentence tightened by 63 characters, the
+   guide's Paywall paragraph, the skill paragraph. Ink or kill.
+
+## 7. NFT: no, for v1 (the handoff's §6, and rule 15)
+
+Agreed on the reasons the handoff gives — provenance is already
+solved by the signature, a transferable token makes a market, and
+every wallet step costs shares — and one more the handoff does not
+say: rule 15 is not a season rule. The `chain_ref` door is left
+unbuilt on purpose.
+
+## 8. Build order, against the handoff's
+
+| handoff §8 | state |
+| --- | --- |
+| 1. ledger tables (pressings, binder, credit, streak, conditions, seed) | pressings, binder, seed: built. credit, streak, conditions: not (§4) |
+| 2. seed commit/reveal cron and the HMAC draw | built |
+| 3. renderer: face + share sheet, faction accent, condition variant, holo band | built (face SVG, sheet PNG) |
+| 4. buy_pack, ring_bell extension, read_binder, /p/{id} OG page | built |
+| 5. earned-card hooks on existing purchases | built for every instant purchase, the guestbook, the train, the pass; not the bounty |
+| 6. condition burn rules | not (§4) |
+| 7. shop window | built |
+| 8. /design | built, static |
+| 9. store guide + skill.md text | built |
+
+Art: 46 plates drawn as single-ink silhouettes; the eleven Herd
+animals besides the T-Rex press as silhouettes labelled "not yet
+pressed". The handoff wanted the twelve Herd drawn at ship; that is
+the one place this build is honestly short of it.
+
+---
+
+## B. The OpenAPI budget (carried from the prototype)
+
+The contract's warning budget (`SCANNER_BUDGET_BYTES`) was 700,000
+with 4,544 bytes of headroom; a listing costs about 8 KB, so the
+first listing tripped the guard by construction. It stands at
+750,000, three quarters of the hard cap, with the reason beside the
+number. Keep, lower, or thin the contract per item instead.
+
+
 
 A card is one printing of one entry in a season's set, pulled from
 a pack, signed at issue. The record (`src/types.ts`, `CardRecord`)

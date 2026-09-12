@@ -729,61 +729,56 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
-### The card table (2026-09-12, `docs/CARD_TABLE_2026-09.md`)
+### The Paywall (2026-09-12, handoff v2, `docs/CARD_TABLE_2026-09.md`)
 
-Built on `claude/compassionate-planck-6pba4v`, green locally, not
-merged. Merging is your press; these three are why it waits.
+Built on `claude/compassionate-planck-6pba4v` to your handoff, green
+locally, not merged. Merging is your press; these are why it waits.
 
-- **RULE — rule 22.** A $0.99 pack of five cards, drawn from the
-  certificate id on wheels whose odds are derived and printed with
-  denominators, recomputable by the buyer, no timer, no pity, no
-  window, no price on a card, no market: honest randomness with
-  custody (the luckies' ruling, five draws instead of one), or gacha
-  by shape? Recommended: the first. If the second, the room stays
-  free and the shelf item comes off the branch.
-- **RULE — rule 41.** Paid random draws are loot boxes in several
-  jurisdictions (§5 of the paper: Belgium, Netherlands, Japan, the
-  UK code). Built posture: nothing cashable, nothing tradeable,
-  nothing bought back, odds published. Residual stated. Do you want
-  a lawyer's sentence before the merge, or in the same week after?
-  Recommended: same week after; it is a dollar novelty.
-- **RULE — rule 7.** Every card name and line in `src/store/cards.ts`,
-  the set's name (*Oak City*), the shelf copy and 402 line in
-  `menu-novelties.ts`, and the storefront line are drafted. Ink or
-  kill. Three link texts on the llms.txt door list were shortened to
-  stay under the 30,000 budget (charter.md, protected-resource,
-  which MCP door); yours to reverse.
-- **RULE — the OpenAPI warning budget.** Any new listing costs the
-  contract about 8 KB, and the September 10 reduction left 4,544
-  bytes. The pack tripped the guard by construction; the budget in
-  `src/store/reader-limits.ts` moved 700,000 → 750,000 (three
-  quarters of the 1 MB hard cap, about four more listings) with the
-  reason beside it. Yours to keep, lower, or replace with a per-item
-  thinning you would rather do.
-- **LOOK** — `/cards/sample.svg` and one real card's `/cards/{id}`
-  page pasted into X or Slack: does the plaque unfurl, and is the
-  card "cool" enough for the second season, or does it want art?
-
-### A corpus a buyer must check (2026-09-10, ROADMAP CV0–CV2)
-
-- **LOOK** — after the next Sunday round, open `/corpus/asked.json`.
-  If `hosts_asked` is 0 the free surfaces are not being asked about
-  unmet hosts, which is its own finding; if hosts sit in
-  `swept_no_door_found` for three weeks, the sweep is reading hosts
-  that publish no `/.well-known/x402`, and the queue's cap is
-  spending reads on them.
-- **RULE** — seller declarations, ruling 1
-  (`docs/SELLER_DECLARATIONS_2026-09.md`): is attaching and reading
-  a declaration free, forever? Recommended yes; the paid instrument
-  is a watch on the match line, already priced as an endpoint watch.
-- **RULE** — seller declarations, ruling 2: does a declaration for a
-  host the feeds do not name enter the asked-for queue at the top of
-  its week? Recommended yes; it does not jump the roster cap.
-- **RULE** — federation (`docs/FEDERATION_2026-09.md`): does a
-  second observer's verified row enter the signed snapshot at its
-  own tier (`federated_rows[]`, the crowd-walk precedent), or sit
-  beside the chain in a file of its own? Recommended inside. No
-  build until a named party asks to submit rows.
+- **RULE — rule 22.** Five draws a pack under a committed, derived
+  seed anyone recomputes the morning after; one common a day off the
+  bell; a window pick chosen by the seed; a card on every purchase.
+  Honest randomness with custody, or gacha by shape? Your handoff
+  says build it; the prototype's paper had argued against the bell
+  card and the window. Recommended: merge as built.
+- **RULE — rule 41.** Paid random draws are loot boxes in Belgium,
+  the Netherlands, Japan and under the UK code. Nothing cashable,
+  nothing tradeable, nothing bought back, odds and seed public.
+  Lawyer before the merge, or the week after? Recommended: after.
+- **RULE — rule 15 vs handoff §6.** The Season 2 `mint_to_chain`
+  door is a token. Rule 15 says no token, permanently. Nothing is
+  built toward it. Your call; not this season's.
+- **RULE — the numbers.** The first-pass plan was not in either
+  repository, on main, or in Drive, so these are assumptions: P =
+  $0.99, the pick at $0.49, Doors capped at 250, the wheels as
+  printed on /design, 52 not 60, Places = Hurricane Junction and
+  Node 21 with Oak City as the subtitle, Mark = the Dinosaur, QR not
+  barcode on the strip. One edit each.
+- **RULE — the card face as PNG.** The handoff wants static PNG
+  faces "Puppeteer as before"; the Worker has no browser and no
+  fonts. Cloudflare Browser Rendering (a paid binding you enable),
+  or resvg-wasm plus two font files in the bundle (a new rendering
+  dependency, ~2.5 MB). Until then the face is SVG and the share
+  sheet — the asset that stops the scroll — is PNG already.
+- **RULE — the OpenAPI warning budget.** 700,000 → 750,000 in
+  `src/store/reader-limits.ts` with the reason beside it; a listing
+  costs about 8 KB and the September 10 reduction left 4,544 bytes.
+  Keep, lower, or thin per item.
+- **RULE — rule 7.** Every card name, line and post sentence in
+  `src/store/cards.ts`; the pack and window-pick copy; the storefront
+  lines; the guide's Paywall paragraph; the skill paragraph; the
+  declined-positions WebMCP sentence tightened by 63 characters to
+  keep the developers area under budget; three link texts on the
+  door list shortened for the index budget. Ink or kill.
+- **TEST — press The Keeper.** `/admin/tools`, the new lever: a
+  wallet, one press, and the card should hang at `/p/{id}` in the
+  inverted cream stock and land in that wallet's binder.
+- **LOOK — the unfurl.** Paste one real `/p/{id}` into X and Slack.
+  The share sheet is the product; if the sentence on the right does
+  not read at timeline size, the post copy is the thing to redraw.
+- **LOOK — the Herd.** Eleven of the twelve Herd animals press as
+  "not yet pressed" silhouettes; the T-Rex is the favicon's own
+  drawing. The handoff wanted all twelve drawn at ship. Art is the
+  long pole it named, and it is yours or an artist's.
 
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 

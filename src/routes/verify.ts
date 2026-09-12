@@ -719,7 +719,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
 
   const cardRecord = await getCard(c.env, id);
   if (cardRecord) {
-    await noteVerify(c, "card_pack");
+    await noteVerify(c, "pack");
     const valid = await verifyCardSignature(cardRecord);
     return c.json({
       valid,
@@ -732,17 +732,18 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       signed_payload: canonicalizeCard(cardRecord.card),
       artifact_hash: await artifactHash(canonicalizeCard(cardRecord.card)),
       signature_covers: HOW_TO_VERIFY,
-      card_url: `${c.env.STORE_BASE_URL}/cards/${cardRecord.card.card_id}.svg`,
-      pack_url: `${c.env.STORE_BASE_URL}/api/pack/${cardRecord.card.pack_id}`,
+      face_url: `${c.env.STORE_BASE_URL}/p/${cardRecord.card.card_id}.svg`,
+      page_url: `${c.env.STORE_BASE_URL}/p/${cardRecord.card.card_id}`,
+      ...(cardRecord.card.pack_id ? { pack_url: `${c.env.STORE_BASE_URL}/api/pack/${cardRecord.card.pack_id}` } : {}),
       note: valid
-        ? "Genuine card. Drawn from the certificate id on the published wheels and signed by the store itself. It entitles the holder to a card."
+        ? "Genuine pressing. Drawn under the day's committed seed on the published wheels, printed once, and signed by the store itself. It entitles the holder to a card."
         : "Signature doesn't match. That's not one of our cards.",
     });
   }
 
   const packRecord = await getPack(c.env, id);
   if (packRecord) {
-    await noteVerify(c, "card_pack");
+    await noteVerify(c, "pack");
     const valid = await verifyPackSignature(packRecord);
     return c.json({
       valid,
@@ -756,6 +757,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       artifact_hash: await artifactHash(canonicalizePack(packRecord.pack)),
       signature_covers: HOW_TO_VERIFY,
       cards: packRecord.pack.card_ids.map((cardId) => `${c.env.STORE_BASE_URL}/api/verify/${cardId}`),
+      seed_url: `${c.env.STORE_BASE_URL}/api/paywall/seed/${packRecord.pack.seed_date}`,
       note: valid
         ? "Genuine pack manifest. Each card inside verifies on its own at the URLs listed."
         : "Signature doesn't match. That's not one of our packs.",

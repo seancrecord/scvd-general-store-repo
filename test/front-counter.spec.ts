@@ -46,7 +46,7 @@ describe("the front counter is derived, not remembered", () => {
     // back on 2026-09-02 and passes every rule as it did before.
     // The card table (2026-09-12) added a $0.99 instant novelty that
     // passes every rule the counter states, so it is admitted here.
-    expect(eligible).toEqual(["small_blessing", "daily_fortune", "hello", "card_pack"]);
+    expect(eligible).toEqual(["small_blessing", "daily_fortune", "window_pick", "hello", "pack"]);
   });
 
   it("keeps recurring_patronage out for the reason that actually applies", () => {
