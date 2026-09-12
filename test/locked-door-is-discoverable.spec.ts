@@ -108,7 +108,7 @@ describe("the requirement is in the challenge, one level deep", () => {
   });
 
   it("is actually served on the live 402, not just constructible", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation?tx_hash=0x${"ab".repeat(32)}`, { headers: AS_AGENT });
+    const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation`, { headers: AS_AGENT });
     expect(response.status).toBe(402);
     const header = response.headers.get("PAYMENT-REQUIRED");
     expect(header).toBeTruthy();

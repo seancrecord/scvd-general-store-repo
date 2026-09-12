@@ -53,13 +53,14 @@ describe("the spot check reads the books at the counter", () => {
 
   it("refuses the sale without a host: no host, no charge", async () => {
     const challenge = await SELF.fetch(`${BASE}/api/buy/spot_check`);
-    // An incomplete purchase is refused before it offers payment terms.
-    expect(challenge.status).toBe(400);
+    // The probe rule: unsigned asks the price and gets a 402 that
+    // names the required parameter.
+    expect(challenge.status).toBe(402);
     const body = (await challenge.json()) as Record<string, unknown>;
     expect(body["required_params"]).toEqual(["host"]);
+    expect(body["input_contract_url"]).toBe(`${BASE}/menu/spot_check?view=compact`);
 
-    const valid = await SELF.fetch(`${BASE}/api/buy/spot_check?host=example.com`);
-    const required = decodePaymentRequired(valid);
+    const required = decodePaymentRequired(challenge);
     const accepted = required.accepts[0]!;
     const paid = await SELF.fetch(`${BASE}/api/buy/spot_check`, {
       headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
@@ -69,9 +70,12 @@ describe("the spot check reads the books at the counter", () => {
     expect(String(refusal["error"])).toContain("no charge");
   });
 
-  it("refuses a URL where it asked for a hostname", async () => {
-    const paid = await SELF.fetch(`${BASE}/api/buy/spot_check?host=https://example.com/api`);
-    expect(paid.status).toBe(400);
+  it("refuses a URL where it asked for a hostname, before offering terms", async () => {
+    // Not a probe: the host was supplied. An unsigned request that
+    // composed its inputs is validated, and garbage gets no quote.
+    const unsigned = await SELF.fetch(`${BASE}/api/buy/spot_check?host=https://example.com/api`);
+    expect(unsigned.status).toBe(400);
+    expect(unsigned.headers.has("PAYMENT-REQUIRED")).toBe(false);
   });
 
   it("sells a signed not_observed for a host the books have never met", async () => {

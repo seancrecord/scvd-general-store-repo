@@ -273,11 +273,13 @@ describe("the guard, before money moves", () => {
     expect(response.status).toBe(400);
   });
 
-  it("refuses a bare purchase before issuing payment terms", async () => {
+  it("still quotes a price to anyone who only asks, per the probe rule", async () => {
+    // This file mocks no facilitator, so the challenge itself may not
+    // build here; the bare-probe 402 for every door, this one included,
+    // is held by test/buyer-http-validation.spec.ts (house rule 62).
+    // What this file can say is that a bare ask is never a refusal.
     const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation`);
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({ charged: false, input_field: "tx_hash" });
-    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
+    expect(response.status).not.toBe(400);
   });
 
   it("publishes the hash pattern so a client can get it right first time", async () => {

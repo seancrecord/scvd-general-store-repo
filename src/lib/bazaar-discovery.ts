@@ -667,9 +667,10 @@ export function buyOutputExample(item: MenuItem): Record<string, unknown> {
  * the same schema Bazaar and the MCP tools use, so the 402 body can
  * never drift from the listing.
  *
- * Quotes require valid buyer inputs. Free compact menu pages publish
- * prices and these fields before the buyer constructs a purchase; the
- * challenge repeats them so a payment client can retain the contract.
+ * Needed because of the probe rule (see routes/door-checks.ts): an
+ * unsigned request gets a price even when the item takes input, so the
+ * challenge has to say what to send. Learning the requirement by
+ * being refused is worse manners than we keep.
  */
 /**
  * WHICH REQUIRED INPUTS A REQUEST ARRIVED WITHOUT (2026-09-04).
@@ -683,7 +684,8 @@ export function buyOutputExample(item: MenuItem): Record<string, unknown> {
  *
  * One reading, three doors: the HTTP gate stamps it on the ask row,
  * the MCP door does the same from its arguments, and the pre-gate
- * refusal uses it to name the input any purchase request forgot.
+ * refusal uses it to name the input a SIGNED request forgot. The probe
+ * rule reads it too: an unsigned ask missing one of these is a probe.
  */
 export function missingRequiredInputs(
   item: MenuItem,
@@ -737,7 +739,7 @@ export function requiredInputsExtension(
       queryParams: [...required],
       note: `This door cannot be served without ${required
         .map((name) => `?${name}=`)
-        .join(" and ")}. Supply valid inputs before requesting payment terms and retain them for the signed retry. Inspect prices free in the compact menu or catalog.`,
+        .join(" and ")}. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.`,
       ...(base
         ? { retry_url_template: `${base}/api/buy/${item.id}?${query}`, price_discovery_url: `${base}/menu/${item.id}?view=compact` }
         : {}),
@@ -745,9 +747,10 @@ export function requiredInputsExtension(
   };
 }
 
-export function requiredParamsNote(item: MenuItem): {
+export function requiredParamsNote(item: MenuItem, base?: string): {
   required_params?: string[];
   required_params_note?: string;
+  input_contract_url?: string;
 } {
   const required = buyInputSchema(item).required ?? [];
   if (required.length === 0) {
@@ -755,11 +758,14 @@ export function requiredParamsNote(item: MenuItem): {
   }
   return {
     required_params: [...required],
+    // The full contract, one hop away from the envelope a stock client
+    // already holds: the same free page the 400 refusal points at.
+    ...(base ? { input_contract_url: `${base}/menu/${item.id}?view=compact` } : {}),
     required_params_note: `This one needs ${required
       .map((name) => `?${name}=`)
       .join(
         " and ",
-      )} before requesting payment terms. Read the free compact menu or catalog for prices without supplying purchase inputs; invalid inputs are refused before a payment quote.`,
+      )} on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves. Supply it unsigned first and the same URL validates it before offering terms.`,
   };
 }
 
