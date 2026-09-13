@@ -41,9 +41,20 @@ function expectOneLinkNoImage(note: string, expected: string): void {
   // OUR links only. The door we probed is named in the note on
   // purpose — it is the subject, it is the operator's own domain, and
   // it is not what a URI blocklist reads this message for.
-  const links = [...new Set(note.match(/https?:\/\/[^\s<>"')\]]+/g) ?? [])].filter(
-    (link) => link.startsWith(BASE),
-  );
+  //
+  // Matched on the PARSED ORIGIN, never on a string prefix: a
+  // startsWith(BASE) here counts https://scvd.store.evil.example as
+  // ours, which is the wrong answer in both directions and is the
+  // shape CodeQL rightly refuses. Same refusal the ward's own stub
+  // makes when it decides whether a fetch is one of our hosts.
+  const ours = new URL(BASE).origin;
+  const links = [...new Set(note.match(/https?:\/\/[^\s<>"')\]]+/g) ?? [])].filter((link) => {
+    try {
+      return new URL(link).origin === ours;
+    } catch {
+      return false;
+    }
+  });
   expect(links, "a note may carry exactly one link back to us").toEqual([expected]);
   expect(note, "no remote image in an outbound note").not.toContain("<img");
   expect(note, "no markdown image either").not.toContain("![");
