@@ -398,6 +398,92 @@ export function classifyPaid(status, bodyText) {
 }
 
 /** Rule 5: verbatim, or sha256 + a head when huge. Never dropped. */
+/**
+ * THE MATERIAL TERMS OF AN OFFER — the five fields that decide what a
+ * payment IS. Everything else in a challenge may legitimately differ
+ * between two responses from the same door: a per-request nonce, an
+ * expiry, a rotating maxTimeoutSeconds, a reworded description, the
+ * error prose. StillOS named this on 2026-09-13 and was right: a
+ * comparator that demands byte-equality across accepts[] scores clean
+ * on exactly the more careful half of the ecosystem, and a detector
+ * whose false negative is "looks fine" is worse than no detector.
+ *
+ * v1 spells the amount maxAmountRequired and v2 spells it amount; both
+ * are read here, because the whole point is comparing a door's answer
+ * against its own earlier answer across that seam.
+ */
+export function materialTerms(accept) {
+  const lower = (value) =>
+    typeof value === "string" && value ? value.toLowerCase() : null;
+  return {
+    scheme: accept?.scheme ?? null,
+    network: lower(accept?.network),
+    payTo: lower(accept?.payTo),
+    asset: lower(accept?.asset),
+    amount: accept?.amount ?? accept?.maxAmountRequired ?? null,
+  };
+}
+
+/**
+ * advertised-version-unpayable: the door answered a correctly signed
+ * payment with the same offer it made before, as though nothing had
+ * been presented. Found on the 2026-09-12 walk; the defect class and
+ * its falsifier are in docs/DEFECT_CANDIDATE_ADVERTISED_VERSION_2026-09.md.
+ *
+ * NOTHING HERE EVER RETURNS A QUIET CLEAN. Every answer says whether
+ * the question could be asked at all: `checked: false` means this
+ * reading proves nothing about the door, and is not the same fact as
+ * `present: false`. That distinction is the whole lesson of the week —
+ * StillOS shipped a chain instrument that read zero revenue at 27 of
+ * 27 doors on a mistyped field name, failing closed and silent, and a
+ * silent clean gets believed. So does ours, if we let it.
+ */
+export function advertisedVersionUnpayable({
+  paymentSubmitted,
+  paidStatus,
+  unpaidChallenge,
+  paidChallenge,
+} = {}) {
+  if (!paymentSubmitted) {
+    return { checked: false, reason: "no payment was presented on this attempt" };
+  }
+  if (typeof paidStatus !== "number") {
+    return { checked: false, reason: "no status recorded for the paid attempt" };
+  }
+  if (paidStatus < 400) {
+    return {
+      checked: true,
+      present: false,
+      reason: `the door answered ${paidStatus} to the presented payment, not a refusal`,
+    };
+  }
+  const before = unpaidChallenge?.accepts;
+  if (!Array.isArray(before) || before.length === 0) {
+    return { checked: false, reason: "no unpaid challenge recorded to compare against" };
+  }
+  const after = paidChallenge?.accepts;
+  if (!Array.isArray(after) || after.length === 0) {
+    return {
+      checked: true,
+      present: false,
+      reason: "the refusal carried no offer, so the door said something about the payment rather than re-serving its terms",
+    };
+  }
+  const terms = (list) => JSON.stringify(list.map(materialTerms));
+  if (terms(before) !== terms(after)) {
+    return {
+      checked: true,
+      present: false,
+      reason: "the refusal carried different material terms, so the door re-quoted rather than ignoring the payment",
+    };
+  }
+  return {
+    checked: true,
+    present: true,
+    reason: `the door answered the presented payment with ${paidStatus} and the same material terms it offered unpaid (scheme, network, payTo, asset, amount), so the payment was not read`,
+  };
+}
+
 export function bodyRecord(text) {
   const bytes = Buffer.byteLength(text ?? "", "utf8");
   if (bytes <= BODY_VERBATIM_LIMIT) {

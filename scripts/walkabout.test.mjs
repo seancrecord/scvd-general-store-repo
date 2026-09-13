@@ -23,6 +23,8 @@ import {
   renderReport,
   ruleCheck,
   screenAddress,
+  advertisedVersionUnpayable,
+  materialTerms,
   summarize,
   targetRequest,
   transferFromLog,
@@ -591,4 +593,113 @@ test("a target the runner cannot send faithfully is refused, never guessed", () 
   assert.throws(() => targetRequest({ url: "https://door.example/x", method: "PUT" }), /GET or POST/);
   assert.throws(() => targetRequest({ url: "https://door.example/x", body: { a: 1 } }), /needs method POST/);
   assert.throws(() => targetRequest({ url: "https://door.example/x", method: "GET", body: "" }), /needs method POST/);
+});
+
+/*
+ * advertised-version-unpayable, with the controls StillOS asked for
+ * before its first green is trusted (2026-09-13). The positive case is
+ * not a hand-built fixture: it is the door as our own walk recorded it
+ * in research/field-run-2026-09-12/ledger.jsonl, read off disk, so the
+ * test fails if that record is ever rewritten.
+ */
+const RECORDED_WALK = JSON.parse(
+  readFileSync(new URL("../research/field-run-2026-09-12/ledger.jsonl", import.meta.url), "utf8")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter((entry) => entry.kind === "attempt")
+    .map((entry) => JSON.stringify(entry))[0],
+);
+
+test("the recorded 2026-09-12 door is detected from its own ledger line", () => {
+  const found = advertisedVersionUnpayable({
+    paymentSubmitted: RECORDED_WALK.payment_submitted,
+    paidStatus: RECORDED_WALK.paid_status,
+    unpaidChallenge: JSON.parse(RECORDED_WALK.body),
+    paidChallenge: JSON.parse(RECORDED_WALK.paid_body),
+  });
+  assert.equal(found.checked, true);
+  assert.equal(found.present, true, found.reason);
+});
+
+test("a door that rotates a nonce, an expiry or a timeout is still detected", () => {
+  // The false negative StillOS named: byte-comparison across accepts[]
+  // scores clean on the careful half of the ecosystem. Only the five
+  // material fields decide, so everything else may move.
+  const offer = {
+    scheme: "exact",
+    network: "eip155:8453",
+    amount: "100000",
+    payTo: "0xfAB07d26F7627fc4cE459ecf90d7E015F7eEcE71",
+    asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  };
+  const found = advertisedVersionUnpayable({
+    paymentSubmitted: true,
+    paidStatus: 402,
+    unpaidChallenge: { accepts: [{ ...offer, nonce: "a1", expiresAt: "2026-09-13T00:00:00Z", maxTimeoutSeconds: 60 }] },
+    paidChallenge: { accepts: [{ ...offer, nonce: "b2", expiresAt: "2026-09-13T00:05:00Z", maxTimeoutSeconds: 45 }] },
+  });
+  assert.equal(found.present, true, found.reason);
+  // And the same offer spelled in the other version's dialect still matches,
+  // because the amount's two field names are the seam this reads across.
+  const across = advertisedVersionUnpayable({
+    paymentSubmitted: true,
+    paidStatus: 402,
+    unpaidChallenge: { accepts: [{ ...offer, amount: undefined, maxAmountRequired: "100000" }] },
+    paidChallenge: { accepts: [offer] },
+  });
+  assert.equal(across.present, true, across.reason);
+});
+
+test("an honest refusal and a re-quote are NOT this defect", () => {
+  const offer = { scheme: "exact", network: "eip155:8453", amount: "100000", payTo: "0xAb", asset: "0xCd" };
+  const refused = advertisedVersionUnpayable({
+    paymentSubmitted: true,
+    paidStatus: 402,
+    unpaidChallenge: { accepts: [offer] },
+    paidChallenge: { error: "signature does not recover to the payer" },
+  });
+  assert.equal(refused.checked, true);
+  assert.equal(refused.present, false);
+  const requoted = advertisedVersionUnpayable({
+    paymentSubmitted: true,
+    paidStatus: 402,
+    unpaidChallenge: { accepts: [offer] },
+    paidChallenge: { accepts: [{ ...offer, amount: "200000" }] },
+  });
+  assert.equal(requoted.present, false, requoted.reason);
+  const settled = advertisedVersionUnpayable({
+    paymentSubmitted: true,
+    paidStatus: 200,
+    unpaidChallenge: { accepts: [offer] },
+    paidChallenge: null,
+  });
+  assert.equal(settled.present, false);
+});
+
+test("it never returns a quiet clean: what it could not check, it says", () => {
+  // The failure StillOS shipped and caught this week — an instrument
+  // that reads nothing and reports fine. checked:false is not present:false.
+  for (const input of [
+    { paymentSubmitted: false, paidStatus: 402 },
+    { paymentSubmitted: true },
+    { paymentSubmitted: true, paidStatus: 402, unpaidChallenge: { accepts: [] } },
+    { paymentSubmitted: true, paidStatus: 402, unpaidChallenge: null },
+  ]) {
+    const out = advertisedVersionUnpayable(input);
+    assert.equal(out.checked, false, JSON.stringify(input));
+    assert.equal(out.present, undefined, "an unchecked reading must not carry a verdict");
+    assert.ok(out.reason.length > 0);
+  }
+  assert.equal(advertisedVersionUnpayable().checked, false);
+});
+
+test("materialTerms reads the five fields and normalises the two amount spellings", () => {
+  assert.deepEqual(
+    materialTerms({ scheme: "exact", network: "EIP155:8453", payTo: "0xAB", asset: "0xCD", maxAmountRequired: "1" }),
+    { scheme: "exact", network: "eip155:8453", payTo: "0xab", asset: "0xcd", amount: "1" },
+  );
+  assert.deepEqual(materialTerms(undefined), {
+    scheme: null, network: null, payTo: null, asset: null, amount: null,
+  });
 });

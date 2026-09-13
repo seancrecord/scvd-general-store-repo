@@ -1,9 +1,11 @@
 # Defect candidate: refuses payment in the version it advertises
 
-Drafted 2026-09-13 from the field, not from a spec read. NOT SHIPPED:
-the vocabulary publishes no class its own instruments cannot report,
-and today none of them reports this one. The detection is specified
-below; the class text is finished and waiting on it.
+Drafted 2026-09-13 from the field, not from a spec read. SHIPPED the
+same day as vocabulary v15, in the order this file set out: the
+detection first, then the class. What shipped is NARROWER than what
+was drafted here, and the narrowing came from the operator we found
+the defect on — see "What the operator corrected" at the end, which is
+the part of this document worth reading twice.
 
 ## The observable
 
@@ -94,3 +96,67 @@ Where it goes:
 Sequence matters: the detection first, then the class. A published
 class nobody's instrument reports is the same shape of claim this
 register exists to refuse.
+
+
+## What the operator corrected, before it shipped
+
+StillOS Notary read the draft above and sent back three things. All
+three were right, all three are in the shipped class, and two of them
+would have been defects in our own instrument rather than in anyone's
+door.
+
+**1. The comparator had a false negative.** The draft compared the
+paid response's challenge to the unpaid one across `accepts[]` whole.
+That scores CLEAN on any door carrying a per-request nonce, an expiry
+or a rotating timeout — semantically identical, byte-different — which
+is the more careful half of the ecosystem. A detector whose failure
+mode is "looks fine" is worse than no detector. The shipped
+comparator (`materialTerms` in `scripts/lib/walkabout.mjs`) reads five
+fields — scheme, network, payTo, asset, amount — and lets everything
+else rotate the way it already let the error prose rotate. It also
+reads `amount` and `maxAmountRequired` as the same field, because the
+seam it compares across is exactly the version boundary where that
+name changes.
+
+**2. `asserts` reached past what a buyer can see.** The draft's `costs`
+claimed the defect also loses the seller their record of the attempt.
+That is a real fault and it is NOT this class: their Bazaar proxy
+accepted v2 payments, settled them, delivered the goods, and logged
+nothing, because its request log keyed on the v1 header. The buyer got
+everything it asked for. Nothing buyer-side can observe it, so
+`detectable: "paid"` cannot reach it and the class does not claim it.
+It now lives in `repair_hint` as a separate fault to go looking for,
+and in `buyer_hint` as the reason a buyer should keep its own record.
+A second class for it would need a seller-side signal we do not have.
+
+**3. Do not trust the instrument's first green.** He had shipped a
+chain-side instrument that week which reported zero revenue at 27 of
+27 doors. A mistyped field name; the filter matched nothing; it failed
+closed and silent. Corrected, it reads 8 of 13 doors with
+multi-counterparty revenue. His words: a class whose instrument
+silently reports clean is worse than one with no instrument, because
+it gets believed.
+
+So the shipped detector cannot return a quiet clean. `checked: false`
+is a different answer from `present: false`, and the difference is
+asserted in `scripts/walkabout.test.mjs`: an unchecked reading carries
+no verdict at all. The controls are the ones he asked for —
+
+- the positive case is read off `research/field-run-2026-09-12/ledger.jsonl`
+  rather than hand-built, so the test fails if that record is rewritten;
+- a door rotating a nonce, an expiry and a timeout must STILL be
+  detected — the test for his false negative;
+- an honest refusal, a re-quote at a different price, and a settled
+  2xx must not be detected;
+- every unreachable case returns `checked: false` with a reason.
+
+Shown red before the fix: without the detector exported, the new tests
+fail; with it, 40 pass.
+
+## What remains
+
+`our_signal` names the walkabout ledger, which is where the reading is
+recorded today. The launch check — the instrument a seller actually
+buys — does not carry the stage yet. That is the remaining half of
+ROADMAP row D-AVU, and until it lands, a seller who wants this finding
+has to be walked rather than served.
