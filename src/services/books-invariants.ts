@@ -141,8 +141,21 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
   }
 
   // 2 & 3. The rail records against the organic count.
-  const { stats, rail_overshoot, hand_placements_unapplied } =
+  const { stats, rail_overshoot, hand_placements_unapplied, counters_truncated } =
     await computeStatsDiagnosed(env);
+  /*
+   * The settle counters are read with a cap, and a capped reading that
+   * nobody is told about is a floor published as a total — on the one
+   * number this store asks to be believed. It has never happened — the
+   * scan is one key per ITEM per month, against a cap set orders of
+   * magnitude above the catalog (services/stats.ts says why) — which
+   * is exactly why it would go unnoticed if it did.
+   */
+  if (counters_truncated.length > 0) {
+    breaches.push(
+      `counters-truncated: the paid-counter scan hit its cap for ${counters_truncated.join(", ")}, so the settle counts for those months are a floor and every figure derived from them — organic, house, the rail split — is short by an unknown amount. Raise PAID_METRIC_CAP or page the counters, and do not publish these figures as totals until it is clear.`,
+    );
+  }
   // A hand-placed sale that found no unplaced settle to stand on is a
   // wrong placement — on a store that has organic sales at all. An
   // empty store (every test store) trivially has nothing to place.
