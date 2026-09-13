@@ -64,6 +64,24 @@ reference, and it reads the merged specification only: the settlement
 status vocabulary proposed on x402-foundation/x402#3325 is ignored
 until it merges.
 
+### What each fixture says about itself
+
+Every fixture declares its own provenance, in the vocabulary agreed on
+x402-foundation/x402#3396:
+
+| field | means |
+|---|---|
+| `proves` / `why` | the claim the fixture makes, inside the file rather than in prose beside it |
+| `source` | `simulated` (constructed from a specification), `observed` (bytes a live door served), or `derived` (a capture altered, and the alteration named) |
+| `captured_at` | when the bytes were taken; `null` for a constructed shape, which has no birth date |
+
+The freshness half of the pair, `last_verified_at`, is not in these
+files: a file cannot know when it was last replayed. It rides the
+served index at `https://scvd.store/fixtures.json`, where it is the
+deploy that last ran the suite over every fixture. A conformance
+verdict is a claim about the day it ran, and this package ships the
+claim while the index dates it.
+
 ## What it is not
 
 Not a ranking and not a list of anybody: every class describes an
