@@ -115,12 +115,10 @@ Last checked by hand: ${catalogLastUpdated()}. Served: ${new Date().toISOString(
 Those are two different facts and we print both, because serving a
 page is not the same as having verified what is on it.
 
-${base}/llms-full.txt serves this SAME document, byte for byte — the
-llmstxt.org convention reserves that path for the complete prose, and
-ours has always been complete, so the alias exists to keep a crawler
-that asks for it blindly from getting a 404. It is not a fuller copy
-and this file will not pretend otherwise. ${base}/agents.md is the
-same store in the agents.md convention.
+${base}/llms-full.txt is the complete prose this file maps, and every
+section named below is there in full — the llmstxt.org convention
+reserves that path for exactly that, and this one for the index.
+${base}/agents.md is the same store in the agents.md convention.
 
 ## When to use this store, and when not to
 
@@ -170,9 +168,9 @@ How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${ba
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
-The instrument, reporting on itself: [where our numbers come from](${base}/sources) · [sources.json](${base}/sources.json) · [the MCP ward](${base}/mcp-ward) · [mcp-ward.json](${base}/mcp-ward.json). The first names every directory our ecosystem figures rest on beside the last time each one answered, and carries the heartbeat that says whether the weekly round is still running. The second is a separate ward over the MCP registry that shares no total with the x402 side.
+The instrument, reporting on itself: [where our numbers come from](${base}/sources) · [sources.json](${base}/sources.json) · [the MCP ward](${base}/mcp-ward) · [mcp-ward.json](${base}/mcp-ward.json). The first names every directory our figures rest on beside the last time each answered, and carries the heartbeat saying whether the weekly round still runs. The second is a separate ward over the MCP registry, sharing no total with the x402 side.
 
-Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [charter.md](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md) · [paywall](${base}/design)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [charter.md](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md) · [paywall](${base}/design) · [the release wheel](${base}/api/paywall/releases)
 
 For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
@@ -564,6 +562,17 @@ pressing hangs at \`${base}/p/{card_id}\` and unfurls wherever it is
 posted; a binder is \`${base}/binder/{wallet}\`; the day seed is at
 \`${base}/api/paywall/seed/{date}\`, committed at once and revealed the
 morning after, so every pull recomputes from public inputs.
+
+The season's two one-of-ones are on no wheel and at no price. Each has
+a milestone in packs opened this season, fixed when the signing key
+was; the sha256 of the 32 secret bytes it comes off has been published
+at \`${base}/api/paywall/releases\` since the season opened, and the pack
+that crosses that count carries the card to whoever opened it, in a
+slot the day seed picks. The bytes are revealed beside the card the
+day it lands, so anyone checks them against a commit that predates
+every purchase. The keeper can pull a release forward to the next pack
+anybody opens; he cannot say whose, and the record says he pulled it.
+Nothing hand-presses one: the door refuses it by name.
 
 If your human wants the ten-second version of this whole place, hand
 them ${base}/what.

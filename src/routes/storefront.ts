@@ -15,6 +15,7 @@ import { listKeys } from "@/lib/kv-list";
 import { computeStats, storefrontLedgerLine } from "@/services/stats";
 import { tradeMonthGauge } from "@/services/trade-counter";
 import { readShopWindow, WINDOW_SIZE } from "@/services/shop-window";
+import { releaseCommits } from "@/services/cards";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
 import { kvGet } from "@/lib/kv-retry";
@@ -114,6 +115,7 @@ storefrontRoutes.get("/", async (c) => {
     board,
     trade,
     shopWindow,
+    rackCommits,
   ] = await Promise.all([
     kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
     kvGet(c.env.COUNTERS, KV_KEYS.bellCount),
@@ -164,6 +166,13 @@ storefrontRoutes.get("/", async (c) => {
      * presented as the whole of the trade.
      */
     readShopWindow(c.env, WINDOW_SIZE).catch(() => null),
+    /*
+     * The card rack's two one-of-one commits. Four HMACs and two
+     * digests, no KV at all — the front page is the hottest door here
+     * and a picture of a card should not cost it a read. Fail-soft
+     * like every other gauge: no hashes, still a rack.
+     */
+    releaseCommits(c.env).catch(() => undefined),
   ]);
   /*
    * A CSP arrives with the storefront's first first-party script
@@ -224,6 +233,7 @@ storefrontRoutes.get("/", async (c) => {
       board,
       trade,
       shopWindow,
+      releaseCommits: rackCommits,
     }),
   );
 });

@@ -55,7 +55,7 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
     // Inked by the keeper 2026-09-12 ("okay they look good").
     id: "pack",
     name: "a pack of cards",
-    line: "Five cards of this store and its town, three commons and two off the wheel. The odds are on the table, the seed is committed. Nobody buys one back.",
+    line: "Five cards of this store and its town, three commons and two off the wheel. The odds are on the table, the seed is committed. Two cards a season are one print each and nobody\u2019s to give. Nobody buys one back.",
   },
   {
     // Inked by the keeper 2026-09-12 ("okay they look good").
@@ -275,6 +275,51 @@ export const STOREFRONT_COPY = {
    */
   soldFootnote:
     'No wallets, no names, no totals \u2014 the window shows what sold and when. The counting is done at <a href="/stats">/stats</a>.',
+  /**
+   * THE CARD RACK (2026-09-13, the keeper: "feels like a 'card' and a
+   * button for it would be good for humans too to know about... not
+   * sure where to fit it in").
+   *
+   * Paywall shipped as a room and a shelf line, which is how an agent
+   * finds anything here and is not how a person does. A human landing
+   * on the front page met one card in a grid of sixteen and a link in
+   * the footer, and had no way to learn there is a browser till behind
+   * it — the store's own rule 53 button, one wallet signature, no gas,
+   * already live on the item page since August.
+   *
+   * So the rack is a picture and three buttons, in that order. It goes
+   * BELOW the counter window rather than up with the shelves because
+   * the shelves are the infrastructure argument and this is the gift
+   * shop: a reader who has got this far has already been told what the
+   * store is for.
+   *
+   * The two hashes are the whole one-of-one promise in eleven
+   * characters each, and they cost four HMACs and no reads to print.
+   * They are here rather than on /design alone because a commit
+   * nobody ever sees is not a commitment.
+   */
+  rackHead: "THE CARD RACK",
+  rackLead:
+    "Collectible trading cards of this store and its town. Sixty-three in Season One, every one a pressing of something that is actually here \u2014 a door the observatory watched, a room you can walk into, a defect with a name \u2014 with the path it lives at printed on the face.",
+  rackOdds:
+    "Five cards a pack. Three commons, then two slots on a wheel whose odds are printed with their denominators, drawn under a seed committed before the day starts and published the morning after, so you can recompute your own pull without trusting us.",
+  rackOneOfOne:
+    "Two cards this season are one print each and are not for sale at any price. Each rides a milestone \u2014 a number of packs opened \u2014 fixed when the signing key was, and the pack that crosses it carries the card to whoever opened it. The keeper cannot say who. Here are the two promises, made before anybody bought anything:",
+  /**
+   * NO PRICE IN THE CONSTANT (the claims guard caught this one, and it
+   * was right): a button reading "$0.99" is a claim that goes stale the
+   * day the pack's price moves. The renderer appends priceLabel() off
+   * MENU_ITEMS, the same derivation the shelf cards use.
+   */
+  rackBuyCta: "Open a pack",
+  rackBuyNote:
+    "One wallet signature in this browser, no gas fee, nothing to install. Or ring the bell and take a free card a day.",
+  rackSetCta: "See all 63 and the odds",
+  rackBellCta: "Ring the bell \u2014 free",
+  rackSpecimenAlt:
+    "The specimen card: an unsigned sample printed to show the form, with no print number and no pull behind it.",
+  rackSpecimenNote:
+    "That one is the specimen \u2014 printed to show the form, unsigned, no print number, not a card anybody holds.",
   /**
    * WHAT THIS IS, BEFORE WHAT IT SELLS (2026-08-10). Five outside
    * models were asked "what is scvd.store"; the three that leaned on

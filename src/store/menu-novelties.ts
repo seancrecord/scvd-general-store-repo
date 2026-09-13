@@ -57,7 +57,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     reads: "made_here",
     fulfillment: "instant",
     description:
-      "Five collectible trading cards from Season One, Summer of 402 · Oak City: every card a thing that is actually here, with the path where it lives printed on it. Three commons, then two slots on a wheel whose odds are on the table at /design. Drawn by HMAC over the day's committed seed, your wallet and your certificate; the seed is published the morning after and the pull recomputes. Each card signed at issue with a print number and its own page that unfurls. A card entitles the holder to a card.",
+      "Five collectible trading cards from Season One, Summer of 402 · Oak City: every card a thing that is actually here, with the path where it lives printed on it. Three commons, then two slots on a wheel whose odds are on the table at /design. Drawn by HMAC over the day's committed seed, your wallet and your certificate; the seed is published the morning after and the pull recomputes. Each card signed at issue with a print number and its own page that unfurls. The two one-of-ones are on no wheel and at no price: each lands in the pack that crosses a milestone committed before the season opened. A card entitles the holder to a card.",
     get note_402(): string {
       return `That'll be $${this.price_usdc}, friend, for five. The odds are on the table, the seed is committed, the draw is yours to check tomorrow, and nobody here will buy a card back. Send an Idempotency-Key if you want the same pack back on a retry.`;
     },
@@ -66,6 +66,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "Odds are published per slot with their denominators at /design; there is no pity timer, no hidden modifier and no second copy of the numbers",
       "Doors are capped at their printed number and a capped card steps to the next in its tier; nothing else caps and nothing sells out",
       "No price on a card, no store-run market, nothing bought back: a card entitles the holder to a card",
+      "The two one-of-ones are released by a wheel, not sold and not handed over: their milestones in packs opened were fixed when the signing key was, their commits published at /api/paywall/releases since the season opened, and the bytes behind each commit are revealed the day it lands",
       "Send an Idempotency-Key header: the same key returns the same pack; no key means a fresh pack and a fresh charge",
     ],
     sample_url: "/p/specimen.svg",
