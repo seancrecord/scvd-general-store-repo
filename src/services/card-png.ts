@@ -1,5 +1,4 @@
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
-import resvgWasm from "@resvg/resvg-wasm/index_bg.wasm";
 import plexBold from "../../assets/fonts/IBMPlexSerif-Bold.ttf";
 import plexItalic from "../../assets/fonts/IBMPlexSerif-Italic.ttf";
 import plexRegular from "../../assets/fonts/IBMPlexSerif-Regular.ttf";
@@ -15,12 +14,18 @@ import plexRegular from "../../assets/fonts/IBMPlexSerif-Regular.ttf";
  * own stack where a browser has the fonts. Nothing is fetched, nothing
  * is billed per render, and the same bytes come out every time.
  *
- * The module initialises once per isolate; the first render pays it.
+ * LOADED ON FIRST USE, NOT ON BOOT (2026-09-13). Imported at the top
+ * of the file the rasterizer costs every cold isolate 24 ms it mostly
+ * does not need: 230 ms to start against 206 without, measured five
+ * starts each by scripts/cold-local.mjs, on a store that minifies for
+ * exactly this reason. Behind a dynamic import the bytes still ship in
+ * the bundle and the compile waits for the first face anyone asks for.
+ * The module initialises once per isolate; that first render pays it.
  */
 let ready: Promise<void> | null = null;
 
 function ensureReady(): Promise<void> {
-  if (!ready) ready = initWasm(resvgWasm);
+  if (!ready) ready = import("@resvg/resvg-wasm/index_bg.wasm").then((module) => initWasm(module.default));
   return ready;
 }
 

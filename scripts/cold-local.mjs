@@ -79,13 +79,20 @@ try {
       console.error(result.stdout, result.stderr);
       process.exit(2);
     }
-    // Wrangler keeps the source extension on Text modules, including the
-    // downloadable markdown-wrapped runner. Its generated README is not a module.
-    const files = readdirSync(dirs[name]).filter((f) =>
-      f !== "README.md" && (f.endsWith(".js") || f.endsWith(".md")));
+    // Wrangler keeps the source extension on every non-JS module, so the
+    // extension is what says which kind workerd must be handed.
+    //
+    // THREE KINDS, NOT ONE (2026-09-13). This walked only .js and .md and
+    // registered both as text, which was the whole truth until the Paywall
+    // shipped a rasterizer and a font: a bundle whose entry imports a
+    // module this list skips boots to "No such module" and the cold read
+    // measures nothing. The build emits them all; this registers them all.
+    const files = readdirSync(dirs[name]).filter((f) => f !== "README.md" && !f.endsWith(".map"));
     built[name] = {
       entry,
-      textModules: files.filter((f) => f !== entry),
+      textModules: files.filter((f) => f !== entry && (f.endsWith(".js") || f.endsWith(".md"))),
+      wasmModules: files.filter((f) => f.endsWith(".wasm")),
+      dataModules: files.filter((f) => !f.endsWith(".js") && !f.endsWith(".md") && !f.endsWith(".wasm")),
       bytes: Buffer.byteLength(readFileSync(join(dirs[name], entry))),
       map: existsSync(join(dirs[name], `${entry}.map`)) ? JSON.parse(readFileSync(join(dirs[name], `${entry}.map`), "utf8")) : null,
     };
@@ -113,6 +120,8 @@ const w :Workers.Worker = (
     const b = built[name];
     const modules = [`(name = "${b.entry}", esModule = embed "${name}/${b.entry}")`]
       .concat(b.textModules.map((f) => `(name = "${f}", text = embed "${name}/${f}")`))
+      .concat(b.wasmModules.map((f) => `(name = "${f}", wasm = embed "${name}/${f}")`))
+      .concat(b.dataModules.map((f) => `(name = "${f}", data = embed "${name}/${f}")`))
       .join(", ");
     const extra =
       name === "store"
