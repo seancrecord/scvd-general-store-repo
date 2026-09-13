@@ -64,6 +64,7 @@
     "docs:check": "node scripts/docs-check.mjs",
     "packages:test": "for d in x402-preflight corpus-client defects mcp-starter; do (cd \"$d\" && node --test) || exit 1; done",
     "defects:cut": "node scripts/cut-defects.mjs",
+    "npm-content:cut": "node scripts/cut-npm-content.mjs",
     "outreach:sent": "node scripts/outreach-sent.mjs",
     "corrections:index": "node scripts/corrections-index.mjs",
     "corrections:test": "node --test scripts/corrections-index.test.mjs",
