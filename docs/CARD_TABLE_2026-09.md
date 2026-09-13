@@ -391,8 +391,18 @@ fonts. The paper-grain filter stays off the PNG: measured at
 Worker ceiling that was 100 ms. The ceiling is now 1,000 ms for
 that one path, stated in `wrangler.jsonc` with the reason, and each
 face is rendered once and kept in KV, so the cost is paid per card,
-not per view. The bundle went from 4.4 MB to 7.2 MB raw, 1.4 MB to
-2.5 MB gzipped, inside the plan's limit. Nothing is fetched at
+not per view. The bundle went from 4.4 MB to 7.4 MB raw, 1.4 MB to
+2.6 MB gzipped, inside the plan's limit, and the rasterizer loads on
+FIRST USE rather than on boot: imported at the top of the file it
+cost every cold isolate 24 ms it mostly does not need (230 ms to
+start against 206 without, five starts each by
+`scripts/cold-local.mjs`), on a store that minifies for exactly that
+reason. Behind a dynamic import the bytes still ship and the compile
+waits for the first face anyone asks for. CI caught the other half:
+the cold-start harness registered only JavaScript and markdown
+modules — the whole truth until this branch shipped a font and a
+rasterizer — so a bundle that builds and deploys fine refused to boot
+there. It registers all three kinds now. Nothing is fetched at
 render time, nothing is billed per render, and the same bytes come
 out every time. The door is `/p/{card_id}.face.png`, `?w=` scales;
 every pressing carries `face_png_url`.

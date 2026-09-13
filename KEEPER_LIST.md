@@ -811,7 +811,9 @@ what you ruled and what is still yours to look at.
   looks nice").** resvg inside the Worker with one font, IBM Plex
   Serif (OFL), at `/p/{id}.face.png`; the grain left off the PNG,
   each face kept in KV after its first render. Two numbers moved
-  with it and are yours: the Worker's CPU ceiling 100 → 1,000 ms in
+  with it and are yours: the cold isolate pays nothing for it (the
+  rasterizer loads on first use, so boot stays at 206 ms), the
+  Worker's CPU ceiling 100 → 1,000 ms in
   `wrangler.jsonc` (that one path needs ~230 ms; lower it and the
   PNG goes to 600 wide), and the bundle 1.4 → 2.5 MB gzipped. RULE
   either if you mind.
