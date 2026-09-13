@@ -360,7 +360,19 @@ describe("a pack, bought", () => {
       const html = await page.text();
       expect(html).toContain(`<meta property="og:image" content="${BASE}/p/${String(card["card_id"])}.png">`);
       expect(html).toContain('name="twitter:card" content="summary_large_image"');
+      // The button reads as an X button and the post compacts the card:
+      // its own sentence, then tier, number and print, then the page URL.
       expect(html).toContain('class="post-button" href="https://x.com/intent/post?text=');
+      expect(html).toContain("Share on X");
+      expect(html).toContain('viewBox="0 0 24 24"');
+      const intent = new URL(String(card["post_url"]));
+      const text = intent.searchParams.get("text")!;
+      expect(text.split("\n\n")).toHaveLength(2);
+      expect(text).toContain(String(card["name"]).startsWith("Door") ? "Door" : "");
+      expect(text).toMatch(/No\. \d+ \/ 63/);
+      expect(text).toContain("print");
+      expect(text).toContain("Summer of 402");
+      expect(intent.searchParams.get("url")).toBe(`${BASE}/p/${String(card["card_id"])}`);
 
       const verified = await json(await SELF.fetch(String(card["verify_url"])));
       expect(verified["valid"]).toBe(true);
@@ -398,7 +410,7 @@ describe("a pack, bought", () => {
     expect(html).toContain(`The collection: ${collection["held"]} of ${CURRENT_SEASON.cards.length}`);
     expect(html).toContain('class="entry held');
     expect(html).toContain('class="entry missing');
-    expect(html).toContain("Post my binder on X");
+    expect(html).toContain("Share my binder");
     expect(html).toContain(`<meta property="og:image" content="${BASE}/binder/${TEST_PAYER.toLowerCase()}.png">`);
     // The binder as a picture: the set as a grid with the held cards drawn.
     const sheet = await SELF.fetch(`${BASE}/binder/${TEST_PAYER}.png`);

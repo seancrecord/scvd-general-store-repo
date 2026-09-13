@@ -126,6 +126,28 @@ export function postIntentUrl(text: string, pageUrl: string): string {
   return `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(pageUrl)}`;
 }
 
+/**
+ * THE CARD, COMPACTED INTO A POST (2026-09-13, the keeper, twice
+ * asked). The line alone was the whole share, which reads as a
+ * sentence from nobody: a stranger's timeline shows the words, the
+ * unfurled sheet, and no idea the two are one object. Two lines now —
+ * the card's own sentence, then its identity in the set — so the post
+ * stands up on its own before the image loads, and reads as a card
+ * the moment it does. The URL rides as X's own `url` parameter, so
+ * the sheet unfurls beneath rather than eating the text.
+ */
+export function sharePost(card: { key: string; name: string; line?: string; rarity: CardRarity; card_no?: number; print_no?: number; print_cap?: number; season?: string }): string {
+  const season = (card.season && seasonById(card.season)) || CURRENT_SEASON;
+  const parts = [RARITY_LINES[card.rarity]];
+  if (card.card_no) parts.push(`No. ${card.card_no} / ${season.cards.length}`);
+  if (card.print_no) parts.push(card.print_cap ? `print ${card.print_no} of ${card.print_cap}` : `print ${card.print_no}`);
+  return `${postFor(card)}\n\n${parts.join(" · ")} · ${CARD_LINES.tableName}, ${season.subtitle}`;
+}
+
+/** The X mark, inline, so a share button reads as one at a glance. Their own path, one colour. */
+export const X_GLYPH =
+  '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false" fill="currentColor"><path d="M18.9 1.2h3.7l-8 9.2 9.4 12.4h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.8L0 1.2h7.6l5.2 6.9zm-1.3 19.4h2L6.5 3.3H4.3z"/></svg>';
+
 export const RAIL_COLOURS: Record<CardRail, string> = {
   base: "#3C6BFF",
   solana: "#9945FF",
