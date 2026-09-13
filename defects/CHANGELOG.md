@@ -3,6 +3,28 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.15.0 — 2026-09-13
+
+Vocabulary v15: adds `advertised-version-unpayable`.
+
+A door that answers a correctly signed payment, presented in the
+protocol version its own challenge advertises, with that same offer
+re-served — so the buyer that followed the instructions is the one
+that cannot pay, no money moves, and the door has no failed payment to
+look at. Found by paying, on a walk of a real door during a protocol
+migration; the operator confirmed it and found the same version-keyed
+read on three more of his own surfaces.
+
+The class is narrower than the finding, and the narrowing came from
+that operator. The comparator reads five material terms (scheme,
+network, payTo, asset, amount) rather than the whole offer, so a door
+carrying a per-request nonce, expiry or rotating timeout is not scored
+clean by accident. And the assertion does not reach the variant where
+a door ACCEPTS the newer version, settles, delivers, and logs nothing
+because its request log keys on the older header: nothing buyer-side
+can observe that, so this class does not claim it — the repair hint
+names it as a separate fault instead.
+
 ## 0.14.1 — 2026-09-13
 
 Package fix, no definition changed: the shipped fixtures now carry the
