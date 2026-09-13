@@ -1,3 +1,5 @@
+import type { TxHashStatus } from "@/services/launch-check";
+
 /**
  * KEEPER-EDITABLE COPY, what actually goes in the bag.
  * Every instant item's deliverable text lives here and nowhere else.
@@ -187,7 +189,7 @@ export function launchCheckNote(
    * always honest; this note is the copy a hurried seller quotes,
    * so it now branches on what the chain read actually saw.
    */
-  txHashStatus?: string | null,
+  txHashStatus?: TxHashStatus | null,
   /**
    * The walk's replay reading (battery v3, 2026-09-12): served_again,
    * redelivered, rechallenged, refused or unknown. Absent on records
@@ -220,9 +222,9 @@ export function launchCheckNote(
   }
   switch (verdict) {
     case "settled":
-      return txHashStatus === "confirmed"
-        ? "We walked up to your till as a paying stranger and it took our money. The whole transaction is written down stage by stage, signed — the settlement is on chain from our declared wallet, verified by our own read of Base, and the delivery stage says what actually came back for it. Read the delivery line before you celebrate: settled and delivered are different words, and the report uses the right one."
-        : "We walked up to your till as a paying stranger, presented a real signed payment, and your door answered 2xx and handed over the goods. What the record can and cannot say: 'settled' here is your till's answer, and the chain read did not confirm a settlement transaction — the tx_hash stage says whether your receipt named a hash we could not verify, or no settlement receipt came back at all. The delivery stage says what actually arrived. Settled, delivered, and confirmed-on-chain are three different words, and the report uses the right ones.";
+      return txHashStatus === "confirmed_on_chain"
+        ? "We walked up to your till as a paying stranger and your door answered 2xx to our signed payment. Our chain read confirmed a USDC transfer between our field wallet and your declared payTo. Read tx_verification for the chain, observed amount and confirmation depth; this read does not bind the transfer to this walk's exact authorization nonce and amount. payment_attempt.settlement remains unknown. The delivery stage says what actually arrived. The whole walk is written down, dated and signed."
+        : "We walked up to your till as a paying stranger, presented a real signed payment, and your door answered 2xx. What the record can and cannot say: 'settled' here is your till's answer, and the chain read did not confirm a settlement transaction — tx_hash_status and tx_verification explain the receipt reading, or the absence of a readable receipt. The delivery stage says what actually arrived. Settled, delivered, and confirmed-on-chain are three different words, and the report uses the right ones.";
     case "payment_refused":
       return "We walked up to your till as a paying stranger, presented a real signed payment, and your door refused it. That is the single most common fate of an x402 purchase attempt in the wild, and now you hold the one thing most sellers never get: the refusal, from the buyer's side, stage by stage, signed and dated. The fix usually lives in the stage right before the refusal.";
     case "no_payment_gate":

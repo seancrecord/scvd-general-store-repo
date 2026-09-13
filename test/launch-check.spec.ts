@@ -899,7 +899,7 @@ describe("the replay finding reaches the person who paid for it", () => {
 
   it("leads with the double charge when the door re-challenged the settled payment", async () => {
     const { launchCheckNote } = await import("@/store/copy/deliverables");
-    const note = launchCheckNote("settled", false, "confirmed", "rechallenged");
+    const note = launchCheckNote("settled", false, "confirmed_on_chain", "rechallenged");
     expect(note).toContain("asked us to pay again");
     expect(note).toContain("second charge");
     expect(note).not.toContain("took it again");
@@ -907,7 +907,7 @@ describe("the replay finding reaches the person who paid for it", () => {
 
   it("keeps the ordinary settled note when the door handed the same purchase back", async () => {
     const { launchCheckNote } = await import("@/store/copy/deliverables");
-    const note = launchCheckNote("settled", false, "confirmed", "redelivered");
+    const note = launchCheckNote("settled", false, "confirmed_on_chain", "redelivered");
     expect(note).not.toContain("pay again");
     expect(note).toContain("paying stranger");
   });

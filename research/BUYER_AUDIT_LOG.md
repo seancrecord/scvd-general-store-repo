@@ -436,3 +436,37 @@ Six replacement CLI agents reached usable quotes; five supplied required inputs 
 Enhancements **EW-01**: provenance-aware public collection, scorer and per-product offer grid; **EW-02**: independent six-entry cold launcher with cheaper-model entry and trace review; **EW-03**: private buyer-grade shopping journal, bounded payment submissions, chain/artifact checks and mandatory product/recipient review; **EW-04**: four-wave acceptance and advancement record. Collector controls: 14 pass, two late fixes witnessed red first; typecheck and no-spend dry run pass. New collector live path remains unvalidated. Build follow-through: **B-WAVES**, ROADMAP.md.
 
 Current quoted full-shelf grid: 33 items, 163 offered item/rail pairs, **$3,040.430** minimum arithmetic cost, unspent and not a capacity reservation. Nine architecture representatives: $158.059 on one rail, unspent. Aggregate spending ceiling and locally configured funded Solana buyer remain outstanding. [Full report](buyer-waves-2026-09-12/REPORT.md), [run order](BUYER_RUN_ORDER.md), [exact log additions](buyer-waves-2026-09-12/LOG_ADDITIONS.md).
+
+
+## Discovery repairs observed after deployment — 2026-09-13 UTC
+
+Eight unsigned public requests at 00:25 UTC verified the two narrow repairs
+from PR #657 (merged September 12 at 20:03 UTC). **BUY-042:** the literal
+`attestation_bundle` and `bitcoin_anchor` examples published by MCP both reach
+a 402 quote over HTTP and MCP, without modifying their inputs; both doors
+quote the same five rails for each item. **BUY-044:** `/llms.txt` names the
+canonical signing-key path, `/keys` redirects there with 308, and the canonical
+registry answers 200. The earlier failed captures remain unchanged.
+
+Raw responses, request bodies, headers, acquisition times and the read-only
+collector are retained in `buyer-discovery-deployed-2026-09-13/public-evidence.tar.gz`;
+`summary.json` beside it records the archive digest and exact examples. No
+payment was submitted. This proves these discovery/quote behaviors at that
+moment, not purchase fulfillment, all-surface consistency or a fresh cold-agent
+walk. No new BUY ID is added and the broader waves remain at their recorded
+coverage.
+
+The existing `doors:check --json` collector also completed with **28/28
+criteria met**, no regressions against its baseline and no overdue source
+reviews. It reports landmarks on 2,990 HTML pages and the WebMCP declaration
+on 2,990 of 2,991 reachable published pages. Those are its own HTML/metadata
+criteria, not real-browser execution or a complete broken-link verdict. The
+result and source hashes are retained beside the eight-request capture as
+`six-doors.json` and `six-doors-metadata.json`; its baseline was not updated.
+
+Benchmark enhancement retained: this checker emits only a final report, lacks
+per-request deadlines and does not retain the raw per-URL status inventory.
+The long run returned successfully; it must not be logged as a dead door. A
+repeatable crawl should retain partial results and request timings so a slow
+run can explain what completed and what it could not read. This is an
+instrument limitation, not a newly reproduced product defect.
