@@ -540,7 +540,7 @@ Next recovery work: audit historical nonhuman paid records and the non-catalogue
 ## Counter-test timing follow-through — 2026-09-09
 
 - [x] Remove elapsed-wall-clock dependence from the counter's ordered-alert scenario. The same-time negative control fails its original new-alarm assertion; the ordered fixture retains that assertion and controls both the producer and route reader.
-- [ ] Harden production same-millisecond alarm handling separately: alert-log keys and seen-watermark comparisons currently rely on timestamps. Distinct simultaneous events and an alert arriving while a counter snapshot is being rendered need their own retention and acknowledgement proof. This adjacent follow-up is not counted among the original 39 buyer findings. Source follow-through on September 12: `sendAlert` still creates `alert_log` keys from time alone, while the counter records its read watermark after loading the displayed alerts. The next regression should freeze both clocks, retain two distinct condition/key pairs, repeat one and assert both identities remain correct; then insert another alert after the snapshot read and assert it remains unseen. This is a test plan from the current source, not a new reproduced production incident.
+- [x] Reproduce and repair same-millisecond alert retention and snapshot acknowledgement locally (September 13). The former time-only log key overwrote distinct events; the counter/reconciliation visit timestamp could acknowledge rows never rendered. Stable row IDs and per-room display receipts now carry those facts. The counter renders all five rows it acknowledges. Full scope, evidence and deployment limits are recorded in the September 13 follow-through below; this is separate from the original 39 buyer findings.
 
 Commit map: `520b9c10` retains individual Patronage grants; `ac7792f4` enables paid-term recovery and signed Operator Statement history. The following commit records the completed checklist and the counter-clock fixture correction.
 
@@ -650,3 +650,20 @@ prior BUY-042/044 discovery repairs on production: both literal examples quote
 over HTTP and MCP with equal rails, and key discovery resolves. Raw evidence
 and its limits are linked from `research/BUYER_AUDIT_LOG.md`. This does not deploy
 or validate the new Launch Check wording.
+
+
+## Alert retention and display receipts — 2026-09-13
+
+New repair, following the retained counter-clock item:
+
+- [x] Keep ten simultaneously raised, distinct condition/key pairs as separate log rows, with a separate eleventh condition using the same key. Repeating one updates only that problem's diagnosis and repeat count.
+- [x] Acknowledge only the successfully rendered snapshot in the counter and reconciliation trail. A new alert sharing the visit's millisecond, or arriving after the snapshot read, stays unread. Rows beyond the page's limit remain unread when they later become visible.
+- [x] Render all five counter rows that contribute to its alert count; previously only three were shown. The office reads the counter's receipts without changing them; reconciliation keeps its own independent receipts.
+- [x] Use additive per-row receipts so an older page finishing last cannot erase another visit's acknowledgements. Storage read failures acknowledge nothing; receipt write failures leave the rendered page available for retry.
+- [x] Correct an adjacent failure-language defect on all three admin pages: an unavailable alarm reading no longer prints a quiet/empty alarm result.
+
+The first nine regression scenarios failed against unchanged source. Three additional outage-language cases failed before the false-quiet messages were corrected. A final source-reversion control ran all 25 new cases: 18 failed and seven existing-behavior controls passed; all repair source bytes were restored afterward. Both actual-render failure cases fail against the old source and pass with acknowledgement moved after rendering. Local tests run the actual app and KV with a shared frozen clock, interleaved writes after the snapshot read, injected storage outages and overlapping page loads. No live emails, payments, browser sessions or deployment are involved. The final focused gate passes 60 tests in seven files. The uninterrupted full suite passes all 696 files: **13,700 tests passed**, one existing key-continuity skip, no failures or reruns (1,659.00 seconds, four workers). All 1,451 source/test file hashes match the pre-run snapshot. Typecheck, both Worker dry-run bundles and documentation checks pass.
+
+Migration and limits: existing log rows stay readable under their original keys. Old visit timestamps cannot establish which rows were displayed, so retained alerts without individual receipts may show NEW once after rollout. Existing overwritten rows cannot be reconstructed from this fix. Receipts deliberately have no expiry, because repeated standing alerts can renew their own retention indefinitely; orphan-receipt cleanup is a separate storage-housekeeping enhancement. The pages remain bounded to five and ten recent rows; an older-row navigation/pagination pass remains separate. Per-identity concurrent repeat-count updates and hourly email budgets still use KV read/modify/write; this change does not claim to serialize those operations or establish multi-region consistency. A successfully rendered response is the existing acknowledgement boundary, not proof that the browser received it or a human read it.
+
+These are keeper recovery-surface defects, not new commissioned Aura Walk findings. The original 39-finding completion count and unrun paid-wave coverage are unchanged.

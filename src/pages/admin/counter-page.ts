@@ -35,11 +35,12 @@ export interface CounterPageData {
   /** One line at the top of the room: what the last form actually did. */
   notice?: string;
   weekNote: string;
-  alerts: Array<{ condition: string; detail: string; at: string }>;
+  alerts: Array<{ condition: string; detail: string; at: string; seen?: boolean }>;
+  alertsUnavailable?: boolean;
   /**
    * When the keeper last stood here with alarms showing (null on a
-   * first look). Rows that fired after it are the ones the top line
-   * is allowed to shout about; the rest are reference below.
+   * first look). Individual row receipts decide what is unread;
+   * this time only supplies the first-look context.
    */
   alertsSeenAt?: string | null;
   orders: OrderRecord[];
@@ -521,17 +522,18 @@ export function renderCounterPage(data: CounterPageData): string {
   const alarmsFirstLook = seenAt === null;
   const newAlerts = alarmsFirstLook
     ? []
-    : data.alerts.filter((alert) => alert.at > (seenAt as string));
+    : data.alerts.filter((alert) => !alert.seen);
   const alertsLine =
-    data.alerts.length === 0
+    data.alertsUnavailable
+      ? "<p><strong>Alarm reading unavailable.</strong> No alerts were marked seen. Reload to retry.</p>"
+      : data.alerts.length === 0
       ? "<p>Quiet. The alarms have had nothing to say.</p>"
       : `<details${newAlerts.length ? " open" : ""}>
           <summary>${data.alerts.length} recent${alarmsFirstLook ? "" : newAlerts.length ? `, ${newAlerts.length} new` : ", all seen"} — newest: <strong>${escapeHtml(data.alerts[0]?.condition ?? "")}</strong> ${escapeHtml((data.alerts[0]?.at ?? "").slice(0, 16))}</summary>
           <ul>${data.alerts
-            .slice(0, 3)
             .map(
               (alert) =>
-                `<li>${seenAt !== null && alert.at > seenAt ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}<strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
+                `<li>${seenAt !== null && !alert.seen ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}<strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
             )
             .join("\n")}</ul>
           <p><small>Details clipped for the counter; the alert emails carry the full text.
