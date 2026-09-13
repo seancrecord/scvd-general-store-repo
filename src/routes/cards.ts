@@ -3,7 +3,7 @@ import type { Context } from "hono";
 import { recoverMessageAddress } from "viem";
 import { jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { kvGet, kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetBytes, kvPut, kvPutBytes } from "@/lib/kv-retry";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { renderCardFace, renderSpecimenFace } from "@/services/card-svg";
@@ -618,7 +618,7 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.face\\.png}", async (c) => {
     : undefined;
   // A pressing's face never changes, so the bytes are rendered once and kept.
   const cacheKey = KV_KEYS.paywallFacePng(cardId, width ?? 1000);
-  const kept = await c.env.PATRONS.get(cacheKey, "arrayBuffer");
+  const kept = await kvGetBytes(c.env.PATRONS, cacheKey);
   if (kept) return c.body(kept, 200, PNG_HEADERS);
   const svg = renderCardFace({ card: record.card, signature: record.signature, verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${cardId}` });
   const png = await renderFacePng(svg, width);
@@ -626,7 +626,7 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.face\\.png}", async (c) => {
   // A cache of a pure function, not a record: it expires, and the next
   // caller pays the render again rather than the store paying storage
   // for every size of every card that was ever looked at once.
-  c.executionCtx.waitUntil(c.env.PATRONS.put(cacheKey, bytes, { expirationTtl: 30 * 86400 }));
+  c.executionCtx.waitUntil(kvPutBytes(c.env.PATRONS, cacheKey, bytes, { expirationTtl: 30 * 86400 }));
   return c.body(bytes, 200, PNG_HEADERS);
 });
 
