@@ -1,0 +1,18 @@
+{
+  "command": "node scripts/doors-check.mjs --json",
+  "baseline_updated": false,
+  "payment_submitted": false,
+  "report_file_written_at": "2026-09-13T00:36:12.834073+00:00",
+  "report_sha256": "e0db4ab9b0c8042b5d70ecb68543abdf68d4c26bc03225472b54839c96e8ceed",
+  "source_sha256": {
+    "scripts/doors-check.mjs": "9a8c1e776585a29f7653c9f8c48bc3062dd4accc7f8066199522977c11b7fb7d",
+    "scripts/lib/doors.mjs": "17825ba4ead17cfea92f2af8b562641540b66db68c6869dacfabb51bdc4ad7a7"
+  },
+  "criteria": 28,
+  "met": 28,
+  "scope": "Existing automated public-surface criteria, including an HTML source sweep; not six fresh agents, real mobile interaction, full recursive broken-link coverage or paid purchase verification.",
+  "limitations": [
+    "The collector emits its report only after all reads finish; it has no per-request deadline or retained raw request transcript. A long-running call cannot be attributed from this output alone.",
+    "Criteria that pass over reachable HTML are not proof that every sitemap URL answered; the report does not retain a per-URL status inventory."
+  ]
+}

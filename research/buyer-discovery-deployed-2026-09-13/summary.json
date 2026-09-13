@@ -1,0 +1,77 @@
+{
+  "at": "2026-09-13T00:25:59.216Z",
+  "scope": "Published bundle and anchor examples over HTTP and MCP, plus key-registry discovery; unsigned quotes only",
+  "requests": 8,
+  "payment_submitted": false,
+  "alias": {
+    "status": 308,
+    "location": "/.well-known/scvd-signing-key"
+  },
+  "canonical_key_status": 200,
+  "llms_names_canonical_key": true,
+  "checks": [
+    {
+      "item": "attestation_bundle",
+      "example": {
+        "item_id": "attestation_bundle",
+        "tx_hashes": "0x47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee0,0x9b04e1c9b04e1c9b04e1c9b04e1c9b04e1c9b04e1c9b04e1c9b04e1c9b04e1c0"
+      },
+      "http_status": 402,
+      "mcp_http_status": 200,
+      "mcp_code": 402,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "quoted": true,
+      "matching_rails": true
+    },
+    {
+      "item": "bitcoin_anchor",
+      "example": {
+        "item_id": "bitcoin_anchor",
+        "digest": "9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f"
+      },
+      "http_status": 402,
+      "mcp_http_status": 200,
+      "mcp_code": 402,
+      "http_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "mcp_rails": [
+        "eip155:137",
+        "eip155:42161",
+        "eip155:480",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "quoted": true,
+      "matching_rails": true
+    }
+  ],
+  "archive": {
+    "file": "public-evidence.tar.gz",
+    "sha256": "2a2c1d490c426e48228cc1035b19ad0d0a292f57cef56bbe0297c3093d83b6a7"
+  },
+  "canonical_key_contract": {
+    "content_type_json": true,
+    "algorithm": "ed25519",
+    "public_key_hex_bytes": 32,
+    "current_history_matches_key": true,
+    "retired_history_present": true
+  }
+}

@@ -1,5 +1,20 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-12 — Launch Check recipient evidence limits
+
+Read [ERC-3009](https://eips.ethereum.org/EIPS/eip-3009), the primary
+specification's event, authorization-state and transfer sections. The
+authorization includes the sender, recipient, value, validity window and nonce;
+the usage event identifies both authorizer and nonce. A transfer between two
+accounts alone does not identify the authorization this walk presented. Expiry
+limits later execution, without proving whether execution happened earlier.
+
+Applied to the Launch Check recipient guide and delivery note: explain the
+existing transfer reading separately from `payment_attempt.settlement`, which
+remains unknown. This read did not inspect deployed token bytecode, perform a
+live settlement, or establish request-to-authorization binding. Those are not
+claims made by this wording repair.
+
 ## 2026-09-11 — exact buyer text and independent completion evidence
 
 Read [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785),
