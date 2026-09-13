@@ -13,6 +13,7 @@ import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { securityBlock } from "@/store/surface-contract";
 import { SCORERS_FOR_MONEY, SCORERS_FREE_FIRST, SCORERS_OPENED, SCORERS_PROPOSITION } from "@/store/copy/scorers";
 import { RESULT_CLASS_RULE } from "@/services/reproduce";
+import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -255,6 +256,7 @@ scorersRoutes.get("/scorers", (c) => {
         pull: `GET ${base}/corpus.json, then the snapshots and host rows it lists.`,
         reproduce: `POST ${base}/api/look/v1 with {"url": "...", "since": "2026-W34"}; the class and the citation ride the reproduce block.`,
         verify: `GET ${base}/api/verify/{id}, or npx x402-verify against any artifact.`,
+        replay: `GET ${base}/api/replay/{cert_id} for one of the store's own paid calls, assembled as an integration test: the signed bytes and their hash, the accepted x402 terms with a JWS offer over them, the settlement transaction and where to read it, and the exact refusal a wrong-scope re-presentation gets. It names what the store does not retain, so the gaps are counted against us in the same document.`,
       },
       errors: {
         this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",
@@ -383,7 +385,7 @@ scorersRoutes.get("/scorers", (c) => {
             { "@type": "HowToStep", name: "Re-observe", text: "Run a fresh observation when a door has moved; differences are time, not error.", url: `${base}/corrections` },
           ],
         })}
-        <p class="menu-meta">Compact discovery: <a href="/corpus/index.json"><code>/corpus/index.json</code></a>. The record: <a href="/corpus.json"><code>/corpus.json</code></a>. The dispute artifacts on the shelf: <a href="/menu/the_case_file">the case file</a>, <a href="/menu/launch_check">the launch check</a>, <a href="/menu/settlement_attestation">the settlement attestation</a>; the free desk for any issuer's signed offers and receipts at <code>/api/conformance/v1</code>. For operators: <a href="/operators">/operators</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
+        <p class="menu-meta">Compact discovery: <a href="/corpus/index.json"><code>/corpus/index.json</code></a>. The record: <a href="/corpus.json"><code>/corpus.json</code></a>. The dispute artifacts on the shelf: <a href="/menu/the_case_file">the case file</a>, <a href="/menu/launch_check">the launch check</a>, <a href="/menu/settlement_attestation">the settlement attestation</a>; the free desk for any issuer's signed offers and receipts at <code>/api/conformance/v1</code>. Replay one of our own paid calls, end to end: <a href="/api/replay/${escapeHtml(SAMPLE_ARTIFACT_ID)}"><code>/api/replay/{cert_id}</code></a>. For operators: <a href="/operators">/operators</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,
     }),
   );
