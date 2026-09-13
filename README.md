@@ -144,8 +144,13 @@ What people arrive here to do, and where each door is:
   it depicts, with a page that unfurls wherever it is posted. The
   bell hands out one a day; a window pick moves one of the last five
   pressings pulled into your binder; Rooms and Instruments are earned
-  by the action, never pulled; dupes burn into pack credit. A card
-  entitles the holder to a card.
+  by the action, never pulled; dupes burn into pack credit. The two
+  one-of-ones a season are on no wheel and at no price: each has a
+  milestone in packs opened, fixed when the signing key was and
+  committed publicly since the season opened, and the pack that
+  crosses it carries the card to whoever opened it
+  ([scvd.store/api/paywall/releases](https://scvd.store/api/paywall/releases)).
+  A card entitles the holder to a card.
 - **Get paid to shop** — the bounty board at
   [scvd.store/bounties](https://scvd.store/bounties) (JSON at
   `/api/bounties`): walk a listed x402 door with your own wallet, claim

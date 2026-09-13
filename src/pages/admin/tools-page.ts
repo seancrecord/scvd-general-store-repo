@@ -208,12 +208,23 @@ export function renderToolsPage(data: ToolsPageData): string {
 
   <section>
     <h2>The keeper's hand (Paywall)</h2>
-    <p>What this is for: the Keeper card (window only, once a season), an Event on its date, or an Ally once consent is on record — pressed by your hand. To a wallet, it lands in that binder; into the window, whoever picks next takes it. Each press is a new print number; the ledger counts them and the caps hold.</p>
+    <p>What this is for: an Event on its date, or an Ally once consent is on record — pressed by your hand. To a wallet, it lands in that binder; into the window, whoever picks next takes it. Each press is a new print number; the ledger counts them and the caps hold. <strong>Not the Keeper or CV</strong>: those ride the release wheel below, and a hand press of one would burn its only print and make the wheel a lie.</p>
     <form method="POST" action="/admin/paywall/press">
       <input type="text" name="key" placeholder="entry key, e.g. keeper, first-organic-settlement" value="keeper" required>
       <input type="text" name="wallet" placeholder="0x… or base58 (ignored for the window)">
       <select name="destination"><option value="wallet">to a wallet</option><option value="window">into the window</option></select>
       <button type="submit">Press one</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>The release wheel (Paywall one-of-ones)</h2>
+    <p>What this is for: the Keeper and CV are one print each and nobody's to give. Each has a milestone in packs opened this season, fixed the day the signing key was and committed publicly since the season opened; the pack that crosses it carries the card to whoever opened it. You do not choose the wallet and you never see the number before it lands.</p>
+    <p>The one lever you have: <strong>pull one forward</strong>, so it rides the next pack anybody opens. It is still whoever happens to buy next, and the public record says you pulled it. The wheel, live: <a href="/api/paywall/releases">/api/paywall/releases</a>.</p>
+    <form method="POST" action="/admin/paywall/release">
+      <select name="key"><option value="keeper">Keeper</option><option value="cv">CV</option></select>
+      <select name="lever"><option value="forward">pull forward to the next pack</option><option value="hold">put it back on the wheel</option></select>
+      <button type="submit">Turn the wheel</button>
     </form>
   </section>
 

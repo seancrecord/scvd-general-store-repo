@@ -97,7 +97,7 @@ export const FEATURES: readonly Feature[] = [
     proposition: CARDS_PROPOSITION,
     for_money: CARDS_FOR_MONEY,
     free_first: CARDS_FREE_FIRST,
-    doors: ["/api/card/{card_id}", "/api/pack/{pack_id}", "/api/paywall/binder/{wallet}", "/api/paywall/burn", "/api/paywall/challenge", "/api/paywall/redeem", "/api/paywall/seed/{date}", "/api/paywall/set", "/api/paywall/window"],
+    doors: ["/api/card/{card_id}", "/api/pack/{pack_id}", "/api/paywall/binder/{wallet}", "/api/paywall/burn", "/api/paywall/challenge", "/api/paywall/redeem", "/api/paywall/releases", "/api/paywall/seed/{date}", "/api/paywall/set", "/api/paywall/window"],
     named_on: [],
     opened: CARDS_OPENED,
   },
@@ -146,6 +146,19 @@ export const FEATURES: readonly Feature[] = [
       "/corpus/asked.json",
       // The capture a sealed row commits to, by digest (2026-09-10).
       "/corpus/{sequence}/evidence/{host}.json",
+      /**
+       * THE REPLAY KIT (2026-09-13) files here rather than under a
+       * room of its own, and the proposition above is why: this room
+       * says the store publishes observations AND THE CHECKS THAT
+       * REPRODUCE THEM, and a replay kit is that check for one paid
+       * call — the offer, the settlement, the response hash and the
+       * refusal, assembled so a scorer or a marketplace can run the
+       * store's own arithmetic without asking us to be honest. A
+       * reader who opens any door on this row is the reader who wants
+       * this one. Named on the page in how_to_call beside the verify
+       * grip it extends, so the register matches what a reader finds.
+       */
+      "/api/replay/{cert_id}",
     ],
     named_on: ["/criteria"],
     opened: SCORERS_OPENED,

@@ -119,6 +119,7 @@ describe("the front of the store, trimmed", () => {
       reclassified_house: 0,
       pre_meter_settlements: 1,
       artifacts_issued: 89,
+      distinct_organic_buyers: 4,
       organic_by_rail: {
         base: 4,
         polygon: 0,
@@ -140,6 +141,7 @@ describe("the front of the store, trimmed", () => {
       reclassified_house: 0,
       pre_meter_settlements: 1,
       artifacts_issued: 89,
+      distinct_organic_buyers: 4,
       organic_by_rail: {
         base: 4,
         polygon: 0,

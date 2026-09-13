@@ -1,0 +1,9 @@
+import type { Correction } from "./types";
+
+export const correction: Correction = {
+  date: "2026-09-12",
+  what_was_wrong: "The public Launch Check verification guide named tx_hash_status confirmed, which the instrument does not emit, and described it as verified settlement. The actual confirmed_on_chain reading establishes a transfer between the named accounts, without correlating this walk's exact authorization nonce and amount. The guide omitted contradicted and unverifiable_shape, and pointed only at the current signing key without explaining historical keys. The delivery note also tested for the nonexistent confirmed value, so actual confirmed_on_chain reports fell through to a note saying the chain read had not confirmed a transfer.",
+  how_long: "Reproduced from the served local report during the September 12 buyer repair follow-through. No production recipient count or first affected deployment was established.",
+  found_by: "The keeper-requested buyer audit: signed local reports with receipt, missing-receipt, malformed-identifier and unpaid fixtures, read through the public route.",
+  what_changed: "The delivery note now accepts the instrument's status type and recognizes confirmed_on_chain without claiming exact purchase settlement. The guide derives every status name from a map checked against the instrument's type, explains finality and unresolved payment separately, and gives the exact signature-byte construction and key-history lookup. A valid signature authenticates bytes under a key; it does not establish the underlying claim's truth. Served-report regressions exercise the outcomes and a raw ed25519 check rejects a changed subject. Existing signed records keep their bytes. Exact authorization-to-settlement correlation and stronger replay interpretation remain open repairs; this change supplies accurate instructions, not those missing observations.",
+};
