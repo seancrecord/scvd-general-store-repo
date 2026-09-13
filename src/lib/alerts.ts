@@ -294,7 +294,9 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
     }
 
     if (!updated) {
-      const logKey = `alert_log:${invertedTimestamp(Date.now())}`;
+      // Time orders the trail; it cannot identify a problem. Two distinct
+      // alerts in one millisecond must not share a row or an open pointer.
+      const logKey = `alert_log:${invertedTimestamp(Date.now())}:${crypto.randomUUID()}`;
       await kvPut(env.COUNTERS, 
         logKey,
         JSON.stringify({
@@ -381,13 +383,15 @@ async function emailKeeper(
  * has fixed, which is a different thing from a problem happening
  * again, and the surface used to show them identically.
  */
-export async function listAlerts(env: Env, limit = 20): Promise<AlertRow[]> {
+export type ListedAlert = AlertRow & { id: string };
+
+export async function listAlerts(env: Env, limit = 20): Promise<ListedAlert[]> {
   const listed = await listKeys(env.COUNTERS, { prefix: "alert_log:", cap: limit });
   const values = await bulkGetJson<AlertRow>(env.COUNTERS, listed.names);
-  const alerts: AlertRow[] = [];
-  for (const record of values.values()) {
+  const alerts: ListedAlert[] = [];
+  for (const [id, record] of values) {
     if (record) {
-      alerts.push(record);
+      alerts.push({ ...record, id });
     }
   }
   return alerts;

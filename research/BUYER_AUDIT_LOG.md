@@ -470,3 +470,12 @@ The long run returned successfully; it must not be logged as a dead door. A
 repeatable crawl should retain partial results and request timings so a slow
 run can explain what completed and what it could not read. This is an
 instrument limitation, not a newly reproduced product defect.
+
+
+## Alert recovery follow-through — 2026-09-13
+
+The separately tracked counter-clock follow-up now has local reproductions and a repair. Distinct alerts at the same millisecond overwrote one log row and shared open pointers. Counter/reconciliation visit timestamps could mark an alert seen even when it arrived after the displayed snapshot, or was outside the page limit. The counter also counted/acknowledged five rows while rendering only three. An adjacent storage-outage check found all three admin pages could describe an unavailable alarm reading as quiet.
+
+The repair uses distinct log IDs, per-room receipts for rendered rows, all five counter rows on the page, and an explicit unavailable reading. Original rows and historical visit timestamps remain stored. A legacy alert without a row receipt may be marked NEW once after rollout; missing historical rows are not recovered. Tests exercise actual local routes and KV, including simultaneous distinct events, a repeated identity, late arrivals, bounded-out rows, concurrent visits and storage failures. Nine original scenarios and three additional false-quiet cases were observed failing before their fixes. This is local recovery-surface evidence, not a live deployment or paid buyer run. The final source-reversion control fails 18 of the 25 new cases; seven existing-behavior controls pass. The restored repair passes all 25. The full local suite passes 13,700 tests across 696 files, with one existing skip and no failures; the 60-test focused gate, typecheck, both Worker bundles and docs checks pass. Source/test hashes stayed unchanged throughout the full run. Remaining retention/concurrency limits are in `research/BUYER_REPAIR_CHECKLIST.md`, September 13.
+
+Enhancements retained: navigate older rows beyond the bounded recent lists, and clean up orphaned display receipts without expiring receipts for still-standing problems. Neither is silently counted as completed. No new Aura Walk commission or original BUY-001–039 completion is claimed.
