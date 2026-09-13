@@ -6,6 +6,7 @@
   "receipt_hash_recomputed": true,
   "receipt_hash_preimage": "JSON of {agent, claim_sha256, ts, prev_hash, notary_fp, resolver_hash} in that order",
   "claim_sha256_published": "84310abb469fe44cbafe0710fafad24e204f94e262e48cb1df97bf961f4b60a6",
-  "sha256_of_claim_text_as_given": "b8e2aea468ecfd21edeb0f00d3567c09e1a4757883099b9d1b82c8c521abc422",
-  "claim_binding_reproduced": false
+  "sha256_of_first_receipts_claim_text": "b8e2aea468ecfd21edeb0f00d3567c09e1a4757883099b9d1b82c8c521abc422",
+  "claim_binding_reproduced_from_claim_text": false,
+  "claim_preimage": "not supplied beside this receipt; the claim_sha256 binding was not checked"
 }

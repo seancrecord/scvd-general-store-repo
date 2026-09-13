@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "issuer": "StillOS Notary",
+  "issuer_origin": "https://stillosdigitalholdings.com",
+  "issued_at": "2026-09-12T23:57:14.442Z",
+  "signing_keys": "https://stillosdigitalholdings.com/notary/keyring",
+  "verify_url_template": "https://stillosdigitalholdings.com/notary/r/{receipt_hash}",
+  "attests": "Artifacts signed by the StillOS Notary key published at signing_keys verify at verify_url_template, free and without an account. Each artifact carries its own scope in its `proves` field; that scope, and nothing broader, is what the artifact attests.",
+  "what_this_does_not_claim": [
+    "A valid signature does not establish that the underlying claim is true.",
+    "Honouring another issuer's artifact is not an endorsement of their judgment.",
+    "A treaty entry carries no liability for the other issuer's mistakes and creates no uptime dependency.",
+    "No entry here is exclusive. Any entry is revocable by unpublishing it."
+  ],
+  "key_resolution": "per-receipt (notary_fp), historical keys retained in the keyring",
+  "bond": {
+    "note": "Our verdicts sit behind a slashable correctness bond. This is offered, not required of anyone honouring our artifacts.",
+    "status_url": "https://stillosdigitalholdings.com/notary/bond",
+    "dispute_url": "https://stillosdigitalholdings.com/notary/dispute"
+  },
+  "treaties": [
+    {
+      "relation": "treaty",
+      "counterparty": "SCVD General Store",
+      "counterparty_origin": "https://scvd.store",
+      "counterparty_signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+      "counterparty_verify_url_template": "https://scvd.store/api/verify/{id}",
+      "statement": "When an SCVD artifact signed by the key published at counterparty_signing_key is presented to us and verifies, we treat it as evidence of exactly what it attests -- its own signature_covers scope and its what-this-does-not-prove text -- and nothing more. No endorsement of SCVD's judgment, no liability for its mistakes, no uptime dependency, no exclusivity. Revocable by unpublishing.",
+      "declared_at": "2026-09-10",
+      "reciprocated": false,
+      "reciprocity_note": "Published unilaterally. A treaty is complete when the counterparty publishes their own statement citing this URL; until then this is our half, standing on its own.",
+      "disclosed_to_counterparty": "https://github.com/seancrecord/scvd-general-store-repo/issues/622",
+      "disclosed_at": "2026-09-10",
+      "disclosure_note": "SCVD was told this entry exists, in public, on the day it was published. They did not ask for it and have not agreed to it.",
+      "removal_policy": "This entry is removed on request from SCVD, without argument and without requiring a reason. Ask at any channel we publish and it comes down."
+    }
+  ],
+  "how_to_be_considered": "Publish one statement at a stable URL you control naming our origin, our signing_keys URL, and what you honour our artifacts as. Tell us where it is and we will cite it here. One published statement, zero infrastructure, revocable by either side."
+}
