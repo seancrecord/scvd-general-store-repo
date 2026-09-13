@@ -1,3 +1,4 @@
+import { LAUNCH_REPLAY_MAPPING_LIMIT } from "@/services/launch-check-terms";
 import { Hono } from "hono";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT, prefersMarkdown } from "@/lib/accept";
 import { escapeHtml } from "@/lib/sanitize";
@@ -44,6 +45,7 @@ function document(base: string) {
     mapping_caveat:
       "Mappings to another instrument's names are our reading of their published definitions on the date above, not their endorsement. Each carries the path to check it and what would show it wrong. If they change a definition, this file is stale until corrected — say so rather than trusting it.",
     corrections: CORRECTIONS_POINTER,
+    current_instrument_limits: LAUNCH_REPLAY_MAPPING_LIMIT,
     classes: DEFECT_CLASSES,
     /*
      * A SECOND REGISTER, DELIBERATELY NOT MIXED IN. A defect class is
@@ -102,6 +104,8 @@ function markdown(base: string): string {
     "",
     `Cross-instrument mappings read on ${doc.cross_instrument_mappings_read_on}. ${doc.mapping_caveat}`,
     "",
+    doc.current_instrument_limits,
+    "",
     "---",
     "",
     ...DEFECT_CLASSES.map(classMarkdown).flatMap((block) => [block, ""]),
@@ -159,6 +163,7 @@ function html(base: string): string {
       <p>The column that does the work is <em>detectable</em>. A free probe
       never pays, so it cannot see what only money reveals. A door clean to an
       unpaid probe and defective to a paid walk is not a contradiction.</p>
+      <p>${escapeHtml(LAUNCH_REPLAY_MAPPING_LIMIT)}</p>
       <div style="overflow-x:auto">
       <table>
         <thead><tr><th>id</th><th>class</th><th>detectable</th><th>asserts</th></tr></thead>
@@ -221,6 +226,7 @@ defectRoutes.get("/defects/:id{[a-z0-9-]+}", (c) => {
       description,
       path: `/defects/${entry.id}`,
       bodyHtml: `<section>
+        ${entry.id.includes("replay") || entry.id.includes("nonce") || entry.id.includes("re-challenges") ? `<p>${escapeHtml(LAUNCH_REPLAY_MAPPING_LIMIT)}</p>` : ""}
         <p class="menu-desc"><strong>Asserts:</strong> ${escapeHtml(entry.asserts)}</p>
         <p class="menu-desc"><strong>What a buyer loses when it is present:</strong> ${escapeHtml(entry.costs)}</p>
         <p class="menu-desc"><strong>Detectable:</strong> ${entry.detectable === "unpaid" ? "by an unpaid probe — a GET nobody paid for can see it" : "only by a paid probe — a settled payment reveals it"}.</p>

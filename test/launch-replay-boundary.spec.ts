@@ -22,6 +22,6 @@ it("caps the replay body instead of consuming a seller's entire oversized respon
   expect(paidRequests).toBe(2);
   expect(cancelled).toBe(true);
   expect(chunksRead).toBeLessThan(16);
-  expect(report.replay_served).toBe(true);
+  expect(report.replay_served).toBeNull();
   expect(report.stages.find(stage => stage.stage === "replay")?.detail).toContain("response truncated");
 });

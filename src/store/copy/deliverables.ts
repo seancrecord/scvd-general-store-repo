@@ -1,4 +1,4 @@
-import type { TxHashStatus } from "@/services/launch-check";
+import type { LaunchCheckObservation, TxHashStatus } from "@/services/launch-check";
 
 /**
  * KEEPER-EDITABLE COPY, what actually goes in the bag.
@@ -205,35 +205,17 @@ export function launchCheckNote(
    * so it now branches on what the chain read actually saw.
    */
   txHashStatus?: TxHashStatus | null,
-  /**
-   * The walk's replay reading (battery v3, 2026-09-12): served_again,
-   * redelivered, rechallenged, refused or unknown. Absent on records
-   * signed before it existed, when replay_served alone decides.
-   */
   replayOutcome?: string | null,
+  settlement?: LaunchCheckObservation["payment_attempt"],
 ): string {
-  /*
-   * THE FINDING THAT COSTS THE BUYER MONEY LEADS TOO. A door that
-   * answers the same settled payment with a fresh challenge is not
-   * giving anything away — it is charging twice. The x402 spec thread
-   * measured this in seven of ten money paths, on the receiving side
-   * of the settlement response, and it is invisible from the seller's
-   * logs: both look like sales.
-   */
   if (verdict === "settled" && replayOutcome === "rechallenged") {
-    return "Your till took our money — and when we presented the very same settled payment a second time, it asked us to pay again. Read that carefully: a buyer who lost your first response and re-presents its authorization is met with a fresh challenge, and the only way through it is a second signature, which is a second charge for goods the first one already bought. The replay stage has the exact response. From your side both look like sales; from the buyer's side it is the double charge the x402 receiver obligation exists to stop. The fix is one keyed read: a spent nonce answers with the original purchase or a refusal that names it, never a new 402.";
+    return "The door answered our signed request with 2xx, then asked us to pay again when we presented the identical authorization. We signed nothing new. A fresh challenge does not establish a second charge or that the first presentation settled. Read payment_attempt.verification for the exact payment evidence and the replay stage for what arrived.";
   }
-  /*
-   * THE FINDING THAT COSTS THEM MONEY LEADS. A door that settles
-   * correctly and then serves the SAME already-settled payment again
-   * is giving its product away: the authorization's nonce is spent, so
-   * nothing reaches the seller the second time. Three of thirty-one
-   * doors an independent tester walked on 2026-08-23 did this. Burying
-   * it under "your till took our money" would hand an operator good
-   * news and leave the expensive part in a stage they may not read.
-   */
-  if (verdict === "settled" && replayServed === true) {
-    return "Your till took our money — and then took it again. We presented the identical, already-settled payment a second time and your door served the goods a second time for it. Read that carefully: the authorization behind it is single-use, so nothing reached you on the second pass. You delivered your product for free, and any buyer who noticed could keep doing it. The replay stage has the exact response. This is the failure sellers almost never find alone, because from your side both requests look like successful sales.";
+  if (verdict === "settled" && (replayServed === true || replayOutcome === "changed_response")) {
+    return "The door answered our signed request with 2xx. Its replay response does not establish whether new goods were fulfilled: changed metadata can surround the same artifact, and historical served_again readings used a weaker heuristic. Read the response evidence and payment_attempt.verification separately. The authorization is single-use; this report does not establish a second sale or payment.";
+  }
+  if (verdict === "settled" && settlement?.settlement !== undefined && settlement.settlement !== "unknown") {
+    return `We walked up to your till as a paying stranger and your door answered 2xx. The receipt matched this walk's exact authorization nonce and amount, payer, recipient, USDC contract and network. payment_attempt.settlement is ${settlement.settlement}; payment_attempt.verification records the paired events, and tx_verification records confirmation depth. This is an RPC observation at the stated moment, not proof of delivery or artifact truth. The delivery and replay stages record what arrived.`;
   }
   switch (verdict) {
     case "settled":

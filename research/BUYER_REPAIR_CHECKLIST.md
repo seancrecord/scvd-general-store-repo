@@ -650,3 +650,20 @@ prior BUY-042/044 discovery repairs on production: both literal examples quote
 over HTTP and MCP with equal rails, and key discovery resolves. Raw evidence
 and its limits are linked from `research/BUYER_AUDIT_LOG.md`. This does not deploy
 or validate the new Launch Check wording.
+
+## 2026-09-13 — Launch Check payment/replay follow-through
+
+- [x] Implement exact authorization-to-receipt matching for Launch Check, retaining separate broad-transfer and exact-payment readings, finality and explicit mismatch/read gaps.
+- [x] Replace transaction-reference replay heuristics with complete raw-response comparison. Changed, empty, truncated and failed reads cannot establish fresh fulfillment or safe recovery; no fresh signature is issued.
+- [x] Update recipient notes, verification instructions, current vocabulary caveats and the unsigned specimen. Publish a correction and preserve historical signed bytes and retained older battery meaning across recovery.
+- [ ] Repair the general Settlement Attestation classifier's independent nonce/transfer matching. This is a related instrument finding, not part of the new Launch Check reader's guarantee.
+- [ ] After review and deployment, run outside-in acceptance with fresh public-only agents and bounded real settlement. Local fixture checks are not live purchase results or an Aura Walk commission.
+
+Final validation is recorded below. The two earlier Launch Check follow-ups are closed at the implementation level by this section; deployed acceptance remains separate. The original 39-finding count is unchanged.
+
+
+Final validation: the complete suite ran all **697 files** in **1,959.87 seconds**: **13,718 tests passed, five failed and one existing key-continuity test was skipped**. Three failures stalled for approximately 198 seconds despite a 30-second timeout; two failures followed immediately in affected files. All five passed unchanged during a serial rerun of those three files (**473 passed, one different setup-hook timeout**). The remaining file then passed all **150 tests** unchanged in **43.22 seconds**, including that hook's case. This is a completed full run plus successful reruns of every failure, not an uninterrupted green full run. The interruption's cause was not established; no timeout or assertion was relaxed. All **1,459 source, test and configuration files** stayed byte-identical through the full run and reruns, with none added or removed.
+
+The final focused gate passes **139 tests across ten files**, including **48 new cases**. Of the first 46 new cases, 45 failed against the original source and one unchanged control passed; both later shared-artifact-scope guards failed before their fix. Eight strengthened receipt-gap cases separately failed before the broad status and stage were made consistent with unavailable exact evidence. The earlier broader recovery/attestation gate passed **616 tests across 28 files**. Typechecking, both Worker dry-run bundles, documentation and correction-index checks pass. One preliminary full attempt was deliberately interrupted to fix the contradictory fields; it is not counted as a completed run. No live purchase or deployment was performed.
+
+A separate read of the **18 previously saved real-chain receipts** in `research/deployment-boundary-2026-09-11/proofs.json` found the expected adjacent canonical-USDC AuthorizationUsed/Transfer pair in every receipt, with the recorded payer and atomic amount matching. Token and event constants were derived from the current reader. This supports its ordering assumption on that dated Base sample; it is not a new RPC collection, new purchase, complete replay acceptance run or proof of current deployed behavior. The source file SHA-256 is `1d2b6dcb98efe7014eb64508f148f4a183324b3009e81dea06956ff6f0396a56`.

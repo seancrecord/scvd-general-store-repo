@@ -2,6 +2,7 @@ import {
   authorizationNonces,
   BASE_EVM,
   getBlockNumber,
+  getChainId,
   getReceipt,
   isSameAddress,
   POLYGON_EVM,
@@ -10,6 +11,7 @@ import {
   usdcTransfers,
 } from "@/lib/base-rpc";
 import type { EvmChain, RpcReceipt } from "@/lib/base-rpc";
+import { readAuthorizationReceipt, type AuthorizationReceiptRead, type AuthorizationTerms } from "@/lib/authorization-receipt";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
 import {
@@ -488,19 +490,25 @@ export interface TransferClaimRead {
   amountUsdc: number | null;
   blockHeight: number | null;
   confirmations: number | null;
+  /** Additional exact-payment evidence, separate from the broad transfer read. */
+  authorization?: AuthorizationReceiptRead;
 }
+
+export type TransferClaimQuery = AttestationQuery & { authorization?: AuthorizationTerms };
 
 export async function readTransferClaim(
   env: Env,
   txHash: string,
-  query: AttestationQuery,
+  query: TransferClaimQuery,
   chain: EvmChain = BASE_EVM,
 ): Promise<TransferClaimRead> {
-  const [receipt, head] = await Promise.all([
+  const [receipt, head, reportedChain] = await Promise.all([
     getReceipt(env, txHash, chain),
     getBlockNumber(env, chain),
+    query.authorization ? getChainId(env, chain).catch(() => null) : Promise.resolve(null),
   ]);
-  return classify(receipt, query, head, chain);
+  return { ...classify(receipt, query, head, chain),
+    ...(query.authorization ? { authorization: readAuthorizationReceipt(receipt, head, reportedChain, txHash, query.authorization, chain) } : {}) };
 }
 
 function classify(

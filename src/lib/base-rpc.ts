@@ -308,6 +308,7 @@ export interface RpcLog {
 }
 
 export interface RpcReceipt {
+  transactionHash?: string;
   status: string;
   blockNumber: string;
   logs: RpcLog[];
@@ -799,7 +800,12 @@ export async function getBlockNumber(
   chain: EvmChain = BASE_EVM,
 ): Promise<number> {
   const hex = await rpc<string>(env, "eth_blockNumber", [], chain);
-  return Number.parseInt(hex, 16);
+  return typeof hex === "string" && /^0x[0-9a-f]+$/i.test(hex) ? Number.parseInt(hex, 16) : Number.NaN;
+}
+
+/** Confirm which chain answered before binding a receipt to signed terms. */
+export async function getChainId(env: Env, chain: EvmChain = BASE_EVM): Promise<string> {
+  return rpc<string>(env, "eth_chainId", [], chain);
 }
 
 /** A recovery cannot deliver against a receipt still outside the finalized chain. */

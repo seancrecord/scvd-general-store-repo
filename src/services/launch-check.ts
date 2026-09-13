@@ -11,7 +11,8 @@ import {
 } from "@/services/watch-evidence";
 import { isRecord, type Env } from "@/types";
 import { readTransferClaim } from "@/services/attestation";
-import type { AttestationQuery, TransferClaimRead } from "@/services/attestation";
+import type { TransferClaimQuery, TransferClaimRead } from "@/services/attestation";
+import type { AuthorizationReceiptRead } from "@/lib/authorization-receipt";
 import {
   evmChainOf,
   redactRpc,
@@ -95,9 +96,9 @@ const MAX_KNOCK_BYTES = 1_048_576;
 /** Read at most MAX_KNOCK_BYTES, saying so when the body was longer. */
 async function readCapped(
   response: Response,
-): Promise<{ text: string; truncated: boolean }> {
+): Promise<{ text: string; truncated: boolean; bytes: Uint8Array }> {
   const body = response.body;
-  if (!body) return { text: "", truncated: false };
+  if (!body) return { text: "", truncated: false, bytes: new Uint8Array() };
   const reader = body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -123,11 +124,11 @@ async function readCapped(
     joined.set(chunk, offset);
     offset += chunk.byteLength;
   }
-  return { text: new TextDecoder().decode(joined), truncated };
+  return { text: new TextDecoder().decode(joined), truncated, bytes: joined };
 }
 
 export type LaunchCheckVerdict =
-  /** Money moved and the response carried goods (or at least a 2xx). */
+  /** Legacy name: the signed request answered 2xx; settlement is read separately. */
   | "settled"
   /** Payment was presented and the seller refused it. */
   | "payment_refused"
@@ -141,41 +142,27 @@ export type LaunchCheckVerdict =
   /** The door did not answer this store at this moment. */
   | "unreachable";
 
-/**
- * WHAT THE DOOR SAID TO THE SAME PAYMENT, TWICE (battery v3,
- * 2026-09-12). The x402 spec thread's receiver obligation says a
- * door holding an already-presented authorization must not answer
- * its re-presentation with a fresh payment challenge, and must not
- * present it to the payer as a failed payment. v2 read every non-2xx
- * on the replay as "refused, correctly", which credited exactly the
- * door the thread measured in seven of ten money paths: the one that
- * answers a spent authorization with a new 402 and gets paid twice.
- *
- *   served_again  2xx, and nothing names the original settlement —
- *                 goods served as a new sale (replay-accepted).
- *   redelivered   2xx naming the original settlement transaction —
- *                 the same purchase handed back, a paid retry.
- *   rechallenged  a payment challenge (PAYMENT-REQUIRED, or accepts
- *                 in the body) on a payment already settled — the
- *                 buyer is being asked to sign again
- *                 (re-challenges-spent-authorization).
- *   refused       any other non-2xx; names_settlement says whether
- *                 the refusal named what spent the nonce
- *                 (nonce-unbound-from-settlement when it did not).
- *   unknown       the replay never completed; nothing is claimed.
- *
- * names_settlement is null when the first response named no
- * transaction, so there was nothing to look for — an honest null,
- * never a finding against the door.
- */
-export type ReplayOutcome = "served_again" | "redelivered" | "rechallenged" | "refused" | "unknown";
+/** Battery v4 compares complete response bytes. A transaction reference is
+ * recorded separately: it proves neither redelivery nor fresh fulfillment.
+ * served_again is retained only for interpreting historical v3 records. */
+export type ReplayOutcome = "served_again" | "redelivered" | "changed_response" | "rechallenged" | "refused" | "unknown";
+
+export interface ResponseReading {
+  sha256: string;
+  bytes_read: number;
+  truncated: boolean;
+  content_type: string | null;
+}
 
 export interface ReplayReading {
   outcome: ReplayOutcome;
-  /** The replay's HTTP status, or null when it never completed. */
   status: number | null;
-  /** Did the replay answer name the transaction the first response named? */
+  /** Did the answer name the transaction the first response named? Not proof. */
   names_settlement: boolean | null;
+  /** Absent on historical records and attempts that never answered. */
+  body_comparison?: "identical" | "different" | "incomplete" | "empty";
+  original_response?: ResponseReading;
+  replay_response?: ResponseReading;
 }
 
 export interface LaunchCheckStage {
@@ -208,7 +195,7 @@ export interface TxVerification {
 
 export type TransferClaimReader = (
   txHash: string,
-  query: AttestationQuery,
+  query: TransferClaimQuery,
   network: string,
 ) => Promise<TransferClaimRead>;
 
@@ -220,7 +207,7 @@ export interface LaunchCheckObservation {
   ua_sent: string;
   verdict: LaunchCheckVerdict;
   stages: LaunchCheckStage[];
-  /** What this store paid out, in USD. Zero on every unpaid verdict. */
+  /** Legacy amount: quoted USD after a 2xx. Exact settlement is separate. */
   paid_usd: number;
   pay_to: string | null;
   /** From the seller's PAYMENT-RESPONSE header, when one came back. */
@@ -256,47 +243,11 @@ export interface LaunchCheckObservation {
   tx_verification?: TxVerification;
   /** The paying wallet, so the on-chain record is findable. */
   field_wallet: string | null;
-  /**
-   * THE ONE CHECK THAT FINDS ANYTHING (2026-08-23).
-   *
-   * An independent tester walked 37 x402 doors and published every
-   * result. Its eleven hostile-payload checks — garbage, unsigned,
-   * wrong scheme, wrong network, wrong asset, self-destination, wrong
-   * amount, extra instruction, fee-payer-as-source, high priority fee
-   * — passed 37 of 37. Not one endpoint anywhere accepted a malformed
-   * payment. Every defect it found sat in two places: the settlement
-   * itself, and the REPLAY. Three of thirty-one doors served the goods
-   * a second time for a payment that had already settled once.
-   *
-   * So this store does not build a negative battery it has evidence
-   * nobody fails. It builds the check that catches a door giving its
-   * product away, which is the defect that costs an operator money and
-   * the one they are least likely to find alone.
-   *
-   * CORRECTION APPENDED 2026-08-24, ORIGINAL LEFT STANDING. The tester
-   * wrote back: "37/37 clean" was true when we read it and is now
-   * stale. Its board carries ONE hostile-input failure in 88 endpoints
-   * — palmyr.ai settled a wrong-scheme envelope,
-   * https://cairnwake.com/r/1ccbdc9f.html. The other ten checks still
-   * have zero failures. The number moved; the ruling did not. One
-   * check in eleven, failing once in eighty-eight doors, is still a
-   * battery whose expected yield rounds to nothing next to a replay
-   * defect found in three doors of thirty-one.
-   *
-   * TRUE = the door served us AGAIN on a spent authorization, which is
-   * the defect. FALSE = it refused, correctly. NULL = nothing settled,
-   * so there was nothing to replay and we say so rather than scoring a
-   * door we never paid.
-   */
+  /** v4: false for identical complete nonempty response bytes or a refusal;
+   * null when fresh fulfillment cannot be determined. Historical true values
+   * were v2/v3 heuristics, not proof of a second sale. */
   replay_served: boolean | null;
-  /**
-   * The replay answer read four ways (battery v3). Present whenever a
-   * replay was attempted; absent on walks that never paid and on
-   * records signed under v2 or earlier. `replay_served` stays the
-   * coarse flag it always was, and a 2xx that names the original
-   * settlement is `redelivered` here and FALSE there: the same
-   * purchase handed back is not the giveaway.
-   */
+  /** Present when replay was attempted; read in the context of battery. */
   replay?: ReplayReading;
   /**
    * UNIX SECONDS THE SIGNED AUTHORIZATION STAYS SUBMITTABLE, or null
@@ -331,8 +282,9 @@ export interface LaunchCheckObservation {
   payment_attempt?: {
     network: string; asset: string; nonce: string; amount_atomic: string;
     valid_after: string; valid_before: string;
-    /** A seller-named receipt does not establish use of this exact nonce. */
-    settlement: "unknown";
+    /** A candidate receipt must bind the exact authorization before this advances. */
+    settlement: "unknown" | "pending_finality" | "confirmed";
+    verification?: AuthorizationReceiptRead;
   };
   evidence_hash: string;
   scope: string;
@@ -351,7 +303,7 @@ export interface LaunchCheckRecord {
 }
 
 const CHECK_SCOPE =
-  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. Any payment presentation uses the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. A seller asking for a different transfer method — extra.assetTransferMethod of permit2 or erc7710 — is read at the terms stage and the walk stops there unpaid, naming this instrument's reach as the reason, because presenting an envelope we knew would bounce and then reporting the bounce would say something false about your door. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. When a payment settles, the identical already-settled payment is then presented once more and the answer recorded: a door that serves it again is giving product away against an authorization whose nonce is spent, so nothing can reach the seller twice. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
+  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. Any payment presentation uses the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. A seller asking for a different transfer method — extra.assetTransferMethod of permit2 or erc7710 — is read at the terms stage and the walk stops there unpaid, naming this instrument's reach as the reason, because presenting an envelope we knew would bounce and then reporting the bounce would say something false about your door. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. After a 2xx response, the byte-identical authorization is presented once more. Either presentation may be the first successful settlement; the single-use authorization cannot settle twice. Complete response bytes are compared, with capped reads counted as gaps. Identical bytes do not establish artifact truth or usefulness; changed bytes and repeated transaction references do not establish fresh fulfillment. Exact authorization evidence is read separately after both presentations. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
 
 /**
  * The buyer-side signer, as a seam: production builds one from
@@ -625,40 +577,41 @@ function defaultNonce(): string {
   return `0x${[...bytes].map((b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 
-async function sha256Hex(text: string): Promise<string> {
+async function sha256Hex(text: string | Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest(
     "SHA-256",
-    new TextEncoder().encode(text),
+    typeof text === "string" ? new TextEncoder().encode(text) : new Uint8Array(text),
   );
   return [...new Uint8Array(digest)]
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
 }
 
-/**
- * The replay answer, read four ways. `txHash` is what the FIRST
- * response named; a replay that names the same transaction — in its
- * own PAYMENT-RESPONSE, or anywhere in the bounded body — is talking
- * about the original purchase, whatever its status code.
- */
-export function readReplay(response: Response, body: string, txHash: string | null): ReplayReading {
+async function responseReading(response: Response, body: { bytes: Uint8Array; truncated: boolean }): Promise<ResponseReading> {
+  return { sha256: await sha256Hex(body.bytes), bytes_read: body.bytes.byteLength,
+    truncated: body.truncated, content_type: response.headers.get("content-type") };
+}
+
+/** Compare observations, never infer product identity from a receipt reference. */
+function readReplay(response: Response, body: string, txHash: string | null,
+  original: ResponseReading, replay: ResponseReading): ReplayReading {
   const header = response.headers.get("payment-response");
   const decoded = header ? decodeSettlementResponse(header) : null;
   const claimed = typeof decoded?.transaction === "string" ? decoded.transaction : null;
-  const names =
-    txHash === null
-      ? null
-      : (claimed !== null && claimed.toLowerCase() === txHash.toLowerCase()) ||
-        body.toLowerCase().includes(txHash.toLowerCase());
+  const names = txHash === null ? null
+    : (claimed !== null && claimed.toLowerCase() === txHash.toLowerCase()) || body.toLowerCase().includes(txHash.toLowerCase());
+  const comparison = original.truncated || replay.truncated ? "incomplete"
+    : !original.bytes_read || !replay.bytes_read ? "empty"
+    : original.sha256 === replay.sha256 ? "identical" : "different";
   const served = response.status >= 200 && response.status < 300;
-  const outcome: ReplayOutcome = served
-    ? names
-      ? "redelivered"
-      : "served_again"
-    : response.headers.has("payment-required") || bodyCarriesChallenge(body)
-      ? "rechallenged"
-      : "refused";
-  return { outcome, status: response.status, names_settlement: names };
+  const temporary = response.status >= 500 || response.status === 408 || response.status === 429
+    || (response.status >= 300 && response.status < 400);
+  const outcome: ReplayOutcome = temporary ? "unknown"
+    : response.headers.has("payment-required") || bodyCarriesChallenge(body) ? "rechallenged"
+    : served ? comparison === "identical" ? "redelivered" : comparison === "different" ? "changed_response" : "unknown"
+    : response.status >= 400 && response.status < 500 ? "refused" : "unknown";
+  return { outcome, status: response.status, names_settlement: names, body_comparison: comparison,
+    original_response: original, replay_response: replay };
 }
 
 /** A body that is a payment challenge: accepts[] or x402Version, the wire shape buyers act on. */
@@ -671,26 +624,22 @@ function bodyCarriesChallenge(body: string): boolean {
   }
 }
 
-function replayDetail(reading: ReplayReading, body: string, truncated: boolean): string {
-  const bytes = `${body.length} bytes${truncated ? " (bounded prefix; response truncated)" : ""}`;
-  const first = `First 300 bytes: ${JSON.stringify(body.slice(0, 300))}`;
-  const named =
-    reading.names_settlement === null
-      ? "The first response named no settlement transaction, so whether this answer names one could not be read."
-      : reading.names_settlement
-        ? "It names the settlement transaction the first response named."
-        : "It does not name the settlement transaction the first response named.";
+function replayDetail(reading: ReplayReading, body: string): string {
+  const prefix = `HTTP ${reading.status}. ${reading.replay_response?.bytes_read ?? 0} bytes read${reading.replay_response?.truncated ? " (response truncated)" : ""}. `;
+  const named = reading.names_settlement === true ? "The answer repeats the seller's original transaction reference; this alone proves no payment or delivery. " : "";
+  const first = ` First 300 characters: ${JSON.stringify(body.slice(0, 300))}`;
   switch (reading.outcome) {
-    case "served_again":
-      return `SERVED AGAIN. The identical already-settled payment was presented a second time and the door answered HTTP ${reading.status} with ${bytes}, naming no settlement. The authorization's nonce is spent, so no second payment can have reached the seller — this is product given away as a new sale. ${first}`;
     case "redelivered":
-      return `re-delivered: HTTP ${reading.status} with ${bytes} on a replay of the already-settled payment, naming the settlement transaction the first response named. The same purchase handed back — a paid retry, charged nothing — which is what the receiver obligation asks of a door and not the giveaway. ${first}`;
+      return prefix + "re-delivered: complete, nonempty response bytes are identical. This establishes byte recovery, not the truth or usefulness of the artifact or a linked resource. " + named + first;
+    case "changed_response":
+    case "served_again":
+      return prefix + "The response bytes changed. Wrapper metadata may differ around the same good; fresh fulfillment is not established. " + named + first;
     case "rechallenged":
-      return `RE-CHALLENGED. The identical already-settled payment was presented a second time and the door answered HTTP ${reading.status} with a fresh payment challenge. ${named} A buyer who lost the first response and re-presents is being asked to sign — and pay — again for goods the first authorization already bought; this is the receiver-side defect the x402 spec thread measured in seven of ten money paths. ${first}`;
+      return prefix + "RE-CHALLENGED: the same authorization received a fresh payment challenge. No new authorization was signed. This does not establish a second charge or that the first presentation settled; read payment_attempt.verification separately. " + named + first;
     case "refused":
-      return `refused, correctly: HTTP ${reading.status} on a replay of the already-settled payment, and no new payment challenge. ${named}${reading.names_settlement === false ? " A refusal that cannot say what spent the nonce leaves a buyer who paid and lost the response indistinguishable from one who never paid (nonce-unbound-from-settlement)." : ""} This is the check most endpoints are never tested on.`;
+      return prefix + "refused without a fresh payment challenge. This establishes neither safe recovery nor settlement. " + named + first;
     case "unknown":
-      return "the replay never completed; nothing is claimed in either direction.";
+      return prefix + "Replay handling is unresolved: a temporary failure, redirect, empty response or incomplete read cannot establish recovery or fresh fulfillment. " + named + first;
   }
 }
 
@@ -1182,8 +1131,8 @@ export async function performLaunchCheck(
       verdict = "payment_refused";
       break walk;
     }
-    const { text: bodyText, truncated: bodyTruncated } =
-      await readCapped(second);
+    const originalBody = await readCapped(second);
+    const { text: bodyText, truncated: bodyTruncated } = originalBody;
     if (bodyTruncated) {
       stages.push({
         stage: "delivery",
@@ -1217,34 +1166,14 @@ export async function performLaunchCheck(
         ok: bodyText.length > 0,
         detail:
           bodyText.length > 0
-            ? `${bodyText.length} bytes returned (${second.headers.get("content-type") ?? "no content-type"}), sha256 ${await sha256Hex(bodyText)}, first 300: ${JSON.stringify(bodyText.slice(0, 300))}`
-            : "an empty body came back with the 2xx — settled, and the buyer left holding nothing. Money moved for zero bytes.",
+            ? `${originalBody.bytes.byteLength} bytes returned (${second.headers.get("content-type") ?? "no content-type"}), sha256 ${await sha256Hex(originalBody.bytes)}, first 300: ${JSON.stringify(bodyText.slice(0, 300))}`
+            : "An empty body came back with the 2xx. No goods arrived in this body; settlement is a separate chain observation.",
       });
       verdict = "settled";
 
-      /*
-       * STAGE 7 — THE SAME PAYMENT, TWICE.
-       *
-       * The byte-identical PAYMENT-SIGNATURE header, presented again.
-       * A conformant door refuses it; three of thirty-one doors an
-       * independent tester walked on 2026-08-23 served the goods a
-       * second time.
-       *
-       * THIS COSTS THE SELLER, NOT US, AND CANNOT COST EITHER TWICE.
-       * The authorization carries a single-use nonce and EIP-3009
-       * spends it on first settlement, so the same authorization can
-       * never move funds again — the on-chain transfer reverts. That
-       * is exactly what makes the check safe to run and exactly what
-       * makes the defect expensive: a door that serves on the replay
-       * is giving its product away for a payment it already banked and
-       * cannot bank again. We are never billed twice, so paid_usd does
-       * not move.
-       *
-       * A replay that ERRORS is not a refusal and is not a pass. The
-       * door failed to answer; that is recorded as unknown rather than
-       * counted in either direction, the same way the census counts
-       * its own missed rounds against itself.
-       */
+      const originalReading = await responseReading(second, originalBody);
+      // Present the identical single-use authorization once more. Either request
+      // may be the first settlement; byte comparison cannot prove a second sale.
       let replayResponse: Response | null = null;
       let replayError: string | null = null;
       try {
@@ -1261,23 +1190,24 @@ export async function performLaunchCheck(
         replayError = String(error);
       }
       if (!replayResponse) {
-        replayReading = { outcome: "unknown", status: null, names_settlement: null };
+        replayReading = { outcome: "unknown", status: null, names_settlement: null, original_response: originalReading };
         stages.push({
           stage: "replay",
           ok: false,
-          detail: `the replayed request could not complete: ${replayError}. Nothing is claimed about this door's replay handling in either direction — the authorization's nonce was already spent, so no funds could move regardless.`,
+          detail: `the replayed request could not complete: ${replayError}. Nothing is claimed about this door's replay handling. No new authorization was signed; either presentation may have been the first successful settlement.`,
         });
       } else {
-        const { text: replayBody, truncated: replayTruncated } = await readCapped(replayResponse);
-        replayReading = readReplay(replayResponse, replayBody, txHash);
-        // The coarse flag keeps its v2 meaning — served AGAIN, as a new
-        // sale. A re-delivery of the same purchase is not that.
-        replayServed = replayReading.outcome === "served_again";
-        stages.push({
-          stage: "replay",
-          ok: replayReading.outcome === "refused" || replayReading.outcome === "redelivered",
-          detail: replayDetail(replayReading, replayBody, replayTruncated),
-        });
+        try {
+          const replayBody = await readCapped(replayResponse);
+          replayReading = readReplay(replayResponse, replayBody.text, txHash,
+            originalReading, await responseReading(replayResponse, replayBody));
+          replayServed = replayReading.outcome === "refused" || replayReading.outcome === "redelivered" ? false : null;
+          stages.push({ stage: "replay", ok: replayReading.outcome === "redelivered",
+            detail: replayDetail(replayReading, replayBody.text) });
+        } catch {
+          replayReading = { outcome: "unknown", status: replayResponse.status, names_settlement: null, original_response: originalReading };
+          stages.push({ stage: "replay", ok: false, detail: "The replay response body could not be read. Recovery and fresh fulfillment remain unknown; the original response observation is retained." });
+        }
       }
     } else {
       stages.push({
@@ -1337,9 +1267,25 @@ export async function performLaunchCheck(
       try {
         const read = await options.readClaim(
           txHash,
-          { txHash, payer: signer.address, recipient: payTo ?? undefined },
+          { txHash, payer: signer.address, recipient: payTo ?? undefined,
+            ...(paymentAttempt && payTo ? { authorization: {
+              network: paymentAttempt.network, asset: paymentAttempt.asset, payer: signer.address,
+              recipient: payTo, nonce: paymentAttempt.nonce, amount_atomic: paymentAttempt.amount_atomic,
+            } } : {}) },
           network,
         );
+        if (paymentAttempt && read.authorization) {
+          paymentAttempt.verification = read.authorization;
+          if (read.authorization.status === "matched") {
+            paymentAttempt.settlement = read.status === "SETTLED" ? "confirmed"
+              : read.status === "PENDING_FINALITY" ? "pending_finality" : "unknown";
+          }
+        }
+        // A bad receipt identity or chain read cannot remain a confirmed
+        // transfer in the older field beside an unavailable exact reading.
+        if (read.authorization?.status === "unavailable" && read.authorization.reason !== "receipt_not_found") {
+          throw new Error(`candidate receipt identity or chain state not established: ${read.authorization.reason}`);
+        }
         const detailByStatus: Record<string, string> = {
           SETTLED: `a receipt on ${network} shows a USDC transfer from this walk's field wallet to the payTo the door declared, ${read.confirmations ?? "?"} blocks deep. The claim is the fact.`,
           PENDING_FINALITY: `a receipt on ${network} shows the transfer at ${read.confirmations ?? 0} confirmations — real, young. Depth is a property of when we looked, not of the transfer.`,
@@ -1381,7 +1327,7 @@ export async function performLaunchCheck(
     }
     stages.push({
       stage: "tx-verify",
-      ok: txHashStatus !== "contradicted" && txHashStatus !== "unverifiable_shape",
+      ok: txHashStatus === "confirmed_on_chain",
       detail: txVerification.detail,
     });
   }
@@ -1414,7 +1360,8 @@ export async function signLaunchCheck(env: Env, core: LaunchCheckCore): Promise<
   const observation: LaunchCheckObservation = {
     ...core,
     evidence_hash: await sha256Hex(JSON.stringify(core)),
-    scope: CHECK_SCOPE,
+    scope: core.battery === LAUNCH_CHECK_BATTERY ? CHECK_SCOPE
+      : `A retained observation from ${core.battery}, completed without repeating the purchase or upgrading its evidence to the current battery. Its stage outcomes keep their original meaning. Historical replay labels and transaction references do not establish fresh fulfillment or exact authorization settlement. Read /corrections and the current report guide for the limits; the signature authenticates these bytes, not the truth of the underlying claim.`,
   };
   const signed = await signMessage(
     JSON.stringify(observation),
