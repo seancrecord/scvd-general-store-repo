@@ -183,3 +183,72 @@ By their own `reciprocity_note` — "a treaty is complete when the
 counterparty publishes their own statement citing this URL" — that
 flag is stale: `/trust-list.json` has cited their statement URL since
 2026-09-11. Ours to tell them, not ours to change.
+
+## What the finding turned out to be (2026-09-13)
+
+Marcus followed up on the one thing he had left open, and brought two
+instances we had no way to see.
+
+**The body, closed — and checked against our own record.** He says only
+the error prose changed and that `x402Version`, `accepts[]`, network,
+`maxAmountRequired`, `payTo`, `asset` and `extra` are byte-identical,
+his process re-comparing both objects with the error nulled and
+shipping the original on any mismatch. That claim is checkable here
+without taking his word, because the 09-12 walk recorded his challenge
+verbatim: comparing today's unpaid 402 against
+`research/field-run-2026-09-12/ledger.jsonl`, the only field that
+differs on either surface is `error`, and `accepts[0]` is byte-identical
+on both. His account of his own change is exact.
+
+The raw record also shows a fix he did not itemise. On 09-12 the v2
+HEADER challenge carried `"X-PAYMENT header is required"` — the v1
+header's name, inside the v2 challenge. It now reads
+`"PAYMENT-SIGNATURE header is required"`. Neither of us named that at
+the time; it is in the ledger because the ledger keeps bytes rather
+than conclusions.
+
+**Three more surfaces, which is the actual finding.** He went looking
+only because the first fix had been too narrow, and the same defect was
+in his MCP adapter (read only `x-payment`, so a v2 caller's payment was
+dropped before it reached the notary, and the caller was told to retry
+with an `X-PAYMENT` header) and in his Bazaar listing proxy (which
+accepted v2 payments correctly, but whose request log keyed on
+`x-payment`, so a real v2 buyer arriving from the Coinbase catalog was
+recorded as never having attempted payment). Every paid front-end now
+goes through one shared translation module. He names two internal-only
+services still running stale processes rather than claim a clean sweep.
+
+So what our walk found at one door was one instance of a defect that
+lived at four, and the door we happened to knock on was not the worst
+of them: the MCP adapter silently dropped payments, and the Bazaar
+proxy took the money and recorded no attempt.
+
+**The consequence for measurement, which is his to state and ours to
+record.** His payment ledger also keyed on `x-payment`, so a v2 attempt
+produced no row at all. Our 09-12 walk is probably absent from it —
+not rejected and logged, but missing. In his words, any count they have
+published of how many wallets have ever attempted payment is a floor,
+not a number; it records both versions now, and which was used.
+
+That is the same failure this store names in its own instruments and
+counts against itself: an instrument that cannot see a case reports
+zero for it, and a zero from a blind instrument is indistinguishable
+from a zero from a working one. Here it ran in the direction that
+flatters nobody — a door that was refusing real buyers also could not
+count them.
+
+**And it settles who holds the record of our own run.** He cannot
+confirm the 09-12 walk from his side, because his ledger has no row for
+it. `research/field-run-2026-09-12/ledger.jsonl` is the only account of
+that attempt that exists anywhere: his words, and our file. That is not
+a point scored. It is the argument for writing down raw bytes at the
+moment of observation, made by the other operator, about our record.
+
+**What this earns.** None of the store's 29 published defect classes
+covers it: a door that refuses a correctly signed payment presented in
+the protocol version its own challenge advertises, answering with the
+same challenge as though nothing had been presented. It is a candidate
+for the vocabulary, drafted in
+`docs/DEFECT_CANDIDATE_ADVERTISED_VERSION_2026-09.md` with the
+detection it would need first, because this store publishes no class
+its own instruments cannot report.
