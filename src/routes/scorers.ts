@@ -203,7 +203,6 @@ const START_HERE = (base: string) => ({
     `curl -s ${base}/corpus.json | jq '.distribution'`,
     `curl -s ${base}/corpus/host/example.com.json | jq '.cite'`,
     `curl -s -X POST ${base}/api/look/v1 -H 'content-type: application/json' -d '{"url":"https://example.com/api/thing","since":"2026-W34"}' | jq '.reproduce'`,
-    `curl -s ${base}/api/replay/${SAMPLE_ARTIFACT_ID} | jq '{offer, settlement, response, refusal}'`,
   ],
   cli: [
     "npx scvd corpus --since 2026-W34",
@@ -214,7 +213,6 @@ const START_HERE = (base: string) => ({
     `read_store_guide, then look_at_door {"url": "https://example.com/api/thing", "since": "2026-W34"}`,
     `the corpus is plain GET: ${base}/corpus.json, ${base}/corpus/host/{host}.json`,
     `verify anything cited: ${base}/api/verify/{id}, or npx x402-verify`,
-    `replay one of our own paid calls: ${base}/api/replay/{cert_id} — plain GET, no key`,
   ],
   note: "Three grips on the same doors. No account, no key, no wallet; nothing here can spend.",
 });

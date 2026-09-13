@@ -211,12 +211,32 @@ named on the scorers page in all four places a reader of that room
 looks — the shell grip, the MCP grip, the five answers beside the
 verify line it extends, and the paragraph a human reads.
 
-STILL OWED, and written here so it is not rediscovered: /llms.txt is
-25 characters under its budget and 17,261 of its 29,975 — 58 per cent
-— is one section enumerating every door inline. The next door that
-needs listing there cannot be. The fix is to move that enumeration
-into the area files the index already points at, which is its own
-change with its own blast radius.
+STILL OWED, and written here so it is not rediscovered. Two machine
+surfaces are at their alarm thresholds, and neither can carry another
+door until somebody rules on it:
+
+- /llms.txt is 25 characters under its 30,000 budget, and 17,261 of
+  its 29,975 — 58 per cent — is one section enumerating every door
+  inline. The fix is to move that enumeration into the area files the
+  index already points at.
+- /openapi.json is 699,288 bytes against the 700,000 alarm in
+  reader-limits.ts — 712 bytes. The real cliff is the 1,000,000-byte
+  scanner cap, so there is about 300KB of true headroom; the alarm is
+  deliberately early, so that when it fires there is still room to do
+  something cheap. It has now fired. The cheap things available are
+  all rulings rather than edits: 472,592 bytes of the document are
+  duplicated blocks, of which the largest are 79 inlined copies of
+  the If-None-Match parameter and 34 of Idempotency-Key (about 55KB,
+  inlined deliberately on 2026-09-05 so a scanner that does not
+  resolve $ref still reads them) and 31 copies of one delivery
+  response (about 36KB, where responses are already $ref-ed
+  elsewhere in the same document).
+
+The replay door is therefore documented on the served /skill.md and
+named on /scorers, and is NOT in openapi.json: house rule 60.1 would
+admit it only through a feature row, and the row cannot claim a door
+the spec does not carry. That is the one honest place it can sit
+until the budget question is answered.
 
 ## What would catch it going stale
 
