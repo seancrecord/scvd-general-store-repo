@@ -8024,6 +8024,57 @@ openapiRoutes.get("/openapi.json", async (c) => {
           parameters: [pathParam("id", "A cert_id or stamp_id.")],
         },
       },
+      "/api/replay/{cert_id}": {
+        get: {
+          ...returns(
+            freeOp(
+              "Replay a paid call",
+              "One purchase assembled as an integration test an agent can run without trusting this store: the certificate's signed bytes and their hash, the five accepted x402 terms recovered by matching the catalog against the certificate's signed quote with a JWS offer over them, the settlement transaction and where to read it, whether the delivery-audit row for that settlement is closed, and the exact refusal body a wrong-scope re-presentation gets. The whole kit is a detached JWS under the store's did:web key, and it names what the store does not retain. Free.",
+            ),
+            {
+              type: "object",
+              description:
+                "The replay kit. Every part is derived on the read from the signed record and the live catalog; nothing here is stored beside the certificate.",
+              properties: {
+                artifact_class: { type: "string", enum: ["replay_kit"] },
+                call: { type: "object", description: "Which paid call this is: cert_id, item, patron_number, date." },
+                offer: {
+                  type: "object",
+                  description:
+                    "quote (the signed hash), accepted_terms (the five recovered, or null), recovered_from (how, or why not), jws (an offer signed over those terms on this read, or null), kid and did_document to resolve the key.",
+                },
+                settlement: {
+                  type: "object",
+                  description:
+                    "state, transaction, network, explorer, payer, paid_usdc, and the sale's standing including the delivery-audit row.",
+                },
+                response: {
+                  type: "object",
+                  description:
+                    "form, signed_payload, signature, signature_jcs, public_key, artifact_hash — everything an ed25519 check needs.",
+                },
+                refusal: {
+                  type: "object",
+                  description:
+                    "wrong_scope: the purchase_input_mismatch body a settled payment gets when re-presented against a different product or inputs, charged once and never twice, plus the other refusal codes by name.",
+                },
+                replay: { type: "array", items: { type: "string" }, description: "The steps, in order, to check all of it yourself." },
+                not_retained: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "What this store does not keep, said out loud rather than left to be discovered.",
+                },
+                kit_signature: {
+                  type: "object",
+                  description:
+                    "Detached JWS over the kit's RFC 8785 form. Proves this store assembled these parts on this read; makes no part truer than its own signature does.",
+                },
+              },
+            },
+          ),
+          parameters: [pathParam("cert_id", "Any cert_id this store has issued; every purchase response and verify answer carries one.")],
+        },
+      },
       "/api/anchor/{anchor_id}": {
         get: {
           ...returns(
