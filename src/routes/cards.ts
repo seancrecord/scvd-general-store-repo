@@ -14,12 +14,14 @@ import {
   burnForCredit,
   getCard,
   getPack,
+  packsOpened,
   printStatus,
   readBinder,
   readBurn,
   readCredit,
   readWindow,
   redeemCredit,
+  releaseStates,
   verifyCardSignature,
   WINDOW_SIZE,
   type BinderRow,
@@ -45,6 +47,9 @@ import {
   postIntentUrl,
   RARITY_LINES,
   RARITY_ORDER,
+  releasable,
+  RELEASE_CEILING,
+  RELEASE_FLOOR,
   RESERVED_CONDITIONS,
   sharePost,
   slotOdds,
@@ -75,6 +80,7 @@ import { isRecord, type CardRecord, type HonoEnv, type SignedCardRecord } from "
  *   GET  /api/paywall/set               the season's set, free
  *   GET  /api/paywall/seed/{date}       the day's commit; its seed the day after
  *   GET  /api/paywall/window            the last five pressings pulled, free
+ *   GET  /api/paywall/releases          the one-of-ones' commits, and any that landed
  *   GET  /api/paywall/binder/{wallet}   the binder as a manifest, with the credit
  *   POST /api/paywall/challenge         { address } → a single-use challenge
  *   POST /api/paywall/burn              { address, signature, card_ids } → pack credit
@@ -153,6 +159,7 @@ const OBTAINED_LINES: Record<CardEntry["obtained"], string> = {
   pack: "pack drop",
   window: "the window only",
   earned: "earned by the action",
+  released: "released by the wheel into somebody's pack",
   hand: "handed over by the keeper",
 };
 
@@ -217,7 +224,14 @@ async function setJson(c: Context<HonoEnv>) {
   };
 }
 
-function roomTwin(base: string, set: Awaited<ReturnType<typeof setJson>>, seed: Awaited<ReturnType<typeof publishSeedRecord>>, yesterday: Awaited<ReturnType<typeof publishSeedRecord>> | null) {
+function roomTwin(
+  base: string,
+  set: Awaited<ReturnType<typeof setJson>>,
+  seed: Awaited<ReturnType<typeof publishSeedRecord>>,
+  yesterday: Awaited<ReturnType<typeof publishSeedRecord>> | null,
+  releases: Awaited<ReturnType<typeof releaseStates>>,
+  packs: number,
+) {
   const pack = getMenuItem(PACK_ITEM);
   const pick = getMenuItem(WINDOW_ITEM);
   const odds = oddsTable();
@@ -236,6 +250,7 @@ function roomTwin(base: string, set: Awaited<ReturnType<typeof setJson>>, seed: 
       the_window: `GET ${base}/api/paywall/window is the last ${WINDOW_SIZE} pressings pulled from packs here, free; GET ${base}/api/buy/${WINDOW_ITEM} takes one of them at half a pack — the seed picks, the pressing moves from the wallet that pulled it to yours, one pick per wallet per ${WINDOW_LOCK_HOURS} hours.`,
       burn_dupes: `POST ${base}/api/paywall/challenge with { address }, EIP-191 personal_sign the challenge, then POST ${base}/api/paywall/burn with { address, signature, card_ids }: ${BURN_RATES["common"]} commons or ${BURN_RATES["uncommon"]} uncommons burn into one pack of credit; rares never. POST ${base}/api/paywall/redeem with { address, signature, want: "pack" | "window_pick" } spends one.`,
       recompute_a_draw: "draw = HMAC-SHA256(seed_d, payer || cert_id || slot). The first four bytes map to [0, 1) and walk the slot's wheel; the next four pick the card within the pool; a capped card steps to the next in its tier. seed_d is published at /api/paywall/seed/{date} the day after; its sha256 is the commit on every pack.",
+      the_release_wheel: `GET ${base}/api/paywall/releases: the one-of-ones are not handed out and not for sale. Each one's milestone in packs opened this season was fixed the day the signing key was, its sha256 commit published since the season opened; the pack that crosses it carries the card to whoever opened it, and the bytes come out beside it so you can check the commit.`,
       a_binder: `GET ${base}/api/paywall/binder/{wallet}, or the read_binder tool, lists what a wallet holds, newest first, with its pack credit.`,
       the_set: `GET ${base}/api/paywall/set is the whole season as JSON: names, types, rarities, how each is obtained, which plates are drawn, how many of each have been pressed and the cap where one exists.`,
     },
@@ -258,8 +273,9 @@ function roomTwin(base: string, set: Awaited<ReturnType<typeof setJson>>, seed: 
     credit: { burn: BURN_RATES, rares: "never burn", spend_on: ["pack", "window_pick"], never: ["instruments", "specific cards", "cash"] },
     conditions: { clears: CONDITION_CLEARS, reserved: RESERVED_CONDITIONS, under_the_weather: "three or more Conditions at once mark the binder Under the weather until one clears; cosmetic" },
     seed: { today: seed, yesterday, sentence: CARD_LINES.seedSentence },
+    release_wheel: releaseWheelJson(base, releases, packs),
     odds: {
-      note: "Per slot: stops of each tier over the stops on that slot's wheel. Per pack: the chance of at least one of the tier, one minus the product of the per-slot misses. Rooms, Instruments, the Keeper and Events never drop from packs; Conditions drop from slot 5 only. No pity timer, no hidden modifier, no second copy of these numbers anywhere.",
+      note: "Per slot: stops of each tier over the stops on that slot's wheel. Per pack: the chance of at least one of the tier, one minus the product of the per-slot misses. Rooms, Instruments and Events never drop from packs, and the one-of-ones are on no wheel at all — they ride the release wheel at /api/paywall/releases; Conditions drop from slot 5 only. No pity timer, no hidden modifier, no second copy of these numbers anywhere.",
       per_slot: odds.rows,
       per_pack: odds.per_pack,
     },
@@ -287,7 +303,9 @@ cardRoutes.get("/design", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const set = await setJson(c);
   const { seed, yesterday } = await todayAndYesterday(c);
-  const twin = roomTwin(base, set, seed, yesterday);
+  const releases = await releaseStates(c.env);
+  const packs = await packsOpened(c.env);
+  const twin = roomTwin(base, set, seed, yesterday, releases, packs);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(twin);
   const pack = getMenuItem(PACK_ITEM);
   const pick = getMenuItem(WINDOW_ITEM);
@@ -311,6 +329,16 @@ cardRoutes.get("/design", async (c) => {
   };
   const setHtml = [...byType.entries()]
     .map(([type, cards]) => `<h3>${escapeHtml(TYPE_LINES[type as keyof typeof TYPE_LINES])} · ${cards.length}</h3><div class="set">${cards.map(entryHtml).join("\n")}</div>`)
+    .join("\n");
+  const releaseRows = releases
+    .map((state) => {
+      const where = state.landed
+        ? `<a href="/p/${escapeHtml(state.landed.card_id)}">landed in pack ${state.landed.pack_no}</a>${state.landed.pulled_forward ? ", pulled forward" : ""} · milestone <strong>${state.landed.milestone}</strong> · reveal <code>${escapeHtml(state.landed.reveal.slice(0, 24))}…</code>`
+        : state.pulled_forward_at
+          ? "pulled forward by the keeper: it rides the next pack anybody opens"
+          : `still out there, ${packs} pack${packs === 1 ? "" : "s"} in`;
+      return `<tr><td>${escapeHtml(state.name)}</td><td><code>${escapeHtml(state.commit.slice(0, 32))}…</code></td><td>${where}</td></tr>`;
+    })
     .join("\n");
   const slotRows = odds.rows
     .map((row) => `<tr><td>slot ${row.slot}</td>${STOPS.map((stop) => `<td>${row.stops[stop] === 0 ? "—" : `${fraction(row.stops[stop], row.wheel_size)} (${percent(row.stops[stop] / row.wheel_size)})`}</td>`).join("")}</tr>`)
@@ -375,7 +403,14 @@ cardRoutes.get("/design", async (c) => {
         <table class="odds"><thead><tr><th></th>${STOPS.map((stop) => `<th>${escapeHtml(stop === "condition" ? "condition" : RARITY_LINES[stop].toLowerCase())}</th>`).join("")}</tr></thead><tbody>${slotRows}</tbody></table>
         <p class="menu-desc">Per pack, the chance of at least one:</p>
         <table class="odds"><thead><tr><th>tier</th><th>chance</th><th>derivation</th></tr></thead><tbody>${packRows}</tbody></table>
-        <p class="menu-meta">Rooms and Instruments are earned by the action, never pulled. The Keeper and CV are one card each, once a season: they hang in the window to be looked at, and the keeper hands them over. A pick never takes one, because a wallet that can make five picks could otherwise buy a specific card outright, and nothing here is sold as a specific card. Events drop by hand on dates. Doors cap at their observation count; 402 the Chicken caps at one. No pity timer, no near-miss, no window that closes, no price on a card, no store-run market. A card entitles the holder to a card.</p>
+        <p class="menu-meta">Rooms and Instruments are earned by the action, never pulled. The Keeper and CV are one card each, once a season, and they are on no wheel above: they ride the release wheel below. A window pick never takes one either, because a wallet that can make five picks could otherwise buy a specific card outright, and nothing here is sold as a specific card. Events drop by hand on dates. Doors cap at their observation count; 402 the Chicken caps at one. No pity timer, no near-miss, no window that closes, no price on a card, no store-run market. A card entitles the holder to a card.</p>
+      </section>
+      <section class="seed">
+        <h2>The release wheel: ${releases.length} cards, one print each, nobody's to give</h2>
+        <p class="menu-desc">The Keeper and CV are not sold and are not handed over. Each one has a milestone — a number of packs opened this season — that was fixed the day the signing key was, months before anybody could buy anything. Its sha256 has been sitting on this page since the season opened. The pack that crosses that count carries the card, in a slot the day seed picks, to whoever happened to open it. Then the bytes come out and you check them against the commit yourself.</p>
+        <p class="menu-meta">Counted on packs opened this season. <strong>${packs}</strong> so far. Every milestone is somewhere in [${RELEASE_FLOOR}, ${RELEASE_CEILING}]; which number, nobody knows — not you, not the keeper — until it lands.</p>
+        <table class="odds"><thead><tr><th>card</th><th>commit, published since the season opened</th><th>where it is</th></tr></thead><tbody>${releaseRows}</tbody></table>
+        <p class="menu-meta">Check it: <code>bytes = HMAC-SHA256(master, "paywall:release:" + season + ":" + key)</code>, <code>commit = sha256(bytes)</code>, <code>milestone = ${RELEASE_FLOOR} + (bytes[0..3] mod ${RELEASE_CEILING - RELEASE_FLOOR + 1})</code>. The whole wheel as JSON: <a href="/api/paywall/releases"><code>/api/paywall/releases</code></a>. The keeper's one lever is to pull a release forward to the next pack anybody opens; he never gets to say whose, and the record says he pulled it.</p>
       </section>
       <section>
         <h2>The bell, the window, the credit</h2>
@@ -396,6 +431,51 @@ cardRoutes.get("/design", async (c) => {
     }),
   );
 });
+
+/**
+ * THE RELEASE WHEEL, in public. The commit for each one-of-one has been
+ * here since the season opened; the milestone and the bytes behind it
+ * come out the moment the card lands, and not a moment before. Until
+ * then all anybody gets — the keeper included — is the range and the
+ * count of packs opened so far.
+ */
+function releaseWheelJson(base: string, releases: Awaited<ReturnType<typeof releaseStates>>, packs: number) {
+  return {
+    what_it_is: `The ${releases.length} one-of-ones this season are on no pack wheel and are not for sale at any price. Each has a milestone in packs opened this season, fixed the day the signing key was; the pack that crosses it carries the card to whoever opened that pack.`,
+    counted_on: "packs opened this season",
+    packs_opened: packs,
+    range: { floor: RELEASE_FLOOR, ceiling: RELEASE_CEILING, note: `Every milestone is somewhere in [${RELEASE_FLOOR}, ${RELEASE_CEILING}] packs. Which number, nobody knows until it lands.` },
+    how_to_check: "milestone_bytes = HMAC-SHA256(master, \"paywall:release:\" + season + \":\" + key), and commit = sha256(milestone_bytes). The commit is published from the day the season opened; the bytes are published beside the card the day it lands. sha256(hex_to_bytes(reveal)) must equal commit, and floor + (bytes[0..3] mod (ceiling - floor + 1)) must equal the milestone.",
+    cards: releases.map((state) => ({
+      key: state.key,
+      name: state.name,
+      commit: state.commit,
+      landed: state.landed
+        ? {
+            milestone: state.landed.milestone,
+            pack_no: state.landed.pack_no,
+            reveal: state.landed.reveal,
+            card_id: state.landed.card_id,
+            holder: state.landed.holder,
+            at: state.landed.at,
+            pulled_forward: state.landed.pulled_forward,
+            page_url: `${base}/p/${state.landed.card_id}`,
+            record_url: `${base}/api/card/${state.landed.card_id}`,
+          }
+        : null,
+      status: state.landed
+        ? `Landed in pack ${state.landed.pack_no} of the season${state.landed.pulled_forward ? ", pulled forward by the keeper" : ""}.`
+        : state.pulled_forward_at
+          ? "Pulled forward by the keeper: it rides the next pack anybody opens."
+          : `Still out there. ${packs} pack${packs === 1 ? "" : "s"} opened so far.`,
+    })),
+    the_keepers_lever: "The keeper can pull a release forward to the next pack. He cannot say whose pack, and the record says he pulled it.",
+  };
+}
+
+cardRoutes.get("/api/paywall/releases", async (c) =>
+  c.json(releaseWheelJson(c.env.STORE_BASE_URL, await releaseStates(c.env), await packsOpened(c.env))),
+);
 
 cardRoutes.get("/api/paywall/set", async (c) => c.json(await setJson(c)));
 

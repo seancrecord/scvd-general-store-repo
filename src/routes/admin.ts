@@ -86,7 +86,7 @@ import {
   parseLuckyStrength,
   setLuckyStatus,
 } from "@/services/luckies";
-import { handPress, CapReached } from "@/services/cards";
+import { handPress, holdRelease, pullReleaseForward, releaseStates, CapReached } from "@/services/cards";
 import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import { luckyNote } from "@/store/copy";
 import { listConfessions, setConfessionStatus } from "@/services/confessions";
@@ -3752,10 +3752,11 @@ adminRoutes.post("/admin/luckies/move", async (c) => {
 });
 
 /**
- * THE KEEPER'S HAND: any entry — the Keeper card, an Event on its date,
- * an Ally once consent is on record — pressed to a wallet he names, or
- * set out in the shop window for whoever picks it (the first pass:
- * "Keeper in the window, once, unannounced").
+ * THE KEEPER'S HAND: an Event on its date, an Ally once consent is on
+ * record — pressed to a wallet he names, or set out in the shop window
+ * for whoever picks it. NOT a one-of-one: those ride the release wheel
+ * below, and pressing one here would spend its only print and make the
+ * published commit a lie. The lever refuses it by name.
  */
 adminRoutes.post("/admin/paywall/press", async (c) => {
   const form = await c.req.parseBody();
@@ -3765,6 +3766,9 @@ adminRoutes.post("/admin/paywall/press", async (c) => {
   if (!toWindow && (!wallet || !(isWalletAddress(wallet) || isSolanaWalletAddress(wallet)))) {
     return c.text("A hand press goes to a wallet (a 0x address or a base58 Solana address) or into the window.", 400);
   }
+  if ((await releaseStates(c.env)).some((state) => state.key === key)) {
+    return c.text(`${key} is a one-of-one on the release wheel: it lands in a pack when the store crosses its milestone, and no hand presses it. Use the release lever on /admin/tools.`, 409);
+  }
   try {
     const pressed = await handPress(c.env, key, toWindow ? { window: true } : { wallet });
     return c.redirect(`/p/${pressed.card.card_id}`);
@@ -3772,6 +3776,27 @@ adminRoutes.post("/admin/paywall/press", async (c) => {
     if (error instanceof CapReached) return c.text(error.message, 409);
     throw error;
   }
+});
+
+/**
+ * THE RELEASE LEVER: the only thing the keeper gets to say about a
+ * one-of-one, and it is not who gets it. "Forward" marks the card to
+ * ride the next pack anybody opens; "hold" takes the mark off again
+ * before it fires. Neither picks a wallet, and the record a landing
+ * writes says whether it was pulled.
+ */
+adminRoutes.post("/admin/paywall/release", async (c) => {
+  const form = await c.req.parseBody();
+  const key = sanitizeText(form["key"], 60);
+  const lever = form["lever"] === "hold" ? "hold" : "forward";
+  try {
+    if (lever === "hold") await holdRelease(c.env, key);
+    else await pullReleaseForward(c.env, key);
+  } catch (error) {
+    if (error instanceof CapReached) return c.text(error.message, 409);
+    return c.text(error instanceof Error ? error.message : "The release lever did not move.", 400);
+  }
+  return c.redirect("/api/paywall/releases");
 });
 
 adminRoutes.post("/admin/guestbook/delete", async (c) => {
