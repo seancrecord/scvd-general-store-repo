@@ -18,6 +18,39 @@ const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
 /**
+ * THE BLOCKLIST SHAPE, REFUSED (2026-09-13). scvd.store was listed on
+ * the Spamhaus DBL, and a seller could not reply to our own welcome:
+ * his provider refused to relay any mail carrying our domain
+ * (Namecheap, JFE040005). The notes were the cause. A rendered
+ * welcome carried ten links back to us and an <img> pointing at our
+ * SVG chip, which is the URI-blocklist profile almost exactly — a
+ * young domain, unsolicited, many self-links, a remote image.
+ *
+ * So the notes carry ONE link: the passport page, which already holds
+ * the chip, the free re-check, the check definitions and the standing
+ * note. Rule 55 is unharmed — a URL the reader can walk is still a
+ * path, and everything it used to take five URLs to offer is one
+ * click behind this one. No image, and no price in a cold note: a
+ * first contact with prices in it is a solicitation however it is
+ * written.
+ *
+ * This assertion is the guard. A note that grows a second link or an
+ * image fails here rather than at somebody's mail provider.
+ */
+function expectOneLinkNoImage(note: string, expected: string): void {
+  // OUR links only. The door we probed is named in the note on
+  // purpose — it is the subject, it is the operator's own domain, and
+  // it is not what a URI blocklist reads this message for.
+  const links = [...new Set(note.match(/https?:\/\/[^\s<>"')\]]+/g) ?? [])].filter(
+    (link) => link.startsWith(BASE),
+  );
+  expect(links, "a note may carry exactly one link back to us").toEqual([expected]);
+  expect(note, "no remote image in an outbound note").not.toContain("<img");
+  expect(note, "no markdown image either").not.toContain("![");
+  expect(note, "no price link in a cold note").not.toContain("/menu/");
+}
+
+/**
  * THE OUTREACH DESK — the rules these tests hold are the consent
  * rules: the queue derives fresh from rounds (no stored scores), the
  * draft is a dated observation the recipient can verify themselves,
@@ -125,10 +158,12 @@ describe("the draft: a dated observation with receipts, never a score", () => {
     expect(note).toContain("2026-08-19");
     expect(note).toContain("https://agents.chain.link/api/x");
     expect(note).toContain("status-402");
-    expect(note).toContain(`${BASE}/api/preflight`);
-    // The receipt: our probe is verifiable in THEIR logs.
+    // The receipt: our probe is verifiable in THEIR logs. The URLs
+    // that used to ride here now sit one click behind the passport
+    // link (2026-09-13, the DBL listing) — the paths are still named.
     expect(note).toContain("scvd-general-store/1.0");
-    expect(note).toContain("http-message-signatures-directory");
+    expect(note).toContain("RFC 9421");
+    expect(note).toContain("re-run the same battery yourself");
     // The claim is quoted as their asserted number, dated by window.
     expect(note).toContain("$139");
     expect(note).toContain("7d");
@@ -624,7 +659,7 @@ describe("the desk and its doors", () => {
     const readyList = summary.slice(summary.indexOf("Ready doors — the welcome"));
     expect(readyList).not.toContain('action="/admin/outreach/send"');
     expect(readyList).toContain("open in Gmail — the welcome written");
-    expect(readyList).toContain('href="mailto:hello%40ready.example?subject=there%20is%20a%20dated%20page');
+    expect(readyList).toContain('href="mailto:hello%40ready.example?subject=a%20dated%20page');
     expect(readyList).toContain('href="#card-ready.example"');
     // The card carries the contact and the same link.
     const card = text.slice(text.indexOf('<section id="card-ready.example">'));
@@ -680,33 +715,27 @@ describe("the ready doors — the welcome with the passport page (2026-09-01)", 
     expect(deriveWelcomes(latest, null)[0]!.newly_listed).toBe(false);
   });
 
-  it("the welcome hands them the passport, the colophon, the free checks, and prices off the shelf", async () => {
-    const { getMenuItem } = await import("@/store/menu");
+  it("the welcome carries ONE link, no image, and no price — the blocklist shape", async () => {
     const latest = round("2026-W35", [host("new.example", "ready")]);
     const note = draftWelcome(deriveWelcomes(latest, round("2026-W34", []))[0]!, BASE);
-    expect(note).toContain(`${BASE}/passport/new.example`);
-    expect(note).toContain("colophon");
+    expectOneLinkNoImage(note, `${BASE}/passport/new.example`);
+    // Still says the things that make it worth reading.
     expect(note).toContain("never says \"passed\"");
-    // 2026-09-04: the chip handed out the way a directory hands out
-    // its badge — markdown and HTML, ready to paste, no claim step.
-    expect(note).toContain("nothing to claim");
-    expect(note).toContain(`[![scvd.store passport for new.example`);
-    expect(note).toContain(`](${BASE}/badges/passport/new.example.svg)](${BASE}/passport/new.example)`);
-    expect(note).toContain(`<img src="${BASE}/badges/passport/new.example.svg"`);
-    expect(note).toContain(`${BASE}/api/preflight`);
-    expect(note).toContain(`${BASE}/api/standing-note`);
-    expect(note).toContain(`$${getMenuItem("conformance_watch")!.price_usdc}`);
-    expect(note).toContain(`$${getMenuItem("opening_day")!.price_usdc}`);
     expect(note).toContain("first week");
     expect(note).toContain("nothing to unsubscribe from");
   });
 
-  it("the broken-door draft now points at the passport page too", () => {
+  it("the broken-door draft carries ONE link, no image, and no price", () => {
     const latest = round("2026-W35", [host("broke.example", "not_ready", { failed: ["accepts"] })]);
     const note = draftNote(deriveProspects(latest, null)[0]!, BASE);
-    expect(note).toContain(`${BASE}/passport/broke.example`);
-    expect(note).toContain("/menu/conformance_watch");
+    expectOneLinkNoImage(note, `${BASE}/passport/broke.example`);
+    // The finding still names the check that failed, by name.
+    expect(note).toContain("accepts");
+    // Rule 55 still holds: the paths are named, and the one link carries them.
+    expect(note).toContain("scvd-general-store/1.0");
+    expect(note).toContain("re-run the same battery yourself");
   });
+
 });
 
 describe("hand delivery in one press", () => {

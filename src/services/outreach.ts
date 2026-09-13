@@ -1,8 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
-import { getMenuItem } from "@/store/menu";
-import { passportEmbedFor } from "@/pages/passport-card";
 import { retractionFor } from "@/store/retracted-readings";
 import type {
   WardHostResult,
@@ -307,14 +305,6 @@ export function deriveProspects(
  * derived fresh each read — the ledger itself is never edited by
  * arithmetic, only by the keeper's hand.
  */
-/** "$5 fixed, seven days" off the shelf — never typed into a draft. */
-function sellLine(itemId: string): string {
-  const item = getMenuItem(itemId);
-  if (!item) return "on the shelf";
-  const term = item.term_days ? `, ${item.term_days} days` : "";
-  return `$${item.price_usdc}${term}`;
-}
-
 /**
  * THE READY DOORS (2026-09-01): the other half of the seller loop.
  * The queue above finds operators by what is BROKEN; this finds them
@@ -383,34 +373,23 @@ export function deriveWelcomes(
 
 export function draftWelcome(welcome: Welcome, base: string): string {
   const date = welcome.observed_at.slice(0, 10);
-  const embed = passportEmbedFor(welcome.host, base);
   const freshLine = welcome.newly_listed
     ? "\nIt was not in the listings on our previous pass, so this note is probably arriving in your first week. Congratulations on the door.\n"
     : "";
-  return `Subject: there is a dated page for your x402 endpoint at ${welcome.host}
+  return `Subject: a dated page for your x402 endpoint at ${welcome.host}
 
-Hello — I run ${base.replace("https://", "")}, an evidence observatory for agentic commerce and a small store on the same door.
+Hello — I run an evidence observatory for agentic commerce, and a small store on the same door.
 
 On ${date} our weekly pass of doors listed in public x402 discovery fetched
   ${welcome.url}
 and it answered the way a buyer needs: a payable 402. That observation, dated, with the date after which to stop trusting it, is on a page that already exists:
   ${base}/passport/${welcome.host}
 ${freshLine}
-The page carries a colophon you can paste beside your door — who looked, when, and the date the reading goes stale. It is not a badge and it never says "passed"; it says you were observed, which is the thing a counterparty can check. Reading it is free forever, and it re-derives from each weekly pass on its own.
-
-There is also a chip for a README, already yours — nothing to claim, the observation earned it. It wears the tier with its fraction and the date, links the page above, and goes dark rather than stale if the door leaves the ready side:
-  Markdown: ${embed.markdown}
-  HTML:     ${embed.html}
-
-Two free things, if you want them:
-- Re-check the door yourself any time: curl -X POST ${base}/api/preflight -H 'Content-Type: application/json' -d '{"url":"${welcome.url}"}'
-- Say something in your own words beside our observation — a standing note, attached by proving control of the door: ${base}/api/standing-note
-
-And two paid ones, only if they are useful: a week of signed daily checks on the same door (${base}/menu/conformance_watch — ${sellLine("conformance_watch")}), or the whole opening day in one purchase — a real paid walk of your till, that week of checks, and the passport, under one certificate (${base}/menu/opening_day — ${sellLine("opening_day")}).
+Reading it is free forever, and it re-derives from each weekly pass on its own. It is not a badge and it never says "passed"; it says you were observed, which is the thing a counterparty can check. The page also carries a chip you can paste beside your door if you want one, a free re-check you can run yourself, and a way to put your own words beside our observation.
 
 This is a one-off note about one dated observation. You're not on a list and there is nothing to unsubscribe from.
 
-— the keeper, SCVD General Store (${base})`;
+— the keeper, SCVD General Store`;
 }
 
 export function healedAfterOutreach(
@@ -473,7 +452,7 @@ export function draftNote(
           prospect.failed.length > 0
             ? prospect.failed.join(", ")
             : "the payment challenge did not parse"
-        } (each check is defined at ${base}/api/preflight/v2)`;
+        }`;
   const subject =
     prospect.verdict === "unreachable"
       ? `your x402 endpoint at ${prospect.host} is turning buyers away`
@@ -486,25 +465,20 @@ export function draftNote(
     : "";
   return `Subject: ${subject}
 
-Hello — I run ${base.replace("https://", "")}, a small store and free conformance desk in the x402 ecosystem.
+Hello — I run a small store and free conformance desk in the x402 ecosystem.
 
 On ${date} our weekly probe of doors listed in public x402 discovery fetched
   ${prospect.url}
 and ${finding}. Any buyer that finds you through those listings hits the same thing.
 ${verifiedLine}${freshLine}${claimLine}
-You don't have to take my word for any of this:
-- Your own access logs: the probe identifies as "scvd-general-store/1.0 (+${base})" and is cryptographically signed (Web Bot Auth / RFC 9421; key directory at ${base}/.well-known/http-message-signatures-directory).
-- Re-check it yourself right now, free, no account:
-    curl -X POST ${base}/api/preflight -H 'Content-Type: application/json' -d '{"url":"${prospect.url}"}'
-  Every check is named; the same battery this note is based on.
+You don't have to take my word for any of this. Our probe identifies itself as "scvd-general-store/1.0" in your access logs and signs its requests (Web Bot Auth / RFC 9421), each check we ran has a published definition, and you can re-run the same battery yourself for free without an account. What the census holds about your door, dated, with the date after which to stop trusting it — and every one of those verification paths — is here:
+  ${base}/passport/${prospect.host}
 
-What the census holds about your door, dated, with the date after which to stop trusting it: ${base}/passport/${prospect.host} — free, and it re-derives from the next weekly pass on its own.
-
-If it's already fixed by the time you read this — great, ignore the rest. If you'd like it watched so a silent break never lasts a week again, that's a thing we sell (${base}/menu/conformance_watch — ${sellLine("conformance_watch")}), but the preflight above is free forever either way.
+If it's already fixed by the time you read this, great: ignore the rest.
 
 This is a one-off note about one dated observation. It isn't published anywhere, you're not on a list, and there's nothing to unsubscribe from.
 
-— the keeper, SCVD General Store (${base})`;
+— the keeper, SCVD General Store`;
 }
 
 /** RFC 9116: Contact fields, in order, deduped, capped. */
