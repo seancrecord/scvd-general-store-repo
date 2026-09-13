@@ -34,7 +34,17 @@ const BASE = "https://scvd.store";
  * 31,250 for the largest tool. The headroom is deliberate and small —
  * enough for ordinary editing, not enough to re-embed a catalog.
  */
-const CATALOG_BYTE_CEILING = 140_000;
+/**
+ * Raised 140,000 → 152,000 on 2026-09-12 for the Paywall: two free
+ * tools (read_binder, look_in_window), two items on the penny shelf
+ * (pack, window_pick) and one published refusal (window_refused) on
+ * the two tools that sell the pick. Measured 147,028 the day it moved,
+ * with the tool descriptions cut first (test/tool-surface.spec.ts
+ * holds them under 34k). A ratchet with its reason, like the OpenAPI
+ * budget in store/reader-limits.ts; the second assertion below still
+ * holds the catalog well under what the specs cost.
+ */
+const CATALOG_BYTE_CEILING = 152_000;
 const LARGEST_TOOL_BYTE_CEILING = 40_000;
 /** What it was before, kept so the test states what it prevents. */
 const BYTES_BEFORE = 234_492;

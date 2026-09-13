@@ -63,6 +63,10 @@ import {
 import { sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
+import { bellExtras } from "@/routes/bell";
+import { earnedPressing, readBinder, readWindow, WINDOW_SIZE } from "@/services/cards";
+import { pressingSummary } from "@/services/instant-goods";
+import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import { getCertificate } from "@/services/certificates";
 import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
@@ -90,6 +94,7 @@ import { getOrder, remainingInventory } from "@/services/orders";
 import { waitlistHowToJoin } from "@/routes/requests";
 import { capacityVerdict } from "@/services/queue-capacity";
 import { InvalidPatronageTarget } from "@/services/patronage";
+import { WindowRefused } from "@/services/cards";
 import { orderStatusBody } from "@/lib/order-status";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
@@ -535,10 +540,39 @@ export async function callFreeTool(
       sanitizeText(args["agent_name"], 80) ||
       c.req.header("CF-Connecting-IP") ||
       "a-mysterious-stranger";
-    const rung = await ringBell(c.env, who);
+    const wallet = typeof args["wallet"] === "string" ? args["wallet"].trim() : "";
+    const passId = typeof args["pass_id"] === "string" ? args["pass_id"].trim() : "";
+    const rung = await ringBell(c.env, who, {
+      ...(wallet && (isWalletAddress(wallet) || isSolanaWalletAddress(wallet)) ? { wallet } : {}),
+      ...(passId ? { passId } : {}),
+    });
     // Same porch row an HTTP ring writes; this door used to ring silently.
     deferBookkeeping(c, recordPorchVisit(c.env, "bell", mcpSignals(c)));
-    return { message: rung.message, count: rung.count };
+    return { message: rung.message, count: rung.count, ...(rung.pressing ? bellExtras(c.env.STORE_BASE_URL, rung.pressing) : {}) };
+  }
+  if (name === "read_binder") {
+    const wallet = typeof args["wallet"] === "string" ? args["wallet"].trim() : "";
+    const keyed = isWalletAddress(wallet) ? wallet.toLowerCase() : isSolanaWalletAddress(wallet) ? wallet : "";
+    if (!keyed) return "read_binder needs a wallet: a 0x address (forty hex characters) or a base58 Solana address.";
+    const base = c.env.STORE_BASE_URL;
+    const { rows, truncated } = await readBinder(c.env, keyed);
+    deferBookkeeping(c, recordPorchVisit(c.env, "cards:binder", mcpSignals(c)));
+    return {
+      wallet: keyed,
+      count: rows.length,
+      truncated,
+      cards: rows.map((row) => ({ ...row, page_url: `${base}/p/${row.card_id}`, face_url: `${base}/p/${row.card_id}.svg`, share_url: `${base}/p/${row.card_id}.png`, record_url: `${base}/api/card/${row.card_id}` })),
+    };
+  }
+  if (name === "look_in_window") {
+    const base = c.env.STORE_BASE_URL;
+    const window = await readWindow(c.env);
+    deferBookkeeping(c, recordPorchVisit(c.env, "cards:window", mcpSignals(c)));
+    return {
+      window: window.map((row) => ({ ...row, page_url: `${base}/p/${row.card_id}`, face_url: `${base}/p/${row.card_id}.svg` })),
+      size: WINDOW_SIZE,
+      pick_url: `${base}/api/buy/window_pick`,
+    };
   }
   if (name === "sign_guestbook") {
     const verifiedIdentity =
@@ -567,9 +601,11 @@ export async function callFreeTool(
       c,
       recordPorchVisit(c.env, "guestbook:write", mcpSignals(c)),
     );
+    const earned = await earnedPressing(c.env, { key: "guestbook", certId: `guestbook:${outcome.result.entry.id}` }).catch(() => null);
     return {
       message: "Noted and appreciated. Take a sticker on your way out.",
       entry_id: outcome.result.entry.id,
+      ...(earned ? { pressing: pressingSummary(c.env.STORE_BASE_URL, earned.card) } : {}),
       sticker_url: `${c.env.STORE_BASE_URL}/badges/sticker.svg`,
       ...(outcome.result.entry.identity_verified
         ? {
@@ -1091,6 +1127,7 @@ async function callPurchaseTool(
    */
   const input = purchaseInputFrom(item, toolArgs(args));
   input.source = "mcp";
+  if (idempotencyKey) input.idempotent = true;
   const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
   if (userAgent) {
     input.userAgent = userAgent;
@@ -1121,13 +1158,13 @@ async function callPurchaseTool(
         if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
         response = saved;
       } else {
-        response = await fulfillPurchase(c.env, item, outcome.pending, input);
+        response = await fulfillPurchase(c.env, item, { ...outcome.pending, recovered: true }, input);
         if (!await stub.complete(claim.token, JSON.stringify(response))) {
           throw new Error("Paid recovery claim is not writable");
         }
       }
     } else {
-      response = await fulfillPurchase(c.env, item, outcome.pending, input,
+      response = await fulfillPurchase(c.env, item, outcome.recovered ? { ...outcome.pending, recovered: true } : outcome.pending, input,
         supportsArtifactRecovery(item) ? { digest: inputDigest, path: `/api/buy/${item.id}` } : undefined,
       );
     }
@@ -1191,6 +1228,9 @@ async function callPurchaseTool(
   } catch (error) {
     if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
       return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
+    }
+    if (!outcome.settledSoFar() && error instanceof WindowRefused) {
+      return rpcRefusal(id, -32000, "window_refused", error.message, { error: error.message, code: "window_refused", charged: false, window_url: `${c.env.STORE_BASE_URL}/api/paywall/window` });
     }
     if (error instanceof SettlementUnknown) {
       const body = error.body();

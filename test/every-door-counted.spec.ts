@@ -48,7 +48,13 @@ const EXEMPT: ReadonlyArray<{ why: string; test: (route: string) => boolean }> =
   },
   {
     why: "Rendered images — the chip is counted as its own surface at /badges/passport/; the rest are pictures, edge-cached, and a count of them would be a count of cache misses.",
-    test: (route) => route.startsWith("GET /badges/") || route.startsWith("GET /luckies/"),
+    test: (route) =>
+      route.startsWith("GET /badges/") ||
+      route.startsWith("GET /luckies/") ||
+      // The card table's pictures (2026-09-12); its room, pages and binders are counted.
+      route === "GET /p/specimen.svg" ||
+      /^GET \/p\/:card\{.*\.(svg|png|face\\\.png)\}$/.test(route) ||
+      /^GET \/binder\/:wallet\{.*\.png\}$/.test(route),
   },
   {
     why: "The three MCP doors log INSIDE their handlers, because the surface depends on the JSON-RPC method and the tool name, which a path cannot see.",

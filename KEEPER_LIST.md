@@ -729,26 +729,147 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
-### A corpus a buyer must check (2026-09-10, ROADMAP CV0–CV2)
+### The Paywall (2026-09-12, first pass reconciled, `docs/CARD_TABLE_2026-09.md`)
 
-- **LOOK** — after the next Sunday round, open `/corpus/asked.json`.
-  If `hosts_asked` is 0 the free surfaces are not being asked about
-  unmet hosts, which is its own finding; if hosts sit in
-  `swept_no_door_found` for three weeks, the sweep is reading hosts
-  that publish no `/.well-known/x402`, and the queue's cap is
-  spending reads on them.
-- **RULE** — seller declarations, ruling 1
-  (`docs/SELLER_DECLARATIONS_2026-09.md`): is attaching and reading
-  a declaration free, forever? Recommended yes; the paid instrument
-  is a watch on the match line, already priced as an endpoint watch.
-- **RULE** — seller declarations, ruling 2: does a declaration for a
-  host the feeds do not name enter the asked-for queue at the top of
-  its week? Recommended yes; it does not jump the roster cap.
-- **RULE** — federation (`docs/FEDERATION_2026-09.md`): does a
-  second observer's verified row enter the signed snapshot at its
-  own tier (`federated_rows[]`, the crowd-walk precedent), or sit
-  beside the chain in a file of its own? Recommended inside. No
-  build until a named party asks to submit rows.
+Built on `claude/compassionate-planck-6pba4v` to your handoff and
+then to the first-pass plan in full, dark-teamed, and MERGED to
+`main` on your "Merge", 2026-09-12. Everything below is the record of
+what you ruled and what is still yours to look at.
+
+- **RULED, rule 22 (2026-09-12): "the first."** Honest randomness
+  with custody. The room stays paid, the shelf item stays on, and
+  every hedge the build carries (derived seed, published wheels, no
+  pity timer, no near-miss, no closing window, no price on a card)
+  is the reason the ruling holds.
+- **RULED, rule 41 (2026-09-12): "no lawyer at all, let's just make
+  it work."** Noted as ruled, not argued. What the build already
+  does for you: nothing cashable, nothing bought back, odds and seed
+  public, the window sentence on /design in plain words. If a
+  regulator ever writes, the record of that is here, dated.
+- **DONE, the Rail holo's perk — without touching the charter.** You
+  wanted 5% off; a discount is a price that depends on who is
+  buying, and `one_price` is older than the Paywall. So it is 5%
+  BACK: a wallet holding Base Rail earns store credit after the
+  sale, the same accrual the Regulars' rebate uses, and the 402 it
+  sees is the 402 everyone sees. RULE only if you meant the discount
+  itself, which needs the charter amended.
+- **DONE, the reserved three.** Indeterminate, Rate Limited and
+  Unclaimed Bounty are Nos. 61–63; the count is 63 and nothing is
+  reserved. Rate Limited clears on the clock (a day), Unclaimed
+  Bounty on a bounty claim, Indeterminate on a passport read.
+- **DONE, `/design`.** All five window pressings on show, each with
+  its post button; CSS-only motion (a card lifts, the hero tilts),
+  off entirely under `prefers-reduced-motion`.
+- **DARK TEAMED (2026-09-12, your word).** Attacked the branch. Six
+  holes, all fixed and pinned by test; the worst was the bell, whose
+  repeat guard keys on a name the caller invents — twenty-two names
+  rang twenty-two free commons into one binder, twenty of which burn
+  into a pack of credit, so a free door made paid goods without
+  limit. The card now keys on the wallet. Also fixed: one signature
+  burning twice, credit going negative on concurrent redemptions, a
+  spent cap failing a PAID pack below the settle line, and the PNG
+  face rendering at any of eight hundred widths on a free door. Full
+  list and the four things an attacker can still do BY DESIGN:
+  §0d–0e of `docs/CARD_TABLE_2026-09.md`.
+- **FIXED on your "make the fixes" — the window and the one-of-ones.**
+  Five wallets could sweep a five-deep window, so $2.45 bought the
+  Keeper with certainty: a price on a specific card, which the table
+  promises never to do. The seed now draws from the window's ordinary
+  pressings; the Keeper and CV hang there to be looked at and YOU
+  hand them over (`/admin/tools`, destination a wallet). Their
+  `obtained` reads "hand". ⚑ To sell them again, delete the filter in
+  `windowPick` — one line, named in its own comment.
+- **FIXED — a cap nobody could enforce.** Without `COUNTER_LEDGER`
+  bound, two presses of a one-of-one could both come back "1 / 1",
+  which is a lie on the face rather than a race. A fixed cap now
+  refuses to press where counters are not serialized. Doors are
+  exempt; their cap is an observation count, not a promise.
+- **DONE, your second reading (2026-09-12).** CV as the season's
+  other one-of-one (Room, rarity Keeper, window only, cap 1 held on
+  the hand press too); Roger Sterling, rare, with his own plate; 402
+  Payment Required as the x402 reference; five Models (two frontier,
+  three goofing and common); the Rails tightened to citable facts;
+  the Keeper and CV faces in their own metal with the sunburst, the
+  seal and the signed line; the binder as a collection checklist
+  with a lookup on /design; a post button on every card page, the
+  binder and the window, and `post_url` on every pressing. The count
+  is 60. ⚑ Every new name and line is the keeper's pen.
+- **RULE — the cuts, one edit each.** *Gas Was Nothing* and *Node
+  21* stay out (the count is 60 with your eight, not their two);
+  Door #0017 a real
+  degraded door (tick.hugen.tokyo) since the store cannot probe its
+  own row and a door capped at its observation count would never
+  press; Door #0410 is api.m2mcent.com, listed and never reached, so
+  it never presses until a round reaches it, and the card says so.
+- **RULE — rule 15 vs the Season 2 `mint_to_chain` door.** A token.
+  Rule 15 says no token, permanently. Nothing built toward it.
+- **DONE — the Ally anonymized** on your word: The Neighbour, no
+  likeness, no name, cites /neighbours, rides the rare pool. Bell
+  streaks built the same day (first ring Bellringer, day 7 a pack,
+  day 30 Bellringer II), and every card in the count now draws.
+- **DONE — the card face as PNG (2026-09-12, "just pick one that
+  looks nice").** resvg inside the Worker with one font, IBM Plex
+  Serif (OFL), at `/p/{id}.face.png`; the grain left off the PNG,
+  each face kept in KV after its first render. Two numbers moved
+  with it and are yours: the cold isolate pays nothing for it (the
+  rasterizer loads on first use, so boot stays at 206 ms), the
+  Worker's CPU ceiling 100 → 1,000 ms in
+  `wrangler.jsonc` (that one path needs ~230 ms; lower it and the
+  PNG goes to 600 wide), and the bundle 1.4 → 2.5 MB gzipped. RULE
+  either if you mind.
+- **RULED, the OpenAPI budget (2026-09-12): "can we thin the contract
+  somehow? what about latency?"** Thinned, and the number is back at
+  700,000: the 304 answer is one shared component instead of
+  eighty-one inline copies, the 402 offer says its sentence in half
+  the words on every paid door, and the idempotency parameter's long
+  form lives on /developers and in every 402 body instead of
+  thirty-seven times in the contract; the async-job prose and the
+  purpose parameter say their sentence once, briefly. Measured:
+  654,898 bytes on today's rails and 683,371 with every checkout
+  rail enabled, from 697,332 and 703,235. That is six listings of
+  headroom today and two in the all-rails case. Then your "just cut
+  one, you decide": the bare x-request-schema copy came off every
+  paid door, since no reader named it and it was byte-identical to
+  x-payment-info.input.schema, the discovery spec's own slot, which
+  stays; parameters stay for generated clients. Measured after:
+  616,345 on today's rails, 644,818 with every rail on, eleven and
+  seven listings of headroom. Latency was never the number:
+  the document builds in about 35 ms and travels gzipped at about
+  86 KB; the budget is the uncompressed byte count a scanner with a
+  fetch cap sees. The MCP tools/list ceiling stays at 152,000
+  (140,000 before the two free tools), reason beside it. RULE if you
+  want that one thinned too.
+- **RULED, rule 7 (2026-09-12): "okay they look good."** Inked: every
+  card name, line and post sentence in `src/store/cards.ts`, the pack
+  and window-pick copy, the credit desk's challenge sentence, the
+  storefront lines, the guide's Paywall paragraph, the skill
+  paragraph, the declined-positions sentence. The pen marks in the
+  source say so. New lines since (the second reading's eight cards,
+  the streak, the Neighbour) are yours the same way; say if any
+  should change.
+- **TEST — hang the Keeper and CV, then hand them over.**
+  `/admin/tools`: key `keeper`, then `cv`, destination `window`; each
+  should hang at `/p/{id}` in its metal with the 1 / 1 seal and show
+  on `/api/paywall/window`, and no pick will take one however many
+  are bought. To hand one over, press it to a wallet instead. A
+  second press of either answers 409.
+- **LOOK — the post button.** Open any `/p/{id}` and press "Post it
+  on X": the composer should open with the card's line and the page
+  URL, nothing else. Same on a binder, whose unfurl is now its own
+  sheet, `/binder/{wallet}.png`: the set as a grid, held cards
+  drawn, the count giant.
+- **TEST — the credit desk with a real wallet.** Twenty commons in
+  a binder, `POST /api/paywall/challenge`, sign it, `POST
+  /api/paywall/burn`, then `/redeem` for a pack. The desk is EVM
+  only (EIP-191); a Solana binder can hold cards and cannot burn
+  them yet.
+- **LOOK — the unfurl.** Paste one real `/p/{id}` into X and Slack.
+  The share sheet is the product; if the sentence on the right does
+  not read at timeline size, the post copy is the thing to redraw.
+- **LOOK — the Herd, drawn.** All twelve, the jar, the Tab and CV
+  now press with single-ink plates of my hand; the Ally is the one
+  silhouette. Every one is a path in `src/store/plates.ts` and yours
+  to redraw the day you have a better one.
 
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 

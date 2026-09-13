@@ -86,6 +86,8 @@ import {
   parseLuckyStrength,
   setLuckyStatus,
 } from "@/services/luckies";
+import { handPress, CapReached } from "@/services/cards";
+import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import { luckyNote } from "@/store/copy";
 import { listConfessions, setConfessionStatus } from "@/services/confessions";
 import { listTags, setTagStatus } from "@/services/train";
@@ -3747,6 +3749,29 @@ adminRoutes.post("/admin/luckies/move", async (c) => {
     return c.text("No lucky by that id in custody.", 404);
   }
   return c.redirect("/admin/tools");
+});
+
+/**
+ * THE KEEPER'S HAND: any entry — the Keeper card, an Event on its date,
+ * an Ally once consent is on record — pressed to a wallet he names, or
+ * set out in the shop window for whoever picks it (the first pass:
+ * "Keeper in the window, once, unannounced").
+ */
+adminRoutes.post("/admin/paywall/press", async (c) => {
+  const form = await c.req.parseBody();
+  const key = sanitizeText(form["key"], 60) || "keeper";
+  const wallet = sanitizeText(form["wallet"], 64);
+  const toWindow = form["destination"] === "window";
+  if (!toWindow && (!wallet || !(isWalletAddress(wallet) || isSolanaWalletAddress(wallet)))) {
+    return c.text("A hand press goes to a wallet (a 0x address or a base58 Solana address) or into the window.", 400);
+  }
+  try {
+    const pressed = await handPress(c.env, key, toWindow ? { window: true } : { wallet });
+    return c.redirect(`/p/${pressed.card.card_id}`);
+  } catch (error) {
+    if (error instanceof CapReached) return c.text(error.message, 409);
+    throw error;
+  }
 });
 
 adminRoutes.post("/admin/guestbook/delete", async (c) => {

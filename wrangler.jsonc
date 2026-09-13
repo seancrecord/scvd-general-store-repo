@@ -10,7 +10,9 @@
    */
   "rules": [
     { "type": "Text", "globs": ["**/*.md"], "fallthrough": true },
-    { "type": "Text", "globs": ["**/till/till.js", "**/webmcp/purchase.js"], "fallthrough": true }
+    { "type": "Text", "globs": ["**/till/till.js", "**/webmcp/purchase.js"], "fallthrough": true },
+    /** The card face's one font (IBM Plex Serif, OFL) ships as bytes for the in-Worker rasterizer (2026-09-12). */
+    { "type": "Data", "globs": ["**/assets/fonts/*.ttf"], "fallthrough": true }
   ],
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "scvd-general-store-repo",
@@ -30,7 +32,16 @@
    * trips the ceiling. Once tracked here, THIS file is the source of
    * truth: raise the limit here, not in the dashboard.
    */
-  "limits": { "cpu_ms": 100 },
+  /**
+   * RAISED 100 → 1000 (2026-09-12) for one path: the card face
+   * rendered to PNG inside the Worker (services/card-png.ts), which
+   * costs about 230 ms of CPU at 1000×1400 with the paper grain left
+   * off, once per card, then it is kept in KV and never rendered
+   * again. Everything else on this Worker still finishes inside the
+   * old 100 ms; the ceiling only says what the one path is allowed.
+   * ⚑ The keeper's number: lower it, and the PNG face goes to ?w=600.
+   */
+  "limits": { "cpu_ms": 1000 },
   /**
    * MINIFIED, FOR THE COLD ISOLATE (2026-09-03, the x402-list p95
    * read). The unminified script uploaded at 5.25 MiB, most of it the

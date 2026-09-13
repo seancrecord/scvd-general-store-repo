@@ -69,6 +69,9 @@ export const ITEM_MAKER_MARK: Readonly<Record<string, MakerMark>> = {
    * shelf whose copy claimed otherwise until 2026-07-30.
    */
   luckies: "house",
+  /** The card table (2026-09-12): same hand, same trick. The keeper wrote the set and the wheels; drawPack hashes the cert id against both. */
+  pack: "house",
+  window_pick: "house",
 };
 
 export function makerMarkFor(itemId: string): MakerMark | undefined {

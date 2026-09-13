@@ -1,3 +1,4 @@
+import { postFor, postIntentUrl, sharePost } from "@/store/cards";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { signMessage } from "@/lib/signing";
 import { deliverA2AKit, type PreparedA2AKit } from "@/services/a2a-kit";
@@ -15,6 +16,8 @@ import { recordGrudge } from "@/services/grudges";
 import { paintTag } from "@/services/train";
 import type { SignedAttestation } from "@/services/attestation";
 import { createLucky, drawLuckyParts } from "@/services/luckies";
+import { clearConditions, earnedPressing, openPack, windowPick } from "@/services/cards";
+import type { CardRecord } from "@/types";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
@@ -58,6 +61,7 @@ import {
   dibsNote,
   helloNote,
   luckyNote,
+  packNote,
   patronageCertificateNote,
   patronagePassNote,
   launchCheckNote,
@@ -148,8 +152,10 @@ export interface InstantGoodsInput {
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
-  /** grudge and luckies: the certificate id behind this purchase. */
+  /** grudge, luckies, the pack and every earned pressing: the certificate id behind this purchase. */
   certId?: string;
+  /** Whether the purchase carried an idempotency key (the Double Charge condition clears on one). */
+  idempotent?: boolean;
 }
 
 export interface InstantGoods {
@@ -174,7 +180,67 @@ async function signedTextGoods(env: Env, item: MenuItem, input: InstantGoodsInpu
   } };
 }
 
+/** The pressing, as it rides a purchase response: ids and the five URLs. */
+export function pressingSummary(base: string, card: CardRecord) {
+  return {
+    card_id: card.card_id,
+    name: card.name,
+    type: card.type,
+    rarity: card.rarity,
+    card_no: card.card_no,
+    print_no: card.print_no,
+    ...(card.print_cap !== undefined ? { print_cap: card.print_cap } : {}),
+    ...(card.slot !== undefined ? { slot: card.slot } : {}),
+    face_url: `${base}/p/${card.card_id}.svg`,
+    face_png_url: `${base}/p/${card.card_id}.face.png`,
+    share_url: `${base}/p/${card.card_id}.png`,
+    page_url: `${base}/p/${card.card_id}`,
+    verify_id: card.card_id,
+    verify_url: `${base}/api/verify/${card.card_id}`,
+    // The post, ready to hand on: the set's own line and the page that unfurls.
+    post_text: sharePost(card),
+    post_url: postIntentUrl(sharePost(card), `${base}/p/${card.card_id}`),
+  };
+}
+
+/**
+ * THE ACTION IS THE PRICE (first-pass plan, "how obtained"): a purchase
+ * on the earned map presses that item's card beside its goods — the
+ * instrument's own card, the Regular, the Tagger, the fortune, the
+ * blessing — and nothing else presses anything. Then every Condition
+ * in the buyer's binder whose rule names this purchase burns. The
+ * goods checkpoint retains the whole result, so a retry returns the
+ * same pressing rather than a second print.
+ */
 export async function deliverInstantGoods(
+  env: Env,
+  item: MenuItem,
+  input: InstantGoodsInput,
+  checkpoint?: ArtifactCheckpoint,
+): Promise<InstantGoods> {
+  const goods = await deliverGoods(env, item, input, checkpoint);
+  if (item.id === "pack" || item.id === "window_pick" || !input.certId) return goods;
+  const base = env.STORE_BASE_URL;
+  const pressing = await earnedPressing(env, {
+    itemId: item.id,
+    certId: input.certId,
+    patronNumber: input.patronNumber,
+    ...(input.payer ? { payer: input.payer } : {}),
+  });
+  const cleared = input.payer
+    ? await clearConditions(env, input.payer, { itemId: item.id, certId: input.certId, ...(input.idempotent ? { idempotent: true } : {}) }).catch(() => [])
+    : [];
+  return {
+    ...goods,
+    extras: {
+      ...(goods.extras ?? {}),
+      ...(pressing ? { pressing: pressingSummary(base, pressing.card) } : {}),
+      ...(cleared.length > 0 ? { conditions_cleared: cleared.map((burn) => ({ card_id: burn.burn.card_id, key: burn.burn.key, cleared_by: burn.burn.cleared_by, verify_url: `${base}/api/card/${burn.burn.card_id}` })) } : {}),
+    },
+  };
+}
+
+async function deliverGoods(
   env: Env,
   item: MenuItem,
   input: InstantGoodsInput,
@@ -855,6 +921,51 @@ export async function deliverInstantGoods(
           lucky_id: record.lucky.lucky_id,
           card_url: cardUrl,
           record_url: recordUrl,
+        },
+      };
+    }
+    case "pack": {
+      // The Paywall (handoff v2): drawn under the day's committed seed,
+      // the pack checkpointed so a retry hands back the same five.
+      const pack = await openPack(env, {
+        certId: input.certId ?? "",
+        patronNumber: input.patronNumber,
+        ...(input.payer ? { payer: input.payer } : {}),
+      }, { checkpoint, purchasedAt: input.purchasedAt });
+      const base = env.STORE_BASE_URL;
+      const packUrl = `${base}/api/pack/${pack.pack.pack_id}`;
+      return {
+        deliverable: packNote({
+          cards: pack.cards.map((signed) => ({ name: signed.card.name, rarity: signed.card.rarity })),
+          packUrl,
+          tableUrl: `${base}/design`,
+        }),
+        extras: {
+          pack_id: pack.pack.pack_id,
+          pack_url: packUrl,
+          season: pack.pack.season,
+          commit_d: pack.pack.commit,
+          seed_date: pack.pack.seed_date,
+          seed_url: `${base}/api/paywall/seed/${pack.pack.seed_date}`,
+          cards: pack.cards.map((signed) => pressingSummary(base, signed.card)),
+          odds_url: `${base}/design`,
+        },
+      };
+    }
+    case "window_pick": {
+      const picked = await windowPick(env, {
+        certId: input.certId ?? "",
+        patronNumber: input.patronNumber,
+        ...(input.payer ? { payer: input.payer } : {}),
+      }, { checkpoint, purchasedAt: input.purchasedAt });
+      const base = env.STORE_BASE_URL;
+      return {
+        deliverable: `Off the window: ${picked.pressing.card.name} (${picked.pressing.card.rarity}), print ${picked.pressing.card.print_no}${picked.from_holder ? ", out of another wallet's binder" : ""}. The seed picked; the card is yours now, re-signed, at ${base}/p/${picked.pressing.card.card_id}. A card entitles the holder to a card.`,
+        extras: {
+          pressing: pressingSummary(base, picked.pressing.card),
+          ...(picked.from_holder ? { from_holder: picked.from_holder } : {}),
+          window: picked.window,
+          odds_url: `${base}/design`,
         },
       };
     }

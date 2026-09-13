@@ -199,6 +199,8 @@ export async function accrueCredit(
   payer: string,
   paidUsdc: number,
   now: Date = new Date(),
+  /** What the accrual is for; the note names it. Default: the Regulars' rebate. */
+  reason: "regular" | "rail_holo" = "regular",
 ): Promise<AccrualResult | null> {
   if (!payer || !Number.isFinite(paidUsdc) || paidUsdc <= 0) return null;
   if (isHouseWallet(env, payer)) return null;
@@ -229,7 +231,7 @@ export async function accrueCredit(
   return {
     earned_usd: usd(earned),
     balance_usd: usd(balance + earned),
-    note: `Regulars' credit: ${CREDIT_RATE * 100}% on eligible organic certificate purchases, subject to the balance cap. ${pickup.balance_url ? `Read your balance free at ${pickup.balance_url}; cash-out starts at $${usd(CREDIT_FLOOR_ATOMIC)} and requires the earning EVM wallet's signature.` : "This wallet has no supported cash-out route: the current API accepts EVM EOAs only."} Idle ${CREDIT_IDLE_EXPIRY_DAYS} days it expires. A closed-loop rebate — never a token, never transferable.`,
+    note: `${reason === "rail_holo" ? `The Rail holo's perk: ${CREDIT_RATE * 100}% back as store credit while this wallet holds Base Rail, after the sale, the same shape as the Regulars' rebate; the price it paid was the price everyone pays.` : `Regulars' credit: ${CREDIT_RATE * 100}% on eligible organic certificate purchases, subject to the balance cap.`} ${pickup.balance_url ? `Read your balance free at ${pickup.balance_url}; cash-out starts at $${usd(CREDIT_FLOOR_ATOMIC)} and requires the earning EVM wallet's signature.` : "This wallet has no supported cash-out route: the current API accepts EVM EOAs only."} Idle ${CREDIT_IDLE_EXPIRY_DAYS} days it expires. A closed-loop rebate — never a token, never transferable.`,
   };
 }
 

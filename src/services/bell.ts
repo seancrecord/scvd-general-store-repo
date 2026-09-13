@@ -5,6 +5,7 @@ import { metricsMonth } from "@/lib/metrics";
 import { bellLine, VOICE } from "@/store";
 import type { Env } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
+import { bellPressing, type BellPressings } from "@/services/cards";
 
 /**
  * The bell, rung from any door. HTTP or MCP, same bell. One ring per
@@ -18,6 +19,15 @@ export interface BellResult {
   count: number;
   /** When the ring resets, so a scheduled visitor can plan around us. */
   cadence?: Cadence;
+  /** One common a day off the bell, and two packs for a current Regular (the Paywall); absent on a repeat ring. */
+  pressing?: BellPressings;
+}
+
+export interface RingOptions {
+  /** The ringer's wallet, so the card lands in a binder. Optional. */
+  wallet?: string;
+  /** A current patron pass: two packs at full odds (the first pass's Regular rule). */
+  passId?: string;
 }
 
 /** Rings that counted this month: `metric:<month>:bell:rings`. */
@@ -36,7 +46,7 @@ export async function readBellRings(env: Env, month: string = metricsMonth()): P
   return raw ? parseInt(raw, 10) || 0 : 0;
 }
 
-export async function ringBell(env: Env, who: string): Promise<BellResult> {
+export async function ringBell(env: Env, who: string, options: RingOptions = {}): Promise<BellResult> {
   const today = new Date().toISOString().slice(0, 10);
   const ringKey = KV_KEYS.bellRing(who.toLowerCase(), today);
   const currentCount = parseInt(
@@ -66,5 +76,12 @@ export async function ringBell(env: Env, who: string): Promise<BellResult> {
    * never waits on it.
    */
   await bumpMonthlyRings(env).catch(() => undefined);
-  return { message: bellLine(count), count, ...(cadence ? { cadence } : {}) };
+  /*
+   * THE BELL PRESSES A CARD (handoff v2 §5): one common a day to
+   * whoever rings, drawn by the same seed with the salt "bell". A
+   * pressing that fails to sign or file never breaks the ring — the
+   * bell rang first, and it says so without the card.
+   */
+  const pressing = (await bellPressing(env, who, options).catch(() => null)) ?? undefined;
+  return { message: bellLine(count), count, ...(cadence ? { cadence } : {}), ...(pressing ? { pressing } : {}) };
 }

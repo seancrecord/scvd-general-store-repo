@@ -348,6 +348,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/verify/{lucky_id}",
   },
   {
+    id: "card",
+    name: "Trading card pressings, packs and day seeds",
+    trust_model: "self_signed",
+    signs:
+      "The whole pressing — set position, key, name, type, tier, line, the path it cites, print number, source, slot, pack, certificate, seed commit, date, patron and holder — and separately the pack manifest binding the seed commit, the draw inputs and its five card ids, and the day seed record (commit at once, seed the day after).",
+    does_not_prove:
+      "Ownership by anybody in particular, or value of any kind. A card entitles the holder to a card.",
+    verify_url: "/api/verify/{card_id}",
+  },
+  {
     id: "gazette_issue",
     name: "Gazette issues",
     trust_model: "self_signed",

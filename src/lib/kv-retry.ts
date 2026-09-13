@@ -145,6 +145,26 @@ export function kvGet(
 }
 
 /**
+ * BYTES, NOT ROWS (2026-09-13). The card face rendered to PNG is kept
+ * in KV so the rasterizer runs once per card; an image is not a
+ * string, so the two helpers above cannot carry it and the sweep's
+ * rule — every read and every write rides the retry — needed a pair
+ * that speaks binary. Same policy, same budget, same failure line.
+ */
+export function kvGetBytes(kv: Namespace, key: string): Promise<ArrayBuffer | null> {
+  return withKvRetry(() => kv.get(key, "arrayBuffer"));
+}
+
+export function kvPutBytes(
+  kv: Namespace,
+  key: string,
+  value: ArrayBuffer,
+  options?: Parameters<Namespace["put"]>[2],
+): Promise<void> {
+  return withKvRetry(() => kv.put(key, value, options));
+}
+
+/**
  * The same, for the rows this store keeps as JSON. The ignored
  * trailing argument is the sweep affordance again: a bare
  * `.get<T>(key, "json")` becomes `kvGetJson<T>(env.NS, key, "json")`

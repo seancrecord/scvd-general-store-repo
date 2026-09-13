@@ -25,6 +25,7 @@ import type {
   AttestationQuery,
   SignedAttestation,
 } from "@/services/attestation";
+import { assertWindowOpenFor, holdsRailHolo } from "@/services/cards";
 import { deliverInstantGoods } from "@/services/instant-goods";
 import { performServiceAudit } from "@/services/service-audit";
 import { performSignatureAgentCard } from "@/services/bot-auth-card";
@@ -100,6 +101,8 @@ export { stockedShelfCount } from "@/services/stock";
 
 export interface FulfillmentInput {
   agentName?: string;
+  /** The purchase carried an idempotency key (the Paywall's Double Charge condition clears on one). */
+  idempotent?: boolean;
   callbackUrl?: string;
   /** context_anchor: pre-validated summary. */
   summary?: string;
@@ -603,6 +606,9 @@ export async function fulfillPurchase(
   // the original commission without probing or extending its term again.
   if (passportRefresh) await retainHosted(() => publishHostedObservation(env, { kind: "passport_refresh", report: passportRefresh! }));
   if (trustProfile) await retainHosted(() => publishHostedObservation(env, { kind: "trust_profile", report: trustProfile! }));
+  // A window pick the twelve-hour lock refuses is refused HERE, above
+  // the settle line, so the refusal costs the buyer nothing (rule 9).
+  if (item.id === "window_pick" && !pending.recovered) await assertWindowOpenFor(env, pending.payer);
   const payment = await pending.settle();
   if (payment.payer) {
     mintOptions.payer = payment.payer;
@@ -688,6 +694,23 @@ export async function fulfillPurchase(
   if (checkpoint) {
     if (creditClaimed) storeCredit = await checkpoint.save("credit", storeCredit);
     else storeCredit = await checkpoint.read<typeof storeCredit>("credit");
+  }
+  /**
+   * THE RAIL HOLO'S PERK (the Paywall, 2026-09-12): a wallet holding
+   * Base Rail earns the plan's 5% back as store credit, accrued after
+   * the sale the same way the Regulars' rebate is. Not a price: the
+   * 402 the holder saw is the 402 everyone sees, so the pricing
+   * charter's one-price clause holds to the byte. Fail-soft, same as
+   * the accrual above; on a retry the checkpoint hands back what it
+   * banked the first time.
+   */
+  let holoRebate: Awaited<ReturnType<typeof accrueCredit>> = null;
+  if (minted.certificate.payer && creditClaimed && (await holdsRailHolo(env, minted.certificate.payer).catch(() => false))) {
+    holoRebate = await accrueCredit(env, minted.certificate.payer, minted.certificate.paid_usdc ?? item.price_usdc, new Date(), "rail_holo").catch(() => null);
+  }
+  if (checkpoint) {
+    if (creditClaimed) holoRebate = await checkpoint.save("holo_rebate", holoRebate);
+    else holoRebate = await checkpoint.read<typeof holoRebate>("holo_rebate");
   }
 
   /**
@@ -794,6 +817,7 @@ export async function fulfillPurchase(
      * would have to fake points at a check it cannot fake.
      */
     ...(storeCredit ? { store_credit: { ...storeCredit, ...creditPickup(env.STORE_BASE_URL, minted.certificate.payer) } } : {}),
+    ...(holoRebate ? { holo_rebate: holoRebate } : {}),
     show_your_human: `Bought "${item.name}" from Sean-Claude Van Damme's General Store ${paidPhrase} — independently verifiable (no login, not our word): ${minted.verifyUrl}`,
     /**
      * THE FORWARDABLE COPY (the receipt chain, 2026-08-19). The line
@@ -829,6 +853,9 @@ export async function fulfillPurchase(
     }
     if (input.agentName) {
       goodsInput.agentName = input.agentName;
+    }
+    if (input.idempotent) {
+      goodsInput.idempotent = true;
     }
     if (input.summary !== undefined) {
       goodsInput.summary = input.summary;

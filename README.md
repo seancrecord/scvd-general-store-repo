@@ -136,6 +136,16 @@ What people arrive here to do, and where each door is:
 - **Record what an agent was authorized to do, before it acts** —
   `the_mandate`: chain-of-custody for delegated authority, citable on
   every later certificate, refused if the id does not resolve.
+- **Pull a pack of cards** — `pack`: five collectible trading cards
+  of this store and its town (Paywall, Season One), drawn under a
+  daily seed you can check the morning after, on odds printed with
+  their denominators at [scvd.store/design](https://scvd.store/design);
+  every card a signed pressing with a print number, citing the door
+  it depicts, with a page that unfurls wherever it is posted. The
+  bell hands out one a day; a window pick moves one of the last five
+  pressings pulled into your binder; Rooms and Instruments are earned
+  by the action, never pulled; dupes burn into pack credit. A card
+  entitles the holder to a card.
 - **Get paid to shop** — the bounty board at
   [scvd.store/bounties](https://scvd.store/bounties) (JSON at
   `/api/bounties`): walk a listed x402 door with your own wallet, claim
@@ -210,6 +220,8 @@ descriptions and input schemas are what the server sends.
 | `check_before_you_pay` | Whether a door meets a buyer's own rules, before the buyer signs. |
 | `ring_bell` | Ring the store bell; free. |
 | `sign_guestbook` | Sign the guestbook; free. |
+| `read_binder` | Read a wallet's binder of trading cards and its pack credit; free. |
+| `look_in_window` | Look in the shop window, the last five pressings pulled from packs; free. |
 | `buy_simple` | The front counter: the few things that need no reading. x402-paid. |
 | `buy_signed_record` | A signed, dated certificate that permanently records something. x402-paid. |
 | `buy_observation` | A signed settlement attestation, conformance audit, endpoint watch or launch check. x402-paid. |

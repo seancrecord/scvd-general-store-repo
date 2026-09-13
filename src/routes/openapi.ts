@@ -376,7 +376,7 @@ function declareHeaderInputs(paths: Record<string, Record<string, unknown>>): vo
     if (!paid && !noStore && !(path in CONDITIONAL_GET_EXEMPT) && !has("If-None-Match")) {
       parameters.push({ ...IF_NONE_MATCH_PARAMETER });
       const responses = (op["responses"] ?? {}) as OpenApiObject;
-      if (!responses["304"]) responses["304"] = { ...NOT_MODIFIED_RESPONSE };
+      if (!responses["304"]) responses["304"] = { $ref: "#/components/responses/NotModified" };
       op["responses"] = responses;
     }
     if (parameters.length > 0) op["parameters"] = parameters;
@@ -412,6 +412,8 @@ export function operationIdFor(method: string, path: string): string {
  * so a reference can never name a component that does not exist.
  */
 const SHARED_RESPONSES: Record<string, OpenApiObject> = {
+  /** Eighty-one GET doors carried this inline (2026-09-12); one copy, referenced. */
+  NotModified: NOT_MODIFIED_RESPONSE,
   BadRequest: PROBLEM_RESPONSE(
     "The request was malformed or a required parameter was missing.",
   ),
@@ -4231,7 +4233,15 @@ const IDEMPOTENCY_PARAMETER: OpenApiObject = {
     minLength: IDEMPOTENCY_KEY_MIN_LENGTH,
     maxLength: IDEMPOTENCY_KEY_MAX_LENGTH,
   },
-  description: `Optional. For new purchases, the same key, product, inputs and verified paying wallet select one retained purchase. The response cache lasts ${IDEMPOTENCY_TTL_SECONDS / 3600} hours; the purchase-key claim persists beyond it. Retries return the original result when available, or its status, with no new settlement. Unresolved or unreadable admission refuses another settlement. Keep the original payment and key while unresolved: a fresh authorization without that key may charge again. Echo idempotency.suggested_key from the first 402, or generate a private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character idempotency key. Values outside that range are treated as absent. Cached replies are marked idempotent_replay.`,
+  /*
+   * SAID ONCE, BRIEFLY (2026-09-12): this parameter rides inline on
+   * every paid door (thirty-seven copies, by the 09-05 ruling below),
+   * so its description is the short form. The full rule — the
+   * ${IDEMPOTENCY_TTL_SECONDS / 3600}-hour cache, the claim that outlives it,
+   * what an unresolved admission refuses — is in every 402 body's
+   * idempotency block and on /developers, where it is read once.
+   */
+  description: `Optional. Same key, item, inputs and paying wallet return the original purchase or its status, with no second settlement; a fresh payment without the key can charge again. Echo idempotency.suggested_key from the 402, or send your own private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character key; values outside that range are treated as absent. Full rule: /developers.`,
   example: "scvd-your-own-high-entropy-value-0001",
 };
 
@@ -5158,7 +5168,7 @@ function paidOp(
       /* The v1 spelling is still accepted; saying so costs one field. */
       legacy_payment_header: "X-PAYMENT",
       settlement:
-        "The store delivers first and settles after: the goods are produced, then the payment is presented at the last moment before the artifact is signed. A delivery that fails takes no money at all.",
+        "Delivers first, settles after: the payment is presented only once the goods exist, so a failed delivery takes no money.",
       discovery: `${env.STORE_BASE_URL}/.well-known/x402.json`,
       documentation: `${env.STORE_BASE_URL}/developers`,
     },
@@ -5169,7 +5179,7 @@ function paidOp(
       },
       "402": {
         description:
-          "Payment required — this is the offer, not a failure. The signable requirements ride base64-encoded in the PAYMENT-REQUIRED response header (x402 v2); the body carries the same terms readably, plus a fill-in-the-blanks payload template. Retry the same URL with a signed PAYMENT-SIGNATURE header to complete the purchase.",
+          "Payment required: the offer, not a failure. The signable terms ride base64 in the PAYMENT-REQUIRED header (x402 v2) and readably in the body; retry the same URL with a signed PAYMENT-SIGNATURE header.",
         headers: PAYMENT_CHALLENGE_HEADER_REFS,
         content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
       },
@@ -5247,7 +5257,12 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
    * the vocabulary a generated client needs. This says it in the
    * vocabulary a payment scanner reads: one JSON Schema object,
    * $schema-declared, every property carrying its own description and
-   * `required` naming what the door will refuse without. Both come
+   * `required` naming what the door will refuse without. It rides
+   * ONCE, as x-payment-info.input.schema, the discovery spec's own
+   * slot; the bare x-request-schema copy of the same object came off
+   * every paid door on 2026-09-12 ("just cut one") for the read
+   * budget, since no reader named it and the two were byte-identical.
+   * Both come
    * from `buyInputSchema` — the same object the Bazaar entry, the MCP
    * tool definition, the live 402 body and the buy route's own guard
    * are built from — so there is one place a field can be described
@@ -5301,7 +5316,6 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     price_discovery_url: `${env.STORE_BASE_URL}/menu/${item.id}?view=compact`,
     schema: requestSchema,
   };
-  operation["x-request-schema"] = requestSchema;
   return operation;
 }
 
@@ -5865,6 +5879,205 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           parameters: [pathParam("case_id", "From the purchase response; starts case_.")],
         },
+      },
+      /**
+       * THE PAYWALL (2026-09-12): a pressing, a pack, a binder, the day
+       * seed, the set and the window. The odds are on the room's own
+       * twin (/design with Accept: application/json).
+       */
+      "/api/card/{card_id}": {
+        get: {
+          ...returns(
+            freeOp(
+              "A trading card's signed record, served forever",
+              "The pressing: set position, key, name, type, tier, the line, the path it cites, print number, source, slot, pack and seed commit. Odds and set at /design.",
+            ),
+            signedCardSchema({
+              payloadKey: "card",
+              payloadDescription: "The card, as pulled and signed.",
+              extras: {
+                face_url: { type: "string", format: "uri" },
+                share_url: { type: "string", format: "uri" },
+                page_url: { type: "string", format: "uri" },
+                verify_id: { type: "string" },
+                pack_url: { type: "string", format: "uri" },
+                cite_url: { type: "string", format: "uri" },
+                post: { type: "string" },
+              },
+            }),
+          ),
+          parameters: [pathParam("card_id", "From the purchase response; starts card_.")],
+        },
+      },
+      "/api/pack/{pack_id}": {
+        get: {
+          ...returns(
+            freeOp(
+              "A pack's signed manifest and its five cards",
+              "The manifest binds the day's seed commit, the payer, the certificate and the five card ids, and is signed on its own; each card rides the response as a signed record. The seed at seed_url, the morning after, lets anyone redo the pull.",
+            ),
+            signedCardSchema({
+              payloadKey: "pack",
+              payloadDescription: "The manifest: pack_id, season, card_ids, commit, seed_date, payer, cert_id, date, patron_number.",
+              extras: {
+                cards: { type: "array", items: { type: "object" } },
+                seed_url: { type: "string", format: "uri" },
+              },
+            }),
+          ),
+          parameters: [pathParam("pack_id", "From the purchase response; starts pack_.")],
+        },
+      },
+      "/api/paywall/binder/{wallet}": {
+        get: {
+          ...returns(
+            freeOp(
+              "What one wallet has pulled, newest first",
+              "A listing keyed by the paying wallet, when the certificate carried one. A listing, not a proof of ownership: the signed records are. 400 for a string that is not a 0x or base58 address.",
+            ),
+            {
+              type: "object",
+              required: ["wallet", "cards", "count"],
+              properties: {
+                wallet: { type: "string" },
+                count: { type: "integer" },
+                cards: { type: "array", items: { type: "object" } },
+                note: { type: "string" },
+              },
+            },
+          ),
+          parameters: [pathParam("wallet", "A 0x address or a base58 Solana address.")],
+        },
+      },
+      "/api/paywall/seed/{date}": {
+        get: {
+          ...returns(
+            freeOp(
+              "The day seed: its commit at once, the seed itself the day after",
+              "Signed. sha256(seed) equals commit. HMAC-SHA256(seed, payer || cert_id || slot) recomputes every pull of that day from the inputs on its pack record. 400 for a day that has not started; a running day answers the commit alone.",
+            ),
+            {
+              type: "object",
+              required: ["record", "signature", "public_key", "revealed"],
+              properties: {
+                record: { type: "object", properties: { date: { type: "string" }, commit: { type: "string" }, seed: { type: "string" }, published_at: { type: "string" } } },
+                signature: { type: "string" },
+                public_key: { type: "string" },
+                revealed: { type: "boolean" },
+                how_to_check: { type: "string" },
+              },
+            },
+          ),
+          parameters: [pathParam("date", "A UTC day, YYYY-MM-DD, since the table opened.")],
+        },
+      },
+      "/api/paywall/set": {
+        get: returns(
+          freeOp(
+            "The season's set as JSON",
+            "Every card in the count, the Events and the Ally: name, type, rarity, rail, the line, the path it cites, whether its plate is drawn, how many have been pressed, and the cap where one exists.",
+          ),
+          {
+            type: "object",
+            required: ["season", "cards", "events", "ally"],
+            properties: {
+              season: { type: "object" },
+              cards: { type: "array", items: { type: "object" } },
+              events: { type: "array", items: { type: "object" } },
+              ally: { type: "object" },
+              plates_drawn: { type: "integer" },
+              specimen_url: { type: "string", format: "uri" },
+            },
+          },
+        ),
+      },
+      "/api/paywall/window": {
+        get: returns(
+          freeOp(
+            "The shop window: the last five pressings pulled store-wide",
+            "Free to look at. A window pick (GET /api/buy/window_pick) moves one of the pressings on show to the picker's binder, chosen by the day seed, at half a pack; one pick per wallet per twelve hours.",
+          ),
+          {
+            type: "object",
+            required: ["window", "size"],
+            properties: {
+              window: { type: "array", items: { type: "object" } },
+              size: { type: "integer" },
+              pick_url: { type: "string", format: "uri" },
+              note: { type: "string" },
+            },
+          },
+        ),
+      },
+      "/api/paywall/challenge": {
+        post: returns(
+          postOp(
+            "The credit desk's challenge: a nonce to sign",
+            "Free. Single-use, five minutes. EIP-191 personal_sign the exact challenge string with the wallet's own key, then present it at /api/paywall/burn or /api/paywall/redeem. EVM wallets only.",
+            "The wallet: 0x plus forty hex.",
+            { type: "object", required: ["address"], additionalProperties: false, properties: { address: { type: "string", pattern: "^0x[0-9a-fA-F]{40}$" } } },
+          ),
+          {
+            type: "object",
+            required: ["challenge", "expires_in_seconds"],
+            properties: { challenge: { type: "string" }, expires_in_seconds: { type: "integer" }, how: { type: "string" } },
+          },
+        ),
+      },
+      "/api/paywall/burn": {
+        post: returns(
+          postOp(
+            "Burn dupes into pack credit",
+            "Free. Twenty commons or five uncommons this wallet holds burn into one pack of credit; rares never, Conditions never, whole batches only. Each burn is a signed record beside the pressing. Refuses by name (400) and burns nothing on a refusal.",
+            "The wallet, its signature over the live challenge, and the card ids to burn.",
+            {
+              type: "object",
+              required: ["address", "signature", "card_ids"],
+              additionalProperties: false,
+              properties: {
+                address: { type: "string", pattern: "^0x[0-9a-fA-F]{40}$" },
+                signature: { type: "string" },
+                card_ids: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 100 },
+              },
+            },
+          ),
+          {
+            type: "object",
+            required: ["burned", "credits", "balance"],
+            properties: { burned: { type: "array", items: { type: "string" } }, credits: { type: "integer" }, balance: { type: "integer" }, note: { type: "string" } },
+          },
+        ),
+      },
+      "/api/paywall/redeem": {
+        post: returns(
+          postOp(
+            "Spend one pack of credit",
+            "Free; the credit is the payment and nothing settles. One credit buys a pack at full odds or a window pick under the same twelve-hour lock. Never an instrument, a specific card, or cash. Refuses (400) with no credit or an empty window.",
+            "The wallet, its signature over the live challenge, and what the credit buys.",
+            {
+              type: "object",
+              required: ["address", "signature", "want"],
+              additionalProperties: false,
+              properties: {
+                address: { type: "string", pattern: "^0x[0-9a-fA-F]{40}$" },
+                signature: { type: "string" },
+                want: { type: "string", enum: ["pack", "window_pick"] },
+              },
+            },
+          ),
+          {
+            type: "object",
+            required: ["spent", "balance"],
+            properties: {
+              spent: { type: "integer" },
+              balance: { type: "integer" },
+              pack_id: { type: "string" },
+              pack_url: { type: "string", format: "uri" },
+              cards: { type: "array", items: { type: "object" } },
+              pressing: { type: "object" },
+            },
+          },
+        ),
       },
       "/api/lucky/{lucky_id}": {
         get: {
@@ -8082,7 +8295,7 @@ export function stampAsyncJob(document: OpenApiObject): void {
         ...(isPoll
           ? {}
           : {
-              note: "Instant items complete in this response and carry status 'completed'; human-fulfilled items come back queued, and the job is finished at the poll URL. Which an item is is stated on its menu entry as fulfillment.",
+              note: "Instant items complete in this response (status 'completed'); human-fulfilled items come back queued and finish at the poll URL. The menu entry's fulfillment field says which.",
             }),
       };
       if (!isPoll && typeof pollOperationId === "string") {

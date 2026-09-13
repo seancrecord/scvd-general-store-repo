@@ -912,11 +912,35 @@ const BASE = "https://scvd.store";
 // and the settlement attestation's binding class and payment_response
 // house rules (this branch) land together; each was pinned alone against
 // its own parent, and this pin is the guide with both in it.
+// 2026-09-12: the card table — a paragraph in the reading room carrying
+// the room's three sentences, its link on the door list, and three
+// link texts on that list shortened (charter.md, protected-resource,
+// which MCP door) to keep the index under the convention's budget.
+// Verified the same way: with llms.ts restored to the prior commit, the
+// prior digest reproduced, and this copy reproduces the new one.
+// 2026-09-12, same day: the card table paragraph's three URL templates
+// moved into code spans, so a URL scanner never sees a brace outside
+// backticks (test/markdown-discoverability.spec.ts). Same verification.
+// 2026-09-12, the Paywall (handoff v2): the card table paragraph became
+// the Paywall paragraph (/design, the pack, the window pick, the bell,
+// the binder, the day seed), the door list names /design, the shelf
+// gained the pack and the window pick, and the declined-positions
+// sentence names two more browser tools. Verified the same way.
 // 2026-09-12: MCP purchase examples now use the HTTP/Bazaar worked inputs.
 // Restoring the pre-repair MCP catalogue and llms source reproduced the prior
 // digest; the new buyer tests submit the published examples without editing.
+// 2026-09-12, the merge: two more link texts on the catalog line
+// shortened (sites /ask answers for, agentic discovery) — the merged
+// index landed nine characters over the convention's 30,000, and a
+// link text that repeats its own URL is the cheapest honest thing to
+// cut. No section changed.
+// 2026-09-12, the merge: the Paywall branch and main met. Both had
+// re-pinned this digest for their own reasons — the card table on one
+// side, the MCP worked inputs on the other — so the pin below is the
+// merged guide, reproduced from the merged tree and from neither half
+// alone. Both notes above stand; this one says why there is a third.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "2c4387f99c86dfbe79427512912aa93839f011d1dcc2340c920bdf658bdb5421";
+  "bda58d44fe994ef02167239485404ffc01184deb3b624654a7b600789274d4df";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -41,6 +41,9 @@ export const TOOL_ENDPOINTS: Readonly<
   check_order: { method: "GET", path: "/api/order/{order_id}" },
   /* The shelf, searchable: the first two steps of the journey a browser agent is most likely to be on. */
   find_in_catalog: { method: "GET", path: "/api/catalog/v1" },
+  /* The Paywall's two free reads (2026-09-12): a binder and the shop window. */
+  read_binder: { method: "GET", path: "/api/paywall/binder/{wallet}" },
+  look_in_window: { method: "GET", path: "/api/paywall/window" },
 };
 
 /** The free instrument set, derived from MCP; purchase tools are defined below. */

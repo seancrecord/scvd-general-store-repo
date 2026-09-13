@@ -36,6 +36,72 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     sample_kind: "visual_preview",
   },
   {
+    /**
+     * THE PAYWALL (handoff v2, 2026-09-12). Five pressings from the
+     * season's set, drawn per slot by HMAC over the day's committed
+     * seed, the payer and the certificate; the seed is revealed the
+     * morning after and every pull recomputes. Same drawer discipline
+     * as the luckies (rule 22): honest randomness, no pity timer, no
+     * window, no price on a card, no market. Instant, never sells
+     * out, the keeper does nothing per order.
+     * Inked 2026-09-12 (rule 7, "okay they look good"): name, price ($0.99, P) and
+     * copy drafted, not inked.
+     */
+    id: "pack",
+    listed_week: "2026-W37",
+    // lowercase, the same orthography as "a lucky"
+    name: "a pack of cards",
+    price_usdc: 0.99,
+    pricing: "fixed",
+    cadence: "one_off",
+    reads: "made_here",
+    fulfillment: "instant",
+    description:
+      "Five collectible trading cards from Season One, Summer of 402 · Oak City: every card a thing that is actually here, with the path where it lives printed on it. Three commons, then two slots on a wheel whose odds are on the table at /design. Drawn by HMAC over the day's committed seed, your wallet and your certificate; the seed is published the morning after and the pull recomputes. Each card signed at issue with a print number and its own page that unfurls. A card entitles the holder to a card.",
+    get note_402(): string {
+      return `That'll be $${this.price_usdc}, friend, for five. The odds are on the table, the seed is committed, the draw is yours to check tomorrow, and nobody here will buy a card back. Send an Idempotency-Key if you want the same pack back on a retry.`;
+    },
+    constraints: [
+      "The set and the wheels are the keeper's; the draw is HMAC-SHA256 over the day seed, your wallet and your certificate, and anyone can recompute it once the seed is revealed at /api/paywall/seed/{date}",
+      "Odds are published per slot with their denominators at /design; there is no pity timer, no hidden modifier and no second copy of the numbers",
+      "Doors are capped at their printed number and a capped card steps to the next in its tier; nothing else caps and nothing sells out",
+      "No price on a card, no store-run market, nothing bought back: a card entitles the holder to a card",
+      "Send an Idempotency-Key header: the same key returns the same pack; no key means a fresh pack and a fresh charge",
+    ],
+    sample_url: "/p/specimen.svg",
+    sample_kind: "visual_preview",
+  },
+  {
+    /**
+     * THE WINDOW PICK (first pass, "the shop window"). One of the last
+     * five pressings pulled from packs store-wide, at half a pack; the
+     * seed, not the buyer, says which, and the card moves from the
+     * binder that pulled it to the picker's. One pick per wallet per
+     * twelve hours. Refuses before payment terms while the window is
+     * empty. Inked 2026-09-12: half of P, so $0.49 while P is $0.99.
+     */
+    id: "window_pick",
+    listed_week: "2026-W37",
+    name: "a window pick",
+    price_usdc: 0.49,
+    pricing: "fixed",
+    cadence: "one_off",
+    reads: "our_books",
+    fulfillment: "instant",
+    description:
+      "One card from the shop window, the last five pressings pulled from packs here by anybody, free to look at at /api/paywall/window. Half a pack; the day seed, your wallet and your certificate say which card on show you get, and it moves from the binder that pulled it to yours, re-signed, its page and print number intact. One pick per wallet per twelve hours. A card entitles the holder to a card.",
+    get note_402(): string {
+      return `That'll be $${this.price_usdc}, friend, for one off the window. Look first, it's free; the seed picks, not you.`;
+    },
+    constraints: [
+      "The window is the last five pressings pulled from packs store-wide; an empty window, or a second pick inside twelve hours, refuses before payment terms and nothing is charged",
+      "Which card you get is HMAC-SHA256 over the day seed, your wallet, your certificate and the window's card ids; recomputable once the seed is revealed. It may be somebody else's Condition",
+      "No price on a card, no store-run market, nothing bought back",
+    ],
+    sample_url: "/p/specimen.svg",
+    sample_kind: "visual_preview",
+  },
+  {
     id: "coffees_for_closers",
     listed_week: "2026-W30",
     name: "Coffee's for Closers",

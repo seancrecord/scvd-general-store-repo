@@ -177,6 +177,12 @@ const ARTIFACT_READ_PREFIXES = [
   "/api/good-buyer/",
   "/api/launch-check/",
   "/api/lucky/",
+  "/api/card/",
+  "/api/pack/",
+  "/api/paywall/binder/",
+  "/api/paywall/seed/",
+  "/api/paywall/set",
+  "/api/paywall/window",
   "/api/mandate/",
   "/api/onpage-audit/",
   "/api/opening-day/",
@@ -242,6 +248,7 @@ const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["pricing", "storefront"],
   ["trade", "room"],
   ["luckies:", "room"],
+  ["cards", "room"],
 ];
 
 const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
@@ -401,6 +408,24 @@ export function porchSurface(path: string, method: string): string | undefined {
   }
   if (path === "/zodiac" || path.startsWith("/zodiac/")) {
     return "zodiac";
+  }
+  /**
+   * THE CARD TABLE (2026-09-12): the room, a binder, a card's page.
+   * The card images (.svg, .png) are pictures, edge-cached, and stay
+   * uncounted on the same reasoning as the lucky cards and the chips.
+   */
+  if (path === "/design") {
+    return "cards";
+  }
+  if (path === "/binder" || path.startsWith("/binder/")) {
+    return "cards:binder";
+  }
+  if (path.startsWith("/p/") && !/\.(svg|png)$/.test(path)) {
+    return "cards:card";
+  }
+  /** The credit desk: a challenge, a burn, a redeem. Written to, never browsed. */
+  if (path === "/api/paywall/challenge" || path === "/api/paywall/burn" || path === "/api/paywall/redeem") {
+    return method === "POST" ? "cards:desk" : undefined;
   }
   if (path === "/api/bell" && method === "POST") {
     return "bell";

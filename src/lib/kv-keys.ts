@@ -14,6 +14,7 @@
  *            payer:<address>
  * PATRONS    patron:<number>, cert:<id>, stamp:<id>, anchor:<id>, pass:<id>,
  *            lucky:<id> (signed lucky records; the card is the record),
+ *            pack:<id>, card:<id>, binder:<wallet>:<ts>:<card_id> (the card table),
  *            stamp_card:<nameSlug> (append-only visit-week log)
  * COUNTERS   stamp_condition:<week> (write-once, same week only)
  */
@@ -688,6 +689,48 @@ export const KV_KEYS = {
   patronagePass: (passId: string): string => `pass:${passId}`,
   lucky: (luckyId: string): string => `lucky:${luckyId}`,
   luckyPrefix: "lucky:",
+  /**
+   * THE CARD TABLE (2026-09-12): a pack is the signed unit of purchase,
+   * each card inside it is projected to its own key so a single card
+   * resolves and verifies alone, and a binder row per paying wallet
+   * lists what that wallet pulled, newest first.
+   */
+  pack: (packId: string): string => `pack:${packId}`,
+  packPrefix: "pack:",
+  card: (cardId: string): string => `card:${cardId}`,
+  cardPrefix: "card:",
+  binder: (wallet: string, invertedTs: string, cardId: string): string =>
+    `binder:${wallet}:${invertedTs}:${cardId}`,
+  binderPrefix: (wallet: string): string => `binder:${wallet}:`,
+  /** The day seed's public record: commit at once, seed the day after. */
+  paywallSeed: (date: string): string => `paywall_seed:${date}`,
+  /** Print counters, one per season entry, on the counter ledger. */
+  paywallPress: (season: string, key: string): string => `paywall_press:${season}:${key}`,
+  /** The shop window: the last pressings pulled from packs store-wide, newest first. */
+  paywallWindow: (invertedTs: string, cardId: string): string => `paywall_window:${invertedTs}:${cardId}`,
+  paywallWindowPrefix: "paywall_window:",
+  /** One window pick per wallet per WINDOW_LOCK_HOURS. */
+  paywallWindowLock: (wallet: string): string => `paywall_window_lock:${wallet}`,
+  /** A Door's observation count, read off the corpus once a day. */
+  paywallDoorObservations: (key: string, date: string): string => `paywall_door_obs:${key}:${date}`,
+  /** A Condition cleared, or a dupe burned into credit: the signed burn beside the pressing. */
+  paywallBurn: (cardId: string): string => `paywall_burn:${cardId}`,
+  /** Pack credit per wallet, in packs, on the counter ledger. */
+  paywallCredit: (wallet: string): string => `paywall_credit:${wallet}`,
+  /** A face rendered to PNG once, at a width; the bytes never change, so the first render is the last. */
+  paywallFacePng: (cardId: string, width: number): string => `paywall_face_png:${cardId}:${width}`,
+  /** One bell pressing per wallet per UTC day, whatever name rang it. */
+  paywallBellDay: (wallet: string, date: string): string => `paywall_bell_day:${wallet}:${date}`,
+  /** An atomic claim on one card's burn, so two requests cannot both credit it. */
+  paywallBurnClaim: (cardId: string): string => `paywall_burn_claim:${cardId}`,
+  /** Which pressing of the Rail holo a wallet holds; the perk reads this, not the whole binder. */
+  paywallHolo: (wallet: string): string => `paywall_holo:${wallet}`,
+  /** The one-of-one's holder perk, granted once per pressing. */
+  paywallPerk: (cardId: string): string => `paywall_perk:${cardId}`,
+  /** A wallet's bell streak: the last UTC day it rang and the run of days (the Paywall). */
+  paywallStreak: (wallet: string): string => `paywall_streak:${wallet}`,
+  /** The burn and redeem desks' single-use challenge nonce. */
+  paywallChallenge: (wallet: string): string => `paywall_challenge:${wallet}`,
   /**
    * THE TRADE COUNTER'S BOOKS (2026-09-03, services/trade-counter.ts).
    * One row per delivery, in ORDERS beside the orders, newest first —

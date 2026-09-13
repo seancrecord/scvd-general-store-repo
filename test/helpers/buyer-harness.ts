@@ -8,6 +8,7 @@ import { encodeBase58 } from "@/lib/base58";
 import { acceptedNetworks, POLYGON_NETWORK } from "@/lib/payments";
 import type { Env } from "@/types";
 import { installFacilitatorMock } from "./facilitator-mock";
+import { setOutTheWindow } from "./paywall";
 import { buildPaymentSignature, type ChallengeRequirement } from "./payment";
 import { AGENT, CARD_URL, fixture as a2aFixture } from "./a2a-fixture";
 
@@ -95,6 +96,8 @@ export function signature(offer: ChallengeRequirement): string {
     : buildPaymentSignature(offer);
 }
 export async function call(item: Item, door: Door, args: Obj, tool?: Tool, payment?: string, key?: string): Promise<Reading> {
+  // A walk that buys the window pick more than once finds it set out again (helpers/paywall.ts).
+  if (item.id === "window_pick" && payment) await setOutTheWindow(sourceEnv, 3, NOW);
   writes = [];
   const v = facilitator.verifyCalls, s = facilitator.settleCalls;
   const query = new URLSearchParams(Object.entries(args).map(([k, value]) => [k, String(value)]));
@@ -135,6 +138,7 @@ export async function clean(): Promise<void> {
         hosts: [{ host: "buyer-fixture.example", url: values.url, verdict: "ready", failed: [], advisories: [] }] } },
     digest: "0".repeat(64), signature: "0".repeat(128), public_key: "0".repeat(64),
   }));
+  await setOutTheWindow(sourceEnv, 3, NOW);
 }
 export function installBuyerHarness(): void {
 beforeAll(async () => {

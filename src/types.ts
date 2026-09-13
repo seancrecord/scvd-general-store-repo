@@ -967,6 +967,117 @@ export interface SignedLuckyRecord {
   public_key: string;
 }
 
+/**
+ * THE PAYWALL (handoff v2, 2026-09-12). A pressing is one printing of
+ * one entry in a season's set: drawn from a pack, the bell or the
+ * shop window, or earned on another purchase; signed at issue; given
+ * a print number by the ledger atomically. Nothing on a pressing
+ * changes after issue, so there is no status to re-sign — the one
+ * structural difference from a lucky.
+ */
+export type CardRarity = "common" | "uncommon" | "rare" | "holo" | "keeper";
+export type CardType =
+  | "herd" | "room" | "instrument" | "place" | "mark" | "rail" | "door" | "condition" | "event" | "ally" | "model";
+export type CardRail = "base" | "solana" | "polygon";
+/** Where a pressing came from. A window pick transfers a pressing; it keeps its source. */
+export type PressingSource = "pack" | "bell" | "earned" | "hand" | "credit";
+
+export interface CardRecord {
+  card_id: string;
+  season: string;
+  /** Position in the set, 1-based; 0 for an Event or the Ally. */
+  card_no: number;
+  /** The set entry's stable key. */
+  key: string;
+  name: string;
+  type: CardType;
+  rarity: CardRarity;
+  rail?: CardRail;
+  line: string;
+  /** A path on this store where the thing depicted actually lives. */
+  cite: string;
+  /** Print number, 1-based, handed out atomically per entry. */
+  print_no: number;
+  /** The entry's real cap, when it has one. */
+  print_cap?: number;
+  source: PressingSource;
+  /** For a pack pressing: which slot, and which pack. */
+  slot?: number;
+  pack_id?: string;
+  /** The certificate the pressing rode on, when it rode on one. */
+  cert_id?: string;
+  /** The day's seed commit the draw was made under; absent for a hand press. */
+  commit?: string;
+  date: string;
+  patron_number?: number;
+  /** The paying wallet, when the draw had one; keys the binder. */
+  holder?: string;
+  /** How many times the window has moved this pressing between wallets; re-signed each time. */
+  transfers?: number;
+  /** For a Door: what the cap was counted on at press time — the host's hash and its observation count. */
+  door_hash?: string;
+  observations?: number;
+}
+
+/** A Condition cleared by the action the rule names. Signed; the pressing itself never changes. */
+export interface ConditionBurn {
+  card_id: string;
+  key: string;
+  holder: string;
+  /** The shelf item whose purchase cleared it, or "idempotency" for the Double Charge rule, or "credit" for a burn into pack credit. */
+  cleared_by: string;
+  cert_id?: string;
+  at: string;
+}
+
+export interface SignedConditionBurn {
+  burn: ConditionBurn;
+  signature: string;
+  public_key: string;
+}
+
+export interface SignedCardRecord {
+  card: CardRecord;
+  signature: string;
+  public_key: string;
+}
+
+/**
+ * The pack: five signed cards and a signed manifest binding the day's
+ * seed commit, the draw inputs and the resulting card ids — so the
+ * morning after the seed is revealed, anyone can redo the whole pull.
+ */
+export interface PackRecord {
+  pack_id: string;
+  season: string;
+  card_ids: string[];
+  /** sha256 of the day seed the draw used. */
+  commit: string;
+  /** The seed's day, YYYY-MM-DD UTC. */
+  seed_date: string;
+  /** The wallet and certificate the HMAC took as input; "none" where the certificate carried no payer. */
+  payer: string;
+  cert_id: string;
+  date: string;
+  patron_number: number;
+}
+
+export interface SignedPackRecord {
+  pack: PackRecord;
+  cards: SignedCardRecord[];
+  signature: string;
+  public_key: string;
+}
+
+/** The day seed's public record: the commit at once, the seed the day after. */
+export interface SeedRecord {
+  date: string;
+  commit: string;
+  /** The 32-byte seed, hex, once the day has ended. */
+  seed?: string;
+  published_at: string;
+}
+
 export type RefundStatus = "refund_pending" | "refund_paid";
 
 /**

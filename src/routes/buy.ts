@@ -1,6 +1,7 @@
 import { readPurchaseStatus } from "@/services/purchase-intent";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { Hono } from "hono";
+import { usableIdempotencyKey } from "@/lib/idempotency";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import {
   SettlementDeclined,
@@ -22,6 +23,7 @@ import {
 import { fulfillPurchase } from "@/services/fulfillment";
 import { getOrder } from "@/services/orders";
 import { InvalidPatronageTarget } from "@/services/patronage";
+import { WindowRefused } from "@/services/cards";
 import { getMenuItem, VOICE } from "@/store";
 import { orderStatusBody } from "@/lib/order-status";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -78,6 +80,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
    * MCP buyer came to pay for a signed reading of an empty string.
    */
   const input = purchaseInputFrom(item, queryArgs((name) => c.req.query(name)));
+  if (usableIdempotencyKey(c.req.header("Idempotency-Key"))) input.idempotent = true;
   const source = sanitizeText(c.req.query("source"), 40);
   if (source) {
     input.source = source;
@@ -119,6 +122,9 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     ));
   } catch (error) {
     if (!settled && error instanceof InvalidPatronageTarget) return c.json(error.body, 400);
+    // A window pick the lock or an emptied window refused, before any
+    // settle call: nothing moved, and the answer says so in fields.
+    if (!settled && error instanceof WindowRefused) return c.json({ error: error.message, code: "window_refused", charged: false, window_url: `${c.env.STORE_BASE_URL}/api/paywall/window` }, 409);
     if (error instanceof SettlementUnknown) return error.response();
     if (error instanceof SettlementDeclined) return error.response;
     /**

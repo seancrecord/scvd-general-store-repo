@@ -149,8 +149,9 @@ export const ASYNC_JOB = {
   terminal_states: [...TERMINAL_ORDER_STATUSES],
   completed_field: "deliverable",
   initial_status_code: 200,
+  // Said in one sentence each (2026-09-12): this block rides on every paid door.
   why_not_202:
-    "This store answers 200, not 202, because the paid response already carries everything it can produce at that moment — the patron number, the badge URL and the signed certificate — and only the human's part is outstanding. A 202 would describe the request as merely accepted, which is less than what happened.",
+    "200, not 202: the paid response already carries the patron number, the badge and the signed certificate; only the human's part is outstanding.",
   poll_guidance:
-    "Poll no faster than once a minute; sla_hours on the order says the window the keeper promised, and a missed window puts a window_breached block on the order stating what is owed. Free, unauthenticated, and the order id is the only thing needed.",
+    "Poll no faster than once a minute; sla_hours on the order is the promised window, and a missed one puts a window_breached block on the order. Free, unauthenticated, order id only.",
 } as const;

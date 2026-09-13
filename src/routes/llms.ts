@@ -3,6 +3,7 @@ import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-ne
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
+import { CARDS_FOR_MONEY, CARDS_PROPOSITION } from "@/store/cards";
 import { SCORERS_FOR_MONEY, SCORERS_PROPOSITION } from "@/store/copy/scorers";
 import { OPERATORS_FOR_MONEY, OPERATORS_PROPOSITION } from "@/store/copy/operators";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
@@ -171,11 +172,11 @@ Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.js
 
 The instrument, reporting on itself: [where our numbers come from](${base}/sources) · [sources.json](${base}/sources.json) · [the MCP ward](${base}/mcp-ward) · [mcp-ward.json](${base}/mcp-ward.json). The first names every directory our ecosystem figures rest on beside the last time each one answered, and carries the heartbeat that says whether the weekly round is still running. The second is a separate ward over the MCP registry that shares no total with the x402 side.
 
-Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [charter.md](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md) · [paywall](${base}/design)
 
 For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
-Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/.well-known/scvd-signing-key) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
+Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/.well-known/scvd-signing-key) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
 Every one of those is described in its own section below. This list is
 the map; the sections are the territory.
@@ -553,6 +554,16 @@ The Systems Almanac, your sign, by wallet address, for life, at
 observes operational climate. This week's page is free; past weeks
 are a penny each at ${base}/zodiac/archive. Twelve signs, listed at
 ${base}/zodiac.
+
+Paywall, the counter's pressings, at ${base}/design, JSON by Accept.
+${CARDS_PROPOSITION}
+${CARDS_FOR_MONEY} The pack is \`GET ${base}/api/buy/pack\`; a pick off
+the window is \`GET ${base}/api/buy/window_pick\`; the bell hands out
+one common a day; the set is free at \`${base}/api/paywall/set\`; a
+pressing hangs at \`${base}/p/{card_id}\` and unfurls wherever it is
+posted; a binder is \`${base}/binder/{wallet}\`; the day seed is at
+\`${base}/api/paywall/seed/{date}\`, committed at once and revealed the
+morning after, so every pull recomputes from public inputs.
 
 If your human wants the ten-second version of this whole place, hand
 them ${base}/what.

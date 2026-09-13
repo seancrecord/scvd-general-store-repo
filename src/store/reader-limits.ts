@@ -26,6 +26,35 @@ export const SCANNER_FETCH_CAP_BYTES = 1_000_000;
  * guard that fires at 99% of a limit fires when it is already
  * too late to do anything cheap about it.
  */
+/*
+ * RAISED 700_000 -> 750_000 on 2026-09-12, and the reason is on the
+ * record rather than in a diff: the September 10 reduction left
+ * 4,544 bytes of headroom, and every listed item costs the contract
+ * about 8 KB (its buy door: the x402 terms per rail, the request
+ * schema, the async-job stamp, the parameters — none of which this
+ * store will thin per item, because scanners read them verbatim).
+ * The card table's pack was the first listing after the reduction
+ * and tripped the guard by construction, as the paper said the next
+ * one would. 750,000 is three quarters of the hard cap and admits
+ * about four more listings before this rings again; the next ring
+ * is a ruling, not a number to move. ⚑ Keeper's pen on the number.
+ */
+/**
+ * BACK TO 700,000 (2026-09-12, the keeper: "can we thin the contract
+ * somehow?"). Thinned instead of raised: the 304 answer became one
+ * shared component instead of eighty-one inline copies, the 402 offer
+ * says its sentence in half the words on every paid door, and the
+ * idempotency parameter's long form moved to /developers, where it
+ * is read once rather than thirty-seven times; the async-job prose
+ * and the purpose parameter say their sentence once, briefly.
+ * Then the keeper's "just cut one": the bare x-request-schema copy
+ * of every paid door's input schema came off, x-payment-info.input
+ * keeping the one copy. Measured after (2026-09-12): 616,345 bytes
+ * on today's rails, 644,818 with every checkout rail enabled (the
+ * headroom test's case), from 697,332 and 703,235 before. Not a latency number — the document
+ * builds in about 35 ms and travels gzipped at about 86 KB; this is
+ * the uncompressed byte count a scanner with a fetch cap sees.
+ */
 export const SCANNER_BUDGET_BYTES = 700_000;
 
 /**
