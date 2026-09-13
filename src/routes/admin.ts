@@ -2430,7 +2430,27 @@ adminRoutes.get("/admin/market", async (c) => {
         new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
       )
     : [];
-  return c.html(renderMarketPage(round, market, board, notice, candidates));
+  /*
+   * THE STANDING ORDER, BESIDE THE BUTTON IT AUTOMATES (2026-09-13).
+   * Read fail-soft and separately from the board: a plan that cannot
+   * be read leaves the desk standing rather than taking the market
+   * page down with it, and the plan itself is unaffected either way.
+   */
+  const { readBountyPlan, committedThisWeek } = await import(
+    "@/services/bounty-plan"
+  );
+  const [plan, committed] = await Promise.all([
+    readBountyPlan(c.env).catch(() => null),
+    committedThisWeek(c.env, new Date()).catch(() => null),
+  ]);
+  const planNotice = c.req.query("plan_notice");
+  return c.html(
+    renderMarketPage(round, market, board, notice, candidates, {
+      plan,
+      committed,
+      ...(planNotice ? { notice: planNotice } : {}),
+    }),
+  );
 });
 
 /**
@@ -2514,27 +2534,51 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
     ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
     : ((await c.req.parseBody({ all: true })) as Record<string, unknown>);
   const weeks = Number.parseInt(String(body["weeks"] ?? ""), 10);
+  /*
+   * A FORM IS ANSWERED WITH A PAGE, A JSON CALL WITH JSON (2026-09-13).
+   * The desk grew a form on the market page; a keeper who presses it
+   * should land back on the desk reading what happened, not on a bare
+   * JSON body he has to interpret. The JSON door is unchanged for
+   * anything that was already calling it.
+   */
+  const isForm = !contentType.includes("json");
+  const back = (message: string) =>
+    c.redirect(
+      `/admin/market?plan_notice=${encodeURIComponent(message.slice(0, 400))}`,
+      303,
+    );
   if (!Number.isFinite(weeks) || weeks < 0 || weeks > 52) {
-    return c.json({ error: "weeks must be a whole number from 0 to 52" }, 400);
+    const message = "weeks must be a whole number from 0 to 52";
+    return isForm
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
   }
   if (weeks === 0) {
     await writeBountyPlan(c.env, null);
-    return c.json({ ok: true, retired: true });
+    return isForm
+      ? back(
+          "The standing order is retired. Listings it already opened run their term and pay their claims as normal.",
+        )
+      : c.json({ ok: true, retired: true });
   }
   const perWeek = Number.parseInt(String(body["per_week"] ?? ""), 10);
   const reward = Number.parseFloat(String(body["reward_usd"] ?? ""));
   const tier = String(body["tier"] ?? "sprint");
   if (!Number.isFinite(perWeek) || perWeek < 1 || perWeek > 10) {
-    return c.json({ error: "per_week must be between 1 and 10" }, 400);
+    return isForm
+      ? back("Nothing was set: per_week must be between 1 and 10.")
+      : c.json({ error: "per_week must be between 1 and 10" }, 400);
   }
   if (!Number.isFinite(reward) || reward <= 0 || reward > BOUNTY_MAX_REWARD_USD) {
-    return c.json(
-      { error: `reward_usd must be between 0 and $${BOUNTY_MAX_REWARD_USD}` },
-      400,
-    );
+    const message = `reward_usd must be between 0 and $${BOUNTY_MAX_REWARD_USD}`;
+    return isForm
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
   }
   if (tier !== "sprint" && tier !== "standard" && tier !== "long") {
-    return c.json({ error: "tier must be sprint, standard or long" }, 400);
+    return isForm
+      ? back("Nothing was set: tier must be sprint, standard or long.")
+      : c.json({ error: "tier must be sprint, standard or long" }, 400);
   }
   const rawRails = body["rails"];
   const rails = Array.isArray(rawRails)
@@ -2562,6 +2606,12 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
     ...(existing?.history ? { history: existing.history } : {}),
   });
   const committed = await committedThisWeek(c.env, new Date());
+  const affordable = Math.floor(committed.headroom / reward);
+  if (isForm) {
+    return back(
+      `Standing order set: ${perWeek} a week at $${reward.toFixed(2)} for ${weeks} week${weeks === 1 ? "" : "s"}. This week's headroom ($${committed.headroom.toFixed(2)}) affords ${affordable}${affordable < perWeek ? ` of them, so it will post fewer until the week turns over` : ""}.`,
+    );
+  }
   return c.json({
     ok: true,
     plan: await readBountyPlan(c.env),
@@ -2571,7 +2621,7 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
      * can actually pay for, because the plan will quietly post fewer
      * and it should not be a surprise when it does.
      */
-    affordable_this_week: Math.floor(committed.headroom / reward),
+    affordable_this_week: affordable,
   });
 });
 
