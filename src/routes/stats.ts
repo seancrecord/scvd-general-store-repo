@@ -50,6 +50,19 @@ statsRoutes.get("/stats", async (c) => {
         }
       : {}),
     /**
+     * THE SECOND FIGURE WHOSE SUBSTRATE IS NOT THE SETTLE COUNTERS,
+     * and named for the same reason the rail split is: a reader adding
+     * these numbers up should never have to guess which ledger a line
+     * came off. Present only when the count could be taken — a null
+     * buyer count publishes no method, because there was no method.
+     */
+    ...(stats.distinct_organic_buyers !== null
+      ? {
+          patrons_method:
+            "distinct_organic_buyers counts payer rows, not sales: one key per wallet that has ever settled here, written at the till, with the house wallets struck out. It is a FLOOR in three directions and none of them inflate it — a settle whose wallet never came back with the money writes no row (those are counted by item, so the gap is a number rather than a mystery), the founding settles that predate the channel meter have no row either, and one buyer paying from a second wallet reads here as a second patron. It is published beside artifacts_issued deliberately: sales, artifacts and patrons are three different quantities, and this store spent its opening weeks showing one of them under another's name.",
+        }
+      : {}),
+    /**
      * AT_SCALE rule 5b. Every number above comes from counters this
      * store writes, which makes them our BOOKS and not the chain. The
      * failure they cannot see is the one that matters: a payment that
