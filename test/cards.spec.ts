@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { encodeQr } from "@/lib/qr";
 import { flattenPath } from "@/lib/pixel-card";
-import { bellPressing, burnForCredit, clearConditions, drawSlot, getCard, handPress, holdsRailHolo, readBinder, readCredit, redeemCredit, windowPick } from "@/services/cards";
+import { bellPressing, burnForCredit, clearConditions, drawSlot, getCard, handPress, holdsRailHolo, openPack, packsOpened, pullReleaseForward, readBinder, readCredit, readRelease, redeemCredit, releaseStates, releaseWheel, windowPick } from "@/services/cards";
 import { commitOf, dayHasEnded, publishSeedRecord, seedFor, utcDate } from "@/services/paywall-seed";
 import { getMenuItem } from "@/store";
 import {
@@ -13,6 +13,8 @@ import {
   CURRENT_SEASON,
   EARNED_BY_ITEM,
   PACK_SIZE,
+  RELEASE_CEILING,
+  RELEASE_FLOOR,
   RESERVED_CONDITIONS,
   RARITY_ORDER,
   SEASONS,
@@ -22,6 +24,7 @@ import {
   entryByKey,
   packChanceOf,
   packPool,
+  releasable,
   slotOdds,
 } from "@/store/cards";
 import { drawnPlateKeys, plateFor } from "@/store/plates";
@@ -94,7 +97,7 @@ describe("the set", () => {
     const keeper = entryByKey(CURRENT_SEASON, "keeper")!;
     expect(keeper.rarity).toBe("keeper");
     expect(keeper.type).toBe("room");
-    expect(keeper.obtained).toBe("hand");
+    expect(keeper.obtained).toBe("released");
     expect(keeper.print_cap).toBe(1);
     for (const rarity of RARITY_ORDER) {
       for (const card of packPool(CURRENT_SEASON, rarity)) {
@@ -108,8 +111,8 @@ describe("the set", () => {
     expect(oneOfOnes.map((card) => card.key).sort()).toEqual(["cv", "keeper"]);
     for (const card of oneOfOnes) {
       expect(card.print_cap, card.name).toBe(1);
-      // On show in the window, handed over by the keeper; a pick never takes one.
-      expect(card.obtained, card.name).toBe("hand");
+      // Off the release wheel, into somebody's pack; a pick never takes one.
+      expect(card.obtained, card.name).toBe("released");
     }
     // The models: the frontier ones rare or uncommon, the goofing ones all common and in packs.
     const models = CURRENT_SEASON.cards.filter((card) => card.type === "model");
@@ -621,42 +624,107 @@ describe("the credit desk", () => {
 });
 
 describe("the one-of-ones", () => {
-  it("hangs a one-of-one in the window without selling it, and hands it over with a pack of credit", async () => {
+  it("rides the release wheel into somebody's pack, commit first, and is never for sale", async () => {
     const collector = "0x7777777777777777777777777777777777777777";
-    let keeperCard: Awaited<ReturnType<typeof handPress>> | null = null;
-    for (const [key, signed, metal] of [["keeper", "signed, the keeper", "#C9A227"], ["cv", "signed, CV", "#C8623A"]] as const) {
-      // The Keeper goes into the window; CV lands straight in a binder, and the perk lands with it.
-      const pressed = key === "keeper" ? await handPress(testEnv, key, { window: true }) : await handPress(testEnv, key, { wallet: collector });
-      if (key === "keeper") keeperCard = pressed;
-      expect(pressed.card.print_cap).toBe(1);
-      const face = await (await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.svg`)).text();
-      expect(face).toContain("1 / 1");
-      expect(face).toContain(signed);
-      expect(face).toContain(metal);
-      expect(face).toContain('clip-path="url(#window)"');
-      const sheet = await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.png`);
-      expect(sheet.status).toBe(200);
-      if (key === "keeper") {
-        const window = await json(await SELF.fetch(`${BASE}/api/paywall/window`));
-        expect((window["window"] as Array<Record<string, unknown>>).map((row) => row["card_id"])).toContain(pressed.card.card_id);
-      }
-    }
-    const binder = await json(await SELF.fetch(`${BASE}/api/paywall/binder/${collector}`));
-    expect((binder["credit"] as Record<string, unknown>)["packs"]).toBe(1);
 
-    // The Keeper hangs in the window, and no amount of picking takes it:
-    // five wallets could otherwise sweep a five-deep window for $2.45.
+    /**
+     * BEFORE ANYTHING LANDS the store publishes a commit and nothing
+     * else. The milestone itself is not on the wire — if it were,
+     * anybody could count packs and buy the one that crosses it.
+     */
+    const before = await releaseStates(testEnv);
+    expect(before.map((state) => state.key).sort()).toEqual(["cv", "keeper"]);
+    expect(releasable(CURRENT_SEASON).map((entry) => entry.key).sort()).toEqual(["cv", "keeper"]);
+    for (const state of before) {
+      expect(state.commit).toMatch(/^[0-9a-f]{64}$/);
+      expect(state.landed).toBeNull();
+      expect(JSON.stringify(state)).not.toContain("reveal");
+    }
+    const wheels = await Promise.all(releasable(CURRENT_SEASON).map((entry) => releaseWheel(testEnv, CURRENT_SEASON, entry)));
+    for (const wheel of wheels) {
+      expect(wheel.milestone).toBeGreaterThanOrEqual(RELEASE_FLOOR);
+      expect(wheel.milestone).toBeLessThanOrEqual(RELEASE_CEILING);
+    }
+    // The two wheels are drawn apart, so one buyer never takes both.
+    expect(wheels[0]!.commit).not.toBe(wheels[1]!.commit);
+
+    /** The keeper's one lever: forward to the next pack, not to a wallet. */
+    await pullReleaseForward(testEnv, "keeper");
+    const packs = await packsOpened(testEnv);
+    const pack = await openPack(testEnv, { certId: "cert_release_1", patronNumber: 1, payer: collector });
+    expect(await packsOpened(testEnv)).toBe(packs + 1);
+    const keeperCard = pack.cards.find((signed) => signed.card.key === "keeper");
+    expect(keeperCard, "the pulled-forward Keeper rides the next pack").toBeDefined();
+    expect(pack.cards).toHaveLength(PACK_SIZE);
+    expect(keeperCard!.card.print_no).toBe(1);
+    expect(keeperCard!.card.print_cap).toBe(1);
+    expect(keeperCard!.card.holder).toBe(collector.toLowerCase());
+    expect(keeperCard!.card.source).toBe("pack");
+
+    /**
+     * THE REVEAL CHECKS OUT against the commit that was published
+     * before anybody opened anything: sha256 of the bytes is the
+     * commit, and the milestone recomputes off the same bytes.
+     */
+    const landed = await readRelease(testEnv, CURRENT_SEASON, "keeper");
+    expect(landed!.card_id).toBe(keeperCard!.card.card_id);
+    expect(landed!.commit).toBe(before.find((state) => state.key === "keeper")!.commit);
+    expect(landed!.pulled_forward).toBe(true);
+    expect(landed!.holder).toBe(collector.toLowerCase());
+    const bytes = Uint8Array.from(landed!.reveal.match(/../g)!.map((pair) => parseInt(pair, 16)));
+    const digest = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((b) => b.toString(16).padStart(2, "0")).join("");
+    expect(digest).toBe(landed!.commit);
+    const recomputed = RELEASE_FLOOR + ((((bytes[0]! << 24) >>> 0) + (bytes[1]! << 16) + (bytes[2]! << 8) + bytes[3]!) % (RELEASE_CEILING - RELEASE_FLOOR + 1));
+    expect(recomputed).toBe(landed!.milestone);
+
+    /** The wheel says so in public, and the door answers free. */
+    const published = await json(await SELF.fetch(`${BASE}/api/paywall/releases`));
+    const rows = published["cards"] as Array<Record<string, unknown>>;
+    const keeperRow = rows.find((row) => row["key"] === "keeper")!;
+    expect((keeperRow["landed"] as Record<string, unknown>)["reveal"]).toBe(landed!.reveal);
+    expect(rows.find((row) => row["key"] === "cv")!["landed"]).toBeNull();
+    expect(JSON.stringify(rows.find((row) => row["key"] === "cv"))).not.toContain(String(wheels.find((wheel) => wheel.key === "cv")!.milestone));
+
+    /** The face, the sheet, the window, and the holder's pack of credit. */
+    const face = await (await SELF.fetch(`${BASE}/p/${keeperCard!.card.card_id}.svg`)).text();
+    expect(face).toContain("1 / 1");
+    expect(face).toContain("signed, the keeper");
+    expect(face).toContain("#C9A227");
+    expect(face).toContain('clip-path="url(#window)"');
+    expect((await SELF.fetch(`${BASE}/p/${keeperCard!.card.card_id}.png`)).status).toBe(200);
+    expect(await readCredit(testEnv, collector)).toBeGreaterThanOrEqual(1);
+
+    /**
+     * A ONE-OF-ONE IS ON SHOW, NOT FOR SALE. It passes through the
+     * window like every pack pull, and no amount of picking takes it:
+     * five wallets could otherwise sweep a five-deep window for $2.45.
+     */
     const onShow = await json(await SELF.fetch(`${BASE}/api/paywall/window`));
-    const shown = (onShow["window"] as Array<Record<string, unknown>>);
-    expect(shown.some((row) => row["key"] === "keeper")).toBe(true);
+    expect((onShow["window"] as Array<Record<string, unknown>>).some((row) => row["key"] === "keeper")).toBe(true);
     for (let n = 0; n < 6; n += 1) {
       await testEnv.COUNTERS.delete(KV_KEYS.paywallWindowLock(TEST_PAYER.toLowerCase()));
       const picked = await windowPick(testEnv, { certId: `cert_sweep_${n}`, patronNumber: 0, payer: TEST_PAYER }).catch(() => null);
       if (picked) expect(picked.pressing.card.rarity).not.toBe("keeper");
     }
-    expect((await getCard(testEnv, keeperCard!.card.card_id))!.card.holder).toBeUndefined();
-    // A second print of either refuses: the cap is one.
+    expect((await getCard(testEnv, keeperCard!.card.card_id))!.card.holder).toBe(collector.toLowerCase());
+
+    /** One print a season: the next pack carries no second Keeper. */
+    const again = await openPack(testEnv, { certId: "cert_release_2", patronNumber: 2, payer: collector });
+    expect(again.cards.some((signed) => signed.card.key === "keeper")).toBe(false);
+    expect(again.cards).toHaveLength(PACK_SIZE);
+    await expect(pullReleaseForward(testEnv, "keeper")).rejects.toThrow();
     await expect(handPress(testEnv, "keeper", { window: true })).rejects.toThrow();
+
+    /** And CV comes the same way, to whoever opens the pack that crosses it. */
+    await pullReleaseForward(testEnv, "cv");
+    const third = await openPack(testEnv, { certId: "cert_release_3", patronNumber: 3, payer: collector });
+    const cvCard = third.cards.find((signed) => signed.card.key === "cv");
+    expect(cvCard, "CV rides the next pack once it is pulled forward").toBeDefined();
+    expect(cvCard!.card.print_no).toBe(1);
+    const cvFace = await (await SELF.fetch(`${BASE}/p/${cvCard!.card.card_id}.svg`)).text();
+    expect(cvFace).toContain("1 / 1");
+    expect(cvFace).toContain("signed, CV");
+    expect(cvFace).toContain("#C8623A");
     await expect(handPress(testEnv, "cv", { wallet: collector })).rejects.toThrow();
   });
 

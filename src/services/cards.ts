@@ -12,7 +12,9 @@ import {
   type PersonalPurchase,
 } from "@/services/personal-goods";
 import {
+  bytesToHex,
   commitOf,
+  deriveSecret,
   drawBytes,
   indexFromBytes,
   publishSeedRecord,
@@ -31,6 +33,9 @@ import {
   PACK_SIZE,
   packPool,
   RAIL_HOLO_KEY,
+  releasable,
+  RELEASE_CEILING,
+  RELEASE_FLOOR,
   SLOT_WHEELS,
   type CardEntry,
   type Season,
@@ -363,6 +368,162 @@ async function setInWindow(env: Env, signed: SignedCardRecord): Promise<void> {
   );
 }
 
+/* ── the release wheel ────────────────────────────────────────────── */
+
+/** A one-of-one's wheel: the secret bytes, their commit, and the milestone they fix. */
+export interface ReleaseWheel {
+  key: string;
+  name: string;
+  /** sha256 of the secret bytes. Published from the day the season opened. */
+  commit: string;
+  /** Packs opened this season that the release lands on. Secret until it lands. */
+  milestone: number;
+  /** The bytes themselves, hex. Only ever published beside a landed release. */
+  reveal: string;
+}
+
+/** The public record of a landing: written once, the moment the pack carries it. */
+export interface ReleaseRecord {
+  season: string;
+  key: string;
+  name: string;
+  commit: string;
+  milestone: number;
+  reveal: string;
+  /** The pack count this actually landed on; equals the milestone unless it was pulled forward. */
+  pack_no: number;
+  pack_id: string;
+  card_id: string;
+  holder: string | null;
+  at: string;
+  pulled_forward: boolean;
+}
+
+export async function releaseWheel(env: Env, season: Season, entry: CardEntry): Promise<ReleaseWheel> {
+  const bytes = await deriveSecret(env, `paywall:release:${season.id}:${entry.key}`);
+  const span = RELEASE_CEILING - RELEASE_FLOOR + 1;
+  return {
+    key: entry.key,
+    name: entry.name,
+    commit: await commitOf(bytes),
+    milestone: RELEASE_FLOOR + indexFromBytes(bytes, 0, span),
+    reveal: bytesToHex(bytes),
+  };
+}
+
+/** Packs opened this season. The denominator every milestone is counted on. */
+export async function packsOpened(env: Env, season: Season = CURRENT_SEASON): Promise<number> {
+  return readCounter(env, KV_KEYS.paywallPacks(season.id));
+}
+
+export async function readRelease(env: Env, season: Season, key: string): Promise<ReleaseRecord | null> {
+  return (await kvGetJson<ReleaseRecord>(env.PATRONS, KV_KEYS.paywallRelease(season.id, key), "json")) ?? null;
+}
+
+export interface ReleaseState {
+  key: string;
+  name: string;
+  commit: string;
+  floor: number;
+  ceiling: number;
+  landed: ReleaseRecord | null;
+  pulled_forward_at: string | null;
+}
+
+/**
+ * What the store can say out loud about the wheel: the commit for each
+ * one-of-one from day one, the range, whether it has landed, and — only
+ * once it has — the milestone and the bytes that prove the commit.
+ */
+export async function releaseStates(env: Env, season: Season = CURRENT_SEASON): Promise<ReleaseState[]> {
+  const states: ReleaseState[] = [];
+  for (const entry of releasable(season)) {
+    const wheel = await releaseWheel(env, season, entry);
+    const landed = await readRelease(env, season, entry.key);
+    const forced = await kvGet(env.COUNTERS, KV_KEYS.paywallReleaseNow(season.id, entry.key));
+    states.push({
+      key: entry.key,
+      name: entry.name,
+      commit: wheel.commit,
+      floor: RELEASE_FLOOR,
+      ceiling: RELEASE_CEILING,
+      landed,
+      pulled_forward_at: forced ?? null,
+    });
+  }
+  return states;
+}
+
+/**
+ * THE KEEPER'S ONE LEVER. Not a wallet and not a pack: a mark that says
+ * this one rides the very next pack somebody opens, whoever they are.
+ * The record it lands with says it was pulled forward, and reveals the
+ * milestone it would otherwise have waited for.
+ */
+export async function pullReleaseForward(env: Env, key: string, now: Date = new Date(), season: Season = CURRENT_SEASON): Promise<ReleaseState> {
+  const entry = releasable(season).find((card) => card.key === key);
+  if (!entry) throw new Error(`${key} is not a one-of-one on the release wheel this season`);
+  if (await readRelease(env, season, key)) throw new CapReached(`${entry.name} has already landed. One print a season.`);
+  await kvPut(env.COUNTERS, KV_KEYS.paywallReleaseNow(season.id, key), now.toISOString());
+  const states = await releaseStates(env, season);
+  return states.find((state) => state.key === key)!;
+}
+
+/** Undo the lever before it fires. */
+export async function holdRelease(env: Env, key: string, season: Season = CURRENT_SEASON): Promise<void> {
+  await env.COUNTERS.delete(KV_KEYS.paywallReleaseNow(season.id, key));
+}
+
+interface DueRelease {
+  entry: CardEntry;
+  wheel: ReleaseWheel;
+  pulled_forward: boolean;
+}
+
+/**
+ * Is a one-of-one due on this pack? At most one a pack: if both wheels
+ * come due at the same count the second waits for the next pack, so a
+ * single buyer never sweeps the season's one-of-ones in one purchase.
+ */
+async function dueRelease(env: Env, season: Season, packNo: number): Promise<DueRelease | null> {
+  // No serialized counter means press() would refuse a capped card anyway.
+  if (!countersSerialized(env)) return null;
+  for (const entry of releasable(season)) {
+    if (await readRelease(env, season, entry.key)) continue;
+    if ((await readPressCount(env, season.id, entry.key)) > 0) continue;
+    const forced = await kvGet(env.COUNTERS, KV_KEYS.paywallReleaseNow(season.id, entry.key));
+    const wheel = await releaseWheel(env, season, entry);
+    if (!forced && packNo < wheel.milestone) continue;
+    return { entry, wheel, pulled_forward: Boolean(forced) };
+  }
+  return null;
+}
+
+/** Write the landing once, and never a second time for the same season and key. */
+async function recordRelease(env: Env, season: Season, signed: SignedCardRecord, packId: string, packNo: number, now: Date): Promise<void> {
+  const key = signed.card.key;
+  if (await readRelease(env, season, key)) return;
+  const entry = releasable(season).find((card) => card.key === key);
+  if (!entry) return;
+  const wheel = await releaseWheel(env, season, entry);
+  const forced = await kvGet(env.COUNTERS, KV_KEYS.paywallReleaseNow(season.id, key));
+  const record: ReleaseRecord = {
+    season: season.id,
+    key,
+    name: entry.name,
+    commit: wheel.commit,
+    milestone: wheel.milestone,
+    reveal: wheel.reveal,
+    pack_no: packNo,
+    pack_id: packId,
+    card_id: signed.card.card_id,
+    holder: signed.card.holder ?? null,
+    at: now.toISOString(),
+    pulled_forward: Boolean(forced),
+  };
+  await kvPut(env.PATRONS, KV_KEYS.paywallRelease(season.id, key), JSON.stringify(record));
+}
+
 /* ── the pack ─────────────────────────────────────────────────────── */
 
 export interface OpenPackOptions {
@@ -376,6 +537,8 @@ export interface OpenPackOptions {
 
 export async function openPack(env: Env, options: OpenPackOptions, purchase?: PersonalPurchase): Promise<SignedPackRecord> {
   const season = options.season ?? CURRENT_SEASON;
+  /** The count this pack was, kept for the release record below; a retained replay re-reads it. */
+  let packNo: number | null = null;
   const prepared = await retainPersonalRecord(purchase, async () => {
     const now = options.now ?? (purchase?.purchasedAt ? new Date(purchase.purchasedAt) : new Date());
     const date = now.toISOString();
@@ -399,9 +562,40 @@ export async function openPack(env: Env, options: OpenPackOptions, purchase?: Pe
     const exhausted = new Set<string>();
     const capReadThrough = capReader(env, season, now);
     const capped: CapReader = async (entry) => exhausted.has(entry.key) || (await capReadThrough(entry));
+    /**
+     * THE RELEASE WHEEL TURNS HERE. This pack's number comes off the
+     * serialized counter before a single slot is drawn, so two packs
+     * opened at once are two different counts and only one of them can
+     * be the one that crosses a milestone. If one is due, the day seed
+     * says which of the five slots it takes — the ordinary draw for
+     * that slot is simply not made — and a press that loses the race
+     * falls back to that draw, below the settle line, so a one-of-one
+     * never costs somebody their pack.
+     */
+    packNo = await addCounter(env, KV_KEYS.paywallPacks(season.id), 1);
+    const due = await dueRelease(env, season, packNo);
+    const landingSlot = due ? 1 + indexFromBytes(await drawBytes(seed, payer, options.certId, "release"), 0, PACK_SIZE) : 0;
     const cards: SignedCardRecord[] = [];
     for (let slot = 1; slot <= PACK_SIZE; slot += 1) {
       let pressed: SignedCardRecord | null = null;
+      if (due && slot === landingSlot) {
+        try {
+          pressed = await press(env, {
+            entry: due.entry,
+            source: options.source ?? "pack",
+            date,
+            season,
+            slot,
+            packId,
+            certId: options.certId,
+            commit,
+            patronNumber: options.patronNumber,
+            ...(options.payer ? { holder: options.payer } : {}),
+          });
+        } catch (error) {
+          if (!(error instanceof CapReached)) throw error;
+        }
+      }
       for (let attempt = 0; attempt < PACK_SIZE && !pressed; attempt += 1) {
         const drawn = await drawSlot(seed, payer, options.certId, slot, { season, capped });
         try {
@@ -445,6 +639,18 @@ export async function openPack(env: Env, options: OpenPackOptions, purchase?: Pe
   for (const signed of published.cards) {
     await filePressing(env, signed);
     await setInWindow(env, signed);
+  }
+  /**
+   * A landed one-of-one gets its public record and its holder's perk.
+   * Read off the published pack rather than off the closure, so a
+   * retained replay that never re-ran the draw still writes the record
+   * exactly once (recordRelease refuses a second).
+   */
+  const landed = published.cards.find((signed) => signed.card.rarity === "keeper");
+  if (landed) {
+    const now = options.now ?? (purchase?.purchasedAt ? new Date(purchase.purchasedAt) : new Date());
+    await recordRelease(env, season, landed, published.pack.pack_id, packNo ?? (await packsOpened(env, season)), now);
+    await grantHolderPerk(env, landed.card);
   }
   return published;
 }
@@ -675,7 +881,7 @@ export async function assertWindowOpenFor(env: Env, wallet?: string): Promise<Bi
   const window = await readWindow(env);
   if (window.length === 0) throw new WindowRefused("The window is empty: nobody has opened a pack yet. Nothing charged.");
   if (window.every((row) => row.rarity === "keeper")) {
-    throw new WindowRefused("Everything in the window is one of one: on show, handed over by the keeper, never sold. Nothing charged.");
+    throw new WindowRefused("Everything in the window is one of one: on show, released by the wheel into somebody's pack, never sold. Nothing charged.");
   }
   return window;
 }
@@ -687,9 +893,11 @@ export async function assertWindowOpenFor(env: Env, wallet?: string): Promise<Bi
  * forty-five cents bought the Keeper with certainty, which is not a
  * lottery, it is a price on a specific card — the one thing the table
  * promises it will never do. So the seed draws from the window's
- * ordinary pressings; the Keeper and CV hang there to be looked at and
- * are handed over by the keeper, whose pen every one-of-one already
- * carries. ⚑ To sell them again, delete this filter: one line.
+ * ordinary pressings; a one-of-one that passes through the window on
+ * its way to the binder it landed in can be looked at and not bought.
+ * (2026-09-13: and it gets there off the release wheel, so the keeper
+ * does not choose its wallet either.) ⚑ To sell them again, delete
+ * this filter: one line.
  */
 function pickable(rows: readonly BinderRow[]): BinderRow[] {
   return rows.filter((row) => row.rarity !== "keeper");
@@ -699,7 +907,7 @@ export async function windowPick(env: Env, options: OpenPackOptions, purchase?: 
   const now = options.now ?? (purchase?.purchasedAt ? new Date(purchase.purchasedAt) : new Date());
   const wallet = options.payer?.toLowerCase();
   const window = pickable(await assertWindowOpenFor(env, wallet));
-  if (window.length === 0) throw new WindowRefused("Everything in the window is one of one: on show, handed over by the keeper, never sold. Nothing charged.");
+  if (window.length === 0) throw new WindowRefused("Everything in the window is one of one: on show, released by the wheel into somebody's pack, never sold. Nothing charged.");
   const seedDate = utcDate(now);
   await publishSeedRecord(env, seedDate, now);
   const seed = await seedFor(env, seedDate);

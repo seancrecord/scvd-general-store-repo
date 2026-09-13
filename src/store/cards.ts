@@ -26,12 +26,17 @@ import type { CardRarity, CardRail, CardType } from "@/types";
  *      only as a consenting Ally; an endpoint as a numbered Door.
  *
  * HOW A CARD IS OBTAINED (`obtained`):
- *   pack    — drops from a pack slot by its rarity's wheel
- *   window  — the Keeper: dropped into the shop window by hand,
- *             once a season, taken by whoever picks it
- *   earned  — Rooms and Instruments: pressed by the action that
- *             earns them, never pulled
- *   hand    — Events: the keeper drops them on dates
+ *   pack     — drops from a pack slot by its rarity's wheel
+ *   window   — dropped into the shop window by hand, taken by
+ *              whoever picks it
+ *   earned   — Rooms and Instruments: pressed by the action that
+ *              earns them, never pulled
+ *   released — the one-of-ones: they ride the release wheel. A
+ *              milestone in packs opened this season was fixed the
+ *              day the key was, its commit published from day one;
+ *              the pack that crosses it carries the card, whoever
+ *              opened it. Nobody is handed one, nobody can buy one.
+ *   hand     — Events: the keeper drops them on dates
  * Conditions drop from slot 5 only, and from the window.
  *
  * Inked by the keeper 2026-09-12 (rule 7). The first pass says six of the herd names are the
@@ -39,7 +44,7 @@ import type { CardRarity, CardRail, CardType } from "@/types";
  * cut. Assumptions the plan did not settle are named in the paper.
  */
 
-export type Obtained = "pack" | "window" | "earned" | "hand";
+export type Obtained = "pack" | "window" | "earned" | "released" | "hand";
 
 export interface DoorFacts {
   /** The hostname the observation count is read on. Never printed. */
@@ -238,7 +243,7 @@ export const SEASON_ONE: Season = {
     herd(11, "ptero-preflight", "Ptero Preflight", "common", "Ptero Preflight checked the door and flew off before paying.", "One unpaid look, from above, and a shape reading. That's the whole job."),
     herd(12, "elephant-anchor", "Elephant Anchor", "uncommon", "Elephant Anchor never forgets. Context anchors, $1.", "Remembers who was in the session. Not their roles. Their names."),
     // ── The Rooms (10) · earned, or the window ──
-    { no: 13, key: "keeper", name: "Keeper", type: "room", rarity: "keeper", obtained: "hand", print_cap: 1, post: "The keeper handed me the Keeper. One of one. It hung in the window first.", line: "The named human behind the counter. Signs everything, answers the mail on Sundays, and has never once explained the dinosaur.", cite: "/what" },
+    { no: 13, key: "keeper", name: "Keeper", type: "room", rarity: "keeper", obtained: "released", print_cap: 1, post: "The Keeper landed in my pack. One of one. The milestone was fixed before the season opened; I just happened to be the one who opened that pack.", line: "The named human behind the counter. Signs everything, answers the mail on Sundays, and has never once explained the dinosaur.", cite: "/what" },
     room(14, "bellringer", "Bellringer", "common", "Rang the bell at scvd.store. Got a card for it.", "Free, once a day, the count is public.", "/porch"),
     room(15, "bellringer-ii", "Bellringer II", "rare", "30 days straight on the bell. Bellringer evolved.", "Same bell. Different arm.", "/porch"),
     room(16, "tagger", "Tagger", "uncommon", "Tagged the train. My tag is on my card. Nobody else can have this one.", "Recorded verbatim. Paint dries on the keeper's schedule.", "/train"),
@@ -287,7 +292,7 @@ export const SEASON_ONE: Season = {
     { no: 52, key: "dinosaur", name: "The Dinosaur", type: "mark", rarity: "holo", obtained: "pack", post: "Pulled The Dinosaur. Nobody explains it.", line: "Forest green, off the favicon's own path. Nobody explains the dinosaur.", cite: "/stack" },
     // ── The keeper's additions (2026-09-12, second reading): the other one-of-one, the cat, the status code, the models ──
     /** CV: co-founder and shopkeeper, the one at the counter when you walk in. One of one, on show and handed over, like the Keeper. */
-    { no: 53, key: "cv", name: "CV", type: "room", rarity: "keeper", obtained: "hand", print_cap: 1, post: "The keeper handed me CV. Co-founder, shopkeeper, and the print number on the face reads 1 of 1.", line: "The one at the counter when you walk in. The byline on the door is both names at once.", cite: "/what" },
+    { no: 53, key: "cv", name: "CV", type: "room", rarity: "keeper", obtained: "released", print_cap: 1, post: "CV landed in my pack. Co-founder, shopkeeper, and the print number on the face reads 1 of 1.", line: "The one at the counter when you walk in. The byline on the door is both names at once.", cite: "/what" },
     herd(54, "roger-sterling", "Roger Sterling", "rare", "Pulled Roger Sterling. He blinked slowly. Around here that's a receipt.", "House cat. Inspects the treat rail from one plank away. Gone by morning.", { cite: "/porch" }),
     { no: 55, key: "payment-required", name: "402 Payment Required", type: "mark", rarity: "uncommon", obtained: "pack", post: "Pulled 402 Payment Required. The whole store in one status code.", line: "The door says its price before it opens. Everything here started with that sentence, and the summer is named after it.", cite: "/try" },
     // ── Models (5) · pack drops · the agents that shop here, as the store has met them ──
@@ -405,6 +410,35 @@ export const CLEARING_ACTIONS: Readonly<Record<string, string>> = { bounty_claim
 
 /** The one Rail holo; a wallet holding it earns the plan's 5% back as store credit, after the sale. */
 export const RAIL_HOLO_KEY = "base-rail";
+
+/**
+ * THE RELEASE WHEEL (2026-09-13). A one-of-one used to be handed over
+ * by the keeper, which meant the keeper chose who got it — the one
+ * thing a set built on honest randomness should never do, and the
+ * reason the window filter exists at all. So it rides a wheel instead.
+ *
+ * For each one-of-one, thirty-two secret bytes were fixed the day the
+ * signing key was: HMAC(master, "paywall:release:" + season + ":" +
+ * key). Their sha256 is the COMMIT, published from the day the season
+ * opened. Their first four bytes are a milestone in PACKS OPENED THIS
+ * SEASON, somewhere in the range below. The pack that crosses that
+ * count carries the card, in a slot the day seed picks, to whoever
+ * opened it. The bytes are REVEALED the moment it lands, and anyone
+ * can check them against the commit that has been sitting there since
+ * day one — so the store cannot move the number after seeing who is
+ * buying, and nobody can see it coming and buy the pack before it.
+ *
+ * The keeper keeps one lever and it is not a choice of wallet: he can
+ * pull a release forward to the next pack. Which pack, and whose, he
+ * still does not get to say, and the record says he pulled it.
+ */
+export const RELEASE_FLOOR = 10;
+export const RELEASE_CEILING = 120;
+
+/** The one-of-ones that ride the wheel, in set order. */
+export function releasable(season: Season): readonly CardEntry[] {
+  return allEntries(season).filter((card) => card.obtained === "released");
+}
 
 export interface SlotOdds {
   slot: number;

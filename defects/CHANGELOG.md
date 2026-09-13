@@ -3,6 +3,49 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.15.0 — 2026-09-13
+
+Vocabulary v15: adds `advertised-version-unpayable`.
+
+A door that answers a correctly signed payment, presented in the
+protocol version its own challenge advertises, with that same offer
+re-served — so the buyer that followed the instructions is the one
+that cannot pay, no money moves, and the door has no failed payment to
+look at. Found by paying, on a walk of a real door during a protocol
+migration; the operator confirmed it and found the same version-keyed
+read on three more of his own surfaces.
+
+The class is narrower than the finding, and the narrowing came from
+that operator. The comparator reads five material terms (scheme,
+network, payTo, asset, amount) rather than the whole offer, so a door
+carrying a per-request nonce, expiry or rotating timeout is not scored
+clean by accident. And the assertion does not reach the variant where
+a door ACCEPTS the newer version, settles, delivers, and logs nothing
+because its request log keys on the older header: nothing buyer-side
+can observe that, so this class does not claim it — the repair hint
+names it as a separate fault instead.
+
+## 0.14.1 — 2026-09-13
+
+Package fix, no definition changed: the shipped fixtures now carry the
+provenance fields the tree's copies gained after 0.14.0 went out.
+
+Every fixture under `fixtures/` declares `source` — one of
+`simulated`, `observed`, `derived` — and `captured_at`, the date the
+bytes were taken from a live door, or `null` for a constructed shape.
+The vocabulary is the one agreed on x402-foundation/x402#3396, so a
+fixture here reads beside a row from that corpus without translation.
+`scvd.store/fixtures.json` serves the same fields, plus the freshness
+half (`last_verified_at`) that only the deploy can know.
+
+Why this is a patch and not a minor: vocabulary v14 is unchanged, and
+no class moved. 0.14.0 was published two hours before the provenance
+change merged, so its fixture copies were behind the tree at the same
+version number. A new guard in the store's own suite
+(`registry/npm-content.json`, cut by `npm run npm-content:cut`) now
+refuses to record changed package content under an unchanged version,
+so this particular drift cannot recur silently.
+
 ## 0.14.0 — 2026-09-12
 
 Vocabulary v14: adds `re-challenges-spent-authorization` and amends

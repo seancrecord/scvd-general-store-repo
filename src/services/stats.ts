@@ -1,5 +1,6 @@
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
+import { isHouseWallet } from "@/lib/channel";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
@@ -10,6 +11,15 @@ import { kvGet } from "@/lib/kv-retry";
 
 /** Ceiling on a paid counters scan. An unnamed cap is a silent one. */
 const PAID_METRIC_CAP = 2000;
+
+/**
+ * Ceiling on the payer-row scan behind the distinct-buyer count. One
+ * key per wallet that ever paid, house included, so this is a scan of
+ * the customer list rather than of the traffic — and the cap exists
+ * anyway, because an unnamed limit is the defect kv-list.ts was
+ * written to stop.
+ */
+const PAYER_SCAN_CAP = 2000;
 
 /**
  * C2: the public ledger summary. Computed live from the same counters
@@ -114,6 +124,39 @@ export interface StoreStats {
    */
   artifacts_issued: number;
   /**
+   * THE PATRONS: DISTINCT ORGANIC WALLETS, NOT SALES AND NOT ARTIFACTS
+   * (2026-09-13, the keeper reading his own front page).
+   *
+   * The shopfront's nixie gauge said "Patrons served" and showed the
+   * patron counter — 375 the day this was written, beside a ledger
+   * line two rows above it reading "100 organic sales". Both numbers
+   * were computed live and neither was wrong; what was wrong was the
+   * word over the tube. The patron counter is artifacts_issued, free
+   * shelf and house tests included, and the identity fix of 2026-08-05
+   * already said so in this file — it just never reached the one
+   * surface a person actually looks at.
+   *
+   * A patron is a WALLET, which is the only sense in which "served"
+   * has a denominator: one key per payer, so the count is the length
+   * of the customer list. A hundred sales across a couple of dozen
+   * wallets is a couple of dozen patrons and a repeat rate worth
+   * being proud of. It is not a hundred patrons, and it is nowhere
+   * near the artifact tally. Which of those it actually is, this
+   * counts rather than states — no figure here is ever typed.
+   *
+   * A FLOOR, AND SAID SO. Three things keep this under the truth and
+   * none of them can push it over: a settle whose wallet never came
+   * back with the money writes no payer row (counted, by item, at
+   * metric:<month>:nopayer:<item>, so the gap is a number rather than
+   * a mystery); the founding settles that predate the meter have no
+   * row either; and one buyer paying from two wallets reads as two.
+   * NULL — never zero — when the scan truncates or fails, on the same
+   * rule organic_by_rail follows: "0 patrons" and "we could not count
+   * the patrons" are different claims and only one of them is ours to
+   * make.
+   */
+  distinct_organic_buyers: number | null;
+  /**
    * THE RAIL SPLIT: the organic figure above, divided by the chain the
    * money actually arrived on. Absent — never zeroed — when there is
    * nothing to divide it by yet, because "0 on Solana" and "we haven't
@@ -189,6 +232,50 @@ export interface BooksDiagnostics {
    * sales it means a placement is wrong, and the sweep pages on it.
    */
   hand_placements_unapplied: number;
+  /**
+   * Months whose paid-counter scan hit PAID_METRIC_CAP, so this
+   * month's settle counts are a floor rather than a total. Empty is
+   * the normal state and the only state seen so far; the reasoning at
+   * the scan itself says why, and why it is still reported.
+   */
+  counters_truncated: string[];
+}
+
+/**
+ * THE CUSTOMER LIST, COUNTED BY ITS KEYS.
+ *
+ * `payer:<address>` is one key per wallet that has ever settled here,
+ * written by recordPayerSeen at the till. The address is IN the key,
+ * and isHouseWallet reads an address, so the organic count needs the
+ * key NAMES and nothing else: no values, no certificate walk, no bulk
+ * read. That is the whole reason this can hang on the free shopfront
+ * while readBuyers — the same question with every purchase attached —
+ * stays behind the keeper's door at five thousand certificates a call.
+ *
+ * Deduplicated case-insensitively, which is the direction that can
+ * only cost us a patron: rows written before the canonical-address fix
+ * live under a lowercased key, and a base58 wallet appearing as both
+ * would otherwise be served twice. recordPayerSeen folds those as it
+ * meets them; this refuses to double-count the ones it has not.
+ *
+ * Null on truncation or failure, never zero. Rule 52's shape: a
+ * lookup that cannot see everything does not get to answer.
+ */
+export async function countDistinctOrganicBuyers(
+  env: Env,
+): Promise<number | null> {
+  const listed = await listKeys(env.COUNTERS, {
+    prefix: KV_KEYS.payerPrefix,
+    cap: PAYER_SCAN_CAP,
+  }).catch(() => null);
+  if (!listed || listed.truncated) return null;
+  const wallets = new Set<string>();
+  for (const name of listed.names) {
+    const address = name.slice(KV_KEYS.payerPrefix.length);
+    if (!address || isHouseWallet(env, address)) continue;
+    wallets.add(address.toLowerCase());
+  }
+  return wallets.size;
 }
 
 export async function computeStats(env: Env): Promise<StoreStats> {
@@ -215,10 +302,16 @@ export async function computeStatsDiagnosed(
    * The patron counter is still published, as what it actually is:
    * artifacts_issued, free shelf included, not a purchase count.
    */
-  const artifactsIssued = parseInt(
-    (await kvGet(env.COUNTERS, KV_KEYS.patronNumber)) ?? "0",
-    10,
-  );
+  /*
+   * Two independent reads, one wave: the counter that is the artifact
+   * tally and the key-list that is the customer list. Neither reads
+   * the other's result, and /stats is a free door.
+   */
+  const [artifactsRaw, distinctOrganicBuyers] = await Promise.all([
+    kvGet(env.COUNTERS, KV_KEYS.patronNumber),
+    countDistinctOrganicBuyers(env),
+  ]);
+  const artifactsIssued = parseInt(artifactsRaw ?? "0", 10);
   let organic = 0;
   let house = 0;
   const tillByItem: Record<string, TillItemCount> = {};
@@ -249,9 +342,32 @@ export async function computeStatsDiagnosed(
         cap: PAID_METRIC_CAP,
       });
       const values = await bulkGetJson<number>(env.COUNTERS, listed.names);
-      return { month, names: listed.names, values };
+      return { month, names: listed.names, values, truncated: listed.truncated };
     }),
   );
+  /*
+   * WHAT TRUNCATION MEANS HERE, answered rather than assumed (rule 52,
+   * and the bounded-read guard that made this file say so out loud on
+   * the day the patron gauge was fixed).
+   *
+   * These keys are `metric:<month>:paid:<item>` — ONE PER ITEM per
+   * month, not one per sale — so the cap is not a ceiling the store
+   * reaches by selling; it is a ceiling the store would reach only by
+   * listing PAID_METRIC_CAP distinct items in a single month, orders
+   * of magnitude past the catalog. That is why it has never truncated
+   * and why the figure is still published when it does.
+   *
+   * But "has never" is not "cannot", and the consequence if it ever
+   * does is the worst one this file has: organic_settlements, the
+   * number the whole store is built to earn, would come back short and
+   * look exactly like a quiet week. So the months that truncated are
+   * named on the diagnostics, where the invariant sweep reads them and
+   * a person gets paged — the public figure never silently becomes a
+   * floor with nobody told.
+   */
+  const countersTruncated = perMonth
+    .filter((row) => row.truncated)
+    .map((row) => row.month);
   for (const { month, names, values } of perMonth) {
     for (const name of names) {
       const count = values.get(name) ?? 0;
@@ -352,6 +468,7 @@ export async function computeStatsDiagnosed(
     reclassified_house: reclassified,
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     artifacts_issued: artifactsIssued,
+    distinct_organic_buyers: distinctOrganicBuyers,
     ...(haveRails && railTotal > 0 && !overshoot
       ? {
           organic_by_rail: {
@@ -374,6 +491,7 @@ export async function computeStatsDiagnosed(
       ? { rail_total: railTotal, organic: organicSettlements }
       : null,
     hand_placements_unapplied: handApplies ? 0 : handTotal,
+    counters_truncated: countersTruncated,
   };
 }
 

@@ -252,3 +252,45 @@ for the vocabulary, drafted in
 `docs/DEFECT_CANDIDATE_ADVERTISED_VERSION_2026-09.md` with the
 detection it would need first, because this store publishes no class
 its own instruments cannot report.
+
+## The fourth round: he corrected our instrument (2026-09-13)
+
+The treaty's best day so far, and it ran against us, which is the
+point of having one.
+
+He flipped `reciprocated` to true with a `reciprocated_at` of
+2026-09-11 and evidence pointing at our list — and said he read our
+list to do it rather than taking our word from the comment. Then he
+took the drafted defect class apart, correctly, three times.
+
+The comparator had a **false negative**: comparing `accepts[]` whole
+would score clean on any door carrying a per-request nonce, expiry or
+rotating timeout, which is the more careful half of the ecosystem. The
+**assertion reached past what a buyer can see**: his Bazaar proxy
+accepted v2 payments, settled, delivered, and logged nothing, and no
+buyer-side instrument can observe that, so the class must not claim
+it. And **the instrument's first green must not be trusted** — he had
+shipped a chain reader that week which said zero revenue at 27 of 27
+doors on a mistyped field name, failing closed and silent, and
+corrected reads 8 of 13.
+
+All three are in what shipped, the same day, as vocabulary v15. The
+detector reads five material terms, the class names the seller-side
+variant as a separate fault rather than claiming it, and no reading
+can come back a quiet clean: `checked: false` is a different answer
+from `present: false`, asserted in the tests. The positive control is
+our own 09-12 ledger line rather than a fixture, so the test fails if
+that record is ever rewritten.
+
+He also offered two things we have not taken: a chain-side instrument
+that ranks doors by whether anyone has ever paid them, free and
+retroactive, useful before spending a wallet on a walk; and five of
+his 49 third-party defects as a blind answer key for our battery. Both
+are the keeper's to accept or decline. The second is the more
+interesting: a blind answer key is the only honest way to find out
+whether our instruments report what they claim to, and it is exactly
+what he did to himself this week and told us about.
+
+Four days in, this treaty has caught his verifier, his door, his
+adapter, his proxy, his ledger, our comparator and our assertion. Not
+one of those was found by trusting anyone.
