@@ -288,11 +288,12 @@ what works is advertising.
    bought the Keeper with certainty. That is not a lottery, it is a
    price on a specific card, which is the one thing the table
    promises it will never do. FIXED: the seed draws from the
-   window's ordinary pressings. The Keeper and CV hang there to be
-   looked at and are handed over by the keeper, whose pen every
-   one-of-one already carried; their `obtained` reads "hand" now, and
-   `/design` says so in the room. ⚑ To sell them again, delete the
+   window's ordinary pressings. ⚑ To sell them again, delete the
    filter in `windowPick`: one line, named in the comment.
+   *(Superseded in part on 2026-09-13 by §0f: the first fix handed
+   them over by the keeper's own hand, which cured the price and
+   left the choice of wallet with the keeper. The release wheel
+   takes that away too.)*
 7. **A cap nobody could enforce.** Print numbers are atomic on the
    counter ledger and a read-modify-write without it, so a
    deployment with no `COUNTER_LEDGER` bound could print two cards
@@ -301,6 +302,70 @@ what works is advertising.
    serialized, and says why. Doors are exempt: their cap is an
    observation count, which moves on its own and was never a
    promise of scarcity.
+
+## 0f. The release wheel (2026-09-13, STANDING)
+
+The keeper, on the hand press: *"I'd rather be able to hit the button
+to put them in circulation vs that. Or better yet like when we hit a
+milestone they get thrown in randomly and released."* Both halves are
+built, and the second is the default.
+
+The hole the hand press left is small and real. §0d.6 took the price
+off a one-of-one, but the cure was that the keeper hands it over —
+which means the keeper picks the wallet. On a table whose whole
+proposition is a draw you can recompute without trusting us, the two
+scarcest cards in the season were the two the keeper chose the owner
+of. So they now ride a wheel of their own:
+
+1. **The milestone was fixed when the key was.** For each one-of-one,
+   `bytes = HMAC-SHA256(master, "paywall:release:" + season + ":" +
+   key)` — the same domain-separated master the day seed comes off,
+   now shared as `deriveSecret`. The milestone is
+   `RELEASE_FLOOR + (bytes[0..3] mod span)`, a count of **packs opened
+   this season**, in the published range [10, 120].
+2. **Its commit is public from the day the season opened.**
+   `sha256(bytes)` is on `/design` and `/api/paywall/releases` before
+   a single pack was sold. The bytes themselves are not, and the
+   milestone is not: 111 candidates would be trivially enumerable if
+   we committed to the number, so we commit to the 32 secret bytes it
+   comes off instead.
+3. **The pack that crosses the count carries the card.** `openPack`
+   takes this pack's number off the serialized counter *before* it
+   draws a single slot, so two simultaneous packs are two different
+   counts and only one can cross. If one is due, the day seed picks
+   which of the five slots it takes; the ordinary draw for that slot
+   is simply not made.
+4. **A one-of-one never costs somebody their pack.** The press runs
+   below the settle line, so a `CapReached` — the race lost to
+   another pack — falls straight back to the ordinary draw for that
+   slot. Five cards either way, money already earned.
+5. **The reveal lands with the card.** `recordRelease` writes the
+   milestone, the bytes and the pack number the moment it lands, read
+   off the *published* pack rather than the closure so a retained
+   replay writes it exactly once. Anyone recomputes
+   `sha256(reveal) == commit` and `floor + (bytes[0..3] mod span) ==
+   milestone` against a commit that has been sitting on the page since
+   the season opened.
+6. **One a pack.** `dueRelease` returns the first one-of-one that is
+   due and stops, so if both wheels come up at the same count the
+   second waits for the next pack. Nobody sweeps the season in one
+   purchase.
+7. **The keeper's one lever is not a wallet.** `POST
+   /admin/paywall/release` marks a card to ride the *next* pack
+   anybody opens, and the landing record says `pulled_forward: true`.
+   He still cannot say whose pack. The hold lever takes the mark off
+   again before it fires.
+8. **The hand is closed on them.** `POST /admin/paywall/press` refuses
+   a one-of-one by name (409), because a hand press would spend its
+   only print and make the published commit a lie. `handPress` in the
+   service still can — the test uses it to prove the cap — but no
+   door reaches it.
+
+`obtained` for the Keeper and CV reads **`released`** now, and the set,
+the room, the OpenAPI contract and the feature register all say so.
+They still pass through the shop window on their way to the binder
+they landed in, and `pickable` still refuses to sell them: on show,
+not for sale, and now not anybody's to give either.
 
 ## 0e. What is true by design, stated rather than hidden
 
@@ -311,6 +376,11 @@ what works is advertising.
   Regulars' 5%; a wallet holding Base Rail earns 5% more, which is
   exactly the 5% the plan wanted, expressed as credit rather than as
   a price. Both are bounded by the credit cap.
+- **A one-of-one can be waited for, but not aimed at.** The range is
+  published and the pack count is public, so anybody can watch the
+  store approach [10, 120]. What nobody can do — the keeper included
+  — is know which number, so being the buyer who crosses it is luck
+  and cannot be bought.
 - **The rebate can be bought for about thirty dollars.** Base Rail is
   one of three holos in the pack pool at roughly a 10% holo rate, so
   around thirty packs buys a standing 5% back. It is a card doing

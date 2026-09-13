@@ -35,11 +35,20 @@ async function hmac(keyBytes: Uint8Array, message: string): Promise<Uint8Array> 
   return new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(message)));
 }
 
+/**
+ * Anything Paywall derives instead of storing, off one domain-separated
+ * master: the day seed, and the release wheel's milestone for each
+ * one-of-one. The signing secret is only ever an HMAC key here, never
+ * a signing key.
+ */
+export async function deriveSecret(env: Env, label: string): Promise<Uint8Array> {
+  const master = await hmac(enc.encode(env.SIGNING_KEY), "paywall:master");
+  return hmac(master, label);
+}
+
 /** The seed for a UTC date, as bytes. Never leaves this module before the date has ended. */
 export async function seedFor(env: Env, date: string): Promise<Uint8Array> {
-  // Domain-separated: the signing secret is only ever an HMAC key here, never a signing key.
-  const master = await hmac(enc.encode(env.SIGNING_KEY), "paywall:master");
-  return hmac(master, `paywall:seed:${date}`);
+  return deriveSecret(env, `paywall:seed:${date}`);
 }
 
 export async function commitOf(seed: Uint8Array): Promise<string> {

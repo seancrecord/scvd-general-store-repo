@@ -6009,6 +6009,25 @@ openapiRoutes.get("/openapi.json", async (c) => {
           },
         ),
       },
+      "/api/paywall/releases": {
+        get: returns(
+          freeOp(
+            "The release wheel: the one-of-ones' commits, and any that landed",
+            "Free. The Keeper and CV are one print each, on no pack wheel and not for sale. Each has a milestone in packs opened this season, fixed when the signing key was and committed publicly since the season opened; the pack that crosses it carries the card to whoever opened it, and the bytes behind the commit are published beside it.",
+          ),
+          {
+            type: "object",
+            required: ["cards", "packs_opened"],
+            properties: {
+              packs_opened: { type: "integer" },
+              counted_on: { type: "string" },
+              range: { type: "object" },
+              how_to_check: { type: "string" },
+              cards: { type: "array", items: { type: "object" } },
+            },
+          },
+        ),
+      },
       "/api/paywall/challenge": {
         post: returns(
           postOp(

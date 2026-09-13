@@ -706,6 +706,12 @@ export const KV_KEYS = {
   paywallSeed: (date: string): string => `paywall_seed:${date}`,
   /** Print counters, one per season entry, on the counter ledger. */
   paywallPress: (season: string, key: string): string => `paywall_press:${season}:${key}`,
+  /** Packs opened this season: the count the release wheel's milestones are measured on. */
+  paywallPacks: (season: string): string => `paywall_packs:${season}`,
+  /** The signed record of a one-of-one's release, written the moment it lands in a pack. */
+  paywallRelease: (season: string, key: string): string => `paywall_release:${season}:${key}`,
+  /** The keeper's lever: a one-of-one pulled forward to the next pack, whoever opens it. */
+  paywallReleaseNow: (season: string, key: string): string => `paywall_release_now:${season}:${key}`,
   /** The shop window: the last pressings pulled from packs store-wide, newest first. */
   paywallWindow: (invertedTs: string, cardId: string): string => `paywall_window:${invertedTs}:${cardId}`,
   paywallWindowPrefix: "paywall_window:",
