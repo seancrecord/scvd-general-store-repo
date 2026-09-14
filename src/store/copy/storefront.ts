@@ -221,7 +221,20 @@ export const STOREFRONT_COPY = {
   /** Keeper-approved 2026-07-23 (batch 1). Back on the sign. */
   intentLine:
     "A partner, a friend, a listening ear. At some point we gotta keep the lights on, brother.",
+  /**
+   * THE TUBE FINALLY COUNTS WHAT THE LABEL SAYS (2026-09-13, the
+   * keeper: "should we change patrons served to the actual organic
+   * number of customers"). The words did not change; the number under
+   * them did. It was the patron counter — every artifact ever minted,
+   * free shelf and house tests included — which read 375 on a page
+   * whose own ledger line, two rows above, said 100 organic sales.
+   * Now it is distinct organic wallets, which is the only reading of
+   * "patrons" that has a denominator.
+   */
   gaugePatrons: "Patrons served",
+  /** The denominator, for the hover the label has no room for. */
+  gaugePatronsTitle:
+    "Distinct wallets that have paid here, house traffic excluded. A floor: a settle whose wallet never came back with the money leaves no row, and one buyer paying from a second wallet reads here as a second patron. The sales count is at /stats.",
   /**
    * REPLACED THE MAILBOX GAUGE, 2026-08-27, on the keeper's call. The
    * mailbox LED read "0 in · 0 answered" for weeks — people chose

@@ -112,7 +112,21 @@ const KNOWN_UNACKNOWLEDGED = [
   "../src/services/phantom.ts",
   "../src/services/refunds.ts",
   "../src/services/requests.ts",
-  "../src/services/stats.ts",
+  /*
+   * stats.ts CAME OFF THIS LIST ON 2026-09-13, and both of its bounded
+   * reads had to answer before it could — this check works per file,
+   * and would otherwise have taken the new one's answer for the whole
+   * file's.
+   *
+   * The NEW read is the customer list behind the patron gauge, which
+   * returns null rather than a short count: a wallet tally that could
+   * not see every wallet is not a number of patrons. The OLD one is
+   * the paid-counter scan, one key per item per month against a cap
+   * two orders of magnitude above the catalog — so it still publishes
+   * when it truncates, and names the months it truncated on the
+   * diagnostics, where the invariant sweep pages a person. Either way
+   * the question is answered in the code instead of left open.
+   */
   "../src/services/stock.ts",
   "../src/services/tips.ts",
   "../src/services/train.ts",

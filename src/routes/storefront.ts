@@ -109,7 +109,6 @@ storefrontRoutes.get("/", async (c) => {
     bellCountRaw,
     guestbook,
     corpusKeys,
-    patronRaw,
     stats,
     firstDollar,
     board,
@@ -133,7 +132,6 @@ storefrontRoutes.get("/", async (c) => {
       prefix: KV_KEYS.corpusPrefix,
       cap: 1000,
     }).catch(() => ({ names: [], truncated: false })),
-    kvGet(c.env.COUNTERS, KV_KEYS.patronNumber),
     computeStats(c.env).catch(() => null),
     getFirstDollar(c.env).catch(() => null),
     /*
@@ -226,7 +224,16 @@ storefrontRoutes.get("/", async (c) => {
       guestbook,
       recordWeeks: corpusKeys.names.length,
       recordTruncated: corpusKeys.truncated,
-      patronCount: patronRaw ? parseInt(patronRaw, 10) : 0,
+      /*
+       * THE PATRON GAUGE READS THE BOOKS NOW (2026-09-13), not the
+       * patron counter it used to read straight out of KV. Same wave,
+       * one fewer read: computeStats already walks the till, and the
+       * customer list is one capped key-list inside it. Null when the
+       * books could not be computed, which takes the gauge off the
+       * wall rather than hanging a zero nobody measured — the same
+       * fail-soft every other gauge on this page uses.
+       */
+      patronCount: stats ? stats.distinct_organic_buyers : null,
       stats,
       ledgerLine: stats ? storefrontLedgerLine(stats) : undefined,
       firstDollar,

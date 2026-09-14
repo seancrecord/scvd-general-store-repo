@@ -111,7 +111,6 @@ export function bountyCandidates(
   const out: BountyCandidate[] = [];
   const nowIso = now.toISOString();
   for (const host of round.hosts ?? []) {
-    if (out.length >= cap) break;
     if (host.verdict !== "ready" || !host.url) continue;
     let domain: string;
     try {
@@ -154,13 +153,36 @@ export function bountyCandidates(
    * Never-walked doors first, then the ones whose last bounty is
    * oldest: the board's job is breadth, and re-walking the same four
    * doors every week buys the corpus nothing it already has.
+   *
+   * SORT THE WHOLE ROUND, THEN CAP — and the order of those two
+   * things is the entire point (2026-09-13, the keeper: "all the ones
+   * available to press are already done so no point in hitting the
+   * button").
+   *
+   * This loop used to stop at `cap` and sort what it had stopped on,
+   * which made the sort above a no-op across the pool: the desk was
+   * the first 24 READY rows in the round's own probe order, forever,
+   * and the sort only shuffled those 24 among themselves. Walk them
+   * and the desk reads "already done" for good — on 2026-W37 that was
+   * 24 doors offered out of 1,709 ready ones, with the other 1,685
+   * unreachable by any press the keeper could make. The standing
+   * order inherited the same blindness: it keeps only
+   * `state === "never"` from this list, so it posted nothing every
+   * week while believing the round had nothing to offer.
+   *
+   * The cap was always meant to be "how many the desk OFFERS", not
+   * "how far into the round it looks". Collect every ready door,
+   * order them by what this store has actually done, and hand over
+   * the first `cap`. A never-walked door now surfaces because it is
+   * never-walked, not because of where the probe happened to find it.
    */
-  return out.sort((a, b) => {
+  out.sort((a, b) => {
     if (a.blocked !== b.blocked) return a.blocked ? 1 : -1;
     if (a.history.state === "never" && b.history.state !== "never") return -1;
     if (b.history.state === "never" && a.history.state !== "never") return 1;
     return (a.history.at ?? "").localeCompare(b.history.at ?? "");
   });
+  return out.slice(0, cap);
 }
 
 export interface BatchOutcome {

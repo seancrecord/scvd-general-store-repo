@@ -3,7 +3,8 @@ import { basicAuth } from "hono/basic-auth";
 import { isHouseWallet } from "@/lib/channel";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { MiddlewareHandler } from "hono";
-import { listAlerts, sendAlert } from "@/lib/alerts";
+import { sendAlert } from "@/lib/alerts";
+import { acknowledgeAlertInbox, readAlertInbox } from "@/lib/alert-inbox";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { takeCensus } from "@/lib/census";
 import { isNoiseFloor, readDeclines, traceClient } from "@/lib/declines";
@@ -727,7 +728,6 @@ adminRoutes.get("/admin/counter", async (c) => {
     closers,
     drawerStock,
     grudges,
-    alarmsSeen,
   ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -737,14 +737,13 @@ adminRoutes.get("/admin/counter", async (c) => {
     kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
     listTips(c.env),
     listLetters(c.env),
-    listAlerts(c.env, 5),
+    readAlertInbox(c.env, "counter", 5),
     listConfessions(c.env),
     listTags(c.env),
     listRefunds(c.env),
     listClosers(c.env, 20),
     listStock(c.env, "the_drawer"),
     listGrudges(c.env, 30),
-    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
   // so the 24h page stands down for everything listed (keeper's order,
@@ -764,28 +763,12 @@ adminRoutes.get("/admin/counter", async (c) => {
   for (const order of unseen) {
     order.acknowledged_at = seenAt;
   }
-  /*
-   * THE ALARM WATERMARK, on the same rule as the orders above: standing
-   * at the counter IS seeing what the counter is showing (keeper's
-   * order 2026-07-24 — "the button was ceremony"), so the top line
-   * stops shouting about alarms he has already met while the alarms
-   * themselves stay listed below, and on the reconciliation trail with
-   * what came of each one.
-   *
-   * Marked only when BOTH reads landed: on a KV blip we would rather
-   * shout twice than mark an alarm seen that never rendered.
-   */
-  const alarmsSeenAt = shelf(alarmsSeen, null, "alarm watermark", notes);
-  const listedAlerts = shelf(alerts, [], "alerts", notes);
-  if (alerts.status === "fulfilled" && alarmsSeen.status === "fulfilled") {
-    await kvPut(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter, seenAt).catch(
-      () => undefined,
-    );
-  }
+  // The snapshot owns its receipts. An alert arriving while another
+  // shelf loads must stay unread, even if its timestamp matches this visit.
+  const alertInbox = shelf(alerts, null, "alerts", notes);
   // The Gazette press left the counter with the 2026-08-05
   // retirement; the freshness check went with it.
-  return c.html(
-    renderCounterPage({
+  const page = renderCounterPage({
       notice: stockNotice(c.req.query("stocked"), c.req.query("shelf")),
       orders: listedOrders,
       closers: shelf(closers, [], "closers", notes),
@@ -802,8 +785,9 @@ adminRoutes.get("/admin/counter", async (c) => {
       letters: shelf(letters, [], "letters", notes).map(
         (entry) => entry.record,
       ),
-      alerts: listedAlerts,
-      alertsSeenAt: alarmsSeenAt,
+      alerts: alertInbox?.alerts ?? [],
+      alertsUnavailable: alertInbox === null,
+      alertsSeenAt: alertInbox?.lastVisit ?? null,
       trainTags: shelf(trainTags, [], "the train", notes).map(
         (entry) => entry.record,
       ),
@@ -812,8 +796,9 @@ adminRoutes.get("/admin/counter", async (c) => {
       ),
       refunds: shelf(refunds, [], "refunds", notes),
       loadNotes: notes,
-    }),
-  );
+    });
+  if (alertInbox) await acknowledgeAlertInbox(c.env, alertInbox).catch(() => undefined);
+  return c.html(page);
 });
 
 adminRoutes.get("/admin", async (c) => {
@@ -850,11 +835,7 @@ adminRoutes.get("/admin", async (c) => {
     mcpClients,
     fieldWallet,
     bountyState,
-    // Order matters: these two must sit in the same order as the
-    // promises below — the ward round first, then the counter's
-    // alarm watermark.
     wardLatest,
-    officeAlarmsSeenRead,
   ] = await Promise.allSettled([
     cached(desk?.month_ledger, () => readMonthLedger(c.env)),
     cached(desk?.porch_ledger, () => readPorchLedger(c.env)),
@@ -867,7 +848,7 @@ adminRoutes.get("/admin", async (c) => {
     listTips(c.env),
     listConfessions(c.env),
     listRefunds(c.env),
-    listAlerts(c.env, 5),
+    readAlertInbox(c.env, "counter", 5),
     cached(desk?.month_reclass, () =>
       import("@/services/reclassify").then(({ monthReclassAdjustments }) =>
         monthReclassAdjustments(c.env),
@@ -915,13 +896,6 @@ adminRoutes.get("/admin", async (c) => {
       latestWardRound(c.env),
     ),
     /*
-     * The counter's alarm watermark, READ ONLY here. The strip points
-     * at the counter, so it should say what is still waiting there —
-     * but the office is not the counter, and looking at a pointer is
-     * not meeting the alarm, so this page never moves the mark.
-     */
-    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
-    /*
      * THE FOUR THAT LEFT, 2026-08-28, and where they went.
      *
      * computeStats scans the metric keys for every month the store has
@@ -943,12 +917,6 @@ adminRoutes.get("/admin", async (c) => {
      */
   ]);
   const emptyLedger = emptyMonthLedger();
-  const officeAlarmsSeen = shelf(
-    officeAlarmsSeenRead,
-    null,
-    "alarm watermark",
-    notes,
-  );
   const pendingReviews =
     shelf(tips, [], "tips", notes).filter(
       (tip) => tip.record.status === "pending_review",
@@ -1049,9 +1017,9 @@ adminRoutes.get("/admin", async (c) => {
           letterNeedsReply(entry.record),
         ).length,
         reviews: pendingReviews,
-        alerts: shelf(alerts, [], "alerts", notes).filter(
-          (alert) => officeAlarmsSeen === null || alert.at > officeAlarmsSeen,
-        ).length,
+        alerts: shelf(alerts, null, "alerts", notes)?.alerts.filter(
+          (alert) => !alert.seen,
+        ).length ?? null,
       },
       loadNotes: notes,
     }),
@@ -1085,7 +1053,6 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
     solanaLastResult,
     deliveries,
     alerts,
-    lastRead,
   ] = await Promise.allSettled([
     reconcileSettles(c.env),
     kvGet(c.env.COUNTERS, KV_KEYS.reconcileCursor),
@@ -1105,46 +1072,18 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
       at: string;
     }>(SOLANA_RECONCILE_LAST_RESULT_KEY, "json"),
     auditDeliveries(c.env),
-    listAlerts(c.env, 10),
-    kvGet(c.env.COUNTERS, KV_KEYS.alarmsLastRead),
+    readAlertInbox(c.env, "reconciliation", 10),
   ]);
 
-  /*
-   * THE WATERMARK. The keeper's complaint, verbatim: "how do i know if
-   * its something ive seen or not without having to like eyeball it
-   * thats too much work for me."
-   *
-   * A row is NEW when it FIRST fired after his last visit. First-fired
-   * and not last-raised, deliberately: a standing problem he has
-   * already read about is not news again every six hours — that is the
-   * re-dating bug in a different costume.
-   *
-   * The mark advances on load, below, and only after a successful
-   * read. If the watermark read failed we would rather mark nothing
-   * than mark everything, so a KV blip cannot manufacture a flood.
-   */
-  const alarmsLastRead = shelf(lastRead, null, "alarm watermark", notes);
-  const markedAt = new Date().toISOString();
+  const alertInbox = shelf(alerts, null, "alarm trail", notes);
+  const alarmsLastRead = alertInbox?.lastVisit ?? null;
   // The third witness (2026-09-04): the certificates, read beside the
   // counters and the payer rows so an unexplained settle gets a cause
   // and a wallet. Fail-soft — a shelf that does not load says so.
   const settlesValue = shelf(settles, null, "settle recount", notes);
   const { certificatesAgainstSettles } = await import("@/services/settle-sources");
   const certsValue = await certificatesAgainstSettles(c.env, settlesValue).catch(() => null);
-  if (alerts.status === "fulfilled" && lastRead.status === "fulfilled") {
-    /*
-     * Written before the render rather than after: this handler has no
-     * post-response hook, and a mark that only lands on a fully
-     * rendered page would silently stop moving the first time some
-     * other section threw. Worst case here is a page he loaded and did
-     * not read, which is the same thing every unread-marker in the
-     * world gets wrong, and it is recoverable by looking again.
-     */
-    await kvPut(c.env.COUNTERS, KV_KEYS.alarmsLastRead, markedAt);
-  }
-
-  return c.html(
-    renderReconciliationPage(
+  const page = renderReconciliationPage(
       {
         settles: settlesValue,
         countersSerialized: (await import("@/lib/counter-ledger")).countersSerialized(c.env),
@@ -1188,16 +1127,12 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
           return { ...audit, house_payers: housePayers };
         })(),
         alertsLastRead: alarmsLastRead,
+        alertsUnavailable: alertInbox === null,
         alerts: await Promise.all(
-          shelf(alerts, [], "alarm trail", notes)
-            /*
-             * ISO-8601 UTC strings sort the same way the instants do,
-             * which is the entire reason the store writes dates this
-             * way; no parsing, no timezone, no clock skew to argue with.
-             */
+          (alertInbox?.alerts ?? [])
             .map((alert) => ({
               ...alert,
-              is_new: alarmsLastRead !== null && alert.at > alarmsLastRead,
+              is_new: alarmsLastRead !== null && !alert.seen,
             }))
             .map(async (alert) => {
             if (alert.condition !== "undelivered_sale") return alert;
@@ -1265,8 +1200,9 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
         loadNotes: notes,
       },
       new Date(),
-    ),
-  );
+    );
+  if (alertInbox) await acknowledgeAlertInbox(c.env, alertInbox).catch(() => undefined);
+  return c.html(page);
 });
 
 /** KEEPER'S FILES: downloadable records, nothing that changes the store. */
@@ -2430,7 +2366,27 @@ adminRoutes.get("/admin/market", async (c) => {
         new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
       )
     : [];
-  return c.html(renderMarketPage(round, market, board, notice, candidates));
+  /*
+   * THE STANDING ORDER, BESIDE THE BUTTON IT AUTOMATES (2026-09-13).
+   * Read fail-soft and separately from the board: a plan that cannot
+   * be read leaves the desk standing rather than taking the market
+   * page down with it, and the plan itself is unaffected either way.
+   */
+  const { readBountyPlan, committedThisWeek } = await import(
+    "@/services/bounty-plan"
+  );
+  const [plan, committed] = await Promise.all([
+    readBountyPlan(c.env).catch(() => null),
+    committedThisWeek(c.env, new Date()).catch(() => null),
+  ]);
+  const planNotice = c.req.query("plan_notice");
+  return c.html(
+    renderMarketPage(round, market, board, notice, candidates, {
+      plan,
+      committed,
+      ...(planNotice ? { notice: planNotice } : {}),
+    }),
+  );
 });
 
 /**
@@ -2514,27 +2470,51 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
     ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
     : ((await c.req.parseBody({ all: true })) as Record<string, unknown>);
   const weeks = Number.parseInt(String(body["weeks"] ?? ""), 10);
+  /*
+   * A FORM IS ANSWERED WITH A PAGE, A JSON CALL WITH JSON (2026-09-13).
+   * The desk grew a form on the market page; a keeper who presses it
+   * should land back on the desk reading what happened, not on a bare
+   * JSON body he has to interpret. The JSON door is unchanged for
+   * anything that was already calling it.
+   */
+  const isForm = !contentType.includes("json");
+  const back = (message: string) =>
+    c.redirect(
+      `/admin/market?plan_notice=${encodeURIComponent(message.slice(0, 400))}`,
+      303,
+    );
   if (!Number.isFinite(weeks) || weeks < 0 || weeks > 52) {
-    return c.json({ error: "weeks must be a whole number from 0 to 52" }, 400);
+    const message = "weeks must be a whole number from 0 to 52";
+    return isForm
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
   }
   if (weeks === 0) {
     await writeBountyPlan(c.env, null);
-    return c.json({ ok: true, retired: true });
+    return isForm
+      ? back(
+          "The standing order is retired. Listings it already opened run their term and pay their claims as normal.",
+        )
+      : c.json({ ok: true, retired: true });
   }
   const perWeek = Number.parseInt(String(body["per_week"] ?? ""), 10);
   const reward = Number.parseFloat(String(body["reward_usd"] ?? ""));
   const tier = String(body["tier"] ?? "sprint");
   if (!Number.isFinite(perWeek) || perWeek < 1 || perWeek > 10) {
-    return c.json({ error: "per_week must be between 1 and 10" }, 400);
+    return isForm
+      ? back("Nothing was set: per_week must be between 1 and 10.")
+      : c.json({ error: "per_week must be between 1 and 10" }, 400);
   }
   if (!Number.isFinite(reward) || reward <= 0 || reward > BOUNTY_MAX_REWARD_USD) {
-    return c.json(
-      { error: `reward_usd must be between 0 and $${BOUNTY_MAX_REWARD_USD}` },
-      400,
-    );
+    const message = `reward_usd must be between 0 and $${BOUNTY_MAX_REWARD_USD}`;
+    return isForm
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
   }
   if (tier !== "sprint" && tier !== "standard" && tier !== "long") {
-    return c.json({ error: "tier must be sprint, standard or long" }, 400);
+    return isForm
+      ? back("Nothing was set: tier must be sprint, standard or long.")
+      : c.json({ error: "tier must be sprint, standard or long" }, 400);
   }
   const rawRails = body["rails"];
   const rails = Array.isArray(rawRails)
@@ -2562,6 +2542,12 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
     ...(existing?.history ? { history: existing.history } : {}),
   });
   const committed = await committedThisWeek(c.env, new Date());
+  const affordable = Math.floor(committed.headroom / reward);
+  if (isForm) {
+    return back(
+      `Standing order set: ${perWeek} a week at $${reward.toFixed(2)} for ${weeks} week${weeks === 1 ? "" : "s"}. This week's headroom ($${committed.headroom.toFixed(2)}) affords ${affordable}${affordable < perWeek ? ` of them, so it will post fewer until the week turns over` : ""}.`,
+    );
+  }
   return c.json({
     ok: true,
     plan: await readBountyPlan(c.env),
@@ -2571,7 +2557,7 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
      * can actually pay for, because the plan will quietly post fewer
      * and it should not be a surprise when it does.
      */
-    affordable_this_week: Math.floor(committed.headroom / reward),
+    affordable_this_week: affordable,
   });
 });
 

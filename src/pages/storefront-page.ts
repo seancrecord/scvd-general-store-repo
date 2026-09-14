@@ -124,7 +124,17 @@ export interface StorefrontData {
    * a rack with no hashes still shows the cards and the buttons.
    */
   releaseCommits?: { key: string; name: string; commit: string }[];
-  patronCount: number;
+  /**
+   * PATRONS: DISTINCT ORGANIC WALLETS, from the books (2026-09-13).
+   * This used to be the patron counter, which is every artifact ever
+   * minted with the free shelf and the house tests in it — 375 under
+   * a label reading "Patrons served", two rows under a ledger line
+   * saying 100 organic sales. services/stats.ts carries the whole
+   * argument on distinct_organic_buyers, including why it is a floor.
+   * Null means the count could not be taken, and the gauge comes off
+   * the wall rather than showing a zero it did not measure.
+   */
+  patronCount: number | null;
   /** Live books, for the structured data. Absent rather than stale. */
   stats?: StoreStats | null;
   /**
@@ -328,6 +338,28 @@ function readerboardHtml(note: string): string {
       return `<span class="brd-w${tilt}${dim}">${escapeHtml(word)}</span>`;
     })
     .join(" ");
+}
+
+/**
+ * THE PATRON TUBE, OR NO TUBE AT ALL.
+ *
+ * The number is a count of wallets, and a wallet count that could not
+ * be taken is not zero wallets — so a null takes the gauge off the
+ * wall entirely, the way an unmeasured rail split is absent from
+ * /stats rather than published as 0 on Solana. The row is a flex of
+ * whatever gauges are live; three sit as happily as four.
+ *
+ * The title says what the tube counts, because "Patrons served" is
+ * the sign-painter's phrase and "distinct wallets, house excluded" is
+ * the denominator — rule 58.2 wants both, and only one of them fits
+ * over a nixie tube.
+ */
+function patronsGaugeHtml(count: number | null): string {
+  if (count === null) return "";
+  return `<div class="gauge">
+        <span class="gauge-label">${COPY.gaugePatrons}</span>
+        <span class="nixie" title="${escapeHtml(COPY.gaugePatronsTitle)}">${nixieHtml(count)}</span>
+      </div>`;
 }
 
 /** Odometer digits: leading zeros stay on the drum, just unlit. */
@@ -1082,10 +1114,7 @@ ${webmcpOriginTrialTags()}
     </header>
 
     <div class="gauges">
-      <div class="gauge">
-        <span class="gauge-label">${COPY.gaugePatrons}</span>
-        <span class="nixie">${nixieHtml(data.patronCount)}</span>
-      </div>
+      ${patronsGaugeHtml(data.patronCount)}
       <div class="gauge">
         <span class="gauge-label">${COPY.gaugeRecord}</span>
         ${
