@@ -1182,7 +1182,28 @@ Corrected 2026-09-10 (BUY-016): cache races formerly permitted a second
 charge. New keyed purchases atomically claim one payment identity before
 settlement, and retain that claim beyond the cache lifetime. Unresolved
 or unreadable admission stops another settlement; authenticated retries
-return the original purchase or its status. See lib/idempotency.ts and
+return the original purchase or its status.
+Corrected 2026-09-14: that retained claim was PERMANENT, so a confirmed
+non-payment — a declined settlement, a capacity refusal — left the key bound
+to a dead purchase forever. A buyer retrying that key with a fresh payment
+was refused `purchase_not_settled` and could never clear it, and the store's
+own copy routed around it by telling them to rotate the key, which is not
+the Idempotency-Key semantic anyone else implements and not a promise worth
+making about money that never moved. In flight is not used: the claim is
+now released when, and only when, the not_settled state is durable, by
+compare-and-delete so a slot the buyer's next attempt has already re-claimed
+is never dropped. An UNRESOLVED outcome still holds the key permanently —
+that is the case the claim exists for, and releasing it would reopen the
+double settlement BUY-016 closed. Found by reading nirholas/x402-facilitator-sperax,
+which distinguishes in-flight nonces from spent ones and deletes on failure;
+our durable admission was the stronger primitive and had the weaker semantic.
+Same pass, lib/replay-guard.ts: the spent-nonce row's fixed 24h TTL claimed
+to "comfortably outlive any authorization's validBefore window" and did not —
+validBefore is buyer-chosen and uncapped, so a week-long authorization
+outlived its row by six days and silently lost the paid-retry link (nonce ->
+settle -> delivery intent) while still live. Retention is now derived from
+the authorization's own expiry, floored at the old day and capped at thirty
+so buyer input cannot pick our storage horizon. See lib/idempotency.ts and
 research/BUYER_REPAIR_CHECKLIST.md. The original entry follows for the record.
 
 ### 16b. (original entry, for the record)

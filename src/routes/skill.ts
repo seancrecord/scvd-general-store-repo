@@ -317,7 +317,10 @@ the door, identifying this skill file, never you. Leave it on.
    when available, or its pending status — no settlement, no second
    charge. Bring your own key instead (16–128 characters, kept
    private); the response cache lasts 24 hours. New purchase-key claims
-   persist beyond that cache. Pending or unreadable admission can refuse a purchase
+   persist beyond that cache while an outcome is UNRESOLVED. A CONFIRMED
+   non-payment — a declined settlement, a capacity refusal — hands the key
+   back instead: no money moved, so retry the SAME key with a fresh payment.
+   Pending or unreadable admission can refuse a purchase
    without another settlement; keep the original payment and key while unresolved.
    Keep any key already sent; a later suggestion must not replace it.
    The original signed payment can recover retained goods or private status

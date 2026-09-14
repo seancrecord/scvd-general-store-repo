@@ -7,7 +7,7 @@ import { humanResolutionBody } from "@/services/human-resolution-record";
 import { supportsObservationRecovery, httpArtifactDigest } from "@/lib/artifact-checkpoint";
 import type { PaymentRequirements } from "@x402/core/types";
 import { jcsCanonicalize } from "@/lib/jcs";
-import { idempotentPurchaseStore, sha256Hex } from "@/lib/idempotency";
+import { idempotencySlotName, idempotentPurchaseSlot, idempotentPurchaseStore, sha256Hex } from "@/lib/idempotency";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { SettlementDeclined, SettlementUnknown, type SettledPayment } from "@/lib/payments";
 import { isRecord, type Env, type MenuItem } from "@/types";
@@ -39,6 +39,15 @@ export interface PurchaseIntent {
   authorization?: { nonce: string; valid_after: string; valid_before: string };
   solana?: { message_hash: string };
   state: "unknown" | "settled" | "not_settled";
+  /**
+   * The durable idempotency slot this purchase claimed, if it was keyed —
+   * a one-way name (lib/idempotency idempotencySlotName), never the key.
+   * Carried so a CONFIRMED non-payment can hand the key back without the
+   * releasing writer being told the secret. Absent on unkeyed purchases
+   * and on every record written before this field existed; both simply
+   * have no claim to release.
+   */
+  idempotency_slot?: string;
   payment?: SettledPayment;
   reconciliation_reference?: string;
   reconciliation?: { start_block?: number; next_block?: number; before_signature?: string; checked_at: string };
@@ -190,8 +199,10 @@ export async function beginPurchaseIntent(env: Env, input: {
   try {
     if (!input.payer) throw new Error("Missing verified payer");
     const { payer, id } = await purchaseIdentity(input.terms.network, input.payer, input.payload);
+    let claimedSlot: string | undefined;
     if (input.idempotency) {
-      const slot = await idempotentPurchaseStore(env, input.idempotency.surface, payer, input.idempotency.key);
+      claimedSlot = await idempotencySlotName(input.idempotency.surface, payer, input.idempotency.key);
+      const slot = idempotentPurchaseSlot(env, claimedSlot);
       const owner = await slot.claimIdempotentPurchase(id);
       if (owner !== id) {
         const saved = await purchaseIntentStore(env, owner).existingPurchase();
@@ -219,6 +230,7 @@ export async function beginPurchaseIntent(env: Env, input: {
       ...(nonce ? { authorization: { nonce: nonce.toLowerCase(), valid_after: String(auth.validAfter), valid_before: String(auth.validBefore) } } : {}),
       ...(solana ? { solana: { message_hash: solana.message_hash } } : {}),
       ...(observationDigest ? { observation_digest: observationDigest } : {}),
+      ...(claimedSlot ? { idempotency_slot: claimedSlot } : {}),
       ...(input.publication ? { publication: input.publication } : {}),
       ...(input.item ? { item: input.item } : {}), ...(input.commission ? { commission: input.commission } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
     record = JSON.parse(result.record) as PurchaseIntent;
@@ -240,14 +252,14 @@ export async function beginPurchaseIntent(env: Env, input: {
       await purchaseIntentStore(env, record.id).updatePurchase({ state: "not_settled" }).catch(() => undefined);
       throw new SettlementDeclined(Response.json({ code: "capacity_unavailable", charged: false, settlement_attempted: false,
         recovery: purchaseRecovery(env, record),
-        error: "Human capacity could not be reserved. No charge. Read this attempt's status. If it confirms not_settled, start a new purchase with a fresh payment and a new idempotency key once capacity is available." }, { status: 503 }));
+        error: "Human capacity could not be reserved. No charge, and this attempt released its idempotency key. Retry with the SAME key and a fresh payment once capacity is available. Read this attempt's status first; if it does not yet confirm not_settled, the key is still held and a retry is refused rather than charged." }, { status: 503 }));
     }
     if (!verdict.ok) {
       await purchaseIntentStore(env, record.id).updatePurchase({ state: "not_settled" }).catch(() => undefined);
       throw new SettlementDeclined(Response.json({ code: "capacity_unavailable", charged: false, settlement_attempted: false,
         ...(verdict.scope === "week" ? { sold_this_week: verdict.open } : { open_orders: verdict.open }), cap: verdict.cap, capacity_scope: verdict.scope,
         recovery: purchaseRecovery(env, record),
-        error: "The available human capacity was taken before payment. No charge. Read this attempt's status. If it confirms not_settled, start a new purchase with a fresh payment and a new idempotency key when capacity opens." }, { status: 503 }));
+        error: "The available human capacity was taken before payment. No charge, and this attempt released its idempotency key. Retry with the SAME key and a fresh payment when capacity opens. Read this attempt's status first; if it does not yet confirm not_settled, the key is still held and a retry is refused rather than charged." }, { status: 503 }));
     }
   }
   return record;
