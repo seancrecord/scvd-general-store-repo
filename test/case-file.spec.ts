@@ -55,6 +55,7 @@ function units(usdc: number): string {
 
 function transferReceipt(to: string, usdc: number): RpcReceipt {
   return {
+    transactionHash: TX,
     status: "0x1",
     blockNumber: "0x64",
     logs: [
@@ -83,6 +84,7 @@ function withChain(receipt: RpcReceipt | null): void {
     const raw = typeof init?.body === "string" ? init.body : "";
     if (raw.includes('"method":"eth_')) {
       const body = JSON.parse(raw) as { method: string };
+      if (body.method === "eth_chainId") return rpc(String(input).includes("polygon") ? "0x89" : "0x2105");
       if (body.method === "eth_blockNumber") return rpc("0x80");
       if (body.method === "eth_getBlockByNumber") return rpc({ timestamp: "0x68b5c000" });
       if (body.method === "eth_getTransactionReceipt") return rpc(receipt);

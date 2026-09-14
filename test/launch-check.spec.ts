@@ -292,7 +292,7 @@ describe("the walk engine, stage by stage", () => {
    * and it is recorded here rather than edited above so a reader can
    * see both what we believed and when it moved.
    */
-  it("presents the settled payment a second time and records the answer", async () => {
+  it("presents the identical authorization a second time without crediting a refusal as recovery", async () => {
     const log: SellerLog = { requests: [] };
     const check = await performLaunchCheck(testEnv, TARGET, {
       fetch: fakeSeller(log),
@@ -303,18 +303,18 @@ describe("the walk engine, stage by stage", () => {
     // A conformant door refused it, so the field is FALSE, not null.
     expect(check.replay_served).toBe(false);
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
-    expect(replay.ok).toBe(true);
-    expect(replay.detail).toContain("refused, correctly");
+    expect(replay.ok).toBe(false);
+    expect(replay.detail).toContain("refused without a fresh payment challenge");
     // v3 reads the refusal finer: no new terms, and this one names
     // nothing about what spent the nonce.
-    expect(check.replay).toEqual({ outcome: "refused", status: 402, names_settlement: false });
-    expect(replay.detail).toContain("nonce-unbound-from-settlement");
+    expect(check.replay).toMatchObject({ outcome: "refused", status: 402, names_settlement: false });
+    expect(replay.detail).toContain("neither safe recovery nor settlement");
     // BYTE-IDENTICAL is the whole test: a fresh authorization would
     // prove nothing, because a second nonce is a second payment.
     expect(log.requests[2]?.payment).toBe(log.requests[1]?.payment);
   });
 
-  it("names the defect when a door serves the same payment twice", async () => {
+  it("recognizes identical response bytes as recovery without requiring a receipt reference", async () => {
     const log: SellerLog = { requests: [] };
     const check = await performLaunchCheck(testEnv, TARGET, {
       fetch: fakeSeller(log, { acceptsReplay: true }),
@@ -322,11 +322,11 @@ describe("the walk engine, stage by stage", () => {
       screen: clearScreen,
     });
     expect(check.verdict).toBe("settled");
-    expect(check.replay_served).toBe(true);
+    expect(check.replay_served).toBe(false);
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
-    expect(replay.ok).toBe(false);
-    expect(replay.detail).toContain("SERVED AGAIN");
-    expect(check.replay).toEqual({ outcome: "served_again", status: 200, names_settlement: false });
+    expect(replay.ok).toBe(true);
+    expect(replay.detail).toContain("complete, nonempty response bytes are identical");
+    expect(check.replay).toMatchObject({ outcome: "redelivered", status: 200, names_settlement: false });
     /*
      * AND WE ARE NOT BILLED TWICE. The authorization's nonce is spent
      * on first settlement, so no second transfer can reach the seller
@@ -374,7 +374,7 @@ describe("the walk engine, stage by stage", () => {
     });
     expect(check.verdict).toBe("settled");
     expect(check.replay_served).toBeNull();
-    expect(check.replay).toEqual({ outcome: "unknown", status: null, names_settlement: null });
+    expect(check.replay).toMatchObject({ outcome: "unknown", status: null, names_settlement: null });
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
     expect(replay.ok).toBe(false);
     expect(replay.detail).toContain("could not complete");
@@ -390,7 +390,7 @@ describe("the walk engine, stage by stage", () => {
    * what this store's own till would have been called for handing the
    * same purchase back.
    */
-  it("reads a fresh challenge on the replay as the double charge, not as a refusal", async () => {
+  it("records a fresh replay challenge without signing another authorization", async () => {
     const log: SellerLog = { requests: [] };
     const check = await performLaunchCheck(testEnv, TARGET, {
       fetch: fakeSeller(log, { rechallengesOnReplay: true }),
@@ -398,10 +398,9 @@ describe("the walk engine, stage by stage", () => {
       screen: clearScreen,
     });
     expect(check.verdict).toBe("settled");
-    expect(check.replay).toEqual({ outcome: "rechallenged", status: 402, names_settlement: false });
-    // Not served, so the coarse flag is false — and that is exactly why
-    // the coarse flag was not enough.
-    expect(check.replay_served).toBe(false);
+    expect(check.replay).toMatchObject({ outcome: "rechallenged", status: 402, names_settlement: false });
+    // A challenge establishes neither recovery nor fresh fulfillment.
+    expect(check.replay_served).toBeNull();
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
     expect(replay.ok).toBe(false);
     expect(replay.detail).toContain("RE-CHALLENGED");
@@ -410,7 +409,7 @@ describe("the walk engine, stage by stage", () => {
     expect(check.paid_usd).toBe(0.005);
   });
 
-  it("reads a 2xx naming the original settlement as the same purchase handed back", async () => {
+  it("keeps a changed wrapper unresolved even when it names the original transaction", async () => {
     const log: SellerLog = { requests: [] };
     const check = await performLaunchCheck(testEnv, TARGET, {
       fetch: fakeSeller(log, { redeliversOnReplay: true }),
@@ -418,24 +417,24 @@ describe("the walk engine, stage by stage", () => {
       screen: clearScreen,
     });
     expect(check.verdict).toBe("settled");
-    expect(check.replay).toEqual({ outcome: "redelivered", status: 200, names_settlement: true });
-    expect(check.replay_served).toBe(false);
+    expect(check.replay).toMatchObject({ outcome: "changed_response", status: 200, names_settlement: true });
+    expect(check.replay_served).toBeNull();
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
-    expect(replay.ok).toBe(true);
-    expect(replay.detail).toContain("re-delivered");
+    expect(replay.ok).toBe(false);
+    expect(replay.detail).toContain("fresh fulfillment is not established");
     expect(replay.detail).not.toContain("SERVED AGAIN");
   });
 
-  it("reads a refusal that names the settlement as clear of the nonce-unbound class", async () => {
+  it("records a refusal transaction reference without treating it as recovery", async () => {
     const log: SellerLog = { requests: [] };
     const check = await performLaunchCheck(testEnv, TARGET, {
       fetch: fakeSeller(log, { refusalNamesSettlement: true }),
       signer: await fieldSignerFromKey(TEST_FIELD_KEY),
       screen: clearScreen,
     });
-    expect(check.replay).toEqual({ outcome: "refused", status: 402, names_settlement: true });
+    expect(check.replay).toMatchObject({ outcome: "refused", status: 402, names_settlement: true });
     const replay = check.stages.find((stage) => stage.stage === "replay")!;
-    expect(replay.ok).toBe(true);
+    expect(replay.ok).toBe(false);
     expect(replay.detail).not.toContain("nonce-unbound-from-settlement");
   });
 
@@ -880,11 +879,11 @@ describe("the launch check door", () => {
  * finding most operators will never read.
  */
 describe("the replay finding reaches the person who paid for it", () => {
-  it("leads the note with the giveaway when a door served twice", async () => {
+  it("qualifies the historical giveaway heuristic in the buyer note", async () => {
     const { launchCheckNote } = await import("@/store/copy/deliverables");
     const note = launchCheckNote("settled", true);
-    expect(note).toContain("took it again");
-    expect(note).toContain("for free");
+    expect(note).toContain("historical served_again");
+    expect(note).toContain("does not establish a second sale or payment");
     // And it explains WHY no second payment arrived, so the operator
     // does not go looking for money that cannot exist.
     expect(note.toLowerCase()).toContain("single-use");
@@ -897,7 +896,7 @@ describe("the replay finding reaches the person who paid for it", () => {
     expect(note).toContain("paying stranger");
   });
 
-  it("leads with the double charge when the door re-challenged the settled payment", async () => {
+  it("reports a new challenge without claiming another charge", async () => {
     const { launchCheckNote } = await import("@/store/copy/deliverables");
     const note = launchCheckNote("settled", false, "confirmed_on_chain", "rechallenged");
     expect(note).toContain("asked us to pay again");

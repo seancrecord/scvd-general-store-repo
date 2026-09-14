@@ -58,8 +58,8 @@ beforeAll(() => {
     if (raw.includes('"method":"eth_')) {
       const rpc = object(JSON.parse(raw));
       const topic = (address: string) => `0x${address.slice(2).toLowerCase().padStart(64, "0")}`;
-      const result = rpc.method === "eth_blockNumber" ? "0x80" : rpc.method === "eth_getBlockByNumber" ? { timestamp: `0x${Math.floor(NOW.getTime() / 1000).toString(16)}` }
-        : rpc.method === "eth_getTransactionReceipt" ? { status: "0x1", blockNumber: "0x64", logs: [{ address: BASE_USDC,
+      const result = rpc.method === "eth_chainId" ? "0x2105" : rpc.method === "eth_blockNumber" ? "0x80" : rpc.method === "eth_getBlockByNumber" ? { timestamp: `0x${Math.floor(NOW.getTime() / 1000).toString(16)}` }
+        : rpc.method === "eth_getTransactionReceipt" ? { transactionHash: (rpc.params as string[])[0], status: "0x1", blockNumber: "0x64", logs: [{ address: BASE_USDC,
           topics: [TRANSFER_TOPIC, topic(evmBuyer.address), topic("0x2222222222222222222222222222222222222222")],
           data: `0x${chainAmount.toString(16).padStart(64, "0")}` }] } : null;
       return Response.json({ jsonrpc: "2.0", id: rpc.id, result });

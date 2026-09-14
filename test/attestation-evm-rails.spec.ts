@@ -31,6 +31,7 @@ const HALF_DOLLAR = `0x${(500000n).toString(16).padStart(64, "0")}`;
 
 function polygonReceipt(): Record<string, unknown> {
   return {
+    transactionHash: HASH,
     status: "0x1",
     blockNumber: "0x3f0f5c43",
     logs: [
@@ -60,7 +61,7 @@ function stubTwoChains(options: {
       if (isPolygon) polygonAsked = true;
       const body = JSON.parse(init?.body ?? "{}") as { method?: string };
       const result =
-        body.method === "eth_blockNumber"
+        body.method === "eth_chainId" ? (isPolygon ? "0x89" : "0x2105") : body.method === "eth_blockNumber"
           ? "0x3f0f5d00"
           : isPolygon
             ? options.polygonReceipt

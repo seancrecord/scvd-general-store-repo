@@ -1,3 +1,4 @@
+import { assertReportedChain } from "@/lib/receipt-context";
 import { humanOrderEvidence } from "@/services/human-order-proof";
 import { creditPickup } from "@/lib/credit-terms";
 import { buyerGuidance } from "@/lib/buyer-guidance";
@@ -20,7 +21,7 @@ import type { PendingPayment, SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { JCS_DISCIPLINE, JCS_SIGNATURE_COVERS } from "@/lib/jcs";
 import { observeSettlement, observeWithFacts } from "@/services/attestation";
-import { getBlockNumber, getReceiptsBatch } from "@/lib/base-rpc";
+import { BASE_EVM, getChainId, getBlockNumber, getReceiptsBatch } from "@/lib/base-rpc";
 import type {
   AttestationQuery,
   SignedAttestation,
@@ -285,19 +286,15 @@ export async function fulfillPurchase(
    * does: the certificate binds a digest over every observation, so
    * /api/verify answers for the whole sheaf without a second endpoint.
    * Observations run sequentially and a failed chain read fails the
-   * lot — the settle already happened, so that failure lands in the
-   * delivery audit exactly like the single item's would, and the
-   * keeper resolves it by hand rather than the buyer getting a sheaf
-   * with quiet holes in it.
+   * lot before settlement. A partial sheaf never reaches the buyer.
    */
   let bundle: SignedAttestation[] | undefined = retainedObservation?.bundle;
   if (item.id === "attestation_bundle" && !retainedObservation) {
     /**
-     * TWO CHAIN SUBREQUESTS FOR THE WHOLE SHEAF, however many hashes
+     * THREE CHAIN SUBREQUESTS FOR THE WHOLE SHEAF, however many hashes
      * (the red team's finding): every receipt in one batched call,
-     * the head read once and shared. Post-settle work has a
-     * subrequest budget, and forty reads after money moved was a
-     * delivery failure waiting for a busy day. The shared head means
+     * the head and chain identity each read once. The work precedes
+     * settlement and stays bounded as the sheaf grows. The shared head means
      * the sheaf is attested against one moment, and says so — every
      * observation carries the same chain_head.
      */
@@ -319,14 +316,16 @@ export async function fulfillPurchase(
         "attestation_bundle reached the till with no hashes: a sheaf of nothing is refused before settlement, never signed.",
       );
     }
-    const [receipts, head] = await Promise.all([
+    const [receipts, head, reportedChain] = await Promise.all([
       getReceiptsBatch(env, hashes),
       getBlockNumber(env),
+      getChainId(env),
     ]);
+    assertReportedChain(reportedChain, BASE_EVM);
     bundle = [];
     for (const txHash of hashes) {
       bundle.push(
-        await observeWithFacts(env, { txHash }, receipts.get(txHash) ?? null, head),
+        await observeWithFacts(env, { txHash }, receipts.get(txHash)!, head),
       );
     }
     mintOptions.attests = await bundleEvidenceHash(bundle);

@@ -59,7 +59,7 @@ function stubRpc(receipt: unknown): void {
     vi.fn(async (_url: unknown, init?: { body?: string }) => {
       const body = JSON.parse(init?.body ?? "{}") as { method?: string };
       const result =
-        body.method === "eth_blockNumber" ? "0x3f0f5d00" : receipt;
+        body.method === "eth_chainId" ? (String(_url).includes("polygon") ? "0x89" : "0x2105") : body.method === "eth_blockNumber" ? "0x3f0f5d00" : receipt;
       return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result }), {
         headers: { "Content-Type": "application/json" },
       });

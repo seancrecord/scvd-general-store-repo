@@ -24,14 +24,14 @@ vi.mock("@/services/attestation", async original => {
 });
 vi.mock("@/lib/base-rpc", async original => {
   const actual = await original<typeof import("@/lib/base-rpc")>();
-  return { ...actual, getBlockNumber: async () => {
+  return { ...actual, getChainId: async () => "0x2105", getBlockNumber: async () => {
     reads++;
     if (unavailable) throw new Error("fixture chain head unavailable");
     return 1000;
-  }, getReceiptsBatch: async () => {
+  }, getReceiptsBatch: async (_env: unknown, hashes: string[]) => {
     reads++;
     if (unavailable) throw new Error("fixture chain receipts unavailable");
-    return new Map();
+    return new Map(hashes.map(hash => [hash, null]));
   } };
 });
 vi.mock("@/services/certificates", async original => {

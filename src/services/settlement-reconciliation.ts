@@ -1,6 +1,8 @@
+import { readAuthorizationTransfer } from "@/lib/authorization-receipt";
 import {
   usdcAuthorizations,
   BASE_CHAIN,
+  BASE_EVM,
   getBlockNumber,
   getReceipt,
   isSameAddress,
@@ -239,7 +241,10 @@ export function reconcileFacts(
     return { ...empty, blockHeight, confirmations };
   }
 
-  const transfers = usdcTransfers(receipt).filter((transfer) => {
+  // Keep receipt positions: equal-valued legs are still different transfers.
+  const transfers = receipt.logs.flatMap((log, offset) =>
+    usdcTransfers({ ...receipt, logs: [log] }).map(transfer => ({ ...transfer, offset })),
+  ).filter((transfer) => {
     if (query.recipient && !isSameAddress(transfer.to, query.recipient)) {
       return false;
     }
@@ -279,17 +284,13 @@ export function reconcileFacts(
    * honest report is that no discretion existed — not that the cap
    * happened to be met exactly.
    */
-  /*
-   * THE AUTHORIZATION MUST BELONG TO THE PAYER WE ARE REPORTING ON.
-   * This filter was missing while the approval filter below was
-   * present — the same mistake, made once and caught once. Without
-   * it, an authorization signed by anybody in the receipt was read as
-   * evidence that THIS transfer's amount was fixed in THIS payer's
-   * signed digest, which is a false statement under our own key.
-   */
-  const authorized = usdcAuthorizations(receipt).some((authorization) =>
-    isSameAddress(authorization.authorizer, largest.from),
-  );
+  // Payer equality alone cannot attribute one leg of a batch to a nonce.
+  const authorized = usdcAuthorizations(receipt).some(authorization => {
+    if (!isSameAddress(authorization.authorizer, largest.from)) return false;
+    const pair = readAuthorizationTransfer(receipt, { nonce: authorization.nonce, payer: largest.from,
+      recipient: largest.to, amount_atomic: largest.amount.toString() }, BASE_EVM);
+    return pair.status === "matched" && pair.observed?.transfer_receipt_offset === largest.offset;
+  });
   const approvals = usdcApprovals(receipt).filter(
     (approval) => isSameAddress(approval.owner, largest.from),
   );

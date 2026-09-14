@@ -1,3 +1,4 @@
+import { ReceiptEvidenceUnavailable } from "@/lib/receipt-context";
 import { BASE_NETWORK, POLYGON_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK } from "@/lib/payment-networks";
 import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
@@ -308,6 +309,7 @@ export interface RpcLog {
 }
 
 export interface RpcReceipt {
+  transactionHash?: string;
   status: string;
   blockNumber: string;
   logs: RpcLog[];
@@ -641,12 +643,10 @@ export async function getReceiptsBatch(
           `${chain.label} RPC batch errored for ${txHash}: ${JSON.stringify((entry as { error: unknown }).error).slice(0, 200)}`,
         );
       }
-      receipts.set(
-        txHash,
-        "result" in entry
-          ? (entry as { result: RpcReceipt | null }).result
-          : null,
-      );
+      if (!("result" in entry) || receipts.has(txHash)) {
+        throw new ReceiptEvidenceUnavailable("batch_response_missing_or_duplicated");
+      }
+      receipts.set(txHash, (entry as { result: RpcReceipt | null }).result);
     }
   }
   // Same line for a hash the provider's answer simply omitted: absent
@@ -799,7 +799,12 @@ export async function getBlockNumber(
   chain: EvmChain = BASE_EVM,
 ): Promise<number> {
   const hex = await rpc<string>(env, "eth_blockNumber", [], chain);
-  return Number.parseInt(hex, 16);
+  return typeof hex === "string" && /^0x[0-9a-f]+$/i.test(hex) ? Number.parseInt(hex, 16) : Number.NaN;
+}
+
+/** Confirm which chain answered before binding a receipt to signed terms. */
+export async function getChainId(env: Env, chain: EvmChain = BASE_EVM): Promise<string> {
+  return rpc<string>(env, "eth_chainId", [], chain);
 }
 
 /** A recovery cannot deliver against a receipt still outside the finalized chain. */

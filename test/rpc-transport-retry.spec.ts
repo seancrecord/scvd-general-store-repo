@@ -40,7 +40,7 @@ let originalFetch: typeof globalThis.fetch;
  * on nonsense — or worse, passes by luck until the day it does not.
  */
 function mockRpc(
-  handler: (method: string, callForMethod: number) => Response | Promise<Response>,
+  handler: (method: string, callForMethod: number, url: string) => Response | Promise<Response>,
 ): { calls: () => number } {
   originalFetch = globalThis.fetch;
   let total = 0;
@@ -53,7 +53,7 @@ function mockRpc(
       : ((raw as { method?: string }).method ?? "unknown");
     const seen = (perMethod.get(method) ?? 0) + 1;
     perMethod.set(method, seen);
-    return handler(method, seen);
+    return handler(method, seen, String(_input));
   }) as typeof fetch;
   return { calls: () => total };
 }
@@ -128,25 +128,18 @@ describe("an answer, which is never re-asked", () => {
     expect(mock.calls()).toBe(1);
   });
 
-  it("keeps a paid attestation's NOT_FOUND verdict to two reads per rail", async () => {
+  it("keeps a paid attestation's NOT_FOUND verdict to three reads per rail", async () => {
     /*
-     * observeSettlement reads the receipt and the head — two calls per
-     * EVM rail, and since 2026-08-21 a 0x hash is asked of BOTH live
-     * EVM rails before NOT_FOUND is signed (a Polygon settlement is
-     * 0x-hex too, and signing NOT_FOUND about a payment one chain over
-     * is the false negative this product exists to never produce).
-     *
-     * FOUR, and the shape of the four is the invariant: 2 × Base,
-     * 2 × Polygon, each answer taken the first time. No hopeful third
-     * look at either chain — that is the rule this test protects, and
-     * it survives the rail count changing.
+     * Read receipt, head and chain identity once on each EVM rail before
+     * signing NOT_FOUND. Each actual answer is used the first time;
+     * chain identity adds a check, never a hopeful re-read of a receipt.
      */
-    const mock = mockRpc((method) =>
-      method === "eth_getTransactionReceipt" ? ok(null) : ok("0x64"),
+    const mock = mockRpc((method, _call, url) =>
+      method === "eth_chainId" ? ok(url.includes("polygon") ? "0x89" : "0x2105") : method === "eth_getTransactionReceipt" ? ok(null) : ok("0x64"),
     );
     const observation = await observeSettlement(testEnv, { txHash: TX });
     expect(observation.status).toBe("NOT_FOUND");
-    expect(mock.calls()).toBe(4);
+    expect(mock.calls()).toBe(6);
     expect(
       (observation as unknown as { chains_checked?: string[] }).chains_checked,
     ).toEqual(["eip155:8453", "eip155:137"]);
@@ -159,7 +152,8 @@ describe("an answer, which is never re-asked", () => {
      * says NOT_FOUND because that is what the chain said once it
      * answered. The stumble changed the timing, never the finding.
      */
-    mockRpc((method, call) => {
+    mockRpc((method, call, url) => {
+      if (method === "eth_chainId") return ok(url.includes("polygon") ? "0x89" : "0x2105");
       // The receipt read is rate-limited once, then answers honestly.
       if (method === "eth_getTransactionReceipt") {
         return call === 1 ? rateLimited() : ok(null);

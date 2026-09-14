@@ -141,10 +141,11 @@ describe("a sheaf of attestations", () => {
  * where they get held.
  */
 describe("the sheaf, paid for", () => {
-  it("delivers one signed observation per hash, two chain calls total, digest bound", async () => {
+  it("delivers one signed observation per hash, three chain calls total, digest bound", async () => {
     let rpcSingleCalls = 0;
     let rpcBatchCalls = 0;
     let headCalls = 0;
+    let chainCalls = 0;
     // Layer an RPC answerer over the facilitator mock's fetch: batch
     // requests answer null receipts (honest NOT_FOUND for hashes that
     // never existed); everything non-RPC falls through to the mock.
@@ -183,6 +184,10 @@ describe("the sheaf, paid for", () => {
               ),
               { headers: { "Content-Type": "application/json" } },
             );
+          }
+          if (body.method === "eth_chainId") {
+            chainCalls += 1;
+            return Response.json({ jsonrpc: "2.0", id: body.id, result: "0x2105" });
           }
           if (body.method === "eth_blockNumber") {
             headCalls += 1;
@@ -240,6 +245,7 @@ describe("the sheaf, paid for", () => {
     // one head read, zero per-hash receipt calls after settle.
     expect(rpcBatchCalls).toBe(1);
     expect(headCalls).toBe(1);
+    expect(chainCalls).toBe(1);
     expect(rpcSingleCalls).toBe(0);
 
     // The certificate binds the digest of the sheaf: recompute it from
