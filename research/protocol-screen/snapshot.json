@@ -1215,7 +1215,14 @@
    "lastMerge": "2026-09-11",
    "quietDays": 3,
    "quiet": false,
-   "specChanges90": 41
+   "specChanges90": 41,
+   "releasesInWindow": 235,
+   "latestRelease": {
+    "tag": "go-x402@v2.25.0",
+    "date": "2026-09-04",
+    "commit": "2cc7e9a6880c08433b692666032862bcbea51187"
+   },
+   "specMovedSinceRelease": 3
   },
   {
    "protocol": "UCP",
@@ -1232,7 +1239,10 @@
    "lastMerge": "2026-09-10",
    "quietDays": 4,
    "quiet": false,
-   "specChanges90": 0
+   "specChanges90": 0,
+   "releasesInWindow": null,
+   "latestRelease": null,
+   "specMovedSinceRelease": null
   },
   {
    "protocol": "Tempo TIPs",
@@ -1249,7 +1259,14 @@
    "lastMerge": "2026-09-10",
    "quietDays": 4,
    "quiet": false,
-   "specChanges90": 58
+   "specChanges90": 58,
+   "releasesInWindow": 25,
+   "latestRelease": {
+    "tag": "tempo-alloy@1.11.0",
+    "date": "2026-08-20",
+    "commit": "2ca8e8e626fdf0de636f5b8d3558b9dbcb4d3864"
+   },
+   "specMovedSinceRelease": 16
   },
   {
    "protocol": "A2A",
@@ -1266,7 +1283,10 @@
    "lastMerge": "2026-09-10",
    "quietDays": 4,
    "quiet": false,
-   "specChanges90": 0
+   "specChanges90": 0,
+   "releasesInWindow": null,
+   "latestRelease": null,
+   "specMovedSinceRelease": null
   },
   {
    "protocol": "MPP",
@@ -1283,7 +1303,14 @@
    "lastMerge": "2026-09-10",
    "quietDays": 4,
    "quiet": false,
-   "specChanges90": 27
+   "specChanges90": 27,
+   "releasesInWindow": 13,
+   "latestRelease": {
+    "tag": "spec-artifacts-2e3de24c07a9218456bd8814d6746a0dad941d06",
+    "date": "2026-09-09",
+    "commit": "2e3de24c07a9218456bd8814d6746a0dad941d06"
+   },
+   "specMovedSinceRelease": 1
   },
   {
    "protocol": "WebBotAuth",
@@ -1300,7 +1327,10 @@
    "lastMerge": "2026-09-10",
    "quietDays": 4,
    "quiet": false,
-   "specChanges90": 0
+   "specChanges90": 0,
+   "releasesInWindow": null,
+   "latestRelease": null,
+   "specMovedSinceRelease": null
   },
   {
    "protocol": "WebMCP",
@@ -1317,7 +1347,10 @@
    "lastMerge": "2026-09-14",
    "quietDays": 0,
    "quiet": false,
-   "specChanges90": 0
+   "specChanges90": 0,
+   "releasesInWindow": null,
+   "latestRelease": null,
+   "specMovedSinceRelease": null
   },
   {
    "protocol": "ACP",
@@ -1334,7 +1367,10 @@
    "lastMerge": "2026-07-18",
    "quietDays": 58,
    "quiet": true,
-   "specChanges90": 0
+   "specChanges90": 0,
+   "releasesInWindow": null,
+   "latestRelease": null,
+   "specMovedSinceRelease": null
   },
   {
    "protocol": "AP2",
@@ -1351,7 +1387,10 @@
    "lastMerge": null,
    "quietDays": null,
    "quiet": true,
-   "specChanges90": 0
+   "specChanges90": 0,
+   "releasesInWindow": null,
+   "latestRelease": null,
+   "specMovedSinceRelease": null
   }
  ]
 }

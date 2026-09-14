@@ -181,6 +181,65 @@ export function parseLog(raw, source) {
   return out;
 }
 
+/**
+ * TAGS, AND WHY THIS DOES NOT CLAIM TO KNOW WHAT SHIPPED.
+ *
+ * A commit is not a release. Implementers adopt tagged versions, so a
+ * spec change that has merged and a spec change that has shipped are
+ * different news — the screen read only the first until 2026-09-14.
+ *
+ * The honest limit, and it is a real one: these clones are shallow, so
+ * `git tag --contains` cannot be trusted and ANCESTRY IS NOT COMPUTED.
+ * A row is marked released only when a tag points AT IT — exactly, by
+ * commit sha, or by MPP's `spec-artifacts-<sha>` naming, which names
+ * its commit in the tag itself. Everything else is `unknown`, NEVER
+ * "unreleased": most x402 spec commits ship inside the next SDK
+ * release without any tag pointing at them, and reporting that as
+ * "not shipped" would be an instrument inventing a finding.
+ *
+ * What the per-source figures below CAN say honestly: how many
+ * releases happened in the window, and when the last one was. A source
+ * whose spec kept moving after its last release has unreleased spec
+ * changes, and that is readable without any ancestry at all.
+ */
+export function readTags(dir, since, run = git) {
+  const raw = run([
+    "for-each-ref",
+    "--format=%(refname:short)|%(creatordate:short)|%(objectname)|%(*objectname)",
+    "refs/tags",
+  ], dir);
+  return raw
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [tag, date, objectName, derefName] = line.split("|");
+      return { tag, date, commit: derefName || objectName };
+    })
+    .filter((t) => !since || t.date >= since)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/** MPP tags its immutable spec artifacts `spec-artifacts-<commit sha>`. */
+const SPEC_ARTIFACT = /^spec-artifacts-([0-9a-f]{40})$/;
+
+/**
+ * A preview or pre-release is not the thing implementers adopt, and
+ * MPP's `pr-356-spec-preview` presented itself as the latest release
+ * on the first run that read tags. Counted, never crowned.
+ */
+export const PRERELEASE = /preview|snapshot|nightly|[-@._](rc|alpha|beta|pre)[-.0-9]*$/i;
+
+export function latestRelease(tags) {
+  return tags.find((t) => !PRERELEASE.test(t.tag)) ?? null;
+}
+
+export function releasesFor(sha, tags) {
+  return tags
+    .filter((t) => t.commit === sha || SPEC_ARTIFACT.exec(t.tag)?.[1] === sha)
+    .map((t) => t.tag);
+}
+
 export function readSource(source, since, cacheDir) {
   const dir = ensureClone(source, since, cacheDir);
   const args = [
@@ -192,7 +251,12 @@ export function readSource(source, since, cacheDir) {
     `--format=${REC}%H${FIELD}%ad${FIELD}%an${FIELD}%s${FIELD}%b${FIELD}`,
   ];
   if (source.onlyPaths) args.push("--", ...source.onlyPaths);
-  const updates = parseLog(git(args, dir), source);
+  const tags = readTags(dir, since);
+  const updates = parseLog(git(args, dir), source).map((u) => {
+    const sha = u.id.split(":")[1];
+    const releasedIn = releasesFor(sha, tags);
+    return { ...u, releasedIn, released: releasedIn.length > 0 ? true : "unknown" };
+  });
   if (updates.length === 0) {
     /*
      * Same rule as the scout extractor: an empty read is never reported
@@ -202,6 +266,9 @@ export function readSource(source, since, cacheDir) {
     throw new Error(`git-source: ${source.key} returned no commits since ${since} — the read is broken, not the protocol`);
   }
   return {
+    tags,
+    latestRelease: latestRelease(tags),
+    releasesInWindow: tags.length,
     name: source.name,
     fullName: source.fullName,
     maintainers: source.maintainers,

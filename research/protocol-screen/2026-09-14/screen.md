@@ -19,14 +19,22 @@ Of this window, 58 rows fell under a standing ruling and 554 did not.
 | ACP | 2 commerce | OpenAI | scout | 1 | 0 | 0 | — | 2026-07-18 | **yes — 58d** |
 | AP2 | 1 authorization | Google + FIDO Alliance | scout | 0 | 0 | 0 | — | none observed | **yes — ∞d** |
 
+**Releases.** A commit is not a release; implementers adopt tagged versions.
+
+| Protocol | Releases in window | Latest | Spec commits since it |
+| --- | --- | --- | --- |
+| x402 | 235 | `go-x402@v2.25.0` (2026-09-04) | 3 |
+| Tempo TIPs | 25 | `tempo-alloy@1.11.0` (2026-08-20) | 16 |
+| MPP | 13 | `spec-artifacts-2e3de24c07a9218456bd8814d6746a0dad941d06` (2026-09-09) | 1 |
+
+Ancestry is NOT computed — these clones are shallow. A row is marked released only when a tag points at it by sha (or by MPP's `spec-artifacts-<sha>` naming); everything else reads `unknown`, never `unreleased`.
+
 ² Tempo TIPs: scoped to tips/ — the node's Rust internals are deliberately out of frame.
 
-## Still open (3)
+## Still open (1)
 
 | Ruling | Age | What was proposed |
 | --- | --- | --- |
-| R4-verdict-across-schemes | 0d | No battery check branches on scheme, so checks written with exact semantics run unconditionally against upto, auth-capture and batch-settlement. Establish per check whether its verdict still means what it says. |
-| R5-x402-extension-coverage | 0d | Five of the seven extensions x402 publishes have no reader here, including extension-offer-and-receipt, which is the conformance desk's own subject. |
 | R7-corpus-scheme-retention | 0d | The corpus keeps an advisory's name and not its detail, so the fragmentation time series cannot tell a real fork from our own blind spot. Retaining the scheme value changes what the corpus stores, so it is the keeper's call. |
 
 ## Already ruled on (58)
@@ -298,6 +306,6 @@ Not hidden — answered. Each was scored, then matched a standing ruling.
 - **scout** — Scout is somebody else's reading. A merge absent from it is unobserved, not absent.
 - **scout** — Scout reports merges, not adoption. A specification can be quiet because it is finished, and a product can ship from infrastructure that never appears in a spec repository's log.
 - **git** — Git carries no `breaking` flag. None of the layer-3 repositories uses conventional-commit breaking markers, so a git-sourced row's `breaking: false` means NOT DECLARED, never NOT BREAKING. Level and consequence on these rows are derived by this script, not stated by the maintainer.
-- **git** — A commit is not a release. A spec path changing is not the same as a shipped, versioned protocol change, and this screen does not read tags or releases.
+- **git** — Release ancestry. Tags are read, but these clones are shallow, so a row is marked released only when a tag points at its exact commit. `unknown` means no tag names it — never that it has not shipped.
 - **git** — The window is bounded by the clone. Anything older than the run's `--since` is outside the read, not absent from history.
 - **window** — the git sources were read from 2026-06-16 forward; scout's own backlog reaches further back than that.

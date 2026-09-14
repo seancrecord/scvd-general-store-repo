@@ -142,7 +142,7 @@ export const SOURCE_LIMITS = {
   ],
   git: [
     "Git carries no `breaking` flag. None of the layer-3 repositories uses conventional-commit breaking markers, so a git-sourced row's `breaking: false` means NOT DECLARED, never NOT BREAKING. Level and consequence on these rows are derived by this script, not stated by the maintainer.",
-    "A commit is not a release. A spec path changing is not the same as a shipped, versioned protocol change, and this screen does not read tags or releases.",
+    "Release ancestry. Tags are read, but these clones are shallow, so a row is marked released only when a tag points at its exact commit. `unknown` means no tag names it — never that it has not shipped.",
     "The window is bounded by the clone. Anything older than the run's `--since` is outside the read, not absent from history.",
   ],
 };
@@ -413,6 +413,8 @@ export function flattenUpdates(protocolData, today) {
         source: meta.source ?? "scout",
         derived: Boolean(u.derived),
         specChange: Boolean(u.specChange),
+        released: u.released ?? null,
+        releasedIn: u.releasedIn ?? [],
       };
       row.tags = tagRow(row);
       row.surfaces = matchSurfaces(row);
@@ -447,6 +449,17 @@ export function cadence(protocolData, rows, today) {
       quietDays: last ? daysBetween(last, today) : null,
       quiet: last === null || daysBetween(last, today) > QUIET_DAYS,
       specChanges90: mine.filter((r) => r.age <= 90 && r.specChange).length,
+      releasesInWindow: meta.releasesInWindow ?? null,
+      latestRelease: meta.latestRelease ?? null,
+      /*
+       * A source whose specification kept moving after its last
+       * release has unreleased spec changes, and that is readable
+       * without computing ancestry on a shallow clone. It is the one
+       * release claim this screen is entitled to make.
+       */
+      specMovedSinceRelease: meta.latestRelease && last
+        ? mine.filter((r) => r.specChange && r.date > meta.latestRelease.date).length
+        : null,
     };
   }).sort((a, b) => b.last90 - a.last90);
 }
@@ -596,6 +609,20 @@ export function renderMarkdown(report) {
     const spec = c.source === "git" ? String(c.specChanges90) : "—";
     const brk = c.source === "git" ? `${c.breaking90} (undeclared)` : String(c.breaking90);
     out.push(`| ${c.protocol}${c.scopeNote ? " ²" : ""} | ${c.layer} | ${c.maintainers} | ${c.source} | ${c.last90} | ${c.last30} | ${brk} | ${spec} | ${c.lastMerge ?? "none observed"} | ${c.quiet ? `**yes — ${c.quietDays ?? "∞"}d**` : "no"} |`);
+  }
+  const released = report.cadence.filter((c) => c.latestRelease);
+  if (released.length) {
+    out.push("");
+    out.push("**Releases.** A commit is not a release; implementers adopt tagged versions.");
+    out.push("");
+    out.push("| Protocol | Releases in window | Latest | Spec commits since it |");
+    out.push("| --- | --- | --- | --- |");
+    for (const c of released) {
+      const pending = c.specMovedSinceRelease;
+      out.push(`| ${c.protocol} | ${c.releasesInWindow} | \`${c.latestRelease.tag}\` (${c.latestRelease.date}) | ${pending === null ? "—" : pending} |`);
+    }
+    out.push("");
+    out.push("Ancestry is NOT computed — these clones are shallow. A row is marked released only when a tag points at it by sha (or by MPP's `spec-artifacts-<sha>` naming); everything else reads `unknown`, never `unreleased`.");
   }
   const scoped = report.cadence.filter((c) => c.scopeNote);
   if (scoped.length) {

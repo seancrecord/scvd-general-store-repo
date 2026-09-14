@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   LAYER3,
+  PRERELEASE,
+  latestRelease,
+  readTags,
+  releasesFor,
   levelFromSubject,
   parseLog,
   prNumberFrom,
@@ -145,6 +149,57 @@ test("one unreachable repository does not take the others down", () => {
   });
   assert.deepEqual(Object.keys(map), ["MPP"]);
   assert.deepEqual(failures.map((f) => f.source), ["x402"]);
+});
+
+test("tags parse with their dereferenced commit, newest first", () => {
+  const raw = [
+    "go-x402@v2.25.0|2026-09-04|tagobj1|c0ffee01",
+    "lightweight|2026-08-01|c0ffee02|",
+    "",
+  ].join("\n");
+  const tags = readTags("/ignored", null, () => raw);
+  assert.deepEqual(tags, [
+    { tag: "go-x402@v2.25.0", date: "2026-09-04", commit: "c0ffee01" },
+    { tag: "lightweight", date: "2026-08-01", commit: "c0ffee02" },
+  ]);
+  assert.equal(readTags("/ignored", "2026-09-01", () => raw).length, 1, "the window bounds tags too");
+});
+
+test("a row is released only when a tag points AT it — never by ancestry", () => {
+  const sha = "a".repeat(40);
+  const tags = [
+    { tag: "go-x402@v2.25.0", date: "2026-09-04", commit: "b".repeat(40) },
+    { tag: "spec-artifacts-" + sha, date: "2026-09-09", commit: "c".repeat(40) },
+  ];
+  // MPP names its commit inside the tag, so that one resolves.
+  assert.deepEqual(releasesFor(sha, tags), ["spec-artifacts-" + sha]);
+  // A later SDK tag does NOT mark an earlier commit released: ancestry
+  // is not computed on a shallow clone, and inventing it would be the
+  // instrument manufacturing a finding.
+  assert.deepEqual(releasesFor("d".repeat(40), tags), []);
+  // An exact sha match does resolve.
+  assert.deepEqual(releasesFor("b".repeat(40), tags), ["go-x402@v2.25.0"]);
+});
+
+test("a preview tag is counted but never crowned the latest release", () => {
+  // MPP's pr-356-spec-preview presented itself as the latest release
+  // on the first run that read tags, which is how this was found.
+  const tags = [
+    { tag: "pr-356-spec-preview", date: "2026-09-09", commit: "a" },
+    { tag: "spec-artifacts-" + "b".repeat(40), date: "2026-09-08", commit: "b" },
+  ];
+  assert.equal(latestRelease(tags).tag, "spec-artifacts-" + "b".repeat(40));
+  assert.ok(PRERELEASE.test("v2.0.0-rc1"));
+  assert.ok(PRERELEASE.test("npm-@x402/core@v1.0.0-beta.2"));
+  assert.ok(!PRERELEASE.test("go-x402@v2.25.0"), "a plain version is a release");
+  assert.equal(latestRelease([]), null);
+});
+
+test("the report says `unknown`, never `unreleased`", () => {
+  const src = LAYER3.find((s) => s.key === "x402");
+  assert.ok(src, "x402 is a source");
+  // The word the screen is entitled to use is asserted at the lib level;
+  // see protocol-screen's source limits for the published wording.
 });
 
 test("the x402 source points at the foundation repo, not the frozen mirror", () => {
