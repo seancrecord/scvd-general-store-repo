@@ -693,7 +693,7 @@ B-ABND now pairs authorizer/nonce and canonical-USDC Transfer before asserting s
 
 - [x] B-RPAIR: reproduced and locally repaired September 14; see the follow-through below. Production impact and deployed acceptance remain unestablished.
 - [x] General RPC envelope hardening: implemented September 14 as B-RPC; see the follow-through below.
-- [ ] Live acceptance after reviewed deployment; no new paid wave has run here.
+- [x] Targeted live acceptance after reviewed deployment — September 14 record below. The full paid-wave matrix remains open.
 
 
 ### B-ABND final validation — September 14
@@ -708,7 +708,7 @@ Final publication gate: **77 tests across five files passed**, including pairing
 - [x] **B-RPC implemented:** general EVM attestation and bundle validate transaction identity, chain identity, block/head validity and receipt status before signing. Missing/duplicate batch responses cannot become NOT_FOUND. Battery v4 distinguishes the instrument; explicit null, genuine reversion, finality depth, prior signed records and Solana behavior retain their meaning.
 - [x] **Buyer refusal facts:** the newly introduced receipt refusals say no settlement was attempted, supply same-payment retry guidance, leave temporariness unknown, and do not invent an artifact/verify URL. HTTP and both MCP dialects are covered.
 - [ ] **Separate source-review candidates:** settlement reconciliation's Approval-to-transfer cap attribution and its own RPC envelope. Existing owner/ambiguity filters remain; no production impact or repair is asserted here.
-- [ ] **Deployed acceptance:** real-chain and changed-code deployment waves remain outstanding. These local changes do not alter PR #675.
+- [x] **Targeted deployed acceptance:** repairs merged through PR #680; September 14 real Base purchases and changed-deployment quote/certificate checks are recorded below. Full real-chain/deployment matrices remain open.
 
 Source-reversion control: 49 failed / 47 passed across 96 tests, with task-owned implementation files restored afterward. Final validation follows below. Original BUY-001–039 counts and commissioned Aura records are unchanged.
 
@@ -721,6 +721,20 @@ Final gate: **939 tests across 28 spec files passed**, combining 749 successful 
 - [x] Full suite: 705 files; 13,849 passed, one existing skip. All 1,471 frozen inputs unchanged.
 - [x] The interrupted attempt's 33 outdated-fixture failures resolved; 409 affected/control cases passed before the complete rerun.
 - [x] Typecheck, both bundles, docs, corrections, code audit and public-claims checks passed.
-- [ ] PR/merge and live acceptance evidence follow this gate. $1 USDC maximum; Base funded, other EVM rails empty, Solana signer unconfigured.
+- [x] PR #680 merged and targeted live acceptance completed within the $1 ceiling; see the dated evidence below. Other checkout rails remain unexercised.
 
 The detailed release record is in BUYER_AUDIT_LOG.md. Historical validation paragraphs above describe their own checkpoints and are not claims about the later release.
+
+
+### Targeted live acceptance — September 14
+
+- [x] PR #680 merged, required CI green, production version and battery v4 checked.
+- [x] 22 distinct purchases, 0.199 USDC exact reconciled spend, no duplicate settlement; all authorizations expired by final observation.
+- [x] Correct signed goods and transaction subjects through HTTP/MCP; Base payment plus a Polygon-reader observation; bundles retain both distinct subjects.
+- [x] Ten distinct mixed-door purchases, ten same-payment/key submissions, and ten fresh-authorizations/shared-key submissions reconciled; pending requests recovered the original goods.
+- [x] Controlled response loss, original-interface retry after expiry, old quotes/new code, retired-key artifact continuity, and a fresh cheaper recipient exercised at the report's stated scope.
+- [ ] B-RSTATUS / LA-01: explain the gap between a successful purchase and private status-handle goods readiness; supply a safe polling action.
+- [ ] B-RDOOR / LA-02: name the original interface/recovery action when a cross-interface replay is refused; retain authorization scoping and reconsider transient HTTP 503 wording.
+- [ ] Full other-rail, mixed-SKU, interrupted-settlement, human/watch/anchor/inventory, loss-of-all-hints and propagation coverage remains; prior separate reconciliation source-review candidates remain.
+
+[Report and limits](buyer-receipt-acceptance-2026-09-14/REPORT.md). The fresh recipient fetched key history but did not explain historical-key verification; the parent's retired-key control is separate. Original BUY-001–039 and commissioned Aura counts are unchanged.
