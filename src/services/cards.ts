@@ -899,6 +899,32 @@ export async function assertWindowOpenFor(env: Env, wallet?: string): Promise<Bi
   if (window.every((row) => row.rarity === "keeper")) {
     throw new WindowRefused("Everything in the window is one of one: on show, released by the wheel into somebody's pack, never sold. Nothing charged.");
   }
+  /**
+   * NOBODY PAYS TO BUY THEIR OWN CARD BACK (2026-09-14, found by an
+   * agent walking the whole loop on the keeper's wallet).
+   *
+   * The window is the last five pressings store-wide, so a buyer who
+   * has just opened a pack IS the window: all five rows are theirs,
+   * and a pick nine minutes later was guaranteed to hand one of their
+   * own cards from their binder to their binder for half a pack. On a
+   * young store that is not an edge case, it is the default path — the
+   * first organic buyer who tries the window after their own pack hits
+   * it every time.
+   *
+   * "Look first, it's free" is a real mitigation and not enough of
+   * one: it asks the buyer to notice a thing the store already knows.
+   * The store knows the holder of every row before the money moves, so
+   * it says so before the money moves, which is the same precedent as
+   * the empty window and the twelve-hour lock — charged:false, a
+   * reason by name, above the settle line. windowPick then draws only
+   * from rows this wallet does not already hold, so a partial window
+   * sells the part that is somebody else's rather than refusing.
+   */
+  if (wallet && pickable(window).every((row) => row.holder === wallet.toLowerCase())) {
+    throw new WindowRefused(
+      `Every pressing on show is already yours — the window is the last ${WINDOW_SIZE} pulled store-wide, and right now they are all out of your own pack. A pick would move your card from your binder to your binder. Nothing charged; look again once somebody else opens one.`,
+    );
+  }
   return window;
 }
 
@@ -922,7 +948,10 @@ function pickable(rows: readonly BinderRow[]): BinderRow[] {
 export async function windowPick(env: Env, options: OpenPackOptions, purchase?: PersonalPurchase): Promise<{ pressing: SignedCardRecord; from_holder: string | null; window: string[] }> {
   const now = options.now ?? (purchase?.purchasedAt ? new Date(purchase.purchasedAt) : new Date());
   const wallet = options.payer?.toLowerCase();
-  const window = pickable(await assertWindowOpenFor(env, wallet));
+  const onShow = pickable(await assertWindowOpenFor(env, wallet));
+  // A row this wallet already holds is not a purchase, so it is not in
+  // the draw. The refusal above catches the case where that empties it.
+  const window = wallet ? onShow.filter((row) => row.holder !== wallet) : onShow;
   if (window.length === 0) throw new WindowRefused("Everything in the window is one of one: on show, released by the wheel into somebody's pack, never sold. Nothing charged.");
   const seedDate = utcDate(now);
   await publishSeedRecord(env, seedDate, now);

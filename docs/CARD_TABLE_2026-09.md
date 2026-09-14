@@ -431,6 +431,114 @@ not contain "SAME document" or "byte for byte", and must contain the
 true sentence. The honest sentence came out 85 characters shorter,
 which is what paid for the new door — headroom went from 6 to 87.
 
+## 0h. The pack, opened, and the preview nobody ever saw (2026-09-14, STANDING)
+
+The keeper bought a pack with his own wallet — `pack_5qjkf4273g`, five
+cards, Base Rail holo in slot five — and reported three things and then
+a fourth:
+
+> for bots this is probably fine, for humans, its not clear 1. how many
+> cards you got in the pack 2. how to see the card (there should be some
+> kind of reveal and then way to view them when you want) theres no
+> "button" to share you have to have some knowledge of what to click
+>
+> … also no image included in the share on twitter part
+
+All four were true. Three were a missing page; the fourth was a bug that
+had been costing the store every share it ever got.
+
+### 0h.1 The pack had no page
+
+`GET /api/pack/{id}` was the only thing a purchase pointed at, and it is
+a signed manifest — the right answer for an agent and nothing at all for
+a person. The till's receipt named the five cards in the middle of a
+paragraph, inside a JSON blob, behind a disclosure triangle, with no
+picture of any of them and no way back to them later.
+
+**`GET /pack/{pack_id}`** is the page that was missing. It opens with
+*"You pulled 5 cards."* in words, then the tally by tier and the count
+of duplicates named as credit rather than left looking like a mistake,
+then all five faces as pictures, each linked to its own page and each
+with its own share button, then one button for the whole pack and one
+for the binder — the answer to "how do I see them when I want".
+
+The browser till now reads one optional field, `view_url`, off any
+delivery and draws a button to it above the receipt. Same-origin and
+http(s) only: a till that renders arbitrary links out of a response body
+is a phishing surface wearing a store's paint, and the moment straight
+after paying is the moment a buyer is most primed to click. Every item
+with no page keeps exactly the receipt it had.
+
+### 0h.2 No link to this store has ever unfurled
+
+The share button worked. The `og:image` was correct, the sheet was a
+real 1200×675 PNG, the `twitter:card` said `summary_large_image`. And
+requesting the same page as `Twitterbot/1.0` returned **1,509 bytes of
+JSON**.
+
+`wantsHtml()` gave HTML to a browser and to a named search or AI
+indexer, and the JSON twin to everything else. A link-preview bot is
+neither: it fetches one URL, reads the head, throws the body away, and
+draws a card from the meta tags. All of them send `Accept: */*` with a
+bot User-Agent — so **Twitterbot, facebookexternalhit (Instagram and
+WhatsApp too), Slackbot, Discordbot, LinkedInBot, Telegram, Reddit,
+Mastodon and Bluesky have every one of them been handed a signed record
+with no Open Graph tags in it**, since the day each page shipped.
+
+The store promised the opposite in writing the whole time: the menu
+description, the `buy_pack` tool and `SPEC_RETURNS` all say each card
+has "a page that unfurls wherever it is posted", and the share sheet is
+rendered at 1200×675 for precisely this. Nothing errored, so nothing
+said so.
+
+`SOCIAL_UNFURLERS` is now its own list, kept apart from the indexers and
+the readers because the three want different representations for
+different reasons — JSON-LD, prose, and meta tags. The guard fetches a
+live card page as Twitterbot and requires the tags plus a real PNG
+behind the URL they name, and does the same for the pack page and the
+binder, which are the two links a person actually posts. Filed in the
+corrections ledger: it was a published claim that was never true.
+
+## 0i. The window sold a buyer their own card (2026-09-14, STANDING)
+
+An agent walked the whole loop on the keeper's wallet — pack over
+hand-rolled HTTP, window pick over MCP, bell free, $1.48 all in — and
+found the one thing the dark-team pass missed:
+
+> the window pick handed me my own Blue Door. My pack at 15:49 became
+> the window's last-five pressings, so picking at 15:58 was guaranteed
+> to return one of my own five cards — $0.49 to move my own card from
+> my binder to my binder.
+
+Nothing was mispriced, nothing failed, the certificate was honest. The
+buyer paid half a pack for a transfer with no counterparty. And on a
+store this young it is not an edge case: **the window is the last five
+pressings store-wide, so a wallet that has just opened a pack IS the
+window**, and the first organic buyer who tries the window after their
+own pack hits it every time. The shelf puts the two next to each other,
+which invites exactly that sequence.
+
+Two guards, both above the settle line where the empty-window and the
+twelve-hour-lock refusals already sat:
+
+1. **`assertWindowOpenFor` refuses** with `charged:false` and a reason
+   by name when every pickable pressing on show is held by the picking
+   wallet.
+2. **`windowPick` draws only from rows that wallet does not hold**, so a
+   partial window sells the part that is somebody else's rather than
+   refusing the whole purchase. A buyer can never be handed a card they
+   already had.
+
+The free window door now returns **each row's holder** with a note
+saying to compare it against your own wallet, so the check is doable
+before paying and not merely enforced at the door. "Look first, it's
+free" was a real mitigation and not a sufficient one: it asked the
+buyer to notice something the store already knew.
+
+Filed in the corrections ledger. Held by test both ways: a wallet whose
+own pack fills the window is refused and left unlocked, and a mixed
+window sells the other wallet's pressing.
+
 ## 0e. What is true by design, stated rather than hidden
 
 - **The window still moves ordinary cards between binders.** A rare

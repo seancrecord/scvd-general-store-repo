@@ -934,15 +934,26 @@ async function deliverGoods(
       }, { checkpoint, purchasedAt: input.purchasedAt });
       const base = env.STORE_BASE_URL;
       const packUrl = `${base}/api/pack/${pack.pack.pack_id}`;
+      /*
+       * THE PAGE A PERSON OPENS (2026-09-14). pack_url is the signed
+       * manifest and stays exactly where it was — an agent's answer.
+       * view_url is the human half: the five faces, a share button on
+       * each, and the way back to the binder. The browser till reads
+       * view_url off any delivery and draws a button for it, so this
+       * one field is what turns a JSON receipt into an opened pack.
+       */
+      const viewUrl = `${base}/pack/${pack.pack.pack_id}`;
       return {
         deliverable: packNote({
           cards: pack.cards.map((signed) => ({ name: signed.card.name, rarity: signed.card.rarity })),
           packUrl,
+          viewUrl,
           tableUrl: `${base}/design`,
         }),
         extras: {
           pack_id: pack.pack.pack_id,
           pack_url: packUrl,
+          view_url: viewUrl,
           season: pack.pack.season,
           commit_d: pack.pack.commit,
           seed_date: pack.pack.seed_date,

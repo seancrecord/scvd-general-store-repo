@@ -1,5 +1,5 @@
 import { goDeeperSection } from "@/store/go-deeper";
-import { isKnownCrawler } from "@/lib/crawlers";
+import { isSocialUnfurler, isKnownCrawler } from "@/lib/crawlers";
 import { negotiate } from "@/lib/accept";
 import { webmcpOriginTrialTags } from "@/pages/storefront-page";
 import { escapeHtml } from "@/lib/sanitize";
@@ -255,6 +255,14 @@ export function wantsHtml(
   userAgent?: string | undefined,
 ): boolean {
   if ((acceptHeader ?? "").includes("text/html")) return true;
+  /*
+   * AN UNFURLER GETS THE PAGE ON ANY ACCEPT (2026-09-14). It came for
+   * the Open Graph tags in the head and they exist in the HTML alone,
+   * so negotiating it into a JSON twin is handing a link-preview bot a
+   * document with no preview in it. See SOCIAL_UNFURLERS in
+   * lib/crawlers.ts for what this cost and for how long.
+   */
+  if (isSocialUnfurler(userAgent)) return true;
   if (!isKnownCrawler(userAgent)) return false;
   return (
     negotiate(acceptHeader, ["text/html", "application/json", "text/markdown"]) ===

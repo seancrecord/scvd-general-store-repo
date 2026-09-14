@@ -964,8 +964,18 @@ const BASE = "https://scvd.store";
 // which is the same story as the index's six and is worth saying twice.
 // Verified the same way: with llms.ts restored to the prior commit the
 // prior digest reproduced, and this copy reproduces the new one.
+// 2026-09-14: the window stopped selling a buyer their own card, and
+// the shelf copy says so where a buyer reads it before paying — the
+// window_pick listing now names the two refusals (a pressing you hold
+// is out of your own draw; a window that is only your own pack refuses
+// before payment terms), and the published refusal guidance says to
+// compare each row's holder against your wallet. The pack's own note
+// leads with the count and names the page a person opens.
+// Verified the same way: with menu-novelties.ts, spec.ts and
+// surface-contract.ts restored to the prior commit the prior digest
+// reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e6d439fba6a87c3428f00a305aa5fd7241700e3405ac1f216867b70cff3d08ed";
+  "0ac6baada215694bd31d302734377d1b295d4b036eb483ff26e9e192199ad638";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
