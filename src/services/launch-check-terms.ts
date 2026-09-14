@@ -47,7 +47,11 @@ export const FIELD_SPEND_CAP_USD = 0.05;
  * `replay` object beside the tri-state `replay_served`. A v2 record's
  * "refused, correctly" therefore means "not a 2xx" and nothing finer.
  */
-export const LAUNCH_CHECK_BATTERY = "launch-check-v3";
+/** v4, 2026-09-13: exact authorization/transfer receipt pairing and raw
+ * response comparison. v3 transaction references did not establish redelivery,
+ * and changed bodies did not establish fresh fulfillment. Historical signed
+ * bytes remain unchanged; /corrections explains the superseded interpretation. */
+export const LAUNCH_CHECK_BATTERY = "launch-check-v4";
 
 /**
  * THE LONGEST AUTHORIZATION THIS STORE WILL EVER SIGN (ledger I2).
@@ -64,3 +68,8 @@ export const LAUNCH_CHECK_BATTERY = "launch-check-v3";
  * may never ask for more.
  */
 export const MAX_AUTHORIZATION_SECONDS = 600;
+
+
+/** Current instrument limit, separate from the versioned vocabulary definitions. */
+export const LAUNCH_REPLAY_MAPPING_LIMIT =
+  "Launch Check v4 compares complete response bytes. Transaction references alone do not establish redelivery; changed bytes alone do not establish fresh fulfillment. Historical v3 served_again and redelivered mappings were heuristics, and a fresh challenge alone proves no second charge. Read the report's battery, response evidence and payment_attempt.verification separately. The September 13 correction at /corrections withdraws the stronger interpretation; saved signed records retain their bytes.";

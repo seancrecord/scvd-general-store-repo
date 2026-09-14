@@ -11,6 +11,7 @@ import { HostedObservationStore, type HostedObservation, type HostedPurchase } f
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
 import { recordDeliveredSettlement } from "@/services/settlement-records";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
+import { idempotentPurchaseSlot } from "@/lib/idempotency";
 import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { evmChainOf } from "@/lib/base-rpc";
@@ -172,6 +173,36 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     });
   }
 
+  /**
+   * Hand the key back after a CONFIRMED non-payment — in flight is not used.
+   *
+   * The claim above is permanent on purpose while an outcome is unresolved.
+   * But a capacity refusal and a declined settlement both establish that no
+   * money moved, and until now the key stayed bound to that dead purchase
+   * forever: a buyer retrying the same key with a fresh payment was refused
+   * `purchase_not_settled` and could never succeed, so the store's own copy
+   * had to tell them to rotate the key. That is a confirmed no-charge
+   * holding a key hostage, and it diverges from the Idempotency-Key
+   * semantic every other implementation has, where a key is reusable after
+   * a failed request. A well-behaved agent holding one key per intent loops
+   * against a refusal it cannot clear.
+   *
+   * COMPARE AND DELETE, never a bare delete. By the time a late or repeated
+   * release arrives the slot may already have been re-claimed by the
+   * buyer's next attempt, and dropping THAT claim would open a second
+   * settlement against a live purchase — the exact thing the claim exists
+   * to stop. Releasing only our own id makes this safe to call more than
+   * once, so a lost release is retried by the next update rather than
+   * stranding the key.
+   */
+  async releaseIdempotentPurchase(purchaseId: string): Promise<void> {
+    await this.ctx.storage.transaction(async txn => {
+      if (await txn.get<string>("idempotent-purchase") === purchaseId) {
+        await txn.delete("idempotent-purchase");
+      }
+    });
+  }
+
   async beginPurchase(proposalJson: string): Promise<{ started: boolean; record: string }> {
     const proposal = JSON.parse(proposalJson) as PurchaseIntent;
     return this.ctx.storage.transaction(async (txn) => {
@@ -216,8 +247,22 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       await txn.put("purchase", next);
       return next;
     });
-    // Persist definitive non-payment before freeing the bench. Lost release
-    // acknowledgements over-refuse until the next reservation reconciles it.
+    // Persist definitive non-payment before freeing anything it holds: only
+    // once the not_settled record above is durable, and only for a state
+    // THIS store confirmed — a delayed not_settled writer against an already settled
+    // purchase is returned the settled prior above and frees nothing.
+    // A failed release leaves the key claimed, which refuses a retry rather
+    // than admitting one twice; the next update to this record retries it.
+    //
+    // Ahead of the bench, and swallowing its own failure, so that these two
+    // independent resources cannot strand each other: an unreleasable bench
+    // must not also cost the buyer their key.
+    if (record.state === "not_settled" && record.idempotency_slot) {
+      await idempotentPurchaseSlot(this.env, record.idempotency_slot)
+        .releaseIdempotentPurchase(record.id).catch(() => undefined);
+    }
+    // Lost release acknowledgements over-refuse until the next reservation
+    // reconciles it, which is the same direction the key fails.
     if (record.state === "not_settled" && record.item?.fulfillment === "human_queue") {
       await laborCapacity(this.env).releaseUnpaidLabor(record.id);
     }

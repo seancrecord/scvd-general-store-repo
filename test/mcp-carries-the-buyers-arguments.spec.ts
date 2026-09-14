@@ -284,6 +284,9 @@ describe("what the buyer paid for is about what the buyer named", () => {
               body.map((entry) => ({ jsonrpc: "2.0", id: entry.id, result: null })),
             );
           }
+          if (body.method === "eth_chainId") {
+            return Response.json({ jsonrpc: "2.0", id: body.id, result: "0x2105" });
+          }
           if (body.method === "eth_blockNumber") {
             return Response.json({ jsonrpc: "2.0", id: body.id, result: "0x2ff0000" });
           }

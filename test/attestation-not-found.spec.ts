@@ -47,7 +47,7 @@ function stubRpc(receipt: unknown, blockNumberHex: string): void {
     vi.fn(async (_url: unknown, init?: { body?: string }) => {
       const body = JSON.parse(init?.body ?? "{}") as { method?: string };
       const result =
-        body.method === "eth_blockNumber" ? blockNumberHex : receipt;
+        body.method === "eth_chainId" ? (String(_url).includes("polygon") ? "0x89" : "0x2105") : body.method === "eth_blockNumber" ? blockNumberHex : receipt;
       return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result }), {
         headers: { "Content-Type": "application/json" },
       });
@@ -133,7 +133,7 @@ describe("a well-formed hash that never existed", () => {
     // Adjacent path, cheap to pin while the stub is here: a reverted
     // transaction EXISTS and moved nothing, which is a different fact
     // about the world than never having been broadcast.
-    stubRpc({ status: "0x0", blockNumber: "0x64", logs: [] }, "0x2f00000");
+    stubRpc({ transactionHash: NEVER_BROADCAST_TX_HASH, status: "0x0", blockNumber: "0x64", logs: [] }, "0x2f00000");
     const observation = await observeSettlement(testEnv, {
       txHash: NEVER_BROADCAST_TX_HASH,
     });

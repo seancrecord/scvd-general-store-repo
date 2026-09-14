@@ -377,7 +377,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["nonce"] = {
       type: "string",
       description:
-        "Optional, EVM rails only. Require this EIP-3009 authorization nonce to have been burned in the transaction, checked against whichever EVM chain holds the receipt. Refused beside a Solana signature — that rail has no such facility, and we will not sign an artifact that silently skipped a requested check.",
+        "Optional, EVM rails only. Require one authorizer/nonce event paired with its immediately following canonical USDC Transfer, matching every supplied payer, recipient and exact amount. Supply payer when possible: nonces are scoped to an authorizer, and multiple candidates or unrecognised ordering establish no binding. Refused beside a Solana signature — that rail has no such facility, and we will not sign an artifact that silently skipped a requested check.",
     };
     properties["amount_usdc"] = {
       type: "number",
@@ -388,7 +388,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["payment_payload"] = {
       type: "string",
       description:
-        "Optional. The base64 PAYMENT-SIGNATURE you sent, verbatim. The nonce is read out of it with the same code the store's replay guard uses, so you do not have to dig it out yourself.",
+        "Optional. The base64 PAYMENT-SIGNATURE you sent, verbatim. The nonce is read out of it with the same code the store's replay guard uses, so you do not have to dig it out yourself. Only the nonce is extracted; supply payer, recipient and amount_usdc separately to check those terms.",
     };
     properties["payment_response"] = {
       type: "string",

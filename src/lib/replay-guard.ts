@@ -14,8 +14,58 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
  * with a TTL so the namespace doesn't grow forever.
  */
 
-/** Comfortably outlives any authorization's validBefore window. */
+/**
+ * The floor, not the whole answer. This was the whole answer until
+ * 2026-09-14, under a comment claiming it "comfortably outlives any
+ * authorization's validBefore window" — which is not ours to promise.
+ * `validBefore` is chosen by the BUYER and nothing in this stack caps it,
+ * so a week-long authorization outlived its row by six days. The chain
+ * still refuses the double-settle (that is the source of truth, and it is
+ * why this was never a payment hole), but getSpentNonce is also the link
+ * the paid retry stands on — nonce -> settle -> delivery intent — so an
+ * expired row silently drops a buyer out of goods recovery while their
+ * authorization is still live. The row now outlives the authorization by
+ * construction, and never sits below this floor.
+ */
 const NONCE_TTL_SECONDS = 24 * 60 * 60;
+
+/** Skew and settlement slack past validBefore, so the row never lapses first. */
+const NONCE_TTL_SLACK_SECONDS = 60 * 60;
+
+/**
+ * The ceiling, because validBefore is BUYER-CONTROLLED input and retention
+ * derived from it is our storage. Without this an authorization dated the
+ * year 3000 pins a row effectively forever, which is a stranger choosing
+ * how long we keep things. Past a month the early guard is a courtesy
+ * anyway: the chain consumes the nonce and remains the source of truth.
+ */
+const NONCE_TTL_MAX_SECONDS = 30 * 24 * 60 * 60;
+
+/**
+ * The buyer's chosen expiry, in unix seconds, off an exact-EVM envelope.
+ * Read through the same gate as the nonce: a bare authorization fragment
+ * is buyer-supplied evidence and cannot set our retention.
+ */
+export function authorizationValidBefore(paymentPayload: unknown): number | null {
+  if (!isRecord(paymentPayload)) return null;
+  if (
+    ("accepted" in paymentPayload || "x402Version" in paymentPayload) &&
+    !isExactEvmPayment(paymentPayload)
+  ) return null;
+  const payload = paymentPayload["payload"];
+  if (!isRecord(payload)) return null;
+  const authorization = payload["authorization"];
+  if (!isRecord(authorization)) return null;
+  const validBefore = Number(authorization["validBefore"]);
+  return Number.isSafeInteger(validBefore) && validBefore > 0 ? validBefore : null;
+}
+
+/** Never below the floor, never above the ceiling, otherwise the expiry. */
+export function nonceTtlSeconds(validBefore: number | null, nowMs: number = Date.now()): number {
+  if (validBefore === null) return NONCE_TTL_SECONDS;
+  const untilExpiry = validBefore - Math.floor(nowMs / 1000) + NONCE_TTL_SLACK_SECONDS;
+  return Math.min(NONCE_TTL_MAX_SECONDS, Math.max(NONCE_TTL_SECONDS, untilExpiry));
+}
 
 function isExactEvmPayment(paymentPayload: Record<string, unknown>): boolean {
   const accepted = paymentPayload["accepted"];
@@ -124,10 +174,11 @@ export async function recordSpentNonce(
   nonce: string,
   path: string,
   transaction?: string,
+  validBefore: number | null = null,
 ): Promise<void> {
   await kvPut(env.COUNTERS, 
     KV_KEYS.paymentNonce(nonce),
     JSON.stringify({ path, ...(transaction ? { transaction } : {}) }),
-    { expirationTtl: NONCE_TTL_SECONDS },
+    { expirationTtl: nonceTtlSeconds(validBefore) },
   );
 }

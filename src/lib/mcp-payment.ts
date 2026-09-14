@@ -64,6 +64,7 @@ function jsonDeclineResponse(body: unknown): Response {
   });
 }
 import {
+  authorizationValidBefore,
   extractPaymentNonce,
   recordSpentNonce,
 } from "@/lib/replay-guard";
@@ -444,6 +445,8 @@ export async function runMcpPayment(
 
   // Authentication precedes recovery; only retained original goods may resume.
   const nonce = extractPaymentNonce(result.paymentPayload);
+  // Same retention rule as the HTTP door; the spec pins both together.
+  const nonceValidBefore = authorizationValidBefore(result.paymentPayload);
   let spent;
   try {
     spent = await legacyPaidAttempt(env, result.paymentRequirements.network, result.paymentPayload);
@@ -674,7 +677,7 @@ export async function runMcpPayment(
      * SolomonisBlack named it. Third fix-that-looks-shared-and-isn't
      * this month, and the spec now pins both doors together.
      */
-    await recordSpentNonce(env, nonce, path, settledFacts.transaction);
+    await recordSpentNonce(env, nonce, path, settledFacts.transaction, nonceValidBefore);
   }
 
   const minimumUsdc = minimumUsdcQuoted;

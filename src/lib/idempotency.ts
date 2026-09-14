@@ -35,6 +35,14 @@ import { jcsCanonicalize } from "@/lib/jcs";
  * cache and never expires into permission to charge an unresolved purchase.
  * Before BUY-016 this file deliberately allowed races to charge normally;
  * that failed the advertised same-key guarantee and is no longer the rule.
+ *
+ * IN FLIGHT IS NOT USED. The claim is permanent for an UNRESOLVED purchase
+ * and released for a CONFIRMED non-payment: a capacity refusal or a declined
+ * settlement establishes that no money moved, so holding the key past that
+ * only strands a buyer who is retrying correctly. Releasing is done by the
+ * one writer that can prove the outcome (PaidRecovery.updatePurchase, after
+ * the not_settled state is durable), never by a caller reasoning about it.
+ * `unknown` is never released — that is the case the claim exists for.
  */
 
 /** Below this, a key is guessable decoration, not a secret. */
@@ -279,12 +287,30 @@ async function kvKeyFor(
   );
 }
 
+/**
+ * The durable slot a keyed purchase claims, named without retaining the key.
+ *
+ * Derived through kvKeyFor and hashed AGAIN, so the name is a one-way
+ * function of (surface, payer, secret key). That is what makes it safe
+ * to write onto the purchase record (PurchaseIntent.idempotency_slot):
+ * a later holder of the record can re-open this exact slot to RELEASE a
+ * confirmed non-payment without ever being told the buyer's key. Nothing
+ * derived from this name can honor a replay; honoring one still requires
+ * presenting the key itself.
+ */
+export async function idempotencySlotName(surface: string, payer: string, key: string): Promise<string> {
+  return `idempotency:${await sha256Hex(await kvKeyFor(surface, payer, key))}`;
+}
+
 /** Atomic ownership is separate from the optional response cache. */
-export async function idempotentPurchaseStore(env: Env, surface: string, payer: string, key: string) {
+export function idempotentPurchaseSlot(env: Env, slot: string) {
   const namespace = env.PAID_RECOVERIES;
   if (!namespace) throw new Error("Purchase admission unavailable");
-  const scope = await sha256Hex(await kvKeyFor(surface, payer, key));
-  return namespace.get(namespace.idFromName(`idempotency:${scope}`));
+  return namespace.get(namespace.idFromName(slot));
+}
+
+export async function idempotentPurchaseStore(env: Env, surface: string, payer: string, key: string) {
+  return idempotentPurchaseSlot(env, await idempotencySlotName(surface, payer, key));
 }
 
 /**
