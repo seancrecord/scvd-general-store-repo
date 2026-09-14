@@ -790,6 +790,9 @@ export function pennyPageDiscoveryExtensions(
   return declareDiscoveryExtension({
     output: {
       example: `# ${exampleTitle}\n\n(One markdown page, written by the keeper's own hand, delivered as text/markdown.)`,
+      // The SDK defaults examples to objects. Publications deliver text;
+      // leaving the default made CDP reject their discovery declaration.
+      schema: { type: "string" },
     },
   });
 }

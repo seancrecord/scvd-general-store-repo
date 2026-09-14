@@ -1,5 +1,60 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-14 — Forge OpenAPI intake
+
+For the authorized release, read current main's rule 62 and
+[x402-list's API contract](https://x402-list.com/api/v1/openapi.json) and
+[SCVD service history](https://x402-list.com/services/sean-claude-van-damme-s-general-store).
+It covers 32 endpoints and reports a passing unpaid handshake. The
+store's public preflight intentionally refuses its own hostname, so no
+self-preflight pass is claimed. The external schema probes remain the
+evidence for the full 36-route set.
+
+Read the live [store contract](https://scvd.store/openapi.json), the
+[OpenAPI 3.1.1 specification](https://spec.openapis.org/oas/v3.1.1.html)
+(response maps and references), Coinbase's
+[x402 v2 specification](https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md),
+and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+Inspected Response.status and ResponseInit in the already retrieved
+Workers types 5.20260914.1; no runtime API or binding changes are needed.
+
+The [Forge landing page](https://forge.clawca.sh/) does not expose the
+verification algorithm. Its Twitter page could not be read (403).
+The keeper's paste is the source for Forge's displayed statuses; our
+separate unsigned requests reproduce quote/refusal distinctions, not
+Forge's original requests. No payment or delivery verification was made.
+The local change documents the trust-profile route's observed 403 with
+the existing Problem schema. Evidence and remaining uncertainty:
+`docs/FORGE_DISCOVERY_2026-09-14.md`.
+
+Expanded the read to [Coinbase discovery](https://docs.cdp.coinbase.com/x402/seller/get-discovered)
+and its [free validator contract](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/validate-x402-endpoint).
+The validator's `simulation` is eligibility, while its separate `index`
+reports catalog status; the call neither pays nor indexes. All 35 menu
+declarations were accepted, with 27 active index rows. The publication
+was rejected for its string example against an object schema. Inspected
+the installed SDK declaration/validation implementation: the HTTP
+middleware supplies the method; output examples otherwise default to an
+object schema. Publication OpenAPI also omitted the till's optional tiers.
+
+Read [Circle listing requirements](https://developers.circle.com/agent-stack/agent-marketplace/get-listed),
+[Indexter provider intake](https://indexter.cash/for-providers), and
+[PayAI Bazaar discovery](https://docs.payai.network/x402/facilitators/bazaar).
+Circle manually reviews applications; partner-directory acceptance is
+separate. Its public domain search returned no items, with a successful
+nonempty control query. The linked Google intake form was unreadable in
+the web reader; no application or wallet-review reason was inferred.
+Indexter offers provider submission/claiming behind account access.
+PayAI catalogs declarations echoed to its own verify/settle endpoints,
+including verification without settlement since July 29. No submission,
+signed authorization, facilitator switch or vendor message was made.
+The remaining menu index gaps have no established cause from current
+metadata validity alone. Exact Forge requests remain unavailable.
+
+Read [Wrangler commands](https://developers.cloudflare.com/workers/wrangler/commands/)
+for the existing local dry-run bundle check. Evidence:
+`FORGE_INDEX_VALIDATION_2026-09-14.json`.
+
 ## 2026-09-12 — Launch Check recipient evidence limits
 
 Read [ERC-3009](https://eips.ethereum.org/EIPS/eip-3009), the primary
