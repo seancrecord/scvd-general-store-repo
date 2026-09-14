@@ -37,6 +37,7 @@ export function decisionBlock(passport: EndpointPassport): string {
   const s = passport.payload.summary;
   return `<section class="decision" data-decision="${escapeHtml(s.decision)}">
     <p class="decision-word">${escapeHtml(s.decision)}</p>
+    ${s.protocol ? `<p class="menu-meta">Protocol: <strong>${escapeHtml(s.protocol.toUpperCase())}</strong></p>` : ""}
     <p class="menu-desc">${escapeHtml(DECISION_MEANING[s.decision])}</p>
     <p class="menu-meta">Derived from <code>status: ${escapeHtml(s.status)}</code> —
     ${escapeHtml(DECISION_RULE)}</p>
@@ -70,7 +71,7 @@ function notObservedCell(gaps: readonly string[]): string {
     return "<em>the modules cited here declare no gaps</em>";
   }
   return `<strong>${gaps.length}</strong> thing${gaps.length === 1 ? "" : "s"}
-  the cited modules declined to check — a gap is not a pass.
+  the evidence declined to check — a gap is not a pass.
   ${gapList(gaps, "list them")}`;
 }
 
@@ -90,6 +91,7 @@ function summaryTable(passport: EndpointPassport): string {
   return `<table class="summary">
     <tbody>
       ${row("status", `<code>${escapeHtml(s.status)}</code>`)}
+      ${row("protocol", s.protocol ? escapeHtml(s.protocol) : null)}
       ${row(
         "tier",
         tier
@@ -206,6 +208,8 @@ export function passportCard(passport: EndpointPassport): string {
     <p class="menu-meta">issued ${escapeHtml(p.issued_at.slice(0, 16))}Z ·
     observer: ${escapeHtml(p.observer)}</p>
     ${decisionBlock(passport)}
+    ${p.protocol_rule ? `<p class="menu-desc">${escapeHtml(p.protocol_rule)}</p>` : ""}
+    ${p.protocol_tiers ? `<section><h3>Each protocol's own history</h3><ul>${Object.entries(p.protocol_tiers).map(([protocol, reading]) => `<li>${escapeHtml(protocol)}: ${escapeHtml(reading.line)} · <a href="${escapeHtml(reading.criteria_url)}">the rule</a></li>`).join("")}</ul></section>` : ""}
     ${summaryTable(passport)}
     <p class="menu-meta">history: first observed ${escapeHtml(p.history.first_observed ?? "—")},
     ${p.history.rounds_probed} rounds probed, ${p.history.rounds_gapped} gapped,
@@ -385,7 +389,7 @@ export function refusalCard(input: {
    * rendering a withdrawn finding as a refusal about the host would
    * be publishing the retracted claim in a smaller font.
    */
-  reason: "never-observed" | "not-ready" | "retracted-reading";
+  reason: "never-observed" | "not-ready" | "retracted-reading" | "protocol-unmeasured";
   detail: string;
 }): string {
   const decision = input.reason === "not-ready" ? "NOT_READY" : "INDETERMINATE";

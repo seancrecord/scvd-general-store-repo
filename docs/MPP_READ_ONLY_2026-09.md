@@ -419,3 +419,121 @@ Yes / no / later on this copy is the ruling PR 2 waits on.
 | xquik MPP quickstart (raw HTTP flow), Nevermined "The MPP rail", Exa MPP guide, AWS AgentCore tutorial 08 and ProcessPayment docs, Dwellir x402-vs-MPP | yes, as indexed passages | `[impl]` |
 | `docs.rs/mpp-br` (a Rust reader's `PaymentChallenge`) | **no** | egress-blocked |
 | Our own: `PAYMENT_RAILS.md` Part B and E, `docs/PROTOCOL_EXPANSION_2026-08.md` §1, §2, §7.3, §7.8, §11, §12, `docs/S8_CROSS_SURFACE_2026-09.md`, `src/services/preflight.ts`, `src/services/ward-round.ts`, `src/evidence/subject.ts`, `src/store/defect-vocabulary.ts` | yes | read |
+
+## PR 2 implementation — 2026-09-14, local and uncommitted
+
+The census now calls the existing Tier 0 reader on its one captured
+response and records `protocols_spoken` plus an `mpp` reading on each
+answered row. Expiry is evaluated at that row's `observed_at`; the
+requested URL supplies the TLS check. Raw challenges stay in the evidence
+headers rather than becoming a second structured recipient index.
+The reading records `body_complete`; a truncated capture skips JSON
+validation in the problem-body advisory because partial JSON cannot
+establish malformed JSON.
+
+Both the one-shot round and the hourly walk retain the readings. Their
+round-level `mpp` counts distinguish measured responses, answered rows
+without a saved reading, unreachable attempts and hosts not probed.
+The signed corpus retains the fields; host history carries them forward;
+trajectory and brief counts are recomputed from signed rows. Old rows
+are never re-parsed or rewritten. A missing historical field is unknown,
+not zero MPP doors. The brief and admin ward show the denominator and
+these gaps beside the count.
+
+Tests exercise MPP-only, both protocols, Basic beside x402, neither,
+malformed challenges, expiry, unreachable probes, both census paths,
+snapshot retention, public JSON/HTML and signature tampering. Four
+implementation-dependent tests failed with the source changes removed;
+the unchanged unreachable control passed. See `test/mpp-census.spec.ts`.
+The truncated-body regression also failed before its fix, then passed.
+An object in the MPP `chainId` field can throw inside the frozen reader;
+the census contains that failure as `mpp_read_error: "reader_failed"`,
+counted unmeasured, while retaining the x402 result. Its regression first
+returned `unreachable` instead of the unchanged x402 `ready` verdict.
+
+Final focused verification passed for `mpp-census`, `mpp-battery`,
+`trajectory` and `machine-readable-data`, as did typecheck, docs check
+and both Worker dry-run builds. The broad suite was stopped under
+concurrent test contention after failures in `counter-cadence`,
+`bounty-asks-and-tiers`, `bounty-board` and `passport-decision`; those
+failures were reproduced on unchanged HEAD, with the same local runtime
+configuration for the wallet-sensitive bounty board. This is not a
+completed full-suite pass. No commit or deployment was made.
+
+The census implementation initially left the passport ruling open; the
+keeper subsequently approved it below. No new intake source, payment
+rail or paid discovery read is part of this change. Primary-source read limits
+are recorded in `docs/SPEC_READS.md` under 2026-09-14.
+
+### Draft-01 comparison accompanying PR 2
+
+The full current core draft was read through GitHub on 2026-09-14;
+source and limits are in `docs/SPEC_READS.md`. Its challenge requirements
+continue to support the existing presence/id/realm/request/expiry/TLS
+checks, but that does not make the complete battery a draft-01 validator.
+The core delegates amount/currency/recipient to other specifications, the
+reader's `session` exception is not a registry assertion, and its method
+check conflates malformed identifiers with names outside its frozen list.
+The reader also cannot verify the normative challenge binding without
+the server's state or secret, and observes neither credential routing nor
+payment execution.
+
+A concrete difference beyond the handoff's shortlist: draft-01's Error
+Codes table adds `bad-request`, `invalid-payload`, `internal-payment-error`
+and `payment-action-required`. The existing problem-body advisory's list
+has none of them. Consequently PR 2 preserves the draft-00 citation and
+battery unchanged instead of silently widening the subject family. A
+separate draft-01 battery review is needed before claiming that revision.
+
+The handoff's measured snapshot supersedes this note's earlier near-zero
+forecast: sequence 6 / 2026-W37 recorded 161 MPP-bearing rows among 2,767
+probed, all also speaking x402. These are the handoff's dated counts, not a
+new live measurement by this implementation. The new census fields begin
+with new probes; historical captured headers are not retroactively
+promoted into freshly signed battery results.
+
+
+### Passport decision applied — 2026-09-14
+
+The keeper approved passport coverage for MPP-only doors, doors speaking
+MPP beside x402 and other protocols, and x402-only doors as today.
+Eligibility now requires a passing supported protocol in the newest
+observation. When both pass, x402 stays primary; a passing MPP battery
+also qualifies when the x402 battery fails. Additional protocols neither
+qualify nor disqualify a door by themselves.
+
+The passport names its selected `protocol`, retains the captured
+`protocols_spoken`, and signs separate `protocol_tiers` for protocols
+the record has actually observed. Every tier counts that protocol's
+own rounds; the fraction never sums successes across protocols. Missing
+legacy MPP readings, reader failures and unknown/incomplete batteries
+remain unmeasured. The underlying signed row and free preflight keep
+their x402 verdict; the passport retains it as `latest.x402_verdict`.
+
+The same selection feeds passport issuance, chip, commissioned profile,
+per-host tier and alphabetical tier index. A paid refresh retains and
+signs its protocol readings at the probe's recorded moment, so the
+newest observation can qualify or revoke either protocol. An older
+clean MPP challenge cannot survive a newer unmeasured refresh as a
+fresh passing observation. The passport's visible explanation names
+the unobserved credentials, binding, delivery and receipts, and states
+that the store's till does not speak MPP.
+
+Verification: the passport/profile/chip/criteria/census selection passed
+except for the already reproduced date-sensitive `passport-decision`
+fixture (its old observation now expires). The final focused run passed
+MPP issuance, separate histories, profile/index agreement, signed refresh
+retention and revocation, incomplete-evidence refusal and retractions.
+The new coverage tests first failed against the old behavior; refresh
+retention and the unmeasured refusal were also checked red before their
+fixes. The chip and passport were visually checked with a synthetic
+fixture. This implementation remains local and uncommitted.
+
+### PR 2 review preparation — 2026-09-14
+
+The census and passport changes were isolated on `codex/mpp-census-passport-pr`
+against main at `b661fdc1`. The paid discovery comparison is a separate change.
+This supersedes the earlier local-stage status above; no deployment is part
+of this review preparation.
+
+Validation: the regression tests were shown to fail against the prior behavior. On the isolated branch based on main, typecheck, both Worker dry-run bundles, documentation checks, audit and claims checks passed. The full suite completed with 13,899 passing tests, 14 failures and one skipped test; it also reported one worker-startup timeout. All 14 failed tests passed in targeted reruns on unchanged code and timeout settings. The file omitted by the startup timeout, published-signatures, passed all four tests separately. The full run was not wholly green; the failures comprised test timeouts and subsequent shared-fixture assertions, none of which reproduced in the reruns.

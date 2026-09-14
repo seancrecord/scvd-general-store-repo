@@ -1,5 +1,40 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-14 — MPP census persistence (PR 2)
+
+Read the current [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and retrieved `@cloudflare/workers-types` 5.20260914.1 to inspect the
+Response and KV types. The existing response capture and storage APIs
+remain in use; the MPP read adds no fetch or binding.
+
+Read the exact `docs/MPP_HANDOFF_2026-09-14.md` from remote main
+(the current checkout did not contain it), then read the full current
+[core draft-01](https://github.com/tempoxyz/mpp-specs/blob/main/specs/core/draft-httpauth-payment-01.md)
+through GitHub's contents API. The historical draft-00 URL returned 404;
+the raw draft-01 URL failed through the web reader, and mpp.dev could not
+be opened there. GitHub's primary source was reachable.
+
+The challenge-presence, nonempty unescaped id, required realm, unpadded
+base64url/JCS request, optional future expiry and HTTPS checks still have
+corresponding requirements. Amount, currency and recipient schemas are
+delegated to intent/method specifications; this core re-read alone does
+not certify those methods or refresh their registry. The frozen method
+allowlist does not separately classify identifier grammar failures, and
+`session` remains an observed exception in `mpp-v1`, not proof of IANA
+registration.
+
+Draft-01 adds binding requirements the unpaid reader cannot verify,
+credential-header selection, payment preferences and explicit versioning.
+Its Error Codes table also includes `bad-request`, `invalid-payload`,
+`internal-payment-error` and `payment-action-required`, which are absent
+from `MPP_PROBLEM_TYPES`. This makes widening the family to draft-01
+without further work misleading: the current body advisory would reject
+those newly listed types. PR 2 therefore keeps `mpp-v1` and `draft-00`
+unchanged. A future draft-01 battery needs a separately reviewed set of
+checks/advisories and its own citation. No current-spec conformance,
+challenge-binding verification, live MPP service or payment is claimed.
+
+
 ## 2026-09-12 — Launch Check recipient evidence limits
 
 Read [ERC-3009](https://eips.ethereum.org/EIPS/eip-3009), the primary
