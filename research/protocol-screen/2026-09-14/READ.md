@@ -156,20 +156,38 @@ Plus [#328](https://github.com/tempoxyz/mpp-specs/pull/328), an
 alternate payment credential header in the core draft — a change to
 what `src/lib/mpp-challenge.ts` has to parse.
 
-**DONE 2026-09-14, and not the way this section first proposed it.**
+**DONE 2026-09-14 — twice, and the second time was the right one.**
+
 The proposal was "re-cite the eleven classes to `-01`". Carried out
 literally that is a *false* citation: each `sourced_by` reads "read at
 main **2026-09-03**", a dated read that was accurate — on 3 September
 the file genuinely was `-00`. Swapping the number while keeping the
-date would claim we read a revision six days before it existed, in a
-repository whose whole thesis is checkable provenance.
+date would claim we read a revision six days before it existed.
 
-What was done instead: the rename diff was actually read
-(`git show 63c6461 -- specs/core/`), and it touches **four lines** —
-`docname` and `version` in the front matter, nothing normative. The
-eleven citations now name `-01`, carry today's read date, and record
-the renewal and the diff that justifies keeping the substance. Only
-#321 remains genuinely uncovered, with its observability question
+So the rename diff was actually read (`git show 63c6461 --
+specs/core/`): four lines, `docname` and `version`, nothing normative.
+Every substantive change to the core draft in the window — #285, #323,
+#328 (179 insertions) and #334 — landed *before* 2026-09-03, which is
+why the classes' substance holds.
+
+**And then a correction on top of that one.** The first fix re-cited
+all eleven to `-01` at today's date. Merging `origin/main` brought in
+`docs/MPP_HANDOFF_2026-09-14.md`, which reserves exactly this:
+
+> does `mpp-v1` stay pinned to draft-00 with draft-01 arriving as a
+> sibling battery, or is the delta small enough that the family row
+> grows to `versions: ["draft-00", "draft-01"]` with the checks
+> unchanged? … **But it is a ruling, not a refactor.**
+
+`MPP_SPEC_DRAFT` is `"draft-00"` and `subject.ts` reads
+`versions: ["draft-00"]`. Leading the citations with `-01` while the
+battery reports `spec: "draft-00"` is an internal contradiction, and it
+pre-empts a decision that is not a build decision. The eleven lines now
+**record the move rather than make it**: they cite `-00` at its real
+read date, and carry the renewal, the diff and the pointer to the
+ruling. Opened as **R8** in the ledger.
+
+Only #321 remains genuinely uncovered, with its observability question
 open.
 
 ---
