@@ -68,6 +68,7 @@ import {
 import type { Env, HonoEnv } from "@/types";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
 import {
+  agentToolsVerifyField,
   OPENAI_APPS_CHALLENGE,
   x402listTokenFile,
 } from "@/store/site-verification";
@@ -261,6 +262,9 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     resources: await structuredPaidResources(c.env),
     publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
+    // Additive, per this document's standing rule: a reader that
+    // ignores unknown keys is unaffected. See store/site-verification.
+    ...agentToolsVerifyField(),
     name: STORE_SERVICE_NAME,
     description: STORE_METADATA.description,
     tags: [...STORE_TAGS],
@@ -383,6 +387,10 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
     x402Version: 2,
+    // The ownership claim rides both well-known documents; a checker
+    // that fetches this one rather than the thin one beside it must
+    // not read a missing field as a failed claim.
+    ...agentToolsVerifyField(),
     // THE NAMING LAW, tier 2: display name, one string everywhere.
     // The full name is tier 3 and retired from all metadata.
     name: STORE_SERVICE_NAME,

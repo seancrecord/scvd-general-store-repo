@@ -1,0 +1,76 @@
+{
+ "note": "Real git trees, captured 2026-09-14, so the replay of both 2026-09 defects stays pinned. Regenerate only from the upstream repos.",
+ "x402_schemes_2026_08_03": {
+  "commit": "34cb6bd04c88f4333f56b9c778d3d35df997379c",
+  "lines": [
+   "00ca08a0414130c327d69a987798e88ead660a0f specs/schemes/exact/scheme_exact_svm.md",
+   "0204eb55adb9d39010d3835a28e1ca7036f23501 specs/schemes/exact/scheme_exact_evm.md",
+   "0ed7629b535e1cd2925ca016ef76bdcf905f2a1d specs/schemes/batch-settlement/scheme_batch_settlement_cloudflare.md",
+   "166c04352dcde338f171a062f5ea5dfe839bb205 specs/schemes/exact/scheme_exact_xrpl.md",
+   "1a13a9bd0cbc3bc1a8256af46f0df0f36c34ad1d specs/schemes/exact/scheme_exact_casper.md",
+   "28868bacea2c1f54e17c11a29e17625edee03851 specs/schemes/exact/scheme_exact_starknet.md",
+   "2adba09e1123561ab60398179d21b82b7b1b96c1 specs/schemes/exact/scheme_exact_sui.md",
+   "31d28bc812db6446527cf0869e2102d09d8be407 specs/schemes/exact/scheme_exact_stellar.md",
+   "42091514afc4afdf221ec24dcd72bc0df424def2 specs/schemes/exact/scheme_exact_algo.md",
+   "73b8a5e2f96839aa2e2121b220821edec14418a8 specs/schemes/exact/scheme_exact_ton.md",
+   "76a999d5e67121a39bb7266cacc8a291b840ec7a specs/schemes/upto/scheme_upto.md",
+   "77ca60e9976be4744c72ed34c6e75527a38745cd specs/schemes/exact/scheme_exact_cardano.md",
+   "7d82dc2f38d27e0615c472154d7916d536c8adb8 specs/schemes/batch-settlement/scheme_batch_settlement_evm.md",
+   "9f947c716319b017494963050991dbcd6a89938e specs/schemes/upto/scheme_upto_evm.md",
+   "ac399aa1310879b0cbc091f9027ae2edb849c9b1 specs/schemes/exact/scheme_exact.md",
+   "b7e81c3609137e1f0c641f3a478cef93b928600a specs/schemes/exact/scheme_exact_concordium.md",
+   "b8378608a1452ec9efcf2b147e578de79b2bdab9 specs/schemes/upto/scheme_upto_svm.md",
+   "c0a43b82c410755cee5ab21973aadddf90279f97 specs/schemes/exact/scheme_exact_aptos.md",
+   "c17662c4d00757d0fa555ab092f45ace301ee014 specs/schemes/auth-capture/scheme_auth_capture.md",
+   "c7c127bb866d6827609627c7eab28a0fd4a8b20e specs/schemes/batch-settlement/scheme_batch_settlement.md",
+   "df9106d5725bfbf16477545053f69b03d8728047 specs/schemes/exact/scheme_exact_near.md",
+   "e92c036d50373b103f1ef8114c6dc1b4152107da specs/schemes/auth-capture/scheme_auth_capture_evm.md",
+   "ee3860ccdf351b22a1186c08660cf6929a54d0f6 specs/schemes/exact/scheme_exact_hedera.md",
+   "ff7eaaa2868c174c71e01fc2f35e73818da048aa specs/schemes/exact/scheme_exact_keeta.md"
+  ]
+ },
+ "x402_schemes_head": {
+  "lines": [
+   "0bd9649218de0a01d981e382d538f7602f6dd153 specs/schemes/auth-capture/scheme_auth_capture.md",
+   "0ed7629b535e1cd2925ca016ef76bdcf905f2a1d specs/schemes/batch-settlement/scheme_batch_settlement_cloudflare.md",
+   "166c04352dcde338f171a062f5ea5dfe839bb205 specs/schemes/exact/scheme_exact_xrpl.md",
+   "1a13a9bd0cbc3bc1a8256af46f0df0f36c34ad1d specs/schemes/exact/scheme_exact_casper.md",
+   "202dae031d453db9cf46cd52de92c1800aee33f5 specs/schemes/upto/scheme_upto.md",
+   "2739f01b8002075b9d3369b324c7bc2d6ebfd45f specs/schemes/auth-capture/scheme_auth_capture_evm.md",
+   "28868bacea2c1f54e17c11a29e17625edee03851 specs/schemes/exact/scheme_exact_starknet.md",
+   "2adba09e1123561ab60398179d21b82b7b1b96c1 specs/schemes/exact/scheme_exact_sui.md",
+   "42091514afc4afdf221ec24dcd72bc0df424def2 specs/schemes/exact/scheme_exact_algo.md",
+   "630e3acc634cef480e4f4f326d220fabb971a85c specs/schemes/exact/scheme_exact_canton.md",
+   "702624ad929411553c8635e60dad855e55fc9b82 specs/schemes/exact/scheme_exact_stellar.md",
+   "73b8a5e2f96839aa2e2121b220821edec14418a8 specs/schemes/exact/scheme_exact_ton.md",
+   "8652580e7899f2ffc3e6420eb6a22dcd61091168 specs/schemes/upto/scheme_upto_svm.md",
+   "87947f64fe6089fd96e3413fac4bbaa1bf6c2cdd specs/schemes/exact/scheme_exact_svm.md",
+   "9cf64c0e2f8d172765cc17e345e2f19a324b948b specs/schemes/batch-settlement/scheme_batch_settlement_svm.md",
+   "9fa6e227ce89840921cbf8c7b5d127e0515e0678 specs/schemes/batch-settlement/scheme_batch_settlement_evm.md",
+   "af6b12bbafe03940a710708b1908c63b0fcd2de3 specs/schemes/upto/scheme_upto_evm.md",
+   "b7e81c3609137e1f0c641f3a478cef93b928600a specs/schemes/exact/scheme_exact_concordium.md",
+   "c0a43b82c410755cee5ab21973aadddf90279f97 specs/schemes/exact/scheme_exact_aptos.md",
+   "c53d0185a72d4f09e7d70d3f77027d4d502840ea specs/schemes/exact/scheme_exact_cardano.md",
+   "c7c127bb866d6827609627c7eab28a0fd4a8b20e specs/schemes/batch-settlement/scheme_batch_settlement.md",
+   "cda2ed42b0169e8db05969c193a8012f74fb0b20 specs/schemes/exact/scheme_exact_evm.md",
+   "df9106d5725bfbf16477545053f69b03d8728047 specs/schemes/exact/scheme_exact_near.md",
+   "ee3860ccdf351b22a1186c08660cf6929a54d0f6 specs/schemes/exact/scheme_exact_hedera.md",
+   "fe27f3c2a971fcc8325c9f65c85bc19f8f93271f specs/schemes/exact/scheme_exact.md",
+   "ff7eaaa2868c174c71e01fc2f35e73818da048aa specs/schemes/exact/scheme_exact_keeta.md"
+  ]
+ },
+ "mpp_core00_2026_09_03": {
+  "commit": "604e0ad677828b3d73aa1fa2e683087fe22fc408",
+  "lines": [
+   "89043d3bdc73e03ec1ba1309d86c6964e9ca9e85 specs/core/draft-httpauth-payment-00.md"
+  ]
+ },
+ "mpp_core00_head": {
+  "lines": []
+ },
+ "mpp_core_dir_head": {
+  "lines": [
+   "435301d7a40fe189b106440da63112466b99d2e1 specs/core/draft-httpauth-payment-01.md"
+  ]
+ }
+}

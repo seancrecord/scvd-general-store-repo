@@ -1,0 +1,64 @@
+{
+  "note": "Decisions the protocol screen has already been given, with their reasons. A row an existing ruling covers is reported under it rather than in ACT — answered, not hidden. Scope rulings expire on purpose: see scripts/lib/rulings.mjs. Edited by hand or by the Monday run; every entry needs a reason a stranger could re-examine.",
+  "rulings": [
+    {
+      "id": "R1-preflight-scheme-list",
+      "state": "done",
+      "reason": "The nonstandard-scheme advisory was narrowed to the spec's own four families and spec-scheme-not-exact added. Shipped 2026-09-14 with red witnessed first.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R2-mpp-citations",
+      "state": "wont",
+      "reason": "WITHDRAWN 2026-09-14, twice corrected. The eleven classes still cite draft-httpauth-payment-00 at their real read date, unchanged from main. Editing sourced_by changes the bytes of the published scvd-defects package, and registry/npm-content.json refuses changed bytes under an unchanged version (test/packages.spec.ts) — so the prose edit was a package release wearing a citation's clothes, inside a PR about a protocol screen. It would also have published a position on R8, which is the keeper's. The renewal is recorded where it costs nothing: this ledger, the dated READ, and the path table in docs/MPP_READ_ONLY_2026-09.md.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R3-tempo-not-our-rail",
+      "state": "noted",
+      "reason": "We do not settle on Tempo. Its TIPs are read so that the day a named counterparty asks for it we are not starting from zero, and for the settlement mechanics MPP's charge methods cite — but a TIP moving is never work on shipped code here.",
+      "ruled_on": "2026-09-14",
+      "covers_until": "2026-12-31",
+      "scope": {
+        "protocol": "Tempo TIPs"
+      }
+    },
+    {
+      "id": "R4-verdict-across-schemes",
+      "state": "done",
+      "reason": "Answered 2026-09-14: `ready` does mean the same thing — the verdict-moving checks read the scheme-independent envelope §4 requires of every scheme, and no verdict is wrong on a non-exact door. What ready did not cover was §6.1's extra.paymentFlow, where upfront and escrow spend the buyer before the handler runs; our own client already dropped those entries and the free preflight said nothing. Advisory settles-before-delivery shipped. Record: docs/SCHEME_VERDICT_DEPTH_2026-09.md.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R5-x402-extension-coverage",
+      "state": "done",
+      "reason": "Answered 2026-09-14: docs/X402_EXTENSION_COVERAGE.md is generated from specs/extensions/ at HEAD — 9 extensions, 2 read in full, 1 adjacent, 6 unread, each unread one carrying what reading it would cost. An extension the spec adds with no row FAILS the generator, so a new one is a decision rather than an accident. The two worth a ruling: payment-identifier is a standard idempotency key we built our own answer to before it existed, and auth-hints is a pre-payment fact, which is this battery's whole thesis.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R6-coinbase-mirror",
+      "state": "wont",
+      "reason": "Withdrawn as a finding: SPEC_READS.md had already recorded the move to x402-foundation, and the remaining mentions are the npm package @coinbase/x402, which is current. One later dated log entry reached for the old URL again — history, corrected by appending, never by editing.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R7-corpus-scheme-retention",
+      "state": "proposed",
+      "reason": "The corpus keeps an advisory's name and not its detail, so the fragmentation time series cannot tell a real fork from our own blind spot. Retaining the scheme value changes what the corpus stores, so it is the keeper's call.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R8-mpp-draft-01-pin",
+      "state": "proposed",
+      "reason": "Does mpp-v1 stay pinned to draft-00 with draft-01 a sibling battery, or does the family row widen to versions: [draft-00, draft-01] with the twelve checks unchanged? docs/MPP_HANDOFF_2026-09-14.md §3b reads the delta as small enough to widen, and says plainly it is a ruling and not a refactor. The vocabulary now records the move without making it; MPP_SPEC_DRAFT and subject.ts still say draft-00. Note: any change to the classes' sourced_by lines rides with this ruling, because it changes published package bytes and needs a scvd-defects version bump and a re-cut npm-content record.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    }
+  ]
+}
