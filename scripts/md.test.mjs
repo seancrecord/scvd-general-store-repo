@@ -26,15 +26,26 @@ function cells(row) {
 }
 
 test("REPRODUCES THE CODEQL FINDING: escaping the delimiter alone is defeated by a backslash", () => {
-  // The original: title.replace(/\|/g, "\\|") — pipes escaped, backslashes not.
-  const broken = (s) => s.replace(/\|/g, "\\|");
   const hostile = String.raw`fix: handle \| in the parser`;
 
-  const brokenRow = `| a | ${broken(hostile)} |`;
-  assert.equal(cells(brokenRow), 3, "the old escaping leaks a third cell — the row breaks");
+  /*
+   * The old expression was `title.replace(/\|/g, "\\|")` — pipes
+   * escaped, backslashes not. Its output is written out here as a
+   * literal rather than re-run, for two reasons. Keeping a live copy
+   * of the vulnerable expression around earns its own CodeQL alert
+   * (and did, on this PR, at this line), and a suppression comment
+   * would be a worse answer than not shipping the code. Pinning the
+   * exact historical output is also the stronger assertion: it cannot
+   * drift with a re-derivation.
+   *
+   * Verified equal to the old expression's output before being frozen
+   * here: replacing `|` with `\|` in `\|` yields `\\|` — an escaped
+   * backslash, then a LIVE delimiter.
+   */
+  const asTheOldCodeLeftIt = String.raw`fix: handle \\| in the parser`;
 
-  const fixedRow = `| a | ${mdCell(hostile)} |`;
-  assert.equal(cells(fixedRow), 2, "escaping the escape character first holds the row to two cells");
+  assert.equal(cells(`| a | ${asTheOldCodeLeftIt} |`), 3, "the old escaping leaks a third cell — the row breaks");
+  assert.equal(cells(`| a | ${mdCell(hostile)} |`), 2, "escaping the escape character first holds the row to two cells");
 });
 
 test("a backslash is escaped before the pipe, never after", () => {
