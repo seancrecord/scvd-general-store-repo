@@ -34,8 +34,8 @@
     },
     {
       "id": "R5-x402-extension-coverage",
-      "state": "proposed",
-      "reason": "Five of the seven extensions x402 publishes have no reader here, including extension-offer-and-receipt, which is the conformance desk's own subject.",
+      "state": "done",
+      "reason": "Answered 2026-09-14: docs/X402_EXTENSION_COVERAGE.md is generated from specs/extensions/ at HEAD — 9 extensions, 2 read in full, 1 adjacent, 6 unread, each unread one carrying what reading it would cost. An extension the spec adds with no row FAILS the generator, so a new one is a decision rather than an accident. The two worth a ruling: payment-identifier is a standard idempotency key we built our own answer to before it existed, and auth-hints is a pre-payment fact, which is this battery's whole thesis.",
       "ruled_on": "2026-09-14",
       "rows": []
     },
