@@ -394,6 +394,38 @@ function storeServiceMetadata(
  */
 export const SIGNING_WINDOW_SECONDS = 300;
 
+/**
+ * HOW THE MONEY ACTUALLY MOVES ON AN EVM RAIL, SAID OUT LOUD
+ * (2026-09-14).
+ *
+ * `extra.assetTransferMethod` is the field that decides whether a
+ * buyer's signature is acceptable at all: eip3009 signs a
+ * `transferWithAuthorization`, permit2 signs a Permit2 witness, and
+ * erc7710 a delegation. They are not interchangeable, and a client
+ * that builds the wrong one fails at the last step, silently.
+ *
+ * ABSENT WAS ALREADY CORRECT AND STAYS CORRECT. The exact-EVM scheme
+ * says an unspecified method means "prioritize eip3009 (if
+ * compatible), then permit2", which resolves to what this store has
+ * always served — an EIP-3009 authorization, the one our own
+ * payload_template writes out. So this declares a fact rather than
+ * changing one: no buyer's path moves, and the bytes of the
+ * authorization are the same bytes.
+ *
+ * WHY SAY IT ANYWAY. The spec gained permit2 and erc7710 beside
+ * eip3009, so silence now means "infer it" where it used to mean
+ * "there is only one". This store's OWN battery has read this field
+ * on every rail since 2026-08-29 (nonstandard-transfer-method,
+ * unrecognized-transfer-method) — we were reading other people's
+ * doors for a field we declined to fill in ourselves.
+ *
+ * TYPED ONCE, used by both the till and the manifest, for the reason
+ * the signing window was: a value spelled twice is a value that can
+ * disagree with itself. EVM only — a Solana accept takes a signed
+ * transaction and has no authorization to choose a method for.
+ */
+export const EVM_TRANSFER_METHOD = "eip3009";
+
 export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
   // EIP-55 on every EVM rail, Base included, so the two Workers quote
   // one spelling of the wallet however each secret was typed (see
@@ -410,6 +442,10 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
     // Set on every accept, on every rail, so the library's `|| 300`
     // can never bind again. See SIGNING_WINDOW_SECONDS.
     maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,
+    // Merged OVER the SDK's derived {name, version} rather than
+    // replacing it — @x402/core spreads parsedPrice.extra first and
+    // ours second, so the EIP-712 domain the buyer needs is untouched.
+    extra: { assetTransferMethod: EVM_TRANSFER_METHOD },
   }));
   const polygon = polygonPayTo(env);
   if (polygon) {
@@ -420,6 +456,7 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
         price: `$${tierUsdc}`,
         payTo: polygon,
         maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,
+        extra: { assetTransferMethod: EVM_TRANSFER_METHOD },
       });
     }
   }
@@ -433,6 +470,9 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
         ? { amount: usdcToAtomic(tier), asset: WORLD_USDC, extra: { name: "USDC", version: "2" } }
         : `$${tier}`,
       maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,
+      // Both rails here are EVM. On World this merges over the name and
+      // version the price object carries; on Arbitrum, over the SDK's.
+      extra: { assetTransferMethod: EVM_TRANSFER_METHOD },
     });
   }
   const solana = solanaPayTo(env);
@@ -462,6 +502,20 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
  * Fresh-challenge fields (validBefore, Solana feePayer) are
  * deliberately absent — they are negotiated per challenge, and a
  * manifest that froze them would be advertising bytes it cannot honor.
+ *
+ * MAXTIMEOUTSECONDS IS NOT ONE OF THOSE, and leaving it out was an
+ * omission rather than a decision (found 2026-09-14, on a walk of our
+ * own discovery document against our own challenge). The signing
+ * window is a STANDING TERM: SIGNING_WINDOW_SECONDS, ruled at 300 on
+ * 2026-08-29 and the same on every rail and every tier. railAccepts
+ * sets it on every entry precisely so the library's `|| 300` can
+ * never bind again — and then this function dropped it on the way
+ * out, so `/.well-known/x402` and `/openapi.json` advertised a door
+ * whose window a buyer had to guess, or inherit from that same
+ * library fallback we went to the trouble of pinning. A client that
+ * pre-builds a payment from discovery needs it to compute validBefore
+ * before it has ever seen a challenge. Carried, not rebuilt: the rule
+ * above applies to this field like every other one.
  */
 export interface ManifestAccept {
   scheme: "exact";
@@ -470,8 +524,14 @@ export interface ManifestAccept {
   amount: string;
   asset: string;
   payTo: string;
-  /** EIP-712 domain params, on EVM entries only — the USDC contract's. */
-  extra?: { name: string; version: string };
+  /** The signing window the challenge will carry. See the note above. */
+  maxTimeoutSeconds: number;
+  /**
+   * EIP-712 domain params, on EVM entries only — the USDC contract's —
+   * beside the transfer method the authorization is built for. See
+   * EVM_TRANSFER_METHOD.
+   */
+  extra?: { name: string; version: string; assetTransferMethod: string };
 }
 
 const USDC_ASSET_BY_NETWORK: Record<string, string> = {
@@ -495,9 +555,17 @@ export function manifestAccepts(
       amount: typeof option.price === "object" ? option.price.amount : usdcToAtomic(usdc),
       asset: USDC_ASSET_BY_NETWORK[network] ?? "",
       payTo: String(option.payTo),
+      // Carried from the till's own entry, never retyped. The `??` is
+      // the type's optionality, not a second opinion about the number:
+      // railAccepts sets this on every entry it builds.
+      maxTimeoutSeconds: option.maxTimeoutSeconds ?? SIGNING_WINDOW_SECONDS,
     };
     if (network.startsWith("eip155:")) {
-      entry.extra = { name: network === WORLD_NETWORK ? "USDC" : "USD Coin", version: "2" };
+      entry.extra = {
+        name: network === WORLD_NETWORK ? "USDC" : "USD Coin",
+        version: "2",
+        assetTransferMethod: EVM_TRANSFER_METHOD,
+      };
     }
     return entry;
   });

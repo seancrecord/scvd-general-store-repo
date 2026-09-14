@@ -1,6 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { acceptedNetworks } from "@/lib/payments";
+import { acceptedNetworks, manifestAccepts, railAccepts, SIGNING_WINDOW_SECONDS } from "@/lib/payments";
 import { MENU_ITEMS } from "@/store";
 import type { Env } from "@/types";
 
@@ -35,7 +35,7 @@ interface X402Doc {
   resources: Array<{
     resource: string;
     price_usdc_options?: number[];
-    accepts?: Array<{ network: string }>;
+    accepts?: Array<{ network: string; maxTimeoutSeconds?: number }>;
   }>;
 }
 interface OpenApiDoc {
@@ -102,6 +102,63 @@ describe("price: the number a buyer sees is the same number everywhere", () => {
         resource.price_usdc_options,
         `x402 tiers for ${item.id}`,
       ).toEqual(menuItem.price_tiers_usdc);
+    }
+  });
+});
+
+/**
+ * THE SIGNING WINDOW, ADVERTISED AND SERVED (added 2026-09-14).
+ *
+ * The fourth fact where drift is a customer-facing lie, and the one
+ * this spec was missing on the day it was written: how long a signed
+ * authorization stays good. `railAccepts` sets maxTimeoutSeconds on
+ * every entry so that `@x402/core`'s `|| 300` can never bind (see
+ * SIGNING_WINDOW_SECONDS); `manifestAccepts` then rebuilt the entry
+ * field by field and dropped it, so every discovery surface served
+ * accepts WITHOUT the window while the challenge served them with it.
+ * A buyer pre-building a payment from `/.well-known/x402` had to
+ * guess validBefore, or inherit the same library fallback we pinned
+ * ourselves against.
+ *
+ * Two assertions on purpose. The first reads the SERVED document, in
+ * this spec's own register: whatever else moves, what a buyer fetches
+ * carries the ruled window. The second is the narrower pin on how the
+ * bug happened — the manifest rebuilt entry by entry against the
+ * till's own builder, which is the invariant manifestAccepts claims
+ * in its docblock and the one that silently stopped holding. The
+ * served challenge's own half of this is walked by
+ * cross-surface-tier-a.spec.ts, which has the buyer harness.
+ */
+describe("signing window: discovery advertises the window the till serves", () => {
+  it("every advertised accepts entry carries the ruled window", () => {
+    for (const item of MENU_ITEMS) {
+      const resource = buyResource(item.id)!;
+      for (const entry of resource.accepts ?? []) {
+        expect(
+          entry.maxTimeoutSeconds,
+          `${item.id} advertises ${entry.network} without a signing window`,
+        ).toBe(SIGNING_WINDOW_SECONDS);
+      }
+    }
+  });
+
+  it("the manifest carries the window the till's own builder sets", () => {
+    // The failure was not a wrong number, it was a DROPPED one:
+    // manifestAccepts rebuilds each entry field by field, so a field
+    // railAccepts sets is only advertised if someone remembered to
+    // copy it. Compared entry by entry against the till's builder,
+    // which is what payment-gate reads to write the real challenge.
+    const tiers = [0.001, 0.5];
+    const till = railAccepts(testEnv, tiers);
+    const manifest = manifestAccepts(testEnv, tiers);
+    expect(manifest.length).toBe(till.length);
+    for (const [index, entry] of manifest.entries()) {
+      const source = till[index]!;
+      expect(entry.network, `entry ${index} order`).toBe(source.network);
+      expect(
+        entry.maxTimeoutSeconds,
+        `entry ${index} (${entry.network}) lost the window`,
+      ).toBe(source.maxTimeoutSeconds);
     }
   });
 });
