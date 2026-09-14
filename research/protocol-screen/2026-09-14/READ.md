@@ -39,11 +39,25 @@ verify other people's doors against.
 1. **`coinbase/x402` is not the x402 repository any more.** Its tip is
    2026-04-21, `chore: bump main to match foundation repo (#93)` — a
    mirror that stopped tracking when the protocol moved to the x402
-   Foundation. Our own `docs/PROTOCOL_EXPANSION_2026-08.md` and
-   `docs/SPEC_READS.md` still cite spec files by their `coinbase/`
-   path. A screen pointed there would have reported that our rail went
-   quiet in April, which is the most expensive wrong answer available.
-   The live repository is `x402-foundation/x402`.
+   Foundation. A screen pointed there would have reported that our rail
+   went quiet in April, which is the most expensive wrong answer
+   available. The live repository is `x402-foundation/x402`.
+
+   ***This is not a new finding, and the first draft of this section was
+   wrong twice.*** It named `docs/PROTOCOL_EXPANSION_2026-08.md` as
+   carrying a stale citation — that file does not mention the mirror at
+   all — and then counted "nine files" that name it. Read rather than
+   grepped, almost every one of those is the npm package
+   `@coinbase/x402`, which is current and correct and must not be
+   touched. More to the point, **`docs/SPEC_READS.md` had already caught
+   this**, under its own heading: *"THE x402 SPEC HAD ALREADY MOVED, AND
+   TWO ROWS POINTED AT A FORK … The repository is
+   `github.com/x402-foundation/x402`; `coinbase/x402` is now a
+   development fork."* The house knew. What remains is one spec link
+   inside a later dated log entry (2026-09-11) that reached for the old
+   URL again — and a dated log entry is history, corrected by appending,
+   never by editing. **P6 is withdrawn as a finding**; the recurrence is
+   worth a line to the keeper, not a rewrite.
 2. **Git declares no breaking changes.** Over 90 days x402 carried zero
    `feat!:` subjects and zero `BREAKING CHANGE` trailers. Every level
    and consequence on a layer-3 row is **derived by our script**, and
@@ -52,7 +66,7 @@ verify other people's doors against.
 
 ---
 
-## 1. A shipped instrument is now wrong, and the screen found it
+## 1. A shipped instrument was wrong, the screen found it, and it is fixed
 
 `src/services/preflight.ts:1019`:
 
@@ -106,7 +120,7 @@ not to quietly correct.
 
 ---
 
-## 2. Eleven vocabulary citations point at an expired draft
+## 2. Eleven vocabulary citations pointed at an expired draft
 
 `src/store/defect-vocabulary.ts` sources **11 MPP classes** to
 `draft-httpauth-payment-00`.
@@ -124,26 +138,38 @@ classes cite no longer exists, and the version they name is superseded.
 `docs/MPP_READ_ONLY_2026-09.md` and `PAYMENT_RAILS.md` carry the same
 `-00` citations.
 
-Worse for the battery than the rename: **four MUST-level requirements
-entered the core draft inside the window**, each of which is a check
-that can fail, which is exactly what our vocabulary is made of.
+**Corrected 2026-09-14, on acting: three of these were already ours.**
+This section first read four MUST-level requirements as candidate new
+classes. They entered the core draft *before* our 2026-09-03 read date,
+which is precisely why the vocabulary already covers three of them —
+checked by opening the file rather than grepping it:
 
-| PR | Date | The requirement |
-|---|---|---|
-| [#285](https://github.com/tempoxyz/mpp-specs/pull/285) | 2026-06-19 | Challenge ids must be non-empty |
-| [#321](https://github.com/tempoxyz/mpp-specs/pull/321) | 2026-08-18 | MUST NOT grant partial access on verification failure |
-| [#323](https://github.com/tempoxyz/mpp-specs/pull/323) | 2026-08-18 | Challenge binding verification required |
-| [#334](https://github.com/tempoxyz/mpp-specs/pull/334) | 2026-08-24 | Use `payment-expired` for expired challenges |
+| PR | Date | The requirement | Covered by |
+|---|---|---|---|
+| [#285](https://github.com/tempoxyz/mpp-specs/pull/285) | 2026-06-19 | Challenge ids must be non-empty | `mpp-challenge-id` — *"any non-empty opaque string"* |
+| [#323](https://github.com/tempoxyz/mpp-specs/pull/323) | 2026-08-18 | Challenge binding verification required | `mpp-request-not-canonical` — *"hashes the request for challenge binding"* |
+| [#334](https://github.com/tempoxyz/mpp-specs/pull/334) | 2026-08-24 | Use `payment-expired` for expired challenges | `mpp-challenge-expired-at-issue` — *"refuses the credential as `payment-expired`"* |
+| [#321](https://github.com/tempoxyz/mpp-specs/pull/321) | 2026-08-18 | MUST NOT grant partial access on verification failure | **nothing** — and it may not be reachable read-only: observing it means presenting a bad credential and seeing whether partial content comes back, which is an active probe, not a read |
 
 Plus [#328](https://github.com/tempoxyz/mpp-specs/pull/328), an
 alternate payment credential header in the core draft — a change to
 what `src/lib/mpp-challenge.ts` has to parse.
 
-**Proposed (P2):** re-cite the eleven classes to `-01`, read the rename
-diff for substantive change, and size the four MUST-level checks as new
-sourced classes. The MPP battery's own rule — one class per check that
-can fail, sourced to the draft — makes this mechanical rather than a
-judgement call.
+**DONE 2026-09-14, and not the way this section first proposed it.**
+The proposal was "re-cite the eleven classes to `-01`". Carried out
+literally that is a *false* citation: each `sourced_by` reads "read at
+main **2026-09-03**", a dated read that was accurate — on 3 September
+the file genuinely was `-00`. Swapping the number while keeping the
+date would claim we read a revision six days before it existed, in a
+repository whose whole thesis is checkable provenance.
+
+What was done instead: the rename diff was actually read
+(`git show 63c6461 -- specs/core/`), and it touches **four lines** —
+`docname` and `version` in the front matter, nothing normative. The
+eleven citations now name `-01`, carry today's read date, and record
+the renewal and the diff that justifies keeping the substance. Only
+#321 remains genuinely uncovered, with its observability question
+open.
 
 ---
 
@@ -215,17 +241,78 @@ them; each is a yes / no / later.
 
 | # | Proposal | Size | § |
 |---|---|---|---|
-| **P1** | **Teach the preflight advisory the spec's own scheme list** (`exact`, `upto`, `auth-capture`, `batch-settlement`), keep `nonstandard-scheme` for what is genuinely outside it, and count the doors scored under the narrow test. A shipped free instrument is issuing a wrong advisory today. | Small, and the denominator work is the honest half | §1 |
-| **P2** | **Re-cite the eleven MPP classes to `draft-httpauth-payment-01`**, read the rename diff, and size the four new MUST-level checks as sourced classes | Small–medium | §2 |
+| **P1** | **DONE 2026-09-14.** `SPEC_SCHEMES` sourced to `specs/schemes/` at HEAD; `nonstandard-scheme` now fires only outside that list and names the list in its detail; the new `spec-scheme-not-exact` carries what was true in the old advisory without the accusation. Red witnessed on all four cases before green. Neither advisory folds into a verdict, so no door's `ready` moves and nothing signed changes meaning. Denominator in §6. | done | §1 |
+| **P2** | **DONE 2026-09-14**, as a re-read rather than a find-and-replace — see §2. Only #321 stays open. | done | §2 |
 | **P3** | **Four candidate defect classes from WebBotAuth**, with #130's borrowed test vectors run through the conformance desk | Small | §4 |
 | **P4** | **Read x402 #3067 (§8 discovery) and #3083 (settlement pending)** against our preflight and our flow audit | An hour each | §3 |
 | **P5** | **Re-check AP2 directly** before any D5 work; if confirmed quiet, re-point the instrument at `dev.ucp.common.payment.*` | An hour | §4 |
-| **P6** | **Correct our own citations**: `coinbase/x402` → `x402-foundation/x402` across docs | Minutes | §0 |
+| ~~P6~~ | **WITHDRAWN** — `docs/SPEC_READS.md` had already recorded the move; the rest are the npm package. One dated log entry reached for the old URL again, which is a line to the keeper, not a rewrite. | — | §0 |
 | **P7** | When lane-B commerce is written, **UCP first, ACP dormant-watch** | A sentence | §4 |
 
 ---
 
-## 6. What this screen did not see
+## 6. The denominator for P1, and the part of it we cannot recover
+
+The advisory was wrong from 2026-08-03 to 2026-09-14. Counting who
+wore it is the honest half of the fix, and the count comes with a hole
+we have to own.
+
+**In the published corpus (`scvd.store/corpus.json`, read today): ten
+hosts carry `nonstandard-scheme`.**
+
+    api.onesource.io                     mcp.barker.money
+    x402.api.browser-use.com             x402-paid-service.iholt.workers.dev
+    api.vaults.fyi                       cashflow.genesisconductor.io
+    agent402.tools                       asia-pulse.com
+    app.heinrichstech.com                x402.fairseal.io
+
+**How many of those ten were scored wrongly is not recoverable from the
+published record.** The corpus retains the advisory *name* and not its
+detail, and the scheme string — the thing that decides whether a row
+was a real `gokite-aa`-class finding or a spec-legal `upto` — lived
+only in the detail sentence. Ten is therefore an upper bound on the
+harm and a lower bound on nothing.
+
+Two consequences, neither of them a rewrite:
+
+1. **Nothing signed is being re-signed.** Those rows were scored under
+   the battery as it stood, and they stand as history — the same rule
+   the v2 fold was held to. The advisory never folded into a verdict,
+   so no `ready` moved then and none moves now.
+2. **The instrument that was supposed to be a time series could not
+   answer its own question.** The 2026-08-03 comment calls the weekly
+   ward round "the store's own time series on fragmentation." A series
+   that records *that* a door was non-standard but not *what it
+   offered* cannot distinguish fragmentation from our own blind spot —
+   which is exactly the distinction it existed to measure. Retaining
+   the scheme value in a structured field is the follow-up; it is a
+   change to what the corpus stores, so it is a proposal, not a fix
+   made in passing.
+
+---
+
+## 7. A note on this document's own accuracy
+
+Three claims in the first draft of this read were wrong, and all three
+failed the same way: written from a grep, not from opening the file.
+
+- §0 named `PROTOCOL_EXPANSION_2026-08.md` as citing the frozen mirror.
+  It does not mention it.
+- §0 then counted "nine files" citing the mirror. Almost all are the
+  npm package `@coinbase/x402`, which is current.
+- §2 offered four MUST-level requirements as candidate new classes.
+  Three were already covered, and were covered *because* they predate
+  our read date.
+
+None of the three changed what the screen found — §1 stands, and it is
+the finding that mattered — but a document that asks a reader to check
+its claims has to survive its own author checking them. Recorded here
+rather than quietly amended, on the same principle as the rest of the
+file: the gaps get counted against the observer.
+
+---
+
+## 8. What this screen did not see
 
 - **scout** is somebody else's reading. Absent from scout is
   unobserved, not absent. It reports merges, not adoption.

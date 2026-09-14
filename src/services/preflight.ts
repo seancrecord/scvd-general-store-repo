@@ -177,9 +177,65 @@ export const VERDICT_FOLD_CHECK_NAMES = [
   "solana-rail-receivable",
 ] as const;
 
+/**
+ * THE SCHEME FAMILIES THE SPECIFICATION ITSELF PUBLISHES.
+ *
+ * Read from `specs/schemes/` at `x402-foundation/x402@HEAD` on
+ * 2026-09-14 — each family's spec file opens with its own wire
+ * identifier as its title (`# Scheme: \`upto\``), so these are the
+ * strings a door puts in `accepts[].scheme`, not directory names we
+ * guessed at.
+ *
+ * WHY THIS CONSTANT EXISTS. Until today this battery treated every
+ * scheme but `exact` as vendor drift, on an August reading that was
+ * true when it was made: the ecosystem was forking at the scheme
+ * identifier, Kite answered `gokite-aa`, and the only verified volume
+ * settled under `exact`. It stopped being true while we weren't
+ * looking. `upto` gained SVM payment flows and a delegated receiver
+ * authorizer, `auth-capture` reached v1.1, `batch-settlement` gained
+ * an SVM specification and response validation — all inside ninety
+ * days, all in the specification, none of it drift.
+ *
+ * So a door correctly advertising `upto` was told by this store's
+ * headline free instrument that it was a dead end for everyone
+ * outside its vendor's stack. That is the keeper's 2026-09-04 ruling
+ * on the MPP battery happening again one layer down: a door speaking
+ * another wire read as a broken x402 door was a verdict on our reader
+ * wearing a finding about their door. Not another protocol this time.
+ * Another scheme inside our own.
+ *
+ * THE RULE THAT FOLLOWS. The standing intake rule in PAYMENT_RAILS.md
+ * governs the TILL — what we accept payment in, which grows only on a
+ * named counterparty. It does not govern the BATTERY. A reader that
+ * does not know a scheme does not decline it, it MISJUDGES it, and
+ * publishes the misjudgement over our signature. When this list falls
+ * behind the specification again, that is a defect in us.
+ *
+ * Neither advisory folds into a verdict, so no door's `ready` moves
+ * and nothing already signed changes meaning. Rows sealed before
+ * today were scored under the battery as it stood and stand as
+ * history; we do not resign old artifacts.
+ */
+export const SPEC_SCHEMES: ReadonlySet<string> = new Set([
+  "exact",
+  "upto",
+  "auth-capture",
+  "batch-settlement",
+]);
+
 /** Advisory names, in battery emission order. True and worth knowing, never folded. */
 export const ADVISORY_NAMES = [
   "nonstandard-scheme",
+  /*
+   * Split out of nonstandard-scheme 2026-09-14, found by the protocol
+   * screen's first run. See SPEC_SCHEMES below: three of the four
+   * scheme families the x402 specification publishes are not `exact`,
+   * and calling them vendor drift was our reader wearing a finding
+   * about their door. This advisory carries what was actually true in
+   * the old one — a client built only for `exact` still cannot pay
+   * here — without the accusation.
+   */
+  "spec-scheme-not-exact",
   "testnet-network",
   "payto-is-a-name",
   "payto-wrong-rail",
@@ -1001,7 +1057,7 @@ export function runChecks(
 
   for (const entry of accepts) {
     /**
-     * SCHEME DRIFT, flagged since 2026-08-03. The L1 landscape
+     * SCHEME DRIFT, flagged since 2026-08-03, NARROWED 2026-09-14. The L1 landscape
      * research found the ecosystem quietly forking at the scheme
      * identifier: Kite's reference implementation answers
      * "gokite-aa", Tempo's MPP is a different protocol entirely,
@@ -1016,10 +1072,15 @@ export function runChecks(
      * weekly is the store's own time series on fragmentation.
      */
     const scheme = String(entry["scheme"] ?? "");
-    if (scheme && scheme !== "exact") {
+    if (scheme && !SPEC_SCHEMES.has(scheme)) {
       advisories.push({
         name: "nonstandard-scheme",
-        detail: `accepts offers scheme "${scheme}" rather than the spec's "exact". A generic x402 client will not recognize it without scheme-specific handling — fine for clients built to this vendor's stack, a silent dead end for everyone else.`,
+        detail: `accepts offers scheme "${scheme}", which is not one of the scheme families the x402 specification publishes (${[...SPEC_SCHEMES].join(", ")}). A generic x402 client will not recognize it without scheme-specific handling — fine for clients built to this vendor's stack, a silent dead end for everyone else.`,
+      });
+    } else if (scheme && scheme !== "exact") {
+      advisories.push({
+        name: "spec-scheme-not-exact",
+        detail: `accepts offers scheme "${scheme}". That is a scheme family the x402 specification publishes — this is not a defect and not drift. It is here because a client built only for "exact" still cannot pay this door without ${scheme}-specific handling, which is worth knowing before the call rather than after it.`,
       });
     }
     const network = String(entry["network"] ?? "");

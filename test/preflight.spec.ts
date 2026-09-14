@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { runChecks } from "@/services/preflight";
+import { ADVISORY_NAMES, SPEC_SCHEMES, runChecks } from "@/services/preflight";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
 /**
@@ -252,7 +252,62 @@ describe("scheme drift is named before anyone pays into it", () => {
     // But a generic caller is told before paying, not after.
     const drift = advisories.find((a) => a.name === "nonstandard-scheme");
     expect(drift?.detail).toContain('"gokite-aa"');
-    expect(drift?.detail).toContain('"exact"');
+    // The accusation now has to name the list it is measured against,
+    // so a reader can check the claim instead of taking our word.
+    expect(drift?.detail).toContain("exact, upto, auth-capture, batch-settlement");
+    expect(advisories.map((a) => a.name)).not.toContain("spec-scheme-not-exact");
+  });
+
+  /*
+   * THE DRIFT WAS OURS, 2026-09-14. Until today every one of these
+   * three earned `nonstandard-scheme` and a sentence calling the door
+   * a silent dead end outside its vendor's stack. They are the
+   * specification. Each case below fails against the battery as it
+   * stood this morning, which is the point of pinning them.
+   */
+  it.each(["upto", "auth-capture", "batch-settlement"])(
+    "%s is the specification, not vendor drift, and is never accused of being one",
+    (scheme) => {
+      const { checks, advisories } = runChecks(
+        new Response("{}", {
+          status: 402,
+          headers: {
+            "PAYMENT-REQUIRED": btoa(
+              JSON.stringify({
+                x402Version: 2,
+                accepts: [
+                  {
+                    scheme,
+                    network: "eip155:8453",
+                    amount: "5000",
+                    asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                    payTo: "0x1111111111111111111111111111111111111111",
+                  },
+                ],
+              }),
+            ),
+          },
+        }),
+        false,
+      );
+      expect(checks.every((check) => check.ok)).toBe(true);
+      expect(advisories.map((a) => a.name)).not.toContain("nonstandard-scheme");
+
+      // What WAS true in the old advisory survives, without the charge:
+      // an exact-only client still cannot pay here.
+      const noted = advisories.find((a) => a.name === "spec-scheme-not-exact");
+      expect(noted?.detail).toContain(`"${scheme}"`);
+      expect(noted?.detail).toContain("not a defect and not drift");
+      expect(noted?.detail).toContain('built only for "exact"');
+    },
+  );
+
+  it("the published scheme list is the one the battery actually applies", () => {
+    // A list that drifts from the code is the same failure one level up.
+    expect([...SPEC_SCHEMES].sort()).toEqual(
+      ["auth-capture", "batch-settlement", "exact", "upto"],
+    );
+    expect(ADVISORY_NAMES).toContain("spec-scheme-not-exact");
   });
 
   it("our own 402 earns no scheme advisory, which is the claim that matters", async () => {
