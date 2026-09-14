@@ -120,6 +120,7 @@ import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { SettledPayment } from "@/lib/payments";
 import { SettlementUnknown, SettlementDeclined, settlementDeclinedBody } from "@/lib/payments";
 import {
+  authorizationValidBefore,
   extractPaymentNonce,
   recordSpentNonce,
 } from "@/lib/replay-guard";
@@ -1263,6 +1264,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // Only retained original goods may resume a settled payment. A retry's
   // inputs and today's upstream evidence cannot replace the purchased good.
   const nonce = extractPaymentNonce(result.paymentPayload);
+  // Retention is pinned to the buyer's own expiry: the row must outlive the
+  // authorization it guards, or the paid retry loses its link while live.
+  const nonceValidBefore = authorizationValidBefore(result.paymentPayload);
   let spent;
   try {
     spent = await legacyPaidAttempt(c.env, result.paymentRequirements.network, result.paymentPayload);
@@ -1573,6 +1577,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         nonce,
         c.req.path,
         till.settled.transaction,
+        nonceValidBefore,
       );
     }
 
