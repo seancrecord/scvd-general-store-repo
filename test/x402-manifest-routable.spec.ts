@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { EVM_TRANSFER_METHOD } from "@/lib/payments";
 
 /**
  * THE MANIFEST BECOMES ROUTABLE (2026-08-26, after a verified outside
@@ -40,7 +41,7 @@ type Entry = {
     amount: string;
     asset: string;
     payTo: string;
-    extra?: { name: string; version: string };
+    extra?: { name: string; version: string; assetTransferMethod: string };
   }[];
 };
 
@@ -88,8 +89,21 @@ describe("the routable manifest", () => {
         expect(accept.payTo.length).toBeGreaterThan(0);
         if (accept.network.startsWith("eip155:")) {
           // The EIP-712 domain params, present on every EVM entry —
-          // the exact conformance line a directory checks us on.
-          expect(accept.extra).toEqual({ name: "USD Coin", version: "2" });
+          // the exact conformance line a directory checks us on —
+          // beside the transfer method the authorization is built for
+          // (added 2026-09-14; see EVM_TRANSFER_METHOD).
+          //
+          // Kept EXACT rather than loosened to a subset match. A
+          // directory reads this object whole, so a key that appears
+          // here is a decision about what we advertise, and this
+          // assertion is where that decision has to be made on
+          // purpose. It is the check that caught the method being
+          // added, which is the behaviour to keep.
+          expect(accept.extra).toEqual({
+            name: "USD Coin",
+            version: "2",
+            assetTransferMethod: EVM_TRANSFER_METHOD,
+          });
         }
       }
     }
