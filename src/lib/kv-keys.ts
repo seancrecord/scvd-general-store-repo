@@ -276,18 +276,16 @@ export const KV_KEYS = {
   almanacEntryPrefix: "almanac_entry:",
   keeperLastSeen: "keeper_last_seen",
   /**
-   * When the keeper last LOOKED at the alarm trail. Rows that first
-   * fired after it are marked NEW, so "have I seen this?" stops being
-   * answered by memory and eyeballing.
+   * Last successfully rendered alarm-trail visit, for first-look
+   * context. Per-row receipts in alert-inbox.ts determine unread state.
    */
   alarmsLastRead: "alarms_last_read",
   /**
    * When the keeper last STOOD AT THE COUNTER while alarms were
    * showing. Separate from alarmsLastRead on purpose: that one is the
-   * reconciliation trail's own watermark, and a glance at the counter
+   * reconciliation trail's own visit, and a glance at the counter
    * is not a read of the trail — clearing one with the other would
-   * hide rows he never opened. This one only decides whether the
-   * counter's top line shouts.
+   * hide rows he never opened. Neither timestamp acknowledges a row.
    */
   alarmsSeenAtCounter: "alarms_seen_counter",
   /**

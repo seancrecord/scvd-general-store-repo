@@ -286,6 +286,7 @@ describe("the shopfront says what happened to the record, not to the money", () 
       reclassified_house: 0,
       pre_meter_settlements: 1,
       artifacts_issued: 89,
+      distinct_organic_buyers: 4,
       organic_by_rail: {
         base: 3,
         polygon: 0,

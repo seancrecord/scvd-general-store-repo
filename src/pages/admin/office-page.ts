@@ -144,7 +144,7 @@ export interface OfficePageData {
   bazaarLedger: BazaarLedgerEntry[];
   gazetteIssues: GazetteIssue[];
   /** Pending work counts for the strip. */
-  work: { orders: number; letters: number; reviews: number; alerts: number };
+  work: { orders: number; letters: number; reviews: number; alerts: number | null };
   /**
    * MONEY OUT (2026-09-04): what the paying wallet holds, read off the
    * chain, against what the bounty board has promised. Null fields
@@ -967,13 +967,13 @@ export function renderOfficePage(data: OfficePageData): string {
   const work = data.work;
   const workTotal = work.orders + work.letters + work.reviews;
   const workStrip =
-    workTotal + work.alerts === 0
+    work.alerts !== null && workTotal + work.alerts === 0
       ? `<p>Nothing waiting at <a href="/admin/counter">the counter</a>. The alarms are quiet.</p>`
       : `<p><strong>Waiting at <a href="/admin/counter">the counter</a>:</strong>
          ${work.orders} open order${work.orders === 1 ? "" : "s"} \u00B7
          ${work.letters} letter${work.letters === 1 ? "" : "s"} \u00B7
          ${work.reviews} review${work.reviews === 1 ? "" : "s"} (tips/confessions/refunds)
-         ${work.alerts > 0 ? `\u00B7 <strong style="color:#8c2f1b">${work.alerts} alarm${work.alerts === 1 ? "" : "s"}</strong>` : ""}</p>`;
+         ${work.alerts === null ? "· <strong>Alarm reading unavailable.</strong> Reload to retry." : work.alerts > 0 ? `\u00B7 <strong style="color:#8c2f1b">${work.alerts} alarm${work.alerts === 1 ? "" : "s"}</strong>` : ""}</p>`;
   const body = `
   <section>
     <h2>The take — all-time</h2>

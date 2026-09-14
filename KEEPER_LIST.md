@@ -1486,8 +1486,23 @@ what you ruled and what is still yours to look at.
   accusation and it has no bearing on the DBL listing. It would
   only bite if a mail server ran on that IP, and none does: Gmail
   and Resend both relay from their own authenticated addresses.
-  Read it and let it be. Tell David the DBL listing was
-  confirmed — he asked for nothing, and it is the kind of reply
+  Read it and let it be.
+
+  **THE NOTES ARE CUT (2026-09-13).** The cause is fixed in code,
+  not just paused: a rendered welcome carried seven links back to
+  us and an `<img>` pointing at our SVG chip; the broken-door note
+  carried six and a price link. Both now carry exactly ONE link,
+  the passport page, which already holds the chip, the free
+  re-check, the check definitions and the standing note. No image.
+  No price in a cold note — a first contact with prices in it is a
+  solicitation however it is written. Rule 55 is unharmed: the
+  verification paths are still named in the note (the user agent
+  string to grep, RFC 9421, the free re-run) and every URL they
+  used to need is one click behind the passport link. The guard is
+  `expectOneLinkNoImage` in `test/outreach.spec.ts`, shown red
+  against the old notes at seven and six links. Delisting text for
+  the Spamhaus form is in the session chat.
+  Tell David the DBL listing was confirmed — he asked for nothing, and it is the kind of reply
   the store owes.
 - **Findability afternoon.** Run the batch 4 queries
   (attic). Write who appears. Google still blank for

@@ -15,7 +15,7 @@ import type { DeliveryAudit } from "@/services/delivery-audit";
 interface AlertLogEntry {
   condition: string;
   detail: string;
-  /** True when this first fired after the keeper's previous visit. */
+  /** True when this row has no receipt from a previous successful render here. */
   is_new?: boolean;
   /** FIRST seen, and it does not move. See lib/alerts. */
   at: string;
@@ -82,10 +82,11 @@ export interface ReconciliationPageData {
   };
   deliveries: DeliveryAudit | null;
   alerts: AlertLogEntry[];
+  alertsUnavailable?: boolean;
   /**
    * When the keeper last loaded this page, or null if never. Only used
    * to word the header honestly — the per-row NEW mark is decided by
-   * the route, which has the watermark in hand when it reads the log.
+   * the route, which reads the individual row receipts with the log.
    */
   alertsLastRead: string | null;
   loadNotes: string[];
@@ -311,7 +312,11 @@ function deliveriesHtml(
 function alertsHtml(
   alerts: AlertLogEntry[],
   lastRead: string | null,
+  unavailable = false,
 ): string {
+  if (unavailable) {
+    return `<p>${ATTENTION} — Alarm reading unavailable. No alerts were marked seen. Reload to retry.</p>`;
+  }
   if (alerts.length === 0) {
     return `<p>${PASS} — the alarm log is quiet (30-day window).</p>`;
   }
@@ -432,7 +437,7 @@ export function renderReconciliationPage(
 
   <section>
     <h2>The alarm trail</h2>
-    ${alertsHtml(data.alerts, data.alertsLastRead)}
+    ${alertsHtml(data.alerts, data.alertsLastRead, data.alertsUnavailable)}
   </section>
 
   <section>

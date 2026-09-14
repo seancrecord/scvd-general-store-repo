@@ -486,6 +486,19 @@ async function walk(flags) {
       const outcome = classifyPaid(second.status, secondBody);
       entry.verdict = outcome.verdict;
       entry.deliverable = outcome.deliverable;
+      /*
+       * Every paid attempt carries the reading, present or not, checked
+       * or not: "the door refused my payment" and "the door never read
+       * my payment" are different facts with opposite remedies, and
+       * this ledger recorded only the weaker one until 2026-09-13.
+       */
+      entry.advertised_version_unpayable = advertisedVersionUnpayable({
+        paymentSubmitted: true,
+        paidStatus: second.status,
+        unpaidChallenge: parsed.challenge,
+        paidChallenge: parseChallenge(second.status, second.headers, secondBody)
+          .challenge,
+      });
       const receipt = second.headers.get("payment-response");
       if (receipt) {
         try {

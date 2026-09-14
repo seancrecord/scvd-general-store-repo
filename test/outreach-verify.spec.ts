@@ -115,9 +115,11 @@ describe("verify live: the knock before the note", () => {
     expect(note).toContain("On 2026-09-05 our weekly probe");
     expect(note).toContain("re-checked live at 22:41 UTC on 2026-09-05");
     expect(note).toContain("First seen on our 2026-W36 weekly pass");
-    // The finding is what the check saw, by name, with its definition.
+    // The finding is what the check saw, by name. Its definition moved
+    // one click behind the single passport link (2026-09-13, the DBL
+    // listing): a note carries one link back to us and no more.
     expect(note).toContain("What failed, by name: payto-payable");
-    expect(note).toContain(`${BASE}/api/preflight/v2`);
+    expect(note).toContain(`${BASE}/passport/door.example`);
     expect(note).not.toContain("no x402 buyer can pay");
     expect(note).toContain("Subject: a failed readiness check on your x402 endpoint at door.example");
   });
