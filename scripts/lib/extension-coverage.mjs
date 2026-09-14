@@ -1,3 +1,5 @@
+import { mdCell, mdCellTrunc } from "./md.mjs";
+
 /**
  * THE x402 EXTENSION COVERAGE MATRIX — what the specification
  * publishes, what this store reads, and what the difference costs.
@@ -138,7 +140,7 @@ export function renderMatrix(extensions, coverage = COVERAGE, today = new Date()
   out.push("| --- | --- | --- | --- |");
   for (const r of rows) {
     const mark = { full: "**full**", adjacent: "adjacent", none: "—", unclassified: "**UNCLASSIFIED**" }[r.reads];
-    out.push(`| \`${r.id}\` | ${mark} | ${r.where ? r.where.split(" — ")[0] : "—"} | ${r.summary.slice(0, 150)} |`);
+    out.push(`| \`${mdCell(r.id)}\` | ${mark} | ${r.where ? mdCell(r.where.split(" — ")[0]) : "—"} | ${mdCellTrunc(r.summary, 150)} |`);
   }
   out.push("");
   for (const state of ["adjacent", "none"]) {

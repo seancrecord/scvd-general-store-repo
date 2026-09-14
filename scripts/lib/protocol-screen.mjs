@@ -28,6 +28,7 @@
  * scripts/protocol-screen.mjs.
  */
 
+import { mdCell } from "./md.mjs";
 import { applyRulings, openProposals, renderRulings } from "./rulings.mjs";
 
 export const SCOUT_URL = "https://scout.nekuda.ai/";
@@ -579,7 +580,7 @@ function bandTable(rows) {
   if (rows.length === 0) return "_None this run._\n";
   const head = "| Protocol | Ref | Level | Surface | What it does to us |\n| --- | --- | --- | --- | --- |\n";
   const body = rows.map((r) =>
-    `| ${r.protocol} | ${refCell(r)} | ${levelCell(r)} | ${r.surfaces.join(", ") || "—"} | ${r.title.replace(/\|/g, "\\|")} |`
+    `| ${mdCell(r.protocol)} | ${refCell(r)} | ${levelCell(r)} | ${mdCell(r.surfaces.join(", ")) || "—"} | ${mdCell(r.title)} |`
   ).join("\n");
   const derived = rows.some((r) => r.derived);
   return `${head}${body}\n${derived ? "\n¹ derived by this script from the commit subject, not declared by the maintainer.\n" : ""}`;
@@ -608,7 +609,7 @@ export function renderMarkdown(report) {
   for (const c of report.cadence) {
     const spec = c.source === "git" ? String(c.specChanges90) : "—";
     const brk = c.source === "git" ? `${c.breaking90} (undeclared)` : String(c.breaking90);
-    out.push(`| ${c.protocol}${c.scopeNote ? " ²" : ""} | ${c.layer} | ${c.maintainers} | ${c.source} | ${c.last90} | ${c.last30} | ${brk} | ${spec} | ${c.lastMerge ?? "none observed"} | ${c.quiet ? `**yes — ${c.quietDays ?? "∞"}d**` : "no"} |`);
+    out.push(`| ${mdCell(c.protocol)}${c.scopeNote ? " ²" : ""} | ${mdCell(c.layer)} | ${mdCell(c.maintainers)} | ${mdCell(c.source)} | ${c.last90} | ${c.last30} | ${brk} | ${spec} | ${c.lastMerge ?? "none observed"} | ${c.quiet ? `**yes — ${c.quietDays ?? "∞"}d**` : "no"} |`);
   }
   const released = report.cadence.filter((c) => c.latestRelease);
   if (released.length) {
@@ -619,7 +620,7 @@ export function renderMarkdown(report) {
     out.push("| --- | --- | --- | --- |");
     for (const c of released) {
       const pending = c.specMovedSinceRelease;
-      out.push(`| ${c.protocol} | ${c.releasesInWindow} | \`${c.latestRelease.tag}\` (${c.latestRelease.date}) | ${pending === null ? "—" : pending} |`);
+      out.push(`| ${mdCell(c.protocol)} | ${c.releasesInWindow} | \`${mdCell(c.latestRelease.tag)}\` (${c.latestRelease.date}) | ${pending === null ? "—" : pending} |`);
     }
     out.push("");
     out.push("Ancestry is NOT computed — these clones are shallow. A row is marked released only when a tag points at it by sha (or by MPP's `spec-artifacts-<sha>` naming); everything else reads `unknown`, never `unreleased`.");

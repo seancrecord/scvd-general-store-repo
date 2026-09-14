@@ -8,15 +8,15 @@
 
 | Extension | Reads | Where | What it is |
 | --- | --- | --- | --- |
-| `bazaar` | **full** | src/services/preflight.ts | The `bazaar` extension enables **resource discovery and cataloging** for x402-enabled endpoints and MCP tools. Resource servers declare their endpoint |
-| `builder-code` | — | — | The `builder-code` extension enables **on-chain attribution tracking** for x402 payments by appending [ERC-8021](https://eip.tools/eip/8021) Schema 2  |
-| `eip2612GasSponsoring` | — | — | The `eip2612GasSponsoring` extension enables a "gasless" approval flow to the `Permit` Contract for tokens that implement **EIP-2612** for the [`schem |
-| `erc20ApprovalGasSponsoring` | — | — | The `erc20ApprovalGasSponsoring` extension enables a **gasless ERC-20 approval flow** for the [`scheme_exact_evm.md`](../schemes/exact/scheme_exact_ev |
-| `auth-hints` | — | — | The `auth-hints` extension provides authentication hints for specific payment requirements within x402. It enables clients to discover which `accepts[ |
+| `bazaar` | **full** | src/services/preflight.ts | The `bazaar` extension enables **resource discovery and cataloging** for x402-enabled endpoints and MCP tools. Resource servers declare their endpoin… |
+| `builder-code` | — | — | The `builder-code` extension enables **on-chain attribution tracking** for x402 payments by appending [ERC-8021](https://eip.tools/eip/8021) Schema 2… |
+| `eip2612GasSponsoring` | — | — | The `eip2612GasSponsoring` extension enables a "gasless" approval flow to the `Permit` Contract for tokens that implement **EIP-2612** for the [`sche… |
+| `erc20ApprovalGasSponsoring` | — | — | The `erc20ApprovalGasSponsoring` extension enables a **gasless ERC-20 approval flow** for the [`scheme_exact_evm.md`](../schemes/exact/scheme_exact_e… |
+| `auth-hints` | — | — | The `auth-hints` extension provides authentication hints for specific payment requirements within x402. It enables clients to discover which `accepts… |
 | `extension-offer-and-receipt` | **full** | src/services/preflight.ts (`signed-offers`), src/services/ward-round.ts, src/services/market.ts | The Offer and Receipt Extension adds **server-side signatures** to x402, enabling: |
-| `http-message-signatures` | adjacent | src/services/bot-auth-card.ts and the RFC 9421 work behind the signature agent card | The `http-message-signatures` extension establishes the **identity** of the paying agent through cryptographic signatures (RFC 9421). This extension i |
-| `payment-identifier` | — | — | The `payment-identifier` extension enables clients to provide an `id` that serves as an idempotency key. Both resource servers and facilitators consum |
-| `sign-in-with-x` | — | — | The `sign-in-with-x` extension enables [CAIP-122](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-122.md) compliant wallet-based authentic |
+| `http-message-signatures` | adjacent | src/services/bot-auth-card.ts and the RFC 9421 work behind the signature agent card | The `http-message-signatures` extension establishes the **identity** of the paying agent through cryptographic signatures (RFC 9421). This extension … |
+| `payment-identifier` | — | — | The `payment-identifier` extension enables clients to provide an `id` that serves as an idempotency key. Both resource servers and facilitators consu… |
+| `sign-in-with-x` | — | — | The `sign-in-with-x` extension enables [CAIP-122](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-122.md) compliant wallet-based authenti… |
 
 ## Adjacent — the machinery exists, the reading in this position does not
 
