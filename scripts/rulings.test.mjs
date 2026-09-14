@@ -88,10 +88,26 @@ test("a lapsed ruling stops covering, and its rows come back", () => {
 });
 
 test("open proposals are reported oldest first, with their age", () => {
-  const open = openProposals(shipped, "2026-10-14");
-  assert.ok(open.length >= 3);
-  assert.ok(open.every((p) => p.ageDays === 30));
-  assert.ok(open.map((p) => p.id).includes("R4-verdict-across-schemes"));
+  /*
+   * Deliberately not pinned to a count. The ledger is live: closing a
+   * proposal is the system working, and a test that fails when a
+   * decision gets made teaches the next person to stop making them.
+   * The mechanism is what is asserted.
+   */
+  const ledger = [
+    { id: "old", state: "proposed", reason: "x".repeat(50), ruled_on: "2026-06-01" },
+    { id: "new", state: "proposed", reason: "x".repeat(50), ruled_on: "2026-09-01" },
+    { id: "shipped", state: "done", reason: "x".repeat(50), ruled_on: "2026-06-01" },
+  ];
+  const open = openProposals(ledger, "2026-10-01");
+  assert.deepEqual(open.map((p) => p.id), ["old", "new"], "oldest first, and a done ruling is not open");
+  assert.equal(open[0].ageDays, 122);
+  assert.equal(open[1].ageDays, 30);
+
+  // And the shipped ledger stays loadable and internally consistent.
+  for (const p of openProposals(shipped, "2026-10-14")) {
+    assert.ok(p.ageDays >= 0, `${p.id} is dated in the future`);
+  }
 });
 
 test("the rendered ledger says settled rows were answered, not hidden", () => {
@@ -102,8 +118,11 @@ test("the rendered ledger says settled rows were answered, not hidden", () => {
   });
   assert.match(md, /Already ruled on \(1\)/);
   assert.match(md, /Not hidden — answered/);
-  assert.match(md, /Still open \(3\)/);
-  assert.match(md, /R4-verdict-across-schemes/);
+  assert.match(md, /we do not settle on Tempo/);
+
+  const open = openProposals(shipped, "2026-09-21");
+  assert.match(md, new RegExp(`Still open \\(${open.length}\\)`));
+  for (const p of open) assert.ok(md.includes(p.id), `${p.id} is open and unreported`);
 });
 
 test("a lapsed ruling is named in the report and asks to be renewed", () => {

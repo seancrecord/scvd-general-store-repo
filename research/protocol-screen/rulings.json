@@ -21,12 +21,14 @@
       "reason": "We do not settle on Tempo. Its TIPs are read so that the day a named counterparty asks for it we are not starting from zero, and for the settlement mechanics MPP's charge methods cite — but a TIP moving is never work on shipped code here.",
       "ruled_on": "2026-09-14",
       "covers_until": "2026-12-31",
-      "scope": { "protocol": "Tempo TIPs" }
+      "scope": {
+        "protocol": "Tempo TIPs"
+      }
     },
     {
       "id": "R4-verdict-across-schemes",
-      "state": "proposed",
-      "reason": "No battery check branches on scheme, so checks written with exact semantics run unconditionally against upto, auth-capture and batch-settlement. Establish per check whether its verdict still means what it says.",
+      "state": "done",
+      "reason": "Answered 2026-09-14: `ready` does mean the same thing — the verdict-moving checks read the scheme-independent envelope §4 requires of every scheme, and no verdict is wrong on a non-exact door. What ready did not cover was §6.1's extra.paymentFlow, where upfront and escrow spend the buyer before the handler runs; our own client already dropped those entries and the free preflight said nothing. Advisory settles-before-delivery shipped. Record: docs/SCHEME_VERDICT_DEPTH_2026-09.md.",
       "ruled_on": "2026-09-14",
       "rows": []
     },

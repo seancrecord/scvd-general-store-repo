@@ -15,6 +15,8 @@ import {
   KNOWN_TESTNETS,
   KNOWN_TRANSFER_METHODS,
   l3bChecks,
+  readPaymentFlow,
+  settlesBeforeHandler,
 } from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
@@ -236,6 +238,16 @@ export const ADVISORY_NAMES = [
    * here — without the accusation.
    */
   "spec-scheme-not-exact",
+  /*
+   * 2026-09-14, and it is the answer to a question the scheme fix
+   * raised rather than settled. `ready` DOES mean the same thing on an
+   * `upto` or `batch-settlement` door — the verdict-moving checks read
+   * the scheme-independent envelope the core spec requires of every
+   * scheme, and batch-settlement uses PaymentRequirements.amount like
+   * everyone else. What differs is what `ready` does not cover, and
+   * §6.1's payment flow is the piece a buyer most needs before paying.
+   */
+  "settles-before-delivery",
   "testnet-network",
   "payto-is-a-name",
   "payto-wrong-rail",
@@ -388,6 +400,7 @@ export const BATTERY_CHANGELOG: readonly {
 export {
   DEFAULT_TRANSFER_METHOD,
   KNOWN_TRANSFER_METHODS,
+  PRE_HANDLER_PAYMENT_FLOWS,
 } from "@/lib/value-checks";
 
 export const ACCEPT_REQUIRED_FIELDS = [
@@ -1083,6 +1096,28 @@ export function runChecks(
         detail: `accepts offers scheme "${scheme}". That is a scheme family the x402 specification publishes — this is not a defect and not drift. It is here because a client built only for "exact" still cannot pay this door without ${scheme}-specific handling, which is worth knowing before the call rather than after it.`,
       });
     }
+    /*
+     * §6.1: "When the resolved payment flow is not `authorization`,
+     * accepts[].extra.paymentFlow MUST be present so clients can reason
+     * about pre-handler fund commitment WITHOUT scheme-specific
+     * knowledge." The spec added the field for exactly the reader this
+     * battery is, so not reading it was a gap with the spec's own name
+     * on it.
+     *
+     * Advisory, not a fold. A door may have perfectly good reasons to
+     * settle upfront — a handler that can outrun its own validity
+     * window is the spec's own example — and scoring an operator for
+     * declaring the truth about their flow is the mistake the scheme
+     * advisory just made. The buyer is told; the verdict is untouched.
+     */
+    const flow = readPaymentFlow(entry["extra"]);
+    if (settlesBeforeHandler(flow)) {
+      advisories.push({
+        name: "settles-before-delivery",
+        detail: `accepts offers extra.paymentFlow "${flow}", which commits your payment BEFORE the resource server runs the handler. If the handler then fails you are charged with nothing delivered, and the specification defines no refund — any remedy is this operator's own arrangement. Under the default "authorization" flow the payment commits only after the handler succeeds. If this door also offers an authorization entry, prefer it; the spec says clients SHOULD.`,
+      });
+    }
+
     const network = String(entry["network"] ?? "");
     const testnet = KNOWN_TESTNETS[network];
     if (testnet) {

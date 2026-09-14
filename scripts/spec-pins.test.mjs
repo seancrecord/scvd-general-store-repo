@@ -11,10 +11,10 @@ import {
   renderReport,
   summarise,
   treeLines,
-} from "./lib/citations.mjs";
+} from "./lib/spec-pins.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const fx = JSON.parse(readFileSync(join(HERE, "..", "test", "fixtures", "citations", "replay.json"), "utf8"));
+const fx = JSON.parse(readFileSync(join(HERE, "..", "test", "fixtures", "spec-pins", "replay.json"), "utf8"));
 
 const lockFrom = (lines, read_date) => lockEntry({ read_date }, lines);
 

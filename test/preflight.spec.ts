@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { ADVISORY_NAMES, SPEC_SCHEMES, runChecks } from "@/services/preflight";
+import { ADVISORY_NAMES, PRE_HANDLER_PAYMENT_FLOWS, SPEC_SCHEMES, runChecks } from "@/services/preflight";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
 /**
@@ -223,6 +223,30 @@ describe("the route holds its boundaries", () => {
   });
 });
 
+/** A 402 whose single accepts entry declares (or omits) a payment flow. */
+function flowChallenge(paymentFlow: string | null): Response {
+  return new Response("{}", {
+    status: 402,
+    headers: {
+      "PAYMENT-REQUIRED": btoa(
+        JSON.stringify({
+          x402Version: 2,
+          accepts: [
+            {
+              scheme: "exact",
+              network: "eip155:8453",
+              amount: "5000",
+              asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              payTo: "0x1111111111111111111111111111111111111111",
+              ...(paymentFlow === null ? {} : { extra: { paymentFlow } }),
+            },
+          ],
+        }),
+      ),
+    },
+  });
+}
+
 describe("scheme drift is named before anyone pays into it", () => {
   it("a proprietary scheme earns the advisory without failing the shape", () => {
     const { checks, advisories } = runChecks(
@@ -301,6 +325,46 @@ describe("scheme drift is named before anyone pays into it", () => {
       expect(noted?.detail).toContain('built only for "exact"');
     },
   );
+
+  /*
+   * THE ANSWER TO WHAT THE SCHEME FIX RAISED. `ready` means the same
+   * thing on every family — the verdict-moving checks read the
+   * scheme-independent envelope §4 requires of all of them. What
+   * differs is what `ready` does not cover, and §6.1's flow is the
+   * piece a buyer most needs before spending.
+   */
+  it.each([...PRE_HANDLER_PAYMENT_FLOWS])(
+    "a %s flow is named, because it spends the buyer before anything is delivered",
+    (paymentFlow) => {
+      const { checks, advisories } = runChecks(flowChallenge(paymentFlow), false);
+      expect(checks.every((check) => check.ok)).toBe(true);
+      const warned = advisories.find((a) => a.name === "settles-before-delivery");
+      expect(warned?.detail).toContain(`"${paymentFlow}"`);
+      expect(warned?.detail).toContain("charged with nothing delivered");
+      expect(warned?.detail).toContain("defines no refund");
+    },
+  );
+
+  it.each(["authorization", null])(
+    "flow %s draws nothing — absence means the mechanism default, which we do not resolve",
+    (paymentFlow) => {
+      const { advisories } = runChecks(flowChallenge(paymentFlow), false);
+      expect(advisories.map((a) => a.name)).not.toContain("settles-before-delivery");
+    },
+  );
+
+  it("the battery and this store's own buying client read the flow through one law", async () => {
+    // One law with two spellings is how instruments drift apart; the
+    // client dropped upfront entries long before the battery said so.
+    const { readPaymentFlow, settlesBeforeHandler } = await import("@/lib/value-checks");
+    expect(readPaymentFlow({ paymentFlow: "upfront" })).toBe("upfront");
+    expect(readPaymentFlow({})).toBeNull();
+    expect(readPaymentFlow(null)).toBeNull();
+    expect(readPaymentFlow({ paymentFlow: "" })).toBeNull();
+    expect(settlesBeforeHandler("authorization")).toBe(false);
+    expect(settlesBeforeHandler(null)).toBe(false);
+    expect(PRE_HANDLER_PAYMENT_FLOWS).toEqual(["upfront", "escrow"]);
+  });
 
   it("the published scheme list is the one the battery actually applies", () => {
     // A list that drifts from the code is the same failure one level up.

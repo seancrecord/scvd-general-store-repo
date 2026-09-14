@@ -2,9 +2,9 @@
 /**
  * THE CITATION CHECK RUNNER.
  *
- *   node scripts/citation-check.mjs            # check, exit 1 on drift
- *   node scripts/citation-check.mjs --update   # re-pin, AFTER reading the diff
- *   node scripts/citation-check.mjs --write    # also save a dated report
+ *   node scripts/spec-pins.mjs            # check, exit 1 on drift
+ *   node scripts/spec-pins.mjs --update   # re-pin, AFTER reading the diff
+ *   node scripts/spec-pins.mjs --write    # also save a dated report
  *
  * `--update` is a human act. It records that somebody re-read the
  * source and stands behind the claim again. Running it to clear a red
@@ -19,16 +19,16 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LAYER3 } from "./lib/git-source.mjs";
-import { PINS, checkPin, cloneAtHead, lockEntry, renderReport, summarise, treeLines } from "./lib/citations.mjs";
+import { PINS, checkPin, cloneAtHead, lockEntry, renderReport, summarise, treeLines } from "./lib/spec-pins.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HOME = join(ROOT, "research", "protocol-screen");
-const LOCK = join(HOME, "citations.lock.json");
+const LOCK = join(HOME, "spec-pins.lock.json");
 
 const args = process.argv.slice(2);
 const update = args.includes("--update");
 const write = args.includes("--write");
-const cacheDir = (args.find((a) => a.startsWith("--cache=")) ?? "").split("=")[1] || join(tmpdir(), "citation-check-cache");
+const cacheDir = (args.find((a) => a.startsWith("--cache=")) ?? "").split("=")[1] || join(tmpdir(), "spec-pins-cache");
 const today = new Date().toISOString().slice(0, 10);
 
 const sources = new Map(LAYER3.map((s) => [s.key, s]));
@@ -38,7 +38,7 @@ const clones = new Map();
 function cloneFor(key) {
   if (clones.has(key)) return clones.get(key);
   const source = sources.get(key);
-  if (!source) throw new Error(`citation-check: pin names unknown source "${key}"`);
+  if (!source) throw new Error(`spec-pins: pin names unknown source "${key}"`);
   const dir = cloneAtHead(source.url, join(cacheDir, key));
   clones.set(key, dir);
   return dir;
@@ -87,8 +87,8 @@ if (!existsSync(LOCK)) {
 if (write) {
   const dir = join(HOME, today);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "citations.md"), report);
-  console.log(`\n  ${join(dir, "citations.md")}`);
+  writeFileSync(join(dir, "spec-pins.md"), report);
+  console.log(`\n  ${join(dir, "spec-pins.md")}`);
 }
 
 const s = summarise(results);

@@ -297,3 +297,46 @@ export function l3bChecks(
         },
   ];
 }
+
+/**
+ * PAYMENT FLOWS, and which of them spend a buyer's money before the
+ * resource has done anything (x402 v2 §6.1).
+ *
+ * The flow decides the ORDER of the facilitator's /verify and /settle
+ * around the resource server's handler:
+ *
+ *   authorization  verify → handler → settle. A failed handler leaves
+ *                  the client uncharged. The spec says clients SHOULD
+ *                  prefer it wherever a door offers both.
+ *   upfront        settle → handler → respond. The payment commits
+ *                  first, so a handler failure leaves the client
+ *                  "charged with nothing delivered; this specification
+ *                  defines no refund, and any remedy is the resource
+ *                  server's own arrangement" (scheme_exact.md).
+ *   escrow         funds committed before the handler runs, released
+ *                  by the mechanism afterwards.
+ *
+ * ONE LAW, TWO READERS. `src/lib/client-simulator.ts` has dropped
+ * upfront and escrow entries since it was written, which is why this
+ * store's own buying never lands on one. The free preflight said
+ * nothing about them until 2026-09-14 — we knew enough to protect
+ * ourselves and did not tell anybody else. The constant lives here so
+ * both readers spell the law once.
+ *
+ * ABSENCE IS NOT SAFETY AND IS NOT A DEFECT. §6.1: omitting the key
+ * means the mechanism default, and resolving a mechanism default needs
+ * a registry this store does not keep. So a missing paymentFlow is
+ * read as unknown and drawn no conclusion from, which is the honest
+ * answer and a named gap rather than a quiet pass.
+ */
+export const PRE_HANDLER_PAYMENT_FLOWS = ["upfront", "escrow"] as const;
+
+export function readPaymentFlow(extra: unknown): string | null {
+  if (extra == null || typeof extra !== "object") return null;
+  const flow = (extra as Record<string, unknown>)["paymentFlow"];
+  return typeof flow === "string" && flow !== "" ? flow : null;
+}
+
+export function settlesBeforeHandler(flow: string | null): boolean {
+  return flow !== null && (PRE_HANDLER_PAYMENT_FLOWS as readonly string[]).includes(flow);
+}

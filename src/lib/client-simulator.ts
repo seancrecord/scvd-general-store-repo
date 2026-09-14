@@ -1,3 +1,4 @@
+import { readPaymentFlow } from "@/lib/value-checks";
 import { DEFAULT_MAX_AMOUNT_PER_PAYMENT } from "@x402/core/client";
 import { findDefaultAsset as findEvmDefaultAsset } from "@x402/evm";
 import { findDefaultAsset as findSvmDefaultAsset } from "@x402/svm";
@@ -243,13 +244,15 @@ function amountOf(accept: ReadAccept): string {
   return v2 !== "" ? v2 : text(accept.maxAmountRequired);
 }
 
+/*
+ * The flow law moved to lib/value-checks on 2026-09-14 so the free
+ * preflight could read it too. This client has dropped upfront and
+ * escrow entries since it was written; the instrument we publish for
+ * everyone else's buyers said nothing about them until that date.
+ * Same law, one spelling.
+ */
 function paymentFlowOf(accept: ReadAccept): string | null {
-  const extra = accept.extra;
-  if (extra == null || typeof extra !== "object") {
-    return null;
-  }
-  const flow = (extra as Record<string, unknown>)["paymentFlow"];
-  return typeof flow === "string" ? flow : null;
+  return readPaymentFlow(accept.extra);
 }
 
 function label(accept: ReadAccept): { network: string; asset: string } {
