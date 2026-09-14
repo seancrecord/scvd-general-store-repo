@@ -10,8 +10,8 @@
     },
     {
       "id": "R2-mpp-citations",
-      "state": "done",
-      "reason": "The eleven MPP classes now RECORD that the core draft was renewed as -01 on 2026-09-09, with the rename diff and the dated note that every substantive change (#285, #323, #328, #334) landed before they were registered. They still cite -00 at its real read date, because MPP_SPEC_DRAFT is pinned to draft-00 and re-pinning is a battery-versioning ruling, not a refactor. Corrected 2026-09-14 after docs/MPP_HANDOFF_2026-09-14.md landed on main reserving that decision for the keeper.",
+      "state": "wont",
+      "reason": "WITHDRAWN 2026-09-14, twice corrected. The eleven classes still cite draft-httpauth-payment-00 at their real read date, unchanged from main. Editing sourced_by changes the bytes of the published scvd-defects package, and registry/npm-content.json refuses changed bytes under an unchanged version (test/packages.spec.ts) — so the prose edit was a package release wearing a citation's clothes, inside a PR about a protocol screen. It would also have published a position on R8, which is the keeper's. The renewal is recorded where it costs nothing: this ledger, the dated READ, and the path table in docs/MPP_READ_ONLY_2026-09.md.",
       "ruled_on": "2026-09-14",
       "rows": []
     },
@@ -56,7 +56,7 @@
     {
       "id": "R8-mpp-draft-01-pin",
       "state": "proposed",
-      "reason": "Does mpp-v1 stay pinned to draft-00 with draft-01 a sibling battery, or does the family row widen to versions: [draft-00, draft-01] with the twelve checks unchanged? docs/MPP_HANDOFF_2026-09-14.md §3b reads the delta as small enough to widen, and says plainly it is a ruling and not a refactor. The vocabulary now records the move without making it; MPP_SPEC_DRAFT and subject.ts still say draft-00.",
+      "reason": "Does mpp-v1 stay pinned to draft-00 with draft-01 a sibling battery, or does the family row widen to versions: [draft-00, draft-01] with the twelve checks unchanged? docs/MPP_HANDOFF_2026-09-14.md §3b reads the delta as small enough to widen, and says plainly it is a ruling and not a refactor. The vocabulary now records the move without making it; MPP_SPEC_DRAFT and subject.ts still say draft-00. Note: any change to the classes' sourced_by lines rides with this ruling, because it changes published package bytes and needs a scvd-defects version bump and a re-cut npm-content record.",
       "ruled_on": "2026-09-14",
       "rows": []
     }

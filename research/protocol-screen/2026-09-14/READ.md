@@ -121,7 +121,7 @@ not to quietly correct.
 
 ---
 
-## 2. Eleven vocabulary citations pointed at an expired draft
+## 2. Eleven vocabulary citations point at a renewed draft, and stay that way
 
 `src/store/defect-vocabulary.ts` sources **11 MPP classes** to
 `draft-httpauth-payment-00`.
@@ -156,39 +156,42 @@ Plus [#328](https://github.com/tempoxyz/mpp-specs/pull/328), an
 alternate payment credential header in the core draft — a change to
 what `src/lib/mpp-challenge.ts` has to parse.
 
-**DONE 2026-09-14 — twice, and the second time was the right one.**
+**WITHDRAWN 2026-09-14, after three passes — and the third was CI
+stopping me.**
 
-The proposal was "re-cite the eleven classes to `-01`". Carried out
-literally that is a *false* citation: each `sourced_by` reads "read at
-main **2026-09-03**", a dated read that was accurate — on 3 September
-the file genuinely was `-00`. Swapping the number while keeping the
-date would claim we read a revision six days before it existed.
+The proposal was "re-cite the eleven classes to `-01`". Each attempt
+was wrong in a different way, and the sequence is the record:
 
-So the rename diff was actually read (`git show 63c6461 --
-specs/core/`): four lines, `docname` and `version`, nothing normative.
-Every substantive change to the core draft in the window — #285, #323,
-#328 (179 insertions) and #334 — landed *before* 2026-09-03, which is
-why the classes' substance holds.
+1. **Re-cite to `-01` at today's date.** False citation: every
+   `sourced_by` reads "read at main **2026-09-03**", and on 3 September
+   the file genuinely was `-00`. Swapping the number while keeping the
+   date claims we read a revision six days before it existed.
+2. **Record the renewal in the citation instead.** Then `origin/main`
+   landed `docs/MPP_HANDOFF_2026-09-14.md`, which reserves the
+   question — *"does `mpp-v1` stay pinned to draft-00 … **But it is a
+   ruling, not a refactor**"* — while `MPP_SPEC_DRAFT` still reads
+   `"draft-00"`. Leading the lines with `-01` contradicted the
+   battery's own pin.
+3. **Even the neutral dated note is refused, and correctly.**
+   `defects/defects.json` is the packaged copy of this vocabulary that
+   `scvd-defects` ships, and `registry/npm-content.json` records a
+   per-file sha256 that **refuses changed bytes under an unchanged
+   version** (`test/packages.spec.ts`). So a prose edit to
+   `sourced_by` is a package release wearing a citation's clothes —
+   inside a pull request about a protocol screen, and publishing a
+   position on a ruling that is the keeper's, to every npm consumer.
 
-**And then a correction on top of that one.** The first fix re-cited
-all eleven to `-01` at today's date. Merging `origin/main` brought in
-`docs/MPP_HANDOFF_2026-09-14.md`, which reserves exactly this:
+**The eleven classes are unchanged from main and still cite `-00` at
+their real read date.** The rename diff was still worth reading and
+still holds: four lines, `docname` and `version`, nothing normative —
+and every substantive change to the core draft in the window (#285,
+#323, #328 at 179 insertions, #334) landed *before* 2026-09-03, which
+is why their substance is sound whatever the pin says.
 
-> does `mpp-v1` stay pinned to draft-00 with draft-01 arriving as a
-> sibling battery, or is the delta small enough that the family row
-> grows to `versions: ["draft-00", "draft-01"]` with the checks
-> unchanged? … **But it is a ruling, not a refactor.**
-
-`MPP_SPEC_DRAFT` is `"draft-00"` and `subject.ts` reads
-`versions: ["draft-00"]`. Leading the citations with `-01` while the
-battery reports `spec: "draft-00"` is an internal contradiction, and it
-pre-empts a decision that is not a build decision. The eleven lines now
-**record the move rather than make it**: they cite `-00` at its real
-read date, and carry the renewal, the diff and the pointer to the
-ruling. Opened as **R8** in the ledger.
-
-Only #321 remains genuinely uncovered, with its observability question
-open.
+The finding loses nothing by being recorded outside the published
+artifact: it is here, it is **R8** in the ledger, and the path table in
+`docs/MPP_READ_ONLY_2026-09.md` names `-01`. Only #321 remains
+genuinely uncovered, with its observability question open.
 
 ---
 
@@ -261,7 +264,7 @@ them; each is a yes / no / later.
 | # | Proposal | Size | § |
 |---|---|---|---|
 | **P1** | **DONE 2026-09-14.** `SPEC_SCHEMES` sourced to `specs/schemes/` at HEAD; `nonstandard-scheme` now fires only outside that list and names the list in its detail; the new `spec-scheme-not-exact` carries what was true in the old advisory without the accusation. Red witnessed on all four cases before green. Neither advisory folds into a verdict, so no door's `ready` moves and nothing signed changes meaning. Denominator in §6. | done | §1 |
-| **P2** | **DONE 2026-09-14**, as a re-read rather than a find-and-replace — see §2. Only #321 stays open. | done | §2 |
+| ~~P2~~ | **WITHDRAWN** — the citations are unchanged from main. Editing them changes published `scvd-defects` bytes, which the npm-content record refuses under an unchanged version, and would publish a position on R8. The renewal is recorded in §2, the ledger and `MPP_READ_ONLY`. | — | §2 |
 | **P3** | **Four candidate defect classes from WebBotAuth**, with #130's borrowed test vectors run through the conformance desk | Small | §4 |
 | **P4** | **Read x402 #3067 (§8 discovery) and #3083 (settlement pending)** against our preflight and our flow audit | An hour each | §3 |
 | **P5** | **Re-check AP2 directly** before any D5 work; if confirmed quiet, re-point the instrument at `dev.ucp.common.payment.*` | An hour | §4 |

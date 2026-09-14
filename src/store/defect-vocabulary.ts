@@ -685,7 +685,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Do not construct a credential against a challenge with no id: the door cannot bind your payment to its own request, and a client that proceeds pays into a challenge the server may not recognise. Refuse, and say which parameter was missing.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -704,7 +704,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Treat a challenge with no realm as unscoped: do not reuse a credential across doors, and prefer a door whose challenge names where the credential belongs.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -723,7 +723,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Do not guess a credential shape for a method you do not recognise: a signature over the wrong payload is money sent under terms neither side agreed to. Refuse, and name the method you could not build.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -742,7 +742,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Do not sign against a challenge whose intent you do not recognise: you cannot know whether you are committing once or repeatedly. Refuse, and say which intent you could not read.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -761,7 +761,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Do not guess the terms: a request you could not decode is a door you cannot sign for. Report the decode failure by name and move on.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -780,7 +780,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Bind your credential to the bytes you were served, never to a re-serialisation of them, and expect a mismatch refusal from a server that hashes its own canonical form; if the door's own bytes are not canonical, tell the operator rather than retrying.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -799,7 +799,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Do not pay a decimal amount: the true price is unknowable from it. Refuse, and if you must proceed, get the integer amount and its unit from the operator in writing first.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -818,7 +818,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Do not sign for an amount with no currency: you cannot know what you are paying in. Refuse, and say which field was missing.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -837,7 +837,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Never supply a recipient the challenge did not: the credential's to must match the challenge, and a payment to any other address is unrecoverable. Refuse until the door names one.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -856,7 +856,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Do not pay a challenge that is already expired: the credential will be refused and the attempt may still be logged against you. Re-request the door for a fresh challenge, and if it is expired again, tell the operator.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
   {
@@ -875,7 +875,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     buyer_hint:
       "Never send a Payment credential over plain http, whatever the door asks: the credential travels in the clear. Refuse, and use the door's https address if it has one.",
     sourced_by:
-      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. DATED NOTE, 2026-09-14: the core draft expired at the IETF Datatracker and was renewed as draft-httpauth-payment-01 on 2026-09-09 (mpp-specs#351); that rename's diff touches the front-matter docname and version and nothing else, and every substantive change to the core draft in the window (#285, #323, #328, #334) landed before this class was registered, so the class keeps the substance it was read against. Whether the battery re-pins to -01 or carries both versions is a battery-versioning ruling and is the keeper's — docs/MPP_HANDOFF_2026-09-14.md §3b — so this line records the move rather than making it. This store is the registrar, not the author.",
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
     registered: "2026-09-04",
   },
 ];
