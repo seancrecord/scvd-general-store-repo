@@ -288,7 +288,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_small_pleasure",
     title: "The Penny Shelf",
     purpose:
-      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), a lucky totem drawn from the keeper's collection, a pack of five trading cards, or one off the window. Keepsakes with no functional effect, said plainly, and the cheapest doors in the store, which makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
+      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), a lucky totem from the keeper's collection, a pack of five trading cards, or one off the window. Keepsakes with no functional effect, said plainly, and the cheapest doors in the store — the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Or when an agent simply wants one.",
     itemIds: ["small_blessing", "daily_fortune", "luckies", "pack", "window_pick"],
   },
 ];

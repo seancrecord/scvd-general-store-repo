@@ -939,8 +939,33 @@ const BASE = "https://scvd.store";
 // side, the MCP worked inputs on the other — so the pin below is the
 // merged guide, reproduced from the merged tree and from neither half
 // alone. Both notes above stand; this one says why there is a third.
+// 2026-09-13, the release wheel and a claim that had gone false. Two
+// edits to the guide, and the second is the interesting one.
+//   (1) The Paywall section gained the release wheel: the one-of-ones'
+//       committed milestones, the reveal beside the card, the keeper's
+//       pull-forward lever and the hand press that refuses. The door
+//       list names /api/paywall/releases.
+//   (2) THE PREAMBLE WAS LYING. It said /llms-full.txt "serves this
+//       SAME document, byte for byte" and promised the file would not
+//       pretend otherwise — true when it was written, false from the
+//       day the index/full split shipped, and the test two describes
+//       below ("is no longer the same document") has been asserting
+//       the opposite in the same file ever since. Nothing caught it
+//       because no guard compares the guide's prose to the guide's
+//       own behaviour. The sentence now says what is true: full is
+//       the complete prose, this is the index. It came out 85
+//       characters shorter, which is what paid for the door above —
+//       the index was at 6 characters of headroom and is at 87 now.
+// 2026-09-13, same change, second pin: the pack's SPEC_RETURNS — which
+// the guide prints — now says a crossed milestone drops a one-of-one
+// in, and buy_small_pleasure's purpose lost the duplicate smoke-test
+// clause that paid for it. The MCP catalog ceiling was at FOUR
+// characters of headroom before this edit and is at fourteen after,
+// which is the same story as the index's six and is worth saying twice.
+// Verified the same way: with llms.ts restored to the prior commit the
+// prior digest reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "bda58d44fe994ef02167239485404ffc01184deb3b624654a7b600789274d4df";
+  "e6d439fba6a87c3428f00a305aa5fd7241700e3405ac1f216867b70cff3d08ed";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -991,6 +1016,28 @@ describe("the index is an index", () => {
     // And is genuinely smaller than what it replaced, not trimmed to
     // the line: the whole guide is over 89,000 characters.
     expect(index.length).toBeLessThan(storeGuideText(BASE, env as unknown as Env).length / 3);
+  });
+
+  it("does not claim in prose to be the document it is not", async () => {
+    /**
+     * THE CLAIM THAT WENT FALSE UNDER ITS OWN TEST (2026-09-13). The
+     * preamble said /llms-full.txt "serves this SAME document, byte
+     * for byte" and that this file "will not pretend otherwise" — true
+     * before the index/full split, false the moment it shipped, and
+     * the test directly below has asserted the opposite ever since.
+     * Two guards in one file disagreed for a fortnight because one
+     * checked the bytes and nothing checked the sentence.
+     *
+     * So this reads the prose. A store whose whole argument is that a
+     * public claim ships with the check that fails when it stops being
+     * true cannot leave its own front door saying the wrong thing
+     * about itself.
+     */
+    const index = await body("/llms.txt");
+    expect(index).not.toContain("SAME document");
+    expect(index).not.toContain("byte for byte");
+    // And says the true thing instead, so the path is still findable.
+    expect(index).toContain("/llms-full.txt is the complete prose");
   });
 
   it("is no longer the same document as /llms-full.txt", async () => {
