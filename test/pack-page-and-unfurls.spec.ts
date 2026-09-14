@@ -74,6 +74,55 @@ describe("an unfurler gets the page it came for", () => {
   });
 });
 
+describe("the share sheet is the most ordinary PNG on the internet", () => {
+  /**
+   * AN OG IMAGE IS THE WRONG PLACE TO BE CLEVER (2026-09-14, the
+   * keeper, out of patience with a blank preview: "is there not a
+   * fucking way to hit tweet and have the picture embedded?").
+   *
+   * X's intent URL has no media parameter — no site can attach a file
+   * to a tweet through a link, and the card is the only automatic
+   * path. So the card has to be beyond argument, and ours was not: a
+   * 4-bit indexed palette in uncompressed deflate blocks, 405,833
+   * bytes. Spec-valid, decodes fine locally, and about as far from an
+   * ordinary social image as a PNG gets — two nonstandard traits
+   * sitting in the one file every unfurler on the internet has to
+   * accept, plus a weight some of them will not spend.
+   *
+   * Workers ship CompressionStream, so the clever was never buying
+   * anything: 8-bit RGB properly deflated is both standard and 25x
+   * smaller. This test holds the format, because the temptation to
+   * shave bytes with a palette is exactly how it got here.
+   */
+  it("is 8-bit truecolour RGB, deflated, and small enough that nothing gives up fetching it", async () => {
+    const pack = await openPack(testEnv, { certId: "cert_sheet_shape", patronNumber: 7, payer: BUYER });
+    const id = pack.cards[0]!.card.card_id;
+    const res = await SELF.fetch(`${BASE}/p/${id}.png`);
+    expect(res.headers.get("content-type")).toBe("image/png");
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const view = new DataView(bytes.buffer);
+
+    // The PNG signature, then IHDR at a fixed offset.
+    expect([...bytes.slice(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    expect(view.getUint32(16)).toBe(1200);
+    expect(view.getUint32(20)).toBe(675);
+    expect(bytes[24], "bit depth: 8, not a packed palette").toBe(8);
+    expect(bytes[25], "colour type: 2 (truecolour RGB), not 3 (indexed)").toBe(2);
+    // No PLTE chunk at all — a truecolour image has no palette to carry.
+    expect(new TextDecoder().decode(bytes.slice(0, 64))).not.toContain("PLTE");
+
+    /*
+     * A REAL DEFLATE STREAM, not stored blocks. The zlib header's
+     * second byte carries the compression level in its top bits; a
+     * stored-block stream from the old encoder wrote 0x01 there.
+     */
+    const idat = bytes.indexOf(0x49);
+    expect(idat).toBeGreaterThan(0);
+    expect(bytes.length, "was 405,833 at 4-bit stored; anything near that means the palette came back").toBeLessThan(120_000);
+    expect(bytes.length).toBeGreaterThan(2_000);
+  });
+});
+
 describe("the pack, opened, for a person", () => {
   let packId = "";
   let names: string[] = [];
@@ -109,6 +158,36 @@ describe("the pack, opened, for a person", () => {
     // "burns" for one, "burn" for several — assert the part that holds
     // either way, so the grammar can be right without the test lying.
     if (dupes.length > 0) expect(page).toContain("into pack credit");
+  });
+
+  it("hands a person a PNG to attach, not the SVG an upload box refuses", async () => {
+    /**
+     * THE FILE A READER ACTUALLY GETS (2026-09-14, the keeper, looking
+     * at an empty X composer: "they are also saving as svg so that is
+     * probably why").
+     *
+     * He was right about the file and it was a second gap, not the one
+     * blocking the card: the face on these pages is vector, so a
+     * right-click or a drag hands over an SVG, which X, Slack and every
+     * other upload box reject. The PNG was always served and was named
+     * only in fine print as a code span. Both pages now carry a real
+     * download beside the share button, and it must stay a PNG.
+     */
+    const page = await (await SELF.fetch(`${BASE}/pack/${packId}`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain("Save the image");
+    const downloads = [...page.matchAll(/href="\/p\/(card_[a-z0-9]+)\.png" download="/g)];
+    expect(downloads.length).toBeGreaterThanOrEqual(1);
+    for (const [, id] of downloads) {
+      const png = await SELF.fetch(`${BASE}/p/${id}.png`);
+      expect(png.headers.get("content-type"), id).toBe("image/png");
+    }
+    // Never an SVG behind a download, however the markup moves around.
+    expect(page).not.toMatch(/href="[^"]*\.svg" download/);
+
+    const card = await (await SELF.fetch(`${BASE}/p/${downloads[0]![1]}`, { headers: { Accept: "text/html" } })).text();
+    expect(card).toContain("Save the image");
+    expect(card).toMatch(/href="\/p\/card_[a-z0-9]+\.png" download="/);
+    expect(card).not.toMatch(/href="[^"]*\.svg" download/);
   });
 
   it("404s an id nobody opened, and never mints one by looking", async () => {
