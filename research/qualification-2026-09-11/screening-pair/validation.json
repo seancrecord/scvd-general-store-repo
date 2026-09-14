@@ -1,0 +1,102 @@
+{
+  "checked_at": "2026-09-11T18:09:45.882Z",
+  "node": "v22.13.1",
+  "experimental": true,
+  "qualified_for_product": false,
+  "command": "node --test experiments/screening/*.test.mjs",
+  "tests": 41,
+  "passed": 41,
+  "failed": 0,
+  "cases": [
+    "both matching witnesses produce only an unsigned not-listed observation",
+    "both matching witnesses produce only an unsigned listed observation",
+    "starts both witnesses concurrently and cannot return on the first answer",
+    "second witness listed_disagreement makes the entire observation unavailable",
+    "second witness malformed_bool makes the entire observation unavailable",
+    "second witness wrong_chain makes the entire observation unavailable",
+    "second witness wrong_contract makes the entire observation unavailable",
+    "second witness wrong_calldata makes the entire observation unavailable",
+    "second witness wrong_hash makes the entire observation unavailable",
+    "second witness wrong_number makes the entire observation unavailable",
+    "second witness wrong_time makes the entire observation unavailable",
+    "second witness unsafe_head makes the entire observation unavailable",
+    "second witness noncanonical makes the entire observation unavailable",
+    "second witness silence makes the entire observation unavailable",
+    "rejects stale, future and unsupported inputs before admission or reads",
+    "shared deadline aborts both adapters and retains slots until actual completion",
+    "an early failure cannot free the slot of a still-running second adapter",
+    "clock and block age are rechecked at completion",
+    "caller mutation cannot replace the pinned block or witness pair",
+    "free saturation leaves provider credits for paid work; all tiers remain capped",
+    "concurrent free flood cannot take the reserved paid slot",
+    "limiter failure or witness budget mismatch causes zero provider reads",
+    "per-caller caps and bounded free caller storage cannot consume paid caller entries",
+    "window rollover resets spending but preserves inflight concurrency; backwards clock refuses",
+    "failed second-provider capacity check never partially debits the first provider",
+    "request-count caps apply even when credit budgets have room",
+    "configuration requires exactly two distinct operator and account labels",
+    "disposable guard removals make the original agreement and reserve assertions fail",
+    "public probe stops on silence or wrong chain without inventing capability evidence",
+    "calls are pinned to sampled safe/finalized hashes and stay within the read budget",
+    "passes all controls but does not promote protocol cases into product qualification",
+    "refuses wrong-chain instead of counting a broken instrument as a passing case",
+    "refuses ignore-hash instead of counting a broken instrument as a passing case",
+    "refuses unsupported instead of counting a broken instrument as a passing case",
+    "refuses no-changing-fixture instead of counting a broken instrument as a passing case",
+    "refuses missing-fork instead of counting a broken instrument as a passing case",
+    "refuses ignore-canonical instead of counting a broken instrument as a passing case",
+    "refuses throws instead of counting a broken instrument as a passing case",
+    "timeout aborts transport and starts no follow-on read",
+    "missing or contradictory fixture controls refuse before a read",
+    "malformed result text and a mistaken URL as witness ID cannot escape in reports"
+  ],
+  "source_sha256": {
+    "experiments/screening/pair-policy.mjs": "233c17bbf078244557430d004e8a0607d7bbb2a165f0ad5f3c4ef0cee76df539",
+    "experiments/screening/pair-policy.test.mjs": "2f0f95050a5224169b0e7a9ea62245847febfc197f988d09fd5abcec59472ede",
+    "experiments/screening/qualify-provider.mjs": "5139e64498982a90721f5ebfbd800b2a601394800e30a5b5bd1dc0f51363f93d",
+    "experiments/screening/qualify-provider.test.mjs": "e736d31002a15c47a5490f5a273a51c5b9e3432bb496280a7a08753daeaed04d",
+    "experiments/screening/provider-probe.mjs": "c6a63f1da20b8f01b949ecf9cb8ed6007db1bddd337276849a266cfb373a0ca4",
+    "experiments/screening/provider-probe.test.mjs": "412092d6919a702c9ea0315092ffb5603588352909f6403ec62d3953c09d8958"
+  },
+  "checks": {
+    "screening": {
+      "exit_code": 0,
+      "log_sha256": "5d9c4f8f327507a30bfa49d3dccb2c3a13f4f9914e5250ac6f2d8c6259217289"
+    },
+    "docs": {
+      "exit_code": 0,
+      "log_sha256": "d93d555ef3c630839cb423f37bf6eef4be57c19f10e6ca3f23b6b5f9e299cb57"
+    },
+    "claims": {
+      "exit_code": 0,
+      "log_sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9"
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "build": {
+      "exit_code": 0,
+      "log_sha256": "4a5e74448658c1009cfb003ccf4a511a4c5ab1c976c1cbfa37e82d11fc0c1d1c"
+    }
+  },
+  "worker_bundles": [
+    {
+      "path": ".build-check/index.js.map",
+      "sha256": "740ed5eeb06e7f875c46891b491ca148705d693e241b600bb339ccddf7cd2227",
+      "experiment_or_pq_sources": []
+    },
+    {
+      "path": "doors/.build-check-doors/doors.js.map",
+      "sha256": "444d888d74264ed55c124994e734c8ae8562458215dde763e182075ce855fc5f",
+      "experiment_or_pq_sources": []
+    }
+  ],
+  "limitations": [
+    "Synthetic adapter receipts; no live account, source rights, canonical ancestry or billing qualification.",
+    "Single-process in-memory budget; no durable distributed admission or paid-tier authentication.",
+    "No production source/package/key changes, deployment or commit.",
+    "The full Worker test suite was not rerun for this external fixture increment and remains required before commit.",
+    "Both dry-run builds exited zero and produced maps; Wrangler reported sandbox EPERM writing preference logs."
+  ]
+}

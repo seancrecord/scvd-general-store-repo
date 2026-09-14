@@ -1,0 +1,128 @@
+{
+  "checked_at": "2026-09-11T22:15:51.586Z",
+  "local_only": true,
+  "synthetic_only": true,
+  "deployed": false,
+  "committed": false,
+  "tests": {
+    "encryption": 23,
+    "offline": 14,
+    "isolated_worker_rerun": false,
+    "full_store_suite_run": false
+  },
+  "node_version": "v22.13.1",
+  "age": {
+    "version": "1.3.2",
+    "platform": "darwin-arm64",
+    "distribution": "Homebrew arm64_tahoe",
+    "metadata_url": "https://formulae.brew.sh/api/formula/age.json",
+    "metadata_sha256": "a1a34db892f6a56e75a9562803eb9a2443108bb2c6e958a3a856217db139d8d1",
+    "bottle_url": "https://ghcr.io/v2/homebrew/core/age/blobs/sha256:48bbd797cd00ab11ec496717f51205ba07f4f7fdc7c8a939c5f4b7b6a11d5287",
+    "bottle_sha256": "48bbd797cd00ab11ec496717f51205ba07f4f7fdc7c8a939c5f4b7b6a11d5287",
+    "executable_sha256": "5e5d756f6659ca8fe0a2f2e05f126529e5d36c5d65c961e6912966482f0f8de1",
+    "keygen_sha256": "21a1ef274071c0eb784810f998e745b7480b137cc8fcce56386f062889e58f44",
+    "upstream_sigsum_verified": false,
+    "global_install": false
+  },
+  "checks": {
+    "encryption": {
+      "log_path": "/private/tmp/scvd-encrypted-final.log",
+      "sha256": "80feba5d912dceb61bac5b99b2719a74ef01088dfde5f4c840b6ca5f4f14810b",
+      "outcome": "passed"
+    },
+    "offline": {
+      "log_path": "/private/tmp/scvd-encrypted-offline-final.log",
+      "sha256": "b0d0d75dd66871b633f3c01b688e625e09c551c3620378181483c34234deaca2",
+      "outcome": "passed"
+    },
+    "root_types": {
+      "log_path": "/private/tmp/scvd-encrypted-root-types.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "outcome": "passed"
+    },
+    "offline_types": {
+      "log_path": "/private/tmp/scvd-encrypted-offline-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "offline_build": {
+      "log_path": "/private/tmp/scvd-encrypted-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "store_and_doors_build": {
+      "log_path": "/private/tmp/scvd-encrypted-root-build.log",
+      "sha256": "9f2ac0fdc2c51dd0e2405659ff5dacf3722dcf7f89c9fbe18c5033d661e3c370",
+      "outcome": "passed_with_wrangler_preference_log_EPERM"
+    },
+    "docs": {
+      "log_path": "/private/tmp/scvd-encrypted-docs.log",
+      "sha256": "1a571a067687de1a404d66f95de7b7f9030fb355577c96c7e5eb05bede435cca",
+      "outcome": "passed_with_existing_age_advisories"
+    },
+    "claims": {
+      "log_path": "/private/tmp/scvd-encrypted-claims.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "child_exit_negative": {
+      "log_path": "/private/tmp/scvd-encrypted-exit-negative.log",
+      "sha256": "8bdb6bcd192494f9341b92befcaac8c88189d8ee4dcdef32c4cfa249fc6153d1",
+      "outcome": "original_assertion_failed_when_guard_removed"
+    },
+    "trusted_manifest_negative": {
+      "log_path": "/private/tmp/scvd-encrypted-manifest-negative.log",
+      "sha256": "455f516ebd990c72ea2c2b687da2f7c2a93234e0a1575ec57b69f97860a30433",
+      "outcome": "original_assertion_failed_when_guard_removed"
+    }
+  },
+  "bundles": [
+    {
+      "name": "store",
+      "path": ".build-check/index.js.map",
+      "sha256": "4dacb2d95ad75a27be242ab1ec0aaf1497ba0226c29ce1d0caf4bbab2dfe1db5",
+      "source_count": 1652,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "doors",
+      "path": "doors/.build-check-doors/doors.js.map",
+      "sha256": "fba27bc7e704c12df77fc29d4dbee52f39d504437d2c42fb07d2e7c2a4a13c7d",
+      "source_count": 545,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "encrypted_cli",
+      "path": "experiments/screening/backup/.build-check/encrypted-cli.mjs.map",
+      "sha256": "a2d3a4f3339f01bdabf7618552189b724416593f4f3bd62c734f3b3f8e61854b",
+      "source_count": 9,
+      "import_boundary_passed": true
+    }
+  ],
+  "source_sha256": {
+    "experiments/screening/backup/ENCRYPTED_CUSTODY.md": "dc492e568878c724abe181b1d212404d3fe12c6563ef0270b1ba876389489231",
+    "experiments/screening/backup/README.md": "cfbcd8d5614593438948258da381b7e982416040d124d1f41d5bfee1ee32f883",
+    "experiments/screening/backup/build.mjs": "42d277642b36d9f2286d78f43f8543646db3e2f3b9c3a5a18211e69981be6230",
+    "experiments/screening/backup/encrypted-cli.ts": "4bbe66b2e9fdebd5614fdada5a3c8f23e469220c813692b9879c139ec7be59a4",
+    "experiments/screening/backup/encrypted.test.mjs": "e6ac342986007ec29a73088b2fb014b234db41737b9d504e1371273a4e190c46",
+    "experiments/screening/backup/encrypted.ts": "4c17739798758ad04d80d0b4a327d37e06a8d2c217ef81d6c4a9b527ccb8c4d1",
+    "experiments/screening/backup/format.ts": "cd637ef9976e34d89a8046459c3840b28b603f1c14adccd63649863e3ceaa831",
+    "experiments/screening/backup/offline.test.mjs": "c7bc1a117573d4b075c10334006e35c5a487bc8a124b374fb606ad06bded0f9a",
+    "experiments/screening/backup/restore-cli.ts": "184c2f1503da05a93941181352f320ff8f9adaed39d4db0797199615640ab8c1",
+    "experiments/screening/backup/restore.ts": "e9d7d344e95361303a697badd88cafedd6baae95fd4cbc1c8cb80350cb9d6723",
+    "experiments/screening/backup/source.ts": "978ec6d665912fb22c50ec8d7061cf2a254d9e13695b980a3a38ad62eb58674c",
+    "experiments/screening/backup/stream.ts": "591aeee240e184bd2fd35cc46f87d77c7467ab4478ca773f084333f52ff34772",
+    "experiments/screening/backup/test-fixtures.mjs": "6dbcd4da4283dcbcd38cbd6ce5361e7097ffcaff9e58fc29bd76bf5861d0dc77",
+    "experiments/screening/backup/tsconfig.json": "1fe4d756e90d085f3eda2341058f43daef0c469afa2adeedd1b7c7739cf16e67"
+  },
+  "limitations": [
+    "Independent storage destination, real backup-key custody and retention are undecided; no account or transfer was configured.",
+    "Synthetic keys were generated only in private temporary test directories and removed. No real identity or signing key was read.",
+    "Version check is not executable provenance authentication. Local distribution checksum is not upstream signature verification or a cryptographic audit.",
+    "Private source, scratch verification and restored SQLite files are plaintext. Normal cleanup is not secure erase or crash cleanup.",
+    "Copy verification checks bytes, not remote origin. Independently retained manifest and ciphertext receipts remain necessary.",
+    "No maximum-volume, encrypted scratch-volume, live collection or timed independent-account disaster recovery drill was performed.",
+    "No production activation/reconciliation, automatic deletion, monitoring schedule, npm release or request-path change.",
+    "Full store suite remains required before a commit. Prior Worker tests were not rerun for this offline-only increment."
+  ]
+}

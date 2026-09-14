@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-09-11T17:04:25.301768+00:00",
+  "synthetic_only": true,
+  "experiment_suite": {
+    "tests": 44,
+    "pass": 44,
+    "fail": 0
+  },
+  "typecheck": "passed",
+  "worker_dry_run_bundles": "passed with preferences-log sandbox warnings",
+  "docs_check": "passed",
+  "claims": "passed",
+  "source_files": [
+    {
+      "path": "experiments/pqc/checkpoint.mjs",
+      "sha256": "3ae7a2a33b074dd5b0f9ed9318c0650d8d37e5cf153e34b4722f72fc21429880"
+    },
+    {
+      "path": "experiments/pqc/checkpoint.test.mjs",
+      "sha256": "5c4b099a25c149ceda890e2c715b196bef94a5396850d5154c145b74c7e49aeb"
+    },
+    {
+      "path": "experiments/pqc/checkpoint-cli.mjs",
+      "sha256": "6a0117b01bc6b89259dde635ae2fbdfc0a1be264d7803c2a7e9547ba983764ab"
+    },
+    {
+      "path": "experiments/pqc/checkpoint-fixture.mjs",
+      "sha256": "a1f21c0bb06707ba5b8febed309bc5e5f899e3c3e345a9326eb652ce9f25af52"
+    }
+  ],
+  "worker_imports": [
+    {
+      "source_map": ".build-check/index.js.map",
+      "sha256": "740ed5eeb06e7f875c46891b491ca148705d693e241b600bb339ccddf7cd2227",
+      "pq_or_experiment_sources": []
+    },
+    {
+      "source_map": "doors/.build-check-doors/doors.js.map",
+      "sha256": "444d888d74264ed55c124994e734c8ae8562458215dde763e182075ce855fc5f",
+      "pq_or_experiment_sources": []
+    }
+  ],
+  "production_deployment": false,
+  "full_worker_suite": "not rerun for this external-only increment",
+  "negative_control": "Both original purpose assertions raise AssertionError when the guard is removed from a disposable module copy."
+}

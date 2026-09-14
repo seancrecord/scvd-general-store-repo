@@ -1,0 +1,46 @@
+{
+  "synthetic": true,
+  "created_at": "2026-09-11T16:59:56.005Z",
+  "node": "v22.13.1",
+  "files": {
+    "checkpoint.json": {
+      "bytes": 7569,
+      "sha256": "f6793d705012fc49f60740e2854153895aff6ec81bc315d4954865612b5ae0f5"
+    },
+    "snapshot.json": {
+      "bytes": 61,
+      "sha256": "14d0ee40cf5529bea1f5c5f750e800d53329fe0eea62e58a1ea213b31400d64b"
+    },
+    "trust.json": {
+      "bytes": 4483,
+      "sha256": "5d2f304bdd7d98cc9e349657b83337b103be61d545ffd8ddfec6648ed2aa78c9"
+    },
+    "wrong-purpose-checkpoint.json": {
+      "bytes": 7565,
+      "sha256": "141865aee2602189e46524424883a12857ec4883c33203db167124ae3e402992"
+    },
+    "format.json": {
+      "bytes": 1216,
+      "sha256": "07a04d7a9d4c26769569fd509fe0ebe24bebf6d6cc36c0f1f8df0e95191e08b9"
+    }
+  },
+  "valid": {
+    "valid": true,
+    "signatures": "both_valid",
+    "snapshot_bytes": "bound",
+    "key_purposes": "authorized_by_supplied_trust",
+    "signing_variant": "issuer_claim_only",
+    "anchoring": "not_checked",
+    "production_ready": false
+  },
+  "wrong_purpose": {
+    "valid": false,
+    "problem": "invalid_checkpoint_or_unmet_trust_policy",
+    "production_ready": false
+  },
+  "limits": [
+    "Caller supplies fixture trust independently; no established store identity.",
+    "No anchor submission or verification, production corpus validation, custody or independent parser qualification.",
+    "Private keys are not written; JavaScript memory erasure is not guaranteed."
+  ]
+}

@@ -20,6 +20,8 @@ import {
 import { DEFAULT_TRANSFER_METHOD } from "@/services/preflight";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { sendAlert } from "@/lib/alerts";
+import { SANCTIONS_ORACLE_BASE, oracleCalldata, decodeOracleBoolean } from "@/lib/sanctions-oracle";
+export { SANCTIONS_ORACLE_BASE } from "@/lib/sanctions-oracle";
 
 /**
  * THE LAUNCH CHECK — the walkabout productized for one endpoint
@@ -376,11 +378,6 @@ export type SanctionsScreen = (
  * payment. The one answer that permits money to move is the oracle
  * saying false, byte for byte.
  */
-export const SANCTIONS_ORACLE_BASE =
-  "0x3A91A31cB3dC49b4db9Ce721F50a9D076c8D739B";
-const IS_SANCTIONED_SELECTOR = "0xdf592f7d";
-const BOOL_TRUE = `0x${"0".repeat(63)}1`;
-const BOOL_FALSE = `0x${"0".repeat(64)}`;
 
 /**
  * EVERY ENDPOINT, NOT ONE (2026-09-04, from a bounty walker's letter:
@@ -412,13 +409,11 @@ export function oracleScreen(
   const endpoints = typeof rpcUrls === "string" ? [rpcUrls] : [...rpcUrls];
   return async (address: string) => {
     const source = `Chainalysis on-chain sanctions oracle (${SANCTIONS_ORACLE_BASE} on eip155:8453)`;
-    if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+    const data = oracleCalldata(address);
+    if (data === null) {
       // Not a 20-byte EVM address; the oracle cannot answer for it.
       return { listed: null, source: `${source} — address shape unscreenable` };
     }
-    const data =
-      IS_SANCTIONED_SELECTOR +
-      address.slice(2).toLowerCase().padStart(64, "0");
     const failures: string[] = [];
     for (const rpcUrl of endpoints) {
       const host = redactRpc(rpcUrl);
@@ -439,8 +434,8 @@ export function oracleScreen(
           continue;
         }
         const body = (await response.json()) as { result?: string };
-        if (body.result === BOOL_TRUE) return { listed: true, source };
-        if (body.result === BOOL_FALSE) return { listed: false, source };
+        const listed = decodeOracleBoolean(body.result);
+        if (listed !== null) return { listed, source };
         failures.push(`${host} (unexpected result)`);
       } catch {
         failures.push(`${host} (unreachable)`);

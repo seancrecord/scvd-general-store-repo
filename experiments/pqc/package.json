@@ -3,6 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node --test envelope.test.mjs", "pilot": "node pilot.mjs" },
+  "scripts": { "test": "node --test envelope.test.mjs runtime-qualification.test.mjs checkpoint.test.mjs corpus-checkpoint.test.mjs", "pilot": "node pilot.mjs", "qualify:runtime": "node runtime-qualification.mjs run" },
   "devDependencies": { "@noble/post-quantum": "0.7.1" }
 }

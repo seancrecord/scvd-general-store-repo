@@ -1,0 +1,181 @@
+{
+  "checked_at": "2026-09-11T20:21:38.262849+00:00",
+  "experimental": true,
+  "deployed": false,
+  "production_route_mounted": false,
+  "production_ready": false,
+  "tests": {
+    "worker": 108,
+    "gateway_admin": 50,
+    "browser_module": 21,
+    "full_store_suite_run": false
+  },
+  "checks": {
+    "worker_tests": {
+      "log_path": "/private/tmp/scvd-attention-worker.log",
+      "sha256": "f9d9bb5125e45606659021a63fff7600095a8a1030e11d1fd3deec908bae0aea",
+      "outcome": "passed"
+    },
+    "gateway_admin_tests": {
+      "log_path": "/private/tmp/scvd-attention-gateway.log",
+      "sha256": "817f8bb661e10f587ce40d3c5e34f4e93a0a05cffca3bc5c6ca29590b044c302",
+      "outcome": "passed"
+    },
+    "browser_module_tests": {
+      "log_path": "/private/tmp/scvd-attention-client.log",
+      "sha256": "e4a48d4a7137146def5ab1c0f901ba81ac891e910bde79538e55baf0a9e8874d",
+      "outcome": "passed"
+    },
+    "root_typecheck": {
+      "log_path": "/private/tmp/scvd-attention-root-types.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "outcome": "passed"
+    },
+    "worker_typecheck": {
+      "log_path": "/private/tmp/scvd-attention-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "store_doors_build": {
+      "log_path": "/private/tmp/scvd-attention-build.log",
+      "sha256": "67b887af40df868dc10855f7dbb1730ac289d503c91eb4386cfd60c467b49ee0",
+      "outcome": "passed"
+    },
+    "worker_build": {
+      "log_path": "/private/tmp/scvd-attention-worker-build.log",
+      "sha256": "68a2164885b3011b51d66ced59f705260c5929487c45b9e2fa94dc151fcaf709",
+      "outcome": "passed"
+    },
+    "gateway_build": {
+      "log_path": "/private/tmp/scvd-attention-gateway-build.log",
+      "sha256": "fce32b0b8a9ccdda988c2ab0408ba0ace2a08ab37174e019e0a10e9c4747a6e7",
+      "outcome": "passed"
+    },
+    "monitor_build": {
+      "log_path": "/private/tmp/scvd-attention-monitor-build.log",
+      "sha256": "299399a15dc0034a4da46c3dc0553cde14445e5c9f4c953f8562c3535bf17fa9",
+      "outcome": "passed"
+    },
+    "docs": {
+      "log_path": "/private/tmp/scvd-attention-docs.log",
+      "sha256": "3f2b9c3929ddb53eccf0ebbf233acfabaaaddab6ecb041444a326a50b646a382",
+      "outcome": "passed"
+    },
+    "claims": {
+      "log_path": "/private/tmp/scvd-attention-claims.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "whitespace": {
+      "log_path": "/private/tmp/scvd-attention-diff.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "unavailable_stub": {
+      "log_path": "/private/tmp/scvd-attention-red.log",
+      "sha256": "9c32c23b864f62db4e4e696cc8a92f8f7dbecd532ad13e7487f3f0b39ea6ebb3",
+      "outcome": "original_assertions_failed_before_implementation"
+    },
+    "negative_rollover": {
+      "log_path": "/private/tmp/scvd-attention-negative-rollover.log",
+      "sha256": "944b06ea93c6afa0140b8b678e76cda38cfec4bc8942e28c6e34f0f843c09970",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "negative_freshness": {
+      "log_path": "/private/tmp/scvd-attention-negative-freshness.log",
+      "sha256": "4b82ebe0404d9b00e7699f61968a4c38bd71e03a01ccf674481a7cd419a82c9b",
+      "outcome": "expected_original_assertion_failure"
+    }
+  },
+  "bundles": [
+    {
+      "name": "store",
+      "path": ".build-check/index.js.map",
+      "sha256": "4dacb2d95ad75a27be242ab1ec0aaf1497ba0226c29ce1d0caf4bbab2dfe1db5",
+      "source_count": 1652,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "doors",
+      "path": "doors/.build-check-doors/doors.js.map",
+      "sha256": "fba27bc7e704c12df77fc29d4dbee52f39d504437d2c42fb07d2e7c2a4a13c7d",
+      "source_count": 545,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "reader",
+      "path": "experiments/screening/worker/.build-check/index.js.map",
+      "sha256": "0b29b7e686d2589ed2463042d3cf4a3d147183abb2be8fe17732224a1621c5f9",
+      "source_count": 8,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "gateway",
+      "path": "experiments/screening/operator/.build-check/gateway.js.map",
+      "sha256": "b109a9321fad9a9b41424b29ea3e3c0098cf6bf7dc8842e32cefcbe79d1026d2",
+      "source_count": 72,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "monitor",
+      "path": "experiments/screening/operator/.build-check/monitor.js.map",
+      "sha256": "e572b2f8522acc01d38986038ea293c811bb3fc48c2ba3c3b735c20b53ec9f8f",
+      "source_count": 2,
+      "import_boundary_passed": true
+    }
+  ],
+  "source_sha256": {
+    "experiments/screening/worker/attention.ts": "e998749964e0daff67a5e26e2a8ce98343b5f7167feafef733487ae137e9e765",
+    "experiments/screening/worker/attention.spec.ts": "836bce75705d55e9895dc30776405173c38ca93390d66f4288cbcba908f4c578",
+    "experiments/screening/worker/budget.ts": "83ae1bbd32d2bf2e48d08783ff3b44afee66ef01095e368ed2df2bc07489f6c7",
+    "experiments/screening/worker/index.ts": "a7ad3bdae222caaf0a7d834abfa6745f04634f15572e71cd322814ca06c72c43",
+    "experiments/screening/worker/monitor.spec.ts": "197bf484f32d4d5a0fa129cccd321bbfeac94f092312d0b53f0b1582ddb66866",
+    "experiments/screening/worker/operator.spec.ts": "de148b1e367d3ecbca69a6a6ea0ddb6b0c952661432d2539e03d52094112fa8a",
+    "experiments/screening/worker/vitest.mutation.config.ts": "ce8b81f065ab13f1a7dfa2fbc9b0295d71786015f632127da20e78b55d756ba4",
+    "experiments/screening/operator/monitor.ts": "c7b837378e4ebd429ee10ddb0002c348a2822a83976f778997b5dfe6ed4c567b",
+    "experiments/screening/operator/gateway.ts": "4ceffd724ff2090fe69d54a952e00f06be216eeb564a67dcee5f7f35ab5b48ed",
+    "experiments/screening/operator/client.txt": "b64f5df19adc17437495c5f285c66503b0a5c4846c0a2fb59521daedf65d3e4e",
+    "experiments/screening/operator/client.test.mjs": "35309812a821a9726621a4d90899de4bb59fb9d8e17430dcd4da20f89c9a9555",
+    "experiments/screening/operator/page.ts": "e4b019757878769661164f53374eefd5712ee745f8ecfdf486f0b2bc236e282a",
+    "test/screening-operator.spec.ts": "7796931c13f89f1ced01c66b570cfa75b66a7eb198ef7c363e7c11c1a008ba9c",
+    "experiments/screening/worker/OPERATIONS.md": "a03d91226688ddcd25cedd70525afd0385d45f067cf800b484425cef64e2564e",
+    "experiments/screening/operator/README.md": "545af1aaf014d78505c6ccddf750d428f020a030952a124d5300a8846fa3e27c",
+    "experiments/screening/worker/README.md": "24fca418a15034ebb030747f1f829ceadef6932087bf6a0be2b66fd6e30744bd",
+    "experiments/screening/worker/RECOVERY.md": "cce374042b40c4c9fd4da683e5c2fb0bda3a5f3c1e55face851162e19850d88c",
+    "ROADMAP.md": "0a954f9d11dc722e6d9e87080a7738abc6296f121edc9e7edcb2afdb715e320b",
+    "docs/SCREENING_PRODUCT_DESIGN_2026-09.md": "32003de81d9837900a026b9228b892e43e7ad31ad518baf39b181eece3a36f43",
+    "docs/SCREENING_PROVIDER_SETUP_2026-09.md": "b5e985267498b8856289b28f754a65080b206a480c6c3db5d6ac15cc6a5176f0",
+    "docs/ADOPTION_AND_LATENCY_2026-09.md": "a1cb9e5a51497e4a79bc552e271484c811e1fbe591c4d8797000143016c7880b",
+    "docs/VERIFICATION_IMPROVEMENTS_2026-09.md": "40684b72b8f4f835f784f6b16a755a6a2ee2eb2f7cebd3999b205f3efb585cf6",
+    "docs/SPEC_READS.md": "0a10614b0d4477ae2585b051c0816efb742cc339c94b8a240d1f35f3b27bb21d"
+  },
+  "browser": {
+    "surface": "Real Chrome on a loopback-only synthetic fixture",
+    "dated_signals": [
+      "reservations_aging",
+      "free_capacity_exhausted"
+    ],
+    "rendered_as_plain_text": true,
+    "approval_initially_disabled": true,
+    "action_requests_on_load": 0,
+    "attention_failure_display": "Operational reading unavailable or stale. Reload before relying on it.",
+    "console_errors_or_warnings_on_initial_load": 0,
+    "screenshots": "Inspected inline; not retained",
+    "fixture_sha256": "59bb334536fcfd3cab6312b79db973e3452d1c755faeecbc9af674a230311996"
+  },
+  "remaining": [
+    "Deployed read-only monitoring binding, schedule, production thresholds and real delivery qualification",
+    "Bounded monitor last-run receipt and independent freshness/delivery watchdog",
+    "Independent export, encryption, backup destination, restore/reconciliation drill and retention policy",
+    "Real provider/source qualification and signed product delivery"
+  ],
+  "limitations": [
+    "Capacity is pair-wide before holds and caller-specific limits; it is not a promise of admission. Age is not termination evidence.",
+    "Monitor adapter is unscheduled. Shared alert deduplication was tested in local KV with email disabled and zero external fetch. No notification was sent.",
+    "Successful channel submission is not confirmed delivery; quiet readings do not automatically resolve retained alert rows.",
+    "UI snapshot changes only on render/reload; no background poll or live freshness countdown.",
+    "No added work on normal observation/payout paths; no production latency result claimed.",
+    "No new dependency, verify/sign/CLI/Tab release, commit, push, merge, deployment, account provisioning, recurring automation or backup operation.",
+    "Full store suite remains required before committing. Builds succeeded despite Wrangler preference-log EPERM output; the isolated suite includes an expected fixed-prose evidence refusal."
+  ]
+}

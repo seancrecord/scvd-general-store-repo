@@ -1,0 +1,38 @@
+{
+  "checked_at": "2026-09-13T00:05:23.837869+00:00",
+  "source": "User-identified Desktop copy retrieved from Bitwarden",
+  "source_format": "RTF despite .txt extension",
+  "normalized_to_plaintext": true,
+  "bare_public_recipient_removed_from_identity": true,
+  "expected_recipient_match": true,
+  "recipient_sha256": "fa3298a8e3593f1f01fe6799f962b2fec5d1dfa87e9fceadd0be2320dd8fc44c",
+  "synthetic_encrypt_decrypt_passed": true,
+  "vault_origin": "user_reported; vault was not directly inspected",
+  "private_key_displayed": false,
+  "source_file_modified": false,
+  "structured_archive_restore_verified": true,
+  "independent_offline_copy_verified": false,
+  "remote_backup_verified": false,
+  "fixture_checks": [
+    {
+      "fixture": "held",
+      "manifest_sha256": "2bad0fe2a95bbcf0bdc2d7f35c814f097a1b973627858c7595cc97de3cba8930",
+      "ciphertext_sha256": "d46f05ba64bc820bfc804257e1183839374141eb20222133a55497ff99bfa346",
+      "exact_rows_preserved": true,
+      "restore_verified": true,
+      "admissions_enabled": false
+    },
+    {
+      "fixture": "recovered",
+      "manifest_sha256": "b13a9def6d2bf5bc6e7854b40588b0f6effcd0b954b0a2f1b645e22d0732ac63",
+      "ciphertext_sha256": "13633cbc3e1610ec6d70dfd217d0afe5ba18c29cc08281531f9244ed24ba35bd",
+      "exact_rows_preserved": true,
+      "restore_verified": true,
+      "admissions_enabled": false
+    }
+  ],
+  "completed_at": "2026-09-13T00:05:40.178Z",
+  "publication_redactions": [
+    "Private local identity-file path omitted September 14, 2026; verification outcomes unchanged."
+  ]
+}

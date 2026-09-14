@@ -1,0 +1,62 @@
+{
+  "contract": {
+    "version": 1,
+    "purpose": "corpus-checkpoint",
+    "canonicalization": "scvd-pq-checkpoint-draft-v1",
+    "policy": "all",
+    "mldsa_mode": "pure",
+    "signing_variant": "hedged",
+    "context": "scvd.store:corpus-checkpoint:v1",
+    "snapshot_canonicalization": "scvd-corpus-canonical-input-v1",
+    "max_envelope_bytes": 16384,
+    "max_snapshot_bytes": 16777216,
+    "max_trust_bytes": 16384
+  },
+  "fields": {
+    "envelope": [
+      "protected",
+      "payload",
+      "signatures"
+    ],
+    "header": [
+      "version",
+      "purpose",
+      "canonicalization",
+      "policy",
+      "signers",
+      "mldsa_mode",
+      "signing_variant",
+      "context"
+    ],
+    "payload": [
+      "corpus_version",
+      "sequence",
+      "week",
+      "snapshot_canonicalization",
+      "canonical_sha256",
+      "canonical_sha512",
+      "key_announcement_sha256"
+    ],
+    "signer": [
+      "algorithm",
+      "key_id"
+    ],
+    "signature": [
+      "algorithm",
+      "key_id",
+      "signature"
+    ],
+    "trust": [
+      "version",
+      "purpose",
+      "keys"
+    ],
+    "key": [
+      "algorithm",
+      "key_id",
+      "purpose",
+      "encoding",
+      "public_key"
+    ]
+  }
+}

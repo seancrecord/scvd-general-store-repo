@@ -1,0 +1,101 @@
+{
+  "checked_at": "2026-09-11T18:35:41.097Z",
+  "experimental": true,
+  "deployed": false,
+  "production_ready": false,
+  "tests": {
+    "worker": 34,
+    "node_fixtures": 41,
+    "payout_regression": 33
+  },
+  "source_sha256": {
+    "experiments/screening/worker/budget.spec.ts": "582667116364488c006ec2034ea6b9c5d07fe70d320c3970ad36fbc76f5de637",
+    "experiments/screening/worker/budget.ts": "67d2b578fe02238ad91cc63e907c6ef3561aaebc5c613c77621d332d87d0522a",
+    "experiments/screening/worker/fixtures.ts": "fc10a47f41351061d971104cebdf041f813b2a37aff4a32084a5a83006e3f493",
+    "experiments/screening/worker/index.ts": "32d9e0fa0ed8e7f47883a49ae6c16daaf6b420ea4d489ee283710507f7780080",
+    "experiments/screening/worker/rpc-reader.spec.ts": "9a28f200e54dd2fda824b3becb819bead3a37d3e0eae7c5c7b29bf99fd6c2e59",
+    "experiments/screening/worker/rpc-reader.ts": "9ffe77261ef6ef041d761ca0965d220a5e4df004acd141191eaec7655d0d331c",
+    "experiments/screening/worker/vitest.config.ts": "543dda7fa976bdda69ac339a93618272f0d5512a7161b2fb85f280e5b8a0889c",
+    "experiments/screening/worker/vitest.mutation.config.ts": "6b1749b8c3abb74b1d27dcbc4b98f61f2f7ef738383331c1f8d778adec96c4a0",
+    "experiments/screening/worker/worker-configuration.d.ts": "6750ba1248e4ac33f0cd73a5ba7c69e6eb63498569c58c879335468f6bb72de8",
+    "experiments/screening/worker/wrangler.jsonc": "5072c674ebe99dde6a04c23a139343e6ff374119cea1f8ae2fa96db9aa0d19da",
+    "src/lib/sanctions-oracle.ts": "35b8786a8cacff4368e83449dd3398dfa3c869b1ee8ca6571e5da7935f051280",
+    "src/services/launch-check.ts": "fda19f6636469f53ac72aebbad685f1dc70b100114b6217aa68d189eac372a87",
+    "experiments/screening/provider-probe.mjs": "5561bf2d9f2cc7029fecfa2090f910133b7513947e1d0589a416b0f2bf1251cf"
+  },
+  "checks": {
+    "runtime": {
+      "sha256": "e7d7575977a6510cfcd381aa43545389459a515dde8954a834c9010683959a15",
+      "outcome": "passed"
+    },
+    "node_fixtures": {
+      "sha256": "603738f8b2c6cb9b28baa713792e4a13ce945cf641fb05f82d8ff34b58427dca",
+      "outcome": "passed"
+    },
+    "payout_regression": {
+      "sha256": "3ad533172e94d153281f65aa116a38c8286a5e0eb2b5ba2334297f1cdc2967e8",
+      "outcome": "passed"
+    },
+    "root_types": {
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "outcome": "passed"
+    },
+    "qualification_types": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "docs": {
+      "sha256": "d93d555ef3c630839cb423f37bf6eef4be57c19f10e6ca3f23b6b5f9e299cb57",
+      "outcome": "passed"
+    },
+    "claims": {
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "store_builds": {
+      "sha256": "92171359a8ceec2d9d374f3a3d391bf15da1f965f2a29985dd3a7b2ad132eee9",
+      "outcome": "passed"
+    },
+    "qualification_build": {
+      "sha256": "e37a23f630d8e512951428ab89a0d2946ad5529660fdc71fc87be5d352f74cac",
+      "outcome": "passed"
+    },
+    "negative_agreement": {
+      "sha256": "ba21eecc3c6d4239a9d4875b867da91c5f7c91ef1d869719a78a640fca51f9f9",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "negative_reserve": {
+      "sha256": "bae44830abdbf02d79d7e8d904170ad3c13a22350c2d2e839489f7f935c67cca",
+      "outcome": "expected_original_assertion_failure"
+    }
+  },
+  "bundles": [
+    {
+      "path": ".build-check/index.js.map",
+      "sha256": "0407e950533dba0606e1ba1f2530a5ad6075140c1d33f84b59ee9e691be6fd55",
+      "qualification": false,
+      "import_boundary_passed": true
+    },
+    {
+      "path": "doors/.build-check-doors/doors.js.map",
+      "sha256": "fba27bc7e704c12df77fc29d4dbee52f39d504437d2c42fb07d2e7c2a4a13c7d",
+      "qualification": false,
+      "import_boundary_passed": true
+    },
+    {
+      "path": "experiments/screening/worker/.build-check/index.js.map",
+      "sha256": "fb19d6051476d5579ecf67f0d83f40b6c859669947d4a59f301b39b7506a2a3e",
+      "qualification": true,
+      "import_boundary_passed": true
+    }
+  ],
+  "limitations": [
+    "Synthetic HTTP responses with real local SQLite storage; no authenticated provider/account or cloud failover qualification.",
+    "Public HTTP returns 404; configuration empty; no production service binding or paid product activation.",
+    "Internal service caller is trusted to select tier and caller identity. Public authorization and signed delivery are not implemented.",
+    "Orphaned leases remain closed; operator-visible reconciliation/recovery remains required.",
+    "Full store suite not run for this increment; required before commit. No commit/push/npm release.",
+    "Initial loopback denial and unsupported compatibility date were corrected before tests. Installed runtime date is 2026-08-22.",
+    "An unsupported sourcemap CLI flag was removed before successful qualification bundling. Dry-run preference-log EPERM warnings remain separate from bundle success."
+  ]
+}

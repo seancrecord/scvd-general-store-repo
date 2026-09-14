@@ -1,0 +1,62 @@
+{
+  "completed_at": "2026-09-13T17:45:42.259Z",
+  "synthetic_only": true,
+  "download": {
+    "downloaded_at": "2026-09-13T17:44:51.001416+00:00",
+    "download_method": "B2 Native API v4; TLS authenticated; redirects refused",
+    "fileId": "4_z36a22f2ec5e49160ae040212_f113fb2239c4b5929_d20260913_m172747_c005_v0501044_t0057_u01789320467915",
+    "bucketId": "36a22f2ec5e49160ae040212",
+    "filename": "scvd-screening-synthetic-drill-20260913.age",
+    "ciphertextBytes": 6606,
+    "ciphertextSha256": "2bfc388ad3e993209f7c9d7e2119cb1bd4913607963ba61dc498f034335f7f73",
+    "sha1_matches_response_and_upload_console": true,
+    "server_side_encryption": "AES256 (SSE-B2)",
+    "upload_timestamp": "1789320467915",
+    "key_scope_verified": true,
+    "key_capabilities": [
+      "listBuckets",
+      "listFiles",
+      "readBucketEncryption",
+      "readBucketLifecycleRules",
+      "readBucketLogging",
+      "readBucketNotifications",
+      "readBucketReplications",
+      "readBucketRetentions",
+      "readBuckets",
+      "readFileLegalHolds",
+      "readFileRetentions",
+      "readFiles",
+      "shareFiles"
+    ],
+    "key_expiration_utc": "2026-09-14T17:33:54.662000+00:00",
+    "private_credentials_displayed": false,
+    "restore_verified": true
+  },
+  "ciphertext_check": {
+    "copyMatches": true,
+    "ciphertextSha256": "2bfc388ad3e993209f7c9d7e2119cb1bd4913607963ba61dc498f034335f7f73",
+    "ciphertextBytes": 6606,
+    "remoteOriginVerified": false
+  },
+  "restore": {
+    "verified": true,
+    "manifestSha256": "3857fb879c23bface26f89ef0cb80da39d95c8822101bd523ff13a53a5b231ea",
+    "rows": 5,
+    "cases": 1,
+    "evidence": 3,
+    "admissionsEnabled": false,
+    "ageAuthenticated": true,
+    "quarantined": true
+  },
+  "exact_rows_preserved": true,
+  "no_live_tables": true,
+  "plaintext_restore_owner_only": true,
+  "recovery_identity": "Verified normalized keeper-retrieved vault copy",
+  "vault_origin": "keeper_reported",
+  "independent_offline_copy_verified": false,
+  "automatic_backups_active": false,
+  "caps_changed": false,
+  "production_state_transferred": false,
+  "private_key_displayed": false,
+  "scope_note": "Console Read Only includes shareFiles, which can issue scoped download tokens. No sharing-token operation ran; no write, delete, key-management or retention-change capabilities were granted."
+}

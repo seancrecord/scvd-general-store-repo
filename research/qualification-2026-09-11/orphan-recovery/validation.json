@@ -1,0 +1,71 @@
+{
+  "checked_at": "2026-09-11T19:05:39.564Z",
+  "experimental": true,
+  "deployed": false,
+  "production_ready": false,
+  "tests": {
+    "worker": 58
+  },
+  "source_sha256": {
+    "experiments/screening/worker/recovery.ts": "af0d6a64fae59c4b63c1014a09f9b51c9cac3d537472cd1d68f1c7fef451530f",
+    "experiments/screening/worker/budget.ts": "fe9c4615e4a89850e14c20d7c93593b730aa9f71b683f8ee81c00e21db3360b6",
+    "experiments/screening/worker/index.ts": "0072fce7afa2240829e02908239ce9f9f0822fa8daed468b1da8c6bff28cd022",
+    "experiments/screening/worker/recovery.spec.ts": "5318b7d260851d0539cdf75f2ce407d1393d5e79ec6916b56a0b9478a36290a1",
+    "experiments/screening/worker/vitest.mutation.config.ts": "40924f891643403c926d59971099c32516183748fc21b0313be00b2da808c78b",
+    "experiments/screening/worker/rpc-reader.ts": "9ffe77261ef6ef041d761ca0965d220a5e4df004acd141191eaec7655d0d331c",
+    "experiments/screening/worker/wrangler.jsonc": "5072c674ebe99dde6a04c23a139343e6ff374119cea1f8ae2fa96db9aa0d19da",
+    "experiments/screening/worker/RECOVERY.md": "4b700c597eb9b2672bc637c2baea6ab988ce5a8ee7e62ae21b2dafa39cc2e43e"
+  },
+  "checks": {
+    "worker": {
+      "log_path": "/private/tmp/scvd-recovery-tests-final.log",
+      "sha256": "a53b03b9d8192e436774adf474bb43c01f66546562f07a2c9a69775dcec3bd4e",
+      "outcome": "passed"
+    },
+    "qualification_types": {
+      "log_path": "/private/tmp/scvd-recovery-typecheck-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "docs": {
+      "log_path": "/private/tmp/scvd-recovery-docs-final.log",
+      "sha256": "b285b1451de508364f7322b7709a1b5750a28e87301874f73b0b3636502290f9",
+      "outcome": "passed"
+    },
+    "claims": {
+      "log_path": "/private/tmp/scvd-recovery-claims-final.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "qualification_build": {
+      "log_path": "/private/tmp/scvd-recovery-build-final.log",
+      "sha256": "b76419cea5ad79ab746d2268cff8ac4eca21a5c1bfce2b7a41e96c951e07ba56",
+      "outcome": "passed"
+    },
+    "negative_revision": {
+      "log_path": "/private/tmp/scvd-recovery-negative-revision.log",
+      "sha256": "c40acc7ac8ab6001797c8f9b7fbc8cac03af1d03713d0118af7866b1b62ec0f6",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "negative_evidence": {
+      "log_path": "/private/tmp/scvd-recovery-negative-evidence.log",
+      "sha256": "68021bd9af55907d89127c4a0f480cd93a5e4f8f3a799b67c548230aee23d194",
+      "outcome": "expected_original_assertion_failure"
+    }
+  },
+  "bundle": {
+    "path": "experiments/screening/worker/.build-check/index.js.map",
+    "sha256": "000c4c3daaa1169bce2602757e4cb342aa3f3a7dbd5a3d23e65a8e010e151fb5",
+    "required_sources_present": true,
+    "excluded_payout_signing_pq_sources": true
+  },
+  "limitations": [
+    "Local Workers SQLite and synthetic providers; no real provider termination, account qualification, or cloud failover exercised.",
+    "Recovery validates recorded reference structure, scope, timing and reservation revision. Evidence content is not fetched or authenticated; remote termination remains an operator attestation.",
+    "Admission hold does not terminate already admitted executors. Operator must establish that original executors cannot resume and both providers have no active target work before approval.",
+    "Private service entrypoint only; authenticated operator integration, console, external evidence retention and alerts remain outstanding. Public HTTP returns 404 and qualification configuration is empty.",
+    "Full store suite and previous Node/payout suites were not rerun for this increment. Full suite required before any commit.",
+    "No commit, push, merge, deployment, account provisioning, public activation or npm publication performed.",
+    "Dry-run bundle succeeded; Wrangler preference-log EPERM messages report inability to write local preference logs, not bundle failure."
+  ]
+}

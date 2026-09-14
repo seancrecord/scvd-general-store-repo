@@ -1,0 +1,43 @@
+{
+  "observed_at": "2026-09-12T18:10:40.075540+00:00",
+  "source": "Authenticated Backblaze web console, visible UI",
+  "account_created_by": "keeper",
+  "bucket": {
+    "name": "scvd-screening-backups-20260912",
+    "id": "36a22f2ec5e49160ae040212",
+    "endpoint": "s3.us-east-005.backblazeb2.com",
+    "privacy": "private",
+    "server_side_encryption": "SSE-B2 enabled",
+    "object_lock_enabled": true,
+    "retention_period_configured_by_this_task": false,
+    "lifecycle": "Keep all versions",
+    "current_files": 0,
+    "current_bytes": 0
+  },
+  "existing_caps_observed": {
+    "storage_dollars_per_day": 0,
+    "storage_display": "10 GB",
+    "download_dollars_per_day": 0,
+    "download_display": "1 GB",
+    "class_b_max_per_day": 2500,
+    "class_c_max_per_day": 2500,
+    "caps_modified": false
+  },
+  "custody_choice": {
+    "provider": "Bitwarden",
+    "plan": "Free",
+    "format": "Secure Note text; no paid attachment required",
+    "real_recovery_key_created": false,
+    "offline_copy_verified": false
+  },
+  "application_key_created": false,
+  "files_uploaded": false,
+  "collector_connected": false,
+  "restore_drill_completed": false,
+  "limitations": [
+    "UI cap observations are not a billing guarantee or proof of enforcement; pricing pages and the account UI describe different transaction allowances.",
+    "Object Lock is enabled, but no file retention period was applied. The creation UI described per-file compliance retention; governance/default retention remains unqualified.",
+    "Application-key form offers Read and Write, Read Only and Write Only. Exact upload-only capability enforcement was not established and no key was generated.",
+    "No recovery identity, real archive, provider credential or automatic backup schedule was created."
+  ]
+}

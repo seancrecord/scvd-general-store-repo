@@ -1,0 +1,15 @@
+{
+  "scope": "Actual dry-run Worker sourcemap sources; no production deployment",
+  "bundles": [
+    {
+      "sourcemap": ".build-check/index.js.map",
+      "sha256": "740ed5eeb06e7f875c46891b491ca148705d693e241b600bb339ccddf7cd2227",
+      "pq_or_experiment_sources": []
+    },
+    {
+      "sourcemap": "doors/.build-check-doors/doors.js.map",
+      "sha256": "444d888d74264ed55c124994e734c8ae8562458215dde763e182075ce855fc5f",
+      "pq_or_experiment_sources": []
+    }
+  ]
+}

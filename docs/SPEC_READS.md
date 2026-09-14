@@ -940,3 +940,258 @@ its actual run. Publication does not establish third-party adoption.
 Read the current [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/), [EIP-3009](https://eips.ethereum.org/EIPS/eip-3009) and [Solana transaction documentation](https://solana.com/docs/core/transactions). The EIP-3009 signature commits to the authorization values and EIP-712 domain; the transfer operation separately checks its validity interval and usage. Solana signatures cover the transaction message, with signers corresponding to the first static account keys; expiry affects broadcast eligibility. These are ownership proofs for retained records, not evidence that a fresh transfer is currently spendable or that settlement occurred.
 
 Checked the installed `@x402/evm` exported `authorizationTypes`, viem `verifyTypedData` utility, and the existing bounded Solana framing helper. The viem documentation endpoint could not be read by the browsing tool; the installed utility and real signed fixture tests supply compatibility evidence. Contract signatures that cannot be rechecked locally use an exact one-way fingerprint captured only after the original facilitator verification. Existing `PAID_RECOVERIES` JSON records gain one optional field, with no binding migration or new dependency. The current Workers types were retrieved for BUY-016 earlier the same day; this increment reuses those existing bindings and timing-safe comparison APIs. No production chain transaction is submitted by these checks.
+
+
+## September 11 — narrowed checkpoint and oracle-observation plans
+
+Read current-main `key-continuity.ts`, corpus canonicalization and anchor
+submission, the experimental envelope and the sanctions-screen seam.
+The public PQ trigger still says watching/not building; the oracle adapter
+calls `latest` and returns no block identity. These are concrete plan gaps.
+A direct HTTPS JSON read of `/attestation` at 2026-09-11T15:26:28Z
+also returned the watching/not-building trigger at
+`key_continuity.post_quantum.trigger` (HTTP 200); this was not inferred
+solely from a cached web extract.
+
+Primary sources: [NIST FIPS 204](https://csrc.nist.gov/pubs/fips/204/final)
+and [sections 3.4–3.6](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)
+for hedged signing and key identity; [OpenTimestamps](https://opentimestamps.org/)
+for prior-existence proofs; [Chainalysis oracle documentation](https://go.chainalysis.com/chainalysis-oracle-docs.html)
+for public availability, EVM deployments, input type, source scope and data
+limits. The oracle page describes sources including US, EU and UN lists;
+an OFAC-only attribution is not established. Access without a customer
+relationship does not establish unrestricted commercial redistribution.
+No API terms breach or legal clearance is concluded by this read.
+
+Updated plans: `PQ_PRODUCTION_ROLLOUT_2026-09.md` and
+`SCREENING_PRODUCT_DESIGN_2026-09.md`. This is documentation work, not
+cryptographic qualification, product implementation or public activation.
+
+The follow-up review checked the [OTS client documentation](https://github.com/opentimestamps/opentimestamps-client),
+which describes confirmation in hours rather than a one-day minimum, against
+`anchor-submit.ts`: daily log creation and repeated pending-proof upgrades
+are separate cadences, and `complete` is bookkeeping rather than independent
+verification. The plan now separates engineer-days from two sequential
+calendar waits, with next-day review slots as proposed operational buffers.
+FIPS 204 uses identical verification for deterministic and hedged signatures;
+the mode field is an issuer claim. Key-purpose rejection belongs in trusted
+artifact acceptance, not the generic Ed25519 primitive; existing verifier
+entry points were inspected, not changed or newly qualified.
+
+Read [EIP-1898](https://eips.ethereum.org/EIPS/eip-1898),
+[Base RPC tags](https://docs.base.org/base-chain/api-reference/rpc-overview),
+[OP Stack status definitions](https://docs.optimism.io/app-developers/guides/transactions/statuses)
+and [Geth archive storage](https://geth.ethereum.org/docs/fundamentals/archive).
+The product proposal chooses `safe` plus canonical block-hash selection;
+there is no number-based fallback. Safe-head lag and state retention must
+be measured on the actual providers: neither a universal 128-block window
+nor guaranteed safe-head availability follows from these sources. No live
+product-provider capability or quota-isolation claim is established here.
+The separate product budget, fixed two-witness policy and admission limits
+are new proposed requirements, with qualification work included in the lift.
+
+
+## September 11 — qualification instrument and provider cost reading
+
+The next increment is retained in `../research/qualification-2026-09-11/`.
+Installed the existing PQ lockfile without lifecycle scripts; checked its
+ML-DSA entropy path and security notes, repeated the retained NIST cases
+and added the proposed context to the OpenSSL interchange probe. Fresh
+processes measured backend operations. A disposable mutation proves the
+entropy probe detects silent deterministic fallback rather than passing
+on a broken instrument. No production backend approval follows.
+
+Read current [Alchemy plans](https://www.alchemy.com/docs/reference/pricing-plans)
+and [method weights](https://www.alchemy.com/docs/reference/compute-unit-costs),
+[Quicknode pricing](https://www.quicknode.com/pricing) and its
+[Base archive description](https://www.quicknode.com/chains/base). They
+support candidate cost estimates, not qualification of a configured account.
+The public Base sample used seven read-only requests; the preceding sandbox
+transport failure remains a separate result. Both samples explicitly refuse
+to call the product providers qualified. The probe and fixture tests load
+no credentials, and the public probe is not a product fallback ladder.
+
+Read the [Wrangler command reference](https://developers.cloudflare.com/workers/wrangler/commands/)
+for the existing dry-run build check. No deployment or runtime configuration
+change is part of this work.
+
+
+## September 11 — synthetic checkpoint format and purpose guards
+
+Read the existing `canonicalizeCorpusSnapshot` and its version/sequence/week
+contract, the experimental envelope, [Node key decoding](https://nodejs.org/api/crypto.html#cryptocreatepublickeykey)
+and [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html). The new draft
+uses explicit field order and exact raw-text reconstruction, not JCS.
+Duplicate/alternate encodings are refused before parsed data can authorize
+a signature. The installed Node crypto implementation exercises Ed25519
+SPKI decoding; the pinned PQ backend supplies exact raw-key/signature lengths.
+
+The prototype cross-checks snapshot metadata and byte hashes but delegates
+full corpus canonicalization/schema/continuity to the existing verifier.
+A minimal synthetic snapshot is intentionally not a real ward reading.
+Purpose rejection is tested with valid wrong-purpose signatures and a
+disposable mutation removing the guard; no production acceptance path was
+modified. Saved public fixtures verify in a separate process, not an
+independently authored parser. These distinctions remain release gates.
+
+The provider setup handoff uses the preceding pricing/protocol reads; no
+new provider-capability, account-isolation or subscription claim is made.
+
+## September 11 — existing corpus readers and provider fixture controls
+
+Read `verifier/evidence-bundle.js`, `checkKeyServiceWindow` in
+`verifier/x402-verify.js`, the corpus canonicalizer and current/retired key
+registry. The adapter reuses those readers without modifying their released
+interfaces. The existing bundle reader validates the snapshot representation,
+digest and original signature, not the entire nested WardRound schema.
+Service-window checks use claimed dates; independent time proof remains a
+separate requirement, demonstrated by a backdated synthetic signature test.
+
+The new run uses the September 9 frozen corpus capture manifest and September
+8 public key-history capture. It is not a fresh live read or current-key
+assertion. The provider harness implements controls from the preceding
+EIP-1898 reading; only synthetic transports were exercised in this increment.
+No new hosted-provider, source-license or subscription finding is asserted.
+
+## September 11 — pair agreement and budget fixture policy
+
+Re-read [EIP-1898](https://eips.ethereum.org/EIPS/eip-1898) for block-hash
+selection and canonicality, and the existing `oracleScreen` implementation
+for strict ABI decoding and its first-valid-answer payout policy. The new
+fixture model uses a fixed pair and requires agreement; it does not import
+or alter that payout retry loop. Its synthetic adapter receipt includes
+canonical/safe metadata, which is a test assumption, not new chain evidence.
+
+Inspected the new admission model against free saturation, paired reservation
+atomicity, caller-entry exhaustion and unfinished work after deadlines.
+In-memory accounting establishes single-process behavior only. A distributed
+limiter, real provider budgets and exact method-cost accounting remain open.
+No live provider call, source-rights determination or account provisioning
+was performed in this increment.
+
+## September 11 — runnable screening adapter and durable admission
+
+Read current [SQLite storage APIs](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/),
+[Durable Object coordination rules](https://developers.cloudflare.com/durable-objects/best-practices/rules-of-durable-objects/),
+[Workers test APIs](https://developers.cloudflare.com/workers/testing/vitest-integration/test-apis/)
+and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+Checked installed storage transaction/sync types and Wrangler's types command.
+The pair's shared capacity is one coordination atom, independent of request
+identity or policy version; synchronous transactions reserve both witnesses,
+and persistence is confirmed before external I/O. Real local SQLite tests
+exercise reconstruction and failed-write rollback. Cloud failover remains
+unmeasured, and orphaned leases remain closed until reconciled.
+
+The isolated runtime rejected September 11 compatibility because the installed
+server supports dates only through August 22. The qualification Worker now
+pins August 22, without upgrading dependencies or changing the store's date.
+A first sandbox attempt also lacked loopback permission; the passing run used
+the local test server. Neither startup failure counts as product evidence.
+
+The adapter follows the previously read EIP-1898 contract with a bounded
+parent-hash walk from the higher safe head to the selected lower head.
+Strict oracle helpers were extracted from `launch-check.ts` into
+`src/lib/sanctions-oracle.ts`, preserving the payout loop and its behavior.
+No new source-use conclusion, authenticated provider reading or production
+latency claim is established by synthetic transport tests.
+
+## September 11 — orphan recovery review and audit
+
+Re-read the [SQLite transaction and storage contract](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and the existing admission/completion code. Recovery changes the same durable
+coordination atom as ordinary reservation/release, with no network I/O inside
+the transaction. Tests exercise rollback when the audit insert/update fails,
+reconstruction, stale revisions and late normal completion. Revision and
+evidence-age guard removals cause the original refusal assertions to fail.
+
+The protocol records current operator-reviewed evidence references, including
+both provider witnesses and a terminated executor. It checks shape, scope,
+freshness and current budget state, not the external materials' truth or
+signatures. The artifact explicitly calls this an operator attestation.
+No live provider termination evidence, authenticated operator console or
+production recovery action was exercised. Source terms and account identity
+qualification remain unchanged and open.
+
+### 2026-09-11 — private recovery evidence retention
+
+Read the current Cloudflare [SQLite storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/),
+[Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and [Node crypto compatibility](https://developers.cloudflare.com/workers/runtime-apis/nodejs/crypto/).
+The qualification Worker already enables `nodejs_compat`; bounded SHA-256
+hashing uses the built-in `node:crypto` implementation with no new dependency.
+Hashing, case checks, revision and evidence insertion stay in one synchronous
+SQLite transaction, with persistence acknowledgement before a success reply.
+Local Workers tests independently compare the digest with WebCrypto and test
+rollback, UTF-8 limits, edited/deleted/copied documents and exact retries.
+These tests do not prove external authenticity, account access control, cloud
+backup or provider termination. See the private recovery runbook for limits.
+
+### 2026-09-11 — screening operator access
+
+Read current [Hono Basic Auth documentation](https://hono.dev/docs/middleware/builtin/basic-auth)
+and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+The gateway reuses the installed Hono gate and existing store throttle; no
+authentication dependency or secret is introduced. Existing admin behavior
+was extracted into `src/lib/admin-auth.ts`; username is a shared constant.
+Authenticated local tests cover the gateway and real SQLite operation, while
+production mounting and service binding remain absent. Uploads enforce a
+streamed byte limit and deadline; failed/successful private responses retain
+no-store and content protections after handlers return.
+
+### 2026-09-11 — screening browser review
+
+Read MDN's [script-src reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src)
+and Cloudflare's [Wrangler configuration reference](https://developers.cloudflare.com/workers/wrangler/configuration/).
+The private page uses a fresh nonce for its module and styles, a strict
+content policy and same-origin connections. Evidence is assigned through
+textContent. A scoped Text rule imports the unchanged browser module; tests
+load those same bytes. Local browser checks exercised the page's policy and
+literal rendering; production bundles are checked separately for absence of
+the experimental UI. Neither establishes a deployed authentication session.
+
+### 2026-09-11 — operational screening readings and backup boundary
+
+Re-read Cloudflare's [SQLite storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+Operational readings consume SQL synchronously in a read-only transaction,
+without awaiting external work or changing admission state. The monitoring
+entrypoint is distinct from recovery authority. Platform point-in-time recovery
+is documented separately from the independent export/restore requirement; no
+backup or scheduler was activated by this local qualification.
+
+### 2026-09-11 — consistent screening export and quarantined restore
+
+Read the current Cloudflare [SQLite storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/),
+including synchronous cursor consumption and transaction boundaries. Snapshot
+capture scans and writes staging inside one synchronous transaction without
+network work. Bounded pages read only that frozen copy. Real local Workers
+tests exercise the storage boundary; Node's built-in SQLite API is used only
+for offline restore and synthetic adapter tests. Its local runtime status and
+plaintext-output limit are recorded in the backup runbook; no encryption or
+production reactivation is implied by an offline verification receipt.
+
+### September 11 — age backup encryption contract
+
+Read the versioned upstream age manual and v1.3.2 release for native hybrid
+recipients, public-recipient encryption, full-stream exit semantics and output
+overwrite behavior. The local wrapper supports one native hybrid public
+recipient, preserves exclusive final creation, and refuses publication when the
+child exits unsuccessfully even after emitting valid plaintext. Version checks
+are compatibility checks, not executable provenance. Homebrew distribution
+checksums and the synthetic qualification boundary are retained in
+`../research/qualification-2026-09-11/encrypted-backup/validation.json`.
+
+Sources: https://github.com/FiloSottile/age/blob/v1.3.2/doc/age.1 ,
+https://github.com/FiloSottile/age/releases/tag/v1.3.2 ,
+https://formulae.brew.sh/api/formula/age.json .
+
+### 2026-09-13 — private backup host transport
+
+Read Backblaze Native API v4 authorization, upload-location, upload and download
+operations, plus application-key capabilities. Implemented exact bucket/prefix
+and capability checks, expiring-key qualification, SSE-B2 checks, bounded HTTP
+and exact-version readback in the host adapter. Read the Cloudflare WorkerEntrypoint
+service-binding RPC reference for the disabled private source handler. The live
+binding and the new B2 upload transport remain unqualified in deployment.
+Sources and implementation boundaries: `../experiments/screening/backup/HOST_COLLECTOR.md`.
+No SDK dependency or production route was added.

@@ -1,0 +1,32 @@
+TAP version 13
+# Subtest: authentication precedes every binding lookup and never echoes supplied secrets
+not ok 1 - authentication precedes every binding lookup and never echoes supplied secrets
+  ---
+  duration_ms: 9.926833
+  location: '/private/tmp/scvd-pq-screening-plan-20260911/experiments/screening/backup/gateway.test.mjs:10:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    200 !== 401
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 401
+  actual: 200
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-pq-screening-plan-20260911/experiments/screening/backup/gateway.test.mjs:10:271)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76.870125

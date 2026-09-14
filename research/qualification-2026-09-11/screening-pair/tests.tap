@@ -1,0 +1,215 @@
+TAP version 13
+# Subtest: both matching witnesses produce only an unsigned not-listed observation
+ok 1 - both matching witnesses produce only an unsigned not-listed observation
+  ---
+  duration_ms: 1.096583
+  ...
+# Subtest: both matching witnesses produce only an unsigned listed observation
+ok 2 - both matching witnesses produce only an unsigned listed observation
+  ---
+  duration_ms: 0.236083
+  ...
+# Subtest: starts both witnesses concurrently and cannot return on the first answer
+ok 3 - starts both witnesses concurrently and cannot return on the first answer
+  ---
+  duration_ms: 0.251125
+  ...
+# Subtest: second witness listed_disagreement makes the entire observation unavailable
+ok 4 - second witness listed_disagreement makes the entire observation unavailable
+  ---
+  duration_ms: 0.695542
+  ...
+# Subtest: second witness malformed_bool makes the entire observation unavailable
+ok 5 - second witness malformed_bool makes the entire observation unavailable
+  ---
+  duration_ms: 1.01075
+  ...
+# Subtest: second witness wrong_chain makes the entire observation unavailable
+ok 6 - second witness wrong_chain makes the entire observation unavailable
+  ---
+  duration_ms: 0.14525
+  ...
+# Subtest: second witness wrong_contract makes the entire observation unavailable
+ok 7 - second witness wrong_contract makes the entire observation unavailable
+  ---
+  duration_ms: 0.160375
+  ...
+# Subtest: second witness wrong_calldata makes the entire observation unavailable
+ok 8 - second witness wrong_calldata makes the entire observation unavailable
+  ---
+  duration_ms: 0.094083
+  ...
+# Subtest: second witness wrong_hash makes the entire observation unavailable
+ok 9 - second witness wrong_hash makes the entire observation unavailable
+  ---
+  duration_ms: 0.373458
+  ...
+# Subtest: second witness wrong_number makes the entire observation unavailable
+ok 10 - second witness wrong_number makes the entire observation unavailable
+  ---
+  duration_ms: 0.286917
+  ...
+# Subtest: second witness wrong_time makes the entire observation unavailable
+ok 11 - second witness wrong_time makes the entire observation unavailable
+  ---
+  duration_ms: 0.125917
+  ...
+# Subtest: second witness unsafe_head makes the entire observation unavailable
+ok 12 - second witness unsafe_head makes the entire observation unavailable
+  ---
+  duration_ms: 0.072
+  ...
+# Subtest: second witness noncanonical makes the entire observation unavailable
+ok 13 - second witness noncanonical makes the entire observation unavailable
+  ---
+  duration_ms: 0.138125
+  ...
+# Subtest: second witness silence makes the entire observation unavailable
+ok 14 - second witness silence makes the entire observation unavailable
+  ---
+  duration_ms: 0.072916
+  ...
+# Subtest: rejects stale, future and unsupported inputs before admission or reads
+ok 15 - rejects stale, future and unsupported inputs before admission or reads
+  ---
+  duration_ms: 0.127458
+  ...
+# Subtest: shared deadline aborts both adapters and retains slots until actual completion
+ok 16 - shared deadline aborts both adapters and retains slots until actual completion
+  ---
+  duration_ms: 0.240709
+  ...
+# Subtest: an early failure cannot free the slot of a still-running second adapter
+ok 17 - an early failure cannot free the slot of a still-running second adapter
+  ---
+  duration_ms: 0.16075
+  ...
+# Subtest: clock and block age are rechecked at completion
+ok 18 - clock and block age are rechecked at completion
+  ---
+  duration_ms: 0.663834
+  ...
+# Subtest: caller mutation cannot replace the pinned block or witness pair
+ok 19 - caller mutation cannot replace the pinned block or witness pair
+  ---
+  duration_ms: 0.103291
+  ...
+# Subtest: free saturation leaves provider credits for paid work; all tiers remain capped
+ok 20 - free saturation leaves provider credits for paid work; all tiers remain capped
+  ---
+  duration_ms: 0.194083
+  ...
+# Subtest: concurrent free flood cannot take the reserved paid slot
+ok 21 - concurrent free flood cannot take the reserved paid slot
+  ---
+  duration_ms: 0.184708
+  ...
+# Subtest: limiter failure or witness budget mismatch causes zero provider reads
+ok 22 - limiter failure or witness budget mismatch causes zero provider reads
+  ---
+  duration_ms: 0.097666
+  ...
+# Subtest: per-caller caps and bounded free caller storage cannot consume paid caller entries
+ok 23 - per-caller caps and bounded free caller storage cannot consume paid caller entries
+  ---
+  duration_ms: 0.08825
+  ...
+# Subtest: window rollover resets spending but preserves inflight concurrency; backwards clock refuses
+ok 24 - window rollover resets spending but preserves inflight concurrency; backwards clock refuses
+  ---
+  duration_ms: 0.063834
+  ...
+# Subtest: failed second-provider capacity check never partially debits the first provider
+ok 25 - failed second-provider capacity check never partially debits the first provider
+  ---
+  duration_ms: 0.041
+  ...
+# Subtest: request-count caps apply even when credit budgets have room
+ok 26 - request-count caps apply even when credit budgets have room
+  ---
+  duration_ms: 0.086583
+  ...
+# Subtest: configuration requires exactly two distinct operator and account labels
+ok 27 - configuration requires exactly two distinct operator and account labels
+  ---
+  duration_ms: 0.145416
+  ...
+# Subtest: disposable guard removals make the original agreement and reserve assertions fail
+ok 28 - disposable guard removals make the original agreement and reserve assertions fail
+  ---
+  duration_ms: 8.869917
+  ...
+# Subtest: public probe stops on silence or wrong chain without inventing capability evidence
+ok 29 - public probe stops on silence or wrong chain without inventing capability evidence
+  ---
+  duration_ms: 88.329625
+  ...
+# Subtest: calls are pinned to sampled safe/finalized hashes and stay within the read budget
+ok 30 - calls are pinned to sampled safe/finalized hashes and stay within the read budget
+  ---
+  duration_ms: 49.103958
+  ...
+# Subtest: passes all controls but does not promote protocol cases into product qualification
+ok 31 - passes all controls but does not promote protocol cases into product qualification
+  ---
+  duration_ms: 1.13325
+  ...
+# Subtest: refuses wrong-chain instead of counting a broken instrument as a passing case
+ok 32 - refuses wrong-chain instead of counting a broken instrument as a passing case
+  ---
+  duration_ms: 0.136125
+  ...
+# Subtest: refuses ignore-hash instead of counting a broken instrument as a passing case
+ok 33 - refuses ignore-hash instead of counting a broken instrument as a passing case
+  ---
+  duration_ms: 0.230542
+  ...
+# Subtest: refuses unsupported instead of counting a broken instrument as a passing case
+ok 34 - refuses unsupported instead of counting a broken instrument as a passing case
+  ---
+  duration_ms: 0.109416
+  ...
+# Subtest: refuses no-changing-fixture instead of counting a broken instrument as a passing case
+ok 35 - refuses no-changing-fixture instead of counting a broken instrument as a passing case
+  ---
+  duration_ms: 0.138334
+  ...
+# Subtest: refuses missing-fork instead of counting a broken instrument as a passing case
+ok 36 - refuses missing-fork instead of counting a broken instrument as a passing case
+  ---
+  duration_ms: 0.291667
+  ...
+# Subtest: refuses ignore-canonical instead of counting a broken instrument as a passing case
+ok 37 - refuses ignore-canonical instead of counting a broken instrument as a passing case
+  ---
+  duration_ms: 0.186916
+  ...
+# Subtest: refuses throws instead of counting a broken instrument as a passing case
+ok 38 - refuses throws instead of counting a broken instrument as a passing case
+  ---
+  duration_ms: 0.106083
+  ...
+# Subtest: timeout aborts transport and starts no follow-on read
+ok 39 - timeout aborts transport and starts no follow-on read
+  ---
+  duration_ms: 10.410167
+  ...
+# Subtest: missing or contradictory fixture controls refuse before a read
+ok 40 - missing or contradictory fixture controls refuse before a read
+  ---
+  duration_ms: 0.394
+  ...
+# Subtest: malformed result text and a mistaken URL as witness ID cannot escape in reports
+ok 41 - malformed result text and a mistaken URL as witness ID cannot escape in reports
+  ---
+  duration_ms: 0.195291
+  ...
+1..41
+# tests 41
+# suites 0
+# pass 41
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 184.043958

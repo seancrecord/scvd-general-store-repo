@@ -1,0 +1,19 @@
+{
+  "enabled": false,
+  "root": "/absolute/private/collector",
+  "ageBinary": "/absolute/qualified/age",
+  "ageSha256": "REPLACE_WITH_VERIFIED_BINARY_SHA256",
+  "recipientPath": "/absolute/private/recipient.txt",
+  "sourceUrl": "https://configured-private-host.invalid/internal/screening-backup",
+  "sourceSecretPath": "/absolute/private/source-token.txt",
+  "writerCredentialPath": "/absolute/private/b2-writer.txt",
+  "readerCredentialPath": "/absolute/private/b2-reader.txt",
+  "bucketId": "REPLACE_WITH_BUCKET_ID",
+  "prefix": "backup_",
+  "policy": {
+    "maxArchiveBytes": 16777216,
+    "maxStoredBytes": 268435456,
+    "maxSourceAgeMs": 129600000,
+    "maxDownloadAttempts": 3
+  }
+}

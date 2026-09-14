@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-09-13T18:03:10.702812+00:00",
+  "checks": {
+    "host_build": {
+      "exit_code": 0
+    },
+    "host_typecheck": {
+      "exit_code": 0
+    },
+    "root_typecheck": {
+      "exit_code": 0
+    },
+    "store_and_doors_dry_run": {
+      "exit_code": 0,
+      "note": "Wrangler preferences log write reported EPERM; both bundles completed. No deployment."
+    },
+    "tests": {
+      "exit_code": 0,
+      "tests": 78,
+      "pass": 78,
+      "fail": 0
+    }
+  },
+  "negative_controls": [
+    {
+      "guard": "readback",
+      "exit_code": 1,
+      "original_assertion_failed": true
+    },
+    {
+      "guard": "auth",
+      "exit_code": 1,
+      "original_assertion_failed": true
+    }
+  ],
+  "source_sha256": {
+    "collector.ts": "27197609c64650da4eb283488597034e2c5b28c75f4f040c404a443c3c412287",
+    "collector-cli.ts": "ab359dd9a130a6535551549e4cb4e8209a881d69e0b8d37e4b5fbe813d458c92",
+    "b2.ts": "71c369b708a90597612bd686d605b479ccd05f3fe2f4de3c94567da6eae81359",
+    "gateway.ts": "1f96e56cd3801b3f79b7b60789f050568b6f8e4dba87793d4222ab5c502b3b56",
+    "build.mjs": "3277bef34a53edd35b94e79529a7bee72c850596bd6f1909e189d4c40f36627c",
+    "collector.test.mjs": "53449f878c3c983038a52abd542107f5d5cb9c5b2a8970570ad58deec5f843f9",
+    "collector-cli.test.mjs": "c6e8b4bedd6e79a247dba343413e34d11482129d42b4d824a573d5dfbca826c0",
+    "b2.test.mjs": "b9b11abd124e3249b39800ad2c8b7ba84d5bf22bf41df5a38c2a0f3407156b44",
+    "gateway.test.mjs": "a791626510960ed695f261b6c5cd09fe5f937257f0ea4bf4953b2e79745a0ba8"
+  },
+  "live_transport_qualified": false,
+  "source_gateway_deployed": false,
+  "schedule_installed": false,
+  "credential_created": false,
+  "retention_changed": false,
+  "new_npm_dependency": false,
+  "full_store_suite_run": false,
+  "limitations": [
+    "New B2 adapter tested with synthetic HTTP, not real upload credentials.",
+    "Gateway Web APIs tested in Node, not deployed Worker binding.",
+    "Prior manual live B2 restore remains separate.",
+    "Host selection is provisional; no scheduler or notification installed."
+  ]
+}

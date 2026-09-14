@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtempSync,writeFileSync,rmSync,chmodSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+const cli='experiments/screening/backup/.build-check/collector-cli.mjs';
+for(const mode of ['run','check'])test('disabled '+mode+' never reads credential paths',()=>{const dir=mkdtempSync(path.join(tmpdir(),'scvd-collector-cli-test-'));try{const config=path.join(dir,'config.json');writeFileSync(config,JSON.stringify({enabled:false,sourceSecretPath:'/nonexistent/secret'}),{mode:0o600});const result=spawnSync(process.execPath,[cli,mode,config],{encoding:'utf8'});assert.equal(result.status,1);assert.equal(result.stdout,'{"state":"disabled"}\n');}finally{rmSync(dir,{recursive:true,force:true});}});
+test('missing and exposed configuration fail with fixed output',()=>{const dir=mkdtempSync(path.join(tmpdir(),'scvd-collector-cli-test-'));try{const config=path.join(dir,'config.json');for(const content of [null,'{"enabled":false}']){if(content!==null){writeFileSync(config,content);chmodSync(config,0o644);}const result=spawnSync(process.execPath,[cli,'run',config],{encoding:'utf8'});assert.equal(result.status,1);assert.equal(result.stdout,'{"state":"unavailable"}\n');}}finally{rmSync(dir,{recursive:true,force:true});}});
+test('freshness check requires no destination or source credential',()=>{const dir=mkdtempSync(path.join(tmpdir(),'scvd-collector-cli-test-'));try{const config=path.join(dir,'config.json');writeFileSync(config,JSON.stringify({enabled:true,root:dir,policy:{maxSourceAgeMs:10}}),{mode:0o600});const result=spawnSync(process.execPath,[cli,'check',config],{encoding:'utf8'});assert.equal(result.status,1);assert.equal(result.stdout,'{"state":"missing"}\n');}finally{rmSync(dir,{recursive:true,force:true});}});

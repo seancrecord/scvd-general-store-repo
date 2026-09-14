@@ -1,0 +1,67 @@
+{
+  "checked_at": "2026-09-11T17:47:29.344Z",
+  "experimental": true,
+  "source_sha256": {
+    "experiments/pqc/corpus-checkpoint.mjs": "ea15a03e206e85152bd1f7491e3186330449be6e84d0dff0ed5252fa7a27c9d7",
+    "experiments/pqc/corpus-checkpoint.test.mjs": "2347dc1787c8f3891c8a47e9120fdf1bb3e999c9baa0ebcb69437a04b63ef147",
+    "experiments/pqc/corpus-qualification.mjs": "f7428e4b888a446c51a66376319a5c6f460b995183ca9fd50a9badb4d147fc71",
+    "experiments/screening/qualify-provider.mjs": "5139e64498982a90721f5ebfbd800b2a601394800e30a5b5bd1dc0f51363f93d",
+    "experiments/screening/qualify-provider.test.mjs": "e736d31002a15c47a5490f5a273a51c5b9e3432bb496280a7a08753daeaed04d"
+  },
+  "checks": {
+    "pq": {
+      "log": "/private/tmp/scvd-corpus-final-pq.log",
+      "sha256": "fe6154d67cc95bc5967c8b9fb13ff0c6c4ad40d9f5c1eae177456975e5ad6293",
+      "outcome": "passed"
+    },
+    "screening": {
+      "log": "/private/tmp/scvd-corpus-final-screening.log",
+      "sha256": "7ffe074183d615bbfb2bd45ce3d8f6a43c648b95e80cbc7cb17edd41bb6bb6ab",
+      "outcome": "passed"
+    },
+    "typecheck": {
+      "log": "/private/tmp/scvd-corpus-final-typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "outcome": "passed"
+    },
+    "docs": {
+      "log": "/private/tmp/scvd-corpus-final-docs.log",
+      "sha256": "d93d555ef3c630839cb423f37bf6eef4be57c19f10e6ca3f23b6b5f9e299cb57",
+      "outcome": "passed"
+    },
+    "claims": {
+      "log": "/private/tmp/scvd-corpus-final-claims.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "build": {
+      "log": "/private/tmp/scvd-corpus-final-build.log",
+      "sha256": "cd7c1aed78f8721de5e0fb3b29c25de1c55c82e2b1997e87ce035b348d5e5230",
+      "outcome": "passed"
+    },
+    "scalar-negative": {
+      "log": "/private/tmp/scvd-corpus-final-scalar-negative.log",
+      "sha256": "32b264624ee387beb9b7fb65039390cbcbc1a59a2119d262a33fc75a61c4f392",
+      "outcome": "expected_assertion_failure"
+    }
+  },
+  "pq_tests": 62,
+  "screening_tests": 13,
+  "worker_bundles": [
+    {
+      "file": ".build-check/index.js.map",
+      "sha256": "740ed5eeb06e7f875c46891b491ca148705d693e241b600bb339ccddf7cd2227",
+      "experiment_or_pq_sources": []
+    },
+    {
+      "file": "doors/.build-check-doors/doors.js.map",
+      "sha256": "444d888d74264ed55c124994e734c8ae8562458215dde763e182075ce855fc5f",
+      "experiment_or_pq_sources": []
+    }
+  ],
+  "notes": [
+    "Full Worker test suite not rerun for this external experiment increment; required before commit.",
+    "Builds exited zero; Wrangler reported sandbox EPERM writing its preference logs. Both bundles and source maps were produced.",
+    "No deployment, commit, package release, live account qualification or independent Bitcoin proof verification."
+  ]
+}

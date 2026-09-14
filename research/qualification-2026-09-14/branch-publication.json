@@ -1,0 +1,153 @@
+{
+  "recorded_at": "2026-09-14T15:49:21.388678+00:00",
+  "purpose": "Branch-only implementation and review handoff; local checks do not qualify a production release.",
+  "branch": "codex/pq-screening-plan-refinement",
+  "base_commit": "ecd0807431a64e1fd9b18efcbd5e646001d0228d",
+  "publication_scope": {
+    "commit_and_push_requested": true,
+    "pr_created": false,
+    "merged": false,
+    "deployed": false,
+    "schedule_installed": false,
+    "production_pq_activated": false,
+    "new_live_backup_transfer": false
+  },
+  "root_suite": {
+    "success": true,
+    "numTotalTests": 11837,
+    "numPassedTests": 11836,
+    "numFailedTests": 0,
+    "numPendingTests": 1,
+    "numTodoTests": 0,
+    "numRuntimeErrorTestSuites": null
+  },
+  "root_file_count": 656,
+  "root_command": "npm test -- --maxWorkers=4 --reporter=verbose --reporter=json --outputFile.json=<local-validation-dir>/full-tests.json",
+  "node_test_suites": [
+    {
+      "suite": "pq",
+      "tests": 62,
+      "pass": 62,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "screening_protocol_and_browser",
+      "tests": 62,
+      "pass": 62,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "backup",
+      "tests": 78,
+      "pass": 78,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  ],
+  "isolated_worker": {
+    "success": true,
+    "passed": 118,
+    "failed": 0,
+    "pending": 0,
+    "files": 8
+  },
+  "checks": {
+    "root_typecheck": "passed",
+    "backup_typecheck": "passed",
+    "isolated_worker_typecheck": "passed",
+    "backup_build": "passed",
+    "root_docs": "passed",
+    "claims": "44 bound and resolved",
+    "production_dry_run_bundles": "passed",
+    "isolated_worker_dry_run_bundle": "passed"
+  },
+  "negative_controls": {
+    "readback_guard": "Original assertion fails with guard removed in test build.",
+    "gateway_auth_guard": "Original assertion fails with guard removed in test build.",
+    "provider_agreement_guard": "Original assertion fails with guard removed in test build.",
+    "paid_reserve_guard": "Original assertion fails with guard removed in test build.",
+    "source_edited": false,
+    "excluded_run": "negative-readback-unmatched-pattern.log selected no tests and is not evidence."
+  },
+  "setup_correction": {
+    "initial_backup_run": "Missing SCVD_AGE_BIN caused two test-file setup failures; no source change.",
+    "corrected_run": "All 78 backup tests rerun with checksum-verified age and disposable generated test keys.",
+    "age_version": "1.3.2",
+    "age_sha256": "5e5d756f6659ca8fe0a2f2e05f126529e5d36c5d65c961e6912966482f0f8de1",
+    "age_keygen_sha256": "21a1ef274071c0eb784810f998e745b7480b137cc8fcce56386f062889e58f44"
+  },
+  "production_bundle_boundaries": [
+    {
+      "bundle": "store",
+      "map_sha256": "4dacb2d95ad75a27be242ab1ec0aaf1497ba0226c29ce1d0caf4bbab2dfe1db5",
+      "source_count": 1652,
+      "experimental_imports_absent": true
+    },
+    {
+      "bundle": "doors",
+      "map_sha256": "fba27bc7e704c12df77fc29d4dbee52f39d504437d2c42fb07d2e7c2a4a13c7d",
+      "source_count": 545,
+      "experimental_imports_absent": true
+    }
+  ],
+  "validation_snapshot": {
+    "files": 1444,
+    "sha256": "6e7027da9a7638bd859d19b2a11b55b243440a55fc9ee70d4a48eaa1fa37ce10",
+    "executable_source_tests_and_configuration_unchanged": true,
+    "only_changed_snapshot_file": "experiments/screening/backup/ENCRYPTED_CUSTODY.md",
+    "reason": "Documentation privacy redaction of real private recovery-key location; no executable changes."
+  },
+  "privacy": {
+    "actual_recovery_keys_read": false,
+    "private_identity_path_removed_from": [
+      "research/qualification-2026-09-12/bitwarden-copy-check.json",
+      "experiments/screening/backup/ENCRYPTED_CUSTODY.md"
+    ],
+    "candidate_scan": "No private age/PEM keys, credential-token patterns, binary files or symlinks detected. Public/synthetic qualification artifacts retained.",
+    "not_a_guarantee": "Pattern checks are not a comprehensive secret audit."
+  },
+  "local_log_sha256": {
+    "backup-build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backup-tests-rerun.log": "d76d049b1166d96b936bc3386dd7490ba14dbc0d70d7bf95e2b1946f2ef2fd62",
+    "backup-tests.log": "d45f47e25729976e577cfe296ab32c63ecdff14dce51ff5824f875ea2fb86977",
+    "backup-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "claims.log": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+    "docs.log": "57ba381a6e597982223b7887c24b8d4ad6d8aa198526eb1f40b16fc3981b8f1f",
+    "full-tests.log": "e6312b8e79208e8cae52b43cdd95601dbaed1ba25bff55701993dc47228ab422",
+    "negative-agreement.log": "f37321e77be06558bd25f1a2a681cc58f4379dd8f8f8008e6055f16881b24542",
+    "negative-auth.log": "2a07d149255756244dd9292ae77cdc4ec57973684ff5dc4cdcb7b351db1e668a",
+    "negative-readback-unmatched-pattern.log": "70a3d3cc533fc60c9149ffc1769364f1a8a7889ca8f36b6e527deda554eb81f7",
+    "negative-readback.log": "815d6fb5dc6332a2b9fa6ea21515e16c9c8f68bfa6458e2f0620299e199ed05e",
+    "negative-reserve.log": "e9bb854ebc59cafd2f3960da3ad67fc91a01307a01219b28c6e8ab2f5cbe403d",
+    "pq-tests.log": "dbb570f015718697b013f92153781718f4c7dd4cdb5137e295a14ec7539efc13",
+    "root-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "screening-node-tests.log": "921732e63b6ffed72e603ee6bcae29ea545429df0cc7603af57c441243115ba7",
+    "store-builds.log": "eb17ce7353450568d2cf7cf3fa2f7ca7ae3cc70a739e2c136fba592315669e4b",
+    "worker-build.log": "6e4fe132b0065b42c3d42f53d5ac4149e3b783d7e02063efeda40d8589ddf908",
+    "worker-tests.log": "3c8f3e1c18f11281f41b287b49f45f53351bc84fbb29011e5d78090098a970a0",
+    "worker-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wrangler-isolated.log": "a7c638ff4cd48c8e62a1332580525c06f1a0a08df2c2966a026c758d38c380f0",
+    "docs-final.log": "d04161391fbf1ad96887a5e7c7d13b496f9cac7b24b796bc08c4a0972f0b210c"
+  },
+  "root_json_sha256": "b95b97da93d3749a55c9bf105234a4aa54685316c28aeb1c428ec7a52ea2dc06",
+  "limits": [
+    "No deployed service-binding test or live provider-account qualification in this run.",
+    "No independent full cloud inventory audit.",
+    "Root tests exclude experiments; the experimental suites are listed separately.",
+    "Old branch still requires reconciliation with current main and release qualification before activation.",
+    "Raw logs remain in the local validation directory; only this summary and log hashes are published."
+  ],
+  "root_skipped_tests": [
+    {
+      "file": "key-continuity.spec.ts",
+      "test": "no continuity claim runs ahead of the fact serves the pending wording, not the shipped wording, while the flag is false",
+      "status": "skipped"
+    }
+  ],
+  "root_reported_duration_seconds": 1345.93
+}

@@ -1,0 +1,406 @@
+TAP version 13
+# Subtest: native B2 upload and exact-version readback preserve ciphertext and SSE-B2
+ok 1 - native B2 upload and exact-version readback preserve ciphertext and SSE-B2
+  ---
+  duration_ms: 21.81425
+  ...
+# Subtest: writer refuses excess capability deleteFiles
+ok 2 - writer refuses excess capability deleteFiles
+  ---
+  duration_ms: 1.128583
+  ...
+# Subtest: writer refuses excess capability writeKeys
+ok 3 - writer refuses excess capability writeKeys
+  ---
+  duration_ms: 0.898875
+  ...
+# Subtest: writer refuses excess capability writeFileRetentions
+ok 4 - writer refuses excess capability writeFileRetentions
+  ---
+  duration_ms: 1.015542
+  ...
+# Subtest: writer refuses excess capability bypassGovernance
+ok 5 - writer refuses excess capability bypassGovernance
+  ---
+  duration_ms: 1.279625
+  ...
+# Subtest: broader filename scope is refused before obtaining an upload token
+ok 6 - broader filename scope is refused before obtaining an upload token
+  ---
+  duration_ms: 0.875958
+  ...
+# Subtest: upload token never reaches a foreign host
+ok 7 - upload token never reaches a foreign host
+  ---
+  duration_ms: 1.069375
+  ...
+# Subtest: readback refuses hash
+ok 8 - readback refuses hash
+  ---
+  duration_ms: 1.544583
+  ...
+# Subtest: readback refuses version
+ok 9 - readback refuses version
+  ---
+  duration_ms: 1.101708
+  ...
+# Subtest: readback refuses oversize
+ok 10 - readback refuses oversize
+  ---
+  duration_ms: 1.071
+  ...
+# Subtest: oversize upload response refuses without retaining provider prose
+ok 11 - oversize upload response refuses without retaining provider prose
+  ---
+  duration_ms: 0.63425
+  ...
+# Subtest: reader with write authority is refused before the download
+ok 12 - reader with write authority is refused before the download
+  ---
+  duration_ms: 0.603792
+  ...
+# Subtest: expired credential refuses before an upload URL request
+ok 13 - expired credential refuses before an upload URL request
+  ---
+  duration_ms: 0.6965
+  ...
+# Subtest: disabled run never reads credential paths
+ok 14 - disabled run never reads credential paths
+  ---
+  duration_ms: 42.098041
+  ...
+# Subtest: disabled check never reads credential paths
+ok 15 - disabled check never reads credential paths
+  ---
+  duration_ms: 48.890667
+  ...
+# Subtest: missing and exposed configuration fail with fixed output
+ok 16 - missing and exposed configuration fail with fixed output
+  ---
+  duration_ms: 78.393209
+  ...
+# Subtest: freshness check requires no destination or source credential
+ok 17 - freshness check requires no destination or source credential
+  ---
+  duration_ms: 51.690541
+  ...
+# (node:65468) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: capture, verify, encrypt and read back; receipt preserves source age without a restore claim
+ok 18 - capture, verify, encrypt and read back; receipt preserves source age without a restore claim
+  ---
+  duration_ms: 301.381833
+  ...
+# Subtest: tampered remote readback cannot create a success receipt or advance the source
+ok 19 - tampered remote readback cannot create a success receipt or advance the source
+  ---
+  duration_ms: 134.6
+  ...
+# Subtest: uncertain upload freezes generation and does not resend or recapture
+ok 20 - uncertain upload freezes generation and does not resend or recapture
+  ---
+  duration_ms: 84.261375
+  ...
+# Subtest: readback retries are capped and never repeat the upload
+ok 21 - readback retries are capped and never repeat the upload
+  ---
+  duration_ms: 126.115667
+  ...
+# Subtest: capture is not replaced when its predecessor is unknown
+ok 22 - capture is not replaced when its predecessor is unknown
+  ---
+  duration_ms: 12.788334
+  ...
+# Subtest: quota stops before capture; no deletion creates space
+ok 23 - quota stops before capture; no deletion creates space
+  ---
+  duration_ms: 144.39075
+  ...
+# Subtest: changed or truncated source pages never upload
+ok 24 - changed or truncated source pages never upload
+  ---
+  duration_ms: 33.899792
+  ...
+# Subtest: overlapping collector refuses without removing the first lock
+ok 25 - overlapping collector refuses without removing the first lock
+  ---
+  duration_ms: 123.05875
+  ...
+# Subtest: changed age executable is refused before source access
+ok 26 - changed age executable is refused before source access
+  ---
+  duration_ms: 19.714208
+  ...
+# Subtest: crash after success receipt resumes publication without new capture, upload or freshened time
+ok 27 - crash after success receipt resumes publication without new capture, upload or freshened time
+  ---
+  duration_ms: 137.313792
+  ...
+# Subtest: stale capture cannot upload or pretend its upload time is source freshness
+ok 28 - stale capture cannot upload or pretend its upload time is source freshness
+  ---
+  duration_ms: 23.471875
+  ...
+# Subtest: changed recipient cannot resume an already encrypted generation
+ok 29 - changed recipient cannot resume an already encrypted generation
+  ---
+  duration_ms: 112.291333
+  ...
+# Subtest: malformed success metadata is unavailable rather than fresh
+ok 30 - malformed success metadata is unavailable rather than fresh
+  ---
+  duration_ms: 123.322375
+  ...
+# (node:65469) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: real hybrid encryption and restore preserve exact recovered state and no live authority
+ok 31 - real hybrid encryption and restore preserve exact recovered state and no live authority
+  ---
+  duration_ms: 201.7995
+  ...
+# Subtest: encrypted restore refuses wrong_key
+ok 32 - encrypted restore refuses wrong_key
+  ---
+  duration_ms: 161.85775
+  ...
+# Subtest: encrypted restore refuses wrong_hash
+ok 33 - encrypted restore refuses wrong_hash
+  ---
+  duration_ms: 155.948708
+  ...
+# Subtest: encrypted restore refuses tampered
+ok 34 - encrypted restore refuses tampered
+  ---
+  duration_ms: 158.645958
+  ...
+# Subtest: encrypted restore refuses truncated
+ok 35 - encrypted restore refuses truncated
+  ---
+  duration_ms: 189.945708
+  ...
+# Subtest: encrypted restore refuses appended
+ok 36 - encrypted restore refuses appended
+  ---
+  duration_ms: 199.537458
+  ...
+# Subtest: encrypted restore refuses missing_input
+ok 37 - encrypted restore refuses missing_input
+  ---
+  duration_ms: 151.322834
+  ...
+# Subtest: seal refuses wrong_hash
+ok 38 - seal refuses wrong_hash
+  ---
+  duration_ms: 72.877583
+  ...
+# Subtest: seal refuses bad_record
+ok 39 - seal refuses bad_record
+  ---
+  duration_ms: 81.693333
+  ...
+# Subtest: seal refuses missing_newline
+ok 40 - seal refuses missing_newline
+  ---
+  duration_ms: 72.61575
+  ...
+# Subtest: seal refuses private_recipient
+ok 41 - seal refuses private_recipient
+  ---
+  duration_ms: 55.209541
+  ...
+# Subtest: seal refuses classic_recipient
+ok 42 - seal refuses classic_recipient
+  ---
+  duration_ms: 54.630875
+  ...
+# Subtest: seal refuses missing_tool
+ok 43 - seal refuses missing_tool
+  ---
+  duration_ms: 52.479167
+  ...
+# Subtest: seal refuses overwrite of file
+ok 44 - seal refuses overwrite of file
+  ---
+  duration_ms: 72.284708
+  ...
+# Subtest: seal refuses overwrite of symlink
+ok 45 - seal refuses overwrite of symlink
+  ---
+  duration_ms: 83.171625
+  ...
+# Subtest: open refuses overwrite of file
+ok 46 - open refuses overwrite of file
+  ---
+  duration_ms: 147.8665
+  ...
+# Subtest: open refuses overwrite of symlink
+ok 47 - open refuses overwrite of symlink
+  ---
+  duration_ms: 157.902333
+  ...
+# Subtest: complete decrypted plaintext followed by tool failure never publishes a verified restore
+ok 48 - complete decrypted plaintext followed by tool failure never publishes a verified restore
+  ---
+  duration_ms: 388.050209
+  ...
+# Subtest: ciphertext readback exact
+ok 49 - ciphertext readback exact
+  ---
+  duration_ms: 114.168333
+  ...
+# Subtest: ciphertext readback edited
+ok 50 - ciphertext readback edited
+  ---
+  duration_ms: 110.866959
+  ...
+# Subtest: ciphertext readback short
+ok 51 - ciphertext readback short
+  ---
+  duration_ms: 113.687208
+  ...
+# Subtest: ciphertext readback extra
+ok 52 - ciphertext readback extra
+  ---
+  duration_ms: 128.556333
+  ...
+# Subtest: unqualified version and private tool diagnostics are refused without echoing them
+ok 53 - unqualified version and private tool diagnostics are refused without echoing them
+  ---
+  duration_ms: 376.286166
+  ...
+# Subtest: authentication precedes every binding lookup and never echoes supplied secrets
+ok 54 - authentication precedes every binding lookup and never echoes supplied secrets
+  ---
+  duration_ms: 12.183375
+  ...
+# Subtest: source connection is disabled by default
+ok 55 - source connection is disabled by default
+  ---
+  duration_ms: 0.248709
+  ...
+# Subtest: client round trip dispatches only manifest, capture and page
+ok 56 - client round trip dispatches only manifest, capture and page
+  ---
+  duration_ms: 7.252458
+  ...
+# Subtest: invalid command never resolves a binding {"action":"commit"}
+ok 57 - invalid command never resolves a binding {"action":"commit"}
+  ---
+  duration_ms: 0.829083
+  ...
+# Subtest: invalid command never resolves a binding {"action":"manifest","extra":true}
+ok 58 - invalid command never resolves a binding {"action":"manifest","extra":true}
+  ---
+  duration_ms: 0.466333
+  ...
+# Subtest: invalid command never resolves a binding {"action":"capture","id":"../bad","previous":null}
+ok 59 - invalid command never resolves a binding {"action":"capture","id":"../bad","previous":null}
+  ---
+  duration_ms: 0.665375
+  ...
+# Subtest: invalid command never resolves a binding {"action":"page","hash":"x","after":0}
+ok 60 - invalid command never resolves a binding {"action":"page","hash":"x","after":0}
+  ---
+  duration_ms: 0.363875
+  ...
+# Subtest: invalid command never resolves a binding {"action":"page","hash":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","after":-1}
+ok 61 - invalid command never resolves a binding {"action":"page","hash":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","after":-1}
+  ---
+  duration_ms: 0.34025
+  ...
+# Subtest: browser context refuses machine authority
+ok 62 - browser context refuses machine authority
+  ---
+  duration_ms: 0.428958
+  ...
+# Subtest: body bound holds with no Content-Length and no source lookup
+ok 63 - body bound holds with no Content-Length and no source lookup
+  ---
+  duration_ms: 0.462541
+  ...
+# Subtest: source exceptions and HTTP errors are fixed prose
+ok 64 - source exceptions and HTTP errors are fixed prose
+  ---
+  duration_ms: 1.168958
+  ...
+# (node:65471) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: offline restore verifies held state without enabling admissions
+ok 65 - offline restore verifies held state without enabling admissions
+  ---
+  duration_ms: 14.193667
+  ...
+# Subtest: offline restore verifies recovered state without enabling admissions
+ok 66 - offline restore verifies recovered state without enabling admissions
+  ---
+  duration_ms: 12.418917
+  ...
+# Subtest: restore refuses edited
+ok 67 - restore refuses edited
+  ---
+  duration_ms: 5.689083
+  ...
+# Subtest: restore refuses missing
+ok 68 - restore refuses missing
+  ---
+  duration_ms: 6.232042
+  ...
+# Subtest: restore refuses duplicate
+ok 69 - restore refuses duplicate
+  ---
+  duration_ms: 19.118875
+  ...
+# Subtest: restore refuses reordered
+ok 70 - restore refuses reordered
+  ---
+  duration_ms: 12.901
+  ...
+# Subtest: restore refuses wrong_manifest
+ok 71 - restore refuses wrong_manifest
+  ---
+  duration_ms: 1.534875
+  ...
+# Subtest: restore refuses rehash_without_trusted_hash
+ok 72 - restore refuses rehash_without_trusted_hash
+  ---
+  duration_ms: 1.977208
+  ...
+# Subtest: restore refuses cross_case
+ok 73 - restore refuses cross_case
+  ---
+  duration_ms: 4.976875
+  ...
+# Subtest: restore refuses a linked approval document removed even if replacement hashes are supplied
+ok 74 - restore refuses a linked approval document removed even if replacement hashes are supplied
+  ---
+  duration_ms: 4.694959
+  ...
+# Subtest: append failure rolls back the entire page and leaves an unverified quarantined archive
+ok 75 - append failure rolls back the entire page and leaves an unverified quarantined archive
+  ---
+  duration_ms: 4.308875
+  ...
+# Subtest: existing output files are never overwritten
+ok 76 - existing output files are never overwritten
+  ---
+  duration_ms: 5.205417
+  ...
+# Subtest: offline CLI consumes bounded newline records and requires the external manifest hash
+ok 77 - offline CLI consumes bounded newline records and requires the external manifest hash
+  ---
+  duration_ms: 109.668958
+  ...
+# Subtest: CLI output is a real file even when its name is SQLite memory syntax
+ok 78 - CLI output is a real file even when its name is SQLite memory syntax
+  ---
+  duration_ms: 74.076042
+  ...
+1..78
+# tests 78
+# suites 0
+# pass 78
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3419.671959

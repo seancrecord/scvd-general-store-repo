@@ -1,0 +1,184 @@
+// Served unchanged as a browser module; the controller also runs in Node tests.
+export function createReviewController({get,post,now=Date.now,onChange=()=>{}}) {
+  const state={busy:false,contract:null,overview:null,attention:null,review:null,documents:[],viewed:null,selected:{},ack:false,cancelAck:false,pending:null,pendingInspected:false,message:'Loading current state.',history:null};
+  const clone=value=>structuredClone(value);
+  const emit=()=>onChange(clone(state));
+  const reset=()=>{state.ack=false;state.cancelAck=false;state.selected={};state.viewed=null;};
+  const label=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(value);
+  const role=doc=>doc.kind==='executor_terminated'?'executor':'provider:'+doc.witnessId;
+  const sameIds=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&JSON.stringify([...a].sort())===JSON.stringify([...b].sort());
+  function validReview(value) {
+    const r=value?.record;
+    return Number.isSafeInteger(value?.revision)&&label(r?.caseId)&&Array.isArray(r?.targets)&&r.targets.length>0&&r.targets.every(t=>label(t.id))&&
+      Array.isArray(r?.witnessIds)&&r.witnessIds.length>0&&r.witnessIds.every(label)&&new Set(r.witnessIds).size===r.witnessIds.length&&
+      Array.isArray(value.stillActive)&&['open','recovered','cancelled'].includes(r.status);
+  }
+  function active() {return validReview(state.review)&&state.review.admissionsHeld&&state.review.record.status==='open'&&sameIds(state.review.stillActive,state.review.record.targets.map(t=>t.id));}
+  function fresh(doc) {
+    const age=now()-doc.observedAtMs;
+    return Number.isFinite(age)&&age>=0&&doc.observedAtMs>=state.review.record.openedAtMs&&age<=state.contract?.recoveryLimits?.evidenceMaxAgeMs;
+  }
+  function ready() {
+    if(!active()||!state.contract||state.pending)return false;
+    const roles=['executor',...state.review.record.witnessIds.map(id=>'provider:'+id)];
+    return roles.every(key=>{
+      const d=state.selected[key];return d&&fresh(d)&&state.documents.some(v=>v.reference===d.reference&&v.sha256===d.sha256&&v.scopeSha256===d.scopeSha256&&v.observedAtMs===d.observedAtMs&&role(v)===key);
+    });
+  }
+  async function exclusive(fn) {
+    if(state.busy)return false;
+    state.busy=true;emit();
+    try {await fn();return true;}catch{reset();state.message='The reading is unavailable. No new decision was sent.';return false;}
+    finally {state.busy=false;emit();}
+  }
+  async function readCase(id) {
+    if(!label(id))throw Error('invalid_case');
+    state.review=null;state.documents=[];reset();
+    const [review,docs]=await Promise.all([get('/cases/'+id),get('/cases/'+id+'/evidence')]);
+    if(!validReview(review)||review.record.caseId!==id||!Array.isArray(docs?.documents))throw Error('invalid_reading');
+    state.review=review;state.documents=docs.documents;reset();
+  }
+  async function refresh() {
+    reset();state.review=null;state.documents=[];state.overview=null;state.attention=null;
+    const [contract,overview,attention]=await Promise.all([get('/contract'),get('/overview'),get('/attention').catch(()=>({status:'unavailable'}))]);
+    if(typeof contract?.acknowledgement!=='string'||!Array.isArray(overview?.active))throw Error('invalid_reading');
+    state.contract=contract;state.overview=overview;state.attention=attention;
+    if(state.pending) {await readCase(state.pending.body.caseId);state.pendingInspected=true;}
+    else if(overview.caseId)await readCase(overview.caseId);
+    state.message=state.pending?'Current state loaded. Inspect it before retrying the original attempt or starting a fresh review.':'Current state loaded. A new reading clears confirmation.';
+  }
+  async function action(path,body) {
+    reset();state.pending={path,body:clone(body)};state.pendingInspected=false;
+    try {
+      const result=await post(path,clone(body));
+      const expected={'/begin':'review','/evidence':'retained','/commit':'recovered','/cancel':'cancelled'}[path];
+      if(result?.status!==expected)throw Error('uncertain');
+      state.pending=null;
+      state.message='Action recorded. Load the current state before another decision.';
+      try {await refresh();if(state.review?.record.caseId!==body.caseId)await readCase(body.caseId);state.message='Action recorded. Current state loaded; confirmation is cleared.';}
+      catch {state.review=null;state.documents=[];state.message='Action was recorded, but the follow-up reading failed. Reload the current state.';}
+    }catch {
+      state.message='The response is uncertain. Inspect the stored case before retrying the exact original attempt. Other actions are paused.';
+    }
+  }
+  const api={
+    snapshot:()=>({...clone(state),canApprove:!state.busy&&state.ack&&ready(),canCancel:!state.busy&&!state.pending&&!!state.cancelAck&&state.review?.admissionsHeld&&state.review?.record.status==='open'}),
+    load:()=>exclusive(refresh),
+    openCase:id=>exclusive(async()=>{if(state.pending)return;await readCase(id);state.message='Case loaded. Confirmation is cleared.';}),
+    history:after=>exclusive(async()=>{const result=await get('/history?after='+encodeURIComponent(after??0));if(!Array.isArray(result?.cases))throw Error('invalid_history');state.history=result;}),
+    hold:(id,ids)=>exclusive(async()=>{
+      if(state.pending||state.overview?.admissionsHeld||!label(id)||!Array.isArray(ids)||ids.length===0||new Set(ids).size!==ids.length||!ids.every(v=>state.overview?.active.some(a=>a.id===v)))return;
+      await action('/begin',{caseId:id,requestIds:[...ids].sort()});
+    }),
+    upload:input=>exclusive(async()=>{if(state.pending||!state.review?.admissionsHeld||state.review.record.status!=='open')return;await action('/evidence',{...clone(input),caseId:state.review.record.caseId});}),
+    readDocument:reference=>exclusive(async()=>{
+      state.ack=false;state.viewed=null;
+      if(state.pending||!state.review||!label(reference))return;
+      const result=await get('/cases/'+state.review.record.caseId+'/evidence/'+reference),doc=result?.evidence;
+      const listed=state.documents.find(d=>d.reference===reference);
+      if(result?.contentTrust!=='untrusted_operator_submission'||typeof doc?.content!=='string'||!listed)throw Error('invalid_document');
+      const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(doc.content))),b=>b.toString(16).padStart(2,'0')).join('');
+      if(doc.caseId!==state.review.record.caseId||doc.sha256!==digest||doc.sha256!==listed.sha256||doc.scopeSha256!==listed.scopeSha256||doc.observedAtMs!==listed.observedAtMs||role(doc)!==role(listed))throw Error('changed_document');
+      state.viewed=doc;state.message='Read this retained document. Its contents are an operator submission, not verified provider testimony.';
+    }),
+    useViewed:()=>{if(state.busy||state.pending||!state.viewed||!active())return;state.selected[role(state.viewed)]=clone(state.viewed);state.ack=false;state.viewed=null;state.message='Document selected for this case. Read and select the other required documents before confirming.';emit();},
+    acknowledge:value=>{if(state.busy)return;state.ack=value===true&&ready();if(value===true&&!state.ack)state.message='Read and select all current required documents before confirming.';if(state.ack)state.cancelAck=false;emit();},
+    acknowledgeCancel:value=>{if(state.busy||state.pending)return;state.cancelAck=value===true;state.ack=false;emit();},
+    commit:()=>exclusive(async()=>{
+      if(!state.ack||!ready()){state.ack=false;state.message='Review all current documents and confirm this exact case before releasing capacity.';return;}
+      const reference=d=>({reference:d.reference,sha256:d.sha256,observedAtMs:d.observedAtMs});
+      const body={caseId:state.review.record.caseId,expectedRevision:state.review.revision,acknowledgement:state.contract.acknowledgement,
+        executor:{kind:'executor_terminated',...reference(state.selected.executor)},providers:state.review.record.witnessIds.map(id=>({kind:'no_active_provider_requests',witnessId:id,...reference(state.selected['provider:'+id])}))};
+      await action('/commit',body);
+    }),
+    cancel:()=>exclusive(async()=>{if(state.pending||!state.cancelAck||!state.review?.admissionsHeld||state.review.record.status!=='open')return;await action('/cancel',{caseId:state.review.record.caseId,expectedRevision:state.review.revision});}),
+    retry:()=>exclusive(async()=>{if(!state.pending||!state.pendingInspected)return;const {path,body}=clone(state.pending);await action(path,body);}),
+    discardAttempt:()=>{if(state.busy||!state.pending||!state.pendingInspected||state.review?.record.status!=='open')return;state.pending=null;state.pendingInspected=false;reset();state.message='Original attempt set aside. Review the current case and documents before a new decision.';emit();},
+  };
+  return api;
+}
+
+export function describeAttention(reading,contract,now=Date.now()) {
+  const messages=contract?.attentionMessages,limit=contract?.attentionLimits?.maxReadingAgeMs;
+  if(reading?.status!=='ok'||!Number.isSafeInteger(reading.observedAtMs)||reading.observedAtMs<0||!Number.isFinite(limit)||
+    reading.observedAtMs>now||now-reading.observedAtMs>limit||!messages||!Array.isArray(reading.signals)||
+    !reading.signals.every(code=>Object.hasOwn(messages,code)))return 'Operational reading unavailable or stale. Reload before relying on it.';
+  return 'Observed '+new Date(reading.observedAtMs).toISOString()+'\n'+(reading.signals.map(code=>messages[code]).join('\n')||'No configured attention condition observed. This does not test providers or guarantee admission.');
+}
+export const CLIENT_REQUEST_TIMEOUT_MS=10000;
+export function mountReview(root) {
+  const base=root.dataset.base,el=id=>root.querySelector('#'+id);
+  const text=(id,value)=>{el(id).textContent=value;};
+  const request=async(path,body)=>{
+    const contract=controller.snapshot().contract;
+    const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),CLIENT_REQUEST_TIMEOUT_MS);
+    try {const response=await fetch(base+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',redirect:'error',signal:abort.signal,
+      headers:body===undefined?{}:{'Content-Type':'application/json',[contract.actionHeader]:contract.actionValue},
+      ...(body===undefined?{}:{body:JSON.stringify(body)})});
+    if(!response.ok)throw Error('reading_unavailable');return await response.json();}finally{clearTimeout(timer);}
+  };
+  const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.dataset.pendingBlocked='true';b.textContent=label;b.addEventListener('click',fn);return b;};
+  function row(values) {const tr=document.createElement('tr');for(const value of values){const td=document.createElement('td');if(value instanceof Node)td.append(value);else td.textContent=String(value);tr.append(td);}return tr;}
+  const date=value=>Number.isFinite(value)?new Date(value).toISOString():'Unknown';
+  let renderedOverview=null,renderedReview=null;
+  const controller=createReviewController({get:path=>request(path),post:(path,body)=>request(path,body),onChange:()=>render()});
+  function render() {
+    const s=controller.snapshot();text('message',s.message);text('attention',describeAttention(s.attention,s.contract));root.setAttribute('aria-busy',String(s.busy));
+    for(const b of root.querySelectorAll('button'))b.disabled=s.busy;
+    for(const input of root.querySelectorAll('input,textarea,select'))input.disabled=s.busy;
+    const overviewKey=JSON.stringify(s.overview);
+    if(overviewKey!==renderedOverview){renderedOverview=overviewKey;el('reservations').replaceChildren();
+      for(const item of s.overview?.active??[]){const check=document.createElement('input');check.type='checkbox';check.value=item.id;check.className='reservation';check.setAttribute('aria-label','Review '+item.id);check.addEventListener('change',render);
+        el('reservations').append(row([check,item.id,item.tier,item.ageMs===null?'Unknown age':Math.floor(item.ageMs/1000)+' seconds']));}
+    }
+    text('admission-state',s.overview?(s.overview.admissionsHeld?'Admissions held for '+s.overview.caseId:'Admissions open · '+s.overview.active.length+' active reservations'):'Reading admissions…');
+    for(const input of root.querySelectorAll('.reservation'))input.disabled=s.busy||!!s.pending||!!s.overview?.admissionsHeld;
+    el('hold').disabled=s.busy||!!s.pending||!!s.overview?.admissionsHeld||!root.querySelector('.reservation:checked');
+    el('review').hidden=!s.review;el('pending').hidden=!s.pending;
+    el('retry').disabled=s.busy||!s.pendingInspected;el('discard-attempt').disabled=s.busy||!s.pendingInspected||s.review?.record.status!=='open';
+    if(s.pending)text('pending-detail',s.pending.path+' · '+s.pending.body.caseId+' · original revision '+(s.pending.body.expectedRevision??'not applicable'));
+    if(s.review){const r=s.review.record;
+      text('case-summary',r.caseId+' · '+r.status+' · revision '+s.review.revision+' · policy '+r.policyId);
+      text('targets',r.targets.map(t=>t.id+' ('+t.tier+')').join('\n'));text('still-active','Still active: '+(s.review.stillActive.join(', ')||'None'));
+      el('evidence-upload').hidden=r.status!=='open';el('decision').hidden=r.status!=='open';el('final-decision').open=!!r.final;
+      text('receipt',r.final?JSON.stringify(r.final,null,2):'No final decision recorded.');
+      const reviewKey=JSON.stringify({r:s.review,docs:s.documents});
+      if(reviewKey!==renderedReview){renderedReview=reviewKey;el('role').replaceChildren();
+        const roles=[['executor','Executor stopped'],...r.witnessIds.map(id=>['provider:'+id,'Provider '+id])];
+        for(const [value,label] of roles){const o=document.createElement('option');o.value=value;o.textContent=label;el('role').append(o);}
+        el('documents').replaceChildren();for(const d of s.documents)el('documents').append(row([d.reference,d.witnessId??'Executor',date(d.observedAtMs),d.sha256,button('Read '+d.reference,()=>controller.readDocument(d.reference))]));
+      }
+      text('selected',Object.values(s.selected).map(d=>(d.witnessId??'Executor')+': '+d.reference+' · '+d.sha256).join('\n')||'No documents selected for approval.');
+      el('upload').disabled=s.busy||!!s.pending||r.status!=='open'||!s.review.admissionsHeld;
+    }
+    el('document-preview').hidden=!s.viewed;
+    if(s.viewed){text('document-title',s.viewed.reference+' · '+s.viewed.sha256);text('document-content',s.viewed.content);}
+    el('use-document').disabled=s.busy||!!s.pending||!s.viewed||!s.review?.admissionsHeld||s.review?.record.status!=='open';
+    text('ack-label',s.contract?.acknowledgement??'Loading confirmation…');el('ack').checked=s.ack;el('ack').disabled=s.busy||!!s.pending;
+    el('cancel-ack').checked=s.cancelAck;el('cancel-ack').disabled=s.busy||!!s.pending;
+    el('approve').disabled=!s.canApprove;el('cancel').disabled=!s.canCancel;
+    el('open-case').disabled=s.busy||!!s.pending;
+    for(const b of root.querySelectorAll('[data-pending-blocked]'))b.disabled=s.busy||!!s.pending;
+    if(s.history){el('history').replaceChildren();for(const item of s.history.cases)el('history').append(row([item.caseId,item.status,button('Open '+item.caseId,()=>controller.openCase(item.caseId))]));text('history-count',s.history.returned+' shown / '+s.history.retained+' retained');}
+  }
+  el('reload').addEventListener('click',()=>controller.load());
+  el('hold').addEventListener('click',()=>controller.hold(el('new-case').value,[...root.querySelectorAll('.reservation:checked')].map(v=>v.value)));
+  el('open-case').addEventListener('click',()=>controller.openCase(el('case-lookup').value));
+  el('upload').addEventListener('click',()=>{
+    const observed=el('observed-at').value,observedAtMs=Date.parse(observed);
+    const normalized=observed.includes('.')?observed:observed.replace('Z','.000Z');
+    if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(observed)||!Number.isFinite(observedAtMs)||new Date(observedAtMs).toISOString()!==normalized){text('message','Enter the actual observation time in UTC, ending in Z.');return;}
+    const role=el('role').value;
+    const reference=el('reference').value;
+    controller.upload({reference,kind:role==='executor'?'executor_terminated':'no_active_provider_requests',witnessId:role==='executor'?null:role.slice('provider:'.length),observedAtMs,content:el('content').value}).then(()=>{const s=controller.snapshot();if(!s.pending&&s.documents.some(d=>d.reference===reference)){el('reference').value='document_'+crypto.randomUUID();el('content').value='';el('observed-at').value='';}});
+  });
+  el('use-document').addEventListener('click',()=>controller.useViewed());el('ack').addEventListener('change',()=>controller.acknowledge(el('ack').checked));
+  el('cancel-ack').addEventListener('change',()=>controller.acknowledgeCancel(el('cancel-ack').checked));
+  el('approve').addEventListener('click',()=>controller.commit());el('cancel').addEventListener('click',()=>controller.cancel());
+  el('retry').addEventListener('click',()=>controller.retry());el('discard-attempt').addEventListener('click',()=>controller.discardAttempt());
+  el('history-first').addEventListener('click',()=>controller.history(0));el('history-next').addEventListener('click',()=>controller.history(controller.snapshot().history?.nextSequence??0));
+  el('new-case').value='review_'+crypto.randomUUID();el('reference').value='document_'+crypto.randomUUID();
+  window.addEventListener('beforeunload',event=>{if(controller.snapshot().pending){event.preventDefault();event.returnValue='';}});
+  controller.load();return controller;
+}
+if(typeof document!=='undefined'){const root=document.querySelector('#screening-review');if(root)mountReview(root);}

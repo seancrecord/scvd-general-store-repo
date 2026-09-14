@@ -1,0 +1,24 @@
+{
+  "experimental": true,
+  "checked_at": "2026-09-11T16:39:49.336Z",
+  "endpoint": "https://mainnet.base.org/",
+  "contract": "0x3A91A31cB3dC49b4db9Ce721F50a9D076c8D739B",
+  "request_budget": 7,
+  "attempts": [
+    {
+      "id": 1,
+      "method": "eth_chainId",
+      "params": [],
+      "observed_at": "2026-09-11T16:39:49.295Z",
+      "outcome": "transport_or_parse_failure",
+      "elapsed_ms": 41.499667
+    }
+  ],
+  "qualified_for_product": false,
+  "limitations": [
+    "Single keyless public endpoint, not either isolated product provider; no account quota or commercial terms qualified.",
+    "A returned boolean is a response observation only, not address clearance or an independent state proof.",
+    "No known-changing historical state, controlled noncanonical block or ignored-selector qualification in this sample.",
+    "One bounded sample cannot establish availability, retention guarantees or production latency."
+  ]
+}

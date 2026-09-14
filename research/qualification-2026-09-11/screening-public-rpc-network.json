@@ -1,0 +1,146 @@
+{
+  "experimental": true,
+  "checked_at": "2026-09-11T16:40:27.205Z",
+  "endpoint": "https://mainnet.base.org/",
+  "contract": "0x3A91A31cB3dC49b4db9Ce721F50a9D076c8D739B",
+  "request_budget": 7,
+  "attempts": [
+    {
+      "id": 1,
+      "method": "eth_chainId",
+      "params": [],
+      "observed_at": "2026-09-11T16:40:26.781Z",
+      "http_status": 200,
+      "response_bytes": 43,
+      "outcome": "result",
+      "result": "0x2105",
+      "elapsed_ms": 118.42983299999999
+    },
+    {
+      "id": 2,
+      "method": "eth_getBlockByNumber",
+      "params": [
+        "latest",
+        false
+      ],
+      "observed_at": "2026-09-11T16:40:26.900Z",
+      "http_status": 200,
+      "response_bytes": 21171,
+      "outcome": "result",
+      "result": {
+        "number": "0x30ce90b",
+        "hash": "0xe9f27c8adba0eae715f3b7df07c95dbbe47880b4db8cc0c4896abf218cde50da",
+        "timestamp": "0x6aa42ef9",
+        "parentHash": "0x0f3d7b23f87c07ed64d681811ff4e1cf91fef6e3ddca2a7f470093f3ba3fcc6d"
+      },
+      "elapsed_ms": 72.35245799999998
+    },
+    {
+      "id": 3,
+      "method": "eth_getBlockByNumber",
+      "params": [
+        "safe",
+        false
+      ],
+      "observed_at": "2026-09-11T16:40:26.972Z",
+      "http_status": 200,
+      "response_bytes": 20343,
+      "outcome": "result",
+      "result": {
+        "number": "0x30ce8ee",
+        "hash": "0x57aacf643f405f6749923b1b9b696fda73a009370140643631ee94178e813934",
+        "timestamp": "0x6aa42ebf",
+        "parentHash": "0x986d55c53647e37511db6370094bcf8e8fff324955370e3d6c29d789ff81bf6d",
+        "distance_from_sampled_latest": "29"
+      },
+      "elapsed_ms": 42.93312500000002
+    },
+    {
+      "id": 4,
+      "method": "eth_getBlockByNumber",
+      "params": [
+        "finalized",
+        false
+      ],
+      "observed_at": "2026-09-11T16:40:27.015Z",
+      "http_status": 200,
+      "response_bytes": 33246,
+      "outcome": "result",
+      "result": {
+        "number": "0x30ce6e8",
+        "hash": "0x9c1fb48a44416a717d30fefbe9d93d2c22bb2d1323ba118b498495c702f69fe1",
+        "timestamp": "0x6aa42ab3",
+        "parentHash": "0x79d37b6b83452daebf81119bae415baee47f4cb404f45b3ee92ee2e265a220f8",
+        "distance_from_sampled_latest": "547"
+      },
+      "elapsed_ms": 59.55737499999998
+    },
+    {
+      "id": 5,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3A91A31cB3dC49b4db9Ce721F50a9D076c8D739B",
+          "data": "0xdf592f7d0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "blockHash": "0x57aacf643f405f6749923b1b9b696fda73a009370140643631ee94178e813934",
+          "requireCanonical": true
+        }
+      ],
+      "observed_at": "2026-09-11T16:40:27.075Z",
+      "http_status": 200,
+      "response_bytes": 103,
+      "outcome": "result",
+      "result": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "elapsed_ms": 36.326166
+    },
+    {
+      "id": 6,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3A91A31cB3dC49b4db9Ce721F50a9D076c8D739B",
+          "data": "0xdf592f7d0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "blockHash": "0x9c1fb48a44416a717d30fefbe9d93d2c22bb2d1323ba118b498495c702f69fe1",
+          "requireCanonical": true
+        }
+      ],
+      "observed_at": "2026-09-11T16:40:27.111Z",
+      "http_status": 200,
+      "response_bytes": 103,
+      "outcome": "result",
+      "result": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "elapsed_ms": 49.131958999999995
+    },
+    {
+      "id": 7,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3A91A31cB3dC49b4db9Ce721F50a9D076c8D739B",
+          "data": "0xdf592f7d0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "requireCanonical": true
+        }
+      ],
+      "observed_at": "2026-09-11T16:40:27.160Z",
+      "http_status": 200,
+      "response_bytes": 160,
+      "outcome": "rpc_error",
+      "rpc_error_code": -32001,
+      "elapsed_ms": 44.95483300000001
+    }
+  ],
+  "qualified_for_product": false,
+  "limitations": [
+    "Single keyless public endpoint, not either isolated product provider; no account quota or commercial terms qualified.",
+    "A returned boolean is a response observation only, not address clearance or an independent state proof.",
+    "No known-changing historical state, controlled noncanonical block or ignored-selector qualification in this sample.",
+    "One bounded sample cannot establish availability, retention guarantees or production latency."
+  ]
+}

@@ -845,6 +845,44 @@ Do not relitigate without you.
 
 ### Decisions that unblock the roadmap
 
+- **Screening backup custody — September 13 remote drill passed; offline copy and retention remain.**
+  The keeper selected Backblaze B2 and Bitwarden Free. The private bucket
+  holds one encrypted synthetic sample; existing zero-dollar caps were preserved.
+  The dedicated recovery identity now exists locally and passed a synthetic
+  encrypt/decrypt check without exposing its contents. The keeper-retrieved
+  Desktop copy now matches and restores held/recovered synthetic archives
+  after RTF/plaintext cleanup. Vault origin is keeper-reported; an independent
+  offline copy is still unverified and retention is undecided. The keeper-created
+  one-day scoped Read Only key completed an authenticated API download and
+  exact five-row recovery. No further keeper action is needed for that drill.
+  Receipt: `research/qualification-2026-09-13/backblaze-roundtrip.json`.
+  Host choice was asked September 13; this Mac is the provisional pilot choice,
+  with sleeping/offline periods counted as missed collection. The collector and
+  private source connection are now implemented locally; deployment qualification,
+  scheduling and independent notification remain engineering work. Retention
+  proposal: keep versions during the capped pilot; no compliance duration has
+  been applied. Exact observed setup is in
+  `research/qualification-2026-09-12/backblaze-setup.json`; custody steps are in
+  `experiments/screening/backup/ENCRYPTED_CUSTODY.md`. Engineering remains VQ9.
+
+- **RULE — dated PQ public stance before adopting the checkpoint track.**
+  September 11 review: `POST_QUANTUM` still says watching/not building and
+  names x402 standardization plus runtime support as its trigger. The
+  proposed first scope is instead an externally signed weekly corpus
+  checkpoint with a separate verifier. A concrete dated amendment is in
+  `docs/PQ_PRODUCTION_ROLLOUT_2026-09.md`; it distinguishes existing local
+  experiments, the proposed checkpoint track and unchanged x402 signatures.
+  This is a public-wording decision, not a key-provisioning press. No public
+  statement or production key changed in the planning revision. Build
+  scope and acceptance remain on ROADMAP VQ7. The synthetic checkpoint
+  experiment now has public fixtures and purpose-refusal tests; the public
+  wording and production custody decisions remain distinct. Screening
+  account requirements are prepared in `docs/SCREENING_PROVIDER_SETUP_2026-09.md`;
+  no subscription or account was created by this work. The isolated screening
+  Worker is now implemented but disabled; provider account qualification and
+  source/price decisions remain yours, with the concrete setup contract in that handoff.
+
+
 
 
 - **Rail run-through** (eleven checks, drafted against

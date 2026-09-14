@@ -1,0 +1,166 @@
+{
+  "checked_at": "2026-09-11T21:08:53.736399+00:00",
+  "experimental": true,
+  "deployed": false,
+  "production_ready": false,
+  "production_binding_added": false,
+  "tests": {
+    "isolated_worker": 118,
+    "offline_node": 14,
+    "full_store_suite_run": false
+  },
+  "node_version": "v22.13.1",
+  "checks": {
+    "worker_tests": {
+      "log_path": "/private/tmp/scvd-backup-worker-final.log",
+      "sha256": "d113a21d7c1ba9a6ba5c3964d946529472da4540d18803637399ccfa02039e57",
+      "outcome": "passed"
+    },
+    "offline_tests": {
+      "log_path": "/private/tmp/scvd-backup-offline-final.log",
+      "sha256": "b1976280214647040482081a5c8da8ce6a4ae1c06695aeeee3a49f7b27c41f86",
+      "outcome": "passed"
+    },
+    "root_types": {
+      "log_path": "/private/tmp/scvd-backup-root-types.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "outcome": "passed"
+    },
+    "worker_types": {
+      "log_path": "/private/tmp/scvd-backup-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "offline_types": {
+      "log_path": "/private/tmp/scvd-backup-offline-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "root_builds": {
+      "log_path": "/private/tmp/scvd-backup-root-build.log",
+      "sha256": "911f7f02f5a6bf4e62c0e821faea802b1fba6ec43107d53098561ea6889d937c",
+      "outcome": "passed"
+    },
+    "worker_build": {
+      "log_path": "/private/tmp/scvd-backup-worker-build.log",
+      "sha256": "bd1256404a272232d40869d5f2e25820484b0146fe757b590bcf13f86480d7eb",
+      "outcome": "passed"
+    },
+    "docs": {
+      "log_path": "/private/tmp/scvd-backup-docs.log",
+      "sha256": "fafbb68a92aadf93668f7b5224d73d1be20d3df03015d046aadcbd459ce675d6",
+      "outcome": "passed"
+    },
+    "claims": {
+      "log_path": "/private/tmp/scvd-backup-claims.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "whitespace": {
+      "log_path": "/private/tmp/scvd-backup-diff.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "negative_record_digest": {
+      "log_path": "/private/tmp/scvd-backup-negative-record-final.log",
+      "sha256": "e597b11d6ce373e0124f364f1e7ad7f09e75b312b85ef1edc521d7f2912dd0b9",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "negative_trusted_manifest": {
+      "log_path": "/private/tmp/scvd-backup-negative-manifest-final.log",
+      "sha256": "8fec40efaabe5c6a9f22d28db8850b6cce9db819e9760c430ca45d5b5f40a1ee",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "window_before_fix": {
+      "log_path": "/private/tmp/scvd-backup-window-red.log",
+      "sha256": "6506d50b857adb3ee480676d30b9cea788d9a8ddb96ad264f73193c7cda2d35d",
+      "outcome": "original_assertion_failed_before_fix"
+    },
+    "disk_output_before_fix": {
+      "log_path": "/private/tmp/scvd-backup-output-red.log",
+      "sha256": "2f8adb98c1f0d925d4a03eb6f8e50202dc40c87ba2ac4c4ec4ccd9923ead3634",
+      "outcome": "original_assertion_failed_before_fix"
+    }
+  },
+  "bundles": [
+    {
+      "name": "store",
+      "path": ".build-check/index.js.map",
+      "sha256": "4dacb2d95ad75a27be242ab1ec0aaf1497ba0226c29ce1d0caf4bbab2dfe1db5",
+      "source_count": 1652,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "doors",
+      "path": "doors/.build-check-doors/doors.js.map",
+      "sha256": "fba27bc7e704c12df77fc29d4dbee52f39d504437d2c42fb07d2e7c2a4a13c7d",
+      "source_count": 545,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "qualification_worker",
+      "path": "experiments/screening/worker/.build-check/index.js.map",
+      "sha256": "1d972d41cf68239c100e7c556b3f5ff2e5387250075ff9a85c65f7cadc37cc71",
+      "source_count": 10,
+      "import_boundary_passed": true
+    },
+    {
+      "name": "offline_restore",
+      "path": "experiments/screening/backup/.build-check/restore-cli.mjs.map",
+      "sha256": "40c7ba78862451be4b98b9d2427256a5b7c5060e85aeb40d2afa4d2a1f04f863",
+      "source_count": 7,
+      "import_boundary_passed": true
+    }
+  ],
+  "source_sha256": {
+    "experiments/screening/backup/source.ts": "978ec6d665912fb22c50ec8d7061cf2a254d9e13695b980a3a38ad62eb58674c",
+    "experiments/screening/backup/restore.ts": "e9d7d344e95361303a697badd88cafedd6baae95fd4cbc1c8cb80350cb9d6723",
+    "experiments/screening/backup/README.md": "de6d251602f5296f1649d0a7600f6471384ed5e804c727a02bad1f27c8114956",
+    "experiments/screening/backup/format.ts": "cd637ef9976e34d89a8046459c3840b28b603f1c14adccd63649863e3ceaa831",
+    "experiments/screening/backup/build.mjs": "81f78b96db8127de72ddcc60bf307d87a62c567d28b5af16a04b498441d5ed32",
+    "experiments/screening/backup/tsconfig.json": "1fe4d756e90d085f3eda2341058f43daef0c469afa2adeedd1b7c7739cf16e67",
+    "experiments/screening/backup/restore-cli.ts": "184c2f1503da05a93941181352f320ff8f9adaed39d4db0797199615640ab8c1",
+    "experiments/screening/backup/offline.test.mjs": "1840d2bb44f87ceb70640a43cee88e8f5192bd2c70419814d0d7f52fe7019a02",
+    "experiments/screening/worker/budget.ts": "01b0f24f5827c9eae5c6b90932e0d65d900cfe69cb4c39db4818bbf5214aa6e8",
+    "experiments/screening/worker/index.ts": "caf82777fabb5486c5a766eb55bf2ed205a6315888b342744461446905ad3381",
+    "experiments/screening/worker/backup.spec.ts": "0a7a291b69bdc4aa5052a088c06d039d75ea142b758898fed3e889cd93c33ac8",
+    "experiments/screening/worker/vitest.mutation.config.ts": "2b5b5917ed76a4cb7cdbac636354127833da6d8725a52fe893f11d79b7c3b858",
+    "experiments/screening/worker/OPERATIONS.md": "649da75e76e3539050e4c6b288cc19d18bebc78cc883d9cf5b95fe70e18eaf6c",
+    "experiments/screening/worker/README.md": "bf61a4cd0b13b736017eadfbac4a6f22e6db7796860b3be6a29681b2118b46cd",
+    "experiments/screening/worker/RECOVERY.md": "2196020543345265bf029cb2f34c2bd54743745401f5ed4c8a57eec898b571dc",
+    "experiments/screening/operator/README.md": "fc08234bc2f141edc938961c74300b457048d40f9e463365ceef8e4baef1c5c2",
+    "ROADMAP.md": "57d7d6f1933396c1bf8426e6f5843c9815aad5473906f9e42654b866b311a76b",
+    "docs/SCREENING_PRODUCT_DESIGN_2026-09.md": "9cfcfb28e9f6641f92101f2686769d16f171d70de98f0eddacacf67de707d5ad",
+    "docs/SCREENING_PROVIDER_SETUP_2026-09.md": "1ada0477032235a158fb040c386a73ac5f78fb587cc26831e56f3865f6b63bd9",
+    "docs/ADOPTION_AND_LATENCY_2026-09.md": "fe6a7ff632ff266d2a37ee620b489c1e85446ea2fe7029182c28451b33c172ac",
+    "docs/VERIFICATION_IMPROVEMENTS_2026-09.md": "629d87c0994ea4140397b2b23667ce1293696b2a4beff299d128aa1220073c61",
+    "docs/SPEC_READS.md": "eaeb2b7938c40406c7be1be481f2e3602c765060f9f054f7f0203ecbade145b5"
+  },
+  "verified_behaviors": [
+    "Atomic consistent capture and frozen pages across live completions",
+    "Exact capture-ID retry and prior-digest staging replacement",
+    "Canonical budget/history/evidence unchanged by capture",
+    "Raw lease, review, document and sequence preservation",
+    "Held and recovered offline round-trips with no live budget tables",
+    "Tampered, removed, duplicated, reordered and cross-case records refused",
+    "Missing final approval evidence refused even with substituted in-file digests",
+    "Snapshot/page rollback and bounded paging",
+    "Fresh owner-only archive creation with no overwrite; failed restore remains unverified",
+    "CLI manifests and record lines bounded by actual bytes; external manifest hash required",
+    "Later-window review preserves older accounting without credit reset",
+    "Output filenames resolved to avoid accidental in-memory SQLite verification"
+  ],
+  "limitations": [
+    "All data was synthetic. No real account, credential, archive collection, notification, deployment or independent backup transfer.",
+    "Backup pages contain sensitive raw release tokens/caller counters and evidence. Only a separate private backup entrypoint exposes them; no operator browser route was added.",
+    "Export staging remains on the source object and can be replaced by an explicit expected-digest capture. It is not an independent backup destination.",
+    "Offline output is owner-only plaintext, not encrypted. Independent destination, encryption/key custody and retention policy remain to select and qualify.",
+    "No live budget tables, provider access or activation method exist in the restored SQLite archive. Production reactivation/reconciliation is not implemented.",
+    "Node built-in SQLite is experimental in the tested runtime. Node fixture construction uses a synthetic storage adapter; separate Workers tests use actual local Durable Object SQLite.",
+    "Hash integrity depends on an independently trusted manifest hash; no signature, anchor or provider evidence authenticity is implied.",
+    "Platform SQL limits can be stricter than format limits. Maximum-volume CPU/memory and capture cadence remain unqualified; synchronous capture can delay the shared coordination object.",
+    "Archive includes persisted budget policy and SQLite records, not all deployment configuration or secret recovery. Legacy completed recoveries missing retained approval bytes are refused.",
+    "No new dependency, verify/sign/CLI/Tab npm release, commit, push, merge, deployment or recurring schedule. Full store suite remains required before committing.",
+    "Root and Worker dry-run builds passed despite Wrangler preference-log EPERM messages; the isolated suite retains an expected fixed-prose evidence refusal."
+  ]
+}

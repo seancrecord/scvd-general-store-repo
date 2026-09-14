@@ -37,8 +37,15 @@ interoperability remains untested. Benchmarks are Node on this laptop,
 under concurrent test load, not Workers CPU or request latency.
 
 Production adoption still needs an implementation/supply-chain review,
-independent vectors/interoperability, Workers memory and CPU measurements,
-key provisioning and recovery, and a public verifier migration policy.
+independent vectors/interoperability, measured external-signer memory and
+CPU, key provisioning and recovery, and a separate checkpoint verifier.
+The September 11 first scope keeps both Workers free of PQ code; see
+`../../docs/PQ_PRODUCTION_ROLLOUT_2026-09.md` for the dated public-statement
+revision, trusted key/Bitcoin bindings and proposed signing contract.
+That plan chooses a distinct checkpoint Ed25519 key and explicit key-purpose
+acceptance tests. SHA-512 is optional; hedged mode is an issuer claim whose
+entropy handling is tested at the signer. Engineering effort excludes the
+sequential waits for independently verified declaration/checkpoint anchors.
 Do not add the experimental dependency to the Worker to make a headline.
 
 ## Independent implementation probe — September 10
@@ -90,3 +97,64 @@ invalid-signature cases. Known test seeds and private keys from the public
 vectors are solely test inputs. No production key is read or written.
 Passing this selected sample is not complete FIPS conformance, a module
 validation, an implementation audit or production approval.
+
+## Qualification increment — September 11
+
+`node runtime-qualification.mjs run <new-result.json>` compares three serial,
+alternating fresh-process runs of Ed25519 alone and Ed25519 plus ML-DSA-65.
+Each records its first operation and 50 warm operations, import duration,
+CPU, peak process RSS, sampled memory and signature lengths. This is a
+synthetic backend message with the proposed checkpoint context, not a
+production checkpoint or a p95 service benchmark. The external runtime
+and production byte contract still need qualification.
+
+The entropy subprocess injects a throwing RNG, verifies that normal signing
+refuses, and uses deterministic signing as a positive control showing why
+verification cannot infer hedging. `npm test` includes a disposable mutated
+copy of the candidate with a silent deterministic fallback: the same probe
+must go red on the missing expected exception, not on an import/setup error.
+No installed dependency or original fixture is edited by that negative test.
+
+The interoperability runner now also checks `scvd.store:corpus-checkpoint:v1`.
+The September 10 evidence remains unchanged. New results, limits, provider
+research and next gates are in `research/qualification-2026-09-11/README.md`.
+This increment uses the same pinned experimental dependency; it adds no
+production dependency or package release.
+
+## Synthetic checkpoint contract
+
+`checkpoint.mjs` implements the draft fixed-order envelope, exact byte and
+metadata bindings, both required signatures and a separate three-key trust
+document. Its shared purpose guard also exercises an artifact-signature
+acceptance seam; no production verifier is patched by this experiment.
+`CHECKPOINT_FORMAT.md` specifies parsing, encoding, limits and open boundaries.
+
+`npm test` includes the checkpoint suite and a retained public fixture.
+Valid signatures made with the wrong-purpose keys must fail in both
+directions. Both assertions go red against a disposable copy with that guard
+removed. SHA-512 may be null; a present but incorrect digest always fails.
+The signer refuses missing entropy, and the verifier explicitly treats
+hedging as an issuer claim. The fixture CLI verifies in a separate process
+without network access, refuses overwrite, and stores public material only.
+
+## Existing corpus adapter
+
+From the repository root, run:
+
+```sh
+node experiments/pqc/corpus-qualification.mjs /tmp/new-corpus-qualification
+```
+
+The output directory must not exist. The runner verifies the frozen capture
+manifest, original signatures and prefix links through the existing evidence
+reader, then checkpoints the latest supplied canonical snapshot with
+disposable keys. The originals remain unchanged. Public output is retained
+in `research/qualification-2026-09-11/corpus-adapter/`.
+
+`corpus-checkpoint.mjs` also checks caller-supplied historical key windows
+and excludes the checkpoint key from artifact history. Tests cover current
+and retired keys, inclusive retirement dates, caller mutation, conflicting
+canonical bytes and guard-removal negative controls. A claimed in-window
+date is not independent time evidence; the adapter verifies no Bitcoin
+proofs and does not validate the full nested round schema. See
+`CHECKPOINT_FORMAT.md` for the exact scope and remaining production gates.

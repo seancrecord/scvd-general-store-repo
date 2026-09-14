@@ -1,0 +1,194 @@
+{
+  "checked_at": "2026-09-11T20:11:01.923039+00:00",
+  "experimental": true,
+  "deployed": false,
+  "production_route_mounted": false,
+  "production_ready": false,
+  "tests": {
+    "browser_controller": 20,
+    "gateway_admin": 48,
+    "isolated_worker": 91,
+    "full_store_suite_run": false
+  },
+  "checks": {
+    "controller_tests": {
+      "log_path": "/private/tmp/scvd-ui-node-final.log",
+      "sha256": "21a065e60b74b254032f37c7004827a9688831e9d5a0f49aab2ef2f21ffef778",
+      "outcome": "passed"
+    },
+    "gateway_admin_tests": {
+      "log_path": "/private/tmp/scvd-ui-gateway-final.log",
+      "sha256": "8a53693eea00335c614bc55d1722333e9f08642c4fa93b789a900167f7792b3e",
+      "outcome": "passed"
+    },
+    "worker_tests": {
+      "log_path": "/private/tmp/scvd-ui-worker-final.log",
+      "sha256": "57dac3669051c40ed604eeff1f7605d768663a9457415bcde5354b91f8f1f0e2",
+      "outcome": "passed"
+    },
+    "root_typecheck": {
+      "log_path": "/private/tmp/scvd-ui-types-final.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "outcome": "passed"
+    },
+    "worker_typecheck": {
+      "log_path": "/private/tmp/scvd-ui-worker-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "store_doors_build": {
+      "log_path": "/private/tmp/scvd-ui-build-final.log",
+      "sha256": "fce4d4c2ad6b22212bbda671c69982ab12d3e56d212fa36e9e168483136e3961",
+      "outcome": "passed"
+    },
+    "worker_build": {
+      "log_path": "/private/tmp/scvd-ui-worker-build-final.log",
+      "sha256": "a4bc25ef751e7642242988a8bed7c61f651ad7bc3745dcd4dfab17992c701dd1",
+      "outcome": "passed"
+    },
+    "gateway_build": {
+      "log_path": "/private/tmp/scvd-ui-gateway-build.log",
+      "sha256": "408678f9853e279ca3881ba27e2f89d6be55cba9bf44f96da0b8968d937168c0",
+      "outcome": "passed"
+    },
+    "docs": {
+      "log_path": "/private/tmp/scvd-ui-docs-final.log",
+      "sha256": "3f2b9c3929ddb53eccf0ebbf233acfabaaaddab6ecb041444a326a50b646a382",
+      "outcome": "passed"
+    },
+    "claims": {
+      "log_path": "/private/tmp/scvd-ui-claims-final.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "whitespace": {
+      "log_path": "/private/tmp/scvd-ui-diff-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "negative_acknowledgement": {
+      "log_path": "/private/tmp/scvd-ui-negative-ack-final.log",
+      "sha256": "53ce9881fbc3e8c4e51aa2b30a2669880840863dffecdd173f58f62e1fc26bbc",
+      "outcome": "expected_assertion_failure"
+    },
+    "negative_retry_revision": {
+      "log_path": "/private/tmp/scvd-ui-negative-retry-final.log",
+      "sha256": "3b543fb8730ce3870c794ad336ea0732c667f8f37b39bbc4662ee4e1ff96e73f",
+      "outcome": "expected_assertion_failure"
+    },
+    "red_before_receipt_fix": {
+      "log_path": "/private/tmp/scvd-ui-receipt-red.log",
+      "sha256": "f0c4b587f048e0241568866429e9123320005b96e56a4baeaad3ca6bfbc2081a",
+      "outcome": "assertion_failed_before_fix"
+    },
+    "red_before_confirmation_fix": {
+      "log_path": "/private/tmp/scvd-ui-choice-red.log",
+      "sha256": "be7df3204591830a213f72be8d1e5e2e4ab67d750e523a1444c218a11f4f1306",
+      "outcome": "assertion_failed_before_fix"
+    }
+  },
+  "bundles": [
+    {
+      "name": "store",
+      "path": ".build-check/index.js.map",
+      "sha256": "4dacb2d95ad75a27be242ab1ec0aaf1497ba0226c29ce1d0caf4bbab2dfe1db5",
+      "source_count": 1652,
+      "operator_ui_sources": [],
+      "import_boundary_passed": true
+    },
+    {
+      "name": "doors",
+      "path": "doors/.build-check-doors/doors.js.map",
+      "sha256": "fba27bc7e704c12df77fc29d4dbee52f39d504437d2c42fb07d2e7c2a4a13c7d",
+      "source_count": 545,
+      "operator_ui_sources": [],
+      "import_boundary_passed": true
+    },
+    {
+      "name": "reader",
+      "path": "experiments/screening/worker/.build-check/index.js.map",
+      "sha256": "cbbdb7035e1e44674250ac3cb892a20a8dfb032a6e6bf1c0ac80f278ad7c337f",
+      "source_count": 7,
+      "operator_ui_sources": [],
+      "import_boundary_passed": true
+    },
+    {
+      "name": "gateway",
+      "path": "experiments/screening/operator/.build-check/gateway.js.map",
+      "sha256": "d414caef4471e7f54a45d4f4fb9b470dc628dd3a2325e1a0443dbbe92d2fe5ed",
+      "source_count": 71,
+      "operator_ui_sources": [
+        "experiments/screening/operator/client.txt",
+        "experiments/screening/operator/page.ts",
+        "experiments/screening/operator/gateway.ts"
+      ],
+      "import_boundary_passed": true
+    }
+  ],
+  "source_sha256": {
+    "experiments/screening/operator/client.txt": "061e9e232d25471f5dfac6764338771e85ab36838df229e838a701f073581041",
+    "experiments/screening/operator/client.test.mjs": "74e565b9795cc37f5063e15265a88b2ed8c8b4529165bf14e5b910d56a0ddb85",
+    "experiments/screening/operator/page.ts": "01905d75669d10d4c099982e795adc01ac81542da8a869fe70f1ae80c31fc8be",
+    "experiments/screening/operator/gateway.ts": "23d9bda91af6781f368baff63db43388449e9e670a85cafe285ee9b6910b108f",
+    "experiments/screening/operator/README.md": "0e3f10b90b1fdad54d812e35bbb9a7aa302cf7f73787fcae2840b1e31325b093",
+    "test/screening-operator.spec.ts": "569a939ea0dbf2863d337d5bc17985555ba06045779971e24be11ca0c46cb2a4",
+    "src/lib/admin-auth.ts": "b225d81e53f244e5c4d4f618e3f9bd32f48ad62d605b419bb064d1972fb835ce",
+    "src/routes/admin.ts": "2d4c60e1943771d95d23931f1217f1f6f7211d196bf6adabda53a9251bb4736c",
+    "src/raw-modules.d.ts": "c4d8fb2f2d8b94b3184bcc61c143aa52e89cf3fe939b0c8788ff952447613087",
+    "wrangler.jsonc": "1bb96f68a6bb2d05a7d912b1933b56ba700e43a9b0ae3dafc3c5d1e9a6923387",
+    "experiments/screening/worker/wrangler.jsonc": "965f0d4dfc3d0b07b847613a87de24e7af3b8e4bc2fa7b31e7e18723d10e2f79",
+    "experiments/screening/worker/README.md": "6e13185b2247d1e9a8796c198034548f193902734bbf291a48b8ba21d21802a0",
+    "experiments/screening/worker/RECOVERY.md": "4fbc6674c140a3f9021eb258cfe4df8fcc12229a3158defa459ba05c0d8ede00",
+    "ROADMAP.md": "6db85abffce24b431b55a2e1303c6adabb8062f7ac90e3826b5cde8e7875b704",
+    "docs/SCREENING_PRODUCT_DESIGN_2026-09.md": "d626da58a14f67bc49be9406a1e0957958f6c4291f4e280c4424cd1764aaa4d6",
+    "docs/SCREENING_PROVIDER_SETUP_2026-09.md": "46e97ff3ff347ca5e9fbba2e8da8e69262d483a6629014dda854e5bd41eadf30",
+    "docs/ADOPTION_AND_LATENCY_2026-09.md": "d2ac55b87e5560423260a54a3ba619a91129acd10ee7e4c5e1fe8aff45a9171f",
+    "docs/VERIFICATION_IMPROVEMENTS_2026-09.md": "ed6eb3e63e79d64af395555a166cd9275223e9f4e06a02bb3b61461185bd4662",
+    "docs/SPEC_READS.md": "8ee6c58dde3773d8356fb3076bec06834f305249ee44d2d159d48390e0c4d645"
+  },
+  "browser": {
+    "surface": "Real Chrome; loopback-only synthetic HTTP fixture; no real provider accounts, administrator password or actual gateway binding in browser",
+    "interaction_walkthrough": [
+      "Explicit reservation selection and admission hold",
+      "Three documents uploaded, read and explicitly selected",
+      "Hostile-looking HTML/script content displayed as text; no execution",
+      "In-page reload cleared selections and confirmation",
+      "Lost successful response blocked automatic retry; inspection allowed an explicit identical-body retry",
+      "Final recovered case visible after hold removed"
+    ],
+    "retry_observation": {
+      "fixture_commit_requests": 2,
+      "fixture_recoveries": 1,
+      "same_request_body": true,
+      "same_original_revision": true
+    },
+    "narrow_view": {
+      "actual_inner_width": 500,
+      "document_scroll_width": 485,
+      "requested_width": 390,
+      "qualification_limit": "Chrome enforced a minimum viewport; no 390px result claimed"
+    },
+    "latest_closed_case_visual": {
+      "setup": "Directly seeded synthetic closed case for display check only; not a real approval or evidence validation",
+      "case": "fixture_closed_review",
+      "upload_hidden": true,
+      "decision_hidden": true,
+      "final_receipt_expanded": true,
+      "still_active_text": "Still active: None",
+      "inner_width": 1512,
+      "document_scroll_width": 1497,
+      "console_errors_or_warnings": 0
+    },
+    "screenshots": "Inspected inline; not saved in repository",
+    "fixture_script_sha256": "00195e19c553e28a7caed5ad4f47fda7c8156453610ff3e3481d40d76e9c529a"
+  },
+  "limitations": [
+    "Browser fixture walkthrough and authenticated local gateway/SQLite tests are separate; no deployed browser-to-service-binding qualification.",
+    "Operator evidence remains untrusted testimony; byte checks do not authenticate providers or prove remote work termination.",
+    "Pending request body exists only in tab memory. In-page reload preserves it; hard reload/closing may lose it. Missing/unreadable case does not enable retry.",
+    "Mounting/binding and deployed UI qualification, hold/capacity alerts, independent backup/retention policy, real-account/source qualification and signed delivery remain open.",
+    "No new dependency, npm verify/sign/CLI/Tab release, commit, push, merge, deployment, provider account provisioning or notification.",
+    "Full store suite was not rerun and is required before committing. No production latency measurement or improvement claimed.",
+    "Wrangler dry-run builds exited successfully despite preference-log EPERM messages. Worker suite emits an expected fixed-prose refusal while all assertions pass."
+  ]
+}

@@ -50,3 +50,9 @@ declare module "*/webmcp/purchase.js" {
   const contents: string;
   export default contents;
 }
+
+/** Private experimental operator browser module, served as text. */
+declare module "*/client.txt" {
+  const contents: string;
+  export default contents;
+}

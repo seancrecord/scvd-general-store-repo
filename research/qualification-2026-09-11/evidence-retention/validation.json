@@ -1,0 +1,84 @@
+{
+  "checked_at": "2026-09-11T19:15:19.047Z",
+  "experimental": true,
+  "deployed": false,
+  "production_ready": false,
+  "tests": {
+    "workers": 90
+  },
+  "checks": {
+    "workers": {
+      "log_path": "/private/tmp/scvd-evidence-tests-final.log",
+      "sha256": "609272a35195e21768b1445ee4b9ce7ce1fe1b4029b17f76ccde82d96e4cada9",
+      "outcome": "passed"
+    },
+    "qualification_types": {
+      "log_path": "/private/tmp/scvd-evidence-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "docs": {
+      "log_path": "/private/tmp/scvd-evidence-docs.log",
+      "sha256": "b285b1451de508364f7322b7709a1b5750a28e87301874f73b0b3636502290f9",
+      "outcome": "passed"
+    },
+    "claims": {
+      "log_path": "/private/tmp/scvd-evidence-claims.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "qualification_build": {
+      "log_path": "/private/tmp/scvd-evidence-build.log",
+      "sha256": "6727ab58b7c4ad890db69ca6a49dfc8b576f6e2871b51eb7f3552a38aee82d68",
+      "outcome": "passed"
+    },
+    "missing_evidence_before_implementation": {
+      "log_path": "/private/tmp/scvd-evidence-red.log",
+      "sha256": "372ccd7646f2be82cf07d7b7797f3135635166c95bad168f0c2085dd9b8db621",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "negative_integrity": {
+      "log_path": "/private/tmp/scvd-evidence-negative-integrity.log",
+      "sha256": "278f79480676c7fc7df6771ed81d90468d2bec3fd064336153fce342ceb05cda",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "negative_revision": {
+      "log_path": "/private/tmp/scvd-evidence-negative-revision.log",
+      "sha256": "4c3cf7336d3f451e80677bb445cc169f62d224a8c73eedc5ccf7e3744c55ea76",
+      "outcome": "expected_original_assertion_failure"
+    },
+    "negative_age": {
+      "log_path": "/private/tmp/scvd-evidence-negative-age.log",
+      "sha256": "ff9c33a9731fffcc03a0f8ddef003cd36f980701d89d5ae580578381b9c82cca",
+      "outcome": "expected_original_assertion_failure"
+    }
+  },
+  "source_sha256": {
+    "experiments/screening/worker/budget.ts": "e0b0f25ba5d14f8fad6a3570b1679f4c2994d65485bf9c3202b98464c912bdba",
+    "experiments/screening/worker/recovery.ts": "68c17b5466471f4894f044cc8d36d2c15e208c5074b3c587821e4805be3c16e3",
+    "experiments/screening/worker/index.ts": "1a89146e70035659849c7613cecc700dc9d3c061eeb9d07d5a7cb53e9b88337b",
+    "experiments/screening/worker/evidence.ts": "26c8a2c6b3eb14e61f1e0b443b956d9197ab84e8d39d61de826140eccdb81a43",
+    "experiments/screening/worker/evidence.spec.ts": "9c629251d648527079ed3c532d60599cbd6d118e7812c8e537f65a84e677ce93",
+    "experiments/screening/worker/evidence-fixtures.ts": "77f913ca82a3866d304bfb9f569df52adb01b3062f88d58b7737759bdab4a560",
+    "experiments/screening/worker/recovery.spec.ts": "0abf18310868041b79a374bafa4b744437fdf40564382b1a0b9a78669a6651dd",
+    "experiments/screening/worker/vitest.mutation.config.ts": "5663d1f1b615a4c605f3a35efdb41352332c37767e3324c715f35794739d062f",
+    "experiments/screening/worker/wrangler.jsonc": "5072c674ebe99dde6a04c23a139343e6ff374119cea1f8ae2fa96db9aa0d19da",
+    "experiments/screening/worker/RECOVERY.md": "c15c7f7d1ff82223ed080c9ef6dc2678e457bea74b20fe3f06bdb6fec7f6e47d"
+  },
+  "bundle": {
+    "path": "experiments/screening/worker/.build-check/index.js.map",
+    "sha256": "47029d389076e9aace2bea505a66049c19e1e84a74d5100bf7a43d7ed0ae8494",
+    "import_boundary_passed": true
+  },
+  "limitations": [
+    "Local Workers SQLite and synthetic, explicitly labeled evidence. No real provider/account evidence or credentials collected.",
+    "Hashes establish retained-byte integrity and case scope. No provider signatures, external authenticity or real termination verified.",
+    "Private service bindings only; operator authentication/UI, external backup/retention policy and alerts remain unimplemented. Public HTTP remains 404 and configuration is empty.",
+    "A database administrator able to rewrite both material and audit is outside the integrity guarantee; no independent signature or anchor added.",
+    "Exact historical decision retries do not assert present availability of its documents. Separate evidence reads assess current integrity and availability.",
+    "No new provider calls or evidence writes on normal reads. No production p95 or cloud durability measurement performed.",
+    "Full store suite, Node fixture and payout regression suites were not rerun in this increment; full suite required before commit.",
+    "No new dependency, npm release, commit, push, merge, deployment, account provisioning or public product activation.",
+    "Qualification dry-run bundle succeeded despite Wrangler preference-log EPERM messages. A fixed-prose private refusal appears in the Workers test log; all assertions pass."
+  ]
+}

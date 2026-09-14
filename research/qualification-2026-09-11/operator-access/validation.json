@@ -1,0 +1,110 @@
+{
+  "checked_at": "2026-09-11T19:44:34.713Z",
+  "experimental": true,
+  "deployed": false,
+  "production_route_mounted": false,
+  "production_ready": false,
+  "tests": {
+    "store_tests": 45,
+    "worker_tests": 91
+  },
+  "checks": {
+    "store_tests": {
+      "log_path": "/private/tmp/scvd-operator-tests-final.log",
+      "sha256": "78d2549d70bb91470019a9d399bf99dccce46ab3b0cd9ba84000f315b16c4fc0",
+      "outcome": "passed"
+    },
+    "worker_tests": {
+      "log_path": "/private/tmp/scvd-operator-worker-tests-final.log",
+      "sha256": "dc9d722df91d59d895af169dd48f2286437402cab925e61d342cb078811c3d10",
+      "outcome": "passed"
+    },
+    "root_types": {
+      "log_path": "/private/tmp/scvd-operator-types-final.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "outcome": "passed"
+    },
+    "worker_types": {
+      "log_path": "/private/tmp/scvd-operator-worker-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed"
+    },
+    "store_builds": {
+      "log_path": "/private/tmp/scvd-operator-store-builds.log",
+      "sha256": "3ad276ed96d4b9e1f4bbdb2fa04979a5eccf0ef59fa4a4e8113d7b7dc9acd692",
+      "outcome": "passed"
+    },
+    "gateway_build": {
+      "log_path": "/private/tmp/scvd-operator-gateway-build.log",
+      "sha256": "0b6ef9c193c156d99701a0f0953a07d78de339d7e1f290f0d72411f869ed0b2e",
+      "outcome": "passed"
+    },
+    "docs": {
+      "log_path": "/private/tmp/scvd-operator-docs.log",
+      "sha256": "585f464ae9efde15544682590d17616c5a7a574b7bcafded734c588f4e586fea",
+      "outcome": "passed"
+    },
+    "claims": {
+      "log_path": "/private/tmp/scvd-operator-claims.log",
+      "sha256": "f7055979f08e5e4c38ad5970e82c218ddc3a2668a7238f2a1d427e3aef830be9",
+      "outcome": "passed"
+    },
+    "negative_authentication": {
+      "log_path": "/private/tmp/scvd-operator-negative-auth.log",
+      "sha256": "efaa03b88cf72575bd396494e922be5a54e8474f56978dcb580800d84f4ff166",
+      "outcome": "expected_assertion_failure"
+    },
+    "negative_upload_limit": {
+      "log_path": "/private/tmp/scvd-operator-negative-limit-final.log",
+      "sha256": "6dee3ce1213a3d21bd40139415ebe3a6aa6135e403cde2b210ae05f405a2cd57",
+      "outcome": "expected_assertion_failure"
+    },
+    "initial_header_failure": {
+      "log_path": "/private/tmp/scvd-operator-tests-initial.log",
+      "sha256": "167ef405c9056f436d68a609737aaebd51005626d6d6a8d3e3590400849e9bdf",
+      "outcome": "expected_assertion_failure"
+    }
+  },
+  "bundles": [
+    {
+      "path": ".build-check/index.js.map",
+      "sha256": "4dacb2d95ad75a27be242ab1ec0aaf1497ba0226c29ce1d0caf4bbab2dfe1db5",
+      "experimental_operator": false,
+      "import_boundary_passed": true
+    },
+    {
+      "path": "doors/.build-check-doors/doors.js.map",
+      "sha256": "fba27bc7e704c12df77fc29d4dbee52f39d504437d2c42fb07d2e7c2a4a13c7d",
+      "experimental_operator": false,
+      "import_boundary_passed": true
+    },
+    {
+      "path": "experiments/screening/operator/.build-check/gateway.js.map",
+      "sha256": "f2cb515c76cef4288bc78d2dd962836d761752d7900afff0dc5d17fab2f6778c",
+      "experimental_operator": true,
+      "import_boundary_passed": true
+    }
+  ],
+  "source_sha256": {
+    "src/lib/admin-auth.ts": "b225d81e53f244e5c4d4f618e3f9bd32f48ad62d605b419bb064d1972fb835ce",
+    "src/routes/admin.ts": "2d4c60e1943771d95d23931f1217f1f6f7211d196bf6adabda53a9251bb4736c",
+    "test/screening-operator.spec.ts": "9c6100651af5af2587b629bb3bc35a7ae90f898f9e2134b791f619a43bedb39c",
+    "experiments/screening/operator/gateway.ts": "e1c0244251295392afbeaa46d7405b1b44b112aec5f4f18fa09fb5cae83dbfdf",
+    "experiments/screening/operator/vitest.mutation.config.ts": "d8bf9d05ba8d1f4889d6efcc23f173e40a8b8642557f791e1e36cec2e8ab3abf",
+    "experiments/screening/operator/README.md": "ad826fa1a8f31059069cb1291793824f68db62161bc2d2ba2e218af2d4631981",
+    "experiments/screening/worker/operator.spec.ts": "681b0c94fa30c6d9ccc5749d9a559ec480305726246aef1fc3678a2ae6cf73d4",
+    "experiments/screening/worker/vitest.config.ts": "5cfd17b7c03ae236dd1aa2fbc65205e5ae92705f24cf7e067888b1e6e9036949",
+    "experiments/screening/worker/RECOVERY.md": "feb90fecb97bec21f09b7c6e1eb23b37d99793e5379f09b09fd2847194a7f156"
+  },
+  "authentication_extraction": "Original HEAD admin-auth block matches exactly after exporting adminGate and replacing the literal username with the shared ADMIN_USERNAME constant.",
+  "limitations": [
+    "Locally exercised existing Basic authentication with synthetic test password, namespace counters and real local SQLite recovery. No production login, account credentials or live recovery used.",
+    "End-to-end gateway test uses a trusted local adapter to real Durable Object RPC; a deployed service binding and operator UI remain unqualified.",
+    "Server-assigned operator identity does not establish human review or verify provider evidence authenticity/termination.",
+    "Production mounting, concrete review UI, hold/capacity alerts, independent backup/retention policy and real provider/source qualification remain open.",
+    "Full store suite was not run for this increment and remains required before a commit. Existing admin throttle/navigation regressions were run.",
+    "No new dependency, npm release, commit, push, merge, deployment, account provisioning, public activation or notification performed.",
+    "Production bundles exclude experimental screening code. Shared authentication adds no extra network call. No production p95 measurement or speed improvement claimed.",
+    "Workers dry-run builds succeeded despite preference-log EPERM messages. The isolated suite logs a fixed-prose private refusal while all assertions pass."
+  ]
+}
