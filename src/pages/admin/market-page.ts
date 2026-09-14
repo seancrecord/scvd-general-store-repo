@@ -6,7 +6,12 @@ import {
   type MarketAggregates,
 } from "@/services/market";
 import type { bountyBoard } from "@/services/bounty-board";
-import { bountyRails } from "@/services/bounty-board";
+import {
+  BOUNTY_MAX_REWARD_USD,
+  BOUNTY_WEEKLY_BUDGET_USD,
+  bountyRails,
+} from "@/services/bounty-board";
+import type { BountyPlan } from "@/services/bounty-plan";
 import {
   BOUNTY_BATCH_CAP,
   BOUNTY_BATCH_DEFAULT_REWARD,
@@ -15,6 +20,14 @@ import {
 import type { WardRound } from "@/services/ward-round";
 
 type BoardState = Awaited<ReturnType<typeof bountyBoard>>;
+
+/** The standing order as the desk shows it: the plan and its condition. */
+export interface StandingOrderView {
+  plan: BountyPlan | null;
+  /** What this week has already promised — spent AND still open. */
+  committed: { spent: number; open: number; headroom: number } | null;
+  notice?: string;
+}
 
 /**
  * THE POSTING LIST (2026-09-08, the keeper: "i should probably do up
@@ -122,6 +135,161 @@ function candidatesHtml(candidates: readonly BountyCandidate[]): string {
  * actually did, because a redirect in silence reads exactly like a
  * form that did nothing.
  */
+/**
+ * WHAT THE KEEPER WOULD HAVE PRESSED, WRITTEN DOWN (2026-09-13, the
+ * keeper: "i had thought we created a button to add new ones or is it
+ * automatic").
+ *
+ * The standing order has run on the hourly tick since 2026-09-10 and
+ * had no door on any page: it was settable only by hand-rolling a
+ * POST at /admin/bounties/plan, which is why the honest answer to
+ * "is it automatic" was "it could be, and isn't." A lever with no
+ * handle is a lever nobody pulls.
+ *
+ * EVERY LEVER STATES ITS CONDITION (2026-07-30). The three facts that
+ * decide whether next week posts anything are served beside the
+ * dials, not left for the keeper to hold in his head: what this week
+ * has already committed (open listings included — the reservation
+ * that stops the board promising money it cannot pay), how many
+ * listings that headroom actually affords at the reward being asked
+ * for, and whether payouts are live at all. A plan set against a
+ * paused wallet posts nothing and says so here rather than in a log.
+ *
+ * THE PLAN CHOOSES NO DOORS. It presses the button the keeper would
+ * have pressed, over the same house-picked candidates from the same
+ * census round, and it takes only never-walked ones. Nothing
+ * self-nominates onto that list; the anti-farming design in
+ * BOUNTY_BOARD.md is untouched by anything on this page.
+ */
+function standingOrderHtml(
+  view: StandingOrderView | null,
+  board: BoardState | null,
+): string {
+  if (!view) {
+    return `<section>
+    <h2>The standing order</h2>
+    <p class="empty">The plan could not be read just now. It is still settable at POST /admin/bounties/plan; a plan already running is unaffected by this page failing to show it.</p>
+  </section>`;
+  }
+  const { plan, committed, notice } = view;
+  const running = plan !== null && plan.weeks_remaining > 0;
+  /*
+   * A RETIRED PLAN IS A ZEROED ONE, NOT AN ABSENT ONE. writeBountyPlan
+   * stores `{weeks_remaining: 0, per_week: 0, reward_usd: 0}` where a
+   * delete might be expected, and the pass reads that as "do nothing"
+   * correctly. The form must not read its DIALS off it: a $0 reward
+   * would render a box the browser refuses (min 0.01) and divide the
+   * headroom by zero to offer the keeper an infinite number of
+   * listings. The dials come from a plan that is actually running,
+   * and otherwise from the same defaults a first-time press gets.
+   */
+  const dials = running ? plan : null;
+  const railBoxes = bountyRails()
+    .map((rail) => {
+      const checked = dials?.rails.includes(rail.caip2) ? " checked" : "";
+      return `<label style="display:inline-block;margin-right:1em"><input type="checkbox" name="rails" value="${escapeHtml(rail.caip2)}"${checked}> ${escapeHtml(rail.label)}</label>`;
+    })
+    .join("\n");
+  const tierOption = (value: string, label: string): string =>
+    `<option value="${value}"${dials?.tier === value ? " selected" : ""}>${escapeHtml(label)}</option>`;
+  const reward = dials?.reward_usd ?? BOUNTY_BATCH_DEFAULT_REWARD;
+  const affordable =
+    committed && reward > 0 ? Math.floor(committed.headroom / reward) : null;
+  const state = running
+    ? `<p><strong style="font-size:1.1em">Running — ${plan.weeks_remaining} week${plan.weeks_remaining === 1 ? "" : "s"} left</strong>: ${plan.per_week} a week at $${plan.reward_usd.toFixed(2)}, ${escapeHtml(plan.tier)}${plan.rails.length > 0 ? ` on ${escapeHtml(plan.rails.join(", "))}` : ", whatever rail each door quotes first"}.${plan.last_week ? ` Last acted in ${escapeHtml(plan.last_week)}.` : " Has not acted yet."}</p>`
+    : `<p><strong style="font-size:1.1em">No standing order.</strong> Every bounty on the board is one the keeper pressed by hand, and the week nobody presses, the board stands empty for the walkers who poll it.</p>`;
+  /*
+   * THE NUMBER THAT DECIDES NEXT WEEK, said before the dials rather
+   * than after. `open` is the half a naive reading misses: the budget
+   * is checked at CLAIM time, after a walker has already paid a door
+   * out of their own wallet, so a listing this board cannot honour
+   * does not overspend — it takes a stranger's money and refuses them.
+   */
+  const headroomLine = committed
+    ? `<p class="menu-meta">This week: $${committed.spent.toFixed(2)} paid out, $${committed.open.toFixed(2)} still standing open against the $${BOUNTY_WEEKLY_BUDGET_USD.toFixed(2)} budget — <strong>$${committed.headroom.toFixed(2)} of headroom</strong>, which affords ${affordable} listing${affordable === 1 ? "" : "s"} at $${reward.toFixed(2)}. Open listings are reserved as well as spent ones: the budget is checked after a walker has already paid the door, so a listing the board cannot honour takes a stranger's money and refuses them.</p>`
+    : `<p class="menu-meta">This week's headroom could not be read, so the figure that decides whether next week posts anything is missing. The plan checks it again itself when it runs.</p>`;
+  const paused = board && !board.payouts_enabled
+    ? `<p><strong>Payouts are PAUSED (no field wallet key).</strong> A plan set now keeps all its weeks and posts nothing until the wallet is back — a listing opened while payouts are off is a door a walker can pay and never be paid for.</p>`
+    : "";
+  const history = plan?.history?.length
+    ? `<h3>What it has done</h3>
+    <table border="1" cellpadding="6">
+      <tr><th>week</th><th>posted</th><th>refused</th><th>what it decided</th></tr>
+      ${plan.history
+        .map(
+          (row) => `<tr>
+        <td>${escapeHtml(row.week)}</td>
+        <td>${row.posted}</td>
+        <td>${row.refused}</td>
+        <td><small>${escapeHtml(row.note)}</small></td>
+      </tr>`,
+        )
+        .join("\n")}
+    </table>
+    <p class="menu-desc">A week that posted nothing is not a week that failed — "the budget was already committed" and "every candidate refused" are both the plan working. The note says which.</p>`
+    : "";
+  return `<section>
+    <h2>The standing order</h2>
+    ${notice ? `<p><strong>${escapeHtml(notice)}</strong></p>` : ""}
+    ${state}
+    ${headroomLine}
+    ${paused}
+    <form method="POST" action="/admin/bounties/plan">
+      <p>
+        <label>Run for how many weeks (0 retires it)<br>
+          <input type="number" name="weeks" required min="0" max="52" step="1" value="${running ? plan.weeks_remaining : 6}">
+        </label>
+      </p>
+      <p>
+        <label>How many listings a week<br>
+          <input type="number" name="per_week" required min="1" max="10" step="1" value="${dials?.per_week ?? 4}">
+        </label>
+      </p>
+      <p>
+        <label>Reward each (USD, on top of each door's own price)<br>
+          <input type="number" name="reward_usd" required min="0.01" max="${BOUNTY_MAX_REWARD_USD}" step="0.01" value="${reward.toFixed(2)}">
+        </label>
+      </p>
+      <p>
+        <label>How long each listing stands<br>
+          <select name="tier">
+            ${tierOption("standard", "standard — 7 days")}
+            ${tierOption("sprint", "sprint — 2 days (a live queue, not a shelf)")}
+            ${tierOption("long", "long — 21 days (wait for a DIFFERENT walker to find it)")}
+          </select>
+        </label>
+      </p>
+      <p>
+        Rails to pin, cycled one per posting<br>
+        ${railBoxes}<br>
+        <small class="menu-meta">None checked means "whatever the door quotes first", which in practice is Base — so a plan that wants the other rails exercised has to say so. Each rail named is posted as its own small batch: a rail that refuses every door does not take the others down with it.</small>
+      </p>
+      <p>
+        <label>Why these walks (optional — your words, carried verbatim onto every listing this plan opens)<br>
+          <textarea name="note" rows="2" cols="60" maxlength="500">${escapeHtml(dials?.note ?? "")}</textarea>
+        </label>
+      </p>
+      <p>
+        <label>What we want observed (one a line, carried onto every listing)<br>
+          <textarea name="asks" rows="3" cols="60">${escapeHtml((dials?.asks ?? []).join("\n"))}</textarea>
+        </label>
+      </p>
+      <button type="submit"><strong>${running ? "Replace the standing order" : "Set the standing order"}</strong></button>
+      <p class="menu-desc">Once per ISO week, on the first hourly tick after the week turns. It picks from the same house-picked candidates above, takes only doors this store has never walked, and stops early rather than post one listing the week cannot honour. It chooses no doors by any new rule and nothing self-nominates onto that list.</p>
+    </form>
+    ${
+      running
+        ? `<form method="POST" action="/admin/bounties/plan" style="margin-top:1em">
+      <input type="hidden" name="weeks" value="0">
+      <button type="submit">Retire it</button>
+      <small class="menu-meta">Stops the posting. Listings already standing run their term and pay their claims as normal — retiring the plan is not a retraction of anything it opened.</small>
+    </form>`
+        : ""
+    }
+    ${history}
+  </section>`;
+}
+
 function bountyDeskHtml(
   board: BoardState | null,
   notice: string | undefined,
@@ -261,6 +429,8 @@ export function renderMarketPage(
   bountyNotice: string | undefined = undefined,
   /** The week's ready doors with this store's own history beside each. */
   candidates: readonly BountyCandidate[] = [],
+  /** The standing order and the headroom that decides whether it posts. */
+  standing: StandingOrderView | null = null,
 ): string {
   const so = market.signed_offers;
   const rails = market.rails;
@@ -356,6 +526,8 @@ export function renderMarketPage(
   ${fieldsSection}
 
   ${bountyDeskHtml(board, bountyNotice, candidates)}
+
+  ${standingOrderHtml(standing, board)}
 
   <section>
     <h2>Publish to the public tally</h2>

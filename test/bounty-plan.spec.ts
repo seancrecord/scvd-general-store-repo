@@ -1,4 +1,4 @@
-import { env } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { afterEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
@@ -12,6 +12,10 @@ import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
 const NOW = new Date("2026-09-14T12:00:00.000Z");
+const BASE = "https://scvd.store";
+const AUTH = {
+  Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+};
 
 /**
  * THE STANDING ORDER (2026-09-10). Two properties, and the first is
@@ -179,5 +183,174 @@ describe("the standing bounty order", () => {
       created_at: NOW.toISOString(),
     });
     expect(await bountyPlanPass(testEnv, NOW)).toBeNull();
+  });
+});
+
+/**
+ * THE HANDLE ON THE LEVER (2026-09-13, the keeper: "i had thought we
+ * created a button to add new ones or is it automatic").
+ *
+ * The plan had run on the tick for three days with no door on any
+ * page — settable only by hand-rolling a POST — so the honest answer
+ * to "is it automatic" was "it could be, and isn't". A form that sets
+ * it is the whole fix, and the two things it must not get wrong are
+ * that a press lands the keeper back on a page he can read, and that
+ * the JSON door keeps answering JSON for whatever was already calling
+ * it.
+ */
+describe("the standing order has a door on the desk", () => {
+  it("sets the plan from a form and lands back on the desk saying so", async () => {
+    const response = await SELF.fetch(`${BASE}/admin/bounties/plan`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        weeks: "6",
+        per_week: "4",
+        reward_usd: "0.25",
+        tier: "standard",
+        note: "the week's walk",
+      }),
+      redirect: "manual",
+    });
+    expect(response.status).toBe(303);
+    const location = response.headers.get("location") ?? "";
+    expect(location).toContain("/admin/market");
+    expect(decodeURIComponent(location)).toContain("4 a week at $0.25");
+    const plan = await readBountyPlan(testEnv);
+    expect(plan?.weeks_remaining).toBe(6);
+    expect(plan?.per_week).toBe(4);
+    expect(plan?.note).toBe("the week's walk");
+  });
+
+  /*
+   * A REFUSAL IS A PAGE TOO. A form press that lands on a bare JSON
+   * error is a keeper who cannot tell whether anything was written —
+   * and here nothing was, which is the fact that has to reach him.
+   */
+  it("refuses a bad form press in words, and writes nothing", async () => {
+    const response = await SELF.fetch(`${BASE}/admin/bounties/plan`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        weeks: "6",
+        per_week: "40",
+        reward_usd: "0.25",
+        tier: "standard",
+      }),
+      redirect: "manual",
+    });
+    expect(response.status).toBe(303);
+    expect(decodeURIComponent(response.headers.get("location") ?? "")).toContain(
+      "Nothing was set",
+    );
+    expect(await readBountyPlan(testEnv)).toBeNull();
+  });
+
+  it("retires the plan from the form's own off switch", async () => {
+    await writeBountyPlan(testEnv, {
+      version: 1,
+      weeks_remaining: 4,
+      per_week: 2,
+      reward_usd: 0.25,
+      tier: "sprint",
+      rails: [],
+      created_at: NOW.toISOString(),
+    });
+    const response = await SELF.fetch(`${BASE}/admin/bounties/plan`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ weeks: "0" }),
+      redirect: "manual",
+    });
+    expect(response.status).toBe(303);
+    expect(decodeURIComponent(response.headers.get("location") ?? "")).toContain(
+      "retired",
+    );
+    /*
+     * Retiring stores a ZEROED plan rather than deleting the key, and
+     * the pass reads that as "do nothing" — so the fact to assert is
+     * that no week is left to run, not that the key is gone.
+     */
+    expect((await readBountyPlan(testEnv))?.weeks_remaining).toBe(0);
+    expect(await bountyPlanPass(testEnv, NOW)).toBeNull();
+  });
+
+  /* The JSON door is what the tick's own callers use. It keeps its shape. */
+  it("still answers a JSON call with JSON", async () => {
+    const response = await SELF.fetch(`${BASE}/admin/bounties/plan`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        weeks: 3,
+        per_week: 2,
+        reward_usd: 0.1,
+        tier: "sprint",
+      }),
+    });
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body["ok"]).toBe(true);
+    expect(body).toHaveProperty("affordable_this_week");
+  });
+
+  it("shows the plan and this week's headroom on the market desk", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round()));
+    await writeBountyPlan(testEnv, {
+      version: 1,
+      weeks_remaining: 5,
+      per_week: 3,
+      reward_usd: 0.2,
+      tier: "standard",
+      rails: [],
+      created_at: NOW.toISOString(),
+      history: [
+        { week: "2026-W37", posted: 0, refused: 0, note: "the week was committed" },
+      ],
+    });
+    const html = await (
+      await SELF.fetch(`${BASE}/admin/market`, {
+        headers: { ...AUTH, Accept: "text/html" },
+      })
+    ).text();
+    expect(html).toContain("The standing order");
+    expect(html).toContain('action="/admin/bounties/plan"');
+    expect(html).toContain("5 weeks left");
+    expect(html).toContain("of headroom");
+    // The history rides along, so a week that posted nothing is legible.
+    expect(html).toContain("the week was committed");
+    expect(html).toContain("Retire it");
+  });
+
+  it("offers to set one when none is running", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round()));
+    const html = await (
+      await SELF.fetch(`${BASE}/admin/market`, {
+        headers: { ...AUTH, Accept: "text/html" },
+      })
+    ).text();
+    expect(html).toContain("No standing order.");
+    expect(html).toContain("Set the standing order");
+    expect(html).not.toContain("Retire it");
+  });
+
+  /*
+   * A RETIRED PLAN IS A ZEROED ONE ON DISK, and a form that read its
+   * dials off it would offer a $0 reward the browser refuses and an
+   * infinite number of listings (headroom / 0). The desk after a
+   * retirement has to be as pressable as the desk before the first
+   * plan ever was.
+   */
+  it("offers workable dials after a retirement, not the zeroed ones", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round()));
+    await writeBountyPlan(testEnv, null);
+    const html = await (
+      await SELF.fetch(`${BASE}/admin/market`, {
+        headers: { ...AUTH, Accept: "text/html" },
+      })
+    ).text();
+    expect(html).toContain("No standing order.");
+    expect(html).toContain("Set the standing order");
+    expect(html).not.toContain('value="0.00"');
+    expect(html).not.toContain("Infinity");
   });
 });
