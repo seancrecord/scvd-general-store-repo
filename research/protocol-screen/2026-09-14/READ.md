@@ -1,7 +1,8 @@
 # THE FIRST PROTOCOL SCREEN — read of 2026-09-14
 
 Machine output: `screen.md` (612 rows in a 90-day first window — 90 ACT,
-198 READ, 324 LOG) and `merges.json`. This file is the human read.
+140 READ, 324 LOG, and 58 filed under a standing ruling) and
+`merges.json`. This file is the human read.
 
 Two sources, and the difference between them is load-bearing:
 

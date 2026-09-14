@@ -28,6 +28,8 @@
  * scripts/protocol-screen.mjs.
  */
 
+import { applyRulings, openProposals, renderRulings } from "./rulings.mjs";
+
 export const SCOUT_URL = "https://scout.nekuda.ai/";
 
 /**
@@ -493,6 +495,7 @@ export function buildReport({
   firstRunDays = 7,
   failures = [],
   extraLimits = [],
+  rulings = [],
 }) {
   const rows = flattenUpdates(protocolData, today);
   const usedSources = new Set(Object.values(protocolData).map((m) => m.source ?? "scout"));
@@ -500,7 +503,14 @@ export function buildReport({
   const diff = diffSnapshots(previous, rows);
   Object.assign(diff, cadenceDiff(previous, cad));
   const window = diff.first ? rows.filter((r) => r.age <= firstRunDays) : diff.fresh;
-  const byBand = (band) => window.filter((r) => r.band === band);
+  /*
+   * Rulings run AFTER scoring, never instead of it. Every row is still
+   * scored on its merits; a standing ruling only decides where it is
+   * reported. Score-then-file keeps the bands honest and means lifting
+   * a ruling returns its rows to the band they always had.
+   */
+  const ruled = applyRulings(window, rulings, today);
+  const byBand = (band) => ruled.fresh.filter((r) => r.band === band);
   return {
     source,
     ran: today,
@@ -511,6 +521,9 @@ export function buildReport({
     cadence: cad,
     diff,
     window,
+    settled: ruled.settled,
+    lapsed: ruled.lapsed,
+    proposals: openProposals(rulings, today),
     act: byBand("act"),
     read: byBand("read"),
     log: byBand("log"),
@@ -571,6 +584,9 @@ export function renderMarkdown(report) {
     ? `Window: everything the sources showed that the ${report.since} run had not already seen.`
     : `Window: first run — the last ${report.firstRunDays} days, not the whole backlog.`);
   out.push(`Denominator: ${report.denominator} merges across ${report.protocols.length} protocols (${report.protocols.join(", ")}).`);
+  if ((report.settled ?? []).length) {
+    out.push(`Of this window, ${report.settled.length} row${report.settled.length === 1 ? "" : "s"} fell under a standing ruling and ${report.act.length + report.read.length + report.log.length} did not.`);
+  }
   out.push("");
   out.push("## Cadence");
   out.push("");
@@ -594,6 +610,14 @@ export function renderMarkdown(report) {
   if (report.diff.resumed.length) {
     out.push(`**Resumed since last run:** ${report.diff.resumed.map((c) => c.protocol).join(", ")}.`);
     out.push("");
+  }
+  const ruled = renderRulings({
+    settled: report.settled ?? [],
+    lapsed: report.lapsed ?? [],
+    proposals: report.proposals ?? [],
+  });
+  if (ruled.trim()) {
+    out.push(ruled);
   }
   out.push(`## ACT — a consequential change on a surface we have shipped (${report.act.length})`);
   out.push("");

@@ -1,0 +1,55 @@
+{
+  "note": "Decisions the protocol screen has already been given, with their reasons. A row an existing ruling covers is reported under it rather than in ACT — answered, not hidden. Scope rulings expire on purpose: see scripts/lib/rulings.mjs. Edited by hand or by the Monday run; every entry needs a reason a stranger could re-examine.",
+  "rulings": [
+    {
+      "id": "R1-preflight-scheme-list",
+      "state": "done",
+      "reason": "The nonstandard-scheme advisory was narrowed to the spec's own four families and spec-scheme-not-exact added. Shipped 2026-09-14 with red witnessed first.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R2-mpp-citations",
+      "state": "done",
+      "reason": "The eleven MPP classes now cite draft-httpauth-payment-01 at a real read date, with the renewal diff recorded. Shipped 2026-09-14.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R3-tempo-not-our-rail",
+      "state": "noted",
+      "reason": "We do not settle on Tempo. Its TIPs are read so that the day a named counterparty asks for it we are not starting from zero, and for the settlement mechanics MPP's charge methods cite — but a TIP moving is never work on shipped code here.",
+      "ruled_on": "2026-09-14",
+      "covers_until": "2026-12-31",
+      "scope": { "protocol": "Tempo TIPs" }
+    },
+    {
+      "id": "R4-verdict-across-schemes",
+      "state": "proposed",
+      "reason": "No battery check branches on scheme, so checks written with exact semantics run unconditionally against upto, auth-capture and batch-settlement. Establish per check whether its verdict still means what it says.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R5-x402-extension-coverage",
+      "state": "proposed",
+      "reason": "Five of the seven extensions x402 publishes have no reader here, including extension-offer-and-receipt, which is the conformance desk's own subject.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R6-coinbase-mirror",
+      "state": "wont",
+      "reason": "Withdrawn as a finding: SPEC_READS.md had already recorded the move to x402-foundation, and the remaining mentions are the npm package @coinbase/x402, which is current. One later dated log entry reached for the old URL again — history, corrected by appending, never by editing.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    },
+    {
+      "id": "R7-corpus-scheme-retention",
+      "state": "proposed",
+      "reason": "The corpus keeps an advisory's name and not its detail, so the fragmentation time series cannot tell a real fork from our own blind spot. Retaining the scheme value changes what the corpus stores, so it is the keeper's call.",
+      "ruled_on": "2026-09-14",
+      "rows": []
+    }
+  ]
+}

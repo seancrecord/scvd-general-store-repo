@@ -18,6 +18,10 @@
  *   node scripts/protocol-screen.mjs --window=90     # widen a FIRST run
  *   node scripts/protocol-screen.mjs --since=2026-06-16  # git window
  *   node scripts/protocol-screen.mjs --no-git        # scout only
+ *
+ * research/protocol-screen/rulings.json carries decisions already made:
+ * a row a standing ruling covers is reported under it rather than in
+ * ACT. Scope rulings expire on purpose — see lib/rulings.mjs.
  *   node scripts/protocol-screen.mjs --force         # replace today's run
  *   node scripts/protocol-screen.mjs --html=path     # screen a saved page
  *
@@ -39,10 +43,12 @@ import {
   toSnapshot,
 } from "./lib/protocol-screen.mjs";
 import { readLayer3 } from "./lib/git-source.mjs";
+import { loadRulings } from "./lib/rulings.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HOME = join(ROOT, "research", "protocol-screen");
 const SNAPSHOT = join(HOME, "snapshot.json");
+const RULINGS = join(HOME, "rulings.json");
 
 const args = process.argv.slice(2);
 const flag = (name, fallback = "") =>
@@ -104,12 +110,19 @@ if (noGit) {
 }
 
 const previous = existsSync(SNAPSHOT) ? JSON.parse(readFileSync(SNAPSHOT, "utf8")) : null;
+/*
+ * An invalid ledger stops the run rather than being skipped. A screen
+ * that silently ignored its own rulings would report settled questions
+ * as new, which is the failure the ledger exists to prevent.
+ */
+const rulings = existsSync(RULINGS) ? loadRulings(readFileSync(RULINGS, "utf8")) : [];
 const report = buildReport({
   protocolData,
   today,
   previous,
   firstRunDays,
   failures,
+  rulings,
   extraLimits: [`**window** — the git sources were read from ${since} forward; scout's own backlog reaches further back than that.`],
 });
 const markdown = renderMarkdown(report);
@@ -145,6 +158,8 @@ writeFileSync(join(runDir, "screen.md"), markdown);
 writeFileSync(join(runDir, "merges.json"), `${JSON.stringify(report.window.map(trimForDisk), null, 1)}\n`);
 writeFileSync(SNAPSHOT, `${JSON.stringify(toSnapshot(report), null, 1)}\n`);
 
-console.log(`protocol screen ${today}: ${report.window.length} in window — ACT ${report.act.length}, READ ${report.read.length}, LOG ${report.log.length}`);
+console.log(`protocol screen ${today}: ${report.window.length} in window — ACT ${report.act.length}, READ ${report.read.length}, LOG ${report.log.length}, ruled ${report.settled.length}`);
+for (const r of report.lapsed) console.log(`  LAPSED: ${r.id} expired ${r.covers_until} — renew it or its rows return`);
+for (const p of report.proposals) console.log(`  OPEN:   ${p.id} (${p.ageDays}d)`);
 for (const f of failures) console.log(`  UNREAD: ${f.source} — ${f.error}`);
 console.log(`  ${join(runDir, "screen.md")}`);
