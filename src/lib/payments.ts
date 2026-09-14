@@ -462,6 +462,20 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
  * Fresh-challenge fields (validBefore, Solana feePayer) are
  * deliberately absent — they are negotiated per challenge, and a
  * manifest that froze them would be advertising bytes it cannot honor.
+ *
+ * MAXTIMEOUTSECONDS IS NOT ONE OF THOSE, and leaving it out was an
+ * omission rather than a decision (found 2026-09-14, on a walk of our
+ * own discovery document against our own challenge). The signing
+ * window is a STANDING TERM: SIGNING_WINDOW_SECONDS, ruled at 300 on
+ * 2026-08-29 and the same on every rail and every tier. railAccepts
+ * sets it on every entry precisely so the library's `|| 300` can
+ * never bind again — and then this function dropped it on the way
+ * out, so `/.well-known/x402` and `/openapi.json` advertised a door
+ * whose window a buyer had to guess, or inherit from that same
+ * library fallback we went to the trouble of pinning. A client that
+ * pre-builds a payment from discovery needs it to compute validBefore
+ * before it has ever seen a challenge. Carried, not rebuilt: the rule
+ * above applies to this field like every other one.
  */
 export interface ManifestAccept {
   scheme: "exact";
@@ -470,6 +484,8 @@ export interface ManifestAccept {
   amount: string;
   asset: string;
   payTo: string;
+  /** The signing window the challenge will carry. See the note above. */
+  maxTimeoutSeconds: number;
   /** EIP-712 domain params, on EVM entries only — the USDC contract's. */
   extra?: { name: string; version: string };
 }
@@ -495,6 +511,10 @@ export function manifestAccepts(
       amount: typeof option.price === "object" ? option.price.amount : usdcToAtomic(usdc),
       asset: USDC_ASSET_BY_NETWORK[network] ?? "",
       payTo: String(option.payTo),
+      // Carried from the till's own entry, never retyped. The `??` is
+      // the type's optionality, not a second opinion about the number:
+      // railAccepts sets this on every entry it builds.
+      maxTimeoutSeconds: option.maxTimeoutSeconds ?? SIGNING_WINDOW_SECONDS,
     };
     if (network.startsWith("eip155:")) {
       entry.extra = { name: network === WORLD_NETWORK ? "USDC" : "USD Coin", version: "2" };
