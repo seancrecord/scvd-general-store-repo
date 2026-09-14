@@ -910,9 +910,28 @@ export function extractArtifact(body) {
       : null) || (typeof body.cert_id === "string" ? body.cert_id : null);
   const verifyUrl =
     typeof body.verify_url === "string" ? body.verify_url : null;
+  /*
+   * THE PAGE THE GOODS LIVE ON (2026-09-14, the keeper, having bought
+   * a pack with this till: "for humans, its not clear 1. how many
+   * cards you got 2. how to see the card ... theres no 'button' to
+   * share you have to have some knowledge of what to click").
+   *
+   * The till told the truth and showed a receipt: a sentence, a
+   * certificate id, and the whole signed body in a <pre>. For an agent
+   * that is the delivery. For a person it is a wall of JSON with the
+   * goods somewhere inside it, and the store's own pages — the five
+   * card faces, the binder, the share buttons — reachable only by
+   * reading a URL out of the blob and pasting it.
+   *
+   * So any delivery may name ONE human page in view_url, and the till
+   * draws a button to it above the fold. Optional by construction:
+   * an item that has no page keeps exactly the receipt it had.
+   */
+  const viewUrl = typeof body.view_url === "string" ? body.view_url : null;
   return {
     ...(certId ? { certId } : {}),
     ...(verifyUrl ? { verifyUrl } : {}),
+    ...(viewUrl ? { viewUrl } : {}),
     ...(body.deliverable !== undefined
       ? { deliverable: body.deliverable }
       : {}),
@@ -963,6 +982,8 @@ const TILL_STYLE = `
 .till-status{margin:.75rem 0;white-space:pre-wrap}
 .till-status[data-outcome]{border-left:3px solid currentColor;padding:.5rem .75rem}
 .till-status[data-outcome=delivered]{color:#2f9e44}
+.till-view{display:inline-block;margin:0 0 .75rem;padding:.5rem 1rem;border:2px solid #2f9e44;color:#2f9e44;font-weight:bold;text-decoration:none}
+.till-view:hover{background:#2f9e44;color:#fff}
 .till-status[data-outcome=declined],.till-status[data-outcome=refused]{color:#d9480f}
 .till-status[data-outcome=uncertain]{color:#e03131;font-weight:700}
 .till-wallet[data-connected=yes]{color:#2f9e44}
@@ -1248,6 +1269,47 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
   return section;
 }
 
+/**
+ * The one button a person needs after paying: the page the goods are
+ * on. Inserted before the raw body, never instead of it — the receipt
+ * stays whole underneath, which is the half an agent and an auditor
+ * both want. Same-origin only: a delivery that names an off-site URL
+ * gets no button, because a till that renders arbitrary links from a
+ * response body is a phishing surface wearing a store's paint.
+ */
+export function renderViewButton({ doc, output, url, item, origin }) {
+  if (!doc || !output) return null;
+  const here =
+    origin ||
+    (doc.location && doc.location.origin) ||
+    (doc.defaultView && doc.defaultView.location && doc.defaultView.location.origin) ||
+    null;
+  let safe = null;
+  try {
+    const parsed = new URL(url, here || undefined);
+    // http(s) and same origin, or nothing. A javascript: or data: url
+    // parses fine and must never become a button.
+    if ((parsed.protocol === "https:" || parsed.protocol === "http:") && (!here || parsed.origin === here)) {
+      safe = parsed.href;
+    }
+  } catch {
+    safe = null;
+  }
+  if (!safe) return null;
+  const existing = doc.querySelector && doc.querySelector("[data-till-view]");
+  if (existing && existing.remove) existing.remove();
+  const link = doc.createElement("a");
+  link.setAttribute("data-till-view", "");
+  link.className = "till-view";
+  link.href = safe;
+  if (link.setAttribute) link.setAttribute("href", safe);
+  link.textContent = `See your ${item && item.name ? item.name.replace(/^an? /, "") : "goods"} \u2192`;
+  output.insertAdjacentElement
+    ? output.insertAdjacentElement("beforebegin", link)
+    : output.parentNode.insertBefore(link, output);
+  return link;
+}
+
 /** One outcome, one sentence, and the goods when there are goods. */
 export function renderResult({ result, say, output, item }) {
   if (result.outcome === "delivered") {
@@ -1264,6 +1326,10 @@ export function renderResult({ result, say, output, item }) {
       );
     }
     say(parts.join(" "), "delivered");
+    if (result.viewUrl) {
+      const doc = output.ownerDocument || (typeof document !== "undefined" ? document : null);
+      if (doc) renderViewButton({ doc, output, url: result.viewUrl, item });
+    }
     output.hidden = false;
     output.textContent = JSON.stringify(result.body, null, 2);
     return;

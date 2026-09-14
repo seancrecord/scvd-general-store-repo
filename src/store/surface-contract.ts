@@ -165,7 +165,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   {
     code: "window_refused", http: 409, charged: false,
     means: "the shop window has nothing to pick (nobody has opened a pack yet), or this wallet picked inside the last twelve hours; the pick was refused before any settle call",
-    what_to_do: "Look first: GET /api/paywall/window is free and lists what is on show. An empty window fills when anyone opens a pack; a locked wallet picks again after twelve hours. Do not retry inside the lock; nothing was charged.",
+    what_to_do: "Look first: GET /api/paywall/window is free and lists what is on show, each row with its holder. An empty window fills when anyone opens a pack; a window holding only your own pressings fills when somebody else opens one; a locked wallet picks again after twelve hours. Do not retry inside the lock or against your own window; nothing was charged.",
   },
   {
     code: "callback_refused", http: 400, charged: false,

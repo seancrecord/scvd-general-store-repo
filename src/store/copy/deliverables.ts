@@ -83,11 +83,14 @@ export function luckyNote(options: {
 export function packNote(options: {
   cards: { name: string; rarity: string }[];
   packUrl: string;
+  /** The human page: five faces, a share button each, the way back to the binder. */
+  viewUrl?: string;
   tableUrl: string;
 }): string {
   const pulls = options.cards.map((card) => `${card.name} (${card.rarity})`).join(", ");
   return [
-    `Pack opened: ${pulls}.`,
+    `${options.cards.length} cards: ${pulls}.`,
+    ...(options.viewUrl ? [`See them at ${options.viewUrl}.`] : []),
     `Every card is signed and hangs at its own page; the pack record answers at ${options.packUrl}.`,
     `The odds you drew on, with their denominators, are on the table at ${options.tableUrl}; the seed the draw used is published there the morning after, and the whole pull recomputes from public inputs.`,
     "A card entitles the holder to a card.",
