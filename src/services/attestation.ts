@@ -1,3 +1,4 @@
+import { assertReceiptContext, assertReportedChain } from "@/lib/receipt-context";
 import {
   BASE_EVM,
   getBlockNumber,
@@ -125,9 +126,10 @@ export const SOLANA_FINALITY_SLOTS = 32;
  * artifact citing it without them is defective, not merely old.
  * readBinding() applies that rule so no reader has to reconstruct it.
  * v3 pairs authorizer/nonce and Transfer instead of independent matches;
- * older signed observations keep their bytes and their original battery.
+ * v4 also establishes receipt identity, chain and block/head context.
+ * Older signed observations keep their bytes and their original battery.
  */
-export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v3";
+export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v4";
 
 /**
  * WHAT TIES THE OBSERVED TRANSACTION TO ONE PAYMENT (2026-09-11).
@@ -496,7 +498,7 @@ export function staleAfterFrom(observedAt: string): string {
 }
 
 export interface TransferClaimRead {
-  status: SettlementStatus;
+  status: SettlementStatus | "UNAVAILABLE";
   recipient: string | null;
   payer: string | null;
   amountUsdc: number | null;
@@ -517,11 +519,18 @@ export async function readTransferClaim(
   const [receipt, head, reportedChain] = await Promise.all([
     getReceipt(env, txHash, chain),
     getBlockNumber(env, chain),
-    query.authorization ? getChainId(env, chain).catch(() => null) : Promise.resolve(null),
+    getChainId(env, chain).catch(() => null),
   ]);
-  const { authorization: _pair, ...verdict } = classify(receipt, query, head, chain);
+  const exact = query.authorization ? readAuthorizationReceipt(receipt, head, reportedChain, txHash, query.authorization, chain) : undefined;
+  // Preserve structured exact-reader evidence without inventing a broad verdict.
+  if (exact?.status === "unavailable" && exact.reason !== "receipt_not_found") {
+    return { status: "UNAVAILABLE", recipient: null, payer: null, amountUsdc: null,
+      blockHeight: null, confirmations: null, authorization: exact };
+  }
+  assertReportedChain(reportedChain, chain);
+  const { authorization: _pair, ...verdict } = classify(receipt, { ...query, txHash }, head, chain);
   return { ...verdict,
-    ...(query.authorization ? { authorization: readAuthorizationReceipt(receipt, head, reportedChain, txHash, query.authorization, chain) } : {}) };
+    ...(exact ? { authorization: exact } : {}) };
 }
 
 function classify(
@@ -539,6 +548,7 @@ function classify(
   /** The same paired evidence drives both status and the signed binding. */
   authorization: AuthorizationTransferRead | null;
 } {
+  assertReceiptContext(receipt, head, query.txHash);
   if (!receipt) {
     return {
       status: "NOT_FOUND",
@@ -631,7 +641,7 @@ function classify(
 
 /**
  * One read, one verdict, one signature. Throws only if the RPC itself
- * is unreachable — the gate turns that into a refund-shaped refusal
+ * is unreachable or its receipt context is unestablished — the gate refuses
  * rather than selling an observation we could not make.
  */
 export async function observeSettlement(
@@ -650,10 +660,13 @@ export async function observeSettlement(
   if (txHash && isSolanaSignature(txHash)) {
     return observeSolanaSettlement(env, query, now);
   }
-  const [receipt, head] = await Promise.all([
+  const [receipt, head, reportedChain] = await Promise.all([
     txHash ? getReceipt(env, txHash) : Promise.resolve(null),
     getBlockNumber(env),
+    getChainId(env),
   ]);
+  assertReportedChain(reportedChain, BASE_EVM);
+  assertReceiptContext(receipt, head, query.txHash);
   if (receipt || !txHash) {
     return observeWithFacts(env, query, receipt, head, BASE_EVM, {}, now);
   }
@@ -665,10 +678,13 @@ export async function observeSettlement(
    * holds the receipt is the settlement's chain; a hash on neither is
    * NOT_FOUND with both reads named on the artifact.
    */
-  const [polygonReceipt, polygonHead] = await Promise.all([
+  const [polygonReceipt, polygonHead, polygonChain] = await Promise.all([
     getReceipt(env, txHash, POLYGON_EVM),
     getBlockNumber(env, POLYGON_EVM),
+    getChainId(env, POLYGON_EVM),
   ]);
+  assertReportedChain(polygonChain, POLYGON_EVM);
+  assertReceiptContext(polygonReceipt, polygonHead, query.txHash);
   if (polygonReceipt) {
     return observeWithFacts(
       env,

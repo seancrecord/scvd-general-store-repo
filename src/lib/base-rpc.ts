@@ -1,3 +1,4 @@
+import { ReceiptEvidenceUnavailable } from "@/lib/receipt-context";
 import { BASE_NETWORK, POLYGON_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK } from "@/lib/payment-networks";
 import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
@@ -642,12 +643,10 @@ export async function getReceiptsBatch(
           `${chain.label} RPC batch errored for ${txHash}: ${JSON.stringify((entry as { error: unknown }).error).slice(0, 200)}`,
         );
       }
-      receipts.set(
-        txHash,
-        "result" in entry
-          ? (entry as { result: RpcReceipt | null }).result
-          : null,
-      );
+      if (!("result" in entry) || receipts.has(txHash)) {
+        throw new ReceiptEvidenceUnavailable("batch_response_missing_or_duplicated");
+      }
+      receipts.set(txHash, (entry as { result: RpcReceipt | null }).result);
     }
   }
   // Same line for a hash the provider's answer simply omitted: absent

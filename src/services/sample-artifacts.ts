@@ -475,6 +475,7 @@ export async function sampleSettlementAttestation(
   const pad = (address: string): string => `0x${address.slice(2).padStart(64, "0")}`;
   const amount = SAMPLE_PAID_UNITS;
   const receipt = {
+    transactionHash: SAMPLE_TX_HASH,
     status: "0x1",
     blockNumber: `0x${(34_000_000).toString(16)}`,
     logs: [

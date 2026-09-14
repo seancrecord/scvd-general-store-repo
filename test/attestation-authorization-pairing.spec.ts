@@ -85,7 +85,7 @@ it("preserves a broad transfer-only observation when no nonce was asked", async 
 
 it("signs the pairing evidence and rejects its alteration", async () => {
   const signed = await observe([auth(), transfer()]);
-  expect(signed.battery).toBe("settlement-attestation-v3");
+  expect(signed.battery).toBe("settlement-attestation-v4");
   expect(signed.binding.evidence).toMatchObject({ status: "matched", reason: "authorization_and_transfer_match",
     observed: { authorizer: payer, nonce, recipient, amount_atomic: "10000", authorization_receipt_offset: 0, transfer_receipt_offset: 1 } });
   const { signature, public_key, signature_covers: _a, signature_jcs: _b, signature_jcs_covers: _c,

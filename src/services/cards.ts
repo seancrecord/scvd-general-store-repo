@@ -411,6 +411,22 @@ export async function releaseWheel(env: Env, season: Season, entry: CardEntry): 
   };
 }
 
+/**
+ * THE COMMITS ALONE, WITHOUT TOUCHING KV (2026-09-13). The storefront
+ * puts these two hashes on the front page, and the front page is the
+ * hottest door in the store: this is four HMACs and two digests and
+ * not a single read, so a card rack on the homepage costs nothing to
+ * serve. The milestone the same bytes fix never leaves this module.
+ */
+export async function releaseCommits(env: Env, season: Season = CURRENT_SEASON): Promise<{ key: string; name: string; commit: string }[]> {
+  return Promise.all(
+    releasable(season).map(async (entry) => {
+      const { key, name, commit } = await releaseWheel(env, season, entry);
+      return { key, name, commit };
+    }),
+  );
+}
+
 /** Packs opened this season. The denominator every milestone is counted on. */
 export async function packsOpened(env: Env, season: Season = CURRENT_SEASON): Promise<number> {
   return readCounter(env, KV_KEYS.paywallPacks(season.id));

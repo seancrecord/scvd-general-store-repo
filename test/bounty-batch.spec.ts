@@ -204,6 +204,42 @@ describe("the posting list carries what we have already done", () => {
     );
     expect(candidates).toHaveLength(1);
   });
+
+  /*
+   * THE DESK WENT BLIND AT ROW 24 (2026-09-13, the keeper: "all the
+   * ones available to press are already done so no point in hitting
+   * the button").
+   *
+   * The cap used to stop the SCAN rather than trim the OFFER, so the
+   * desk was the first `cap` ready rows in probe order and nothing
+   * else, ever. Walk those and the market page reads "already done"
+   * for good while the round's other ready doors — 1,685 of them on
+   * 2026-W37 — sit unreachable behind it. The never-walked door here
+   * is deliberately the LAST row of the round, past a full cap of
+   * doors this store has already paid for.
+   */
+  it("reaches a never-walked door past the cap, and offers it first", () => {
+    const walked = Array.from({ length: 30 }, (_, index) =>
+      host(`walked${index}.example`, "ready"),
+    );
+    const candidates = bountyCandidates(
+      round([...walked, host("unseen.example", "ready")]),
+      walked.map((entry) =>
+        bounty(
+          entry.host,
+          "paid",
+          "2026-09-01T00:00:00.000Z",
+          "2026-09-08T00:00:00.000Z",
+        ),
+      ),
+      "scvd.store",
+      NOW,
+      24,
+    );
+    expect(candidates).toHaveLength(24);
+    expect(candidates[0]?.domain).toBe("unseen.example");
+    expect(candidates[0]?.history.state).toBe("never");
+  });
 });
 
 describe("the press posts a round and names every refusal", () => {

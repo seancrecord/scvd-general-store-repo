@@ -367,6 +367,70 @@ They still pass through the shop window on their way to the binder
 they landed in, and `pickable` still refuses to sell them: on show,
 not for sale, and now not anybody's to give either.
 
+## 0g. The card rack, and the surfaces that sell a pack (2026-09-13, STANDING)
+
+The keeper: *"is all the aeo/menu/client facing materials all updated
+with relevant notes on this, what about the home page? feels like a
+'card' and a button for it would be good for humans too to know
+about... not sure where to fit it in. how are they bought? we need a
+browser button too like webmcp style."*
+
+The audit answered three different ways, and only one of them was a
+build.
+
+**1. The browser button already existed.** House rule 53's till has
+been on `/menu/pack` since August: "Buy it from this browser", one EVM
+wallet signature, no gas, nothing to install, and a written reason
+where it does not apply. WebMCP is live too — the origin-trial tokens
+are on the storefront and `quote_store_purchase` /
+`complete_store_purchase` cover every shelf item including the pack,
+beside `read_binder` and `look_in_window`. Nothing needed building.
+What was missing was any path from the front page to either.
+
+**2. The front page had no card on it.** Paywall shipped as a room, a
+shelf line and a set of JSON doors, which is how an agent finds
+anything here and is not how a person does. A human landing on `/` met
+one card in a grid of sixteen and a link in the rooms footer. So: **the
+card rack**, a new section below the counter window — a fanned stack
+with the specimen face on top (two empty card shapes in CSS, one SVG
+request), the pitch in plain language, the two one-of-one commits, and
+three buttons: the till, the set, the free bell. The buy button points
+at `/menu/pack` and NOT at `/api/buy/pack`, because a front-page button
+pointing at a raw 402 is a button that hands a person a JSON error; a
+test holds that. The commits cost four HMACs and no KV read, and a
+test counts the reads at zero — the front page is the hottest door in
+the store and a picture of a card is not worth a read on it.
+
+**3. The client-facing copy now says what a pack is.** The release
+wheel changed the product, so the surfaces that sell one say so: the
+menu description and a new constraint on `pack`, `SPEC_RETURNS`, the
+storefront shelf line, and a paragraph in the guide's Paywall section.
+The index names `/api/paywall/releases` on the door list.
+
+### 0g.1 The claim that had gone false
+
+Naming one more door pushed `/llms.txt` six characters past the
+llmstxt.org budget, and the paragraph read while hunting for
+characters was this one:
+
+> `/llms-full.txt` serves this SAME document, byte for byte … It is not
+> a fuller copy and this file will not pretend otherwise.
+
+True when written. False from the day the index/full split shipped —
+`/llms.txt` is 30,000 characters and `/llms-full.txt` is 159,000 — and
+`test/llms-modular.spec.ts` has carried a test named *"is no longer the
+same document as /llms-full.txt"* in the same file the whole time.
+**Two guards in one file disagreed for a fortnight because one checked
+the bytes and nothing checked the sentence about the bytes.**
+
+Fixed, and filed in the corrections ledger rather than quietly
+reworded, because a reader who believed that sentence had no reason to
+fetch the only document most of this store is described in. The
+mechanism is a new guard that reads the prose: the served index must
+not contain "SAME document" or "byte for byte", and must contain the
+true sentence. The honest sentence came out 85 characters shorter,
+which is what paid for the new door — headroom went from 6 to 87.
+
 ## 0e. What is true by design, stated rather than hidden
 
 - **The window still moves ordinary cards between binders.** A rare

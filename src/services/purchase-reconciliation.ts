@@ -1,10 +1,11 @@
+import { readAuthorizationTransfer } from "@/lib/authorization-receipt";
 import { publicationDelivery } from "@/lib/publication-recovery";
 import { observationCheckpoint } from "@/services/purchase-observation";
 import type { Env } from "@/types";
 import type { PurchaseIntent } from "@/services/purchase-intent";
 import { atomicToUsdc, tipFromPaid } from "@/lib/payments";
 import { evmChainOf, getFinalizedBlockNumber, getBlockTimestamp, findAuthorizationUseInRange,
-  getReceipt, usdcAuthorizations, usdcTransfers, isSameAddress, type EvmChain } from "@/lib/base-rpc";
+  getReceipt, isSameAddress, type EvmChain } from "@/lib/base-rpc";
 import { httpArtifactDigest, supportsArtifactRecovery, supportsObservationRecovery } from "@/lib/artifact-checkpoint";
 import { sha256Hex } from "@/lib/idempotency";
 import { jcsCanonicalize } from "@/lib/jcs";
@@ -52,11 +53,9 @@ export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promi
         !("transactionHash" in receipt) || String(receipt.transactionHash).toLowerCase() !== transaction.toLowerCase()) {
         throw new Error("Settlement receipt not established");
       }
-      const authorized = usdcAuthorizations(receipt, chain).some(a =>
-        isSameAddress(a.authorizer, record.payer) && a.nonce === record.authorization!.nonce.toLowerCase());
-      const transferred = usdcTransfers(receipt, chain).some(t =>
-        isSameAddress(t.from, record.payer) && isSameAddress(t.to, record.terms.payTo) && t.amount === BigInt(record.terms.amount));
-      if (!authorized || !transferred) throw new Error("Settlement does not match purchase");
+      const paired = readAuthorizationTransfer(receipt, { payer: record.payer,
+        nonce: record.authorization.nonce, recipient: record.terms.payTo, amount_atomic: record.terms.amount }, chain);
+      if (paired.status !== "matched") throw new Error("Settlement does not match purchase");
       const paidUsdc = atomicToUsdc(record.terms.amount);
       return { payment: { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, record.publication?.minimum_usdc ?? record.item?.price_usdc ?? paidUsdc),
         payer: record.payer, network: record.terms.network, transaction,

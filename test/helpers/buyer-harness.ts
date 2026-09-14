@@ -1,3 +1,4 @@
+import { EVM_CHAINS, rpcEndpoints } from "@/lib/base-rpc";
 import { LABOR_CAPACITY_ID } from "@/services/labor-reservations";
 import { createExecutionContext, env, runInDurableObject, waitOnExecutionContext } from "cloudflare:test";
 import { afterAll, beforeAll, beforeEach, expect, vi } from "vitest";
@@ -162,7 +163,9 @@ beforeAll(async () => {
       if (batch.every(entry => typeof object(entry).method === "string" && String(object(entry).method).startsWith("eth_"))) {
         const results = batch.map(entry => {
           const rpc = object(entry);
-          const answers: Obj = { eth_blockNumber: "0x2ff0000", eth_getTransactionReceipt: null, eth_getLogs: [], eth_chainId: "0x2105", eth_call: `0x${"0".repeat(64)}` };
+          const chain = EVM_CHAINS.find(chain => rpcEndpoints(testEnv, chain).some(endpoint => new URL(endpoint).href === url.href));
+          if (rpc.method === "eth_chainId" && !chain) throw new Error("Unmocked RPC chain");
+          const answers: Obj = { eth_blockNumber: "0x2ff0000", eth_getTransactionReceipt: null, eth_getLogs: [], eth_chainId: chain ? `0x${Number(chain.caip2.split(":")[1]).toString(16)}` : null, eth_call: `0x${"0".repeat(64)}` };
           if (!(String(rpc.method) in answers)) throw new Error(`Unmocked RPC: ${String(rpc.method)}`);
           return { jsonrpc: "2.0", id: rpc.id, result: answers[String(rpc.method)] };
         });

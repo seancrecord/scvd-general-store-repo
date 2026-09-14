@@ -691,8 +691,8 @@ These are keeper recovery-surface defects, not new commissioned Aura Walk findin
 
 B-ABND now pairs authorizer/nonce and canonical-USDC Transfer before asserting status or binding, publishes signed pairing evidence, and gives an actionable explanation for ambiguity. Battery v3 and a public correction identify the changed instrument; old signed bytes stay intact. The new 23 tests yielded 17 failures and 6 controls without the source fix; the repair passed a 119-test focused gate. Final validation is recorded below when complete.
 
-- [ ] B-RPAIR: reproduce and address independent authorization/transfer selection in the separate purchase and settlement reconciliation readers. Source-review candidates only; do not count as repaired or production impact established.
-- [ ] General RPC envelope hardening: receipt identity, claimed chain and block/head validity are outside this pairing repair and do not inherit Launch Check's stronger checks.
+- [x] B-RPAIR: reproduced and locally repaired September 14; see the follow-through below. Production impact and deployed acceptance remain unestablished.
+- [x] General RPC envelope hardening: implemented September 14 as B-RPC; see the follow-through below.
 - [ ] Live acceptance after reviewed deployment; no new paid wave has run here.
 
 
@@ -701,3 +701,26 @@ B-ABND now pairs authorizer/nonce and canonical-USDC Transfer before asserting s
 Completed full suite: **700 files; 13,710 passed, 69 failed, one existing skip; 7,448.98 seconds**. Every one of the 69 failed cases passed unchanged in a single-worker rerun across 25 files (111.88 seconds), with file/title coverage reconciled and none omitted. The other 4,024 cases in those files were filtered only for the rerun. All 1,582 frozen inputs stayed unchanged through both runs. Repeated multi-minute stalls occurred, but their cause was not established; no timeout or assertion changed. This is completed full-run plus rerun coverage, not an uninterrupted green full run. The earlier interrupted attempt and the guide's intentionally changed checksum are recorded in BUYER_AUDIT_LOG.md. Final publication wording and correction dating are checked separately below.
 
 Final publication gate: **77 tests across five files passed**, including pairing and signature tampering, historical binding behavior, guide consistency and the generated correction ledger. Typechecking, documentation checks, correction-index checks and both Worker dry-run bundles passed on the final text. No live acceptance is claimed.
+
+## Reconciliation and receipt-context follow-through — September 14
+
+- [x] **B-RPAIR reproduced and locally repaired:** wrong authorization/transfer association through the actual purchase-recovery alarm and the signed settlement-reconciliation reader. Same-valued legs are distinguished by receipt position; ambiguous recovery remains unknown and scheduled. Tests cover no-discretion overstatement, declared-cap fallback, and signature tampering.
+- [x] **B-RPC implemented:** general EVM attestation and bundle validate transaction identity, chain identity, block/head validity and receipt status before signing. Missing/duplicate batch responses cannot become NOT_FOUND. Battery v4 distinguishes the instrument; explicit null, genuine reversion, finality depth, prior signed records and Solana behavior retain their meaning.
+- [x] **Buyer refusal facts:** the newly introduced receipt refusals say no settlement was attempted, supply same-payment retry guidance, leave temporariness unknown, and do not invent an artifact/verify URL. HTTP and both MCP dialects are covered.
+- [ ] **Separate source-review candidates:** settlement reconciliation's Approval-to-transfer cap attribution and its own RPC envelope. Existing owner/ambiguity filters remain; no production impact or repair is asserted here.
+- [ ] **Deployed acceptance:** real-chain and changed-code deployment waves remain outstanding. These local changes do not alter PR #675.
+
+Source-reversion control: 49 failed / 47 passed across 96 tests, with task-owned implementation files restored afterward. Final validation follows below. Original BUY-001–039 counts and commissioned Aura records are unchanged.
+
+Final gate: **939 tests across 28 spec files passed**, combining 749 successful cases from the broad run with the 190-case rerun after correcting Case File RPC fixtures. All 177 failures in that broad run were in the fixture missing chain/transaction identity; production source did not change for the rerun. The 21 buyer-door cases prove zero settlement calls on refusal, same-payment recovery, one later settlement, correct transaction subjects and certificate verification. Typecheck, docs, generated correction-index checks, both Worker dry-run bundles and whitespace checks passed. This is targeted validation; a fresh full suite and live deployment are not claimed. Changes remain local and uncommitted on `codex/reconciliation-receipt-hardening`.
+
+
+### B-RPAIR / B-RPC publication gate — September 14
+
+- [x] Latest-main integration and guide/ledger conflict resolution verified.
+- [x] Full suite: 705 files; 13,849 passed, one existing skip. All 1,471 frozen inputs unchanged.
+- [x] The interrupted attempt's 33 outdated-fixture failures resolved; 409 affected/control cases passed before the complete rerun.
+- [x] Typecheck, both bundles, docs, corrections, code audit and public-claims checks passed.
+- [ ] PR/merge and live acceptance evidence follow this gate. $1 USDC maximum; Base funded, other EVM rails empty, Solana signer unconfigured.
+
+The detailed release record is in BUYER_AUDIT_LOG.md. Historical validation paragraphs above describe their own checkpoints and are not claims about the later release.

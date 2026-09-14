@@ -119,6 +119,12 @@ export interface StorefrontData {
   recordWeeks: number;
   recordTruncated: boolean;
   /**
+   * The two one-of-one commits for the card rack. Derived from the
+   * signing key with no KV read at all, and absent rather than faked:
+   * a rack with no hashes still shows the cards and the buttons.
+   */
+  releaseCommits?: { key: string; name: string; commit: string }[];
+  /**
    * PATRONS: DISTINCT ORGANIC WALLETS, from the books (2026-09-13).
    * This used to be the patron counter, which is every artifact ever
    * minted with the free shelf and the house tests in it — 375 under
@@ -276,6 +282,51 @@ function featuredHtml(): string {
  * The jank is deterministic (hashed per word) so the sign holds still
  * between visits, the way real signs do.
  */
+/**
+ * THE CARD RACK. A fanned stack with the specimen face on top — two
+ * empty card shapes behind it, drawn in CSS, so the picture costs one
+ * SVG request and not three. Then the plain-language pitch, the two
+ * commits, and the three doors a person can actually walk through:
+ * the set, the browser till, and the free bell.
+ */
+function cardRackHtml(commits: StorefrontData["releaseCommits"]): string {
+  const packItem = MENU_ITEMS.find((entry) => entry.id === "pack");
+  const buyCta = packItem ? `${COPY.rackBuyCta} \u2014 ${priceLabel(packItem)}` : COPY.rackBuyCta;
+  const promises = (commits ?? []).length
+    ? `<p class="rack-line">${COPY.rackOneOfOne}</p>
+      <ul class="rack-commits">
+        ${(commits ?? [])
+          .map(
+            (entry) =>
+              `<li><span class="rack-commit-who">${escapeHtml(entry.name)}</span><code class="rack-commit-hash">${escapeHtml(entry.commit.slice(0, 24))}…</code></li>`,
+          )
+          .join("\n        ")}
+      </ul>
+      <p class="rack-small">Neither number behind those hashes is known to anybody, the keeper included, until the card lands. The whole wheel, and how to check it: <a href="/api/paywall/releases"><code>/api/paywall/releases</code></a>.</p>`
+    : "";
+  return `<section class="rack">
+      <h2 class="night-head">${COPY.rackHead}</h2>
+      <div class="rack-body">
+        <div class="rack-fan">
+          <span class="rack-ghost rack-ghost-b" aria-hidden="true"></span>
+          <span class="rack-ghost rack-ghost-a" aria-hidden="true"></span>
+          <img class="rack-face" src="/p/specimen.svg" width="360" height="504" loading="lazy" decoding="async" alt="${escapeHtml(COPY.rackSpecimenAlt)}">
+        </div>
+        <div class="rack-say">
+          <p class="rack-line">${escapeHtml(COPY.rackLead)}</p>
+          <p class="rack-line">${escapeHtml(COPY.rackOdds)}</p>
+          ${promises}
+          <p class="rack-buttons">
+            <a class="door-cta rack-buy" href="/menu/pack">${escapeHtml(buyCta)}</a>
+            <a class="door-cta" href="/design">${escapeHtml(COPY.rackSetCta)}</a>
+            <a class="door-cta" href="/api/bell">${escapeHtml(COPY.rackBellCta)}</a>
+          </p>
+          <p class="rack-small">${escapeHtml(COPY.rackBuyNote)} ${escapeHtml(COPY.rackSpecimenNote)}</p>
+        </div>
+      </div>
+    </section>`;
+}
+
 function readerboardHtml(note: string): string {
   return note
     .split(/\s+/)
@@ -1112,6 +1163,8 @@ ${webmcpOriginTrialTags()}
       ${shopWindowHtml(data.shopWindow)}
       <p class="menu-meta">${COPY.soldFootnote}</p>
     </section>
+
+    ${cardRackHtml(data.releaseCommits)}
 
     <section class="what-this-is promise">
       <h2 class="night-head">${COPY.promiseHead}</h2>

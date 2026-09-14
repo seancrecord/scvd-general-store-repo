@@ -24,7 +24,7 @@ export function publicationConfirmation(record: PurchaseIntent, payload: Record<
       } else if (method === "eth_getTransactionReceipt") result = { transactionHash: transaction, blockNumber: hex(1800), status: "0x1",
         logs: [
           { address: chain.usdc, topics: [AUTHORIZATION_USED_TOPIC, topic(record.payer), record.authorization!.nonce], data: "0x" },
-          { address: chain.usdc, topics: [TRANSFER_TOPIC, topic(record.payer), topic(record.terms.payTo)], data: hex(Number(record.terms.amount)) },
+          { address: chain.usdc, topics: [TRANSFER_TOPIC, topic(record.payer), topic(record.terms.payTo)], data: `0x${BigInt(record.terms.amount).toString(16).padStart(64, "0")}` },
         ] };
       else throw new Error("Unexpected EVM fixture read");
     } else {

@@ -38,6 +38,7 @@ function topicFor(address: string): string {
 
 function settledReceipt(): RpcReceipt {
   return {
+    transactionHash: TX,
     status: "0x1",
     blockNumber: "0x64",
     logs: [

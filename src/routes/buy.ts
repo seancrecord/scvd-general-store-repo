@@ -1,3 +1,4 @@
+import { ReceiptEvidenceUnavailable } from "@/lib/receipt-context";
 import { readPurchaseStatus } from "@/services/purchase-intent";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { Hono } from "hono";
@@ -121,6 +122,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
       supportsArtifactRecovery(item) ? { path: c.req.path, digest: await httpArtifactDigest(c.req.url) } : undefined,
     ));
   } catch (error) {
+    if (!settled && error instanceof ReceiptEvidenceUnavailable) return c.json(error.body(), 503);
     if (!settled && error instanceof InvalidPatronageTarget) return c.json(error.body, 400);
     // A window pick the lock or an emptied window refused, before any
     // settle call: nothing moved, and the answer says so in fields.

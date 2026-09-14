@@ -59,7 +59,11 @@ beforeAll(() => {
         { address: chain.usdc, topics: [AUTHORIZATION_USED_TOPIC, topics(record.payer), defect === "nonce" ? `0x${"ff".repeat(32)}` : record.authorization!.nonce], data: "0x" },
         { address: defect === "token" ? `0x${"ff".repeat(20)}` : chain.usdc,
           topics: [TRANSFER_TOPIC, topics(defect === "payer" ? `0x${"ee".repeat(20)}` : record.payer), topics(defect === "recipient" ? `0x${"ee".repeat(20)}` : record.terms.payTo)],
-          data: hex(Number(record.terms.amount) + (defect === "amount" ? 1 : 0)) },
+          data: `0x${(BigInt(record.terms.amount) + (defect === "amount" || defect === "cross-pair" ? 1n : 0n)).toString(16).padStart(64, "0")}` },
+        ...(defect === "cross-pair" ? [
+          { address: chain.usdc, topics: [AUTHORIZATION_USED_TOPIC, topics(record.payer), `0x${"aa".repeat(32)}`], data: "0x" },
+          { address: chain.usdc, topics: [TRANSFER_TOPIC, topics(record.payer), topics(record.terms.payTo)], data: `0x${BigInt(record.terms.amount).toString(16).padStart(64, "0")}` },
+        ] : []),
       ],
     };
     else return inner(input, init);
@@ -153,7 +157,7 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) for (const rail of 
   });
 }
 
-for (const defect of ["rpc", "unfinalized", "chain", "nonce", "token", "payer", "recipient", "amount", "failed", "missing"]) {
+for (const defect of ["rpc", "unfinalized", "chain", "nonce", "token", "payer", "recipient", "amount", "failed", "missing", "cross-pair"]) {
   it(`${defect}: insufficient payment evidence stays unknown and scheduled, then recovers after evidence arrives`, async () => {
     const fixture = await interrupted("context_anchor", "http", 1, true);
     evidence!.defect = defect;

@@ -510,7 +510,7 @@ export const SPEC_RETURNS: Record<string, string> = {
   aura_walk:
     "An order id and signed commission now; completion_proof binds the delivered report to the accepted brief and target. Within the promised window the completed order carries the report: for each entry point walked, the round trips to first success, the avoidable 400s, and where in the read order the strongest trust signal appeared — each with the model that walked it named, every transcript attached verbatim, dated, under the order's certificate. Counts and quotations only; no grade of any kind.",
   pack:
-    "Five signed pressings from the season's set, drawn by HMAC over the day's committed seed on the wheels at /design, each with a print number, a page at /p/{card_id} that unfurls, and a verify URL; the signed manifest at /api/pack/{pack_id} binds the seed commit and the inputs. Instant.",
+    "Five signed pressings from the season's set, drawn by HMAC over the day's committed seed on the wheels at /design, each with a print number, a page at /p/{card_id} that unfurls, and a verify URL; the signed manifest at /api/pack/{pack_id} binds the seed commit and the inputs, and a crossed milestone drops a one-of-one in. Instant.",
   window_pick:
     "One pressing from the shop window (the last five pulled from packs, free at /api/paywall/window), chosen by the day seed and moved to your binder re-signed, with its print number, page and verify URL. Instant; refused before payment while the window is empty or inside your twelve-hour lock.",
   luckies:

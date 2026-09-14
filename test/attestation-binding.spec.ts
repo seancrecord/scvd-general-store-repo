@@ -39,6 +39,7 @@ function topicFor(address: string): string {
 
 function settledReceipt(nonce: string | null = NONCE): RpcReceipt {
   return {
+    transactionHash: TX,
     status: "0x1",
     blockNumber: "0x64",
     logs: [
@@ -117,7 +118,7 @@ describe("what the artifact says it is bound to", () => {
   });
 
   it("asked with a nonce on a reverted transaction: none, no authorization used", async () => {
-    const reverted: RpcReceipt = { status: "0x0", blockNumber: "0x64", logs: [] };
+    const reverted: RpcReceipt = { transactionHash: TX, status: "0x0", blockNumber: "0x64", logs: [] };
     const signed = await observeWithFacts(testEnv, { txHash: TX, nonce: NONCE }, reverted, HEAD);
     expect(signed.status).toBe("REVERTED");
     expect(signed.binding.class).toBe("none");

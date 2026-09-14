@@ -271,6 +271,93 @@ html { overflow-x: clip; }
   .sold-live { animation: none; }
 }
 
+/* ---- the card rack: the one thing on this page you can hold ----
+   Everything else the store sells is a signed record. This is a
+   picture of a card, because a card is the only item on the shelf a
+   person recognises on sight, and the page has been asking readers to
+   imagine it since September. The fan is three shapes and one SVG:
+   two empty cards rotated behind, the specimen face on top. Widescreen
+   puts the picture beside the words; narrow stacks it above them, and
+   the picture never grows past its own 360px plate. */
+.rack {
+  max-width: 720px; margin: 0 auto 2.7rem;
+  padding: 1.2rem 1.3rem 1.1rem;
+  border: 1px solid var(--line); border-radius: 4px;
+  background: linear-gradient(180deg, rgba(30,24,40,0.82), rgba(14,11,21,0.82));
+  box-shadow: inset 0 0 34px rgba(0,0,0,0.55);
+}
+.rack .night-head { text-align: center; margin-bottom: 1rem; }
+.rack-body { display: flex; flex-direction: column; align-items: center; gap: 1.35rem; }
+.rack-fan {
+  position: relative; flex: none;
+  width: 200px; height: 292px;
+}
+.rack-face, .rack-ghost {
+  position: absolute; top: 0; left: 0;
+  width: 200px; height: 280px; max-width: 100%;
+  border-radius: 9px;
+}
+.rack-face {
+  height: auto; display: block;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,180,94,0.14);
+  transition: transform 320ms ease;
+}
+/* The two behind are empty on purpose: a pack is five and the page is
+   showing one, so the others are shapes rather than invented faces. */
+.rack-ghost {
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, rgba(50,40,64,0.9), rgba(20,16,28,0.9));
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+.rack-ghost-a { transform: rotate(-5deg) translate(-11px, 5px); }
+.rack-ghost-b { transform: rotate(6deg) translate(12px, 9px); }
+.rack-fan:hover .rack-face { transform: translateY(-6px) rotate(1deg); }
+.rack-say { width: 100%; }
+.rack-line {
+  margin-bottom: 0.72rem; font-size: 0.87rem; line-height: 1.62;
+  color: var(--night-text);
+}
+.rack-commits { list-style: none; margin: 0 0 0.8rem; }
+.rack-commits li {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.8rem; padding: 0.4rem 0.1rem;
+  border-top: 1px dashed var(--line);
+}
+.rack-commits li:first-child { border-top: none; }
+.rack-commit-who {
+  font-size: 0.82rem; color: var(--paper);
+  letter-spacing: 0.04em;
+}
+.rack-commit-hash {
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.62rem; letter-spacing: 0.04em;
+  color: var(--teal); word-break: break-all;
+}
+.rack-buttons {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin: 0.95rem 0 0.7rem;
+}
+.rack-buttons .door-cta { font-size: 0.8rem; padding: 0.34rem 0.8rem; }
+/* The till button is the one this section exists to point at. */
+.rack-buy {
+  background: var(--neon) !important; color: #22160a !important;
+  box-shadow: 0 0 16px rgba(255,180,94,0.34);
+}
+.rack-buy:hover { background: var(--neon-hot) !important; }
+.rack-small {
+  font-size: 0.74rem; line-height: 1.55; color: var(--night-faded);
+}
+.rack-small a { color: var(--teal); text-decoration: none; border-bottom: 1px solid rgba(93,230,200,0.22); }
+.rack-small a:hover { border-bottom-color: var(--neon-hot); }
+@media (min-width: 640px) {
+  .rack-body { flex-direction: row; align-items: flex-start; gap: 1.7rem; }
+  .rack-fan { width: 220px; height: 320px; }
+  .rack-face, .rack-ghost { width: 220px; height: 308px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rack-face, .rack-fan:hover .rack-face { transition: none; transform: none; }
+}
+
 /* ---- the readerboard: this week's note, letters set by hand ---- */
 .board {
   max-width: 560px; margin: 0 auto 2.7rem;
