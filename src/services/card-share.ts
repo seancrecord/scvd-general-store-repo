@@ -42,7 +42,7 @@ function wrapToWidth(text: string, cell: number, tracking: number, maxWidth: num
   return lines.slice(0, maxLines);
 }
 
-export function renderShareSheet(card: CardRecord, base: string, post: string): Uint8Array {
+export async function renderShareSheet(card: CardRecord, base: string, post: string): Promise<Uint8Array> {
   const ink = new Surface(W, H);
   const accent = new Surface(W, H);
   const season = seasonById(card.season);
@@ -164,7 +164,7 @@ function drawPlate(surface: Surface, key: string, x: number, y: number, size: nu
  * collection is the thing a collector posts; this is the picture
  * that goes with it, off the same desk as the card's own sheet.
  */
-export function renderBinderSheet(held: ReadonlySet<string>, wallet: string, base: string, conditions = 0): Uint8Array {
+export async function renderBinderSheet(held: ReadonlySet<string>, wallet: string, base: string, conditions = 0): Promise<Uint8Array> {
   const ink = new Surface(W, H);
   const accent = new Surface(W, H);
   const cards: readonly CardEntry[] = CURRENT_SEASON.cards;

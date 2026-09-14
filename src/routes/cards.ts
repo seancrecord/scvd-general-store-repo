@@ -588,7 +588,7 @@ cardRoutes.get("/binder/:wallet{[A-Za-z0-9]+\\.png}", async (c) => {
   const wallet = walletOrNull(c.req.param("wallet").replace(/\.png$/, ""));
   if (!wallet) return c.text("A binder is keyed by a wallet address.", 400);
   const binder = await readBinder(c.env, wallet);
-  const png = renderBinderSheet(new Set(binder.rows.map((row) => row.key)), wallet, c.env.STORE_BASE_URL, binder.conditions);
+  const png = await renderBinderSheet(new Set(binder.rows.map((row) => row.key)), wallet, c.env.STORE_BASE_URL, binder.conditions);
   return c.body(png.buffer as ArrayBuffer, 200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" });
 });
 
@@ -742,7 +742,7 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.png}", async (c) => {
   const cardId = c.req.param("card").replace(/\.png$/, "");
   const record = await getCard(c.env, cardId);
   if (!record) return c.text("No card by that id was ever pressed here.", 404);
-  return c.body(renderShareSheet(record.card, c.env.STORE_BASE_URL, postFor(record.card)).buffer as ArrayBuffer, 200, PNG_HEADERS);
+  return c.body((await renderShareSheet(record.card, c.env.STORE_BASE_URL, postFor(record.card))).buffer as ArrayBuffer, 200, PNG_HEADERS);
 });
 
 cardRoutes.get("/api/card/:card_id", async (c) => {
