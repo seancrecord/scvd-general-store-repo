@@ -5,7 +5,14 @@ import { purchaseIdentity, purchaseIntentStore, type PurchaseIntent } from "@/se
 import { idempotencyScope, idempotencySlotName, idempotentPurchaseSlot, jsonBodyDigest } from "@/lib/idempotency";
 import { nonceTtlSeconds, authorizationValidBefore } from "@/lib/replay-guard";
 import { installLaborAdmissionHarness, laborNetworks, signLabor, sendLabor, transfers } from "./helpers/labor-admission";
-import { call, items, shelves, object, testEnv, sourceEnv, facilitator, NOW } from "./helpers/buyer-harness";
+import { LaborCapacityStore, laborCapacity, type LaborReservation } from "@/services/labor-reservations";
+import { baseline, call, items, shelves, object, testEnv, sourceEnv, facilitator, NOW } from "./helpers/buyer-harness";
+
+/** The bench, so a freed key can be seen not to have cost the labour hold. */
+async function held(): Promise<LaborReservation[]> {
+  return runInDurableObject(laborCapacity(testEnv), async (_instance, state) =>
+    [...(await state.storage.list<LaborReservation>({ prefix: "capacity:open:" })).values()]);
+}
 
 /**
  * IN FLIGHT IS NOT USED.
@@ -48,9 +55,11 @@ beforeAll(() => {
 });
 afterEach(() => { settlementFixture = "none"; vi.restoreAllMocks(); vi.setSystemTime(NOW); });
 
-async function setup(network: string, door: "http" | "mcp" | "mcp-standard") {
-  const item = items.find(row => row.id === "context_anchor")!;
-  const args = { summary: `SCVD-E2E key-release ${crypto.randomUUID()}` };
+async function setup(network: string, door: "http" | "mcp" | "mcp-standard", itemId = "context_anchor") {
+  const item = items.find(row => row.id === itemId)!;
+  const args = itemId === "context_anchor"
+    ? { summary: `SCVD-E2E key-release ${crypto.randomUUID()}` }
+    : { ...baseline(item), detail: `SCVD-E2E key-release ${crypto.randomUUID()}` } as Record<string, string>;
   const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(row => row.network === network)!;
   const first = await signLabor(offer), second = await signLabor(offer), key = crypto.randomUUID();
   const payer = network.startsWith("eip155:") ? evmBuyer.address : solBuyer;
@@ -183,4 +192,88 @@ it("the expiry is read only from a verified exact-EVM envelope", async () => {
   expect(authorizationValidBefore({ x402Version: 2, accepted: { scheme: "exact", network: "not-a-chain" }, payload: object(object(payment).payload) })).toBeNull();
   expect(authorizationValidBefore({ payload: { authorization: {} } })).toBeNull();
   expect(authorizationValidBefore(null)).toBeNull();
+});
+
+/**
+ * THE CAPACITY REFUSALS, end to end.
+ *
+ * These share the updatePurchase chokepoint with the declined settlement
+ * above, but they are the refusals whose BUYER-FACING COPY changed, and the
+ * copy is a promise about somebody's money. They are also the only paths
+ * that reach the release with a labour hold outstanding, which is the case
+ * the release ordering exists for. Worth their own cases rather than an
+ * argument that the chokepoint covers them.
+ */
+for (const door of ["http", "mcp", "mcp-standard"] as const) {
+  it(`${door}: a lost reservation acknowledgement frees the key and the bench`, async () => {
+    const p = await setup(laborNetworks()[0]!, door, "the_collab");
+    const reserve = LaborCapacityStore.prototype.reserve;
+    vi.spyOn(LaborCapacityStore.prototype, "reserve").mockImplementationOnce(async function (this: LaborCapacityStore, ...args) {
+      await reserve.apply(this, args);
+      throw new Error("fixture drops reserved acknowledgement");
+    });
+    const refused = await sendLabor(p.item.id, door, p.args, p.first, p.key);
+    expect(refused.body).toMatchObject({ code: "capacity_unavailable", charged: false, settlement_attempted: false });
+    expect(transfers).toBe(0);
+    expect(await held()).toHaveLength(0);
+    expect(await p.slot.readIdempotentPurchase()).toBeNull();
+    // No money moved, so the key is the buyer's again: same key, fresh payment.
+    const retry = await sendLabor(p.item.id, door, p.args, p.second, p.key);
+    expect(retry.refused, String(retry.body.code)).toBe(false);
+    expect(transfers).toBe(1);
+  });
+
+  it(`${door}: capacity taken before payment frees the key and the bench`, async () => {
+    const p = await setup(laborNetworks()[0]!, door, "the_collab");
+    vi.spyOn(LaborCapacityStore.prototype, "reserve")
+      .mockResolvedValueOnce({ ok: false, open: 1, cap: 1, scope: "item" });
+    const refused = await sendLabor(p.item.id, door, p.args, p.first, p.key);
+    expect(refused.body).toMatchObject({ code: "capacity_unavailable", charged: false, settlement_attempted: false, capacity_scope: "item" });
+    expect(transfers).toBe(0);
+    expect(await held()).toHaveLength(0);
+    expect(await p.slot.readIdempotentPurchase()).toBeNull();
+    const retry = await sendLabor(p.item.id, door, p.args, p.second, p.key);
+    expect(retry.refused, String(retry.body.code)).toBe(false);
+    expect(transfers).toBe(1);
+  });
+}
+
+/**
+ * The release runs AHEAD of the bench and swallows its own failure, so these
+ * two independent resources cannot strand each other. Pinned here because it
+ * is an ordering choice inside one function, invisible to every other test:
+ * put the bench first and an unreleasable hold silently costs the buyer a key
+ * they are owed.
+ */
+it("an unreleasable labour hold does not also cost the buyer their key", async () => {
+  const p = await setup(laborNetworks()[0]!, "http", "the_collab");
+  vi.spyOn(LaborCapacityStore.prototype, "notSettled").mockRejectedValueOnce(new Error("fixture release unavailable"));
+  settlementFixture = "declined";
+  const refused = await sendLabor(p.item.id, "http", p.args, p.first, p.key);
+  expect(refused.refused).toBe(true);
+  expect(transfers).toBe(0);
+  // The bench keeps the hold until a later reservation reconciles it — and
+  // the key is free regardless, because it was handed back first.
+  expect(await held()).toHaveLength(1);
+  expect(await p.slot.readIdempotentPurchase()).toBeNull();
+  settlementFixture = "none";
+  const retry = await sendLabor(p.item.id, "http", p.args, p.second, p.key);
+  expect(retry.refused, String(retry.body.code)).toBe(false);
+  expect(transfers).toBe(1);
+});
+
+/**
+ * The copy is the other half of the fix: the old text told buyers to rotate
+ * the key, which was true only because the claim was stranded. A sentence
+ * that survives the mechanism it described is how a store ends up lying to
+ * somebody about their own wallet.
+ */
+it("no refusal still tells a buyer to rotate a key the store has handed back", async () => {
+  const p = await setup(laborNetworks()[0]!, "http", "the_collab");
+  vi.spyOn(LaborCapacityStore.prototype, "reserve")
+    .mockResolvedValueOnce({ ok: false, open: 1, cap: 1, scope: "item" });
+  const refused = await sendLabor(p.item.id, "http", p.args, p.first, p.key);
+  const error = String(refused.body.error);
+  expect(error).not.toMatch(/new idempotency key/i);
+  expect(error).toMatch(/SAME key/);
 });
