@@ -1,5 +1,4 @@
 import {
-  authorizationNonces,
   BASE_EVM,
   getBlockNumber,
   getChainId,
@@ -11,7 +10,7 @@ import {
   usdcTransfers,
 } from "@/lib/base-rpc";
 import type { EvmChain, RpcReceipt } from "@/lib/base-rpc";
-import { readAuthorizationReceipt, type AuthorizationReceiptRead, type AuthorizationTerms } from "@/lib/authorization-receipt";
+import { readAuthorizationReceipt, readAuthorizationTransfer, type AuthorizationTransferRead, type AuthorizationReceiptRead, type AuthorizationTerms } from "@/lib/authorization-receipt";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
 import {
@@ -116,7 +115,7 @@ export const FINALITY_BLOCKS = 12;
 export const SOLANA_FINALITY_SLOTS = 32;
 
 /**
- * THE DESK'S BATTERY (2026-09-11). Every observation now names the
+ * THE DESK'S BATTERY (introduced 2026-09-11). Every observation names the
  * revision of the desk that produced it, as the launch check has since
  * D6. The first revision never wrote one down, so its absence is how a
  * reader knows an artifact predates this line. That matters because v1
@@ -125,8 +124,10 @@ export const SOLANA_FINALITY_SLOTS = 32;
  * finding. Under this battery both fields are mandatory, and an
  * artifact citing it without them is defective, not merely old.
  * readBinding() applies that rule so no reader has to reconstruct it.
+ * v3 pairs authorizer/nonce and Transfer instead of independent matches;
+ * older signed observations keep their bytes and their original battery.
  */
-export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v2";
+export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v3";
 
 /**
  * WHAT TIES THE OBSERVED TRANSACTION TO ONE PAYMENT (2026-09-11).
@@ -144,10 +145,10 @@ export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v2";
  *                         to one authorization or request. The usual
  *                         value, and an honest one: it is what every
  *                         artifact before this battery meant.
- *   authorization_nonce — the nonce asked about appears in an
- *                         AuthorizationUsed event of this transaction,
- *                         read from the chain. The transfer is the
- *                         settlement of that one EIP-3009 authorization.
+ *   authorization_nonce — one authorizer/nonce event is paired with
+ *                         its canonical USDC Transfer, matching every
+ *                         supplied transfer field. Unknown ordering or
+ *                         ambiguous authorizers establish no binding.
  *   input_commitment    — reserved. A commitment to the request itself,
  *                         carried in the settlement (masumi's
  *                         inputCommitment is the live example). No rail
@@ -187,6 +188,8 @@ export interface SettlementBinding {
   asked: BindingClass;
   /** Plain words: what the class ties, and what it leaves untied. */
   reading: string;
+  /** Pairing evidence is part of the signed observation from battery v3 onward. */
+  evidence?: AuthorizationTransferRead;
 }
 
 const BINDING_SEAM =
@@ -196,7 +199,7 @@ const UNASKED_BINDING: SettlementBinding = {
   class: "none",
   asked: "none",
   reading:
-    "No authorization nonce was asked about, so nothing on this artifact ties the transaction to one payment authorization or request; it is identified by its hash and the stated transfer fields only. To bind, ask again with the nonce from the PAYMENT-SIGNATURE payload (or send payment_payload) and the desk reads it against the transaction's AuthorizationUsed events.",
+    "No authorization nonce was asked about, so nothing on this artifact ties the transaction to one payment authorization or request; it is identified by its hash and the stated transfer fields only. To bind, ask again with the nonce from the PAYMENT-SIGNATURE payload (or send payment_payload) and supply payer when possible: nonces are scoped to an authorizer. The desk pairs its AuthorizationUsed event with the immediately following canonical USDC Transfer and checks every supplied transfer field. Multiple candidate authorizers or unrecognised ordering establish no binding.",
 };
 
 const SOLANA_BINDING: SettlementBinding = {
@@ -210,7 +213,7 @@ function evmBinding(
   query: AttestationQuery,
   receipt: RpcReceipt | null,
   status: SettlementStatus,
-  nonces: string[],
+  authorization: AuthorizationTransferRead | null,
 ): SettlementBinding {
   if (!query.nonce) return UNASKED_BINDING;
   if (!receipt) {
@@ -229,18 +232,27 @@ function evmBinding(
         "A nonce was asked about, but the transaction reverted: no authorization was used and no value moved, so no binding is established.",
     };
   }
-  if (nonces.includes(query.nonce.toLowerCase())) {
+  if (authorization?.status === "matched") {
     return {
       class: "authorization_nonce",
       asked: "authorization_nonce",
-      reading: `The nonce asked about appears in an AuthorizationUsed event of this transaction, read from the chain, so the observed transfer is the settlement of that one EIP-3009 authorization. ${BINDING_SEAM}`,
+      evidence: authorization,
+      reading: `The nonce and authorizer identify one canonical USDC AuthorizationUsed event immediately followed by its Transfer, matching every supplied transfer field. The signed evidence names the authorizer, recipient, atomic amount and receipt positions. ${BINDING_SEAM}`,
     };
   }
+  const reason = authorization?.reason;
+  const reading = reason === "authorization_not_found"
+    ? "The nonce asked about does not appear in a canonical USDC authorization event for the supplied payer (if any)."
+    : reason === "ambiguous_authorization_events"
+      ? "Multiple candidate authorization events carry this nonce. Supply the payer to distinguish authorizers; duplicate events for the same payer still establish no binding."
+      : reason === "paired_transfer_terms_not_matched"
+        ? "The nonce's paired transfer does not match the requested recipient or exact amount. The signed evidence shows that pair; another matching transfer in the transaction cannot substitute for it."
+        : "The nonce could not be paired with an immediately following canonical USDC Transfer from the same authorizer. Missing, malformed or unrecognised event ordering leaves correspondence unestablished; it does not prove the payment never happened.";
   return {
     class: "none",
     asked: "authorization_nonce",
-    reading:
-      "The nonce asked about does not appear in any AuthorizationUsed event of this transaction. No binding is established, and status reads INSUFFICIENT_MATCH for that reason.",
+    ...(authorization ? { evidence: authorization } : {}),
+    reading: `${reading} No binding is established; status reads INSUFFICIENT_MATCH.`,
   };
 }
 
@@ -276,7 +288,7 @@ export function readBinding(artifact: object): BindingRead {
   if (record.battery === undefined) {
     return {
       kind: "predates",
-      note: `This observation names no battery, so it predates ${SETTLEMENT_ATTESTATION_BATTERY} and binding classes (2026-09-11). It is silent about binding — not "unbound", not "unasked". Its echoed query says whether a nonce was asked, and its status already folded the answer in.`,
+      note: `This observation names no battery, so it predates binding classes (introduced 2026-09-11). It is silent about binding — not "unbound", not "unasked". Its echoed query says whether a nonce was asked, and its status already folded the answer in.`,
     };
   }
   if (isSettlementBinding(record.binding)) {
@@ -410,7 +422,7 @@ function evmReadings(
     PENDING_FINALITY:
       "The transaction is mined and matches, but sits fewer than the stated number of blocks behind the head. Real, and not yet as deep as the rule asks.",
     INSUFFICIENT_MATCH:
-      "The transaction exists and succeeded, but it does not match what was asked about — wrong recipient, wrong amount, no USDC movement at all, or (when a nonce was asked about) a nonce absent from the transaction's authorization events. The echoed query says which fields were asked; the gap is the finding.",
+      "The transaction exists and succeeded, but it does not match what was asked about — wrong recipient, wrong amount, no USDC movement at all, or (when a nonce was asked about) no uniquely identified authorizer/nonce and paired transfer matching the query. Unrecognised ordering leaves correspondence unestablished, not disproved. The echoed query says which fields were asked; the gap is the finding.",
     REVERTED: `The transaction was mined and failed. No value moved.`,
   };
 }
@@ -507,7 +519,8 @@ export async function readTransferClaim(
     getBlockNumber(env, chain),
     query.authorization ? getChainId(env, chain).catch(() => null) : Promise.resolve(null),
   ]);
-  return { ...classify(receipt, query, head, chain),
+  const { authorization: _pair, ...verdict } = classify(receipt, query, head, chain);
+  return { ...verdict,
     ...(query.authorization ? { authorization: readAuthorizationReceipt(receipt, head, reportedChain, txHash, query.authorization, chain) } : {}) };
 }
 
@@ -523,8 +536,8 @@ function classify(
   amountUsdc: number | null;
   blockHeight: number | null;
   confirmations: number | null;
-  /** Every EIP-3009 nonce the transaction burned; the binding reads these. */
-  nonces: string[];
+  /** The same paired evidence drives both status and the signed binding. */
+  authorization: AuthorizationTransferRead | null;
 } {
   if (!receipt) {
     return {
@@ -534,7 +547,7 @@ function classify(
       amountUsdc: null,
       blockHeight: null,
       confirmations: null,
-      nonces: [],
+      authorization: null,
     };
   }
   const blockHeight = Number.parseInt(receipt.blockNumber, 16);
@@ -551,12 +564,15 @@ function classify(
       amountUsdc: null,
       blockHeight,
       confirmations,
-      nonces: [],
+      authorization: null,
     };
   }
 
   const transfers = usdcTransfers(receipt, chain);
-  const nonces = authorizationNonces(receipt, chain);
+  const authorization = query.nonce ? readAuthorizationTransfer(receipt, {
+    nonce: query.nonce, payer: query.payer, recipient: query.recipient,
+    ...(query.amountUsdc !== undefined ? { amount_atomic: BigInt(Math.round(query.amountUsdc * 1_000_000)).toString() } : {}),
+  }, chain) : null;
 
   // Narrow by whatever the caller actually gave us. Every unstated
   // field widens the match, which is why the query is echoed onto the
@@ -575,10 +591,11 @@ function classify(
     return true;
   });
 
-  const nonceOk = !query.nonce || nonces.includes(query.nonce.toLowerCase());
-
-  const match = matches[0];
-  if (!match || !nonceOk) {
+  const paired = authorization?.status === "matched" ? authorization.observed : null;
+  const match = query.nonce
+    ? paired ? { from: paired.authorizer, to: paired.recipient, amount: BigInt(paired.amount_atomic) } : undefined
+    : matches[0];
+  if (!match) {
     /*
      * Echo the transfer that MATCHED the stated fields when one did
      * (the nonce alone failed), the first transfer otherwise. The
@@ -586,7 +603,7 @@ function classify(
      * other leg of the transaction and read as "the seller paid the
      * wrong party" when the only gap was the nonce.
      */
-    const echoed = match ?? transfers[0];
+    const echoed = matches[0] ?? transfers[0];
     return {
       status: "INSUFFICIENT_MATCH",
       recipient: echoed?.to ?? null,
@@ -594,7 +611,7 @@ function classify(
       amountUsdc: echoed ? usdcFromUnits(echoed.amount) : null,
       blockHeight,
       confirmations,
-      nonces,
+      authorization,
     };
   }
 
@@ -608,7 +625,7 @@ function classify(
     amountUsdc: usdcFromUnits(match.amount),
     blockHeight,
     confirmations,
-    nonces,
+    authorization,
   };
 }
 
@@ -899,7 +916,7 @@ export async function observeWithFacts(
     block_height: verdict.blockHeight,
     chain_head: head,
     confirmations: verdict.confirmations,
-    binding: evmBinding(query, receipt, verdict.status, verdict.nonces),
+    binding: evmBinding(query, receipt, verdict.status, verdict.authorization),
     ...(claims ? { input_claims: claims } : {}),
     query: echoedQuery(query),
   };

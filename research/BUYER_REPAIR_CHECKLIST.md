@@ -656,7 +656,7 @@ or validate the new Launch Check wording.
 - [x] Implement exact authorization-to-receipt matching for Launch Check, retaining separate broad-transfer and exact-payment readings, finality and explicit mismatch/read gaps.
 - [x] Replace transaction-reference replay heuristics with complete raw-response comparison. Changed, empty, truncated and failed reads cannot establish fresh fulfillment or safe recovery; no fresh signature is issued.
 - [x] Update recipient notes, verification instructions, current vocabulary caveats and the unsigned specimen. Publish a correction and preserve historical signed bytes and retained older battery meaning across recovery.
-- [ ] Repair the general Settlement Attestation classifier's independent nonce/transfer matching. This is a related instrument finding, not part of the new Launch Check reader's guarantee.
+- [x] General Settlement Attestation independent nonce/transfer matching: B-ABND repair built September 13 and validated September 14 for the update to PR #675. This is a separate instrument repair from Launch Check.
 - [ ] After review and deployment, run outside-in acceptance with fresh public-only agents and bounded real settlement. Local fixture checks are not live purchase results or an Aura Walk commission.
 
 Final validation is recorded below. The two earlier Launch Check follow-ups are closed at the implementation level by this section; deployed acceptance remains separate. The original 39-finding count is unchanged.
@@ -667,6 +667,8 @@ Final validation: the complete suite ran all **697 files** in **1,959.87 seconds
 The final focused gate passes **139 tests across ten files**, including **48 new cases**. Of the first 46 new cases, 45 failed against the original source and one unchanged control passed; both later shared-artifact-scope guards failed before their fix. Eight strengthened receipt-gap cases separately failed before the broad status and stage were made consistent with unavailable exact evidence. The earlier broader recovery/attestation gate passed **616 tests across 28 files**. Typechecking, both Worker dry-run bundles, documentation and correction-index checks pass. One preliminary full attempt was deliberately interrupted to fix the contradictory fields; it is not counted as a completed run. No live purchase or deployment was performed.
 
 A separate read of the **18 previously saved real-chain receipts** in `research/deployment-boundary-2026-09-11/proofs.json` found the expected adjacent canonical-USDC AuthorizationUsed/Transfer pair in every receipt, with the recorded payer and atomic amount matching. Token and event constants were derived from the current reader. This supports its ordering assumption on that dated Base sample; it is not a new RPC collection, new purchase, complete replay acceptance run or proof of current deployed behavior. The source file SHA-256 is `1d2b6dcb98efe7014eb64508f148f4a183324b3009e81dea06956ff6f0396a56`.
+
+
 
 ## Alert retention and display receipts — 2026-09-13
 
@@ -683,3 +685,19 @@ The first nine regression scenarios failed against unchanged source. Three addit
 Migration and limits: existing log rows stay readable under their original keys. Old visit timestamps cannot establish which rows were displayed, so retained alerts without individual receipts may show NEW once after rollout. Existing overwritten rows cannot be reconstructed from this fix. Receipts deliberately have no expiry, because repeated standing alerts can renew their own retention indefinitely; orphan-receipt cleanup is a separate storage-housekeeping enhancement. The pages remain bounded to five and ten recent rows; an older-row navigation/pagination pass remains separate. Per-identity concurrent repeat-count updates and hourly email budgets still use KV read/modify/write; this change does not claim to serialize those operations or establish multi-region consistency. A successfully rendered response is the existing acknowledgement boundary, not proof that the browser received it or a human read it.
 
 These are keeper recovery-surface defects, not new commissioned Aura Walk findings. The original 39-finding completion count and unrun paid-wave coverage are unchanged.
+
+
+## General attestation pairing — September 13 follow-through
+
+B-ABND now pairs authorizer/nonce and canonical-USDC Transfer before asserting status or binding, publishes signed pairing evidence, and gives an actionable explanation for ambiguity. Battery v3 and a public correction identify the changed instrument; old signed bytes stay intact. The new 23 tests yielded 17 failures and 6 controls without the source fix; the repair passed a 119-test focused gate. Final validation is recorded below when complete.
+
+- [ ] B-RPAIR: reproduce and address independent authorization/transfer selection in the separate purchase and settlement reconciliation readers. Source-review candidates only; do not count as repaired or production impact established.
+- [ ] General RPC envelope hardening: receipt identity, claimed chain and block/head validity are outside this pairing repair and do not inherit Launch Check's stronger checks.
+- [ ] Live acceptance after reviewed deployment; no new paid wave has run here.
+
+
+### B-ABND final validation — September 14
+
+Completed full suite: **700 files; 13,710 passed, 69 failed, one existing skip; 7,448.98 seconds**. Every one of the 69 failed cases passed unchanged in a single-worker rerun across 25 files (111.88 seconds), with file/title coverage reconciled and none omitted. The other 4,024 cases in those files were filtered only for the rerun. All 1,582 frozen inputs stayed unchanged through both runs. Repeated multi-minute stalls occurred, but their cause was not established; no timeout or assertion changed. This is completed full-run plus rerun coverage, not an uninterrupted green full run. The earlier interrupted attempt and the guide's intentionally changed checksum are recorded in BUYER_AUDIT_LOG.md. Final publication wording and correction dating are checked separately below.
+
+Final publication gate: **77 tests across five files passed**, including pairing and signature tampering, historical binding behavior, guide consistency and the generated correction ledger. Typechecking, documentation checks, correction-index checks and both Worker dry-run bundles passed on the final text. No live acceptance is claimed.

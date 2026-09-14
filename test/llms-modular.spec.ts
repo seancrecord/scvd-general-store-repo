@@ -939,8 +939,11 @@ const BASE = "https://scvd.store";
 // side, the MCP worked inputs on the other — so the pin below is the
 // merged guide, reproduced from the merged tree and from neither half
 // alone. Both notes above stand; this one says why there is a third.
+// 2026-09-13: the derived settlement-attestation menu constraint now names
+// authorizer/nonce pairing and ambiguity. Substituting only the prior
+// constraint in the served guide reproduced the prior digest exactly.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "bda58d44fe994ef02167239485404ffc01184deb3b624654a7b600789274d4df";
+  "38f9cdaab515f2c742c32fa9f089ecf380d9ceaa9478d7ceb3f11ff84b2288a2";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

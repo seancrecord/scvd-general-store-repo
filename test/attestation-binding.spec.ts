@@ -42,11 +42,6 @@ function settledReceipt(nonce: string | null = NONCE): RpcReceipt {
     status: "0x1",
     blockNumber: "0x64",
     logs: [
-      {
-        address: BASE_EVM.usdc,
-        topics: [TRANSFER_TOPIC, topicFor(PAYER), topicFor(PAYEE)],
-        data: "0xfa0",
-      },
       ...(nonce
         ? [
             {
@@ -56,6 +51,12 @@ function settledReceipt(nonce: string | null = NONCE): RpcReceipt {
             },
           ]
         : []),
+      // Circle emits AuthorizationUsed before the Transfer, with an ABI uint256.
+      {
+        address: BASE_EVM.usdc,
+        topics: [TRANSFER_TOPIC, topicFor(PAYER), topicFor(PAYEE)],
+        data: `0x${(4000).toString(16).padStart(64, "0")}`,
+      },
     ],
   };
 }
