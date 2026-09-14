@@ -111,6 +111,36 @@ describe("the pack, opened, for a person", () => {
     if (dupes.length > 0) expect(page).toContain("into pack credit");
   });
 
+  it("hands a person a PNG to attach, not the SVG an upload box refuses", async () => {
+    /**
+     * THE FILE A READER ACTUALLY GETS (2026-09-14, the keeper, looking
+     * at an empty X composer: "they are also saving as svg so that is
+     * probably why").
+     *
+     * He was right about the file and it was a second gap, not the one
+     * blocking the card: the face on these pages is vector, so a
+     * right-click or a drag hands over an SVG, which X, Slack and every
+     * other upload box reject. The PNG was always served and was named
+     * only in fine print as a code span. Both pages now carry a real
+     * download beside the share button, and it must stay a PNG.
+     */
+    const page = await (await SELF.fetch(`${BASE}/pack/${packId}`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain("Save the image");
+    const downloads = [...page.matchAll(/href="\/p\/(card_[a-z0-9]+)\.png" download="/g)];
+    expect(downloads.length).toBeGreaterThanOrEqual(1);
+    for (const [, id] of downloads) {
+      const png = await SELF.fetch(`${BASE}/p/${id}.png`);
+      expect(png.headers.get("content-type"), id).toBe("image/png");
+    }
+    // Never an SVG behind a download, however the markup moves around.
+    expect(page).not.toMatch(/href="[^"]*\.svg" download/);
+
+    const card = await (await SELF.fetch(`${BASE}/p/${downloads[0]![1]}`, { headers: { Accept: "text/html" } })).text();
+    expect(card).toContain("Save the image");
+    expect(card).toMatch(/href="\/p\/card_[a-z0-9]+\.png" download="/);
+    expect(card).not.toMatch(/href="[^"]*\.svg" download/);
+  });
+
   it("404s an id nobody opened, and never mints one by looking", async () => {
     const miss = await SELF.fetch(`${BASE}/pack/pack_neverwasone`, { headers: { Accept: "text/html" } });
     expect(miss.status).toBe(404);

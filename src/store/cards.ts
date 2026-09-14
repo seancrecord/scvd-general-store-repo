@@ -486,6 +486,16 @@ export const CARD_LINES = {
   seedSentence:
     "This is the store's own doctrine applied to a pack: the draw is signed, dated, and re-derivable without trusting us.",
   underTheWeather: "Under the weather",
+  /**
+   * THE SVG IS THE WRONG FILE TO HAND A PERSON (2026-09-14, the
+   * keeper: "they are also saving as svg so that is probably why").
+   * The face on these pages is vector because it is sharp at any size
+   * and weighs nothing; X, Slack and every other upload box reject it.
+   * The PNG was always served — it was just named in fine print, which
+   * is where nobody looks when they want a picture.
+   */
+  saveTheImage:
+    "Saves the 1200\u00d7675 share sheet as a PNG, which is what an upload box will take \u2014 the card on this page is vector, and most of them refuse an SVG. Posting the link instead unfurls the same picture on its own.",
 } as const;
 
 export const SPECIMEN_CARD: CardEntry = {
