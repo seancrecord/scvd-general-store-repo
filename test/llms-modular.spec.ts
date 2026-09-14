@@ -939,6 +939,9 @@ const BASE = "https://scvd.store";
 // side, the MCP worked inputs on the other — so the pin below is the
 // merged guide, reproduced from the merged tree and from neither half
 // alone. Both notes above stand; this one says why there is a third.
+// 2026-09-13: the derived settlement-attestation menu constraint now names
+// authorizer/nonce pairing and ambiguity. Substituting only the prior
+// constraint in the served guide reproduced the prior digest exactly.
 // 2026-09-13, the release wheel and a claim that had gone false. Two
 // edits to the guide, and the second is the interesting one.
 //   (1) The Paywall section gained the release wheel: the one-of-ones'
@@ -964,8 +967,10 @@ const BASE = "https://scvd.store";
 // which is the same story as the index's six and is worth saying twice.
 // Verified the same way: with llms.ts restored to the prior commit the
 // prior digest reproduced, and this copy reproduces the new one.
+// 2026-09-14: main's guide edits and the authorization-pairing constraint
+// now coexist. Replacing only that constraint reproduces main's digest.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e6d439fba6a87c3428f00a305aa5fd7241700e3405ac1f216867b70cff3d08ed";
+  "d1b4386be296e68479f7500b67bc999d4f951f06c1215bab1476c1e767dcc92f";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

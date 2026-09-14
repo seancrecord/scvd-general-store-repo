@@ -32,6 +32,7 @@ function topicFor(address: string): string {
 }
 
 const RECEIPT: RpcReceipt = {
+  transactionHash: TX,
   status: "0x1",
   blockNumber: "0x64",
   logs: [
@@ -89,7 +90,7 @@ describe("a projection, never the record", () => {
     expect(mismatch.projection.settlement_result).toBeNull();
     expect(mismatch.projection.native_status).toBe("INSUFFICIENT_MATCH");
     // REVERTED is not REVERSED: a failed transaction is not a reversal.
-    const reverted = await observeWithFacts(testEnv, { txHash: TX }, { status: "0x0", blockNumber: "0x64", logs: [] }, 140);
+    const reverted = await observeWithFacts(testEnv, { txHash: TX }, { transactionHash: TX, status: "0x0", blockNumber: "0x64", logs: [] }, 140);
     expect(reverted.projection.settlement_result).toBeNull();
   });
 

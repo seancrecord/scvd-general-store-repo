@@ -658,6 +658,7 @@ async function deliverGoods(
           walk.replay_served,
           walk.tx_hash_status,
           walk.replay?.outcome ?? null,
+          walk.payment_attempt,
         ),
         extras: {
           check_id: walk.check_id,

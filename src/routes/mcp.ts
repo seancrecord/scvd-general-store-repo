@@ -1,3 +1,4 @@
+import { ReceiptEvidenceUnavailable } from "@/lib/receipt-context";
 import { decodePaymentHeader } from "@/lib/decline-diagnosis";
 import { recoverSignedPurchase } from "@/services/signed-purchase-recovery";
 import { signedRecoveryOutcome } from "@/lib/mcp-payment";
@@ -1226,6 +1227,11 @@ async function callPurchaseTool(
     }
     return answer;
   } catch (error) {
+    if (!outcome.settledSoFar() && error instanceof ReceiptEvidenceUnavailable) {
+      const body = error.body();
+      if (standardPayment(c)) return rpcResult(id, { ...toolText(body) as Record<string, unknown>, isError: true });
+      return rpcRefusal(id, -32000, body.code, body.error, body);
+    }
     if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
       return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
     }

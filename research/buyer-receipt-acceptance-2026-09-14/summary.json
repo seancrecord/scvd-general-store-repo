@@ -1,0 +1,238 @@
+{
+  "purchase_interface_requests": 87,
+  "unsigned_quotes": 31,
+  "signed_requests": 56,
+  "intentional_replays": 16,
+  "paid_response_codes": {
+    "success": 36,
+    "settlement_unknown": 18,
+    "purchase_input_mismatch": 2
+  },
+  "distinct_purchased_goods": 22,
+  "ordinary_first_paid_successes": 19,
+  "ordinary_first_paid_attempts": 19,
+  "source_of_round_trip_counts": "Purchase-interface calls retained by the runner; independent chain reads and verification tool calls are separate, not an exhaustive network total.",
+  "status_readiness": [
+    {
+      "payment_id": "seed-http",
+      "certificate_id": "cert_nvbeckaq93",
+      "completed_response_at": "2026-09-14T17:37:02.554Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 15.388,
+      "last_missing_seconds_after_response": 15.388,
+      "first_ready_seconds_after_response": 59.724,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "seed-mcp",
+      "certificate_id": "cert_xaf8sz8uc7",
+      "completed_response_at": "2026-09-14T17:38:36.191Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 32.859,
+      "last_missing_seconds_after_response": 32.859,
+      "first_ready_seconds_after_response": 71.459,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "polygon-reader",
+      "certificate_id": "cert_ap8rmrem2n",
+      "completed_response_at": "2026-09-14T17:39:25.388Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 20.881,
+      "last_missing_seconds_after_response": 20.881,
+      "first_ready_seconds_after_response": 202.905,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "attestation-http",
+      "certificate_id": "cert_8yedq3w8yu",
+      "completed_response_at": "2026-09-14T17:41:11.794Z",
+      "missing_status_reads": 0,
+      "first_missing_seconds_after_response": null,
+      "last_missing_seconds_after_response": null,
+      "first_ready_seconds_after_response": 85.884,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "reconciliation-http",
+      "certificate_id": "cert_jjd3fm938p",
+      "completed_response_at": "2026-09-14T17:41:23.791Z",
+      "missing_status_reads": 0,
+      "first_missing_seconds_after_response": null,
+      "last_missing_seconds_after_response": null,
+      "first_ready_seconds_after_response": 75.466,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "bundle-http",
+      "certificate_id": "cert_hfju7749m8",
+      "completed_response_at": "2026-09-14T17:41:33.589Z",
+      "missing_status_reads": 0,
+      "first_missing_seconds_after_response": null,
+      "last_missing_seconds_after_response": null,
+      "first_ready_seconds_after_response": 67.643,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "attestation-mcp",
+      "certificate_id": "cert_jtgfsg2tp5",
+      "completed_response_at": "2026-09-14T17:41:43.342Z",
+      "missing_status_reads": 0,
+      "first_missing_seconds_after_response": null,
+      "last_missing_seconds_after_response": null,
+      "first_ready_seconds_after_response": 59.746,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "reconciliation-mcp",
+      "certificate_id": "cert_njfp5ragy2",
+      "completed_response_at": "2026-09-14T17:41:50.671Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 53.963,
+      "last_missing_seconds_after_response": 53.963,
+      "first_ready_seconds_after_response": 493.133,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "bundle-mcp",
+      "certificate_id": "cert_qcxykedw6f",
+      "completed_response_at": "2026-09-14T17:41:57.899Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 48.503,
+      "last_missing_seconds_after_response": 48.503,
+      "first_ready_seconds_after_response": 488.418,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-0",
+      "certificate_id": "cert_m7aahnf5tx",
+      "completed_response_at": "2026-09-14T17:43:34.276Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 30.701,
+      "last_missing_seconds_after_response": 30.701,
+      "first_ready_seconds_after_response": 394.587,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-1",
+      "certificate_id": "cert_2mt4dh8wfd",
+      "completed_response_at": "2026-09-14T17:43:34.445Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 31.978,
+      "last_missing_seconds_after_response": 31.978,
+      "first_ready_seconds_after_response": 396.219,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-2",
+      "certificate_id": "cert_8596nywg8n",
+      "completed_response_at": "2026-09-14T17:43:35.528Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 32.281,
+      "last_missing_seconds_after_response": 32.281,
+      "first_ready_seconds_after_response": 397.275,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-3",
+      "certificate_id": "cert_893f6jjxns",
+      "completed_response_at": "2026-09-14T17:43:34.905Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 34.377,
+      "last_missing_seconds_after_response": 34.377,
+      "first_ready_seconds_after_response": 400.238,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-4",
+      "certificate_id": "cert_mqfa6eu2aj",
+      "completed_response_at": "2026-09-14T17:43:34.370Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 36.44,
+      "last_missing_seconds_after_response": 36.44,
+      "first_ready_seconds_after_response": 402.871,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-5",
+      "certificate_id": "cert_gr8rxzuddq",
+      "completed_response_at": "2026-09-14T17:43:34.381Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 37.99,
+      "last_missing_seconds_after_response": 37.99,
+      "first_ready_seconds_after_response": 405.004,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-6",
+      "certificate_id": "cert_fcmv9we98d",
+      "completed_response_at": "2026-09-14T17:43:36.275Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 37.326,
+      "last_missing_seconds_after_response": 37.326,
+      "first_ready_seconds_after_response": 405.182,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-7",
+      "certificate_id": "cert_gn84mkbs8v",
+      "completed_response_at": "2026-09-14T17:43:34.344Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 41.337,
+      "last_missing_seconds_after_response": 41.337,
+      "first_ready_seconds_after_response": 409.192,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-8",
+      "certificate_id": "cert_468k648udw",
+      "completed_response_at": "2026-09-14T17:43:35.017Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 42.077,
+      "last_missing_seconds_after_response": 42.077,
+      "first_ready_seconds_after_response": 410.683,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-9",
+      "certificate_id": "cert_haqqz5ncf6",
+      "completed_response_at": "2026-09-14T17:43:35.833Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 43.299,
+      "last_missing_seconds_after_response": 43.299,
+      "first_ready_seconds_after_response": 411.898,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-same",
+      "certificate_id": "cert_fvbgb5rzys",
+      "completed_response_at": "2026-09-14T17:45:02.292Z",
+      "missing_status_reads": 1,
+      "first_missing_seconds_after_response": 28.788,
+      "last_missing_seconds_after_response": 28.788,
+      "first_ready_seconds_after_response": 327.712,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "concurrent-fresh-0",
+      "certificate_id": "cert_5s5kzzwehk",
+      "completed_response_at": "2026-09-14T17:46:02.403Z",
+      "missing_status_reads": 0,
+      "first_missing_seconds_after_response": null,
+      "last_missing_seconds_after_response": null,
+      "first_ready_seconds_after_response": 100.518,
+      "recovery_eventually_observed": true
+    },
+    {
+      "payment_id": "lost-response",
+      "certificate_id": "cert_7fsttnvgxc",
+      "completed_response_at": "2026-09-14T17:46:45.581Z",
+      "missing_status_reads": 0,
+      "first_missing_seconds_after_response": null,
+      "last_missing_seconds_after_response": null,
+      "first_ready_seconds_after_response": 228.208,
+      "recovery_eventually_observed": true
+    }
+  ],
+  "readiness_limit": "Readiness delays are observation bounds; polling did not establish the exact moment the background process made the good recoverable."
+}

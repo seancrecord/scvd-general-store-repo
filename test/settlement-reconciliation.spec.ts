@@ -48,7 +48,7 @@ function topicFor(address: string): string {
 
 /** USDC has six decimals, so 1 USDC is 1_000_000 units. */
 function units(usdc: number): string {
-  return `0x${BigInt(Math.round(usdc * 1_000_000)).toString(16)}`;
+  return `0x${BigInt(Math.round(usdc * 1_000_000)).toString(16).padStart(64, "0")}`;
 }
 
 function transferLog(from: string, to: string, usdc: number) {

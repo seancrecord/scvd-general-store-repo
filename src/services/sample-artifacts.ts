@@ -253,7 +253,7 @@ import {
 } from "@/services/standing-watch";
 import { observeWithFacts, type SignedAttestation } from "@/services/attestation";
 import type { LaunchCheckObservation } from "@/services/launch-check";
-import { LAUNCH_CHECK_UA } from "@/services/launch-check-terms";
+import { LAUNCH_CHECK_UA, LAUNCH_CHECK_BATTERY } from "@/services/launch-check-terms";
 import { BASE_EVM, TRANSFER_TOPIC } from "@/lib/base-rpc";
 
 export type SampleSlug =
@@ -418,6 +418,7 @@ const SAMPLE_PAY_TO = "0x00000000000000000000000000000000000000ff";
 export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<LaunchCheckObservation> {
   const walk: LaunchCheckObservation = {
     check_id: "lcheck_specimen_not_a_real_check",
+    battery: LAUNCH_CHECK_BATTERY,
     url: SAMPLE_SUBJECT_URL,
     observed_at: SAMPLE_OBSERVED_AT,
     ua_sent: LAUNCH_CHECK_UA,
@@ -430,7 +431,7 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
       { stage: "payment", ok: true, detail: "EIP-3009 authorization signed by the field wallet and presented in the PAYMENT-SIGNATURE header." },
       { stage: "settle", ok: true, detail: "The till answered 200 with a PAYMENT-RESPONSE naming a settlement transaction." },
       { stage: "delivery", ok: true, detail: "A JSON body arrived with the goods." },
-      { stage: "replay", ok: true, detail: "refused, correctly: HTTP 409 on a replay of the already-settled payment, and no new payment challenge. It names the settlement transaction the first response named." },
+      { stage: "replay", ok: false, detail: "HTTP 409 refused the identical authorization without a fresh challenge. The repeated transaction reference proves neither settlement nor safe recovery." },
     ],
     paid_usd: SAMPLE_PAID_USD,
     pay_to: SAMPLE_PAY_TO,
@@ -441,7 +442,7 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
     tx_verification: {
       read: "receipt",
       chain: BASE_EVM.caip2,
-      chain_status: "0x1",
+      chain_status: "SETTLED",
       block_height: 34_000_000,
       confirmations: 12,
       observed_payer: SAMPLE_PAYER,
@@ -456,7 +457,7 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
     env,
     "launch_check",
     price,
-    "A free, unsigned sample of the Launch Check — one real purchase attempt at one x402 endpoint, from the store's declared field wallet, recorded stage by stage. Every field below is the field a buyer gets; this walk is constructed to show a door that settles cleanly and answers the replay correctly, so the stages read in order.",
+    "A free, unsigned sample of the Launch Check — one real purchase attempt at one x402 endpoint, from the store's declared field wallet, recorded stage by stage. Every field below is the field a buyer gets; this constructed excerpt shows a 2xx answer, a transfer read and a replay refusal. It carries no exact authorization match or complete response digests, so it establishes neither exact payment settlement nor safe recovery.",
     NOT_SIGNED,
     walk,
   );
@@ -474,6 +475,7 @@ export async function sampleSettlementAttestation(
   const pad = (address: string): string => `0x${address.slice(2).padStart(64, "0")}`;
   const amount = SAMPLE_PAID_UNITS;
   const receipt = {
+    transactionHash: SAMPLE_TX_HASH,
     status: "0x1",
     blockNumber: `0x${(34_000_000).toString(16)}`,
     logs: [

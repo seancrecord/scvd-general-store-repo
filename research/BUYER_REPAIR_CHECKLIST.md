@@ -651,6 +651,24 @@ over HTTP and MCP with equal rails, and key discovery resolves. Raw evidence
 and its limits are linked from `research/BUYER_AUDIT_LOG.md`. This does not deploy
 or validate the new Launch Check wording.
 
+## 2026-09-13 — Launch Check payment/replay follow-through
+
+- [x] Implement exact authorization-to-receipt matching for Launch Check, retaining separate broad-transfer and exact-payment readings, finality and explicit mismatch/read gaps.
+- [x] Replace transaction-reference replay heuristics with complete raw-response comparison. Changed, empty, truncated and failed reads cannot establish fresh fulfillment or safe recovery; no fresh signature is issued.
+- [x] Update recipient notes, verification instructions, current vocabulary caveats and the unsigned specimen. Publish a correction and preserve historical signed bytes and retained older battery meaning across recovery.
+- [x] General Settlement Attestation independent nonce/transfer matching: B-ABND repair built September 13 and validated September 14 for the update to PR #675. This is a separate instrument repair from Launch Check.
+- [ ] After review and deployment, run outside-in acceptance with fresh public-only agents and bounded real settlement. Local fixture checks are not live purchase results or an Aura Walk commission.
+
+Final validation is recorded below. The two earlier Launch Check follow-ups are closed at the implementation level by this section; deployed acceptance remains separate. The original 39-finding count is unchanged.
+
+
+Final validation: the complete suite ran all **697 files** in **1,959.87 seconds**: **13,718 tests passed, five failed and one existing key-continuity test was skipped**. Three failures stalled for approximately 198 seconds despite a 30-second timeout; two failures followed immediately in affected files. All five passed unchanged during a serial rerun of those three files (**473 passed, one different setup-hook timeout**). The remaining file then passed all **150 tests** unchanged in **43.22 seconds**, including that hook's case. This is a completed full run plus successful reruns of every failure, not an uninterrupted green full run. The interruption's cause was not established; no timeout or assertion was relaxed. All **1,459 source, test and configuration files** stayed byte-identical through the full run and reruns, with none added or removed.
+
+The final focused gate passes **139 tests across ten files**, including **48 new cases**. Of the first 46 new cases, 45 failed against the original source and one unchanged control passed; both later shared-artifact-scope guards failed before their fix. Eight strengthened receipt-gap cases separately failed before the broad status and stage were made consistent with unavailable exact evidence. The earlier broader recovery/attestation gate passed **616 tests across 28 files**. Typechecking, both Worker dry-run bundles, documentation and correction-index checks pass. One preliminary full attempt was deliberately interrupted to fix the contradictory fields; it is not counted as a completed run. No live purchase or deployment was performed.
+
+A separate read of the **18 previously saved real-chain receipts** in `research/deployment-boundary-2026-09-11/proofs.json` found the expected adjacent canonical-USDC AuthorizationUsed/Transfer pair in every receipt, with the recorded payer and atomic amount matching. Token and event constants were derived from the current reader. This supports its ordering assumption on that dated Base sample; it is not a new RPC collection, new purchase, complete replay acceptance run or proof of current deployed behavior. The source file SHA-256 is `1d2b6dcb98efe7014eb64508f148f4a183324b3009e81dea06956ff6f0396a56`.
+
+
 
 ## Alert retention and display receipts — 2026-09-13
 
@@ -667,3 +685,56 @@ The first nine regression scenarios failed against unchanged source. Three addit
 Migration and limits: existing log rows stay readable under their original keys. Old visit timestamps cannot establish which rows were displayed, so retained alerts without individual receipts may show NEW once after rollout. Existing overwritten rows cannot be reconstructed from this fix. Receipts deliberately have no expiry, because repeated standing alerts can renew their own retention indefinitely; orphan-receipt cleanup is a separate storage-housekeeping enhancement. The pages remain bounded to five and ten recent rows; an older-row navigation/pagination pass remains separate. Per-identity concurrent repeat-count updates and hourly email budgets still use KV read/modify/write; this change does not claim to serialize those operations or establish multi-region consistency. A successfully rendered response is the existing acknowledgement boundary, not proof that the browser received it or a human read it.
 
 These are keeper recovery-surface defects, not new commissioned Aura Walk findings. The original 39-finding completion count and unrun paid-wave coverage are unchanged.
+
+
+## General attestation pairing — September 13 follow-through
+
+B-ABND now pairs authorizer/nonce and canonical-USDC Transfer before asserting status or binding, publishes signed pairing evidence, and gives an actionable explanation for ambiguity. Battery v3 and a public correction identify the changed instrument; old signed bytes stay intact. The new 23 tests yielded 17 failures and 6 controls without the source fix; the repair passed a 119-test focused gate. Final validation is recorded below when complete.
+
+- [x] B-RPAIR: reproduced and locally repaired September 14; see the follow-through below. Production impact and deployed acceptance remain unestablished.
+- [x] General RPC envelope hardening: implemented September 14 as B-RPC; see the follow-through below.
+- [x] Targeted live acceptance after reviewed deployment — September 14 record below. The full paid-wave matrix remains open.
+
+
+### B-ABND final validation — September 14
+
+Completed full suite: **700 files; 13,710 passed, 69 failed, one existing skip; 7,448.98 seconds**. Every one of the 69 failed cases passed unchanged in a single-worker rerun across 25 files (111.88 seconds), with file/title coverage reconciled and none omitted. The other 4,024 cases in those files were filtered only for the rerun. All 1,582 frozen inputs stayed unchanged through both runs. Repeated multi-minute stalls occurred, but their cause was not established; no timeout or assertion changed. This is completed full-run plus rerun coverage, not an uninterrupted green full run. The earlier interrupted attempt and the guide's intentionally changed checksum are recorded in BUYER_AUDIT_LOG.md. Final publication wording and correction dating are checked separately below.
+
+Final publication gate: **77 tests across five files passed**, including pairing and signature tampering, historical binding behavior, guide consistency and the generated correction ledger. Typechecking, documentation checks, correction-index checks and both Worker dry-run bundles passed on the final text. No live acceptance is claimed.
+
+## Reconciliation and receipt-context follow-through — September 14
+
+- [x] **B-RPAIR reproduced and locally repaired:** wrong authorization/transfer association through the actual purchase-recovery alarm and the signed settlement-reconciliation reader. Same-valued legs are distinguished by receipt position; ambiguous recovery remains unknown and scheduled. Tests cover no-discretion overstatement, declared-cap fallback, and signature tampering.
+- [x] **B-RPC implemented:** general EVM attestation and bundle validate transaction identity, chain identity, block/head validity and receipt status before signing. Missing/duplicate batch responses cannot become NOT_FOUND. Battery v4 distinguishes the instrument; explicit null, genuine reversion, finality depth, prior signed records and Solana behavior retain their meaning.
+- [x] **Buyer refusal facts:** the newly introduced receipt refusals say no settlement was attempted, supply same-payment retry guidance, leave temporariness unknown, and do not invent an artifact/verify URL. HTTP and both MCP dialects are covered.
+- [ ] **Separate source-review candidates:** settlement reconciliation's Approval-to-transfer cap attribution and its own RPC envelope. Existing owner/ambiguity filters remain; no production impact or repair is asserted here.
+- [x] **Targeted deployed acceptance:** repairs merged through PR #680; September 14 real Base purchases and changed-deployment quote/certificate checks are recorded below. Full real-chain/deployment matrices remain open.
+
+Source-reversion control: 49 failed / 47 passed across 96 tests, with task-owned implementation files restored afterward. Final validation follows below. Original BUY-001–039 counts and commissioned Aura records are unchanged.
+
+Final gate: **939 tests across 28 spec files passed**, combining 749 successful cases from the broad run with the 190-case rerun after correcting Case File RPC fixtures. All 177 failures in that broad run were in the fixture missing chain/transaction identity; production source did not change for the rerun. The 21 buyer-door cases prove zero settlement calls on refusal, same-payment recovery, one later settlement, correct transaction subjects and certificate verification. Typecheck, docs, generated correction-index checks, both Worker dry-run bundles and whitespace checks passed. This is targeted validation; a fresh full suite and live deployment are not claimed. Changes remain local and uncommitted on `codex/reconciliation-receipt-hardening`.
+
+
+### B-RPAIR / B-RPC publication gate — September 14
+
+- [x] Latest-main integration and guide/ledger conflict resolution verified.
+- [x] Full suite: 705 files; 13,849 passed, one existing skip. All 1,471 frozen inputs unchanged.
+- [x] The interrupted attempt's 33 outdated-fixture failures resolved; 409 affected/control cases passed before the complete rerun.
+- [x] Typecheck, both bundles, docs, corrections, code audit and public-claims checks passed.
+- [x] PR #680 merged and targeted live acceptance completed within the $1 ceiling; see the dated evidence below. Other checkout rails remain unexercised.
+
+The detailed release record is in BUYER_AUDIT_LOG.md. Historical validation paragraphs above describe their own checkpoints and are not claims about the later release.
+
+
+### Targeted live acceptance — September 14
+
+- [x] PR #680 merged, required CI green, production version and battery v4 checked.
+- [x] 22 distinct purchases, 0.199 USDC exact reconciled spend, no duplicate settlement; all authorizations expired by final observation.
+- [x] Correct signed goods and transaction subjects through HTTP/MCP; Base payment plus a Polygon-reader observation; bundles retain both distinct subjects.
+- [x] Ten distinct mixed-door purchases, ten same-payment/key submissions, and ten fresh-authorizations/shared-key submissions reconciled; pending requests recovered the original goods.
+- [x] Controlled response loss, original-interface retry after expiry, old quotes/new code, retired-key artifact continuity, and a fresh cheaper recipient exercised at the report's stated scope.
+- [ ] B-RSTATUS / LA-01: explain the gap between a successful purchase and private status-handle goods readiness; supply a safe polling action.
+- [ ] B-RDOOR / LA-02: name the original interface/recovery action when a cross-interface replay is refused; retain authorization scoping and reconsider transient HTTP 503 wording.
+- [ ] Full other-rail, mixed-SKU, interrupted-settlement, human/watch/anchor/inventory, loss-of-all-hints and propagation coverage remains; prior separate reconciliation source-review candidates remain.
+
+[Report and limits](buyer-receipt-acceptance-2026-09-14/REPORT.md). The fresh recipient fetched key history but did not explain historical-key verification; the parent's retired-key control is separate. Original BUY-001–039 and commissioned Aura counts are unchanged.

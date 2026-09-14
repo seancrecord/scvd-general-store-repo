@@ -190,7 +190,7 @@ describe("the overlap classes — the artifacts in the receipts race's lane", ()
           JSON.stringify({
             jsonrpc: "2.0",
             id: 1,
-            result: method === "eth_blockNumber" ? "0x2f00000" : null,
+            result: method === "eth_chainId" ? (String(_url).includes("polygon") ? "0x89" : "0x2105") : method === "eth_blockNumber" ? "0x2f00000" : null,
           }),
           { headers: { "Content-Type": "application/json" } },
         );

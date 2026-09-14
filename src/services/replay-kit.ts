@@ -260,7 +260,7 @@ export async function buildReplayKit(
       other_codes: {
         payment_declined: "The authorization verified but did not settle; no money moved and nothing left the shelf.",
         settlement_unknown: "The settle call returned no verdict; the payment is unresolved and the buyer must not sign a new one. The hourly reconciler asks the chain.",
-        purchase_not_settled: "A recorded attempt whose settlement was refused; the buyer may start a fresh purchase with a fresh payment and a new idempotency key.",
+        purchase_not_settled: "A recorded attempt whose settlement was refused. No money moved, so the attempt hands its idempotency key back: the buyer retries with the SAME key and a fresh payment. A key is held only while an outcome is UNRESOLVED, never after a confirmed non-payment.",
         purchase_recovery_pending: "The payment settled and delivery is being recovered from the retained record; no second settlement is attempted.",
       },
     },
