@@ -196,6 +196,66 @@ export const SEARCH_CRAWLERS: readonly string[] = [
 ];
 
 /**
+ * THE UNFURLERS (2026-09-14, found by the keeper posting his own card).
+ *
+ * A social unfurler is not a crawler and not a reader. It fetches one
+ * URL, reads the `<head>`, throws the body away, and renders a preview
+ * card from the Open Graph tags. It sends `Accept: * / *` and a bot
+ * User-Agent, which is exactly the shape this store answers with JSON
+ * — so every one of them has been getting a signed record with no
+ * `og:image` in it since the day the card table opened.
+ *
+ * The cost was total and silent. The store's own copy promises "a page
+ * that unfurls wherever it is posted" on the menu, in the MCP tool
+ * description and in the spec; the share sheet is rendered at 1200x675
+ * for precisely this; and no post of a scvd.store link to X, Slack,
+ * Discord, LinkedIn or iMessage has ever shown a picture. Nothing
+ * failed, so nothing said so.
+ *
+ * These are listed separately from the indexers because they want a
+ * different thing for a different reason: an indexer wants the page
+ * for its JSON-LD, an unfurler wants the page for its meta tags, and
+ * a training crawler wants the prose. Only the first two want HTML.
+ *
+ * Tokens are the vendor-published ones. Note facebookexternalhit is
+ * also what Instagram and WhatsApp send, and Slackbot-LinkExpanding is
+ * the unfurl half of Slack's two agents.
+ */
+export const SOCIAL_UNFURLERS: readonly string[] = [
+  "Twitterbot",
+  "facebookexternalhit",
+  "Slackbot-LinkExpanding",
+  "Slackbot",
+  "Discordbot",
+  "LinkedInBot",
+  "WhatsApp",
+  "TelegramBot",
+  "redditbot",
+  "Pinterestbot",
+  "Mastodon",
+  "Bluesky",
+  // iMessage, Mail.app and every other macOS link preview.
+  "facebookcatalog",
+  "SkypeUriPreview",
+  "vkShare",
+  "Iframely",
+  "Embedly",
+];
+
+const UNFURLER_TOKENS = SOCIAL_UNFURLERS.map((token) => token.toLowerCase());
+
+/**
+ * True when the User-Agent is a link-preview fetcher. It gets HTML on
+ * any Accept header, because the meta tags it came for exist nowhere
+ * else — a JSON twin is a preview that cannot be drawn.
+ */
+export function isSocialUnfurler(userAgent: string | undefined | null): boolean {
+  if (!userAgent) return false;
+  const lower = userAgent.toLowerCase();
+  return UNFURLER_TOKENS.some((token) => lower.includes(token));
+}
+
+/**
  * THE READERS AND THE INDEXERS (2026-09-05, at the keeper's ask).
  *
  * The 2026-09-02 rule above gave every named crawler the HTML page on

@@ -967,10 +967,27 @@ const BASE = "https://scvd.store";
 // which is the same story as the index's six and is worth saying twice.
 // Verified the same way: with llms.ts restored to the prior commit the
 // prior digest reproduced, and this copy reproduces the new one.
+// 2026-09-14: the window stopped selling a buyer their own card, and
+// the shelf copy says so where a buyer reads it before paying — the
+// window_pick listing now names the two refusals (a pressing you hold
+// is out of your own draw; a window that is only your own pack refuses
+// before payment terms), and the published refusal guidance says to
+// compare each row's holder against your wallet. The pack's own note
+// leads with the count and names the page a person opens.
+// Verified the same way: with menu-novelties.ts, spec.ts and
+// surface-contract.ts restored to the prior commit the prior digest
+// reproduced, and this copy reproduces the new one.
 // 2026-09-14: main's guide edits and the authorization-pairing constraint
 // now coexist. Replacing only that constraint reproduces main's digest.
+// 2026-09-14, THE MERGE. Both sides re-pinned correctly for their own
+// edit — main for the authorization-pairing constraint, this branch for
+// the window's two refusals and the pack note — so the merged guide is
+// a third text that neither digest above describes. Both notes stand;
+// this pin is the guide with both edits in it, taken from the merged
+// tree and from neither half alone. This is the case the notes at the
+// top of this constant keep describing, and it is the fourteenth time.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d1b4386be296e68479f7500b67bc999d4f951f06c1215bab1476c1e767dcc92f";
+  "0207f37c249353e6a315ace3d7d6a8ec21d68d8871a6b7e43aa6312ab379dfbe";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
