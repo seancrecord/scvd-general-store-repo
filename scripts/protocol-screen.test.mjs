@@ -141,6 +141,13 @@ test("a first run is bounded, and the second run reports only what is new", () =
   assert.equal(third.window[0].pr, 150);
 });
 
+test("the window line does not credit one source for a two-source run", () => {
+  const first = buildReport({ protocolData: data, today: "2026-09-14" });
+  const second = renderMarkdown(buildReport({ protocolData: data, today: "2026-09-21", previous: toSnapshot(first) }));
+  assert.match(second, /Window: everything the sources showed/);
+  assert.doesNotMatch(second, /merges scout showed since/);
+});
+
 test("a protocol going quiet between runs is named", () => {
   const before = cadence(data, flattenUpdates(data, "2026-09-14"), "2026-09-14");
   const later = cadence(data, flattenUpdates(data, "2026-11-14"), "2026-11-14");
@@ -148,9 +155,28 @@ test("a protocol going quiet between runs is named", () => {
   assert.deepEqual(moved.goneQuiet.map((c) => c.protocol), ["WebBotAuth"]);
 });
 
-test("the rendered screen always declares what it could not see", () => {
+test("the rendered screen declares the limits of the sources it actually read", () => {
   const md = renderMarkdown(buildReport({ protocolData: data, today: "2026-09-14" }));
   assert.match(md, /What this screen did NOT see/);
-  assert.match(md, /x402 — our own rail/);
+  assert.match(md, /\*\*scout\*\* — Scout is somebody else's reading/);
+  assert.doesNotMatch(md, /NOT DECLARED/, "a scout-only run must not claim git's limitations");
   assert.match(md, /Denominator: 2 merges/);
+
+  const withGit = {
+    ...data,
+    x402: { name: "x402", maintainers: "x402 Foundation", repo: "https://example.test/x402", launchDate: "2026-04-02", source: "git", updates: [update({ id: "g1", breaking: false, level: "patch", derived: true, specChange: true, title: "Expand asset transfer methods" })] },
+  };
+  const both = renderMarkdown(buildReport({ protocolData: withGit, today: "2026-09-14" }));
+  assert.match(both, /NOT DECLARED, never NOT BREAKING/);
+  assert.match(both, /\*\*scout\*\* —/);
+});
+
+test("a source that could not be read is named, not silently dropped", () => {
+  const report = buildReport({
+    protocolData: data,
+    today: "2026-09-14",
+    failures: [{ source: "MPP", url: "https://example.test/mpp", error: "clone refused" }],
+  });
+  const md = renderMarkdown(report);
+  assert.match(md, /\*\*unread\*\* — MPP .* could not be read this run: clone refused/);
 });

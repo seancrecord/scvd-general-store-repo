@@ -30,7 +30,12 @@
 
 export const SCOUT_URL = "https://scout.nekuda.ai/";
 
-/** Protocols scout carries, with the layer each occupies for us. */
+/**
+ * Every protocol the screen carries, with the layer each occupies in
+ * `docs/PROTOCOL_EXPANSION_2026-08.md` §1. The first six come from
+ * scout; the last three are read from their own git history by
+ * `git-source.mjs`, and are the layer scout cannot see.
+ */
 export const LAYERS = {
   AP2: "1 authorization",
   ACP: "2 commerce",
@@ -38,6 +43,9 @@ export const LAYERS = {
   A2A: "3 agent transport",
   WebMCP: "4 browser runtime",
   WebBotAuth: "5 agent identity",
+  x402: "3 our rail",
+  MPP: "3 second wire",
+  "Tempo TIPs": "4 settlement",
 };
 
 /* ------------------------------------------------------------------ *
@@ -115,6 +123,28 @@ export function extractProtocols(flight) {
   return parsed;
 }
 
+/**
+ * WHAT EACH SOURCE STRUCTURALLY CANNOT SHOW, declared per source and
+ * assembled into every report's closing section.
+ *
+ * This used to be a hard-coded paragraph saying x402 was invisible.
+ * Once the git source landed that sentence became false, and a stale
+ * limitation is worse than none: it teaches a reader to discount a
+ * screen that has since grown the coverage. Limits are now a property
+ * of the sources actually read on the run.
+ */
+export const SOURCE_LIMITS = {
+  scout: [
+    "Scout is somebody else's reading. A merge absent from it is unobserved, not absent.",
+    "Scout reports merges, not adoption. A specification can be quiet because it is finished, and a product can ship from infrastructure that never appears in a spec repository's log.",
+  ],
+  git: [
+    "Git carries no `breaking` flag. None of the layer-3 repositories uses conventional-commit breaking markers, so a git-sourced row's `breaking: false` means NOT DECLARED, never NOT BREAKING. Level and consequence on these rows are derived by this script, not stated by the maintainer.",
+    "A commit is not a release. A spec path changing is not the same as a shipped, versioned protocol change, and this screen does not read tags or releases.",
+    "The window is bounded by the clone. Anything older than the run's `--since` is outside the read, not absent from history.",
+  ],
+};
+
 /* ------------------------------------------------------------------ *
  * Tagging — what a merge is ABOUT
  * ------------------------------------------------------------------ */
@@ -146,9 +176,12 @@ export const TAGS = {
  * terms.
  */
 export const HOUSEKEEPING =
-  /\breadability\b|\bwording\b|\btypos?\b|\bspelling\b|\bgrammar\b|\bbump\b|\bupgrade [\w.-]+ to\b|dependency packages|\bdiscord\b|\blink checker\b|\blinter\b|\bformatting\b|stale (issue|example)/i;
+  /\breadability\b|\bwording\b|\btypos?\b|\bspelling\b|\bgrammar\b|\bbump\b|\bupgrade [\w.-]+ to\b|dependency packages|\bdiscord\b|\blink checker\b|\blinter\b|\bformatting\b|stale (issue|example)|^(chore|ci|build|test|style|deps)(\([^)]*\))?:|\bdependabot\b|\bgithub action/i;
 
 export function isHousekeeping(row) {
+  // A commit that touched the specification is never housekeeping,
+  // whatever its subject line calls itself.
+  if (row.specChange) return false;
   return !row.breaking && row.level === "patch" && HOUSEKEEPING.test(`${row.title} ${row.description}`);
 }
 
@@ -187,7 +220,7 @@ export const SURFACES = [
     id: "defect-vocabulary",
     state: "shipped",
     where: "defects/, the named defect classes (vocabulary v15)",
-    protocols: ["WebBotAuth", "UCP", "ACP", "A2A", "WebMCP"],
+    protocols: ["WebBotAuth", "UCP", "ACP", "A2A", "WebMCP", "x402", "MPP"],
     tags: ["failClosed", "expiry", "idempotency", "schema"],
     why: "A standard that makes previously-valid traffic invalid is manufacturing a silent-break class — the same shape as advertised-version-unpayable. Candidate classes arrive here first.",
   },
@@ -224,10 +257,59 @@ export const SURFACES = [
     why: "ACP/UCP-class doors enter the corpus as subjects the day their batteries are written. Cadence here decides which battery is worth writing first.",
   },
   {
+    id: "x402-wire",
+    state: "shipped",
+    where: "src/routes/buy.ts, src/lib/payment-networks.ts — x402 v2 offers, accepts and settlement",
+    protocols: ["x402"],
+    tags: [],
+    why: "This is the wire we are paid over. A change to the x402 specification is a change to the offers we serve and the payments we accept.",
+  },
+  {
+    id: "preflight-battery",
+    state: "shipped",
+    where: "src/services/preflight.ts — the free instrument, and the census battery behind it",
+    protocols: ["x402"],
+    tags: [],
+    why: "The preflight verdict is a reading of somebody else's door against the x402 spec. When the spec moves, the battery is measuring against yesterday's wire — and a stale battery issues confident wrong verdicts rather than failing loudly.",
+  },
+  {
+    id: "mpp-battery",
+    state: "shipped",
+    where: "src/services/mpp-battery.ts, src/lib/mpp-challenge.ts — the Tier 0 read-only checks",
+    protocols: ["MPP"],
+    tags: [],
+    why: "The second wire, already built read-only. Its challenge parser and check list are sourced to the draft; the draft moving is the one thing that invalidates them.",
+  },
+  {
+    id: "settlement-rails",
+    state: "shipped",
+    where: "src/lib/payment-networks.ts, PAYMENT_RAILS.md — the standing intake rule",
+    protocols: ["x402", "MPP"],
+    tags: ["payment"],
+    why: "A new scheme or chain in the spec is not a reason to accept it. The intake rule needs a named counterparty — but a rail we have not heard of cannot be asked for by name, so it gets read here and waits there.",
+  },
+  {
+    id: "tempo-rail-watch",
+    state: "planned",
+    /*
+     * Tempo is PLANNED on purpose, and the distinction is the whole
+     * point of the band. We settle on Base, Polygon, Arbitrum, World
+     * and Solana; we do not settle on Tempo, and D2 in the August read
+     * puts it behind MPP as a capped rail with no demand signal. A TIP
+     * moving is worth a read and is never work on shipped code — which
+     * is exactly what `planned` means here. Scored as shipped, Tempo
+     * alone put nine rows in ACT that nobody could act on.
+     */
+    where: "docs/PROTOCOL_EXPANSION_2026-08.md D2 — Tempo capped, behind MPP, no demand signal",
+    protocols: ["Tempo TIPs"],
+    tags: [],
+    why: "Not a rail we take. Its TIPs are read so that the day a named counterparty asks for Tempo we are not starting from zero, and for the settlement mechanics MPP's charge methods cite.",
+  },
+  {
     id: "discovery",
     state: "shipped",
     where: ".well-known/x402.json, registry listings, KEEPER_LIST submissions",
-    protocols: ["WebBotAuth", "A2A", "UCP", "WebMCP"],
+    protocols: ["WebBotAuth", "A2A", "UCP", "WebMCP", "x402"],
     tags: ["discovery"],
     why: "Discovery registrations grow additively under the standing intake rule — this is the one lane that does not need a named counterparty.",
   },
@@ -247,12 +329,30 @@ export function matchSurfaces(row) {
  * ------------------------------------------------------------------ */
 
 /**
+ * WHAT COUNTS AS CONSEQUENTIAL, and why it is not one field.
+ *
+ * Scout gives us a human-set `breaking` flag. Git gives us no such
+ * thing (see git-source.mjs), so at layer 3 the promotion signal is
+ * whether the commit touched the SPECIFICATION rather than an SDK —
+ * a fact about paths, not a guess about intent. Both are the same
+ * question in the end: did the wire we implement move?
+ */
+export function isConsequential(row) {
+  return Boolean(row.breaking) || Boolean(row.specChange);
+}
+
+function consequenceReason(row) {
+  if (row.breaking) return row.derived ? "breaking (derived from the subject)" : "breaking";
+  return "touches the specification";
+}
+
+/**
  * Three bands, and the middle one is deliberately the widest.
  *
- *  act  — breaking, and it lands on a surface we have SHIPPED. Someone
- *         has to look at our code this week.
- *  read — breaking anywhere, or payment/signature-shaped on any surface
- *         we named. A human reads the impact line and rules.
+ *  act  — consequential, and it lands on a surface we have SHIPPED.
+ *         Someone has to look at our code this week.
+ *  read — consequential anywhere, or payment/signature-shaped on any
+ *         surface we named. A human reads it and rules.
  *  log  — it happened; it is in the denominator; nobody is paged.
  */
 export function scoreRow(row) {
@@ -262,12 +362,14 @@ export function scoreRow(row) {
   const core = row.tags.filter((t) => CORE_TAGS.has(t));
   const reasons = [];
   let band = "log";
-  if (row.breaking && shipped.length > 0) {
+  if (isConsequential(row) && shipped.length > 0) {
     band = "act";
-    reasons.push(`breaking, on shipped surface: ${shipped.join(", ")}`);
-  } else if (row.breaking) {
+    reasons.push(`${consequenceReason(row)}, on shipped surface: ${shipped.join(", ")}`);
+  } else if (isConsequential(row)) {
     band = "read";
-    reasons.push(surfaces.length ? `breaking, on planned surface: ${surfaces.join(", ")}` : "breaking, no surface matched");
+    reasons.push(surfaces.length
+      ? `${consequenceReason(row)}, on planned surface: ${surfaces.join(", ")}`
+      : `${consequenceReason(row)}, no surface matched`);
   } else if (surfaces.length > 0 && core.length > 0) {
     band = "read";
     reasons.push(`${core.join("/")} on ${surfaces.join(", ")}`);
@@ -306,6 +408,9 @@ export function flattenUpdates(protocolData, today) {
         level: u.level,
         files: u.files ?? [],
         author: u.author,
+        source: meta.source ?? "scout",
+        derived: Boolean(u.derived),
+        specChange: Boolean(u.specChange),
       };
       row.tags = tagRow(row);
       row.surfaces = matchSurfaces(row);
@@ -326,7 +431,9 @@ export function cadence(protocolData, rows, today) {
     const last = mine[0]?.date ?? null;
     return {
       protocol,
-      layer: LAYERS[protocol] ?? "unmapped",
+      layer: LAYERS[protocol] ?? meta.layer ?? "unmapped",
+      source: meta.source ?? "scout",
+      scopeNote: meta.scopeNote ?? null,
       maintainers: meta.maintainers,
       repo: meta.repo,
       launched: meta.launchDate,
@@ -337,6 +444,7 @@ export function cadence(protocolData, rows, today) {
       lastMerge: last,
       quietDays: last ? daysBetween(last, today) : null,
       quiet: last === null || daysBetween(last, today) > QUIET_DAYS,
+      specChanges90: mine.filter((r) => r.age <= 90 && r.specChange).length,
     };
   }).sort((a, b) => b.last90 - a.last90);
 }
@@ -377,8 +485,17 @@ export function cadenceDiff(previous, cadenceRows) {
  * every merge scout holds as this week's news, which is the same lie in
  * the other direction: 823 rows nobody reads.
  */
-export function buildReport({ protocolData, today, previous = null, source = SCOUT_URL, firstRunDays = 7 }) {
+export function buildReport({
+  protocolData,
+  today,
+  previous = null,
+  source = SCOUT_URL,
+  firstRunDays = 7,
+  failures = [],
+  extraLimits = [],
+}) {
   const rows = flattenUpdates(protocolData, today);
+  const usedSources = new Set(Object.values(protocolData).map((m) => m.source ?? "scout"));
   const cad = cadence(protocolData, rows, today);
   const diff = diffSnapshots(previous, rows);
   Object.assign(diff, cadenceDiff(previous, cad));
@@ -398,10 +515,11 @@ export function buildReport({ protocolData, today, previous = null, source = SCO
     read: byBand("read"),
     log: byBand("log"),
     rows,
+    sources: [...usedSources],
     notObserved: [
-      "x402 — our own rail. Scout does not track it; nothing here is evidence about it.",
-      "MPP / Tempo — the second wire. Not tracked by scout.",
-      "Anything merged and not yet ingested by scout, or merged in a repo scout does not read.",
+      ...[...usedSources].flatMap((k) => (SOURCE_LIMITS[k] ?? []).map((line) => `**${k}** — ${line}`)),
+      ...failures.map((f) => `**unread** — ${f.source} (${f.url}) could not be read this run: ${f.error}`),
+      ...extraLimits,
     ],
   };
 }
@@ -421,30 +539,52 @@ export function toSnapshot(report) {
  * Rendering
  * ------------------------------------------------------------------ */
 
+function levelCell(r) {
+  if (r.breaking) return r.derived ? "**breaking**¹" : "**breaking**";
+  if (r.specChange) return "**spec**";
+  return r.derived ? `${r.level}¹` : r.level;
+}
+
+function refCell(r) {
+  return r.pr ? `[#${r.pr}](${r.url})` : `[commit](${r.url})`;
+}
+
 function bandTable(rows) {
   if (rows.length === 0) return "_None this run._\n";
-  const head = "| Protocol | PR | Level | Surface | What it does to us |\n| --- | --- | --- | --- | --- |\n";
-  return head + rows.map((r) =>
-    `| ${r.protocol} | [#${r.pr}](${r.url}) | ${r.breaking ? "**breaking**" : r.level} | ${r.surfaces.join(", ") || "—"} | ${r.title} |`
-  ).join("\n") + "\n";
+  const head = "| Protocol | Ref | Level | Surface | What it does to us |\n| --- | --- | --- | --- | --- |\n";
+  const body = rows.map((r) =>
+    `| ${r.protocol} | ${refCell(r)} | ${levelCell(r)} | ${r.surfaces.join(", ") || "—"} | ${r.title.replace(/\|/g, "\\|")} |`
+  ).join("\n");
+  const derived = rows.some((r) => r.derived);
+  return `${head}${body}\n${derived ? "\n¹ derived by this script from the commit subject, not declared by the maintainer.\n" : ""}`;
 }
 
 export function renderMarkdown(report) {
   const out = [];
   out.push(`# PROTOCOL SCREEN — ${report.ran}`);
   out.push("");
-  out.push(`Source: ${report.source} (somebody else's reading, re-checkable at each PR link).`);
+  const sourceLine = report.sources.includes("git")
+    ? `Sources: ${report.source} (somebody else's reading) and the layer-3 repositories' own git history (first-hand). Every row re-checkable at its link.`
+    : `Source: ${report.source} (somebody else's reading, re-checkable at each PR link).`;
+  out.push(sourceLine);
   out.push(report.since
-    ? `Window: merges scout showed since the ${report.since} run.`
+    ? `Window: everything the sources showed that the ${report.since} run had not already seen.`
     : `Window: first run — the last ${report.firstRunDays} days, not the whole backlog.`);
   out.push(`Denominator: ${report.denominator} merges across ${report.protocols.length} protocols (${report.protocols.join(", ")}).`);
   out.push("");
   out.push("## Cadence");
   out.push("");
-  out.push("| Protocol | Layer | Maintainers | 90d | 30d | breaking 90d | last merge | quiet? |");
-  out.push("| --- | --- | --- | --- | --- | --- | --- | --- |");
+  out.push("| Protocol | Layer | Maintainers | Source | 90d | 30d | breaking | spec | last | quiet? |");
+  out.push("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
   for (const c of report.cadence) {
-    out.push(`| ${c.protocol} | ${c.layer} | ${c.maintainers} | ${c.last90} | ${c.last30} | ${c.breaking90} | ${c.lastMerge ?? "none observed"} | ${c.quiet ? `**yes — ${c.quietDays ?? "∞"}d**` : "no"} |`);
+    const spec = c.source === "git" ? String(c.specChanges90) : "—";
+    const brk = c.source === "git" ? `${c.breaking90} (undeclared)` : String(c.breaking90);
+    out.push(`| ${c.protocol}${c.scopeNote ? " ²" : ""} | ${c.layer} | ${c.maintainers} | ${c.source} | ${c.last90} | ${c.last30} | ${brk} | ${spec} | ${c.lastMerge ?? "none observed"} | ${c.quiet ? `**yes — ${c.quietDays ?? "∞"}d**` : "no"} |`);
+  }
+  const scoped = report.cadence.filter((c) => c.scopeNote);
+  if (scoped.length) {
+    out.push("");
+    for (const c of scoped) out.push(`² ${c.protocol}: ${c.scopeNote}.`);
   }
   out.push("");
   if (report.diff.goneQuiet.length) {
@@ -455,10 +595,10 @@ export function renderMarkdown(report) {
     out.push(`**Resumed since last run:** ${report.diff.resumed.map((c) => c.protocol).join(", ")}.`);
     out.push("");
   }
-  out.push(`## ACT — breaking, on a surface we have shipped (${report.act.length})`);
+  out.push(`## ACT — a consequential change on a surface we have shipped (${report.act.length})`);
   out.push("");
   out.push(bandTable(report.act));
-  out.push(`## READ — breaking elsewhere, or payment-shaped on a named surface (${report.read.length})`);
+  out.push(`## READ — consequential elsewhere, or payment-shaped on a named surface (${report.read.length})`);
   out.push("");
   out.push(bandTable(report.read));
   out.push(`## LOG — in the denominator, nobody paged (${report.log.length})`);

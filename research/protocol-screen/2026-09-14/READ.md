@@ -1,210 +1,248 @@
 # THE FIRST PROTOCOL SCREEN — read of 2026-09-14
 
-The machine output is `screen.md` (240 merges in a 90-day first window:
-22 ACT, 64 READ, 154 LOG) and `merges.json`. This file is the human
-read: what the screen is actually good for, what it found, and what it
-changes. Source: [scout.nekuda.ai](https://scout.nekuda.ai/), somebody
-else's reading of six repositories, re-checkable at every PR link.
+Machine output: `screen.md` (612 rows in a 90-day first window — 90 ACT,
+198 READ, 324 LOG) and `merges.json`. This file is the human read.
 
-Prior art this updates: `docs/PROTOCOL_EXPANSION_2026-08.md`, the
-2026-08-30 read of the whole agentic-payment surface. Nothing below
-overturns its door-sizing. Two of its verdicts now have cadence
-evidence behind them that they did not have two weeks ago, and one of
-its lanes has a problem.
+Two sources, and the difference between them is load-bearing:
 
----
+| Layer | Protocols | Source | What it gives us |
+|---|---|---|---|
+| 1, 2, 5 | AP2, ACP, UCP, A2A, WebMCP, WebBotAuth | [scout.nekuda.ai](https://scout.nekuda.ai/) | Somebody else's reading, with a human-set `breaking` flag and a written impact line |
+| 3, 4 | **x402, MPP, Tempo TIPs** | the repositories' own git history | First-hand commits. No breaking flag exists to read; consequence is derived from whether the commit touched `specs/` |
 
-## 0. What this instrument is, and what it is not
-
-**It is not a payment-methods screen.** The keeper's ask was "look at
-all the payment methods here." Scout watches six standards — AP2, ACP,
-UCP, A2A, WebMCP, WebBotAuth — and **none of them is x402, and none is
-MPP**. Our own rail and the second wire are both invisible to it. Read
-against the five layers in `PROTOCOL_EXPANSION_2026-08.md §1`, scout
-covers layers 1, 2 and 5 and skips layer 3, which is the layer we are
-on. A quiet week on scout is not a quiet week on our wire and must
-never be written down as one.
-
-**It is an adjacency screen**, and a good one. It answers: what did the
-standards *next to us* do to the surfaces we have shipped, and to the
-lanes we have only sized? That question was previously answered by a
-person reading release notes when they remembered to. Now it is a
-script with a denominator.
-
-Worth running weekly: **yes**, at about five minutes of reading. The
-first run paid for the build twice over (§2 and §3 below). The honest
-extension is in §6.
+Prior art this updates: `docs/PROTOCOL_EXPANSION_2026-08.md` (2026-08-30).
 
 ---
 
-## 1. Cadence — the commerce layer has a winner, and it is not the one we sized against
+## 0. The headline: our own rail is the busiest thing on the board
 
-| Protocol | Layer | 90d merges | 30d | breaking 90d | last merge |
+| Protocol | Layer | 90d | 30d | spec commits 90d | last |
 |---|---|---|---|---|---|
-| UCP (Google) | 2 commerce | 108 | 38 | 17 | 2026-09-10 |
-| A2A (Linux Foundation) | 3 transport | 54 | 19 | 0 | 2026-09-10 |
-| WebBotAuth (Cloudflare + IETF) | 5 identity | 45 | 14 | 6 | 2026-09-10 |
-| WebMCP (Google + Microsoft) | 4 browser | 32 | 20 | 3 | 2026-09-14 |
-| **ACP (OpenAI + Stripe)** | 2 commerce | **1** | **0** | 0 | **2026-07-18 (58d)** |
-| **AP2 (Google + FIDO)** | 1 authorization | **0 observed** | 0 | 0 | **none observed** |
+| **x402** | 3 — ours | **267** | **105** | **41** | 2026-09-11 |
+| UCP | 2 | 108 | 38 | — | 2026-09-10 |
+| Tempo TIPs | 4 | 58 | 21 | 58 | 2026-09-10 |
+| A2A | 3 | 54 | 19 | — | 2026-09-10 |
+| **MPP** | 3 — second wire | **47** | **20** | **27** | 2026-09-10 |
+| WebBotAuth | 5 | 45 | 14 | — | 2026-09-10 |
+| WebMCP | 4 | 32 | 20 | — | 2026-09-14 |
+| ACP | 2 | 1 | 0 | — | 2026-07-18 (58d) |
+| AP2 | 1 | 0 observed | 0 | — | none observed |
 
-`PROTOCOL_EXPANSION_2026-08.md` D6 treats ACP and UCP as one row —
-"NO as a merchant, YES as a subject the observatory reads." That row
-now needs an order inside it. On merge cadence, **UCP is where the
-commerce layer is being built and ACP is where it is being left
-alone**: 108 merges to 1, 17 breaking changes to none, over the same
-90 days. UCP also stood up a **Payments Technical Council with eight
-inaugural members** on 2026-09-08 (#809) — the payments half of the
-commerce layer acquiring formal governance, under Google, while
-OpenAI/Stripe's spec repo sits still.
+The adjacency screen was measuring the neighbours while the loudest
+construction was on our own street: **x402 merged almost as much in the
+last 30 days (105) as UCP did in 90 (108)**, and 41 of its 90-day
+commits touched the specification we implement, sell readings of, and
+verify other people's doors against.
 
-**What this does and does not license.** It licenses ordering: when the
-lane-B commerce battery is written (ROADMAP L3), write it against UCP
-first. It does **not** license "ACP is dead." A specification can be
-quiet because it is finished, and ACP's product surface — Instant
-Checkout in ChatGPT — ships from Stripe and OpenAI infrastructure that
-has no reason to appear in a spec repo's merge log. **The screen sees
-merges, not adoption.** Anyone quoting the 108-to-1 has to carry that
-sentence with it.
+**Two source corrections before anything below is quoted.**
 
----
-
-## 2. The finding that costs us something: AP2, our highest-value lane, has gone quiet in the place we were going to read
-
-`PROTOCOL_EXPANSION_2026-08.md` D5 is unambiguous: AP2 mandates are
-**"BUILD — as an INSTRUMENT, not a rail. Highest-value lane in this
-file."** Zero regulatory delta, no funds held, low-medium door cost,
-and it answers the question `the_mandate` already answers in our own
-home-grown way.
-
-Two facts arrived this week:
-
-1. **Scout carries AP2 as a tracked protocol and shows zero merges for
-   it** — not "few," zero, against 823 across the other five. A direct
-   look at `github.com/google-agentic-commerce/AP2` shows its most
-   recent commit on `main` dated **2026-04-29** ("fix: remove uvlock",
-   #246), roughly four and a half months ago.
-2. **UCP #741 (2026-08-25, breaking) moved AP2's mandates inside UCP.**
-   Payment constructs — "payment authentication, **AP2 mandates**,
-   split payments, and all related JSON schema references" — moved from
-   `dev.ucp.shopping.*` to `dev.ucp.common.payment.*`, with
-   `dev.ucp.shopping.ap2_mandate` becoming `dev.ucp.common.payment.*`.
-   UCP #424 split card credentials into `pan_credential` and
-   `network_token_credential`; #746 made token binding
-   vertical-agnostic; #712 simplified payment schedule terms. All
-   breaking, all inside 30 days.
-
-**The consequence for D5 is concrete and it is not "drop the lane."**
-The instrument was always going to parse presented mandate chains. The
-question a screen can answer is *whose schema is the live one*, and the
-answer moved: **the actively-versioned, breaking-change-carrying home
-of AP2 mandate schemas is now the UCP repo, not the AP2 repo.** An
-instrument built against the AP2 repo's schemas would be built against
-an artifact nobody has touched since April, while the thing real
-implementers integrate against changes under a different namespace
-every few weeks.
-
-**Caveat, held firmly:** finding (1) rests on a page read, not a git
-clone, and FIDO Alliance specification work does not necessarily happen
-in a GitHub repo — AP2 was donated to FIDO, and a standards body's
-deliverables can move to a member-only track and look exactly like a
-dead repo from outside. **Before a line of D5 code: clone the AP2 repo
-and check `git log` directly, and check whether FIDO publishes the
-mandate spec elsewhere.** The screen has raised a question, not settled
-one. It is on KEEPER_LIST, not in this file, as a decision.
+1. **`coinbase/x402` is not the x402 repository any more.** Its tip is
+   2026-04-21, `chore: bump main to match foundation repo (#93)` — a
+   mirror that stopped tracking when the protocol moved to the x402
+   Foundation. Our own `docs/PROTOCOL_EXPANSION_2026-08.md` and
+   `docs/SPEC_READS.md` still cite spec files by their `coinbase/`
+   path. A screen pointed there would have reported that our rail went
+   quiet in April, which is the most expensive wrong answer available.
+   The live repository is `x402-foundation/x402`.
+2. **Git declares no breaking changes.** Over 90 days x402 carried zero
+   `feat!:` subjects and zero `BREAKING CHANGE` trailers. Every level
+   and consequence on a layer-3 row is **derived by our script**, and
+   the screen marks them so. `breaking: false` here means *not
+   declared*, never *not breaking*.
 
 ---
 
-## 3. The finding that pays for itself: WebBotAuth is writing our defect vocabulary for free
+## 1. A shipped instrument is now wrong, and the screen found it
 
-Four breaking merges in Cloudflare's `web-bot-auth` inside 90 days, and
-every one of them is the **same shape as `advertised-version-unpayable`**
-— a rule tightening such that artifacts that verified yesterday fail
-today, silently, on both sides:
+`src/services/preflight.ts:1019`:
 
-| PR | Date | The rule it added |
+```
+const scheme = String(entry["scheme"] ?? "");
+if (scheme && scheme !== "exact") {
+  advisories.push({ name: "nonstandard-scheme", detail: `accepts offers scheme "${scheme}" rather than the spec's "exact"...` });
+}
+```
+
+The reasoning above it, dated 2026-08-03, is sound for what it saw:
+the ecosystem was forking at the scheme identifier, Kite answered
+`gokite-aa`, and the only verified volume settled under `exact`.
+
+**`specs/schemes/` in the live x402 tree today holds four first-class
+scheme families:** `exact`, `upto`, `auth-capture`, `batch-settlement`.
+They are not vendor drift. They are the specification, worked on
+continuously through the window — `auth-capture` reached v1.1 (#3197,
+#3283, #3354), `batch-settlement` gained an SVM specification (#2698)
+and response validation (#3251), `upto` gained SVM payment flows
+(#3094) and a delegated receiver authorizer (#3346), and #3145 expanded
+`scheme_exact.md` itself with `upfront` payment flows.
+
+**So a door correctly advertising `upto` or `auth-capture` gets told by
+our free instrument that a generic client will not recognise it — "fine
+for clients built to this vendor's stack, a silent dead end for
+everyone else."** That sentence is now false about three-quarters of
+the specification's scheme families, and it is the headline free
+instrument saying it.
+
+This is precisely the failure the MPP battery was built to prevent, and
+the keeper already ruled on the principle (2026-09-04, V3 decision 3):
+*a door speaking another wire read as a broken x402 door was a verdict
+on our reader wearing a finding about their door.* Same mistake, one
+layer down — not another protocol, another **scheme within our own**.
+
+**The distinction this run forces into the open:** the standing intake
+rule in `PAYMENT_RAILS.md` governs the **till** — what we will accept
+payment in, and it grows only on a named counterparty. It must not
+govern the **battery** — what we can correctly read. A reader that does
+not know a scheme does not decline it, it *misjudges* it, and publishes
+the misjudgement over our signature. Scheme coverage in the battery is
+not a rail decision and should never have been gated like one.
+
+**Proposed (P1):** teach the advisory the specification's own scheme
+list, sourced to `specs/schemes/`, keep `nonstandard-scheme` for what
+really is outside it (`gokite-aa` still qualifies), and record the
+denominator — how many doors we have scored against the narrow test —
+because prior verdicts carrying this advisory wrongly are ours to count,
+not to quietly correct.
+
+---
+
+## 2. Eleven vocabulary citations point at an expired draft
+
+`src/store/defect-vocabulary.ts` sources **11 MPP classes** to
+`draft-httpauth-payment-00`.
+
+On 2026-09-09, MPP #351 — *"fix: renew IETF draft from Datatracker
+expiry"* — renamed that file:
+
+```
+R099  specs/core/draft-httpauth-payment-00.md → specs/core/draft-httpauth-payment-01.md
+```
+
+A 99%-similarity rename, so the substance is intact; the draft had
+**expired at the IETF Datatracker** and was renewed. But the path our
+classes cite no longer exists, and the version they name is superseded.
+`docs/MPP_READ_ONLY_2026-09.md` and `PAYMENT_RAILS.md` carry the same
+`-00` citations.
+
+Worse for the battery than the rename: **four MUST-level requirements
+entered the core draft inside the window**, each of which is a check
+that can fail, which is exactly what our vocabulary is made of.
+
+| PR | Date | The requirement |
 |---|---|---|
-| [#114](https://github.com/cloudflare/web-bot-auth/pull/114) | 2026-07-21 | Signature replay: **enforce covered components** — a signature that does not cover the right components was accepted and is now refused |
-| [#125](https://github.com/cloudflare/web-bot-auth/pull/125) | 2026-08-13 | Rust verifier **fails closed on expired signatures** |
-| [#127](https://github.com/cloudflare/web-bot-auth/pull/127) | 2026-08-18 | **Reject signatures with future `created` timestamps** — fail-closed before cryptographic verification, new `SignatureCreatedInFuture` error and `is_created_in_future` advisory |
-| [#130](https://github.com/cloudflare/web-bot-auth/pull/130) | 2026-08-26 | **`content-digest` now required** in signed directory responses: "existing signatures that omit it will fail verification against the updated spec" — **and it ships a JSON test-vector file plus a generator script** |
+| [#285](https://github.com/tempoxyz/mpp-specs/pull/285) | 2026-06-19 | Challenge ids must be non-empty |
+| [#321](https://github.com/tempoxyz/mpp-specs/pull/321) | 2026-08-18 | MUST NOT grant partial access on verification failure |
+| [#323](https://github.com/tempoxyz/mpp-specs/pull/323) | 2026-08-18 | Challenge binding verification required |
+| [#334](https://github.com/tempoxyz/mpp-specs/pull/334) | 2026-08-24 | Use `payment-expired` for expired challenges |
 
-We sell a conformance desk that checks any issuer's signed offers and
-receipts, and a named defect vocabulary (v15). Four fail-closed rules
-for signed-artifact verification, each written up with its failure
-mode, each sourced to a public spec merge, and one of them arriving
-with **test vectors we can run**, is the cheapest inventory on this
-page. The vocabulary's own rule holds — one class per check that can
-fail, sourced — and these come pre-sourced.
+Plus [#328](https://github.com/tempoxyz/mpp-specs/pull/328), an
+alternate payment credential header in the core draft — a change to
+what `src/lib/mpp-challenge.ts` has to parse.
 
-`#127` is the most interesting: **a future `created` timestamp,
-rejected before crypto**. Our own batteries check expiry. A clock
-skewed the *other* way is the mirror case and the write-up is already
-done for us.
-
-This is a `defect-vocabulary` proposal, not a build. It goes to the
-keeper as "four candidate classes, sourced, with one set of borrowed
-test vectors" — his yes / no / later.
+**Proposed (P2):** re-cite the eleven classes to `-01`, read the rename
+diff for substantive change, and size the four MUST-level checks as new
+sourced classes. The MPP battery's own rule — one class per check that
+can fail, sourced to the draft — makes this mechanical rather than a
+judgement call.
 
 ---
 
-## 4. The finding that is a clean bill of health, and why that is worth the five minutes
+## 3. Two more on our rail worth a human's eye
 
-The screen put **WebMCP #281 in the ACT band** — breaking, on a surface
-we have shipped. Read in full, it is not ours: the "observed tool
-collection struct" with its `origin` field is what a **user agent**
-maintains in its observation tool map. We are a page that *exposes*
-tools, not a browser that *observes* them. **Scoring note for next
-week: a WebMCP merge on the UA side can land in ACT wrongly; the band
-is a prompt to read, not a verdict.**
+**`docs(specs): correct v2 §8 discovery fields to match the wire
+format`** ([#3067](https://github.com/x402-foundation/x402/pull/3067),
+2026-08-31, `specs/x402-specification-v2.md`). The specification's
+discovery section did not match the wire, and the wire won. Our
+preflight reads discovery fields and our `.well-known/x402.json` serves
+them. Whether we were built against the wrong §8 or the right wire is a
+half-hour read with a definite answer.
 
-Underneath it, three WebMCP breaking changes in 90 days —
-#241 (`inputSchema` string → object), #246 (`executeTool()` input
-string → object), #281 — plus #217 adding `consequentialHint` to
-`ToolAnnotations` on 2026-09-03, "for tools that perform significant,
-real-world, or non-reversible actions (e.g. booking flights,
-**transferring money**)".
+**`feat: add settlement pending state`**
+([#3083](https://github.com/x402-foundation/x402/pull/3083),
+2026-08-17) — touching `scheme_exact_evm.md`, `scheme_upto_evm.md` and
+`scheme_batch_settlement_evm.md` together. A settlement state that did
+not exist when our flow audit ran (`PAYMENT_RAILS.md` Part A, 08-03).
+The question: does a `pending` settle read as success, as failure, or
+as something rows A.1.3 and A.1.4 never contemplated?
 
-`src/routes/webmcp.ts` is already on the current shape of all four:
-object `inputSchema`, two-headed `document.modelContext` /
-`navigator.modelContext` detection, `consequentialHint: false` on the
-free quote and **`consequentialHint: true` on buyer-signed completion**,
-adopted 2026-09-08 — five days after the spec merged it.
+Also noted, not sized: `specs/extensions/` now carries
+`http-message-signatures.md` — x402's own RFC 9421 extension, the same
+machinery the WebBotAuth findings below are about — plus
+`extension-offer-and-receipt.md`, which is the conformance desk's exact
+subject. `builder_code`, `payment_identifier` and `auth-capture` appear
+nowhere in our tree.
 
-Nothing to do. That is the point: the screen's job on a good week is to
-cost five minutes and find nothing, and a screen that can only ever
-justify itself by finding work will manufacture work.
+---
+
+## 4. The neighbours (unchanged from the adjacency read)
+
+**AP2 — the August file's "highest-value lane" — has gone quiet in the
+place we were going to read it.** Zero merges observed; its repository's
+last commit on `main` reads 2026-04-29. Meanwhile UCP #741 (breaking,
+2026-08-25) moved AP2's mandates into `dev.ucp.common.payment.*`, where
+they are versioned continuously. The lane is not dead; its **subject
+moved**. Against the layer-3 numbers above the contrast is stark: 0
+commits on the authorization layer, 267 on the payment wire.
+*Caveat held:* that rests on a page read, not a clone, and a FIDO
+deliverable can move to a member-only track and look exactly like a dead
+repo from outside. **Clone it and read `git log` before a line of D5 code.**
+
+**WebBotAuth is writing defect classes for free.** Four breaking merges
+in 90 days, each a fail-closed rule of the `advertised-version-unpayable`
+shape: covered-components replay ([#114](https://github.com/cloudflare/web-bot-auth/pull/114), 07-21),
+expired signatures ([#125](https://github.com/cloudflare/web-bot-auth/pull/125), 08-13),
+future `created` timestamps ([#127](https://github.com/cloudflare/web-bot-auth/pull/127), 08-18),
+and `content-digest` now required ([#130](https://github.com/cloudflare/web-bot-auth/pull/130), 08-26,
+**which ships JSON test vectors and a generator**).
+
+**UCP 108 merges to ACP's 1**, 17 breaking to none, plus a Payments
+Technical Council of eight seated 09-08. When lane-B commerce is
+written, UCP first; ACP becomes a dormant-watch. *Merges are not
+adoption* — ACP's product ships from infrastructure with no reason to
+appear in a spec repo's log.
+
+**WebMCP broke three times and we were already current** — object
+schemas, two-headed `modelContext` detection, and `consequentialHint`
+adopted 09-08, five days after #217 merged. #281 belongs to the user
+agent's observation map, not to a page exposing tools. Nothing to do.
 
 ---
 
 ## 5. What this does to the queue
 
-Nothing jumps ROADMAP NOW. Every row below is a proposal for the
-keeper's yes / no / later, in the order the screen would rank them.
+Nothing jumps ROADMAP NOW on its own. Ranked as the screen would rank
+them; each is a yes / no / later.
 
-| # | Proposal | Size | Rests on |
+| # | Proposal | Size | § |
 |---|---|---|---|
-| P1 | **Four candidate defect classes from WebBotAuth**, sourced to #114/#125/#127/#130, with #130's test vectors run through the conformance desk as a first check | Small — vocabulary work we already do, with the research done by someone else | §3 |
-| P2 | **Re-check AP2 directly** (clone, `git log`, and look for FIDO's published track) before any D5 work; if it is confirmed quiet, re-point D5's subject at `dev.ucp.common.payment.*` in the UCP repo | An hour of reading. Blocks a lane the August file calls the highest-value in it | §2 |
-| P3 | **When lane-B commerce is written (L3), UCP first, ACP as dormant-watch** — a one-line ordering inside D6, with the "merges are not adoption" caveat attached | A sentence today, an ordering later | §1 |
-| P4 | **Extend the screen to layer 3** — the same library, pointed at the x402 and MPP repos directly, so the instrument finally covers our own rail | Medium; §6 | §6 |
+| **P1** | **Teach the preflight advisory the spec's own scheme list** (`exact`, `upto`, `auth-capture`, `batch-settlement`), keep `nonstandard-scheme` for what is genuinely outside it, and count the doors scored under the narrow test. A shipped free instrument is issuing a wrong advisory today. | Small, and the denominator work is the honest half | §1 |
+| **P2** | **Re-cite the eleven MPP classes to `draft-httpauth-payment-01`**, read the rename diff, and size the four new MUST-level checks as sourced classes | Small–medium | §2 |
+| **P3** | **Four candidate defect classes from WebBotAuth**, with #130's borrowed test vectors run through the conformance desk | Small | §4 |
+| **P4** | **Read x402 #3067 (§8 discovery) and #3083 (settlement pending)** against our preflight and our flow audit | An hour each | §3 |
+| **P5** | **Re-check AP2 directly** before any D5 work; if confirmed quiet, re-point the instrument at `dev.ucp.common.payment.*` | An hour | §4 |
+| **P6** | **Correct our own citations**: `coinbase/x402` → `x402-foundation/x402` across docs | Minutes | §0 |
+| **P7** | When lane-B commerce is written, **UCP first, ACP dormant-watch** | A sentence | §4 |
 
 ---
 
-## 6. The gap in this instrument, named
+## 6. What this screen did not see
 
-The screen cannot see x402, MPP, Circle Gateway, or Tempo. It watches
-the neighbours and is blind to the street we live on. That is a
-property of scout, not of the screen: `scripts/lib/protocol-screen.mjs`
-takes a protocol map and scores it against `SURFACES`, and nothing in
-the scoring depends on where the merges came from.
-
-Pointing the same scorer at the GitHub APIs for `x402-foundation/x402`
-and the MPP spec repos would make this an actual payment-methods
-screen — the thing the keeper asked for — rather than an adjacency
-screen that happens to be useful. That is P4, and it is the only item
-here that is a build rather than a read.
-
-Until it exists, every artifact derived from this screen carries the
-line the runner already prints: **x402 — our own rail. Scout does not
-track it; nothing here is evidence about it.**
+- **scout** is somebody else's reading. Absent from scout is
+  unobserved, not absent. It reports merges, not adoption.
+- **git** declares no breaking flag; every layer-3 level and
+  consequence here is derived by our script, not stated by the
+  maintainer. A commit is not a release — this screen reads neither
+  tags nor releases.
+- **Tempo is scoped to `tips/` on purpose.** Its node carried 548
+  commits in the window, of consensus, precompiles and reth bumps that
+  we neither run nor read. Admitting them would have made the screen
+  look thorough and been unreadable. 58 TIP commits are in frame; the
+  rest are declared out.
+- **The window is the clone.** Layer 3 was read from 2026-06-16 forward.
+  First-appearance dates for scheme families cannot be read off this
+  clone — the boundary is not an origin.
+- **Facilitators, Circle Gateway and the CDP Bazaar index** have no
+  source here at all. Bazaar is now a spec'd x402 extension
+  (`specs/extensions/bazaar.md`); our registration state in it is still
+  only observable by asking CDP, which `scripts/bazaar-check.mjs` does
+  separately.

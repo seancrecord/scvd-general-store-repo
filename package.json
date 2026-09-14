@@ -34,7 +34,7 @@
     "build:check": "wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors",
     "bazaar:validate": "node scripts/bazaar-validate.mjs",
     "protocol-screen": "node scripts/protocol-screen.mjs",
-    "protocol-screen:test": "node --test scripts/protocol-screen.test.mjs",
+    "protocol-screen:test": "node --test scripts/protocol-screen.test.mjs scripts/git-source.test.mjs",
     "census": "node scripts/x402-census.mjs",
     "supported:kinds": "node scripts/supported-kinds.mjs",
     "agentic:check": "node scripts/agentic-market-check.mjs",
