@@ -381,7 +381,14 @@ describe("a pack, bought", () => {
       const text = intent.searchParams.get("text")!;
       expect(text.split("\n\n")).toHaveLength(2);
       expect(text).toContain(String(card["name"]).startsWith("Door") ? "Door" : "");
-      expect(text).toMatch(/No\. \d+ \/ 63/);
+      // A card in the count leads with its number; the Ally and the
+      // events sit outside the count (`no: 0`) and the post says so by
+      // leaving the number off rather than printing "No. 0 / 63".
+      if (card["card_no"]) {
+        expect(text).toContain(`No. ${Number(card["card_no"])} / ${CURRENT_SEASON.cards.length}`);
+      } else {
+        expect(text).not.toContain("No. ");
+      }
       expect(text).toContain("print");
       expect(text).toContain("Summer of 402");
       expect(intent.searchParams.get("url")).toBe(`${BASE}/p/${String(card["card_id"])}`);
