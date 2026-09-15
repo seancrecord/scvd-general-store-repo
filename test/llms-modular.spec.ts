@@ -986,8 +986,18 @@ const BASE = "https://scvd.store";
 // this pin is the guide with both edits in it, taken from the merged
 // tree and from neither half alone. This is the case the notes at the
 // top of this constant keep describing, and it is the fourteenth time.
+// 2026-09-14: the guide names the store's OASF record. The AGNTCY
+// Agent Directory discovers by taxonomy rather than by prose, and the
+// record at /agents/general-store (also /.well-known/oasf.json) is
+// where the store's skills, domains and both MCP connections are said
+// in that taxonomy — so a door that was on no discovery surface now
+// sits in the machine-surfaces block beside the OpenAPI contract, with
+// the sentence that it is unsigned and worth exactly what an unsigned
+// record is worth. Verified the same way: with llms.ts restored to the
+// prior commit the prior digest reproduced, and this copy reproduces
+// the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "0207f37c249353e6a315ace3d7d6a8ec21d68d8871a6b7e43aa6312ab379dfbe";
+  "d4125b1dbae2b1b180565b1f28b6b7b0fe2cc8a77cce445b2e23d3f664799e1a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
