@@ -263,12 +263,32 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
     version: 1,
+    /*
+     * FIRST, AND THE POSITION IS THE WHOLE POINT (2026-09-15).
+     *
+     * A proof-of-control field is read by a checker, not by this
+     * store, and a checker fetches with a read cap. This document is
+     * ~326 KB because `resources` alone serialises to ~344 KB, so when
+     * the claim sat after `compact_catalog_url` it landed at byte
+     * 331,526 — 99.4% of the way in. Agent Tools reported
+     * "agentToolsVerify not found in /.well-known/x402" while the
+     * field was demonstrably being served, because nothing that
+     * truncates ever reached it.
+     *
+     * The sibling at /.well-known/x402.json already carried it at byte
+     * 18 and would have verified; the thin document is the one the
+     * checker named first. Both now put it in the first hundred bytes.
+     *
+     * Additive, per this document's standing rule: `version` and
+     * `resources` keep their shape, and a reader that ignores unknown
+     * keys is unaffected. Key ORDER is not part of that contract — no
+     * JSON reader may depend on it — so hoisting costs nothing and
+     * buys every size-limited fetcher.
+     */
+    ...agentToolsVerifyField(),
     resources: await structuredPaidResources(c.env),
     publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
-    // Additive, per this document's standing rule: a reader that
-    // ignores unknown keys is unaffected. See store/site-verification.
-    ...agentToolsVerifyField(),
     name: STORE_SERVICE_NAME,
     description: STORE_METADATA.description,
     tags: [...STORE_TAGS],
@@ -617,8 +637,22 @@ for (const path of [
    * discovery-document card that said "does not speak the A2A message
    * protocol today": it does now, at /a2a, with three read-only tasks
    * in task language. See services/a2a-evidence.ts.
+   *
+   * THE OWNERSHIP CLAIM RIDES HERE TOO (2026-09-15). Agent Tools'
+   * checker names three paths — /.well-known/x402,
+   * /.well-known/agent-card.json and /.well-known/agent.json — and the
+   * claim was on the first only. Two of the three it looked at are
+   * served by this loop and answered 200 without the field, which
+   * reads to a checker exactly like a domain that never published it.
+   *
+   * First key, deliberately: these cards are ~4 KB, so position is not
+   * load-bearing here the way it is on the x402 documents, but a
+   * proof-of-control field belongs where a truncating reader finds it
+   * whatever the document's size today.
    */
-  wellKnownRoutes.get(path, (c) => c.json(evidenceAgentCard(c.env.STORE_BASE_URL)));
+  wellKnownRoutes.get(path, (c) =>
+    c.json({ ...agentToolsVerifyField(), ...evidenceAgentCard(c.env.STORE_BASE_URL) }),
+  );
 }
 
 /**

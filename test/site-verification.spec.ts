@@ -138,13 +138,67 @@ describe("/.well-known/openai-apps-challenge", () => {
  * serves two and a checker picks one.
  */
 describe("agent tools ownership claim", () => {
-  it.each(["/.well-known/x402", "/.well-known/x402.json"])(
+  it.each([
+    "/.well-known/x402",
+    "/.well-known/x402.json",
+    "/.well-known/agent-card.json",
+    "/.well-known/agent.json",
+    "/.well-known/a2a.json",
+  ])(
     "serves agentToolsVerify at %s",
     async (path) => {
       const doc = (await (await SELF.fetch(`${BASE}${path}`)).json()) as Record<string, unknown>;
       expect(doc["agentToolsVerify"]).toBe(AGENT_TOOLS_VERIFY);
     },
   );
+
+  /*
+   * THE FIELD BEING PRESENT IS NOT ENOUGH, AND THAT COST A ROUND.
+   *
+   * Agent Tools reported "agentToolsVerify not found in
+   * /.well-known/x402" while the field was demonstrably served on
+   * that path. It sat at byte 331,526 of a 333,690-byte document,
+   * because `resources` alone serialises to ~344 KB and the claim had
+   * been appended after it. A checker with any read cap never reached
+   * it. `serves agentToolsVerify` above passed the whole time, because
+   * SELF.fetch has no cap and JSON.parse does not care about order.
+   *
+   * So the assertion that matters is WHERE. A proof-of-control field
+   * is read by somebody else's fetcher, under somebody else's limits.
+   */
+  /*
+   * EVERY PATH THE CHECKER NAMES, not just the one we thought of.
+   * Agent Tools reported the claim missing from three paths; it was on
+   * one of them, buried. Two answered 200 without it at all, which to
+   * a checker is indistinguishable from never having published.
+   */
+  it.each([
+    "/.well-known/x402",
+    "/.well-known/x402.json",
+    "/.well-known/agent-card.json",
+    "/.well-known/agent.json",
+    "/.well-known/a2a.json",
+  ])(
+    "puts the claim in the first 2 KB of %s, where a truncating checker will find it",
+    async (path) => {
+      const body = await (await SELF.fetch(`${BASE}${path}`)).text();
+      const at = body.indexOf("agentToolsVerify");
+      expect(at, `${path} does not carry the claim at all`).toBeGreaterThan(-1);
+      expect(
+        at,
+        `${path} buries the claim at byte ${at} of ${body.length}; a checker that truncates will report it missing`,
+      ).toBeLessThan(2048);
+    },
+  );
+
+  it("still serves the claim even in a document too large to read whole", async () => {
+    // The size is the reason the position matters; if these documents
+    // ever became small this test would stop being interesting, so it
+    // asserts the condition rather than assuming it.
+    const body = await (await SELF.fetch(`${BASE}/.well-known/x402`)).text();
+    expect(body.length).toBeGreaterThan(50_000);
+    expect(body.slice(0, 2048)).toContain(AGENT_TOOLS_VERIFY);
+  });
 
   it("is a top-level field, which is what the issuer asked for", async () => {
     const doc = (await (await SELF.fetch(`${BASE}/.well-known/x402`)).json()) as Record<string, unknown>;
