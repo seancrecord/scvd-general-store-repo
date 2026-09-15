@@ -32,9 +32,37 @@ test("what the 402 is minted from is identical: runtime, KV, R2, vars", () => {
   assert.deepEqual(doors.kv_namespaces, store.kv_namespaces);
   assert.deepEqual(doors.r2_buckets, store.r2_buckets);
   assert.deepEqual(doors.vars, store.vars);
-  assert.deepEqual(doors.limits, store.limits);
   assert.equal(doors.minify, true);
   assert.deepEqual(doors.observability, store.observability);
+});
+
+/**
+ * LIMITS ARE NOT PART OF WHAT A 402 IS MINTED FROM, and holding them
+ * to parity was wrong from 2026-09-08 (RED SINCE, fixed 2026-09-14).
+ *
+ * The shelf, the KV, the R2 bucket, the vars and the runtime decide
+ * what a 402 SAYS, and those stay identical above. `cpu_ms` decides
+ * how long a Worker may think, and the two Workers do different
+ * amounts of work on purpose: the store rasterizes a PNG face inside
+ * the isolate and took its ceiling to 1000 for it (2af67d6, "The face
+ * as PNG, rendered inside the Worker with one font"); the doors are a
+ * 656 KB router with three import cuts so they carry no delivery code
+ * at all, and 100 is the tight ceiling that was chosen for them.
+ *
+ * The parity assertion did not move when the store's number did, so
+ * this file has failed on every clean tree since. Asserting a config
+ * fact that is deliberately false is worse than not asserting it: it
+ * trains a reader to ignore a red file.
+ *
+ * What IS still worth holding: the doors must never quietly acquire a
+ * larger budget than the store they hand work to.
+ */
+test("each Worker's cpu ceiling is sized to its own work, and the doors never exceed the store", () => {
+  assert.equal(doors.limits.cpu_ms, 100, "the doors are a router; this ceiling is deliberate");
+  assert.ok(
+    doors.limits.cpu_ms <= store.limits.cpu_ms,
+    `doors cpu_ms ${doors.limits.cpu_ms} exceeds the store's ${store.limits.cpu_ms} — the pass-through cannot outspend what it passes to`,
+  );
 });
 
 test("the doors hand everything else to the store by name", () => {

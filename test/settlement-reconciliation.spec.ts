@@ -76,7 +76,7 @@ function authorizationLog(authorizer: string) {
 }
 
 function receipt(logs: RpcReceipt["logs"], status = "0x1"): RpcReceipt {
-  return { status, blockNumber: "0x64", logs };
+  return { transactionHash: TX, status, blockNumber: "0x64", logs };
 }
 
 const rpc = (result: unknown) =>
@@ -90,6 +90,7 @@ function withRpc(receiptBody: RpcReceipt | null, head = "0x80"): Env {
   globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
     const body = JSON.parse(String(init?.body ?? "{}")) as { method: string };
     call += 1;
+    if (body.method === "eth_chainId") return rpc("0x2105");
     if (body.method === "eth_blockNumber") return rpc(head);
     return rpc(receiptBody);
   }) as typeof fetch;
@@ -135,14 +136,14 @@ describe("the Approval topic", () => {
 });
 
 describe("what one receipt can be made to say", () => {
-  it("finds an on-chain ceiling when the approval is in the same transaction", () => {
+  it("does not attribute an allowance merely because its approval shares the transaction", () => {
     const facts = reconcileFacts(
       receipt([approvalLog(PAYER, SPENDER, 10), transferLog(PAYER, PAYEE, 3)]),
       { txHash: TX },
       100,
     );
-    expect(facts.capSource).toBe("chain_same_tx_approval");
-    expect(facts.capUnits).toBe(10_000_000n);
+    expect(facts.capSource).toBe("none");
+    expect(facts.capUnits).toBeNull();
     expect(facts.settledUnits).toBe(3_000_000n);
   });
 
@@ -223,16 +224,16 @@ describe("what one receipt can be made to say", () => {
 });
 
 describe("the signed observation", () => {
-  it("says WITHIN CAP and marks the ceiling as observed when it was on the chain", async () => {
+  it("reports cap not observable when an approval cannot be linked to spending", async () => {
     const observation = await reconcileSettlement(
       withRpc(receipt([approvalLog(PAYER, SPENDER, 10), transferLog(PAYER, PAYEE, 3)])),
       { txHash: TX },
     );
     restore();
-    expect(observation.verdict).toBe("within_cap");
-    expect(observation.cap_observed).toBe(true);
-    expect(observation.cap_source).toBe("chain_same_tx_approval");
-    expect(observation.discretion_usdc).toBe(7);
+    expect(observation.verdict).toBe("cap_not_observable");
+    expect(observation.cap_observed).toBe(false);
+    expect(observation.cap_source).toBe("none");
+    expect(observation.discretion_usdc).toBeNull();
     expect(observation.signature).toMatch(/^[0-9a-f]+$/);
   });
 
@@ -256,17 +257,17 @@ describe("the signed observation", () => {
   });
 
   it("never lets a declared ceiling override one found on the chain", async () => {
-    // A caller who declares 100 against an on-chain approval of 10
-    // does not get to widen their own cap. The chain wins, and the
+    // A caller who declares 100 against a paired authorization of 50
+    // does not get to widen that fixed value. The chain wins, and the
     // query is echoed so the disagreement is visible.
     const observation = await reconcileSettlement(
-      withRpc(receipt([approvalLog(PAYER, SPENDER, 10), transferLog(PAYER, PAYEE, 50)])),
+      withRpc(receipt([authorizationLog(PAYER), transferLog(PAYER, PAYEE, 50)])),
       { txHash: TX, declaredCapUsdc: 100 },
     );
     restore();
-    expect(observation.cap_usdc).toBe(10);
+    expect(observation.cap_usdc).toBe(50);
     expect(observation.cap_observed).toBe(true);
-    expect(observation.verdict).toBe("over_cap");
+    expect(observation.verdict).toBe("no_discretion");
     expect(observation.query.declaredCapUsdc).toBe(100);
   });
 
@@ -328,8 +329,8 @@ describe("the shelf and the spec", () => {
     const constraints = item!.constraints?.join(" ") ?? "";
     expect(constraints).toContain("DECLARED, never as observed");
     expect(constraints).toContain("never allowed to override");
-    // The listing must not promise it can see a ceiling set earlier.
-    expect(constraints).toContain("not observed");
+    // The listing must not promote an unbound approval into observed authority.
+    expect(constraints).toContain("Approval alone is not an observed spending cap");
   });
 
   it("is an artifact class inside the existing namespace, not a new one", () => {

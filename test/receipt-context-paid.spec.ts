@@ -22,7 +22,7 @@ beforeAll(() => {
     return Response.json({ jsonrpc: "2.0", id: q.id, result });
   });
 });
-for (const id of ["settlement_attestation", "attestation_bundle"]) for (const door of ["http", "mcp", "mcp-standard"] as const) {
+for (const id of ["settlement_attestation", "attestation_bundle", "settlement_reconciliation"]) for (const door of ["http", "mcp", "mcp-standard"] as const) {
   for (const failure of ["identity", "chain", "head", ...(id === "attestation_bundle" ? ["missing-result"] : [])]) {
     it(`${id} ${door}: ${failure} is refused before settlement`, async () => {
       defect = failure;
@@ -41,7 +41,7 @@ for (const id of ["settlement_attestation", "attestation_bundle"]) for (const do
       expect(recovered.refused).toBe(false);
       expect(transfers).toBe(1);
       expect(facilitator.settleCalls).toBe(1);
-      const observations = id === "attestation_bundle" ? recovered.body.attestations as Record<string, unknown>[] : [object(recovered.body.attestation)];
+      const observations = id === "attestation_bundle" ? recovered.body.attestations as Record<string, unknown>[] : [object(recovered.body[id === "settlement_reconciliation" ? "reconciliation" : "attestation"])];
       expect(observations.map(observation => observation.tx_hash)).toEqual(id === "attestation_bundle" ? hashes : hashes.slice(0, 1));
       expect(object(await (await request(String(recovered.body.verify_url))).json()).valid).toBe(true);
     });

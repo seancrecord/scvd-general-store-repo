@@ -1,0 +1,69 @@
+{
+  "counts": {
+    "focused_cases": 194,
+    "focused_files": 3,
+    "source_reversion_failures": 61,
+    "source_reversion_controls": 133,
+    "reconciliation_probes": 11,
+    "reconciliation_failures": 8,
+    "reconciliation_controls": 3,
+    "full_suite": {
+      "files": 706,
+      "passed": 13863,
+      "failed": 39,
+      "skipped": 1,
+      "seconds": 1341.03
+    },
+    "frozen_inputs": 1474,
+    "final_affected_file_rerun": {
+      "files": 9,
+      "passed": 379
+    },
+    "restored_contract_file": {
+      "files": 1,
+      "passed": 145
+    },
+    "guide_delta_proof": {
+      "passed": 1
+    },
+    "missing_documentation_witness": {
+      "failed": 1
+    },
+    "developer_characters": 29952,
+    "mcp_description_characters": 33990
+  },
+  "log_sha256": {
+    "scvd-recovery-guidance-final-focused.log": "b0618478e934750eec110c4049c297bdc104c4fda929bf7cf1cc4360fffb73b1",
+    "scvd-recovery-guidance-final-witness.log": "1a0882919f02757c6f1679fb13d44b1f9fab9b43008b0e0208e334c7ca0a77dc",
+    "scvd-reconciliation-candidates.log": "85af07ac56fd5f4a8d0b1e0c1a4a25797fcc1c56c4e158647a34b5227b6521a0",
+    "scvd-recovery-guidance-complete.log": "c18519b66a2ca1ca4eea5da886abbd7ac746b11a75cff30e6aefeabc1683d548",
+    "scvd-recovery-guidance-acceptance.log": "daf89eb11d04d1f4bc4667308d4ae33630eab021f13ddd3b56ad756cf6c3a85c",
+    "scvd-recovery-guide-proof-final.log": "22f47d64be042903e13ca8d3a5f486160727b60672757dc443e3eab73f3d8ed8",
+    "scvd-recovery-contract-before.log": "33babaeb2615ae592aabebf412f4aa1566399f29b06166e07b77651fd37bac40",
+    "scvd-recovery-contract-after.log": "88c956a2940f1f3a5e4c906374de146addda42d5b8e3e5ca81e5d01f463f2189",
+    "scvd-recovery-contract-witness.log": "9582da9ae93915662e48514d2b344f1fe418fcfa53ee94f09360d42311d959a9",
+    "scvd-recovery-guidance-typecheck-final.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-recovery-guidance-bundle-final.log": "35508ad408b2c120db049dfe50c356dff17b5764b58be72d9bbd75b1bd246a07",
+    "scvd-recovery-contract-restored.log": "f061d0d296a6367bf365733760170a572604e6f2317edbc326f7ba605bf51e7f",
+    "scvd-recovery-docs-final.log": "98f68889067aeb0ef17a5be9a4c5e7bfb7e962614b7526cd3b883d9250ed6acd",
+    "scvd-recovery-audit-final.log": "38a624a69f377240c723ff59e96064fe1aaa9eeb5d6ce5a29f1f9155bb7d0ccf",
+    "scvd-recovery-claims-final.log": "46de00cb287f90648402581b9fb9dfd4a802a87b82158c52d4edfb09f78dbc8e"
+  },
+  "scope": "Local tests and synthetic probes only. No additional payment, commit, push or deployment.",
+  "changed_from_full_run_snapshot": [
+    "src/lib/mcp-tools.ts",
+    "src/lib/purchase-status-contract.ts",
+    "src/routes/llms.ts",
+    "test/llms-modular.spec.ts",
+    "test/paid-doors-answer-rule-57.spec.ts"
+  ],
+  "full_run_was_uninterrupted_green": false,
+  "gates": {
+    "typecheck": "passed",
+    "worker_dry_run_bundles": "both passed",
+    "documentation": "passed",
+    "claims": "46/46 resolved",
+    "code_audit": "4 warnings, within budget",
+    "whitespace": "passed"
+  }
+}

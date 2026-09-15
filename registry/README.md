@@ -64,6 +64,20 @@ finder's index on the last read (2026-09-06). Steps, the two judgment
 calls a reviewer might raise, and why the tab is not yet in the drawer:
 `agentfinder/README.md`.
 
+## AGNTCY Directory (`agntcy/`)
+
+`agntcy/record.json` — the store's OASF 1.1.0 record for the AGNTCY
+Agent Directory, a federated registry that discovers by taxonomy and
+can *install* what it finds. Cut from `src/lib/oasf-record.ts` by
+`npm run oasf:cut`, served live at `/agents/general-store`, and held to
+the MCP catalogue and the manifests by `test/oasf-record.spec.ts`.
+`npm run oasf:taxonomy:check` reads the six declared skill and domain
+rows back from `agntcy/oasf` at the pinned tag and recomputes every id
+rather than trusting it. Not yet pushed: name verification needs a
+record-signing key and a JWKS the store does not have, and the reason
+that is a keeper decision rather than a script's is in
+`agntcy/README.md`.
+
 ## Hugging Face (`huggingface/`)
 
 The corpus dataset is already on the Hub under `keeper-scvd`. The

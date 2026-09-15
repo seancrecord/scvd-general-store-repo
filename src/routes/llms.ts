@@ -1,3 +1,4 @@
+import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
@@ -442,6 +443,12 @@ Skills discovery index (Agent Skills Discovery RFC v0.2.0: both skills,
 each with the SHA-256 digest of the file it points at):
 ${base}/.well-known/agent-skills/index.json — the digested copies at
 \`${base}/.well-known/agent-skills/{name}/SKILL.md\`
+OASF record (AGNTCY Agent Directory, schema 1.1.0): ${base}/agents/general-store
+— the store's skills, domains and both MCP connections in the taxonomy a
+federated directory matches on, derived from the same catalogue /mcp
+answers tools/list from. Also at ${base}/.well-known/oasf.json. Unsigned:
+a record fetched from here is a claim by whoever controls this hostname,
+which is exactly as much as an unsigned record ever proves.
 OpenAPI 3.1 contract: ${base}/openapi.json
 The free instruments as function-calling tools, one worked call each,
 derived from the MCP catalog: ${base}/openapi-tools.json
@@ -618,11 +625,7 @@ affected 402 repeats it in its own body.
 
 TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
 
-Uncertain payment: keep the original payment/key. Use recovery.purchase_id
-and private recovery.status_token with MCP check_purchase, or GET
-\`${base}/api/purchase-status/{purchase_id}\` with Authorization: Bearer
-<status_token>. Free after authorization expiry; payment status alone
-is not proof of delivery. Avoid a second authorization while unresolved.
+${PURCHASE_RECOVERY_GUIDANCE}
 
 Idempotency. Send an Idempotency-Key header (16-128 characters) with a
 purchase — or _meta['x402/idempotency-key'] over MCP — and a repeat of

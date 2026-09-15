@@ -1,0 +1,43 @@
+{
+  "phase": "Authorized PR and merge preparation",
+  "base_commit": "b661fdc1",
+  "full_suite": {
+    "files_passed": 709,
+    "files_on_disk": 710,
+    "tests_passed": 13982,
+    "tests_skipped": 1,
+    "assertion_failures": 0,
+    "runner_errors": 1,
+    "exit_code": 1,
+    "seconds": 8976.36,
+    "limitation": "One cloudflare-pool runner startup timed out without naming its test file. This run is not green and does not establish complete coverage. A clean complete GitHub run is required before merge."
+  },
+  "source_snapshot": {
+    "files": 1480,
+    "unchanged_during_run": true
+  },
+  "guide_sha256": "1ba2bfb35524de821498e748d37daff5aab0c040e6e71b099c1b199acc7abf38",
+  "reversed_guide_sha256": "0207f37c249353e6a315ace3d7d6a8ec21d68d8871a6b7e43aa6312ab379dfbe",
+  "guide_reversal": "passed",
+  "typecheck": "passed",
+  "worker_builds": "both passed",
+  "documentation": "passed",
+  "correction_index": "passed",
+  "claims": "passed",
+  "audit": "four warnings within existing budget",
+  "log_hashes": {
+    "scvd-release-full.log": "8b05ce3a1bfac40c6ac1800fca0b6a1a419cf19f71d2e4ceb07f6c78933cafd7",
+    "scvd-release-guide.log": "9fb311660ff0f7870032aba53b0443b3c37316cadce654ff693a63e3f8dbbc70",
+    "scvd-release-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-release-build.log": "aeadf8a68d186117e48034f78e17341d411cb2566baeee8f07ffc1dfef7c1f77",
+    "scvd-release-focused.log": "19d5b5d63a58d519579ea4aa85ea741571da91b5950800fb42db8340d9e69bed"
+  },
+  "focused_rerun": {
+    "files": 5,
+    "passed": 133,
+    "failed": 0,
+    "errors": 0,
+    "seconds": 40.44,
+    "exit_code": 0
+  }
+}

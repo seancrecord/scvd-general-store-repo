@@ -5,11 +5,12 @@ import {
   BASE_EVM,
   getBlockNumber,
   getReceipt,
+  getChainId,
   isSameAddress,
-  usdcApprovals,
   usdcFromUnits,
   usdcTransfers,
 } from "@/lib/base-rpc";
+import { assertReceiptContext, assertReportedChain } from "@/lib/receipt-context";
 import type { RpcReceipt } from "@/lib/base-rpc";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
@@ -41,11 +42,10 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  * separate field from the comparison, and every reading says which
  * kind it is:
  *
- *   OBSERVED — the ceiling is on Base. Either an Approval in the same
- *   receipt (the payer signed a ceiling, the spender took part of it,
- *   and both numbers are in the logs), or an EIP-3009 authorization,
- *   where the value is fixed inside the payer's signed digest and no
- *   discretion existed at all.
+ *   OBSERVED — the selected transfer is paired with an EIP-3009
+ *   authorization, whose signed value permits no discretion. A nearby
+ *   Approval does not identify the spender of a Transfer, so receipt
+ *   co-occurrence cannot establish an allowance used by this payment.
  *
  *   DECLARED — the caller told us. We do the arithmetic, we publish
  *   the result, and we say plainly that one of the two numbers came
@@ -63,11 +63,12 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  * sold to.
  */
 
-/** How the ceiling got here. Ordered strongest to weakest, deliberately. */
+/** How the ceiling got here, including the retired source in historical records. */
 export type CapSource =
   /**
-   * An Approval in the SAME receipt: the payer signed a ceiling and
-   * the spender drew on it in one transaction. Both numbers observed.
+   * Historical only: same-receipt approvals did not establish which
+   * allowance funded the transfer. Retained for old signed records;
+   * never emitted by the current reader. See /corrections.
    */
   | "chain_same_tx_approval"
   /**
@@ -130,7 +131,7 @@ export interface ReconciliationObservation {
 
   cap_usdc: number | null;
   cap_source: CapSource;
-  /** THE FIELD THE WHOLE ARTIFACT TURNS ON. False means: caller's number. */
+  /** True only when the selected transfer has an observed authorization limit. */
   cap_observed: boolean;
   /** cap - settled, when both are known. The unused headroom. */
   discretion_usdc: number | null;
@@ -159,7 +160,7 @@ export interface ReconciliationRecord {
 }
 
 const SCOPE =
-  "This reads one Base transaction receipt at the moment shown and reports two numbers: what moved, and what ceiling was in force. It does not attest that goods or services were delivered, it resolves no dispute, it takes no custody, and it is not accounting. Produced automatically from one RPC read — no human looked, which is the point, because a party to a payment cannot produce a neutral observation of it.";
+  "This reads one Base transaction receipt at the moment shown and reports two numbers: what moved, and a fixed authorization value or caller-declared ceiling where available. It does not attest that goods or services were delivered, it resolves no dispute, it takes no custody, and it is not accounting. Produced automatically from one receipt plus reported chain and head reads — no human looked, which is the point, because a party to a payment cannot produce a neutral observation of it.";
 
 const NOT_SUBTRACTION =
   "Comparing two numbers is free and you do not need us for it. What this artifact is, is a party with no stake in the answer reading both numbers off the public chain at a stated moment and signing them together — and saying, in the same breath, which of the two it actually observed and which it was merely told. That last part is the whole difference between a receipt and evidence.";
@@ -170,9 +171,9 @@ const READINGS: Record<ReconciliationVerdict, string> = {
   no_discretion:
     "This was an EIP-3009 authorization: the amount was fixed inside the payer's own signed digest, so the spender could not have taken a different figure. There was no ceiling to exceed because there was no discretion to exercise.",
   within_cap:
-    "The amount taken is at or below the ceiling in force, and both numbers are named above with where each came from.",
+    "The amount taken is at or below the caller-declared ceiling. We observed the movement, not the truth of that ceiling.",
   over_cap:
-    "The amount taken is ABOVE the ceiling in force. Read cap_source before drawing a conclusion: an observed ceiling makes this a fact about the chain, and a declared one makes it a fact about what the caller told us.",
+    "The amount taken is ABOVE the caller-declared ceiling. This compares observed movement with what the caller told us; it does not establish that an authorization was exceeded.",
   cap_not_observable:
     "The payment settled and no ceiling was observable in this receipt, nor was one declared. We report what moved and decline to imply a limit we never saw.",
 };
@@ -291,27 +292,9 @@ export function reconcileFacts(
       recipient: largest.to, amount_atomic: largest.amount.toString() }, BASE_EVM);
     return pair.status === "matched" && pair.observed?.transfer_receipt_offset === largest.offset;
   });
-  const approvals = usdcApprovals(receipt).filter(
-    (approval) => isSameAddress(approval.owner, largest.from),
-  );
-  const approval = approvals.reduce<(typeof approvals)[number] | null>(
-    (best, entry) => (best === null || entry.amount > best.amount ? entry : best),
-    null,
-  );
-
-  if (approval) {
-    return {
-      settledUnits: largest.amount,
-      from: largest.from,
-      to: largest.to,
-      capUnits: approval.amount,
-      capSource: "chain_same_tx_approval",
-      blockHeight,
-      confirmations,
-      matched,
-      ambiguous,
-    };
-  }
+  // An Approval names an owner and spender; a Transfer does not name its
+  // spender or spending mechanism. Neither event position nor equal accounts
+  // proves that this transfer consumed that allowance.
   if (authorized) {
     return {
       settledUnits: largest.amount,
@@ -338,16 +321,19 @@ export function reconcileFacts(
   };
 }
 
-/** One reconciliation: one receipt read, one head read, signed. */
+/** Establish provider context before classifying or signing any receipt. */
 export async function reconcileSettlement(
   env: Env,
   query: ReconciliationQuery,
   now: Date = new Date(),
 ): Promise<SignedReconciliation> {
-  const [receipt, head] = await Promise.all([
+  const [receipt, head, chain] = await Promise.all([
     getReceipt(env, query.txHash),
     getBlockNumber(env),
+    getChainId(env),
   ]);
+  assertReportedChain(chain, BASE_EVM);
+  assertReceiptContext(receipt, head, query.txHash);
   const facts = reconcileFacts(receipt, query, head);
 
   /*
@@ -358,7 +344,7 @@ export async function reconcileSettlement(
    */
   let capUnits = facts.capUnits;
   let capSource = facts.capSource;
-  let capObserved = capSource.startsWith("chain_");
+  let capObserved = capSource === "chain_eip3009_fixed_value";
   if (capUnits === null && query.declaredCapUsdc !== undefined) {
     capUnits = BigInt(Math.round(query.declaredCapUsdc * 1_000_000));
     capSource = "declared_by_caller";
@@ -420,14 +406,18 @@ export async function reconcileSettlement(
     evidence_hash: await evidenceHash(core),
     scope: SCOPE,
     what_this_cannot_see: [
-      "A ceiling granted in an EARLIER transaction. Only approvals inside this receipt are visible here, so 'no cap observed' means 'not in this receipt' and never 'no ceiling existed'.",
+      "Allowance consumption, including approvals in this receipt or earlier transactions. A Transfer does not name its spender or spending mechanism. No cap observed never means no ceiling existed.",
       capObserved
         ? "Whether the ceiling was reasonable. We observed that it was in force, not that it was fair."
+        : capSource === "none"
+        ? "No ceiling was established or declared. This artifact makes no claim about an authorization limit."
         : "WHETHER THE DECLARED CEILING IS REAL. It came from whoever asked for this artifact, who is generally the party it benefits. Our signature covers the fact that we were told this number, never that it is true.",
       "Anything about delivery. Money moving is not goods arriving, and this reads only the money.",
       "Later. This is one receipt at one moment; a subsequent transaction could move more.",
       facts.ambiguous
         ? `WHETHER THIS IS THE TRANSFER YOU MEANT. ${facts.matched} matched, the largest was reported, and match_ambiguous is true for exactly this reason. A receipt can carry a fee split, a refund leg, or an entirely unrelated payment between other parties.`
+        : facts.matched === 0
+        ? "No matching USDC transfer was observed, so there is no selected transfer to attribute to the question."
         : "Whether the transfer named here is the RIGHT one, when the question did not narrow it. Here exactly one matched, so there was no choice to get wrong.",
     ],
     why_this_is_not_just_subtraction: NOT_SUBTRACTION,

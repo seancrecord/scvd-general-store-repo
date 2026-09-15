@@ -202,6 +202,8 @@ export async function buildReplayKit(
     status_url: `${base}/api/purchase-status/<purchase_id>`,
     status_token: "<held by the buyer, never published>",
     status_tool: "check_purchase",
+    original_door: "<the original interface: http or mcp>",
+    original_path: "<the original purchase path>",
     status_auth: "GET status_url with Authorization: Bearer <status_token>. Keep the token private. This read is free and never submits payment.",
   };
   const kit: ReplayKit = {

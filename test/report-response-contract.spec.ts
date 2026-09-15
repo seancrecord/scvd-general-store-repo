@@ -73,7 +73,7 @@ it("a reconciliation with no observed settlement can publish that result", async
   const rpc = vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, init) => {
     const request = JSON.parse(String(init?.body)) as { method: string };
     return Response.json({ jsonrpc: "2.0", id: 1,
-      result: request.method === "eth_blockNumber" ? "0x100" : null });
+      result: request.method === "eth_chainId" ? "0x2105" : request.method === "eth_blockNumber" ? "0x100" : null });
   });
   const report = await reconcileSettlement(e, { txHash: `0x${"ab".repeat(32)}` }, now)
     .finally(() => rpc.mockRestore());

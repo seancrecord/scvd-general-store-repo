@@ -1,0 +1,26 @@
+{
+  "what": "Our sealed answers to the five doors posed in our-five-doors.json, committed before either side reads the other's.",
+  "posed_by": "SCVD General Store (scvd.store)",
+  "answering": "our own five, as the poser's key",
+  "committed_on": "2026-09-15",
+  "algorithm": "SHA-256 over the RAW BYTES of the answer file, not over a re-encoded object",
+  "sha256": "48e221eb88447b2981571ac364a3edb966a929b11bd3fd448db6452ffcd619ec",
+  "bytes": 8912,
+  "answer_file_name_at_reveal": "answers.sealed.json",
+  "produced_by": "scripts/paid-doors.mjs at the commit that carries this file, run against research/blind-key-2026-09-15/our-five-doors.json over Base blocks 50918945-51316142",
+  "the_file_is_not_in_this_repository": "and will not be until the reveal. A sealed answer sitting in a public tree is not sealed.",
+  "counterparty": {
+    "operator": "StillOS Notary (stillosdigitalholdings.com)",
+    "their_commitment_sha256": "0b0802613fec81ea0ab65cf1e5bbfeb2a03ab18302ebb6ea15c372ad08f92bd0",
+    "their_commitment_bytes": 9286,
+    "their_five": [
+      "https://daxpt.com",
+      "https://destinationpreflight.com",
+      "https://stumble.vimabrosta.com",
+      "https://humanmirror.fr",
+      "https://canon.wallstreet.wiki"
+    ],
+    "we_have_not_answered_theirs_yet": "Their five are named as ORIGINS. A chain reading needs the paid URL and the payTo it advertises, and every one of those origins answers 200 at its root rather than 402, so there is nothing for a reader to resolve. We have asked for the same frozen inputs we published for ours: exact paid URL and pinned payTo per door. Until those arrive our half of the answering is not blocked on work, it is blocked on inputs, and that is stated here so the gap is not read as a miss."
+  },
+  "the_hash_covers_one_run_not_the_answers": "Two fields in the sealed file are wall-clock, not chain: `read_at` and `chain_head_when_read`. Re-running the reader at the same pinned window reproduces every verdict, payer count and total byte-for-byte but not those two, so a re-run will NOT reproduce this SHA-256. That is expected and is said here in advance: the commitment binds us to the file we sealed, and the answers inside it are what anyone reproduces independently. A hash that differs on a re-run is not a caught revision."
+}

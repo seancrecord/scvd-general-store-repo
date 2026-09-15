@@ -1,0 +1,105 @@
+{
+ "updated": "2026-09-14",
+ "pins": {
+  "x402-scheme-families": {
+   "digest": "sha256:384a7dad52e1badc6e74032fb3f92897ef994352f94f816422a9d758d20a4c0b",
+   "read_date": "2026-09-14",
+   "files": 26,
+   "lines": [
+    "0bd9649218de0a01d981e382d538f7602f6dd153 specs/schemes/auth-capture/scheme_auth_capture.md",
+    "0ed7629b535e1cd2925ca016ef76bdcf905f2a1d specs/schemes/batch-settlement/scheme_batch_settlement_cloudflare.md",
+    "166c04352dcde338f171a062f5ea5dfe839bb205 specs/schemes/exact/scheme_exact_xrpl.md",
+    "1a13a9bd0cbc3bc1a8256af46f0df0f36c34ad1d specs/schemes/exact/scheme_exact_casper.md",
+    "202dae031d453db9cf46cd52de92c1800aee33f5 specs/schemes/upto/scheme_upto.md",
+    "2739f01b8002075b9d3369b324c7bc2d6ebfd45f specs/schemes/auth-capture/scheme_auth_capture_evm.md",
+    "28868bacea2c1f54e17c11a29e17625edee03851 specs/schemes/exact/scheme_exact_starknet.md",
+    "2adba09e1123561ab60398179d21b82b7b1b96c1 specs/schemes/exact/scheme_exact_sui.md",
+    "42091514afc4afdf221ec24dcd72bc0df424def2 specs/schemes/exact/scheme_exact_algo.md",
+    "630e3acc634cef480e4f4f326d220fabb971a85c specs/schemes/exact/scheme_exact_canton.md",
+    "702624ad929411553c8635e60dad855e55fc9b82 specs/schemes/exact/scheme_exact_stellar.md",
+    "73b8a5e2f96839aa2e2121b220821edec14418a8 specs/schemes/exact/scheme_exact_ton.md",
+    "8652580e7899f2ffc3e6420eb6a22dcd61091168 specs/schemes/upto/scheme_upto_svm.md",
+    "87947f64fe6089fd96e3413fac4bbaa1bf6c2cdd specs/schemes/exact/scheme_exact_svm.md",
+    "9cf64c0e2f8d172765cc17e345e2f19a324b948b specs/schemes/batch-settlement/scheme_batch_settlement_svm.md",
+    "9fa6e227ce89840921cbf8c7b5d127e0515e0678 specs/schemes/batch-settlement/scheme_batch_settlement_evm.md",
+    "af6b12bbafe03940a710708b1908c63b0fcd2de3 specs/schemes/upto/scheme_upto_evm.md",
+    "b7e81c3609137e1f0c641f3a478cef93b928600a specs/schemes/exact/scheme_exact_concordium.md",
+    "c0a43b82c410755cee5ab21973aadddf90279f97 specs/schemes/exact/scheme_exact_aptos.md",
+    "c53d0185a72d4f09e7d70d3f77027d4d502840ea specs/schemes/exact/scheme_exact_cardano.md",
+    "c7c127bb866d6827609627c7eab28a0fd4a8b20e specs/schemes/batch-settlement/scheme_batch_settlement.md",
+    "cda2ed42b0169e8db05969c193a8012f74fb0b20 specs/schemes/exact/scheme_exact_evm.md",
+    "df9106d5725bfbf16477545053f69b03d8728047 specs/schemes/exact/scheme_exact_near.md",
+    "ee3860ccdf351b22a1186c08660cf6929a54d0f6 specs/schemes/exact/scheme_exact_hedera.md",
+    "fe27f3c2a971fcc8325c9f65c85bc19f8f93271f specs/schemes/exact/scheme_exact.md",
+    "ff7eaaa2868c174c71e01fc2f35e73818da048aa specs/schemes/exact/scheme_exact_keeta.md"
+   ]
+  },
+  "x402-core-v2": {
+   "digest": "sha256:b3a0d0f6c9343d05c7a5a668837e0a5636978f2678be7618d29b782020032e19",
+   "read_date": "2026-09-14",
+   "files": 1,
+   "lines": [
+    "3b4631af0684748966eafcdf6a6a90a8cbbf7198 specs/x402-specification-v2.md"
+   ]
+  },
+  "x402-extensions": {
+   "digest": "sha256:d7f3734d871f66380af2a3113f1a69b565b4285f3b96b44f4ecb5d9e5edafe8c",
+   "read_date": "2026-09-14",
+   "files": 9,
+   "lines": [
+    "00579025df94b5cf0ea349347f2cf6205fc0ad6e specs/extensions/eip2612_gas_sponsoring.md",
+    "020914b3c820a8efc508761673debebd29766e24 specs/extensions/extension-offer-and-receipt.md",
+    "15a083662a8126381b2a5667546001fc9d7e7054 specs/extensions/builder_code.md",
+    "442708e76d5a129e0c1393471d8ed71e3604c94e specs/extensions/bazaar.md",
+    "7e079035c22f5d81a5529af27c58ed722bd4a344 specs/extensions/erc20_gas_sponsoring.md",
+    "cf4e41aed56aae4904d978dd3f3d477047fcd9ca specs/extensions/http-message-signatures.md",
+    "e19e0dae8a10e2439366f820226d47f8042d552d specs/extensions/sign-in-with-x.md",
+    "e85f0d53101aa7a4246b01d9f31f0e2b1ba24f12 specs/extensions/payment_identifier.md",
+    "fae215dea438ecd410d24d99daeeccc8f06518c4 specs/extensions/extension-auth-hints.md"
+   ]
+  },
+  "mpp-core-draft": {
+   "digest": "sha256:e9b87ee82f9cef371dffebb26b575254e0318aa69896722b2b0f931410ce0bcd",
+   "read_date": "2026-09-14",
+   "files": 1,
+   "lines": [
+    "435301d7a40fe189b106440da63112466b99d2e1 specs/core/draft-httpauth-payment-01.md"
+   ]
+  },
+  "mpp-intents": {
+   "digest": "sha256:d1d41c9fdf91ab2844bfcfb39bc1c02c892a009a705310d4901db82d7656a185",
+   "read_date": "2026-09-14",
+   "files": 2,
+   "lines": [
+    "a5c1b7bd21ec9da967916e5bd1d69614f892cb08 specs/intents/draft-payment-intent-charge-00.md",
+    "a67c3d2710f9d5328d0369cda84026775ee55a98 specs/intents/draft-payment-intent-subscription-00.md"
+   ]
+  },
+  "mpp-methods": {
+   "digest": "sha256:64434f1eb26fd035c2e45ef2b83663942a3fddede39103d887bf7e7e7355d314",
+   "read_date": "2026-09-14",
+   "files": 19,
+   "lines": [
+    "06621f57a58d6071a654a035d11a2d60be32c3bd specs/methods/tempo/draft-tempo-subscription-00.md",
+    "1137fd08f8a486aa0b13a782d27e3b907c06a0a8 specs/methods/stripe/draft-stripe-charge-00.md",
+    "14c2c73a917f69b759fe41441f639cc5dfa0210f specs/methods/solana/draft-solana-session-00.md",
+    "26498f1425552ae74363f781bffce22ea8c499dd specs/methods/card/draft-card-charge-00.md",
+    "2944055ee3dc5fbbd5ebf98515ba231c0d4df3d4 specs/methods/solana/draft-solana-charge-00.md",
+    "3bdcfd0184442de86439491a4b6fc4d35d8ae355 specs/methods/lightning/draft-lightning-session-00.md",
+    "414b52a85ad0ec4648bdd72e9b4966be226650a7 specs/methods/hedera/draft-hedera-charge-00.md",
+    "43a8782502622a063fadf5d0e2543dddc1682715 specs/methods/lightning/draft-lightning-charge-00.md",
+    "5a3d6c8d06b3dcabe200347899a84338103dfe83 specs/methods/stripe/draft-stripe-subscription-00.md",
+    "69e0a735f8417724ec6b833994279bd9d9db5f02 specs/methods/xrpl/draft-xrpl-session-00.md",
+    "6a389faa6bfe087f68b65f442849a90f1667dcf9 specs/methods/nearintents/draft-nearintents-charge-01.md",
+    "6b50d035d1b5e4222f0404344695e6ac7f71d5d6 specs/methods/evm/draft-evm-session-00.md",
+    "84cbc8da618fad87c81f85c39b4c2cbab4e0b26e specs/methods/stellar/draft-stellar-charge-00.md",
+    "8c0620e68619e47b5a44c92fdb11dee5fe997728 specs/methods/tempo/draft-tempo-session-00.md",
+    "9cfdd0e14030275b07e8eaf296845dc878a0aa23 specs/methods/evm/draft-evm-charge-00.md",
+    "a31d3767f890eecf25e78487a28a74b68d01242c specs/methods/xrpl/draft-xrpl-charge-00.md",
+    "a3698589aed08c3ea2fc99d482c475ae3d36431e specs/methods/hedera/draft-hedera-session-00.md",
+    "ea6ba2d3795ee5219eff05960e9437a57717eaa9 specs/methods/tempo/draft-tempo-charge-00.md",
+    "ec7fc1868bb8eef3a4705d51ea9a4824fda9b3d0 specs/methods/usdc/draft-usdc-charge-00.md"
+   ]
+  }
+ }
+}

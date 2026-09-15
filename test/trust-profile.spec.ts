@@ -121,6 +121,20 @@ describe("the hosted trust profile", () => {
     expect(response.status).toBe(403);
     const body = (await response.json()) as { error: string };
     expect(body.error).toContain("Nothing charged");
+
+    // A scanner must learn this eligibility refusal from the contract,
+    // rather than treating every non-402 answer as a broken payment door.
+    const specResponse = await SELF.fetch("https://scvd.store/openapi.json");
+    expect(specResponse.status).toBe(200);
+    const document = await specResponse.json() as {
+      paths: Record<string, { get: { responses: Record<string, {
+        description: string;
+        content: Record<string, { schema: { $ref: string } }>;
+      }> } }>;
+    };
+    const declared = document.paths["/api/buy/trust_profile"]?.get.responses[String(response.status)];
+    expect(declared, "the observed eligibility refusal must be declared in OpenAPI").toBeDefined();
+    expect(declared?.content["application/problem+json"]?.schema.$ref).toBe("#/components/schemas/Problem");
   });
 
   it("holds the consent line on the index and serves the page honestly", async () => {

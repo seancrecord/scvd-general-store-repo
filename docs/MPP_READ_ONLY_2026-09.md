@@ -42,7 +42,7 @@ The repository's layout, which is also the protocol's shape:
 
 | Path | What it fixes |
 | --- | --- |
-| `specs/core/draft-httpauth-payment-00.md` | The challenge, credential and receipt headers; the problem-details errors; the registries |
+| `specs/core/draft-httpauth-payment-01.md` (was `-00.md` until 2026-09-09) | The challenge, credential and receipt headers; the problem-details errors; the registries |
 | `specs/intents/draft-payment-intent-charge-00.md`, `…-subscription-00.md` | What a `request` means: one-off, or recurring |
 | `specs/methods/{card,evm,hedera,lightning,nearintents,solana,stellar,stripe,tempo,usdc}/` | The method-specific `methodDetails`, credential payloads and receipt fields |
 | `specs/extensions/draft-payment-discovery-01.md` | Pre-request price advertisement in `/openapi.json` |

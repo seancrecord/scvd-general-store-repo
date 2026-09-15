@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-/** Free live preflight of our menu URLs. No payment, registration, or credentials. */
+/** Free live preflight of menu and published paid URLs. No payment, registration, or credentials. */
 import { argv } from "node:process";
+import { validationResources } from "./lib/bazaar-validation-resources.mjs";
 
 const MENU_URL = "https://scvd.store/menu.json";
+const OPENAPI_URL = "https://scvd.store/openapi.json";
 const VALIDATE_URL = "https://api.cdp.coinbase.com/platform/v2/x402/validate";
 const asJson = argv.includes("--json");
 const log = (...values) => { if (!asJson) console.log(...values); };
@@ -37,15 +39,15 @@ async function validate(resource) {
 const response = await fetch(MENU_URL, { signal: AbortSignal.timeout(30_000) });
 if (!response.ok) throw new Error(`Menu HTTP ${response.status}`);
 const menu = await response.json();
-if (!Array.isArray(menu.items) || !menu.items.length) throw new Error("Menu contained no items; nothing was checked.");
-log(`Checking ${menu.items.length} menu URLs with Coinbase's free validator.\n`);
+const specResponse = await fetch(OPENAPI_URL, { signal: AbortSignal.timeout(30_000) });
+if (!specResponse.ok) throw new Error(`OpenAPI HTTP ${specResponse.status}; publication coverage is unknown.`);
+const resources = validationResources(menu, await specResponse.json());
+log(`Checking ${resources.length} menu and published paid URLs with Coinbase's free validator.\n`);
 const results = [];
-for (const item of menu.items) {
-  if (typeof item.id !== "string" || !/^[a-z0-9_]+$/.test(item.id)) throw new Error("Menu contained an invalid item id.");
-  const url = `https://scvd.store/api/buy/${item.id}`;
+for (const { id, url } of resources) {
   const reading = await validate(url);
-  results.push({ id: item.id, url, ...reading });
-  log(`${reading.state.padEnd(13)} ${item.id}: ${reading.detail || "current metadata accepted"}`);
+  results.push({ id, url, ...reading });
+  log(`${reading.state.padEnd(13)} ${id}: ${reading.detail || "current metadata accepted"}`);
 }
 if (asJson) console.log(JSON.stringify({ checked_at: new Date().toISOString(), results }, null, 2));
 else {

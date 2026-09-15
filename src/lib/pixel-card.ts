@@ -669,6 +669,67 @@ function chunk(type: string, data: Uint8Array): Uint8Array {
   return out;
 }
 
+/**
+ * A REAL DEFLATE STREAM, FROM THE RUNTIME (2026-09-14). The stored
+ * blocks below are spec-valid and were the only option when this
+ * engine was hand-rolled; Workers ship CompressionStream natively, so
+ * the IDAT can be genuinely compressed with no dependency. That is
+ * what makes the truecolour encoder affordable: a flat-ink card at
+ * 8-bit RGB deflates to a fraction of what it would store at, so the
+ * sheet stops being a 4-bit palette curiosity and becomes the most
+ * ordinary PNG on the internet — which is the only thing every social
+ * image pipeline is guaranteed to accept.
+ */
+async function zlibDeflate(raw: Uint8Array): Promise<Uint8Array> {
+  const stream = new Blob([raw as BufferSource]).stream().pipeThrough(new CompressionStream("deflate"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+/**
+ * The sheet as 8-bit RGB: one byte a channel, filter 0, deflated.
+ * Bigger than the indexed form in pixels and smaller on the wire once
+ * compressed, and — the point — a format nothing has to think about.
+ */
+export async function encodePngTruecolor(
+  width: number,
+  height: number,
+  indices: Uint8Array,
+  palette: readonly (readonly [number, number, number])[],
+): Promise<Uint8Array> {
+  const rowBytes = width * 3;
+  const raw = new Uint8Array((rowBytes + 1) * height);
+  for (let y = 0; y < height; y += 1) {
+    const rowStart = y * (rowBytes + 1);
+    raw[rowStart] = 0;
+    for (let x = 0; x < width; x += 1) {
+      const colour = palette[indices[y * width + x]!] ?? [0, 0, 0];
+      const at = rowStart + 1 + x * 3;
+      raw[at] = colour[0]!;
+      raw[at + 1] = colour[1]!;
+      raw[at + 2] = colour[2]!;
+    }
+  }
+  const ihdr = new Uint8Array(13);
+  ihdr.set(u32(width), 0);
+  ihdr.set(u32(height), 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 2; // colour type: truecolour RGB
+  const parts = [
+    new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", await zlibDeflate(raw)),
+    chunk("IEND", new Uint8Array(0)),
+  ];
+  const total = parts.reduce((sum, part) => sum + part.length, 0);
+  const png = new Uint8Array(total);
+  let o = 0;
+  for (const part of parts) {
+    png.set(part, o);
+    o += part.length;
+  }
+  return png;
+}
+
 /** zlib stream of stored deflate blocks (max 65535 bytes each). */
 function zlibStored(raw: Uint8Array): Uint8Array {
   const blocks = Math.ceil(raw.length / 65535) || 1;
@@ -888,11 +949,11 @@ export function renderCardPng(content: CardContent): Uint8Array {
  * pixel. Where both inks touched a pixel the heavier one wins, which
  * at the sizes these are set is never visible.
  */
-export function renderTwoInkPng(
+export async function renderTwoInkPng(
   ink: Surface,
   accent: Surface,
   colours: { field: readonly [number, number, number]; ink: readonly [number, number, number]; accent: readonly [number, number, number] },
-): Uint8Array {
+): Promise<Uint8Array> {
   const width = ink.width;
   const height = ink.height;
   const indices = new Uint8Array(width * height);
@@ -910,7 +971,16 @@ export function renderTwoInkPng(
         Math.round(colours.field[2] + (to[2] - colours.field[2]) * t),
       ] as [number, number, number];
     });
-  return encodePngIndexed(width, height, indices, [...ramp(colours.ink), ...ramp(colours.accent)], 4);
+  /*
+   * TRUECOLOUR, DELIBERATELY (2026-09-14). The indexed form below is
+   * still here and still right for the passport chip; the Paywall's
+   * share sheet is the image X, Slack and Discord fetch, and an OG
+   * image is the wrong place to be clever. 8-bit RGB with a real
+   * deflate stream is the format every pipeline on the internet
+   * handles without a second thought, and compressed it lands smaller
+   * than the 4-bit palette did uncompressed.
+   */
+  return encodePngTruecolor(width, height, indices, [...ramp(colours.ink), ...ramp(colours.accent)]);
 }
 
 export const CARD_WIDTH = W;

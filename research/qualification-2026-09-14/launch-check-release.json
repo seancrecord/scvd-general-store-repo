@@ -1,0 +1,59 @@
+{
+  "recorded_at": "2026-09-15",
+  "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/700",
+  "merge_commit": "8483d14701112e117b672fe601ae30ad2cfe6aff",
+  "merged_at": "2026-09-15T08:49:07Z",
+  "pr_ci": {
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34942940279",
+    "conclusion": "success",
+    "root_test_files": 712,
+    "root_tests_passed": 14030,
+    "root_tests_skipped": 1
+  },
+  "main_ci": {
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34949056479",
+    "conclusion": "success"
+  },
+  "worker_builds": {
+    "store": "9d40c2ec-a3a3-43df-87bb-f6cde495828d",
+    "doors": "495a7d2e-7f1d-45b7-83dd-77f568287ac5",
+    "conclusion": "success"
+  },
+  "public_reads": [
+    {
+      "url": "https://scvd.store/fixtures.json",
+      "status": 200,
+      "response_date": "Tue, 15 Sep 2026 10:13:37 GMT",
+      "sha256": "28a69900113241acb797770025112095c12c0c60f708298d6340a997be6dbcbd",
+      "bytes": 45225,
+      "freshness": {
+        "claim_birth": "captured_at is when the bytes were taken from a live door (observed), or altered from such a capture (derived); a constructed shape (simulated) has none and says null.",
+        "last_verified_at": "2026-09-15T08:49:34.704528Z",
+        "verified_by": "every set is replayed by the spec its row names on every push; the deploy carrying this index is therefore the last verification, and its version metadata is the timestamp",
+        "deploy_id": "f3f92966-b978-4071-859f-e8b004442363",
+        "vocabulary": "source, captured_at, last_verified_at and proves follow the conformance-corpus vocabulary agreed on x402-foundation/x402#3396 and cut at smartflowproai-lang/x402-endpoint-validator v1.5.1, so a row here can be read beside one there without translation"
+      }
+    },
+    {
+      "url": "https://scvd.store/api/buy/launch_check",
+      "status": 402,
+      "response_date": "Tue, 15 Sep 2026 10:29:31 GMT",
+      "sha256": "9efb8b69c0144614b9ce023bf8af19089efbb1d9ca48fbc5d26e6cde54c71620",
+      "bytes": 20967
+    },
+    {
+      "url": "https://scvd.store/api/launch-check/release-check-missing",
+      "status": 404,
+      "response_date": "Tue, 15 Sep 2026 10:29:32 GMT",
+      "sha256": "3e2ea154f40b65552fa06e14bb549f963c207154696f8a5412494c66c32ade6d",
+      "bytes": 133
+    }
+  ],
+  "limits": [
+    "No paid purchase was submitted for release verification.",
+    "Fresh production issuance and unchanged bytes of an existing signed Launch Check were not observed.",
+    "Account-level KV lookup returned authentication error 10000. Deployment-metadata follow-up permission review timed out twice.",
+    "Build checks and a public version timestamp establish deployment evidence; they are not cryptographic source-to-runtime attestation.",
+    "No production latency benchmark was performed."
+  ]
+}

@@ -13,7 +13,7 @@ afterEach(() => vi.restoreAllMocks());
 async function observe(logs: RpcLog[], declaredCapUsdc?: number) {
   vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
     const q = JSON.parse(String(init?.body));
-    return Response.json({ jsonrpc: "2.0", id: q.id, result: q.method === "eth_blockNumber" ? "0x90" :
+    return Response.json({ jsonrpc: "2.0", id: q.id, result: q.method === "eth_chainId" ? "0x2105" : q.method === "eth_blockNumber" ? "0x90" :
       { transactionHash: txHash, status: "0x1", blockNumber: "0x64", logs } });
   });
   return reconcileSettlement(env as Env, { txHash, payer, recipient, declaredCapUsdc });

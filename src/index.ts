@@ -60,6 +60,7 @@ import {
   skillRoutes,
   executionContractRoutes,
   agentSkillsIndexRoutes,
+  oasfRoutes,
   statsRoutes,
   corpusRoutes,
   reportRoutes,
@@ -274,6 +275,7 @@ app.route("/", agentsMdRoutes);
 app.route("/", skillRoutes);
 app.route("/", executionContractRoutes);
 app.route("/", agentSkillsIndexRoutes);
+app.route("/", oasfRoutes);
 app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);

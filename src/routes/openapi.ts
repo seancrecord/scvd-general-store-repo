@@ -1,3 +1,4 @@
+import { PURCHASE_RECOVERY_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
 import { AUDIT_REPORT_VERDICT, GOOD_BUYER_REPORT_VERDICT, LAUNCH_REPORT_VERDICT, ONPAGE_REPORT_VERDICT, RECONCILIATION_REPORT_VERDICT } from "@/lib/report-verdicts";
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
@@ -31,7 +32,7 @@ import {
 } from "@/services/preflight";
 import { buyInputSchema, itemsRequiring } from "@/lib/bazaar-discovery";
 import {
-  PENNY_PAGE_USDC,
+  pennyPageTiersUsdc,
   SIGNING_WINDOW_SECONDS,
   manifestAccepts,
   priceTiersUsdc,
@@ -5307,6 +5308,15 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     ),
     parameters,
   };
+  if (item.id === "trust_profile") {
+    // Eligibility is checked before a quote when a target is supplied.
+    // Describe the refusal so discovery readers can distinguish it from
+    // a payment failure (the Forge intake, 2026-09-14).
+    const responses = operation["responses"] as OpenApiObject;
+    responses["403"] = PROBLEM_RESPONSE(
+      "passport_refused: the supplied endpoint lacks qualifying passport evidence. Nothing charged. Read the response's reason before choosing a target or requesting a free preflight.",
+    );
+  }
   const paymentInfo = operation["x-payment-info"] as OpenApiObject;
   paymentInfo["input"] = {
     location: "query",
@@ -5343,7 +5353,7 @@ function pennyPagePaths(
         env,
         entry.summary,
         entry.description,
-        [PENNY_PAGE_USDC],
+        pennyPageTiersUsdc(),
         true,
       ),
     };
@@ -5815,14 +5825,14 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/purchase-status/{purchase_id}": {
         get: {
-          ...freeOp("Read a retained purchase status", "A free, read-only status for catalogue purchases with a retained recovery handle. Use recovery.status_url and send the private recovery.status_token as Authorization: Bearer <status_token>. This does not verify or submit a payment; an expired payment authorization does not expire this read. The record preserves original request and terms, but settlement evidence alone does not establish delivery. Recovery can resume goods backed by retained artifact checkpoints; a settled payment without recovered goods still does not establish delivery."),
+          ...freeOp("Read a retained purchase status", PURCHASE_RECOVERY_GUIDANCE),
           security: [{ purchaseStatusToken: [] }],
           parameters: [pathParam("purchase_id", "The purchase_id in the recovery response.")],
           responses: {
             ...COMMON_RESPONSES,
             "200": { description: "Original purchase request, terms, and recorded payment state", content: { "application/json": { schema: {
               type: "object", required: ["purchase_id", "payment_state", "charged", "request", "terms", "delivery_state"],
-              properties: { purchase_id: { type: "string" }, payment_state: { type: "string", enum: ["unknown", "settled", "not_settled"] },
+              properties: { ...PURCHASE_STATUS_GUIDANCE_PROPERTIES, purchase_id: { type: "string" }, payment_state: { type: "string", enum: ["unknown", "settled", "not_settled"] },
                 charged: { type: ["boolean", "null"] }, request: { type: "string" }, terms: { type: "object" },
                 delivery_state: { type: "string", description: "The retained record may establish delivery, an order, or a resolution. Settlement alone does not establish delivery." } },
             } } } },
