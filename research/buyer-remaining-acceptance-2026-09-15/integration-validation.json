@@ -93,7 +93,10 @@
     "scvd-integrated-self-row.log": "c0b4f0b2cba0d5c8f0acfee4c608f987dca5271729f176660c7f156dd8c2ca1e",
     "scvd-integrated-audit.log": "93d4a80ed744831c5a134b78c3789704e00500499f88d8c61c35680888aacfcf",
     "scvd-integrated-corrections.log": "4606b2f6da4712cb31c1325cec2e6f09266926aaf8ab2acc76a1f708b255b381",
-    "scvd-integrated-full-suite.log": "9c1d3713136d200acdaf3b2aaf5c249618e8c227ca11244c2ee63920a972f945"
+    "scvd-integrated-full-suite.log": "9c1d3713136d200acdaf3b2aaf5c249618e8c227ca11244c2ee63920a972f945",
+    "scvd-codeql-buyer-restored.log": "e5389f64a9217875d1af3c90f639a680882c3ed8fea6829dcc6537a4741dc51a",
+    "scvd-codeql-origin-control.log": "c4218bcfaa6cd6ad12f50bf98b813d900bde925305375b108df0c61ec2c508e4",
+    "scvd-codeql-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
   },
   "self_row": {
     "files_passed": 1,
@@ -109,5 +112,20 @@
     "exit": 0
   },
   "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/718",
-  "release_status": "PR integration pending push; deployment not yet qualified"
+  "release_status": "PR integration pending push; deployment not yet qualified",
+  "ci_followup": {
+    "check_url": "https://github.com/seancrecord/scvd-general-store-repo/runs/104498278041",
+    "reported_alerts": 2,
+    "assessment": "The reported URL checks are Array.includes assertions over URL lists in Node fixtures, not substring-based production validation. Make exact membership explicit with Set.has.",
+    "production_source_changed": false,
+    "benchmark_tests_passed": 44,
+    "typecheck_exit": 0,
+    "deceptive_origin_control": {
+      "mutation": "replace exact parsed-origin equality with substring membership",
+      "test_exit": 1,
+      "restored_exactly": true,
+      "source_sha256": "7ecb7dfe90fb50664e46ccb93561fc691c1916250c18699f066c2d630a7f5288"
+    },
+    "new_security_check_status": "pending rerun on follow-up commit"
+  }
 }

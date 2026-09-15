@@ -32,12 +32,12 @@ test('collector distinguishes a missing schema from a contradictory limit',t=>{
  const changed=fixture(t,{changed:true}).read('comparison.json').flatMap(r=>r.issues);assert.equal(changed.length,1);assert.equal(changed[0].kind,'contradiction');assert.equal(changed[0].field,'OpenAPI inputs');
 });
 test('collector preserves nested URLs and literal hrefs, and records unfilled templates without fetching them',t=>{
- const f=fixture(t),urls=f.read('links.json').map(r=>r.url);
- assert(urls.includes('https://scvd.store/api/buy/launch_check?url=https://example.com/a'));
- assert(urls.includes('https://scvd.store/literal.'));
- assert(urls.includes('https://scvd.store/openapi.json'));
- assert(!urls.includes('https://scvd.store/openapi.json.'));
- assert(urls.includes('https://scvd.store/fixture-page'));
+ const f=fixture(t),urls=f.read('links.json').map(r=>r.url),urlSet=new Set(urls);
+ assert(urlSet.has('https://scvd.store/api/buy/launch_check?url=https://example.com/a'));
+ assert(urlSet.has('https://scvd.store/literal.'));
+ assert(urlSet.has('https://scvd.store/openapi.json'));
+ assert(!urlSet.has('https://scvd.store/openapi.json.'));
+ assert(urlSet.has('https://scvd.store/fixture-page'));
  assert(!urls.some(u=>/\{|%7b/i.test(u)));
  assert(f.read('unresolved-links.json').some(r=>r.reason==='template_needs_concrete_value'));
 });
@@ -65,8 +65,8 @@ test('two published schema copies cannot disagree silently',t=>{
 });
 
 test('prose colons and localized sentence stops do not become endpoint names',t=>{
- const urls=fixture(t).read('links.json').map(r=>r.url);
- assert(urls.includes('https://scvd.store/menu.json'));assert(urls.includes('https://scvd.store/observatory'));
+ const urls=fixture(t).read('links.json').map(r=>r.url),urlSet=new Set(urls);
+ assert(urlSet.has('https://scvd.store/menu.json'));assert(urlSet.has('https://scvd.store/observatory'));
  assert(!urls.some(u=>u.endsWith(':')||decodeURIComponent(u).includes('。')));
 });
 
@@ -95,7 +95,7 @@ test('redirect loops fail with their entire observed chain',async()=>{
 test('redirect limit and outside-origin destinations remain explicit gaps',async()=>{
  const limited=await crawl('https://scvd.store/a',[{status:302,headers:{location:'/b'}}],{maxRedirects:0});
  assert.equal(limited.result.state,'incomplete');assert.equal(limited.result.code,'redirect_limit');
- for(const location of ['https://elsewhere.example/a','http://scvd.store/a','https://scvd.store/admin','https://user:secret@scvd.store/a']){
+ for(const location of ['https://elsewhere.example/a','https://scvd.store.evil.example/a','https://evil.example/scvd.store/a','http://scvd.store/a','https://scvd.store/admin','https://user:secret@scvd.store/a']){
   const {result,calls}=await crawl('https://scvd.store/a',[{status:302,headers:{location}}]);
   assert.equal(result.state,'incomplete');assert.equal(result.code,'redirect_outside_scope');assert.equal(calls.length,1);
   assert(!JSON.stringify(result).includes('secret'));

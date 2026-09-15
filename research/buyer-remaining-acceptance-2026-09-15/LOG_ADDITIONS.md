@@ -36,3 +36,6 @@ No new live USDC was spent in this repair. The original BUY-001–039 and commis
 - Added GitHub generated-file hints for raw buyer snapshots, request journals and machine comparisons; reports, reviews and code remain normal reviewable diffs. Raw evidence bytes are unchanged.
 
 - Clean integrated full-suite result: 724 files / 14,194 tests passed, one existing skip, exit 0. PR #718 opened; no deployed-recovery pass is claimed before the release check.
+
+
+PR #718 CI follow-up: CodeQL classified two array-membership assertions in the Node fixture tests as partial URL checks. They now use explicit set membership. Added deceptive-host inputs and proved that replacing the actual exact-origin guard with substring matching fails the control; the production guard was restored byte-for-byte. All 44 benchmark cases and typecheck pass. No production source changed, no alert was dismissed, and the security check must rerun on the new commit.

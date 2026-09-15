@@ -97,3 +97,6 @@ The reviewed batch is committed as `52af8bbd`. Main was integrated through the r
 
 
 **Integrated full-suite result:** all **724 files / 14,194 tests passed**, with one existing skip, exit 0, in 1,773.17 seconds. The source hashes match the frozen integrated files. This is the clean full run; the earlier contaminated attempt remains recorded separately. Typecheck, both builds, 246 affected cases, 44 buyer benchmark/evidence cases and the explicit CI guards also passed. [PR #718](https://github.com/seancrecord/scvd-general-store-repo/pull/718) contains the batch; required CI and deployed wallet recovery remain the release gates.
+
+
+PR #718 CI follow-up: CodeQL classified two array-membership assertions in the Node fixture tests as partial URL checks. They now use explicit set membership. Added deceptive-host inputs and proved that replacing the actual exact-origin guard with substring matching fails the control; the production guard was restored byte-for-byte. All 44 benchmark cases and typecheck pass. No production source changed, no alert was dismissed, and the security check must rerun on the new commit.
