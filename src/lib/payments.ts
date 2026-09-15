@@ -1323,7 +1323,7 @@ export function buildRoutesConfig(env: Env): RoutesConfig {
   // the season advances, so the paid route is a pattern too.
   routes["GET /zodiac/archive/:sign/week-:week"] = pennyPageRouteConfig(
     env,
-    "The Systems Almanac archive, one sign, one past week of Season One, one penny. The current week is free at /zodiac/{address}.",
+    "Archived Systems Almanac, one sign and one past week of Season One, one penny. Available pages are listed at /zodiac/archive.",
     "That page of the Almanac has turned, friend. A penny opens the archive.",
     "The Systems Almanac. The Checksum, Season One, Week 1",
   );

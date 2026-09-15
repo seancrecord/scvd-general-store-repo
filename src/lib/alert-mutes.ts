@@ -117,6 +117,7 @@ export async function muteAlarm(
   env: Env,
   request: MuteRequest,
   conditions: readonly AlertCondition[],
+  paging: readonly string[],
   now = new Date(),
 ): Promise<AlertMute | { refused: string }> {
   const target = request.target.trim();
@@ -124,7 +125,19 @@ export async function muteAlarm(
   const condition = conditionOf(target);
   if (!conditions.includes(condition as AlertCondition)) {
     return {
-      refused: `"${condition}" is not one of the conditions that page. Nothing was muted.`,
+      refused: `"${condition}" is not a condition this store raises. Nothing was muted.`,
+    };
+  }
+  /*
+   * A DESK CONDITION HAS NOTHING TO MUTE, and saying so is better
+   * than writing a row that silences a channel it was never in. The
+   * keeper pressing this would otherwise see a mute standing on his
+   * page forever, doing nothing, with no way to tell it apart from
+   * one that works.
+   */
+  if (!paging.includes(condition)) {
+    return {
+      refused: `"${condition}" never emails you — it writes to the alarm trail and stops there. Nothing to mute.`,
     };
   }
   if (request.scope === "condition" && condition !== target) {

@@ -3,9 +3,9 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
-## 0.16.0 — 2026-09-15
+## 0.17.0 — 2026-09-15
 
-Vocabulary v16: `advertised-version-unpayable` becomes obtainable.
+Vocabulary v17: `advertised-version-unpayable` becomes obtainable.
 
 No definition changed. The class's assertion, falsifier, costs and
 boundary are byte-identical to v15 — what moved is `our_signal`.
@@ -20,6 +20,15 @@ beside it because that reading is still real and still reproducible.
 The comparator is unchanged and so is the rule that it never returns a
 quiet clean: a refusal carrying no readable challenge reads `not
 checked`, which is a different fact from `not present`.
+
+## 0.16.0 — 2026-09-15
+
+Vocabulary v16: `surface-contradicts-challenge` now includes
+the paid audit's separate MPP discovery comparison. Each observed challenge
+is compared with every advertised alternative on the exact GET operation.
+A difference requires stable terms at both reads; dynamic or omitted fields,
+unreadable metadata and changing terms remain explicit gaps. The x402
+assertion and all previous vocabulary entries are retained.
 
 ## 0.15.0 — 2026-09-13
 

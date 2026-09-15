@@ -1,6 +1,6 @@
 {
   "what_this_is": "A snapshot of https://scvd.store/defects.json cut from the store's own source at the version below (npm run defects:cut). The live document is the authority; fetchLatest() reads it, and isStale() says whether this file is behind.",
-  "version": "16",
+  "version": "17",
   "url": "https://scvd.store/defects",
   "cross_instrument_mappings_read_on": "2026-08-23",
   "classes": [
@@ -238,12 +238,12 @@
     },
     {
       "id": "surface-contradicts-challenge",
-      "title": "A same-origin surface names a different price than the 402",
-      "asserts": "Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail.",
+      "title": "A same-origin surface names different payment terms than the 402",
+      "asserts": "Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail. For MPP, an observed challenge matches at least one advertised alternative on the exact GET operation's named method, intent, amount and currency fields, with the compared terms stable at both bookends; dynamic amount and omitted currency make no assertion.",
       "costs": "A buyer who budgets from the surface it happened to read first — an installed skill, a fetched llms.txt, a client generated from the OpenAPI document — arrives at the till with the wrong number, refuses or overpays, and reports the door as something it is not. This store did exactly that to its own doors in an installed bundle for weeks before a check looked at a number beside a name.",
       "detectable": "paid",
-      "our_signal": "surfaces (the paid single-door audit's section; rows with state read and agrees false, when the bookend did not move)",
-      "falsified_by": "The surface, re-read, naming the 402's minimum on the same rail; or the 402 read again on either side of the surface read carrying a different price, which makes the reading moving rather than contradicting; or the surface's number sitting only in prose, which the convention does not read.",
+      "our_signal": "surfaces (the paid single-door audit's section; rows with state read and agrees false, when the bookend did not move; MPP: surfaces.mpp.rows with state differ under its cited reading rule)",
+      "falsified_by": "For MPP, any advertised alternative matching all named fields, or an unreadable or moving bookend. For x402, the surface, re-read, naming the 402's minimum on the same rail; or the 402 read again on either side of the surface read carrying a different price, which makes the reading moving rather than contradicting; or the surface's number sitting only in prose, which the convention does not read.",
       "repair_hint": "Derive every surface from the one place the price lives, the way this store derives its llms.txt lines from its shelf, and never type a number into a document that a buyer may install and never refresh. Where a surface must be static, put the endpoint path and the dollar amount in one code span so the convention reads it, and publish the date it was last derived.",
       "buyer_hint": "Budget from the 402, not from the surface you read first: an installed skill, a fetched llms.txt or a generated client can carry a stale number. Before paying, read the challenge's amount and refuse if it is not what you were told, rather than reporting the door as broken.",
       "registered": "2026-09-02"
@@ -505,6 +505,12 @@
     },
     {
       "version": "16",
+      "date": "2026-09-15",
+      "at_the_instigation_of": "this store, roadmap V3 PR 3, on the keeper's instruction to continue the paid MPP discovery comparison",
+      "what_changed": "surface-contradicts-challenge gains a separately versioned MPP reader in surfaces.mpp. It compares the exact GET operation's advertised alternatives with each observed Payment challenge. All alternatives must conflict on at least one named field, and the compared terms must match at both bookends, before a difference counts. Dynamic amount, omitted currency, unresolved operations, failed reads and changing terms cannot create a contradiction. The x402 assertion and verdict are unchanged. The former assertion remains here: Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail. The MPP discovery reading is advisory and does not claim general conformance or that this store's till speaks MPP."
+    },
+    {
+      "version": "17",
       "date": "2026-09-15",
       "at_the_instigation_of": "the keeper, closing the half of v15 that was left open: a class marked detectable: \"paid\" whose our_signal named only a research ledger",
       "what_changed": "advertised-version-unpayable becomes obtainable. Its assertion, falsifier, costs and boundary are UNCHANGED; what moved is our_signal, which named `walkabout ledger: advertised_version_unpayable` — a file in this store's research directory. A class is marked detectable: \"paid\" to tell a buyer the finding exists on the other side of money, and pointing that buyer at our field notes tells them we saw it once. The launch check now reads every refusal on its settle stage rather than only recording the status: it compares the offer the door serves AFTER refusing a correctly signed payment against the offer it served unpaid, on the five material terms alone, and reports advertised-version-unpayable present, not present, or not checked. So the signal a reader joins on is now a stage of a paid instrument they can commission, with the ledger kept beside it because the research reading is still real and still reproducible. The comparator is the corrected one from v15 — scheme, network, payTo, asset, amount, with nonces, expiries and timeouts free to rotate — and it keeps the v15 rule that it never returns a quiet clean: a refusal carrying no readable challenge reads `not checked`, which is a different fact from `not present` and says so in the stage line a buyer reads."

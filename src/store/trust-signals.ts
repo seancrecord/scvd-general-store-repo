@@ -385,12 +385,55 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     what_it_proves:
       "That mcpindex.ai lists the MCP server with its own live verdict page. Not an endorsement and not an audit: their verdict is their instrument, read on their page — this record only proves the listing exists.",
   },
+  /**
+   * THE THREE AGENT-TOOLS ENTRIES, one per protocol, 2026-09-15.
+   *
+   * That directory indexes x402 services, MCP servers and A2A agents
+   * as three separate populations, so this store appears in three
+   * places rather than one. Listed separately because they are
+   * separate records: a reader checking whether the A2A agent is real
+   * should not have to take an x402 listing as evidence for it.
+   *
+   * WHAT CHANGED THE CLAIM. Until this date these were crawler
+   * imports nobody here had authenticated. The store then proved
+   * domain control (the `agentToolsVerify` token in
+   * src/store/site-verification.ts), which means the operator can now
+   * edit the descriptive fields. That CUTS what a listing proves
+   * rather than raising it: the name and description are now the
+   * store's own words, so they are self-description carried by a third
+   * party, not a third party's account of us. The measured fields are
+   * the opposite — their directory holds those shut against the
+   * operator, so those remain somebody else's reading.
+   *
+   * THE GRADE IS NOT REPRODUCED HERE, and that is the rule rather than
+   * modesty about the number. This store does not republish other
+   * people's scores (the same rule that drops x402scout's 0-100 at the
+   * parse in src/services/ward-sources.ts). Their grade is their
+   * instrument, it moves on their probe schedule, and a figure copied
+   * into this file would be stale the first time they re-probe while
+   * still reading as a current claim. Follow the link and read it
+   * there.
+   */
   {
     url: "https://agent-tools.cloud/services/scvd-store-bazaar",
-    registry: "agent-tools.cloud",
-    confirmed: "2026-09-01",
+    registry: "agent-tools.cloud (x402 services)",
+    confirmed: "2026-09-15",
     what_it_proves:
-      "That agent-tools.cloud carries the store's Bazaar-registered service among the paid tools it indexes. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
+      "That agent-tools.cloud carries this origin among the x402 services it indexes, and that the operator proved control of the domain to them. Not an endorsement and not an audit: the page's description is the store's own words, and its quality grade is their measurement on their schedule — read it there rather than here.",
+  },
+  {
+    url: "https://agent-tools.cloud/a2a/agents/scvd-evidence-agent",
+    registry: "agent-tools.cloud (A2A agents)",
+    confirmed: "2026-09-15",
+    what_it_proves:
+      "That the same directory carries the SCVD Evidence Agent in its A2A population, resolved from the agent card at /.well-known/agent-card.json. Not an endorsement and not an audit: it proves the card was fetched and parsed, nothing about what the agent does when asked.",
+  },
+  {
+    url: "https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store",
+    registry: "agent-tools.cloud (MCP servers)",
+    confirmed: "2026-09-15",
+    what_it_proves:
+      "That the same directory carries this store's MCP server, listed against the endpoint at /mcp. Not an endorsement and not an audit: it proves the server was reachable and its card read, nothing about the tools behind it.",
   },
   {
     url: "https://x402.fuchss.app/provider/scvd.store",

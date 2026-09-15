@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "16";
+export const DEFECT_VOCABULARY_VERSION = "17";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -181,6 +181,13 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
   },
   {
     version: "16",
+    date: "2026-09-15",
+    at_the_instigation_of: "this store, roadmap V3 PR 3, on the keeper's instruction to continue the paid MPP discovery comparison",
+    what_changed:
+      "surface-contradicts-challenge gains a separately versioned MPP reader in surfaces.mpp. It compares the exact GET operation's advertised alternatives with each observed Payment challenge. All alternatives must conflict on at least one named field, and the compared terms must match at both bookends, before a difference counts. Dynamic amount, omitted currency, unresolved operations, failed reads and changing terms cannot create a contradiction. The x402 assertion and verdict are unchanged. The former assertion remains here: Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail. The MPP discovery reading is advisory and does not claim general conformance or that this store's till speaks MPP.",
+  },
+  {
+    version: "17",
     date: "2026-09-15",
     at_the_instigation_of:
       "the keeper, closing the half of v15 that was left open: a class marked detectable: \"paid\" whose our_signal named only a research ledger",
@@ -656,15 +663,15 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
   },
   {
     id: "surface-contradicts-challenge",
-    title: "A same-origin surface names a different price than the 402",
+    title: "A same-origin surface names different payment terms than the 402",
     asserts:
-      "Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail.",
+      "Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail. For MPP, an observed challenge matches at least one advertised alternative on the exact GET operation's named method, intent, amount and currency fields, with the compared terms stable at both bookends; dynamic amount and omitted currency make no assertion.",
     costs:
       "A buyer who budgets from the surface it happened to read first — an installed skill, a fetched llms.txt, a client generated from the OpenAPI document — arrives at the till with the wrong number, refuses or overpays, and reports the door as something it is not. This store did exactly that to its own doors in an installed bundle for weeks before a check looked at a number beside a name.",
     detectable: "paid",
-    our_signal: "surfaces (the paid single-door audit's section; rows with state read and agrees false, when the bookend did not move)",
+    our_signal: "surfaces (the paid single-door audit's section; rows with state read and agrees false, when the bookend did not move; MPP: surfaces.mpp.rows with state differ under its cited reading rule)",
     falsified_by:
-      "The surface, re-read, naming the 402's minimum on the same rail; or the 402 read again on either side of the surface read carrying a different price, which makes the reading moving rather than contradicting; or the surface's number sitting only in prose, which the convention does not read.",
+      "For MPP, any advertised alternative matching all named fields, or an unreadable or moving bookend. For x402, the surface, re-read, naming the 402's minimum on the same rail; or the 402 read again on either side of the surface read carrying a different price, which makes the reading moving rather than contradicting; or the surface's number sitting only in prose, which the convention does not read.",
     repair_hint:
       "Derive every surface from the one place the price lives, the way this store derives its llms.txt lines from its shelf, and never type a number into a document that a buyer may install and never refresh. Where a surface must be static, put the endpoint path and the dollar amount in one code span so the convention reads it, and publish the date it was last derived.",
     buyer_hint:

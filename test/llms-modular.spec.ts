@@ -992,14 +992,19 @@ const BASE = "https://scvd.store";
 // record is worth. Verified the same way, and across the merge: with
 // only that paragraph removed from the merged tree, main's 1ba2bf
 // digest above reproduced, and this copy reproduces the new one.
+// 2026-09-15: preserve main's archived Zodiac and filing changes alongside
+// wallet Claims instructions and narrower reconciliation task wording.
+// The integrated digest is qualified by reversing only the buyer copy.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "aa53eaeed10db2b158a71f6dde1d7b86debb08e6561621c8d0427d50919eb80b";
+  "293280bf76d818f930e0d177c0ce006005aa9a39c3aeb31074d6f807fe3e3f97";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
 
 function normalize(text: string): string {
   return text
+    // Filing headings added to keep the index short; the prose is preserved.
+    .replace(/## (?:At the counter|More ways to use the store)\n\n/g, "")
     .replace(/Served: \d{4}-\d{2}-\d{2}/g, "Served: <DATE>")
     .replace(/Last checked by hand: \d{4}-\d{2}-\d{2}/g, "Last checked: <DATE>");
 }

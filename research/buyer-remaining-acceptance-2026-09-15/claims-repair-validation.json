@@ -1,0 +1,162 @@
+{
+  "date": "2026-09-15",
+  "status": "local_full_suite_complete_with_documented_interference",
+  "live_spend_usdc": 0,
+  "source_reversion": {
+    "new_cases_failed": 46,
+    "existing_guide_cases_passed": 13,
+    "baseline_exit": 1,
+    "restored_exactly": true,
+    "source_sha256": {
+      "src/routes/claims.ts": "4a7bf4d1be4712e06958b1c95b3c47e9b5932efa3b68c797094c51ef63d01221",
+      "src/services/paid-recovery.ts": "67b0a89e6a227e06ea509d0558e1d1e47a45ee86dea912328374b58b23e778bc",
+      "src/services/claimed-good.ts": "d8887ae2c4464a2812e820d6fb7f60447d7291c47e25052bfec361510bc1e129",
+      "src/lib/claims-contract.ts": "bed0e553b7c12cf6a5b1de3570c859536117e2fb08af834d617995f68614c506",
+      "src/routes/openapi.ts": "e3a829b88c600cfa7e453e85ec4aa71e91e0ad8e972c9f8e9fdf98699154b004",
+      "src/routes/skill.ts": "a69b38195e75d4813f3ff06297947c0b8171813efb935bdf6be62b50c1b55bb0",
+      "src/routes/llms.ts": "81b3e71d3d12d16821c4808f83fe0bcab51803e5360cd76b3cb58c14519e8fb9",
+      "src/store/spec.ts": "d93dc993307db99a9a9a54e300b47f653bb54f6ee11b55c4e6413b1e6f5f9289",
+      "src/store/corrections-ledger/index.ts": "1944a7ab93881a30cabba91a9a9605820cbf96b99416401a87fcfc9384fd72b8",
+      "src/store/corrections-ledger/2026-09-15-wallet-original-good-recovery.ts": "6e7c901df086ebab9f8c08ae735b3367a516d234e917c4745ecaf09ff30e9151"
+    }
+  },
+  "affected_tests": {
+    "files_passed": 13,
+    "tests_passed": 340,
+    "runner_exit": 0
+  },
+  "typecheck": {
+    "command": "npm run typecheck",
+    "exit": 0
+  },
+  "build": {
+    "command": "npm run build:check",
+    "exit": 0,
+    "workers": 2,
+    "deploy": false
+  },
+  "source_guards": {
+    "claims_unbound": 0,
+    "docs": "passed with existing age notices",
+    "corrections_index_tests_passed": 2
+  },
+  "full_suite": {
+    "status": "completed_with_documented_interference",
+    "command": "npm test -- --maxWorkers=2",
+    "tests_skipped_by_command": 0,
+    "timeout_changes": false,
+    "isolation_disabled": false,
+    "interrupted_attempts": [
+      {
+        "reason": "stopped before companion source changes",
+        "exit": 130
+      },
+      {
+        "reason": "restarted with bounded concurrency under observed concurrent local full-suite load; prior historical full attempt took 8976.36 seconds and ended with a runner-startup error",
+        "exit": 130
+      }
+    ],
+    "interrupted_attempts_credited_as_pass": false,
+    "observed_interference": {
+      "file": "package.json",
+      "cause": "agent CI-wiring rewrite briefly exposed empty file to Vite while suite ran",
+      "affected_spec": "test/buyer-atomic-idempotency.spec.ts",
+      "affected_case": "mcp \u2192 mcp eip155:8453 pack: fresh concurrent authorizations share one payment and recovery",
+      "error": "JSONError: File is empty",
+      "rerun": {
+        "command": "npx vitest run test/buyer-atomic-idempotency.spec.ts --maxWorkers=1",
+        "exit": 0,
+        "files_passed": 1,
+        "tests_passed": 122,
+        "duration_seconds": 49.53
+      },
+      "credited_as_pass": false
+    },
+    "exit": 1,
+    "files_passed": 715,
+    "files_failed": 1,
+    "tests_passed": 14102,
+    "tests_failed": 1,
+    "tests_skipped": 1,
+    "duration_seconds": 3988.99,
+    "clean_full_pass": false
+  },
+  "scope": {
+    "rails": "Five configured fixture rails; no live rail qualification",
+    "purchase_doors": [
+      "HTTP",
+      "MCP HTTP-402 profile",
+      "MCP tool-result profile"
+    ],
+    "recovery_door": "HTTP /api/claims",
+    "original_good_examples": [
+      "small_blessing",
+      "spot_check",
+      "the_confession",
+      "aura_walk"
+    ],
+    "retained_storage": [
+      "artifact:response",
+      "completed attempt response"
+    ],
+    "no_claims": [
+      "new paid cold-entry cohort",
+      "live original-good Claims recovery",
+      "all historical products",
+      "multi-region nonce replay safety",
+      "fresh settlement",
+      "deployment"
+    ]
+  },
+  "tests_sha256": {
+    "test/wallet-original-good.spec.ts": "a9cf742d6d6ae9ce7f7b060767b887f6606c97ff4d378af537967ea24b956eeb",
+    "test/llms-modular.spec.ts": "7935574eab7277b8013ff8a9aaf29d4535fb2616c00914dedab8a138c81f9e98",
+    "test/helpers/buyer-signed-payments.ts": "426c33545014c3418c1dfcd7790f44f26933aa917fa1d5d7b3c26b6024ff3856",
+    "test/recovered-order-language.spec.ts": "d743d334479eb03f06e4566a5fa0835749520b938901f98bdbf72eafb3ee6617"
+  },
+  "log_sha256": {
+    "scvd-claims-source-reversion-red.log": "2e04e5f23af6dfecbe2ec8d77273f8cf99943ac98bfcb84460966c321b2c98e0",
+    "scvd-claims-affected-green.log": "f4569b44c552d1ddbe5852e66252687b6e7f1d6b93aad175455917ecf880bdef",
+    "scvd-claims-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-claims-build-clean.log": "691611c951b23548b2a37f1022d766cb80aaef9a4caada34ba6af378a698fad9",
+    "scvd-claims-check.log": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99",
+    "scvd-claims-docs.log": "1fdee8a2c64a68c9e7297ac5d6a825b0313c265b6c61e7c79e6477161cf3bc8a",
+    "scvd-claims-corrections.log": "471f3d19f3440dd7e77c2c182851c264d5637264ab4e70df89a8550b190f2e0e",
+    "scvd-order-language-red.log": "b3de8e7f62099ceca5c7c12ba670defc8566d93b65a303319c05f06398108376",
+    "scvd-order-language-green.log": "0a11e9f043f0920cf182ac4f7b16f0063933d6c2abdfc42cd24eb4dd92edd207",
+    "scvd-claims-stable-idempotency.log": "def4c7004449da0c4dcb2ea5a5b306cb819c72b4cbfcdeb041fa5e812d4c812e",
+    "scvd-claims-bounded-full-suite.log": "b1943e6411c2932a9ce328a5d3b09a5d2d1149a0060baf8780c603a822a5bfcf"
+  },
+  "companion_order_language": {
+    "id": "B-RORDERMSG",
+    "before_fix_failed": 9,
+    "affected_files_passed": 5,
+    "affected_tests_passed": 271,
+    "runner_exit": 0
+  },
+  "final_source_sha256": {
+    "src/routes/claims.ts": "4a7bf4d1be4712e06958b1c95b3c47e9b5932efa3b68c797094c51ef63d01221",
+    "src/services/paid-recovery.ts": "67b0a89e6a227e06ea509d0558e1d1e47a45ee86dea912328374b58b23e778bc",
+    "src/services/claimed-good.ts": "93babdee1ec7254c9bcf319e823e1706a4d71d46e390693c7ff6c1e5d76a4d19",
+    "src/lib/claims-contract.ts": "bed0e553b7c12cf6a5b1de3570c859536117e2fb08af834d617995f68614c506",
+    "src/routes/openapi.ts": "e3a829b88c600cfa7e453e85ec4aa71e91e0ad8e972c9f8e9fdf98699154b004",
+    "src/routes/skill.ts": "a69b38195e75d4813f3ff06297947c0b8171813efb935bdf6be62b50c1b55bb0",
+    "src/routes/llms.ts": "81b3e71d3d12d16821c4808f83fe0bcab51803e5360cd76b3cb58c14519e8fb9",
+    "src/store/spec.ts": "d93dc993307db99a9a9a54e300b47f653bb54f6ee11b55c4e6413b1e6f5f9289",
+    "src/store/corrections-ledger/index.ts": "1944a7ab93881a30cabba91a9a9605820cbf96b99416401a87fcfc9384fd72b8",
+    "src/store/corrections-ledger/2026-09-15-wallet-original-good-recovery.ts": "db5f360e22b01ad7930d9d20a113eeacafd69e146049cea65e212fbcda3b2179",
+    "src/services/purchase-intent.ts": "0ac803db804ecee3ed0575c53679bcae57dc59136720333f85714bef190800d5",
+    "src/services/signed-purchase-recovery.ts": "edd4347e580a817387d273f8ca384b1c72c143dd09c95e16508df6b9086874be"
+  },
+  "final_typecheck": {
+    "command": "npm run typecheck",
+    "exit": 0
+  },
+  "integration": {
+    "tested_head": "eb9350dbb671538854b162e223de2cb6bc366f45",
+    "observed_origin_main": "da0341788d03d7cabd3300b35bed0edacaa0974e",
+    "behind_commits": 11,
+    "status": "not integrated; release gate remains",
+    "overlap_in_modified_runtime_files": []
+  }
+}

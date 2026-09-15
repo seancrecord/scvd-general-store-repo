@@ -1,3 +1,4 @@
+import { EVM_ADDRESS_PATTERN, SOLANA_ADDRESS_PATTERN } from "@/lib/purchase-input-syntax";
 import {
   BASE_EVM,
   EVM_CHAINS,
@@ -78,7 +79,7 @@ function evmRail(chain: EvmChain): StatementRail {
     readMethod: "indexed eth_getLogs over exactly the block window stated",
     cannotSee:
       "a wallet moving ETH, other tokens, or funds on other networks shows none of that here",
-    isAddress: (value) => /^0x[0-9a-fA-F]{40}$/.test(value),
+    isAddress: (value) => new RegExp(EVM_ADDRESS_PATTERN).test(value),
     normalize: (value) => value.toLowerCase(),
     head: (env) => getBlockNumber(env, chain),
     transfersTo: async (env, wallet, from, to) =>
@@ -99,7 +100,7 @@ function evmRail(chain: EvmChain): StatementRail {
 }
 
 export function isSolanaAddress(value: string): boolean {
-  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value)) return false;
+  if (!new RegExp(SOLANA_ADDRESS_PATTERN).test(value)) return false;
   const bytes = decodeBase58(value);
   return bytes !== null && bytes.length === 32;
 }

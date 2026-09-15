@@ -41,6 +41,8 @@ interface AlertLogEntry {
   identity?: string;
   /** Set when the last raise sent no email, and by which kind of mute. */
   email_muted?: AlertMute["scope"];
+  /** Set when this condition never mails at all — a desk finding, not a page. */
+  desk_only?: true;
 }
 
 /**
@@ -335,6 +337,17 @@ function deliveriesHtml(
  * actually wanted was one desk item to stop knocking.
  */
 function muteLeverHtml(alert: AlertLogEntry): string {
+  /*
+   * NO LEVER, BECAUSE THERE IS NO WIRE. A desk condition never
+   * reached the phone, so offering "stop emailing this one" would be
+   * offering to turn off something already off — and the keeper would
+   * have no way to tell that press apart from one that did something.
+   * The line says which desk answers it instead.
+   */
+  if (alert.desk_only) {
+    return `<div style="margin:0.3em 0"><small><strong>Desk only</strong> — this one never emails
+      anybody; it is answered where it is raised, not by being paged about.</small></div>`;
+  }
   if (alert.email_muted) {
     const target = alert.email_muted === "condition" ? alert.condition : alert.identity;
     if (!target) return "";

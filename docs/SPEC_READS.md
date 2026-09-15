@@ -1,5 +1,90 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-15 — Confidence review and compatibility correction
+
+The initial catalog patch renamed `store.zodiac`. Retain that original
+field and URL as a compatibility alias beside `zodiac_archive`; archive
+labeling does not justify removing a published field. The regression
+was demonstrated failing on the PR before restoring the alias.
+
+Rechecked [OpenAPI latest (3.2.1)](https://spec.openapis.org/oas/v3.2.1.html)
+and the [llms.txt v2 proposal](https://llmstxt.org/), plus Coinbase's
+[current discovery requirements](https://docs.cdp.coinbase.com/x402/seller/get-discovered)
+and [MCP's served 2026-07-28 tool contract](https://modelcontextprotocol.io/specification/2026-07-28/server/tools).
+The first pass read OpenAPI 3.1.1, not the newest published revision;
+our emitted contract remains 3.1.0. Examples, bounded path enums and
+operation deprecation remain defined constructs in the newer version.
+MCP keeps functionality descriptions separate from input/output schemas;
+the numeric description and catalog budgets are ours, not MCP limits.
+The llms.txt proposal favors a concise index with linked detail and
+specifies no universal 30,000-character threshold. These checks do not
+prove Forge will expand path enums or that shorter descriptions improve
+agent conversion. No MPP implementation was changed or validated.
+
+## 2026-09-15 — Current offerings, archive scope and reading budgets
+
+Read the [llms.txt proposal](https://llmstxt.org/),
+[OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html) (Parameter
+Objects, examples, path templates and response links), and current
+[Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+The 30,000-character index budget is our local guard, not a universal
+limit specified by llmstxt.org. File-list links use ordinary Markdown.
+The complete guide remains available separately. No new Worker API or
+binding is introduced; tests use the installed locked Worker runtime.
+
+The keeper corrected the scope: archived Zodiac pages should not be
+promoted as active offerings. Current Almanac slugs come from the same
+reader as its index, expressed with a bounded path enum instead of a
+paid operation per page. Existing concrete seed paths stay compatible.
+Archive indexes remain explicitly labeled and opt-in. A count of all
+reachable paid URLs, including archived writing, is not an active
+catalog count or a target for marketplace indexing.
+
+Input syntax is shared with the existing route validators. Lexical
+schema validation does not prove a Solana key decodes to 32 bytes, that
+a transaction exists, that a subject is eligible, or that a purchase
+will succeed. The live route remains authoritative. OpenAPI examples
+are worked inputs, not claims of current availability.
+
+Release witness rechecked on 2026-09-15: the store's live preflight v2
+returns 400 `own_host_refused` for its own spot-check URL. This is an
+instrument limitation, not a failed payment challenge and not a pass.
+[x402-list's SCVD history](https://x402-list.com/services/sean-claude-van-damme-s-general-store)
+reports 32 endpoints and 14/14 conformance checks on the unpaid handshake.
+That does not establish paid delivery or cover every current route.
+All nine published schema patterns compile with Go regexp using the
+checksum-verified official Go 1.27.1 archive from [go.dev](https://go.dev/dl/).
+
+## 2026-09-15 — paid MPP discovery comparison (PR 3)
+
+Read [discovery draft-01](https://github.com/tempoxyz/mpp-specs/blob/main/specs/extensions/draft-payment-discovery-01.md)
+from the primary repository through the web reader and GitHub contents
+API. Operation-level `x-payment-info` allows a flat offer or an `offers`
+array of alternatives. Amount is an atomic integer string or dynamic
+`null`; currency is optional. Discovery is optional and advisory; the
+runtime 402 remains authoritative. Draft-01's output-schema additions
+are not runtime evidence and are outside this comparison.
+
+The new `mpp-discovery-v1` reading compares only the exact GET operation
+and the captured challenge's method, intent, amount and currency. It
+reuses the paid audit's existing OpenAPI and bookend requests. All
+alternatives are retained; dynamic amount and omitted currency are
+unmeasured fields. A difference counts only when every alternative
+conflicts and the compared challenge terms match at both bookends.
+Unresolved operation/server mapping, malformed data and failed reads
+are gaps, not defects. Unobserved discovery alternatives are not tested
+for availability. The frozen `mpp-v1` battery and x402 verdict do not
+change. The store observes MPP; its till does not speak it.
+
+Rechecked the primary discovery draft, Workers best practices and Wrangler
+commands on 2026-09-15. Retrieved Workers types 5.20260915.1 and verified
+the stream reader, cancellation and lock-release APIs. No binding,
+compatibility-date or checkout changes are required.
+
+Read the [OpenAPI 3.1.1 server fields](https://spec.openapis.org/oas/v3.1.1.html)
+for inheritance precedence. Explicit null server declarations are malformed
+and remain unreadable; only omitted fields inherit a parent.
+
 ## 2026-09-14 — Forge OpenAPI intake
 
 For the authorized release, read current main's rule 62 and

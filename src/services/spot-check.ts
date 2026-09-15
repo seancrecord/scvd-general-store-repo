@@ -1,3 +1,4 @@
+import { SPOT_CHECK_HOST_PATTERN } from "@/lib/purchase-input-syntax";
 import { signJcs } from "@/lib/jcs";
 import { signMessage } from "@/lib/signing";
 import { subjectHistory, type SubjectHistory } from "@/services/subject-history";
@@ -79,7 +80,7 @@ export interface SignedSpotCheck {
 export function validSpotCheckHost(raw: string | undefined): string | null {
   const host = (raw ?? "").trim().toLowerCase();
   if (!host || host.length > 253) return null;
-  if (!/^[a-z0-9][a-z0-9.-]*\.[a-z0-9-]+$/.test(host)) return null;
+  if (!new RegExp(SPOT_CHECK_HOST_PATTERN).test(host)) return null;
   return host;
 }
 

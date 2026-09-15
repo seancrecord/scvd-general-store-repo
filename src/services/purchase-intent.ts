@@ -1,4 +1,4 @@
-import { humanOrderEvidence } from "@/services/human-order-proof";
+import { orderStatusBody } from "@/lib/order-status";
 import { laborCapacity } from "@/services/labor-reservations";
 import { publicationDelivery, type PublicationSnapshot } from "@/lib/publication-recovery";
 import type { CommissionPurchase } from "@/services/commission-purchase";
@@ -291,8 +291,7 @@ async function purchaseDelivery(env: Env, record: PurchaseIntent): Promise<Recor
     const { getOrder } = await import("@/services/orders");
     const order = await getOrder(env, record.delivery.order_id);
     if (!order) throw new Error("Purchased order unavailable");
-    return { ...record.delivery, ...humanOrderEvidence(order), status: order.status,
-      ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}) };
+    return { ...record.delivery, ...orderStatusBody(env.STORE_BASE_URL, order) };
   }
   return record.delivery ?? publicationDelivery(record);
 }
