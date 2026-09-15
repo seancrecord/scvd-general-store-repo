@@ -103,15 +103,33 @@ covers. It is not the claim text: on a `resolved_verdict` it commits
 to the sealed verdict object, which is why no whitespace or wrapping
 of the sentence closed it. They published the summary, not the object.
 
-And the answer carries a harder fact he volunteered rather than
-buried: `e851b71a…`'s binding is **unreproducible by anyone**,
-permanently. One field of that object is the SHA-256 of the resolver
-that ruled; that file changed on an SSRF fix the morning of the 12th,
-and the preimage was never stored. So the first artifact across this
-treaty stands as intact at the receipt layer — chain, signature and
-`notary_fp` all reproduced here — and unreproducible at the claim
-layer, forever. Both halves are true at once and neither cancels the
-other.
+CORRECTED 2026-09-15, and the correction is against us. What this
+section said until then was that `e851b71a…`'s binding was
+"unreproducible by anyone, permanently" — because a field of that
+object is the SHA-256 of the resolver that ruled, that file changed on
+an SSRF fix the morning of the 12th, and the issuer reported the
+preimage unstored.
+
+That was never our observation to make. We had established one thing:
+that WE could not reproduce the binding from the claim text. The rest
+was the issuer's account of his own records, which is evidence about
+his records and not a fact about what is possible — and we wrote
+"anyone" and "permanently" into it anyway. On 2026-09-15 he supplied
+the preimage. It is 827 bytes, it hashes to
+`84310abb469fe44cbafe0710fafad24e204f94e262e48cb1df97bf961f4b60a6`,
+and that is exactly the `claim_sha256` the receipt carries. It
+reproduces, by anyone, from bytes now published: the file sits beside
+the receipt here as `stillos-receipt-e851d799.json.preimage`, and
+`result.json` is `verify.mjs` reading it. Both artifacts across this
+treaty now reproduce on every layer.
+
+The rule this cost us, kept where it was earned: an issuer's account
+of their own internals is evidence about their records, never a fact
+about the world, and one failed reproduction earns nobody the word
+"permanently". `verify.mjs` was not wrong — it refused to pass a
+binding it could not check, and it hashed the supplied bytes without
+change. The defect was in prose, which is where this store's
+unfalsifiable claims have always appeared. It is on /corrections.
 
 What changed on his side: `GET /notary/preimage?hash=<receipt_hash>`
 now serves the literal bytes hashed at ruling time, every

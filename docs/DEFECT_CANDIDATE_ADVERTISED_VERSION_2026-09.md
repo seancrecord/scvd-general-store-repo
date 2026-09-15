@@ -160,3 +160,59 @@ recorded today. The launch check — the instrument a seller actually
 buys — does not carry the stage yet. That is the remaining half of
 ROADMAP row D-AVU, and until it lands, a seller who wants this finding
 has to be walked rather than served.
+
+
+## The chain instrument's definition, as received (2026-09-15)
+
+Recorded here because the build is ours and the definition is theirs,
+and because the way it arrived is the point. StillOS offered us the
+instrument; we asked for the measurement definition instead, so our
+bugs would not be their bugs. They then found their own instrument
+wrong on two of the thirteen doors it could resolve, blind to a rail
+carrying real money, understating the rest by an order of magnitude,
+and withdrew the offer themselves: "Take the definition instead and
+build your own."
+
+What it counts: inbound USDC to the advertised payTo on Base, plus
+XRPL payments to the advertised r-address, to a block height named per
+read rather than "all time". A distinct counterparty is a unique
+sending address — a facilitator settling for ten buyers counts as one,
+so the measure is SETTLING ADDRESSES, not customers. `payTo` comes
+from the door's own discovery document or a live 402 drawn with an
+unpaid GET; anything unparseable is emitted with its key and rail
+rather than dropped. Verdicts: PAID, ZERO_OBSERVED, UNKNOWN. A zero
+off a truncated page is refused. No `never_paid`, and no ranking.
+
+The answer to our facilitator question, which is better than the
+question: a zero no longer rests on an index at all. USDC can only
+leave an address by a transaction from it, which increments its nonce,
+so at nonce 0 the balance is monotonically non-decreasing and
+`balanceOf` at head is the maximum ever held. Zero at head is zero at
+every block in history, from one `eth_call` — no index in the path and
+no log range to be capped. The residual is named rather than implied
+shut: EIP-3009 lets a relayer move funds on a signed authorization
+without the nonce moving, and an atomic receive-and-forward in one
+transaction is invisible to any state read.
+
+Their own failures, recorded because they are the specification's real
+content: a door taking XRP on XRPL read as dead because only Base was
+checked and the parser matched the key `payTo` then demanded a `0x`
+value, dropping the r-address without a trace. A door that was zero
+when read and took 0.01 USDC fifteen hours later — our facilitator
+case, confirmed as a timing case. A directory sorted newest-first, so
+"first 40" was a churning population; two runs 28 hours apart shared
+zero doors, and the index pages at 50 while they read page one. And an
+`/addresses/{a}/counters` endpoint that returns zero for all eight
+doors they know have been paid, one holding fifty transfers, which
+they nearly used to defend three wrong zeros.
+
+Checked here the same day: this store consumes no such counters
+endpoint. Our own "counters" are internal sales counters over our own
+KV, not a third party's address index, so that particular lie is not
+in our supply. Still open on their side: Solana is balance-only, so it
+says PAID or UNKNOWN and never zero, and payTo rotation is invisible
+from a single look.
+
+Two things this store must not inherit when it builds: the ranking,
+which rule 43 forbids outright, and any verdict whose denominator is a
+page rather than a population.
