@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { REFUND_POLICY } from "@/store/refund-policy";
 import { RIGHTS, RIGHTS_LIMIT, RIGHTS_STANDFIRST } from "@/store/rights";
@@ -22,6 +24,7 @@ import type { HonoEnv } from "@/types";
 export const rightsRoutes = new Hono<HonoEnv>();
 
 rightsRoutes.get("/rights", (c) => {
+  const base = c.env.STORE_BASE_URL;
   const payload = {
     standfirst: RIGHTS_STANDFIRST,
     clauses: RIGHTS,
@@ -60,6 +63,16 @@ rightsRoutes.get("/rights", (c) => {
      */
     refund_policy: REFUND_POLICY,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/rights",
+      title: "What's yours",
+      description:
+        "Who owns what you bought from this x402 store, whether it transfers, and what you may do with it — including the keeper's own words.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

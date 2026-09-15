@@ -16,7 +16,7 @@
     "deploy": "wrangler deploy && node scripts/indexnow-ping.mjs",
     "indexnow": "node scripts/indexnow-ping.mjs",
     "test": "vitest run",
-    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run evidence:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run doors:test && npm run specs:test && npm run listings:test && npm run space:test && npm run cold:test && npm run doors:test && npm run corpus:publish:test && npm run citations:test && npm run corrections:test && npm run outreach:test && npm run walkabout:test && npm run paid-doors:test && npm run audit && npm run claims && npm run others:check && npm run docs:check && npm run build:check",
+    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run evidence:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run preflight:py:test && npm run preflight:go:test && npm run doors:test && npm run specs:test && npm run listings:test && npm run space:test && npm run cold:test && npm run doors:test && npm run corpus:publish:test && npm run citations:test && npm run corrections:test && npm run outreach:test && npm run walkabout:test && npm run paid-doors:test && npm run audit && npm run claims && npm run others:check && npm run docs:check && npm run build:check",
     "self-row": "vitest run test/self-row-blocker.spec.ts",
     "typecheck": "tsc --noEmit",
     "a2a:validation:build": "node scripts/a2a-validation-build.mjs",
@@ -89,7 +89,9 @@
     "a2a:runner:test": "node --test scripts/a2a-runner.test.mjs",
     "evidence:test": "node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs scripts/evidence-coverage.test.mjs && node --test scripts/retained-evidence.test.mjs scripts/retained-journal-reader.test.mjs",
     "bazaar:validate:test": "node --test scripts/bazaar-validate.test.mjs scripts/bazaar-validation-resources.test.mjs",
-    "bazaar:regex:test": "node scripts/bazaar-regex-check.mjs"
+    "bazaar:regex:test": "node scripts/bazaar-regex-check.mjs",
+    "preflight:py:test": "cd x402-preflight-py && python3 -m unittest discover -s tests",
+    "preflight:go:test": "cd x402-preflight-go && test -z \"$(gofmt -l .)\" && go vet ./... && go test ./..."
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

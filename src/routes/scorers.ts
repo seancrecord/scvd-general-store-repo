@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   MISUSE_CLAUSE,
@@ -239,50 +241,66 @@ function integrationsBlock(base: string) {
 scorersRoutes.get("/scorers", (c) => {
   const base = c.env.STORE_BASE_URL;
   const integrations = integrationsBlock(base);
-  if (!wantsHtml(c.req.header("Accept"))) {
-    return c.json({
+  /*
+   * Hoisted out of the c.json() call it used to be written inside, so
+   * the markdown twin below renders the SAME object the JSON serves
+   * rather than a second copy of it that could drift.
+   */
+  const payload = {
+    title: "For scorers and marketplaces",
+    /*
+     * THE FIVE ANSWERS (house rule 60.4) and the three sentences
+     * (60.2), identical on this twin, the page and the guide.
+     */
+    what_this_is: STANDFIRST,
+    proposition: SCORERS_PROPOSITION,
+    price: SCORERS_FOR_MONEY,
+    free_first: SCORERS_FREE_FIRST,
+    opened: SCORERS_OPENED,
+    how_to_call: {
+      this_page: `GET ${base}/scorers with Accept: application/json for this twin, text/html for the page. No account, no key.`,
+      pull: `GET ${base}/corpus.json, then the snapshots and host rows it lists.`,
+      reproduce: `POST ${base}/api/look/v1 with {"url": "...", "since": "2026-W34"}; the class and the citation ride the reproduce block.`,
+      verify: `GET ${base}/api/verify/{id}, or npx x402-verify against any artifact.`,
+      replay: `GET ${base}/api/replay/{cert_id} for one of the store's own paid calls, assembled as an integration test: the signed bytes and their hash, the accepted x402 terms with a JWS offer over them, the settlement transaction and where to read it, and the exact refusal a wrong-scope re-presentation gets. It names what the store does not retain, so the gaps are counted against us in the same document.`,
+    },
+    errors: {
+      this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",
+      the_doors_it_names: "Each door names its own refusals in its own JSON; the look refuses a since that is not a signed week with code bad_since, and a URL it will not probe with the preflight's own refusal text.",
+    },
+    security: securityBlock(base, {
+      does_in_your_name: "Nothing. A GET here reads a page; no probe is made, nothing is signed, nothing is fetched from anyone.",
+      stores: "Nothing about you. The porch counts a visit by surface, never by caller.",
+    }),
+    seats: { dated: TWO_SEATS_DATED, sentence: TWO_SEATS_SENTENCE },
+    summary: STANDFIRST,
+    start_here: START_HERE(base),
+    pull: pull(base),
+    verify: verify(base),
+    cite: CITE,
+    reproduce: reproduce(base),
+    re_observe: { ...RE_OBSERVE, surfaces: reObserve(base) },
+    enables: ENABLES,
+    resell_on_account: `${base}/trade`,
+    misuse: MISUSE_CLAUSE,
+    named_integrations: integrations,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    compact_index: `${base}/corpus/index.json`,
+    the_record: `${base}/corpus.json`,
+    the_dispute_artifacts: [`${base}/menu/the_case_file`, `${base}/menu/launch_check`, `${base}/menu/settlement_attestation`, `${base}/api/conformance/v1`],
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/scorers",
       title: "For scorers and marketplaces",
-      /*
-       * THE FIVE ANSWERS (house rule 60.4) and the three sentences
-       * (60.2), identical on this twin, the page and the guide.
-       */
-      what_this_is: STANDFIRST,
-      proposition: SCORERS_PROPOSITION,
-      price: SCORERS_FOR_MONEY,
-      free_first: SCORERS_FREE_FIRST,
-      opened: SCORERS_OPENED,
-      how_to_call: {
-        this_page: `GET ${base}/scorers with Accept: application/json for this twin, text/html for the page. No account, no key.`,
-        pull: `GET ${base}/corpus.json, then the snapshots and host rows it lists.`,
-        reproduce: `POST ${base}/api/look/v1 with {"url": "...", "since": "2026-W34"}; the class and the citation ride the reproduce block.`,
-        verify: `GET ${base}/api/verify/{id}, or npx x402-verify against any artifact.`,
-        replay: `GET ${base}/api/replay/{cert_id} for one of the store's own paid calls, assembled as an integration test: the signed bytes and their hash, the accepted x402 terms with a JWS offer over them, the settlement transaction and where to read it, and the exact refusal a wrong-scope re-presentation gets. It names what the store does not retain, so the gaps are counted against us in the same document.`,
-      },
-      errors: {
-        this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",
-        the_doors_it_names: "Each door names its own refusals in its own JSON; the look refuses a since that is not a signed week with code bad_since, and a URL it will not probe with the preflight's own refusal text.",
-      },
-      security: securityBlock(base, {
-        does_in_your_name: "Nothing. A GET here reads a page; no probe is made, nothing is signed, nothing is fetched from anyone.",
-        stores: "Nothing about you. The porch counts a visit by surface, never by caller.",
-      }),
-      seats: { dated: TWO_SEATS_DATED, sentence: TWO_SEATS_SENTENCE },
-      summary: STANDFIRST,
-      start_here: START_HERE(base),
-      pull: pull(base),
-      verify: verify(base),
-      cite: CITE,
-      reproduce: reproduce(base),
-      re_observe: { ...RE_OBSERVE, surfaces: reObserve(base) },
-      enables: ENABLES,
-      resell_on_account: `${base}/trade`,
-      misuse: MISUSE_CLAUSE,
-      named_integrations: integrations,
-      license: "https://creativecommons.org/licenses/by/4.0/",
-      compact_index: `${base}/corpus/index.json`,
-      the_record: `${base}/corpus.json`,
-      the_dispute_artifacts: [`${base}/menu/the_case_file`, `${base}/menu/launch_check`, `${base}/menu/settlement_attestation`, `${base}/api/conformance/v1`],
+      description:
+        "Two seats: the record, and the reproducible dispute artifact. How to pull, verify, cite, reproduce and re-observe this store's evidence without inheriting an opinion. Names seats, not occupants.",
+      document: payload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(payload);
   }
   const rows = (list: ScorerSurface[]) =>
     `<ul class="menu-desc">${list

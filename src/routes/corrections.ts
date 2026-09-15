@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   CORRECTIONS,
@@ -80,7 +82,7 @@ correctionsRoutes.get("/corrections", (c) => {
     );
   }
 
-  return c.json({
+  const payload = {
     title: "Corrections",
     summary: CORRECTIONS_STANDFIRST,
     how_to_read: CORRECTIONS_HOW_TO_READ,
@@ -93,5 +95,16 @@ correctionsRoutes.get("/corrections", (c) => {
     corrections_url: `${base}/corrections`,
     mailbox: `${base}/api/letter`,
     invitation: CORRECTIONS_INVITATION,
-  });
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/corrections",
+      title: "Corrections",
+      description:
+        "Things this store said that were not true, dated, with what found each one and the mechanism that changed so it cannot recur quietly.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
+  return c.json(payload);
 });

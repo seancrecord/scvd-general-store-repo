@@ -114,6 +114,17 @@ jobs:
       # store. Publish is the keeper's press; the tree is the source.
       - name: The packages
         run: npm run packages:test
+      # THE SAME LAW IN THREE LANGUAGES (2026-09-15). A readiness scan
+      # found the preflight client published to npm and nowhere else,
+      # which is true and is the kind of gap that only closes if the
+      # ports are held to the reference rather than written beside it.
+      # Both read the SAME recorded reports as the JavaScript, from
+      # x402-preflight/fixtures, and assert the same exit law — a gate
+      # that means one thing in a Node CI step and another in a Go one
+      # is worse than no gate. Go is already set up above; Python is
+      # the stdlib the examples and the Space jobs already use.
+      - name: The preflight client, ported
+        run: npm run preflight:py:test && npm run preflight:go:test
       # THE SCALABILITY AUDIT — the same idea pointed forward instead of
       # backward. The tests catch a claim that is false NOW; this catches
       # a shape that will quietly become false as the store grows. Its

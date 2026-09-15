@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT, prefersMarkdown } from "@/lib/accept";
 import { escapeHtml } from "@/lib/sanitize";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   buildOperatorNotice,
@@ -222,6 +223,16 @@ function noticeHtml(notice: OperatorNotice, base: string): string {
 noticeRoutes.get("/notice", (c) => {
   const base = c.env.STORE_BASE_URL;
   const accept = c.req.header("Accept");
+  if (prefersMarkdown(accept, "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/notice",
+      title: "The notice desk",
+      description:
+        "How an operator asks this store to correct, annotate or withdraw what it published about their host, and what happens to the signed rows either way.",
+      document: landingJson(base) as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(accept, c.req.header("User-Agent"))) {
     return c.html(landingHtml(base), 200, { Vary: VARY_ACCEPT });
   }

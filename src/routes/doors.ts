@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { getMenuItem } from "@/store/menu";
@@ -416,6 +418,16 @@ doorsRoutes.get("/doors.json", async (c) => {
 doorsRoutes.get("/doors", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const index = await readIndex(c.env);
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/doors",
+      title: "Every door we have checked",
+      description: "Every x402 endpoint this store's weekly ward round has observed, with the most recent dated observation of each and a link to its full signed history. Free, alphabetical, never a ranking.",
+      dataUrl: `${base}/doors.json`,
+      document: bodyJson(base, index, index.hosts) as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
