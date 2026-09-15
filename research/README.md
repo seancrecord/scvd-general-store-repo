@@ -38,3 +38,9 @@ narrowly it was scoped.
 - `solo-ai-founder-scan.md` — solo AI founder pattern log
 - `x402-pulse.md` — x402 / agentic commerce market pulse
 - `store-admin-sweep.md` — daily store admin sweep takeaways
+
+## Historical evidence follow-through — September 15
+
+[Catalog commitment recovery and retained-report accounting](historical-evidence-2026-09-15/README.md)
+preserves separate cohorts, the initial failed read and its retry, exact catalog
+preimages, and the remaining original-report gaps. Raw buyer records stay private.

@@ -1,0 +1,178 @@
+{
+  "source_manifest_sha256": "2d1548fcba07c3945a37f1f2c0a02bf57160ae7cf05d5af588428c5df3407235",
+  "captured_from": "2026-09-15T15:01:43.075Z",
+  "captured_to": "2026-09-15T15:12:00.532288+00:00",
+  "certificate_count": 418,
+  "candidate_count": 41,
+  "outcomes": {
+    "no_signed_saw": 141,
+    "matched_catalog_preimage": 277
+  },
+  "by_item": {
+    "a_secret": {
+      "no_signed_saw": 2
+    },
+    "app_gutcheck": {
+      "no_signed_saw": 1
+    },
+    "attestation_bundle": {
+      "matched_catalog_preimage": 13,
+      "no_signed_saw": 1
+    },
+    "aura_walk": {
+      "matched_catalog_preimage": 2
+    },
+    "bitcoin_anchor": {
+      "matched_catalog_preimage": 3,
+      "no_signed_saw": 1
+    },
+    "certificate_of_patronage": {
+      "no_signed_saw": 4,
+      "matched_catalog_preimage": 1
+    },
+    "coffees_for_closers": {
+      "matched_catalog_preimage": 2,
+      "no_signed_saw": 5
+    },
+    "conformance_watch": {
+      "no_signed_saw": 4,
+      "matched_catalog_preimage": 2
+    },
+    "context_anchor": {
+      "no_signed_saw": 9,
+      "matched_catalog_preimage": 3
+    },
+    "daily_fortune": {
+      "no_signed_saw": 12,
+      "matched_catalog_preimage": 10
+    },
+    "dibs": {
+      "no_signed_saw": 8
+    },
+    "good_buyer": {
+      "matched_catalog_preimage": 7
+    },
+    "graffiti_on_a_train": {
+      "matched_catalog_preimage": 1,
+      "no_signed_saw": 4
+    },
+    "grudge": {
+      "no_signed_saw": 2
+    },
+    "hello": {
+      "no_signed_saw": 11,
+      "matched_catalog_preimage": 4
+    },
+    "human_witness": {
+      "no_signed_saw": 1
+    },
+    "jar_of_tuesday": {
+      "no_signed_saw": 1
+    },
+    "launch_check": {
+      "matched_catalog_preimage": 5
+    },
+    "luckies": {
+      "matched_catalog_preimage": 10,
+      "no_signed_saw": 5
+    },
+    "nomenclature": {
+      "no_signed_saw": 3
+    },
+    "onpage_audit": {
+      "no_signed_saw": 1,
+      "matched_catalog_preimage": 1
+    },
+    "opening_day": {
+      "matched_catalog_preimage": 2
+    },
+    "operator_statement": {
+      "matched_catalog_preimage": 3
+    },
+    "pack": {
+      "matched_catalog_preimage": 3
+    },
+    "passport_refresh": {
+      "matched_catalog_preimage": 7
+    },
+    "phantom_check": {
+      "no_signed_saw": 3
+    },
+    "phone_call": {
+      "no_signed_saw": 1
+    },
+    "portrait": {
+      "no_signed_saw": 1
+    },
+    "provenance_check": {
+      "matched_catalog_preimage": 3
+    },
+    "quick_judgment": {
+      "no_signed_saw": 2
+    },
+    "recurring_patronage": {
+      "matched_catalog_preimage": 1,
+      "no_signed_saw": 3
+    },
+    "service_audit": {
+      "matched_catalog_preimage": 2,
+      "no_signed_saw": 1
+    },
+    "settlement_attestation": {
+      "no_signed_saw": 6,
+      "matched_catalog_preimage": 11
+    },
+    "settlement_reconciliation": {
+      "matched_catalog_preimage": 7,
+      "no_signed_saw": 1
+    },
+    "signature_agent_card": {
+      "matched_catalog_preimage": 1,
+      "no_signed_saw": 1
+    },
+    "small_blessing": {
+      "no_signed_saw": 33,
+      "matched_catalog_preimage": 133
+    },
+    "spot_check": {
+      "matched_catalog_preimage": 17
+    },
+    "standing_watch": {
+      "no_signed_saw": 5,
+      "matched_catalog_preimage": 2
+    },
+    "the_case_file": {
+      "matched_catalog_preimage": 2
+    },
+    "the_collab": {
+      "no_signed_saw": 2,
+      "matched_catalog_preimage": 1
+    },
+    "the_confession": {
+      "no_signed_saw": 3,
+      "matched_catalog_preimage": 7
+    },
+    "the_drawer": {
+      "no_signed_saw": 4
+    },
+    "the_mandate": {
+      "matched_catalog_preimage": 3
+    },
+    "the_statement": {
+      "matched_catalog_preimage": 4
+    },
+    "trust_profile": {
+      "matched_catalog_preimage": 3
+    },
+    "window_pick": {
+      "matched_catalog_preimage": 1
+    }
+  },
+  "limits": [
+    "This cohort is the enumerated, checksum-checked and signature-verified certificate capture, not every purchase or an earlier census.",
+    "A match recovers exact catalog commitment bytes. Source reconstruction is not an archived HTTP response or proof of which deployment answered.",
+    "The saw commitment covers route, list price and required inputs. It does not establish accepted payment terms, settlement, delivery or the missing attests report.",
+    "Candidate provenance describes the extraction inputs, not a deployment attestation. Unmatched hashes remain unresolved; absent signed saw fields stay separate.",
+    "Certificate verification uses separately supplied issuer public keys. This command does not check key service windows, Bitcoin proofs or historical issue time."
+  ]
+}

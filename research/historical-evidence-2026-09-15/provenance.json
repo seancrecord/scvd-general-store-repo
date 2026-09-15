@@ -1,0 +1,63 @@
+{
+  "checked_at": "2026-09-15T15:16:20.932017+00:00",
+  "kind": "operator_verified_private_cohort_aggregates",
+  "source_revision": "da0341788d03d7cabd3300b35bed0edacaa0974e",
+  "historical_source_revisions": [
+    "f514d910e44a22c28ab1f37382e912a759eff9ec"
+  ],
+  "private_capture_manifests": [
+    {
+      "label": "inventory/manifest.json",
+      "sha256": "f700dc34695013b3ab81660d149fa068d4de72f53cc1df8fd75d1811296fa0ba"
+    },
+    {
+      "label": "inventory-with-retry/manifest.json",
+      "sha256": "2d1548fcba07c3945a37f1f2c0a02bf57160ae7cf05d5af588428c5df3407235"
+    },
+    {
+      "label": "retained/manifest.json",
+      "sha256": "7fee0420412e70ed7d1ae5ebbc4fbda4712f6a8363d360fdee47fed093c3846b"
+    },
+    {
+      "label": "catalog/manifest.json",
+      "sha256": "7ab484484ddc6a7f9c3028e52c429cfda3aeefce34a0f4d39a66ffe045ea3e86"
+    },
+    {
+      "label": "catalog-with-history/manifest.json",
+      "sha256": "dc60f849c2183a0cc5f89b0e49b2b37a88c0b76fb4cabe521565ab4188d2a51f"
+    },
+    {
+      "label": "issuer-key.json",
+      "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+    }
+  ],
+  "collector_sources": [
+    {
+      "path": "scripts/capture-evidence-inventory.mjs",
+      "sha256": "06d8a172073606580fc6db1863993988c42c436c7f589e0a7da29c1d70cfbd89"
+    },
+    {
+      "path": "scripts/capture-retained-evidence.mjs",
+      "sha256": "f8312b35bbaf9c8f1a948e628c591f3cfa3c5de9ce169064e2efe9335bba167e"
+    },
+    {
+      "path": "scripts/catalog-evidence.mjs",
+      "sha256": "8aa012994918e7c2e87511361ebdc8e9fcd009ec4e3060255bafd569e37b4839"
+    },
+    {
+      "path": "scripts/lib/catalog-evidence.mjs",
+      "sha256": "566039018621785e69dfaf5f9b72f6a50d53ed2b90f5c9b69e405a9f6dcb0b74"
+    },
+    {
+      "path": "scripts/lib/retained-capture.mjs",
+      "sha256": "46d6b4bc428846f1f3593115861f7313dff05886c464c336e6519be6c9aefdbd"
+    }
+  ],
+  "limits": [
+    "The September 9 raw census was not available in its known temporary locations. This is a new cohort, not a reconstruction of the old manifest.",
+    "Counts and item mix matching the old unresolved aggregate do not establish identical certificate membership.",
+    "The initial failed certificate read is retained unchanged; a separate copied capture identifies its retry and original manifest hash.",
+    "Private records and identifiers are not published. These aggregates do not independently prove population completeness; holders can check candidate bytes against their own certificates.",
+    "No new observation, signature, payment, replay or production store deployment was performed. The retained-response reader used a temporary authenticated remote preview and its existing read RPCs."
+  ]
+}

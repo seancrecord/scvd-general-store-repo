@@ -1089,3 +1089,17 @@ Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/wor
 ### September 14 — applying the reconciliation follow-up
 
 The primary sources in the recovery follow-up entry above support the repair boundary: an Approval names an allowance but a Transfer does not identify the spender or spending mechanism, so same-receipt ordering and owner/recipient equality do not establish consumed allowance. Only the independently paired EIP-3009 fixed value remains observed here. The reconciliation reader now reuses the already-reviewed chain/receipt validators before signing; explicit null is distinct from unestablished context. No new platform API or dependency was introduced. RPC assertions and local fixtures do not establish consensus, finality, historical incidence or live buyer impact. The new correction preserves those limits and historical signatures.
+
+## 2026-09-15 — historical evidence storage reads
+
+Read https://developers.cloudflare.com/kv/reference/kv-commands/ for the existing
+`kv key list` / `kv key get`, explicit remote storage and configured bindings.
+The capture uses the locked Wrangler version and existing operator access.
+A successful bounded list establishes access, not a historical snapshot or
+complete purchase population; each value is retained with its own checksum
+and read date. No KV write or production deployment is part of this pass.
+Local sources for catalog reconstruction: `src/discovery/receipt-surface.ts`,
+`src/lib/jcs.ts`, `src/store/menu.ts` and the catalog input schema. An exact
+`saw` hash match recovers three committed fields; it does not recover an HTTP
+response, accepted quote, settlement or report. MPP remains under development
+and is outside this first capture.
