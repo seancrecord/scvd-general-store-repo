@@ -75,6 +75,7 @@
     "packages:test": "for d in x402-preflight corpus-client defects mcp-starter; do (cd \"$d\" && node --test) || exit 1; done",
     "defects:cut": "node scripts/cut-defects.mjs",
     "oasf:cut": "node scripts/cut-oasf.mjs",
+    "jwks:cut": "node scripts/cut-jwks.mjs",
     "oasf:taxonomy:check": "node scripts/oasf-taxonomy-check.mjs",
     "npm-content:cut": "node scripts/cut-npm-content.mjs",
     "outreach:sent": "node scripts/outreach-sent.mjs",

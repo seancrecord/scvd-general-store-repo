@@ -1,10 +1,11 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
   AGENT_REGISTRATION_PATH,
   ERC8004_REGISTRATION_TYPE,
   SCVD_AGENT_ID,
   SCVD_AGENT_REGISTRY,
+  agentRegistrationFile,
 } from "@/services/agent-registration";
 import {
   OASF_DOMAINS,
@@ -16,6 +17,8 @@ import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store/metadata";
 import { registryDescription } from "@/store/identity-lead";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { MENU_ITEMS } from "@/store";
+import { checkoutWallets, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { mcpToolCatalog } from "@/lib/mcp-tools";
 
 const BASE = "https://scvd.store";
 
@@ -206,6 +209,73 @@ describe("ERC-8004 registration file", () => {
     expect(response.status, "the OASF endpoint must serve").toBe(200);
     const record = (await response.json()) as { skills: { name: string }[] };
     expect(record.skills.map((skill) => skill.name)).toEqual(oasf!.skills);
+  });
+
+  /**
+   * THE DOOR SAYS WHAT IS BEHIND IT. The guide's MCP entry carries
+   * `mcpTools`; without it a reader of this file learns the store
+   * speaks MCP and nothing about what it can be asked to do. Held to
+   * the catalogue /mcp answers tools/list from, so the two cannot
+   * disagree.
+   */
+  it("names every MCP tool the server serves", async () => {
+    const doc = await fetchRegistration();
+    const mcp = (doc.services as { name: string; mcpTools?: string[] }[]).find((s) => s.name === "MCP");
+    const live = mcpToolCatalog(BASE).map((tool) => tool.name);
+    expect(mcp?.mcpTools, "the MCP entry names no tools").toBeDefined();
+    expect([...mcp!.mcpTools!].sort()).toEqual([...live].sort());
+  });
+
+  /**
+   * WHERE THE STORE TAKES MONEY, held to the checkout's own table. A
+   * rail advertised here that the checkout does not accept would be a
+   * door that cannot be paid; a rail accepted and not advertised is
+   * the store underselling itself to anyone who reads before knocking.
+   */
+  it("advertises exactly the rails the checkout accepts, as CAIP-10 accounts", () => {
+    /*
+     * A FIXTURE, NOT THE TEST ENV. The payout addresses are Worker
+     * secrets and the test env has none, so reading the served
+     * document here would assert "no rails" and pass for the wrong
+     * reason. Two rails configured and two left unset is the case
+     * worth pinning: the gate must advertise the first pair and stay
+     * silent about the second.
+     */
+    const evm = "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0";
+    const fixture = {
+      PAY_TO_ADDRESS: evm,
+      POLYGON_PAY_TO: evm,
+      SOLANA_PAY_TO: "1".repeat(32),
+      ARBITRUM_PAY_TO: undefined,
+      WORLD_PAY_TO: undefined,
+    } as unknown as PaymentNetworkConfig;
+
+    const doc = agentRegistrationFile(BASE, fixture);
+    const wallets = (doc.services as { name: string; endpoint: string }[])
+      .filter((service) => service.name === "agentWallet")
+      .map((service) => service.endpoint);
+
+    expect(wallets).toEqual(checkoutWallets(fixture).map((w) => `${w.network}:${w.address}`));
+    expect(wallets).toContain(`eip155:8453:${evm}`);
+    expect(wallets).toContain(`eip155:137:${evm}`);
+    expect(wallets.some((w) => w.startsWith("solana:"))).toBe(true);
+
+    // An unconfigured rail is never advertised: a door that cannot be paid.
+    expect(wallets.some((w) => w.startsWith("eip155:42161:"))).toBe(false);
+    expect(wallets.some((w) => w.startsWith("eip155:480:"))).toBe(false);
+
+    for (const account of wallets) {
+      // <namespace>:<reference>:<address> — never a bare address.
+      expect(account.split(":").length, `${account} is not a CAIP-10 account`).toBe(3);
+    }
+  });
+
+  it("advertises, in the served document, exactly what this env accepts", async () => {
+    const doc = await fetchRegistration();
+    const wallets = (doc.services as { name: string; endpoint: string }[])
+      .filter((service) => service.name === "agentWallet")
+      .map((service) => service.endpoint);
+    expect(wallets).toEqual(checkoutWallets(env as unknown as PaymentNetworkConfig).map((w) => `${w.network}:${w.address}`));
   });
 
   it("claims x402 support and active status", async () => {

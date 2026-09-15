@@ -63,46 +63,40 @@ record at all. A 404 on a class file is absence; a timeout, a 429 or a
 5xx is a probe that did not run, and reporting the second as the first
 would send somebody to correct a table that was already right.
 
-## What is NOT done, and needs the keeper's hand
+## What is done, and what is still the keeper's hand
 
-**The record is not signed, and scvd.store publishes no JWKS.**
+**The JWKS is published.** `https://scvd.store/.well-known/jwks.json`
+carries the public half of a Cosign ECDSA P-256 keypair, `kid`
+`RLIRwYpmdGr8FvLbCPhS01DHxJK23QMTIXBnPQqU5A4` (its RFC 7638
+thumbprint). It is derived from `record-signing-key.pub.pem` in this
+folder by `npm run jwks:cut`, never typed, and
+`test/directory-jwks.spec.ts` re-derives it and refuses any drift — a
+mistyped coordinate would otherwise fail silently, reported by
+Directory as "signing key does not match any domain key", which reads
+like the wrong key signed rather than like a typo in what we published.
 
-Directory separates two things this store already knows are different:
-*provenance* (who asserted this) and *observation* (what was actually
-seen). Signing a pushed record establishes the first. Name verification
-goes further — a record named `https://scvd.store/agents/general-store`
-is bound to that domain only when it is signed by a key published at
-`https://scvd.store/.well-known/jwks.json`, after which it resolves as
-`scvd.store/agents/general-store` instead of a raw CID.
+**What Directory actually matches on**, read out of agntcy/dir rather
+than its documentation: `server/naming/keys.go` compares raw DER bytes
+with `bytes.Equal`, and `IsValidKeyType` accepts `ed25519`,
+`ecdsa-p256`, `ecdsa-p384` and `rsa`. `server/naming/types.go` calls
+the key id "an optional identifier". So `kty`, `crv`, `x` and `y` are
+load-bearing; `kid`, `alg` and `use` are published for readers and are
+not consulted for the match. The docs specify the location and the
+matching rule but not the field list — the source does.
 
-That key does not exist, and this change deliberately does not invent
-one:
+**This key is not `SIGNING_KEY`.** That seed signs the store's
+evidence artifacts and lives in the Worker's secrets. This one
+authorises directory metadata, its private half is not in this
+repository or the Worker, and the two were deliberately kept apart:
+collapsing them would put the whole corpus in the blast radius of a
+listing. Revocation is a deploy — drop the key from the PEM, re-cut,
+ship, and every signature made under it stops verifying.
 
-- It must **not** be `SIGNING_KEY`. That seed signs the store's
-  evidence artifacts. Reusing it to authorise directory metadata
-  collapses two trust domains into one, and the blast radius of the
-  evidence key is the whole corpus.
-- Which key authorises directory records — a new ed25519 seed, a KMS
-  key, a Sigstore identity — is a keeper decision with a key-registry
-  entry behind it (`src/store/key-registry.ts`), not something a
-  publishing script should pick.
+**Still owed: the signature itself.** The private half lives with the
+keeper. Nothing in this repository can sign the record, and that is
+the point.
 
-Publishing a `jwks.json` before that decision would be a published
-protocol with no mechanism under it, which is the defect class this
-store keeps finding in itself. So the gap is named here instead.
-
-`scvd.erc8004.identity` **is** carried, composed from
-`src/store/agent-identity.ts` rather than typed here:
-`eip155:8453:0x8004…a432/86957`, the ERC's own
-`{namespace}:{chainId}:{identityRegistry}` string with the token id
-after it. It says this record and agent 86957 are the same party,
-which `ownerOf(86957)` settles against Base without asking us. It does
-not say the registration is finished — the on-chain `tokenURI` still
-points at the bare origin, so explorers reading the agent as
-"Unconfigured" are right to (`docs/ERC8004_AGENT_86957.md`). A
-cross-link is not a status claim.
-
-## The release sequence, when there is a key
+## The release sequence
 
 For the keeper, against a node that is already trusted:
 

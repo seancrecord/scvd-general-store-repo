@@ -995,8 +995,20 @@ const BASE = "https://scvd.store";
 // 2026-09-15: preserve main's archived Zodiac and filing changes alongside
 // wallet Claims instructions and narrower reconciliation task wording.
 // The integrated digest is qualified by reversing only the buyer copy.
+// 2026-09-15, THE MERGE, again. Both sides re-pinned correctly for their
+// own edit — main for the Zodiac/filing and buyer-copy changes, this
+// branch for the JWKS paragraph — so the merged guide is a third text
+// neither digest above describes. Both notes stand. The guide now names
+// the key that authorises the OASF record: AGNTCY name verification
+// reads /.well-known/jwks.json to decide whether this domain actually
+// published the record, so the key had to be findable where the record
+// is, and the line says what it is NOT — the evidence-signing key is a
+// different key at a different path, and two key documents on one origin
+// is exactly the pair a reader can confuse. Verified across the merge:
+// with only that paragraph removed from the merged tree, main's 293280bf
+// reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "293280bf76d818f930e0d177c0ce006005aa9a39c3aeb31074d6f807fe3e3f97";
+  "1162c2112ed86a20eacc133e71d56c439a5d1c78a0bb5ee88d5be17a285d929d";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

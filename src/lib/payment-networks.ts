@@ -82,6 +82,30 @@ export function acceptedNetworks(env: PaymentNetworkConfig): string[] {
   return checkoutNetworks(env).map(network => network.network);
 }
 
+/**
+ * EVERY CHECKOUT RAIL AS A CAIP-10 ACCOUNT — `<chain>:<address>`.
+ *
+ * Added 2026-09-15 for the ERC-8004 registration file, whose
+ * `agentWallet` service entries advertise where an agent accepts
+ * payment, one per chain. The addresses are already public — every
+ * 402 this store issues quotes them — so nothing new is exposed. What
+ * is gained is that a reader of the registration file learns the
+ * store takes USDC on five rails without having to knock on a door
+ * first.
+ *
+ * Derived from the same NETWORKS table and the same `enabled` gate the
+ * checkout uses, so a rail that is not configured is not advertised,
+ * and a rail added later appears here without anybody remembering to.
+ */
+export function checkoutWallets(env: PaymentNetworkConfig): { network: string; address: string }[] {
+  const wallets: { network: string; address: string }[] = [];
+  for (const row of checkoutNetworks(env)) {
+    const address = row.key === "solana" ? solanaPayTo(env) : evmCheckoutPayTo(env, row.key);
+    if (address) wallets.push({ network: row.network, address });
+  }
+  return wallets;
+}
+
 export function paymentNetworkNames(env: PaymentNetworkConfig): string {
   return checkoutNetworks(env).map(network => network.label).join(', ');
 }
