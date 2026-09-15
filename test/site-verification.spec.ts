@@ -77,12 +77,32 @@ describe("the x402-list token file", () => {
     expect(await response.text()).toContain("# x402-list.com domain-ownership tokens");
   });
 
-  it("pins the tokens in flight (issued 2026-09-02 and 2026-09-03) so retiring one early is a diff", () => {
-    const first = X402LIST_TOKENS[0]!;
-    expect(first.token).toBe("x402list-verify-4CmBDdTm1wU4eq-Q6Artnjthyrn5-tz_6H5WoML3jco");
-    expect(first.request_id).toBe("d766c4a7-1918-4f4f-b0f3-2215ec15bb72");
-    expect(live.token).toBe("x402list-verify-Jw6U5W79yD9dD5SmQ6Z4_LgEnoN2cTcva-wav7VQ1Ow");
-    expect(live.request_id).toBe("56532116-de53-447b-aeac-b46d68d039ff");
+  /*
+   * EVERY round, not the first and the newest (2026-09-15). This
+   * pinned X402LIST_TOKENS[0] and the last entry, which was the whole
+   * list while there were two of them. A third round arrived and the
+   * middle one became unpinned — retiring it early would have been
+   * exactly the silent diff this test is named for. Listed in full so
+   * the list cannot grow past its own guard again.
+   */
+  it("pins every round's token and request id, so retiring one early is a diff", () => {
+    expect(X402LIST_TOKENS.map((entry) => [entry.issued, entry.token, entry.request_id])).toEqual([
+      [
+        "2026-09-02",
+        "x402list-verify-4CmBDdTm1wU4eq-Q6Artnjthyrn5-tz_6H5WoML3jco",
+        "d766c4a7-1918-4f4f-b0f3-2215ec15bb72",
+      ],
+      [
+        "2026-09-03",
+        "x402list-verify-Jw6U5W79yD9dD5SmQ6Z4_LgEnoN2cTcva-wav7VQ1Ow",
+        "56532116-de53-447b-aeac-b46d68d039ff",
+      ],
+      [
+        "2026-09-15",
+        "x402list-verify-QIp16ZNOJlEG7OhSsnnVU5fVxJ2GgpiluovoV1ztOWk",
+        "3606e242-afbe-46eb-86fa-e3b82b2a419a",
+      ],
+    ]);
   });
 });
 
