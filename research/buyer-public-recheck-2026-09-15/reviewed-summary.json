@@ -1,0 +1,258 @@
+{
+  "source": "Public snapshots acquired September 15; production is distinct from the local recovery branch.",
+  "scope": "Eight discovery snapshots; unsigned HTTP/default-MCP input cases; direct concrete-path crawl. Not recursive coverage or paid/cold-agent acceptance.",
+  "surfaces": 8,
+  "items": 35,
+  "spend_usdc": 0,
+  "prepayment": {
+    "requests": 539,
+    "http_statuses": {
+      "400": 111,
+      "402": 66,
+      "403": 1
+    },
+    "mcp_http_statuses": {
+      "200": 361
+    },
+    "server_or_transport_failures": 0,
+    "published_examples": 70,
+    "published_example_quotes": 66,
+    "example_refusals": [
+      {
+        "item": "a2a_repair_kit",
+        "door": "http",
+        "status": 400,
+        "code": "unsupported_version"
+      },
+      {
+        "item": "a2a_repair_kit",
+        "door": "mcp",
+        "status": 200,
+        "code": "unsupported_version"
+      },
+      {
+        "item": "trust_profile",
+        "door": "mcp",
+        "status": 200,
+        "code": "passport_refused"
+      },
+      {
+        "item": "trust_profile",
+        "door": "http",
+        "status": 403,
+        "code": "passport_refused"
+      }
+    ]
+  },
+  "comparison": {
+    "raw_issue_count": 35,
+    "reviewed_issue_count": 0,
+    "reviewed": [
+      {
+        "item": "spot_check",
+        "issues": []
+      },
+      {
+        "item": "settlement_attestation",
+        "issues": []
+      },
+      {
+        "item": "small_blessing",
+        "issues": []
+      },
+      {
+        "item": "settlement_reconciliation",
+        "issues": []
+      },
+      {
+        "item": "daily_fortune",
+        "issues": []
+      },
+      {
+        "item": "the_confession",
+        "issues": []
+      },
+      {
+        "item": "attestation_bundle",
+        "issues": []
+      },
+      {
+        "item": "the_mandate",
+        "issues": []
+      },
+      {
+        "item": "the_case_file",
+        "issues": []
+      },
+      {
+        "item": "window_pick",
+        "issues": []
+      },
+      {
+        "item": "hello",
+        "issues": []
+      },
+      {
+        "item": "good_buyer",
+        "issues": []
+      },
+      {
+        "item": "signature_agent_card",
+        "issues": []
+      },
+      {
+        "item": "the_statement",
+        "issues": []
+      },
+      {
+        "item": "luckies",
+        "issues": []
+      },
+      {
+        "item": "pack",
+        "issues": []
+      },
+      {
+        "item": "coffees_for_closers",
+        "issues": []
+      },
+      {
+        "item": "bitcoin_anchor",
+        "issues": []
+      },
+      {
+        "item": "context_anchor",
+        "issues": []
+      },
+      {
+        "item": "passport_refresh",
+        "issues": []
+      },
+      {
+        "item": "graffiti_on_a_train",
+        "issues": []
+      },
+      {
+        "item": "a2a_repair_kit",
+        "issues": []
+      },
+      {
+        "item": "standing_watch",
+        "issues": []
+      },
+      {
+        "item": "service_audit",
+        "issues": []
+      },
+      {
+        "item": "conformance_watch",
+        "issues": []
+      },
+      {
+        "item": "onpage_audit",
+        "issues": []
+      },
+      {
+        "item": "launch_check",
+        "issues": []
+      },
+      {
+        "item": "opening_day",
+        "issues": []
+      },
+      {
+        "item": "provenance_check",
+        "issues": []
+      },
+      {
+        "item": "recurring_patronage",
+        "issues": []
+      },
+      {
+        "item": "trust_profile",
+        "issues": []
+      },
+      {
+        "item": "operator_statement",
+        "issues": []
+      },
+      {
+        "item": "certificate_of_patronage",
+        "issues": []
+      },
+      {
+        "item": "aura_walk",
+        "issues": []
+      },
+      {
+        "item": "the_collab",
+        "issues": []
+      }
+    ],
+    "collector_defect": "The old comparator reads only x-request-schema. These snapshots publish the input schema at x-payment-info.input.schema. Missing collector data was misreported as a product contradiction.",
+    "controls": [
+      "changed maxLength rejected",
+      "absent schema rejected"
+    ]
+  },
+  "links": {
+    "requests": 352,
+    "statuses": {
+      "200": 264,
+      "301": 19,
+      "400": 11,
+      "402": 40,
+      "404": 9,
+      "405": 9
+    },
+    "literal_404s": [],
+    "unsubstituted_template_404s": [
+      {
+        "url": "https://scvd.store/api/provenance-check/%7Bid%7D",
+        "from": "skill"
+      },
+      {
+        "url": "https://scvd.store/menu/%7Bitem_id%7D?view=compact",
+        "from": "skill"
+      },
+      {
+        "url": "https://scvd.store/api/buy/%7Bitem_id%7D?src=skill",
+        "from": "skill"
+      },
+      {
+        "url": "https://scvd.store/api/credit/%7Byour-wallet%7D",
+        "from": "skill"
+      },
+      {
+        "url": "https://scvd.store/menu/%7Bitem_id%7D",
+        "from": "skill"
+      },
+      {
+        "url": "https://scvd.store/api/mandate/%7Bid%7D",
+        "from": "skill"
+      },
+      {
+        "url": "https://scvd.store/api/order/%7Border_id%7D",
+        "from": "skill"
+      },
+      {
+        "url": "https://scvd.store/api/discovery/report/%7Bid%7D",
+        "from": "llms"
+      },
+      {
+        "url": "https://scvd.store/corpus/month/%7BYYYY-MM%7D",
+        "from": "llms"
+      }
+    ],
+    "server_or_transport_failures": 0,
+    "unexpected_auth_responses": 0,
+    "redirects": 19,
+    "limits": "Redirect targets/loops not followed by this collector; GET against documented POST routes and missing-query refusals are not dead endpoints. The extractor also truncates nested URL values at colon and includes punctuation. Template substitution and recursive links remain untested."
+  },
+  "overall_wave_1": "incomplete",
+  "new_confirmed_store_defects": 0,
+  "new_benchmark_defects": [
+    "obsolete OpenAPI input field",
+    "URL/template extraction creates invalid requests"
+  ]
+}

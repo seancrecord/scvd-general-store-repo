@@ -1,0 +1,28 @@
+{
+  "at": "2026-09-15T16:14:28.335Z",
+  "seed_urls": 322,
+  "actual_gets": 323,
+  "unresolved_template_occurrences": 18,
+  "by_state": {
+    "checked": 306,
+    "incomplete": 1,
+    "needs_review": 15
+  },
+  "by_code": {
+    "body_limit": 1,
+    "document_read": 264,
+    "http_refusal": 6,
+    "method_not_allowed": 9,
+    "payment_required": 42
+  },
+  "findings": [],
+  "spend_usdc": 0,
+  "recursive": false,
+  "limits": [
+    "Seeded from retained home, skill, llms, menu and concrete OpenAPI GET URLs; not all first-party pages or JSON references.",
+    "At most five same-origin redirects, twenty seconds and four MiB per seed; budget stops remain incomplete.",
+    "Only successful .json and .md destinations have a promised-format check. Other bodies are hashed but not schema-validated.",
+    "402 identifies a payment-required response; it does not establish usable offers, payment, settlement or fulfillment.",
+    "HTTP refusals and method mismatches require source-context review; no automated global buyer pass."
+  ]
+}

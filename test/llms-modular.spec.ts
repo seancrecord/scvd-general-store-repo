@@ -992,12 +992,11 @@ const BASE = "https://scvd.store";
 // record is worth. Verified the same way, and across the merge: with
 // only that paragraph removed from the merged tree, main's 1ba2bf
 // digest above reproduced, and this copy reproduces the new one.
-// 2026-09-15: the keeper identified Zodiac as archived. The reading-room
-// paragraph now says so, and its weekly invitation came out of the clock
-// list. The two filing headings are normalized below; the rest of the
-// complete guide remains guarded by this digest.
+// 2026-09-15: preserve main's archived Zodiac and filing changes alongside
+// wallet Claims instructions and narrower reconciliation task wording.
+// The integrated digest is qualified by reversing only the buyer copy.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a30ef0ec802c772c99082cb0ba86db82e9c8a89615770ad9e5ba873d84aec61a";
+  "293280bf76d818f930e0d177c0ce006005aa9a39c3aeb31074d6f807fe3e3f97";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

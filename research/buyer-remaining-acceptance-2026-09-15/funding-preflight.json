@@ -1,0 +1,45 @@
+{
+  "observed_at": "2026-09-15T13:32:23.879Z",
+  "payer": "0x137aE5e3c7ed176744226F67223de50CA3A19e5A",
+  "solana_key_configured": false,
+  "offers": [
+    {
+      "network": "eip155:8453",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "price_atomic": "5000",
+      "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+      "chain_id": "0x2105",
+      "balance_atomic": "1548720"
+    },
+    {
+      "network": "eip155:137",
+      "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+      "price_atomic": "5000",
+      "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+      "chain_id": "0x89",
+      "balance_atomic": "0"
+    },
+    {
+      "network": "eip155:42161",
+      "asset": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      "price_atomic": "5000",
+      "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+      "chain_id": "0xa4b1",
+      "balance_atomic": "0"
+    },
+    {
+      "network": "eip155:480",
+      "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+      "price_atomic": "5000",
+      "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+      "chain_id": "0x1e0",
+      "balance_atomic": "0"
+    },
+    {
+      "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "price_atomic": "5000",
+      "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"
+    }
+  ]
+}

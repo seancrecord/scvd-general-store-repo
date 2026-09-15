@@ -707,7 +707,7 @@ Final publication gate: **77 tests across five files passed**, including pairing
 - [x] **B-RPAIR reproduced and locally repaired:** wrong authorization/transfer association through the actual purchase-recovery alarm and the signed settlement-reconciliation reader. Same-valued legs are distinguished by receipt position; ambiguous recovery remains unknown and scheduled. Tests cover no-discretion overstatement, declared-cap fallback, and signature tampering.
 - [x] **B-RPC implemented:** general EVM attestation and bundle validate transaction identity, chain identity, block/head validity and receipt status before signing. Missing/duplicate batch responses cannot become NOT_FOUND. Battery v4 distinguishes the instrument; explicit null, genuine reversion, finality depth, prior signed records and Solana behavior retain their meaning.
 - [x] **Buyer refusal facts:** the newly introduced receipt refusals say no settlement was attempted, supply same-payment retry guidance, leave temporariness unknown, and do not invent an artifact/verify URL. HTTP and both MCP dialects are covered.
-- [ ] **Separate source-review candidates:** settlement reconciliation's Approval-to-transfer cap attribution and its own RPC envelope. Existing owner/ambiguity filters remain; no production impact or repair is asserted here.
+- [x] **Separate source-review candidates:** subsequently reproduced, repaired and released as B-RCAP/B-RCONTEXT in PR #692; dated follow-up evidence below preserves the original investigation boundary.
 - [x] **Targeted deployed acceptance:** repairs merged through PR #680; September 14 real Base purchases and changed-deployment quote/certificate checks are recorded below. Full real-chain/deployment matrices remain open.
 
 Source-reversion control: 49 failed / 47 passed across 96 tests, with task-owned implementation files restored afterward. Final validation follows below. Original BUY-001–039 counts and commissioned Aura records are unchanged.
@@ -745,7 +745,7 @@ The detailed release record is in BUYER_AUDIT_LOG.md. Historical validation para
 - [x] Implement LA-01 pending/ready/unpaid/resolved status guidance without changing retained delivery or payment behavior.
 - [x] Implement LA-02 original-interface recovery instructions and non-temporary HTTP 409 refusals; preserve signed ownership and scope guards.
 - [x] Complete full-suite plus corrected reruns, typecheck and both Worker builds: 706 files, 13,863 passed / 39 discovery failures / one existing skip in the full run; all failures corrected and covered by 379 passing affected-file cases. Exact validation limits are in the report.
-- [ ] Release these local fixes and verify the resulting production guidance; no new purchase is required merely to check discovery.
+- [x] Released in PR #692 on September 15; required GitHub suite and both production Worker builds passed. Public HTTP/MCP guidance and historical observation continuity verified; see the production-release record.
 - [x] Reproduce the two B-RNEXT reader candidates using synthetic receipts, including local verification of returned observation signatures.
 - [x] **B-RCAP:** remove unsupported Approval-to-transfer cap attribution; preserve paired authorizations and historical signed bytes; stage a dated correction and recipient warning locally.
 - [x] **B-RCONTEXT:** establish reconciliation receipt/chain context; test HTTP and both MCP profiles refusing before settlement and safely retrying the same payment.
@@ -760,6 +760,56 @@ See `research/buyer-recovery-followup-2026-09-14/REPORT.md` and its opt-in repro
 - [x] Preserve historical signed bytes, warn about retired approval inference, and explain primary signatures and historical keys to recipients.
 - [x] Correct zero-match prose and prove missing/empty/reverted cases fail without the fix (B-RZERO).
 - [x] Complete 708-file full run: 13,933 passed, one existing skip; after the final prose repair, 55 affected checks plus final typecheck/build/documentation gates passed. Exact snapshot/delta limits are in the report.
-- [ ] Release/live verification remains held: latest instruction is no PR or merge. Other funded rails and remaining fulfillment/recovery/deployment scenarios are still open.
+- [x] Release and public guidance verification completed September 15 in PR #692 following the keeper’s later authorization. Other funded rails and remaining fulfillment/recovery/deployment scenarios remain open.
 
 Release authorized September 14: integrated-main full attempt passed 709 files / 13,982 tests, with one existing skip and one unnamed runner-startup error. The five-file final affected run passed all 133 cases without an unhandled error. Full attempt is not labeled green; a clean complete GitHub suite is required before merge. See `buyer-recovery-followup-2026-09-14/release-validation.json`.
+
+
+## September 15 — production release and remaining live acceptance
+
+- [x] PR #692 merged; required GitHub suite, both production Worker builds, public recovery guidance and historical-byte continuity verified.
+- [x] Ten simultaneous Base purchases across five different products, split HTTP/MCP, returned ten correct certificates on the first paid call. Client response-consumption delays were varied; server delays were not injected.
+- [x] All ten moved from explicit pending recovery to ready, returning their exact original signed payloads and goods through free private status reads.
+- [x] A separate clean response-body cancellation was independently confirmed settled before original-payment retry; the correct good returned with no additional debit. This does not test interruption inside settlement.
+- [x] One fresh weaker public-only recipient independently verified a retired-key artifact and succession record, and separated signed claims from payment, delivery and timestamp truth. Its OTS proof remained unverified.
+- [ ] B-RTASK release: wording repaired locally, with a failing baseline and eleven passing affected tests; typecheck/claims/docs passed. Not committed or deployed.
+- [ ] Complete artifact-only / transaction-only / wallet-time recovery: wallet ownership recovered all eleven initial purchase references, but Claims and replay did not supply the lost Spot Check observation. Expert recovery of an already-spent authorization retrieved it; this is not a normal buyer success. New B-RCLAIMS is tracked separately.
+- [ ] Other funded rails, actual interrupted settlement, queued human completion, term-service completion, anchoring, inventory, multi-region deployment propagation and full shelf remain open.
+
+New evidence and exact scope: `buyer-remaining-acceptance-2026-09-15/REPORT.md`. Internal acceptance findings do not change original BUY-001–039 or commissioned Aura totals.
+
+
+## September 15 — wallet-to-original-good repair follow-through
+
+- [x] B-RCLAIMS local implementation: wallet proof plus certificate ID retrieves the retained original good; no original payment/header or private recovery token is needed.
+- [x] Local privacy and integrity controls: wrong wallet, unknown ID, malformed selector, cross-wired/damaged receipt, Solana case mismatch and unchanged purchase journal.
+- [x] Local legacy-record and human-order coverage: older completed attempts; queued to completed on the same order with signed completion evidence; recorded refund precedence even without original artifact storage.
+- [x] Claims discovery contract: correct `address` response field, certificate selector, list/selected-good schemas, fresh-proof instructions and existing guide-size guard.
+- [x] Reversion evidence: all 46 new tests fail without the source fix; exact source hashes restored; 340 affected tests pass. Typecheck and both build checks pass.
+- [ ] B-RCLAIMS release and live acceptance: use a fresh wallet proof on the already-paid lost Spot Check after release; do not buy it again. Full historic/all-product and transaction-only recovery remain open.
+
+Details and final qualification results: `buyer-remaining-acceptance-2026-09-15/REPORT.md`. These local checkmarks do not close the earlier live matrices or add Aura reports.
+
+- [x] B-RORDERMSG local repair: completed human-order recovery no longer carries the queued message. Nine failing-before controls cover wallet, private-status and original-payment reads across three purchase profiles; 271 affected tests pass, with typecheck and both builds.
+- [ ] B-RORDERMSG release/live acceptance: verify completed order language and evidence through the deployed recovery paths. No live affected order was claimed from local tests.
+
+
+## September 15 — unsigned discovery/input/direct-link refresh
+
+- [x] Fresh public evidence: eight starting surfaces, 539 unsigned input requests, 352 direct-link requests, no payment or wallet, no 5xx/transport failures.
+- [x] Review the raw comparison against actual public data: 35 items agree on the compared menu/manifest/OpenAPI fields; nine 404s were unfilled templates, with no concrete 404 observed.
+- [x] B-BCOLLECT local repair: current/legacy/duplicate schema checks, unresolved templates, nested/prose URLs, body-only 402 terms and evidence-backed scoring. Failing-before controls recorded; all 36 buyer benchmark/evidence tests pass and run in CI. See `buyer-public-recheck-fixed-2026-09-15/REPORT.md`.
+- [ ] Full ten-surface semantics, recursive links, redirect loops, all error codes/content types, alternative MCP profile and paid cold-entry acceptance remain open.
+
+Evidence and limits: `buyer-public-recheck-2026-09-15/REPORT.md`. The snapshot-only review includes changed-limit and missing-schema controls. The later primary collector/scorer repair is recorded separately; neither run adds a new aggregate acceptance score.
+
+
+## September 15 — bounded redirect and format checks
+
+- [x] Shared URL extraction feeds a repeatable unsigned GET checker with redirect-loop, same-origin, byte/time budget and successful JSON/Markdown format controls.
+- [x] Three disabled detector checks fail their controls; final redirect extension failed before its fix; all 44 benchmark/evidence tests pass.
+- [x] Production direct-link follow-through: 322 seeds / 323 GETs, no detected dead/loop/access/format failure. Fifteen refusals reviewed against documented methods/inputs; no payment submitted.
+- [x] Separately qualify the oversized corpus under a 16-MiB follow-up ceiling and the menu redirect's JSON, adding three GETs. Raw incomplete/unasserted first results remain intact.
+- [ ] Full recursive first-party/JSON-reference crawl, all promised schemas and errors, MCP install/source-code/correction paths and paid cold-entry completion remain open.
+
+Evidence: `buyer-link-followthrough-2026-09-15/REPORT.md`. This closes only the bounded link-following/format instrument gap, not the entire broken-link or Wave 1 checklist.

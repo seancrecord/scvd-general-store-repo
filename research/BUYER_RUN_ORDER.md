@@ -2,7 +2,7 @@
 
 Run in this order. A payment endpoint returning its documented status is not acceptance. A pass requires the right promised good, about the submitted subject, delivered and independently verifiable, with the money accounted for. Missing evidence is **incomplete**; an observed contradiction is **fail**. Keep failures visible even when other checks remain incomplete.
 
-Current evidence: [September 12 run](buyer-waves-2026-09-12/REPORT.md), [machine score](buyer-waves-2026-09-12/score.json), [quoted shelf grid](buyer-waves-2026-09-12/shelf-quote-grid.json). This run spent **0 USDC**. Wave 1 is partial; Waves 2–4 are not run. Prior audit evidence stays attributed to its actual product, rail, release and purchase.
+Current evidence includes the [September 12 baseline](buyer-waves-2026-09-12/REPORT.md), its [machine score](buyer-waves-2026-09-12/score.json) and [quoted shelf grid](buyer-waves-2026-09-12/shelf-quote-grid.json), the [September 14 paid receipt run](buyer-receipt-acceptance-2026-09-14/REPORT.md), the [September 15 remaining live acceptance](buyer-remaining-acceptance-2026-09-15/REPORT.md), and the [September 15 unsigned public refresh](buyer-public-recheck-2026-09-15/REPORT.md). The September 12 baseline spent **0 USDC**; that is not the later paid runs' spend. Waves 1 and 2 are partially measured; neither the full architecture matrix nor full shelf is complete. Attribute each result to its actual product, rail, release and purchase. The latest refresh exposed B-BCOLLECT in the primary comparator/crawler; do not treat its raw differences and placeholder requests as store defects.
 
 ## Wave 1 — public contracts, then cold entry
 
@@ -25,7 +25,7 @@ Review and preserve each cold transcript before writing `cold/reviewed-metrics.j
 
 ## Wave 2 — cheapest suitable instant good, real money
 
-Select from live offers, not a hardcoded historical cheapest item. The observed cheapest is **Spot Check, $0.001**, requiring `host`. It returns signed existing observations or an explicit `not_observed`; it does not probe the host. Use a meaningful, reviewed host and judge usefulness against that promise.
+Select from live offers, not a hardcoded historical cheapest item. The September 12 quoted cheapest was **Spot Check, $0.001**, requiring `host`. It returns signed existing observations or an explicit `not_observed`; it does not probe the host. Use a meaningful, reviewed host and judge usefulness against that promise.
 
 Run Base, Polygon and Solana first. For each rail retain selected terms, signed authorization privately, exact inputs, chain evidence, complete response and original artifact. Then exercise:
 
@@ -40,13 +40,13 @@ Do not use mocks as live settlement evidence. The shopping collector is sequenti
 
 ## Wave 3 — architecture representatives
 
-The current public-contract plan selects Small Blessing, Confession, Signature Agent Card, Settlement Attestation, Attestation Bundle, Standing Watch, Aura Walk, Bitcoin Anchor and Graffiti on a Train. Respectively these exercise generated text, buyer text, URL probe, chain lookup, multiple transactions, periodic work, human queue, external anchoring and stateful publication. Their listed one-rail minimum sum is **$158.059**, unspent.
+The September 12 public-contract plan selected Small Blessing, Confession, Signature Agent Card, Settlement Attestation, Attestation Bundle, Standing Watch, Aura Walk, Bitcoin Anchor and Graffiti on a Train. Respectively these exercise generated text, buyer text, URL probe, chain lookup, multiple transactions, periodic work, human queue, external anchoring and stateful publication. Their listed one-rail minimum sum is **$158.059**, unspent.
 
 Recheck the deployed fulfillment paths before executing; expand only for material implementation differences. Supply real valid transaction hashes, a meaningful endpoint, reviewed text and a digest of retained bytes. Observe watch completion, human fulfillment and external anchor confirmation before passing those purchases. An order receipt or “queued” status proves acceptance of work, not delivery of the promised result. Inventory/capacity and sold-out behavior need their own observed transitions.
 
 ## Wave 4 — full offered shelf
 
-The retained quotes contain **33 products / 163 offered item-and-rail pairs**, with minimum arithmetic total **$3,040.430**. Base, Polygon, World and Solana each total $610.886; Arbitrum totals $596.886 because Launch Check and Opening Day do not offer it. Recompute from each actual offer. This is not a fulfillable capacity reservation, and excludes earlier waves, retries, optional tiers and network fees.
+The September 12 retained quotes contain **33 products / 163 offered item-and-rail pairs**, with minimum arithmetic total **$3,040.430**. Base, Polygon, World and Solana each total $610.886; Arbitrum totals $596.886 because Launch Check and Opening Day do not offer it. Recompute from each actual offer. This is not a fulfillable capacity reservation, and excludes earlier waves, retries, optional tiers and network fees.
 
 Use the existing house shopping walk with `BUYER_GRADE=1`, one explicitly scoped rail and reviewed item group at a time. First inspect a dry run:
 
@@ -64,4 +64,22 @@ An EVM receipt match or Solana confirmed owner/mint balance match is a bounded c
 
 ## Advancement and outstanding decisions
 
-Keep the order visible; do not silently skip incomplete checks or turn historical tests into this run's passes. Known Wave 1 failures currently reproduce BUY-040, BUY-042 and BUY-044. Complete the remaining semantic surface/error/crawl coverage before claiming Wave 1 done. Cheap live coverage needs the requested total spending ceiling and a funded Solana signer configured locally; neither can be supplied by a test fixture. Watch/human/anchor completion may outlast the purchase session and remains incomplete until actually observed.
+Keep the order visible; do not silently skip incomplete checks or turn historical tests into this run's passes. The September 12 Wave 1 baseline reproduced BUY-040, BUY-042 and BUY-044; consult the later repair and deployed-acceptance records before treating that dated status as current. Complete the remaining semantic surface/error/crawl coverage before claiming Wave 1 done. Cheap live coverage needs the requested total spending ceiling and a funded Solana signer configured locally; neither can be supplied by a test fixture. Watch/human/anchor completion may outlast the purchase session and remains incomplete until actually observed.
+
+
+## Benchmark regression and evidence attribution
+
+Run `npm run buyer:test` before relying on collector/scorer changes; local gates and CI include it. Use a fresh acquisition directory. The comparator reads current and legacy input schemas and records duplicate-copy disagreement. Treat `missing` entries as missing evidence and `contradiction` entries as observed disagreement. `unresolved-links.json` retains templates that need real values; they are coverage gaps, not fetched broken links.
+
+Do not copy an older `score.json`, cold review or reproduced-defect list. The optional `reviewed-findings.json` has a `findings` array of `{ "id": "BUY-040", "state": "reproduced", "request_ids": [1] }` entries. States are `reproduced`, `not_reproduced` or `incomplete`; IDs must be unique and request references must exist in that run's retained requests. A conclusive review needs references. Omitting the file yields an unreviewed/null reproduced-finding result, not a clean bill. References establish provenance; the reviewer still must substantiate the verdict. Fresh cold metrics and readiness review remain required for the aggregate scorer.
+
+The September 15 [repair follow-through](buyer-public-recheck-fixed-2026-09-15/REPORT.md) preserves both public runs and their parser-created false positives. Its bounded result does not complete Wave 1.
+
+
+For bounded direct-link redirect/format follow-through run:
+
+```sh
+node scripts/buyer-link-check.mjs research/buyer-waves-NEW research/buyer-links-NEW
+```
+
+The starting snapshot hashes must match their acquisition records. The output directory must be new. Inspect `summary.json`, then review every `needs_review`/`incomplete` row against the documented method, required inputs and actual source link. Never turn GET-on-POST or unfilled examples into confirmed dead links. Loop/format failures are candidates requiring context; `checked` means only this bounded read was checked, never that a purchase succeeded. Preserve raw outcomes when a separately bounded follow-up closes a read gap. The checker neither recurses nor submits POSTs/payments.

@@ -1,0 +1,51 @@
+{
+  "max_corpus_bytes": 16777216,
+  "rows": [
+    {
+      "url": "https://scvd.store/menu",
+      "from": "redirect-format-followup",
+      "sent_at": "2026-09-15T16:15:28.852Z",
+      "payment_submitted": false,
+      "hops": [
+        {
+          "url": "https://scvd.store/menu",
+          "status": 301,
+          "content_type": "",
+          "location": "https://scvd.store/menu.json"
+        },
+        {
+          "url": "https://scvd.store/menu.json",
+          "status": 200,
+          "content_type": "application/json",
+          "bytes": 309830,
+          "sha256": "0b833c9ef5f971ae32680dd2f3c3ad574216d96b62430799d9d1c013fdcc8c68"
+        }
+      ],
+      "expected_type": "json",
+      "state": "checked",
+      "code": "document_read",
+      "format": "json",
+      "received_at": "2026-09-15T16:15:31.321Z"
+    },
+    {
+      "url": "https://scvd.store/corpus.json",
+      "from": "bounded-large-document-followup",
+      "sent_at": "2026-09-15T16:15:31.321Z",
+      "payment_submitted": false,
+      "hops": [
+        {
+          "url": "https://scvd.store/corpus.json",
+          "status": 200,
+          "content_type": "application/json",
+          "bytes": 11494918,
+          "sha256": "d94d0ad9b9b3b450bfeae4947918a4423d571de9cdd52005c29143555b945092"
+        }
+      ],
+      "expected_type": "json",
+      "state": "checked",
+      "code": "document_read",
+      "format": "json",
+      "received_at": "2026-09-15T16:15:32.061Z"
+    }
+  ]
+}

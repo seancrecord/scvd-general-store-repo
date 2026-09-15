@@ -31,6 +31,9 @@ export async function evmValid(w: Obj, o: ChallengeRequirement): Promise<boolean
 }
 let solKey: CryptoKeyPair, feeKey: CryptoKeyPair;
 export let solBuyer = "", solFeePayer = "";
+export async function signSolClaim(message: string): Promise<string> {
+  return encodeBase58(new Uint8Array(await crypto.subtle.sign("Ed25519", solKey.privateKey, new TextEncoder().encode(message))));
+}
 export async function initializeSol(): Promise<void> {
   solKey = await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]) as CryptoKeyPair;
   feeKey = await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]) as CryptoKeyPair;
