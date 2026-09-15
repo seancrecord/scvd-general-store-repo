@@ -26,6 +26,23 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Mute the alarm you asked about, 2026-09-15 — LOOK.** You said of a
+  `worker_health` page about a note this desk sent to delvorn.site: "I
+  don't want to get this particular alarm anymore." The lever now
+  exists and the press is yours — nothing in code decides which of your
+  alarms you are done with. Open `/admin/reconciliation#alarms`, find
+  the row, and press "Stop emailing this one": that silences exactly
+  that alarm (`worker_health:note-audit:look:delvorn.site`) and leaves
+  every other `worker_health` page — including the ones that mean the
+  Worker is down — alone. The beside-it lever mutes the whole
+  condition, which is the bigger hammer and says so. Either way the
+  row keeps landing on the trail with its repeat count, every live
+  mute is listed under the trail with the lever to lift it, and
+  alert emails now carry the alarm's own name and a line pointing at
+  that page. If what you meant was the desk item itself rather than
+  the email, the underlying finding is on `/admin/outreach#audit` and
+  clearing it there stops the alarm at its source.
+
 - **Forge intake, 2026-09-14 — LOOK.** Joey (@Joeyy_0x) used OpenAPI
   discovery. Our unsigned checks returned 402 on all eleven doors shown
   as 400/403; placeholder inputs reproduced two 400s and the profile's
@@ -1010,10 +1027,12 @@ what you ruled and what is still yours to look at.
   FIRM: the top-level preflight `verdict` keeps meaning x402-ready,
   permanently, and `protocols_spoken` is the union field — never to
   be relitigated, because a field that changes meaning breaks every
-  historical row's comparability. Decision 2 (a passport for an
-  MPP-only door) waits on an actual mockup of the passport copy,
-  now in the design note's rulings section: read it, then yes / no
-  / later. Framing, sourcing, zero added cost, versioning and the
+  historical row's comparability. Decision 2 APPROVED 2026-09-14:
+  the passport should work for MPP-only, MPP beside x402 (and other
+  protocols), or x402 alone as it does today. The passport names the
+  protocol supporting its reading and keeps each protocol's tier
+  history separate; the till ruling is unchanged.
+  Framing, sourcing, zero added cost, versioning and the
   risk section approved as-is. "Get bolder on actual
   implementation": PR 1 is built the same day. Decisions 1, 4, 5
   and 6 stand as recommended until you say otherwise.

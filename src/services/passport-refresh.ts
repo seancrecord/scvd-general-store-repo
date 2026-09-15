@@ -5,6 +5,7 @@ import { ProbeTargetRefused, checkProbeTarget, parseProbeTarget } from "@/lib/pr
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
 import { kvGetJson } from "@/lib/kv-retry";
+import type { MppCensusReading } from "@/services/mpp-census";
 
 /**
  * THE PASSPORT REFRESH — the paid fresh check (the keeper's "both"
@@ -25,6 +26,10 @@ import { kvGetJson } from "@/lib/kv-retry";
  */
 
 export interface RefreshObservation {
+  battery?: string;
+  protocols_spoken?: ("x402" | "mpp")[];
+  mpp?: MppCensusReading;
+  mpp_read_error?: "reader_failed";
   artifact: "passport_refresh";
   host: string;
   url: string;
@@ -92,10 +97,14 @@ export async function performPassportRefresh(
     artifact: "passport_refresh",
     host: url.host.toLowerCase(),
     url: url.toString(),
-    observed_at: now.toISOString(),
+    observed_at: probe.observed_at ?? now.toISOString(),
     verdict: probe.verdict === "not_probed" ? "unreachable" : probe.verdict,
     failed: probe.failed,
     advisories: probe.advisories,
+    ...(probe.battery ? { battery: probe.battery } : {}),
+    ...(probe.protocols_spoken ? { protocols_spoken: probe.protocols_spoken } : {}),
+    ...(probe.mpp ? { mpp: probe.mpp } : {}),
+    ...(probe.mpp_read_error ? { mpp_read_error: probe.mpp_read_error } : {}),
     instrument:
       "the weekly census's own probe (one GET, Web Bot Auth) — buyer-commissioned observations stay byte-comparable with the weekly ones",
     what_this_buys:

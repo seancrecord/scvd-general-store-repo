@@ -3,7 +3,7 @@ import { basicAuth } from "hono/basic-auth";
 import { isHouseWallet } from "@/lib/channel";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { MiddlewareHandler } from "hono";
-import { sendAlert } from "@/lib/alerts";
+import { ALERT_CONDITIONS, sendAlert } from "@/lib/alerts";
 import { acknowledgeAlertInbox, readAlertInbox } from "@/lib/alert-inbox";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { takeCensus } from "@/lib/census";
@@ -1128,6 +1128,16 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
         })(),
         alertsLastRead: alarmsLastRead,
         alertsUnavailable: alertInbox === null,
+        // A mute that the page cannot show is a wire quietly cut. It
+        // is read fail-soft like every other shelf here: an unreadable
+        // mute list renders as nothing rather than taking the trail
+        // down with it, and the load note says so.
+        mutes: await import("@/lib/alert-mutes")
+          .then(({ listMutes }) => listMutes(c.env))
+          .catch(() => {
+            notes.push("alarm mutes");
+            return undefined;
+          }),
         alerts: await Promise.all(
           (alertInbox?.alerts ?? [])
             .map((alert) => ({
@@ -3648,6 +3658,51 @@ adminRoutes.post("/admin/alerts/test", async (c) => {
     key: `test-${Date.now()}`,
   });
   return c.redirect("/admin/tools");
+});
+
+/**
+ * "I DON'T WANT TO GET THIS PARTICULAR ALARM ANYMORE" (2026-09-15).
+ *
+ * The keeper's sentence, about one `worker_health` page naming one
+ * host. Before this the answers were to keep reading the email or to
+ * take the condition out of the code, and the second one takes the
+ * page away for every other host and every real outage that rides the
+ * same condition. So the mute is a row, it is per alarm unless the
+ * keeper deliberately reaches for the whole condition, and it silences
+ * the mail only — see lib/alert-mutes for why nothing else moves.
+ */
+adminRoutes.post("/admin/alerts/mute", async (c) => {
+  const form = await c.req.parseBody();
+  const scope = form["scope"] === "condition" ? "condition" : "alarm";
+  const target = sanitizeText(
+    scope === "condition" ? form["condition"] : form["identity"],
+    400,
+  );
+  if (!target) {
+    return c.text("That alarm gave the page no name to mute it by.", 400);
+  }
+  const { muteAlarm } = await import("@/lib/alert-mutes");
+  const reason = sanitizeText(form["reason"], 200);
+  const result = await muteAlarm(
+    c.env,
+    { scope, target, ...(reason ? { reason } : {}) },
+    ALERT_CONDITIONS,
+  );
+  if ("refused" in result) {
+    return c.text(result.refused, 400);
+  }
+  return c.redirect("/admin/reconciliation#alarms");
+});
+
+adminRoutes.post("/admin/alerts/unmute", async (c) => {
+  const form = await c.req.parseBody();
+  const target = sanitizeText(form["target"], 400);
+  if (!target) {
+    return c.text("Nothing named to unmute.", 400);
+  }
+  const { unmuteAlarm } = await import("@/lib/alert-mutes");
+  await unmuteAlarm(c.env, target);
+  return c.redirect("/admin/reconciliation#alarms");
 });
 
 adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {

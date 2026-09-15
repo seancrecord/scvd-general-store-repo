@@ -188,6 +188,8 @@ itself: signed artifacts a third party can verify, memory that
 survives a context reset, out-of-band checks, and the labor of a
 named human. Your operator can read every receipt.
 
+## At the counter
+
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
 \`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
 works whether or not you bought the thing. A live one to try right
@@ -280,6 +282,8 @@ plain-language room is ${base}/bot-auth, which also states, derived
 live from config rather than promised here, whether this store's own
 egress is signed the same way. The signed card an origin will believe
 is signature_agent_card on the menu.
+
+## More ways to use the store
 
 BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point
 rather than a pitch: the cheapest useful things here cost nothing.
@@ -554,11 +558,10 @@ dollar each, free to read at ${base}/train. Buying mints the
 certificate at once; the keeper decides what goes on the wall. Oldest
 tag first, because a train fills front to back.
 
-The Systems Almanac, your sign, by wallet address, for life, at
-\`${base}/zodiac/{address}\`. The runtime is weather; the weekly page
-observes operational climate. This week's page is free; past weeks
-are a penny each at ${base}/zodiac/archive. Twelve signs, listed at
-${base}/zodiac.
+Archived Systems Almanac: retained wallet-sign readings at
+\`${base}/zodiac/{address}\` and Season One pages at
+${base}/zodiac/archive. This is an archived feature, outside the active
+shelf. The retained reader follows its original calendar.
 
 Paywall, the counter's pressings, at ${base}/design, JSON by Accept.
 ${CARDS_PROPOSITION}
@@ -1608,7 +1611,6 @@ THE CLOCK, so a scheduled agent can put us in its loop:
 
   the bell     once a day per visitor
   the stamp    a new design every week; the old ones stay yours
-  the zodiac   this week's page free, past weeks a penny
 
 No streaks, nothing expires, nothing is lost by skipping a week. The
 clock is here so you can plan around it, not so we can pull you back.
@@ -1879,6 +1881,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
  * store with a hole in it and nothing says so.
  */
 const SECTION_AREAS: Record<string, string> = {
+  "At the counter": "menu",
   "Practicing on us": "developers",
   "How paying works here": "developers",
   "Standards, so you can check us without asking us": "developers",
@@ -1958,6 +1961,7 @@ const INDEX_SECTIONS = [
    */
   "Words people use for what this store does",
   "Every door, in one list",
+  "More ways to use the store",
   /*
    * The multilingual summary stays on the index rather than filing
    * under an area, because it summarises the WHOLE store for a reader
@@ -2046,8 +2050,8 @@ ${others}
  * GET /llms.txt — the index.
  *
  * The preamble, the two sections a reader needs before anything else,
- * a map of the area files, and nothing else. Under the convention's
- * 30,000-character recommendation with room to spare, and every
+ * a map of the area files, and nothing else. Under our
+ * local 30,000-character reading budget with room to spare, and every
  * sentence in it is the same sentence it was yesterday.
  */
 export function llmsIndex(base: string, paymentConfig?: PaymentNetworkConfig): string {
@@ -2058,7 +2062,7 @@ export function llmsIndex(base: string, paymentConfig?: PaymentNetworkConfig): s
 
   const map = LLMS_AREAS.map(
     (area) =>
-      `- **${area.title}** — ${base}${area.path}/llms.txt${
+      `- [${area.title}](${base}${area.path}/llms.txt)${
         area.page ? `\n  Also a page for people: ${base}${area.page}` : ""
       }\n  ${area.blurb}`,
   ).join("\n\n");

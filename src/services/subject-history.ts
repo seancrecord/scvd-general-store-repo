@@ -1,4 +1,5 @@
 import type { CatalogReading } from "@/services/catalog-agreement";
+import type { MppCensusReading } from "@/services/mpp-census";
 import { roundCoverageSuspect } from "@/services/passport-tier";
 import { listCorpus, type CorpusRecord } from "@/services/corpus";
 import { PAY_TO_DIGEST_SALT } from "@/lib/pay-to-digest";
@@ -144,6 +145,9 @@ export interface SubjectRound {
    * catalog. Absent on rounds before the column.
    */
   catalog?: CatalogReading;
+  protocols_spoken?: ("x402" | "mpp")[];
+  mpp?: MppCensusReading;
+  mpp_read_error?: "reader_failed";
   /** Which feed named it: discovery, leaderboard, or both. */
   source?: string;
   gap?: GapReason;
@@ -425,6 +429,9 @@ export async function subjectHistory(
             }
           : {}),
         ...(entry.catalog ? { catalog: entry.catalog } : {}),
+        ...(entry.mpp ? { mpp: entry.mpp } : {}),
+        ...(entry.mpp_read_error ? { mpp_read_error: entry.mpp_read_error } : {}),
+        ...(entry.protocols_spoken ? { protocols_spoken: entry.protocols_spoken } : {}),
         ...(entry.source ? { source: entry.source } : {}),
         note:
           entry.verdict === "ready"

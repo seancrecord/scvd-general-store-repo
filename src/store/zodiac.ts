@@ -7,6 +7,10 @@ import type { ZodiacSign } from "@/types";
  * allowed; remapping wallets is not. Array position is canonical sign
  * order 1-12.
  */
+/** Retired from the active offering; the original reader and purchased pages remain usable. */
+export const ZODIAC_STATUS = "archived";
+export const ZODIAC_ARCHIVE_NOTICE = "Archived Systems Almanac. Retained wallet-sign readings and Season One pages; the reader follows its original calendar.";
+
 export const ZODIAC_SIGNS: readonly ZodiacSign[] = [
   {
     id: "cold_start",

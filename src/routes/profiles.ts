@@ -1,11 +1,12 @@
 import { deriveTier, tierInputFromHistory, type TierReading } from "@/services/passport-tier";
+import { PASSPORT_PROTOCOL_RULE } from "@/services/passport-protocol";
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { PASSPORT_CSS, passportCard, refusalCard } from "@/pages/passport-card";
 import {
   decisionOf,
-  effectiveObservation,
+  effectivePassportObservation,
   freshnessOf,
   issuePassport,
   type AgentDecision,
@@ -52,7 +53,7 @@ interface ProfileView {
  * dark on its chip and its passport while this page — the URL its
  * operator hands to counterparties — stayed ready-side until the next
  * weekly round. The copy was then fixed to match. A matching copy is
- * not a mechanism; `effectiveObservation` is, and it is now the only
+ * not a mechanism; `effectivePassportObservation` is, and it is now the only
  * place the comparison happens.
  */
 async function viewOf(
@@ -60,7 +61,7 @@ async function viewOf(
   profile: SignedTrustProfile,
   now: Date,
 ): Promise<ProfileView> {
-  const observation = await effectiveObservation(
+  const observation = await effectivePassportObservation(
     c.env,
     profile.record.host,
     now,
@@ -97,6 +98,7 @@ profilesRoutes.get("/profiles", async (c) => {
     return c.json({
       what: `A hosted trust profile is a standing page an operator commissions about their own endpoint: this store's public evidence — the live passport, the chip, the signed history — aggregated at one URL for ${PROFILE_TERM_DAYS} days per purchase, renewable. Never a verdict: the page derives from the same corpus everyone reads free, and a host that breaks mid-term shows broken on its own page.`,
       how: `Buy trust_profile at ${base}/api/buy/trust_profile?url={your endpoint}. The index lists only in-term hosts whose latest evidence is on the ready side — names on the ready side, everywhere.`,
+      protocol_rule: PASSPORT_PROTOCOL_RULE,
       profiles: listed.map((v) => ({
         host: v.profile.record.host,
         profile_url: v.profile.record.profile_url,
@@ -105,6 +107,7 @@ profilesRoutes.get("/profiles", async (c) => {
         decision: v.decision,
         freshness: v.freshness,
         tier: v.tier.tier,
+        protocol: v.tier.protocol,
         tier_line: v.tier.line,
         last_observed: v.last_observed,
       })),
@@ -135,6 +138,7 @@ profilesRoutes.get("/profiles", async (c) => {
     money moves.</p>
   </section>
   <section><h2>In-term profiles, ready side</h2>
+  <p class="menu-meta">${escapeHtml(PASSPORT_PROTOCOL_RULE)}</p>
   ${listed.length === 0 ? `<p class="menu-meta">None yet. The first profile on this index will belong to whoever commissions it.</p>` : `<table><thead><tr><th>host</th><th>decision</th><th>freshness</th><th>tier</th><th>last observed</th><th>term ends</th></tr></thead><tbody>${rows}</tbody></table>`}
   </section>`;
   return c.html(
