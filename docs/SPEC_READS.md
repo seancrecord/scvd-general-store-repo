@@ -1144,3 +1144,32 @@ Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/wor
 ### September 14 — applying the reconciliation follow-up
 
 The primary sources in the recovery follow-up entry above support the repair boundary: an Approval names an allowance but a Transfer does not identify the spender or spending mechanism, so same-receipt ordering and owner/recipient equality do not establish consumed allowance. Only the independently paired EIP-3009 fixed value remains observed here. The reconciliation reader now reuses the already-reviewed chain/receipt validators before signing; explicit null is distinct from unestablished context. No new platform API or dependency was introduced. RPC assertions and local fixtures do not establish consensus, finality, historical incidence or live buyer impact. The new correction preserves those limits and historical signatures.
+
+## 2026-09-15 — CDP, MCP and browser payment handoffs
+
+Read Coinbase's current buyer quickstart and MCP buyer/seller guides:
+https://docs.cdp.coinbase.com/x402/buyer/quickstart
+https://docs.cdp.coinbase.com/x402/buyer/mcp-payments
+https://docs.cdp.coinbase.com/x402/seller/mcp-payments
+and the Foundation's transport:
+https://github.com/x402-foundation/x402/blob/main/specs/transports-v2/mcp.md
+CDP's CdpX402Client supplies wallet/signing to @x402/fetch or @x402/mcp;
+it is not another merchant discovery endpoint. The standard MCP challenge
+is an isError tool result, with identical structuredContent and text.
+Our payment=tool-result profile already supports it, alongside the retained
+legacy RPC-error profile. No default-profile switch is made here.
+
+Read Chrome's current imperative API and tool-security guidance:
+https://developer.chrome.com/docs/ai/webmcp/imperative-api
+https://developer.chrome.com/docs/ai/webmcp/secure-tools
+Live Chrome 152 registered 14 tools and returned free quotes for spot_check,
+small_blessing and daily_fortune. A browser tool needs an external authorized
+signer to submit payment. Chrome 152's returned annotations omitted
+consequentialHint despite our registration including it; do not infer that
+this browser enforces a confirmation prompt from our source declaration.
+No wallet was opened and no live purchase was made.
+
+The browser payment bridge dropped the existing private Purchase-Recovery
+header on publication deliveries. Pass it through unchanged as base64 JSON,
+with a private-retention instruction, so the buyer can use the existing free
+check_purchase tool. No recovery request, signing, or retry happens implicitly.
