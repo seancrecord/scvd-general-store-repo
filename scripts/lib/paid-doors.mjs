@@ -65,6 +65,25 @@ export const PAID_RESIDUAL =
 export const SETTLEMENT_RESIDUAL =
   "This reads direct USDC Transfer events to the advertised payTo. A door whose challenge advertises a scheme other than `exact` — a batch or escrow settlement, typically carrying a receiverAuthorizer and a withdrawDelay — can be paid without any such transfer existing, because buyer funds move into the scheme's contract instead. On those doors ZERO_OBSERVED means this instrument found no DIRECT payment, never that the door was not paid.";
 
+/**
+ * A rail this instrument can actually settle a ZERO on. It reads direct
+ * USDC Transfer events, so it can only report an empty result as a
+ * finding where a payment WOULD be such a transfer. Under a batch or
+ * escrow scheme the money moves into the scheme's contract, and looking
+ * at the payTo's transfers is looking in the wrong place.
+ *
+ * ADDED 2026-09-15, after StillOS Notary pinned the rule: ZERO_OBSERVED
+ * requires every advertised rail to resolve empty, and any rail out of
+ * reach makes the door UNKNOWN. We already carried SETTLEMENT_RESIDUAL
+ * saying a zero on such a door was "a fact about where we looked" — and
+ * then let the verdict read ZERO_OBSERVED anyway, with the caveat
+ * printed beside it. A caveat beside a verdict gets quoted without the
+ * caveat. This makes it structural.
+ */
+export function railInReach(scheme) {
+  return scheme === null || scheme === undefined || scheme === "exact";
+}
+
 /** A unique SENDING address is one counterparty, however many buyers it settles for. */
 export function distinctPayers(logs) {
   return [...new Set((logs ?? []).map((l) => String(l.from ?? "").toLowerCase()).filter(Boolean))];
@@ -132,6 +151,14 @@ export function readDoorRail({
         total_received_atomic: totalReceived(logs).toString(),
       };
     }
+    if (!railInReach(scheme)) {
+      return {
+        ...base,
+        verdict: "UNKNOWN",
+        established_by: `the transfer window to this address ${inWindow} was read complete and contained no inbound USDC — but this door advertises the ${scheme} scheme, under which a payment need not be a direct transfer to the advertised payTo at all. An empty result here is a fact about where this instrument looked, not about the door, so it is UNKNOWN rather than a zero.`,
+        distinct_payers: null,
+      };
+    }
     return {
       ...base,
       verdict: "ZERO_OBSERVED",
@@ -158,7 +185,7 @@ export function readDoorRail({
         : "no transfer window was read, so senders could not be counted",
     };
   }
-  if (balance !== null && BigInt(balance) === 0n && nonce === 0) {
+  if (balance !== null && BigInt(balance) === 0n && nonce === 0 && railInReach(scheme)) {
     return {
       ...base,
       verdict: "ZERO_OBSERVED",
@@ -176,5 +203,54 @@ export function readDoorRail({
       : balance === null
         ? "neither a transfer window nor a balance was read for this rail"
         : `a zero balance at block ${atBlock} with a non-zero transaction count: funds may have arrived and left, and this instrument did not read the window that would say`,
+  };
+}
+
+/**
+ * THE DOOR, from its rails. StillOS Notary's rule, pinned on issue #622
+ * on 2026-09-15 and taken as written:
+ *
+ *   "ZERO_OBSERVED requires every advertised rail to resolve empty.
+ *    Any rail out of reach makes the door UNKNOWN."
+ *
+ * PAID is the one verdict that survives an unreadable neighbour,
+ * because it is monotone: an observed settlement on any rail means
+ * somebody paid this door, and no rail we failed to read can undo that.
+ * A zero is the opposite — it is a claim about ALL the ways money could
+ * have arrived, so a single rail we could not read collapses it.
+ *
+ * This is why a door verdict is not the same object as a rail verdict
+ * and is computed rather than picked. A reader quoting one rail of a
+ * multi-rail door is quoting a page again.
+ */
+export function readDoor({ name = null, rails = [] } = {}) {
+  const verdicts = rails.map((r) => r?.verdict ?? "UNKNOWN");
+  const base = {
+    name,
+    rails_read: rails.length,
+    rail_verdicts: verdicts,
+    rule: "ZERO_OBSERVED requires every advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN. PAID survives an unreadable rail because an observed settlement cannot be undone by one we did not read. StillOS Notary, 2026-09-15.",
+  };
+  if (rails.length === 0) {
+    return { ...base, verdict: "UNKNOWN", established_by: "no rails were read for this door" };
+  }
+  if (verdicts.includes("PAID")) {
+    return {
+      ...base,
+      verdict: "PAID",
+      established_by: `${verdicts.filter((v) => v === "PAID").length} of ${rails.length} advertised rail(s) showed an observed settlement`,
+    };
+  }
+  if (verdicts.every((v) => v === "ZERO_OBSERVED")) {
+    return {
+      ...base,
+      verdict: "ZERO_OBSERVED",
+      established_by: `every one of this door's ${rails.length} advertised rail(s) was read and resolved empty`,
+    };
+  }
+  return {
+    ...base,
+    verdict: "UNKNOWN",
+    established_by: `${verdicts.filter((v) => v === "UNKNOWN").length} of ${rails.length} advertised rail(s) could not be resolved, and a zero is a claim about every way money could have arrived`,
   };
 }

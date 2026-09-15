@@ -1,3 +1,7 @@
+import {
+  advertisedVersionDetail,
+  advertisedVersionUnpayable,
+} from "./advertised-version";
 import { privateKeyToAccount } from "viem/accounts";
 import { decodeSettlementResponse } from "../../defects/settlement-response.js";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -739,6 +743,7 @@ export async function performLaunchCheck(
       : oracleScreen(rpcEndpoints(env), fetchImpl));
 
   let challengeEvidence: WatchEvidenceCapture | undefined;
+  let unpaidAccepts: AcceptEntry[] = [];
   walk: {
     // STAGE 1 — approach, unpaid, calling card out.
     let first: Response;
@@ -804,6 +809,10 @@ export async function performLaunchCheck(
       accepts?: AcceptEntry[];
     } | null;
     const accepts = Array.isArray(challenge?.accepts) ? challenge.accepts : [];
+    // Held for the settle stage: advertised-version-unpayable is a
+    // comparison between what the door offered UNPAID and what it
+    // offers again after refusing a correctly signed payment.
+    unpaidAccepts = accepts;
     if (accepts.length === 0) {
       stages.push({
         stage: "challenge",
@@ -1251,6 +1260,38 @@ export async function performLaunchCheck(
         stage: "settle",
         ok: false,
         detail: `payment refused: HTTP ${second.status}. First 300 bytes: ${JSON.stringify(bodyText.slice(0, 300))}. In the August field run this was the largest failure class (616 of 1,707 attempts answered 'Payment failed: 400').`,
+      });
+      /*
+       * THE REFUSAL IS READ, NOT JUST RECORDED. A door that answers a
+       * correctly signed payment by re-serving the same offer has a
+       * named defect, and until now only our own field walk could see
+       * it — which put the finding in our research notes rather than
+       * in the hands of the buyer who paid for a check. The reading
+       * runs on every refusal and reports `checked: false` rather than
+       * a clean whenever it could not be taken.
+       */
+      // Header first, body second — the same order a buyer's client
+      // reads a challenge in, and the same order stage 2 used.
+      const refusedHeaderRaw = second.headers.get("payment-required");
+      let refusedChallenge = (refusedHeaderRaw ? decodeBase64Json(refusedHeaderRaw) : null) as
+        { accepts?: AcceptEntry[] } | null;
+      if (!Array.isArray(refusedChallenge?.accepts)) {
+        try {
+          refusedChallenge = JSON.parse(bodyText) as { accepts?: AcceptEntry[] };
+        } catch {
+          refusedChallenge = null;
+        }
+      }
+      const advertisedVersion = advertisedVersionUnpayable({
+        paymentSubmitted: true,
+        paidStatus: second.status,
+        unpaidAccepts,
+        paidAccepts: Array.isArray(refusedChallenge?.accepts) ? refusedChallenge.accepts : null,
+      });
+      stages.push({
+        stage: "settle",
+        ok: advertisedVersion.present !== true,
+        detail: advertisedVersionDetail(advertisedVersion),
       });
       verdict = "payment_refused";
     }

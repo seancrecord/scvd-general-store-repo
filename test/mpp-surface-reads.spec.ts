@@ -121,7 +121,19 @@ describe("paid MPP discovery comparison", () => {
     const sample = await sampleOnceOver(env as unknown as Env, 5);
     expect(sample.sample.surfaces?.mpp).toMatchObject({ challenge: { state: "absent" }, compared: 0 });
     expect(defectClass("surface-contradicts-challenge")?.our_signal).toContain("surfaces.mpp");
-    expect(VOCABULARY_CHANGELOG.at(-1)?.what_changed).toContain("MPP");
+    // BY VERSION, NOT BY POSITION (2026-09-15). This read .at(-1) and
+    // broke the first time another entry landed after it — two v16s
+    // arrived on the same day from different branches and one had to
+    // become v17. The claim being made is that the MPP reader has a
+    // changelog entry describing it, which is true wherever that entry
+    // sits; "it is the newest" was never the claim and cannot survive
+    // a second author.
+    // Matched on surfaces.mpp, the thing this reading actually added.
+    // "MPP" alone hits the older entry that registered the challenge
+    // classes, which is a different change with the same three letters.
+    const mppEntry = VOCABULARY_CHANGELOG.find(entry => entry.what_changed.includes("surfaces.mpp"));
+    expect(mppEntry, "the MPP discovery reader must carry a changelog entry naming surfaces.mpp").toBeDefined();
+    expect(mppEntry!.what_changed).toContain("MPP");
   });
   it("caps OpenAPI bytes while streaming and cancels before the tail is read", async () => {
     let canceled = false;
