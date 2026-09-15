@@ -10,6 +10,7 @@ import {
   AGENT_REGISTRATION_PATH,
   agentRegistrationFile,
 } from "@/services/agent-registration";
+import { chainIdentity, identitySurfaces } from "@/store/chain-identity";
 import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { organizationRef } from "@/lib/jsonld";
 import { mcpToolCatalog, specShapedTool } from "@/lib/mcp-tools";
@@ -170,6 +171,17 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
         `${base}${path}`,
       ]),
     ),
+    /**
+     * WHO THIS IS, IN EVERY VOCABULARY, AND THE ONE PART THAT IS NOT
+     * OUR WORD. A diligence pass asking "is this a real, identifiable
+     * party" reads this document; until 2026-09-15 the on-chain
+     * identity existed and was named in exactly one file, reachable
+     * only by a reader who already had the agent id. Kept ABOVE
+     * external_records deliberately: identity is not reputation, and
+     * a registry entry must not be read as somebody vouching for us.
+     */
+    chain_identity: chainIdentity(base),
+    identity_surfaces: identitySurfaces(base),
     /**
      * Records, not endorsements, and each entry says which it is.
      * Empty is an honest state; an invented URL in the one document
@@ -478,6 +490,19 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * `registrations` block against the Identity Registry on Base.
      */
     agent_registration: `${base}${AGENT_REGISTRATION_PATH}`,
+    /**
+     * The chain record itself, beside the file that describes it. An
+     * indexer holding this catalog can check that this origin and
+     * ERC-8004 agent 86957 are one party without taking our word for
+     * it — the calls are in the block, and they need no key.
+     */
+    chain_identity: chainIdentity(base),
+    /**
+     * Every other vocabulary we answer in. An indexer that speaks
+     * did:web, A2A or OASF rather than ERC-8004 should not have to
+     * guess our conventions to find the same identity.
+     */
+    identity_surfaces: identitySurfaces(base),
     /**
      * For implementers who land here first: the offer-receipt test
      * vectors, and the standards block in trust.json that explains
