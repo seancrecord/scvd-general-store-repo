@@ -1,0 +1,11 @@
+(node:92230) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-attestation-authorization-pairing
+
+
+ Test Files  3 passed (3)
+      Tests  11 passed (11)
+   Start at  09:52:20
+   Duration  54.32s (transform 74.65s, setup 640ms, import 132.71s, tests 6.74s, environment 1ms)
+

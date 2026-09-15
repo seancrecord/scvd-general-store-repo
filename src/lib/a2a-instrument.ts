@@ -1,3 +1,4 @@
+import { boundedResponseText } from "./bounded-response";
 import { checkProbeTarget, parseProbeTarget } from "./probe-target";
 import { validateAgentCard, validateTask, validateMessage, validateSendMessageRequest, A2A_PROTOCOL_VERSION } from "./a2a-validation.js";
 
@@ -31,22 +32,10 @@ export function target(raw: unknown, ownHost = ""): string {
   if (!checkProbeTarget(url, ownHost).ok || url.search || url.hash) throw new Error("target_refused");
   return url.href;
 }
-export async function boundedText(response: Response, limit = A2A_READ_LIMIT): Promise<string> {
-  if (!response.body) return "";
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = []; let length = 0;
-  try {
-    for (;;) {
-      const { value, done } = await reader.read(); if (done) break;
-      length += value.byteLength;
-      if (length > limit) { await reader.cancel(); throw new Error("body_limit"); }
-      chunks.push(value);
-    }
-  } finally { reader.releaseLock(); }
-  const bytes = new Uint8Array(length); let offset = 0;
-  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-  return new TextDecoder().decode(bytes);
+export function boundedText(response: Response, limit = A2A_READ_LIMIT): Promise<string> {
+  return boundedResponseText(response, limit);
 }
+
 export async function exchange(id: string, url: string, request: string | null, fetchImpl: typeof fetch = fetch): Promise<Exchange> {
   target(url);
   const method = request === null ? "GET" : "POST";

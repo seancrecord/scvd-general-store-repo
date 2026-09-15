@@ -1,0 +1,29 @@
+[
+  {
+    "url": "https://scvd.store/menu.json",
+    "sent_at": "2026-09-15T15:56:00.139Z",
+    "status": 200,
+    "content_type": "application/json",
+    "bytes": 308325,
+    "payment_submitted": false,
+    "received_at": "2026-09-15T15:56:01.780Z"
+  },
+  {
+    "url": "https://scvd.store/mcp.md",
+    "sent_at": "2026-09-15T15:56:01.780Z",
+    "status": 200,
+    "content_type": "text/markdown; charset=utf-8",
+    "bytes": 8506,
+    "payment_submitted": false,
+    "received_at": "2026-09-15T15:56:01.816Z"
+  },
+  {
+    "url": "https://scvd.store/observatory",
+    "sent_at": "2026-09-15T15:56:01.816Z",
+    "status": 200,
+    "content_type": "application/json",
+    "bytes": 38800,
+    "payment_submitted": false,
+    "received_at": "2026-09-15T15:56:04.058Z"
+  }
+]

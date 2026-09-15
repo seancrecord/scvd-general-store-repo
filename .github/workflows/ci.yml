@@ -81,6 +81,8 @@ jobs:
         run: npm run evidence:test
       - name: Field research accounting and spending limits
         run: npm run walkabout:test
+      - name: Buyer benchmark evidence and public contracts
+        run: npm run buyer:test
       - name: Browser payment bridges
         run: npm run till:test
       # The preflight Action (roadmap L7): one file, no dependencies,
