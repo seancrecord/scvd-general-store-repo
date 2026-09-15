@@ -319,7 +319,7 @@ function cardRackHtml(commits: StorefrontData["releaseCommits"]): string {
           <p class="rack-buttons">
             <a class="door-cta rack-buy" href="/menu/pack">${escapeHtml(buyCta)}</a>
             <a class="door-cta" href="/design">${escapeHtml(COPY.rackSetCta)}</a>
-            <a class="door-cta" href="/api/bell">${escapeHtml(COPY.rackBellCta)}</a>
+            <a class="door-cta" href="/bell">${escapeHtml(COPY.rackBellCta)}</a>
           </p>
           <p class="rack-small">${escapeHtml(COPY.rackBuyNote)} ${escapeHtml(COPY.rackSpecimenNote)}</p>
         </div>
