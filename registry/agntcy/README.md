@@ -147,12 +147,62 @@ every deploy: the store's website changes far more often than its
 identity, and a directory full of indistinguishable versions is worse
 than one entry that is current.
 
+## What has actually been run, and what has not
+
+**2026-09-15, against `dirctl` v1.7.0 and a local daemon:**
+
+    push          ok    baeareibx57ltp5doinx4envdl4rargfarhxrwvrjgussj34movffmp6qb4
+    sign          ok    cosign ECDSA P-256, key held by the keeper
+    verify        ok    "signature is: trusted", 1 valid signer
+    naming verify ok    domain scvd.store, method wellknown,
+                        key_id RLIRwYpmdGr8FvLbCPhS01DHxJK23QMTIXBnPQqU5A4,
+                        verified_at 2026-09-15T21:03:41Z
+
+That last line is the one worth having. A Directory this store does not
+operate fetched `https://scvd.store/.well-known/jwks.json` over the
+public internet, compared the published key against the one the record
+was signed with, and agreed. The key id it returned is the RFC 7638
+thumbprint `npm run jwks:cut` derives from
+`record-signing-key.pub.pem`. The record, the published key and the
+signing key are one key, checked by something with no reason to
+flatter us.
+
+**`naming verify` is a READ, not a check.** `server/controller/naming.go`
+looks up a stored row and answers "no verification found" when there
+isn't one; the daemon's name-resolution reconciler writes it
+asynchronously after signing. The first call after `sign` returns
+`verified: false` and means *not yet*, not *no*. Wait and ask again.
+
+**The method is `wellknown`, not `jwks`.** AGNTCY's published example
+response shows `"method": "jwks"`; `server/naming/types.go` defines
+`MethodWellKnown = "wellknown"`, and the running code agrees with the
+source. Second time the docs and the source disagreed on this feature —
+the JWK field list was the first. Read the source.
+
+**NOT run: anything on a shared node.** `dirctl push` against
+`ads.outshift.io:443` returns `PermissionDenied`: the principal
+`oidc:dex:seancrecord` authenticates but is not authorised for
+`StoreService/Push`. Note that AGNTCY's own CLI documentation only ever
+demonstrates `search` against that host — a read. Write access appears
+to be granted rather than self-serve.
+
+So the federated half is untested: whether a record published on one
+peer can be found from another by its payment and blockchain taxonomy,
+pulled, scanned, and installed. That is the question worth answering
+about this venue, and it remains unanswered — which is the standard
+this store holds everyone else's doors to, applied to itself.
+
+**What does not depend on that grant.** The record and the JWKS are
+served from this origin and are fetchable by anyone, including a
+Directory operator who wants to import them. Domain verification is a
+property of scvd.store, not of any one Directory instance, so it works
+against any node that implements it — including one we run. And the
+same taxonomy already reaches readers through the ERC-8004 registration
+file, which needs nobody's permission.
+
 ## Federation testbed
 
-AGNTCY runs an open testbed for decentralised discovery. The question
-worth answering there is not "does push work" but: can a record
-published on one peer be found from another by its payment and
-blockchain taxonomy, pulled, verified by its domain name, scanned, and
-installed? Until that round-trip has actually been run, the value of
-this listing is unproven — which is the same standard this store holds
-everyone else's doors to.
+AGNTCY runs an open testbed for decentralised discovery, and invites
+participants. That is the route to the grant above, and the round-trip
+it would let us run is the one thing this listing cannot currently
+claim.
