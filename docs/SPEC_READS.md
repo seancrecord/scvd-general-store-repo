@@ -55,6 +55,36 @@ That does not establish paid delivery or cover every current route.
 All nine published schema patterns compile with Go regexp using the
 checksum-verified official Go 1.27.1 archive from [go.dev](https://go.dev/dl/).
 
+## 2026-09-15 — paid MPP discovery comparison (PR 3)
+
+Read [discovery draft-01](https://github.com/tempoxyz/mpp-specs/blob/main/specs/extensions/draft-payment-discovery-01.md)
+from the primary repository through the web reader and GitHub contents
+API. Operation-level `x-payment-info` allows a flat offer or an `offers`
+array of alternatives. Amount is an atomic integer string or dynamic
+`null`; currency is optional. Discovery is optional and advisory; the
+runtime 402 remains authoritative. Draft-01's output-schema additions
+are not runtime evidence and are outside this comparison.
+
+The new `mpp-discovery-v1` reading compares only the exact GET operation
+and the captured challenge's method, intent, amount and currency. It
+reuses the paid audit's existing OpenAPI and bookend requests. All
+alternatives are retained; dynamic amount and omitted currency are
+unmeasured fields. A difference counts only when every alternative
+conflicts and the compared challenge terms match at both bookends.
+Unresolved operation/server mapping, malformed data and failed reads
+are gaps, not defects. Unobserved discovery alternatives are not tested
+for availability. The frozen `mpp-v1` battery and x402 verdict do not
+change. The store observes MPP; its till does not speak it.
+
+Rechecked the primary discovery draft, Workers best practices and Wrangler
+commands on 2026-09-15. Retrieved Workers types 5.20260915.1 and verified
+the stream reader, cancellation and lock-release APIs. No binding,
+compatibility-date or checkout changes are required.
+
+Read the [OpenAPI 3.1.1 server fields](https://spec.openapis.org/oas/v3.1.1.html)
+for inheritance precedence. Explicit null server declarations are malformed
+and remain unreadable; only omitted fields inherit a parent.
+
 ## 2026-09-14 — Forge OpenAPI intake
 
 For the authorized release, read current main's rule 62 and
@@ -1178,3 +1208,16 @@ Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/wor
 ### September 14 — applying the reconciliation follow-up
 
 The primary sources in the recovery follow-up entry above support the repair boundary: an Approval names an allowance but a Transfer does not identify the spender or spending mechanism, so same-receipt ordering and owner/recipient equality do not establish consumed allowance. Only the independently paired EIP-3009 fixed value remains observed here. The reconciliation reader now reuses the already-reviewed chain/receipt validators before signing; explicit null is distinct from unestablished context. No new platform API or dependency was introduced. RPC assertions and local fixtures do not establish consensus, finality, historical incidence or live buyer impact. The new correction preserves those limits and historical signatures.
+
+
+## 2026-09-15 — PQ measurement publication
+
+Read NIST's [FIPS 204 publication page](https://csrc.nist.gov/pubs/fips/204/final)
+and the [x402 client/server reference](https://docs.x402.org/core-concepts/client-server).
+FIPS 204 specifies ML-DSA; this is not backend certification. The x402 page
+places the payment payload in PAYMENT-SIGNATURE; it does not place our proposed
+separate corpus checkpoint there. No header-fit or checkout-latency result is
+inferred from raw signature bytes. Retained records, script hashes and raw timing
+samples supply this report's measurements; no new benchmark date is claimed.
+Production key-history and corpus anchoring were read separately: only bytes
+actually committed inherit the verified timestamp, not arbitrary linked records.

@@ -1,0 +1,24 @@
+{
+  "at": "2026-09-15",
+  "task_scope": {
+    "baseline": "1 expected failure; task omitted fixed-value/declared/unobservable scope",
+    "affected_files": [
+      "test/reconciliation-task-scope.spec.ts",
+      "test/reconciliation-recipient.spec.ts",
+      "test/derived-not-typed.spec.ts"
+    ],
+    "passed": 11,
+    "duration_seconds": 54.32,
+    "full_suite_run": false,
+    "typecheck": "passed after correcting optional test-path access",
+    "claims": "passed; zero unbound",
+    "docs": "passed; existing age notices"
+  },
+  "source_sha256": {
+    "src/store/spec.ts": "d93dc993307db99a9a9a54e300b47f653bb54f6ee11b55c4e6413b1e6f5f9289",
+    "test/reconciliation-task-scope.spec.ts": "3fd63a4fc2fadd2d1593fef4b771d3141c1b2e7c9a2005e6bbcf357fe4774d1c"
+  },
+  "production_changed": false,
+  "commit_created": false,
+  "scope": "Data verification and targeted wording regression only; full application suite remains a commit gate."
+}

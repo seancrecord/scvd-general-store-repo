@@ -386,6 +386,19 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     return prior && owns(prior.purchase, identity) ? prior : null;
   }
 
+  /** Internal wallet-authenticated read. The original path comes from storage,
+   * not a caller who lost it. Never create a claim, advance a stage or settle. */
+  async readClaimedGood(identity: Omit<RecoveryIdentity, "path">): Promise<{ path: string; response: string | null } | null> {
+    return this.ctx.storage.transaction(async txn => {
+      const artifact = await txn.get<ArtifactPurchase>("artifact");
+      const attempt = artifact ? undefined : await txn.get<RecoveryAttempt>("attempt");
+      const purchase = artifact?.purchase ?? attempt?.purchase;
+      if (!purchase || !owns(purchase, { ...identity, path: purchase.path })) return null;
+      const response = artifact ? await txn.get<string>("artifact:response") : attempt?.response;
+      return { path: purchase.path, response: response ?? null };
+    });
+  }
+
   /** First committed bytes win. Callers must publish the returned value. */
   async artifactStage(digest: string, stage: ArtifactStage, proposal?: string): Promise<string | null> {
     return this.ctx.storage.transaction(async (txn) => {

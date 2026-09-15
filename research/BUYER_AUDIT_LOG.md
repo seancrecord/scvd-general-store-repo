@@ -600,3 +600,51 @@ Before the two core repairs, 25 assertions failed and 23 controls passed; recipi
 ## September 14 — release authorized; integration validation
 
 The keeper authorized PR and merge for B-RSTATUS/B-RDOOR/B-RCAP/B-RCONTEXT/B-RZERO. Integrated main through `b661fdc1` and resolved the generated index/guide pin while preserving both branches' copy. New full attempt: 709 files and 13,982 tests passed, one existing skip, one unnamed Worker-runner startup timeout, exit 1; no assertion failure. This is not a green full run. Source remained unchanged, and a clean complete GitHub suite remains a merge gate. Exact integration validation and the updated guide-reversal proof are recorded in `buyer-recovery-followup-2026-09-14/REPORT.md` and `release-validation.json`. Broader funded acceptance remains open.
+
+
+## September 15 — remaining live acceptance and release closeout
+
+PR #692 merged and both production Worker builds succeeded. Public HTTP/MCP recovery guidance, the correction and historical-byte continuity were verified; exact release evidence is retained in `buyer-recovery-followup-2026-09-14/production-release.json`.
+
+The next Base pass bought twelve goods for 0.054 USDC. Ten simultaneous purchases across five different products and both HTTP/MCP doors succeeded on the first paid attempt with exact signed inputs, correct transaction subjects and no duplicate settlement. Free recovery progressed from pending to ready with the original goods. A clean response-body cancellation was followed by independent chain confirmation and original-payment recovery without another debit. A fresh weaker recipient verified a retired-key artifact and handover without assistance; its OpenTimestamps proof remains unverified.
+
+**B-RCLAIMS, open:** the public wallet-ownership recovery flow finds a recent paid receipt but does not bridge its certificate to the lost original Spot Check observation or private recovery handle. Existing original-payment/status recovery works; do not confuse that defense with wallet-only recovery. The cancelled observation was recovered using an already-spent authorization reconstructed from on-chain calldata after a local harness journal overwrite. That expert repair is neither a product failure nor a cold-buyer success.
+
+**B-RTASK, locally repaired; release open:** the live compact reconciliation task summary still promises proof of staying inside an authorized ceiling while the repaired description narrows the claim to attributable fixed value, declared ceiling or unobservable cap. The newly paid observations themselves verify and report the correct paired fixed value.
+
+The local journal-overwrite incident, sequential clean control, exact spend and artifact evidence are in [the September 15 report](buyer-remaining-acceptance-2026-09-15/REPORT.md). Other checkout rails remain unfunded/unconfigured. Full architecture, full-shelf, interrupted-settlement, original-good recovery and deployment matrices remain open. These internal findings leave original BUY-001–039 and commissioned Aura counts unchanged.
+
+B-RTASK local repair: task wording now limits itself to attributable fixed value, declared ceiling and unobservable cap. The new public-route regression failed before the fix. All eleven affected tests across three files passed afterward, plus typecheck, claims and docs checks. Full-suite/commit/release gates remain separate. Offline acceptance verification passed and all nine evidence-corruption controls were rejected.
+
+
+### September 15 — B-RCLAIMS local repair, release still open
+
+The free wallet Claims flow now accepts a certificate selector after ownership proof and retrieves the original retained good without the old payment or private status token. It keeps missing historical goods explicit, fails closed on mismatched records, honors recorded resolutions, and reads current evidence for the same human order. Unknown and other-wallet certificates share a nondisclosing refusal. Original purchase storage is not changed and no new payment or fulfillment is created.
+
+The same pass corrected the Claims OpenAPI response's nonexistent required `wallet` field to the actual `address` contract, declared selected-good recovery, updated public instructions and added a dated correction. The developer guide remains under its existing reading budget. All 46 new cases failed with the task-owned source removed; exact source restoration was verified. The affected thirteen-file run passed 340 tests, and typecheck, both builds, claims and docs checks passed. These are local fixtures, not additional live purchases or another cold-agent cohort. Full-suite and release status are retained in `buyer-remaining-acceptance-2026-09-15/REPORT.md` and its validation record. No original BUY-001–039 or commissioned Aura totals changed.
+
+
+**B-RORDERMSG — locally repaired, release open.** Recovered human orders could return completed status and goods alongside the old instruction to give the keeper a week. Nine local controls reproduced the contradiction across HTTP/MCP purchases and wallet, private-status and original-payment recovery. All three now reuse the public order-page response for the current message, completion time and evidence. All nine controls plus affected recovery cases passed (271 tests in five files); typecheck and both builds passed. Live affected orders were not established. The first broad run was stopped to include this fix; no pass is credited to that interrupted run. Final qualification remains recorded with the September 15 report.
+
+
+### September 15 — unsigned public refresh and collector defects
+
+Eight public snapshots, 539 unsigned HTTP/default-MCP input requests and 352 direct URL requests were retained in `buyer-public-recheck-2026-09-15/`. No wallet or payment was used; no 5xx or transport failure occurred. The 35-item bounded menu/manifest/OpenAPI comparison agrees after reading the current published input-schema location. No concrete 404 was observed; all nine raw 404s contain unsubstituted templates. No full-crawl, all-error, all-surface or paid acceptance pass is claimed.
+
+**B-BCOLLECT, open in the primary collector:** it reads obsolete `x-request-schema` instead of the observed `x-payment-info.input.schema`, generating 35 false comparison differences. Its URL parser tests for braces after encoding, requests unfilled templates, truncates nested URL values at colon, and keeps punctuation. The snapshot review preserves raw outputs and rejects changed/missing schema controls; the original collector/scorer still needs repair. These are benchmark defects, not new confirmed store bugs or additions to BUY-001–039/Aura totals. See the new report for exact scope and reproduction.
+
+
+**B-BCOLLECT follow-through — locally repaired.** Current and legacy OpenAPI schemas, duplicate-schema disagreement, missing-data classification, template/nested/prose URL handling and body-only 402 collection now have controls. The scorer no longer carries historical reproduced IDs or old cold-cohort prose into new runs; reviewed findings require real request references. Seven primary regression cases failed under source reversion, one legacy control passed; an additional punctuation case failed before its fix. All 36 benchmark/evidence controls pass, with `buyer:test` wired into local gates and CI. A second unsigned public run compares 35 items without differences and retains 539 input/327 link requests plus 18 unresolved template occurrences. Its five 404s are parser-created prose URLs, retained and separately reviewed. Full all-surface/recursive/error/paid coverage is still open. Exact evidence: `buyer-public-recheck-fixed-2026-09-15/REPORT.md`. No additional product-bug or Aura total is claimed.
+
+
+### September 15 — redirect and promised-format follow-through
+
+The shared buyer URL extractor now feeds a bounded read-only link checker. The production pass requested 322 starting URLs through 323 GETs: no dead URL, redirect loop, unexpected access refusal, server error or promised-format failure was observed. It retains 42 payment-required responses and 15 context-reviewed refusals without calling them purchases or dead links. One corpus read hit the four-MiB cap; a separate at-most-16-MiB follow-up read 11,494,918 bytes of valid JSON. A menu-redirect format follow-up also passed. Total follow-through GETs: 326; spend: 0 USDC.
+
+The final-redirect format control failed before its repair; disabling three detector checks caused three failing controls, and exact source restoration was verified. All 44 benchmark/evidence tests pass through the existing CI command. Eighteen unresolved template occurrences, recursive/all-surface/all-error/mobile/paid acceptance remain outside this pass. Report and exact refusal dispositions: `buyer-link-followthrough-2026-09-15/REPORT.md`. No new confirmed product defect or Aura/BUY-001–039 count is claimed.
+
+
+September 15 full-suite closeout: **715 files / 14,102 tests passed**, one test failed, one existing test skipped; duration 3,988.99 seconds, exit 1. The sole failure is the previously documented transient empty-package-file interference. Its entire 122-test spec passed against stable inputs. No other assertion failure or unhandled runner error was reported. This is not a clean full-suite pass; clean integrated CI remains the merge gate.
+
+
+**Integrated full-suite result:** all **724 files / 14,194 tests passed**, with one existing skip, exit 0, in 1,773.17 seconds. The source hashes match the frozen integrated files. This is the clean full run; the earlier contaminated attempt remains recorded separately. Typecheck, both builds, 246 affected cases, 44 buyer benchmark/evidence cases and the explicit CI guards also passed. [PR #718](https://github.com/seancrecord/scvd-general-store-repo/pull/718) contains the batch; required CI and deployed wallet recovery remain the release gates.

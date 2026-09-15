@@ -896,3 +896,9 @@ then verify `bundle.json` with `node verifier/evidence-cli.mjs verify <file>
 Missing linked evidence is named. This verifies signed bytes and attachment
 bindings; Bitcoin proof verification is separate. The linked instructions
 cover source and package installation.
+
+### Post-quantum measurement
+
+[Ed25519 and ML-DSA-65: signature size and local signing measurements](docs/PQ_MEASUREMENT_2026-09.md)
+publishes the retained September 11 experiment, raw records, reproduction
+instructions and limits. Production checkpoint issuance is parked.

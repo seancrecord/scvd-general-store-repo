@@ -1,0 +1,113 @@
+{
+  "kind": "ci_repair_validation_not_pq_runtime_measurement",
+  "date": "2026-09-15",
+  "original_head": "a61114cfb1373b364d6b7e714fb9497f9490bb0c",
+  "remote_failure": {
+    "run_id": 34981080654,
+    "job_id": 104421252368,
+    "files_passed": 712,
+    "files_failed": 1,
+    "tests_passed": 14048,
+    "tests_failed": 1,
+    "tests_skipped": 1,
+    "case": "test/openapi-declared-inputs.spec.ts: undeclared Accept negotiation sweep",
+    "reason": "30000ms test timeout",
+    "failure_reported_at": "2026-09-15T15:03:49Z",
+    "job_completed_at": "2026-09-15T15:58:31Z"
+  },
+  "controls": {
+    "unchanged_openapi_file": {
+      "passed": 9
+    },
+    "server_error_guard_without_facilitator_mock": "expected_failure_observed_500_response",
+    "corrected_openapi_file": {
+      "passed": 99
+    },
+    "ci_bail_guard_before_workflow_change": "expected_failure_observed",
+    "ci_bail_guard_after_workflow_change": {
+      "passed": 3
+    }
+  },
+  "full_suite": {
+    "status": "passed",
+    "command": "npm test -- --maxWorkers=6 --reporter=default",
+    "exit_code": 0,
+    "files_passed": 713,
+    "tests_passed": 14137,
+    "tests_skipped": 1,
+    "tests_total": 14138,
+    "duration_seconds": 1697.23,
+    "early_stop": false
+  },
+  "log_hashes": [
+    {
+      "file": "scvd-709-job.log",
+      "sha256": "55bb9c7d224a08ed7ce96581538288d1480d4f3e316e64691062596b61b6e136"
+    },
+    {
+      "file": "scvd-709-openapi-baseline.log",
+      "sha256": "3323f26fdef185889ad9194f0cae60c0a707319a4f591ce716ebafbfb6893524"
+    },
+    {
+      "file": "scvd-709-openapi-red.log",
+      "sha256": "e16fab8ab6751ba4495d3b27a38286df08f31518b27c664dfda1e896daf09b9f"
+    },
+    {
+      "file": "scvd-709-openapi-final.log",
+      "sha256": "75a0f19fa9b55f950f500d7d855cffb74d764238f9a610468ca14f8cdddef9ff"
+    },
+    {
+      "file": "scvd-709-ci-bail-red.log",
+      "sha256": "24e7f7233bdccb892a1e8adbcb985bb883122c4878e5e7ac53d5322256c9fb4b"
+    },
+    {
+      "file": "scvd-709-ci-bail-green.log",
+      "sha256": "5b22c694aef9d8f698b5b830a163805716d9c542d7b9939bca79704ef06ff01e"
+    },
+    {
+      "file": "scvd-709-full-fixed.log",
+      "sha256": "f0029e73a0cfd03ae282636ee9d622c4c8dce76e737e07270a5581a4aad0c64b"
+    },
+    {
+      "file": "scvd-709-typecheck-final.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "scvd-709-evidence-final.log",
+      "sha256": "3b3402cb59c92cc0ecb413bf2c3d1fe48fb63abd1c4c7392583a96d6616aad62"
+    },
+    {
+      "file": "scvd-709-docs.log",
+      "sha256": "c64dfdb34ca5582897df2e6fb78b554d62a3c07afbc53024b384fac90ae7c243"
+    },
+    {
+      "file": "scvd-709-build.log",
+      "sha256": "dc1d67973f83d6fecc0fe1698a6884ead8575a032c52fc4b1e0a376cb03cfca3"
+    },
+    {
+      "file": "scvd-709-audit.log",
+      "sha256": "669e6dc93ca29259da20e27319aa409e646798f326bbf202ccb83184d6bac823"
+    },
+    {
+      "file": "scvd-709-claims.log",
+      "sha256": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99"
+    }
+  ],
+  "limits": [
+    "No production code, payment behavior, dependency version or PQ measurements changed.",
+    "No test timeout was raised and no route was removed from the sweep.",
+    "A bailed failing CI run is incomplete; green runs must complete all tests.",
+    "Remote CI on the new commit remains required before merging."
+  ],
+  "additional_checks": {
+    "typecheck": "passed",
+    "offline_evidence": {
+      "passed": 53,
+      "failed": 0
+    },
+    "documentation": "passed",
+    "worker_dry_run_bundles": "both_passed",
+    "scalability_audit": "passed",
+    "claims_register": "passed"
+  }
+}

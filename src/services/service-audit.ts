@@ -211,6 +211,7 @@ export async function performServiceAudit(
       await readSurfaces(env, url, resourceUrlOf(outcome.response), options.fetch ?? fetch),
       ran.accepts ?? null,
       (options.now ?? new Date()).toISOString(),
+      { status: outcome.response.status, www_authenticate: outcome.response.headers.get("WWW-Authenticate") },
     );
     /*
      * The v2 score, from the free door's own recipe (preflightUrl):

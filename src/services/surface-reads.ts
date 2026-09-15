@@ -1,3 +1,5 @@
+import { boundedResponseText } from "@/lib/bounded-response";
+import { mppSurfacesSectionOf, type MppChallengeRead, type MppSurfacesSection } from "@/services/mpp-surface-reads";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { EVM_CHAINS } from "@/lib/base-rpc";
@@ -62,6 +64,8 @@ export interface ChallengePrice {
 }
 
 export interface SurfacesSection {
+  /** Separately versioned MPP comparison; never folded into the x402 totals. */
+  mpp?: MppSurfacesSection;
   read_at: string;
   /** Null when the challenge's accepts named no asset this store can convert to dollars, or no amount in atomic units. */
   challenge_price: ChallengePrice | null;
@@ -222,6 +226,8 @@ function openapiHasPath(doc: unknown, pathname: string): boolean {
 
 /** What one read came back as, before any comparison. */
 export interface SurfaceRead {
+  /** Captured on the existing challenge reads; undefined means not captured, null means absent. */
+  www_authenticate?: string | null;
   url: string;
   status: number | null;
   text: string | null;
@@ -245,11 +251,12 @@ async function readSurface(
       signal: AbortSignal.timeout(SURFACE_TIMEOUT_MS),
       headers: await webBotAuthHeaders(env, url, { Accept: accept }),
     });
-    const text = await response.text();
-    if (text.length > SURFACE_BODY_CAP) {
-      return { url, status: response.status, text: null, failure: `the body exceeded ${SURFACE_BODY_CAP} bytes and was not read` };
+    try {
+      const text = await boundedResponseText(response, SURFACE_BODY_CAP);
+      return { url, status: response.status, text };
+    } catch {
+      return { url, status: response.status, text: null, failure: `the body could not be read within ${SURFACE_BODY_CAP} bytes` };
     }
-    return { url, status: response.status, text };
   } catch (error) {
     return { url, status: null, text: null, failure: String(error) };
   }
@@ -257,7 +264,7 @@ async function readSurface(
 
 function decodeChallenge(response: SurfaceRead): Record<string, unknown>[] | null {
   if (response.status !== 402 || response.text === null) return null;
-  // The header is not kept on a SurfaceRead; the bookend and the
+  // The x402 header is not kept on a SurfaceRead; the bookend and the
   // resource read keep the decoded accepts in `text` as JSON (see
   // readChallengeAccepts), so this is a parse of that.
   try {
@@ -268,7 +275,7 @@ function decodeChallenge(response: SurfaceRead): Record<string, unknown>[] | nul
   }
 }
 
-/** A 402 read that keeps only its decoded accepts, header first then body, as JSON text. */
+/** Keep decoded x402 accepts and the MPP header from the same challenge read. */
 async function readChallengeAccepts(env: WbaEnv, url: string, fetchImpl: typeof fetch): Promise<SurfaceRead> {
   try {
     const target = new URL(url);
@@ -290,8 +297,8 @@ async function readChallengeAccepts(env: WbaEnv, url: string, fetchImpl: typeof 
       }
     }
     if (!Array.isArray(accepts)) {
-      const body = await response.text();
-      if (body.length <= SURFACE_BODY_CAP) {
+      const body = await boundedResponseText(response, SURFACE_BODY_CAP).catch(() => null);
+      if (body !== null) {
         try {
           accepts = (JSON.parse(body) as Record<string, unknown>)["accepts"];
         } catch {
@@ -299,7 +306,8 @@ async function readChallengeAccepts(env: WbaEnv, url: string, fetchImpl: typeof 
         }
       }
     }
-    return { url, status: response.status, text: Array.isArray(accepts) ? JSON.stringify(accepts) : null };
+    return { url, status: response.status, text: Array.isArray(accepts) ? JSON.stringify(accepts) : null,
+      www_authenticate: response.headers.get("WWW-Authenticate") };
   } catch (error) {
     return { url, status: null, text: null, failure: String(error) };
   }
@@ -382,6 +390,7 @@ export function surfacesSectionOf(
   reads: SurfaceReads,
   challengeAccepts: Record<string, unknown>[] | null | undefined,
   readAt: string,
+  mppChallenge?: MppChallengeRead,
 ): SurfacesSection {
   const pathname = new URL(reads.probed_url).pathname;
   const price = challengePriceOf(challengeAccepts);
@@ -510,6 +519,7 @@ export function surfacesSectionOf(
 
   const compared = rows.filter((row) => row.surface !== "402_bookend" && row.state === "read" && row.agrees !== undefined);
   return {
+    ...(mppChallenge ? { mpp: mppSurfacesSectionOf(reads, mppChallenge) } : {}),
     read_at: readAt,
     challenge_price: price,
     ...(price ? {} : { no_challenge_price: whyNoChallengePrice(challengeAccepts) }),

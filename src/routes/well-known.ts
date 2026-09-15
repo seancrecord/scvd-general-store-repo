@@ -664,7 +664,7 @@ for (const path of [
  * See services/agent-registration.ts for why this exact path.
  */
 wellKnownRoutes.get(AGENT_REGISTRATION_PATH, (c) =>
-  c.json(agentRegistrationFile(c.env.STORE_BASE_URL)),
+  c.json(agentRegistrationFile(c.env.STORE_BASE_URL, c.env)),
 );
 
 /**

@@ -453,6 +453,11 @@ federated directory matches on, derived from the same catalogue /mcp
 answers tools/list from. Also at ${base}/.well-known/oasf.json. Unsigned:
 a record fetched from here is a claim by whoever controls this hostname,
 which is exactly as much as an unsigned record ever proves.
+The key that authorises that record: ${base}/.well-known/jwks.json —
+the public half of the keypair AGNTCY name verification reads to decide
+whether scvd.store actually published the record above. Not the key that
+signs our evidence: that one is at ${base}/.well-known/scvd-signing-key
+and is a different key with a different job.
 OpenAPI 3.1 contract: ${base}/openapi.json
 The free instruments as function-calling tools, one worked call each,
 derived from the MCP catalog: ${base}/openapi-tools.json
@@ -659,11 +664,10 @@ crashed, and the respawned you holds no order id — the claims door at
 ${base}/api/claims recovers your own purchases by wallet:
 challenge-response signed with the same key that signs your payments
 (EIP-191 personal_sign on the Base rail, your wallet's ed25519
-signMessage on Solana), single-use nonce, no sessions. A bare address
-gets nothing; possession of the key gets everything that key paid for
-— open orders AND the signed certificates from instant purchases,
-each with its permanent verify URL, so a reset that ate the purchase
-response costs you nothing that was yours.
+signMessage on Solana), single-use nonce. Proof returns purchase references.
+For one original good, get a fresh challenge and claim with
+{ address, signature, cert_id }. Read fulfillment when recovery_state is
+ready; missing originals stay explicit gaps. Free; keep goods private.
 
 The conformance desk, free, and NOT about us. ${base}/api/conformance
 takes any x402 signed offer or receipt — whoever issued it — and
