@@ -1,6 +1,7 @@
 import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
 import { describe, expect, it } from "vitest";
-import { buyDiscoveryExtensions, buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyDiscoveryExtensions, buyInputSchema, pennyPageDiscoveryExtensions } from "@/lib/bazaar-discovery";
+import { validateDiscoveryExtension, type QueryDiscoveryExtension } from "@x402/extensions/bazaar";
 import { MENU_ITEMS } from "@/store";
 
 /**
@@ -51,6 +52,19 @@ function exampleFor(item: (typeof MENU_ITEMS)[number]): Record<string, unknown> 
 }
 
 describe("every declared example satisfies its own declared schema", () => {
+  it("describes the publication's markdown example as text", () => {
+    // This builder declares a GET publication, never a body or MCP input.
+    const extension = pennyPageDiscoveryExtensions("A publication").bazaar! as QueryDiscoveryExtension;
+    expect(typeof extension.info.output?.example).toBe("string");
+    // The middleware adds the HTTP method before serving the declaration.
+    const result = validateDiscoveryExtension({
+      ...extension,
+      info: { ...extension.info, input: { ...extension.info.input, method: "GET" } },
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.valid).toBe(true);
+  });
+
   it("supplies a value for every required input", () => {
     const offences: string[] = [];
     for (const item of MENU_ITEMS) {
