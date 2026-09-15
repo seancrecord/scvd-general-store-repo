@@ -36,7 +36,9 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "16";
+export const MPP_CORE_DEFECT = "mpp-core-observable-invalid";
+
+export const DEFECT_VOCABULARY_VERSION = "17";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -185,6 +187,12 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     at_the_instigation_of: "this store, roadmap V3 PR 3, on the keeper's instruction to continue the paid MPP discovery comparison",
     what_changed:
       "surface-contradicts-challenge gains a separately versioned MPP reader in surfaces.mpp. It compares the exact GET operation's advertised alternatives with each observed Payment challenge. All alternatives must conflict on at least one named field, and the compared terms must match at both bookends, before a difference counts. Dynamic amount, omitted currency, unresolved operations, failed reads and changing terms cannot create a contradiction. The x402 assertion and verdict are unchanged. The former assertion remains here: Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail. The MPP discovery reading is advisory and does not claim general conformance or that this store's till speaks MPP.",
+  },
+  {
+    version: "17",
+    date: "2026-09-15",
+    at_the_instigation_of: "the keeper, completing separately versioned draft-01 core support",
+    what_changed: "Added an unpaid MPP observable-core finding under mpp-core-v1 and core draft-01. It identifies failed named checks, with unmeasured binding, registry and payment behavior separate. The historical mpp-v1 battery and its assertions remain unchanged.",
   },
 ];
 
@@ -676,6 +684,19 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
    * not a class (a door with no Payment challenge speaks another
    * wire); the four MPP advisories are advisories, not classes.
    */
+  {
+    id: MPP_CORE_DEFECT,
+    title: "An observable MPP core requirement fails",
+    asserts: "The named observable core check passes under mpp-core-v1 and its cited draft-01 source. The field, response condition and failed challenge indexes determine the assertion; unmeasured registry, binding and payment behavior make no assertion.",
+    costs: "A buyer can receive an ambiguous or malformed challenge, select an unsupported credential header, or reuse cacheable or expired payment terms. The observation identifies the failing condition without claiming a payment was attempted.",
+    detectable: "unpaid",
+    our_signal: "mpp_core.checks with state fail, under the core block's cited battery and source digest",
+    falsified_by: "The captured response satisfying the named check under the same battery at the observation time, or evidence that the required field was not captured and the check should have remained unmeasured.",
+    repair_hint: "Correct the named auth parameter, encoding, expiry or response header in the challenge producer, then obtain a fresh read. A passing core subset does not establish method validity or payment delivery.",
+    buyer_hint: "Keep the cited check and observation time. Resolve the reported condition before constructing a credential, and independently validate the chosen method and payment terms; this store's till does not speak MPP.",
+    sourced_by: "Observable requirements of draft-httpauth-payment-01, read from tempoxyz/mpp-specs on 2026-09-15. The aggregation into one named core-subset class is this store's reading rule.",
+    registered: "2026-09-15",
+  },
   {
     id: "mpp-challenge-id",
     title: "MPP challenge with no id",

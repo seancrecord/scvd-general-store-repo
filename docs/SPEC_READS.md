@@ -1119,3 +1119,39 @@ Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/wor
 ### September 14 — applying the reconciliation follow-up
 
 The primary sources in the recovery follow-up entry above support the repair boundary: an Approval names an allowance but a Transfer does not identify the spender or spending mechanism, so same-receipt ordering and owner/recipient equality do not establish consumed allowance. Only the independently paired EIP-3009 fixed value remains observed here. The reconciliation reader now reuses the already-reviewed chain/receipt validators before signing; explicit null is distinct from unestablished context. No new platform API or dependency was introduced. RPC assertions and local fixtures do not establish consensus, finality, historical incidence or live buyer impact. The new correction preserves those limits and historical signatures.
+
+
+## 2026-09-15 — separately versioned MPP core draft-01 reading
+
+Read the full `specs/core/draft-httpauth-payment-01.md` from
+[tempoxyz/mpp-specs](https://github.com/tempoxyz/mpp-specs/blob/main/specs/core/draft-httpauth-payment-01.md)
+through GitHub's contents API. The raw URL failed through the web reader.
+The retrieved bytes have SHA-256
+`30dd795d27e3b0df832daffdcf2441975d10099a01a6e8f74aece19d9500d54c`.
+
+The draft requires lowercase-letter method identifiers, an unpadded JCS
+request, a nonempty id, a realm parameter, the exact alternate credential
+header value when supplied, a flat string-map JCS opaque value, lowercase
+custom names, no-store on 402 responses, and no receipt on error responses.
+RFC 9110 auth-parameter names remain case-insensitive and duplicates are
+ambiguous. Core request schemas belong to method specifications; the core
+alone does not justify amount/currency/recipient checks or a registry claim.
+The proposed intent registry is initially empty in this draft. Unknown
+parameters are ignored, not interpreted as failed payment semantics.
+
+Challenge binding is normative but unobservable without the server's state
+or secret. Credentials, settlement, replay, concurrency, delivery and
+preference negotiation are not tested by a single unpaid GET. The new
+`mpp-core-v1` block publishes these gaps. Its problem-body reader follows the
+expanded error table as a recommendation; `mpp-v1` remains pinned to its
+original draft and keeps its historical advisory list.
+
+Re-read Cloudflare Workers best practices, and checked the retrieved
+Workers types 5.20260915.1 for fatal UTF-8 decoding and BOM preservation.
+No new dependency, binding, compatibility date or payment path is added.
+Implementation scope and acceptance: `docs/MPP_CORE_DRAFT01_2026-09.md`.
+
+The source file was fetched again at immutable revision
+`2e3de24c07a9218456bd8814d6746a0dad941d06`; its SHA-256 matched the
+reviewed bytes. The emitted source link pins that revision. Wrangler's
+current command reference was read before the dry-run Worker bundles.

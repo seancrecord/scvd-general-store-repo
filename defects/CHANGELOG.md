@@ -3,6 +3,13 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.17.0 — 2026-09-15
+
+Vocabulary v17 adds `mpp-core-observable-invalid` for failed named checks
+in the separately versioned draft-01 observable-core reading. Unmeasured
+registry, binding and payment behavior remain explicit gaps. Historical
+MPP battery assertions and the prior discovery comparison keep their meaning.
+
 ## 0.16.0 — 2026-09-15
 
 Vocabulary v16: `surface-contradicts-challenge` now includes

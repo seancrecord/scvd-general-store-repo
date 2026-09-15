@@ -1,3 +1,4 @@
+import { MPP_CORE_BATTERY, MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
 import { PURCHASE_RECOVERY_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
 import { AUDIT_REPORT_VERDICT, GOOD_BUYER_REPORT_VERDICT, LAUNCH_REPORT_VERDICT, ONPAGE_REPORT_VERDICT, RECONCILIATION_REPORT_VERDICT } from "@/lib/report-verdicts";
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
@@ -1212,6 +1213,16 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
       items: { type: "string", enum: ["x402", "mpp"] },
       description:
         "Which protocols the 402 speaks, derived from its headers: x402 when PAYMENT-REQUIRED is present, mpp when a WWW-Authenticate: Payment challenge parses. The verdict keeps meaning x402-ready, permanently; read this for the union.",
+    },
+    mpp_core: {
+      type: "object",
+      description: `The additive ${MPP_CORE_BATTERY} observable core reading under ${MPP_CORE_SPEC.draft}. Separates failed checks from unmeasured requirements; never changes the x402 verdict or historical MPP battery. The store's till does not speak MPP.`,
+      properties: {
+        battery: { type: "string", enum: [MPP_CORE_BATTERY] },
+        spec: { type: "object" }, state: { type: "string" }, observed_at: { type: "string", format: "date-time" },
+        checks: { type: "array", items: { type: "object" } }, challenges: { type: "array", items: { type: "object" } },
+        counts: { type: "object" }, problem: { type: "object" }, gaps: { type: "array", items: { type: "string" } },
+      },
     },
     mpp: {
       type: "object",

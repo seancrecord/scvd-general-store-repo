@@ -1,6 +1,6 @@
 {
   "what_this_is": "A snapshot of https://scvd.store/defects.json cut from the store's own source at the version below (npm run defects:cut). The live document is the authority; fetchLatest() reads it, and isStale() says whether this file is behind.",
-  "version": "16",
+  "version": "17",
   "url": "https://scvd.store/defects",
   "cross_instrument_mappings_read_on": "2026-08-23",
   "classes": [
@@ -247,6 +247,19 @@
       "repair_hint": "Derive every surface from the one place the price lives, the way this store derives its llms.txt lines from its shelf, and never type a number into a document that a buyer may install and never refresh. Where a surface must be static, put the endpoint path and the dollar amount in one code span so the convention reads it, and publish the date it was last derived.",
       "buyer_hint": "Budget from the 402, not from the surface you read first: an installed skill, a fetched llms.txt or a generated client can carry a stale number. Before paying, read the challenge's amount and refuse if it is not what you were told, rather than reporting the door as broken.",
       "registered": "2026-09-02"
+    },
+    {
+      "id": "mpp-core-observable-invalid",
+      "title": "An observable MPP core requirement fails",
+      "asserts": "The named observable core check passes under mpp-core-v1 and its cited draft-01 source. The field, response condition and failed challenge indexes determine the assertion; unmeasured registry, binding and payment behavior make no assertion.",
+      "costs": "A buyer can receive an ambiguous or malformed challenge, select an unsupported credential header, or reuse cacheable or expired payment terms. The observation identifies the failing condition without claiming a payment was attempted.",
+      "detectable": "unpaid",
+      "our_signal": "mpp_core.checks with state fail, under the core block's cited battery and source digest",
+      "falsified_by": "The captured response satisfying the named check under the same battery at the observation time, or evidence that the required field was not captured and the check should have remained unmeasured.",
+      "repair_hint": "Correct the named auth parameter, encoding, expiry or response header in the challenge producer, then obtain a fresh read. A passing core subset does not establish method validity or payment delivery.",
+      "buyer_hint": "Keep the cited check and observation time. Resolve the reported condition before constructing a credential, and independently validate the chosen method and payment terms; this store's till does not speak MPP.",
+      "sourced_by": "Observable requirements of draft-httpauth-payment-01, read from tempoxyz/mpp-specs on 2026-09-15. The aggregation into one named core-subset class is this store's reading rule.",
+      "registered": "2026-09-15"
     },
     {
       "id": "mpp-challenge-id",
@@ -508,6 +521,12 @@
       "date": "2026-09-15",
       "at_the_instigation_of": "this store, roadmap V3 PR 3, on the keeper's instruction to continue the paid MPP discovery comparison",
       "what_changed": "surface-contradicts-challenge gains a separately versioned MPP reader in surfaces.mpp. It compares the exact GET operation's advertised alternatives with each observed Payment challenge. All alternatives must conflict on at least one named field, and the compared terms must match at both bookends, before a difference counts. Dynamic amount, omitted currency, unresolved operations, failed reads and changing terms cannot create a contradiction. The x402 assertion and verdict are unchanged. The former assertion remains here: Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail. The MPP discovery reading is advisory and does not claim general conformance or that this store's till speaks MPP."
+    },
+    {
+      "version": "17",
+      "date": "2026-09-15",
+      "at_the_instigation_of": "the keeper, completing separately versioned draft-01 core support",
+      "what_changed": "Added an unpaid MPP observable-core finding under mpp-core-v1 and core draft-01. It identifies failed named checks, with unmeasured binding, registry and payment behavior separate. The historical mpp-v1 battery and its assertions remain unchanged."
     }
   ],
   "license": "CC BY 4.0 for the names; MIT for the code that carries them."
