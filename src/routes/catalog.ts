@@ -1,3 +1,4 @@
+import { publicationCollections } from "@/lib/publication-checkout";
 import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
 import { catalogRecovery } from "@/lib/catalog-recovery";
@@ -305,7 +306,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       corrections: `${base}/corrections`,
       item_detail: `${base}/menu/{item_id} (JSON, or markdown per Accept)`,
       operator_glance: `${base}/what (for the human whose agent is here)`,
-      zodiac: `${base}/zodiac`,
+      zodiac_archive: `${base}/zodiac/archive`,
       mcp: `${base}/mcp (streamable HTTP; tools/list free, buy_* tools x402-paid in-band)`,
     },
     // The reverse index: situation -> item ids. why_use tells an agent
@@ -501,8 +502,8 @@ export function atAGlance(
     // input schema the 402 already publishes and the returns text the
     // spec page already carries.
     input: required.length
-      ? `${required.join(", ")} (query parameters; the full schema rides the 402 body as payload_template)`
-      : "nothing beyond agent_name; the 402 body carries the exact payload_template",
+      ? `${required.join(", ")} (query parameters; input schema and checkout: ${buyerLinks(item, base).input_contract_url})`
+      : `no required product input; optional agent_name. Input schema and checkout: ${buyerLinks(item, base).input_contract_url}`,
     output: `${SPEC_RETURNS[item.id] ?? `The deliverable as JSON, plus a signed ${artifactClass?.name ?? "certificate"}`} Every artifact carries a cert_id and verifies free at ${base}/api/verify/{cert_id}.`,
     cryptography: `ed25519 signature by this store's key, published at ${base}/.well-known/scvd-signing-key and carried inside every 402`,
     verify: `GET ${base}/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key`,
@@ -1021,6 +1022,8 @@ export function searchCatalog(
     return {
       status: 200,
       body: {
+        scope: "active_menu",
+        publications: publicationCollections(base),
         query: { item_id: itemId },
         matched: 1,
         of: MENU_ITEMS.length,
@@ -1049,6 +1052,8 @@ export function searchCatalog(
         ...(rawQuery ? { q: rawQuery } : {}),
         ...(cap === undefined ? {} : { max_price_usdc: cap }),
       },
+      scope: "active_menu",
+      publications: publicationCollections(base),
       matched: matched.length,
       of: MENU_ITEMS.length,
       items: matched.map((item) => catalogRow(item, base)),

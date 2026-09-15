@@ -1,3 +1,4 @@
+import { SUBJECT_ADDRESS_PATTERN, TRANSACTION_ID_PATTERN, SPOT_CHECK_HOST_PATTERN, trimmedInputPattern } from "@/lib/purchase-input-syntax";
 import { MANDATE_TEXT_CAP } from "@/lib/mandate-terms";
 import { NAME_CAP } from "@/lib/sanitize";
 import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES, BUNDLE_HASH_CHARACTERS } from "@/lib/attestation-bundle-terms";
@@ -181,6 +182,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "provenance_check") {
     properties["address"] = {
       type: "string",
+      pattern: SUBJECT_ADDRESS_PATTERN,
       description:
         "The receiving address to ask about: an EVM address (0x + 40 hex) or a Solana pubkey (base58). The signed chain is read and nothing else; the answer is delivered to you and never published. Your own address is free once proved — GET /api/provenance/self.",
     };
@@ -241,6 +243,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "spot_check") {
     properties["host"] = {
       type: "string",
+      pattern: trimmedInputPattern(SPOT_CHECK_HOST_PATTERN),
       description:
         "A bare hostname, e.g. example.com. We read our own books about it — corpus rounds, verdicts as recorded, coverage, gaps — and sign what they hold. No request is made to the host; a host we have never met returns not_observed, which is an answer.",
     };
@@ -267,6 +270,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "the_statement") {
     properties["wallet"] = {
       type: "string",
+      pattern: SUBJECT_ADDRESS_PATTERN,
       description:
         "The wallet to state: a 0x address on the selected EVM network, a base58 pubkey on Solana. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
     };
@@ -285,6 +289,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "operator_statement") {
     properties["wallet"] = {
       type: "string",
+      pattern: SUBJECT_ADDRESS_PATTERN,
       description:
         "Your receiving address: a 0x address on the selected EVM network, a base58 pubkey on Solana. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
     };
@@ -400,6 +405,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "the_case_file") {
     properties["tx_hash"] = {
       type: "string",
+      pattern: TRANSACTION_ID_PATTERN,
       description:
         "The transaction to assemble the case around: 0x + 64 hex for Base or Polygon, a base58 signature for Solana. The shape picks the chain.",
     };

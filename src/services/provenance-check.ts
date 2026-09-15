@@ -1,3 +1,4 @@
+import { EVM_ADDRESS_PATTERN, SOLANA_ADDRESS_PATTERN } from "@/lib/purchase-input-syntax";
 import { recoverMessageAddress } from "viem";
 import { signJcs } from "@/lib/jcs";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -116,8 +117,8 @@ function hostsOf(record: CorpusRecord): WardHostResult[] {
 /** An EVM address or a Solana base58 pubkey — the payTo shapes the corpus digests. */
 export function validSubjectAddress(raw: string | undefined): string | null {
   const value = (raw ?? "").trim();
-  if (/^0x[0-9a-fA-F]{40}$/.test(value)) return value;
-  if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value)) return value;
+  if (new RegExp(EVM_ADDRESS_PATTERN).test(value)) return value;
+  if (new RegExp(SOLANA_ADDRESS_PATTERN).test(value)) return value;
   return null;
 }
 
@@ -338,7 +339,7 @@ export async function verifySelfAudit(
   signature: string,
   week: string,
 ): Promise<boolean> {
-  if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return false;
+  if (!new RegExp(EVM_ADDRESS_PATTERN).test(address)) return false;
   try {
     const recovered = await recoverMessageAddress({
       message: selfAuditChallengeText(address, week),

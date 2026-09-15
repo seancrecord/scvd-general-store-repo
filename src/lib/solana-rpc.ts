@@ -1,3 +1,4 @@
+import { SOLANA_SIGNATURE_PATTERN } from "@/lib/purchase-input-syntax";
 import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
 
@@ -31,7 +32,7 @@ export const SOLANA_CHAIN = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
  * identifier families dispatch cleanly on shape alone.
  */
 export function isSolanaSignature(value: string): boolean {
-  return /^[1-9A-HJ-NP-Za-km-z]{64,88}$/.test(value);
+  return new RegExp(SOLANA_SIGNATURE_PATTERN).test(value);
 }
 
 /**

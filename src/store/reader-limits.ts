@@ -58,7 +58,8 @@ export const SCANNER_FETCH_CAP_BYTES = 1_000_000;
 export const SCANNER_BUDGET_BYTES = 700_000;
 
 /**
- * The llmstxt.org recommendation. /llms.txt is the index;
+ * Our local reading budget, not a universal llmstxt.org limit.
+ * /llms.txt is the index;
  * /llms-full.txt is the complete guide and is allowed to be
  * longer — agents who want the whole thing ask for it by name.
  */

@@ -1,5 +1,39 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-15 — Current offerings, archive scope and reading budgets
+
+Read the [llms.txt proposal](https://llmstxt.org/),
+[OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html) (Parameter
+Objects, examples, path templates and response links), and current
+[Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+The 30,000-character index budget is our local guard, not a universal
+limit specified by llmstxt.org. File-list links use ordinary Markdown.
+The complete guide remains available separately. No new Worker API or
+binding is introduced; tests use the installed locked Worker runtime.
+
+The keeper corrected the scope: archived Zodiac pages should not be
+promoted as active offerings. Current Almanac slugs come from the same
+reader as its index, expressed with a bounded path enum instead of a
+paid operation per page. Existing concrete seed paths stay compatible.
+Archive indexes remain explicitly labeled and opt-in. A count of all
+reachable paid URLs, including archived writing, is not an active
+catalog count or a target for marketplace indexing.
+
+Input syntax is shared with the existing route validators. Lexical
+schema validation does not prove a Solana key decodes to 32 bytes, that
+a transaction exists, that a subject is eligible, or that a purchase
+will succeed. The live route remains authoritative. OpenAPI examples
+are worked inputs, not claims of current availability.
+
+Release witness rechecked on 2026-09-15: the store's live preflight v2
+returns 400 `own_host_refused` for its own spot-check URL. This is an
+instrument limitation, not a failed payment challenge and not a pass.
+[x402-list's SCVD history](https://x402-list.com/services/sean-claude-van-damme-s-general-store)
+reports 32 endpoints and 14/14 conformance checks on the unpaid handshake.
+That does not establish paid delivery or cover every current route.
+All nine published schema patterns compile with Go regexp using the
+checksum-verified official Go 1.27.1 archive from [go.dev](https://go.dev/dl/).
+
 ## 2026-09-14 — Forge OpenAPI intake
 
 For the authorized release, read current main's rule 62 and

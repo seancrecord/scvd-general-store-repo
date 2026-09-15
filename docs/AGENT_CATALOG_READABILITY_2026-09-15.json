@@ -1,0 +1,54 @@
+{
+  "source_base": "eb9350dbb671538854b162e223de2cb6bc366f45",
+  "scope": "Active menu and current Almanac; archived Zodiac and Gazette remain behind labeled, opt-in indexes.",
+  "measurements": {
+    "environment": "Local Worker test configuration; uncompressed UTF-8 bytes except index characters",
+    "llms_index": {
+      "before_characters": 29913,
+      "after_characters": 24476,
+      "existing_budget_characters": 30000,
+      "regression_target_characters": 25000,
+      "after_bytes": 25331
+    },
+    "openapi": {
+      "after_bytes": 595324,
+      "existing_budget_bytes": 700000,
+      "regression_target_bytes": 620000,
+      "scanner_cap_bytes": 1000000
+    },
+    "mcp_catalog": {
+      "before_bytes": 148200,
+      "after_bytes": 139515,
+      "existing_budget_bytes": 152000,
+      "before_largest_description_characters": 13632,
+      "after_largest_description_characters": 6350,
+      "description_target_characters": 8000
+    }
+  },
+  "checks": {
+    "baseline_regressions": "14 failures across the 13 catalog regressions and new MCP budget test; 5 pre-existing MCP checks passed. Source automatically restored afterward.",
+    "final_focused": "70 passed, including the index regressions found by the first full run.",
+    "mcp_and_catalog": "19 passed",
+    "go_regex": "9 published patterns compile with Go regexp 1.27.1",
+    "validator_script": "10 tests passed",
+    "full_suite": "715 test files passed; 14,064 tests passed, 1 skipped (14,065 total). npm test exited 0.",
+    "final_archive_focused": "61 tests passed: archive labels, retained readers, title identity, complete-guide digest and reading budgets",
+    "zodiac_baseline_regressions": "All 3 archive-discovery tests failed before the Zodiac surface corrections.",
+    "typecheck": "passed",
+    "worker_bundles": "both dry-run bundles passed"
+  },
+  "live_release_witness": {
+    "self_preflight": {
+      "status": 400,
+      "code": "own_host_refused",
+      "meaning": "Self-probe unavailable, not a failed challenge or a pass"
+    },
+    "outside_witness": {
+      "url": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+      "endpoints": 32,
+      "conformance": "14/14 unpaid handshake checks as published on 2026-09-15",
+      "scope": "Pre-release production snapshot; does not prove paid delivery or every route"
+    }
+  },
+  "archived_zodiac_behavior": "Status and promotion corrected. The original deterministic calendar and paid pages remain available; no retirement date was invented."
+}
