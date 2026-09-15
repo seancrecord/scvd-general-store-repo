@@ -83,6 +83,15 @@ export const X402LIST_TOKENS: readonly DirectoryToken[] = [
     request_id: "56532116-de53-447b-aeac-b46d68d039ff",
     purpose: "listing update request of 2026-09-03",
   },
+  {
+    issuer: "x402-list.com",
+    issued: "2026-09-15",
+    serve_until: "2026-09-19",
+    token: "x402list-verify-QIp16ZNOJlEG7OhSsnnVU5fVxJ2GgpiluovoV1ztOWk",
+    request_id: "3606e242-afbe-46eb-86fa-e3b82b2a419a",
+    purpose:
+      "listing update: the three doors their prober has never seen (window_pick, pack, a2a_repair_kit), taking the listing from 32 to the shelf's 35",
+  },
 ];
 
 /**
