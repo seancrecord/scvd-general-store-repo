@@ -10,6 +10,7 @@ import {
   fieldSignerFromKey,
   oracleScreen,
   performLaunchCheck,
+  type SignedLaunchCheck,
 } from "@/services/launch-check";
 import type { Env } from "@/types";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -849,6 +850,11 @@ describe("the launch check door", () => {
       expect(body.tx_hash).toBe(SELLER_TX);
       expect(body.check_url).toBe(`/api/launch-check/${body.check_id}`);
       expect(body.check.ua_sent).toBe(LAUNCH_CHECK_UA);
+      const screenEvidence = (body.check as SignedLaunchCheck).stages.find(stage => stage.stage === "screen")?.evidence;
+      expect(screenEvidence).toMatchObject({
+        version: 1, contract: SANCTIONS_ORACLE_BASE, block_tag: "latest",
+        block_number: null, block_hash: null, result: `0x${"0".repeat(64)}`, listed: false,
+      });
 
       // The certificate's attests field IS the record's evidence hash.
       const verify = (await (
@@ -862,6 +868,8 @@ describe("the launch check door", () => {
         await SELF.fetch(`${BASE}${body.check_url}`)
       ).json()) as Record<string, any>;
       expect(record.check.evidence_hash).toBe(body.check.evidence_hash);
+      expect((record.check as SignedLaunchCheck).stages.find(stage => stage.stage === "screen")?.evidence).toEqual(screenEvidence);
+      expect(JSON.stringify(record.how_to_verify)).toContain("answering block was not captured");
       expect(record.what_this_is).toContain("never a badge");
       expect(JSON.stringify(record.how_to_verify)).toContain(
         "house-ledger.json",

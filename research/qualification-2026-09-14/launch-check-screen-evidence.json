@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-14T18:39:56.242146+00:00",
+  "branch": "codex/launch-check-screen-evidence",
+  "base_commit": "e0f0a4d769c12fed0cf2bea1e468a8e99bb865ed",
+  "scope": "Preserve accepted latest oracle responses in the existing signed Launch Check screen stage; no new RPC, background job, provider account, product or payout decision rule.",
+  "root_selected": {
+    "files": 17,
+    "passed": 557,
+    "failed": 0,
+    "skipped": 0
+  },
+  "root_selected_files": [
+    "bounty-board.spec.ts",
+    "directory-walk.spec.ts",
+    "launch-check-evidence.spec.ts",
+    "launch-check-exposure.spec.ts",
+    "launch-check-screen-evidence.spec.ts",
+    "launch-check.spec.ts",
+    "launch-journal.spec.ts",
+    "launch-paid-recovery.spec.ts",
+    "launch-payment-binding.spec.ts",
+    "launch-recipient-guidance.spec.ts",
+    "launch-replay-boundary.spec.ts",
+    "launch-replay-evidence.spec.ts",
+    "launch-settlement-evidence.spec.ts",
+    "screen-unavailable-alert.spec.ts",
+    "signer-package.spec.ts",
+    "store-credit.spec.ts",
+    "verifier-package.spec.ts"
+  ],
+  "root_selected_command": "npm test -- test/launch*.spec.ts test/bounty-board.spec.ts test/store-credit.spec.ts test/directory-walk.spec.ts test/screen-unavailable-alert.spec.ts test/verifier-package.spec.ts test/signer-package.spec.ts --maxWorkers=2",
+  "other_checks": {
+    "typecheck": "passed",
+    "evidence_test_batches": [
+      36,
+      12
+    ],
+    "cli_tests": 30,
+    "tab_tests": 101,
+    "docs_check": "passed",
+    "claims": "46 resolved, zero unbound",
+    "worker_dry_run_builds": "both passed"
+  },
+  "negative_controls": {
+    "unchanged_source": {
+      "failed": 5,
+      "passed": 8,
+      "reason": "Missing accepted-response evidence."
+    },
+    "source_reversion_after_implementation": {
+      "failed": 6,
+      "passed": 46,
+      "files": 2,
+      "reason": "Missing evidence including default paid HTTP capture. Both source files restored automatically."
+    }
+  },
+  "setup_issues": [
+    "Initial baseline could not import the rasterizer dependency newly added to main; zero tests ran. npm ci then installed the branch lockfile. This was not a negative control.",
+    "Initial Node evidence suite had two localhost listen EPERM failures. The unchanged suite passed with local-server permission."
+  ],
+  "tested_file_sha256": {
+    "src/services/launch-check.ts": "b5d92208ea9aee0b7c62bb92cb833e9e2cd2658d048e1ecb93737e0d970a19c1",
+    "src/routes/launch-check.ts": "e9c4882396607571d709ed3d60e5469ec2aeb4ff4310f37218cd4b6df7bab99b",
+    "test/launch-check.spec.ts": "44a6950d1354ed45e514d418728dc052c10f72385a97d89d388381f729c4d4b8",
+    "test/launch-check-screen-evidence.spec.ts": "37fad16a75b54dd56427ff0f52abdb9a581c39377709be620d0d2544213d25b9"
+  },
+  "log_sha256": {
+    "red.log": "c23f20d26341a1085bf0c5940691a5cb5dec29cf94e662656cccafd696889598",
+    "red-ready.log": "edf5c43a82930de34842e9859947d9615399070670bb1e560fee51822b0e6cd3",
+    "reversion.log": "b1476e4de52d914fc9ec6a06fc9d767c96eff4c1032cc05c250f76e2fb1b046d",
+    "regressions.log": "6d1e5827e184bba25553e0ebdf9dd8bab90b5d5e17ada1acd4606752c8aaa669",
+    "typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "packages.log": "6da70a5f162e89c146b0cb2538f4582aef56defef4e183301c2e1d51b1db8393",
+    "packages-ready.log": "eccf7a8577f05f02353f22e24f6ab2f91634b3d19c70db6000c77298c89ae6bf",
+    "cli.log": "a850de8170748bd9438b233b3683fd963011ffd9e8a71e8556deb2d637ec2375",
+    "tab.log": "4c5c48cd33c8aa09f3219c8623f825e8f6928a8aac9b802f46a2fc38a8d85ef8",
+    "docs.log": "35fa724d2c5d18710a07f249126a888f7d08a41dba798ed447bd3d18b4717ac9",
+    "claims.log": "46de00cb287f90648402581b9fb9dfd4a802a87b82158c52d4edfb09f78dbc8e",
+    "build.log": "41df001984d30316fe63a6436d770018219c79467a1f3e467b65b8a60546ac5a",
+    "docs-final.log": "35fa724d2c5d18710a07f249126a888f7d08a41dba798ed447bd3d18b4717ac9"
+  },
+  "limits": [
+    "Full root suite and all 24 gate commands passed; the chain resumed after a Node-only configuration-test correction. Current main integration and deployed behavior remain separate release checks.",
+    "New evidence tests use synthetic provider/seller responses. No live oracle-account qualification or measured production latency claim.",
+    "Latest answering block remains unknown; captured response is not independent chain-state proof.",
+    "No commit, push, PR, merge, deployment, npm release or scheduling performed for this increment."
+  ],
+  "full_validation": {
+    "record": "research/qualification-2026-09-14/launch-check-full-gates.json",
+    "root_files": 707,
+    "passed": 13904,
+    "skipped": 1,
+    "gate_commands_passed": 24,
+    "runtime_source_unchanged": true,
+    "additional_change": "Corrected a pre-existing Node config test assumption; deployment settings unchanged."
+  }
+}

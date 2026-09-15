@@ -1,0 +1,377 @@
+{
+  "recorded_at": "2026-09-14T20:54:23.121291+00:00",
+  "branch": "codex/launch-check-screen-evidence",
+  "base_commit": "e0f0a4d769c12fed0cf2bea1e468a8e99bb865ed",
+  "root": {
+    "files": 707,
+    "passed": 13904,
+    "failed": 0,
+    "skipped": 1,
+    "skip_details": [
+      {
+        "file": "test/key-continuity.spec.ts",
+        "test": "no continuity claim runs ahead of the fact serves the pending wording, not the shipped wording, while the flag is false",
+        "status": "skipped"
+      }
+    ],
+    "report_sha256": "f0d26fd413923282a6ed144fbc4659eb83b3d032404a166d8eb617a3dc9b2637",
+    "wall_seconds": 4212.18,
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "--maxWorkers=6",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile.json=/private/tmp/scvd-screen-full-tests.json"
+    ]
+  },
+  "gate_commands": [
+    {
+      "step": "npm run typecheck",
+      "args": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 14.81,
+      "log": "/private/tmp/scvd-screen-gate-00.log",
+      "log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "step": "npm run self-row",
+      "args": [
+        "npm",
+        "run",
+        "self-row"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 18.33,
+      "log": "/private/tmp/scvd-screen-gate-01.log",
+      "log_sha256": "71d908e81a2094fd5638c828a73153964cfcc8d202834c84347c2e5fede77823"
+    },
+    {
+      "step": "npm test",
+      "args": [
+        "npm",
+        "test",
+        "--",
+        "--maxWorkers=6",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/scvd-screen-full-tests.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4212.18,
+      "log": "/private/tmp/scvd-screen-gate-02.log",
+      "log_sha256": "2dfd56a411ba707f7f9656440c78d9d18815a271673323f42dd065386fbf463f"
+    },
+    {
+      "step": "npm run tab:test",
+      "args": [
+        "npm",
+        "run",
+        "tab:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.52,
+      "log": "/private/tmp/scvd-screen-gate-03.log",
+      "log_sha256": "2df11db5e2dd561ea8427fee23cd44b34efe2cbc6273798d3b258424ae69d458"
+    },
+    {
+      "step": "npm run evidence:test",
+      "args": [
+        "npm",
+        "run",
+        "evidence:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.36,
+      "log": "/private/tmp/scvd-screen-gate-04.log",
+      "log_sha256": "5ef8b65878b6b79349a9451bff93e2c7ca1cd4261f63d5c60cc7e8955bb5905a"
+    },
+    {
+      "step": "npm run till:test",
+      "args": [
+        "npm",
+        "run",
+        "till:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.34,
+      "log": "/private/tmp/scvd-screen-gate-05.log",
+      "log_sha256": "28c99a0fbb22f4eb049a5cb7e1b2774e83a609f56006575893779fd8711d852f"
+    },
+    {
+      "step": "npm run cli:test",
+      "args": [
+        "npm",
+        "run",
+        "cli:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.61,
+      "log": "/private/tmp/scvd-screen-gate-06.log",
+      "log_sha256": "eb55dcb23e6d9978f0cf8b8634600731bbd634c75dccd5949d658bd31836c371"
+    },
+    {
+      "step": "npm run examples:test",
+      "args": [
+        "npm",
+        "run",
+        "examples:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.8,
+      "log": "/private/tmp/scvd-screen-gate-07.log",
+      "log_sha256": "c528552e776fa393a008a51ee5c2e2a223a5c30e8510f391716cffbf0e95e647"
+    },
+    {
+      "step": "npm run packages:test",
+      "args": [
+        "npm",
+        "run",
+        "packages:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.02,
+      "log": "/private/tmp/scvd-screen-gate-08.log",
+      "log_sha256": "d5fb7d4cab214ccaa89f6fb12f8be55a0959cb34f48ae5218da0e37a1f08c44f"
+    },
+    {
+      "step": "npm run doors:test",
+      "args": [
+        "npm",
+        "run",
+        "doors:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.1,
+      "log": "/private/tmp/scvd-screen-gate-09.log",
+      "log_sha256": "deb2b5b8735fc576758a2d4cbc75a276cac08d491536220d036187132d6f0ca9"
+    },
+    {
+      "step": "npm run specs:test",
+      "args": [
+        "npm",
+        "run",
+        "specs:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.31,
+      "log": "/private/tmp/scvd-screen-gate-10.log",
+      "log_sha256": "1891b0aed240eb1848112b64a2964ada620017f78e6ea06a7b4c704638801002"
+    },
+    {
+      "step": "npm run listings:test",
+      "args": [
+        "npm",
+        "run",
+        "listings:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.39,
+      "log": "/private/tmp/scvd-screen-gate-11.log",
+      "log_sha256": "52c4276dfbb5c1f448db61d3e6feb07affcd27b4c3f2ee69952d1243d52fb802"
+    },
+    {
+      "step": "npm run space:test",
+      "args": [
+        "npm",
+        "run",
+        "space:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.6,
+      "log": "/private/tmp/scvd-screen-gate-12.log",
+      "log_sha256": "81b3079248d7015e39fdd746973c689ef9a83cb636dc7f0e66f30746f7bc7194"
+    },
+    {
+      "step": "npm run cold:test",
+      "args": [
+        "npm",
+        "run",
+        "cold:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.36,
+      "log": "/private/tmp/scvd-screen-gate-13.log",
+      "log_sha256": "bd23dbf3e14fa3ae15ef27c3854813e71208f69d50d7b268a34330c97e266d1c"
+    },
+    {
+      "step": "npm run doors:test",
+      "args": [
+        "npm",
+        "run",
+        "doors:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.65,
+      "log": "/private/tmp/scvd-screen-gate-14.log",
+      "log_sha256": "efe35b4a70b6b6cdfabe2f7253f58eb3451ba0d5e128724c1e8e785ae205b217"
+    },
+    {
+      "step": "npm run corpus:publish:test",
+      "args": [
+        "npm",
+        "run",
+        "corpus:publish:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.35,
+      "log": "/private/tmp/scvd-screen-gate-15.log",
+      "log_sha256": "3e6f6db81a4ac40c85a2a0f7837660d6640b65844b7914e50cce2125f13d697c"
+    },
+    {
+      "step": "npm run citations:test",
+      "args": [
+        "npm",
+        "run",
+        "citations:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.37,
+      "log": "/private/tmp/scvd-screen-gate-16.log",
+      "log_sha256": "dcce4118b0c7dbdf330d62acb7055081e435a0ca09de563e41ea9bb4f7ebaa02"
+    },
+    {
+      "step": "npm run corrections:test",
+      "args": [
+        "npm",
+        "run",
+        "corrections:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.38,
+      "log": "/private/tmp/scvd-screen-gate-17.log",
+      "log_sha256": "4e28f84286f4928740c9daaa6a8a2ef475df203c1ea2d734ec73ac1a3333e157"
+    },
+    {
+      "step": "npm run outreach:test",
+      "args": [
+        "npm",
+        "run",
+        "outreach:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.35,
+      "log": "/private/tmp/scvd-screen-gate-18.log",
+      "log_sha256": "e0bcc046ba35b175c5b6c2511718f03f562a66dac249cc983714323ef46f4657"
+    },
+    {
+      "step": "npm run walkabout:test",
+      "args": [
+        "npm",
+        "run",
+        "walkabout:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.8,
+      "log": "/private/tmp/scvd-screen-gate-19.log",
+      "log_sha256": "c6539eb89a28008545826fc58315813d00074c6e42e968c0d2abc8c10a052dae"
+    },
+    {
+      "step": "npm run audit",
+      "args": [
+        "npm",
+        "run",
+        "audit"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.68,
+      "log": "/private/tmp/scvd-screen-gate-20.log",
+      "log_sha256": "7ef869102b8a163c56ad5652e498908189907b1a61bc52717934f4f9561dbe5c"
+    },
+    {
+      "step": "npm run claims",
+      "args": [
+        "npm",
+        "run",
+        "claims"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.37,
+      "log": "/private/tmp/scvd-screen-gate-21.log",
+      "log_sha256": "46de00cb287f90648402581b9fb9dfd4a802a87b82158c52d4edfb09f78dbc8e"
+    },
+    {
+      "step": "npm run docs:check",
+      "args": [
+        "npm",
+        "run",
+        "docs:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.78,
+      "log": "/private/tmp/scvd-screen-gate-22.log",
+      "log_sha256": "115b4597f8ed5813067f9a1b28aba7e54345e2d9fa31c97014cc9130ae132ffe"
+    },
+    {
+      "step": "npm run build:check",
+      "args": [
+        "npm",
+        "run",
+        "build:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.11,
+      "log": "/private/tmp/scvd-screen-gate-23.log",
+      "log_sha256": "331828ab54f643e981480b96eabccba924896c801a247b439721f383555db950"
+    }
+  ],
+  "gate_execution": "All 24 package.json gate commands completed successfully. The chain resumed at doors:test after a Node-only config test correction; the full root suite and runtime source were unchanged.",
+  "test_correction": {
+    "file": "scripts/doors-config.test.mjs",
+    "reason": "HEAD already has an intentional main-Worker PNG CPU allowance of 1000 ms versus 100 ms on the quote-only Worker. The old limits-equality assertion was stale. Preserve all other parity checks; require positive explicit CPU budgets and doors <= store. No config value changed.",
+    "introduced_by": "2af67d62a600cf0ea1e70601525e7994423d228c",
+    "baseline": "The same config assertion fails on files extracted unchanged from HEAD.",
+    "negative_controls": [
+      {
+        "mutation": "larger_than_store",
+        "exit_code": 1,
+        "intended_guard_failed": true
+      },
+      {
+        "mutation": "zero",
+        "exit_code": 1,
+        "intended_guard_failed": true
+      },
+      {
+        "mutation": "fractional",
+        "exit_code": 1,
+        "intended_guard_failed": true
+      },
+      {
+        "mutation": "missing",
+        "exit_code": 1,
+        "intended_guard_failed": true
+      },
+      {
+        "mutation": "non_cpu_limit_mismatch",
+        "exit_code": 1,
+        "intended_guard_failed": true
+      }
+    ],
+    "final_doors_tests": 52
+  },
+  "partial_attempt": {
+    "workers": 2,
+    "disposition": "Intentionally interrupted after 1784.87 seconds to increase test concurrency to six on a 14-core host. Not counted as a full-suite pass.",
+    "local_records": "/private/tmp/scvd-screen-gates-two-workers/"
+  },
+  "environment_retry": "A direct non-escalated Node rerun could not open three localhost fixture servers (EPERM). The unchanged tests passed in the resumed gate runner with local-server permission.",
+  "scope_limits": [
+    "No fresh main integration or deployment verification.",
+    "No production oracle, settlement or latency measurement.",
+    "No commit, push, PR, merge, deployment, npm release or schedule change."
+  ],
+  "tested_file_sha256": {
+    "src/services/launch-check.ts": "b5d92208ea9aee0b7c62bb92cb833e9e2cd2658d048e1ecb93737e0d970a19c1",
+    "src/routes/launch-check.ts": "e9c4882396607571d709ed3d60e5469ec2aeb4ff4310f37218cd4b6df7bab99b",
+    "test/launch-check.spec.ts": "44a6950d1354ed45e514d418728dc052c10f72385a97d89d388381f729c4d4b8",
+    "test/launch-check-screen-evidence.spec.ts": "37fad16a75b54dd56427ff0f52abdb9a581c39377709be620d0d2544213d25b9",
+    "scripts/doors-config.test.mjs": "5b37b4024a123974cdc19ecb191bf18f71bc13b910abeb25ef05fc9dc99f0860"
+  },
+  "baseline_log_sha256": "06d68f566d679ed130b5d8ec0c8053e00373ea0ea04b6de3bf1e0c6baf950f4e"
+}

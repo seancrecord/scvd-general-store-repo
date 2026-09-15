@@ -32,9 +32,19 @@ test("what the 402 is minted from is identical: runtime, KV, R2, vars", () => {
   assert.deepEqual(doors.kv_namespaces, store.kv_namespaces);
   assert.deepEqual(doors.r2_buckets, store.r2_buckets);
   assert.deepEqual(doors.vars, store.vars);
-  assert.deepEqual(doors.limits, store.limits);
   assert.equal(doors.minify, true);
   assert.deepEqual(doors.observability, store.observability);
+});
+
+test("the doors keep an explicit CPU budget no larger than the store's; other limits agree", () => {
+  // The store renders PNGs; the doors only quote. The September 12
+  // rendering allowance must not force a matching increase on the doors.
+  const { cpu_ms: storeCpu, ...storeLimits } = store.limits ?? {};
+  const { cpu_ms: doorsCpu, ...doorsLimits } = doors.limits ?? {};
+  assert.ok(Number.isInteger(storeCpu) && storeCpu > 0, "the store CPU budget is explicit and positive");
+  assert.ok(Number.isInteger(doorsCpu) && doorsCpu > 0, "the doors CPU budget is explicit and positive");
+  assert.ok(doorsCpu <= storeCpu, "the lightweight doors need no larger CPU allowance than the store");
+  assert.deepEqual(doorsLimits, storeLimits);
 });
 
 test("the doors hand everything else to the store by name", () => {
