@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   PAID_RESIDUAL,
+  readDoor,
   PAID_VERDICTS,
   distinctPayers,
   readDoorRail,
@@ -124,7 +125,12 @@ test("a door advertising a settlement scheme carries the residual that its zero 
     fromBlock: 1, atBlock: 9, logs: [], logsComplete: true,
     balance: 12345n,
   });
-  assert.equal(batched.verdict, "ZERO_OBSERVED");
+  // UNTIL 2026-09-15 THIS ASSERTED ZERO_OBSERVED, and that assertion was
+  // the bug: the residual said the zero was a fact about where we looked
+  // and the verdict said ZERO_OBSERVED anyway, with the caveat printed
+  // beside it. A caveat beside a verdict gets quoted without the caveat.
+  assert.equal(batched.verdict, "UNKNOWN");
+  assert.match(batched.established_by, /a fact about where this instrument looked, not about the door/);
   assert.equal(batched.advertised_scheme, "batch-settlement");
   assert.match(batched.settlement_residual, /no DIRECT payment, never that the door was not paid/);
 
@@ -150,4 +156,48 @@ test("a door advertising a settlement scheme carries the residual that its zero 
   // The EIP-3009 residual is on every row regardless; the two are
   // different gaps and neither substitutes for the other.
   for (const row of [batched, plain, paidBatch]) assert.ok(row.residual);
+});
+
+test("a door's verdict is computed from every rail, never picked from one", () => {
+  // StillOS Notary's rule, 2026-09-15: ZERO_OBSERVED requires every
+  // advertised rail to resolve empty; any rail out of reach makes the
+  // door UNKNOWN.
+  const zero = { verdict: "ZERO_OBSERVED" };
+  const unknown = { verdict: "UNKNOWN" };
+  const paid = { verdict: "PAID" };
+
+  // One unreadable rail collapses a zero, because a zero is a claim
+  // about every way money could have arrived.
+  const collapsed = readDoor({ name: "two rails", rails: [zero, unknown] });
+  assert.equal(collapsed.verdict, "UNKNOWN");
+  assert.match(collapsed.established_by, /a zero is a claim about every way money could have arrived/);
+
+  // Every rail empty, and only then.
+  assert.equal(readDoor({ name: "all read", rails: [zero, zero] }).verdict, "ZERO_OBSERVED");
+
+  // PAID is monotone: an observed settlement cannot be undone by a rail
+  // we failed to read, so it survives where a zero does not.
+  assert.equal(readDoor({ name: "one paid", rails: [paid, unknown] }).verdict, "PAID");
+  assert.equal(readDoor({ name: "paid + zero", rails: [paid, zero] }).verdict, "PAID");
+
+  // No rails is not a clean door.
+  assert.equal(readDoor({ name: "none", rails: [] }).verdict, "UNKNOWN");
+
+  // The rule travels with the reading rather than living in our prose.
+  for (const row of [collapsed, readDoor({ rails: [paid] })]) {
+    assert.match(row.rule, /any rail out of reach makes the door UNKNOWN/);
+    assert.ok(Array.isArray(row.rail_verdicts));
+  }
+});
+
+test("the settlement-scheme door and the door rule agree with each other", () => {
+  // End to end: the rail reading refuses the zero, and the door rule
+  // then refuses it too. Two independent places, one answer — which is
+  // what stops a future edit quietly restoring the old verdict.
+  const rail = readDoorRail({
+    rail: "eip155:8453", payTo: "0xffff", scheme: "batch-settlement",
+    fromBlock: 1, atBlock: 9, logs: [], logsComplete: true, balance: 12345n,
+  });
+  assert.equal(rail.verdict, "UNKNOWN");
+  assert.equal(readDoor({ name: "batch door", rails: [rail] }).verdict, "UNKNOWN");
 });
