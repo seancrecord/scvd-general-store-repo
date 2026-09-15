@@ -92,7 +92,8 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
       try {
         const response = await request(quote.url, { method: "GET", headers: { Accept: "application/json", "PAYMENT-SIGNATURE": encoded(payload), "Idempotency-Key": quote.key }, credentials: "omit", redirect: "error", signal });
         const body = await bodyOf(response);
-        const result = answer({ status: response.status, body, payment_response: response.headers.get("PAYMENT-RESPONSE"), idempotency_key: quote.key, buy_url: quote.url }, !response.ok);
+        // Publications carry their private status handle in a header, not the markdown body.
+        const result = answer({ status: response.status, body, payment_response: response.headers.get("PAYMENT-RESPONSE"), purchase_recovery: response.headers.get("Purchase-Recovery"), idempotency_key: quote.key, buy_url: quote.url }, !response.ok);
         if (response.ok) quote.result = result;
         return result;
       } catch {
