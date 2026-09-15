@@ -1,10 +1,7 @@
 import { LATEST_PROTOCOL } from "@/routes/mcp";
 import { A2A_PROTOCOL_VERSION } from "@/lib/a2a-validation.js";
-import {
-  STORE_CONTACT_EMAIL,
-  STORE_METADATA,
-  STORE_SERVICE_NAME,
-} from "@/store/metadata";
+import { STORE_CONTACT_EMAIL, STORE_SERVICE_NAME } from "@/store/metadata";
+import { registryDescription } from "@/store/identity-lead";
 
 /**
  * THE ERC-8004 REGISTRATION FILE — the document an agent registry
@@ -33,11 +30,22 @@ import {
  *
  * DERIVED, NOT RETYPED. Every field below comes from the constant
  * that already governs it — the naming law's one display string, the
- * canonical one-liner, the live protocol versions. A registration
+ * registry-budget identity, the live protocol versions. A registration
  * file is copy that travels: an explorer caches it and it becomes the
  * store's identity in somebody else's index. The first draft of this
- * document carried a hand-written name and a fifth description, which
- * is precisely the drift STORE_METADATA's own comment warns about.
+ * document carried a hand-written name and a hand-written description,
+ * which is precisely the drift STORE_METADATA's own comment warns
+ * about.
+ *
+ * THE DESCRIPTION IS A SHORT FORM, NOT A SECOND OPINION, and the
+ * difference is the whole rule. What metadata.ts forbids is a surface
+ * inventing its own account of the store; what it already does four
+ * times over is say the SAME account at the length its reader can
+ * take — ~160 characters for a search snippet, sixty words for a
+ * social card, a paragraph for a document fetcher. A registry card is
+ * a fifth such reader. So this uses registryDescription(), which is
+ * one more length of one identity, and introduces no fact that is not
+ * published at length somewhere else.
  */
 
 /** The `type` discriminator. Registries match on this exact string. */
@@ -142,8 +150,17 @@ export function agentRegistrationFile(base: string): Record<string, unknown> {
      * should invent a new one.
      */
     name: STORE_SERVICE_NAME,
-    /** The canonical one-liner. Change it in metadata.ts, not here. */
-    description: STORE_METADATA.description,
+    /**
+     * THE REGISTRY BUDGET, not the canon (2026-09-15). This carried
+     * STORE_METADATA.description until the keeper read it on a card:
+     * 900 characters written for a reader that fetches the whole
+     * document, rendered by an explorer that collapses after three
+     * lines and cuts mid-clause. Same identity, a length that fits
+     * the surface — see registryDescription() for the budget and the
+     * order of its clauses. Still derived, still one string: edit it
+     * there, never here.
+     */
+    description: registryDescription(),
     /**
      * `image` is a SHOULD for ERC-721 app compatibility — the
      * registry is an NFT, so wallets and explorers will render this.
