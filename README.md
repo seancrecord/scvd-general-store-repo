@@ -761,8 +761,14 @@ are not:
   [auto-crawled server index entry](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
   and a [connectors page](https://glama.ai/mcp/connectors/store.scvd/general-store).
 - **mcpindex.ai** — [a listing with its own live verdict](https://mcpindex.ai/server/store-scvd-general-store).
-- **agent-tools.cloud** — [the Bazaar-registered service](https://agent-tools.cloud/services/scvd-store-bazaar)
-  among the paid tools it indexes.
+- **agent-tools.cloud** — three entries, because it indexes x402
+  services, MCP servers and A2A agents as separate populations: the
+  [x402 service](https://agent-tools.cloud/services/scvd-store-bazaar),
+  the [MCP server](https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store)
+  and the [SCVD Evidence Agent](https://agent-tools.cloud/a2a/agents/scvd-evidence-agent).
+  The store proved domain control on 2026-09-14, so the descriptions
+  there are its own words; the quality grade beside them is their
+  measurement, on their probe schedule, and is not reproduced here.
 - **x402.fuchss.app** — [a provider index entry](https://x402.fuchss.app/provider/scvd.store)
   keyed on the origin rather than on anything we submitted.
 - **Circle (Sell to Agents)** — a

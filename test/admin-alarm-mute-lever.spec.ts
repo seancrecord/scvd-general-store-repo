@@ -96,6 +96,21 @@ describe("the mute lever on the alarm trail", () => {
     expect(html).toContain("[MUTED]");
   });
 
+  it("offers a desk finding no lever, and says why, rather than a press that does nothing", async () => {
+    await sendAlert(testEnv, {
+      condition: "note_audit",
+      key: "look:delvorn.site",
+      detail: "A note this desk sent to delvorn.site no longer holds.",
+    });
+    const html = await (await look()).text();
+    expect(html).toContain("Desk only");
+    expect(html).not.toContain("Stop emailing every &quot;note_audit&quot;");
+    const counter = await (
+      await SELF.fetch("https://scvd.store/admin/counter", { headers: auth() })
+    ).text();
+    expect(counter).toContain("[DESK]");
+  });
+
   it("refuses a press that names no condition, rather than writing a mute that silences nothing", async () => {
     const response = await press("/admin/alerts/mute", {
       scope: "alarm",
