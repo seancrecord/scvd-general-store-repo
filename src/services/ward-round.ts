@@ -3,6 +3,8 @@ import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { readObserverStatus } from "@/lib/observer-control";
 import { createAuthHeader } from "@coinbase/x402";
 import { runChecks } from "@/services/preflight";
+import { runMppChecks } from "@/services/mpp-battery";
+import { mppCensusOf, type MppCensus, type MppCensusReading } from "@/services/mpp-census";
 import { signerKidsFromChallenge } from "@/services/watch-evidence";
 import type { EvidenceDigest } from "@/services/corpus-evidence";
 import { sendAlert } from "@/lib/alerts";
@@ -150,6 +152,11 @@ export interface WardVolumeClaim {
 export interface WardHostResult {
   host: string;
   url: string;
+  /** Absent before PR 2 and when no response was received. */
+  protocols_spoken?: ("x402" | "mpp")[];
+  mpp?: MppCensusReading;
+  /** Our reader failed; this says nothing about the door's protocols. */
+  mpp_read_error?: "reader_failed";
   /**
    * "not_probed" (2026-08-04, the first two-feed round's lesson): a
    * leaderboard row's origin is a HOMEPAGE, not a paid resource URL —
@@ -319,6 +326,8 @@ export function namedByFeed(source: string | undefined): boolean {
 
 export interface WardRound {
   week: string;
+  /** Counts over saved protocol readings, with the unmeasured rows beside them. */
+  mpp?: MppCensus;
   at: string;
   listed_resources: number;
   /**
@@ -1101,6 +1110,19 @@ export async function probeHost(
     // the market desk read both offer placements; the text rides
     // beside the capture and never enters the signed row.
     const { evidence, bodyText } = await captureWatchEvidenceKeepingBody(response);
+    let mppReading: Pick<WardHostResult, "protocols_spoken" | "mpp" | "mpp_read_error">;
+    try {
+      const { protocols_spoken, challenges: _challenges, ...mpp } = runMppChecks({
+        headers: response.headers,
+        url,
+        bodyText: evidence.body_truncated ? undefined : bodyText,
+        now: new Date(startedAt),
+      });
+      mppReading = { protocols_spoken, mpp: { ...mpp, body_complete: !evidence.body_truncated } };
+    } catch {
+      // A second reader's failure cannot turn an answered x402 door into unreachable.
+      mppReading = { mpp_read_error: "reader_failed" };
+    }
     const { checks, advisories, accepts, l3b } = runChecks(
       response,
       evidence.body_truncated,
@@ -1150,6 +1172,7 @@ export async function probeHost(
       failed,
       advisories: advisoryNames,
       observed_at: observedAt,
+      ...mppReading,
       ...(offer ? { offer } : {}),
       ...(catalog
         ? { catalog: compareCatalogToDoor(catalog.terms, accepts ?? null, catalog.listed) }
@@ -1625,6 +1648,7 @@ async function assembleWalkRound(
     ...(catalogMeasured(rows)
       ? { catalog_agreement: catalogAgreementOf(rows) }
       : {}),
+    mpp: mppCensusOf(rows),
     leaderboard_sellers: walk.leaderboard ? walk.leaderboard.sellers : null,
     leaderboard_window: walk.leaderboard ? walk.leaderboard.window : null,
     our_leaderboard_rank: walk.leaderboard ? walk.leaderboard.our_rank : null,
@@ -1845,6 +1869,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     our_search_presence: presence,
     our_doors: doors,
     ...(catalogMeasured(results) ? { catalog_agreement: catalogAgreementOf(results) } : {}),
+    mpp: mppCensusOf(results),
     leaderboard_sellers: leaderboard ? leaderboard.sellers : null,
     leaderboard_window: leaderboard ? leaderboard.window : null,
     our_leaderboard_rank: leaderboard ? leaderboard.ourRank : null,

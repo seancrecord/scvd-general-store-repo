@@ -1027,10 +1027,12 @@ what you ruled and what is still yours to look at.
   FIRM: the top-level preflight `verdict` keeps meaning x402-ready,
   permanently, and `protocols_spoken` is the union field — never to
   be relitigated, because a field that changes meaning breaks every
-  historical row's comparability. Decision 2 (a passport for an
-  MPP-only door) waits on an actual mockup of the passport copy,
-  now in the design note's rulings section: read it, then yes / no
-  / later. Framing, sourcing, zero added cost, versioning and the
+  historical row's comparability. Decision 2 APPROVED 2026-09-14:
+  the passport should work for MPP-only, MPP beside x402 (and other
+  protocols), or x402 alone as it does today. The passport names the
+  protocol supporting its reading and keeps each protocol's tier
+  history separate; the till ruling is unchanged.
+  Framing, sourcing, zero added cost, versioning and the
   risk section approved as-is. "Get bolder on actual
   implementation": PR 1 is built the same day. Decisions 1, 4, 5
   and 6 stand as recommended until you say otherwise.
