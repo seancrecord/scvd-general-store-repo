@@ -3,6 +3,24 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.16.0 — 2026-09-15
+
+Vocabulary v16: `advertised-version-unpayable` becomes obtainable.
+
+No definition changed. The class's assertion, falsifier, costs and
+boundary are byte-identical to v15 — what moved is `our_signal`.
+
+It named `walkabout ledger: advertised_version_unpayable`, a file in
+the store's own research directory. A class marked `detectable: "paid"`
+says the finding exists on the other side of money; pointing the buyer
+at field notes tells them somebody saw it once. The signal now names a
+stage of an instrument a buyer can commission, with the ledger kept
+beside it because that reading is still real and still reproducible.
+
+The comparator is unchanged and so is the rule that it never returns a
+quiet clean: a refusal carrying no readable challenge reads `not
+checked`, which is a different fact from `not present`.
+
 ## 0.15.0 — 2026-09-13
 
 Vocabulary v15: adds `advertised-version-unpayable`.
