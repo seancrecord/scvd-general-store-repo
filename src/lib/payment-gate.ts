@@ -40,6 +40,7 @@ import {
 import type { EventSignals } from "@/lib/metrics";
 import {
   bookedReason,
+  withVerdictClass,
   decodePaymentHeader,
   isNeverJudged,
   JUDGED_NOTE,
@@ -1094,6 +1095,11 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
                 ? "unspecified:reason_not_captured"
                 : "unspecified:no_nonce_in_payload"),
             payloadProblems,
+            // The facilitator's free text, read down to one bounded
+            // class. Without it the books carry `invalid_payload` and
+            // nothing else, and the revert and replay readings that
+            // exist for exactly this row can never fire on it.
+            decline?.message,
           ),
           gateSignals(c),
         ).catch(() => undefined);
@@ -1528,7 +1534,14 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         await recordPaymentDecline(
           c.env,
           c.req.path,
-          `settle:${settlement.errorReason}`,
+          // settlementDeclinedBody hands errorMessage to the buyer two
+          // statements below; the books got the code alone until
+          // 2026-09-15. Settle-stage is the worse failure of the two,
+          // so it is the last place that should read as UNCLEAR.
+          withVerdictClass(
+            `settle:${settlement.errorReason}`,
+            settlement.errorMessage,
+          ),
           gateSignals(c),
         ).catch(() => undefined);
         /*

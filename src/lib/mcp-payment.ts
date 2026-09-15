@@ -14,6 +14,7 @@ import { persistBazaarObservations } from "@/lib/bazaar-observer";
 import {
   JUDGED_NOTE,
   bookedReason,
+  withVerdictClass,
   decodePaymentHeader,
   diagnoseDecline,
   isNeverJudged,
@@ -347,6 +348,10 @@ export async function runMcpPayment(
         bookedReason(
           diagnosis.decline?.reason ?? "unspecified:reason_not_captured",
           diagnosis.payloadProblems,
+          // Both doors read one instrument: the MCP door had no
+          // decline reading at all until 2026-07-29, and the same rule
+          // applies to the facilitator's words. See withVerdictClass.
+          diagnosis.decline?.message,
         ),
         signals,
       ).catch(() => undefined);
@@ -633,7 +638,10 @@ export async function runMcpPayment(
       await recordPaymentDecline(
         env,
         path,
-        `settle:${settlement.errorReason}`,
+        withVerdictClass(
+          `settle:${settlement.errorReason}`,
+          settlement.errorMessage,
+        ),
         signals,
       ).catch(() => undefined);
       /*
