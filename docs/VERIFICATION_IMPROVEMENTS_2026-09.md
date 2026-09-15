@@ -1,5 +1,17 @@
 # Verification improvements — September 8, 2026
 
+September 15 release preparation: the feature is committed as `b73ac8f4`
+and integrated with main `bf52db66` for PR review. Typecheck, 52 focused
+tests, door tests, documentation checks and both bundles pass on the
+integrated tree. PR CI, merge and live deployment checks remain.
+
+September 14 full-validation follow-through: the small Launch Check
+screen-evidence branch passed 707 files / 13,904 tests with one existing
+skip and all 24 gate commands. A stale CPU-limit equality test was corrected
+without changing deployment settings. See
+[the feature record](LAUNCH_CHECK_SCREEN_EVIDENCE_2026-09.md#full-validation--september-14).
+This is local qualification, not a commit, merge or deployment.
+
 Latest September 9 follow-through: all 262 certificate proofs in the frozen
 census are now independently checked. Retained-evidence reads recovered three
 signed reports and two bundles, with unsigned projections, opaque digests and
@@ -26,6 +38,16 @@ validation record, not a second queue.
 The keeper subsequently confirmed that the competitor in the original
 comparison is Rubric. The prior Rubric documentation read therefore
 applies directly; the implementation order is unchanged.
+
+## September 14 — preserve Launch Check's existing screen response
+
+Following the screening review, the keeper accepted a bounded increment:
+retain the actual gate response in the existing signed screen stage, with
+`latest` and the missing block identity stated explicitly. No new calls, payout
+policy, product, schedule or backup dependency. Implemented on an isolated
+branch from current main; not merged or deployed. Scope, compatibility,
+validation and the explicit stopping point:
+`docs/LAUNCH_CHECK_SCREEN_EVIDENCE_2026-09.md`.
 
 ## September 10 — package reader follow-through
 
