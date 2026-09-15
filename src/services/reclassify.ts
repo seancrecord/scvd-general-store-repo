@@ -437,5 +437,7 @@ export async function monthReclassAdjustments(
       months[month] = entry;
     }
   }
-  return { months, truncated: listed.names.length >= CAP };
+  // Authoritative rather than inferred from the count — see the note
+  // in delivery-audit.ts: a short page is not proof of a finished one.
+  return { months, truncated: listed.truncated };
 }

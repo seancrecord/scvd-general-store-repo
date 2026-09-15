@@ -22,6 +22,13 @@ const SCAN_CAP = 5000;
 
 export interface PayerRepairResult {
   scanned: number;
+  /**
+   * TRUE WHEN `scanned` IS A FLOOR (2026-09-15). This repair reported
+   * a scan count with nothing beside it, so a reader could not tell a
+   * sweep that saw every payer from one that stopped at its cap — and
+   * "repaired 3 of 400" reads very differently when 400 was a page.
+   */
+  scan_truncated: boolean;
   repaired: string[];
   /** Lowercased rows with no cert carrying the true case: unfixable
    * from our own books, listed so nobody thinks they were missed. */
@@ -50,6 +57,7 @@ export async function repairPayerCase(env: Env): Promise<PayerRepairResult> {
   const rows = await bulkGetJson<PayerRecord>(env.COUNTERS, payerKeys.names);
   const result: PayerRepairResult = {
     scanned: payerKeys.names.length,
+    scan_truncated: payerKeys.truncated,
     repaired: [],
     unrecoverable: [],
   };
@@ -95,6 +103,8 @@ export async function repairPayerCase(env: Env): Promise<PayerRepairResult> {
 
 export interface PayerSettleBackfill {
   certificates_read: number;
+  /** TRUE WHEN `certificates_read` IS A FLOOR — see PayerRepairResult. */
+  scan_truncated: boolean;
   /** Settle records written this pass; a second pass writes none. */
   records_written: number;
   /** Payer rows raised to the record count where the row was short. */
@@ -171,11 +181,17 @@ export async function backfillPayerSettlesFromCertificates(
     cap: SCAN_CAP,
   });
   const certs = await bulkGetJson<CertificateRecord>(env.PATRONS, certKeys.names);
-  const existing = new Set(
-    (await listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: SCAN_CAP })).names,
-  );
+  const existingListed = await listKeys(env.COUNTERS, {
+    prefix: KV_KEYS.payerSettlePrefix(),
+    cap: SCAN_CAP,
+  });
+  const existing = new Set(existingListed.names);
   const result: PayerSettleBackfill = {
     certificates_read: certKeys.names.length,
+    // Either scan falling short makes the whole backfill a floor: a row
+    // absent from a truncated `existing` looks exactly like a row that
+    // was never written.
+    scan_truncated: certKeys.truncated || existingListed.truncated,
     records_written: 0,
     rows_corrected: [],
     rows_created: [],

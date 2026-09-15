@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "15";
+export const DEFECT_VOCABULARY_VERSION = "16";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -178,6 +178,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "this store's own walk of a door on 2026-09-12, and StillOS Notary (stillosdigitalholdings.com), who confirmed the finding, generalized it on his own surfaces, and then corrected the class before it shipped",
     what_changed:
       "Added advertised-version-unpayable: a door that answers a correctly signed payment, presented in the protocol version its own challenge advertises, with that same offer re-served — so the buyer that followed the instructions is the one that cannot pay, no money moves, and the door has no failed payment to look at. Found by paying: the walk presented an EIP-3009 authorization for the door's exact v2 terms and was answered 402 naming the v1 payment header. THE CLASS IS NARROWER THAN THE FINDING, and the narrowing came from the operator we found it on. The corrections are his and both are taken. First, the detector originally compared accepts[] whole, which would have scored clean on any door carrying a per-request nonce, expiry or rotating timeout — the more careful half of the ecosystem — so the comparator reads the five material terms (scheme, network, payTo, asset, amount) and lets everything else vary the way it already let the error prose vary. Second, the assertion does not reach the variant we cared most about and said so: a door that ACCEPTS the newer version, settles it, delivers, and logs nothing because its request log keys on the older header. Nothing buyer-side can observe that, so detectable: paid cannot reach it and this class does not claim it; the repair hint names it as a separate fault and buyer_hint tells a buyer their record may be the only one. The instrument ships with the controls he asked for before its first green was trusted — a positive case read off our own 2026-09-12 ledger rather than hand-built, a rotating-nonce case that must still fire, honest-refusal and re-quote cases that must not, and the rule that it never returns a quiet clean: `checked: false` is a different answer from `present: false`, because an instrument that reads nothing and reports fine gets believed. That rule is his too, from a chain instrument of his own that read zero revenue at 27 of 27 doors on a mistyped field name, failing closed and silent.",
+  },
+  {
+    version: "16",
+    date: "2026-09-15",
+    at_the_instigation_of:
+      "the keeper, closing the half of v15 that was left open: a class marked detectable: \"paid\" whose our_signal named only a research ledger",
+    what_changed:
+      "advertised-version-unpayable becomes obtainable. Its assertion, falsifier, costs and boundary are UNCHANGED; what moved is our_signal, which named `walkabout ledger: advertised_version_unpayable` — a file in this store's research directory. A class is marked detectable: \"paid\" to tell a buyer the finding exists on the other side of money, and pointing that buyer at our field notes tells them we saw it once. The launch check now reads every refusal on its settle stage rather than only recording the status: it compares the offer the door serves AFTER refusing a correctly signed payment against the offer it served unpaid, on the five material terms alone, and reports advertised-version-unpayable present, not present, or not checked. So the signal a reader joins on is now a stage of a paid instrument they can commission, with the ledger kept beside it because the research reading is still real and still reproducible. The comparator is the corrected one from v15 — scheme, network, payTo, asset, amount, with nonces, expiries and timeouts free to rotate — and it keeps the v15 rule that it never returns a quiet clean: a refusal carrying no readable challenge reads `not checked`, which is a different fact from `not present` and says so in the stage line a buyer reads.",
   },
 ];
 
@@ -540,7 +548,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     costs:
       "The buyer that followed the instructions is the one that cannot pay. It read the advertised version, signed against those terms, presented them in that version's envelope, and got back the offer it started with — from outside, identical to never having paid at all. No money moves, so there is nothing to refund and nothing to chase; what is lost is the sale, silently, and the door has no failed payment to look at either. Seen in the field on 2026-09-12 during a protocol migration, on a door whose operator then found the same version-keyed read on three more of his own surfaces.",
     detectable: "paid",
-    our_signal: "walkabout ledger: advertised_version_unpayable (checked, present)",
+    our_signal:
+      "launch_check stage: settle (advertised-version-unpayable PRESENT); also walkabout ledger: advertised_version_unpayable (checked, present)",
     falsified_by:
       "The door answering a correctly signed payment, presented in the version its challenge advertises, with anything other than its own terms re-served — the goods, a refusal naming something about the payment, or an offer whose material terms (scheme, network, payTo, asset, amount) have changed — at the stated moment. A door that advertises one version and refuses a DIFFERENT one is not this defect: the class is about the version the door itself names. Nor is a door that re-serves terms which differ only in a nonce, an expiry or a timeout being cleared by that variation; those rotate legitimately and this class reads the material terms alone.",
     sourced_by:

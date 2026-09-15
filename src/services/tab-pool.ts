@@ -251,7 +251,8 @@ export async function poolSample(env: Env): Promise<PoolSample> {
     opened: 0,
     outcome: 0,
     by_category: {},
-    truncated: listed.names.length >= TAB_POOL_SCAN_CAP,
+    // Authoritative rather than inferred from the count.
+    truncated: listed.truncated,
   };
   for (const name of listed.names) {
     const [kind, category] = name.slice(KV_KEYS.tabDeltaPrefix.length).split(":");
