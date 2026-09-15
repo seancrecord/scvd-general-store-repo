@@ -1,0 +1,168 @@
+{
+  "pull_request": "https://github.com/seancrecord/scvd-general-store-repo/pull/718",
+  "head": "aab943247888dc257422edff410bad2453444c99",
+  "merge_commit": "de4f4590c4e93272b4c379403c9a37842877553b",
+  "merged_at": "2026-09-15T19:13:28Z",
+  "required_check": {
+    "conclusion": "SUCCESS",
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35004074753/job/104499326690",
+    "files_passed": 724,
+    "tests_passed": 14194,
+    "existing_skips": 1,
+    "duration_seconds": 4619.76
+  },
+  "security_checks": [
+    {
+      "name": "analyze",
+      "conclusion": "SUCCESS",
+      "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35004074783/job/104499326845"
+    },
+    {
+      "name": "CodeQL",
+      "conclusion": "SUCCESS",
+      "url": "https://github.com/seancrecord/scvd-general-store-repo/runs/104499933120"
+    }
+  ],
+  "production_builds": [
+    {
+      "worker": "scvd-doors",
+      "conclusion": "SUCCESS",
+      "url": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-doors/production/builds/10ae03b2-6285-4785-a0ca-83a89d841f35",
+      "completed_at": "2026-09-15T19:14:24Z"
+    },
+    {
+      "worker": "scvd-general-store-repo",
+      "conclusion": "SUCCESS",
+      "url": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-general-store-repo/production/builds/004713c2-183e-4522-a79f-e1e5296cd961",
+      "completed_at": "2026-09-15T19:14:14Z"
+    }
+  ],
+  "final_main_integration": {
+    "head": "aab943247888dc257422edff410bad2453444c99",
+    "base": "ac3ad96d3bafe4371440d7f92436b045134635a5",
+    "tested_tree": "7f87a8e0633101d9ec517bc0056a22aae2a26e47",
+    "conflicts": false,
+    "typecheck": "passed",
+    "affected_tests": {
+      "files": 15,
+      "passed": 226,
+      "duration_seconds": 168.79,
+      "exit": 0
+    },
+    "builds": {
+      "workers": 2,
+      "exit": 0,
+      "deployed": false
+    },
+    "qualification": "Targeted final-main integration; not a new full-suite result. Exact-head full GitHub CI remains the merge gate.",
+    "logs_sha256": {
+      "scvd-buyer718-latest-main-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "scvd-buyer718-latest-main-affected.log": "7336714ca03261e2279ac13e00b328c2ba657eeed6f30aeca1b34c8e16b8ac41",
+      "scvd-buyer718-latest-main-build.log": "215a90ec9c4828a35b0edc73db4bccb2adee0dee955e74996418eeda40d6ec9a"
+    },
+    "merged_tree_matches_tested_tree": true,
+    "full_suite": {
+      "status": "passed",
+      "command": "npm test -- --maxWorkers=4",
+      "exit": 0,
+      "files_passed": 725,
+      "tests_passed": 14208,
+      "existing_skips": 1,
+      "duration_seconds": 3954.03,
+      "tree_unchanged_after_run": true,
+      "log_sha256": "198c9343deac0f300361d78cc6641cf2aba26b63b810d1c8dd21bdda99b8df9e"
+    }
+  },
+  "premerge_contract": {
+    "at": "2026-09-15T18:07:24.621Z",
+    "path": "/api/claims",
+    "status": 200,
+    "content_type": "application/json",
+    "response_sha256": "9b001d9a66e9053f2bfee22751d2990807c30ffad630c436b711db0b084f7ac7",
+    "free": true,
+    "has_original_good_instructions": false,
+    "spend_usdc": 0
+  },
+  "public_http": {
+    "at": "2026-09-15T19:15:14.891Z",
+    "records": [
+      {
+        "path": "/api/claims",
+        "at": "2026-09-15T19:15:13.671Z",
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "9826429448af58227bc06152f9801c6c9e885e0e432b5a63a5effc648bc875de"
+      },
+      {
+        "path": "/openapi.json",
+        "at": "2026-09-15T19:15:14.105Z",
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "f22e0bfe504313dd3ec062a833e713739205cd10c36c9172438cec7cf46763cd"
+      },
+      {
+        "path": "/skill.md",
+        "at": "2026-09-15T19:15:14.688Z",
+        "status": 200,
+        "content_type": "text/markdown; charset=utf-8",
+        "sha256": "cb0f6862819c914fa726d642a68b7269b2e852f434eb01b286b2f4058b750aed"
+      },
+      {
+        "path": "/llms-full.txt",
+        "at": "2026-09-15T19:15:14.759Z",
+        "status": 200,
+        "content_type": "text/plain;charset=UTF-8",
+        "sha256": "c548cfe005e6deddff51b7b841ebb4be78eafae8888331caaa29f82acdc6401a"
+      },
+      {
+        "path": "/corrections",
+        "at": "2026-09-15T19:15:14.826Z",
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "9cba6647744d1d69149768a988a79b2e3179f056ec001c855edf3cbe78490640"
+      },
+      {
+        "path": "/menu/settlement_reconciliation?view=compact",
+        "at": "2026-09-15T19:15:14.877Z",
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "a0a36dc5489ce78083e5f555c902e0a72dbbf9ff09911d338b8336ab45679770"
+      }
+    ],
+    "checks": {
+      "free_claim_contract": true,
+      "openapi_request_and_response": true,
+      "skill_and_guide": true,
+      "public_correction": true,
+      "reconciliation_task": true
+    },
+    "spend_usdc": 0,
+    "scope": "Six public HTTP surfaces; not a complete discovery consistency pass."
+  },
+  "wallet_recovery_evidence": "claims-release-acceptance.json",
+  "new_spend_usdc": 0,
+  "superseded_ci": {
+    "run": 35003581518,
+    "disposition": "Cancelled after the newer exact-head CI run started; not a qualifying pass."
+  },
+  "limits": [
+    "One already-paid retained Base Spot Check; no new cold buyer cohort or all-history recovery claim.",
+    "Completed human-order language has local controls and deployed implementation, but no new live completed human order was exercised.",
+    "No new live acceptance on other rails or inside settlement, and no full architecture/shelf/recursive/error/mobile pass.",
+    "Original BUY-001\u2013039 and commissioned Aura totals unchanged."
+  ],
+  "log_sha256": {
+    "ci": "cf2e101d10039f98b42fe6f25020b569f3deac952e63f8ec970eb0e9190dcc0f"
+  },
+  "documentation_closeout": {
+    "application_source_changed": false,
+    "typecheck_exit": 0,
+    "docs_check_exit": 0,
+    "claims_exit": 0,
+    "log_sha256": {
+      "scvd-buyer718-record-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "scvd-buyer718-record-docs-final.log": "356070afe5ba5cc53f5a372ea286e1a5fc4f6fec68c5e9afceb172b10a964dcd",
+      "scvd-buyer718-record-claims.log": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99"
+    }
+  }
+}

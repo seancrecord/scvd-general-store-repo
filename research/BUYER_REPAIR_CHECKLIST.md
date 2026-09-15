@@ -772,8 +772,8 @@ Release authorized September 14: integrated-main full attempt passed 709 files /
 - [x] All ten moved from explicit pending recovery to ready, returning their exact original signed payloads and goods through free private status reads.
 - [x] A separate clean response-body cancellation was independently confirmed settled before original-payment retry; the correct good returned with no additional debit. This does not test interruption inside settlement.
 - [x] One fresh weaker public-only recipient independently verified a retired-key artifact and succession record, and separated signed claims from payment, delivery and timestamp truth. Its OTS proof remained unverified.
-- [ ] B-RTASK release: wording repaired locally, with a failing baseline and eleven passing affected tests; typecheck/claims/docs passed. Not committed or deployed.
-- [ ] Complete artifact-only / transaction-only / wallet-time recovery: wallet ownership recovered all eleven initial purchase references, but Claims and replay did not supply the lost Spot Check observation. Expert recovery of an already-spent authorization retrieved it; this is not a normal buyer success. New B-RCLAIMS is tracked separately.
+- [x] B-RTASK released in PR #718; the compact public task and OpenAPI agree on fixed value, declared ceiling and unobservable cap. See the September 15 production-release record.
+- [ ] Complete artifact-only / transaction-only / wallet-time recovery: the September 15 baseline required expert reconstruction to recover the lost Spot Check. PR #718 now passes that bounded wallet-proof original-good case without the old payment. Full historical/all-product and transaction-only coverage remains open.
 - [ ] Other funded rails, actual interrupted settlement, queued human completion, term-service completion, anchoring, inventory, multi-region deployment propagation and full shelf remain open.
 
 New evidence and exact scope: `buyer-remaining-acceptance-2026-09-15/REPORT.md`. Internal acceptance findings do not change original BUY-001–039 or commissioned Aura totals.
@@ -786,12 +786,13 @@ New evidence and exact scope: `buyer-remaining-acceptance-2026-09-15/REPORT.md`.
 - [x] Local legacy-record and human-order coverage: older completed attempts; queued to completed on the same order with signed completion evidence; recorded refund precedence even without original artifact storage.
 - [x] Claims discovery contract: correct `address` response field, certificate selector, list/selected-good schemas, fresh-proof instructions and existing guide-size guard.
 - [x] Reversion evidence: all 46 new tests fail without the source fix; exact source hashes restored; 340 affected tests pass. Typecheck and both build checks pass.
-- [ ] B-RCLAIMS release and live acceptance: use a fresh wallet proof on the already-paid lost Spot Check after release; do not buy it again. Full historic/all-product and transaction-only recovery remain open.
+- [x] B-RCLAIMS released in PR #718 and verified with fresh wallet proofs on the already-paid lost Spot Check: exact original good, independently verified receipt and observation signatures, unchanged public signed bytes, zero additional USDC. Full historic/all-product and transaction-only recovery remain open.
 
 Details and final qualification results: `buyer-remaining-acceptance-2026-09-15/REPORT.md`. These local checkmarks do not close the earlier live matrices or add Aura reports.
 
 - [x] B-RORDERMSG local repair: completed human-order recovery no longer carries the queued message. Nine failing-before controls cover wallet, private-status and original-payment reads across three purchase profiles; 271 affected tests pass, with typecheck and both builds.
-- [ ] B-RORDERMSG release/live acceptance: verify completed order language and evidence through the deployed recovery paths. No live affected order was claimed from local tests.
+- [x] B-RORDERMSG implementation released in PR #718 with its failing-before and passing local recovery controls.
+- [ ] B-RORDERMSG live completed-order acceptance: verify current language and completion evidence through the deployed recovery paths. No live affected order is claimed from local tests.
 
 
 ## September 15 — unsigned discovery/input/direct-link refresh
@@ -813,3 +814,8 @@ Evidence and limits: `buyer-public-recheck-2026-09-15/REPORT.md`. The snapshot-o
 - [ ] Full recursive first-party/JSON-reference crawl, all promised schemas and errors, MCP install/source-code/correction paths and paid cold-entry completion remain open.
 
 Evidence: `buyer-link-followthrough-2026-09-15/REPORT.md`. This closes only the bounded link-following/format instrument gap, not the entire broken-link or Wave 1 checklist.
+
+
+PR #718 closeout evidence: `buyer-remaining-acceptance-2026-09-15/production-release.json`, `claims-release-acceptance.json` and the report. The benchmark repair is merged; its bounded unsigned reads do not complete the broader Wave 1 matrix.
+
+- [x] One changed-release continuity case: the pre-deployment Spot Check was recovered after PR #718, with its original observation and signed bytes intact. Retained old quotes, human orders, independent Worker rollouts and multi-region propagation remain separate open cases.

@@ -1,0 +1,87 @@
+{
+  "at": "2026-09-15T19:15:34.707Z",
+  "cert_id": "cert_fbx7mhwwzv",
+  "trace": [
+    {
+      "path": "/api/claims",
+      "method": "GET",
+      "request_fields": [],
+      "status": 200,
+      "at": "2026-09-15T19:15:27.691Z",
+      "response_sha256": "9826429448af58227bc06152f9801c6c9e885e0e432b5a63a5effc648bc875de",
+      "payment_submitted": false
+    },
+    {
+      "path": "/api/claims/challenge",
+      "method": "POST",
+      "request_fields": [
+        "address"
+      ],
+      "status": 200,
+      "at": "2026-09-15T19:15:27.951Z",
+      "response_sha256": "bbefa9c2ad409f2aa65d2cd853747977099c3118f7cc764417c0dfab1981245a",
+      "payment_submitted": false
+    },
+    {
+      "path": "/api/claims",
+      "method": "POST",
+      "request_fields": [
+        "address",
+        "signature"
+      ],
+      "status": 200,
+      "at": "2026-09-15T19:15:30.833Z",
+      "response_sha256": "545084292a14ae874f5c390866e7f35811883ca04c4dbb8b5cb6c9a4fd7e9f18",
+      "payment_submitted": false
+    },
+    {
+      "path": "/api/claims/challenge",
+      "method": "POST",
+      "request_fields": [
+        "address"
+      ],
+      "status": 200,
+      "at": "2026-09-15T19:15:32.204Z",
+      "response_sha256": "eb4b91128b47d801ab4093cde58bc2607ca1769eb48c29cda5b413a787717b2d",
+      "payment_submitted": false
+    },
+    {
+      "path": "/api/claims",
+      "method": "POST",
+      "request_fields": [
+        "address",
+        "signature",
+        "cert_id"
+      ],
+      "status": 200,
+      "at": "2026-09-15T19:15:33.236Z",
+      "response_sha256": "645435205fc54ed195e4a7c0422e5d707f3ba87f5fa74eca0f4301ee741d42e6",
+      "payment_submitted": false
+    },
+    {
+      "path": "/api/verify/cert_fbx7mhwwzv",
+      "method": "GET",
+      "request_fields": [],
+      "status": 200,
+      "at": "2026-09-15T19:15:34.707Z",
+      "response_sha256": "898ddd534bbe1c986347a5c8e9b9c23ef624f7e4724c97da30daa09605c51351",
+      "payment_submitted": false
+    }
+  ],
+  "round_trips": 6,
+  "spend_usdc": 0,
+  "payment_authorization_created": false,
+  "original_payment_or_status_token_used": false,
+  "listed_existing_receipt": true,
+  "original_signed_bytes_match": true,
+  "original_observation_matches": true,
+  "signature_verified_offline": true,
+  "observation_signature_verified_offline": true,
+  "correct_host": true,
+  "public_verification_bytes_unchanged": true,
+  "limits": [
+    "Known historical receipt selected after wallet list; not a new cold-agent cohort.",
+    "One retained Base Spot Check; not all historical products or other rails.",
+    "No claim about unrelated concurrent wallet movement."
+  ]
+}

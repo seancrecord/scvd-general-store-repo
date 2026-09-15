@@ -39,3 +39,12 @@ No new live USDC was spent in this repair. The original BUY-001–039 and commis
 
 
 PR #718 CI follow-up: CodeQL classified two array-membership assertions in the Node fixture tests as partial URL checks. They now use explicit set membership. Added deceptive-host inputs and proved that replacing the actual exact-origin guard with substring matching fails the control; the production guard was restored byte-for-byte. All 44 benchmark cases and typecheck pass. No production source changed, no alert was dismissed, and the security check must rerun on the new commit.
+
+### PR #718 release and free original-good acceptance
+
+- Added the exact PR/merge/CI and production-build record, final-main qualification, six public checks and no-new-payment recovery evidence.
+- Checked off B-RCLAIMS's bounded release/live case and B-RTASK's public release; distinguished deployed B-RORDERMSG code from still-open live human-order acceptance.
+- Moved the implemented rows to ROADMAP's completed section while keeping broader acceptance in the existing live-audit rows.
+- Preserved all earlier raw runs, explicit gaps and original BUY/Aura counts. No private wallet journal or credential was published.
+
+Final merged-tree qualification: **725 files / 14,208 tests passed**, one existing skip, exit 0, in 3,954.03 seconds. The frozen checkout's tree stayed `7f87a8e0633101d9ec517bc0056a22aae2a26e47`, exactly matching the published merge. The final record changes only documentation and public evidence; typecheck, documentation and claims guards passed. No additional payment was made.

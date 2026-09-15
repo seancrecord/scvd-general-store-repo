@@ -648,3 +648,15 @@ September 15 full-suite closeout: **715 files / 14,102 tests passed**, one test 
 
 
 **Integrated full-suite result:** all **724 files / 14,194 tests passed**, with one existing skip, exit 0, in 1,773.17 seconds. The source hashes match the frozen integrated files. This is the clean full run; the earlier contaminated attempt remains recorded separately. Typecheck, both builds, 246 affected cases, 44 buyer benchmark/evidence cases and the explicit CI guards also passed. [PR #718](https://github.com/seancrecord/scvd-general-store-repo/pull/718) contains the batch; required CI and deployed wallet recovery remain the release gates.
+
+### PR #718 release and free original-good acceptance
+
+[PR #718](https://github.com/seancrecord/scvd-general-store-repo/pull/718) merged at 2026-09-15T19:13:28Z as `de4f4590c4e93272b4c379403c9a37842877553b`. The exact PR head passed GitHub CI and both security checks. Both production Worker builds passed for the merge. Main advanced during CI; the final combined tree was separately checked, with its exact qualification in `production-release.json`. Earlier local runs and their limits above remain historical records.
+
+The pre-merge Claims contract lacked original-good instructions. After deployment, six public HTTP surfaces passed the scoped contract, documentation, correction and task-summary checks. A fresh wallet proof then listed the already-paid Spot Check and a second proof recovered `cert_fbx7mhwwzv`. Its receipt and original observation matched the retained good, both signatures verified independently, the requested host was correct, and the public verification response preserved the signed bytes. Recovery used 6 HTTP round trips including contract discovery and public verification, with no old payment or private status token and **0 additional USDC**. The proof-to-list-to-good portion is four calls. This is one retained Base good across a deployment, not a new cold-agent cohort or an all-history recovery pass.
+
+B-RCLAIMS and B-RTASK are released with the bounded public/live checks above. B-RORDERMSG's implementation is released; a completed human order has not been exercised live through these paths. B-BCOLLECT and its 44 benchmark/evidence controls are merged and included in CI. The original BUY-001–039 and commissioned Aura totals are unchanged.
+
+Still open: other funded rails/Solana, real interruption inside settlement, completed human/watch/anchor terms and capacity, complete historical/transaction-only recovery, the full shelf, the broader deployment matrix, all-surface/all-field/all-error/recursive coverage, the mobile pass and fresh paid cold-entry cohorts. Details stay in the existing repair checklist and run order.
+
+Final merged-tree qualification: **725 files / 14,208 tests passed**, one existing skip, exit 0, in 3,954.03 seconds. The frozen checkout's tree stayed `7f87a8e0633101d9ec517bc0056a22aae2a26e47`, exactly matching the published merge. The final record changes only documentation and public evidence; typecheck, documentation and claims guards passed. No additional payment was made.
