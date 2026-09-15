@@ -1,4 +1,10 @@
-import { isNoiseFloor, type ClientTrace, type DeclineReport, type DeclineRow } from "@/lib/declines";
+import {
+  isNoiseFloor,
+  sharedReasons,
+  type ClientTrace,
+  type DeclineReport,
+  type DeclineRow,
+} from "@/lib/declines";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 
@@ -137,6 +143,39 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
           below is a guess about someone else's error code. If one client repeats the
           same reason, treat it as ours until proven otherwise.</p>`;
 
+  /**
+   * THE COUNT THE READINGS KEEP ASKING FOR. Three of them turn on
+   * "the same thing from DIFFERENT clients" and nothing on this page
+   * ever took that count, so the rule was printed and never applied.
+   * The clients are named rather than summarised: a verdict the
+   * reader cannot check is the thing this desk exists not to print.
+   */
+  const shared = sharedReasons(r);
+  const sharedSection =
+    shared.length === 0
+      ? ""
+      : `<section>
+    <h2>Seen from more than one client</h2>
+    <p>Each row is one reason that refused <strong>two or more different clients</strong> in
+    this window &mdash; the exact condition the readings below name. Two independent
+    implementations do not forget the same parameter by coincidence: where the reading says
+    that would be OURS, the fault column above has been moved to <code>ours</code> and says
+    so. The noise floor is counted <em>here</em> and nowhere else on the page, on purpose
+    &mdash; a conformance crawler that read our challenge and could not find a required
+    input is evidence about the challenge whatever it intended to spend.</p>
+    <table>
+      <tr><th>reason</th><th>clients</th><th>who</th><th>moved the fault</th></tr>
+      ${shared
+        .map(
+          (row) =>
+            `<tr><td><code>${escapeHtml(row.reason)}</code></td><td>${row.clients.length}</td><td>${row.clients
+              .map((client) => `<code>${escapeHtml(client)}</code>`)
+              .join(", ")}</td><td>${row.escalated ? "<strong>yes &mdash; now ours</strong>" : "no, annotated only"}</td></tr>`,
+        )
+        .join("\n")}
+    </table>
+  </section>`;
+
   // Demand for a rail the store does not run, the only place it shows.
   const railRows = Object.entries(r.rails_asked_for)
     .sort((a, b) => b[1] - a[1])
@@ -204,6 +243,8 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
         : ""
     }
   </section>
+
+  ${sharedSection}
 
   ${railsSection}
 

@@ -121,6 +121,21 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
    */
   "validator", "verifier", "observatory", "no-pay", "dry-only",
   "agenteconomyreport", "band-hunt",
+  /**
+   * Fifth pass, 2026-09-15, off the decline desk. x402lint/0.1
+   * (+https://x402lint.dev) sat in the intent-bearing column with two
+   * declines three seconds apart on two different doors, both
+   * `local:input_missing:*` — the walk of a conformance linter, not a
+   * buyer, and behaviourally identical to vet402-observatory beside
+   * it. The table already holds validator, verifier, checker,
+   * inspector, scanner and monitor; a linter lints, which is the same
+   * verb and was the only one missing.
+   *
+   * Kept narrow as "lint" rather than the version string, per the
+   * table's own rule: a machine that names its own job. Nothing a real
+   * buyer's SDK calls itself contains it.
+   */
+  "lint",
 ];
 
 /**
