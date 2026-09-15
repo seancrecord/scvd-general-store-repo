@@ -204,7 +204,8 @@ export async function sampleOnceOver(
        * absent, one absent, one bookend, so the sample shows the
        * section finding something.
        */
-      surfaces: surfacesSectionOf(sampleSurfaceReads(), ran.accepts ?? null, SAMPLE_OBSERVED_AT),
+      surfaces: surfacesSectionOf(sampleSurfaceReads(), ran.accepts ?? null, SAMPLE_OBSERVED_AT,
+        { status: outcome.response.status, www_authenticate: outcome.response.headers.get("WWW-Authenticate") }),
       scope: AUDIT_SCOPE,
     },
   };
@@ -224,7 +225,8 @@ function sampleSurfaceReads(): SurfaceReads {
     openapi: { url: `${origin}/openapi.json`, status: 404, text: null },
     resource: null,
     resource_url: null,
-    bookend: { url: SAMPLE_SUBJECT_URL, status: 402, text: JSON.stringify(accepts) },
+    bookend: { url: SAMPLE_SUBJECT_URL, status: 402, text: JSON.stringify(accepts),
+      www_authenticate: cannedChallenge().headers.get("WWW-Authenticate") },
   };
 }
 
