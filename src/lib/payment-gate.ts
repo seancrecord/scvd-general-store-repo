@@ -847,7 +847,7 @@ function recordGateOutcome(c: Context<HonoEnv>, outcome: string): void {
 export async function signedRecoveryResponse(c: Context<HonoEnv>, recovery: SignedPurchaseRecovery): Promise<Response> {
   c.header("Cache-Control", "no-store");
   c.header("Paid-Retry", "true");
-  if (recovery.kind === "status") return c.json(recovery.body, recovery.body.code === "purchase_resolved" ? 409 : 503);
+  if (recovery.kind === "status") return c.json(recovery.body, ["purchase_resolved", "purchase_input_mismatch"].includes(String(recovery.body.code)) ? 409 : 503);
   try {
     const page = recovery.delivery.publication_response;
     if (isRecord(page) && typeof page.markdown === "string" && typeof page.content_type === "string") {
@@ -1235,7 +1235,10 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
     { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) },
     idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams, bodyDigest), key: idempotencyKey } : undefined) : null;
-  if (recorded?.kind === "refused") return c.json(recorded.body, 503);
+  if (recorded?.kind === "refused") {
+    c.header("Cache-Control", "no-store");
+    return c.json(recorded.body, 409);
+  }
   if (recorded?.kind === "complete") {
     c.header("Cache-Control", "no-store");
     c.header("Paid-Retry", "true");

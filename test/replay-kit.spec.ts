@@ -94,7 +94,8 @@ describe("the replay kit stands together at /api/replay/{cert_id}", () => {
     expect(kit.refusal.wrong_scope.code).toBe("purchase_input_mismatch");
     expect(kit.refusal.wrong_scope.charged_again).toBe(false);
     expect(kit.refusal.wrong_scope.error).toBe(inputMismatchRefusal({}).error);
-    expect(kit.refusal.wrong_scope.recovery).toMatchObject({ status_tool: "check_purchase" });
+    expect(kit.refusal.wrong_scope.recovery).toMatchObject({ status_tool: "check_purchase",
+      original_door: expect.stringContaining("original interface"), original_path: expect.stringContaining("original purchase path") });
     expect(String((kit.refusal.wrong_scope.recovery as { status_token: string }).status_token)).toContain("never published");
 
     // The steps, and the honest list of what is not here.

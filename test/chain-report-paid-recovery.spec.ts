@@ -76,7 +76,7 @@ beforeAll(() => {
     }
     if (method === "eth_getTransactionReceipt") {
       expect(params[0]).toBe(subjectTx);
-      return reply({ status: "0x1", blockNumber: `0x${(head - 1).toString(16)}`, logs: [{ address: BASE_USDC,
+      return reply({ transactionHash: subjectTx, status: "0x1", blockNumber: `0x${(head - 1).toString(16)}`, logs: [{ address: BASE_USDC,
         topics: [TRANSFER_TOPIC, topic(subjectWallet), topic(other)], data: `0x${amount.toString(16)}` }] });
     }
     if (method === "getTokenAccountsByOwner") {

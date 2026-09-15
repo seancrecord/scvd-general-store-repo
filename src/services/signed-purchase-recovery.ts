@@ -11,7 +11,7 @@ import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
 import { itemKeyFromPath } from "@/lib/metrics";
 import type { SettledPayment } from "@/lib/payments";
 import { isRecord, type Env } from "@/types";
-import { purchaseIdentity, purchaseIntentStore, purchaseRecovery, purchaseStatus, lookupRecordedPurchase, paymentRecoveryFingerprint, type PurchaseIntent } from "@/services/purchase-intent";
+import { inputMismatchRefusal, purchaseIdentity, purchaseIntentStore, purchaseRecovery, purchaseStatus, lookupRecordedPurchase, paymentRecoveryFingerprint, type PurchaseIntent } from "@/services/purchase-intent";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { getOpenDeliveryIntent } from "@/services/delivery-audit";
 import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
@@ -84,9 +84,7 @@ export async function recoverSignedPurchase(env: Env, wire: unknown,
         return { kind: "complete", delivery, payment: { payer, network: s.network, transaction: s.transaction,
           paidUsdc: s.paid_usdc, tipUsdc: Number(delivery.tip_usdc ?? 0), settleHeaders: {} } };
       }
-      if (known && mismatchedRequest) return status({ code: "purchase_input_mismatch", charged: purchaseStatus(known).charged,
-        charged_again: false, settlement_attempted: false, recovery: purchaseRecovery(env, known),
-        error: "This signed payment belongs to a different original request. Read its private status or retry the original product and inputs; no new payment was submitted." });
+      if (known && mismatchedRequest) return status(inputMismatchRefusal(purchaseRecovery(env, known), purchaseStatus(known).charged));
       if (known?.state === "settled") {
         const recorded = await lookupRecordedPurchase(env, proof.network, payer, wire, request);
         if (recorded?.kind === "complete") return recorded;
@@ -110,10 +108,7 @@ export async function recoverSignedPurchase(env: Env, wire: unknown,
           ? payment.payer.toLowerCase() === payer.toLowerCase() : payment.payer === payer);
         if (payment && samePayer) {
           const digest = artifact?.digest ?? saved?.digest;
-          if (!request.digest || digest !== request.digest) return status({ code: "purchase_input_mismatch",
-            charged: true, charged_again: false, settlement_attempted: false,
-            ...(known ? { recovery: purchaseRecovery(env, known) } : {}),
-            error: "This payment bought different inputs. Retry the original request; no replacement goods or payment were created." });
+          if (!request.digest || digest !== request.digest) return status(inputMismatchRefusal(known ? purchaseRecovery(env, known) : undefined));
           const raw = artifact ? await stub.artifactStage(artifact.digest, "response") : saved?.response;
           if (raw && (!request.path.startsWith("/api/commission/pay/") || known?.commission)) {
             const delivery: unknown = JSON.parse(raw);
