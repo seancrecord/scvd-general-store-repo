@@ -55,6 +55,9 @@ export const OASF_TAXONOMY_TAG = "v1.1.0";
 /** The record's stable, domain-verifiable name. Never regenerated. */
 export const OASF_RECORD_NAME = "https://scvd.store/agents/general-store";
 
+/** That name as a path, for every surface that builds URLs from its own base. */
+export const OASF_RECORD_PATH = new URL(OASF_RECORD_NAME).pathname;
+
 /**
  * The record's creation timestamp, fixed rather than `now()`. A record
  * is content-addressed: a timestamp that moves on every cut gives a

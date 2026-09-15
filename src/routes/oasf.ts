@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { OASF_RECORD_NAME, oasfRecord } from "@/lib/oasf-record";
+import { OASF_RECORD_PATH, oasfRecord } from "@/lib/oasf-record";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -27,8 +27,7 @@ import type { HonoEnv } from "@/types";
  */
 export const oasfRoutes = new Hono<HonoEnv>();
 
-/** The record's own name, as a path. Kept in step with OASF_RECORD_NAME. */
-export const OASF_RECORD_PATH = new URL(OASF_RECORD_NAME).pathname;
+export { OASF_RECORD_PATH };
 
 for (const path of [OASF_RECORD_PATH, "/.well-known/oasf.json"] as const) {
   oasfRoutes.get(path, (c) =>

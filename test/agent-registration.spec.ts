@@ -6,6 +6,12 @@ import {
   SCVD_AGENT_ID,
   SCVD_AGENT_REGISTRY,
 } from "@/services/agent-registration";
+import {
+  OASF_DOMAINS,
+  OASF_RECORD_PATH,
+  OASF_SKILLS,
+  OASF_TAXONOMY_TAG,
+} from "@/lib/oasf-record";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store/metadata";
 
 const BASE = "https://scvd.store";
@@ -120,6 +126,37 @@ describe("ERC-8004 registration file", () => {
         expect(new URL(service.endpoint).origin).toBe(BASE);
       }
     }
+  });
+
+  /**
+   * THE TWO IDENTITY SYSTEMS POINT AT EACH OTHER, AND SAY THE SAME
+   * THING. The OASF record annotates the ERC-8004 agent; this entry
+   * annotates the OASF record back. The taxonomy rows are the
+   * record's own constants rather than a second list, because two
+   * lists of skills that can disagree is the defect this store sells
+   * a desk for finding in other people's metadata.
+   */
+  it("carries the store's OASF taxonomy, read off the record itself", async () => {
+    const doc = await fetchRegistration();
+    const services = doc.services as {
+      name: string;
+      endpoint: string;
+      version?: string;
+      skills?: string[];
+      domains?: string[];
+    }[];
+    const oasf = services.find((service) => service.name === "OASF");
+    expect(oasf, "the registration file names no OASF entry").toBeDefined();
+    expect(oasf!.endpoint).toBe(`${BASE}${OASF_RECORD_PATH}`);
+    expect(oasf!.version).toBe(OASF_TAXONOMY_TAG);
+    expect(oasf!.skills).toEqual(OASF_SKILLS.map((skill) => skill.name));
+    expect(oasf!.domains).toEqual(OASF_DOMAINS.map((domain) => domain.name));
+
+    // And the endpoint is a door, not a spelling: it serves the record.
+    const response = await SELF.fetch(oasf!.endpoint);
+    expect(response.status, "the OASF endpoint must serve").toBe(200);
+    const record = (await response.json()) as { skills: { name: string }[] };
+    expect(record.skills.map((skill) => skill.name)).toEqual(oasf!.skills);
   });
 
   it("claims x402 support and active status", async () => {
