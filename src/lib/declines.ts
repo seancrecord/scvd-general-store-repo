@@ -96,6 +96,24 @@ export interface DeclineReport {
   /** Reason string -> how many times, intent-bearing declines only. */
   by_reason: Record<string, number>;
   /**
+   * Reason string -> the DISTINCT CLIENTS that hit it. The one thing
+   * readReason cannot see and the readings keep promising: three of
+   * them ("the same thing from DIFFERENT clients", the rail case, the
+   * v1 tail) turn on a count this desk never took, so the rule was
+   * printed on the page and never once applied. See escalateSharedReasons.
+   *
+   * COUNTED ACROSS THE NOISE FLOOR TOO, and deliberately unlike
+   * by_reason directly above. The question this map answers is "can a
+   * client find this requirement", not "how much demand was lost" — and
+   * a conformance observatory that read our challenge and could not
+   * find a required parameter is evidence about the CHALLENGE whatever
+   * its intent. Excluding machinery here would hide the second
+   * implementation that proves the first one was not just careless.
+   * The house is still excluded: family reading our own challenge
+   * proves nothing about whether a stranger can.
+   */
+  clients_by_reason: Record<string, string[]>;
+  /**
    * THE RAILS ASKED FOR AND NOT OFFERED (2026-09-11). A payment signed
    * for a network absent from the challenge books as
    * `local:requirement_mismatch:network:<caip-2>`, and this tallies
@@ -394,6 +412,31 @@ export function readReason(raw: string): {
     };
   }
   /**
+   * PAYER AND PAYEE WERE THE SAME ADDRESS (2026-09-15). The one row on
+   * the desk that reached the facilitator at all — everything else in
+   * that window was refused by us, before it — and the one reason with
+   * no clause written for it, so it read as "No reading written for
+   * this reason yet" and paged the keeper as UNCLEAR.
+   *
+   * The facilitator refuses a transferWithAuthorization whose `from`
+   * equals its `to`. Our `to` is the store's own payTo, so this says
+   * somebody signed FROM the address the store receives at. That is
+   * not an ordinary buyer mistake and it is not a funds problem: the
+   * envelope decoded, the accepted matched, the signature was
+   * examined. It got further than any other decline in the window.
+   *
+   * Left UNKNOWN on purpose rather than guessed either way — the
+   * three causes want different hands and the row cannot tell them
+   * apart by itself. Check them in this order.
+   */
+  if (reason.includes("self_send") || reason.includes("self send")) {
+    return {
+      fault: "unknown",
+      reading:
+        "The facilitator refused because the payment's `from` and `to` were the SAME address — and our `to` is the store's own payTo, so this was signed from the wallet the store receives at. Not a funds problem and not a signing problem: the envelope decoded, the accepted matched, and the signature was examined, which makes this the furthest into the pipe any decline gets before dying. Check in this order. (1) Was it the house? The store's RECEIVING address is not listed in src/store/house-wallets.json, so a keeper or an agent paying from it books as an OUTSIDE decline and lands on this desk as demand — read the payer off the row before anything else. (2) Was it the browser till? This arrives from a browser far more often than from an SDK, and a till that pre-fills `from` with the payTo it just read out of the challenge produces exactly this. (3) Only if neither: a hand-rolled client copied payTo into both fields, which is theirs and is worth saying in the 402.",
+    };
+  }
+  /**
    * BEFORE the substring guesses below, deliberately: everything after
    * "(5xx):" is the facilitator's raw HTTP response body, which is
    * arbitrary text — Cloudflare's canned "error code: 502" today,
@@ -547,6 +590,99 @@ export function isNoiseFloor(row: {
   );
 }
 
+/**
+ * THE RULE THE DESK PRINTED AND COULD NEVER APPLY (2026-09-15).
+ *
+ * Three readings in readReason above turn on a count: "the same thing
+ * from DIFFERENT clients means the requirement is not discoverable
+ * from the header alone, and that would be OURS", "if one chain
+ * recurs across DIFFERENT clients, that is the case for the rail",
+ * "if this recurs across DIFFERENT clients, the ecosystem still has a
+ * v1 tail".
+ *
+ * readReason takes one string. It is stateless per row, by design and
+ * for a good reason — metrics.ts writes the phone alert off it at
+ * decline time, with one event in hand and no history. So every one
+ * of those sentences was printed beside a fault column that had
+ * already hardcoded `buyer` on the line above, and the escalation
+ * could not fire however many clients hit the wall. On 2026-09-15 the
+ * desk read 27 outside declines, ALL of them "theirs", while
+ * `local:input_missing:tx_hash` had been refusing three separate
+ * implementations on settlement_attestation for five consecutive
+ * days. The rule was on the page the whole time.
+ *
+ * It runs HERE instead, at the end of the scan, where the whole
+ * window is in hand. Nothing about readReason changes: the per-row
+ * default is still what pages the keeper, and this only ever moves a
+ * verdict toward OURS — the direction that costs us work and flatters
+ * nobody, the same way round the house rules are written.
+ */
+export const SHARED_REASON_ESCALATION = 2;
+
+/** A reason carried by two or more distinct clients, and who they were. */
+export interface SharedReason {
+  reason: string;
+  clients: string[];
+  /** True when the shared count moved the fault, not just annotated it. */
+  escalated: boolean;
+}
+
+/**
+ * Whether a reason's own published reading makes a shared count OURS.
+ *
+ * Only the missing-input family. A rail nobody offered and a v1
+ * envelope both say "different clients" too, but neither is a fault
+ * we own — one is demand for a rail, the other is the ecosystem's
+ * tail — so those are annotated and left with the fault they had.
+ */
+function escalatesWhenShared(reason: string): boolean {
+  const bare = reason.startsWith("settle:") ? reason.slice(7) : reason;
+  return bare.startsWith("local:input_missing:");
+}
+
+function annotatesWhenShared(reason: string): boolean {
+  const bare = reason.startsWith("settle:") ? reason.slice(7) : reason;
+  return (
+    bare.startsWith(RAIL_ASKED_FOR_PREFIX) || bare === "local:payload_v1_envelope"
+  );
+}
+
+/**
+ * What the count found, read-only. The page renders this to NAME the
+ * clients: a verdict the reader cannot check is the one thing this
+ * desk exists not to print.
+ */
+export function sharedReasons(report: DeclineReport): SharedReason[] {
+  const shared: SharedReason[] = [];
+  for (const [reason, clients] of Object.entries(report.clients_by_reason)) {
+    if (clients.length < SHARED_REASON_ESCALATION) continue;
+    const escalated = escalatesWhenShared(reason);
+    if (!escalated && !annotatesWhenShared(reason)) continue;
+    shared.push({ reason, clients: [...clients], escalated });
+  }
+  return shared;
+}
+
+/** Applies the count, mutating each affected row's fault and reading. */
+export function escalateSharedReasons(report: DeclineReport): SharedReason[] {
+  const shared = sharedReasons(report);
+  for (const { reason, clients, escalated } of shared) {
+    const who = clients.map((client) => `\`${client}\``).join(", ");
+    const note = escalated
+      ? ` ESCALATED BY THE DESK: ${clients.length} DIFFERENT clients hit this same code in this window (${who}), which is the condition the sentence above names. Two implementations do not independently forget the same parameter. The requirement is not discoverable where they are looking, and that is OURS to fix in the challenge rather than theirs to fix in their clients. Check what the PAYMENT-REQUIRED header actually carries before reading any of these rows as a careless buyer.`
+      : ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — the condition the sentence above names. The fault is unchanged and correctly so; what changed is that this is now a pattern rather than one client, which is what the reading asked you to watch for.`;
+
+    for (const row of report.declines) {
+      if (row.reason !== reason) continue;
+      if (escalated) {
+        row.fault = "ours";
+      }
+      row.reading = `${row.reading}${note}`;
+    }
+  }
+  return shared;
+}
+
 /** Walks the raw rows newest-first and reads every decline. */
 export async function readDeclines(
   env: Env,
@@ -563,6 +699,7 @@ export async function readDeclines(
     infrastructure_count: 0,
     infrastructure_clients: [],
     by_reason: {},
+    clients_by_reason: {},
     rails_asked_for: {},
     unspecified: 0,
   };
@@ -608,6 +745,14 @@ export async function readDeclines(
     if (bare === "unspecified") {
       report.unspecified += 1;
     }
+    // Before the noise-floor split on purpose: see clients_by_reason.
+    // A second implementation failing the same way is evidence about
+    // our challenge whether or not it was ever going to pay.
+    const forReason = (report.clients_by_reason[raw] ??= []);
+    if (!forReason.includes(who)) {
+      forReason.push(who);
+    }
+
     if (isNoiseFloor(event)) {
       report.infrastructure_count += 1;
       machines.add(who);
@@ -688,6 +833,9 @@ export async function readDeclines(
   report.declines.sort((a, b) => b.at.localeCompare(a.at));
   report.outside_clients = [...clients];
   report.infrastructure_clients = [...machines];
+  // Last, with the whole window in hand: the one reading readReason
+  // cannot do for itself. See escalateSharedReasons.
+  escalateSharedReasons(report);
   return report;
 }
 

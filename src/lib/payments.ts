@@ -17,6 +17,7 @@ import { ExactSvmScheme } from "@x402/svm/exact/server";
 import { bazaarResourceServerExtension } from "@x402/extensions/bazaar";
 import {
   buyDiscoveryExtensions,
+  buyInputSchema,
   pennyPageDiscoveryExtensions,
   requiredParamsNote,
 } from "@/lib/bazaar-discovery";
@@ -323,12 +324,57 @@ down, with reasons</a>, is published too &mdash; worth a look before you write.<
  */
 export const ROUTE_DESCRIPTION_CAP = 480;
 
+/**
+ * THE REQUIREMENT THE HEADER NEVER CARRIED (2026-09-15, off the
+ * decline desk).
+ *
+ * `required_params` went out in the unpaidResponseBody — the 402's
+ * JSON BODY — and in the bazaar `required-inputs` discovery extension.
+ * Neither is where a client looks. A stock x402 client reads the
+ * PAYMENT-REQUIRED header, picks an accepts entry, signs it and
+ * retries; it never parses our body, and it does not know a
+ * nonstandard extension key by name. So a door with a required input
+ * refused every such client before the gate, and the desk read each
+ * refusal as a buyer who had not done their reading.
+ *
+ * It was not one careless client. `local:input_missing:tx_hash`
+ * turned away three separate implementations on settlement_attestation
+ * across five consecutive days, and `local:input_missing:host` did the
+ * same on spot_check — which is the store's own published test for
+ * "not discoverable from the header alone, and that would be ours to
+ * fix in the challenge" (lib/declines.ts, readReason).
+ *
+ * `description` is the right field for it, and provably so: in x402
+ * v2 it belongs to ResourceInfo, at the TOP LEVEL of the challenge,
+ * not to the PaymentRequirements entries the client echoes back as
+ * `accepted`. So it rides the header every client already decodes and
+ * it cannot widen the deep-equal that mints
+ * local:requirement_mismatch — this adds a place to read the rule and
+ * changes nothing about what makes a signature valid. (The v1 shape
+ * does carry description per-requirement; a v1 straggler echoes back
+ * whatever we sent it, so that path is unaffected too.)
+ *
+ * It goes FIRST, ahead of the pitch, so ROUTE_DESCRIPTION_CAP
+ * truncates the sales copy rather than the one sentence that decides
+ * whether the payment can succeed.
+ *
+ * The body, the extension and the probe rule are all untouched; this
+ * adds a fourth place to find it, in the only place every client
+ * already looks.
+ */
 export function buyRouteDescription(item: MenuItem, env: Env): string {
   const tierNote =
     item.pricing === "pay_what_it_deserves"
       ? " Amounts above the minimum record as tips."
       : "";
-  const description = `${item.name}. ${SPEC_RETURNS[item.id] ?? item.description}${tierNote} Full listing: ${env.STORE_BASE_URL}/menu/${item.id}. MCP tool: buy_${item.id}.`;
+  // The schema directly, not requiredParamsNote: this runs on every
+  // 402 and only the names are wanted, not the prose beside them.
+  const required = buyInputSchema(item).required ?? [];
+  const requiredNote =
+    required.length === 0
+      ? ""
+      : `REQUIRES ${required.map((name) => `?${name}=`).join(" and ")} on the paid request \u2014 a signed request without ${required.length === 1 ? "it" : "them"} is refused before the gate and no money moves. `;
+  const description = `${item.name}. ${requiredNote}${SPEC_RETURNS[item.id] ?? item.description}${tierNote} Full listing: ${env.STORE_BASE_URL}/menu/${item.id}. MCP tool: buy_${item.id}.`;
   return description.length > ROUTE_DESCRIPTION_CAP
     ? `${description.slice(0, ROUTE_DESCRIPTION_CAP - 1)}\u2026`
     : description;
