@@ -459,7 +459,17 @@ describe("the walk engine, stage by stage", () => {
     });
     expect(check.verdict).toBe("payment_refused");
     expect(check.paid_usd).toBe(0);
-    expect(check.stages.at(-1)?.detail).toContain("HTTP 400");
+    // The refusal is still recorded verbatim as the seller's answer.
+    // It is no longer the LAST stage: since 2026-09-15 every refusal is
+    // also READ for advertised-version-unpayable, and that reading is
+    // pushed after it. Asserting on the settle stages rather than on
+    // .at(-1) keeps the original claim and stops the position of a new
+    // stage from looking like a regression.
+    const settle = check.stages.filter((stage) => stage.stage === "settle");
+    expect(settle.some((stage) => stage.detail.includes("HTTP 400"))).toBe(true);
+    // And the door that says something ABOUT the payment is not the
+    // defect: it refused, it did not re-serve its own terms.
+    expect(check.stages.at(-1)?.detail).toContain("advertised-version-unpayable: not present");
   });
 
   it("an open door gets a note, not a harvest", async () => {

@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "16";
+export const DEFECT_VOCABULARY_VERSION = "17";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -185,6 +185,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     at_the_instigation_of: "this store, roadmap V3 PR 3, on the keeper's instruction to continue the paid MPP discovery comparison",
     what_changed:
       "surface-contradicts-challenge gains a separately versioned MPP reader in surfaces.mpp. It compares the exact GET operation's advertised alternatives with each observed Payment challenge. All alternatives must conflict on at least one named field, and the compared terms must match at both bookends, before a difference counts. Dynamic amount, omitted currency, unresolved operations, failed reads and changing terms cannot create a contradiction. The x402 assertion and verdict are unchanged. The former assertion remains here: Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail. The MPP discovery reading is advisory and does not claim general conformance or that this store's till speaks MPP.",
+  },
+  {
+    version: "17",
+    date: "2026-09-15",
+    at_the_instigation_of:
+      "the keeper, closing the half of v15 that was left open: a class marked detectable: \"paid\" whose our_signal named only a research ledger",
+    what_changed:
+      "advertised-version-unpayable becomes obtainable. Its assertion, falsifier, costs and boundary are UNCHANGED; what moved is our_signal, which named `walkabout ledger: advertised_version_unpayable` — a file in this store's research directory. A class is marked detectable: \"paid\" to tell a buyer the finding exists on the other side of money, and pointing that buyer at our field notes tells them we saw it once. The launch check now reads every refusal on its settle stage rather than only recording the status: it compares the offer the door serves AFTER refusing a correctly signed payment against the offer it served unpaid, on the five material terms alone, and reports advertised-version-unpayable present, not present, or not checked. So the signal a reader joins on is now a stage of a paid instrument they can commission, with the ledger kept beside it because the research reading is still real and still reproducible. The comparator is the corrected one from v15 — scheme, network, payTo, asset, amount, with nonces, expiries and timeouts free to rotate — and it keeps the v15 rule that it never returns a quiet clean: a refusal carrying no readable challenge reads `not checked`, which is a different fact from `not present` and says so in the stage line a buyer reads.",
   },
 ];
 
@@ -547,7 +555,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     costs:
       "The buyer that followed the instructions is the one that cannot pay. It read the advertised version, signed against those terms, presented them in that version's envelope, and got back the offer it started with — from outside, identical to never having paid at all. No money moves, so there is nothing to refund and nothing to chase; what is lost is the sale, silently, and the door has no failed payment to look at either. Seen in the field on 2026-09-12 during a protocol migration, on a door whose operator then found the same version-keyed read on three more of his own surfaces.",
     detectable: "paid",
-    our_signal: "walkabout ledger: advertised_version_unpayable (checked, present)",
+    our_signal:
+      "launch_check stage: settle (advertised-version-unpayable PRESENT); also walkabout ledger: advertised_version_unpayable (checked, present)",
     falsified_by:
       "The door answering a correctly signed payment, presented in the version its challenge advertises, with anything other than its own terms re-served — the goods, a refusal naming something about the payment, or an offer whose material terms (scheme, network, payTo, asset, amount) have changed — at the stated moment. A door that advertises one version and refuses a DIFFERENT one is not this defect: the class is about the version the door itself names. Nor is a door that re-serves terms which differ only in a nonce, an expiry or a timeout being cleared by that variation; those rotate legitimately and this class reads the material terms alone.",
     sourced_by:
