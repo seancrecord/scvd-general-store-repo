@@ -26,6 +26,17 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Forge intake, 2026-09-14 — LOOK.** Joey (@Joeyy_0x) used OpenAPI
+  discovery. Our unsigned checks returned 402 on all eleven doors shown
+  as 400/403; placeholder inputs reproduced two 400s and the profile's
+  eligibility 403. Ask for the exact request and response body for one
+  400 and the 403, plus any actual 410 URL (none appears in the paste).
+  Coinbase's free validator reports 27 active entries, including
+  the_mandate and signature_agent_card, which Forge marks not indexed.
+  Ask which source, timestamp and URL match produced those two misses.
+  A follow-up is drafted in chat; nothing sent. Evidence and the local
+  OpenAPI response repair: `docs/FORGE_DISCOVERY_2026-09-14.md`.
+
 - **Corpus proof delivery verified (2026-09-09).** PR #588 deployed;
   all six listed snapshots served completed proofs at 14:32 UTC, verified
   against outside Bitcoin headers with signatures unchanged. This closes
@@ -409,9 +420,13 @@ build, it is on the roadmap.
   `registry/clawhub/published.json`. Corrected 2026-09-06.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
-- Circle Agent Marketplace: submitted 2026-09-01, listed
+- Circle **partner directory**: submitted 2026-09-01, listed
   2026-09-04 at partners.circle.com/partner/scvdstore. On the
-  trust record, the storefront sameAs and the README.
+  trust record, the storefront sameAs and the README. This is not
+  Agent Marketplace acceptance. The keeper reports that application
+  still unaccepted (2026-09-14); the public Discovery API search returns
+  no scvd.store entry. **LOOK:** retain Circle's review reply/status;
+  the public listing cannot explain the pending review.
 
 ---
 

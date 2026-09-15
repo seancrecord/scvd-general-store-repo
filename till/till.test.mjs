@@ -16,6 +16,7 @@ import {
   evmChainId,
   extractArtifact,
   mountTill,
+  renderViewButton,
   purchase,
   randomNonce,
   readShelf,
@@ -640,6 +641,86 @@ test("a delivery whose certificate cannot be read is still not a lie", () => {
   assert.equal(artifact.verifyUrl, undefined);
   assert.deepEqual(artifact.deliverable, { note: "hi" });
 });
+
+test("extractArtifact reads the human page off a delivery, and tolerates its absence", () => {
+  /*
+   * The keeper bought a pack through this till and got a receipt he
+   * could not act on: five cards named mid-paragraph inside a JSON
+   * blob, no picture, and no way to reach them again. view_url is the
+   * one field that fixes it, so its NAME is load-bearing — a rename on
+   * the server silently takes the button away again.
+   */
+  const withPage = extractArtifact({ view_url: "https://scvd.store/pack/pack_abc", cert_id: "cert_1" });
+  assert.equal(withPage.viewUrl, "https://scvd.store/pack/pack_abc");
+  // Everything else on the shelf keeps exactly the receipt it had.
+  assert.equal(extractArtifact({ cert_id: "cert_1" }).viewUrl, undefined);
+  assert.equal(extractArtifact({ view_url: 42 }).viewUrl, undefined);
+});
+
+test("renderViewButton draws a same-origin button and refuses an off-site one", () => {
+  /*
+   * A till that renders arbitrary links out of a response body is a
+   * phishing surface wearing a store's paint: the moment a buyer is
+   * most primed to click is straight after paying. Same origin and
+   * http(s), or no button at all.
+   */
+  const ORIGIN = "https://scvd.store";
+  const make = () => {
+    const doc = fakeDocument();
+    const views = [];
+    doc.querySelector = (selector) =>
+      selector === "[data-till-view]" ? views[views.length - 1] ?? null : null;
+    const output = doc.createElement("pre");
+    output.insertAdjacentElement = (_where, node) => {
+      node.remove = () => {
+        const at = views.indexOf(node);
+        if (at >= 0) views.splice(at, 1);
+      };
+      views.push(node);
+      return node;
+    };
+    return { doc, output, views };
+  };
+
+  const first = make();
+  const link = renderViewButton({
+    doc: first.doc,
+    output: first.output,
+    url: `${ORIGIN}/pack/pack_abc`,
+    item: { name: "a pack of cards" },
+    origin: ORIGIN,
+  });
+  assert.ok(link, "a same-origin url gets a button");
+  assert.equal(link.attributes.href ?? link.href, `${ORIGIN}/pack/pack_abc`);
+  assert.equal(link.textContent, "See your pack of cards \u2192");
+  assert.equal(first.views.length, 1);
+
+  // A second delivery replaces the first button rather than stacking.
+  renderViewButton({
+    doc: first.doc,
+    output: first.output,
+    url: `${ORIGIN}/pack/pack_def`,
+    item: { name: "a pack of cards" },
+    origin: ORIGIN,
+  });
+  assert.equal(first.views.length, 1, "one button, not a pile of them");
+
+  const off = make();
+  for (const hostile of [
+    "https://not-the-store.example/claim",
+    "javascript:alert(1)",
+    "data:text/html,<h1>hi",
+    "//evil.example/x",
+  ]) {
+    assert.equal(
+      renderViewButton({ doc: off.doc, output: off.output, url: hostile, item: { name: "a pack" }, origin: ORIGIN }),
+      null,
+      `${hostile} gets no button`,
+    );
+  }
+  assert.equal(off.views.length, 0);
+});
+
 
 /* ------------------------------------------------------------------
  * 7. The DOM half: no wallet, no markup.

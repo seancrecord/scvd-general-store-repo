@@ -1,0 +1,13 @@
+import type { Correction } from "./types";
+
+export const correction: Correction = {
+  date: "2026-09-14",
+  what_was_wrong:
+    "Every link to this store posted anywhere social unfurled with no picture and no preview, and had since the day each page shipped. The cause was content negotiation: wantsHtml() served HTML to a browser and to a named search or AI indexer, and the JSON twin to everything else. A link-preview bot is neither. Twitterbot, facebookexternalhit (which is also Instagram and WhatsApp), Slackbot-LinkExpanding, Discordbot, LinkedInBot, Telegram, Reddit, Mastodon and Bluesky all send Accept: */* with a bot User-Agent, so all of them received a signed record with no Open Graph tags in it and drew the only preview they could, which was none. The store meanwhile promised the opposite in writing: the menu description, the buy_pack MCP tool and SPEC_RETURNS all said each card has \"a page that unfurls wherever it is posted\", the share sheet has been rendered at 1200x675 for precisely this purpose since the card table opened, and every card page carries correct og:image and twitter:card tags that no unfurler was ever shown. Nothing errored, so nothing reported it.",
+  how_long:
+    "From each page's own ship date to 2026-09-14. For the card pages, the share sheets and the share buttons, that is the whole life of the Paywall; for /design and the older rooms it is longer. No count of affected posts can be given — the store cannot see a preview that was never drawn.",
+  found_by:
+    "The keeper, buying a pack with his own wallet and pressing the store's own Share on X button: \"also no image included in the share on twitter part.\" The meta tags, the image and its content-type all checked out on inspection; the fault only appeared when the page was requested with a Twitterbot User-Agent, which returned 1,509 bytes of JSON.",
+  what_changed:
+    "SOCIAL_UNFURLERS is a new list in lib/crawlers.ts, kept separate from the indexers and the readers because the three want different representations for different reasons: an indexer wants JSON-LD, a reader wants prose, an unfurler wants meta tags. wantsHtml() now returns HTML for any of them on any Accept header. The guard is test/pack-page-and-unfurls.spec.ts, which asserts every name on the list gets HTML on */*, on a missing Accept and on an explicit application/json, and separately fetches a live card page as Twitterbot and requires og:image, twitter:card and twitter:image in the bytes plus a real PNG behind the URL they name. The pack page and the binder are checked the same way, since those are the two links a person actually posts. Ordinary agents still get the record: the negotiation was narrowed, not removed.",
+};

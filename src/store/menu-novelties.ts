@@ -90,7 +90,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     reads: "our_books",
     fulfillment: "instant",
     description:
-      "One card from the shop window, the last five pressings pulled from packs here by anybody, free to look at at /api/paywall/window. Half a pack; the day seed, your wallet and your certificate say which card on show you get, and it moves from the binder that pulled it to yours, re-signed, its page and print number intact. One pick per wallet per twelve hours. A card entitles the holder to a card.",
+      "One card from the shop window, the last five pressings pulled from packs here by anybody, free to look at at /api/paywall/window. Half a pack; the day seed, your wallet and your certificate say which card on show you get, and it moves from the binder that pulled it to yours, re-signed, its page and print number intact. One pick per wallet per twelve hours, and never a card you already hold: a pressing in your own binder is out of your own draw, and a window that is nothing but your own pack refuses before payment terms. A card entitles the holder to a card.",
     get note_402(): string {
       return `That'll be $${this.price_usdc}, friend, for one off the window. Look first, it's free; the seed picks, not you.`;
     },

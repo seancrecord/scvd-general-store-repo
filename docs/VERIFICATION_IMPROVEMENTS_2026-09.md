@@ -1,5 +1,10 @@
 # Verification improvements — September 8, 2026
 
+September 15 release preparation: the feature is committed as `b73ac8f4`
+and integrated with main `bf52db66` for PR review. Typecheck, 52 focused
+tests, door tests, documentation checks and both bundles pass on the
+integrated tree. PR CI, merge and live deployment checks remain.
+
 September 14 full-validation follow-through: the small Launch Check
 screen-evidence branch passed 707 files / 13,904 tests with one existing
 skip and all 24 gate commands. A stale CPU-limit equality test was corrected

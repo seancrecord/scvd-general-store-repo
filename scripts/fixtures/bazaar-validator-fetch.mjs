@@ -1,9 +1,13 @@
 // Every request is intercepted; this fixture cannot make a payment or call a live service.
 globalThis.fetch = async (url, init) => {
   if (String(url) === "https://scvd.store/menu.json") return Response.json({ items: [{ id: "hello" }] });
+  if (String(url) === "https://scvd.store/openapi.json") return Response.json({ paths: {
+    "/api/buy/hello": { get: { "x-payment": {} } },
+    "/almanac/a-page": { get: { "x-payment": {} } },
+  } });
   if (String(url) !== "https://api.cdp.coinbase.com/platform/v2/x402/validate") throw new Error("Unexpected URL");
   const body = JSON.parse(init.body);
-  if (init.method !== "POST" || body.resource !== "https://scvd.store/api/buy/hello" || body.method !== "GET" || Object.keys(body).length !== 2 || init.headers.Authorization) {
+  if (init.method !== "POST" || !["https://scvd.store/api/buy/hello", "https://scvd.store/almanac/a-page"].includes(body.resource) || body.method !== "GET" || Object.keys(body).length !== 2 || init.headers.Authorization) {
     return Response.json({ errorMessage: "Expected public validation request: resource and method" }, { status: 400 });
   }
   switch (process.env.SCVD_BAZAAR_TEST_MODE) {

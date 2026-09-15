@@ -3,11 +3,16 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
-function run(mode, json = true) {
+function run(mode, json = true, all = false) {
   const result = spawnSync(process.execPath, ["--import", "./scripts/fixtures/bazaar-validator-fetch.mjs", "./scripts/bazaar-validate.mjs", ...(json ? ["--json"] : [])], { cwd: root, env: { ...process.env, SCVD_BAZAAR_TEST_MODE: mode, CDP_API_KEY_ID: "", CDP_API_KEY_SECRET: "" }, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
-  return json ? JSON.parse(result.stdout).results[0] : result.stdout;
+  return json ? (all ? JSON.parse(result.stdout).results : JSON.parse(result.stdout).results[0]) : result.stdout;
 }
+test("the live validator loop includes the publication discovered through OpenAPI", () => {
+  const rows = run("accepted", true, true);
+  assert.deepEqual(rows.map(row => row.url), ["https://scvd.store/api/buy/hello", "https://scvd.store/almanac/a-page"]);
+  assert.ok(rows.every(row => row.state === "accepted"));
+});
 test("uses the documented public request and records acceptance without inventing index presence", () => {
   const row = run("accepted"); assert.equal(row.state, "accepted"); assert.equal(row.index, null);
 });

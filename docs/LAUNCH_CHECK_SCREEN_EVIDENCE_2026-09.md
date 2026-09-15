@@ -1,7 +1,8 @@
 # Launch Check: preserve the screen response
 
 September 14, 2026. Branch: `codex/launch-check-screen-evidence`, based on
-main `e0f0a4d7`. Implemented and fully checked locally; not committed, merged or deployed.
+main `e0f0a4d7`. Feature committed as `b73ac8f4`; integrating main `bf52db66`
+for PR review. Release and deployment verification are still pending.
 
 ## Scope and stopping point
 
@@ -143,3 +144,20 @@ resulting deployment remain release steps. Production PQ, standalone
 screening and the backup rollout remain parked. Existing tasks **Audit
 cold-entry buyer journeys** and **Implement MPP PR 2** own the adjacent
 buyer and MPP work; this validation does not complete or duplicate them.
+
+
+## Release preparation — September 15
+
+The keeper authorized a PR and merge. The validated feature was committed as
+`b73ac8f4`, then integrated with main `bf52db66`. The only merge conflict was
+the Node CPU-budget test: main had independently repaired it in `007d9d2a`.
+The integration keeps main's version unchanged; the earlier local guard and
+its negative controls remain historical qualification evidence, not a second
+configuration-test change in the PR. No Worker configuration changed.
+
+The runtime feature files merged unchanged. The September 14 full local run
+applies to its recorded base; the PR's full CI run must establish the integrated
+tree before merge. Production deployment and live reads remain separate checks.
+
+Integrated local checks passed: typecheck, 52 focused Launch Check tests,
+the door tests, documentation checks and both Worker dry-run builds.

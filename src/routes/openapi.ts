@@ -31,7 +31,7 @@ import {
 } from "@/services/preflight";
 import { buyInputSchema, itemsRequiring } from "@/lib/bazaar-discovery";
 import {
-  PENNY_PAGE_USDC,
+  pennyPageTiersUsdc,
   SIGNING_WINDOW_SECONDS,
   manifestAccepts,
   priceTiersUsdc,
@@ -5307,6 +5307,15 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     ),
     parameters,
   };
+  if (item.id === "trust_profile") {
+    // Eligibility is checked before a quote when a target is supplied.
+    // Describe the refusal so discovery readers can distinguish it from
+    // a payment failure (the Forge intake, 2026-09-14).
+    const responses = operation["responses"] as OpenApiObject;
+    responses["403"] = PROBLEM_RESPONSE(
+      "passport_refused: the supplied endpoint lacks qualifying passport evidence. Nothing charged. Read the response's reason before choosing a target or requesting a free preflight.",
+    );
+  }
   const paymentInfo = operation["x-payment-info"] as OpenApiObject;
   paymentInfo["input"] = {
     location: "query",
@@ -5343,7 +5352,7 @@ function pennyPagePaths(
         env,
         entry.summary,
         entry.description,
-        [PENNY_PAGE_USDC],
+        pennyPageTiersUsdc(),
         true,
       ),
     };

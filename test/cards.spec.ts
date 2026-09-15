@@ -295,7 +295,16 @@ describe("a pack, bought", () => {
   it("hands back five pressings, each with a print number, a face, a share sheet, a page and a record that verifies", async () => {
     const body = await buy("pack");
     expect(body["order_id"]).toBeUndefined();
-    expect(String(body["deliverable"])).toContain("Pack opened");
+    /*
+     * THE COUNT FIRST (2026-09-14). The note used to open "Pack
+     * opened:" and name five cards mid-paragraph; the keeper bought one
+     * and could not tell how many he had got. It leads with the number
+     * now, and names the page a person opens before the manifest an
+     * agent reads.
+     */
+    expect(String(body["deliverable"])).toContain(`${PACK_SIZE} cards:`);
+    expect(String(body["deliverable"])).toContain(String(body["view_url"]));
+    expect(String(body["view_url"])).toBe(`${BASE}/pack/${String(body["pack_id"])}`);
     expect(String(body["commit_d"])).toMatch(/^[0-9a-f]{64}$/);
     const cards = body["cards"] as Array<Record<string, unknown>>;
     expect(cards).toHaveLength(PACK_SIZE);
@@ -372,7 +381,14 @@ describe("a pack, bought", () => {
       const text = intent.searchParams.get("text")!;
       expect(text.split("\n\n")).toHaveLength(2);
       expect(text).toContain(String(card["name"]).startsWith("Door") ? "Door" : "");
-      expect(text).toMatch(/No\. \d+ \/ 63/);
+      // A card in the count leads with its number; the Ally and the
+      // events sit outside the count (`no: 0`) and the post says so by
+      // leaving the number off rather than printing "No. 0 / 63".
+      if (card["card_no"]) {
+        expect(text).toContain(`No. ${Number(card["card_no"])} / ${CURRENT_SEASON.cards.length}`);
+      } else {
+        expect(text).not.toContain("No. ");
+      }
       expect(text).toContain("print");
       expect(text).toContain("Summer of 402");
       expect(intent.searchParams.get("url")).toBe(`${BASE}/p/${String(card["card_id"])}`);
@@ -620,6 +636,48 @@ describe("the credit desk", () => {
     const empty = await signedDesk("/api/paywall/redeem", { want: "pack" });
     expect(empty.status).toBe(400);
     expect(String((await json(empty))["error"])).toContain("No pack credit");
+  });
+});
+
+describe("the window never sells you your own card", () => {
+  it("refuses above the settle line when every pressing on show is the picker's", async () => {
+    /**
+     * FOUND BY WALKING THE WHOLE LOOP ON ONE WALLET (2026-09-14): a
+     * pack at 15:49 became the window, and a pick at 15:58 was
+     * guaranteed to hand one of that pack's own five cards back for
+     * half a pack — the buyer's binder to the buyer's binder. On a
+     * young store that is the DEFAULT path for the first person who
+     * tries the window after their own pack, not an edge case.
+     */
+    const mine = "0x1212121212121212121212121212121212121212";
+    await openPack(testEnv, { certId: "cert_own_window", patronNumber: 9, payer: mine });
+    await testEnv.COUNTERS.delete(KV_KEYS.paywallWindowLock(mine.toLowerCase()));
+    const window = await json(await SELF.fetch(`${BASE}/api/paywall/window`));
+    const rows = window["window"] as Array<Record<string, unknown>>;
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((row) => row["holder"] === mine.toLowerCase())).toBe(true);
+    // The row carries its holder, so a buyer can see this for free
+    // before paying, which is the mitigation this refusal backs up.
+    expect(String(window["holders_note"])).toContain("cannot be sold a card you already hold");
+
+    await expect(windowPick(testEnv, { certId: "cert_own_pick", patronNumber: 9, payer: mine })).rejects.toThrow(/already yours/);
+    // Nothing moved and nothing was locked: the refusal is above the
+    // settle line, so a refused pick leaves the wallet free to try
+    // again the moment somebody else opens a pack.
+    expect(await testEnv.COUNTERS.get(KV_KEYS.paywallWindowLock(mine.toLowerCase()))).toBeNull();
+  });
+
+  it("sells the part of the window that is somebody else's, and never the part that is yours", async () => {
+    const mine = "0x1313131313131313131313131313131313131313";
+    const theirs = "0x1414141414141414141414141414141414141414";
+    await openPack(testEnv, { certId: "cert_mixed_mine", patronNumber: 10, payer: mine });
+    await openPack(testEnv, { certId: "cert_mixed_theirs", patronNumber: 11, payer: theirs });
+    await testEnv.COUNTERS.delete(KV_KEYS.paywallWindowLock(mine.toLowerCase()));
+    const picked = await windowPick(testEnv, { certId: "cert_mixed_pick", patronNumber: 10, payer: mine });
+    // A partial window sells the part that is not already yours rather
+    // than refusing the whole purchase.
+    expect(picked.from_holder).toBe(theirs.toLowerCase());
+    expect(picked.pressing.card.holder).toBe(mine.toLowerCase());
   });
 });
 

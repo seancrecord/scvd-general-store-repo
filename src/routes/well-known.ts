@@ -6,6 +6,10 @@ import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { DOCS_SERVER_NAME, DOCS_TOOL_NAME, docsToolCatalog } from "@/routes/mcp-docs";
 import { VERIFIER_SERVER_NAME, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
 import { evidenceAgentCard } from "@/services/a2a-evidence";
+import {
+  AGENT_REGISTRATION_PATH,
+  agentRegistrationFile,
+} from "@/services/agent-registration";
 import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { organizationRef } from "@/lib/jsonld";
 import { mcpToolCatalog, specShapedTool } from "@/lib/mcp-tools";
@@ -68,6 +72,7 @@ import {
 import type { Env, HonoEnv } from "@/types";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
 import {
+  agentToolsVerifyField,
   OPENAI_APPS_CHALLENGE,
   x402listTokenFile,
 } from "@/store/site-verification";
@@ -261,6 +266,9 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     resources: await structuredPaidResources(c.env),
     publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
+    // Additive, per this document's standing rule: a reader that
+    // ignores unknown keys is unaffected. See store/site-verification.
+    ...agentToolsVerifyField(),
     name: STORE_SERVICE_NAME,
     description: STORE_METADATA.description,
     tags: [...STORE_TAGS],
@@ -291,6 +299,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     liveness: `${base}/.well-known/liveness.json`,
     anchor_log: `${base}/.well-known/anchor-log.json`,
     a2a: `${base}/.well-known/a2a.json`,
+    agent_registration: `${base}${AGENT_REGISTRATION_PATH}`,
   });
 });
 
@@ -383,6 +392,10 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
     x402Version: 2,
+    // The ownership claim rides both well-known documents; a checker
+    // that fetches this one rather than the thin one beside it must
+    // not read a missing field as a failed claim.
+    ...agentToolsVerifyField(),
     // THE NAMING LAW, tier 2: display name, one string everywhere.
     // The full name is tier 3 and retired from all metadata.
     name: STORE_SERVICE_NAME,
@@ -438,6 +451,13 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * the other without guessing the convention.
      */
     did: `${base}/.well-known/did.json`,
+    /**
+     * The chain-side identity, beside the did:web one. An indexer
+     * that wants to know whether this origin and ERC-8004 agent
+     * 86957 are the same party reads this file and compares its
+     * `registrations` block against the Identity Registry on Base.
+     */
+    agent_registration: `${base}${AGENT_REGISTRATION_PATH}`,
     /**
      * For implementers who land here first: the offer-receipt test
      * vectors, and the standards block in trust.json that explains
@@ -600,6 +620,18 @@ for (const path of [
    */
   wellKnownRoutes.get(path, (c) => c.json(evidenceAgentCard(c.env.STORE_BASE_URL)));
 }
+
+/**
+ * THE ERC-8004 REGISTRATION FILE, beside the A2A card because they
+ * answer the same question to two different readers: what is this
+ * agent and where do you reach it. The chain half — agent 86957's
+ * agentURI — has to be pointed here by a transaction from the owner
+ * wallet; until it is, this file is served and simply unread.
+ * See services/agent-registration.ts for why this exact path.
+ */
+wellKnownRoutes.get(AGENT_REGISTRATION_PATH, (c) =>
+  c.json(agentRegistrationFile(c.env.STORE_BASE_URL)),
+);
 
 /**
  * RFC 9116 security.txt — the URL a responsible-disclosure checklist

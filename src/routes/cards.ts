@@ -130,6 +130,33 @@ const DESIGN_CSS = `
 .paywall .hero img:hover { transform: rotate(-1.5deg) scale(1.02); }
 @media (prefers-reduced-motion: reduce) { .paywall .entry, .paywall .hero img { transition: none; } .paywall .entry:hover, .paywall .hero img:hover { transform: none; } }
 .paywall .entry.held { border-color: currentColor; }
+/* ---- the pack, opened. Five faces, dealt. ----
+   Face-down until asked where scripting allows, and already face-up
+   where it does not: a reveal nobody can trigger is a page with no
+   cards on it. The stagger is per-card off --n so the deal reads as a
+   hand being turned over rather than five things blinking at once. */
+.paywall .post-button-quiet { font-weight: normal; opacity: 0.85; }
+/* THE SAVE BUTTON SITS BESIDE THE SHARE BUTTON (2026-09-14), because
+   the picture on this page is an SVG and X does not accept one. A
+   reader who right-clicks the card gets a vector file the upload box
+   refuses; the PNG was here all along, named in fine print as a code
+   span, which is a place nobody looks when they want a picture. */
+.paywall .share-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.paywall .share-note { margin-top: -0.35rem; }
+.paywall .pack-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 1.2rem 0 1.4rem; }
+.paywall .pack-card { margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.paywall .pack-card img { width: 100%; height: auto; display: block; border: 1px solid var(--line); }
+.paywall .pack-card figcaption { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.8rem; }
+.paywall .pack-card-name { font-weight: bold; }
+.paywall .pack-card-meta { opacity: 0.75; font-size: 0.72rem; letter-spacing: 0.03em; }
+.paywall .pack-grid[data-revealing] .pack-card { animation: pack-deal 460ms ease both; animation-delay: calc(var(--n) * 90ms); }
+@keyframes pack-deal {
+  from { opacity: 0; transform: translateY(14px) rotateY(90deg); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .paywall .pack-grid[data-revealing] .pack-card { animation: none; }
+}
 .paywall .entry.missing { opacity: 0.45; }
 .paywall .lookup { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
 .paywall .lookup input { flex: 1 1 18rem; padding: 0.45rem 0.6rem; font-family: ui-monospace, monospace; }
@@ -178,7 +205,7 @@ async function pressingJson(c: Context<HonoEnv>, record: SignedCardRecord) {
     page_url: `${base}/p/${id}`,
     verify_id: id,
     verify_url: `${base}/api/verify/${id}`,
-    ...(record.card.pack_id ? { pack_url: `${base}/api/pack/${record.card.pack_id}` } : {}),
+    ...(record.card.pack_id ? { pack_url: `${base}/api/pack/${record.card.pack_id}`, pack_page_url: `${base}/pack/${record.card.pack_id}` } : {}),
     cite_url: `${base}${record.card.cite}`,
     post: postFor(record.card),
     post_url: postIntentUrl(postFor(record.card), `${base}/p/${id}`),
@@ -259,7 +286,7 @@ function roomTwin(
       unknown_card: "GET /api/card/{id} or /p/{id} for an id never pressed answers 404 with a plain sentence. Nothing is minted by looking.",
       binder_not_a_wallet: "GET /api/paywall/binder/{wallet} for a string that is not a 0x address or a base58 Solana address answers 400.",
       seed_not_yet: "GET /api/paywall/seed/{date} for a day that has not started answers 400; a day still running answers the commit alone.",
-      window_empty: "GET /api/buy/window_pick before any pack has been opened refuses before payment terms; a second pick inside twelve hours refuses before settlement. Nothing is charged either way.",
+      window_empty: "GET /api/buy/window_pick before any pack has been opened refuses before payment terms; so does a window whose every pressing is already yours, which is what a buyer sees right after opening their own pack. A second pick inside twelve hours refuses before settlement. Nothing is charged in any of the three.",
       burn_refused: "POST /api/paywall/burn answers 400 with the reason by name: a card not in the binder, already burned, a rare, or short of a whole batch. Nothing burns on a refusal.",
     },
     security: securityBlock(base, {
@@ -414,7 +441,7 @@ cardRoutes.get("/design", async (c) => {
       </section>
       <section>
         <h2>The bell, the window, the credit</h2>
-        <p class="menu-desc">The bell hands out one common a day to whoever rings; send a wallet and it lands in your binder; send a current pass id and a Regular gets two packs at full odds. The window shows the last ${WINDOW_SIZE} pressings pulled from packs; a pick takes one at half a pack, the seed chooses, and the card moves from the wallet that pulled it to yours. One pick per wallet per ${WINDOW_LOCK_HOURS} hours. If you draw someone else's Stale Passport, that is your problem now.</p>
+        <p class="menu-desc">The bell hands out one common a day to whoever rings; send a wallet and it lands in your binder; send a current pass id and a Regular gets two packs at full odds. The window shows the last ${WINDOW_SIZE} pressings pulled from packs; a pick takes one at half a pack, the seed chooses, and the card moves from the wallet that pulled it to yours. One pick per wallet per ${WINDOW_LOCK_HOURS} hours. If you draw someone else's Stale Passport, that is your problem now. A card you already hold is never in your own draw, and a window holding nothing but your own pack refuses before it quotes you a price.</p>
         <p class="menu-desc">Dupes are the credit economy: ${BURN_RATES["common"]} commons or ${BURN_RATES["uncommon"]} uncommons burn into one pack of credit, spent on a pack or a window pick. Rares never burn. Credit never buys an instrument, a specific card, or cash. The desks: <code>POST /api/paywall/challenge</code>, sign it, then <code>POST /api/paywall/burn</code> or <code>POST /api/paywall/redeem</code>.</p>
         <h3>Conditions, and what clears them</h3>
         <table class="odds"><thead><tr><th>condition</th><th>clears on</th></tr></thead><tbody>${clearRows}</tbody></table>
@@ -504,7 +531,8 @@ cardRoutes.get("/api/paywall/window", async (c) => {
     size: WINDOW_SIZE,
     lock_hours: WINDOW_LOCK_HOURS,
     pick_url: `${base}/api/buy/${WINDOW_ITEM}`,
-    note: window.length === 0 ? "Nobody has opened a pack yet; the window is empty and a pick refuses before payment terms." : "The last pressings pulled from packs here, newest first, plus anything the keeper set out. A pick takes one of them; the seed, not the buyer, says which, and the card moves to the picker's binder.",
+    note: window.length === 0 ? "Nobody has opened a pack yet; the window is empty and a pick refuses before payment terms." : "The last pressings pulled from packs here, newest first, plus anything the keeper set out. A pick takes one of them; the seed, not the buyer, says which, and the card moves to the picker's binder. A pressing you already hold is never in your own draw, and a window holding nothing but your own cards refuses before payment terms.",
+    holders_note: "Each row names its holder. Compare them to your own wallet before paying: you cannot be sold a card you already hold.",
   });
 });
 
@@ -560,7 +588,7 @@ cardRoutes.get("/binder/:wallet{[A-Za-z0-9]+\\.png}", async (c) => {
   const wallet = walletOrNull(c.req.param("wallet").replace(/\.png$/, ""));
   if (!wallet) return c.text("A binder is keyed by a wallet address.", 400);
   const binder = await readBinder(c.env, wallet);
-  const png = renderBinderSheet(new Set(binder.rows.map((row) => row.key)), wallet, c.env.STORE_BASE_URL, binder.conditions);
+  const png = await renderBinderSheet(new Set(binder.rows.map((row) => row.key)), wallet, c.env.STORE_BASE_URL, binder.conditions);
   return c.body(png.buffer as ArrayBuffer, 200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" });
 });
 
@@ -714,7 +742,7 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.png}", async (c) => {
   const cardId = c.req.param("card").replace(/\.png$/, "");
   const record = await getCard(c.env, cardId);
   if (!record) return c.text("No card by that id was ever pressed here.", 404);
-  return c.body(renderShareSheet(record.card, c.env.STORE_BASE_URL, postFor(record.card)).buffer as ArrayBuffer, 200, PNG_HEADERS);
+  return c.body((await renderShareSheet(record.card, c.env.STORE_BASE_URL, postFor(record.card))).buffer as ArrayBuffer, 200, PNG_HEADERS);
 });
 
 cardRoutes.get("/api/card/:card_id", async (c) => {
@@ -735,8 +763,76 @@ cardRoutes.get("/api/pack/:pack_id", async (c) => {
     cards: await Promise.all(record.cards.map((signed) => pressingJson(c, signed))),
     seed_url: `${base}/api/paywall/seed/${record.pack.seed_date}`,
     verify_url: `${base}/api/verify/${record.pack.pack_id}`,
+    page_url: `${base}/pack/${record.pack.pack_id}`,
     note: "Five cards, one manifest, every one signed as pulled. The manifest binds the day's seed commit and the draw inputs; the seed itself is at seed_url the day after, and then the whole pull recomputes. A card the window has since moved shows its current holder at /api/card/{id}.",
   });
+});
+
+/**
+ * THE PACK, FOR A PERSON (2026-09-14, the keeper, having bought one:
+ * "for bots this is probably fine, for humans, its not clear 1. how
+ * many cards you got in the pack 2. how to see the card (there should
+ * be some kind of reveal and then way to view them when you want)
+ * theres no 'button' to share you have to have some knowledge of what
+ * to click").
+ *
+ * The till handed back a signed record and called it delivered, which
+ * is the correct thing to hand an agent and is nothing at all to hand
+ * a person: a JSON blob behind a disclosure triangle, with the five
+ * cards named in the middle of a paragraph and no picture of any of
+ * them. This is the page that was missing. It says FIVE, shows five
+ * faces, gives each one its own share button and its own page, hands
+ * the whole pack one share button of its own, and ends with the link
+ * back to the binder — the answer to "how do I see them when I want".
+ *
+ * Face-down until asked, where scripting allows: `.pack-reveal` turns
+ * the grid over on a click and `prefers-reduced-motion` skips the
+ * flip. With scripting off every card is already face-up, because a
+ * reveal nobody can trigger is a page with no cards on it.
+ */
+cardRoutes.get("/pack/:pack_id{pack_[a-z0-9]+}", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const packId = c.req.param("pack_id");
+  const record = await getPack(c.env, packId);
+  if (!record) return c.text("No pack by that id was ever opened here.", 404);
+  const cards = record.cards.map((signed) => signed.card);
+  const best = [...cards].sort((a, b) => RARITY_ORDER.indexOf(b.rarity) - RARITY_ORDER.indexOf(a.rarity))[0]!;
+  const holder = cards.find((card) => card.holder)?.holder ?? null;
+  const tally = RARITY_ORDER.map((rarity) => ({ rarity, count: cards.filter((card) => card.rarity === rarity).length })).filter((row) => row.count > 0);
+  const packPost = `${cards.length} cards out of a pack at ${CURRENT_SEASON.subtitle}: ${cards.map((card) => card.name).join(", ")}.\n\nBest pull: ${best.name}, ${RARITY_LINES[best.rarity].toLowerCase()}. Drawn under a seed committed before the day started. ${CARD_LINES.tableName}`;
+  const faces = cards
+    .map(
+      (card, index) => `<figure class="pack-card tier-${escapeHtml(card.rarity)}" style="--n:${index}">
+        <a href="/p/${escapeHtml(card.card_id)}"><img src="/p/${escapeHtml(card.card_id)}.svg" width="360" height="504" loading="${index < 2 ? "eager" : "lazy"}" alt="${escapeHtml(card.name)}, ${escapeHtml(RARITY_LINES[card.rarity].toLowerCase())}"></a>
+        <figcaption>
+          <span class="pack-card-name">${escapeHtml(card.name)}</span>
+          <span class="pack-card-meta">${escapeHtml(RARITY_LINES[card.rarity])}${card.card_no ? ` · No. ${String(card.card_no).padStart(2, "0")} / ${CURRENT_SEASON.cards.length}` : ""} · print ${card.print_no}${card.print_cap !== undefined ? ` of ${card.print_cap}` : ""}</span>
+          <span class="share-row"><a class="post-button small" href="${escapeHtml(postIntentUrl(sharePost(card), `${base}/p/${card.card_id}`))}" rel="noopener">${X_GLYPH}Share</a><a class="post-button small post-button-quiet" href="/p/${escapeHtml(card.card_id)}.png" download="${escapeHtml(card.card_id)}.png">Save</a></span>
+        </figcaption>
+      </figure>`,
+    )
+    .join("\n");
+  const dupes = cards.filter((card, index) => cards.findIndex((other) => other.key === card.key) !== index);
+  return c.html(
+    renderSimplePage({
+      title: `A pack of ${cards.length}: ${best.name} and ${cards.length - 1} more`,
+      description: `${cards.length} signed collectible cards pulled from one pack at scvd.store on ${record.pack.date.slice(0, 10)}: ${cards.map((card) => card.name).join(", ")}. Drawn under a day seed committed before the pull and published the morning after.`,
+      path: `/pack/${packId}`,
+      extraCss: DESIGN_CSS,
+      bodyClass: "paywall",
+      ogImage: `${base}/p/${best.card_id}.png`,
+      bodyHtml: `<section>
+        <p class="doctrine">You pulled ${cards.length} cards.</p>
+        <p class="menu-desc">${tally.map((row) => `<strong>${row.count}</strong> ${escapeHtml(row.count === 1 ? RARITY_LINES[row.rarity].toLowerCase() : `${RARITY_LINES[row.rarity].toLowerCase()}s`)}`).join(" · ")}${dupes.length ? ` · ${dupes.length} duplicate${dupes.length === 1 ? ", which burns" : "s, which burn"} into pack credit` : ""}</p>
+        <p><a class="post-button" href="${escapeHtml(postIntentUrl(packPost, `${base}/pack/${packId}`))}" rel="noopener">${X_GLYPH}Share the whole pack</a><a class="post-button post-button-quiet" href="/p/${escapeHtml(best.card_id)}.png" download="${escapeHtml(best.card_id)}.png">Save the image</a>${holder ? `<a class="post-button post-button-quiet" href="/binder/${escapeHtml(holder)}">All your cards</a>` : ""}</p>
+        <p class="menu-meta share-note">${CARD_LINES.saveTheImage}</p>
+        <div class="pack-grid" data-pack-reveal>
+${faces}
+        </div>
+        <p class="menu-meta">Every card above has its own page, its own signature and its own share button; click a face to open it. Pulled ${escapeHtml(record.pack.date.slice(0, 10))} under seed commit <code>${escapeHtml(record.pack.commit.slice(0, 16))}…</code>; the seed itself is published at <a href="/api/paywall/seed/${escapeHtml(record.pack.seed_date)}"><code>/api/paywall/seed/${escapeHtml(record.pack.seed_date)}</code></a> the morning after, and then this whole pull recomputes from public inputs. The signed manifest: <a href="/api/pack/${escapeHtml(packId)}"><code>/api/pack/${escapeHtml(packId)}</code></a>. The set, the odds and another pack: <a href="/design">Paywall</a>.</p>
+      </section>`,
+    }),
+  );
 });
 
 cardRoutes.get("/p/:card_id{card_[a-z0-9]+}", async (c) => {
@@ -763,12 +859,13 @@ cardRoutes.get("/p/:card_id{card_[a-z0-9]+}", async (c) => {
           <img src="/p/${escapeHtml(cardId)}.svg" width="1000" height="1400" alt="${escapeHtml(card.name)}, ${escapeHtml(RARITY_LINES[card.rarity].toLowerCase())}">
           <div>
             <p class="doctrine">${escapeHtml(post)}</p>
-            <p><a class="post-button" href="${escapeHtml(postIntentUrl(sharePost(card), `${base}/p/${cardId}`))}" rel="noopener">${X_GLYPH}Share on X</a></p>
+            <p class="share-row"><a class="post-button" href="${escapeHtml(postIntentUrl(sharePost(card), `${base}/p/${cardId}`))}" rel="noopener">${X_GLYPH}Share on X</a><a class="post-button post-button-quiet" href="/p/${escapeHtml(cardId)}.png" download="${escapeHtml(cardId)}.png">Save the image</a></p>
+            <p class="menu-meta share-note">${CARD_LINES.saveTheImage}</p>
             <p class="menu-desc"><strong>${escapeHtml(card.name)}</strong> · ${escapeHtml(RARITY_LINES[card.rarity])} · ${escapeHtml(TYPE_LINES[card.type])}${card.rail ? ` · ${escapeHtml(card.rail)}` : ""}${card.card_no ? ` · No. ${String(card.card_no).padStart(2, "0")} of ${CURRENT_SEASON.cards.length}` : ""} · print ${card.print_no}${card.print_cap !== undefined ? ` of ${card.print_cap}` : ""}</p>
             <p class="menu-desc"><em>${escapeHtml(card.line)}</em></p>
             ${card.door_hash ? `<p class="menu-meta">A numbered Door: the endpoint is shown as its hash, <code>${escapeHtml(card.door_hash.slice(0, 16))}…</code>, and its observation count, ${card.observations ?? 0}, which is also this card's cap. Never the URL.</p>` : ""}
             ${burn ? `<p class="weather">${escapeHtml(CARD_LINES.clearedMark)}: ${burn.burn.cleared_by === "credit" ? "burned into pack credit by its holder" : burn.burn.cleared_by === "idempotency" ? "cleared by a purchase carrying an idempotency key" : `cleared by buying ${escapeHtml(getMenuItem(burn.burn.cleared_by)?.name ?? burn.burn.cleared_by)}`} on ${escapeHtml(burn.burn.at.slice(0, 10))}. The pressing stays signed; so does the burn.</p>` : ""}
-            <p class="menu-meta">Depicts <a href="${escapeHtml(card.cite)}"><code>${escapeHtml(card.cite)}</code></a>. Pressed ${escapeHtml(card.date.slice(0, 10))} from the ${escapeHtml(card.source)}${card.pack_id ? `, slot ${card.slot} of <a href="/api/pack/${escapeHtml(card.pack_id)}"><code>${escapeHtml(card.pack_id)}</code></a>` : ""}${card.commit ? `, under seed commit <code>${escapeHtml(card.commit.slice(0, 16))}…</code>` : ""}.${card.holder ? ` Held by <a href="/binder/${escapeHtml(card.holder)}"><code>${escapeHtml(card.holder)}</code></a>${card.transfers ? `, moved through the window ${card.transfers} time${card.transfers === 1 ? "" : "s"}` : ""}.` : ""}</p>
+            <p class="menu-meta">Depicts <a href="${escapeHtml(card.cite)}"><code>${escapeHtml(card.cite)}</code></a>. Pressed ${escapeHtml(card.date.slice(0, 10))} from the ${escapeHtml(card.source)}${card.pack_id ? `, slot ${card.slot} of <a href="/pack/${escapeHtml(card.pack_id)}">the pack it came in</a>` : ""}${card.commit ? `, under seed commit <code>${escapeHtml(card.commit.slice(0, 16))}…</code>` : ""}.${card.holder ? ` Held by <a href="/binder/${escapeHtml(card.holder)}"><code>${escapeHtml(card.holder)}</code></a>${card.transfers ? `, moved through the window ${card.transfers} time${card.transfers === 1 ? "" : "s"}` : ""}.` : ""}</p>
             <p class="menu-meta">Signature ${valid ? "verifies" : "does NOT verify"} against the store's key: <a href="/api/verify/${escapeHtml(cardId)}"><code>/api/verify/${escapeHtml(cardId)}</code></a>. The share sheet: <a href="/p/${escapeHtml(cardId)}.png"><code>/p/${escapeHtml(cardId)}.png</code></a>; the face as PNG, to post as a picture: <a href="/p/${escapeHtml(cardId)}.face.png"><code>/p/${escapeHtml(cardId)}.face.png</code></a>. The set, the odds and a pack of your own: <a href="/design">Paywall</a>.</p>
           </div>
         </div>
