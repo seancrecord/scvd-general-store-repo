@@ -1,5 +1,26 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-15 — Confidence review and compatibility correction
+
+The initial catalog patch renamed `store.zodiac`. Retain that original
+field and URL as a compatibility alias beside `zodiac_archive`; archive
+labeling does not justify removing a published field. The regression
+was demonstrated failing on the PR before restoring the alias.
+
+Rechecked [OpenAPI latest (3.2.1)](https://spec.openapis.org/oas/v3.2.1.html)
+and the [llms.txt v2 proposal](https://llmstxt.org/), plus Coinbase's
+[current discovery requirements](https://docs.cdp.coinbase.com/x402/seller/get-discovered)
+and [MCP's served 2026-07-28 tool contract](https://modelcontextprotocol.io/specification/2026-07-28/server/tools).
+The first pass read OpenAPI 3.1.1, not the newest published revision;
+our emitted contract remains 3.1.0. Examples, bounded path enums and
+operation deprecation remain defined constructs in the newer version.
+MCP keeps functionality descriptions separate from input/output schemas;
+the numeric description and catalog budgets are ours, not MCP limits.
+The llms.txt proposal favors a concise index with linked detail and
+specifies no universal 30,000-character threshold. These checks do not
+prove Forge will expand path enums or that shorter descriptions improve
+agent conversion. No MPP implementation was changed or validated.
+
 ## 2026-09-15 — Current offerings, archive scope and reading budgets
 
 Read the [llms.txt proposal](https://llmstxt.org/),

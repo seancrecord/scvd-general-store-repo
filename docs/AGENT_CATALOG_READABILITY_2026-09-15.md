@@ -71,3 +71,21 @@ passed and one existing test was skipped. This report describes the
 PR change; it does not claim the changes are deployed.
 These tests do not establish Forge's probing algorithm or marketplace
 acceptance, and no purchase is needed for this work.
+
+## Confidence review before merge
+
+The review found one avoidable compatibility risk: `menu.store.zodiac`
+was renamed. The follow-up retains its original URL and field beside
+`zodiac_archive`, while the linked reader remains explicitly archived.
+The compatibility regression failed before the alias was restored;
+all 16 focused catalog/archive tests and the typecheck pass afterward.
+The full-suite follow-up passed all 715 files: 14,064 tests passed,
+with one existing skip.
+
+The runtime regex refactors retain the same lexical rules. Payment
+amounts, optional tiers, settlement, signatures, refunds, queue behavior,
+and the original Zodiac calendar and content were not changed. Moving
+selection prose into linked detail is a readability tradeoff; neither
+that change nor standards-valid path enums prove how Forge will behave.
+Fresh primary-source checks and the OpenAPI version qualification are
+recorded in SPEC_READS.md. No MPP implementation was changed or tested.

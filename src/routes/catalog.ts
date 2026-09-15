@@ -306,6 +306,8 @@ catalogRoutes.get("/menu.json", async (c) => {
       corrections: `${base}/corrections`,
       item_detail: `${base}/menu/{item_id} (JSON, or markdown per Accept)`,
       operator_glance: `${base}/what (for the human whose agent is here)`,
+      // Retain the original field for clients; its reader now labels itself archived.
+      zodiac: `${base}/zodiac`,
       zodiac_archive: `${base}/zodiac/archive`,
       mcp: `${base}/mcp (streamable HTTP; tools/list free, buy_* tools x402-paid in-band)`,
     },

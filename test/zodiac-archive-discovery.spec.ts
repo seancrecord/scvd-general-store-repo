@@ -34,7 +34,7 @@ describe("Zodiac stays an archive on every retained discovery surface", () => {
     }
     const menu = record(await (await read("/menu.json")).json());
     const docs = record(menu.store);
-    expect(docs.zodiac).toBeUndefined();
+    expect(docs.zodiac).toBe(`${BASE}/zodiac`);
     expect(docs.zodiac_archive).toBe(`${BASE}/zodiac/archive`);
   });
 });

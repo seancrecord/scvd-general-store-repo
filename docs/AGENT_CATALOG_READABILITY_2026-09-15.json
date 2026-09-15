@@ -35,7 +35,8 @@
     "final_archive_focused": "61 tests passed: archive labels, retained readers, title identity, complete-guide digest and reading budgets",
     "zodiac_baseline_regressions": "All 3 archive-discovery tests failed before the Zodiac surface corrections.",
     "typecheck": "passed",
-    "worker_bundles": "both dry-run bundles passed"
+    "worker_bundles": "both dry-run bundles passed",
+    "compatibility_followup": "Original store.zodiac field retained. Regression failed before correction; 16 focused tests and typecheck passed afterward. Full suite passed: 715 files; 14,064 tests passed, 1 skipped."
   },
   "live_release_witness": {
     "self_preflight": {
