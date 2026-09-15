@@ -443,6 +443,12 @@ Skills discovery index (Agent Skills Discovery RFC v0.2.0: both skills,
 each with the SHA-256 digest of the file it points at):
 ${base}/.well-known/agent-skills/index.json — the digested copies at
 \`${base}/.well-known/agent-skills/{name}/SKILL.md\`
+OASF record (AGNTCY Agent Directory, schema 1.1.0): ${base}/agents/general-store
+— the store's skills, domains and both MCP connections in the taxonomy a
+federated directory matches on, derived from the same catalogue /mcp
+answers tools/list from. Also at ${base}/.well-known/oasf.json. Unsigned:
+a record fetched from here is a claim by whoever controls this hostname,
+which is exactly as much as an unsigned record ever proves.
 OpenAPI 3.1 contract: ${base}/openapi.json
 The free instruments as function-calling tools, one worked call each,
 derived from the MCP catalog: ${base}/openapi-tools.json

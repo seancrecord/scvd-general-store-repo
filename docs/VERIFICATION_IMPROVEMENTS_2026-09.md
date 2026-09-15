@@ -1,5 +1,15 @@
 # Verification improvements — September 8, 2026
 
+September 15 release: Launch Check screen evidence merged in PR #700
+(`8483d147`). Full PR CI passed 712 files / 14,030 tests, one existing skip;
+main CI and both Cloudflare builds passed. Public reads confirmed the new
+deployment's fixture metadata, an unpaid 402 and a missing-record 404. No
+fresh paid issuance or production latency result is claimed. The
+[feature record](LAUNCH_CHECK_SCREEN_EVIDENCE_2026-09.md#release-result--september-15)
+contains the evidence and remaining observation limits. Earlier entries
+below are dated preparation and qualification, not the current release state.
+
+
 September 15 release preparation: the feature is committed as `b73ac8f4`
 and integrated with main `bf52db66` for PR review. Typecheck, 52 focused
 tests, door tests, documentation checks and both bundles pass on the

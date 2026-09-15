@@ -1,5 +1,12 @@
 import { LATEST_PROTOCOL } from "@/routes/mcp";
 import { A2A_PROTOCOL_VERSION } from "@/lib/a2a-validation.js";
+import {
+  OASF_DOMAINS,
+  OASF_RECORD_PATH,
+  OASF_SKILLS,
+  OASF_TAXONOMY_TAG,
+} from "@/lib/oasf-record";
+import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
 import { STORE_CONTACT_EMAIL, STORE_SERVICE_NAME } from "@/store/metadata";
 import { registryDescription } from "@/store/identity-lead";
 
@@ -56,20 +63,21 @@ export const ERC8004_REGISTRATION_TYPE =
 export const AGENT_REGISTRATION_PATH = "/.well-known/agent-registration.json";
 
 /**
- * The store's agent, as minted. The registry string is
- * `{namespace}:{chainId}:{identityRegistry}` per the ERC — the
- * ERC-8004 Identity Registry on Base mainnet, EIP-55 checksummed
- * because a registry that string-compares a lowercase address
- * against its own checksummed one finds no match.
+ * The store's agent, as minted. The values live in
+ * store/agent-identity — they are data about who this store is, and
+ * this module cannot be imported outside the Worker (see the note
+ * there). Re-exported so every reader that learned them here keeps
+ * working.
  */
-export const SCVD_AGENT_ID = 86957;
-export const SCVD_AGENT_REGISTRY =
-  "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+export { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY };
 
 interface RegistrationService {
   name: string;
   endpoint: string;
   version?: string;
+  /** OASF taxonomy names, on the one entry that carries them. */
+  skills?: string[];
+  domains?: string[];
 }
 
 /**
@@ -136,6 +144,37 @@ export function agentRegistrationFile(base: string): Record<string, unknown> {
      * this registration file should be able to reach the key that
      * signs our artifacts without guessing the convention.
      */
+    /**
+     * THE OASF ENTRY, and the one place this file departs from the
+     * ERC-8004 best-practices example on purpose.
+     *
+     * That example points `endpoint` at `https://github.com/agntcy/
+     * oasf/` — the taxonomy's own repository. Here it points at this
+     * store's OASF record instead, because the test below holds every
+     * https endpoint in this file to THIS origin, and it holds it for
+     * a reason: the domain-verification half of this document only
+     * works if every endpoint named in it is on the host serving it.
+     * An endpoint on github.com would need its own
+     * agent-registration.json over there, which we cannot publish.
+     *
+     * Nothing is lost by the swap. `version` still names the taxonomy
+     * release the names below were read from, and the record at the
+     * endpoint declares the same rows with their ids and says where
+     * it read them. A reader following this entry lands on the OASF
+     * document for this agent rather than on the schema it uses,
+     * which is the more useful of the two anyway.
+     *
+     * The rows are the record's own. Two lists of taxonomy names that
+     * could disagree is the defect this store sells a desk for
+     * finding in other people's metadata.
+     */
+    {
+      name: "OASF",
+      endpoint: `${base}${OASF_RECORD_PATH}`,
+      version: OASF_TAXONOMY_TAG,
+      skills: OASF_SKILLS.map((skill) => skill.name),
+      domains: OASF_DOMAINS.map((domain) => domain.name),
+    },
     { name: "DID", endpoint: `did:web:${host}`, version: "v1" },
     { name: "email", endpoint: STORE_CONTACT_EMAIL },
   ];
