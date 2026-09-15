@@ -24,6 +24,14 @@ export const PORCH_EXACT = new Map<string, string>([
   // would hide which one agents actually ask.
   ["/api/catalog/v1", "catalog-search"],
   ["/skill.md", "skill.md"],
+  /**
+   * THE OASF RECORD, one row for one document served at two paths.
+   * /.well-known/oasf.json already buckets under "well-known"; the
+   * name-shaped path is the one a directory resolves and a human
+   * pastes, and "did anyone actually read our record" is a different
+   * question from "did a scanner sweep /.well-known".
+   */
+  ["/agents/general-store", "oasf-record"],
   // The execution-contract give-away's 30-day gate is "did anyone
   // organically fetch or reference this" — a porch row, not a feeling.
   ["/skills/execution-contract.md", "execution-contract"],
@@ -270,6 +278,7 @@ const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
   "openapi.json": "storefront",
   rails: "storefront",
   "well-known": "storefront",
+  "oasf-record": "storefront",
   zodiac: "storefront",
   onpage: "instrument",
   claims: "instrument",
