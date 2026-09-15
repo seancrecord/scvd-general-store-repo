@@ -1,4 +1,5 @@
 import { buyerLinks } from "@/lib/buyer-contract";
+import { chainIdentity, identitySurfaces } from "@/store/chain-identity";
 import { MENU_ITEMS } from "@/store/menu";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
 import { ROOMS } from "@/store/rooms";
@@ -380,6 +381,20 @@ export function buildAtlas(base: string): Record<string, unknown> {
         url: `${base}${room.path}`,
         name: room.name,
       })),
+    },
+    /**
+     * WHO IS ANSWERING, for the reader that arrived here first.
+     *
+     * The atlas is the document written for an agent that has just
+     * discovered this origin and wants to know what it can call. "Who
+     * is this" is the question immediately before that one, and the
+     * answer used to live only in documents a reader had to know the
+     * convention to find. The identity block routes to all of them,
+     * and the chain block is the half that can be checked without us.
+     */
+    identity: {
+      ...chainIdentity(base),
+      surfaces: identitySurfaces(base),
     },
     also: {
       guide: `${base}/llms.txt`,
