@@ -188,6 +188,7 @@ const ARTIFACT_READ_PREFIXES = [
   "/api/card/",
   "/api/pack/",
   "/pack/",
+  "/bell",
   "/api/paywall/binder/",
   "/api/paywall/releases",
   "/api/paywall/seed/",

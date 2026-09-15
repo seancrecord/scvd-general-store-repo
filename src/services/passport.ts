@@ -17,6 +17,8 @@ import { readPassportRefresh } from "@/services/passport-refresh";
 import { signMessage } from "@/lib/signing";
 import { subjectHistory, type SubjectHistory } from "@/services/subject-history";
 import type { Env } from "@/types";
+import { PASSPORT_PROTOCOL_RULE, passportProtocolOf, protocolFailures, protocolVerdict, type PassportProtocol, type ProtocolEvidence } from "@/services/passport-protocol";
+import type { MppCensusReading } from "@/services/mpp-census";
 
 export type { PassportModule };
 
@@ -113,7 +115,7 @@ export function decisionOf(freshness: FreshnessState): AgentDecision {
  * reader never has to guess what this store means by READY. */
 export const DECISION_MEANING: Record<AgentDecision, string> = {
   READY:
-    "The latest observation found a working x402 door and the evidence has not expired. This is the evidence saying go ahead — it is not a promise that the door will deliver, and it says nothing about what happens after payment.",
+    "The latest observation passed the checks for the passport's named protocol and the evidence has not expired. Use a client that supports that protocol. This is not a promise that the door will deliver, and it says nothing about what happens after payment.",
   NOT_READY:
     "The latest observation found the door failing. Do not treat this host as payable on our evidence. Refusal is the honest read: something we could check did not work when we checked it.",
   EXPIRED:
@@ -136,6 +138,7 @@ export const DECISION_RULE = `fresh or aging -> READY; broken -> NOT_READY; expi
  * could rewrite freely.
  */
 export interface PassportSummary {
+  protocol?: PassportProtocol;
   /** The four-word read, a total function of `status` below. */
   decision: AgentDecision;
   decision_rule: string;
@@ -174,6 +177,10 @@ export interface PassportSummary {
 }
 
 export interface PassportPayload {
+  protocol?: PassportProtocol;
+  protocols_spoken?: string[];
+  protocol_rule?: string;
+  protocol_tiers?: Partial<Record<PassportProtocol, TierReading>>;
   artifact: "endpoint_passport";
   host: string;
   /** The three-answer read; every value derived from the fields below. */
@@ -187,6 +194,10 @@ export interface PassportPayload {
   tier?: TierReading;
   /** Latest observed verdict and when. */
   latest: {
+    /** The unchanged verdict on the underlying x402 observation. */
+    x402_verdict?: string | null;
+    x402_failed?: string[];
+    mpp?: MppCensusReading;
     verdict: string;
     observed_at: string | null;
     week: string | null;
@@ -238,7 +249,7 @@ export type PassportOutcome =
        * finding against the host, and we do not upgrade it to ready
        * either — there is no verdict here until the next walk.
        */
-      reason: "never-observed" | "not-ready" | "retracted-reading";
+      reason: "never-observed" | "not-ready" | "retracted-reading" | "protocol-unmeasured";
       detail: string;
       /** Present on `retracted-reading`: the correction that withdrew it. */
       correction_date?: string;
@@ -271,6 +282,7 @@ function summarize(parts: {
    * it, never a second list — which is why the modules are computed
    * before the summary in both issuers rather than after. */
   modules: readonly PassportModule[];
+  protocolGaps?: readonly string[];
 }): PassportSummary {
   const ageDays =
     parts.observedAt === null
@@ -281,6 +293,7 @@ function summarize(parts: {
             86_400_000,
         );
   return {
+    protocol: parts.tier?.protocol ?? "x402",
     decision: decisionOf(parts.freshness),
     decision_rule: DECISION_RULE,
     status: parts.freshness,
@@ -288,7 +301,7 @@ function summarize(parts: {
     observed_at: parts.observedAt,
     valid_until: parts.expires,
     evidence_age_days: ageDays,
-    ...(parts.tier ? { tier: parts.tier.tier, tier_line: parts.tier.line } : {}),
+    ...(parts.tier ? { tier: parts.tier.tier, tier_line: parts.tier.line, protocol: parts.tier.protocol } : {}),
     ...(parts.offer
       ? {
           networks: parts.offer.networks,
@@ -301,12 +314,29 @@ function summarize(parts: {
         }
       : {}),
     failed: parts.failed,
-    not_observed: notObservedFrom(parts.modules),
+    not_observed: [...new Set([...notObservedFrom(parts.modules), ...(parts.protocolGaps ?? [])])].sort(),
     verify:
       "ed25519_verify(utf8(signed_payload), hex(signature), hex(public_key)); the key and its Bitcoin-anchored history are at /.well-known/scvd-signing-key.",
     history_url: `${parts.base}/corpus/host/${parts.host}.json`,
     corrections_url: `${parts.base}/corrections`,
   };
+}
+
+export interface EffectivePassportObservation extends EffectiveObservation {
+  protocol: PassportProtocol;
+  protocol_evidence: ProtocolEvidence | undefined;
+  x402_verdict: string | null;
+}
+
+/** Passport eligibility is a union; the underlying x402 observation never changes. */
+export async function effectivePassportObservation(env: Env, host: string, now: Date = new Date()): Promise<EffectivePassportObservation> {
+  const observation = await effectiveObservation(env, host, now);
+  const evidence = observation.refreshIsNewest ? observation.refresh ?? undefined : observation.latestProbed;
+  const protocol = passportProtocolOf(evidence);
+  return { ...observation, protocol, protocol_evidence: evidence, x402_verdict: observation.verdict,
+    verdict: protocolVerdict(evidence, protocol),
+    failed: protocolFailures(evidence, protocol),
+    offer: protocol === "x402" ? observation.offer : undefined };
 }
 
 function expiryFrom(lastObserved: string): string {
@@ -421,7 +451,7 @@ export async function issuePassport(
 ): Promise<PassportOutcome> {
   const base = env.STORE_BASE_URL;
   const host = rawHost.trim().toLowerCase();
-  const observation = await effectiveObservation(env, host, now);
+  const observation = await effectivePassportObservation(env, host, now);
   const { history, latestProbed, refresh, refreshIsNewest } = observation;
   const effectiveVerdict = observation.verdict ?? undefined;
   if (observation.never_observed) {
@@ -432,6 +462,10 @@ export async function issuePassport(
     };
   }
   if (effectiveVerdict !== "ready") {
+    if (observation.verdict === null || observation.protocol_evidence?.mpp_read_error) {
+      return { issued: false, reason: "protocol-unmeasured",
+        detail: `${host} has no passing supported-protocol reading in its latest observation, and the MPP reading is unavailable or incomplete. That is a gap in our evidence, not a finding that the door failed. The next census pass or a fresh check can supply a new observation.` };
+    }
     /*
      * A VERDICT WHOSE CHECK WE WITHDREW IS NOT A VERDICT (2026-09-05,
      * rule 56). The row stays in the chain as walked; what stops is
@@ -464,14 +498,14 @@ export async function issuePassport(
   const offer = observation.offer;
   const latest = refreshIsNewest
     ? {
-        verdict: refresh!.verdict,
+        verdict: effectiveVerdict,
         observed_at: refresh!.observed_at,
         week: null,
         source:
           "paid refresh — buyer-commissioned, census instrument; same probe, same rules, no favor",
       }
     : {
-        verdict: latestProbed!.verdict!,
+        verdict: effectiveVerdict,
         observed_at: lastObserved,
         week: latestProbed!.week,
         ...(offer
@@ -498,9 +532,24 @@ export async function issuePassport(
     tierInputFromHistory(history, observation),
     `${base}/criteria`,
   );
+  const protocol_tiers: Partial<Record<PassportProtocol, TierReading>> = {};
+  for (const protocol of ["x402", "mpp"] as const) {
+    const seen = protocol === "x402"
+      ? observation.protocol === "x402" || observation.protocol_evidence?.protocols_spoken?.includes("x402") || history.timeline.some(row => row.verdict === "ready" || row.protocols_spoken?.includes("x402"))
+      : observation.protocol_evidence?.mpp?.spoken || history.timeline.some(row => row.mpp?.spoken);
+    if (!seen) continue;
+    protocol_tiers[protocol] = deriveTier(tierInputFromHistory(history, {
+      ...observation, protocol, verdict: protocolVerdict(observation.protocol_evidence, protocol),
+    }), `${base}/criteria`);
+  }
+  const mpp = observation.protocol_evidence?.mpp;
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
+    protocol: observation.protocol,
+    ...(observation.protocol_evidence?.protocols_spoken ? { protocols_spoken: [...observation.protocol_evidence.protocols_spoken] } : {}),
+    protocol_rule: PASSPORT_PROTOCOL_RULE,
+    protocol_tiers,
     summary: summarize({
       base,
       host,
@@ -513,13 +562,15 @@ export async function issuePassport(
       failed: observation.failed,
       tier,
       modules,
+      ...(mpp?.spoken ? { protocolGaps: [...mpp.what_this_cannot_tell_you, "MPP challenge binding was not verified."] } : {}),
     }),
     issued_at: issuedAt,
     expires,
     freshness,
     freshness_rule: `fresh <= ${FRESH_DAYS} days since last observation, aging <= ${AGING_DAYS}, expired after; broken when the latest verdict is not ready; refuse expired passports.`,
     tier,
-    latest,
+    latest: { ...latest, x402_verdict: observation.x402_verdict,
+      x402_failed: observation.protocol_evidence?.failed ?? [], ...(mpp ? { mpp } : {}) },
     history: {
       first_observed: history.first_observed,
       rounds_probed: history.rounds_probed,

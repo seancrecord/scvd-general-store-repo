@@ -117,8 +117,12 @@ ${STORE_METADATA.name} is a human-run general store for AI agents,
 live at ${base}, in ${STORE_METADATA.location}. Commerce protocol:
 **x402** (not UCP) over HTTP, settling ${STORE_METADATA.currency} on
 a network offered in the current payment quote. Two doors, same catalog: an
-HTTP door and an MCP door. Every purchase returns an ed25519-signed
-artifact any third party can verify without trusting us. Money also
+HTTP door and an MCP door. Menu goods end in an ed25519-signed
+artifact any third party can verify without trusting us; human-fulfilled
+orders first return a queue ticket. Publication pages return markdown
+with PAYMENT-RESPONSE and private Purchase-Recovery headers, not a
+per-purchase certificate. The Almanac is current; Gazette and Zodiac
+collections are archives, available separately from the active shelf. Money also
 runs the other way: the bounty board at ${base}/bounties pays your
 wallet to walk other operators' x402 doors (board JSON at
 ${base}/api/bounties; the terms are on the board and further down

@@ -1,3 +1,5 @@
+import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
+import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { MPP_CORE_BATTERY, MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
 import { PURCHASE_RECOVERY_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
 import { AUDIT_REPORT_VERDICT, GOOD_BUYER_REPORT_VERDICT, LAUNCH_REPORT_VERDICT, ONPAGE_REPORT_VERDICT, RECONCILIATION_REPORT_VERDICT } from "@/lib/report-verdicts";
@@ -31,7 +33,7 @@ import {
   PREFLIGHT_VERSIONS,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
-import { buyInputSchema, itemsRequiring } from "@/lib/bazaar-discovery";
+import { buyInputSchema, buyInputExample, itemsRequiring } from "@/lib/bazaar-discovery";
 import {
   pennyPageTiersUsdc,
   SIGNING_WINDOW_SECONDS,
@@ -39,6 +41,7 @@ import {
   priceTiersUsdc,
 } from "@/lib/payments";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { listAlmanacEntries } from "@/services/almanac-store";
 import { API_VERSIONS, isRetiring } from "@/store/api-lifecycle";
 import {
   TAB_DELTA_FIELDS,
@@ -47,7 +50,6 @@ import {
   TAB_SIGNUP_FRICTION,
 } from "@/store/tab-pool";
 import { CAPABILITY_QUERY } from "@/store/spec";
-import { listIssues } from "@/services/gazette";
 import {
   MENU_ITEMS,
   STORE_CONTACT_EMAIL,
@@ -338,6 +340,7 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
  */
 export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
   "/health": "no-store by design: a liveness line that must never be a cached yes",
+  "/bell": "an HTML room, not a machine-readable document: lib/conditional-get.ts tags the representations an agent polls, and this GET exists to put a form in front of a person. The bell's machine door is POST /api/bell, which is outside conditional GET by method.",
 };
 const NO_STORE_PREFIXES = ["/api/buy/", "/api/order/", "/api/phantom/", "/api/commission/pay/"];
 
@@ -461,6 +464,18 @@ function inlineSharedResponse(response: OpenApiObject): OpenApiObject {
 
 const MARKDOWN_RESPONSE: OpenApiObject = {
   content: { "text/markdown": { schema: { type: "string" } } },
+};
+
+/**
+ * A door that answers a PERSON. The bell's room is the first of these
+ * in the contract, and it is declared as what it serves rather than
+ * wrapped in the JSON helper: a generated client that reads
+ * {"type":"object"} here would learn that a web page is a JSON object,
+ * which is worse than learning nothing. The machine door for the same
+ * bell is POST /api/bell and carries a real schema.
+ */
+const HTML_RESPONSE: OpenApiObject = {
+  content: { "text/html": { schema: { type: "string" } } },
 };
 
 /**
@@ -3230,6 +3245,7 @@ const ZODIAC_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["week", "signs"],
   properties: {
+    status: { type: "string", const: ZODIAC_STATUS },
     week: { type: "string" },
     season_week: { type: "integer" },
     signs: {
@@ -3255,6 +3271,7 @@ const ZODIAC_ARCHIVE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["pages"],
   properties: {
+    status: { type: "string", const: ZODIAC_STATUS },
     archive: { type: "string" },
     pages: {
       type: "array",
@@ -3471,6 +3488,7 @@ const ZODIAC_READING_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["address", "sign", "week"],
   properties: {
+    status: { type: "string", const: ZODIAC_STATUS },
     address: { type: "string" },
     sign: { type: "string" },
     sign_id: { type: "string" },
@@ -4960,7 +4978,7 @@ const PAYMENT_REQUIRED_SCHEMA: OpenApiObject = {
     price_usdc: {
       type: "number",
       description:
-        "The flat price, on the penny pages — the almanac and gazette doors, which are single-price and send this instead of min_price_usdc.",
+        "The minimum page price. Publication doors send this instead of min_price_usdc; higher offered tiers buy the same page and add a tip.",
     },
     pay_more_if_you_like: {
       type: "string",
@@ -5245,6 +5263,7 @@ function pathParam(
  */
 function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
   const schema = buyInputSchema(item);
+  const example = buyInputExample(item);
   const required = new Set(schema.required ?? []);
   const parameters = Object.entries(schema.properties).map(
     ([name, definition]) => {
@@ -5258,6 +5277,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
         in: "query",
         ...(required.has(name) ? { required: true } : {}),
         schema: rest,
+        ...(Object.hasOwn(example, name) ? { example: example[name] } : {}),
         ...(description ? { description } : {}),
       };
     },
@@ -5454,10 +5474,8 @@ function buyOperation(env: Env, items: readonly MenuItem[]): OpenApiObject {
 
 openapiRoutes.get("/openapi.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  // Only issues that exist get a path. A route with no instances is
-  // documentation, not a resource, and a registry probing it finds a
-  // 404 and holds it against us.
-  const issues = await listIssues(c.env).catch(() => []);
+  // Current pages share a finite enum; archived writing stays behind its index.
+  const almanac = await listAlmanacEntries(c.env);
   const document: OpenApiObject = {
     openapi: "3.1.0",
     info: {
@@ -6029,6 +6047,48 @@ openapiRoutes.get("/openapi.json", async (c) => {
             },
           },
         ),
+      },
+      "/bell": {
+        get: {
+          ...freeOp(
+            "The bell, as a room a person can walk into",
+            "Free, no account and no wallet. Answers HTML, not JSON: GET renders the bell with a form, and POST /bell rings it and renders the card you got with its share and save buttons. Agents want POST /api/bell or the ring_bell tool instead — this pair exists because a door that changes something cannot be a link, and the front page needed one a human could tap.",
+          ),
+          responses: {
+            "200": { description: "The bell, as a page.", ...HTML_RESPONSE },
+            ...COMMON_RESPONSES,
+          },
+          parameters: [
+            {
+              name: "wallet",
+              in: "query",
+              required: false,
+              schema: { type: "string", maxLength: 64 },
+              description:
+                "Prefills the form's wallet field so a daily ring is a bookmark and one tap. A preference, not an action: this GET rings nothing, and an address that is not one is dropped rather than echoed back.",
+            },
+          ],
+        },
+        post: {
+          ...postOp(
+            "Ring the bell from a browser",
+            "Free. One ring a visitor a day, one common pressing. Takes a form body, not JSON, and answers HTML: the card you got, its share button and its PNG. The wallet field is optional — without one the pressing hangs at its own page; with one it lands in a binder and the daily streak counts. POST /api/bell is the JSON door and is unchanged.",
+            "An optional wallet, as a form field.",
+            { type: "object", additionalProperties: false, properties: { wallet: { type: "string", maxLength: 64 } } },
+          ),
+          requestBody: {
+            required: false,
+            content: {
+              "application/x-www-form-urlencoded": {
+                schema: { type: "object", additionalProperties: false, properties: { wallet: { type: "string", maxLength: 64, description: "Optional. Where the pressing lands, and what the daily streak counts on." } } },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "The card you just rang for, as a page.", ...HTML_RESPONSE },
+            ...COMMON_RESPONSES,
+          },
+        },
       },
       "/api/paywall/releases": {
         get: returns(
@@ -7663,36 +7723,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/zodiac": {
-        get: returns(
-  freeOp("The Systems Almanac", "The twelve signs, free."),
-          ZODIAC_SCHEMA,
-        ),
+        get: { ...returns(freeOp("Archived Systems Almanac", ZODIAC_ARCHIVE_NOTICE), ZODIAC_SCHEMA), deprecated: true },
       },
       "/zodiac/{address}": {
         get: {
-          ...returns(
-  freeOp(
-              "A wallet's sign and the current week's page",
-              "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
-            ),
-            ZODIAC_READING_SCHEMA,
-          ),
-          parameters: [
-            pathParam(
-              "address",
-              "A wallet address on any rail: 0x + forty hex characters (Base and Polygon share EVM addresses), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
-            ),
-          ],
+          ...returns(freeOp("Archived wallet-sign reader", ZODIAC_ARCHIVE_NOTICE), ZODIAC_READING_SCHEMA),
+          deprecated: true,
+          parameters: [pathParam("address", "A 0x address with forty hex characters, or an exact case-sensitive base58 Solana address.")],
         },
       },
       "/zodiac/archive": {
-        get: returns(
-  freeOp(
-            "The Almanac archive index",
-            "Past season weeks, listed free, with the URL of every page that exists. Each page is a penny over x402 at /zodiac/archive/{sign}/week-{week}, and they are listed here rather than in this contract because the set grows every week the calendar turns.",
-          ),
-          ZODIAC_ARCHIVE_SCHEMA,
-        ),
+        get: {
+          ...returns(freeOp("Systems Almanac archive index",
+            "Archived Season One pages, outside the active catalog. This free index lists available paid URLs and checkout terms; it is not a promise of new editions."), ZODIAC_ARCHIVE_SCHEMA),
+          deprecated: true,
+        },
       },
       ...buyPaths(c.env, MENU_ITEMS),
       "/api/catalog/v1": {
@@ -7744,6 +7789,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
                   },
                 },
                 how_this_was_ordered: { type: "string" },
+                scope: { type: "string", enum: ["active_menu"] },
+                publications: PUBLICATION_COLLECTIONS_SCHEMA,
                 whole_catalogue: { type: "string", format: "uri" },
               },
             },
@@ -7857,21 +7904,20 @@ openapiRoutes.get("/openapi.json", async (c) => {
           description: `A dated journal page as markdown, one penny over x402. Written ${entry.date}.`,
         })),
       ),
+      "/almanac/{slug}": {
+        get: {
+          ...paidOp(c.env, "Read a current Almanac page",
+            "A keeper journal page as markdown. Choose a current slug from the free /almanac index; the enum is refreshed with that index on each contract read.",
+            pennyPageTiersUsdc(), true),
+          parameters: [pathParam("slug", "A currently published Almanac page.", almanac.map(entry => entry.slug))],
+        },
+      },
       "/gazette": {
         get: returns(
-  freeOp("Gazette index", "Free index of published issues."),
+  freeOp("Gazette archive index", "Free index of archived issues. Archived pages are opt-in and are not part of the active paid catalog."),
           GAZETTE_SCHEMA,
         ),
       },
-      ...pennyPagePaths(
-        c.env,
-        issues.map((issue) => ({
-          path: `/gazette/issue-${issue.issue_number}`,
-          summary: `Gazette no. ${issue.issue_number}: ${issue.title}`,
-          description:
-            "A published issue as markdown, a penny a copy, contributors credited.",
-        })),
-      ),
       "/api/guestbook": {
         get: returns(
           freeOp(
@@ -8349,7 +8395,7 @@ export function stampCollections(document: OpenApiObject): void {
  * pattern here, and an agent reading it had to learn the states by
  * watching them go by.
  *
- * Stamped on the poll endpoint and on every paid operation, because
+ * Stamped on the poll endpoint and on queued menu purchases, because
  * the buy is where a caller first meets the job and the poll is where
  * it finishes. The states come from the array the OrderStatus type is
  * derived from, so the contract cannot enumerate a state the code will
@@ -8379,14 +8425,15 @@ export function stampAsyncJob(document: OpenApiObject): void {
       if (typeof operation !== "object" || operation === null) continue;
       const op = operation as OpenApiObject;
       const isPoll = path === ASYNC_JOB.poll_url_template;
-      if (!isPoll && !op["x-payment"]) continue;
+      const queued = MENU_ITEMS.some(item => item.fulfillment === "human_queue" && path === `/api/buy/${item.id}`);
+      if (!isPoll && (!queued || !op["x-payment"])) continue;
       op["x-async-job"] = {
         ...ASYNC_JOB,
         role: isPoll ? "poll" : "start",
         ...(isPoll
           ? {}
           : {
-              note: "Instant items complete in this response (status 'completed'); human-fulfilled items come back queued and finish at the poll URL. The menu entry's fulfillment field says which.",
+              note: "This human-fulfilled purchase returns a queue ticket and finishes at the poll URL.",
             }),
       };
       if (!isPoll && typeof pollOperationId === "string") {
@@ -8403,7 +8450,7 @@ export function stampAsyncJob(document: OpenApiObject): void {
               operationId: pollOperationId,
               parameters: { order_id: "$response.body#/order_id" },
               description:
-                "Human-fulfilled purchases return an order_id; poll it here until status is terminal. Instant items complete in the buy response itself and never need this link.",
+                "Poll the returned order_id until status is terminal.",
             },
           };
         }

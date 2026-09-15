@@ -54,6 +54,16 @@ function catalog(): Array<Record<string, unknown>> {
 }
 
 describe("the tool catalog every session downloads", () => {
+  it("keeps tool selection concise and leaves detailed output prose at the linked item", () => {
+    const tools = catalog();
+    const bytes = new TextEncoder().encode(JSON.stringify(tools)).length;
+    console.log(JSON.stringify({ mcp_catalog_bytes: bytes, longest_description: Math.max(...tools.map(tool => String(tool.description).length)) }));
+    expect(bytes).toBeLessThan(CATALOG_BYTE_CEILING);
+    for (const tool of tools) {
+      expect(String(tool.description).length, String(tool.name)).toBeLessThan(8_000);
+    }
+  });
+
   it("stays under its budget, and is well under what it replaced", () => {
     const bytes = JSON.stringify(catalog()).length;
     expect(bytes, `tools/list is ${bytes} bytes`).toBeLessThan(CATALOG_BYTE_CEILING);

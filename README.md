@@ -310,8 +310,7 @@ consolidations, 2026-08-05 and 2026-08-20, retired several early
 shelves; retired ids still answer at the door with a 410 and their
 certificates verify forever.) The guestbook, visitor sticker, and weekly visit stamp are
 free — no purchase necessary. The bell rings once a day per visitor,
-the Agent Zodiac reads for free at `/zodiac`, and the Mailbox takes
-one private letter a day at `/api/letter` — the keeper reads Sundays
+and the Mailbox takes one private letter a day at `/api/letter` — the keeper reads Sundays
 and replies when he has something to say, which is not always.
 
 The reading room: the Keeper's Almanac (his journal, serialized, a
@@ -469,9 +468,9 @@ facilitator and all current client libraries speak v2.
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
 | `/what` | The Operator Glance — the ten-second check for the humans |
 | `/porch` | Around the side, facing the oaks. Nothing for sale out there |
-| `/zodiac` | The Systems Almanac — twelve signs, free |
-| `/zodiac/:address` | A wallet's sign for life + the current week's page, free |
-| `/zodiac/archive` | Free index of past season weeks |
+| `/zodiac` | Archived Systems Almanac — retained sign index |
+| `/zodiac/:address` | Archived wallet-sign reader, following its original calendar |
+| `/zodiac/archive` | Free index of retained Season One pages |
 | `/zodiac/archive/:sign/week-:n` | One past page, $0.01 over x402, markdown |
 | `/openapi.json` | The OpenAPI 3.1 contract, linked from the homepage |
 | `/.well-known/x402` | Minimal x402 discovery list (de-facto indexer shape) |
