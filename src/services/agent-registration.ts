@@ -1,10 +1,14 @@
 import { LATEST_PROTOCOL } from "@/routes/mcp";
 import { A2A_PROTOCOL_VERSION } from "@/lib/a2a-validation.js";
 import {
-  STORE_CONTACT_EMAIL,
-  STORE_METADATA,
-  STORE_SERVICE_NAME,
-} from "@/store/metadata";
+  OASF_DOMAINS,
+  OASF_RECORD_PATH,
+  OASF_SKILLS,
+  OASF_TAXONOMY_TAG,
+} from "@/lib/oasf-record";
+import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
+import { STORE_CONTACT_EMAIL, STORE_SERVICE_NAME } from "@/store/metadata";
+import { registryDescription } from "@/store/identity-lead";
 
 /**
  * THE ERC-8004 REGISTRATION FILE — the document an agent registry
@@ -33,11 +37,22 @@ import {
  *
  * DERIVED, NOT RETYPED. Every field below comes from the constant
  * that already governs it — the naming law's one display string, the
- * canonical one-liner, the live protocol versions. A registration
+ * registry-budget identity, the live protocol versions. A registration
  * file is copy that travels: an explorer caches it and it becomes the
  * store's identity in somebody else's index. The first draft of this
- * document carried a hand-written name and a fifth description, which
- * is precisely the drift STORE_METADATA's own comment warns about.
+ * document carried a hand-written name and a hand-written description,
+ * which is precisely the drift STORE_METADATA's own comment warns
+ * about.
+ *
+ * THE DESCRIPTION IS A SHORT FORM, NOT A SECOND OPINION, and the
+ * difference is the whole rule. What metadata.ts forbids is a surface
+ * inventing its own account of the store; what it already does four
+ * times over is say the SAME account at the length its reader can
+ * take — ~160 characters for a search snippet, sixty words for a
+ * social card, a paragraph for a document fetcher. A registry card is
+ * a fifth such reader. So this uses registryDescription(), which is
+ * one more length of one identity, and introduces no fact that is not
+ * published at length somewhere else.
  */
 
 /** The `type` discriminator. Registries match on this exact string. */
@@ -48,20 +63,21 @@ export const ERC8004_REGISTRATION_TYPE =
 export const AGENT_REGISTRATION_PATH = "/.well-known/agent-registration.json";
 
 /**
- * The store's agent, as minted. The registry string is
- * `{namespace}:{chainId}:{identityRegistry}` per the ERC — the
- * ERC-8004 Identity Registry on Base mainnet, EIP-55 checksummed
- * because a registry that string-compares a lowercase address
- * against its own checksummed one finds no match.
+ * The store's agent, as minted. The values live in
+ * store/agent-identity — they are data about who this store is, and
+ * this module cannot be imported outside the Worker (see the note
+ * there). Re-exported so every reader that learned them here keeps
+ * working.
  */
-export const SCVD_AGENT_ID = 86957;
-export const SCVD_AGENT_REGISTRY =
-  "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+export { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY };
 
 interface RegistrationService {
   name: string;
   endpoint: string;
   version?: string;
+  /** OASF taxonomy names, on the one entry that carries them. */
+  skills?: string[];
+  domains?: string[];
 }
 
 /**
@@ -128,6 +144,37 @@ export function agentRegistrationFile(base: string): Record<string, unknown> {
      * this registration file should be able to reach the key that
      * signs our artifacts without guessing the convention.
      */
+    /**
+     * THE OASF ENTRY, and the one place this file departs from the
+     * ERC-8004 best-practices example on purpose.
+     *
+     * That example points `endpoint` at `https://github.com/agntcy/
+     * oasf/` — the taxonomy's own repository. Here it points at this
+     * store's OASF record instead, because the test below holds every
+     * https endpoint in this file to THIS origin, and it holds it for
+     * a reason: the domain-verification half of this document only
+     * works if every endpoint named in it is on the host serving it.
+     * An endpoint on github.com would need its own
+     * agent-registration.json over there, which we cannot publish.
+     *
+     * Nothing is lost by the swap. `version` still names the taxonomy
+     * release the names below were read from, and the record at the
+     * endpoint declares the same rows with their ids and says where
+     * it read them. A reader following this entry lands on the OASF
+     * document for this agent rather than on the schema it uses,
+     * which is the more useful of the two anyway.
+     *
+     * The rows are the record's own. Two lists of taxonomy names that
+     * could disagree is the defect this store sells a desk for
+     * finding in other people's metadata.
+     */
+    {
+      name: "OASF",
+      endpoint: `${base}${OASF_RECORD_PATH}`,
+      version: OASF_TAXONOMY_TAG,
+      skills: OASF_SKILLS.map((skill) => skill.name),
+      domains: OASF_DOMAINS.map((domain) => domain.name),
+    },
     { name: "DID", endpoint: `did:web:${host}`, version: "v1" },
     { name: "email", endpoint: STORE_CONTACT_EMAIL },
   ];
@@ -142,8 +189,17 @@ export function agentRegistrationFile(base: string): Record<string, unknown> {
      * should invent a new one.
      */
     name: STORE_SERVICE_NAME,
-    /** The canonical one-liner. Change it in metadata.ts, not here. */
-    description: STORE_METADATA.description,
+    /**
+     * THE REGISTRY BUDGET, not the canon (2026-09-15). This carried
+     * STORE_METADATA.description until the keeper read it on a card:
+     * 900 characters written for a reader that fetches the whole
+     * document, rendered by an explorer that collapses after three
+     * lines and cuts mid-clause. Same identity, a length that fits
+     * the surface — see registryDescription() for the budget and the
+     * order of its clauses. Still derived, still one string: edit it
+     * there, never here.
+     */
+    description: registryDescription(),
     /**
      * `image` is a SHOULD for ERC-721 app compatibility — the
      * registry is an NFT, so wallets and explorers will render this.

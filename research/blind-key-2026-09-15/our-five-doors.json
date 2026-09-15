@@ -1,0 +1,57 @@
+{
+  "posed_by": "SCVD General Store (scvd.store), keeper Sean Record",
+  "posed_on": "2026-09-15",
+  "question": "For each door below, at the frozen inputs given: has anyone paid its advertised payTo? Answer PAID, ZERO_OBSERVED or UNKNOWN, and for PAID give distinct_payers (unique sending addresses) and total_received_atomic.",
+  "frozen_inputs": {
+    "rail": "eip155:8453",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "window_from_block": 50918945,
+    "window_at_block": 51316142,
+    "why_this_floor": "block 50918945 carries the first of this store's own 2026-09-05 settlements to these doors, so every answer has at least one payment in it that either side can name by transaction hash. The ceiling is StillOS Notary's own pinned Base height, so both halves of the exchange share a boundary.",
+    "why_a_floor_at_all": "the public Base RPC caps eth_getLogs at 2,000 blocks; an all-time index of one address is roughly 25,000 requests. An answer nobody can afford to reproduce is not an answer.",
+    "payTo_is_pinned": "The payTo for each door is frozen here rather than re-resolved at answer time. Two answerers resolving a door's 402 on different days can legitimately read different addresses, and that would make a disagreement about the door look like a disagreement about the chain."
+  },
+  "doors": [
+    {
+      "name": "batch-runner",
+      "url": "https://batch-runner.vercel.app/api/game/start",
+      "payTo": "0xdddd576bAF106bAAe54bDE40BCac602bB4a7cf79",
+      "rail": "eip155:8453",
+      "payTo_provenance": "advertised in this door's own unpaid 402, recorded 2026-09-05T16:53:21.223Z in research/field-run-2026-09-05/ledger.jsonl; scheme batch-settlement, not exact",
+      "scheme": "batch-settlement"
+    },
+    {
+      "name": "gas.apitoll.cloud",
+      "url": "https://gas.apitoll.cloud/v1/base/gas",
+      "payTo": "0xcc69d619E6053F88A4845066518f465bD06Fc96c",
+      "rail": "eip155:8453",
+      "payTo_provenance": "advertised in this door's own unpaid 402, recorded 2026-09-05T16:54:11.322Z in research/field-run-2026-09-05/ledger.jsonl",
+      "scheme": "exact"
+    },
+    {
+      "name": "api.bitrefill.com",
+      "url": "https://api.bitrefill.com/x402/checkout/info",
+      "payTo": "0x480CD46E6faDe651a0437DeaddA53D5c8e7D846A",
+      "rail": "eip155:8453",
+      "payTo_provenance": "advertised in this door's own unpaid 402, recorded 2026-09-05T16:53:56.114Z in research/field-run-2026-09-05/ledger.jsonl",
+      "scheme": "exact"
+    },
+    {
+      "name": "tollbooth-hello",
+      "url": "https://tollbooth-hello.sjwilliams8.workers.dev/hello",
+      "payTo": "0xb3e7993Ed2FC2C79FFF220620240f298BBa9bF5B",
+      "rail": "eip155:8453",
+      "payTo_provenance": "advertised in this door's own unpaid 402, recorded 2026-09-05T16:54:57.786Z in research/field-run-2026-09-05/ledger.jsonl",
+      "scheme": "exact"
+    },
+    {
+      "name": "laso.finance",
+      "url": "https://laso.finance/auth",
+      "payTo": "0x3291e96b3bff7ed56e3ca8364273c5b4654b2b37",
+      "rail": "eip155:8453",
+      "payTo_provenance": "advertised in this door's own unpaid 402, recorded 2026-09-05T16:53:52.867Z in research/field-run-2026-09-05/ledger.jsonl",
+      "scheme": "exact"
+    }
+  ],
+  "not_asked": "Nothing here asks whether a door is good, busy, or worth paying. Rule 43: this is a dated observation, never a ranking, and the doors are listed in the order they were chosen."
+}
