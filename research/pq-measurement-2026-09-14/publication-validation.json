@@ -1,0 +1,99 @@
+{
+  "kind": "publication_validation_record_not_runtime_benchmark",
+  "recorded_at": "2026-09-15T14:20:43.215834+00:00",
+  "base_commit": "604c08c99fea47a605c5dfeec793055d96175e18",
+  "scope": "Publication branch working tree before this validation note; no production source or dependency-version changes.",
+  "root_suite": {
+    "command": "npm test -- --maxWorkers=6 --reporter=default --reporter=json --outputFile.json=<local-report>",
+    "exit_code": 1,
+    "files": 713,
+    "passed": 14046,
+    "failed": 1,
+    "skipped": 1,
+    "failures": [
+      {
+        "file": "test/url-observation-paid-recovery.spec.ts",
+        "case": "service_audit mcp rail 2: report-after recovers original signed evidence with upstream down"
+      }
+    ],
+    "cause": "The agent rewrote package.json to add the evidence-test script while the suite was running. A module read briefly saw an empty file; the delivery path logged JSONError: File is empty. This was a validation-workflow interruption. No production code was changed to make the case pass."
+  },
+  "reruns": [
+    {
+      "scope": "Exact interrupted case",
+      "passed": 1,
+      "filtered": 287,
+      "exit_code": 0
+    },
+    {
+      "scope": "Entire affected test file, unchanged",
+      "passed": 288,
+      "exit_code": 0
+    }
+  ],
+  "other_checks": {
+    "typecheck": "passed",
+    "experimental_tests": 14,
+    "summary_consistency_tests_including_four_mutations": 5,
+    "evidence_test": "passed",
+    "docs_check": "passed",
+    "both_worker_dry_run_bundles": "passed",
+    "git_diff_check": "passed",
+    "fresh_openssl_interop_contexts": 3,
+    "fresh_openssl_interop_negative_cases_rejected": 24,
+    "retained_signature_replay_valid": 6,
+    "retained_signature_replay_altered_rejected": 6
+  },
+  "local_logs": [
+    {
+      "filename": "scvd-pq-publication-full.json",
+      "sha256": "7db6f0d24166cfa5cc1bdc0f70e65472bbd0a59a5c94a8f26825c7692da35785"
+    },
+    {
+      "filename": "scvd-pq-publication-full.log",
+      "sha256": "b129f65264f139edcb83273a6ae57ef10c552f6e3ba32629b71c8c1b1052c83b"
+    },
+    {
+      "filename": "scvd-pq-publication-recovery-retry.log",
+      "sha256": "21d696cd3e67e880f92db612e21d16bf6f863bba39202bbfa1a26b5230667f1d"
+    },
+    {
+      "filename": "scvd-pq-publication-recovery-file.log",
+      "sha256": "4047147e4e1ab1970420aee2a36e06b82cb999f498791a2c97d9d44de70cdf6f"
+    },
+    {
+      "filename": "scvd-pq-publication-typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "filename": "scvd-pq-publication-experiment.log",
+      "sha256": "f5bc9b41c35cc81cfacd308cd25d06008c0f5844a23c437887cd3a933da766dd"
+    },
+    {
+      "filename": "scvd-pq-record-tests.log",
+      "sha256": "6b155a94ba5dba5bea845833c9a678654329da65edb83c0c0947bbdac3491755"
+    },
+    {
+      "filename": "scvd-pq-publication-evidence.log",
+      "sha256": "de93e03770da3e2e2cbf101fd0091f62e2e649cba4e16fa9a9d1a9d6bec8eb6c"
+    },
+    {
+      "filename": "scvd-pq-publication-docs.log",
+      "sha256": "1fdee8a2c64a68c9e7297ac5d6a825b0313c265b6c61e7c79e6477161cf3bc8a"
+    },
+    {
+      "filename": "scvd-pq-publication-build.log",
+      "sha256": "7064103ba626af438e75f9c35047b4e8805ed3b2a2fded344f82a1d3575994e1"
+    },
+    {
+      "filename": "scvd-pq-publication-interop.json",
+      "sha256": "f1f5b3f097c497487cf06b18666121db2fc00aea41d56b3f0d9a24b6f0635266"
+    }
+  ],
+  "limitations": [
+    "This is a full run plus unchanged reruns, not an uninterrupted green full-suite run.",
+    "Clean pull-request CI remains required before merging.",
+    "Log hashes record local files; those files are not distributed here and their hashes do not independently prove the reported results.",
+    "No new runtime timing samples, production PQ keys, signing, checkout or deployed-page claim."
+  ]
+}

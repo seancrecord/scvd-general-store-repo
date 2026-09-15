@@ -6,6 +6,8 @@ import {
   OASF_SKILLS,
   OASF_TAXONOMY_TAG,
 } from "@/lib/oasf-record";
+import { checkoutWallets, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
 import { STORE_CONTACT_EMAIL, STORE_SERVICE_NAME } from "@/store/metadata";
 import { registryDescription } from "@/store/identity-lead";
@@ -78,6 +80,8 @@ interface RegistrationService {
   /** OASF taxonomy names, on the one entry that carries them. */
   skills?: string[];
   domains?: string[];
+  /** Tool names, on the MCP entry. */
+  mcpTools?: string[];
 }
 
 /**
@@ -101,7 +105,10 @@ interface RegistrationService {
  * x402 service entry below points at the catalog that enumerates
  * them.
  */
-export function agentRegistrationFile(base: string): Record<string, unknown> {
+export function agentRegistrationFile(
+  base: string,
+  env: PaymentNetworkConfig,
+): Record<string, unknown> {
   const host = new URL(base).host;
 
   /**
@@ -113,10 +120,19 @@ export function agentRegistrationFile(base: string): Record<string, unknown> {
    */
   const services: RegistrationService[] = [
     { name: "web", endpoint: `${base}/` },
+    /**
+     * THE TOOLS, NAMED (2026-09-15). The ERC-8004 registration guide's
+     * MCP entry carries `mcpTools`, and leaving it out was the store
+     * describing a door without saying what is behind it — twenty
+     * tools, all free to list, invisible to any reader of this file.
+     * Straight off the catalogue /mcp answers tools/list from, so a
+     * tool added to the server appears here in the same deploy.
+     */
     {
       name: "MCP",
       endpoint: `${base}/mcp`,
       version: LATEST_PROTOCOL,
+      mcpTools: mcpToolCatalog(base).map((tool) => tool.name),
     },
     {
       name: "A2A",
@@ -175,6 +191,26 @@ export function agentRegistrationFile(base: string): Record<string, unknown> {
       skills: OASF_SKILLS.map((skill) => skill.name),
       domains: OASF_DOMAINS.map((domain) => domain.name),
     },
+    /**
+     * WHERE THE STORE TAKES MONEY, ONE ENTRY PER RAIL (2026-09-15).
+     *
+     * The guide's `agentWallet` entry advertises a payment address,
+     * and says explicitly that an agent registered on one chain may
+     * advertise wallets on others. This store quotes USDC on five
+     * rails and said so nowhere in this file, which undersold it to
+     * every reader that never knocked on a door.
+     *
+     * CAIP-10 shape, `<chain>:<address>`, from the same table and the
+     * same enabled-gate the checkout uses — so an unconfigured rail is
+     * never advertised, and these cannot drift from what a 402
+     * actually quotes. Nothing here is new information: every one of
+     * these addresses already rides in every payment challenge the
+     * store issues.
+     */
+    ...checkoutWallets(env).map((wallet) => ({
+      name: "agentWallet",
+      endpoint: `${wallet.network}:${wallet.address}`,
+    })),
     { name: "DID", endpoint: `did:web:${host}`, version: "v1" },
     { name: "email", endpoint: STORE_CONTACT_EMAIL },
   ];

@@ -131,3 +131,60 @@ question. The finding is recorded here rather than scrubbed silently,
 because a commitment is only worth what the process around it is worth,
 and this is the second time in one week that this exercise has been
 caught answering its own question.
+
+---
+
+# The reveal — 2026-09-15
+
+`answers.sealed.json` is published, unmodified. It checks against the
+commitment made before either side read anything:
+
+```
+sha256  48e221eb88447b2981571ac364a3edb966a929b11bd3fd448db6452ffcd619ec
+bytes   8912
+```
+
+Digest and byte length both hold.
+
+## Two readings, and why there are two
+
+| door | sealed | under the rail rule |
+|---|---|---|
+| batch-runner | `ZERO_OBSERVED` | **`UNKNOWN`** |
+| gas.apitoll.cloud | `PAID` | `PAID` |
+| api.bitrefill.com | `PAID` | `PAID` |
+| tollbooth-hello | `PAID` | `PAID` |
+| laso.finance | `PAID` | `PAID` |
+
+On 2026-09-15, after the seal, StillOS Notary pinned a rule on issue
+#622: *`ZERO_OBSERVED` requires every advertised rail to resolve empty;
+any rail out of reach makes the door `UNKNOWN`.* It is right, and it
+moves one of our answers.
+
+**The part worth writing down is that we had already said why.** The
+reader carried a `SETTLEMENT_RESIDUAL` stating, in our own words, that
+on a door advertising a scheme other than `exact` a zero *"means this
+instrument found no DIRECT payment, never that the door was not paid"* —
+and returned `ZERO_OBSERVED` anyway, with that sentence printed beside
+the verdict. A caveat beside a verdict gets quoted without the caveat.
+We spent the week telling other people so.
+
+`reading-under-rail-rule.json` is the same window re-read by the
+corrected instrument. Both files are here. **The commitment binds us to
+the file we sealed; it does not bind us to keep a verdict we have since
+found wrong**, and the way to honour both is to publish both and date
+the rule that separates them.
+
+## What this is not
+
+Not a ranking (rule 43) — the doors are in the order we chose them.
+A `PAID` row counts unique *sending addresses*, so a facilitator
+settling for ten buyers counts once: these are settling addresses, not
+customers, and not revenue. Every row carries the residuals it cannot
+close.
+
+Scopes, since the other half of this exchange reads differently and
+neither is the correct one: ours is blocks 50918945–51316142, StillOS's
+is genesis to the same ceiling. Ours reproduces cheaply against the
+public RPC's 2,000-block `eth_getLogs` ceiling; theirs reaches further
+back. A zero from each of us is not the same claim.

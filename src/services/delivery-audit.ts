@@ -207,7 +207,13 @@ export async function auditDeliveries(
     checked: listed.names.length,
     in_flight: inFlight,
     undelivered,
-    truncated: listed.names.length >= DELIVERY_SCAN_CAP,
+    // AUTHORITATIVE, not inferred (2026-09-15). This read
+    // `names.length >= DELIVERY_SCAN_CAP`, which is a guess at
+    // completeness from the size of the answer. listKeys already knows:
+    // it returns truncated when KV stopped paginating WITHOUT saying it
+    // was complete, which can happen below the cap. The old form
+    // reported a complete scan in exactly that case.
+    truncated: listed.truncated,
     scanned_at: now.toISOString(),
   };
 }

@@ -419,9 +419,11 @@ export async function knownSettlementHashes(
   }
   return {
     hashes,
-    truncated:
-      listed.names.length >= CERT_SCAN_CAP ||
-      delivered.names.length >= SETTLED_DELIVERY_SCAN_CAP,
+    // Authoritative rather than inferred from the counts. Either scan
+    // being short of its cap does not make it complete, and this
+    // function's whole output is a set of hashes other readers treat
+    // as exhaustive.
+    truncated: listed.truncated || delivered.truncated,
   };
 }
 
