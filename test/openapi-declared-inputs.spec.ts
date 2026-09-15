@@ -1,6 +1,17 @@
-import { SELF } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { SELF, env } from "cloudflare:test";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { CONDITIONAL_GET_EXEMPT, NEGOTIATED_REPRESENTATIONS } from "@/routes/openapi";
+import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { markKeeperPresent } from "./helpers/keeper";
+import type { Env } from "@/types";
+
+// The sweep includes paid doors: compare their actual 402 representations,
+// not matching 500s from failed requests to a real facilitator.
+beforeAll(async () => {
+  installFacilitatorMock();
+  await markKeeperPresent(env as unknown as Env);
+});
+afterAll(() => vi.unstubAllGlobals());
 
 /**
  * THE INPUT-LESS DOORS, TYPED BY WHAT THEY READ (2026-09-05).
@@ -71,7 +82,17 @@ describe("the three query readers", () => {
   });
 });
 
-describe("Accept is declared exactly where a door negotiates", () => {
+describe("Accept is declared exactly where a door negotiates", async () => {
+  // Derive cases from the served contract, not a second route list. One
+  // all-route test exceeded 30s in CI as the shelf grew (#709); each door
+  // keeps the same three requests and assertions under its own deadline.
+  const paths = await spec();
+  const undeclared = Object.entries(paths).filter(([path, item]) =>
+    !path.includes("{") && item["get"] &&
+    !(path in NEGOTIATED_REPRESENTATIONS) &&
+    !params(item["get"]!).some((p) => p["name"] === "Accept"),
+  );
+
   it("serves every representation the table lists, for its Accept", async () => {
     const paths = await spec();
     for (const [path, offered] of Object.entries(NEGOTIATED_REPRESENTATIONS)) {
@@ -88,21 +109,15 @@ describe("Accept is declared exactly where a door negotiates", () => {
     }
   });
 
-  it("and nowhere a door does not: no undeclared negotiation on any brace-less GET", async () => {
-    const paths = await spec();
-    const hidden: string[] = [];
-    for (const [path, item] of Object.entries(paths)) {
-      if (path.includes("{") || !item["get"]) continue;
-      if (path in NEGOTIATED_REPRESENTATIONS) continue;
-      if (params(item["get"]!).some((p) => p["name"] === "Accept")) continue;
-      const url = probeUrl(path, item["get"]!);
-      const bare = await SELF.fetch(url);
-      for (const media of ["text/markdown", "text/html"]) {
-        const asked = await SELF.fetch(url, { headers: { Accept: media } });
-        if (contentType(asked) !== contentType(bare)) hidden.push(`${path} → ${media}`);
-      }
+  it.each(undeclared)("%s does not negotiate without declaring Accept", async (path, item) => {
+    const url = probeUrl(path, item["get"]!);
+    const bare = await SELF.fetch(url);
+    expect(bare.status, `${path} baseline must not be a server error`).toBeLessThan(500);
+    for (const media of ["text/markdown", "text/html"]) {
+      const asked = await SELF.fetch(url, { headers: { Accept: media } });
+      expect(asked.status, `${path} as ${media} must not be a server error`).toBeLessThan(500);
+      expect(contentType(asked), `${path} → ${media}`).toBe(contentType(bare));
     }
-    expect(hidden).toEqual([]);
   });
 });
 

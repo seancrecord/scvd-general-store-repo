@@ -70,8 +70,10 @@ jobs:
       # refund wording, the decline readings, and the skill document
       # against the live menu. A red build means the store is saying
       # something it cannot do.
+      # #709 had already failed 55 minutes before this step ended.
+      # Stop after a failure; a green run still executes the entire suite.
       - name: Tests
-        run: npm test
+        run: npm test -- --bail=1
       # THE TAB'S OWN TESTS — a filesystem product cannot run in the
       # Workers pool (no fs in an isolate), so scvd-tab tests ride
       # Node's own runner. Zero framework, same as zero dependencies.
