@@ -26,22 +26,25 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- **Mute the alarm you asked about, 2026-09-15 — LOOK.** You said of a
-  `worker_health` page about a note this desk sent to delvorn.site: "I
-  don't want to get this particular alarm anymore." The lever now
-  exists and the press is yours — nothing in code decides which of your
-  alarms you are done with. Open `/admin/reconciliation#alarms`, find
-  the row, and press "Stop emailing this one": that silences exactly
-  that alarm (`worker_health:note-audit:look:delvorn.site`) and leaves
-  every other `worker_health` page — including the ones that mean the
-  Worker is down — alone. The beside-it lever mutes the whole
-  condition, which is the bigger hammer and says so. Either way the
-  row keeps landing on the trail with its repeat count, every live
-  mute is listed under the trail with the lever to lift it, and
-  alert emails now carry the alarm's own name and a line pointing at
-  that page. If what you meant was the desk item itself rather than
-  the email, the underlying finding is on `/admin/outreach#audit` and
-  clearing it there stops the alarm at its source.
+- **The note audits stopped paging you, 2026-09-15 — no press needed.**
+  You said of a `worker_health` page about a note this desk sent to
+  delvorn.site: "I don't want to get this particular alarm anymore" —
+  and then, of the first fix: "I don't want any of those TYPE of
+  alarms, not for that specific company." So the answer stopped being
+  a mute on one host. The note audit now has its own condition,
+  `note_audit`, and that condition is on the desk list rather than the
+  paging list: it mails nobody, for any host, on either finding. It
+  still writes its row to the alarm trail with its first-seen and its
+  repeat count, marked **[DESK]** at the counter and "Desk only" on
+  the books page, and it is still answered where it always was — the
+  drafted correction on `/admin/outreach#audit`, one press. Nothing
+  else moved: a note-audit SWEEP that fails still pages as
+  `worker_health`, because an instrument that stopped running is the
+  Worker breaking, and a desk with no wrong notes in it reads exactly
+  like one that is not being read. To put these back in your inbox,
+  move `note_audit` from `DESK_CONDITIONS` to `ALERT_CONDITIONS` in
+  `src/lib/alerts.ts` — one line, and the count in every alert email
+  corrects itself.
 
 - **Forge intake, 2026-09-14 — LOOK.** Joey (@Joeyy_0x) used OpenAPI
   discovery. Our unsigned checks returned 402 on all eleven doors shown

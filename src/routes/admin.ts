@@ -3,7 +3,7 @@ import { basicAuth } from "hono/basic-auth";
 import { isHouseWallet } from "@/lib/channel";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { MiddlewareHandler } from "hono";
-import { ALERT_CONDITIONS, sendAlert } from "@/lib/alerts";
+import { ALERT_CONDITIONS, ALL_CONDITIONS, sendAlert } from "@/lib/alerts";
 import { acknowledgeAlertInbox, readAlertInbox } from "@/lib/alert-inbox";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { takeCensus } from "@/lib/census";
@@ -3686,6 +3686,7 @@ adminRoutes.post("/admin/alerts/mute", async (c) => {
   const result = await muteAlarm(
     c.env,
     { scope, target, ...(reason ? { reason } : {}) },
+    ALL_CONDITIONS,
     ALERT_CONDITIONS,
   );
   if ("refused" in result) {
