@@ -1,0 +1,199 @@
+{
+  "reviewed_at": "2026-09-15",
+  "rows": [
+    {
+      "request_id": 149,
+      "url": "https://scvd.store/mcp",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1mcp"
+    },
+    {
+      "request_id": 155,
+      "url": "https://scvd.store/api/buy/settlement_attestation?tx_hash=0x...&src=skill",
+      "disposition": "unfilled_example_input",
+      "reason": "The documentation uses 0x... as an abbreviated transaction or wallet value. This is not a real input and its refusal is not a dead-link finding.",
+      "published_methods": [
+        "GET"
+      ],
+      "required_get_parameters": [
+        "tx_hash"
+      ],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1buy~1settlement_attestation"
+    },
+    {
+      "request_id": 156,
+      "url": "https://scvd.store/api/buy/settlement_reconciliation?tx_hash=0x...&src=skill",
+      "disposition": "unfilled_example_input",
+      "reason": "The documentation uses 0x... as an abbreviated transaction or wallet value. This is not a real input and its refusal is not a dead-link finding.",
+      "published_methods": [
+        "GET"
+      ],
+      "required_get_parameters": [
+        "tx_hash"
+      ],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1buy~1settlement_reconciliation"
+    },
+    {
+      "request_id": 159,
+      "url": "https://scvd.store/api/claims/challenge",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1claims~1challenge"
+    },
+    {
+      "request_id": 164,
+      "url": "https://scvd.store/api/buy/provenance_check?address=0x...&src=skill",
+      "disposition": "unfilled_example_input",
+      "reason": "The documentation uses 0x... as an abbreviated transaction or wallet value. This is not a real input and its refusal is not a dead-link finding.",
+      "published_methods": [
+        "GET"
+      ],
+      "required_get_parameters": [
+        "address"
+      ],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1buy~1provenance_check"
+    },
+    {
+      "request_id": 165,
+      "url": "https://scvd.store/api/buy/the_statement?wallet=0x...&src=skill",
+      "disposition": "unfilled_example_input",
+      "reason": "The documentation uses 0x... as an abbreviated transaction or wallet value. This is not a real input and its refusal is not a dead-link finding.",
+      "published_methods": [
+        "GET"
+      ],
+      "required_get_parameters": [
+        "wallet"
+      ],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1buy~1the_statement"
+    },
+    {
+      "request_id": 169,
+      "url": "https://scvd.store/api/bell",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1bell"
+    },
+    {
+      "request_id": 171,
+      "url": "https://scvd.store/api/tip",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1tip"
+    },
+    {
+      "request_id": 172,
+      "url": "https://scvd.store/api/letter",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1letter"
+    },
+    {
+      "request_id": 185,
+      "url": "https://scvd.store/api/bot-auth/check",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1bot-auth~1check"
+    },
+    {
+      "request_id": 186,
+      "url": "https://scvd.store/api/preflight/batch",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1preflight~1batch"
+    },
+    {
+      "request_id": 187,
+      "url": "https://scvd.store/ask",
+      "disposition": "missing_required_input",
+      "reason": "The GET operation requires query. This bare URL does not establish a dead endpoint or an ordinary completed request.",
+      "published_methods": [
+        "GET",
+        "POST"
+      ],
+      "required_get_parameters": [
+        "query"
+      ],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1ask"
+    },
+    {
+      "request_id": 207,
+      "url": "https://scvd.store/api/trade/sandbox/check",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1trade~1sandbox~1check"
+    },
+    {
+      "request_id": 220,
+      "url": "https://scvd.store/api/request",
+      "disposition": "documented_post_endpoint",
+      "reason": "This instrument sent GET to a documented POST endpoint. No POST operation was performed; the response does not establish a dead endpoint.",
+      "published_methods": [
+        "POST"
+      ],
+      "required_get_parameters": [],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1api~1request"
+    },
+    {
+      "request_id": 282,
+      "url": "https://scvd.store/corpus/diff.json",
+      "disposition": "missing_required_input",
+      "reason": "The GET operation requires since. This bare URL does not establish a dead endpoint or an ordinary completed request.",
+      "published_methods": [
+        "GET"
+      ],
+      "required_get_parameters": [
+        "since"
+      ],
+      "source_file": "../buyer-public-recheck-fixed-2026-09-15/openapi.snapshot",
+      "source_pointer": "/paths/~1corpus~1diff.json"
+    }
+  ],
+  "scope": "Disposition of direct GET refusals only; not six-question error-language acceptance or validation of each POST operation."
+}

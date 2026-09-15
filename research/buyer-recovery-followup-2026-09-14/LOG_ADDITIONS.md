@@ -12,3 +12,5 @@ The earlier live-acceptance report, original BUY-001–039 totals and commission
 Final validation added: 13,933 passing tests across 708 files (one existing skip), then 55 passing affected tests after the separately reproduced zero-match prose repair. Final typecheck, both builds and documentation/correction checks passed. Exact phase boundaries and source deltas are retained.
 
 - Authorized release preparation: integration with main, exact guide-reversal proof, full-attempt startup error, and clean GitHub merge gate are recorded separately in `release-validation.json` and the report. Historical local-only checkpoints remain intact.
+
+- September 15 release closeout: PR #692 merged, successful GitHub and production builds, public HTTP/MCP guidance and historical-byte checks retained in `production-release.json`; checklist and ROADMAP release rows now closed. Earlier local-only statements remain dated checkpoints.

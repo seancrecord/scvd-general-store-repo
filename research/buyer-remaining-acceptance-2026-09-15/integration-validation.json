@@ -1,0 +1,131 @@
+{
+  "date": "2026-09-15",
+  "status": "integrated_local_qualification_passed",
+  "feature_commit": "52af8bbd",
+  "integrated_base": "57216e274728fbc302c83b1668a248d114d08319",
+  "conflicts_resolved": [
+    "generated corrections index retains both additions",
+    "guide digest preserves both branches after buyer-copy reversal"
+  ],
+  "guide_reversal": {
+    "base": "57216e274728fbc302c83b1668a248d114d08319",
+    "exit": 0,
+    "restored_exactly": true,
+    "source_sha256": {
+      "src/routes/llms.ts": "fb2a04bb60565b4359056213f564d41e49329548d48ea5636b20142e2daf212b",
+      "src/store/spec.ts": "d93dc993307db99a9a9a54e300b47f653bb54f6ee11b55c4e6413b1e6f5f9289"
+    }
+  },
+  "guide_digest": "293280bf76d818f930e0d177c0ce006005aa9a39c3aeb31074d6f807fe3e3f97",
+  "affected_tests": {
+    "files_passed": 10,
+    "tests_passed": 246,
+    "exit": 0
+  },
+  "buyer_tests": {
+    "passed": 44,
+    "exit": 0
+  },
+  "typecheck": {
+    "exit": 0
+  },
+  "build": {
+    "exit": 0,
+    "workers": 2,
+    "deployed": false
+  },
+  "claims": {
+    "unbound": 0,
+    "exit": 0
+  },
+  "docs": {
+    "exit": 0
+  },
+  "offline_paid_evidence": {
+    "exit": 0,
+    "corruption_controls_rejected": 9,
+    "new_spend_usdc": 0
+  },
+  "independent_review": "Specialist Bugbot tool unavailable; local code review completed instead.",
+  "full_suite": {
+    "status": "passed",
+    "command": "npm test -- --maxWorkers=4",
+    "skips_added": 0,
+    "timeout_changes": false,
+    "exit": 0,
+    "files_passed": 724,
+    "tests_passed": 14194,
+    "tests_skipped": 1,
+    "duration_seconds": 1773.17,
+    "clean_full_pass": true
+  },
+  "source_sha256": {
+    ".github/workflows/ci.yml": "13e42b70118ceac504e88f7e4654c3f9b5e1d19effac57224209ce8b7b73f7d0",
+    "package.json": "fc41416fa1df4b3db46989f88d453f167f2152209094c07885a727f19537c116",
+    "src/lib/claims-contract.ts": "bed0e553b7c12cf6a5b1de3570c859536117e2fb08af834d617995f68614c506",
+    "src/routes/claims.ts": "4a7bf4d1be4712e06958b1c95b3c47e9b5932efa3b68c797094c51ef63d01221",
+    "src/routes/llms.ts": "fb2a04bb60565b4359056213f564d41e49329548d48ea5636b20142e2daf212b",
+    "src/routes/openapi.ts": "85b530e538e2fdb01787604473393bc99fc21c98cc0ddbf51d29d957ada3ca56",
+    "src/routes/skill.ts": "a508bea965ce1e7e25c1ca40797366ce8636a5a80287d1863bf67132f40c59d6",
+    "src/services/claimed-good.ts": "93babdee1ec7254c9bcf319e823e1706a4d71d46e390693c7ff6c1e5d76a4d19",
+    "src/services/paid-recovery.ts": "67b0a89e6a227e06ea509d0558e1d1e47a45ee86dea912328374b58b23e778bc",
+    "src/services/purchase-intent.ts": "0ac803db804ecee3ed0575c53679bcae57dc59136720333f85714bef190800d5",
+    "src/services/signed-purchase-recovery.ts": "edd4347e580a817387d273f8ca384b1c72c143dd09c95e16508df6b9086874be",
+    "src/store/corrections-ledger/2026-09-15-wallet-original-good-recovery.ts": "db5f360e22b01ad7930d9d20a113eeacafd69e146049cea65e212fbcda3b2179",
+    "src/store/corrections-ledger/index.ts": "f95ec6836a62139708b755d905967c6b3b609036538de8f9cb9c78e2fda15426",
+    "src/store/spec.ts": "d93dc993307db99a9a9a54e300b47f653bb54f6ee11b55c4e6413b1e6f5f9289",
+    "test/helpers/buyer-signed-payments.ts": "426c33545014c3418c1dfcd7790f44f26933aa917fa1d5d7b3c26b6024ff3856",
+    "test/llms-modular.spec.ts": "daa39423d8456dc5e961be6155dab1882ab32fa26d8719473f140aef702faa53",
+    "test/reconciliation-task-scope.spec.ts": "3fd63a4fc2fadd2d1593fef4b771d3141c1b2e7c9a2005e6bbcf357fe4774d1c",
+    "test/recovered-order-language.spec.ts": "d743d334479eb03f06e4566a5fa0835749520b938901f98bdbf72eafb3ee6617",
+    "test/wallet-original-good.spec.ts": "a9cf742d6d6ae9ce7f7b060767b887f6606c97ff4d378af537967ea24b956eeb"
+  },
+  "log_sha256": {
+    "scvd-integrated-guide-reversal.log": "e5b07763107d1521e8a4c66d308c76557a3ca45a64a3cfef0b9aa478dfb90845",
+    "scvd-integrated-affected.log": "a61d283f55db7103879817d661e6004ce6980d0efaba712d9ce0567a1b3d8e80",
+    "scvd-integrated-buyer-tests.log": "c1249691206af1233436305cf64795836ede39b90f5d694cf48c0a069d8b70f9",
+    "scvd-integrated-final-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-integrated-build.log": "471c04975b4efab8b7b716160a87c2ad6a4b04fe10f611d72b56f69af297964b",
+    "scvd-integrated-claims.log": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99",
+    "scvd-integrated-docs.log": "fed0666038820b0bbbedba06e9b4fbef7b72d072ce3b4d0ca5fcfa6b4e87139f",
+    "scvd-closeout-evidence.log": "da8d19be1802948ebe5919117f55991aa488dd2b7e7cc361589691d675578e77",
+    "scvd-closeout-evidence-negative.log": "600f777a667d22b12df16dd4bf266eb6b04422f5774c855f4835c285474e07d7",
+    "scvd-integrated-self-row.log": "c0b4f0b2cba0d5c8f0acfee4c608f987dca5271729f176660c7f156dd8c2ca1e",
+    "scvd-integrated-audit.log": "93d4a80ed744831c5a134b78c3789704e00500499f88d8c61c35680888aacfcf",
+    "scvd-integrated-corrections.log": "4606b2f6da4712cb31c1325cec2e6f09266926aaf8ab2acc76a1f708b255b381",
+    "scvd-integrated-full-suite.log": "9c1d3713136d200acdaf3b2aaf5c249618e8c227ca11244c2ee63920a972f945",
+    "scvd-codeql-buyer-restored.log": "e5389f64a9217875d1af3c90f639a680882c3ed8fea6829dcc6537a4741dc51a",
+    "scvd-codeql-origin-control.log": "c4218bcfaa6cd6ad12f50bf98b813d900bde925305375b108df0c61ec2c508e4",
+    "scvd-codeql-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+  },
+  "self_row": {
+    "files_passed": 1,
+    "tests_passed": 3,
+    "exit": 0
+  },
+  "audit": {
+    "exit": 0,
+    "existing_warnings_within_budget": 4
+  },
+  "corrections": {
+    "tests_passed": 2,
+    "exit": 0
+  },
+  "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/718",
+  "release_status": "PR integration pending push; deployment not yet qualified",
+  "ci_followup": {
+    "check_url": "https://github.com/seancrecord/scvd-general-store-repo/runs/104498278041",
+    "reported_alerts": 2,
+    "assessment": "The reported URL checks are Array.includes assertions over URL lists in Node fixtures, not substring-based production validation. Make exact membership explicit with Set.has.",
+    "production_source_changed": false,
+    "benchmark_tests_passed": 44,
+    "typecheck_exit": 0,
+    "deceptive_origin_control": {
+      "mutation": "replace exact parsed-origin equality with substring membership",
+      "test_exit": 1,
+      "restored_exactly": true,
+      "source_sha256": "7ecb7dfe90fb50664e46ccb93561fc691c1916250c18699f066c2d630a7f5288"
+    },
+    "new_security_check_status": "pending rerun on follow-up commit"
+  }
+}

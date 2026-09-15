@@ -1,0 +1,37 @@
+{
+  "at": "2026-09-15T16:13:54.068Z",
+  "source": "../buyer-public-recheck-fixed-2026-09-15",
+  "snapshots": [
+    {
+      "name": "home",
+      "sha256": "7d9a1502c36333521cc1b074fb6bc5e54973d8669e397f7e87564c516984df81",
+      "url": "https://scvd.store/",
+      "received_at": "2026-09-15T15:50:40.701Z"
+    },
+    {
+      "name": "skill",
+      "sha256": "13ff9f72c0290108376a80562ae88c9d2710ae986822cd9ea0e0b3bb1e39546b",
+      "url": "https://scvd.store/skill.md",
+      "received_at": "2026-09-15T15:50:42.675Z"
+    },
+    {
+      "name": "llms",
+      "sha256": "aab984bd75266cb99d9451941bd9120f7bbb2b49dc6d73516a7d2387c60beea1",
+      "url": "https://scvd.store/llms.txt",
+      "received_at": "2026-09-15T15:50:42.524Z"
+    },
+    {
+      "name": "menu",
+      "sha256": "f324b7113313aec195eb940f29a644d6448f29e15132a686bb1af31a0c63e92e",
+      "url": "https://scvd.store/menu.json",
+      "received_at": "2026-09-15T15:50:41.914Z"
+    },
+    {
+      "name": "openapi",
+      "sha256": "9dc986162792262b3a546981e590fcb67746d7e52f9fc4ec271c56f867155d66",
+      "url": "https://scvd.store/openapi.json",
+      "received_at": "2026-09-15T15:50:42.131Z"
+    }
+  ],
+  "payment_submitted": false
+}

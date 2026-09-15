@@ -1,0 +1,14 @@
+{
+  "baseline_passes": true,
+  "rejected_mutations": [
+    "changed_signed_bytes",
+    "wrong_buyer_subject",
+    "wrong_buyer_text",
+    "cross_wired_certificate",
+    "duplicate_settlement",
+    "mismatched_transfer",
+    "lost_recovery_good",
+    "wrong_balance",
+    "settlement_checked_after_retry"
+  ]
+}

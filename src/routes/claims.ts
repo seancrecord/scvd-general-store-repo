@@ -8,6 +8,8 @@ import { certificatesForPayer } from "@/services/certificates";
 import { listOrders } from "@/services/orders";
 import { isRecord, type HonoEnv } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
+import { CLAIM_CERT_ID, CLAIM_GOOD_INSTRUCTIONS } from "@/lib/claims-contract";
+import { claimedGood } from "@/services/claimed-good";
 
 /**
  * THE CLAIMS DOOR — context-reset recovery, PROBLEMS.md #17, built.
@@ -163,10 +165,12 @@ claimsRoutes.get("/api/claims", (c) => {
     limits:
       "Raw keys only: EVM verification is recovery-based and cannot check a smart-contract wallet's EIP-1271 signature (no RPC dependency here, deliberately), and a Solana PDA/multisig is an account rather than a key, so it cannot signMessage. Solana addresses are case-sensitive base58 — send yours exactly. Orders only carry a payer since 2026-07-31; older purchases predate the binding and cannot be claimed this way.",
     free: true,
+    recover_original_good: CLAIM_GOOD_INSTRUCTIONS,
   });
 });
 
 claimsRoutes.post("/api/claims/challenge", async (c) => {
+  c.header("Cache-Control", "no-store");
   const body: unknown = await c.req.json().catch(() => null);
   const address =
     isRecord(body) && typeof body["address"] === "string"
@@ -205,7 +209,13 @@ claimsRoutes.post("/api/claims/challenge", async (c) => {
 });
 
 claimsRoutes.post("/api/claims", async (c) => {
+  c.header("Cache-Control", "no-store");
   const body: unknown = await c.req.json().catch(() => null);
+  const certId = isRecord(body) ? body.cert_id : undefined;
+  if (certId !== undefined && (typeof certId !== "string" || certId.length > CLAIM_CERT_ID.maxLength || !new RegExp(CLAIM_CERT_ID.pattern).test(certId))) {
+    return c.json({ error: "Send cert_id as one certificate id from your purchase list. Omit it to list purchases.", field: "cert_id", expected: CLAIM_CERT_ID,
+      charged: null, charged_again: false, settlement_attempted: false }, 400);
+  }
   const address =
     isRecord(body) && typeof body["address"] === "string"
       ? body["address"].trim()
@@ -290,6 +300,10 @@ claimsRoutes.post("/api/claims", async (c) => {
     }
   }
 
+  if (typeof certId === "string") {
+    const result = await claimedGood(c.env, canonical, certId);
+    return c.json(result.body, result.status);
+  }
   const orders = (await listOrders(c.env)).filter(
     (order) =>
       order.payer !== undefined &&
@@ -322,6 +336,7 @@ claimsRoutes.post("/api/claims", async (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
     address: canonical,
+    recover_original_good: CLAIM_GOOD_INSTRUCTIONS,
     certificates: claimed.certificates.map((cert) => ({
       ...cert,
       verify_url: `${base}${cert.verify_path}`,

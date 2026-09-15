@@ -1,0 +1,79 @@
+{
+  "pull_request": "https://github.com/seancrecord/scvd-general-store-repo/pull/692",
+  "head": "7549e498cae1d69f0a3c53d670fb239069cdf641",
+  "merge_commit": "1162197f7320fd5d4f135ca2f64b4740829c970f",
+  "merged_at": "2026-09-15T04:37:56Z",
+  "required_check": {
+    "conclusion": "SUCCESS",
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34918291316/job/104220572302"
+  },
+  "production_builds": [
+    {
+      "worker": "scvd-doors",
+      "id": "ee0e7216-1506-49aa-9653-7eec45062796",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "worker": "main",
+      "id": "d26b7dd4-eea0-41d0-b29d-8dc46fda7854",
+      "conclusion": "SUCCESS"
+    }
+  ],
+  "public_http": {
+    "observed_at": "2026-09-15T04:39:26.990Z",
+    "surfaces": [
+      {
+        "path": "/llms-full.txt",
+        "status": 200,
+        "contentType": "text/plain;charset=UTF-8"
+      },
+      {
+        "path": "/skill.md",
+        "status": 200,
+        "contentType": "text/markdown; charset=utf-8"
+      },
+      {
+        "path": "/openapi.json",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "path": "/corrections",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "path": "/api/reconciliation/srec_72cecej9",
+        "status": 200,
+        "contentType": "application/json"
+      }
+    ],
+    "observation_hash": "9733eb7badbad59527b29aa921d63948237095b906db95541081e9fee0d41bbf",
+    "checks": {
+      "all_200": true,
+      "llms_recovery": true,
+      "skill_recovery": true,
+      "openapi_recovery": true,
+      "correction": true,
+      "recipient_keys": true,
+      "recipient_scope": true,
+      "historical_observation_unchanged": true
+    }
+  },
+  "public_mcp": {
+    "observed_at": "2026-09-15T04:57:47.081Z",
+    "status": 200,
+    "tool": "check_purchase",
+    "checks": {
+      "listed": true,
+      "polling_guidance": true,
+      "readiness_schema": true,
+      "no_settlement": true
+    }
+  },
+  "limits": [
+    "Local full attempt retained its unnamed startup error; GitHub complete suite was the successful merge gate.",
+    "Public release checks submitted no payment.",
+    "Historical signed bytes were preserved; no claim that older approval-based inferences became true."
+  ]
+}
