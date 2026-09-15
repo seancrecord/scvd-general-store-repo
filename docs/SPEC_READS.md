@@ -1089,3 +1089,16 @@ Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/wor
 ### September 14 — applying the reconciliation follow-up
 
 The primary sources in the recovery follow-up entry above support the repair boundary: an Approval names an allowance but a Transfer does not identify the spender or spending mechanism, so same-receipt ordering and owner/recipient equality do not establish consumed allowance. Only the independently paired EIP-3009 fixed value remains observed here. The reconciliation reader now reuses the already-reviewed chain/receipt validators before signing; explicit null is distinct from unestablished context. No new platform API or dependency was introduced. RPC assertions and local fixtures do not establish consensus, finality, historical incidence or live buyer impact. The new correction preserves those limits and historical signatures.
+
+
+## 2026-09-15 — PQ measurement publication
+
+Read NIST's [FIPS 204 publication page](https://csrc.nist.gov/pubs/fips/204/final)
+and the [x402 client/server reference](https://docs.x402.org/core-concepts/client-server).
+FIPS 204 specifies ML-DSA; this is not backend certification. The x402 page
+places the payment payload in PAYMENT-SIGNATURE; it does not place our proposed
+separate corpus checkpoint there. No header-fit or checkout-latency result is
+inferred from raw signature bytes. Retained records, script hashes and raw timing
+samples supply this report's measurements; no new benchmark date is claimed.
+Production key-history and corpus anchoring were read separately: only bytes
+actually committed inherit the verified timestamp, not arbitrary linked records.

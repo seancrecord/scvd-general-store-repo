@@ -1,0 +1,99 @@
+{
+  "prepared_on": "2026-09-14",
+  "measurement_date": "2026-09-11T16:38:44.045Z",
+  "kind": "derived_summary_not_new_benchmark",
+  "sources": [
+    {
+      "path": "research/qualification-2026-09-11/pq-runtime.json",
+      "sha256": "417cf23d364662bd8d311c4723749c7999d6acddd32d291d78700700c7f9052d"
+    },
+    {
+      "path": "research/qualification-2026-09-11/pq-acvp.json",
+      "sha256": "b15c2f180bd01e09b4d9372a8073764c5f53f7564763758ac9ac48903f4c3aa9"
+    },
+    {
+      "path": "research/qualification-2026-09-11/pq-interop.json",
+      "sha256": "8a61d2877c986ab371d9a59ddef7cac9480c2742641ea6a380a2bb2cb03fad61"
+    },
+    {
+      "path": "experiments/pqc/runtime-qualification.mjs",
+      "sha256": "392bc553d31e09a08b6a7b823babd38cf36fbd6b675c74e686383811c310ca09"
+    }
+  ],
+  "raw_signature_bytes": {
+    "ed25519": 64,
+    "ml_dsa65": 3309,
+    "dual_total": 3373,
+    "ml_dsa65_to_ed25519_ratio": 51.703125
+  },
+  "base64url_unpadded_signature_characters": {
+    "ed25519": 86,
+    "ml_dsa65": 4412
+  },
+  "encoding_scope": "Arithmetic for one signature only; no envelope, keys, JSON or HTTP header measurement.",
+  "modes": {
+    "ed25519": {
+      "processes": 3,
+      "warm_iterations_per_process": [
+        50,
+        50,
+        50
+      ],
+      "warm_signing_medians_ms": [
+        0.015207999999997668,
+        0.015875000000001194,
+        0.016500000000000625
+      ],
+      "warm_verification_medians_ms": [
+        0.03437499999999716,
+        0.03520900000000182,
+        0.03791600000000095
+      ],
+      "first_signing_ms": [
+        0.648416000000001,
+        0.15275000000000105,
+        0.12758299999999956
+      ],
+      "max_rss_kib": [
+        45680,
+        45456,
+        45440
+      ]
+    },
+    "ed25519_plus_ml_dsa65": {
+      "processes": 3,
+      "warm_iterations_per_process": [
+        50,
+        50,
+        50
+      ],
+      "warm_signing_medians_ms": [
+        7.422500000000014,
+        6.788000000000011,
+        7.458750000000009
+      ],
+      "warm_verification_medians_ms": [
+        1.6670000000000016,
+        1.6690840000000549,
+        1.659667000000013
+      ],
+      "first_signing_ms": [
+        13.145125,
+        7.474415999999998,
+        8.389584
+      ],
+      "max_rss_kib": [
+        61680,
+        61456,
+        61504
+      ]
+    }
+  },
+  "limitations": [
+    "Backend API only: the production checkpoint format, key-purpose acceptance and custody are not implemented or qualified.",
+    "Fresh-process first calls and 50 warm iterations per run on this host; no production p95, cloud-runtime or concurrency guarantee.",
+    "Peak RSS is process-wide; sampled heap is not peak heap. Process wall time includes all warm measurements, not startup alone.",
+    "JavaScript key erasure and constant-time execution are not guaranteed; no independent audit or FIPS module validation.",
+    "No production keys, chain writes, timestamp submission or Worker import changes."
+  ]
+}
