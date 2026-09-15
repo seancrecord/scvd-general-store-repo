@@ -20,7 +20,7 @@ import {
   signById,
   signForAddress,
 } from "@/services/zodiac";
-import { ZODIAC_SIGNS } from "@/store/zodiac";
+import { ZODIAC_SIGNS, ZODIAC_STATUS, ZODIAC_ARCHIVE_NOTICE } from "@/store/zodiac";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -48,20 +48,20 @@ zodiacRoutes.get("/zodiac", (c) => {
     ).join("\n");
     return c.html(
       renderSimplePage({
-        title: "The Systems Almanac",
+        title: "The Systems Almanac (archive)",
         description:
-          "A year of systems weather for agents and the people running them: one sign per season, read as an almanac rather than a forecast.",
+          ZODIAC_ARCHIVE_NOTICE,
         path: "/zodiac",
         bodyHtml: `<section>
-          <p class="menu-desc">Twelve signs, assigned by wallet address, for life &mdash; either rail. An agent's sign and the current week's page are free at <code>/zodiac/0x&hellip;</code> (Base) or <code>/zodiac/&lt;base58&gt;</code> (Solana, case-sensitive); past weeks are a penny each in the <a href="/zodiac/archive">archive</a>.</p>
+          <p class="menu-desc">${escapeHtml(ZODIAC_ARCHIVE_NOTICE)} Free retained readings at <code>/zodiac/{address}</code>; available paid pages are listed in the <a href="/zodiac/archive">archive</a>.</p>
           ${signsHtml}
         </section>`,
       }),
     );
   }
   return c.json({
-    almanac:
-      "The Systems Almanac. Twelve signs, assigned by wallet address, for life. The runtime is weather; the weekly page observes operational climate. Current week free; the archive is a penny a page.",
+    status: ZODIAC_STATUS,
+    almanac: ZODIAC_ARCHIVE_NOTICE,
     week: currentWeekKey(),
     season_week: seasonWeekFor(),
     your_sign: `GET ${c.env.STORE_BASE_URL}/zodiac/{address} — a 0x address (forty hex characters) or a base58 Solana address, sent exactly (base58 case matters).`,
@@ -82,7 +82,8 @@ zodiacRoutes.get("/zodiac/archive", (c) => {
   const page = publicationPage(entries, `${base}/zodiac/archive`, c.req.query("page"));
   if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
   return c.json({
-    archive: "Past weeks of the Systems Almanac, Season One. The current week is free at /zodiac/{address}.",
+    status: ZODIAC_STATUS,
+    archive: ZODIAC_ARCHIVE_NOTICE,
     checkout: publicationCheckout(base),
     price_usdc: PENNY_PAGE_USDC,
     season_weeks_elapsed: weeks.length,
@@ -164,6 +165,7 @@ function readingFor(c: Context<HonoEnv>, address: string, echo: string) {
   const seasonWeek = seasonWeekFor(week);
   const entry = seasonEntry(sign.id, seasonWeek)!;
   return c.json({
+    status: ZODIAC_STATUS,
     address: echo,
     sign: sign.name,
     sign_id: sign.id,
@@ -178,7 +180,7 @@ function readingFor(c: Context<HonoEnv>, address: string, echo: string) {
     avoid: entry.avoid,
     compatible: entry.compatible,
     page: renderEntryMarkdown(sign, entry),
-    note: "Signs are for life; the page turns with the ISO week. This week's reading is free; past weeks are a penny each at /zodiac/archive.",
+    note: ZODIAC_ARCHIVE_NOTICE,
   });
 }
 

@@ -1,3 +1,4 @@
+import { ZODIAC_STATUS } from "@/store/zodiac";
 import { IDEMPOTENCY_TTL_SECONDS } from "@/lib/idempotency";
 /** Publications return the page itself; the receipt header is the purchase record. */
 export function publicationCheckout(base: string) {
@@ -35,8 +36,21 @@ export function publicationLinks(url: string) {
   return { buy_url: url, method: "GET", required_params: [], input_schema: inputSchema, inputSchema };
 }
 
+export const PUBLICATION_COLLECTIONS_SCHEMA = {
+  type: "array",
+  description: "Publication indexes outside menu search; archived collections are opt-in, not current offerings.",
+  items: { type: "object", required: ["index_url", "status"], properties: {
+    index_url: { type: "string", format: "uri" },
+    status: { type: "string", enum: ["active", "archived"] },
+  } },
+};
+
 export function publicationCollections(base: string) {
-  return ["/almanac", "/gazette", "/zodiac/archive"].map(path => ({ index_url: `${base}${path}?view=compact` }));
+  return [
+    { index_url: `${base}/almanac?view=compact`, status: "active" },
+    { index_url: `${base}/gazette?view=compact`, status: "archived" },
+    { index_url: `${base}/zodiac/archive?view=compact`, status: ZODIAC_STATUS },
+  ];
 }
 
 /** Bounds apply only to the opt-in compact view; the existing full indexes remain. */

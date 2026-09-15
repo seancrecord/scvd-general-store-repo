@@ -992,14 +992,20 @@ const BASE = "https://scvd.store";
 // record is worth. Verified the same way, and across the merge: with
 // only that paragraph removed from the merged tree, main's 1ba2bf
 // digest above reproduced, and this copy reproduces the new one.
+// 2026-09-15: the keeper identified Zodiac as archived. The reading-room
+// paragraph now says so, and its weekly invitation came out of the clock
+// list. The two filing headings are normalized below; the rest of the
+// complete guide remains guarded by this digest.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "aa53eaeed10db2b158a71f6dde1d7b86debb08e6561621c8d0427d50919eb80b";
+  "a30ef0ec802c772c99082cb0ba86db82e9c8a89615770ad9e5ba873d84aec61a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
 
 function normalize(text: string): string {
   return text
+    // Filing headings added to keep the index short; the prose is preserved.
+    .replace(/## (?:At the counter|More ways to use the store)\n\n/g, "")
     .replace(/Served: \d{4}-\d{2}-\d{2}/g, "Served: <DATE>")
     .replace(/Last checked by hand: \d{4}-\d{2}-\d{2}/g, "Last checked: <DATE>");
 }

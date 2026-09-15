@@ -66,7 +66,7 @@ const NOTES: Record<string, { every: CadencePeriod; note: string }> = {
   },
   zodiac: {
     every: "week",
-    note: "This week's page is free. Past weeks are a penny each, forever.",
+    note: "Archived feature; the retained reader follows its original weekly calendar.",
   },
   letter: {
     every: "day",

@@ -23,3 +23,26 @@ test("does not report complete coverage for an unreadable contract or unresolved
     assert.throws(() => validationResources(menu, { paths: { [path]: { get: { "x-payment": {} } } } }), /concrete|origin/);
   }
 });
+
+test("expands current finite publication slugs and leaves archives out of the active check", () => {
+  const rows = validationResources(menu, { paths: {
+    "/almanac/a-page": { get: { "x-payment": {} } },
+    "/almanac/{slug}": { get: { "x-payment": {}, parameters: [
+      { in: "path", name: "slug", required: true, schema: { type: "string", enum: ["a-page", "keeper-page"] } },
+    ] } },
+    "/gazette/issue-1": { get: { "x-payment": {}, deprecated: true } },
+  } });
+  assert.deepEqual(rows.map(row => row.url), [
+    "https://scvd.store/api/buy/hello", "https://scvd.store/almanac/a-page", "https://scvd.store/almanac/keeper-page",
+  ]);
+});
+
+test("refuses unsafe or unbounded path substitutions", () => {
+  for (const values of [[], ["../outside"], ["a?b"], ["a/b"], ["%2e%2e"], [42], Array.from({length: 501}, (_, i) => `entry-${i}`)]) {
+    assert.throws(() => validationResources(menu, { paths: {
+      "/almanac/{slug}": { get: { "x-payment": {}, parameters: [
+        { in: "path", name: "slug", schema: { enum: values } },
+      ] } },
+    } }), /concrete|bounded|safe/);
+  }
+});

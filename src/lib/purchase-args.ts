@@ -1,3 +1,4 @@
+import { EVM_TRANSACTION_PATTERN } from "@/lib/purchase-input-syntax";
 import { checkOptionalObservationConstraints } from "@/lib/purchase-constraints";
 import { unicodeLength, hasUnpairedSurrogate } from "@/lib/unicode";
 import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
@@ -229,7 +230,7 @@ export function refusalRpcCode(refusal: PurchaseRefusal): number {
 const SHA256_HEX = /^[0-9a-fA-F]{64}$/;
 
 /** An EVM transaction hash, the shape both attestation doors read. */
-const TX_HASH = /^0x[0-9a-fA-F]{64}$/;
+const TX_HASH = new RegExp(EVM_TRANSACTION_PATTERN);
 
 
 /**
