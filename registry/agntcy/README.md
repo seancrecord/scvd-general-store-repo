@@ -91,9 +91,16 @@ Publishing a `jwks.json` before that decision would be a published
 protocol with no mechanism under it, which is the defect class this
 store keeps finding in itself. So the gap is named here instead.
 
-`scvd.erc8004.identity` is absent from the record's annotations for the
-same reason: this repo has never minted an ERC-8004 identifier, and a
-guessed one is worse than none.
+`scvd.erc8004.identity` **is** carried, composed from
+`src/store/agent-identity.ts` rather than typed here:
+`eip155:8453:0x8004…a432/86957`, the ERC's own
+`{namespace}:{chainId}:{identityRegistry}` string with the token id
+after it. It says this record and agent 86957 are the same party,
+which `ownerOf(86957)` settles against Base without asking us. It does
+not say the registration is finished — the on-chain `tokenURI` still
+points at the bare origin, so explorers reading the agent as
+"Unconfigured" are right to (`docs/ERC8004_AGENT_86957.md`). A
+cross-link is not a status claim.
 
 ## The release sequence, when there is a key
 

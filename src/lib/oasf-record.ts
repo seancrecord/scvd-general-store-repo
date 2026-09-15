@@ -3,6 +3,7 @@ import PLUGIN from "../../plugin.json";
 import SERVER from "../../server.json";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { FREE_INSTRUMENTS } from "@/lib/instrument-roster";
+import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
 
 /**
@@ -161,9 +162,22 @@ export function oasfFreeInstrumentTools(): string[] {
  * carry. OASF types these as string→string, so a list is a joined
  * string rather than an array; the join is the only formatting here.
  *
- * `scvd.erc8004.identity` is deliberately absent. This repo has never
- * minted an ERC-8004 identifier, and a plausible-looking guess in a
- * record signed by the domain it names is worse than a gap.
+ * THE ERC-8004 CROSS-LINK, COMPOSED RATHER THAN COPIED. The value is
+ * the registry string the ERC defines — `{namespace}:{chainId}:
+ * {identityRegistry}` — with the token id after it, both read off
+ * store/agent-identity where the store already keeps them.
+ * Written out by hand it would be a 40-character checksummed address
+ * in a second place, and an address that is wrong in one copy is the
+ * kind of error nobody finds by reading.
+ *
+ * WHAT IT CLAIMS AND WHAT IT DOES NOT. It says this record and agent
+ * 86957 are the same party, which `ownerOf(86957)` settles against
+ * Base without asking us. It does not say the registration is fully
+ * configured: as of 2026-09-14 the on-chain `tokenURI` still points at
+ * the bare origin rather than the registration file, and explorers
+ * reading the agent as "Unconfigured" are right to (docs/
+ * ERC8004_AGENT_86957.md). A cross-link is not a status claim, and
+ * this one would be false if it were dressed as one.
  */
 export const OASF_ANNOTATIONS: Readonly<Record<string, string>> = {
   "scvd.payment.protocol": "x402",
@@ -172,6 +186,7 @@ export const OASF_ANNOTATIONS: Readonly<Record<string, string>> = {
   "scvd.evidence.not": "escrow,guarantee,ranking",
   "scvd.free.instruments": oasfFreeInstrumentTools().join(","),
   "scvd.oasf.taxonomy_source": `https://github.com/agntcy/oasf/tree/${OASF_TAXONOMY_TAG}`,
+  "scvd.erc8004.identity": `${SCVD_AGENT_REGISTRY}/${SCVD_AGENT_ID}`,
 };
 
 /**

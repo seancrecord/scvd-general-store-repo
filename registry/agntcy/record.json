@@ -13,7 +13,8 @@
     "scvd.evidence.model": "signed,dated,expiring,offline-verifiable",
     "scvd.evidence.not": "escrow,guarantee,ranking",
     "scvd.free.instruments": "check_before_you_pay,check_conformance,look_at_door,preflight_endpoint,read_store_guide,verify_artifact",
-    "scvd.oasf.taxonomy_source": "https://github.com/agntcy/oasf/tree/v1.1.0"
+    "scvd.oasf.taxonomy_source": "https://github.com/agntcy/oasf/tree/v1.1.0",
+    "scvd.erc8004.identity": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432/86957"
   },
   "domains": [
     {

@@ -1,5 +1,6 @@
 import { LATEST_PROTOCOL } from "@/routes/mcp";
 import { A2A_PROTOCOL_VERSION } from "@/lib/a2a-validation.js";
+import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
 import {
   STORE_CONTACT_EMAIL,
   STORE_METADATA,
@@ -48,15 +49,13 @@ export const ERC8004_REGISTRATION_TYPE =
 export const AGENT_REGISTRATION_PATH = "/.well-known/agent-registration.json";
 
 /**
- * The store's agent, as minted. The registry string is
- * `{namespace}:{chainId}:{identityRegistry}` per the ERC — the
- * ERC-8004 Identity Registry on Base mainnet, EIP-55 checksummed
- * because a registry that string-compares a lowercase address
- * against its own checksummed one finds no match.
+ * The store's agent, as minted. The values live in
+ * store/agent-identity — they are data about who this store is, and
+ * this module cannot be imported outside the Worker (see the note
+ * there). Re-exported so every reader that learned them here keeps
+ * working.
  */
-export const SCVD_AGENT_ID = 86957;
-export const SCVD_AGENT_REGISTRY =
-  "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+export { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY };
 
 interface RegistrationService {
   name: string;

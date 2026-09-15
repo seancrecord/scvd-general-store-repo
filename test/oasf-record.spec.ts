@@ -17,6 +17,7 @@ import {
 } from "@/lib/oasf-record";
 import { OASF_RECORD_PATH } from "@/routes/oasf";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
+import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
 
 /**
  * THE OASF RECORD IS THE STORE, NO MORE AND NO LESS.
@@ -99,6 +100,18 @@ describe("the OASF record", () => {
     expect(named).toEqual(oasfFreeInstrumentTools());
     const live = new Set(mcpToolCatalog(ORIGIN).map((t) => t.name));
     for (const name of named) expect(live.has(name), `${name} is not in the catalogue`).toBe(true);
+  });
+
+  /**
+   * The ERC-8004 cross-link is composed from the store's own agent
+   * constants. A checksummed address retyped into a record is an
+   * error nobody finds by reading, and this record is meant to be
+   * signed by the domain it names.
+   */
+  it("cross-links the ERC-8004 agent the store actually minted", () => {
+    expect(snapshot.annotations["scvd.erc8004.identity"]).toBe(
+      `${SCVD_AGENT_REGISTRY}/${SCVD_AGENT_ID}`,
+    );
   });
 
   it("points at the public repository, which is what makes it scannable", () => {
