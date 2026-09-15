@@ -295,6 +295,8 @@ export interface PassportChipOptions {
    * reader comparing them deserves to know they are two instruments.
    */
   selfObserved?: boolean;
+  protocol?: "x402" | "mpp";
+  protocolNote?: string;
   /**
    * The passport's tier with its fraction (2026-09-02). The face carries
    * the compact form (ESTABLISHED 4/4), the accessible label the whole
@@ -559,7 +561,7 @@ export function renderPassportChip(options: PassportChipOptions): string {
   /* "SELF-OBSERVED PASSPORT" did not fit the band beside the stamp and
    * came out cut mid-word; the record line below carries the whole of
    * what self-observed means anyway. */
-  const eyebrow = options.selfObserved ? "SELF-OBSERVED" : "ENDPOINT PASSPORT";
+  const eyebrow = options.selfObserved ? "SELF-OBSERVED" : options.protocol ? `${options.protocol.toUpperCase()} PASSPORT` : "ENDPOINT PASSPORT";
   const host = fitHost(options.host, L.host.sizes, CHIP_BUDGETS.full);
   const sealAngle = sealAngleFor(options.host);
   /*
@@ -579,6 +581,7 @@ export function renderPassportChip(options: PassportChipOptions): string {
   const legend = "SCVD GENERAL STORE";
   const S = L.stamp;
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${L.width}" height="${L.height}" viewBox="0 0 ${L.width} ${L.height}" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}. A dated observation, never a ranking. Verify at ${escapeHtml(options.passportUrl)}">
+  ${options.protocolNote ? `<desc>${escapeHtml(options.protocolNote)}</desc>` : ""}
   <defs>
     <linearGradient id="chipFace" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="${CHIP_GROUND_TOP}"/>

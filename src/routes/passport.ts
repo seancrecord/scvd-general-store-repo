@@ -219,7 +219,7 @@ passportRoutes.get("/passport", async (c) => {
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       what: "One canonical, signed, expiring object per endpoint: the census's evidence about one host, with a freshness state an agent can act on mechanically. Ready-side hosts only — names appear only on the ready side, everywhere in this store.",
-      how: `GET ${base}/passport/{host} — JSON by default, HTML for eyes. Refusals say why (never-observed | not-ready).`,
+      how: `GET ${base}/passport/{host} — JSON by default, HTML for eyes. Refusals distinguish no observation, no passing protocol, an unmeasured protocol and a retracted reading.`,
       freshness_rule: `fresh <= ${FRESH_DAYS}d, aging <= ${AGING_DAYS}d, expired after; broken when the latest verdict is not ready. Refuse expired passports.`,
       decision_rule: DECISION_RULE,
       decision_meaning: DECISION_MEANING,

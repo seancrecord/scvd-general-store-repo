@@ -645,3 +645,6 @@ The final-redirect format control failed before its repair; disabling three dete
 
 
 September 15 full-suite closeout: **715 files / 14,102 tests passed**, one test failed, one existing test skipped; duration 3,988.99 seconds, exit 1. The sole failure is the previously documented transient empty-package-file interference. Its entire 122-test spec passed against stable inputs. No other assertion failure or unhandled runner error was reported. This is not a clean full-suite pass; clean integrated CI remains the merge gate.
+
+
+**Integrated full-suite result:** all **724 files / 14,194 tests passed**, with one existing skip, exit 0, in 1,773.17 seconds. The source hashes match the frozen integrated files. This is the clean full run; the earlier contaminated attempt remains recorded separately. Typecheck, both builds, 246 affected cases, 44 buyer benchmark/evidence cases and the explicit CI guards also passed. [PR #718](https://github.com/seancrecord/scvd-general-store-repo/pull/718) contains the batch; required CI and deployed wallet recovery remain the release gates.

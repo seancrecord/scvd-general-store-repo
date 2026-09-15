@@ -29,3 +29,10 @@ No new live USDC was spent in this repair. The original BUY-001–039 and commis
 - Full-suite qualification explicitly records an agent-caused transient empty `package.json` while CI wiring was edited; the affected file must be rerun against stable inputs. This is not credited as a green full run.
 
 - Added the bounded redirect/format follow-through: 326 read-only GETs including separate corpus/menu follow-ups, 44 passing benchmark/evidence tests, and explicit remaining recursive/error coverage. Details: `../buyer-link-followthrough-2026-09-15/REPORT.md`.
+
+- Finish-up: recorded the original full-suite result (14,102 passed, one known interference failure, one existing skip) and the successful 122-case rerun without calling the original run green.
+- Recorded commit `52af8bbd`, resolved main integration, reversible guide-fingerprint proof and 246 integrated affected tests. Fresh full-suite/PR/deployment status is kept in `integration-validation.json`.
+
+- Added GitHub generated-file hints for raw buyer snapshots, request journals and machine comparisons; reports, reviews and code remain normal reviewable diffs. Raw evidence bytes are unchanged.
+
+- Clean integrated full-suite result: 724 files / 14,194 tests passed, one existing skip, exit 0. PR #718 opened; no deployed-recovery pass is claimed before the release check.

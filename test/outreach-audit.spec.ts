@@ -268,8 +268,17 @@ describe("the sweep — the re-read on a clock", () => {
 
     const alerts = await testEnv.COUNTERS.list({ prefix: "alert_open:" });
     const keys = alerts.keys.map((k) => k.name);
-    expect(keys).toContain("alert_open:worker_health:note-audit:ours:healed-or-wrong.example");
-    // Nothing pages for a door that still fails exactly what we said.
+    /*
+     * A ROW, NOT A PAGE (2026-09-15). The condition moved from
+     * `worker_health` to `note_audit`, which is on DESK_CONDITIONS and
+     * mails nobody — the keeper asked for the whole type out of his
+     * inbox, not one host muted. What the sweep owes the trail is
+     * unchanged and is what this pins: a disagreeing door gets its
+     * row, keyed per host and per call.
+     */
+    expect(keys).toContain("alert_open:note_audit:ours:healed-or-wrong.example");
+    expect(keys.every((k) => !k.startsWith("alert_open:worker_health:note"))).toBe(true);
+    // Nothing is raised at all for a door that still fails exactly what we said.
     expect(keys.some((k) => k.includes("quiet-"))).toBe(false);
   });
 });

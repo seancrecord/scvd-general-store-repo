@@ -10,6 +10,7 @@ import {
   type SkippedRangesRecord,
 } from "@/services/chain-reconciliation";
 import type { DeliveryAudit } from "@/services/delivery-audit";
+import type { AlertMute, MuteListing } from "@/lib/alert-mutes";
 
 /** Matches listAlerts' inline row shape. */
 interface AlertLogEntry {
@@ -36,6 +37,12 @@ interface AlertLogEntry {
   resolved_as?: string;
   /** The settlement tx parsed from the detail, for the inline resolve. */
   tx?: string;
+  /** What this alarm is called when muting it. Absent on rows written before mutes existed. */
+  identity?: string;
+  /** Set when the last raise sent no email, and by which kind of mute. */
+  email_muted?: AlertMute["scope"];
+  /** Set when this condition never mails at all — a desk finding, not a page. */
+  desk_only?: true;
 }
 
 /**
@@ -89,6 +96,12 @@ export interface ReconciliationPageData {
    * the route, which reads the individual row receipts with the log.
    */
   alertsLastRead: string | null;
+  /**
+   * Every alarm whose email is currently silenced. Rendered whether or
+   * not there are any: a mute the page does not show is a wire quietly
+   * cut, and the keeper would find out by missing the page he needed.
+   */
+  mutes?: MuteListing;
   loadNotes: string[];
 }
 
@@ -309,6 +322,112 @@ function deliveriesHtml(
     <ul>${rows}</ul>`;
 }
 
+/**
+ * THE LEVER BESIDE THE ROW (2026-09-15).
+ *
+ * The keeper's ask was not "turn off alerting", it was "not this
+ * one" — and the difference between those two is the whole reason
+ * this is a button on a row rather than a line in the code. Muting
+ * here stops the EMAIL for this exact alarm: the row stays, its
+ * repeats keep climbing, and lifting the mute is the same one press.
+ *
+ * The condition-wide lever sits beside it and says plainly what it
+ * costs, because "every worker_health" includes the pages that mean
+ * the Worker is down, which is not what anybody wants when what they
+ * actually wanted was one desk item to stop knocking.
+ */
+function muteLeverHtml(alert: AlertLogEntry): string {
+  /*
+   * NO LEVER, BECAUSE THERE IS NO WIRE. A desk condition never
+   * reached the phone, so offering "stop emailing this one" would be
+   * offering to turn off something already off — and the keeper would
+   * have no way to tell that press apart from one that did something.
+   * The line says which desk answers it instead.
+   */
+  if (alert.desk_only) {
+    return `<div style="margin:0.3em 0"><small><strong>Desk only</strong> — this one never emails
+      anybody; it is answered where it is raised, not by being paged about.</small></div>`;
+  }
+  if (alert.email_muted) {
+    const target = alert.email_muted === "condition" ? alert.condition : alert.identity;
+    if (!target) return "";
+    return `<form method="POST" action="/admin/alerts/unmute" style="margin:0.3em 0">
+        <input type="hidden" name="target" value="${escapeHtml(target)}">
+        <button type="submit">Email me this again</button>
+        <small>${
+          alert.email_muted === "condition"
+            ? `every "${escapeHtml(alert.condition)}" is muted, so this lever lifts the whole condition`
+            : "muted for this alarm alone"
+        }</small>
+      </form>`;
+  }
+  /*
+   * A row from before identities were written can still be silenced,
+   * just not precisely — so it is offered the honest lever it has
+   * rather than a precise-looking one that would mute nothing.
+   */
+  return `<form method="POST" action="/admin/alerts/mute" style="margin:0.3em 0">
+      <input type="text" name="reason" maxlength="200" placeholder="why (optional, for the mute list)" size="32">
+      ${
+        alert.identity
+          ? `<input type="hidden" name="identity" value="${escapeHtml(alert.identity)}">
+      <button type="submit" name="scope" value="alarm">Stop emailing this one</button>`
+          : ""
+      }
+      <input type="hidden" name="condition" value="${escapeHtml(alert.condition)}">
+      <button type="submit" name="scope" value="condition">Stop emailing every "${escapeHtml(alert.condition)}"</button>
+    </form>`;
+}
+
+/**
+ * WHAT A MUTE ACTUALLY DOES, said once on the page that offers it.
+ * The second half is the sharp edge: an alarm raised without a key of
+ * its own is named by its own text, so a mute follows that wording and
+ * a reworded alarm is a new one. Better said here than discovered by a
+ * page arriving from an alarm the keeper believed he had silenced.
+ */
+const MUTE_NOTE = `<p><small>A mute stops the email for one alarm and
+  nothing else: the row still lands on this trail, its repeat count
+  still climbs, and the console still logs it. An alarm raised without
+  a key of its own is named by its own text — reword it and it pages
+  again under a new name.</small></p>`;
+
+/** Live mutes, always rendered — including the sentence when there are none. */
+function mutesHtml(listing: MuteListing | undefined): string {
+  if (listing === undefined) return "";
+  const { mutes } = listing;
+  if (mutes.length === 0) {
+    return `<p><small>Nothing is muted: every condition that pages is paging.</small></p>
+    ${MUTE_NOTE}`;
+  }
+  const rows = mutes
+    .map(
+      (mute) =>
+        `<li><strong>${escapeHtml(mute.target)}</strong>${
+          mute.scope === "condition" ? " <em>(the whole condition)</em>" : ""
+        } — silenced ${escapeHtml(mute.at.slice(0, 16))}Z${
+          mute.reason ? `, "${escapeHtml(mute.reason)}"` : ""
+        }
+        <form method="POST" action="/admin/alerts/unmute" style="display:inline;margin:0">
+          <input type="hidden" name="target" value="${escapeHtml(mute.target)}">
+          <button type="submit">Email me this again</button>
+        </form></li>`,
+    )
+    .join("\n");
+  return `<p>${ATTENTION} — ${mutes.length} alarm${mutes.length === 1 ? "" : "s"} ${
+    mutes.length === 1 ? "sends" : "send"
+  } you no email. ${
+    mutes.length === 1 ? "It still writes" : "They still write"
+  } to this trail, so a muted problem is one you can still see standing here.</p>
+    <ul>${rows}</ul>
+    ${
+      listing.truncated
+        ? `<p>${ATTENTION} — more alarms are muted than this list holds; it is capped. Lift a few before trusting it as the whole set.</p>`
+        : ""
+    }
+    ${MUTE_NOTE}`;
+}
+
 function alertsHtml(
   alerts: AlertLogEntry[],
   lastRead: string | null,
@@ -374,7 +493,7 @@ function alertsHtml(
       <button type="submit">Resolve this one</button>
               </form>`
             : ""
-        }</li>`,
+        }${muteLeverHtml(alert)}</li>`,
     )
     .join("\n");
   return `<p><strong>${
@@ -435,9 +554,10 @@ export function renderReconciliationPage(
     ${deliveriesHtml(data.deliveries)}
   </section>
 
-  <section>
+  <section id="alarms">
     <h2>The alarm trail</h2>
     ${alertsHtml(data.alerts, data.alertsLastRead, data.alertsUnavailable)}
+    ${mutesHtml(data.mutes)}
   </section>
 
   <section>

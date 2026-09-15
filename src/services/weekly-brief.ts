@@ -1,5 +1,6 @@
 import { CATALOG_COLUMN_WHAT_THIS_IS, type CatalogAgreement } from "@/services/catalog-agreement";
 import type { CorpusRecord } from "@/services/corpus";
+import { MPP_CENSUS_NOTE, type MppCensus } from "@/services/mpp-census";
 import { deriveTrajectory, type WeekPoint } from "@/services/trajectory";
 import { defectClass } from "@/store/defect-vocabulary";
 
@@ -68,6 +69,7 @@ export interface WeeklyBrief {
    * the column was written.
    */
   catalog?: CatalogAgreement & { what_this_is: string };
+  mpp?: MppCensus & { what_this_is: string };
   /** The week before, for a reader who wants the direction, never a trend line. */
   previous?: { week: string; payable: number; not_payable: number; probed: number };
   not_a_ranking: string;
@@ -108,6 +110,7 @@ function briefOf(point: WeekPoint, previous: WeekPoint | undefined, base: string
     ...(point.catalog
       ? { catalog: { ...point.catalog, what_this_is: CATALOG_COLUMN_WHAT_THIS_IS } }
       : {}),
+    ...(point.mpp ? { mpp: { ...point.mpp, what_this_is: MPP_CENSUS_NOTE } } : {}),
     ...(previous
       ? {
           previous: {

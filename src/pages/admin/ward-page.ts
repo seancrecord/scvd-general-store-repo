@@ -1,4 +1,5 @@
 import { renderIndexReading } from "@/pages/admin/index-reading";
+import { MPP_CENSUS_NOTE, mppCensusLine, mppCensusOf } from "@/services/mpp-census";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { WardDelta, WardRound } from "@/services/ward-round";
@@ -127,6 +128,7 @@ export function renderWardPage(
   const summary = `<ul>
     <li><strong>${probed.length} doors probed</strong>${listedOnly > 0 ? ` (+${listedOnly} leaderboard-listed, population only — homepages carry no 402 to judge)` : ""} ${escapeHtml(round.at.slice(0, 16))}Z (week ${escapeHtml(round.week)}); ${round.listed_resources} resources listed.</li>
     <li><strong>${ready} ready (${probed.length > 0 ? Math.round((ready / probed.length) * 100) : 0}% of probed)</strong>, ${probed.length - ready} not.</li>
+    <li>${round.mpp || round.hosts.some(row => row.mpp) ? `${escapeHtml(mppCensusLine(mppCensusOf(round.hosts)))} ${escapeHtml(MPP_CENSUS_NOTE)}` : "MPP: not measured this round."}</li>
     ${
       round.population
         ? `<li><strong>Coverage: ${
@@ -215,6 +217,7 @@ export function renderWardPage(
       (entry) => `<tr>
       <td>${escapeHtml(entry.host)}${entry.source === "leaderboard" ? " <small>(leaderboard-only)</small>" : ""}</td>
       <td>${escapeHtml(entry.verdict)}</td>
+      <td>${escapeHtml(entry.protocols_spoken ? entry.protocols_spoken.join(", ") || "neither observed" : entry.mpp_read_error ? "not measured: reader failed" : "not measured")}${entry.mpp ? ` · ${escapeHtml(entry.mpp.battery)}` : ""}</td>
       <td>${escapeHtml(entry.failed.join(", ") || "—")}</td>
       <td>${escapeHtml(entry.advisories.join(", ") || "—")}</td>
       <td>${
@@ -238,7 +241,7 @@ export function renderWardPage(
       ${deltaHtml}
       <h3>Every door on the ward</h3>
       <table>
-        <thead><tr><th>Host</th><th>Verdict</th><th>Failed checks</th><th>Advisories</th><th>Volume claim</th></tr></thead>
+        <thead><tr><th>Host</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Advisories</th><th>Volume claim</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p>One GET per host per week, same as any indexer. Verdicts here

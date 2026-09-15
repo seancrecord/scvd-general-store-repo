@@ -35,7 +35,21 @@ export interface CounterPageData {
   /** One line at the top of the room: what the last form actually did. */
   notice?: string;
   weekNote: string;
-  alerts: Array<{ condition: string; detail: string; at: string; seen?: boolean }>;
+  /**
+   * `email_muted` is carried here so the glance can say WHY a row
+   * standing in front of the keeper never reached his phone. Without
+   * it the honest half of a mute — the alarm still happening in the
+   * open — reads as a mail wire that has quietly stopped working.
+   */
+  alerts: Array<{
+    condition: string;
+    detail: string;
+    at: string;
+    seen?: boolean;
+    email_muted?: "alarm" | "condition";
+    /** Raised by a condition that never mails: a desk finding, not a page. */
+    desk_only?: true;
+  }>;
   alertsUnavailable?: boolean;
   /**
    * When the keeper last stood here with alarms showing (null on a
@@ -533,10 +547,14 @@ export function renderCounterPage(data: CounterPageData): string {
           <ul>${data.alerts
             .map(
               (alert) =>
-                `<li>${seenAt !== null && !alert.seen ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}<strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
+                `<li>${seenAt !== null && !alert.seen ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}${alert.desk_only ? `<strong>[DESK]</strong> ` : alert.email_muted ? `<strong>[MUTED]</strong> ` : ""}<strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
             )
             .join("\n")}</ul>
-          <p><small>Details clipped for the counter; the alert emails carry the full text.
+          <p><small>Details clipped for the counter; the alert emails carry the full text
+          — except for a row marked [MUTED], which sent you no mail on purpose
+          and can be un-muted on <a href="/admin/reconciliation#alarms">the reconciliation page</a>,
+          and one marked [DESK], which never mails anybody and is answered
+          where it is raised.
           ${
             seenAt === null
               ? "First look: nothing is marked new, because the store has no idea what you have already read."

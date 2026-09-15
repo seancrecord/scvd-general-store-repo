@@ -6,6 +6,8 @@ import type { RefreshObservation } from "@/services/passport-refresh";
 import type { SubjectHistory } from "@/services/subject-history";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import type { Env } from "@/types";
+import { MPP_BATTERY } from "@/lib/mpp-challenge";
+import { PASSPORT_PROTOCOL_RULE, passportProtocolOf, protocolVerdict, type PassportProtocol, type ProtocolEvidence } from "@/services/passport-protocol";
 
 /**
  * THE PASSPORT TIER — the first derived verdict published under the
@@ -67,7 +69,7 @@ export const TIER_RULE: readonly { tier: PassportTier; rule: string }[] = [
 ];
 
 export const TIER_RULE_NOTE =
-  "The tier is a function of (rounds in window, ready count, latest observation, coverage_suspect) and nothing else. Every rendering prints the fraction it came from and links the rows. No ratio without its denominator, no tier without its rows. Newest wins between a weekly round and a paid refresh, so a refresh that finds the door broken moves the tier to broken that hour. Nothing orders one host against another.";
+  "The tier is a function of (rounds in window, ready count, latest observation, coverage_suspect) and nothing else. Every rendering prints the fraction it came from and links the rows. No ratio without its denominator, no tier without its rows. Newest wins between a weekly round and a paid refresh, so a refresh that finds the door broken moves the tier to broken that hour. Nothing orders one host against another. " + PASSPORT_PROTOCOL_RULE;
 
 /** One round of the window, as the tier read it. */
 export interface TierRow {
@@ -98,6 +100,7 @@ export interface TierLatest {
 }
 
 export interface TierInput {
+  protocol?: PassportProtocol;
   /** Rounds since first sighting, ascending, at most STANDING_ROUNDS. */
   rounds: TierRow[];
   latest: TierLatest;
@@ -115,6 +118,8 @@ export interface TierFraction {
 }
 
 export interface TierReading {
+  protocol?: PassportProtocol;
+  battery?: string;
   tier: PassportTier;
   /** "established — 4 of 4, W33–W36": the tier never travels without this. */
   line: string;
@@ -178,7 +183,9 @@ export function deriveTier(input: TierInput, criteriaUrl: string): TierReading {
     const fraction = fractionOf(window);
     return {
       tier,
-      line: `${tier} — ${fraction.ready} of ${fraction.rounds}, ${fraction.weeks}`,
+      line: `${tier} — ${fraction.ready} of ${fraction.rounds}, ${fraction.weeks}${input.protocol === "mpp" ? ` · MPP (${MPP_BATTERY})` : ""}`,
+      ...(input.protocol ? { protocol: input.protocol } : {}),
+      ...(input.protocol === "mpp" ? { battery: MPP_BATTERY } : {}),
       fraction,
       rule: ruleFor(tier),
       latest: input.latest,
@@ -194,6 +201,9 @@ export function deriveTier(input: TierInput, criteriaUrl: string): TierReading {
   };
 
   const latest = input.latest.verdict;
+  if (input.protocol === "mpp" && latest === null) {
+    return finish("indeterminate", windowEstablished);
+  }
   if (latest === "not_ready" || latest === "unreachable") {
     return finish("broken", windowEstablished);
   }
@@ -228,6 +238,7 @@ export function tierInputFromHistory(
     verdict: string | null;
     observed_at: string | null;
     refreshIsNewest: boolean;
+    protocol?: PassportProtocol;
   },
 ): TierInput {
   const rounds: TierRow[] = history.timeline
@@ -235,7 +246,7 @@ export function tierInputFromHistory(
     .map((round) => {
       const observed =
         round.probed && round.verdict !== undefined && round.verdict !== "not_probed";
-      return {
+      return protocolTierRow({
         sequence: round.sequence,
         week: round.week,
         taken_at: round.taken_at,
@@ -244,10 +255,11 @@ export function tierInputFromHistory(
         ...(observed ? { verdict: round.verdict as TierRow["verdict"] } : {}),
         ...(round.gap ? { gap: round.gap } : {}),
         coverage_suspect: !observed && round.coverage_suspect,
-      };
+      }, round, observation.protocol ?? "x402");
     })
     .slice(-STANDING_ROUNDS);
   return {
+    protocol: observation.protocol ?? "x402",
     rounds,
     latest: {
       verdict: observation.verdict,
@@ -262,8 +274,19 @@ export function tierInputFromHistory(
   };
 }
 
+/** Missing MPP evidence is a gap in our reader, not a failed x402 round. */
+function protocolTierRow(row: TierRow, evidence: ProtocolEvidence | undefined, protocol: PassportProtocol): TierRow {
+  if (protocol === "x402" || !row.observed) return row;
+  const verdict = protocolVerdict(evidence, protocol);
+  const { verdict: _verdict, ...rest } = row;
+  return { ...rest, observed: verdict !== null,
+    ...(verdict !== null ? { verdict: verdict as TierRow["verdict"] } : { gap: "protocol_unmeasured" }),
+    coverage_suspect: row.coverage_suspect || verdict === null };
+}
+
 /** A row of the index: one host's tier with its fraction. */
 export interface TierIndexEntry {
+  protocol?: PassportProtocol;
   host: string;
   tier: PassportTier;
   line: string;
@@ -290,9 +313,9 @@ export interface TierIndex {
   hosts: TierIndexEntry[];
 }
 
-interface ChainRow {
+interface ChainRow extends ProtocolEvidence {
   host?: unknown;
-  verdict?: unknown;
+  observed_at?: string;
   observer_status?: unknown;
 }
 
@@ -359,7 +382,8 @@ export function foldTierIndex(
     }
   }
   const rowsByHost = new Map<string, TierRow[]>();
-  const lastObservedByHost = new Map<string, { verdict: string; at: string }>();
+  const evidenceByHost = new Map<string, (ChainRow | undefined)[]>();
+  const lastObservedByHost = new Map<string, { evidence: ChainRow; at: string }>();
   for (const record of records) {
     const { snapshot } = record;
     const round = snapshot.round;
@@ -387,7 +411,10 @@ export function foldTierIndex(
         coverage_suspect: !observed && (suspectRound || degraded),
       });
       rowsByHost.set(host, list);
-      if (observed) lastObservedByHost.set(host, { verdict: verdict!, at: snapshot.taken_at });
+      const evidence = evidenceByHost.get(host) ?? [];
+      evidence.push(row);
+      evidenceByHost.set(host, evidence);
+      if (observed) lastObservedByHost.set(host, { evidence: row!, at: row?.observed_at ?? snapshot.taken_at });
     }
   }
   const hosts: TierIndexEntry[] = [];
@@ -403,18 +430,21 @@ export function foldTierIndex(
     const refresh = refreshes.get(host) ?? null;
     const refreshIsNewest =
       refresh !== null && (census === null || refresh.observed_at > census.at);
+    const winner = refreshIsNewest ? refresh : census?.evidence;
+    const protocol = passportProtocolOf(winner);
     const latest: TierLatest = refreshIsNewest
-      ? { verdict: refresh!.verdict, observed_at: refresh!.observed_at, source: "paid_refresh" }
+      ? { verdict: protocolVerdict(winner, protocol), observed_at: refresh!.observed_at, source: "paid_refresh" }
       : census
-        ? { verdict: census.verdict, observed_at: census.at, source: "census" }
+        ? { verdict: protocolVerdict(winner, protocol), observed_at: census.at, source: "census" }
         : { verdict: null, observed_at: null, source: null };
     const reading = deriveTier(
-      { rounds: (rowsByHost.get(host) ?? []).slice(-STANDING_ROUNDS), latest },
+      { protocol, rounds: (rowsByHost.get(host) ?? []).map((row, index) => protocolTierRow(row, evidenceByHost.get(host)?.[index], protocol)).slice(-STANDING_ROUNDS), latest },
       `${base}/criteria`,
     );
     byTier[reading.tier] += 1;
     hosts.push({
       host,
+      protocol,
       tier: reading.tier,
       line: reading.line,
       fraction: reading.fraction,
@@ -426,7 +456,7 @@ export function foldTierIndex(
   }
   return {
     what_this_is:
-      "Every host the signed chain has carried, each with the tier derived from its own rounds by the rule on /criteria, printed with the fraction it came from. Derived at read from the signed records, never stored; the rows behind every line are at each host's rows_url.",
+      "Every host the signed chain has carried, each with the tier derived from its own rounds by the rule on /criteria, printed with the fraction it came from. Derived at read from the signed records, never stored; the rows behind every line are at each host's rows_url. " + PASSPORT_PROTOCOL_RULE,
     what_this_is_not:
       "Not a ranking: the list is alphabetical by host, and nothing here orders one host against another. Not a score on any operator: a tier is a reading of a door's rounds. Never a verdict without its derivation and denominator beside it.",
     corrections: CORRECTIONS_POINTER,

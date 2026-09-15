@@ -160,11 +160,23 @@ describe("every operation an LLM would call is typed, not described in prose", (
     for (const entry of operations(document)) {
       if (entry.method !== "post") continue;
       const body = entry.op["requestBody"] as Record<string, unknown> | undefined;
-      const schema = body
-        ? ((body["content"] as Record<string, Record<string, unknown>>)?.[
-            "application/json"
-          ]?.["schema"] as Record<string, unknown> | undefined)
-        : undefined;
+      /*
+       * WHATEVER MEDIA TYPE THE BODY DECLARES (widened 2026-09-15).
+       * This read application/json alone, on the assumption every POST
+       * here is a JSON API. POST /bell is not: it takes an HTML form,
+       * because it exists so a person can press a button, and its body
+       * is application/x-www-form-urlencoded.
+       *
+       * The widening does not soften the rule — the rule is "typed,
+       * not prose", and a form body with a declared schema is typed.
+       * What still fails is a requestBody described in a sentence with
+       * no schema behind it, in any media type, which is the thing
+       * this guard was written to stop.
+       */
+      const content = (body?.["content"] ?? {}) as Record<string, Record<string, unknown>>;
+      const schema = Object.values(content)
+        .map((media) => media["schema"] as Record<string, unknown> | undefined)
+        .find((candidate) => candidate !== undefined);
       // `type` alone is not typing: an operation whose body is a free
       // object has to SAY it is, which the verify-receipt desk does.
       if (!schema || !schema["type"]) {

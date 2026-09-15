@@ -89,3 +89,11 @@ The [direct-link follow-through](../buyer-link-followthrough-2026-09-15/REPORT.m
 
 
 September 15 full-suite closeout: **715 files / 14,102 tests passed**, one test failed, one existing test skipped; duration 3,988.99 seconds, exit 1. The sole failure is the previously documented transient empty-package-file interference. Its entire 122-test spec passed against stable inputs. No other assertion failure or unhandled runner error was reported. This is not a clean full-suite pass; clean integrated CI remains the merge gate.
+
+
+### Finish-up and main integration
+
+The reviewed batch is committed as `52af8bbd`. Main was integrated through the revision recorded in `integration-validation.json`; both correction entries are retained and both branches' guide changes survive. Reversing only the buyer copy reproduced main's guide digest (13/13 tests), then the exact buyer source was restored and the integrated digest pinned. The integrated affected run passed 246 tests across ten files; all 44 benchmark/evidence tests, typecheck, both builds, claims and docs guards passed. Retained paid evidence and all nine corruption controls were reverified offline. The fresh complete integrated suite is running before the merge commit; no release or deployed wallet-only recovery is credited yet.
+
+
+**Integrated full-suite result:** all **724 files / 14,194 tests passed**, with one existing skip, exit 0, in 1,773.17 seconds. The source hashes match the frozen integrated files. This is the clean full run; the earlier contaminated attempt remains recorded separately. Typecheck, both builds, 246 affected cases, 44 buyer benchmark/evidence cases and the explicit CI guards also passed. [PR #718](https://github.com/seancrecord/scvd-general-store-repo/pull/718) contains the batch; required CI and deployed wallet recovery remain the release gates.

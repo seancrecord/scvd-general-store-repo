@@ -65,9 +65,9 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     mediaType: "application/ld+json",
     name: "The signed corpus",
     description:
-      "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw. Hash-chained, ed25519-signed, Bitcoin-anchored.",
+      "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw. Answered rows record protocols_spoken and an mpp challenge reading under its named battery; older rows may lack them. Hash-chained, ed25519-signed, Bitcoin-anchored.",
     caution:
-      "Dated observations of moments, never a ranking. A verdict is what one probe saw from one vantage at one time; anything derived from the rows carries its rule and its denominator.",
+      "Dated observations of moments, never a ranking. A verdict is what one probe saw from one vantage at one time; anything derived from the rows carries its rule and its denominator. MPP is read only; this store's till does not speak MPP. Missing protocol readings mean unmeasured.",
     cadence: "weekly, appended",
     representativeQueries: [
       "find signed weekly observations of x402 endpoints",

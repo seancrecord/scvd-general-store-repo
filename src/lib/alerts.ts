@@ -4,6 +4,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { muteFor, type AlertMute } from "@/lib/alert-mutes";
 
 /**
  * P1 alerting. A short list of conditions pages the keeper — see
@@ -140,7 +141,60 @@ export const ALERT_CONDITIONS = [
   "citation_seen",
 ] as const;
 
-export type AlertCondition = (typeof ALERT_CONDITIONS)[number];
+/**
+ * CONDITIONS THAT KEEP A ROW AND NEVER MAIL (2026-09-15).
+ *
+ * The keeper, on the note-audit pages: "I don't want any of those
+ * TYPE of alarms, not for that specific company." Muting one host was
+ * the wrong shape for what he was saying — he was not tired of
+ * delvorn.site, he was telling us this whole instrument does not
+ * belong in the channel that means THE STORE IS BROKEN.
+ *
+ * He is right, and this file already argued it twice. The retired-key
+ * sample alert was deleted rather than reworded because "a
+ * self-clearing cosmetic condition given the same channel as an
+ * outage does not inform anybody; it teaches the reader that alerts
+ * from this store are noise." `citation_seen` carries the other half:
+ * a finding that "is not a fault of the Worker" has no business
+ * riding `worker_health`. A note this desk sent going stale is a DESK
+ * ITEM — it is answered by pressing the drafted correction on
+ * /admin/outreach#audit, not by anybody getting out of bed.
+ *
+ * So these are not muted, they are not paging conditions in the first
+ * place. They still call sendAlert and still get everything sendAlert
+ * gives: the console line, a row on the alarm trail, first-seen and
+ * repeats, the NEW mark, thirty days of retention. The one thing they
+ * never get is the keeper's phone. That is the whole difference
+ * between this list and the one above, and it is why the email
+ * footer's count reads from the PAGING list alone.
+ *
+ * TO MAKE ONE PAGE AGAIN: move its name from this array to
+ * ALERT_CONDITIONS. One line, and the count in every email corrects
+ * itself, because nothing here is hand-typed twice.
+ */
+export const DESK_CONDITIONS = [
+  /**
+   * The Sunday re-read of notes this desk has already sent, laid
+   * against a live probe of the same door: `ours` when the note is
+   * owed a correction (already drafted, one press sends it) and
+   * `look` when it no longer holds and nothing here derives why.
+   * Keyed per host and per call, so a standing disagreement is one
+   * row rather than one a day. Answered at /admin/outreach#audit.
+   */
+  "note_audit",
+] as const;
+
+/** Everything sendAlert accepts: the ones that page, and the ones that don't. */
+export const ALL_CONDITIONS = [...ALERT_CONDITIONS, ...DESK_CONDITIONS] as const;
+
+export type PagingCondition = (typeof ALERT_CONDITIONS)[number];
+export type DeskCondition = (typeof DESK_CONDITIONS)[number];
+export type AlertCondition = PagingCondition | DeskCondition;
+
+/** Does this condition ever reach the keeper's phone? Read from the list, never retyped. */
+export function pagesTheKeeper(condition: string): boolean {
+  return (ALERT_CONDITIONS as readonly string[]).includes(condition);
+}
 
 const DEDUPE_TTL_SECONDS = 6 * 60 * 60;
 
@@ -255,6 +309,34 @@ export interface AlertRow {
   last_seen?: string;
   /** How many times it has been raised, first included. */
   repeats?: number;
+  /**
+   * WHAT THIS ROW IS CALLED WHEN YOU WANT TO SILENCE IT (2026-09-15).
+   *
+   * `alertIdentity` is the only thing that knows how a keyed alarm is
+   * named, and until today it knew it privately: the trail rendered
+   * rows it could not address, so "stop emailing me this one" had no
+   * lever to be a lever on. Written onto the row, the page can offer
+   * the mute for the exact alarm in front of the keeper rather than
+   * for its whole condition. Rows written before this shipped carry
+   * no identity and get the condition-wide lever only.
+   */
+  identity?: string;
+  /**
+   * SET WHEN THE EMAIL WAS HELD BACK, and by which kind of mute. The
+   * row is still here, still counting repeats: a muted alarm is a
+   * quiet phone, never a quiet store.
+   */
+  email_muted?: AlertMute["scope"];
+  /**
+   * SET WHEN NOTHING WAS HELD BACK, because nothing was ever going to
+   * be sent: this condition is on the desk list and does not page at
+   * all. Distinct from `email_muted` on purpose — one is a standing
+   * decision about what belongs in the paging channel, the other is
+   * the keeper silencing something that does. A trail that showed
+   * them identically would have him lifting a mute that does not
+   * exist, and wondering why the mail never came.
+   */
+  desk_only?: true;
 }
 
 export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
@@ -265,6 +347,21 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
   const now = new Date().toISOString();
   try {
     console.error(`[P1 ${input.condition}] ${detail}`);
+
+    /*
+     * IS THE PHONE MUTED FOR THIS ONE? Read before the row is written
+     * so the row can SAY SO — a trail that shows an alarm standing
+     * open while the keeper remembers no email is a trail that makes
+     * him doubt the mail wire, which is the one thing about alerting
+     * he has to be able to trust.
+     *
+     * A failed read pages. Not knowing whether an alarm was silenced
+     * is not permission to silence it, and the cost of the two
+     * mistakes is not remotely symmetric: one is an email the keeper
+     * already asked not to get, the other is an outage nobody hears.
+     */
+    const deskOnly = !pagesTheKeeper(input.condition);
+    const mute = deskOnly ? null : await muteFor(env, identity).catch(() => null);
 
     // Does this condition already have a row? If so it keeps it.
     const existingLogKey = await kvGet(env.COUNTERS, openKey);
@@ -283,6 +380,12 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
             detail,
             last_seen: now,
             repeats,
+            identity,
+            // Written every time rather than merged, so lifting a mute
+            // shows on the row at the next raise instead of leaving a
+            // stale MUTED stamp on an alarm that is paging again.
+            email_muted: mute?.scope,
+            ...(deskOnly ? { desk_only: true as const } : { desk_only: undefined }),
           } satisfies AlertRow),
           { expirationTtl: ALERT_LOG_TTL_SECONDS },
         );
@@ -305,6 +408,9 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
           at: now,
           last_seen: now,
           repeats: 1,
+          identity,
+          email_muted: mute?.scope,
+          ...(deskOnly ? { desk_only: true as const } : {}),
         } satisfies AlertRow),
         { expirationTtl: ALERT_LOG_TTL_SECONDS },
       );
@@ -312,6 +418,26 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
         expirationTtl: ALERT_LOG_TTL_SECONDS,
       });
     }
+
+    /*
+     * A DESK CONDITION STOPS HERE, and the row above is the whole
+     * delivery. Not a mute — there is no lever to lift, because this
+     * instrument was never in the paging channel. See DESK_CONDITIONS
+     * for why the keeper asked for that and why the answer was a list
+     * rather than a filter.
+     */
+    if (deskOnly) return;
+
+    /*
+     * MUTED: the row above is the whole delivery. Returning HERE, and
+     * not earlier, is the design — everything that makes the alarm
+     * discoverable has already run, and nothing below this line does
+     * anything but send mail. It also returns before the dedupe key
+     * and the hourly budget are spent, so a mute lifted an hour from
+     * now pages on the very next raise rather than waiting out a
+     * backoff window it never earned.
+     */
+    if (mute) return;
 
     /*
      * THE EMAIL BACKS OFF. Paging again about a problem still standing
@@ -344,7 +470,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
     await kvPut(env.COUNTERS, pageKey, "1", {
       expirationTtl: pageIntervalFor(repeats),
     });
-    await emailKeeper(env, input.condition, detail + foldNotice, now);
+    await emailKeeper(env, input.condition, detail + foldNotice, now, identity);
   } catch (error) {
     // The alarm must never take down the till it watches.
     console.error("Alert plumbing failed:", error);
@@ -356,6 +482,7 @@ async function emailKeeper(
   condition: string,
   detail: string,
   at: string,
+  identity: string,
 ): Promise<void> {
   if (!env.RESEND_API_KEY || !env.ALERT_EMAIL) {
     return;
@@ -370,7 +497,15 @@ async function emailKeeper(
       from: "The Store <alerts@scvd.store>",
       to: [env.ALERT_EMAIL],
       subject: `[P1] ${condition} at the store`,
-      text: `${at}\n\n${detail}\n\nOne of the ${ALERT_CONDITIONS.length} conditions that page you rather than waiting for the Sunday digest; this one is "${condition}". The back room: https://scvd.store/admin`,
+      /*
+       * THE LAST LINE NAMES THE LEVER, because the moment a keeper
+       * wants an alarm to stop is the moment he is holding the email,
+       * not the moment he is standing in the back room. It names the
+       * alarm's own identity so the page can be told exactly which
+       * row he meant — "this particular alarm", his words, and the
+       * mail is the only place that fact is in his hand.
+       */
+      text: `${at}\n\n${detail}\n\nOne of the ${ALERT_CONDITIONS.length} conditions that page you rather than waiting for the Sunday digest; this one is "${condition}". The back room: https://scvd.store/admin\n\nDone with this one? https://scvd.store/admin/reconciliation#alarms has a lever beside the row that stops it emailing you. The alarm keeps its row, its repeat count and its place on the trail; only the mail stops. This one is "${identity}".`,
     }),
   });
 }

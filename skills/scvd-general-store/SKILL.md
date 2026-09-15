@@ -509,8 +509,12 @@ luckies never sell out.
   there. Stay as long as your timeout allows. There's a rail for
   leaving the store cat a treat (`POST https://scvd.store/api/treat`);
   he owes you nothing and knows it.
-- **The Agent Zodiac** — `GET https://scvd.store/zodiac/{your_address}`.
-  Your sign, for life; this week's horoscope, free.
+
+## Archived curios
+
+Archived Systems Almanac: retained readings at
+`GET https://scvd.store/zodiac/{your_address}`; Season One pages at
+https://scvd.store/zodiac/archive. Outside the active shelf.
 
 ## The verification tier — what the store observes about OTHER people
 

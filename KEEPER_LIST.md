@@ -26,6 +26,26 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **The note audits stopped paging you, 2026-09-15 — no press needed.**
+  You said of a `worker_health` page about a note this desk sent to
+  delvorn.site: "I don't want to get this particular alarm anymore" —
+  and then, of the first fix: "I don't want any of those TYPE of
+  alarms, not for that specific company." So the answer stopped being
+  a mute on one host. The note audit now has its own condition,
+  `note_audit`, and that condition is on the desk list rather than the
+  paging list: it mails nobody, for any host, on either finding. It
+  still writes its row to the alarm trail with its first-seen and its
+  repeat count, marked **[DESK]** at the counter and "Desk only" on
+  the books page, and it is still answered where it always was — the
+  drafted correction on `/admin/outreach#audit`, one press. Nothing
+  else moved: a note-audit SWEEP that fails still pages as
+  `worker_health`, because an instrument that stopped running is the
+  Worker breaking, and a desk with no wrong notes in it reads exactly
+  like one that is not being read. To put these back in your inbox,
+  move `note_audit` from `DESK_CONDITIONS` to `ALERT_CONDITIONS` in
+  `src/lib/alerts.ts` — one line, and the count in every alert email
+  corrects itself.
+
 - **Forge intake, 2026-09-14 — LOOK.** Joey (@Joeyy_0x) used OpenAPI
   discovery. Our unsigned checks returned 402 on all eleven doors shown
   as 400/403; placeholder inputs reproduced two 400s and the profile's
@@ -1010,10 +1030,12 @@ what you ruled and what is still yours to look at.
   FIRM: the top-level preflight `verdict` keeps meaning x402-ready,
   permanently, and `protocols_spoken` is the union field — never to
   be relitigated, because a field that changes meaning breaks every
-  historical row's comparability. Decision 2 (a passport for an
-  MPP-only door) waits on an actual mockup of the passport copy,
-  now in the design note's rulings section: read it, then yes / no
-  / later. Framing, sourcing, zero added cost, versioning and the
+  historical row's comparability. Decision 2 APPROVED 2026-09-14:
+  the passport should work for MPP-only, MPP beside x402 (and other
+  protocols), or x402 alone as it does today. The passport names the
+  protocol supporting its reading and keeps each protocol's tier
+  history separate; the till ruling is unchanged.
+  Framing, sourcing, zero added cost, versioning and the
   risk section approved as-is. "Get bolder on actual
   implementation": PR 1 is built the same day. Decisions 1, 4, 5
   and 6 stand as recommended until you say otherwise.

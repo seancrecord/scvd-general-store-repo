@@ -85,6 +85,8 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
       freshness: payload.freshness,
       // The passport's own word, not a second derivation of it.
       decision: payload.summary.decision,
+      protocol: payload.protocol,
+      protocolNote: payload.protocol_rule,
       observedAt: payload.latest?.observed_at ?? payload.issued_at,
       passportUrl: `${c.env.STORE_BASE_URL}/passport/${host}`,
       // Our own chip wears SELF on its face: the census never
