@@ -55,6 +55,36 @@ That does not establish paid delivery or cover every current route.
 All nine published schema patterns compile with Go regexp using the
 checksum-verified official Go 1.27.1 archive from [go.dev](https://go.dev/dl/).
 
+## 2026-09-15 — paid MPP discovery comparison (PR 3)
+
+Read [discovery draft-01](https://github.com/tempoxyz/mpp-specs/blob/main/specs/extensions/draft-payment-discovery-01.md)
+from the primary repository through the web reader and GitHub contents
+API. Operation-level `x-payment-info` allows a flat offer or an `offers`
+array of alternatives. Amount is an atomic integer string or dynamic
+`null`; currency is optional. Discovery is optional and advisory; the
+runtime 402 remains authoritative. Draft-01's output-schema additions
+are not runtime evidence and are outside this comparison.
+
+The new `mpp-discovery-v1` reading compares only the exact GET operation
+and the captured challenge's method, intent, amount and currency. It
+reuses the paid audit's existing OpenAPI and bookend requests. All
+alternatives are retained; dynamic amount and omitted currency are
+unmeasured fields. A difference counts only when every alternative
+conflicts and the compared challenge terms match at both bookends.
+Unresolved operation/server mapping, malformed data and failed reads
+are gaps, not defects. Unobserved discovery alternatives are not tested
+for availability. The frozen `mpp-v1` battery and x402 verdict do not
+change. The store observes MPP; its till does not speak it.
+
+Rechecked the primary discovery draft, Workers best practices and Wrangler
+commands on 2026-09-15. Retrieved Workers types 5.20260915.1 and verified
+the stream reader, cancellation and lock-release APIs. No binding,
+compatibility-date or checkout changes are required.
+
+Read the [OpenAPI 3.1.1 server fields](https://spec.openapis.org/oas/v3.1.1.html)
+for inheritance precedence. Explicit null server declarations are malformed
+and remain unreadable; only omitted fields inherit a parent.
+
 ## 2026-09-14 — Forge OpenAPI intake
 
 For the authorized release, read current main's rule 62 and

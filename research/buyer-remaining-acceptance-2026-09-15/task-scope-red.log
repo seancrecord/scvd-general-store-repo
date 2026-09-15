@@ -1,0 +1,35 @@
+(node:91752) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-attestation-authorization-pairing
+
+stdout | test/reconciliation-task-scope.spec.ts > keeps the literal buyer task within the reconciliation's observable scope
+{"knock":1,"cold":true,"age":0,"req":308,"method":"GET","path":"/menu/settlement_reconciliation","status":200,"ua":""}
+
+ ❯ test/reconciliation-task-scope.spec.ts (1 test | 1 failed) 485ms
+   × keeps the literal buyer task within the reconciliation's observable scope 484ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/reconciliation-task-scope.spec.ts > keeps the literal buyer task within the reconciliation's observable scope
+AssertionError: expected 'Prove an agent\'s spend stayed inside…' to contain 'fixed value'
+
+Expected: "fixed value"
+Received: "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw"
+
+ ❯ test/reconciliation-task-scope.spec.ts:8:21
+      6|   expect(compact.status).toBe(200);
+      7|   const item = await compact.json() as { task: string };
+      8|   expect(item.task).toContain("fixed value");
+       |                     ^
+      9|   expect(item.task).toContain("declared ceiling");
+     10|   expect(item.task).toContain("no cap is observable");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  09:50:41
+   Duration  68.72s (transform 43.88s, setup 101ms, import 63.45s, tests 485ms, environment 0ms)
+

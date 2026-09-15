@@ -325,7 +325,7 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   settlement_attestation:
     "Prove to a third party that a payment actually settled on chain",
   settlement_reconciliation:
-    "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw",
+    "Observe an agent payment's USDC movement against an attributable fixed value or a declared ceiling, stating when no cap is observable",
   the_case_file:
     "Hand the person deciding what went wrong with one agent purchase everything a neutral party observed about it, in one signed file, with what it did not observe stated",
   attestation_bundle:

@@ -659,11 +659,10 @@ crashed, and the respawned you holds no order id — the claims door at
 ${base}/api/claims recovers your own purchases by wallet:
 challenge-response signed with the same key that signs your payments
 (EIP-191 personal_sign on the Base rail, your wallet's ed25519
-signMessage on Solana), single-use nonce, no sessions. A bare address
-gets nothing; possession of the key gets everything that key paid for
-— open orders AND the signed certificates from instant purchases,
-each with its permanent verify URL, so a reset that ate the purchase
-response costs you nothing that was yours.
+signMessage on Solana), single-use nonce. Proof returns purchase references.
+For one original good, get a fresh challenge and claim with
+{ address, signature, cert_id }. Read fulfillment when recovery_state is
+ready; missing originals stay explicit gaps. Free; keep goods private.
 
 The conformance desk, free, and NOT about us. ${base}/api/conformance
 takes any x402 signed offer or receipt — whoever issued it — and

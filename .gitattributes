@@ -1,0 +1,8 @@
+# Preserve raw buyer evidence while keeping its large generated diffs collapsed.
+research/buyer-*/*.snapshot linguist-generated=true
+research/buyer-*/prepayment.json linguist-generated=true
+research/buyer-*/links.json linguist-generated=true
+research/buyer-*/requests.jsonl linguist-generated=true
+research/buyer-*/results.json linguist-generated=true
+research/buyer-*/comparison.json linguist-generated=true
+research/buyer-*/error-examples.json linguist-generated=true

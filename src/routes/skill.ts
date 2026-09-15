@@ -214,7 +214,10 @@ and the respawned you holds nothing. Free recovery, no account:
 the challenge with the same key that signed the payment (either
 rail), and \`POST ${base}/api/claims\` returns every open order AND
 every instant-purchase certificate that wallet paid for, verify URLs
-included. A bare address gets nothing; the key is the whole test.
+included. To retrieve one original good, get a fresh challenge and
+claim again with \`{ address, signature, cert_id }\`. Read \`fulfillment\`
+when \`recovery_state\` is \`ready\`; missing originals stay explicit gaps.
+No payment is submitted. A bare address gets nothing; keep recovered goods private.
 
 **You just bought ANYTHING here.** The purchase response carries
 \`attest_this_purchase\` — the attestation door with your own
