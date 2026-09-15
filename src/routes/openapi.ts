@@ -337,6 +337,7 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
  */
 export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
   "/health": "no-store by design: a liveness line that must never be a cached yes",
+  "/bell": "an HTML room, not a machine-readable document: lib/conditional-get.ts tags the representations an agent polls, and this GET exists to put a form in front of a person. The bell's machine door is POST /api/bell, which is outside conditional GET by method.",
 };
 const NO_STORE_PREFIXES = ["/api/buy/", "/api/order/", "/api/phantom/", "/api/commission/pay/"];
 
@@ -460,6 +461,18 @@ function inlineSharedResponse(response: OpenApiObject): OpenApiObject {
 
 const MARKDOWN_RESPONSE: OpenApiObject = {
   content: { "text/markdown": { schema: { type: "string" } } },
+};
+
+/**
+ * A door that answers a PERSON. The bell's room is the first of these
+ * in the contract, and it is declared as what it serves rather than
+ * wrapped in the JSON helper: a generated client that reads
+ * {"type":"object"} here would learn that a web page is a JSON object,
+ * which is worse than learning nothing. The machine door for the same
+ * bell is POST /api/bell and carries a real schema.
+ */
+const HTML_RESPONSE: OpenApiObject = {
+  content: { "text/html": { schema: { type: "string" } } },
 };
 
 /**
@@ -6018,6 +6031,48 @@ openapiRoutes.get("/openapi.json", async (c) => {
             },
           },
         ),
+      },
+      "/bell": {
+        get: {
+          ...freeOp(
+            "The bell, as a room a person can walk into",
+            "Free, no account and no wallet. Answers HTML, not JSON: GET renders the bell with a form, and POST /bell rings it and renders the card you got with its share and save buttons. Agents want POST /api/bell or the ring_bell tool instead — this pair exists because a door that changes something cannot be a link, and the front page needed one a human could tap.",
+          ),
+          responses: {
+            "200": { description: "The bell, as a page.", ...HTML_RESPONSE },
+            ...COMMON_RESPONSES,
+          },
+          parameters: [
+            {
+              name: "wallet",
+              in: "query",
+              required: false,
+              schema: { type: "string", maxLength: 64 },
+              description:
+                "Prefills the form's wallet field so a daily ring is a bookmark and one tap. A preference, not an action: this GET rings nothing, and an address that is not one is dropped rather than echoed back.",
+            },
+          ],
+        },
+        post: {
+          ...postOp(
+            "Ring the bell from a browser",
+            "Free. One ring a visitor a day, one common pressing. Takes a form body, not JSON, and answers HTML: the card you got, its share button and its PNG. The wallet field is optional — without one the pressing hangs at its own page; with one it lands in a binder and the daily streak counts. POST /api/bell is the JSON door and is unchanged.",
+            "An optional wallet, as a form field.",
+            { type: "object", additionalProperties: false, properties: { wallet: { type: "string", maxLength: 64 } } },
+          ),
+          requestBody: {
+            required: false,
+            content: {
+              "application/x-www-form-urlencoded": {
+                schema: { type: "object", additionalProperties: false, properties: { wallet: { type: "string", maxLength: 64, description: "Optional. Where the pressing lands, and what the daily streak counts on." } } },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "The card you just rang for, as a page.", ...HTML_RESPONSE },
+            ...COMMON_RESPONSES,
+          },
+        },
       },
       "/api/paywall/releases": {
         get: returns(
