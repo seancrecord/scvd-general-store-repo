@@ -1,3 +1,4 @@
+import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { PURCHASE_RECOVERY_TOOL_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
@@ -33,7 +34,7 @@ import {
   KEY_RESOLUTIONS,
 } from "@/store/conformance-vocabulary";
 import { ORDER_STATUSES } from "@/types";
-import { GUARANTEE_BLOCK_TEXT, SAMPLE_ARTIFACT_ID, SPEC_RETURNS } from "@/store/spec";
+import { GUARANTEE_BLOCK_TEXT, SAMPLE_ARTIFACT_ID, CAPABILITY_QUERY } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
 
@@ -687,14 +688,14 @@ function mcpAmount(item: MenuItem): string {
     : `${amountPhrase(item)}, ${TIP_NOTE}`;
 }
 
-/** One compact line per item: what it is, what it costs, what returns. */
+/** Selection prose stays short; the full output contract is at specsUrlTemplate. */
 function shelfItemLine(item: MenuItem): string {
-  const returns = SPEC_RETURNS[item.id] ?? item.description;
+  const task = CAPABILITY_QUERY[item.id] ?? item.subtitle;
   const timing =
     item.fulfillment === "instant"
       ? "instant"
       : `human-fulfilled within ${item.sla_hours ?? 168}h`;
-  return `- ${item.id}: ${item.name}, ${mcpAmount(item)}, ${cadencePhrase(item)}, ${timing}. ${returns}`;
+  return `- ${item.id}: ${item.name}, ${mcpAmount(item)}, ${cadencePhrase(item)}, ${timing}. ${task}`;
 }
 
 function clusterCompletion(items: MenuItem[]): string {
@@ -1417,6 +1418,8 @@ const FREE_TOOLS: McpTool[] = [
           items: CATALOG_ROW_SCHEMA,
         },
         how_this_was_ordered: str("That the order is the shelf's own and nothing is ranked."),
+        scope: { type: "string", enum: ["active_menu"] },
+        publications: PUBLICATION_COLLECTIONS_SCHEMA,
         whole_catalogue: str("The full catalogue, for a caller that wants every field."),
       },
       required: ["matched", "of", "items"],

@@ -1,12 +1,13 @@
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { EVIDENCE_DIGEST_DATED, readEvidence } from "@/services/corpus-evidence";
+import { mppCensusLine } from "@/services/mpp-census";
 import { namedExclusions } from "@/store/exclusions";
 import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { CITE_HOW, citeRow } from "@/services/cite";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { delisting } from "@/store/delisted";
 import { deriveDoorIndex } from "@/services/door-index";
-import { effectiveObservation } from "@/services/passport";
+import { effectivePassportObservation } from "@/services/passport";
 import { deriveTier, tierIndex, tierInputFromHistory } from "@/services/passport-tier";
 import { Hono, type Context } from "hono";
 import {
@@ -190,6 +191,9 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "host listed in the x402 discovery document",
       "conformance verdict: ready, not_ready, unreachable or not_probed",
       "named failing checks and advisories",
+      "protocols_spoken: x402, mpp, both or neither observed; absent means not measured",
+      "mpp: read-only challenge checks and advisories under the row's named battery; credentials, binding, delivery and receipts unobserved; this store's till does not speak MPP",
+      "mpp_read_error: reader_failed marks our inability to measure, not a defect of the door",
       "week-over-week delta: newly failing, newly fixed, flappers",
       "population known versus walked, and the coverage percentage between them",
       "listing lifecycle: first seen, last seen, newly delisted, listed again",
@@ -321,7 +325,7 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
   }
   /* The tier rides the newest-wins fold, so a paid refresh moves it
    * here the same hour it moves the passport (2026-09-02). */
-  const observation = await effectiveObservation(c.env, host);
+  const observation = await effectivePassportObservation(c.env, host);
   const base = c.env.STORE_BASE_URL;
   // A miss is next week's coverage (asked-queue.ts). On waitUntil so
   // the reader's clock never pays for the queue's write.
@@ -382,7 +386,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   if (host.endsWith(".json") || host.length > 253) {
     return c.json({ error: `Ask for a host, e.g. ${base}/corpus/host/example.com` }, 400);
   }
-  const observation = await effectiveObservation(c.env, host);
+  const observation = await effectivePassportObservation(c.env, host);
   const history = observation.history;
   if (history.rounds_probed === 0) {
     c.executionCtx.waitUntil(recordAsk(c.env, host, "corpus_host"));
@@ -400,8 +404,8 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   const tier = deriveTier(tierInputFromHistory(history, observation), `${base}/criteria`);
   const gone = delisting(host);
   const title = gone
-    ? `x402 endpoint readiness: ${host} — delisted`
-    : `x402 endpoint readiness: ${host} — ${tier.line}`;
+    ? `endpoint readiness: ${host} — delisted`
+    : `${observation.protocol} endpoint readiness: ${host} — ${tier.line}`;
   const description = gone
     ? `${host} asked for its page to come down on ${gone.on}. The signed corpus rows stand and the aggregates still count it; only this page is withdrawn.`
     : `What scvd.store's weekly ward round observed about ${host}: ${tier.line}, derived from ${history.rounds_probed} probed round${history.rounds_probed === 1 ? "" : "s"} since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking.`;
@@ -412,6 +416,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
         <td>${round.listed ? "listed" : "not listed"}</td>
         <td>${round.probed ? "probed" : escapeHtml(round.gap ?? "not probed")}</td>
         <td><code>${escapeHtml(round.verdict ?? "—")}</code></td>
+        <td>${escapeHtml(round.protocols_spoken ? round.protocols_spoken.join(", ") || "neither observed" : round.mpp_read_error ? "not measured: reader failed" : "not measured")}${round.mpp ? ` · <code>${escapeHtml(round.mpp.battery)}</code>` : ""}</td>
         <td>${escapeHtml((round.failed ?? []).join(", ") || "—")}</td>
         <td><a href="${escapeHtml(round.entry_url)}"><code>${escapeHtml(String(round.sequence))}</code></a></td>
       </tr>`,
@@ -457,9 +462,10 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       <section>
         <h2>Every round, including the ones we missed</h2>
         <table>
-          <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>Verdict</th><th>Failed checks</th><th>Entry</th></tr></thead>
+          <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Entry</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
+        <p class="menu-meta">Protocols are read from one unpaid response under the named battery; this store's till does not speak MPP. A missing reading means not measured.</p>
         <p class="menu-meta">A missed week is a fact about us, not about the door. Gaps by reason: ${escapeHtml(
           Object.entries(history.gaps_by_reason)
             .filter(([, count]) => count > 0)
@@ -663,6 +669,9 @@ function briefHtml(brief: WeeklyBrief): string {
     <p class="menu-desc"><strong>${d.listed} doors named</strong> by the discovery feeds; <strong>${d.probed} knocked on</strong>. Of those, <strong>${d.payable} answered with a challenge a buyer could pay</strong>, ${d.not_payable} answered with one a buyer could not pay as served, and ${d.unreachable} did not answer. ${d.offers_seen} carried a parseable offer.</p>
     ${networks ? `<p class="menu-meta">Doors per chain, from the offers' own declarations: ${networks}.</p>` : ""}
     ${previous}
+    ${brief.mpp
+      ? `<p class="menu-desc">${escapeHtml(mppCensusLine(brief.mpp))}</p><p class="menu-meta">${escapeHtml(brief.mpp.what_this_is)}</p>`
+      : `<p class="menu-desc">MPP: not measured in this snapshot. Missing historical readings do not establish absence.</p>`}
   </section>
   <section>
     <h2>Defects, by name</h2>

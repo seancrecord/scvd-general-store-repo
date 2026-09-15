@@ -2,6 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { releaseCommits } from "@/services/cards";
 import { CURRENT_SEASON } from "@/store/cards";
+import { app } from "@/index";
 import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -47,7 +48,7 @@ describe("the card rack", () => {
      */
     expect(html).toContain('href="/menu/pack"');
     expect(html).toContain('href="/design"');
-    expect(html).toContain('href="/api/bell"');
+    expect(html).toContain('href="/bell"');
     expect(html).not.toContain('class="door-cta rack-buy" href="/api/buy/pack"');
   });
 
@@ -107,6 +108,39 @@ describe("the card rack", () => {
       });
     }
     expect(reads).toBe(0);
+  });
+
+  it("never links a door that refuses a GET", async () => {
+    /**
+     * THE BUG THIS TEST EXISTS FOR (2026-09-15, the keeper on a phone:
+     * "Clicking 'ring the bell' on home page gives me this" — the
+     * store's own method refusal, offered as a bell.json download).
+     *
+     * The rack shipped with "Ring the bell — free" as an anchor at
+     * /api/bell, which is POST-only. An anchor is a GET, so the one
+     * free thing on the front page answered a person with
+     * {"error":"This door exists and takes POST, not GET."}. The
+     * refusal was correct; the link was wrong. And the case above
+     * asserted that exact href, so a full green suite shipped it.
+     *
+     * A link is a GET by definition, so this reads the app's OWN route
+     * table and fails on any anchor the storefront points at a path
+     * that is registered for POST and not for GET. Typing a list of
+     * known-bad paths would repeat the original mistake one layer up.
+     */
+    const registered = app.routes as ReadonlyArray<{ path: string; method: string }>;
+    const getPaths = new Set(registered.filter((r) => r.method === "GET" || r.method === "ALL").map((r) => r.path));
+    const postOnly = new Set(
+      registered.filter((r) => r.method === "POST" && !getPaths.has(r.path)).map((r) => r.path),
+    );
+    expect(postOnly.size, "sanity: the store does have POST-only doors").toBeGreaterThan(0);
+    expect(postOnly.has("/api/bell"), "sanity: /api/bell is one of them").toBe(true);
+
+    const html = await storefront();
+    const linked = [...html.matchAll(/href="(\/[^"#?]*)/g)].map(([, path]) => path!);
+    expect(linked.length).toBeGreaterThan(10);
+    const broken = [...new Set(linked)].filter((path) => postOnly.has(path));
+    expect(broken, "the front page links a door that answers a GET with a refusal").toEqual([]);
   });
 
   it("names the release wheel where the shelf and the guide describe the pack", async () => {

@@ -1,3 +1,4 @@
+import { MENU_ITEMS } from "@/store/menu";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -208,7 +209,7 @@ describe("the async job is declared where a caller meets it", () => {
     installFacilitatorMock();
   });
 
-  it("stamps the pattern on the poll endpoint and on every paid door", async () => {
+  it("stamps the pattern on the poll endpoint and on every queued purchase", async () => {
     const document = await spec();
     const poll = operationsOf(document).find(
       (entry) => entry.path === ASYNC_JOB.poll_url_template,
@@ -218,7 +219,7 @@ describe("the async job is declared where a caller meets it", () => {
       "poll",
     );
 
-    const paid = operationsOf(document).filter((entry) => entry.operation["x-payment"]);
+    const paid = operationsOf(document).filter((entry) => entry.operation["x-payment"] && MENU_ITEMS.some(item => item.fulfillment === "human_queue" && entry.path === `/api/buy/${item.id}`));
     expect(paid.length).toBeGreaterThan(0);
     for (const entry of paid) {
       const job = entry.operation["x-async-job"] as Record<string, unknown>;
@@ -330,12 +331,12 @@ describe("the async job speaks OpenAPI's own vocabulary too", () => {
     const pollId =
       document.paths["/api/order/{order_id}"]?.get?.operationId;
     expect(typeof pollId).toBe("string");
-    const starts = Object.entries(document.paths).filter(([, item]) =>
-      Object.values(item).some(
-        (op) => op && typeof op === "object" && op["x-payment"],
-      ),
+    const queued = MENU_ITEMS.filter(item => item.fulfillment === "human_queue");
+    const starts = Object.entries(document.paths).filter(([path]) =>
+      queued.some(item => path === `/api/buy/${item.id}`),
     );
-    expect(starts.length).toBeGreaterThan(10);
+    expect(starts.length).toBe(queued.length);
+    expect(starts.length).toBeGreaterThan(0);
     for (const [path, item] of starts) {
       for (const op of Object.values(item)) {
         if (!op || typeof op !== "object" || !op["x-payment"]) continue;

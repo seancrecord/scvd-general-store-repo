@@ -1,6 +1,7 @@
 import { catalogAgreementOf, catalogMeasured, type CatalogAgreement } from "@/services/catalog-agreement";
 import type { CorpusRecord } from "@/services/corpus";
 import type { WardHostResult } from "@/services/ward-round";
+import { MPP_CENSUS_NOTE, mppCensusOf, type MppCensus } from "@/services/mpp-census";
 
 /**
  * DERIVED VIEWS OVER THE CORPUS CHAIN (roadmap 3.5 — ledger G5, J2, M3).
@@ -74,6 +75,7 @@ export interface WeekPoint {
    * treats missing as "not measured", never as full agreement.
    */
   catalog?: CatalogAgreement;
+  mpp?: MppCensus;
 }
 
 export interface Trajectory {
@@ -195,12 +197,17 @@ export function deriveTrajectory(records: CorpusRecord[]): Trajectory {
     if (catalogMeasured(hosts)) {
       point.catalog = catalogAgreementOf(hosts);
     }
+    // A round marker also records a new round where no door answered.
+    // Never retrofit readings from today's parser onto historical headers.
+    if (record.snapshot.round.mpp || hosts.some(host => host.mpp)) {
+      point.mpp = mppCensusOf(hosts);
+    }
     return point;
   });
   return {
     weeks,
     what_this_is:
-      "The corpus chain read as time: one point per signed weekly snapshot, every count derived at read from the snapshot's own rows. Each point names its snapshot's digest; fetch /corpus/{sequence}.json, recount with your own tools, and this surface owes you nothing on trust.",
+      "The corpus chain read as time: one point per signed weekly snapshot, every count derived at read from the snapshot's own rows. Each point names its snapshot's digest; fetch /corpus/{sequence}.json, recount with your own tools, and this surface owes you nothing on trust." + (weeks.some(week => week.mpp) ? ` ${MPP_CENSUS_NOTE}` : ""),
     nothing_claimed_between_snapshots:
       "One snapshot per week, and NOTHING is claimed between snapshots: a door can appear, break and vanish inside a week without a trace here. Counts come with their denominators (hosts_listed, hosts_probed); no ratio is served anywhere, because a percentage with a hidden denominator is how a market lies.",
   };

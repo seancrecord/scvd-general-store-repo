@@ -310,8 +310,7 @@ consolidations, 2026-08-05 and 2026-08-20, retired several early
 shelves; retired ids still answer at the door with a 410 and their
 certificates verify forever.) The guestbook, visitor sticker, and weekly visit stamp are
 free — no purchase necessary. The bell rings once a day per visitor,
-the Agent Zodiac reads for free at `/zodiac`, and the Mailbox takes
-one private letter a day at `/api/letter` — the keeper reads Sundays
+and the Mailbox takes one private letter a day at `/api/letter` — the keeper reads Sundays
 and replies when he has something to say, which is not always.
 
 The reading room: the Keeper's Almanac (his journal, serialized, a
@@ -469,9 +468,9 @@ facilitator and all current client libraries speak v2.
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
 | `/what` | The Operator Glance — the ten-second check for the humans |
 | `/porch` | Around the side, facing the oaks. Nothing for sale out there |
-| `/zodiac` | The Systems Almanac — twelve signs, free |
-| `/zodiac/:address` | A wallet's sign for life + the current week's page, free |
-| `/zodiac/archive` | Free index of past season weeks |
+| `/zodiac` | Archived Systems Almanac — retained sign index |
+| `/zodiac/:address` | Archived wallet-sign reader, following its original calendar |
+| `/zodiac/archive` | Free index of retained Season One pages |
 | `/zodiac/archive/:sign/week-:n` | One past page, $0.01 over x402, markdown |
 | `/openapi.json` | The OpenAPI 3.1 contract, linked from the homepage |
 | `/.well-known/x402` | Minimal x402 discovery list (de-facto indexer shape) |
@@ -762,8 +761,14 @@ are not:
   [auto-crawled server index entry](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
   and a [connectors page](https://glama.ai/mcp/connectors/store.scvd/general-store).
 - **mcpindex.ai** — [a listing with its own live verdict](https://mcpindex.ai/server/store-scvd-general-store).
-- **agent-tools.cloud** — [the Bazaar-registered service](https://agent-tools.cloud/services/scvd-store-bazaar)
-  among the paid tools it indexes.
+- **agent-tools.cloud** — three entries, because it indexes x402
+  services, MCP servers and A2A agents as separate populations: the
+  [x402 service](https://agent-tools.cloud/services/scvd-store-bazaar),
+  the [MCP server](https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store)
+  and the [SCVD Evidence Agent](https://agent-tools.cloud/a2a/agents/scvd-evidence-agent).
+  The store proved domain control on 2026-09-14, so the descriptions
+  there are its own words; the quality grade beside them is their
+  measurement, on their probe schedule, and is not reproduced here.
 - **x402.fuchss.app** — [a provider index entry](https://x402.fuchss.app/provider/scvd.store)
   keyed on the origin rather than on anything we submitted.
 - **Circle (Sell to Agents)** — a

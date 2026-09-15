@@ -1,0 +1,130 @@
+{
+  "kind": "ci_merged_tree_fixture_repair_not_pq_runtime_measurement",
+  "date": "2026-09-15",
+  "previous_head": "899b5ab8bb158129c0f123bb30bb3c04d6a5af2b",
+  "failed_remote": {
+    "run_id": 35002234961,
+    "job_id": 104493166813,
+    "tested_merge": "dcd604d1e85af3e580e45fc9936a7186fa0a8eb0",
+    "base": "df1b17925dbf205710a2b451231aaf334af025f1",
+    "case": "/api/buy/launch_check does not negotiate without declaring Accept",
+    "failure": "503 from the missing field-wallet gate; server-error assertion failed",
+    "result_scope": "incomplete; stopped after first failure",
+    "files_passed": 176,
+    "files_failed": 1,
+    "tests_passed": 5700,
+    "tests_failed": 1,
+    "tests_skipped_at_bail": 144
+  },
+  "validated_main_parent": "ac3ad96d3bafe4371440d7f92436b045134635a5",
+  "dependency_install": "npm ci in this worktree; shared dependency directory untouched",
+  "controls": {
+    "merged_tree_without_fixture": {
+      "failed": 2,
+      "passed": 98,
+      "failures": [
+        "launch_check:503",
+        "opening_day:503"
+      ]
+    },
+    "scoped_fixture_focused_run": {
+      "passed": 100,
+      "payment_verifies": 0,
+      "payment_settles": 0,
+      "response_statuses": {
+        "/api/buy/launch_check": [
+          402,
+          402,
+          402
+        ],
+        "/api/buy/opening_day": [
+          402,
+          402,
+          402
+        ]
+      }
+    },
+    "dependency_state": "Focused reproduction and correction ran before npm ci, with Wrangler 4.131.0; the full suite uses the exact merged lockfile and Wrangler 4.131.1."
+  },
+  "full_suite": {
+    "status": "passed",
+    "command": "npm test -- --maxWorkers=6 --reporter=default",
+    "exit_code": 0,
+    "files_passed": 722,
+    "tests_passed": 14243,
+    "tests_skipped": 1,
+    "tests_total": 14244,
+    "duration_seconds": 2589.65,
+    "early_stop": false
+  },
+  "log_hashes": [
+    {
+      "file": "scvd-709-second-ci.log",
+      "sha256": "c7c69f055557fb44c30f1a19d99700757f31e4ec39104a714dc2bb2acadccb61"
+    },
+    {
+      "file": "scvd-709-second-baseline.log",
+      "sha256": "ef2aa8f176f8d9c1f55433ae5d8e94992e53c1e79af6a57bea276b8637efe62d"
+    },
+    {
+      "file": "scvd-709-second-green.log",
+      "sha256": "8c7332a77b2fa8b3dc42ff44101fdf933a77baacf4b0473b5cd8b61d75230a64"
+    },
+    {
+      "file": "scvd-709-second-install.log",
+      "sha256": "f2e63c64ec679a29cb3648626ec70dae2a09b426d556b03a2e06cde1d8a175ef"
+    },
+    {
+      "file": "scvd-709-second-full.log",
+      "sha256": "adb5410abb45301709beb96a4087297b55f8a4eabeafba8d57a78702b7ecaf03"
+    },
+    {
+      "file": "scvd-709-second-typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "scvd-709-second-evidence.log",
+      "sha256": "3dac4583bb23bf318c820aea248783fbf8d47e4ae4f4d1343b87ebda81d4e598"
+    },
+    {
+      "file": "scvd-709-second-build.log",
+      "sha256": "26a5ce4e66cfd090668b9f8518dda0cbaee443b5470406d1b2089c2f18b825bb"
+    },
+    {
+      "file": "scvd-709-second-audit.log",
+      "sha256": "80f3d8342ddc9e1512c04bee871f0cbab281a7b4d0510d4cfa879a7970e8caa3"
+    },
+    {
+      "file": "scvd-709-second-claims.log",
+      "sha256": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99"
+    },
+    {
+      "file": "scvd-709-second-docs.log",
+      "sha256": "12d3d18348a7093c0be9d588f3301bd458fad7f3491b8b47fdc6428fc9d4490d"
+    }
+  ],
+  "limits": [
+    "Earlier passing full-suite record describes the earlier branch tree, not the later GitHub merge with main.",
+    "Fixture supplies only a public disposable key in this test; global test bindings and production provisioning are unchanged.",
+    "The real app handles every request with a test execution context; background work is awaited.",
+    "No timeout, route coverage or server-error assertion was relaxed.",
+    "A successful local merged-tree run does not replace GitHub CI on the pushed revision."
+  ],
+  "full_suite_runtime": {
+    "node": "v22.13.1",
+    "vitest": "4.1.11",
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "wrangler": "4.131.1"
+  },
+  "additional_checks": {
+    "typecheck": "passed",
+    "offline_evidence": {
+      "passed": 53,
+      "failed": 0
+    },
+    "worker_dry_run_bundles": "both_passed",
+    "scalability_audit": "passed",
+    "claims_register": "passed",
+    "documentation": "passed"
+  }
+}

@@ -50,3 +50,40 @@ keeps the original remote result, focused controls and final validation
 separate. The original publication-validation record remains unchanged.
 No production code, payment behavior, dependency version or PQ measurement
 changes in this repair. Clean CI on the pushed revision remains the merge gate.
+
+## Follow-up: valid examples reached an unconfigured gate
+
+The [next CI run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35002234961)
+failed on a different condition: `/api/buy/launch_check` returned 503. The
+server-error assertion caught it. CI tested the branch combined with newer
+main (`dcd604d1`), whereas the earlier passing local full run described the
+branch tree alone. That earlier result remains valid for its recorded tree;
+it did not establish that the later combined tree passed.
+
+Main now supplies actual paid-input examples in OpenAPI. The sweep uses
+those examples, so the launch-check products reach their field-wallet
+availability gate. The original test supplied no field-wallet binding.
+The production refusal is correct. On the combined tree, the unchanged
+file reproduced two failures: `launch_check` and `opening_day`; the other
+98 cases passed.
+
+The file now passes its own environment to the real app, using the same
+public disposable field-key fixture as the buyer harness. It uses a test
+execution context and waits for background work. The facilitator still
+intercepts outbound calls, and this file asserts zero payment verifications
+and zero settlements. No pool-wide binding or production secret is added.
+All 100 focused cases pass with the fixture; the server-error assertion,
+route eligibility and deadlines are preserved.
+
+Main has been integrated into the branch before final validation, and its
+exact lockfile installed in this worktree. The new
+[`ci-merged-tree-validation.json`](../research/pq-measurement-2026-09-14/ci-merged-tree-validation.json)
+records the tested main parent, failed CI merge, reproduction and final
+checks separately from the first repair. The earlier records are unchanged.
+
+The combined-tree full run passed all 722 files: 14,243 tests passed and
+1 skipped, without early stopping. It includes all 100 corrected OpenAPI
+cases. Typecheck, all 53 offline evidence tests, the audit, claims register
+and both Worker dry-run bundles also passed. The focused red/green checks
+preceded the clean dependency install; the full run used the exact merged
+lockfile. Remote CI on the pushed revision remains the merge gate.
