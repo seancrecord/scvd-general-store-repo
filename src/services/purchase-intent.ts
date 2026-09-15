@@ -19,6 +19,9 @@ export const PURCHASE_RECORD_CODES = {
   refused: "purchase_not_settled",
 } as const;
 
+// Advisory polling cadence, not a fulfillment deadline or alarm guarantee.
+export const PURCHASE_STATUS_POLL_SECONDS = 60;
+
 export interface PurchaseIntent {
   version: 1;
   id: string;
@@ -67,7 +70,7 @@ export async function paymentRecoveryFingerprint(payment: unknown): Promise<stri
 
 export function purchaseRecovery(env: Env, record: PurchaseIntent) {
   return { purchase_recorded: true, purchase_id: record.id, status_url: `${env.STORE_BASE_URL}/api/purchase-status/${record.id}`,
-    status_token: record.token, status_tool: "check_purchase",
+    status_token: record.token, status_tool: "check_purchase", original_door: record.door, original_path: record.path,
     status_auth: "GET status_url with Authorization: Bearer <status_token>. Keep the token private. This read is free and never submits payment." };
 }
 
@@ -79,17 +82,26 @@ export function purchaseRecovery(env: Env, record: PurchaseIntent) {
  * purchase's private recovery handle attached. Derived by both
  * callers from this function, never typed beside it.
  */
-export function inputMismatchRefusal(recovery: Record<string, unknown>) {
+export function inputMismatchRefusal(recovery?: Record<string, unknown>, charged: boolean | null = true) {
   return {
-    error: "This payment bought a different request. Retry the original product and inputs, or read its purchase status. No additional payment was submitted.",
-    code: "purchase_input_mismatch" as const, charged: true, charged_again: false, settlement_attempted: false,
-    recovery,
+    error: recovery
+      ? "This payment belongs to a different original request or interface. Read its private purchase status, or retry the original product and inputs through the original interface named in recovery. No additional payment was submitted. Repeating this mismatched request will not recover the purchase."
+      : "This payment bought different inputs. Retry the original product, inputs and interface with the original payment. No additional payment was submitted; repeating this mismatched request will not recover the purchase.",
+    code: "purchase_input_mismatch" as const, charged, charged_again: false, settlement_attempted: false,
+    temporary: false, retry_with_same_request: false,
+    next_action: recovery ? "read_purchase_status" : "retry_original_request",
+    ...(recovery ? { recovery } : {}),
   };
 }
 
 export function purchaseStatus(record: PurchaseIntent) {
   const delivery = record.delivery ?? publicationDelivery(record);
+  const pending = !delivery && record.state !== "not_settled";
   return { purchase_id: record.id, payment_state: record.state,
+    settlement_attempted: false,
+    recovery_state: delivery ? "ready" : pending ? "pending" : "not_settled",
+    next_action: delivery ? "use_fulfillment" : pending ? "read_purchase_status" : "review_unsettled_purchase",
+    retry_after_seconds: pending ? PURCHASE_STATUS_POLL_SECONDS : null,
     charged: record.state === "unknown" ? null : record.state === "settled",
     path: record.path, door: record.door, request: record.request,
     terms: record.terms, created_at: record.created_at,
@@ -99,7 +111,10 @@ export function purchaseStatus(record: PurchaseIntent) {
     delivery_state: delivery ? (record.item?.fulfillment === "human_queue" ? "order_created" : "delivered") : "not_established_by_this_record",
     ...(delivery ? { fulfillment: delivery } : {}),
     reconciliation_reference: record.reconciliation_reference ?? null,
-    retry: "Keep the original signed payment and idempotency key. Do not sign a new payment while this purchase is unresolved.",
+    retry: pending
+      ? `Recovery is pending; this record does not yet contain the goods. Read the same private status again after ${PURCHASE_STATUS_POLL_SECONDS} seconds, using GET with the same Bearer token or check_purchase with the same purchase_id and status_token. This interval is advice, not a delivery deadline or guarantee. Status reads are free and submit no payment. Keep the original payment and key; do not pay again to recover this purchase.`
+      : delivery ? "Use the retained fulfillment. Keep the original payment and key; no additional payment is needed to recover this purchase."
+        : "This purchase is recorded as not settled. No payment was submitted by this status read. Review this result before starting a new purchase.",
   };
 }
 
@@ -293,7 +308,9 @@ export async function readPurchaseStatus(env: Env, id: unknown, token: unknown):
     known = record;
     const resolution = await recordedHumanResolution(env, record);
     if (resolution) return { status: 200, body: { ...purchaseStatus(record), ...humanResolutionBody(resolution),
-      delivery_state: "resolved", fulfillment: resolvedHumanDelivery(resolution) ?? undefined } };
+      delivery_state: "resolved", recovery_state: "resolved", next_action: "read_resolution", retry_after_seconds: null,
+      retry: "Keep the signed resolution and its work or refund evidence. Do not pay again to recover this purchase.",
+      fulfillment: resolvedHumanDelivery(resolution) ?? undefined } };
     const body = purchaseStatus(record);
     if (record.delivery) {
       body.fulfillment = await purchaseDelivery(env, record);

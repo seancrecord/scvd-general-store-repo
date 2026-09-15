@@ -287,6 +287,11 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     what_to_do: "Keep resolution and evidence. Do not pay again.",
   },
   {
+    code: "purchase_input_mismatch", http: 409, charged: null,
+    means: "the authenticated payment belongs to another original request or interface; this retry submitted no payment",
+    what_to_do: "Not temporary. Read the private recovery status or retry the original product and inputs using recovery.original_door and recovery.original_path. Payment state is in charged; no additional settlement was attempted. MCP returns an error result.",
+  },
+  {
     code: "purchase_recovery_pending", http: 503, charged: true,
     means: "payment confirmed; delivery recovery pending",
     what_to_do: "Read recovery.status_url with Bearer status_token. No new payment.",

@@ -1053,7 +1053,7 @@ export function usdcTransfers(
 export interface UsdcApproval {
   owner: string;
   spender: string;
-  /** Raw USDC units — the ceiling the owner signed for. */
+  /** Raw allowance value emitted by the token; not proof of a transfer cap. */
   amount: bigint;
 }
 
@@ -1063,8 +1063,8 @@ export interface UsdcApproval {
  * SAME TRANSACTION ONLY, and that limit is the honest part: an
  * approval granted in an EARLIER transaction is invisible here, so
  * the absence of an approval means "not in this receipt", never "no
- * ceiling existed". The reconciliation says exactly that rather than
- * reporting an unobserved cap as an absent one.
+ * ceiling existed". The event also does not establish which transfer,
+ * if any, consumed this allowance.
  */
 export function usdcApprovals(
   receipt: RpcReceipt,

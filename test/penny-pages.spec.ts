@@ -53,6 +53,25 @@ const adminAuth = {
 };
 
 describe("Almanac penny pages", () => {
+  it("publishes every offered payment tier in OpenAPI", async () => {
+    const path = "/almanac/notes-from-a-tuesday-in-oak-city";
+    const challenge = await SELF.fetch(`${BASE}${path}`);
+    expect(challenge.status).toBe(402);
+    const required = decodePaymentRequired(challenge);
+    const spec = await json(await SELF.fetch(`${BASE}/openapi.json`));
+    if (!isRecord(spec.paths)) throw new Error("No OpenAPI paths");
+    const entry = spec.paths[path];
+    if (!isRecord(entry) || !isRecord(entry.get)) throw new Error("No publication operation");
+    const payment = entry.get["x-payment-info"];
+    if (!isRecord(payment) || !Array.isArray(payment.accepts)) throw new Error("No published offers");
+    // Compare actual served offers, including each rail's optional amounts.
+    const terms = (offers: unknown[]) => offers.map(offer => {
+      if (!isRecord(offer)) throw new Error("Invalid offer");
+      return `${offer.network}:${offer.amount}`;
+    }).sort();
+    expect(terms(payment.accepts)).toEqual(terms(required.accepts));
+  });
+
   it("challenges at a penny FIRST, with room above it, and delivers markdown when paid", async () => {
     /**
      * This asserted a single flat tier until 2026-07-30, and the change

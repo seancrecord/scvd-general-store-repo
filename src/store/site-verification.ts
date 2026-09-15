@@ -133,6 +133,41 @@ export function x402listTokenFile(now: Date): string {
  */
 export const OPENAI_APPS_CHALLENGE = "5tiA_QR8XKA2_K2LD4p6pBPGP4cK0uZuUI9FG-mKZ7c";
 
+/**
+ * AGENT TOOLS DIRECTORY OWNERSHIP CLAIM (2026-09-14), served as the
+ * top-level `agentToolsVerify` field on the well-known x402 documents.
+ *
+ * Their flow asks for the token on the JSON the host already serves
+ * rather than at a path of their own, so this one rides inside an
+ * existing document instead of earning a route. Served on BOTH the
+ * thin document and the richer catalog beside it: the instruction
+ * named one path and the store answers two, and a checker that picks
+ * the other one should not read a missing field as a failed claim.
+ *
+ * Proof-of-control nonce, not a secret — useless to anyone who does
+ * not already control scvd.store, which is the entire point of the
+ * check. Same category as the x402-list and OpenAI tokens above, and
+ * published deliberately rather than leaked.
+ *
+ * NOT DATED, and that is an assumption rather than a fact. The issuer
+ * said "shown once" about its display and nothing about how long it
+ * stays valid, so it is modelled on the OpenAI challenge (persistent,
+ * one host one token) rather than the x402-list nonces (72h, dated,
+ * self-retiring). IF IT TURNS OUT TO BE A ONE-TIME NONCE, move it to
+ * a DirectoryToken entry with its own `serve_until` — the x402-list
+ * comment above records what happens otherwise: every round hard-coded
+ * a token with a "remove after verification" note and every note was
+ * broken, leaving a dead nonce served for a week.
+ *
+ * Empty string means no claim in progress and the field is omitted.
+ */
+export const AGENT_TOOLS_VERIFY = "atc_cx2FWueZxYjZWqpN6bmWwkwlqUw9dK-4";
+
+/** The claim as a document field, or nothing when there is no claim. */
+export function agentToolsVerifyField(): { agentToolsVerify: string } | Record<string, never> {
+  return AGENT_TOOLS_VERIFY ? { agentToolsVerify: AGENT_TOOLS_VERIFY } : {};
+}
+
 /** The tags as head markup. Empty string when there are none. */
 export function verificationMetaTags(): string {
   return VERIFICATION_TAGS.map(

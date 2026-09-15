@@ -16,6 +16,7 @@ import {
   defectClass,
 } from "@/store/defect-vocabulary";
 import { buyDiscoveryExtensions } from "@/lib/bazaar-discovery";
+import { EVM_TRANSFER_METHOD } from "@/lib/payments";
 
 /**
  * S8 TIER A (2026-09-02): the door disagreeing with itself inside the
@@ -271,6 +272,84 @@ describe("the vocabulary carries the two classes under v8", () => {
       expect(entry?.our_signal).toContain(signal);
       expect((ADVISORY_NAMES as readonly string[]).includes(signal)).toBe(true);
       expect(entry?.registered).toBe("2026-09-02");
+    }
+  });
+});
+
+/**
+ * THE TRANSFER METHOD ON THE SERVED CHALLENGE (2026-09-14).
+ *
+ * `extra.assetTransferMethod` is declared by railAccepts and reaches
+ * the wire through @x402/core, which builds the requirement's extra as
+ * `{ ...parsedPrice.extra, ...resourceConfig.extra }` — the SDK's
+ * derived EIP-712 domain first, ours merged over it. That merge is a
+ * fact about somebody else's package on somebody else's release
+ * schedule, and the whole value of declaring the method is lost if it
+ * arrives having overwritten the name and version a buyer needs to
+ * build the domain. So it is asserted on the SERVED bytes, both
+ * halves: the method is there, and the domain survived it.
+ *
+ * Solana is excluded by construction, not by omission — that rail
+ * takes a signed transaction and has no authorization whose method
+ * there would be anything to choose.
+ */
+describe("assetTransferMethod: declared, without displacing the domain", () => {
+  it("every EVM accept on a served 402 carries the method beside its domain", async () => {
+    const item = items.find((row) => row.id === "hello")!;
+    const response = await quoteRequest(
+      `${BASE}/api/buy/hello?${new URLSearchParams(
+        Object.entries(baseline(item)).map(([key, value]) => [key, String(value)]),
+      )}`,
+    );
+    expect(response.status).toBe(402);
+    const challenge = JSON.parse(
+      atob(response.headers.get("PAYMENT-REQUIRED")!),
+    ) as { accepts: Array<{ network: string; extra?: Record<string, unknown> }> };
+
+    const evm = challenge.accepts.filter((entry) =>
+      entry.network.startsWith("eip155:"),
+    );
+    expect(evm.length, "no EVM rail on the challenge to read").toBeGreaterThan(0);
+    for (const entry of evm) {
+      expect(entry.extra?.assetTransferMethod, `${entry.network} method`).toBe(
+        EVM_TRANSFER_METHOD,
+      );
+      // The merge did not eat the domain the hand-rolling note promises.
+      expect(entry.extra?.name, `${entry.network} domain name`).toBeTruthy();
+      expect(entry.extra?.version, `${entry.network} domain version`).toBe("2");
+    }
+
+    for (const entry of challenge.accepts.filter((row) =>
+      row.network.startsWith("solana:"),
+    )) {
+      expect(
+        entry.extra?.assetTransferMethod,
+        "solana carries no transfer method",
+      ).toBeUndefined();
+    }
+  });
+
+  it("draws none of our own battery's transfer-method advisories", async () => {
+    const item = items.find((row) => row.id === "hello")!;
+    const query = new URLSearchParams(
+      Object.entries(baseline(item)).map(([key, value]) => [key, String(value)]),
+    );
+    const response = await quoteRequest(`${BASE}/api/buy/hello?${query}`);
+    const body = await response.text();
+    const report = runChecks(
+      new Response(body, {
+        status: 402,
+        headers: { "PAYMENT-REQUIRED": response.headers.get("PAYMENT-REQUIRED")! },
+      }),
+      false,
+      body,
+      `${BASE}/api/buy/hello?${query}`,
+    );
+    // eip3009 is the recognized method; the advisories exist for the
+    // doors that ask for something else. Reading our own door with the
+    // battery that reads theirs is the point.
+    for (const name of ["nonstandard-transfer-method", "unrecognized-transfer-method"]) {
+      expect(advisory(report, name), `${name}: ${advisory(report, name)?.detail ?? ""}`).toBeUndefined();
     }
   });
 });

@@ -33,6 +33,12 @@
     "skill:publish": "node scripts/publish-skill.mjs",
     "build:check": "wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors",
     "bazaar:validate": "node scripts/bazaar-validate.mjs",
+    "protocol-screen": "node scripts/protocol-screen.mjs",
+    "spec-pins": "node scripts/spec-pins.mjs",
+    "extension-coverage": "node scripts/extension-coverage.mjs",
+    "spec-pins:test": "node --test scripts/spec-pins.test.mjs",
+    "protocol-screen:test": "node --test scripts/protocol-screen.test.mjs scripts/git-source.test.mjs scripts/spec-pins.test.mjs scripts/rulings.test.mjs scripts/extension-coverage.test.mjs scripts/md.test.mjs",
+    "screen:all": "npm run protocol-screen:test && npm run protocol-screen && npm run spec-pins && npm run extension-coverage",
     "census": "node scripts/x402-census.mjs",
     "supported:kinds": "node scripts/supported-kinds.mjs",
     "agentic:check": "node scripts/agentic-market-check.mjs",
@@ -79,7 +85,7 @@
     "a2a:runner:check": "node scripts/a2a-runner-build.mjs --check",
     "a2a:runner:test": "node --test scripts/a2a-runner.test.mjs",
     "evidence:test": "node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs scripts/evidence-coverage.test.mjs && node --test scripts/retained-evidence.test.mjs scripts/retained-journal-reader.test.mjs",
-    "bazaar:validate:test": "node --test scripts/bazaar-validate.test.mjs",
+    "bazaar:validate:test": "node --test scripts/bazaar-validate.test.mjs scripts/bazaar-validation-resources.test.mjs",
     "bazaar:regex:test": "node scripts/bazaar-regex-check.mjs"
   },
   "dependencies": {

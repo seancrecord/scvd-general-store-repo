@@ -4,6 +4,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { readPayTo } from "@/lib/pay-to";
 import { isCanonicalUsdc } from "@/lib/value-checks";
 import { newEntryId } from "@/lib/ids";
+import { BASE_NETWORK } from "@/lib/payment-networks";
 import { signMessage } from "@/lib/signing";
 import {
   captureWatchEvidenceKeepingBody,
@@ -169,6 +170,29 @@ export interface LaunchCheckStage {
   stage: string;
   ok: boolean;
   detail: string;
+  /** Optional on the screen stage; absent on older records and non-oracle screens. */
+  evidence?: OracleScreenEvidence;
+}
+
+/** The response used by the gate, not a proof of independently checked chain state. */
+export interface OracleScreenEvidence {
+  version: 1;
+  /** Configured oracle chain; this capture adds no chain-identity RPC. */
+  chain: typeof BASE_NETWORK;
+  contract: string;
+  address: string;
+  method: "eth_call";
+  calldata: string;
+  block_tag: "latest";
+  /** The existing gate does not pin or retrieve the answering block. */
+  block_number: null;
+  block_hash: null;
+  provider_host: string;
+  /** Local response observation time, not a block or settlement timestamp. */
+  observed_at: string;
+  /** Only an exactly decoded ABI boolean is retained; never the whole RPC body. */
+  result: string;
+  listed: boolean;
 }
 
 export type TxHashStatus =
@@ -349,15 +373,15 @@ export async function fieldSignerFromKey(keyHex: string): Promise<FieldSigner> {
 }
 
 /**
- * The sanctions screen, as a seam. Production screens via the
- * Chainalysis public screening API (WALKABOUT.md rule 3 names it);
+ * The sanctions screen, as a seam. Production defaults to the on-chain
+ * oracle; an API key selects the existing API override. In both,
  * `listed: null` means THE SCREEN DID NOT ANSWER, which fails closed
  * upstream — unavailable screening withholds payment, never waves it
  * through.
  */
 export type SanctionsScreen = (
   address: string,
-) => Promise<{ listed: boolean | null; source: string }>;
+) => Promise<{ listed: boolean | null; source: string; evidence?: OracleScreenEvidence }>;
 
 /**
  * THE KEYLESS DEFAULT: Chainalysis publishes the same designations as
@@ -399,18 +423,19 @@ const BOOL_FALSE = `0x${"0".repeat(64)}`;
  *
  * WHAT DOES NOT CHANGE: the screen still fails closed. The one answer
  * that moves money is the oracle saying false, byte for byte, from
- * some endpoint; a listing from ANY endpoint is final and no later
- * endpoint can overrule it; an endpoint that does not answer is
+ * some endpoint. The FIRST valid boolean is final, including false:
+ * later endpoints are not consulted. An endpoint that does not answer is
  * skipped, and when none answers the result is still null. The only
  * new behaviour is asking the next provider before giving up.
  */
 export function oracleScreen(
   rpcUrls: string | readonly string[],
   fetchImpl: typeof fetch = fetch,
+  now: () => Date = () => new Date(),
 ): SanctionsScreen {
   const endpoints = typeof rpcUrls === "string" ? [rpcUrls] : [...rpcUrls];
   return async (address: string) => {
-    const source = `Chainalysis on-chain sanctions oracle (${SANCTIONS_ORACLE_BASE} on eip155:8453)`;
+    const source = `Chainalysis on-chain sanctions oracle (${SANCTIONS_ORACLE_BASE} on ${BASE_NETWORK})`;
     if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
       // Not a 20-byte EVM address; the oracle cannot answer for it.
       return { listed: null, source: `${source} — address shape unscreenable` };
@@ -438,8 +463,18 @@ export function oracleScreen(
           continue;
         }
         const body = (await response.json()) as { result?: string };
-        if (body.result === BOOL_TRUE) return { listed: true, source };
-        if (body.result === BOOL_FALSE) return { listed: false, source };
+        if (body.result === BOOL_TRUE || body.result === BOOL_FALSE) {
+          const listed = body.result === BOOL_TRUE;
+          // Preserve the actual answer before returning. No second read, no
+          // block lookup, no consensus claim: latest did not identify a block.
+          return { listed, source, evidence: {
+            version: 1, chain: BASE_NETWORK, contract: SANCTIONS_ORACLE_BASE,
+            address: address.toLowerCase(), method: "eth_call", calldata: data,
+            block_tag: "latest", block_number: null, block_hash: null,
+            provider_host: host, observed_at: now().toISOString(),
+            result: body.result, listed,
+          } };
+        }
         failures.push(`${host} (unexpected result)`);
       } catch {
         failures.push(`${host} (unreachable)`);
@@ -1013,6 +1048,7 @@ export async function performLaunchCheck(
       stages.push({
         stage: "screen",
         ok: false,
+        ...(screened.evidence ? { evidence: screened.evidence } : {}),
         detail:
           screened.listed === true
             ? `the payTo address is identified on the sanctions screen (${screened.source}). Payment withheld and the skip recorded, per WALKABOUT.md rule 3.`
@@ -1024,7 +1060,8 @@ export async function performLaunchCheck(
     stages.push({
       stage: "screen",
       ok: true,
-      detail: `payTo screened clear (${screened.source}).`,
+      ...(screened.evidence ? { evidence: screened.evidence } : {}),
+      detail: `The named screen reported payTo not listed (${screened.source}); this store's payment rule permitted proceeding.`,
     });
 
     // STAGE 5 — sign the authorization, the field runner's exact shape.

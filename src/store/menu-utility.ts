@@ -618,16 +618,16 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     reads: "chain_read",
     fulfillment: "instant",
     description:
-      "Was the amount taken within the amount authorized? Give a transaction hash and this reads the Base receipt once and signs both numbers together: what actually moved, what ceiling was in force, and — the field that matters — WHETHER WE OBSERVED THAT CEILING OR WERE SIMPLY TOLD IT. An approval inside the same transaction is on the chain, so we saw it. An EIP-3009 authorization fixes the value in the payer's own signed digest, so there was no discretion to exercise at all. Anything else is your number, labelled as your number, forever. Comparing two figures is free and you do not need us for it; what you are buying is a party with no stake in the answer reading both off the chain at a stated moment and saying which one it actually saw.",
+      "Give a Base transaction hash to receive a signed observation of the USDC movement and any attributable authorization limit. A paired EIP-3009 authorization fixes the selected transfer's value: no discretion. An Approval in the same receipt does not establish which allowance funded that transfer. Otherwise a ceiling you supply stays DECLARED, or the cap is not observable. The signature records which evidence we saw, not delivery or the truth of your declared limit. Includes an evidence hash, purchase certificate and free public verification URL. Older approval-based claims need the correction at /corrections.",
     note_402:
       "Six tenths of a cent. The subtraction is free — the disinterested witness who says which number was real is the part that costs.",
     constraints: [
-      "Give the Base transaction hash (0x + 64 hex) in the tx_hash query parameter. This desk reads Base only, deliberately: the ceilings it reconciles (EIP-3009 authorizations) are a Base facility",
+      "Give the Base transaction hash (0x + 64 hex) in the tx_hash query parameter. This product reads Base only; checkout networks do not change the subject chain",
       "Optional narrowing: payer, recipient — a receipt can carry several legs and the largest match is what gets reported",
       "Optional declared_cap_usdc: recorded as DECLARED, never as observed, and never allowed to override a ceiling found on the chain",
-      "Only approvals inside the same transaction are visible; a ceiling granted earlier reads as 'not observed', never as 'absent'",
+      "Approval alone is not an observed spending cap; a paired EIP-3009 value is",
       "Observes money only, never delivery",
-      "One read at one moment; no polling, no retry, no second look",
+      "Receipt, chain and head checked before payment. Invalid context: retry the same payment",
     ],
   },
   /**
@@ -648,7 +648,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     sample_url: "/samples/case-file.json",
     description:
-      "Give a transaction hash and this assembles, at one moment and under one signature, everything this store already observed about that purchase: a fresh settlement attestation; the reconciliation of amount taken against ceiling in force (EVM); the mandate you cite, its declared cap printed beside the settled amount and never enforced; the door over the seven days around the transaction — corpus rounds, any watch rows, the passport tier at the time — or not_observed, which is an answer about our books; and delivery, if you hold a launch check or this store itself was the seller, otherwise 'delivery not observed by this store' in full weight, because that is the section a dispute usually turns on and we usually do not have it. Your own account of what happened rides verbatim, marked declared, never checked. Every absent section is listed with its reason and counted against us. It says what was observed and what was not; it never says who was wronged. If this store is a party to the purchase, the file says so on its face and still assembles.",
+      "Give a transaction hash and this assembles, at one moment and under one signature, everything this store already observed about that purchase: a fresh settlement attestation; the reconciliation of movement against an observed fixed value or declared cap (Base); the mandate you cite, its declared cap printed beside the settled amount and never enforced; the door over the seven days around the transaction — corpus rounds, any watch rows, the passport tier at the time — or not_observed, which is an answer about our books; and delivery, if you hold a launch check or this store itself was the seller, otherwise 'delivery not observed by this store' in full weight, because that is the section a dispute usually turns on and we usually do not have it. Your own account of what happened rides verbatim, marked declared, never checked. Every absent section is listed with its reason and counted against us. It says what was observed and what was not; it never says who was wronged. If this store is a party to the purchase, the file says so on its face and still assembles.",
     note_402:
       "A quarter. The parts are under a dime apiece; the rest is the assembly, and the assembly is the point — one URL a human can hand to the other side.",
     constraints: [

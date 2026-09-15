@@ -1,3 +1,4 @@
+import { PURCHASE_RECOVERY_TOOL_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
 import { A2A_CHECK_SCHEMA } from "@/lib/a2a-desk-schema";
@@ -206,7 +207,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     itemIds: [
       "settlement_attestation",
       // Settlement observed at one turn deeper: not "did it settle"
-      // but "did what moved stay inside the ceiling in force" — and
+      // but "did what moved stay inside an attributable or declared limit" — and
       // whether the ceiling was on the chain or merely asserted.
       "settlement_reconciliation",
       "the_case_file",
@@ -820,13 +821,14 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "check_purchase", reads: "our_books",
     summary: "Read a retained purchase's payment status and original terms using its private recovery handle. Free; submits no payment.",
-    description: "Use recovery.purchase_id and private recovery.status_token to read payment, original terms and available fulfillment, even after payment expiry. Free; submits no payment. Fulfillment may contain a recovered instant good or human order; human work remains pending until completed. Payment alone is not proof of delivery.",
+    description: PURCHASE_RECOVERY_TOOL_GUIDANCE,
     inputSchema: { type: "object", properties: {
       purchase_id: str("The recovery.purchase_id from your purchase response.", 64),
       status_token: str("The private recovery.status_token from the purchase response.", 64),
     }, required: ["purchase_id", "status_token"], additionalProperties: false,
       examples: [{ purchase_id: "0".repeat(64), status_token: "0".repeat(64) }] },
     outputSchema: { type: "object", properties: {
+      ...PURCHASE_STATUS_GUIDANCE_PROPERTIES,
       purchase_id: str("The original purchase identifier."),
       payment_state: choice("The recorded payment outcome.", ["unknown", "settled", "not_settled"]),
       charged: { type: ["boolean", "null"] }, request: str("The full original request."),

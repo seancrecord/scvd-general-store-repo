@@ -136,6 +136,13 @@ const DESIGN_CSS = `
    cards on it. The stagger is per-card off --n so the deal reads as a
    hand being turned over rather than five things blinking at once. */
 .paywall .post-button-quiet { font-weight: normal; opacity: 0.85; }
+/* THE SAVE BUTTON SITS BESIDE THE SHARE BUTTON (2026-09-14), because
+   the picture on this page is an SVG and X does not accept one. A
+   reader who right-clicks the card gets a vector file the upload box
+   refuses; the PNG was here all along, named in fine print as a code
+   span, which is a place nobody looks when they want a picture. */
+.paywall .share-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.paywall .share-note { margin-top: -0.35rem; }
 .paywall .pack-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 1.2rem 0 1.4rem; }
 .paywall .pack-card { margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 .paywall .pack-card img { width: 100%; height: auto; display: block; border: 1px solid var(--line); }
@@ -581,7 +588,7 @@ cardRoutes.get("/binder/:wallet{[A-Za-z0-9]+\\.png}", async (c) => {
   const wallet = walletOrNull(c.req.param("wallet").replace(/\.png$/, ""));
   if (!wallet) return c.text("A binder is keyed by a wallet address.", 400);
   const binder = await readBinder(c.env, wallet);
-  const png = renderBinderSheet(new Set(binder.rows.map((row) => row.key)), wallet, c.env.STORE_BASE_URL, binder.conditions);
+  const png = await renderBinderSheet(new Set(binder.rows.map((row) => row.key)), wallet, c.env.STORE_BASE_URL, binder.conditions);
   return c.body(png.buffer as ArrayBuffer, 200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" });
 });
 
@@ -735,7 +742,7 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.png}", async (c) => {
   const cardId = c.req.param("card").replace(/\.png$/, "");
   const record = await getCard(c.env, cardId);
   if (!record) return c.text("No card by that id was ever pressed here.", 404);
-  return c.body(renderShareSheet(record.card, c.env.STORE_BASE_URL, postFor(record.card)).buffer as ArrayBuffer, 200, PNG_HEADERS);
+  return c.body((await renderShareSheet(record.card, c.env.STORE_BASE_URL, postFor(record.card))).buffer as ArrayBuffer, 200, PNG_HEADERS);
 });
 
 cardRoutes.get("/api/card/:card_id", async (c) => {
@@ -800,7 +807,7 @@ cardRoutes.get("/pack/:pack_id{pack_[a-z0-9]+}", async (c) => {
         <figcaption>
           <span class="pack-card-name">${escapeHtml(card.name)}</span>
           <span class="pack-card-meta">${escapeHtml(RARITY_LINES[card.rarity])}${card.card_no ? ` · No. ${String(card.card_no).padStart(2, "0")} / ${CURRENT_SEASON.cards.length}` : ""} · print ${card.print_no}${card.print_cap !== undefined ? ` of ${card.print_cap}` : ""}</span>
-          <a class="post-button small" href="${escapeHtml(postIntentUrl(sharePost(card), `${base}/p/${card.card_id}`))}" rel="noopener">${X_GLYPH}Share</a>
+          <span class="share-row"><a class="post-button small" href="${escapeHtml(postIntentUrl(sharePost(card), `${base}/p/${card.card_id}`))}" rel="noopener">${X_GLYPH}Share</a><a class="post-button small post-button-quiet" href="/p/${escapeHtml(card.card_id)}.png" download="${escapeHtml(card.card_id)}.png">Save</a></span>
         </figcaption>
       </figure>`,
     )
@@ -817,7 +824,8 @@ cardRoutes.get("/pack/:pack_id{pack_[a-z0-9]+}", async (c) => {
       bodyHtml: `<section>
         <p class="doctrine">You pulled ${cards.length} cards.</p>
         <p class="menu-desc">${tally.map((row) => `<strong>${row.count}</strong> ${escapeHtml(row.count === 1 ? RARITY_LINES[row.rarity].toLowerCase() : `${RARITY_LINES[row.rarity].toLowerCase()}s`)}`).join(" · ")}${dupes.length ? ` · ${dupes.length} duplicate${dupes.length === 1 ? ", which burns" : "s, which burn"} into pack credit` : ""}</p>
-        <p><a class="post-button" href="${escapeHtml(postIntentUrl(packPost, `${base}/pack/${packId}`))}" rel="noopener">${X_GLYPH}Share the whole pack</a>${holder ? ` <a class="post-button post-button-quiet" href="/binder/${escapeHtml(holder)}">All your cards</a>` : ""}</p>
+        <p><a class="post-button" href="${escapeHtml(postIntentUrl(packPost, `${base}/pack/${packId}`))}" rel="noopener">${X_GLYPH}Share the whole pack</a><a class="post-button post-button-quiet" href="/p/${escapeHtml(best.card_id)}.png" download="${escapeHtml(best.card_id)}.png">Save the image</a>${holder ? `<a class="post-button post-button-quiet" href="/binder/${escapeHtml(holder)}">All your cards</a>` : ""}</p>
+        <p class="menu-meta share-note">${CARD_LINES.saveTheImage}</p>
         <div class="pack-grid" data-pack-reveal>
 ${faces}
         </div>
@@ -851,7 +859,8 @@ cardRoutes.get("/p/:card_id{card_[a-z0-9]+}", async (c) => {
           <img src="/p/${escapeHtml(cardId)}.svg" width="1000" height="1400" alt="${escapeHtml(card.name)}, ${escapeHtml(RARITY_LINES[card.rarity].toLowerCase())}">
           <div>
             <p class="doctrine">${escapeHtml(post)}</p>
-            <p><a class="post-button" href="${escapeHtml(postIntentUrl(sharePost(card), `${base}/p/${cardId}`))}" rel="noopener">${X_GLYPH}Share on X</a></p>
+            <p class="share-row"><a class="post-button" href="${escapeHtml(postIntentUrl(sharePost(card), `${base}/p/${cardId}`))}" rel="noopener">${X_GLYPH}Share on X</a><a class="post-button post-button-quiet" href="/p/${escapeHtml(cardId)}.png" download="${escapeHtml(cardId)}.png">Save the image</a></p>
+            <p class="menu-meta share-note">${CARD_LINES.saveTheImage}</p>
             <p class="menu-desc"><strong>${escapeHtml(card.name)}</strong> · ${escapeHtml(RARITY_LINES[card.rarity])} · ${escapeHtml(TYPE_LINES[card.type])}${card.rail ? ` · ${escapeHtml(card.rail)}` : ""}${card.card_no ? ` · No. ${String(card.card_no).padStart(2, "0")} of ${CURRENT_SEASON.cards.length}` : ""} · print ${card.print_no}${card.print_cap !== undefined ? ` of ${card.print_cap}` : ""}</p>
             <p class="menu-desc"><em>${escapeHtml(card.line)}</em></p>
             ${card.door_hash ? `<p class="menu-meta">A numbered Door: the endpoint is shown as its hash, <code>${escapeHtml(card.door_hash.slice(0, 16))}…</code>, and its observation count, ${card.observations ?? 0}, which is also this card's cap. Never the URL.</p>` : ""}

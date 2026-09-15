@@ -1,5 +1,60 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-14 — Forge OpenAPI intake
+
+For the authorized release, read current main's rule 62 and
+[x402-list's API contract](https://x402-list.com/api/v1/openapi.json) and
+[SCVD service history](https://x402-list.com/services/sean-claude-van-damme-s-general-store).
+It covers 32 endpoints and reports a passing unpaid handshake. The
+store's public preflight intentionally refuses its own hostname, so no
+self-preflight pass is claimed. The external schema probes remain the
+evidence for the full 36-route set.
+
+Read the live [store contract](https://scvd.store/openapi.json), the
+[OpenAPI 3.1.1 specification](https://spec.openapis.org/oas/v3.1.1.html)
+(response maps and references), Coinbase's
+[x402 v2 specification](https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md),
+and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+Inspected Response.status and ResponseInit in the already retrieved
+Workers types 5.20260914.1; no runtime API or binding changes are needed.
+
+The [Forge landing page](https://forge.clawca.sh/) does not expose the
+verification algorithm. Its Twitter page could not be read (403).
+The keeper's paste is the source for Forge's displayed statuses; our
+separate unsigned requests reproduce quote/refusal distinctions, not
+Forge's original requests. No payment or delivery verification was made.
+The local change documents the trust-profile route's observed 403 with
+the existing Problem schema. Evidence and remaining uncertainty:
+`docs/FORGE_DISCOVERY_2026-09-14.md`.
+
+Expanded the read to [Coinbase discovery](https://docs.cdp.coinbase.com/x402/seller/get-discovered)
+and its [free validator contract](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/validate-x402-endpoint).
+The validator's `simulation` is eligibility, while its separate `index`
+reports catalog status; the call neither pays nor indexes. All 35 menu
+declarations were accepted, with 27 active index rows. The publication
+was rejected for its string example against an object schema. Inspected
+the installed SDK declaration/validation implementation: the HTTP
+middleware supplies the method; output examples otherwise default to an
+object schema. Publication OpenAPI also omitted the till's optional tiers.
+
+Read [Circle listing requirements](https://developers.circle.com/agent-stack/agent-marketplace/get-listed),
+[Indexter provider intake](https://indexter.cash/for-providers), and
+[PayAI Bazaar discovery](https://docs.payai.network/x402/facilitators/bazaar).
+Circle manually reviews applications; partner-directory acceptance is
+separate. Its public domain search returned no items, with a successful
+nonempty control query. The linked Google intake form was unreadable in
+the web reader; no application or wallet-review reason was inferred.
+Indexter offers provider submission/claiming behind account access.
+PayAI catalogs declarations echoed to its own verify/settle endpoints,
+including verification without settlement since July 29. No submission,
+signed authorization, facilitator switch or vendor message was made.
+The remaining menu index gaps have no established cause from current
+metadata validity alone. Exact Forge requests remain unavailable.
+
+Read [Wrangler commands](https://developers.cloudflare.com/workers/wrangler/commands/)
+for the existing local dry-run bundle check. Evidence:
+`FORGE_INDEX_VALIDATION_2026-09-14.json`.
+
 ## 2026-09-12 — Launch Check recipient evidence limits
 
 Read [ERC-3009](https://eips.ethereum.org/EIPS/eip-3009), the primary
@@ -1025,3 +1080,12 @@ Re-read [ERC-3009](https://eips.ethereum.org/EIPS/eip-3009) and the pinned [Circ
 Reused the pinned Circle event-order interpretation above for the two reconciliation readers: payer equality does not connect distinct transfer legs, and equal-valued transfers remain distinct receipt positions. Re-read the [Ethereum JSON-RPC reference](https://ethereum.org/developers/docs/apis/json-rpc/) for transaction receipts, hexadecimal quantities and chain identity, and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/). The local reader must establish the requested transaction identity and usable block/head data before drawing a signed conclusion. An explicit null result is different from an absent result member; duplicate batch IDs cannot select the observation by overwrite.
 
 This checks the provider's answers, not consensus inclusion proofs or a token proxy's historical implementation. Receipt, head and chain reads can take different configured provider paths; no same-node snapshot or Byzantine-provider guarantee is added. The existing block-depth threshold remains a dated observation policy. No new binding, dependency, wallet or deployment is introduced.
+
+### 2026-09-14 — buyer recovery guidance and reconciliation candidate review
+
+Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/): keep recovery status read-only and preserve binding-based storage; this change adds no platform API, timer or deployment behavior. Read [ERC-20](https://eips.ethereum.org/EIPS/eip-20), especially Approval and Transfer event fields: an approval names owner, spender and allowance; a Transfer does not identify which allowance was spent. Receipt co-occurrence alone is not evidence that a selected transfer consumed that allowance. Read the execution APIs' [transaction methods](https://raw.githubusercontent.com/ethereum/execution-apis/main/src/eth/transaction.yaml) and [receipt schema](https://raw.githubusercontent.com/ethereum/execution-apis/main/src/schemas/receipt.yaml): a receipt is returned for a requested hash and includes its own transaction hash, block and logs. The ethereum.org JSON-RPC documentation URL could not be opened by the browser tool; the primary execution-apis sources above were reachable. No historical RPC-provider behavior or production prevalence was established by these reads. Synthetic reproduction and scope are retained in `research/buyer-recovery-followup-2026-09-14/`.
+
+
+### September 14 — applying the reconciliation follow-up
+
+The primary sources in the recovery follow-up entry above support the repair boundary: an Approval names an allowance but a Transfer does not identify the spender or spending mechanism, so same-receipt ordering and owner/recipient equality do not establish consumed allowance. Only the independently paired EIP-3009 fixed value remains observed here. The reconciliation reader now reuses the already-reviewed chain/receipt validators before signing; explicit null is distinct from unestablished context. No new platform API or dependency was introduced. RPC assertions and local fixtures do not establish consensus, finality, historical incidence or live buyer impact. The new correction preserves those limits and historical signatures.

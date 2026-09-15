@@ -1,6 +1,8 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
+  AGENT_TOOLS_VERIFY,
+  agentToolsVerifyField,
   OPENAI_APPS_CHALLENGE,
   VERIFICATION_TAGS,
   X402LIST_TOKENS,
@@ -105,5 +107,45 @@ describe("/.well-known/openai-apps-challenge", () => {
     } else {
       expect(response.status).toBe(404);
     }
+  });
+});
+
+/**
+ * The Agent Tools ownership claim rides inside the documents the store
+ * already serves rather than a path of its own, so the failure mode is
+ * not a 404 — it is a field quietly missing from a 200 that otherwise
+ * looks right. Both documents are asserted because well-known.ts
+ * serves two and a checker picks one.
+ */
+describe("agent tools ownership claim", () => {
+  it.each(["/.well-known/x402", "/.well-known/x402.json"])(
+    "serves agentToolsVerify at %s",
+    async (path) => {
+      const doc = (await (await SELF.fetch(`${BASE}${path}`)).json()) as Record<string, unknown>;
+      expect(doc["agentToolsVerify"]).toBe(AGENT_TOOLS_VERIFY);
+    },
+  );
+
+  it("is a top-level field, which is what the issuer asked for", async () => {
+    const doc = (await (await SELF.fetch(`${BASE}/.well-known/x402`)).json()) as Record<string, unknown>;
+    expect(Object.keys(doc)).toContain("agentToolsVerify");
+  });
+
+  it("does not disturb the fields an indexer already learned", async () => {
+    // This document's standing rule is additive-only: version and
+    // resources keep their exact shape and position.
+    const doc = (await (await SELF.fetch(`${BASE}/.well-known/x402`)).json()) as Record<string, unknown>;
+    expect(doc["version"]).toBe(1);
+    expect(Array.isArray(doc["resources"])).toBe(true);
+    expect(doc["name"]).toBeTruthy();
+  });
+
+  it("omits the field entirely when there is no claim, rather than serving an empty string", () => {
+    // An empty token published as a field is a claim that the token is
+    // the empty string, which is the failure the OpenAI challenge note
+    // above records for its own path.
+    expect(agentToolsVerifyField()).toEqual({ agentToolsVerify: AGENT_TOOLS_VERIFY });
+    expect(AGENT_TOOLS_VERIFY).not.toBe("");
+    expect(AGENT_TOOLS_VERIFY.startsWith("atc_")).toBe(true);
   });
 });
