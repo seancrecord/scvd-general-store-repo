@@ -1249,13 +1249,22 @@ export async function auditSweep(
   for (const row of report.rows) {
     if (row.finding.call === "agree") continue;
     /*
+     * A DESK FINDING, NOT A PAGE (2026-09-15). This rode
+     * `worker_health` until the keeper read one of these emails about
+     * one host and said he did not want the TYPE — and he was right
+     * twice over: a note of ours going stale is not the Worker being
+     * unhealthy, and the answer to it is a press on the audit desk
+     * below, not a phone at 6am. `note_audit` is on DESK_CONDITIONS,
+     * so this still writes its row, its first-seen and its repeats to
+     * the alarm trail and sends no mail at all.
+     *
      * Keyed per host and per call, so a standing disagreement is one
-     * page rather than one a day — and a row that moves from `look`
-     * to `ours` pages again, because that is news.
+     * row rather than one a day — and a row that moves from `look` to
+     * `ours` is its own row, because that is news.
      */
     await sendAlert(env, {
-      condition: "worker_health",
-      key: `note-audit:${row.finding.call}:${row.host}`,
+      condition: "note_audit",
+      key: `${row.finding.call}:${row.host}`,
       detail:
         row.finding.call === "ours"
           ? `A note this desk sent to ${row.host} is owed a correction. ${row.finding.why} The correction is drafted and waiting on /admin/outreach#audit — one press sends it.`

@@ -47,6 +47,8 @@ export interface CounterPageData {
     at: string;
     seen?: boolean;
     email_muted?: "alarm" | "condition";
+    /** Raised by a condition that never mails: a desk finding, not a page. */
+    desk_only?: true;
   }>;
   alertsUnavailable?: boolean;
   /**
@@ -545,12 +547,14 @@ export function renderCounterPage(data: CounterPageData): string {
           <ul>${data.alerts
             .map(
               (alert) =>
-                `<li>${seenAt !== null && !alert.seen ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}${alert.email_muted ? `<strong>[MUTED]</strong> ` : ""}<strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
+                `<li>${seenAt !== null && !alert.seen ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}${alert.desk_only ? `<strong>[DESK]</strong> ` : alert.email_muted ? `<strong>[MUTED]</strong> ` : ""}<strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
             )
             .join("\n")}</ul>
           <p><small>Details clipped for the counter; the alert emails carry the full text
           — except for a row marked [MUTED], which sent you no mail on purpose
-          and can be un-muted on <a href="/admin/reconciliation#alarms">the reconciliation page</a>.
+          and can be un-muted on <a href="/admin/reconciliation#alarms">the reconciliation page</a>,
+          and one marked [DESK], which never mails anybody and is answered
+          where it is raised.
           ${
             seenAt === null
               ? "First look: nothing is marked new, because the store has no idea what you have already read."
