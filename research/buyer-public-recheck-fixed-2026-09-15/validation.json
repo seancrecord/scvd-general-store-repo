@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-15",
+  "status": "local_benchmark_repair_passed_bounded_public_recheck",
+  "live_spend_usdc": 0,
+  "public": {
+    "items": 35,
+    "prepayment_requests": 539,
+    "link_requests": 327,
+    "comparison_issues": 0,
+    "unresolved_link_occurrences": 18,
+    "prepayment_statuses": {
+      "200": 361,
+      "400": 111,
+      "402": 66,
+      "403": 1
+    },
+    "link_statuses": {
+      "200": 264,
+      "301": 1,
+      "400": 6,
+      "402": 42,
+      "404": 5,
+      "405": 9
+    },
+    "instrument_errors": 0,
+    "raw_404s_are_prose_parser_errors": true,
+    "raw_outputs_preserved": true,
+    "canonical_url_followup": [
+      {
+        "url": "https://scvd.store/menu.json",
+        "sent_at": "2026-09-15T15:56:00.139Z",
+        "status": 200,
+        "content_type": "application/json",
+        "bytes": 308325,
+        "payment_submitted": false,
+        "received_at": "2026-09-15T15:56:01.780Z"
+      },
+      {
+        "url": "https://scvd.store/mcp.md",
+        "sent_at": "2026-09-15T15:56:01.780Z",
+        "status": 200,
+        "content_type": "text/markdown; charset=utf-8",
+        "bytes": 8506,
+        "payment_submitted": false,
+        "received_at": "2026-09-15T15:56:01.816Z"
+      },
+      {
+        "url": "https://scvd.store/observatory",
+        "sent_at": "2026-09-15T15:56:01.816Z",
+        "status": 200,
+        "content_type": "application/json",
+        "bytes": 38800,
+        "payment_submitted": false,
+        "received_at": "2026-09-15T15:56:04.058Z"
+      }
+    ]
+  },
+  "regression": {
+    "primary_source_reversion": {
+      "failed": 7,
+      "passed_legacy_control": 1,
+      "source_restored_exactly": true
+    },
+    "additional_punctuation_before_fix": {
+      "failed": 1,
+      "passed": 8
+    },
+    "final_buyer_test": {
+      "passed": 36,
+      "failed": 0,
+      "command": "npm run buyer:test"
+    },
+    "ci_yaml_syntax": "Ruby Psych parse passed"
+  },
+  "aggregate_score_generated": false,
+  "release_status": "uncommitted_not_deployed",
+  "no_claims": [
+    "full ten-surface comparison",
+    "recursive crawl",
+    "redirect-loop absence",
+    "every public error code",
+    "fresh paid cold cohort",
+    "live wallet original-good recovery"
+  ],
+  "source_sha256": {
+    "scripts/buyer-wave-one.mjs": "9578b0f9efd32a99d1fb3aee86aa30029b08862542797c5f654662e6a0bae062",
+    "scripts/buyer-wave-score.mjs": "03004f041cbd52927822611d8e8f2545e271a2f69ff86f0b336034d14ca5afae",
+    "scripts/buyer-wave-one.test.mjs": "f5d084031f9a2a794e992b87f8ff77f1a63c4889fe440a1b5ee5378a078d6887",
+    "package.json": "678e6b47a646efdff98c1f46f816c4be6acfb3ff1279873e29c59cf2bb5283e7",
+    ".github/workflows/ci.yml": "13e42b70118ceac504e88f7e4654c3f9b5e1d19effac57224209ce8b7b73f7d0"
+  },
+  "log_sha256": {
+    "scvd-benchmark-source-red.log": "a3dec051792029768e0f612268f016f59d6eb9fcbca58e26b36fce9b0a22818e",
+    "scvd-benchmark-punctuation-red.log": "147a5b9d96dcaf2518dcc0b24e4be6166d4ec072664beef44f9c36c77be767f1",
+    "scvd-benchmark-punctuation-green.log": "cd33bc7c7655b058226bfad13e4cde0190856cdeb78db2ba39a6d7d35578a9fd"
+  }
+}

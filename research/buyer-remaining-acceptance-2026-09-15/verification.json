@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "purchases": 12,
+  "distinct_products": 5,
+  "spend_usdc": 0.054,
+  "mixed_first_paid_attempt_successes": 10,
+  "clean_cancel_recovered": true,
+  "historical_signature_and_handover_verified": true,
+  "ots_verified": false,
+  "ordinary_wallet_only_artifact_recovery": false
+}

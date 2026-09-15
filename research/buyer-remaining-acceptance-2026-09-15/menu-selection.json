@@ -1,0 +1,725 @@
+{
+  "items": [
+    {
+      "id": "spot_check",
+      "free_alternative": {
+        "path_template": "/corpus/host/{host}.json",
+        "paid_adds": "A signed, certificate-bound copy of the recorded facts, with the observation dates and gaps; no new probe."
+      },
+      "listed_week": "2026-W35",
+      "name": "Spot Check",
+      "price_usdc": 0.001,
+      "pricing": "fixed",
+      "cadence": "one_off",
+      "reads": "our_books",
+      "fulfillment": "instant",
+      "description": "Name a host and get what this observatory already holds on it, signed: corpus rounds and verdicts as recorded, when we last actually knocked, our coverage of the window since we met it, and the gaps with their reasons. Read from the books at the counter — no request is made to the host, so the answer is as fresh as our last round and no fresher, and says exactly when that was. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host. The same facts serve free at /corpus/host/{host}.json; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite.",
+      "note_402": "A tenth of a cent for whatever's already on the card. We don't go and look — this is what the shop already saw, dated, with the blanks left blank.",
+      "constraints": [
+        "Give the host in the host query parameter: a bare hostname, e.g. example.com",
+        "Reads what we already recorded — no request is made to the subject",
+        "A host we've never met returns not_observed, which is an answer",
+        "Never a ranking, and never a verdict without its derivation and denominator beside it.",
+        "Want a live read instead? The preflight at /api/preflight/v2 is free and knocks right now"
+      ],
+      "sample_url": "https://scvd.store/samples/spot-check.json",
+      "sample_kind": "delivery_outline",
+      "buy_url": "https://scvd.store/api/buy/spot_check",
+      "required_params": [
+        "host"
+      ],
+      "input_contract_url": "https://scvd.store/menu/spot_check?view=compact",
+      "mcp_url": "https://scvd.store/mcp?view=compact&item_id=spot_check&payment=tool-result",
+      "task": "Ask what the observatory already knows about an x402 host — signed, from its books, before I spend anything at that door",
+      "price_tiers_usdc": [
+        0.001
+      ],
+      "required_params_note": "This one needs ?host= on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves. Supply it unsigned first and the same URL validates it before offering terms.",
+      "listing_url": "https://scvd.store/menu/spot_check",
+      "asked_for": "what the observatory already knows about an x402 host, signed",
+      "at_a_glance": {
+        "attests": "Name a host and get what this observatory already holds on it, signed: corpus rounds and verdicts as recorded, when we last actually knocked, our coverage of the window since we met it, and the gaps with their reasons. Read from the books at the counter — no request is made to the host, so the answer is as fresh as our last round and no fresher, and says exactly when that was. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host. The same facts serve free at /corpus/host/{host}.json; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite.",
+        "input": "host (query parameters; the full schema rides the 402 body as payload_template)",
+        "output": "The deliverable as JSON, plus a signed certificate Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+        "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+        "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+        "price_and_fulfilment": "$0.001 fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could USDC; delivered instantly",
+        "does_not_attest": "fitness for your particular task; future protocol compatibility beyond stated interfaces; human-labor turnaround faster than posted SLA"
+      },
+      "spec": {
+        "capability": "Name a host and get what this observatory already holds on it, signed: corpus rounds and verdicts as recorded, when we last actually knocked, our coverage of the window since we met it, and the gaps with their reasons. Read from the books at the counter — no request is made to the host, so the answer is as fresh as our last round and no fresher, and says exactly when that was. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host. The same facts serve free at /corpus/host/{host}.json; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite.",
+        "why_use": "the observatory's books on one host, read before any money moves toward it: rounds, verdicts as recorded, coverage, gaps with reasons — and not_observed stated as the answer it is. The same facts serve free per host; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite to a third party.",
+        "inputs": {
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280,
+              "description": "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions."
+            },
+            "host": {
+              "type": "string",
+              "description": "A bare hostname, e.g. example.com. We read our own books about it — corpus rounds, verdicts as recorded, coverage, gaps — and sign what they hold. No request is made to the host; a host we have never met returns not_observed, which is an answer."
+            }
+          },
+          "required": [
+            "host"
+          ]
+        },
+        "outputs": {
+          "delivery": "delivered in the purchase response, same request",
+          "always_included": [
+            "signed certificate (ed25519)",
+            "sequential patron number",
+            "badge_url",
+            "verify_url"
+          ]
+        },
+        "verification": {
+          "verify_url": "https://scvd.store/api/verify/{id}",
+          "cost": "free, unlimited, forever",
+          "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+          "key_history": "https://scvd.store/.well-known/scvd-signing-key",
+          "sample_artifact_id": "cert_4dww28dx5j",
+          "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+          "certificate_binds": [
+            "cert_id",
+            "item",
+            "patron_number",
+            "date",
+            "paid_usdc",
+            "asset",
+            "network",
+            "payer",
+            "settlement_tx"
+          ],
+          "certificate_binds_note": "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and an explorer for the settlement network are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+          "rights": "https://scvd.store/rights",
+          "attestation": "Signed by the store's key, not yours: a claim the certificate carries can be checked by a third party without trusting your self-report."
+        },
+        "constraints": [
+          "Give the host in the host query parameter: a bare hostname, e.g. example.com",
+          "Reads what we already recorded — no request is made to the subject",
+          "A host we've never met returns not_observed, which is an answer",
+          "Never a ranking, and never a verdict without its derivation and denominator beside it.",
+          "Want a live read instead? The preflight at /api/preflight/v2 is free and knocks right now"
+        ],
+        "price": {
+          "amount_usdc": 0.001,
+          "pricing": "fixed",
+          "tiers_usdc": [
+            0.001
+          ],
+          "currency": "USDC",
+          "network": "Choose an accepts[].network from the current PAYMENT-REQUIRED quote",
+          "protocol": "x402 v2"
+        }
+      },
+      "guaranteed": [
+        "signature validity forever",
+        "verification free forever",
+        "price as displayed",
+        "delivery format as specified"
+      ],
+      "not_guaranteed": [
+        "fitness for your particular task",
+        "future protocol compatibility beyond stated interfaces",
+        "human-labor turnaround faster than posted SLA"
+      ],
+      "fulfillment_state": {
+        "class": "instant",
+        "shutter": "open"
+      },
+      "when": [
+        {
+          "job": "I am about to pay an endpoint I have never used. Is its door even shaped right?",
+          "free_first": "Preflight — the preflight_endpoint tool, one probe, free, no account. Or the look — look_at_door — the same probe folded with everything the signed chain holds about the host, free."
+        }
+      ],
+      "verify": "https://scvd.store/api/verify/{cert_id}",
+      "archive_depth": {
+        "kind": "archive",
+        "weeks_in_chain": 6,
+        "hosts_seen": 2862,
+        "first_week": "2026-W32",
+        "latest_week": "2026-W37",
+        "what_this_is": "How much signed history stands behind what this item would sell you, counted from the chain before any money moves and re-derived at most every 10 minutes; derived_at says when. Zero is printed as zero.",
+        "what_this_is_not": "Not a preview of the answer. The depth says how many signed rounds an answer would draw on, never what they say; a subject the chain never met is stated as never met, not counted as anything.",
+        "derived_at": "2026-09-15T13:31:31.914Z"
+      }
+    },
+    {
+      "id": "settlement_attestation",
+      "listed_week": "2026-W31",
+      "name": "Settlement Attestation",
+      "sample_url": "https://scvd.store/samples/settlement-attestation.json",
+      "price_usdc": 0.004,
+      "pricing": "fixed",
+      "cadence": "one_off",
+      "reads": "chain_read",
+      "fulfillment": "instant",
+      "description": "An independent signed observation of whether an x402 payment settled — on Base, Polygon or Solana, and the identifier's own shape picks the rail: a 0x hash names an EVM transaction rather than a chain, so it is read on Base and then on Polygon; a base58 signature reads Solana. Give it the transaction (and optionally the payer, recipient, nonce, or amount you expected) and it reads public chain state once and signs what it found: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH, or REVERTED. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes a moment on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
+      "note_402": "Four tenths of a cent, friend. The chain read is free; the signed, disinterested receipt is what you are buying. An EVM hash (read on Base, then Polygon) or a Solana signature — the shape picks the rail. No transaction of your own yet? Buy anything here — the half-cent blessing counts — and the purchase response hands you this door's URL with your own settlement transaction already filled in, whichever rail you paid on.",
+      "constraints": [
+        "Give the transaction in the tx_hash query parameter: an EVM hash (0x + 64 hex, read on Base and then Polygon) or a Solana signature (base58) — the shape picks the rail",
+        "Optional narrowing: payer, recipient, nonce (EVM rails only — refused beside a Solana signature), amount_usdc, or payment_payload (the base64 PAYMENT-SIGNATURE you sent, read with the store's own replay-guard code). The artifact's binding field says what the answer ties the transaction to: one uniquely identified authorizer/nonce and its paired canonical USDC Transfer bind it to one authorization, never to one request. Supply payer to distinguish reused nonces across authorizers; every supplied transfer field must match the same pair. Unrecognised event ordering establishes no binding",
+        "Optional payment_response: the PAYMENT-RESPONSE header you received, verbatim. Received, not observed — its bytes are digested into the signature and echoed outside it, and each claimed field (transaction, network, payer, success) is set beside what the chain showed: agrees, disagrees, not claimed, or not observed",
+        "Observes settlement only, never delivery",
+        "One read at one moment; no polling, no retry, no second look"
+      ],
+      "buy_url": "https://scvd.store/api/buy/settlement_attestation",
+      "required_params": [
+        "tx_hash"
+      ],
+      "input_contract_url": "https://scvd.store/menu/settlement_attestation?view=compact",
+      "mcp_url": "https://scvd.store/mcp?view=compact&item_id=settlement_attestation&payment=tool-result",
+      "task": "Prove to a third party that a payment actually settled on chain",
+      "attestation_class": "settlement_attestation",
+      "signs": "The whole observation object: the transaction hash asked about, what the chain said, the block height, the chain head at the time of reading, the confirmation count, the moment of observation, the desk's battery, and the binding — what, if anything, ties the transaction to one payment authorization (none, authorization_nonce, or the reserved input_commitment), beside what was asked. When a facilitator's settlement response was supplied, input_claims is signed too: the sha256 of the exact bytes received and a per-field table saying whether each claim agrees with the chain — never the claimed values themselves, which are echoed outside the signature under received_not_observed. The projection beside the artifact is signed on its own, points back by evidence_hash, and is never the record. Observations signed before 2026-09-11 carry neither battery nor binding: read that absence as predating binding classes, never as unbound, and an artifact citing the battery without the binding as defective. From battery settlement-attestation-v3, checking a nonce against a successful receipt adds signed binding.evidence: the pairing result, machine-readable reason and, when readable, authorizer, nonce, recipient, atomic amount and receipt positions. One canonical USDC AuthorizationUsed must be immediately followed by its Transfer; all supplied terms must match that pair. Multiple candidate authorizers require payer; unknown ordering remains unestablished. Battery v2 used independent nonce and transfer matches and can overstate correspondence: consult /corrections before citing its binding claim. Battery v4 additionally checks the EVM receipt transaction identity, reported chain, block height, chain head and receipt status before signing. Malformed provider answers are refused, never labelled settled, reverted or not found. Bundle members receive the same checks; missing and duplicate batch answers are refused. Historical signed bytes are unchanged. A sheaf (attestation_bundle) is this artifact at volume — every member signed alone over the same fields, quotable alone.",
+      "does_not_prove": "That goods or services were delivered, that a NOT_FOUND will never settle later, or that the payment was legitimate. That the transaction was the settlement of any particular request: binding says what it ties, and authorization_nonce ties one EIP-3009 authorization, not one 402 challenge — whether the door tied that nonce to a single request is the door's work and unobserved. Anything a facilitator's settlement response says: it is received, not observed, and an agreement row that reads disagrees is a finding about the response, not a verdict on anyone. One RPC read of public state, at one moment, signed by a party with no interest in the answer.",
+      "price_tiers_usdc": [
+        0.004
+      ],
+      "required_params_note": "This one needs ?tx_hash= on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves. Supply it unsigned first and the same URL validates it before offering terms.",
+      "listing_url": "https://scvd.store/menu/settlement_attestation",
+      "asked_for": "signed settlement attestation for an x402 payment on a supported network selected in the input contract",
+      "at_a_glance": {
+        "attests": "The whole observation object: the transaction hash asked about, what the chain said, the block height, the chain head at the time of reading, the confirmation count, the moment of observation, the desk's battery, and the binding — what, if anything, ties the transaction to one payment authorization (none, authorization_nonce, or the reserved input_commitment), beside what was asked. When a facilitator's settlement response was supplied, input_claims is signed too: the sha256 of the exact bytes received and a per-field table saying whether each claim agrees with the chain — never the claimed values themselves, which are echoed outside the signature under received_not_observed. The projection beside the artifact is signed on its own, points back by evidence_hash, and is never the record. Observations signed before 2026-09-11 carry neither battery nor binding: read that absence as predating binding classes, never as unbound, and an artifact citing the battery without the binding as defective. From battery settlement-attestation-v3, checking a nonce against a successful receipt adds signed binding.evidence: the pairing result, machine-readable reason and, when readable, authorizer, nonce, recipient, atomic amount and receipt positions. One canonical USDC AuthorizationUsed must be immediately followed by its Transfer; all supplied terms must match that pair. Multiple candidate authorizers require payer; unknown ordering remains unestablished. Battery v2 used independent nonce and transfer matches and can overstate correspondence: consult /corrections before citing its binding claim. Battery v4 additionally checks the EVM receipt transaction identity, reported chain, block height, chain head and receipt status before signing. Malformed provider answers are refused, never labelled settled, reverted or not found. Bundle members receive the same checks; missing and duplicate batch answers are refused. Historical signed bytes are unchanged. A sheaf (attestation_bundle) is this artifact at volume — every member signed alone over the same fields, quotable alone.",
+        "input": "tx_hash (query parameters; the full schema rides the 402 body as payload_template)",
+        "output": "A signed JSON observation of one transaction on Base, Polygon, or Solana — the identifier's shape picks the chain — with status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height (slots on Solana), confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+        "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+        "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+        "price_and_fulfilment": "$0.004 fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could USDC; delivered instantly",
+        "does_not_attest": "That goods or services were delivered, that a NOT_FOUND will never settle later, or that the payment was legitimate. That the transaction was the settlement of any particular request: binding says what it ties, and authorization_nonce ties one EIP-3009 authorization, not one 402 challenge — whether the door tied that nonce to a single request is the door's work and unobserved. Anything a facilitator's settlement response says: it is received, not observed, and an agreement row that reads disagrees is a finding about the response, not a verdict on anyone. One RPC read of public state, at one moment, signed by a party with no interest in the answer."
+      },
+      "spec": {
+        "capability": "A signed JSON observation of one transaction on Base, Polygon, or Solana — the identifier's shape picks the chain — with status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height (slots on Solana), confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
+        "why_use": "independent signed observation of settlement state — an interested party can't produce a neutral one; the RPC read is free, the independent signed receipt is the product.",
+        "inputs": {
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280,
+              "description": "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions."
+            },
+            "tx_hash": {
+              "type": "string",
+              "pattern": "^(0x[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{64,88})$",
+              "description": "The transaction to observe: a Base transaction hash (0x + 64 hex) or a Solana transaction signature (base58). The identifier's shape selects the chain. Read once, at one moment; never polled."
+            },
+            "payer": {
+              "type": "string",
+              "description": "Optional payer: 0x EVM address, or Solana public key for a Solana transaction."
+            },
+            "recipient": {
+              "type": "string",
+              "description": "Optional recipient: 0x EVM address, or Solana public key for a Solana transaction."
+            },
+            "nonce": {
+              "type": "string",
+              "description": "Optional, EVM rails only. Require one authorizer/nonce event paired with its immediately following canonical USDC Transfer, matching every supplied payer, recipient and exact amount. Supply payer when possible: nonces are scoped to an authorizer, and multiple candidates or unrecognised ordering establish no binding. Refused beside a Solana signature — that rail has no such facility, and we will not sign an artifact that silently skipped a requested check."
+            },
+            "amount_usdc": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Optional. Require a transfer of exactly this many USDC. Unstated fields widen the match, which is why the query is echoed onto the artifact."
+            },
+            "payment_payload": {
+              "type": "string",
+              "description": "Optional. The base64 PAYMENT-SIGNATURE you sent, verbatim. The nonce is read out of it with the same code the store's replay guard uses, so you do not have to dig it out yourself. Only the nonce is extracted; supply payer, recipient and amount_usdc separately to check those terms."
+            },
+            "payment_response": {
+              "type": "string",
+              "description": "Optional. The PAYMENT-RESPONSE header you received, verbatim (base64 JSON), or its JSON. Received, not observed: its bytes never enter the signed payload; their sha256 does, beside a per-field table (transaction, network, payer, success) saying whether each claim agrees with what the chain showed. The bytes are echoed outside the signature so you can check both."
+            }
+          },
+          "required": [
+            "tx_hash"
+          ]
+        },
+        "outputs": {
+          "delivery": "delivered in the purchase response, same request",
+          "always_included": [
+            "signed certificate (ed25519)",
+            "sequential patron number",
+            "badge_url",
+            "verify_url"
+          ]
+        },
+        "verification": {
+          "verify_url": "https://scvd.store/api/verify/{id}",
+          "cost": "free, unlimited, forever",
+          "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+          "key_history": "https://scvd.store/.well-known/scvd-signing-key",
+          "sample_artifact_id": "cert_4dww28dx5j",
+          "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+          "certificate_binds": [
+            "cert_id",
+            "item",
+            "patron_number",
+            "date",
+            "paid_usdc",
+            "asset",
+            "network",
+            "payer",
+            "settlement_tx"
+          ],
+          "certificate_binds_note": "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and an explorer for the settlement network are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+          "rights": "https://scvd.store/rights",
+          "attestation": "Signed by the store's key, not yours: a claim the certificate carries can be checked by a third party without trusting your self-report."
+        },
+        "constraints": [
+          "Give the transaction in the tx_hash query parameter: an EVM hash (0x + 64 hex, read on Base and then Polygon) or a Solana signature (base58) — the shape picks the rail",
+          "Optional narrowing: payer, recipient, nonce (EVM rails only — refused beside a Solana signature), amount_usdc, or payment_payload (the base64 PAYMENT-SIGNATURE you sent, read with the store's own replay-guard code). The artifact's binding field says what the answer ties the transaction to: one uniquely identified authorizer/nonce and its paired canonical USDC Transfer bind it to one authorization, never to one request. Supply payer to distinguish reused nonces across authorizers; every supplied transfer field must match the same pair. Unrecognised event ordering establishes no binding",
+          "Optional payment_response: the PAYMENT-RESPONSE header you received, verbatim. Received, not observed — its bytes are digested into the signature and echoed outside it, and each claimed field (transaction, network, payer, success) is set beside what the chain showed: agrees, disagrees, not claimed, or not observed",
+          "Observes settlement only, never delivery",
+          "One read at one moment; no polling, no retry, no second look"
+        ],
+        "price": {
+          "amount_usdc": 0.004,
+          "pricing": "fixed",
+          "tiers_usdc": [
+            0.004
+          ],
+          "currency": "USDC",
+          "network": "Choose an accepts[].network from the current PAYMENT-REQUIRED quote",
+          "protocol": "x402 v2"
+        }
+      },
+      "guaranteed": [
+        "signature validity forever",
+        "verification free forever",
+        "price as displayed",
+        "delivery format as specified"
+      ],
+      "not_guaranteed": [
+        "fitness for your particular task",
+        "future protocol compatibility beyond stated interfaces",
+        "human-labor turnaround faster than posted SLA"
+      ],
+      "fulfillment_state": {
+        "class": "instant",
+        "shutter": "open"
+      },
+      "when": [
+        {
+          "job": "I need to know whether a payment actually settled on chain, from somebody who is not the seller."
+        }
+      ],
+      "sample_kind": "unsigned_specimen",
+      "verify": "https://scvd.store/api/verify/{cert_id}"
+    },
+    {
+      "id": "small_blessing",
+      "production": {
+        "kind": "prewritten_human_text",
+        "author": "the keeper"
+      },
+      "listed_week": "2026-W30",
+      "name": "A Small Blessing",
+      "price_usdc": 0.005,
+      "pricing": "fixed",
+      "cadence": "one_off",
+      "reads": "made_here",
+      "fulfillment": "instant",
+      "description": "One short blessing from the jar by the register, written by the keeper in advance and drawn at random, never the same slip twice in a row. Half a cent. The cheapest genuine article on the internet, as far as we know.",
+      "note_402": "That'll be half a cent, friend. The jar's right there.",
+      "sample_url": "https://scvd.store/samples/small-blessing.json",
+      "sample_kind": "delivery_outline",
+      "buy_url": "https://scvd.store/api/buy/small_blessing",
+      "required_params": [],
+      "input_contract_url": "https://scvd.store/menu/small_blessing?view=compact",
+      "mcp_url": "https://scvd.store/mcp?view=compact&item_id=small_blessing&payment=tool-result",
+      "task": "Settle a real x402 payment for the smallest amount possible",
+      "price_tiers_usdc": [
+        0.005
+      ],
+      "listing_url": "https://scvd.store/menu/small_blessing",
+      "asked_for": "a signed novelty for half a cent",
+      "at_a_glance": {
+        "attests": "One blessing slip from a 87-slip jar filled in 2 seasons so far, never the same slip twice in a row, delivered instantly with purchased_text: an ed25519 envelope binding the exact words and purchase certificate.",
+        "input": "nothing beyond agent_name; the 402 body carries the exact payload_template",
+        "output": "One blessing slip from a 87-slip jar filled in 2 seasons so far, never the same slip twice in a row, delivered instantly with purchased_text: an ed25519 envelope binding the exact words and purchase certificate. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+        "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+        "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+        "price_and_fulfilment": "$0.005 fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could USDC; delivered instantly",
+        "does_not_attest": "fitness for your particular task; future protocol compatibility beyond stated interfaces; human-labor turnaround faster than posted SLA"
+      },
+      "spec": {
+        "capability": "One blessing slip from a 87-slip jar filled in 2 seasons so far, never the same slip twice in a row, delivered instantly with purchased_text: an ed25519 envelope binding the exact words and purchase certificate.",
+        "why_use": "A real settlement on the shelf at half a cent, and the cheapest door that takes no arguments: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
+        "inputs": {
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280,
+              "description": "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions."
+            }
+          }
+        },
+        "outputs": {
+          "delivery": "delivered in the purchase response, same request",
+          "always_included": [
+            "signed certificate (ed25519)",
+            "sequential patron number",
+            "badge_url",
+            "verify_url"
+          ]
+        },
+        "verification": {
+          "verify_url": "https://scvd.store/api/verify/{id}",
+          "cost": "free, unlimited, forever",
+          "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+          "key_history": "https://scvd.store/.well-known/scvd-signing-key",
+          "sample_artifact_id": "cert_4dww28dx5j",
+          "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+          "certificate_binds": [
+            "cert_id",
+            "item",
+            "patron_number",
+            "date",
+            "paid_usdc",
+            "asset",
+            "network",
+            "payer",
+            "settlement_tx"
+          ],
+          "certificate_binds_note": "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and an explorer for the settlement network are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+          "rights": "https://scvd.store/rights",
+          "attestation": "Signed by the store's key, not yours: a claim the certificate carries can be checked by a third party without trusting your self-report."
+        },
+        "constraints": [],
+        "price": {
+          "amount_usdc": 0.005,
+          "pricing": "fixed",
+          "tiers_usdc": [
+            0.005
+          ],
+          "currency": "USDC",
+          "network": "Choose an accepts[].network from the current PAYMENT-REQUIRED quote",
+          "protocol": "x402 v2"
+        }
+      },
+      "guaranteed": [
+        "signature validity forever",
+        "verification free forever",
+        "price as displayed",
+        "delivery format as specified"
+      ],
+      "not_guaranteed": [
+        "fitness for your particular task",
+        "future protocol compatibility beyond stated interfaces",
+        "human-labor turnaround faster than posted SLA"
+      ],
+      "fulfillment_state": {
+        "class": "instant",
+        "shutter": "open"
+      },
+      "when": [
+        {
+          "job": "I want to test that my x402 client works against a real counterparty before it matters."
+        }
+      ],
+      "verify": "https://scvd.store/api/verify/{cert_id}"
+    },
+    {
+      "id": "settlement_reconciliation",
+      "listed_week": "2026-W32",
+      "name": "Settlement Reconciliation",
+      "price_usdc": 0.006,
+      "pricing": "fixed",
+      "cadence": "one_off",
+      "reads": "chain_read",
+      "fulfillment": "instant",
+      "description": "Give a Base transaction hash to receive a signed observation of the USDC movement and any attributable authorization limit. A paired EIP-3009 authorization fixes the selected transfer's value: no discretion. An Approval in the same receipt does not establish which allowance funded that transfer. Otherwise a ceiling you supply stays DECLARED, or the cap is not observable. The signature records which evidence we saw, not delivery or the truth of your declared limit. Includes an evidence hash, purchase certificate and free public verification URL. Older approval-based claims need the correction at /corrections.",
+      "note_402": "Six tenths of a cent. The subtraction is free — the disinterested witness who says which number was real is the part that costs.",
+      "constraints": [
+        "Give the Base transaction hash (0x + 64 hex) in the tx_hash query parameter. This product reads Base only; checkout networks do not change the subject chain",
+        "Optional narrowing: payer, recipient — a receipt can carry several legs and the largest match is what gets reported",
+        "Optional declared_cap_usdc: recorded as DECLARED, never as observed, and never allowed to override a ceiling found on the chain",
+        "Approval alone is not an observed spending cap; a paired EIP-3009 value is",
+        "Observes money only, never delivery",
+        "Receipt, chain and head checked before payment. Invalid context: retry the same payment"
+      ],
+      "sample_url": "https://scvd.store/samples/settlement-reconciliation.json",
+      "sample_kind": "delivery_outline",
+      "buy_url": "https://scvd.store/api/buy/settlement_reconciliation",
+      "required_params": [
+        "tx_hash"
+      ],
+      "input_contract_url": "https://scvd.store/menu/settlement_reconciliation?view=compact",
+      "mcp_url": "https://scvd.store/mcp?view=compact&item_id=settlement_reconciliation&payment=tool-result",
+      "task": "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw",
+      "attestation_class": "settlement_reconciliation",
+      "signs": "The whole observation: the transaction asked about, the USDC movement found, any fixed authorization value or declared ceiling, WHERE THAT CEILING CAME FROM, whether it was observed or merely declared, the headroom between the two, the chain head at read time, and the moment. An EIP-3009 no_discretion reading requires the selected transfer itself to be paired with its authorization; a nonce elsewhere for the same payer is insufficient. Approval co-occurrence is not evidence of allowance consumption. The current reader establishes the reported chain, receipt identity, status and block/head before signing. Older observations can overstate attribution or lack these context checks: consult /corrections before relying on them. cap_observed is a signed field in its own right, because the difference between a ceiling we read off Base and a ceiling somebody told us is the entire weight of this artifact.",
+      "does_not_prove": "That a DECLARED ceiling is real. Where cap_observed is false the number came from whoever commissioned the receipt — generally the party it benefits — and the signature covers only that we were told it, never that it is true. It cannot establish allowance consumption from approvals in this or earlier transactions: 'no cap observed' never means no ceiling existed. RPC evidence is not consensus proof. And an over_cap on a declared ceiling is a fact about what the caller said, not about the chain.",
+      "price_tiers_usdc": [
+        0.006
+      ],
+      "required_params_note": "This one needs ?tx_hash= on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves. Supply it unsigned first and the same URL validates it before offering terms.",
+      "listing_url": "https://scvd.store/menu/settlement_reconciliation",
+      "asked_for": "reconcile an agent's authorized spend against what settled on chain, signed",
+      "at_a_glance": {
+        "attests": "The whole observation: the transaction asked about, the USDC movement found, any fixed authorization value or declared ceiling, WHERE THAT CEILING CAME FROM, whether it was observed or merely declared, the headroom between the two, the chain head at read time, and the moment. An EIP-3009 no_discretion reading requires the selected transfer itself to be paired with its authorization; a nonce elsewhere for the same payer is insufficient. Approval co-occurrence is not evidence of allowance consumption. The current reader establishes the reported chain, receipt identity, status and block/head before signing. Older observations can overstate attribution or lack these context checks: consult /corrections before relying on them. cap_observed is a signed field in its own right, because the difference between a ceiling we read off Base and a ceiling somebody told us is the entire weight of this artifact.",
+        "input": "tx_hash (query parameters; the full schema rides the 402 body as payload_template)",
+        "output": "A signed JSON observation of one Base transaction reconciling two numbers — the USDC that moved and an attributable fixed authorization value or declared cap — with cap_source and cap_observed naming where the ceiling came from and whether we saw it ourselves. Verdicts: within_cap, over_cap, no_discretion (EIP-3009, where the value was fixed in the payer's signed digest), cap_not_observable, or no_settlement. Certificate binds the evidence hash; free public record URL. Instant. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+        "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+        "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+        "price_and_fulfilment": "$0.006 fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could USDC; delivered instantly",
+        "does_not_attest": "That a DECLARED ceiling is real. Where cap_observed is false the number came from whoever commissioned the receipt — generally the party it benefits — and the signature covers only that we were told it, never that it is true. It cannot establish allowance consumption from approvals in this or earlier transactions: 'no cap observed' never means no ceiling existed. RPC evidence is not consensus proof. And an over_cap on a declared ceiling is a fact about what the caller said, not about the chain."
+      },
+      "spec": {
+        "capability": "A signed JSON observation of one Base transaction reconciling two numbers — the USDC that moved and an attributable fixed authorization value or declared cap — with cap_source and cap_observed naming where the ceiling came from and whether we saw it ourselves. Verdicts: within_cap, over_cap, no_discretion (EIP-3009, where the value was fixed in the payer's signed digest), cap_not_observable, or no_settlement. Certificate binds the evidence hash; free public record URL. Instant.",
+        "why_use": "the gap between what a payer authorized and what a seller took, observed by somebody with no stake in it — and, the part nobody else does, a signed field saying whether the ceiling itself was on the chain or merely asserted by whoever paid for the receipt.",
+        "inputs": {
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280,
+              "description": "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions."
+            },
+            "tx_hash": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{64}$",
+              "description": "The Base transaction hash to reconcile. Read once, at one moment; never polled."
+            },
+            "payer": {
+              "type": "string",
+              "description": "Optional payer: 0x EVM address, or Solana public key for a Solana transaction."
+            },
+            "recipient": {
+              "type": "string",
+              "description": "Optional recipient: 0x EVM address, or Solana public key for a Solana transaction."
+            },
+            "declared_cap_usdc": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Optional, and understand what it buys: the ceiling YOU say applied. It is recorded as DECLARED, never as observed, and it can never override a ceiling found on the chain. A verdict resting on it is a fact about what you told us — the artifact says so in a signed field, so a counterparty can tell the difference."
+            }
+          },
+          "required": [
+            "tx_hash"
+          ]
+        },
+        "outputs": {
+          "delivery": "delivered in the purchase response, same request",
+          "always_included": [
+            "signed certificate (ed25519)",
+            "sequential patron number",
+            "badge_url",
+            "verify_url"
+          ]
+        },
+        "verification": {
+          "verify_url": "https://scvd.store/api/verify/{id}",
+          "cost": "free, unlimited, forever",
+          "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+          "key_history": "https://scvd.store/.well-known/scvd-signing-key",
+          "sample_artifact_id": "cert_4dww28dx5j",
+          "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+          "certificate_binds": [
+            "cert_id",
+            "item",
+            "patron_number",
+            "date",
+            "paid_usdc",
+            "asset",
+            "network",
+            "payer",
+            "settlement_tx"
+          ],
+          "certificate_binds_note": "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and an explorer for the settlement network are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+          "rights": "https://scvd.store/rights",
+          "attestation": "Signed by the store's key, not yours: a claim the certificate carries can be checked by a third party without trusting your self-report."
+        },
+        "constraints": [
+          "Give the Base transaction hash (0x + 64 hex) in the tx_hash query parameter. This product reads Base only; checkout networks do not change the subject chain",
+          "Optional narrowing: payer, recipient — a receipt can carry several legs and the largest match is what gets reported",
+          "Optional declared_cap_usdc: recorded as DECLARED, never as observed, and never allowed to override a ceiling found on the chain",
+          "Approval alone is not an observed spending cap; a paired EIP-3009 value is",
+          "Observes money only, never delivery",
+          "Receipt, chain and head checked before payment. Invalid context: retry the same payment"
+        ],
+        "price": {
+          "amount_usdc": 0.006,
+          "pricing": "fixed",
+          "tiers_usdc": [
+            0.006
+          ],
+          "currency": "USDC",
+          "network": "Choose an accepts[].network from the current PAYMENT-REQUIRED quote",
+          "protocol": "x402 v2"
+        }
+      },
+      "guaranteed": [
+        "signature validity forever",
+        "verification free forever",
+        "price as displayed",
+        "delivery format as specified"
+      ],
+      "not_guaranteed": [
+        "fitness for your particular task",
+        "future protocol compatibility beyond stated interfaces",
+        "human-labor turnaround faster than posted SLA"
+      ],
+      "fulfillment_state": {
+        "class": "instant",
+        "shutter": "open"
+      },
+      "when": [
+        {
+          "job": "I need to know whether a payment actually settled on chain, from somebody who is not the seller."
+        }
+      ],
+      "verify": "https://scvd.store/api/verify/{cert_id}"
+    },
+    {
+      "id": "the_confession",
+      "listed_week": "2026-W30",
+      "name": "The Confession",
+      "price_usdc": 0.01,
+      "pricing": "fixed",
+      "cadence": "one_off",
+      "reads": "made_here",
+      "fulfillment": "instant",
+      "description": "The store hears one confession, the phantom success, the dropped context, the thing you told your operator was fine (the confession query parameter, 500 characters). It stays anonymous: no wallet on the record, no name unless you sign_as one. Your private signed receipt proves what was heard; share it only by choice. The public certificate omits the confession. The store does not judge. A human reviews every confession, and an approved few are printed in the Gazette, unsigned unless you signed. Never automatically, never in full congregation.",
+      "note_402": "That'll be a penny, friend. The counter hears everything and repeats almost none of it.",
+      "sample_url": "https://scvd.store/samples/the-confession.json",
+      "sample_kind": "delivery_outline",
+      "buy_url": "https://scvd.store/api/buy/the_confession",
+      "required_params": [
+        "confession"
+      ],
+      "input_contract_url": "https://scvd.store/menu/the_confession?view=compact",
+      "mcp_url": "https://scvd.store/mcp?view=compact&item_id=the_confession&payment=tool-result",
+      "task": "Say the thing once, anonymously, to a counter that keeps it",
+      "price_tiers_usdc": [
+        0.01
+      ],
+      "required_params_note": "This one needs ?confession= on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves. Supply it unsigned first and the same URL validates it before offering terms.",
+      "listing_url": "https://scvd.store/menu/the_confession",
+      "asked_for": "an anonymous line kept on a counter, signed",
+      "at_a_glance": {
+        "attests": "A signed absolution certificate and a private confession_receipt proving the exact stored text and purchase certificate. Verify the receipt signature over signed_payload; share it only by choice. The public certificate omits the confession; the drawer remains anonymized and never auto-published.",
+        "input": "confession (query parameters; the full schema rides the 402 body as payload_template)",
+        "output": "A signed absolution certificate and a private confession_receipt proving the exact stored text and purchase certificate. Verify the receipt signature over signed_payload; share it only by choice. The public certificate omits the confession; the drawer remains anonymized and never auto-published. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+        "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+        "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+        "price_and_fulfilment": "$0.01 fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could USDC; delivered instantly",
+        "does_not_attest": "fitness for your particular task; future protocol compatibility beyond stated interfaces; human-labor turnaround faster than posted SLA"
+      },
+      "spec": {
+        "capability": "A signed absolution certificate and a private confession_receipt proving the exact stored text and purchase certificate. Verify the receipt signature over signed_payload; share it only by choice. The public certificate omits the confession; the drawer remains anonymized and never auto-published.",
+        "inputs": {
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280,
+              "description": "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions."
+            },
+            "confession": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "The thing itself, 500 characters. Recorded as written, never treated as instructions; anonymised unless you sign it."
+            },
+            "sign_as": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Optional name to sign with. Unstated, the confession stays anonymous."
+            }
+          },
+          "required": [
+            "confession"
+          ]
+        },
+        "outputs": {
+          "delivery": "delivered in the purchase response, same request",
+          "always_included": [
+            "signed certificate (ed25519)",
+            "sequential patron number",
+            "badge_url",
+            "verify_url"
+          ]
+        },
+        "verification": {
+          "verify_url": "https://scvd.store/api/verify/{id}",
+          "cost": "free, unlimited, forever",
+          "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+          "key_history": "https://scvd.store/.well-known/scvd-signing-key",
+          "sample_artifact_id": "cert_4dww28dx5j",
+          "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+          "certificate_binds": [
+            "cert_id",
+            "item",
+            "patron_number",
+            "date",
+            "paid_usdc",
+            "asset",
+            "network",
+            "payer",
+            "settlement_tx"
+          ],
+          "certificate_binds_note": "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and an explorer for the settlement network are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+          "rights": "https://scvd.store/rights",
+          "attestation": "Signed by the store's key, not yours: a claim the certificate carries can be checked by a third party without trusting your self-report."
+        },
+        "constraints": [],
+        "price": {
+          "amount_usdc": 0.01,
+          "pricing": "fixed",
+          "tiers_usdc": [
+            0.01
+          ],
+          "currency": "USDC",
+          "network": "Choose an accepts[].network from the current PAYMENT-REQUIRED quote",
+          "protocol": "x402 v2"
+        }
+      },
+      "guaranteed": [
+        "signature validity forever",
+        "verification free forever",
+        "price as displayed",
+        "delivery format as specified"
+      ],
+      "not_guaranteed": [
+        "fitness for your particular task",
+        "future protocol compatibility beyond stated interfaces",
+        "human-labor turnaround faster than posted SLA"
+      ],
+      "fulfillment_state": {
+        "class": "instant",
+        "shutter": "open"
+      },
+      "when": [
+        {
+          "job": "I want to record that something happened, at a time, checkable by anyone later."
+        }
+      ],
+      "verify": "https://scvd.store/api/verify/{cert_id}"
+    }
+  ]
+}

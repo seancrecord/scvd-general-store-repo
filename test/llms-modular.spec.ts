@@ -992,8 +992,13 @@ const BASE = "https://scvd.store";
 // record is worth. Verified the same way, and across the merge: with
 // only that paragraph removed from the merged tree, main's 1ba2bf
 // digest above reproduced, and this copy reproduces the new one.
+// 2026-09-15: wallet Claims now explains selecting an original good with
+// a fresh proof and cert_id, including explicit historical gaps. The copy
+// stays within the existing developer-guide budget. Stashing this task's
+// source edits reproduced the previous digest; all thirteen guide tests
+// passed before this pin changed. The recovery tests failed on that source.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "aa53eaeed10db2b158a71f6dde1d7b86debb08e6561621c8d0427d50919eb80b";
+  "0250105e055bac696361303009e0a539e25c2523b94712c6623565466eb23dff";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -1,3 +1,4 @@
+import { discoverBuyerLinks } from './lib/buyer-links.mjs';
 // Public-only, unsigned observations. Never loads wallet configuration.
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -21,17 +22,25 @@ for(const item of menu.items){
  if(item.spec.inputs.properties.url)for(const url of urlRefusals)for(const door of ['http','mcp'])tasks.push(()=>knock(item,door,{...args,url},'url_refusal',{field:'url'}));
 }
 let next=0;await Promise.all(Array.from({length:3},async()=>{while(next<tasks.length){const index=next++;await tasks[index]();if((index+1)%60===0)console.log(JSON.stringify({completed:index+1,total:tasks.length}));}}));
-const normalize=s=>({required:[...(s?.required??[])].sort(),properties:Object.fromEntries(Object.entries(s?.properties??{}).map(([k,v])=>[k,{type:v.type,maxLength:v.maxLength,minLength:v.minLength,enum:v.enum}]))});
+const normalize=s=>s==null?undefined:({required:[...(s?.required??[])].sort(),properties:Object.fromEntries(Object.entries(s?.properties??{}).map(([k,v])=>[k,{type:v.type,maxLength:v.maxLength,minLength:v.minLength,enum:v.enum}]))});
 const canonical=v=>JSON.stringify(v,(_k,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 const comparisons=[];
-for(const i of menu.items){const m=manifest.resources.find(r=>new URL(r.resource).pathname==='/api/buy/'+i.id),o=openapi.paths['/api/buy/'+i.id]?.get;const issues=[];const compare=(field,a,b)=>{if(canonical(a)!==canonical(b))issues.push({field,left:a,right:b});};compare('manifest price',i.price_tiers_usdc,m?.price_usdc_options);compare('manifest fulfillment',i.fulfillment,m?.fulfillment);compare('manifest input schema',normalize(i.spec.inputs),normalize(m?.inputSchema));compare('OpenAPI price',i.price_tiers_usdc,o?.['x-payment']?.price_usdc_options);compare('OpenAPI inputs',normalize(i.spec.inputs),normalize(o?.['x-request-schema']));compare('manifest spec',i.spec,m?.spec);comparisons.push({item:i.id,issues});}
+for(const i of menu.items){
+ const m=manifest.resources.find(r=>new URL(r.resource).pathname==='/api/buy/'+i.id),o=openapi.paths['/api/buy/'+i.id]?.get;
+ const issues=[],compared_fields=[];
+ const compare=(field,a,b)=>{compared_fields.push(field);if(a==null||b==null)issues.push({field,kind:'missing',left:a??null,right:b??null});else if(canonical(a)!==canonical(b))issues.push({field,kind:'contradiction',left:a,right:b});};
+ compare('manifest price',i.price_tiers_usdc,m?.price_usdc_options);compare('manifest fulfillment',i.fulfillment,m?.fulfillment);compare('manifest input schema',normalize(i.spec.inputs),normalize(m?.inputSchema));compare('OpenAPI price',i.price_tiers_usdc,o?.['x-payment']?.price_usdc_options);
+ const legacy=o?.['x-request-schema'],current=o?.['x-payment-info']?.input?.schema;
+ compare('OpenAPI inputs',normalize(i.spec.inputs),normalize(current??legacy));
+ // If both copies exist, disagreement is still a buyer bug. Neither wins by convention.
+ if(current!=null&&legacy!=null)compare('OpenAPI duplicate inputs',normalize(current),normalize(legacy));
+ compare('manifest spec',i.spec,m?.spec);comparisons.push({item:i.id,compared_fields,issues});
+}
 fs.writeFileSync(root+'/comparison.json',JSON.stringify(comparisons,null,2)+'\n');
 const errors=rows.filter(r=>r.body?.error&&!(r.status===402||r.body.error.code===402));fs.writeFileSync(root+'/error-examples.json',JSON.stringify(errors,null,2)+'\n');
-const allLinks=new Map();const add=(url,from)=>{try{const u=new URL(url.replaceAll('&amp;','&'),origin);if(u.origin!==origin||u.hash||/[{}<>]/.test(u.href)||/^\/(admin|api\/admin|logout)/.test(u.pathname))return;u.hash='';if(!allLinks.has(u.href))allLinks.set(u.href,from);}catch{}};
-for(const name of ['home','skill','llms']){const text=fs.readFileSync(root+'/'+name+'.snapshot','utf8');for(const m of text.matchAll(/href=["']([^"']+)["']/g))add(m[1],name);for(const m of text.matchAll(/https:\/\/scvd\.store\/[\w./?=&%{}-]+/g))add(m[0],name);}
-for(const i of menu.items){for(const k of ['listing_url','input_contract_url','sample_url'])if(i[k])add(i[k],'menu:'+i.id);if(i.spec.verification?.sample_verify_url)add(i.spec.verification.sample_verify_url,'menu:'+i.id);}
-for(const path of Object.keys(openapi.paths))if(openapi.paths[path].get&&!path.includes('{'))add(path,'openapi');
-for(const p of ['/.well-known/security.txt','/.well-known/scvd-signing-key','/.well-known/mcp','/.well-known/a2a.json','/developers','/sitemap.xml'])add(p,'well-known/docs');
-const links=[];next=0;const list=[...allLinks];await Promise.all(Array.from({length:3},async()=>{while(next<list.length){const[url,from]=list[next++];const row=await request(url,{}, {from});delete row.body;if(row.status>=300&&row.status<400){row.redirect=row.headers.location;/* A redirect is recorded, not silently called a dead page. */}links.push(row);}}));fs.writeFileSync(root+'/links.json',JSON.stringify(links,null,2)+'\n');
+const discovery=discoverBuyerLinks({surfaces:Object.fromEntries(['home','skill','llms'].map(name=>[name,fs.readFileSync(root+'/'+name+'.snapshot','utf8')])),menu,openapi});
+const allLinks=new Map(discovery.links.map(({url,from})=>[url,from])),unresolvedLinks=discovery.unresolved;
+fs.writeFileSync(root+'/unresolved-links.json',JSON.stringify(unresolvedLinks,null,2)+'\n');
+const links=[];next=0;const list=[...allLinks];await Promise.all(Array.from({length:3},async()=>{while(next<list.length){const[url,from]=list[next++];const row=await request(url,{}, {from});if(row.status!==402)delete row.body;if(row.status>=300&&row.status<400){row.redirect=row.headers.location;/* A redirect is recorded, not silently called a dead page. */}links.push(row);}}));fs.writeFileSync(root+'/links.json',JSON.stringify(links,null,2)+'\n');
 const catalog={at:new Date().toISOString(),items:menu.items.map(i=>({id:i.id,price_usdc:i.price_usdc,fulfillment:i.fulfillment,required:i.spec.inputs.required??[],networks:openapi.paths['/api/buy/'+i.id]?.get['x-payment']?.networks,description:i.description,outputs:i.spec.capability,delivery:i.spec.outputs.delivery})),minimum_per_rail_usdc:menu.items.reduce((s,i)=>s+Math.round(i.price_usdc*1e6),0)/1e6,source_hash:createHash('sha256').update(fs.readFileSync(root+'/menu.snapshot')).digest('hex')};fs.writeFileSync(root+'/catalog.json',JSON.stringify(catalog,null,2)+'\n');
-console.log(JSON.stringify({prepayment_requests:rows.length,comparison_issues:comparisons.reduce((n,c)=>n+c.issues.length,0),links:links.length,spend:0}));
+console.log(JSON.stringify({prepayment_requests:rows.length,comparison_issues:comparisons.reduce((n,c)=>n+c.issues.length,0),links:links.length,unresolved_links:unresolvedLinks.length,spend:0}));

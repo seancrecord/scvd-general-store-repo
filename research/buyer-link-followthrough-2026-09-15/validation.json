@@ -1,0 +1,65 @@
+{
+  "date": "2026-09-15",
+  "status": "local_instrument_controls_and_bounded_live_checks_complete",
+  "new_spend_usdc": 0,
+  "controls": {
+    "initial_absent_instrument": {
+      "failed": 7,
+      "existing_tests_passed": 9,
+      "qualification": "New module not implemented at this baseline; not a reproduced production failure."
+    },
+    "redirect_target_extension_before_fix": {
+      "failed": 1
+    },
+    "fault_injection": {
+      "disabled_checks": [
+        "redirect-loop detection",
+        "JSON parsing",
+        "body-size limit"
+      ],
+      "runner_exit": 1,
+      "restored_exactly": true,
+      "source_sha256": "7ecb7dfe90fb50664e46ccb93561fc691c1916250c18699f066c2d630a7f5288"
+    },
+    "fault_injection_cases_failed": 3,
+    "restored_buyer_tests": {
+      "passed": 44,
+      "failed": 0,
+      "command": "npm run buyer:test"
+    }
+  },
+  "source_sha256": {
+    "scripts/lib/buyer-links.mjs": "7ecb7dfe90fb50664e46ccb93561fc691c1916250c18699f066c2d630a7f5288",
+    "scripts/buyer-link-check.mjs": "2348e3cfc68d2f9dfc6cd062c04bc499caf07e5c10e9a7fe0bb4423189d21b81",
+    "scripts/buyer-wave-one.mjs": "350cc8d37b41fb96872daa26bf42289b27a16e775d22566a2f15b341fa7ec77f",
+    "scripts/buyer-wave-one.test.mjs": "17754f60b08a7f61e2f059fb8268818acf6365e215bf2286842edcc14e19047c"
+  },
+  "log_sha256": {
+    "scvd-link-controls-red.log": "a6f5cfe40c4424cc2c3306a4fff66c29ad3bf106ee4157f9035094cb36df0a88",
+    "scvd-link-final-extension-red.log": "e4432cdca025b0b8aafff0923c0261850ba6b223ece50fbcf4239d1a4a641961",
+    "scvd-link-detector-faults-red.log": "20a695fa631da311fbdff9a471d84c16262846a23b75b75409ca14ace8f48fa3",
+    "scvd-link-controls-restored-green.log": "b43e78f128c4c3314f5db8ebe205de45b7c9c3ae59d0cfef779701f524fd9e21",
+    "scvd-link-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-link-build.log": "fe6568a172a7cd25125f6b4ed4d0ccf54ecf795e95a4269c050816b9d8543643"
+  },
+  "application_source_modified": false,
+  "release_status": "uncommitted",
+  "summary_file": "summary.json",
+  "followup_file": "followup.json",
+  "refusal_review_file": "refusal-review.json",
+  "collector_safety": {
+    "existing_output_refused": true,
+    "existing_output_hashes_unchanged": true,
+    "changed_snapshot_rejected_before_output_or_network": true
+  },
+  "typecheck": {
+    "command": "npm run typecheck",
+    "exit": 0
+  },
+  "build": {
+    "command": "npm run build:check",
+    "exit": 0,
+    "deployed": false
+  },
+  "application_source_hashes_match_recovery_record": true
+}

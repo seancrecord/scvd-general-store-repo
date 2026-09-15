@@ -1,0 +1,1121 @@
+[
+  {
+    "item": "spot_check",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "host"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "host": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "settlement_attestation",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "nonce": {
+              "type": "string"
+            },
+            "amount_usdc": {
+              "type": "number"
+            },
+            "payment_payload": {
+              "type": "string"
+            },
+            "payment_response": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "small_blessing",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "settlement_reconciliation",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "declared_cap_usdc": {
+              "type": "number"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "daily_fortune",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_confession",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "confession"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "confession": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "sign_as": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "attestation_bundle",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "tx_hashes"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hashes": {
+              "type": "string",
+              "maxLength": 1339,
+              "minLength": 133
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_mandate",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "mandate"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "mandate": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "submitted_as": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "principal"
+              ]
+            },
+            "declared_cap_usdc": {
+              "type": "string"
+            },
+            "expires_at": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_case_file",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "expected_amount_usdc": {
+              "type": "number"
+            },
+            "mandate_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "claim": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "launch_check_id": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "window_pick",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "hello",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "good_buyer",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            },
+            "max_usd": {
+              "type": "string"
+            },
+            "no_spend_controls": {
+              "type": "string",
+              "enum": [
+                "",
+                "true",
+                "false"
+              ]
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "signature_agent_card",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_statement",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "wallet"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "wallet": {
+              "type": "string"
+            },
+            "network": {
+              "type": "string"
+            },
+            "hours": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "luckies",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "pack",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "coffees_for_closers",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "win"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "win": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "bitcoin_anchor",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "digest"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "digest": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string",
+              "maxLength": 120
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "context_anchor",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "summary"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "summary": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "passport_refresh",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "graffiti_on_a_train",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "tag"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tag": {
+              "type": "string",
+              "maxLength": 140
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "a2a_repair_kit",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "standing_watch",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "service_audit",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "conformance_watch",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "onpage_audit",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "launch_check",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "opening_day",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "provenance_check",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "address": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "recurring_patronage",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "pass_id": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "trust_profile",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "operator_statement",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "wallet"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "wallet": {
+              "type": "string"
+            },
+            "network": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "certificate_of_patronage",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "aura_walk",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "callback_url": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string",
+              "maxLength": 600
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_collab",
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "callback_url": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string",
+              "maxLength": 600
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {}
+        }
+      }
+    ]
+  }
+]

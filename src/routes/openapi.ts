@@ -1,4 +1,5 @@
 import { PURCHASE_RECOVERY_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
+import { CLAIM_CERT_ID, CLAIM_GOOD_INSTRUCTIONS } from "@/lib/claims-contract";
 import { AUDIT_REPORT_VERDICT, GOOD_BUYER_REPORT_VERDICT, LAUNCH_REPORT_VERDICT, ONPAGE_REPORT_VERDICT, RECONCILIATION_REPORT_VERDICT } from "@/lib/report-verdicts";
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
@@ -2748,6 +2749,7 @@ const CLAIMS_DOC_SCHEMA: OpenApiObject = {
       description: "Why a signature over a nonce rather than a claim we take on trust.",
     },
     limits: { type: "string" },
+    recover_original_good: { type: "string" },
   },
 };
 
@@ -3288,25 +3290,33 @@ const CLAIMS_CHALLENGE_SCHEMA: OpenApiObject = {
 /** What a wallet's proof returns: every record this store holds for it. */
 const CLAIMS_RESULT_SCHEMA: OpenApiObject = {
   type: "object",
-  required: ["wallet", "certificates"],
+  properties: { address: { type: "string" } },
+  oneOf: [{
+  type: "object",
+  required: ["address", "certificates", "orders", "watches", "recover_original_good"],
   properties: {
-    wallet: { type: "string" },
     address: { type: "string" },
-    rails: { type: "array", items: { type: "string" } },
     certificates: {
       type: "array",
       description: "Signed certificates from instant purchases, each with its permanent URL.",
       items: { type: "object" },
     },
-    record: { type: "object" },
-    verify_url: { type: "string", format: "uri" },
-    what: { type: "string" },
-    how: { type: "array", items: { type: "string" } },
-    sensitive: {
-      type: "string",
-      description: "What this response contains that a holder would not want logged.",
-    },
+    orders: RECORD_LIST, watches: RECORD_LIST,
+    certificates_truncated: { type: "string" }, watches_truncated: { type: "string" },
+    recover_original_good: { type: "string" },
   },
+  }, {
+    type: "object", required: ["address", "cert_id", "recovery_state", "next_action", "settlement_attempted", "charged_again"],
+    properties: {
+      address: { type: "string" }, cert_id: CLAIM_CERT_ID,
+      recovery_state: { type: "string", enum: ["ready", "unavailable", "resolved"] },
+      next_action: { type: "string", enum: ["use_fulfillment", "contact_keeper", "read_resolution"] },
+      fulfillment: { type: "object", description: "Original retained good, or original order with current status. Absent for unavailable goods and refunds. Keep private." },
+      resolution: { type: "object" }, charged: { type: ["boolean", "null"] },
+      charged_again: { const: false }, settlement_attempted: { const: false },
+      verify_url: { type: "string", format: "uri" }, contact_url: { type: "string", format: "uri" },
+    },
+  }],
 };
 
 /**
@@ -6329,7 +6339,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
   postOp(
             "Recover everything a wallet paid for",
-            "A valid signature returns the wallet's open orders (order URLs included) AND the signed certificates from instant purchases, newest first, each with its permanent verify URL. A bare address gets nothing — possession of the key is the whole test. Free.",
+            `A valid wallet signature returns purchase references. ${CLAIM_GOOD_INSTRUCTIONS}`,
             "The address and its signature over the challenge string from POST /api/claims/challenge.",
             {
               type: "object",
@@ -6345,6 +6355,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                   description:
                     "The challenge string signed by that address's key. Possession of the key is the whole test; a bare address returns nothing.",
                 },
+                cert_id: CLAIM_CERT_ID,
               },
             },
           ),
