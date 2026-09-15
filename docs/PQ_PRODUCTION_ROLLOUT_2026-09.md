@@ -1,6 +1,18 @@
 # Production post-quantum signing plan — September 10, 2026
 
-Status: design for the next implementation, not activated. The keeper
+## September 15 decision — production issuance parked
+
+The keeper chose to publish [the retained measurements](PQ_MEASUREMENT_2026-09.md)
+and stop the production track. Custody, rotation, trust distribution, a
+new verifier and anchor-before-issuance remain conditional requirements if
+issuance reopens; they are not active build tasks. Experiments alone do not
+require amending the public trust statement. Actual issuance would require
+reconciling it first. Production signing remains Ed25519. MPP or any other
+payment protocol is a separate choice from the artifact signature scheme.
+
+## Historical September 10 plan
+
+Status at drafting: design for the next implementation, not activated. The keeper
 requested the production plan alongside package publication. Production
 continues to sign Ed25519. No production key has been accessed, generated,
 migrated or changed by this work.

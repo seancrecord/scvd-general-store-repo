@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-09-15T13:20:10.205Z",
+  "node": "v22.13.1",
+  "openssl": "OpenSSL 3.5.1 1 Jul 2025 (Library: OpenSSL 3.5.1 1 Jul 2025)",
+  "noble": "0.7.1",
+  "mode": "Pure ML-DSA-65; randomized signing; empty, prior experimental and proposed checkpoint contexts",
+  "limitations": [
+    "Generated fixtures, not the full FIPS/ACVP vectors or a security audit.",
+    "Only ML-DSA signatures cross implementations; the envelope verifier and Ed25519 leg are not independently implemented here.",
+    "No Worker resource or latency measurement, production keys, custody exercise or FIPS module validation.",
+    "Best-effort buffer clearing is not a JavaScript memory-erasure guarantee."
+  ],
+  "cases": [
+    {
+      "context_hex": "",
+      "openssl_signed_noble_verified": true,
+      "noble_signed_openssl_verified": true,
+      "rejected": {
+        "noble_wrong_message": true,
+        "noble_changed_signature": true,
+        "noble_wrong_context": true,
+        "noble_wrong_key": true,
+        "openssl_wrong_message": true,
+        "openssl_changed_signature": true,
+        "openssl_wrong_context": true,
+        "openssl_wrong_key": true
+      }
+    },
+    {
+      "context_hex": "534356442d5051432d494e5445524f502d7631",
+      "openssl_signed_noble_verified": true,
+      "noble_signed_openssl_verified": true,
+      "rejected": {
+        "noble_wrong_message": true,
+        "noble_changed_signature": true,
+        "noble_wrong_context": true,
+        "noble_wrong_key": true,
+        "openssl_wrong_message": true,
+        "openssl_changed_signature": true,
+        "openssl_wrong_context": true,
+        "openssl_wrong_key": true
+      }
+    },
+    {
+      "context_hex": "736376642e73746f72653a636f727075732d636865636b706f696e743a7631",
+      "openssl_signed_noble_verified": true,
+      "noble_signed_openssl_verified": true,
+      "rejected": {
+        "noble_wrong_message": true,
+        "noble_changed_signature": true,
+        "noble_wrong_context": true,
+        "noble_wrong_key": true,
+        "openssl_wrong_message": true,
+        "openssl_changed_signature": true,
+        "openssl_wrong_context": true,
+        "openssl_wrong_key": true
+      }
+    }
+  ],
+  "kind": "publication_harness_recheck_not_runtime_benchmark"
+}

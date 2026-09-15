@@ -45,7 +45,7 @@ try {
   assert.deepEqual(checked(['pkey','-pubin','-inform','DER','-in',file('noble.der'),'-pubout','-outform','DER']),noblePublic);
   const header = {version:1,purpose:'corpus-checkpoint-pilot',canonicalization:'scvd-envelope-v1',policy:'all',signers:[{algorithm:'ed25519',key_id:'interop-ed'},{algorithm:'ML-DSA-65',key_id:'interop-pq'}]};
   const message = Buffer.from(signingBytes(header,'{"experimental":true,"subject":"independent-implementation-check"}'));
-  const contexts = [Buffer.alloc(0),Buffer.from('SCVD-PQC-INTEROP-v1')];
+  const contexts = [Buffer.alloc(0),Buffer.from('SCVD-PQC-INTEROP-v1'),Buffer.from('scvd.store:corpus-checkpoint:v1')];
   const contextArgs = context => context.length ? ['-pkeyopt',`hexcontext-string:${context.toString('hex')}`] : [];
   async function nativeVerify(signature, bytes, publicFile, context) {
     await writeFile(file('message'),bytes); await writeFile(file('signature'),signature);
@@ -81,7 +81,7 @@ try {
     cases.push({context_hex:context.toString('hex'),openssl_signed_noble_verified:true,noble_signed_openssl_verified:true,rejected,openssl_signature_hex:ns.toString('hex'),noble_signature_hex:js.toString('hex')});
   }
   const manifest=JSON.parse(await readFile(new URL('./node_modules/@noble/post-quantum/package.json',import.meta.url),'utf8'));
-  const report={experimental:true,checked_at:new Date().toISOString(),node:process.version,openssl:version,noble:manifest.version,mode:'Pure ML-DSA-65; randomized signing; empty and nonempty context',message_hex:message.toString('hex'),message_sha256:createHash('sha256').update(message).digest('hex'),public_keys:{openssl_spki_hex:nativePublic.toString('hex'),openssl_raw_hex:rawNative.toString('hex'),noble_spki_hex:noblePublic.toString('hex'),noble_raw_hex:Buffer.from(nobleKeys.publicKey).toString('hex')},cases,limitations:['Two generated fixtures, not the full FIPS/ACVP vectors or a security audit.','Only ML-DSA signatures cross implementations; the envelope verifier and Ed25519 leg are not independently implemented here.','No Worker resource or latency measurement, production keys, custody exercise or FIPS module validation.','Best-effort buffer clearing is not a JavaScript memory-erasure guarantee.']};
+  const report={experimental:true,checked_at:new Date().toISOString(),node:process.version,openssl:version,noble:manifest.version,mode:'Pure ML-DSA-65; randomized signing; empty, prior experimental and proposed checkpoint contexts',message_hex:message.toString('hex'),message_sha256:createHash('sha256').update(message).digest('hex'),public_keys:{openssl_spki_hex:nativePublic.toString('hex'),openssl_raw_hex:rawNative.toString('hex'),noble_spki_hex:noblePublic.toString('hex'),noble_raw_hex:Buffer.from(nobleKeys.publicKey).toString('hex')},cases,limitations:['Generated fixtures, not the full FIPS/ACVP vectors or a security audit.','Only ML-DSA signatures cross implementations; the envelope verifier and Ed25519 leg are not independently implemented here.','No Worker resource or latency measurement, production keys, custody exercise or FIPS module validation.','Best-effort buffer clearing is not a JavaScript memory-erasure guarantee.']};
   await writeFile(output,JSON.stringify(report,null,2)+'\n',{flag:'wx'});
   console.log(JSON.stringify({experimental:true,openssl:version,noble:manifest.version,cases:cases.map(({context_hex,rejected,openssl_signed_noble_verified,noble_signed_openssl_verified})=>({context_hex,rejected,openssl_signed_noble_verified,noble_signed_openssl_verified})),result_file:output}));
 } finally {

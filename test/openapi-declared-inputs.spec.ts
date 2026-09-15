@@ -1,6 +1,42 @@
-import { SELF } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
+import { app } from "@/index";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { CONDITIONAL_GET_EXEMPT, NEGOTIATED_REPRESENTATIONS } from "@/routes/openapi";
+import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { markKeeperPresent } from "./helpers/keeper";
+import type { Env } from "@/types";
+
+const probeEnv: Env = {
+  ...env as unknown as Env,
+  // Public disposable fixture, matching the buyer harness. Requests carry no
+  // payment; the facilitator below must never verify or settle one.
+  FIELD_WALLET_KEY: `0x${"01".repeat(32)}`,
+};
+let facilitator: ReturnType<typeof installFacilitatorMock>;
+
+// SELF uses the pool's fixed bindings. Pass this file's configured fixture to
+// the real app so valid catalog examples can reach the field-wallet doors.
+async function probeFetch(url: string, init?: RequestInit): Promise<Response> {
+  const ctx = createExecutionContext();
+  const response = await app.fetch(new Request(url, init), probeEnv, ctx);
+  await waitOnExecutionContext(ctx);
+  return response;
+}
+
+// The sweep includes paid doors: compare their actual 402 representations,
+// not matching 500s from failed requests to a real facilitator.
+beforeAll(async () => {
+  facilitator = installFacilitatorMock();
+  await markKeeperPresent(probeEnv);
+});
+afterAll(() => {
+  try {
+    expect(facilitator.verifyCalls, "contract probes submit no payment").toBe(0);
+    expect(facilitator.settleCalls, "contract probes settle no payment").toBe(0);
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
 
 /**
  * THE INPUT-LESS DOORS, TYPED BY WHAT THEY READ (2026-09-05).
@@ -19,7 +55,7 @@ const BASE = "https://scvd.store";
 type Op = Record<string, any>;
 
 async function spec(): Promise<Record<string, Record<string, Op>>> {
-  const response = await SELF.fetch(`${BASE}/openapi.json`);
+  const response = await probeFetch(`${BASE}/openapi.json`);
   expect(response.status).toBe(200);
   return ((await response.json()) as { paths: Record<string, Record<string, Op>> }).paths;
 }
@@ -46,9 +82,9 @@ describe("the three query readers", () => {
     const since = params(paths["/corpus/diff.json"]!["get"]!).find((p) => p["name"] === "since");
     expect(since?.["required"]).toBe(true);
     expect(since?.["in"]).toBe("query");
-    const bare = await SELF.fetch(`${BASE}/corpus/diff.json`);
+    const bare = await probeFetch(`${BASE}/corpus/diff.json`);
     expect(bare.status).toBe(400);
-    const named = await SELF.fetch(`${BASE}/corpus/diff.json?since=${since!["example"]}`);
+    const named = await probeFetch(`${BASE}/corpus/diff.json?since=${since!["example"]}`);
     // A test chain may not hold that week; a 404 naming the weeks is the honest answer then.
     expect([200, 404]).toContain(named.status);
   });
@@ -57,8 +93,8 @@ describe("the three query readers", () => {
     const paths = await spec();
     const verdict = params(paths["/doors.json"]!["get"]!).find((p) => p["name"] === "verdict");
     expect(verdict?.["schema"]?.["enum"]).toEqual(["ready", "not_ready", "unreachable", "not_probed"]);
-    expect((await SELF.fetch(`${BASE}/doors.json?verdict=bogus`)).status).toBe(400);
-    expect((await SELF.fetch(`${BASE}/doors.json?verdict=ready`)).status).toBe(200);
+    expect((await probeFetch(`${BASE}/doors.json?verdict=bogus`)).status).toBe(400);
+    expect((await probeFetch(`${BASE}/doors.json?verdict=ready`)).status).toBe(200);
   });
 
   it("/ask requires a query and names its modes from the door's own object", async () => {
@@ -66,12 +102,22 @@ describe("the three query readers", () => {
     const declared = params(paths["/ask"]!["get"]!);
     expect(declared.find((p) => p["name"] === "query")?.["required"]).toBe(true);
     expect(declared.find((p) => p["name"] === "mode")?.["schema"]?.["enum"]).toContain("list");
-    expect((await SELF.fetch(`${BASE}/ask`)).status).toBe(400);
-    expect((await SELF.fetch(`${BASE}/ask?query=how%20do%20I%20pay`)).status).toBe(200);
+    expect((await probeFetch(`${BASE}/ask`)).status).toBe(400);
+    expect((await probeFetch(`${BASE}/ask?query=how%20do%20I%20pay`)).status).toBe(200);
   });
 });
 
-describe("Accept is declared exactly where a door negotiates", () => {
+describe("Accept is declared exactly where a door negotiates", async () => {
+  // Derive cases from the served contract, not a second route list. One
+  // all-route test exceeded 30s in CI as the shelf grew (#709); each door
+  // keeps the same three requests and assertions under its own deadline.
+  const paths = await spec();
+  const undeclared = Object.entries(paths).filter(([path, item]) =>
+    !path.includes("{") && item["get"] &&
+    !(path in NEGOTIATED_REPRESENTATIONS) &&
+    !params(item["get"]!).some((p) => p["name"] === "Accept"),
+  );
+
   it("serves every representation the table lists, for its Accept", async () => {
     const paths = await spec();
     for (const [path, offered] of Object.entries(NEGOTIATED_REPRESENTATIONS)) {
@@ -79,30 +125,24 @@ describe("Accept is declared exactly where a door negotiates", () => {
       expect(accept?.["in"], path).toBe("header");
       expect(accept?.["schema"]?.["enum"], path).toEqual([...offered]);
       for (const media of offered) {
-        const response = await SELF.fetch(`${BASE}${path}`, { headers: { Accept: media } });
+        const response = await probeFetch(`${BASE}${path}`, { headers: { Accept: media } });
         expect(response.status, `${path} as ${media}`).toBe(200);
         expect(contentType(response), `${path} as ${media}`).toBe(media);
       }
-      const bare = await SELF.fetch(`${BASE}${path}`, { headers: { Accept: "*/*" } });
+      const bare = await probeFetch(`${BASE}${path}`, { headers: { Accept: "*/*" } });
       expect(contentType(bare), `${path} bare wildcard`).toBe(offered[0]);
     }
   });
 
-  it("and nowhere a door does not: no undeclared negotiation on any brace-less GET", async () => {
-    const paths = await spec();
-    const hidden: string[] = [];
-    for (const [path, item] of Object.entries(paths)) {
-      if (path.includes("{") || !item["get"]) continue;
-      if (path in NEGOTIATED_REPRESENTATIONS) continue;
-      if (params(item["get"]!).some((p) => p["name"] === "Accept")) continue;
-      const url = probeUrl(path, item["get"]!);
-      const bare = await SELF.fetch(url);
-      for (const media of ["text/markdown", "text/html"]) {
-        const asked = await SELF.fetch(url, { headers: { Accept: media } });
-        if (contentType(asked) !== contentType(bare)) hidden.push(`${path} → ${media}`);
-      }
+  it.each(undeclared)("%s does not negotiate without declaring Accept", async (path, item) => {
+    const url = probeUrl(path, item["get"]!);
+    const bare = await probeFetch(url);
+    expect(bare.status, `${path} baseline must not be a server error`).toBeLessThan(500);
+    for (const media of ["text/markdown", "text/html"]) {
+      const asked = await probeFetch(url, { headers: { Accept: media } });
+      expect(asked.status, `${path} as ${media} must not be a server error`).toBeLessThan(500);
+      expect(contentType(asked), `${path} → ${media}`).toBe(contentType(bare));
     }
-    expect(hidden).toEqual([]);
   });
 });
 
@@ -120,7 +160,7 @@ describe("If-None-Match is declared exactly where a door revalidates", () => {
       const negotiated = NEGOTIATED_REPRESENTATIONS[path];
       const accept = negotiated?.find((m) => m !== "text/html") ?? "*/*";
       const url = probeUrl(path, op);
-      const first = await SELF.fetch(url, { headers: { Accept: accept } });
+      const first = await probeFetch(url, { headers: { Accept: accept } });
       if (first.status === 404 && path === "/corpus/diff.json") {
         // An empty test chain holds no baseline week; the door says so
         // with a 404, and a 404 is outside conditional GET by rule.
@@ -129,7 +169,7 @@ describe("If-None-Match is declared exactly where a door revalidates", () => {
       expect(first.status, path).toBe(200);
       const etag = first.headers.get("ETag");
       expect(etag, `${path} declares If-None-Match and serves no ETag`).toBeTruthy();
-      const again = await SELF.fetch(url, { headers: { Accept: accept, "If-None-Match": etag! } });
+      const again = await probeFetch(url, { headers: { Accept: accept, "If-None-Match": etag! } });
       /*
        * 304, or a 200 carrying a DIFFERENT tag because the document
        * moved between the two reads (the catalog's root carries the
@@ -152,7 +192,7 @@ describe("If-None-Match is declared exactly where a door revalidates", () => {
       if (params(op).some((p) => p["name"] === "If-None-Match")) continue;
       if (op["x-payment"]) continue;
       expect(CONDITIONAL_GET_EXEMPT[path], `${path} declares no If-None-Match and no reason`).toBeTruthy();
-      const response = await SELF.fetch(probeUrl(path, op));
+      const response = await probeFetch(probeUrl(path, op));
       expect(response.headers.get("ETag"), `${path} is exempt yet serves an ETag`).toBeNull();
     }
     for (const path of Object.keys(CONDITIONAL_GET_EXEMPT)) {

@@ -1,5 +1,14 @@
 # CV's research trails
 
+[Ed25519 and ML-DSA-65 measurements](../docs/PQ_MEASUREMENT_2026-09.md):
+retained September 11 signature sizes, local dual-backend timings, selected
+vectors and interoperability records. Reproduce the summary without a PQ
+dependency; production checkpoint issuance is parked.
+
+The [PR 709 CI repair](../docs/CI_OPENAPI_SWEEP_2026-09-15.md) records the
+OpenAPI sweep timeout, the corrected test setup and the validation controls.
+
+
 Three running logs, appended to by CV. Rendered at `/admin/cv` — his
 corner of the keeper's office — newest entry first, no code change
 needed when new entries land.
