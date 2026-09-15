@@ -1,4 +1,4 @@
-import { PURCHASE_RECORD_CODES } from "@/services/purchase-intent";
+import { PURCHASE_RECORD_CODES, inputMismatchRefusal } from "@/services/purchase-intent";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
@@ -21,6 +21,7 @@ import HUMAN_RESOLUTION_SOURCE from "../src/services/human-resolution-record.ts?
 import { INVALID_SETTLEMENT_RECEIPT_CODE, SettlementUnknown, settlementDeclinedBody, paymentIdentityUnavailableBody } from "@/lib/payments";
 
 const BASE = "https://scvd.store";
+const INPUT_MISMATCH_CODE = inputMismatchRefusal({}).code;
 const HUMAN_RESOLUTION_CODES = [...HUMAN_RESOLUTION_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map(match => match[1]!);
 
 /** The two classes that knock on an endpoint the buyer named. */
@@ -86,6 +87,8 @@ describe("the roster is the shelf, and it is not empty", () => {
  */
 describe("the documented codes are the codes the doors send", () => {
   const EMITTED = new Set([
+    // Recovery emits its refusal from the shared helper, not a gate literal.
+    ...(PAYMENT_GATE_SOURCE.includes("lookupRecordedPurchase(") ? [INPUT_MISMATCH_CODE] : []),
     ...(PAYMENT_GATE_SOURCE.includes("resolvedHumanPayment(") ? HUMAN_RESOLUTION_CODES : []),
     ...(PAYMENT_GATE_SOURCE.includes("beginPurchaseIntent(") ? Object.values(PURCHASE_RECORD_CODES) : []),
     ...(/paymentIdentityUnavailableBody\(/.test(PAYMENT_GATE_SOURCE)
@@ -203,12 +206,14 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
     }
     // Confirmed delivery failure is charged. Invalid receipts and lost
     // settlement acknowledgements remain unknown, never a safe refusal.
+    // A scope refusal submits no new payment, but the original purchase can
+    // be settled or unresolved; its per-response charged field is decisive.
     for (const error of errors) {
       expect(
         error.charged,
         `${error.code} on ${id} does not say whether it charged`,
       ).toBe(["delivery_failed", PURCHASE_RECORD_CODES.pending, ...HUMAN_RESOLUTION_CODES].includes(error.code) ? true
-        : [PURCHASE_RECORD_CODES.unavailable, INVALID_SETTLEMENT_RECEIPT_CODE, new SettlementUnknown("fixture:rail").body().code].includes(error.code) ? null : false);
+        : [INPUT_MISMATCH_CODE, PURCHASE_RECORD_CODES.unavailable, INVALID_SETTLEMENT_RECEIPT_CODE, new SettlementUnknown("fixture:rail").body().code].includes(error.code) ? null : false);
     }
   });
 

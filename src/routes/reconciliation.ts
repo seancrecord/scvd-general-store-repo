@@ -29,6 +29,7 @@ reconciliationRoutes.get("/api/reconciliation/:reconciliation_id", async (c) => 
     );
   }
   const observed = record.reconciliation.cap_observed;
+  const capSource = record.reconciliation.cap_source;
   return c.json({
     ...record,
     /*
@@ -38,13 +39,17 @@ reconciliationRoutes.get("/api/reconciliation/:reconciliation_id", async (c) => 
      * off a ceiling on Base. Putting the distinction below the verdict
      * would be technically honest and practically misleading.
      */
-    read_this_first: observed
-      ? "Both numbers on this receipt were read off Base by a party with no stake in the answer. cap_observed is true, which is the version of this artifact that carries weight with a stranger."
-      : "cap_observed is FALSE. The amount was read off Base; the CEILING was supplied by whoever commissioned this. Our signature covers the fact that we were told that number — never that it is true. Anyone relying on this should treat the ceiling as the commissioner's claim and the amount as our observation.",
+    read_this_first: capSource === "chain_same_tx_approval"
+      ? "Historical Approval inference: cap_observed in this signed record does not establish that this transfer consumed that allowance. Approval co-occurrence was insufficient evidence. Read /corrections before relying on the ceiling; the original signed bytes are preserved."
+      : capSource === "none"
+      ? "No ceiling was established or declared. This record makes no claim about an authorization limit. Read verdict to determine whether any matching movement was observed."
+      : observed
+      ? "The selected transfer was paired with an EIP-3009 authorization whose value is fixed. This observation depends on the receipt evidence; it does not prove delivery or consensus. Read /corrections for limitations of older observations."
+      : "cap_observed is FALSE. The CEILING was supplied by the commissioner. Our signature covers the fact that we were told that number — never that it is true. Read verdict to determine whether matching movement was observed.",
     how_to_verify: [
-      "1. Re-serialize every field of `reconciliation` above `signature` as canonical JSON, in the order served, and check the ed25519 signature against the key at /.well-known/scvd-signing-key.",
+      "1. The signed object is reconciliation, not this outer response. Serialize its fields before signature in their served order without whitespace (JSON.stringify); exclude signature, public_key, signature_covers, signature_jcs and signature_jcs_covers. Check those UTF-8 bytes against reconciliation.signature and reconciliation.public_key, both hex encoded, using ed25519. Match the key to key_history.current or key_history.retired at /.well-known/scvd-signing-key. A valid signature authenticates bytes under that key; it does not prove the claim true.",
       `2. GET /api/verify/${record.cert_id}: the certificate's attests field carries this observation's evidence_hash, so the store's dated word says THIS observation is the one that purchase bought.`,
-      "3. Take the tx_hash to any Base explorer or your own node and read the receipt yourself. The amount is in the USDC Transfer log; an observed ceiling is in an Approval log in the same receipt, or is the EIP-3009 value fixed in the payer's signed digest. Nothing here needs our word — that is the point of naming where each number came from.",
+      "3. Independently establish the Base chain and requested transaction identity, then read its status and USDC logs. The amount comes from the selected Transfer. An observed fixed value requires its paired EIP-3009 AuthorizationUsed event; an Approval alone establishes no spending cap. Consult /corrections for older attribution and receipt-context defects. A receipt and head read do not establish consensus, finality or delivery.",
     ],
     what_this_is_not:
       "Not accounting, not a dispute resolution, not a delivery verification, and not a score on whoever sent or received the money. A dated observation about one transaction — rule of the house: we verify artifacts, we do not rate actors.",

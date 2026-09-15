@@ -1,3 +1,4 @@
+import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
@@ -618,11 +619,7 @@ affected 402 repeats it in its own body.
 
 TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
 
-Uncertain payment: keep the original payment/key. Use recovery.purchase_id
-and private recovery.status_token with MCP check_purchase, or GET
-\`${base}/api/purchase-status/{purchase_id}\` with Authorization: Bearer
-<status_token>. Free after authorization expiry; payment status alone
-is not proof of delivery. Avoid a second authorization while unresolved.
+${PURCHASE_RECOVERY_GUIDANCE}
 
 Idempotency. Send an Idempotency-Key header (16-128 characters) with a
 purchase — or _meta['x402/idempotency-key'] over MCP — and a repeat of

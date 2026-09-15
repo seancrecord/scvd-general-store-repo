@@ -979,15 +979,11 @@ const BASE = "https://scvd.store";
 // reproduced, and this copy reproduces the new one.
 // 2026-09-14: main's guide edits and the authorization-pairing constraint
 // now coexist. Replacing only that constraint reproduces main's digest.
-// 2026-09-14, THE MERGE. Both sides re-pinned correctly for their own
-// edit — main for the authorization-pairing constraint, this branch for
-// the window's two refusals and the pack note — so the merged guide is
-// a third text that neither digest above describes. Both notes stand;
-// this pin is the guide with both edits in it, taken from the merged
-// tree and from neither half alone. This is the case the notes at the
-// top of this constant keep describing, and it is the fourteenth time.
+// 2026-09-14: merge the window/pack copy with recovery guidance and
+// reconciliation evidence limits. Reversing this branch's two copy changes
+// reproduces main's 0207f37c digest; neither branch's earlier pin is retained.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "0207f37c249353e6a315ace3d7d6a8ec21d68d8871a6b7e43aa6312ab379dfbe";
+  "1ba2bfb35524de821498e748d37daff5aab0c040e6e71b099c1b199acc7abf38";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

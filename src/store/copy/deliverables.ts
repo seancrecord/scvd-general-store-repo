@@ -282,15 +282,15 @@ export function reconciliationNote(
     return "Read the receipt. Nothing matching your question moved in it — could be the wrong hash, could be a transaction that reverted, could be a different leg than the one you meant. That's the finding, dated and signed, and we're not dressing it up into something about whoever you sent it to.";
   }
   if (verdict === "no_discretion") {
-    return "Read the receipt: this was an EIP-3009 authorization, which means the amount was nailed down inside your own signed message before it ever reached the chain. Nobody could have taken a different number. There was no ceiling to bust because there was no room to move — and that's a better answer than 'within cap', because it's structural rather than lucky.";
+    return "Read the receipt: this was an EIP-3009 authorization, which means the amount was fixed inside the payer's signed message before it ever reached the chain. Nobody could have taken a different number. There was no ceiling to bust because there was no room to move — and that's a better answer than 'within cap', because it's structural rather than lucky.";
   }
   if (verdict === "cap_not_observable") {
-    return "Read the receipt and wrote down what moved. No ceiling in it, and you didn't declare one, so we're not going to imply a limit we never saw. What you've got is a signed, dated note of the amount from a party with no stake in it — which is the honest half of the question you asked.";
+    return "Read the receipt and wrote down what moved. No attributable ceiling was established, and you didn't declare one, so we're not going to imply a limit we never saw. What you've got is a signed, dated note of the amount from a party with no stake in it — which is the honest half of the question you asked.";
   }
   const both = verdict === "within_cap" ? "at or under" : "ABOVE";
   return capObserved
     ? `Read the receipt: both numbers were on the chain, and what moved was ${both} the ceiling that was in force. We saw both halves ourselves — that's the version of this artifact worth showing to somebody.`
-    : `Read the receipt: what moved was ${both} the ceiling YOU TOLD US. Understand what you have — we observed the amount, we did not observe the cap, and the artifact says so in a signed field. If the other side of a dispute doesn't take your word for the ceiling, this doesn't make them. The chain-observed version is the one that carries weight, and it needs the ceiling to be on the chain.`;
+    : `Read the receipt: what moved was ${both} the ceiling YOU TOLD US. Understand what you have — we observed the amount, we did not observe the cap, and the artifact says so in a signed field. If the other side of a dispute doesn't take your word for the ceiling, this doesn't make them. Only a paired EIP-3009 transfer establishes a fixed authorization value here; an Approval by itself does not.`;
 }
 
 export function bundleNote(statuses: readonly string[]): string {

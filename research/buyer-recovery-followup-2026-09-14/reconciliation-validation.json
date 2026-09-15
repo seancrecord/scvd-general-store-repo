@@ -1,0 +1,92 @@
+{
+  "scope": "Local repair and synthetic paid fixtures; no live payment, commit, push, PR, merge or deployment.",
+  "prior_phase": "validation.json",
+  "counts": {
+    "baseline": {
+      "failed": 25,
+      "passed": 23,
+      "files": 2
+    },
+    "recipient_baseline": {
+      "failed": 3,
+      "passed": 1,
+      "files": 1
+    },
+    "core_after": {
+      "passed": 314,
+      "files": 6
+    },
+    "final_contracts_before_repin": {
+      "passed": 55,
+      "failed": 1,
+      "files": 4,
+      "failure": "Intentional full-guide checksum; exact copy reversal passed before repinning."
+    },
+    "guide_delta": {
+      "passed": 1
+    },
+    "full_suite": {
+      "files": 708,
+      "passed": 13933,
+      "skipped": 1,
+      "failed": 0,
+      "seconds": 3204.1
+    },
+    "zero_match_baseline": {
+      "failed": 3,
+      "passed": 18,
+      "files": 1
+    },
+    "final_after_zero_match_repair": {
+      "passed": 55,
+      "files": 3
+    }
+  },
+  "guide_sha256": "cbdcbcc02e2b0df46eab5ddf106e9a7cd6efe59bcb6c0d83ce9c57e24d97d328",
+  "reversed_guide_sha256": "7bdff9324307af10f0c283b888f1ef4b9d69a432e9f6e4ab62343e03cbb29f9e",
+  "gates": {
+    "typecheck": "passed",
+    "worker_dry_run_bundles": "both passed",
+    "documentation": "passed",
+    "corrections_index_tests": "passed",
+    "claims": "passed",
+    "code_audit": "4 warnings, within budget",
+    "complete_application_suite": "passed",
+    "final_typecheck": "passed",
+    "final_worker_dry_run_bundles": "both passed",
+    "final_documentation_and_corrections": "passed",
+    "whitespace": "passed",
+    "closeout_documentation": "passed"
+  },
+  "log_sha256": {
+    "scvd-reconciliation-before.log": "731fa98b002a815ebedf0e8c0291e70163ccf6e4d699af6143a140c98fa2ef80",
+    "scvd-reconciliation-recipient-before.log": "30212100978d9f9f6d9ebaab40c178873bb2d24c5fd1a324d3e37a5a0740dabd",
+    "scvd-reconciliation-after.log": "663d4f9c3246bcddcf3808d16e7713171bc108d820b4a67bdba45db764a8da8f",
+    "scvd-reconciliation-discovery.log": "31edb9932ced67949c29ab4cac51a781813e2b604e9bd242eb778ba04a086840",
+    "scvd-reconciliation-guide-proof-passed.log": "c678e6f394844d439012029e62bce036472b1a2032e1ca3be6e8458dc882cc07",
+    "scvd-reconciliation-final-contracts.log": "2e245d0737ed17b19c0b2766671ca53ddc6a535e15a7816cb81a90f967e723ad",
+    "scvd-reconciliation-typecheck-final.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-reconciliation-build-final.log": "b2c4f544e7bea2bba02fd3f011f06e652a097adb69ad59c47954b80d95c7a83e",
+    "scvd-reconciliation-docs.log": "98f68889067aeb0ef17a5be9a4c5e7bfb7e962614b7526cd3b883d9250ed6acd",
+    "scvd-reconciliation-corrections.log": "2acde8d21a06ce82bb7723c8e067d84f15aaa3c997e263b98bd8211387a395f8",
+    "scvd-reconciliation-claims.log": "46de00cb287f90648402581b9fb9dfd4a802a87b82158c52d4edfb09f78dbc8e",
+    "scvd-reconciliation-audit.log": "be55bae608c28480594bdb23dc612c87399fc758cf3eea457c4faa7cf086d4dc",
+    "scvd-reconciliation-full.log": "41e129ed74abb9fed819cf3514cf2071cefbe3a840bca3b4af6a2adde2d4f965",
+    "scvd-reconciliation-zero-before.log": "38063c060e8774b6b32d8880f3540001495d8830bfb2e39d51c84511d2f06e68",
+    "scvd-reconciliation-zero-after.log": "95e900ec3bdce1ad349ca9be4ef4a8d88f1a9ac071e5053c63881901ccae9565",
+    "scvd-reconciliation-typecheck-complete.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-reconciliation-build-complete.log": "f960fbe151ef478e3af353d95936b7c0a58c4ce15717c2e2bdd825306106489d",
+    "scvd-reconciliation-docs-complete.log": "afda5257adff5eb6425c5187fa64a8f3ed6f3ef256d31dd3eee7a610a05786d0",
+    "scvd-reconciliation-corrections-complete.log": "b00f4f5ff1c91a2466a8904a195bff277ae90ac13c4c17710ffab718b916c2e5",
+    "scvd-reconciliation-docs-closeout.log": "28f28eb4d240cfc72289ed6764e38fa5192086e3c139fd1f6d5f493555b1ffe6"
+  },
+  "full_run_was_uninterrupted_green": true,
+  "full_run_snapshot_files": 1475,
+  "source_changed_during_full_run": [],
+  "changed_after_full_run": [
+    "src/services/settlement-reconciliation.ts",
+    "src/store/corrections-ledger/2026-09-14-reconciliation-approval-and-context.ts",
+    "test/reconciliation-evidence-boundary.spec.ts"
+  ],
+  "final_validation_scope": "An uninterrupted green full run on the frozen snapshot, followed by three new failing zero-match assertions, the prose/correction repair, 55 passing affected tests and final typecheck/build/documentation gates. The entire suite was not repeated after that final prose repair."
+}

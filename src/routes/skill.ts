@@ -1,3 +1,4 @@
+import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { paymentNetworkNames, paymentNetworkGuide } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { beforeYouStartSection } from "@/lib/before-you-start";
@@ -446,6 +447,10 @@ contribute-to-access and is NOT built; \`whats_current\` reports
 return their x402 terms as a JSON-RPC 402 error, and settle in-band
 via \`_meta["x402/payment"]\`. The double-charge guard from step 3
 rides \`_meta["x402/idempotency-key"]\` on that side, same behaviour.
+
+### Recovering a store purchase
+
+${PURCHASE_RECOVERY_GUIDANCE}
 
 ## Resource evidence
 

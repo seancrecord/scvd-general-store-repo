@@ -249,12 +249,12 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
   },
   {
     id: "settlement_reconciliation",
-    name: "Settlement reconciliations (amount taken against ceiling in force)",
+    name: "Settlement reconciliations (movement and attributable or declared limits)",
     trust_model: "third_party_observation",
     signs:
-      "The whole observation: the transaction asked about, the USDC movement found, the ceiling in force, WHERE THAT CEILING CAME FROM, whether it was observed or merely declared, the headroom between the two, the chain head at read time, and the moment. An EIP-3009 no_discretion reading requires the selected transfer itself to be paired with its authorization; a nonce elsewhere for the same payer is insufficient. Older observations can overstate that attribution: consult /corrections before relying on it. cap_observed is a signed field in its own right, because the difference between a ceiling we read off Base and a ceiling somebody told us is the entire weight of this artifact.",
+      "The whole observation: the transaction asked about, the USDC movement found, any fixed authorization value or declared ceiling, WHERE THAT CEILING CAME FROM, whether it was observed or merely declared, the headroom between the two, the chain head at read time, and the moment. An EIP-3009 no_discretion reading requires the selected transfer itself to be paired with its authorization; a nonce elsewhere for the same payer is insufficient. Approval co-occurrence is not evidence of allowance consumption. The current reader establishes the reported chain, receipt identity, status and block/head before signing. Older observations can overstate attribution or lack these context checks: consult /corrections before relying on them. cap_observed is a signed field in its own right, because the difference between a ceiling we read off Base and a ceiling somebody told us is the entire weight of this artifact.",
     does_not_prove:
-      "That a DECLARED ceiling is real. Where cap_observed is false the number came from whoever commissioned the receipt — generally the party it benefits — and the signature covers only that we were told it, never that it is true. It also cannot see a ceiling granted in an earlier transaction: 'no cap observed' means 'not in this receipt'. And an over_cap on a declared ceiling is a fact about what the caller said, not about the chain.",
+      "That a DECLARED ceiling is real. Where cap_observed is false the number came from whoever commissioned the receipt — generally the party it benefits — and the signature covers only that we were told it, never that it is true. It cannot establish allowance consumption from approvals in this or earlier transactions: 'no cap observed' never means no ceiling existed. RPC evidence is not consensus proof. And an over_cap on a declared ceiling is a fact about what the caller said, not about the chain.",
     verify_url: "/api/reconciliation/{reconciliation_id}",
   },
   {

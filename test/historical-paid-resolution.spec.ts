@@ -143,7 +143,7 @@ for (const [rail] of laborNetworks().entries()) for (const shelf of ["small_bles
     expect(await deliverRecordedPurchase(testEnv, p)).toBeNull();
     expect(await runDurableObjectAlarm(purchaseIntentStore(testEnv, p.id))).toBe(true);
     const status = object(await (await request(`/api/purchase-status/${p.id}`, { headers: { Authorization: `Bearer ${p.token}` } })).json());
-    expect(status).toMatchObject({ code: "purchase_resolved", refunded: true, charged_again: false });
+    expect(status).toMatchObject({ code: "purchase_resolved", refunded: true, charged_again: false, recovery_state: "resolved", next_action: "read_resolution", retry_after_seconds: null });
     expect(status.fulfillment).toBeUndefined(); expect(transfers).toBe(0);
   });
 }

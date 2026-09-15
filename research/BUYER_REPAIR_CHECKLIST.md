@@ -733,8 +733,33 @@ The detailed release record is in BUYER_AUDIT_LOG.md. Historical validation para
 - [x] Correct signed goods and transaction subjects through HTTP/MCP; Base payment plus a Polygon-reader observation; bundles retain both distinct subjects.
 - [x] Ten distinct mixed-door purchases, ten same-payment/key submissions, and ten fresh-authorizations/shared-key submissions reconciled; pending requests recovered the original goods.
 - [x] Controlled response loss, original-interface retry after expiry, old quotes/new code, retired-key artifact continuity, and a fresh cheaper recipient exercised at the report's stated scope.
-- [ ] B-RSTATUS / LA-01: explain the gap between a successful purchase and private status-handle goods readiness; supply a safe polling action.
-- [ ] B-RDOOR / LA-02: name the original interface/recovery action when a cross-interface replay is refused; retain authorization scoping and reconsider transient HTTP 503 wording.
+- [x] B-RSTATUS / LA-01: implemented and validated locally September 14; explicit pending state and safe polling action. Release remains separate.
+- [x] B-RDOOR / LA-02: implemented and validated locally September 14; original interface/path, safe private status action and HTTP 409. Scope protection retained; release remains separate.
 - [ ] Full other-rail, mixed-SKU, interrupted-settlement, human/watch/anchor/inventory, loss-of-all-hints and propagation coverage remains; prior separate reconciliation source-review candidates remain.
 
 [Report and limits](buyer-receipt-acceptance-2026-09-14/REPORT.md). The fresh recipient fetched key history but did not explain historical-key verification; the parent's retired-key control is separate. Original BUY-001–039 and commissioned Aura counts are unchanged.
+
+
+## Recovery guidance follow-up — September 14, 2026
+
+- [x] Implement LA-01 pending/ready/unpaid/resolved status guidance without changing retained delivery or payment behavior.
+- [x] Implement LA-02 original-interface recovery instructions and non-temporary HTTP 409 refusals; preserve signed ownership and scope guards.
+- [x] Complete full-suite plus corrected reruns, typecheck and both Worker builds: 706 files, 13,863 passed / 39 discovery failures / one existing skip in the full run; all failures corrected and covered by 379 passing affected-file cases. Exact validation limits are in the report.
+- [ ] Release these local fixes and verify the resulting production guidance; no new purchase is required merely to check discovery.
+- [x] Reproduce the two B-RNEXT reader candidates using synthetic receipts, including local verification of returned observation signatures.
+- [x] **B-RCAP:** remove unsupported Approval-to-transfer cap attribution; preserve paired authorizations and historical signed bytes; stage a dated correction and recipient warning locally.
+- [x] **B-RCONTEXT:** establish reconciliation receipt/chain context; test HTTP and both MCP profiles refusing before settlement and safely retrying the same payment.
+
+See `research/buyer-recovery-followup-2026-09-14/REPORT.md` and its opt-in reproduction. The original investigation recorded eight expected-behavior failures and three controls. Those witnesses are preserved; ordinary regression tests now cover the repairs and recipient guidance. Release was held at the local repair checkpoint; the keeper subsequently authorized PR and merge on September 14. No new Aura finding or original BUY count is asserted.
+
+
+### Reconciliation repair closeout — local only
+
+- [x] Preserve paired fixed-value authorizations; stop observing unbound Approval caps (B-RCAP).
+- [x] Refuse unestablished receipt/chain context before payment on HTTP and both MCP profiles; same-payment recovery settles once (B-RCONTEXT).
+- [x] Preserve historical signed bytes, warn about retired approval inference, and explain primary signatures and historical keys to recipients.
+- [x] Correct zero-match prose and prove missing/empty/reverted cases fail without the fix (B-RZERO).
+- [x] Complete 708-file full run: 13,933 passed, one existing skip; after the final prose repair, 55 affected checks plus final typecheck/build/documentation gates passed. Exact snapshot/delta limits are in the report.
+- [ ] Release/live verification remains held: latest instruction is no PR or merge. Other funded rails and remaining fulfillment/recovery/deployment scenarios are still open.
+
+Release authorized September 14: integrated-main full attempt passed 709 files / 13,982 tests, with one existing skip and one unnamed runner-startup error. The five-file final affected run passed all 133 cases without an unhandled error. Full attempt is not labeled green; a clean complete GitHub suite is required before merge. See `buyer-recovery-followup-2026-09-14/release-validation.json`.

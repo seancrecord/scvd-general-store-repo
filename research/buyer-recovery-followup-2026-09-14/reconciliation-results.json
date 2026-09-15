@@ -1,0 +1,147 @@
+{
+  "scope": "Synthetic direct-service probes, no live chain, purchase or deployment. Assertions encode the desired behavior; failures are defect witnesses, not a passing acceptance run.",
+  "base_commit": "7c16c4bc25969fcb00084f5762de67494cdf1272",
+  "source_sha256": {
+    "src/services/settlement-reconciliation.ts": "353eb5b43d2a79c051527f42d6549471cdc8abf33ad1553fb3e39c60529755a8",
+    "src/lib/base-rpc.ts": "6b3ec60ec409d20654381d815e715a78f9c6d27404e85b2db727dbd0480c23d6",
+    "src/lib/receipt-context.ts": "4a6c48ebbe7969a1fe357a89e69d7568976d27f4ac5fcb30e2c1531b769dc29c"
+  },
+  "expected_behavior_tests": 11,
+  "failed": 8,
+  "passed": 3,
+  "controls": [
+    "valid paired authorization returns no_discretion",
+    "explicit null returns no_settlement",
+    "malformed head cannot produce a returned signed reconciliation (existing JCS finite-number guard)"
+  ],
+  "observations": [
+    {
+      "probe": "approval-before",
+      "signature_valid": true,
+      "verdict": "within_cap",
+      "cap_source": "chain_same_tx_approval",
+      "cap_observed": true,
+      "cap_usdc": 10,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 100,
+      "chain_head": 128
+    },
+    {
+      "probe": "approval-after",
+      "signature_valid": true,
+      "verdict": "within_cap",
+      "cap_source": "chain_same_tx_approval",
+      "cap_observed": true,
+      "cap_usdc": 10,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 100,
+      "chain_head": 128
+    },
+    {
+      "probe": "approval-after-unpaired",
+      "signature_valid": true,
+      "verdict": "within_cap",
+      "cap_source": "chain_same_tx_approval",
+      "cap_observed": true,
+      "cap_usdc": 10,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 100,
+      "chain_head": 128
+    },
+    {
+      "probe": "wrong_hash",
+      "signature_valid": true,
+      "verdict": "no_discretion",
+      "cap_source": "chain_eip3009_fixed_value",
+      "cap_observed": true,
+      "cap_usdc": 3,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 100,
+      "chain_head": 128
+    },
+    {
+      "probe": "wrong_hash",
+      "signed": true,
+      "methods": [
+        "eth_getTransactionReceipt",
+        "eth_blockNumber"
+      ]
+    },
+    {
+      "probe": "missing_hash",
+      "signature_valid": true,
+      "verdict": "no_discretion",
+      "cap_source": "chain_eip3009_fixed_value",
+      "cap_observed": true,
+      "cap_usdc": 3,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 100,
+      "chain_head": 128
+    },
+    {
+      "probe": "missing_hash",
+      "signed": true,
+      "methods": [
+        "eth_getTransactionReceipt",
+        "eth_blockNumber"
+      ]
+    },
+    {
+      "probe": "wrong_chain",
+      "signature_valid": true,
+      "verdict": "no_discretion",
+      "cap_source": "chain_eip3009_fixed_value",
+      "cap_observed": true,
+      "cap_usdc": 3,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 100,
+      "chain_head": 128
+    },
+    {
+      "probe": "wrong_chain",
+      "signed": true,
+      "methods": [
+        "eth_getTransactionReceipt",
+        "eth_blockNumber"
+      ]
+    },
+    {
+      "probe": "future_block",
+      "signature_valid": true,
+      "verdict": "no_discretion",
+      "cap_source": "chain_eip3009_fixed_value",
+      "cap_observed": true,
+      "cap_usdc": 3,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 129,
+      "chain_head": 128
+    },
+    {
+      "probe": "future_block",
+      "signed": true,
+      "methods": [
+        "eth_getTransactionReceipt",
+        "eth_blockNumber"
+      ]
+    },
+    {
+      "probe": "invalid_status",
+      "signature_valid": true,
+      "verdict": "no_settlement",
+      "cap_source": "none",
+      "cap_observed": false,
+      "cap_usdc": null,
+      "tx_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "block_height": 100,
+      "chain_head": 128
+    },
+    {
+      "probe": "invalid_status",
+      "signed": true,
+      "methods": [
+        "eth_getTransactionReceipt",
+        "eth_blockNumber"
+      ]
+    }
+  ]
+}
