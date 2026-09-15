@@ -14,3 +14,14 @@ x402-census-results.json
 __pycache__/
 *.pyc
 .build-check-doors/
+
+# Signing keys, never in the tree. The record-signing keypair for the
+# AGNTCY Directory (registry/agntcy/README.md) is generated OUTSIDE this
+# repo on purpose — but a stray copy pasted in here would be committed
+# by anyone running `git add -A`, and a private key in git history does
+# not come back out. `cosign.pub` is public and harmless; it is ignored
+# too, because the published copy is derived into the JWKS from a
+# checked-in source rather than read from a loose file.
+cosign.key
+cosign.pub
+*.pem
