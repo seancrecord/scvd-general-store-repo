@@ -4,10 +4,11 @@
 # proves the store does what it claims; this hunts for the class of
 # defect nobody wrote a claim about.
 #
-# Actions here are version tags rather than the commit-SHA pinning
-# the other workflows use: this session's tooling cannot resolve SHAs
-# for repositories outside its scope. Pin them when hands allow —
-# Scorecard's Pinned-Dependencies check will name them until then.
+# The three actions here are commit-SHA pinned like the rest of the
+# workflows, with the version in a trailing comment. codeql-action's
+# init and analyze must carry the SAME SHA: the action refuses to run
+# when the halves disagree, which is why .github/dependabot.yml groups
+# them into one PR.
 name: CodeQL
 
 on:
@@ -30,7 +31,7 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+      - uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           languages: javascript-typescript
-      - uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+      - uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0

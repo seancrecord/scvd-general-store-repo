@@ -27,3 +27,21 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      # THE SPLIT THIS EXISTS FOR happened on 2026-09-15: codeql-action
+      # ships init, analyze and upload-sarif from one repo at one version,
+      # and ungrouped Dependabot filed a PR per path (#697, #698, #699).
+      # The action refuses to run when init and analyze disagree, so the
+      # two halves of codeql.yml each failed `analyze` on their own and
+      # neither could go green until the other was merged. Lockstep
+      # dependencies belong in one PR or they arrive unmergeable.
+      codeql:
+        patterns:
+          - "github/codeql-action*"
+      # Volume, not correctness: the first-party actions move often and
+      # independently, and five one-line PRs a week is how a queue stops
+      # being read. Third-party actions stay ungrouped on purpose — a
+      # supply-chain bump deserves its own diff and its own decision.
+      actions-core:
+        patterns:
+          - "actions/*"
