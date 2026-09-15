@@ -453,6 +453,11 @@ federated directory matches on, derived from the same catalogue /mcp
 answers tools/list from. Also at ${base}/.well-known/oasf.json. Unsigned:
 a record fetched from here is a claim by whoever controls this hostname,
 which is exactly as much as an unsigned record ever proves.
+The key that authorises that record: ${base}/.well-known/jwks.json —
+the public half of the keypair AGNTCY name verification reads to decide
+whether scvd.store actually published the record above. Not the key that
+signs our evidence: that one is at ${base}/.well-known/scvd-signing-key
+and is a different key with a different job.
 OpenAPI 3.1 contract: ${base}/openapi.json
 The free instruments as function-calling tools, one worked call each,
 derived from the MCP catalog: ${base}/openapi-tools.json

@@ -15,13 +15,15 @@ __pycache__/
 *.pyc
 .build-check-doors/
 
-# Signing keys, never in the tree. The record-signing keypair for the
+# PRIVATE keys, never in the tree. The record-signing keypair for the
 # AGNTCY Directory (registry/agntcy/README.md) is generated OUTSIDE this
 # repo on purpose — but a stray copy pasted in here would be committed
 # by anyone running `git add -A`, and a private key in git history does
-# not come back out. `cosign.pub` is public and harmless; it is ignored
-# too, because the published copy is derived into the JWKS from a
-# checked-in source rather than read from a loose file.
+# not come back out.
+#
+# Only the private half is ignored. `*.pem` sat here for an hour and was
+# wrong: the PUBLIC half is meant to be committed and served, and a
+# blanket rule would have hidden it — the failure where a file is
+# missing and nothing says so.
 cosign.key
-cosign.pub
-*.pem
+*.key
