@@ -118,7 +118,13 @@ describe("/.well-known/openai-apps-challenge", () => {
  * serves two and a checker picks one.
  */
 describe("agent tools ownership claim", () => {
-  it.each(["/.well-known/x402", "/.well-known/x402.json"])(
+  it.each([
+    "/.well-known/x402",
+    "/.well-known/x402.json",
+    "/.well-known/agent-card.json",
+    "/.well-known/agent.json",
+    "/.well-known/a2a.json",
+  ])(
     "serves agentToolsVerify at %s",
     async (path) => {
       const doc = (await (await SELF.fetch(`${BASE}${path}`)).json()) as Record<string, unknown>;
@@ -140,7 +146,19 @@ describe("agent tools ownership claim", () => {
    * So the assertion that matters is WHERE. A proof-of-control field
    * is read by somebody else's fetcher, under somebody else's limits.
    */
-  it.each(["/.well-known/x402", "/.well-known/x402.json"])(
+  /*
+   * EVERY PATH THE CHECKER NAMES, not just the one we thought of.
+   * Agent Tools reported the claim missing from three paths; it was on
+   * one of them, buried. Two answered 200 without it at all, which to
+   * a checker is indistinguishable from never having published.
+   */
+  it.each([
+    "/.well-known/x402",
+    "/.well-known/x402.json",
+    "/.well-known/agent-card.json",
+    "/.well-known/agent.json",
+    "/.well-known/a2a.json",
+  ])(
     "puts the claim in the first 2 KB of %s, where a truncating checker will find it",
     async (path) => {
       const body = await (await SELF.fetch(`${BASE}${path}`)).text();

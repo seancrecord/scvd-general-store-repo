@@ -637,8 +637,22 @@ for (const path of [
    * discovery-document card that said "does not speak the A2A message
    * protocol today": it does now, at /a2a, with three read-only tasks
    * in task language. See services/a2a-evidence.ts.
+   *
+   * THE OWNERSHIP CLAIM RIDES HERE TOO (2026-09-15). Agent Tools'
+   * checker names three paths — /.well-known/x402,
+   * /.well-known/agent-card.json and /.well-known/agent.json — and the
+   * claim was on the first only. Two of the three it looked at are
+   * served by this loop and answered 200 without the field, which
+   * reads to a checker exactly like a domain that never published it.
+   *
+   * First key, deliberately: these cards are ~4 KB, so position is not
+   * load-bearing here the way it is on the x402 documents, but a
+   * proof-of-control field belongs where a truncating reader finds it
+   * whatever the document's size today.
    */
-  wellKnownRoutes.get(path, (c) => c.json(evidenceAgentCard(c.env.STORE_BASE_URL)));
+  wellKnownRoutes.get(path, (c) =>
+    c.json({ ...agentToolsVerifyField(), ...evidenceAgentCard(c.env.STORE_BASE_URL) }),
+  );
 }
 
 /**
