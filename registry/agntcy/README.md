@@ -97,10 +97,10 @@ store keeps finding in itself. So the gap is named here instead.
 `{namespace}:{chainId}:{identityRegistry}` string with the token id
 after it. It says this record and agent 86957 are the same party,
 which `ownerOf(86957)` settles against Base without asking us. It does
-not say the registration is finished — the on-chain `tokenURI` still
-points at the bare origin, so explorers reading the agent as
-"Unconfigured" are right to (`docs/ERC8004_AGENT_86957.md`). A
-cross-link is not a status claim.
+not say the registration is finished — that is a separate fact, and it
+became true on 2026-09-15 when `setAgentURI` bound the agent to this
+domain (`docs/ERC8004_AGENT_86957.md`). The annotation did not change
+when it did, which is the point: a cross-link is not a status claim.
 
 ## The release sequence, when there is a key
 

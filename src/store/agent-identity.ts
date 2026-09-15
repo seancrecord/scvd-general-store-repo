@@ -17,9 +17,9 @@
  * lowercase address against its own checksummed one finds no match.
  *
  * Verifiable without asking us, and without a key or an account:
- * `ownerOf(86957)` against https://mainnet.base.org. The re-derivation
- * and the one transaction still owed are in
- * docs/ERC8004_AGENT_86957.md.
+ * `ownerOf(86957)` against https://mainnet.base.org. The re-derivation,
+ * and the `setAgentURI` transaction that bound the agent to this domain
+ * on 2026-09-15, are in docs/ERC8004_AGENT_86957.md.
  */
 export const SCVD_AGENT_ID = 86957;
 export const SCVD_AGENT_REGISTRY =
