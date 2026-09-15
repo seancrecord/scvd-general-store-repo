@@ -30,6 +30,36 @@ correctionsRoutes.get("/corrections", (c) => {
     b.date.localeCompare(a.date),
   );
 
+  const payload = {
+    title: "Corrections",
+    summary: CORRECTIONS_STANDFIRST,
+    how_to_read: CORRECTIONS_HOW_TO_READ,
+    how_things_get_caught: CORRECTIONS_MECHANISM,
+    what_we_cannot_do_ourselves: CORRECTIONS_OUTSIDE,
+    scope: CORRECTIONS_SCOPE,
+    what_this_record_cannot_show_you: CORRECTIONS_HAND_KEPT,
+    corrections: newestFirst.map((entry) => ({ ...entry })),
+    count: newestFirst.length,
+    corrections_url: `${base}/corrections`,
+    mailbox: `${base}/api/letter`,
+    invitation: CORRECTIONS_INVITATION,
+  };
+  /*
+   * MARKDOWN BEFORE HTML, because it is the narrower ask and because
+   * a named markdown reader sending `*​/*` satisfies wantsHtml too —
+   * placed after it, this branch was unreachable for exactly the
+   * callers it was written for.
+   */
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/corrections",
+      title: "Corrections",
+      description:
+        "Things this store said that were not true, dated, with what found each one and the mechanism that changed so it cannot recur quietly.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const rows = newestFirst
       .map(
@@ -82,29 +112,5 @@ correctionsRoutes.get("/corrections", (c) => {
     );
   }
 
-  const payload = {
-    title: "Corrections",
-    summary: CORRECTIONS_STANDFIRST,
-    how_to_read: CORRECTIONS_HOW_TO_READ,
-    how_things_get_caught: CORRECTIONS_MECHANISM,
-    what_we_cannot_do_ourselves: CORRECTIONS_OUTSIDE,
-    scope: CORRECTIONS_SCOPE,
-    what_this_record_cannot_show_you: CORRECTIONS_HAND_KEPT,
-    corrections: newestFirst.map((entry) => ({ ...entry })),
-    count: newestFirst.length,
-    corrections_url: `${base}/corrections`,
-    mailbox: `${base}/api/letter`,
-    invitation: CORRECTIONS_INVITATION,
-  };
-  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
-    return jsonDocumentMarkdownResponse({
-      base,
-      path: "/corrections",
-      title: "Corrections",
-      description:
-        "Things this store said that were not true, dated, with what found each one and the mechanism that changed so it cannot recur quietly.",
-      document: payload as unknown as Record<string, unknown>,
-    });
-  }
   return c.json(payload);
 });

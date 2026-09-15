@@ -299,7 +299,22 @@ scorersRoutes.get("/scorers", (c) => {
       document: payload as unknown as Record<string, unknown>,
     });
   }
-  if (!wantsHtml(c.req.header("Accept"))) {
+  /*
+   * THE USER-AGENT BELONGS IN THIS CALL (2026-09-15). Every other
+   * negotiated room passes it; this one never did, so the 2026-09-02
+   * rule — a crawler the store names in robots.txt gets the PAGE when
+   * it states no preference — was true everywhere except here. A
+   * named indexer sending `*​/*` got JSON, which carries no title, no
+   * description and none of this page's JSON-LD.
+   *
+   * The room it was wrong in is the worst one available: /scorers is
+   * the page addressed TO scorers and marketplaces, about how to cite
+   * this store's evidence, and the answer engines that would cite it
+   * were the exact callers being handed the one representation with
+   * nothing to cite. Found by extending crawler-negotiation.spec.ts
+   * over the nine landing pages that gained a markdown twin.
+   */
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }
   const rows = (list: ScorerSurface[]) =>
