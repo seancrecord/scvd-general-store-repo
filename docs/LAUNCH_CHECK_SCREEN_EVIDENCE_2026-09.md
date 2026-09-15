@@ -1,8 +1,11 @@
 # Launch Check: preserve the screen response
 
-September 14, 2026. Branch: `codex/launch-check-screen-evidence`, based on
-main `e0f0a4d7`. Feature committed as `b73ac8f4`; integrating main `bf52db66`
-for PR review. Release and deployment verification are still pending.
+September 15, 2026. Released in [PR #700](https://github.com/seancrecord/scvd-general-store-repo/pull/700),
+merged as `8483d147`. PR and main CI passed; both Cloudflare builds succeeded.
+Public unpaid-offer, missing-record and fixture-index reads passed. A fresh
+paid production issuance was not exercised. Earlier qualification below is
+retained with its original scope.
+
 
 ## Scope and stopping point
 
@@ -161,3 +164,26 @@ tree before merge. Production deployment and live reads remain separate checks.
 
 Integrated local checks passed: typecheck, 52 focused Launch Check tests,
 the door tests, documentation checks and both Worker dry-run builds.
+
+
+## Release result — September 15
+
+PR #700 merged at 08:49 UTC as `8483d147`. Its full CI passed 712 root test
+files, 14,030 tests, and one existing skip. The subsequent main CI also passed.
+Both Cloudflare Worker build checks for that merge succeeded. The public
+fixture index returned Worker version `f3f92966-b978-4071-859f-e8b004442363`
+with version time 08:49:34 UTC; the unpaid Launch Check door returned 402 and
+a missing saved-check ID returned 404. These are deployment and smoke checks,
+not a fresh production signing test or a source-to-runtime attestation.
+
+No purchase was submitted for this release check. Reading a stored check ID
+through the account API failed with authentication error 10000, so no
+before/after comparison of an existing signed record is claimed. The later
+account-level deployment read could not proceed after automatic permission
+review timed out twice; public reads and GitHub's build checks supplied the
+remaining deployment evidence. New capture, signing, tamper detection and
+legacy retrieval remain covered by the controlled regression tests.
+
+The bounded feature is complete. The standalone service, two-provider
+supplement, backup rollout and production PQ checkpoint are separate
+decisions. Release evidence: [release record](../research/qualification-2026-09-14/launch-check-release.json).
