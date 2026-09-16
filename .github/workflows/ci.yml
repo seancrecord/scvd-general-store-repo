@@ -35,8 +35,14 @@ on:
     branches: [main]
   pull_request:
 
+# A newer PR commit supersedes its previous checks. Main runs retain their
+# release evidence and are not cancelled by this performance change.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  check:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -65,15 +71,9 @@ jobs:
       # behind it. The spec asserts this step exists.
       - name: Self-row
         run: npm run self-row
-      # The suite walks every public claim the store makes: the naming
-      # law across seven surfaces, the listing spec's field order, the
-      # refund wording, the decline readings, and the skill document
-      # against the live menu. A red build means the store is saying
-      # something it cannot do.
-      # #709 had already failed 55 minutes before this step ended.
-      # Stop after a failure; a green run still executes the entire suite.
-      - name: Tests
-        run: npm test -- --bail=1
+      # Exercise the actual partitioner and merge gate before trusting them.
+      - name: CI partition and gate regression tests
+        run: node --test scripts/ci-workflow.test.mjs
       # THE TAB'S OWN TESTS — a filesystem product cannot run in the
       # Workers pool (no fs in an isolate), so scvd-tab tests ride
       # Node's own runner. Zero framework, same as zero dependencies.
@@ -186,6 +186,48 @@ jobs:
       # which the build step above already catches for the same reason.
       - name: The cost of starting it
         run: npm run cold:local
+
+  # Full suite, partitioned by measured cost. No protocol/path exclusions.
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tests
+        run: npm test -- --bail=1 --shard=${{ matrix.shard }}/${{ strategy.job-total }} --config=vitest.ci.config.mjs --reporter=default --reporter=json --outputFile=test-results.json
+      - name: Retain test timings and results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-results-${{ matrix.shard }}
+          path: test-results.json
+          retention-days: 14
+          if-no-files-found: warn
+
+  # Keep branch protection's existing name. always() is essential: skipped or
+  # cancelled dependencies must never turn this required check into success.
+  check:
+    if: ${{ always() }}
+    needs: [quality, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all check groups
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          TEST_RESULT: ${{ needs.tests.result }}
+        run: |
+          if [[ "$QUALITY_RESULT" != success || "$TEST_RESULT" != success ]]; then
+            echo "Required groups did not pass: quality=$QUALITY_RESULT tests=$TEST_RESULT"
+            exit 1
+          fi
 
   # THE RED LIGHT THAT TELLS SOMEBODY (2026-08-07, the keeper's ask for
   # enforcement that costs him nothing per push). main sat red for two
