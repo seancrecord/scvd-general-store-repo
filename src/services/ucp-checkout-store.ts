@@ -54,8 +54,31 @@ export interface StoredCheckout {
   inputs?: Record<string, string>;
   /** Set once, when settlement is confirmed. */
   order?: { id: string; permalink_url: string; created_at: string };
-  /** The payment identity admitted for this checkout, for reconciliation. */
-  admitted?: { identity: string; at: string };
+  /**
+   * WHAT AN ACCEPTED COMPLETION LEAVES BEHIND, and what it never does.
+   *
+   * Written in the same transaction that enters complete_in_progress,
+   * and only after the store's global purchase admission has already
+   * granted durable ownership of this payment. Everything here is
+   * recomputable from durable state or is a one-way identity: enough
+   * to recover the completion without the original request body.
+   *
+   * THE CREDENTIAL IS NOT HERE. A checkout never retains the bytes
+   * that could move money; the purchase record does not either, and
+   * this is the same rule one layer up.
+   */
+  completion?: {
+    protocol: "ucp";
+    /** The store's global settlement identity for the admitted payment. */
+    payment_identity: string;
+    /** JCS digest of the completion identity, recomputable from this record. */
+    request_digest: string;
+    terms_digest: string;
+    checkout_version: number;
+    /** Recovery locator for the admitted purchase, when one was issued. */
+    purchase_token?: string;
+    at: string;
+  };
 }
 
 export type CheckoutAdmission =
@@ -183,36 +206,122 @@ export class UcpCheckoutStore {
   }
 
   /**
-   * ONE COMPLETION IS ADMITTED, and the second concurrent caller is
-   * told the first is in flight rather than being allowed to settle
-   * beside it.
+   * THE PRECONDITIONS, READ WITHOUT CHANGING ANYTHING.
    *
-   * The transition into complete_in_progress IS the admission: it is
-   * durable before any money is presented, so a crash between here and
-   * settlement leaves a checkout that says, truthfully, that a
-   * completion was accepted and its outcome is not yet known.
+   * Called before a credential is verified, so a checkout that could
+   * never be completed does not cost the facilitator a round trip and
+   * does not cost the buyer a signature. It deliberately does NOT
+   * transition: see bindCompletion for why the public state change has
+   * to come last.
    */
-  async admitCompletion(input: {
-    expectedVersion: number;
+  async precheckCompletion(input: {
+    expectedVersion?: number;
+    nowMs: number;
+  }): Promise<CheckoutAdmission> {
+    const checkout = await this.read();
+    if (!checkout) return { ok: false, reason: "not_found" };
+    /**
+     * `complete_in_progress` WITH A BINDING IS ALLOWED THROUGH, and it
+     * has to be: that is the identical-retry path. A platform whose
+     * original response was lost repeats the same completion, and the
+     * only way to tell it apart from a second, different payment is to
+     * verify the credential and compare identities. Refusing here
+     * would make the recovery unreachable and leave the buyer holding
+     * a signed payment nobody will acknowledge.
+     *
+     * Nothing is admitted on that path — see ucp-admission.ts, which
+     * compares the verified identity against the binding BEFORE going
+     * anywhere near the shared purchase admission, so a different
+     * credential cannot take ownership it will not be allowed to use.
+     */
+    if (checkout.status === "complete_in_progress" && checkout.completion) {
+      return checkout.quote
+        ? { ok: true, checkout }
+        : { ok: false, reason: "wrong_state", checkout };
+    }
+    if (checkout.status !== "ready_for_complete") {
+      return { ok: false, reason: "wrong_state", checkout };
+    }
+    if (input.expectedVersion !== undefined && checkout.version !== input.expectedVersion) {
+      return { ok: false, reason: "stale_version", checkout };
+    }
+    if (isExpired(checkout.expires_at, input.nowMs)) {
+      return { ok: false, reason: "expired", checkout };
+    }
+    if (!checkout.quote) return { ok: false, reason: "wrong_state", checkout };
+    return { ok: true, checkout };
+  }
+
+  /**
+   * THE PUBLIC TRANSITION COMES LAST, AFTER DURABLE OWNERSHIP EXISTS.
+   *
+   * This used to transition into complete_in_progress first and verify
+   * afterwards, and the ordering was wrong in a way worth writing
+   * down. `complete_in_progress` tells a platform that its Complete
+   * was ACCEPTED — that it should stop initiating completions and
+   * watch the checkout instead. Entering it before the store's global
+   * purchase admission has granted ownership of the payment means a
+   * crash in between leaves an authoritative checkout claiming a
+   * completion the purchase system has never heard of, and a platform
+   * correctly waiting for an outcome nobody is working towards.
+   *
+   * So the order is: verify, admit through the shared purchase
+   * ownership, and only then bind the result here. A crash AFTER
+   * admission but BEFORE this write is the recoverable case: the next
+   * identical Complete verifies again, meets the ownership that
+   * already exists, recognises the same payment identity and request
+   * digest, and finishes the binding rather than opening a second
+   * purchase.
+   *
+   * ONE PAYMENT OWNS A COMPLETION. Rebinding with the SAME identity is
+   * that recovery and returns success. Rebinding with a DIFFERENT one
+   * is refused even when it satisfies the same money: a second
+   * credential must not be able to take over an in-flight checkout
+   * merely because it also happens to cover the price.
+   */
+  async bindCompletion(input: {
+    payment_identity: string;
+    request_digest: string;
+    terms_digest: string;
+    checkout_version: number;
+    purchase_token?: string;
     nowMs: number;
   }): Promise<CheckoutAdmission> {
     return this.storage.transaction(async (txn) => {
       const checkout = await txn.get<StoredCheckout>(ROW);
       if (!checkout) return { ok: false, reason: "not_found" } as const;
-      if (checkout.status === "completed" || checkout.status === "complete_in_progress") {
-        // Not a failure the caller should retry past: read the checkout.
+
+      const bound = checkout.completion;
+      if (bound) {
+        return bound.payment_identity === input.payment_identity
+          ? ({ ok: true, checkout } as const)
+          : ({ ok: false, reason: "wrong_state", checkout } as const);
+      }
+      if (checkout.status === "completed" || checkout.status === "canceled") {
         return { ok: false, reason: "wrong_state", checkout } as const;
       }
       if (checkout.status !== "ready_for_complete") {
         return { ok: false, reason: "wrong_state", checkout } as const;
       }
-      if (checkout.version !== input.expectedVersion) {
+      if (checkout.version !== input.checkout_version) {
         return { ok: false, reason: "stale_version", checkout } as const;
       }
-      if (isExpired(checkout.expires_at, input.nowMs)) {
-        return { ok: false, reason: "expired", checkout } as const;
+      if (checkout.quote?.digest !== input.terms_digest) {
+        return { ok: false, reason: "stale_version", checkout } as const;
       }
-      const next: StoredCheckout = { ...checkout, status: "complete_in_progress" };
+      const next: StoredCheckout = {
+        ...checkout,
+        status: "complete_in_progress",
+        completion: {
+          protocol: "ucp",
+          payment_identity: input.payment_identity,
+          request_digest: input.request_digest,
+          terms_digest: input.terms_digest,
+          checkout_version: input.checkout_version,
+          ...(input.purchase_token ? { purchase_token: input.purchase_token } : {}),
+          at: new Date(input.nowMs).toISOString(),
+        },
+      };
       assertTransition(checkout.status, next.status);
       await txn.put(ROW, next);
       return { ok: true, checkout: next } as const;
@@ -241,11 +350,15 @@ export class UcpCheckoutStore {
         return { ok: false, reason: "wrong_state", checkout } as const;
       }
       const at = new Date(input.nowMs).toISOString();
+      if (checkout.completion && checkout.completion.payment_identity !== input.identity) {
+        // A different payment cannot finish a completion this checkout
+        // already bound to another one.
+        return { ok: false, reason: "wrong_state", checkout } as const;
+      }
       const next: StoredCheckout = {
         ...checkout,
         status: "completed",
         order: { ...input.order, created_at: at },
-        admitted: { identity: input.identity, at },
       };
       assertTransition(checkout.status, next.status);
       await txn.put(ROW, next);
@@ -270,7 +383,13 @@ export class UcpCheckoutStore {
       if (checkout.status !== "complete_in_progress") {
         return { ok: false, reason: "wrong_state", checkout } as const;
       }
+      /**
+       * A confirmed non-payment releases the binding too: no money
+       * moved, so the checkout is payable again and the next
+       * credential is free to be a different one.
+       */
       const next: StoredCheckout = { ...checkout, status: "ready_for_complete" };
+      delete next.completion;
       assertTransition(checkout.status, next.status);
       await txn.put(ROW, next);
       return { ok: true, checkout: next } as const;

@@ -142,7 +142,8 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   createUcpCheckout(input: Parameters<UcpCheckoutStore["create"]>[0]) { return this.ucpCheckout.create(input); }
   reviseUcpCheckout(input: Parameters<UcpCheckoutStore["revise"]>[0]) { return this.ucpCheckout.revise(input); }
   quoteUcpCheckout(input: Parameters<UcpCheckoutStore["quote"]>[0]) { return this.ucpCheckout.quote(input); }
-  admitUcpCompletion(input: Parameters<UcpCheckoutStore["admitCompletion"]>[0]) { return this.ucpCheckout.admitCompletion(input); }
+  precheckUcpCompletion(input: Parameters<UcpCheckoutStore["precheckCompletion"]>[0]) { return this.ucpCheckout.precheckCompletion(input); }
+  bindUcpCompletion(input: Parameters<UcpCheckoutStore["bindCompletion"]>[0]) { return this.ucpCheckout.bindCompletion(input); }
   completeUcpCheckout(input: Parameters<UcpCheckoutStore["complete"]>[0]) { return this.ucpCheckout.complete(input); }
   declineUcpCheckout() { return this.ucpCheckout.declined(); }
   cancelUcpCheckout() { return this.ucpCheckout.cancel(); }
