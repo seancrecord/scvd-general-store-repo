@@ -623,6 +623,7 @@ adminRoutes.get("/admin/take", async (c) => {
   ]);
   const books = shelf(allTimeStats, null, "all-time stats", notes);
   const body = renderTakePage({
+    stats: books?.stats,
     take: shelf(take, null, "the take", notes),
     allTime: books
       ? {

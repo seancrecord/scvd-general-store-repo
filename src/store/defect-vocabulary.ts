@@ -35,8 +35,10 @@
  * survives contact with a taxonomy or the taxonomy goes.
  */
 
+export const MPP_CORE_DEFECT = "mpp-core-observable-invalid";
+
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "17";
+export const DEFECT_VOCABULARY_VERSION = "18";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -193,6 +195,12 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "the keeper, closing the half of v15 that was left open: a class marked detectable: \"paid\" whose our_signal named only a research ledger",
     what_changed:
       "advertised-version-unpayable becomes obtainable. Its assertion, falsifier, costs and boundary are UNCHANGED; what moved is our_signal, which named `walkabout ledger: advertised_version_unpayable` — a file in this store's research directory. A class is marked detectable: \"paid\" to tell a buyer the finding exists on the other side of money, and pointing that buyer at our field notes tells them we saw it once. The launch check now reads every refusal on its settle stage rather than only recording the status: it compares the offer the door serves AFTER refusing a correctly signed payment against the offer it served unpaid, on the five material terms alone, and reports advertised-version-unpayable present, not present, or not checked. So the signal a reader joins on is now a stage of a paid instrument they can commission, with the ledger kept beside it because the research reading is still real and still reproducible. The comparator is the corrected one from v15 — scheme, network, payTo, asset, amount, with nonces, expiries and timeouts free to rotate — and it keeps the v15 rule that it never returns a quiet clean: a refusal carrying no readable challenge reads `not checked`, which is a different fact from `not present` and says so in the stage line a buyer reads.",
+  },
+  {
+    version: "18",
+    date: "2026-09-16",
+    at_the_instigation_of: "the keeper, completing separately versioned draft-01 core support",
+    what_changed: "Added an unpaid MPP observable-core finding under mpp-core-v1 and core draft-01. It identifies failed named checks, with unmeasured binding, registry and payment behavior separate. The historical mpp-v1 battery and its assertions remain unchanged.",
   },
 ];
 
@@ -685,6 +693,19 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
    * not a class (a door with no Payment challenge speaks another
    * wire); the four MPP advisories are advisories, not classes.
    */
+  {
+    id: MPP_CORE_DEFECT,
+    title: "An observable MPP core requirement fails",
+    asserts: "The named observable core check passes under mpp-core-v1 and its cited draft-01 source. The field, response condition and failed challenge indexes determine the assertion; unmeasured registry, binding and payment behavior make no assertion.",
+    costs: "A buyer can receive an ambiguous or malformed challenge, select an unsupported credential header, or reuse cacheable or expired payment terms. The observation identifies the failing condition without claiming a payment was attempted.",
+    detectable: "unpaid",
+    our_signal: "mpp_core.checks with state fail, under the core block's cited battery and source digest",
+    falsified_by: "The captured response satisfying the named check under the same battery at the observation time, or evidence that the required field was not captured and the check should have remained unmeasured.",
+    repair_hint: "Correct the named auth parameter, encoding, expiry or response header in the challenge producer, then obtain a fresh read. A passing core subset does not establish method validity or payment delivery.",
+    buyer_hint: "Keep the cited check and observation time. Resolve the reported condition before constructing a credential, and independently validate the chosen method and payment terms; this store's till does not speak MPP.",
+    sourced_by: "Observable requirements of draft-httpauth-payment-01, read from tempoxyz/mpp-specs on 2026-09-15. The aggregation into one named core-subset class is this store's reading rule.",
+    registered: "2026-09-15",
+  },
   {
     id: "mpp-challenge-id",
     title: "MPP challenge with no id",

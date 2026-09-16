@@ -1,3 +1,4 @@
+import { paymentRollupHtml } from "@/pages/payment-rollup";
 import { acceptedNetworks, paymentNetworkGuide } from "@/lib/payment-networks";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
@@ -137,7 +138,8 @@ railsRoutes.get("/rails", async (c) => {
   };
   const payload = {
     what_this_is:
-      "Where this store's organic settlements actually land, by chain, month by month — the same books /stats serves, drawn. Organic only: house traffic is excluded at the till, never filtered afterwards.",
+      "Organic purchases by payment protocol, network and currency, plus the monthly network history, from the same books /stats serves. House purchases excluded.",
+    payments: stats.payments,
     rails_accepted: acceptedNetworks(c.env),
     all_time: rail ?? null,
     by_month_from_the_till: months,
@@ -181,9 +183,9 @@ railsRoutes.get("/rails", async (c) => {
     renderSimplePage({
       title: "Where the money settles",
       description:
-        "Organic x402 settlements at this store by chain — by recorded settlement network — month by month, drawn from the same live books as /stats. House traffic excluded at the till. With the method and the honest gaps named.",
+        "Purchases at this store by payment protocol, network and currency, with a monthly network history from the same live books as /stats. House traffic excluded at the till. With the method and the honest gaps named.",
       path: "/rails",
-      bodyHtml: `<section>
+      bodyHtml: `${stats.payments ? paymentRollupHtml(stats.payments) : ""}<section>
         <p class="menu-desc"><strong>One till.</strong> ${escapeHtml(paymentNetworkGuide(c.env))} Same prices on every offered network; the buyer chooses. This page is where the money has actually landed, drawn live from the same books as <a href="/stats">/stats</a>.</p>
         <p class="menu-meta">Organic settlements only — the proprietors' own test traffic is excluded at the till, structurally, not filtered afterwards. The count is small and shown at its true size; it grows on its own or not at all.</p>
       </section>
@@ -220,23 +222,31 @@ railsRoutes.get("/rails", async (c) => {
       ${jsonLdScript({
         "@context": "https://schema.org",
         "@type": "Dataset",
-        name: "Where the money settles — organic x402 settlements by chain at scvd.store",
+        name: "Where the money settles — purchases by protocol, network and currency at scvd.store",
         description:
-          "Monthly counts of organic x402 settlements at scvd.store by settlement chain (by recorded settlement network), derived live from the store's public books with house traffic excluded at the till.",
+          "Organic purchases at scvd.store grouped independently by protocol, network and currency, with a monthly network history. Derived from the public books; house purchases excluded.",
         url: `${base}/rails`,
         license: "https://creativecommons.org/licenses/by/4.0/",
         isAccessibleForFree: true,
         creator: organizationRef(base),
-        ...(rail
-          ? {
-              variableMeasured: RAIL_SERIES.map(series => ({
-                "@type": "PropertyValue",
-                name: `organic settlements on ${series.label} (all time)`,
-                value: rail[series.key] ?? 0,
-              })),
-              dateModified: rail.computed_at,
-            }
-          : {}),
+        variableMeasured: [
+          ...(stats.payments?.by_protocol ?? []).map(row => ({
+            "@type": "PropertyValue",
+            name: `organic purchases via ${row.name} (all time)`,
+            value: row.purchases,
+          })),
+          ...(stats.payments?.by_currency ?? []).map(row => ({
+            "@type": "PropertyValue",
+            name: `organic purchases paid in ${row.name} (all time)`,
+            value: row.purchases,
+          })),
+          ...(rail ? RAIL_SERIES.map(series => ({
+            "@type": "PropertyValue",
+            name: `organic settlements on ${series.label} (all time)`,
+            value: rail[series.key] ?? 0,
+          })) : []),
+        ],
+        dateModified: stats.computed_at,
         isBasedOn: `${base}/stats`,
       })}`,
     }),
