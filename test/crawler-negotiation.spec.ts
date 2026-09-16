@@ -26,9 +26,38 @@ const BASE = "https://scvd.store";
  */
 
 /** Rooms that negotiate but serve no markdown: every named crawler gets the page. */
-const NEGOTIATED_PAGE_ONLY = ["/conformance", "/what"];
-/** Rooms with a real markdown twin: a reader gets it, an indexer gets the page. */
-const NEGOTIATED_WITH_MARKDOWN = ["/menu/hello", "/menu/settlement_attestation"];
+const NEGOTIATED_PAGE_ONLY = ["/what"];
+/**
+ * Rooms with a real markdown twin: a reader gets it, an indexer gets
+ * the page.
+ *
+ * /conformance MOVED HERE FROM THE LIST ABOVE ON 2026-09-15, and the
+ * eight landing pages beside it are new to this test the same day.
+ * Each of them used to answer HTML or JSON and nothing else, so a
+ * reader stating no preference got the page for the honest reason
+ * that no markdown existed; lib/json-markdown.ts renders all nine
+ * from the document their JSON already serves, so the premise of
+ * that line changed rather than the rule.
+ *
+ * The rule itself is what the second half of this test guards, and
+ * it is the whole reason the split in lib/crawlers.ts exists: an
+ * INDEXER still gets the page AND its JSON-LD on every one of these.
+ * A markdown twin that cost the answer engines their structured data
+ * would be a trade, and this asserts it was not one.
+ */
+const NEGOTIATED_WITH_MARKDOWN = [
+  "/menu/hello",
+  "/menu/settlement_attestation",
+  "/conformance",
+  "/corpus",
+  "/doors",
+  "/criteria",
+  "/scorers",
+  "/bounties",
+  "/rights",
+  "/notice",
+  "/corrections",
+];
 const NEGOTIATED = [...NEGOTIATED_PAGE_ONLY, ...NEGOTIATED_WITH_MARKDOWN];
 
 async function fetchAs(path: string, userAgent?: string, accept?: string) {

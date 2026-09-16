@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { CENSUS_FINDING, CENSUS_WHY_IT_MATTERS } from "@/store/copy/census";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { deriveWalletFacts, type WalletFacts } from "@/services/operator-facts";
 import { listCorpus } from "@/services/corpus";
@@ -163,6 +165,26 @@ function landingHtml(base: string, facts: WalletFacts | null): string {
 
 corpusLandingRoutes.get("/corpus", async (c) => {
   const base = c.env.STORE_BASE_URL;
+  /*
+   * MARKDOWN FIRST, because it is the narrowest ask of the three this
+   * route answers. A caller that named text/markdown gets markdown; a
+   * caller that named HTML or JSON is decided below exactly as before.
+   * The one behaviour that changes for a silent caller is a named
+   * markdown reader, which now gets here what it already got from the
+   * storefront — lib/crawlers.ts draws that line, and this route has
+   * no business drawing a different one.
+   */
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/corpus",
+      title: "The corpus",
+      description:
+        "Weekly signed observations of the x402 ecosystem — which listed hosts answered and what a conformance probe saw. Hash-chained, ed25519-signed.",
+      dataUrl: `${base}/corpus.json`,
+      document: landingJson(base) as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     /*
      * The same derivation /corpus/wallet-facts.json runs, so the page

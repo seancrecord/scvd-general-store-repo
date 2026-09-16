@@ -1,3 +1,5 @@
+import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
+import { markdownCell } from "@/lib/json-markdown";
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { EVIDENCE_DIGEST_DATED, readEvidence } from "@/services/corpus-evidence";
 import { mppCensusLine } from "@/services/mpp-census";
@@ -363,6 +365,166 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
 });
 
 /**
+ * ONE HOST'S HISTORY AS MARKDOWN, from the same rows the page renders.
+ *
+ * Types are derived from the functions that produce the values rather
+ * than restated, so a change to the tier shape or the history shape
+ * is a compile error here instead of a silently stale document.
+ */
+type HostMarkdownInput = {
+  base: string;
+  host: string;
+  title: string;
+  description: string;
+  tier: ReturnType<typeof deriveTier>;
+  history: Awaited<ReturnType<typeof effectivePassportObservation>>["history"];
+  gone: ReturnType<typeof delisting>;
+};
+
+function hostMarkdown({ base, host, title, description, tier, history, gone }: HostMarkdownInput): string {
+  const front = [
+    "---",
+    `title: ${JSON.stringify(title)}`,
+    `description: ${JSON.stringify(description)}`,
+    `canonical: "${base}/corpus/host/${host}"`,
+    `url: "${base}/corpus/host/${host}"`,
+    `data: "${base}/corpus/host/${host}.json"`,
+    `subject: "${host}"`,
+    `license: "https://creativecommons.org/licenses/by/4.0/"`,
+    ...(history.last_observed ? [`last_observed: "${history.last_observed}"`] : []),
+    ...(history.first_observed ? [`first_observed: "${history.first_observed}"`] : []),
+    "---",
+  ].join("\n");
+
+  if (gone) {
+    return `${front}
+
+# ${title}
+
+${description}
+
+Reason recorded: ${gone.reason}.
+
+The aggregates at ${base}/corpus and ${base}/doors are unchanged; the
+signed rows are still at ${base}/corpus/host/${host}.json. Only this
+page is withdrawn.
+`;
+  }
+
+  const timeline = history.timeline
+    .map((round) => {
+      const protocols = round.protocols_spoken
+        ? round.protocols_spoken.join(", ") || "neither observed"
+        : round.mpp_read_error
+          ? "not measured: reader failed"
+          : "not measured";
+      return `| ${markdownCell(round.week)} | ${round.listed ? "listed" : "not listed"} | ${
+        round.probed ? "probed" : markdownCell(round.gap ?? "not probed")
+      } | \`${markdownCell(round.verdict ?? "—")}\` | ${markdownCell(protocols)}${
+        round.mpp ? ` · \`${markdownCell(round.mpp.battery)}\`` : ""
+      } | ${markdownCell((round.failed ?? []).join(", ") || "—")} | ${markdownCell(round.entry_url)} |`;
+    })
+    .join("\n");
+
+  const gaps =
+    Object.entries(history.gaps_by_reason)
+      .filter(([, count]) => count > 0)
+      .map(([reason, count]) => `${reason} ${count}`)
+      .join(", ") || "none";
+
+  const latestProbed = [...history.timeline].reverse().find((round) => round.probed);
+  const citeSection = latestProbed
+    ? (() => {
+        const cite = citeRow(base, { host, ...latestProbed });
+        return `
+## Cite this row
+
+${cite.text}
+
+\`\`\`json
+${JSON.stringify(cite.json, null, 2)}
+\`\`\`
+
+${CITE_HOW} Any earlier row cites the same way from its entry link in
+the table above. How a scorer consumes this: ${base}/scorers.
+`;
+      })()
+    : "";
+
+  const paymentSection = history.payment_address
+    ? `
+## Payment address
+
+${JSON.stringify(history.payment_address)}
+${
+  history.pay_to
+    ? `
+Where it asks to be paid, as digests: ${
+        history.pay_to.digests.length === 1 ? "one address" : `${history.pay_to.digests.length} addresses`
+      }, unchanged since ${history.pay_to.unchanged_since.week} (snapshot ${history.pay_to.unchanged_since.sequence}), last observed ${history.pay_to.observed.week}; captured in ${history.pay_to.rounds_captured} of ${history.pay_to.rounds_probed} probed rounds; ${
+        history.pay_to.changes.length === 0
+          ? "no change on record"
+          : `changed in ${history.pay_to.changes.map((change) => change.week).join(", ")}`
+      }. The digests and how to match one are in the JSON twin.
+`
+    : ""
+}`
+    : "";
+
+  return `${front}
+
+# ${title}
+
+**${tier.line}** — ${tier.rule}. The rule and every tier are at
+${base}/criteria. ${NEVER_A_RANKING_SENTENCE}
+
+Latest observation: \`${tier.latest.verdict ?? "none"}\`${
+    tier.latest.observed_at ? ` on ${tier.latest.observed_at}` : ""
+  }. Rounds since first sighting: ${history.rounds_since_first_sighting}; probed: ${history.rounds_probed}; missed: ${history.rounds_gapped}${
+    history.observation_coverage_pct !== null
+      ? ` (our coverage of this host: ${history.observation_coverage_pct}%)`
+      : ""
+  }.${
+    tier.coverage_suspect
+      ? " Our own coverage was suspect somewhere in the window, which the tier already reflects."
+      : ""
+  }
+
+## Every round, including the ones we missed
+
+| Week | Listed | Probed | x402 verdict | Protocols observed | Failed checks | Entry |
+| --- | --- | --- | --- | --- | --- | --- |
+${timeline}
+
+Protocols are read from one unpaid response under the named battery;
+this store's till does not speak MPP. A missing reading means not
+measured.
+
+A missed week is a fact about us, not about the door. Gaps by reason:
+${gaps}.
+${paymentSection}
+## What this cannot see
+
+${history.what_this_cannot_see.map((line) => `- ${line}`).join("\n")}
+${citeSection}
+## Check it yourself
+
+The free preflight runs the same battery on any door right now:
+
+\`\`\`
+POST ${base}/api/preflight/v1
+{"url": "https://${host}/…"}
+\`\`\`
+
+The signed rows behind this page are at ${base}/corpus/host/${host}.json;
+every entry links the snapshot it came from, and the chain is at
+${base}/corpus.json. If you operate this host and want the page
+withdrawn, the notice desk is at ${base}/notice. Corrections:
+${base}/corrections.
+`;
+}
+
+/**
  * GET /corpus/host/{host} — the same history as the JSON, as a page
  * (2026-09-03, the AEO plan's PR 3).
  *
@@ -409,6 +571,34 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   const description = gone
     ? `${host} asked for its page to come down on ${gone.on}. The signed corpus rows stand and the aggregates still count it; only this page is withdrawn.`
     : `What scvd.store's weekly ward round observed about ${host}: ${tier.line}, derived from ${history.rounds_probed} probed round${history.rounds_probed === 1 ? "" : "s"} since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking.`;
+  /**
+   * THE MARKDOWN TWIN OF THIS PAGE (2026-09-15).
+   *
+   * This route is the store's widest: one page per host the chain has
+   * ever met, ~2,900 of them and growing a sweep at a time. Every one
+   * of them spoke HTML and nothing else, which made it the largest
+   * block of content here with no markdown representation — and the
+   * `.md` suffix handler in index.ts is DERIVED, so /corpus/host/x.md
+   * 404'd for the honest reason that no markdown existed to serve. An
+   * outside scan sampled the suffix, found the gap, and graded the
+   * fallback partial; the grade was right and the sample was three
+   * URLs wide against a few thousand missing.
+   *
+   * Rendered from the same `history`, `tier` and `gone` the HTML
+   * renders from, above the point where the HTML rows are built, so a
+   * markdown reader never pays for table markup it will not receive
+   * and the two representations cannot drift into disagreeing.
+   *
+   * What it does NOT carry is the JSON-LD. A Dataset node is for a
+   * parser reading HTML; a markdown reader gets the `.json` twin
+   * named in the front matter instead, which is the same facts in the
+   * form that reader can actually use.
+   */
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return new Response(hostMarkdown({ base, host, title, description, tier, history, gone }), {
+      headers: { "Content-Type": MARKDOWN_MEDIA_TYPE, Vary: VARY_ACCEPT },
+    });
+  }
   const rows = history.timeline
     .map(
       (round) => `<tr>
