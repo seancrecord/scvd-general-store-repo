@@ -3,6 +3,14 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.18.0 — 2026-09-16
+
+Vocabulary v18 adds `mpp-core-observable-invalid` for failed named checks
+in the separately versioned draft-01 observable-core reading. Unmeasured
+registry, binding and payment behavior remain explicit gaps. Historical
+MPP battery assertions, discovery comparison and v17's paid launch-check
+signal keep their meaning. No registry publication is performed here.
+
 ## 0.17.0 — 2026-09-15
 
 Vocabulary v17: `advertised-version-unpayable` becomes obtainable.

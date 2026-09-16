@@ -8,6 +8,8 @@ import { PENNY_PAGE_USDC,
   PAYMENT_VARY,
 } from "@/lib/payments";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   findAlmanacEntry,
@@ -55,6 +57,21 @@ almanacRoutes.get("/almanac", async (c) => {
   // Seed pages and keeper pages, merged; a keeper page of the same slug
   // wins, so the office can correct an entry without a deploy.
   const entries = await listAlmanacEntries(c.env);
+  /*
+   * A thunk rather than a const: `page` is computed further down, and
+   * the index is only ever needed once a caller has chosen a dialect.
+   * Both dialects render from this one document.
+   */
+  const indexPayload = () => ({
+    checkout: publicationCheckout(base),
+    ...(c.req.query("view") === "compact" ? page?.pagination : {}),
+    almanac:
+      "The Keeper's Almanac, a serialized journal. Dated entries, newest first, each page individually purchasable.",
+    price_usdc: PENNY_PAGE_USDC,
+    how_to_buy:
+      "GET any entry url; answer the 402 with a signed penny (x402 v2). The page arrives as markdown.",
+    entries: c.req.query("view") === "compact" ? page!.rows : entries.map((entry) => indexEntry(entry, base)),
+  });
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const entriesHtml = entries.map(
       (entry) => `<div class="menu-item">
@@ -82,16 +99,17 @@ almanacRoutes.get("/almanac", async (c) => {
   }
   const page = publicationPage(entries.map(entry => indexEntry(entry, base)), `${base}/almanac`, c.req.query("page"));
   if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
-  return c.json({
-    checkout: publicationCheckout(base),
-    ...(c.req.query("view") === "compact" ? page?.pagination : {}),
-    almanac:
-      "The Keeper's Almanac, a serialized journal. Dated entries, newest first, each page individually purchasable.",
-    price_usdc: PENNY_PAGE_USDC,
-    how_to_buy:
-      "GET any entry url; answer the 402 with a signed penny (x402 v2). The page arrives as markdown.",
-    entries: c.req.query("view") === "compact" ? page!.rows : entries.map((entry) => indexEntry(entry, base)),
-  });
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/almanac",
+      title: "The Keeper's Almanac",
+      description:
+        "A serialized journal. Dated entries, newest first, each page individually purchasable for a penny. The index is free.",
+      document: indexPayload() as unknown as Record<string, unknown>,
+    });
+  }
+  return c.json(indexPayload());
 });
 
 /** Paid pages never sit in a shared cache. */

@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { readVisitorsRegister } from "@/lib/register";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
 
@@ -16,6 +18,42 @@ export const visitorsRoutes = new Hono<HonoEnv>();
 
 visitorsRoutes.get("/visitors", async (c) => {
   const register = await readVisitorsRegister(c.env);
+
+  /*
+
+   * Hoisted so the markdown twin below renders the same
+
+   * object the JSON serves rather than a second copy.
+
+   */
+
+  const pagePayload = {
+    title: "The visitors' register",
+    honest_limit: register.honest_limit,
+    signers: register.signers,
+    named_cards: register.bearers,
+    // No total, deliberately. See honest_limit.
+    guestbook: `${c.env.STORE_BASE_URL}/api/guestbook`,
+    stamp: `${c.env.STORE_BASE_URL}/api/stamp`,
+  };
+
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+
+    return jsonDocumentMarkdownResponse({
+
+      base: c.env.STORE_BASE_URL,
+
+      path: "/visitors",
+
+      title: "The visitors' register",
+
+      description: "Everybody who chose to leave a name here — signed guestbook entries and named Countermark bearers. Volunteered, never inferred.",
+
+      document: pagePayload as unknown as Record<string, unknown>,
+
+    });
+
+  }
 
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const signers =
@@ -68,13 +106,5 @@ visitorsRoutes.get("/visitors", async (c) => {
     );
   }
 
-  return c.json({
-    title: "The visitors' register",
-    honest_limit: register.honest_limit,
-    signers: register.signers,
-    named_cards: register.bearers,
-    // No total, deliberately. See honest_limit.
-    guestbook: `${c.env.STORE_BASE_URL}/api/guestbook`,
-    stamp: `${c.env.STORE_BASE_URL}/api/stamp`,
-  });
+  return c.json(pagePayload);
 });

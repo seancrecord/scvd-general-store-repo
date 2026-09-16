@@ -2,6 +2,8 @@ import { deriveTier, tierInputFromHistory, type TierReading } from "@/services/p
 import { PASSPORT_PROTOCOL_RULE } from "@/services/passport-protocol";
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { PASSPORT_CSS, passportCard, refusalCard } from "@/pages/passport-card";
 import {
@@ -94,8 +96,11 @@ profilesRoutes.get("/profiles", async (c) => {
   const listed = views.filter(
     (v) => v.in_term && v.latest_verdict === "ready",
   );
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
       what: `A hosted trust profile is a standing page an operator commissions about their own endpoint: this store's public evidence — the live passport, the chip, the signed history — aggregated at one URL for ${PROFILE_TERM_DAYS} days per purchase, renewable. Never a verdict: the page derives from the same corpus everyone reads free, and a host that breaks mid-term shows broken on its own page.`,
       how: `Buy trust_profile at ${base}/api/buy/trust_profile?url={your endpoint}. The index lists only in-term hosts whose latest evidence is on the ready side — names on the ready side, everywhere.`,
       protocol_rule: PASSPORT_PROTOCOL_RULE,
@@ -111,7 +116,18 @@ profilesRoutes.get("/profiles", async (c) => {
         tier_line: v.tier.line,
         last_observed: v.last_observed,
       })),
+    };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/profiles",
+      title: "Hosted trust profiles",
+      description: `Standing evidence pages operators commission about their own endpoints. ${PROFILE_TERM_DAYS} days per purchase, renewable; index lists in-term ready-side hosts only.`,
+      document: pagePayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(pagePayload);
   }
   const rows = listed
     .map(

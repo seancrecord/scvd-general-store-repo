@@ -64,10 +64,20 @@ function document(base: string) {
   };
 }
 
-function classMarkdown(entry: DefectClass): string {
+/**
+ * ONE CLASS'S FIELDS AS MARKDOWN, shared by the index and the class's
+ * own page (2026-09-16).
+ *
+ * `withHeading` is the only thing the two callers differ on: in the
+ * index each class is an h3 in a list, and on its own page the h1
+ * above has already named it, so repeating the name would stutter.
+ * Everything below the heading is one renderer on purpose — a defect
+ * class gains fields as the vocabulary grows, and two copies of this
+ * list is two places to forget.
+ */
+function classMarkdown(entry: DefectClass, withHeading = true): string {
   const lines = [
-    `### \`${entry.id}\` — ${entry.title}`,
-    "",
+    ...(withHeading ? [`### \`${entry.id}\` — ${entry.title}`, ""] : []),
     `**Asserts:** ${entry.asserts}`,
     "",
     `**Costs:** ${entry.costs}`,
@@ -108,7 +118,7 @@ function markdown(base: string): string {
     "",
     "---",
     "",
-    ...DEFECT_CLASSES.map(classMarkdown).flatMap((block) => [block, ""]),
+    ...DEFECT_CLASSES.map((entry) => classMarkdown(entry)).flatMap((block) => [block, ""]),
     "## Evidence labels — a separate register",
     "",
     doc.what_evidence_labels_are,
@@ -209,6 +219,49 @@ function html(base: string): string {
  * JSON carries — derived from DEFECT_CLASSES, so a class added to the
  * vocabulary has a page the same commit.
  */
+/**
+ * ONE DEFECT CLASS AS ITS OWN MARKDOWN PAGE (2026-09-16).
+ *
+ * /defects itself has spoken markdown since the vocabulary shipped;
+ * the twenty-nine pages BENEATH it never did, so a reader following
+ * the `.md` convention from the index hit a 404 on every class the
+ * index names. The index and its members now answer the same way,
+ * from the same renderer.
+ */
+function classPageMarkdown(base: string, entry: DefectClass, description: string): string {
+  const caveat =
+    entry.id.includes("replay") || entry.id.includes("nonce") || entry.id.includes("re-challenges")
+      ? [LAUNCH_REPLAY_MAPPING_LIMIT, ""]
+      : [];
+  return [
+    "---",
+    `title: ${JSON.stringify(`${entry.title} — x402 defect class ${entry.id}`)}`,
+    `description: ${JSON.stringify(description)}`,
+    `canonical: "${base}/defects/${entry.id}"`,
+    `url: "${base}/defects/${entry.id}"`,
+    `term_code: "${entry.id}"`,
+    `defined_in: "${base}/defects"`,
+    `data: "${base}/defects.json"`,
+    `vocabulary_version: "${DEFECT_VOCABULARY_VERSION}"`,
+    `license: "https://creativecommons.org/licenses/by/4.0/"`,
+    "---",
+    "",
+    `# ${entry.title}`,
+    "",
+    `\`${entry.id}\` — an x402 defect class.`,
+    "",
+    ...caveat,
+    classMarkdown(entry, false),
+    "",
+    "---",
+    "",
+    `Vocabulary v${DEFECT_VOCABULARY_VERSION}, CC BY 4.0. Every class: ${base}/defects. Machine-readable, with falsifiers and cross-instrument mappings: ${base}/defects.json.`,
+    "",
+    "A class describes a property of one endpoint at one moment and never accumulates into a judgment on an operator.",
+    "",
+  ].join("\n");
+}
+
 defectRoutes.get("/defects/:id{[a-z0-9-]+}", (c) => {
   const base = c.env.STORE_BASE_URL;
   const id = c.req.param("id");
@@ -220,6 +273,11 @@ defectRoutes.get("/defects/:id{[a-z0-9-]+}", (c) => {
     );
   }
   const description = `${entry.title} (${entry.id}), an x402 defect class: ${entry.asserts} Detectable by an ${entry.detectable} probe. ${entry.costs}`;
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return new Response(classPageMarkdown(base, entry, description), {
+      headers: { "Content-Type": MARKDOWN_MEDIA_TYPE, Vary: VARY_ACCEPT },
+    });
+  }
   return c.html(
     renderSimplePage({
       title: `${entry.title} — x402 defect class ${entry.id}`,

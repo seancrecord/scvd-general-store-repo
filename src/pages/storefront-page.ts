@@ -138,8 +138,8 @@ export interface StorefrontData {
   /** Live books, for the structured data. Absent rather than stale. */
   stats?: StoreStats | null;
   /**
-   * C2, at shopfront length: the organic count and the rail it came in
-   * on, computed live and never hand-edited. The four-sentence version
+   * C2, at shopfront length: the organic count and payment protocol,
+   * computed live and never hand-edited. The longer version
    * still exists — it is what /stats, /skill.md and the catalog print,
    * and it is one click away from here.
    */
@@ -1110,7 +1110,7 @@ ${webmcpOriginTrialTags()}
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${COPY.intentLine}</p>
       ${data.ledgerLine ? `<p class="track-record">${escapeHtml(data.ledgerLine)}</p>` : ""}
-      <p class="pay-rails">${escapeHtml(paymentMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>.</p>
+      <p class="pay-rails">${escapeHtml(paymentMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>. <a href="/rails">Payment breakdown</a>.</p>
     </header>
 
     <div class="gauges">

@@ -1,4 +1,5 @@
 import { getMenuItem } from "@/store/menu";
+import { readMppCore, type MppCoreBlock } from "@/services/mpp-core";
 import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
 import { type RemediationRow, remediationRows } from "@/services/remediation";
@@ -659,6 +660,8 @@ export interface PreflightReport {
   protocols_spoken: ("x402" | "mpp")[];
   /** The MPP battery's own block: spoken or not, its checks when spoken, its advisories, what it cannot tell you. */
   mpp: MppBlock;
+  /** Additive observable draft-01 core reading; absent in older stored reports. */
+  mpp_core?: MppCoreBlock;
 }
 
 function report(
@@ -676,6 +679,7 @@ function report(
     };
     /** The MPP battery's reading of the same bytes; absent on an unreachable probe. */
     mpp?: MppBlock & { protocols_spoken: ("x402" | "mpp")[] };
+    mppCore?: MppCoreBlock;
   } = {},
 ): PreflightReport {
   const battery = options.battery ?? PREFLIGHT_VERSION;
@@ -696,6 +700,7 @@ function report(
     mpp: options.mpp
       ? (({ protocols_spoken: _spoken, ...block }) => block)(options.mpp)
       : runMppChecks({ headers: { get: () => null }, url: "" }),
+    mpp_core: options.mppCore ?? readMppCore({ status: null, headers: { get: () => null }, url: "", now: new Date() }),
     single_probe_note:
       "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.",
     what_this_cannot_tell_you: [
@@ -2079,6 +2084,8 @@ export async function preflightUrl(
    * extra contact; nothing here touches the x402 verdict.
    */
   const mpp = runMppChecks({ headers: outcome.response.headers, url: url.toString(), bodyText: outcome.body });
+  const mppCore = readMppCore({ status: outcome.response.status, headers: outcome.response.headers,
+    url: url.toString(), bodyText: outcome.body, bodyOverLimit: outcome.bodyOverLimit, now: new Date() });
   /*
    * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
    *
@@ -2186,6 +2193,7 @@ export async function preflightUrl(
     body: report(base, servedVerdict, servedChecks, advisories, {
       battery: asked,
       mpp,
+      mppCore,
       alsoUnder: {
         version: otherVersion,
         verdict: otherVerdict,

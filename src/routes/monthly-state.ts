@@ -1,5 +1,7 @@
 import { Hono, type Context } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { citeBlock, citeHtml } from "@/lib/cite";
 import { derivedFromCorpus } from "@/services/corpus-list";
@@ -102,7 +104,18 @@ async function serveMonth(c: Context<HonoEnv>, month: string | undefined, stable
   }
   const monthCite = { base, what: "state of x402, month", which: state.month, observed_at: state.closing.week, url: `${base}/corpus/month/${state.month}` };
   if (!html) {
-    return c.json({ ...state, months_held: known_months, corrections: CORRECTIONS_POINTER, ...citeBlock(monthCite) });
+    const payload = { ...state, months_held: known_months, corrections: CORRECTIONS_POINTER, ...citeBlock(monthCite) };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: stable && month ? `/corpus/month/${month}` : "/corpus/month",
+      title: `The month's state — ${state.month}`,
+      description: `What this store's weekly rounds observed across ${state.month}, derived from the signed chain: the doors, the movement, and the weeks the instrument missed.`,
+      dataUrl: `${base}/corpus.json`,
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
+  return c.json(payload);
   }
   const path = stable ? `/corpus/month/${state.month}` : "/corpus/month";
   return c.html(

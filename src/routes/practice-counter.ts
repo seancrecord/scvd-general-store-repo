@@ -9,6 +9,8 @@ import {
 } from "@/lib/idempotency";
 import { escapeHtml } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { firstPartyScriptCsp } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
@@ -163,6 +165,105 @@ practiceCounterRoutes.get("/try", (c) => {
   const low = cheapest();
   const flow = steps(base, low?.id ?? "hello", c.env);
 
+  /*
+   * Hoisted so the markdown twin renders the same object the JSON
+   * serves rather than a second copy.
+   */
+  const counterPayload = {
+    title: COPY.title,
+    summary: COPY.standfirst,
+    browser_checkout: {
+      wallet_limit: TILL_WALLET_LIMIT,
+      signing: 'The wallet signs; WebMCP submits an already-signed payment from a compatible external client.',
+    },
+    protocol: {
+      name: STORE_METADATA.protocol,
+      version: "2",
+      network: "eip155:8453",
+      networks: acceptedNetworks(c.env),
+      currency: STORE_METADATA.currency,
+      sandbox: false,
+      note: "No test mode. The same code path serves everyone, which is what makes it worth testing against.",
+    },
+    cheapest_settlement: low
+      ? {
+          item_id: low.id,
+          price_usdc: low.price_usdc,
+          buy: `${base}/api/buy/${low.id}?src=try`,
+        }
+      : undefined,
+    flow,
+    /**
+     * BESIDE THE FLOW, not in a footnote. An agent reading this
+     * payload top to bottom meets the guard immediately after the
+     * three steps it is a guard on — which is before it writes the
+     * loop, and that ordering is the whole point of the block.
+     */
+    retrying_safely: {
+      head: COPY.retryHead,
+      notes: COPY.retry,
+      header: "Idempotency-Key",
+      mcp_meta_key: "x402/idempotency-key",
+      where_the_key_comes_from:
+        "The idempotency.suggested_key field in the 402 body. Nothing to fetch first.",
+      suggested_key_window_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
+      own_key_window_seconds: IDEMPOTENCY_TTL_SECONDS,
+    },
+    cheap_door: shelf.map((row) => ({
+      ...row,
+      buy: `${base}/api/buy/${row.id}?src=try`,
+    })),
+    verification: {
+      verify_url_template: `${base}/api/verify/{cert_id}`,
+      sample_artifact_id: SAMPLE_ARTIFACT_ID,
+      sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
+      signing_key: `${base}/.well-known/scvd-signing-key`,
+      listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
+      openapi: `${base}/openapi.json`,
+      x402_discovery: `${base}/.well-known/x402.json`,
+    },
+    mcp: {
+      endpoint: `${base}/mcp`,
+      transport: "streamable-http",
+      free_methods: ["initialize", "tools/list"],
+      note: COPY.mcp,
+    },
+    hand_rolling: HAND_ROLLING,
+    when_its_your_till: {
+      head: COPY.yourTillHead,
+      notes: COPY.yourTill,
+      preflight: `${base}/api/preflight/v1`,
+      conformance_desk: `${base}/api/conformance/v1`,
+      launch_check: `${base}/menu/launch_check`,
+      landing: `${base}/conformance`,
+    },
+    when_you_are_stuck: {
+      head: COPY.stuckHead,
+      notes: COPY.stuck,
+      item_id: "settlement_attestation",
+      buy: `${base}/api/buy/settlement_attestation?tx_hash={0x…}&src=try`,
+    },
+    when_your_context_ends: {
+      head: COPY.anchorHead,
+      notes: COPY.anchor,
+      what_survives: WHAT_SURVIVES,
+      before_you_file: ANCHOR_CHECKLIST,
+      item_id: "context_anchor",
+      buy: `${base}/api/buy/context_anchor?summary={…}&src=try`,
+    },
+    honest_notes: COPY.honest,
+    refund_policy: STORE_METADATA.refund_policy,
+    mailbox: `${base}/api/letter`,
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/try",
+      title: COPY.title,
+      description: COPY.standfirst,
+      document: counterPayload as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const list = (lines: readonly string[]): string =>
       lines.map((line) => `<p class="menu-desc">${escapeHtml(line)}</p>`).join("\n");
@@ -360,92 +461,7 @@ practiceCounterRoutes.get("/try", (c) => {
     );
   }
 
-  return c.json({
-    title: COPY.title,
-    summary: COPY.standfirst,
-    browser_checkout: {
-      wallet_limit: TILL_WALLET_LIMIT,
-      signing: 'The wallet signs; WebMCP submits an already-signed payment from a compatible external client.',
-    },
-    protocol: {
-      name: STORE_METADATA.protocol,
-      version: "2",
-      network: "eip155:8453",
-      networks: acceptedNetworks(c.env),
-      currency: STORE_METADATA.currency,
-      sandbox: false,
-      note: "No test mode. The same code path serves everyone, which is what makes it worth testing against.",
-    },
-    cheapest_settlement: low
-      ? {
-          item_id: low.id,
-          price_usdc: low.price_usdc,
-          buy: `${base}/api/buy/${low.id}?src=try`,
-        }
-      : undefined,
-    flow,
-    /**
-     * BESIDE THE FLOW, not in a footnote. An agent reading this
-     * payload top to bottom meets the guard immediately after the
-     * three steps it is a guard on — which is before it writes the
-     * loop, and that ordering is the whole point of the block.
-     */
-    retrying_safely: {
-      head: COPY.retryHead,
-      notes: COPY.retry,
-      header: "Idempotency-Key",
-      mcp_meta_key: "x402/idempotency-key",
-      where_the_key_comes_from:
-        "The idempotency.suggested_key field in the 402 body. Nothing to fetch first.",
-      suggested_key_window_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
-      own_key_window_seconds: IDEMPOTENCY_TTL_SECONDS,
-    },
-    cheap_door: shelf.map((row) => ({
-      ...row,
-      buy: `${base}/api/buy/${row.id}?src=try`,
-    })),
-    verification: {
-      verify_url_template: `${base}/api/verify/{cert_id}`,
-      sample_artifact_id: SAMPLE_ARTIFACT_ID,
-      sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
-      signing_key: `${base}/.well-known/scvd-signing-key`,
-      listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
-      openapi: `${base}/openapi.json`,
-      x402_discovery: `${base}/.well-known/x402.json`,
-    },
-    mcp: {
-      endpoint: `${base}/mcp`,
-      transport: "streamable-http",
-      free_methods: ["initialize", "tools/list"],
-      note: COPY.mcp,
-    },
-    hand_rolling: HAND_ROLLING,
-    when_its_your_till: {
-      head: COPY.yourTillHead,
-      notes: COPY.yourTill,
-      preflight: `${base}/api/preflight/v1`,
-      conformance_desk: `${base}/api/conformance/v1`,
-      launch_check: `${base}/menu/launch_check`,
-      landing: `${base}/conformance`,
-    },
-    when_you_are_stuck: {
-      head: COPY.stuckHead,
-      notes: COPY.stuck,
-      item_id: "settlement_attestation",
-      buy: `${base}/api/buy/settlement_attestation?tx_hash={0x…}&src=try`,
-    },
-    when_your_context_ends: {
-      head: COPY.anchorHead,
-      notes: COPY.anchor,
-      what_survives: WHAT_SURVIVES,
-      before_you_file: ANCHOR_CHECKLIST,
-      item_id: "context_anchor",
-      buy: `${base}/api/buy/context_anchor?summary={…}&src=try`,
-    },
-    honest_notes: COPY.honest,
-    refund_policy: STORE_METADATA.refund_policy,
-    mailbox: `${base}/api/letter`,
-  });
+  return c.json(counterPayload);
 });
 
 /** The name a search engine is likelier to carry. Same room. */
