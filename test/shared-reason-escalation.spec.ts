@@ -221,12 +221,29 @@ describe("x402lint is machinery", () => {
   });
 });
 
-/** The one row in the window that reached the facilitator at all. */
+/**
+ * The one row in the window that reached the facilitator at all.
+ *
+ * The first version of this reading told the keeper to "read the payer
+ * off the row before anything else" — and a decline row carried no
+ * payer, because gateSignals never opened the payload. Corrected
+ * 2026-09-16 alongside the fix that books one: a payer equal to any
+ * payTo is now classified house automatically, so the reading names
+ * the rule and what is left to check rather than sending the keeper
+ * after a field that was not there.
+ */
 describe("self_send_not_allowed", () => {
-  it("has a reading, and checks the house wallet first", () => {
+  it("has a reading, and names the rule that now classifies it", () => {
     const { fault, reading } = readReason("self_send_not_allowed");
     expect(reading).not.toContain("No reading written");
-    expect(reading).toContain("house-wallets.json");
+    expect(reading).toContain("isHouseTraffic");
     expect(fault).toBe("unknown");
+  });
+
+  /** A row older than the fix carries no payer, and the reading says so. */
+  it("does not promise a payer on rows booked before one was written", () => {
+    const { reading } = readReason("self_send_not_allowed");
+    expect(reading).toContain("BEFORE");
+    expect(reading.toLowerCase()).toContain("browser till");
   });
 });

@@ -28,6 +28,7 @@ import {
 import type { EventSignals } from "@/lib/metrics";
 import {
   recordChallengeIssued,
+  mismatchSignal,
   recordPaymentDecline,
   recordSettlement,
 } from "@/lib/metrics";
@@ -353,7 +354,18 @@ export async function runMcpPayment(
           // applies to the facilitator's words. See withVerdictClass.
           diagnosis.decline?.message,
         ),
-        signals,
+        {
+          ...signals,
+          // Same two facts the HTTP gate now books: who signed, and
+          // which field disagreed. One door getting the good
+          // instrument is the failure this file was written to end.
+          ...(payerFromPaymentHeader(paymentHeader)
+            ? { payer: payerFromPaymentHeader(paymentHeader) }
+            : {}),
+          ...(mismatchSignal(diagnosis.mismatch)
+            ? { mismatch: mismatchSignal(diagnosis.mismatch) }
+            : {}),
+        },
       ).catch(() => undefined);
       if (diagnosis.decline) {
         body = {

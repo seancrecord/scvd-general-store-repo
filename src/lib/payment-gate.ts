@@ -34,6 +34,7 @@ import {
   recordChallengeIssued,
   recordRouteTiming,
   recordServerError,
+  mismatchSignal,
   recordPaymentDecline,
   recordSettlement,
 } from "@/lib/metrics";
@@ -1101,7 +1102,22 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             // exist for exactly this row can never fire on it.
             decline?.message,
           ),
-          gateSignals(c),
+          {
+            ...gateSignals(c),
+            // THE PAYER, ON A DECLINE. gateSignals reads headers and
+            // query; the signer lives inside the base64 payload, so
+            // until now every decline met isHouseTraffic with no
+            // wallet to match and the desk could not say who was
+            // turned away. Both facts follow from this one line.
+            ...(payerFromPaymentHeader(paymentHeader)
+              ? { payer: payerFromPaymentHeader(paymentHeader) }
+              : {}),
+            // WHICH FIELD DISAGREED, and both values. We hold both
+            // objects; the code kept only the field's name.
+            ...(mismatchSignal(refusal?.mismatch)
+              ? { mismatch: mismatchSignal(refusal?.mismatch) }
+              : {}),
+          },
         ).catch(() => undefined);
       }
       if (!result.response.isHtml) {
