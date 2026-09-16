@@ -8,6 +8,7 @@ import type { CaseFileRecord } from "@/services/case-file";
 import { PatronAnchorStore, type PatronAnchorRecord } from "@/services/patron-anchors";
 import { humanResolutionKey, type HumanResolutionRecord } from "@/services/human-resolution-record";
 import { HostedObservationStore, type HostedObservation, type HostedPurchase } from "@/services/hosted-observation";
+import { UcpCheckoutStore } from "@/services/ucp-checkout-store";
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
 import { recordDeliveredSettlement } from "@/services/settlement-records";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
@@ -129,6 +130,22 @@ export class PaidRecoveryStore extends DurableObject<Env> {
 
   private readonly patronAnchor = new PatronAnchorStore(this.ctx.storage, this.env);
   publishPatronAnchor(record: PatronAnchorRecord) { return this.patronAnchor.publish(record); }
+
+  /**
+   * UCP checkouts, one instance per checkout id. A named instance of
+   * this class rather than a class of its own: a new Durable Object
+   * class needs a migration and the deploy ordering wrangler.jsonc
+   * warns about, and this needs neither.
+   */
+  private readonly ucpCheckout = new UcpCheckoutStore(this.ctx.storage, this.env);
+  readUcpCheckout() { return this.ucpCheckout.read(); }
+  createUcpCheckout(input: Parameters<UcpCheckoutStore["create"]>[0]) { return this.ucpCheckout.create(input); }
+  reviseUcpCheckout(input: Parameters<UcpCheckoutStore["revise"]>[0]) { return this.ucpCheckout.revise(input); }
+  quoteUcpCheckout(input: Parameters<UcpCheckoutStore["quote"]>[0]) { return this.ucpCheckout.quote(input); }
+  admitUcpCompletion(input: Parameters<UcpCheckoutStore["admitCompletion"]>[0]) { return this.ucpCheckout.admitCompletion(input); }
+  completeUcpCheckout(input: Parameters<UcpCheckoutStore["complete"]>[0]) { return this.ucpCheckout.complete(input); }
+  declineUcpCheckout() { return this.ucpCheckout.declined(); }
+  cancelUcpCheckout() { return this.ucpCheckout.cancel(); }
 
   private readonly hosted = new HostedObservationStore(this.ctx.storage, this.env);
 

@@ -157,16 +157,27 @@ export async function verifyPaymentAgainstTerms(args: {
 }
 
 /**
- * THE KEY SETTLEMENT EVIDENCE IS CONSUMED UNDER, globally rather than
- * per checkout.
+ * REPLAY IS ALREADY REFUSED STOREWIDE, AND NOT BY THIS FILE.
  *
- * `payment.identity` is already the store's historical settlement
- * identity — a hash over network, payer and the authorization nonce or
- * transaction — and it deliberately excludes the protocol so one
- * payment cannot be spent once as x402 and again as MPP. Scoping a
- * replay check to a single checkout would let the same evidence
- * satisfy a second checkout, which is the whole attack.
+ * The first draft of this module invented a consumption key. Reading
+ * the merged tree made that a mistake to delete rather than keep:
+ * `purchaseIntentStore(env, payment.identity)` addresses one Durable
+ * Object per payment identity, and `beginVerifiedPurchaseIntent`
+ * claims it before anything settles — the shared admission the store
+ * already runs for every verified adapter.
+ *
+ * That guard is strictly stronger than a UCP-local one would be. Its
+ * identity deliberately excludes the protocol, so one authorization
+ * cannot be spent once as x402 and again as MPP; and because it is the
+ * SAME atom the /api/buy door and the MCP door claim, a payment cannot
+ * be spent once through a UCP checkout and again through the till. A
+ * key scoped to UCP would have left exactly that door open, which is
+ * the whole attack one namespace over.
+ *
+ * So there is nothing here to consume. A UCP completion presents its
+ * verified PurchasePayment to the existing admission, and the replay
+ * answer comes back from the mechanism that has been giving it since
+ * before UCP existed.
  */
-export function settlementConsumptionKey(payment: PurchasePayment): string {
-  return `ucp:settled:${payment.network}:${payment.identity}`;
-}
+export const REPLAY_GUARD =
+  "services/purchase-intent.ts — beginVerifiedPurchaseIntent claims purchaseIntentStore(env, payment.identity), storewide and protocol-independent";

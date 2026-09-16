@@ -39,6 +39,12 @@ import { SCVD_EXTENSION_VERSION, SCVD_NAMESPACE } from "@/lib/ucp/version";
 export const USDC_HANDLER_TYPE = `${SCVD_NAMESPACE}.payment.usdc`;
 
 export interface UsdcHandlerConfig {
+  /** Present only on a checkout response, where the terms are exact. */
+  amount_atomic?: string;
+  checkout_id?: string;
+  checkout_version?: number;
+  expires_at?: string;
+  terms_digest?: string;
   protocol: "x402";
   protocol_version: 2;
   scheme: "exact";
@@ -245,5 +251,55 @@ export function usdcHandlerSchema(base: string): Record<string, unknown> {
         },
       },
     },
+  };
+}
+
+/**
+ * THE HANDLER AT TRANSACTION TIME, narrowed from "here is a rail" to
+ * "here is the exact transfer that settles THIS checkout".
+ *
+ * The profile's handler says which chains and tokens this store takes.
+ * A checkout response's handler must say more, and the specification
+ * puts it in the same place: ucp.payment_handlers is REQUIRED on a
+ * checkout response, and its config may carry full runtime state. So
+ * the amount, the recipient, the checkout it belongs to, its version
+ * and the digest over those terms ride here — where a platform about
+ * to pay is already looking — rather than only in this store's own
+ * metadata block, where a conforming client has no reason to look.
+ *
+ * Narrowed to ONE instance once a rail is chosen. Offering five when
+ * the quote commits to one would invite a buyer to pay on a rail this
+ * checkout will refuse.
+ */
+export function quotedUsdcHandler(
+  env: PaymentNetworkConfig,
+  base: string,
+  quote: {
+    network: string;
+    amount_atomic: string;
+    checkout_id: string;
+    checkout_version: number;
+    expires_at: string;
+    terms_digest: string;
+  },
+): Record<string, UsdcHandlerInstance[]> {
+  const rail = usdcPaymentHandlers(env, base).find(
+    (instance) => instance.config.network === quote.network,
+  );
+  if (!rail) return { [USDC_HANDLER_TYPE]: [] };
+  return {
+    [USDC_HANDLER_TYPE]: [
+      {
+        ...rail,
+        config: {
+          ...rail.config,
+          amount_atomic: quote.amount_atomic,
+          checkout_id: quote.checkout_id,
+          checkout_version: quote.checkout_version,
+          expires_at: quote.expires_at,
+          terms_digest: quote.terms_digest,
+        },
+      },
+    ],
   };
 }

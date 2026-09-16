@@ -112,7 +112,8 @@ execFileSync(join(ROOT, "node_modules", ".bin", "esbuild"), [
   join(ROOT, "scripts", "lib", "ucp-sample.ts"),
 ], { cwd: ROOT, stdio: ["ignore", "inherit", "inherit"] });
 
-const { profileSample, searchSample, lookupSample } = await import(pathToFileURL(bundle).href);
+const { profileSample, searchSample, lookupSample, checkoutSample, completedCheckoutSample } =
+  await import(pathToFileURL(bundle).href);
 
 const samples = [
   {
@@ -126,6 +127,18 @@ const samples = [
     id: "https://ucp.dev/schemas/shopping/catalog_search.json#/$defs/search_response",
     value: searchSample(BASE),
     served_at: "POST /ucp/v1/catalog/search",
+  },
+  {
+    name: "checkout, holding a live quote",
+    id: "https://ucp.dev/schemas/shopping/checkout.json",
+    value: checkoutSample(BASE),
+    served_at: "GET /ucp/v1/checkout-sessions/{id}",
+  },
+  {
+    name: "checkout, completed, carrying its order",
+    id: "https://ucp.dev/schemas/shopping/checkout.json",
+    value: completedCheckoutSample(BASE),
+    served_at: "POST /ucp/v1/checkout-sessions/{id}/complete",
   },
   {
     name: "catalog lookup response",

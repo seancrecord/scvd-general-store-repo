@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  settlementConsumptionKey,
+  REPLAY_GUARD,
   verifyPaymentAgainstTerms,
   type BindingFailure,
 } from "@/lib/ucp/checkout/binding";
 import { termsDigest, type PaymentTerms } from "@/lib/ucp/checkout/terms";
 import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
-import type { PurchasePayment } from "@/lib/purchase-payment";
+import { settlementPurchaseIdentity, type PurchasePayment } from "@/lib/purchase-payment";
 
 const NOW = Date.parse("2026-09-16T12:00:00.000Z");
 const PAY_TO = "0x1111111111111111111111111111111111111111";
@@ -226,34 +226,33 @@ describe("a payment satisfies this exact obligation, or it is named why not", ()
 });
 
 /**
- * REPLAY IS REFUSED GLOBALLY, NOT PER CHECKOUT. A key scoped to one
- * checkout would let the same evidence satisfy a second one, which is
- * the entire attack.
+ * REPLAY IS NOT THIS MODULE'S JOB, AND SAYING SO IS THE TEST.
+ *
+ * An earlier draft of binding.ts carried its own consumption key.
+ * Deleting it was the correction: the store already claims one durable
+ * atom per payment identity before anything settles, the same atom the
+ * /api/buy door and the MCP door claim. A UCP-local key would have let
+ * a payment be spent once through a checkout and again through the
+ * till.
  */
-describe("settlement evidence is consumable once, storewide", () => {
-  it("keys on the chain and the store's own settlement identity", () => {
-    const key = settlementConsumptionKey(payment());
-    expect(key).toBe(`ucp:settled:eip155:8453:${"a".repeat(64)}`);
-    expect(key).not.toContain("chk_");
+describe("replay is refused by the admission the whole store already shares", () => {
+  it("points at the existing guard rather than inventing a second one", () => {
+    expect(REPLAY_GUARD).toContain("beginVerifiedPurchaseIntent");
+    expect(REPLAY_GUARD).toContain("purchaseIntentStore");
   });
 
-  it("gives one payment one key whichever checkout presents it", () => {
-    expect(settlementConsumptionKey(payment())).toBe(
-      settlementConsumptionKey(payment()),
-    );
-  });
-
-  it("separates the same nonce seen on two different chains", () => {
-    expect(settlementConsumptionKey(payment())).not.toBe(
-      settlementConsumptionKey(payment({ network: "eip155:137" })),
-    );
-  });
-
-  it("cannot be spent once as x402 and again as MPP", () => {
-    // purchase-payment.ts derives `identity` deliberately WITHOUT the
-    // protocol, so the same authorization is the same spend either way.
-    expect(settlementConsumptionKey(payment({ protocol: "x402" }))).toBe(
-      settlementConsumptionKey(payment({ protocol: "mpp", method: "evm/charge" })),
-    );
+  it("relies on a settlement identity that excludes the protocol", async () => {
+    // purchase-payment.ts derives `identity` from network, payer and the
+    // authorization nonce — deliberately NOT from the protocol — so the
+    // same authorization is the same spend whether it arrives as x402
+    // or as MPP. This is the property the guard rests on.
+    const evm = "eip155:8453";
+    const payer = "0x2222222222222222222222222222222222222222";
+    const nonce = `0x${"9".repeat(64)}`;
+    const a = await settlementPurchaseIdentity(evm, payer, nonce, "authorization");
+    const b = await settlementPurchaseIdentity(evm, payer.toUpperCase().replace("0X", "0x"), nonce, "authorization");
+    expect(a.id).toBe(b.id);
+    const other = await settlementPurchaseIdentity("eip155:137", payer, nonce, "authorization");
+    expect(other.id).not.toBe(a.id);
   });
 });
