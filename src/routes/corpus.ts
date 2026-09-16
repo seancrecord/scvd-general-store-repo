@@ -891,7 +891,20 @@ function briefHtml(brief: WeeklyBrief): string {
   </section>`;
 }
 
-async function serveBrief(c: Context<HonoEnv>, html: boolean) {
+/**
+ * THE BRIEF'S THREE DIALECTS (markdown added 2026-09-16).
+ *
+ * This page has rendered `markdownAlt: "/corpus/brief"` into its own
+ * head since it shipped — an advertisement that the same URL answers
+ * markdown — and the URL answered HTML or JSON and nothing else. The
+ * page was pointing at a representation that did not exist, which is
+ * the same class of false claim as a link to a page nobody wrote,
+ * printed in the one place a machine reads first.
+ */
+type BriefFormat = "html" | "json" | "markdown";
+
+async function serveBrief(c: Context<HonoEnv>, format: BriefFormat) {
+  const html = format === "html";
   const base = c.env.STORE_BASE_URL;
   const week = c.req.query("week") ?? undefined;
   const { brief, known_weeks } = deriveWeeklyBrief(await listCorpus(c.env), base, week);
@@ -914,6 +927,21 @@ async function serveBrief(c: Context<HonoEnv>, html: boolean) {
       known_weeks,
       corrections: CORRECTIONS_POINTER,
     };
+    /*
+     * A week the chain does not hold stays a JSON 404: a markdown twin
+     * that answered 200 for a week nobody signed would be inventing a
+     * document. The empty-chain 200 is a real state and renders.
+     */
+    if (format === "markdown" && status === 200) {
+      return jsonDocumentMarkdownResponse({
+        base,
+        path: "/corpus/brief",
+        title: "The Week's Doors",
+        description:
+          "The weekly brief of the x402 corpus: doors named, probed, payable and not, defects by name, and the gaps counted against the observer. Not a ranking.",
+        document: body as unknown as Record<string, unknown>,
+      });
+    }
     return html
       ? c.html(
           renderSimplePage({
@@ -928,6 +956,17 @@ async function serveBrief(c: Context<HonoEnv>, html: boolean) {
         )
       : c.json(body, status);
   }
+  const payload = { ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER };
+  if (format === "markdown") {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/corpus/brief",
+      title: `The Week's Doors — ${brief.week}`,
+      description: `The x402 corpus for ${brief.week} in one page: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Not a ranking.`,
+      dataUrl: `${base}/corpus.json`,
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (html) {
     return c.html(
       renderSimplePage({
@@ -940,12 +979,21 @@ async function serveBrief(c: Context<HonoEnv>, html: boolean) {
       }),
     );
   }
-  return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER });
+  return c.json(payload);
 }
 
 // One address, both dialects — a .json twin would be a seventh surface
 // to list, and the room contract already answers JSON here.
-corpusRoutes.get("/corpus/brief", (c) => serveBrief(c, wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))));
+corpusRoutes.get("/corpus/brief", (c) =>
+  serveBrief(
+    c,
+    prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))
+      ? "markdown"
+      : wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))
+        ? "html"
+        : "json",
+  ),
+);
 
 /**
  * GET /corpus/diff.json?since={week} — what changed between a named

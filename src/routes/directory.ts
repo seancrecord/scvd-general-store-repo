@@ -196,7 +196,17 @@ directoryRoutes.get("/directory", (c) => {
   return c.json(indexPayload);
 });
 
-directoryRoutes.get("/directory/:slug", (c) => {
+/*
+ * THE SLUG EXCLUDES A DOT (2026-09-16), so `/directory/x.md` is not
+ * swallowed as a listing named "x.md".
+ *
+ * An unconstrained :slug matches the suffix too, answers its own 404
+ * for a listing nobody has, and the `.md` twin handler in index.ts
+ * never runs — it lives in notFound, and this route was not letting
+ * the request get there. Every listing had a markdown representation
+ * and no way to ask for it by suffix.
+ */
+directoryRoutes.get("/directory/:slug{[a-z0-9-]+}", (c) => {
   const base = c.env.STORE_BASE_URL;
   const slug = c.req.param("slug");
   const listing = DIRECTORY.listings.find((entry) => entry.slug === slug);

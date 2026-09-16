@@ -893,6 +893,22 @@ function serveMenuIndex(c: Context<HonoEnv>) {
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(renderMenuIndex(c.env.STORE_BASE_URL));
   }
+  /*
+   * MARKDOWN IS SERVED, NOT REDIRECTED (2026-09-16).
+   *
+   * /menu.json has rendered the shelf as markdown since the catalog
+   * shipped; /menu answered every non-HTML caller with a 301 to it,
+   * which is right for JSON — one canonical document at one address —
+   * and wrong for markdown, because the `.md` twin handler reads the
+   * status and a redirect is not a representation. So /menu.md 404'd
+   * on a document the store was already rendering one URL over.
+   *
+   * Same renderer, same bytes as /menu.json serves; only the address
+   * differs, which is the whole point of a twin.
+   */
+  if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
+    return c.text(renderMenuMarkdown(MENU_ITEMS, c.env.STORE_BASE_URL), 200, MARKDOWN_HEADERS);
+  }
   return c.redirect(`${c.env.STORE_BASE_URL}/menu.json`, 301);
 }
 
