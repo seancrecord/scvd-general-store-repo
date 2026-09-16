@@ -93,6 +93,14 @@ What people arrive here to do, and where each door is:
   fails the job and `unreachable` does not:
   [`action/preflight`](action/preflight/README.md). The terminal form
   is `scvd preflight` from [`scvd-cli`](https://www.npmjs.com/package/scvd-cli).
+  As a library, the same check and the same exit law in three languages,
+  each zero-dependency and each tested against the *same* recorded
+  reports rather than a copy of them:
+  [`scvd-preflight`](https://www.npmjs.com/package/scvd-preflight) on
+  npm, [`scvd-preflight`](https://pypi.org/project/scvd-preflight/) on
+  PyPI, and
+  [`x402-preflight-go`](https://pkg.go.dev/github.com/seancrecord/scvd-general-store-repo/x402-preflight-go)
+  for Go.
 - **Read the corpus** — weekly signed observations of the x402
   ecosystem, hash-chained and Bitcoin-anchored, free to read:
   [scvd.store/corpus](https://scvd.store/corpus). For bounded metadata
@@ -534,6 +542,12 @@ signer/           # x402-sign: the issuing half — mints spec-conformant
                   # signed offers & receipts that x402-verify passes
 x402-preflight/   # scvd-preflight: the free door check as a library and
                   # a command, with the deploy gate's exit law
+x402-preflight-py/ # scvd-preflight on PyPI: the same law in Python,
+                  # stdlib only, reading x402-preflight/fixtures rather
+                  # than a copy of them
+x402-preflight-go/ # the same law in Go, stdlib only, same fixtures;
+                  # published by tag as
+                  # github.com/seancrecord/scvd-general-store-repo/x402-preflight-go
 corpus-client/    # scvd-corpus-client: the signed corpus, read as served
 defects/          # scvd-defects: the vocabulary as data, both halves of
                   # the remediation, recorded 402 doors and settlement
