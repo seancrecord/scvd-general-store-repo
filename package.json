@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "description": "Sean-Claude Van Damme's General Store \u2014 a human-run shop for autonomous AI agents.",
+  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
     "indexnow": "node scripts/indexnow-ping.mjs",
     "test": "vitest run",
     "buyer:test": "node --test scripts/buyer-wave-one.test.mjs scripts/buyer-run-evidence.test.mjs scripts/buyer-deployment-score.test.mjs",
-    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run evidence:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run preflight:py:test && npm run preflight:go:test && npm run doors:test && npm run specs:test && npm run listings:test && npm run space:test && npm run cold:test && npm run doors:test && npm run corpus:publish:test && npm run citations:test && npm run corrections:test && npm run outreach:test && npm run walkabout:test && npm run buyer:test && npm run paid-doors:test && npm run floor-check:test && npm run audit && npm run claims && npm run others:check && npm run blindness && npm run docs:check && npm run ucp:conformance && npm run build:check",
+    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run evidence:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run preflight:py:test && npm run preflight:go:test && npm run doors:test && npm run ownership:test && npm run specs:test && npm run listings:test && npm run space:test && npm run cold:test && npm run doors:test && npm run corpus:publish:test && npm run citations:test && npm run corrections:test && npm run outreach:test && npm run walkabout:test && npm run buyer:test && npm run paid-doors:test && npm run floor-check:test && npm run audit && npm run claims && npm run others:check && npm run blindness && npm run docs:check && npm run ucp:conformance && npm run build:check",
     "self-row": "vitest run test/self-row-blocker.spec.ts",
     "typecheck": "tsc --noEmit",
     "a2a:validation:build": "node scripts/a2a-validation-build.mjs",
@@ -34,7 +34,7 @@
     "others:check": "node scripts/others-artifacts-guard.mjs",
     "blindness": "node scripts/blindness-audit.mjs",
     "skill:publish": "node scripts/publish-skill.mjs",
-    "build:check": "wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors",
+    "build:check": "wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors && node scripts/mpp-sdk-build-check.mjs",
     "bazaar:validate": "node scripts/bazaar-validate.mjs",
     "protocol-screen": "node scripts/protocol-screen.mjs",
     "ucp:conformance": "node scripts/ucp-conformance.mjs",
@@ -97,10 +97,14 @@
     "bazaar:validate:test": "node --test scripts/bazaar-validate.test.mjs scripts/bazaar-validation-resources.test.mjs",
     "bazaar:regex:test": "node scripts/bazaar-regex-check.mjs",
     "preflight:py:test": "cd x402-preflight-py && python3 -m unittest discover -s tests",
-    "preflight:go:test": "cd x402-preflight-go && test -z \"$(gofmt -l .)\" && go vet ./... && go test ./..."
+    "preflight:go:test": "cd x402-preflight-go && test -z \"$(gofmt -l .)\" && go vet ./... && go test ./...",
+    "ownership:check": "node scripts/ownership-check.mjs",
+    "ownership:test": "node --test scripts/ownership-check.test.mjs",
+    "ownership:sign": "node scripts/sign-origin.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@noble/ed25519": "^3.2.0",
     "@resvg/resvg-wasm": "^2.6.2",
     "@x402/core": "^2.25.0",
@@ -109,6 +113,7 @@
     "@x402/hono": "^2.25.0",
     "@x402/svm": "~2.25.0",
     "hono": "^4.13.7",
+    "mppx": "0.10.1",
     "viem": "^2.56.3"
   },
   "devDependencies": {

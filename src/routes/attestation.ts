@@ -2,6 +2,8 @@ import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   ARTIFACT_CLASSES,
@@ -191,6 +193,15 @@ attestationRoutes.get("/attestation", (c) => {
     criteria_page: `${base}/criteria`,
     honest_limit: ATTESTATION_HONEST_LIMIT,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/attestation",
+      title: "What we sign",
+      description: "What this x402 store signs, who holds the key, and whose word you are taking: the trust model per artifact class, including where it is the weakest available.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

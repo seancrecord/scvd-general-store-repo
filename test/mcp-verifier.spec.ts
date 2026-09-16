@@ -66,6 +66,53 @@ describe("tools/list", () => {
     }
   });
 
+  it("never contradicts /mcp about whether a renamed tool reaches outside the store", () => {
+    /*
+     * 2026-09-16. This door read openWorldHint off one negation
+     * ("everything but the defect vocabulary is open"), and so told
+     * clients that verify_scvd_artifact reaches outward while /mcp
+     * told them the same tool does not. The same tool, two doors,
+     * two answers — the drift this file exists to make impossible,
+     * on the field a directory reviewer reads first.
+     *
+     * A tool renamed from /mcp inherits its base's reading. A tool
+     * this door owns has no base to disagree with and is asserted
+     * below by name.
+     */
+    const here = verifierToolCatalog(BASE);
+    const full = mcpToolCatalog(BASE);
+    for (const entry of VERIFIER_TOOLS.filter((tool) => tool.base)) {
+      const mine = here.find((tool) => tool["name"] === entry.name)!;
+      const theirs = full.find((tool) => tool.name === entry.base)!;
+      expect(
+        (mine["annotations"] as Record<string, unknown>)["openWorldHint"],
+        `${entry.name} and ${entry.base} disagree about openWorldHint`,
+      ).toBe(theirs.annotations?.openWorldHint);
+    }
+  });
+
+  it("reads open world as what the call touches, not what the answer is about", () => {
+    /*
+     * The two doors this store's own tools own. The readiness lookup
+     * is the interesting one: its SUBJECT is every host on the public
+     * discovery list, and its INTERACTION is a read of this store's
+     * own signed chain with no outbound request — so the hint is
+     * false, and saying why here is cheaper than re-deriving it the
+     * next time a reviewer asks.
+     */
+    const here = verifierToolCatalog(BASE);
+    const reading = Object.fromEntries(
+      here.map((tool) => [tool["name"], (tool["annotations"] as Record<string, unknown>)["openWorldHint"]]),
+    );
+    expect(reading).toEqual({
+      preflight_x402_endpoint: true,
+      verify_x402_receipt: true,
+      lookup_endpoint_readiness: false,
+      get_defect_definition: false,
+      verify_scvd_artifact: false,
+    });
+  });
+
   it("the renamed tools carry the base tool's input schema from /mcp", () => {
     const here = verifierToolCatalog(BASE);
     const full = mcpToolCatalog(BASE);

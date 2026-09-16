@@ -1,3 +1,4 @@
+import { carriesVerdict } from "@/services/ward-round";
 import { AGING_DAYS } from "@/services/passport";
 import { buildFreshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
 import { listCorpus } from "@/services/corpus";
@@ -386,7 +387,7 @@ export async function buildOkfBundle(env: Env): Promise<OkfBundle> {
   const weeks: LogWeek[] = corpus
     .map((record) => {
       const probed = record.snapshot.round.hosts.filter(
-        (host) => host.verdict !== "not_probed",
+        carriesVerdict,
       );
       return {
         date: record.snapshot.taken_at.slice(0, 10),

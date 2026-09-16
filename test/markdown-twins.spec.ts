@@ -43,17 +43,40 @@ describe("the .md twin fallback", () => {
     }
   });
 
-  it("refuses to invent markdown for a page that has none", async () => {
-    for (const path of [
-      // An HTML-only room. The honest answer is that no markdown
-      // representation exists, not a de-tagged approximation of one.
-      "/what.md",
-      "/nope.md",
-    ]) {
-      const response = await SELF.fetch(`${BASE}${path}`);
-      expect(response.status, `${path} should not answer`).toBe(404);
-    }
+  it("refuses to invent markdown where no representation exists", async () => {
+    // A path nobody serves: the twin asks the store for the page
+    // without the suffix, gets a 404, and passes that through.
+    const missing = await SELF.fetch(`${BASE}/nope.md`);
+    expect(missing.status, "/nope.md should not answer").toBe(404);
+
+    /*
+     * A room behind the keeper's password. The suffix must not become
+     * a way around the lock, and it does not: the admin fence answers
+     * 401 before the twin handler in notFound is ever reached. The
+     * assertion is therefore that no DOCUMENT comes back — 401 rather
+     * than 404 is the right refusal, and pinning the number would be
+     * testing which guard got there first.
+     */
+    const locked = await SELF.fetch(`${BASE}/admin/trade.md`);
+    expect(locked.ok, "/admin/trade.md must not answer").toBe(false);
+    expect(locked.headers.get("content-type") ?? "").not.toContain("text/markdown");
   });
+
+  /*
+   * THE HTML-ONLY ROOM THIS TEST USED TO NAME IS GONE (2026-09-16).
+   *
+   * It pointed at /what, as the one negotiated room that genuinely
+   * had no markdown to serve. The sweep that followed the first
+   * markdown pass found eighty-two such rooms, /what among them, and
+   * closed every one: each already carried a JSON twin, so a markdown
+   * representation was derivable from a document somebody had
+   * written, and the twin handler's rule — never invent one — was
+   * never the thing standing in the way.
+   *
+   * So there is no public content page left to name here, and the
+   * cases above are the honest remainder: a path that does not exist,
+   * and a path that exists but refuses to answer.
+   */
 
   it("never shadows a twin that has its own bytes", async () => {
     // These are real routes with their own tests; the fallback runs in

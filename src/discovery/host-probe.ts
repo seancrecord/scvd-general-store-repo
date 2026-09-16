@@ -12,6 +12,11 @@ import type { Env } from "@/types";
  * HOST PROBE — one outbound GET per owned catalog path, pointed at
  * someone else's origin. Inventory (unsigned) and the signed report
  * share this fetch. Paths come from OWNED_DISCOVERY_SURFACES.
+ *
+ * GET AND ONLY GET, stated because the shared probe stopped being
+ * GET-only on 2026-09-16. These are documents a catalog serves, not
+ * doors a buyer pays; the method fallback is explicitly declined
+ * below and the reason is written at the call site.
  */
 
 export interface HostSurfaceRow {
@@ -64,7 +69,19 @@ export async function probeHostCatalogs(input: {
   for (const candidate of inventoryCandidates()) {
     const fetchedFrom = `${about}${candidate.path}`;
     try {
-      const outcome = await probeOnce(fetchedFrom, fetchImpl, ownHost, input.env);
+      /*
+       * `fallback: false` — THE ONE PLACE THAT OPTS OUT (2026-09-16).
+       * These are fixed DOCUMENT paths (/.well-known/x402 and its
+       * siblings), not payment doors. A 405 here is a real answer
+       * about the document, and retrying would have this store
+       * POSTing at strangers' well-known paths to no purpose. The
+       * method fallback defaults ON so the next x402 door somebody
+       * adds inherits the fix; a document reader has to say it does
+       * not want it, which is the right way round.
+       */
+      const outcome = await probeOnce(fetchedFrom, fetchImpl, ownHost, input.env, {
+        fallback: false,
+      });
       if (outcome.bodyOverLimit) {
         surfaces.push({
           id: candidate.id,

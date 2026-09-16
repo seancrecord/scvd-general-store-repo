@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
 import { A2A_STATE_DESCRIPTION } from "@/services/a2a-tasks";
@@ -104,6 +106,15 @@ privacyRoutes.get("/privacy", (c) => {
     effective: "2026-08-21",
     contact: `${base}/api/letter`,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: base,
+      path: "/privacy",
+      title: "Privacy",
+      description: "The privacy policy: no accounts, no cookies, no tracking, no kept IP logs. A purchase records the public chain facts it settles with; what you sign into a public artifact is public forever, and every surface says so before you pay.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

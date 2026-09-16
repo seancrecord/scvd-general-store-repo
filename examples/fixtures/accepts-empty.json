@@ -113,6 +113,45 @@
         "Whether the door stays up, or whether the same challenge is served to a paying client. One request, one moment."
       ]
     },
+    "mpp_core": {
+      "battery": "mpp-core-v1",
+      "spec": {
+        "draft": "draft-01",
+        "url": "https://github.com/tempoxyz/mpp-specs/blob/2e3de24c07a9218456bd8814d6746a0dad941d06/specs/core/draft-httpauth-payment-01.md",
+        "sha256": "30dd795d27e3b0df832daffdcf2441975d10099a01a6e8f74aece19d9500d54c"
+      },
+      "state": "absent",
+      "observed_at": "2026-09-15T12:00:00.000Z",
+      "challenges": [],
+      "checks": [],
+      "counts": {
+        "checks": 0,
+        "pass": 0,
+        "fail": 0,
+        "unmeasured": 0,
+        "not_applicable": 0
+      },
+      "problem": {
+        "state": "unmeasured",
+        "recognized": null,
+        "status_matches": null
+      },
+      "gaps": [
+        "This is the observable core subset under the cited draft, not general MPP conformance or payment readiness. The frozen mpp-v1/draft-00 reading, x402 verdict, census history and passport qualification retain their meaning.",
+        "Method and intent registration, their request schemas, amounts, currencies and recipients are not verified by this core reader. The core draft's proposed registry is initially empty; a repository directory is not an IANA registration.",
+        "Challenge binding, request-body digest binding, credential routing, replay protection, concurrency, settlement, delivery and payment preferences are unmeasured. No credential was submitted. This store's till does not speak MPP.",
+        "HTTPS is observable; the negotiated TLS version is not measured here. Expiry evaluation does not resolve leap seconds or the RFC 3339 unknown local offset. Deep JSON beyond this reader's validation limit remains unmeasured.",
+        "No Payment version is carried on the wire. The cited draft identifies this reader's rules, not a version claimed by the endpoint. Problem Details are a SHOULD recommendation, reported separately from failed checks."
+      ]
+    },
+    "probe_method": {
+      "used": "GET",
+      "attempted": [
+        "GET"
+      ],
+      "source": "default",
+      "note": "Probed with GET."
+    },
     "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
     "what_this_cannot_tell_you": [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",
@@ -132,12 +171,53 @@
       "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 \u2014 send any issuer's x402 signed offer or receipt, ours or not.",
       "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required \u2014 see /rights."
     },
-    "next_steps": {
-      "conformance_desk": "POST https://scvd.store/api/conformance/v1 \u2014 full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free.",
-      "signed_report": "https://scvd.store/api/buy/service_audit \u2014 this exact readout, signed, bound into a certificate and served at a permanent URL, for when you need to hand it to somebody rather than run it yourself.",
-      "across_a_week": "https://scvd.store/api/buy/conformance_watch \u2014 this exact battery once a day for seven days, each day signed alone, for catching a deploy that breaks the challenge mid-week. Our missed days are published against us.",
-      "behavioral_check": "https://scvd.store/api/buy/standing_watch \u2014 the paid rung of the same ladder: a week of signed, out-of-band hourly probes on your endpoint, for when you need evidence rather than a readout."
-    }
+    "the_rest_of_the_ladder": {
+      "climbed": [
+        "L1",
+        "L2"
+      ],
+      "unclimbed": [
+        {
+          "rung": "L3c",
+          "what_it_is": "Authenticity: is the signed offer this door served actually signed by who it names?",
+          "climbs_it": null,
+          "why_not": "Built and not yet served. Nothing you can buy here climbs it today, and saying otherwise to sell a watch would be the thing this store exists not to do."
+        },
+        {
+          "rung": "L3d",
+          "what_it_is": "Cross-probe consistency: does this door serve the same challenge tomorrow, and the day after?",
+          "climbs_it": {
+            "item_id": "conformance_watch",
+            "price_usdc": 5,
+            "tool": "buy_observation",
+            "url": "https://scvd.store/api/buy/conformance_watch",
+            "what_you_get": "The Conformance Watch"
+          },
+          "why_not": "One probe cannot see a second day. Repeated probes cost repeatedly, which is why this rung is sold rather than given."
+        },
+        {
+          "rung": "L4-L6",
+          "what_it_is": "Purchasability through delivery: does paying this door actually produce the goods?",
+          "climbs_it": {
+            "item_id": "standing_watch",
+            "price_usdc": 5,
+            "tool": "buy_observation",
+            "url": "https://scvd.store/api/buy/standing_watch",
+            "what_you_get": "The Night Watch"
+          },
+          "why_not": "No unpaid probe can climb this, ours or anyone's. Finding out whether a door delivers means paying it, and that is a cost per attempt rather than a feature we are withholding."
+        }
+      ],
+      "already_free": "POST https://scvd.store/api/conformance/v1 \u2014 full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free, and it needs no account.",
+      "signed_copy_of_this_reading": {
+        "item_id": "service_audit",
+        "price_usdc": 5,
+        "tool": "buy_observation",
+        "url": "https://scvd.store/api/buy/service_audit",
+        "what_you_get": "The Once-Over"
+      }
+    },
+    "this_is_not_advice": "This is an observation, not advice. It says what was seen and what was not; whether that is enough to spend on is yours to decide, and you know your own risk appetite better than we ever will."
   },
   "these_are_different_questions": "The preflight asks whether this DOOR serves a well-formed x402 challenge. This asks whether YOUR CLIENT will pay it. They are different questions with different answers: a door can be perfectly shaped and still unpayable by an unconfigured buyer, because the refusal happens on your machine before a signature exists \u2014 which means the operator never learns you tried, and sees only a request for a price followed by silence.",
   "what_this_is_not": "Not a guarantee that the purchase succeeds. This walks your client's selection logic over the bytes that door served at one moment; it never touches a wallet, signs nothing, and cannot know whether the resource behind the 402 delivers. A would_sign quoted as 'this endpoint works' is a misquote, exactly as a passing preflight quoted as uptime is.",

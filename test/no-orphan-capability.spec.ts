@@ -104,6 +104,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
     "alias of /developers/llms.txt, which the surfaces list; the room has answered to /api since it shipped and its llms file now does too",
   "/schemamap.xml":
     "robots.txt names it in a Schemamap directive, which IS the NLWeb Schema Feeds discovery mechanism — the same reasoning the Sitemap line has always run on; every feed it indexes is separately listed",
+  "/mcp/verifier/":
+    "the same door as /mcp/verifier, reached by the commonest typo. It 308s there so a POSTed initialize arrives as a POST (2026-09-16, after a red team found it 404ing where /mcp/ had redirected since September); listing it would advertise two doors that are one door",
   "/.well-known/mcp/server-card.json":
     "the third spelling of /.well-known/mcp, which every surface already lists; listing all three would advertise three doors that are one card",
   "/sitemap.xml": "IS one of the six surfaces; a surface need not list itself",

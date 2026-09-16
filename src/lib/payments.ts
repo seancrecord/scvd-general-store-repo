@@ -75,6 +75,7 @@ export const PAYMENT_VARY = "PAYMENT-SIGNATURE, X-PAYMENT";
 
 export const PENNY_PAGE_USDC = 0.01;
 export const USDC_DECIMALS = 6;
+export const EVM_USDC_DOMAIN = { name: "USD Coin", version: "2" } as const;
 
 /**
  * THE RECONCILIATION CAP (the ruling PAYMENT_RAILS.md required before
@@ -624,8 +625,8 @@ export function manifestAccepts(
     };
     if (network.startsWith("eip155:")) {
       entry.extra = {
-        name: network === WORLD_NETWORK ? "USDC" : "USD Coin",
-        version: "2",
+        name: network === WORLD_NETWORK ? "USDC" : EVM_USDC_DOMAIN.name,
+        version: EVM_USDC_DOMAIN.version,
         assetTransferMethod: EVM_TRANSFER_METHOD,
       };
     }

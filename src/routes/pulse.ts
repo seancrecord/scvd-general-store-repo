@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { computePulse } from "@/services/pulse";
 import type { PulseWindow } from "@/services/pulse";
@@ -113,6 +115,15 @@ pulseRoutes.get("/pulse.json", async (c) => {
 
 pulseRoutes.get("/pulse", async (c) => {
   const pulse = await computePulse(c.env);
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: c.env.STORE_BASE_URL,
+      path: "/pulse",
+      title: "The pulse",
+      description: "The whole funnel for this x402 store, organic only: how many times a price was quoted (402s answered, not distinct agents), how many purchases settled, and how many artifacts were re-verified afterwards.",
+      document: pulse as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(pulse);
   }

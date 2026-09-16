@@ -110,6 +110,64 @@ describe("a reason seen from more than one client", () => {
   });
 
   /**
+   * TWO CRAWLERS IS NOT A LOST SALE (2026-09-16). The first cut of
+   * this rule escalated on any two distinct clients, so
+   * local:input_missing:confession read OURS on x402lint and vet402 —
+   * both on the store's own machinery table, neither ever going to
+   * pay. `ours` on this desk means money the store turned away.
+   */
+  it("does not move the fault when every client behind it is machinery", async () => {
+    await seedIndexRow(
+      decline({
+        note: "local:input_missing:confession",
+        channel: "infrastructure",
+        user_agent: "x402lint/0.1 (+https://x402lint.dev)",
+      }),
+    );
+    await seedIndexRow(
+      decline({
+        note: "local:input_missing:confession",
+        channel: "infrastructure",
+        user_agent: "vet402-observatory-l1/1.0",
+      }),
+    );
+
+    const report = await readDeclines(testEnv);
+    for (const row of report.declines) {
+      expect(row.fault).toBe("buyer");
+      expect(row.reading).toContain("EVERY ONE OF THEM IS MACHINERY");
+      expect(row.reading).not.toContain("ESCALATED BY THE DESK");
+    }
+    const shared = sharedReasons(report);
+    expect(shared).toHaveLength(1);
+    expect(shared[0]!.machinery_only).toBe(true);
+    expect(shared[0]!.escalated).toBe(false);
+    expect(shared[0]!.outside_clients).toEqual([]);
+    // The finding is still PRINTED — it just stops borrowing the word.
+    expect(shared[0]!.clients).toHaveLength(2);
+  });
+
+  it("moves it the moment one real buyer joins the crawlers", async () => {
+    await seedIndexRow(
+      decline({
+        note: "local:input_missing:confession",
+        channel: "infrastructure",
+        user_agent: "vet402-observatory-l1/1.0",
+      }),
+    );
+    await seedIndexRow(
+      decline({ note: "local:input_missing:confession", user_agent: "python-httpx/0.28.1" }),
+    );
+
+    const report = await readDeclines(testEnv);
+    const shared = sharedReasons(report);
+    expect(shared[0]!.machinery_only).toBe(false);
+    expect(shared[0]!.escalated).toBe(true);
+    expect(shared[0]!.outside_clients).toEqual(["python-httpx/0.28.1"]);
+    for (const row of report.declines) expect(row.fault).toBe("ours");
+  });
+
+  /**
    * The count that proves the challenge is unreadable must include
    * machinery. A conformance crawler that read our 402 and could not
    * find a required input is evidence about the CHALLENGE, whatever
@@ -163,6 +221,13 @@ describe("a reason seen from more than one client", () => {
         { reason: "local:requirement_mismatch:network:eip155:10", fault: "buyer", reading: "y" },
       ],
       clients_by_reason: {
+        "local:payload_v1_envelope": ["alpha", "beta"],
+        "local:requirement_mismatch:network:eip155:10": ["alpha", "beta"],
+      },
+      // Both are real buyers here: the rail and v1 readings are about
+      // demand and the ecosystem's tail, so the machinery split must
+      // not touch them either way.
+      outside_clients_by_reason: {
         "local:payload_v1_envelope": ["alpha", "beta"],
         "local:requirement_mismatch:network:eip155:10": ["alpha", "beta"],
       },
@@ -228,12 +293,29 @@ describe("x402lint is machinery", () => {
   });
 });
 
-/** The one row in the window that reached the facilitator at all. */
+/**
+ * The one row in the window that reached the facilitator at all.
+ *
+ * The first version of this reading told the keeper to "read the payer
+ * off the row before anything else" — and a decline row carried no
+ * payer, because gateSignals never opened the payload. Corrected
+ * 2026-09-16 alongside the fix that books one: a payer equal to any
+ * payTo is now classified house automatically, so the reading names
+ * the rule and what is left to check rather than sending the keeper
+ * after a field that was not there.
+ */
 describe("self_send_not_allowed", () => {
-  it("has a reading, and checks the house wallet first", () => {
+  it("has a reading, and names the rule that now classifies it", () => {
     const { fault, reading } = readReason("self_send_not_allowed");
     expect(reading).not.toContain("No reading written");
-    expect(reading).toContain("house-wallets.json");
+    expect(reading).toContain("isHouseTraffic");
     expect(fault).toBe("unknown");
+  });
+
+  /** A row older than the fix carries no payer, and the reading says so. */
+  it("does not promise a payer on rows booked before one was written", () => {
+    const { reading } = readReason("self_send_not_allowed");
+    expect(reading).toContain("BEFORE");
+    expect(reading.toLowerCase()).toContain("browser till");
   });
 });

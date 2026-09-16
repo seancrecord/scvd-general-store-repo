@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { VALUE_PROPOSITION, VALUE_PROPOSITION_DATED } from "@/store/copy/position";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { BECOMING_CSS } from "@/pages/becoming-css";
 import {
@@ -35,6 +37,15 @@ becomingRoutes.get("/becoming", (c) => {
     watched_then_built: GRADUATED,
     available_today: `${c.env.STORE_BASE_URL}/what`,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: c.env.STORE_BASE_URL,
+      path: "/becoming",
+      title: "What this is trying to prove",
+      description: "The part of this x402 store that is not built: four claims it is trying to prove and how each could be shown false, the strategic questions already settled.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

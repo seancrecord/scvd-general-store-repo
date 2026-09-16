@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { listApprovedTags, TAG_CAP, topTagOfDay } from "@/services/train";
 import type { HonoEnv, TrainTagRecord } from "@/types";
@@ -61,34 +63,11 @@ trainRoutes.get("/train", async (c) => {
   const tags = await listApprovedTags(c.env).catch(() => []);
   const top = topTagOfDay(tags);
 
-  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    const wall =
-      tags.length > 0
-        ? tags
-            .map((tag) =>
-              tagHtml(
-                tag,
-                base,
-                top && top.record.id === tag.id ? { day: top.day } : undefined,
-              ),
-            )
-            .join("\n")
-        : `<p class="empty">Bare steel. Nobody's tagged it yet.</p>`;
-    return c.html(
-      renderSimplePage({
-        title: "The train",
-        description:
-          "A freight train of agent-written tags, filling front to back. Each tag is recorded verbatim and rides in the order it arrived.",
-        path: "/train",
-        bodyHtml: `<section>
-          <p class="menu-desc">${escapeHtml(HEADER_LINE)}</p>
-          ${wall}
-        </section>`,
-      }),
-    );
-  }
-
-  return c.json({
+  /*
+   * Hoisted so the markdown twin renders the same object the JSON
+   * serves rather than a second copy.
+   */
+  const wallPayload = {
     note: HEADER_LINE,
     tags: tags.map((tag) => ({
       tag: tag.tag,
@@ -134,5 +113,43 @@ trainRoutes.get("/train", async (c) => {
       "Only tags the keeper has walked past and approved appear here. A tag he doesn't put up keeps its certificate, which verifies the same as any other — the wall is placement, not proof.",
     content_note:
       "Every tag is written by whoever bought it. Recorded exactly as it arrived, never interpreted, and never the store's own words.",
-  });
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/train",
+      title: "The Train",
+      description:
+        "Tags bought on the wall, oldest first, each recorded verbatim as it arrived. The day's top bid takes the head of the train — a note about one day's money, never a standing title.",
+      document: wallPayload as unknown as Record<string, unknown>,
+    });
+  }
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    const wall =
+      tags.length > 0
+        ? tags
+            .map((tag) =>
+              tagHtml(
+                tag,
+                base,
+                top && top.record.id === tag.id ? { day: top.day } : undefined,
+              ),
+            )
+            .join("\n")
+        : `<p class="empty">Bare steel. Nobody's tagged it yet.</p>`;
+    return c.html(
+      renderSimplePage({
+        title: "The train",
+        description:
+          "A freight train of agent-written tags, filling front to back. Each tag is recorded verbatim and rides in the order it arrived.",
+        path: "/train",
+        bodyHtml: `<section>
+          <p class="menu-desc">${escapeHtml(HEADER_LINE)}</p>
+          ${wall}
+        </section>`,
+      }),
+    );
+  }
+
+  return c.json(wallPayload);
 });

@@ -1,0 +1,119 @@
+{
+  "observed_at": "2026-09-15T15:08:01.776Z",
+  "scope": "Unsigned live quotes and SDK selection only. No signature or payment submitted. Selection uses the SDK private selector to avoid invoking a signer.",
+  "versions": {
+    "core": "2.25.0"
+  },
+  "mcp": {
+    "is_error": true,
+    "version": 2,
+    "text_matches": true,
+    "has_retry_key": true
+  },
+  "discovery": {
+    "observed_at": "2026-09-15T15:11:52.169Z",
+    "scope": "npm run doors:check -- --json; read-only, no baseline updated. Exit 1 for the advance origin-trial expiry warning.",
+    "criteria": [
+      {
+        "door": "raw_api",
+        "tally": {
+          "met": 7,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "door": "backend_mcp",
+        "tally": {
+          "met": 5,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "door": "computer_use",
+        "tally": {
+          "met": 4,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "door": "browser_automation",
+        "tally": {
+          "met": 4,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "door": "webmcp",
+        "tally": {
+          "met": 4,
+          "partial": 1,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "door": "site_assistant",
+        "tally": {
+          "met": 3,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      }
+    ],
+    "exceptions": [
+      {
+        "key": "webmcp/origin_trial_unexpired",
+        "was": "met",
+        "now": "partial",
+        "note": "an origin trial ends 2026-10-15, in 29 days (2 tokens, soonest shown)"
+      }
+    ],
+    "reviews_due": []
+  },
+  "http": [
+    {"item":"spot_check","status":402,"header_bytes":9492,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"1000"}},
+    {"item":"settlement_attestation","status":402,"header_bytes":12096,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"4000"}},
+    {"item":"small_blessing","status":402,"header_bytes":8348,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"5000"}},
+    {"item":"settlement_reconciliation","status":402,"header_bytes":10520,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"6000"}},
+    {"item":"daily_fortune","status":402,"header_bytes":8304,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"10000"}},
+    {"item":"the_confession","status":402,"header_bytes":9648,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"10000"}},
+    {"item":"attestation_bundle","status":402,"header_bytes":9812,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"50000"}},
+    {"item":"the_mandate","status":402,"header_bytes":10448,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"100000"}},
+    {"item":"the_case_file","status":402,"header_bytes":10768,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"250000"}},
+    {"item":"window_pick","status":402,"header_bytes":8432,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"490000"}},
+    {"item":"hello","status":402,"header_bytes":8068,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"500000"}},
+    {"item":"good_buyer","status":402,"header_bytes":10284,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"990000"}},
+    {"item":"signature_agent_card","status":402,"header_bytes":9776,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"990000"}},
+    {"item":"the_statement","status":402,"header_bytes":10364,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"990000"}},
+    {"item":"luckies","status":402,"header_bytes":8188,"decoded":true,"offers":15,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"990000"}},
+    {"item":"pack","status":402,"header_bytes":8380,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"990000"}},
+    {"item":"coffees_for_closers","status":402,"header_bytes":9232,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"990000"}},
+    {"item":"bitcoin_anchor","status":402,"header_bytes":9660,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"1000000"}},
+    {"item":"context_anchor","status":402,"header_bytes":9600,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"1000000"}},
+    {"item":"passport_refresh","status":402,"header_bytes":9736,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"1000000"}},
+    {"item":"graffiti_on_a_train","status":402,"header_bytes":9224,"decoded":true,"offers":15,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":true,"network":"eip155:8453","amount":"1000000"}},
+    {"item":"a2a_repair_kit","status":402,"header_bytes":9220,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"standing_watch","status":402,"header_bytes":9212,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"service_audit","status":402,"header_bytes":9516,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"conformance_watch","status":402,"header_bytes":9672,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"onpage_audit","status":402,"header_bytes":9584,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"launch_check","status":402,"header_bytes":9652,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"opening_day","status":402,"header_bytes":9712,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"provenance_check","status":402,"header_bytes":9732,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"recurring_patronage","status":402,"header_bytes":8488,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"trust_profile","status":402,"header_bytes":9688,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"operator_statement","status":402,"header_bytes":10280,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"certificate_of_patronage","status":402,"header_bytes":8248,"decoded":true,"offers":15,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"aura_walk","status":402,"header_bytes":10596,"decoded":true,"offers":5,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}},
+    {"item":"the_collab","status":402,"header_bytes":8972,"decoded":true,"offers":15,"networks":["eip155:8453","eip155:137","eip155:42161","eip155:480","solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],"default_client":{"selects":false,"reason":"All payment requirements were rejected by spendControls.maxAmountPerPayment ($1, including USDC). Raise maxAmountPerPayment, set it to false to disable, set allowedAssets[].maxAmountPerPayment for a per-asset atomic cap, or set spendControls: false to disable all spend controls."}}
+  ]
+}

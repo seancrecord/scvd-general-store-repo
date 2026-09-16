@@ -143,7 +143,15 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /ledger/:week{[0-9]{4}-W[0-9]{2}}",
   "GET /case/:case_id",
   "GET /almanac/:slug",
-  "GET /directory/:slug",
+  /*
+   * The pattern is part of the route's name here, as it is for the
+   * samples and ledger entries above. It gained one on 2026-09-16 so
+   * that `/directory/x402scan.md` would stop matching as a listing
+   * named "x402scan.md" and fall through to the `.md` twin handler
+   * in notFound — the suffix trap. The door is the same door; the
+   * inventory has to call it what Hono now calls it.
+   */
+  "GET /directory/:slug{[a-z0-9-]+}",
   "GET /gazette/:issue{issue-[0-9]+}",
   /**
    * EVIDENCE AND INSTRUMENT ROOMS THAT SHOULD PROBABLY BE COUNTED, and

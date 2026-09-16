@@ -433,7 +433,7 @@ function limitsFor(keyResolution: string): string[] {
 }
 
 export const CONFLICT =
-  "WE COMPETE WITH SOME OF THE ISSUERS YOU MIGHT SEND US. This store sells x402 goods; a verdict about a rival's artifact from us is worth exactly as much as the method behind it. That method is MIT-licensed, zero-dependency and identical to the file this endpoint runs — so the correct amount of trust to place in this response is none, and the correct thing to do with a verdict that matters is reproduce it offline.";
+  "WE COMPETE WITH SOME OF THE ISSUERS YOU MIGHT SEND US. This store sells x402 goods, so a verdict from us about a rival's artifact is worth no more than the method behind it. That method is MIT-licensed, zero-dependency, and byte-identical to the file this endpoint runs \u2014 reproduce any verdict that matters offline, and check ours against it.";
 
 const RUN_IT_YOURSELF =
   "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier — same code, runs on your machine, no network needed if you supply the public key. If this endpoint and that file ever disagree, the file is right and we want to hear about it at /api/letter.";

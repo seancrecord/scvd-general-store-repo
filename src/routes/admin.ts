@@ -623,6 +623,7 @@ adminRoutes.get("/admin/take", async (c) => {
   ]);
   const books = shelf(allTimeStats, null, "all-time stats", notes);
   const body = renderTakePage({
+    stats: books?.stats,
     take: shelf(take, null, "the take", notes),
     allTime: books
       ? {
@@ -3513,7 +3514,22 @@ adminRoutes.get("/admin/bounties", async (c) => {
 });
 
 adminRoutes.get("/admin/declines", async (c) => {
-  const report = await readDeclines(c.env);
+  /**
+   * THE WINDOW, ASKED FOR (2026-09-16). On a day that booked more
+   * declines than the scan cap, everything older sat beyond reach with
+   * no way to request it. Name an item, a client, a reason or a date
+   * window and the scan spends a deeper budget walking past the rest.
+   * Every parameter is optional and absent means the whole desk, so
+   * the bare URL behaves exactly as it always has.
+   */
+  const filter = {
+    ...(c.req.query("item") ? { item: c.req.query("item") as string } : {}),
+    ...(c.req.query("ua") ? { ua: c.req.query("ua") as string } : {}),
+    ...(c.req.query("reason") ? { reason: c.req.query("reason") as string } : {}),
+    ...(c.req.query("since") ? { since: c.req.query("since") as string } : {}),
+    ...(c.req.query("before") ? { before: c.req.query("before") as string } : {}),
+  };
+  const report = await readDeclines(c.env, undefined, filter);
   // The trace exists to read A BUYER'S sequence. Picking the busiest
   // non-house client picked the busiest PROBER instead: a conformance
   // walker hits four doors in a morning and no real buyer ever
@@ -3542,7 +3558,18 @@ adminRoutes.get("/admin/declines", async (c) => {
 adminRoutes.get("/admin/trace", async (c) => {
   const ua = c.req.query("ua") ?? "";
   if (!ua) return c.html(renderTracePage(null));
-  return c.html(renderTracePage(await traceClient(c.env, ua)));
+  /**
+   * THE WINDOW (2026-09-16). The raw stream is mostly catalogue
+   * traffic, so a flat cap reaches about two hours on a store being
+   * walked — the keeper could see a client's burst on the desk and not
+   * what it did around it. `since` also tells the scan where to STOP:
+   * rows arrive newest-first, so nothing below the window can match.
+   */
+  const window = {
+    ...(c.req.query("since") ? { since: c.req.query("since") as string } : {}),
+    ...(c.req.query("before") ? { before: c.req.query("before") as string } : {}),
+  };
+  return c.html(renderTracePage(await traceClient(c.env, ua, undefined, window)));
 });
 
 /**

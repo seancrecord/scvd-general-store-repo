@@ -1,0 +1,80 @@
+{
+  "base_commit": "01a97e7d4be5ec9fc9d27b263c1b2c36c06b3fac",
+  "integrated_original_commit": "e7c6d06d8a73ac9291b269cddc1f09dcf6c42205",
+  "runtime_and_test_hashes": {
+    "src/routes/webmcp.ts": "ef78b5e34c4ca1f491f19901b459bf039f8cfbb44be800d46d5d5253470c1264",
+    "webmcp/purchase.js": "68f79f4c808ef9d1c2d62c278e1a063eca9584a6ce30d22af00953e527a0a165",
+    "test/webmcp-purchase.spec.ts": "c8bfd574ab4bc7727b602250b96b4fc226b8ee1b600d078fbee7a4d3d392edcf",
+    "test/stock-fetch-purchase.spec.ts": "7758ec4f530e8eab8b5665eca5f3715807a6b86ecc81ba5f7e2de903f0cde570",
+    "webmcp/purchase.test.mjs": "0c8f3234b533bb08f0c5f9ff9643c9cb4326eb26a0a2a712310993c90443da9a",
+    "package-lock.json": "1c3fb22509cbf35aa0a0a533527e24b45613650907c6669abdce5eff0c417e20"
+  },
+  "checks": [
+    {
+      "name": "scvd-reach-recovery-red.log",
+      "sha256": "c063e573d0e5205fa20460a5cda8fb8cef305e5fc14352ed6bc05c25c79416a8"
+    },
+    {
+      "name": "scvd-reach-schema-red.log",
+      "sha256": "888595e3dca3c08f97b1f8614a8af2bcfc00de4b3e9d207098e62b9cba8aa1bb"
+    },
+    {
+      "name": "scvd-reach-focused-green.log",
+      "sha256": "fe7d7cb69808ae155e61d403f7cd14acbe5c8b264576f0451a8be6389ab6eae6"
+    },
+    {
+      "name": "scvd-reach-till-green.log",
+      "sha256": "7934ab18d604fdc9b5b71feb0cd88d6a612d43c79e74c384f79537c94c37cc94"
+    },
+    {
+      "name": "scvd-reach-typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "name": "scvd-reach-build.log",
+      "sha256": "9911488bd317b4e7140a8c3f06be0d0514f0906fd6eff832becc1906722a2863"
+    },
+    {
+      "name": "scvd-reach-audit.log",
+      "sha256": "d88204f72dec06bf6c993a549a351b871fc5da9250beb3d40a24093eab8a4de0"
+    },
+    {
+      "name": "scvd-reach-claims.log",
+      "sha256": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99"
+    },
+    {
+      "name": "scvd-reach-docs-release.log",
+      "sha256": "94628239fdfffd64b8b9581495742a6eaa32a38d30ae3a5bfca8b60189caa111"
+    }
+  ],
+  "full_suite_status": "passed",
+  "recorded_at": "2026-09-16T10:10:01.516957+00:00",
+  "full_suite": {
+    "command": "caffeinate -i npm test -- --maxWorkers=6 --bail=1",
+    "exit_code": 0,
+    "files_passed": 732,
+    "tests_passed": 14344,
+    "existing_skipped": 1,
+    "duration_seconds": 1971.59,
+    "log_sha256": "a3b509b946419b648a6c7e09e922e6d169e4678bf04c5363620af3e9b2288be6"
+  },
+  "controls": {
+    "browser_retention_without_fix": "12 passed, 1 failed as expected",
+    "schema_without_fix": "3 passed, 1 failed as expected",
+    "focused_workers": "2 files, 5 tests passed",
+    "till_and_browser_bridge": "61 tests passed",
+    "typecheck": "passed",
+    "both_worker_bundles": "passed",
+    "audit": "clean with 4 existing warnings within budget 8",
+    "claims": "48 of 48 resolved; zero unbound",
+    "docs_check": "passed (advisory)",
+    "original_recovery_patch_reused": true,
+    "qualification_json_unchanged": true,
+    "no_live_payment": true
+  },
+  "limits": [
+    "Local wallet signing and facilitator responses are test doubles.",
+    "GitHub required CI, main merge and live served-module verification follow this local validation.",
+    "No paid WebMCP or CDP-managed-wallet acceptance is claimed."
+  ]
+}

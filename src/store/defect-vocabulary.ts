@@ -22,10 +22,20 @@
  * finding of it, and — the part that actually matters for comparing
  * instruments — whether it is detectable WITHOUT PAYING.
  *
- * THE METHOD FIELD IS THE INTEROP. Our census sends one unpaid GET; a
- * paid walk settles real money. A door can be clean to us and defective
- * to them with neither instrument wrong, because we cannot see what
- * only money reveals. Publishing which side of that line each defect
+ * THE METHOD FIELD IS THE INTEROP. Our census sends one unpaid knock;
+ * a paid walk settles real money. A door can be clean to us and
+ * defective to them with neither instrument wrong, because we cannot
+ * see what only money reveals.
+ *
+ * "ONE UNPAID GET" IS WHAT THIS SAID UNTIL 2026-09-16, and the word
+ * GET was doing load-bearing work nobody had checked. The census sent
+ * GET and only GET, so a door taking POST answered 405 and was
+ * published under `no-402` — "listed, but serves no payment
+ * challenge" — while serving a flawless challenge one verb over. The
+ * class's own assertion said "to an unpaid GET", so the vocabulary
+ * was not merely failing to catch our instrument: it was AUTHORISING
+ * it. A definition that makes a wrong finding correct is worse than a
+ * missing one, and it is exactly what this file exists to prevent. Publishing which side of that line each defect
  * falls on is what turns "we disagree" into "we measured different
  * things", and it is the single most useful thing this file does.
  *
@@ -35,8 +45,10 @@
  * survives contact with a taxonomy or the taxonomy goes.
  */
 
+export const MPP_CORE_DEFECT = "mpp-core-observable-invalid";
+
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "17";
+export const DEFECT_VOCABULARY_VERSION = "19";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -194,6 +206,20 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     what_changed:
       "advertised-version-unpayable becomes obtainable. Its assertion, falsifier, costs and boundary are UNCHANGED; what moved is our_signal, which named `walkabout ledger: advertised_version_unpayable` — a file in this store's research directory. A class is marked detectable: \"paid\" to tell a buyer the finding exists on the other side of money, and pointing that buyer at our field notes tells them we saw it once. The launch check now reads every refusal on its settle stage rather than only recording the status: it compares the offer the door serves AFTER refusing a correctly signed payment against the offer it served unpaid, on the five material terms alone, and reports advertised-version-unpayable present, not present, or not checked. So the signal a reader joins on is now a stage of a paid instrument they can commission, with the ledger kept beside it because the research reading is still real and still reproducible. The comparator is the corrected one from v15 — scheme, network, payTo, asset, amount, with nonces, expiries and timeouts free to rotate — and it keeps the v15 rule that it never returns a quiet clean: a refusal carrying no readable challenge reads `not checked`, which is a different fact from `not present` and says so in the stage line a buyer reads.",
   },
+  {
+    version: "18",
+    date: "2026-09-16",
+    at_the_instigation_of: "the keeper, completing separately versioned draft-01 core support",
+    what_changed: "Added an unpaid MPP observable-core finding under mpp-core-v1 and core draft-01. It identifies failed named checks, with unmeasured binding, registry and payment behavior separate. The historical mpp-v1 battery and its assertions remain unchanged.",
+  },
+  {
+    version: "19",
+    date: "2026-09-16",
+    at_the_instigation_of:
+      "the operator of a POST-only endpoint this store had published not_ready, who asked for the exact method, URL, headers and timestamp our probe used",
+    what_changed:
+      "`no-402`'s ASSERTION AND FALSIFIER CHANGE — the first time this vocabulary has narrowed a class because it authorised a wrong finding of ours. Both texts named GET: the class asserted a 402 \"to an unpaid GET\" and was falsified only by a 402 \"to an unauthenticated GET\". Every probe this store runs sent GET and nothing else, so a door that declares POST in its own OpenAPI, answers 405 to GET and serves a valid x402 v2 challenge to POST satisfied the class as written. It was published not_ready on its passport page, entered the corpus, and an automated note went to the operator's security contact naming the failed check. The class now asserts a 402 to a method THE RESOURCE ACCEPTS, and a 405 or 501 to the probing instrument's method now FALSIFIES a finding of this class outright. The old text stays readable above, per the append rule. Nothing already signed is re-scored: rows sealed under v17 were rendered under the criteria as they stood and stand as history. The repair hint gains the Allow header, because the door that caught us sends none and an indexer that reads Allow would have found it. Cross-instrument consequence, stated plainly: any instrument mapping to this class that probes with a single hard-coded method is making a claim v19 does not support.",
+  },
 ];
 
 /** The date this file's cross-instrument mappings were last verified. */
@@ -335,15 +361,15 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     id: "no-402",
     title: "Listed, but serves no payment challenge",
     asserts:
-      "The URL a directory lists answers 402 Payment Required to an unpaid GET.",
+      "The URL a directory lists answers 402 Payment Required to an unpaid request using a method the resource accepts — the method its catalog, challenge or specification declares, or, where none is declared, a method the endpoint does not refuse as a method.",
     costs:
       "Every buyer routed here finds no challenge at all. The listing is an advertisement for a door that does not open.",
     detectable: "unpaid",
     our_signal: "status-402",
     falsified_by:
-      "The same URL answering 402 with a parseable challenge to an unauthenticated GET at the stated moment. A 402 that appears only for some callers is a different finding, not this one.",
+      "The same URL answering 402 with a parseable challenge to an unauthenticated request, by ANY HTTP method, at the stated moment. A 405 or 501 to the probing instrument's method falsifies a finding of this class outright: a method refusal is an observation about the request, not about the challenge, and an instrument that reports this class without having tried a method the door accepts has published a claim it has no evidence for. A 402 that appears only for some callers is a different finding, not this one.",
     repair_hint:
-      "Serve 402 with a PAYMENT-REQUIRED challenge at the exact URL your listing names. The commonest causes are a listing that points at a marketing page instead of the paid resource, and a proxy or CDN answering before your x402 middleware does. If the door moved, update the listing.",
+      "Serve 402 with a PAYMENT-REQUIRED challenge at the exact URL your listing names. The commonest causes are a listing that points at a marketing page instead of the paid resource, and a proxy or CDN answering before your x402 middleware does. If the door moved, update the listing. If your door takes POST rather than GET, both halves of RFC 9110 §15.5.6 are worth serving on the refusal — the 405 AND an Allow header naming the method — because an indexer or preflight that reads Allow finds your door on the first try, and one that does not will keep asking the wrong question.",
     buyer_hint:
       "Do not pay, and do not retry with money: there is no challenge to sign against. Treat the listing as pointing somewhere other than the paid resource; if you hold a different URL for the same service, preflight that one instead.",
   },
@@ -685,6 +711,19 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
    * not a class (a door with no Payment challenge speaks another
    * wire); the four MPP advisories are advisories, not classes.
    */
+  {
+    id: MPP_CORE_DEFECT,
+    title: "An observable MPP core requirement fails",
+    asserts: "The named observable core check passes under mpp-core-v1 and its cited draft-01 source. The field, response condition and failed challenge indexes determine the assertion; unmeasured registry, binding and payment behavior make no assertion.",
+    costs: "A buyer can receive an ambiguous or malformed challenge, select an unsupported credential header, or reuse cacheable or expired payment terms. The observation identifies the failing condition without claiming a payment was attempted.",
+    detectable: "unpaid",
+    our_signal: "mpp_core.checks with state fail, under the core block's cited battery and source digest",
+    falsified_by: "The captured response satisfying the named check under the same battery at the observation time, or evidence that the required field was not captured and the check should have remained unmeasured.",
+    repair_hint: "Correct the named auth parameter, encoding, expiry or response header in the challenge producer, then obtain a fresh read. A passing core subset does not establish method validity or payment delivery.",
+    buyer_hint: "Keep the cited check and observation time. Resolve the reported condition before constructing a credential, and independently validate the chosen method and payment terms; this store's till does not speak MPP.",
+    sourced_by: "Observable requirements of draft-httpauth-payment-01, read from tempoxyz/mpp-specs on 2026-09-15. The aggregation into one named core-subset class is this store's reading rule.",
+    registered: "2026-09-15",
+  },
   {
     id: "mpp-challenge-id",
     title: "MPP challenge with no id",

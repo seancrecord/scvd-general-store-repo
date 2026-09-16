@@ -857,7 +857,16 @@ export async function verifyNext(
  */
 export interface NoteAudit {
   at: string;
-  verdict: "ready" | "not_ready" | "unreachable";
+  /**
+   * `method_unresolved` (2026-09-16) is why the re-read exists. When
+   * this appears on a host a note already went to, the note was
+   * drafted from a reading the current instrument will no longer
+   * make — our probe could not find the door's verb, and the round
+   * that mailed them scored the method refusal as a failed check.
+   * The desk names the disagreement and never resolves it by
+   * arithmetic; see auditSentNotes.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "method_unresolved";
   failed: string[];
   battery?: string;
 }
@@ -1005,7 +1014,25 @@ export function claimFor(
   week: string | undefined,
 ): { claim: ClaimedNote | null; baseline: AuditBaseline } {
   if (entry.claimed) return { claim: entry.claimed, baseline: "note" };
-  if (door && door.verdict !== "not_probed" && door.verdict !== "ready") {
+  /*
+   * `method_unresolved` JOINS `not_probed` HERE (2026-09-16), and this
+   * is the line that matters most in the whole change. A note drafted
+   * from a round row is what reached the operator whose POST-only door
+   * we had published not_ready: the desk read a failed `status-402`,
+   * drafted "got an answer that did not pass our readiness check",
+   * named the check, and sent it to his security contact.
+   *
+   * A door whose verb we could not find has NO finding to write to
+   * anybody. Drafting one would be this store mailing an operator
+   * about our own reach, over our own name, citing a check that never
+   * ran. Not a softer note — no note.
+   */
+  if (
+    door &&
+    door.verdict !== "not_probed" &&
+    door.verdict !== "method_unresolved" &&
+    door.verdict !== "ready"
+  ) {
     return {
       claim: claimFrom(
         { at: door.observed_at ?? "", verdict: door.verdict, failed: door.failed },
@@ -1178,6 +1205,12 @@ export async function auditSentNotes(
     const probe = await probeHost(env, door.url);
     const audit: NoteAudit = {
       at: now.toISOString(),
+      /*
+       * not_probed still maps to unreachable (we declined to knock);
+       * method_unresolved rides through under its own name, because
+       * "we knocked and could not find the verb" is precisely the
+       * disagreement this re-read was built to surface.
+       */
       verdict: probe.verdict === "not_probed" ? "unreachable" : probe.verdict,
       failed: probe.failed,
       ...(probe.battery ? { battery: probe.battery } : {}),

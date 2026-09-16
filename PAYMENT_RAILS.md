@@ -22,6 +22,12 @@ Base browser-till test is recorded in
 `docs/BROWSER_CHECKOUT_2026-09-06.md`; it does not prove paid WebMCP
 completion, every chain, or every browser/extension combination.
 
+September 16 UTC qualification: all 35 discovered catalog GET quotes parsed
+with the locked x402 2.25.0 client; World required an explicit token policy
+with a spending cap. This establishes unpaid offer selection, not new paid
+acceptance on every rail. MCP, browser, package and release boundaries are
+recorded in [the dated reach reading](docs/PAYMENT_REACH_QUALIFICATION_2026-09-16.md).
+
 ## Historical work orders and decisions
 
 September 15 follow-through: historical catalog recovery has a completed
@@ -276,6 +282,81 @@ payable here, add its object to that array in `paidOp()`
 (`src/routes/openapi.ts`); `test/openapi-discovery-shape.spec.ts`
 pins the array to exactly `[{ x402: {} }]` and will fail until it is
 updated, so the reminder is a test, not a memory.
+
+**The array was written correctly and read as absent for five days
+(2026-09-16 note).** x402scan's Add API run listed 191 resources and
+then reported, once per paid operation at each of two layers, that a
+paid endpoint declares no supported payment protocols — 74 notices —
+plus one saying the document uses the legacy flat `x-payment-info`
+format. Read against the validator all three indexers actually run,
+`@agentcash/discovery` v1.7.5, not inferred from the message: its
+`resolvePaymentInfo` chooses a parser from `typeof
+x-payment-info.price`. An OBJECT goes to the structured parser, which
+keeps `protocols` as written. A STRING — which is what the flat hint
+added on 2026-09-11 made it — goes to `normalizeLegacyProtocols`,
+which keeps only array entries that are themselves strings and
+therefore drops `[{ x402: {} }]` entirely. So the flat price hint was
+not a second, harmless spelling beside the array; it was what decided
+the array would never be read. `discoveryPriceHint()` now returns the
+structured `price: { mode, amount | min/max, currency }` object and
+the flat `pricingMode`/`price`/`minPrice`/`maxPrice`/`currency` keys
+are gone; the test pins them ABSENT, because their return is silent.
+Two things came back with it: the protocol labels the listing renders,
+and `currency`, which the legacy path drops from a fixed price — the
+listing had been rendering an amount with no unit. `price_usdc` and
+`x-payment.price_usdc_options` did not move, and they are what this
+store's own readers (`openapiPriceFor`) have always read.
+
+**Proving the origin, rather than asserting it (2026-09-16).** The
+same validator reads `x-agentcash-provenance.ownershipProofs` from the
+root of `openapi.json` (older fallback: `x-discovery.ownershipProofs`)
+and verifies each entry as a signature over THE BARE ORIGIN STRING —
+`https://scvd.store`, no trailing slash and no path — by one of the
+payTo addresses the accepts name. A match moves the origin from
+`origin_hosted` to `ownership_verified` and marks each matching accept
+verified. The proofs arrive by `wrangler secret put
+ORIGIN_OWNERSHIP_PROOFS`; unset, the extension is absent, because an
+origin with nothing to prove should say nothing rather than publish
+`ownershipProofs: []` and look like it passed. The private key is the
+keeper's and never enters this repository or an agent session in it:
+sign the origin, paste the signature.
+
+    cast wallet sign --private-key $KEY "https://scvd.store"
+
+Two checks, because they fail differently and neither covers the
+other. `test/origin-ownership-proof.spec.ts` guards the MECHANISM —
+that the message a keeper signs is the message a reader verifies, that
+a trailing slash or a stranger's wallet fails, and that an unset
+secret publishes no claim. `npm run ownership:check` guards the VALUE
+by reading the DEPLOYED document, and exists for one ordinary event
+that silently falsifies a true claim: rotating the payTo wallet. The
+old proof goes on verifying against a wallet nobody is paid at, the
+new wallet is unproved, every served surface still looks right, and
+nothing else here would notice. `npm run ownership:test` is that
+script's own guard, since a verifier stuck at "false" would report the
+failure forever and one stuck at "true" would never report it.
+
+Two flags from the same run are NOT ours to clear, and are recorded
+here so nobody spends a day on them twice:
+
+- **`WWW-Authenticate` contains no Payment challenges** (reported as an
+  error, once per paid door). That check is `getWarningsForMppHeader`
+  — the MPP rulebook — and it fires on any 402 carrying a
+  `WWW-Authenticate` header that has no `Payment` challenge in it.
+  Ours carries `X402 resource_metadata="…"`, which is the RFC 9110
+  form pointing at the OAuth protected-resource document. The store
+  does not speak MPP (Part B, still WAIT-AND-SEE), so there is no
+  Payment challenge to add. Dropping the header to silence the check
+  would cost a correct discovery pointer to satisfy a rulebook we
+  have not opted into. Left as written.
+- **`/api/purchase-status/{purchase_id}` has no auth mode.** Its
+  `purchaseStatusToken` scheme is `type: http, scheme: bearer`, which
+  is the correct OpenAPI spelling for `Authorization: Bearer
+  <status_token>`. The validator's `resolveSecurityFlags` recognises
+  only `type: apiKey` and its own SIWX extension, so a bearer scheme
+  reads as no auth mode at all. Respelling it `apiKey` would clear
+  the flag and tell every generated client to send the token WITHOUT
+  the `Bearer ` prefix, which would break the door. Left as written.
 
 Part B ruled MPP to WAIT-AND-SEE on 2026-08-04 and named its own two
 reopening conditions: a named counterparty asking to pay that way, OR

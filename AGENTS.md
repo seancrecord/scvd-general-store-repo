@@ -31,7 +31,7 @@ chain-reading support is broader. `PAYMENT_RAILS.md` distinguishes them.
 ## Commands
 
 - Install: `npm install`
-- Test (full suite, required before any commit): `npm test`
+- Test (full suite; all CI shards must pass before merge): `npm test`
 - Typecheck: `npm run typecheck`
 - Bundle check (catches build-only breakage tests miss): `npm run build:check`
 - Local dev: `npm run dev`
@@ -51,8 +51,13 @@ chain-reading support is broader. `PAYMENT_RAILS.md` distinguishes them.
   `--executablePath=<path>`; a container with no display takes
   `--headless`.
 
-Run `npm run typecheck && npm test` before committing. `npm run
-build:check` when touching imports, config, or non-`.ts` modules — the
+Run `npm run typecheck` and focused tests for affected behavior before
+committing; use `npm test -- test/<behavior>.spec.ts` while iterating.
+The full suite runs across CI shards and remains required before merge.
+Do not substitute focused tests for that gate. Run the full suite locally
+when investigating broad interactions or CI failures; it is no longer
+required again locally for every commit (keeper-approved 2026-09-16).
+Run `npm run build:check` when touching imports, config, or non-`.ts` modules — the
 Workers build and the vitest pool disagree on some things (e.g. `.md`
 imports), and a green test suite can still fail the real deploy.
 

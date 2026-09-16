@@ -1024,8 +1024,18 @@ const BASE = "https://scvd.store";
 // it was written — an agent that follows a literal `{item_id}` has
 // been sent somewhere that does not exist. The paragraph is otherwise
 // unchanged; the digest moved because the backticks are bytes.
+// 2026-09-16: the guide names the shared payment breakdown and its MCP
+// resource. Counts are grouped by protocol, network and currency; the
+// existing checkout remains x402/USDC. No purchase instructions changed.
+// 2026-09-16, THE MERGE. Both sides re-pinned correctly for their own
+// edit — main for the shared payment breakdown, this branch for the UCP
+// profile paragraph and its backticks — so the merged guide is a third
+// text neither digest described. Both notes above stand. Verified
+// across the merge: reversing only this branch's paragraph from the
+// merged tree reproduces main's cbd2ff08, and this copy reproduces the
+// new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7a90afbd02a318496c8569283e86dd8c988d4ee5724fe08186ced908972b3136";
+  "76fbdd39c9db14283e2db58f23dbf9db81b1160c3827deee02d91f87bb00bf63";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

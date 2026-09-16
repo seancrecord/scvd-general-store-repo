@@ -1613,9 +1613,11 @@ what you ruled and what is still yours to look at.
 - **World ID** (#52 remainder). Your enrollment.
 - **`launch_check` on Polygon.** Fund the field wallet
   with Polygon USDC. Not a code task.
-- **Chrome origin-trial.** Expires 2026-11-17. Guard
-  already derives expiry from the token. Google mails.
-  Edge token still optional.
+- **Browser origin trials.** September 16 UTC live reading confirms both
+  tokens are present: Edge expires 2026-10-15; Chrome expires 2026-11-17.
+  Renew the earlier Edge grant before it ends. The door reader already
+  derives the soonest expiry from both tokens; this is an advance warning,
+  not a current outage. Evidence: `docs/PAYMENT_REACH_QUALIFICATION_2026-09-16.md`.
 
 ### Housekeeping, your machine
 
