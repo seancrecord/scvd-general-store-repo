@@ -1424,3 +1424,9 @@ GitHub CI remains the merge gate. Concurrent branch updates were retained,
 including the newer probe-method resolution and native MPP qualification;
 the focused integration tests and typecheck were rerun on that combined
 source. No timeout was increased and no assertion was removed.
+
+PR #735 merged concurrently at 14:43 UTC. The remaining JSON and metadata/
+privacy corrections therefore ship in a follow-up PR, preserving the
+merged transport fixes and subsequent main changes. The full CI gate is
+retained for automatic merge; the Downloads copy remains byte-identical
+to the submission import in this branch.

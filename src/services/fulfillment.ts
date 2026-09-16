@@ -1,4 +1,6 @@
 import { assertReportedChain } from "@/lib/receipt-context";
+import { feedbackInvite } from "@/store/agent-feedback";
+import { isHouseWallet } from "@/lib/channel";
 import { humanOrderEvidence } from "@/services/human-order-proof";
 import { creditPickup } from "@/lib/credit-terms";
 import { buyerGuidance } from "@/lib/buyer-guidance";
@@ -783,6 +785,34 @@ export async function fulfillPurchase(
             price_usdc: getMenuItem("settlement_attestation")!.price_usdc,
             note: `You now hold a settlement transaction — the input Settlement Attestation requires. $${getMenuItem("settlement_attestation")!.price_usdc} buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL.`,
           },
+        }
+      : {}),
+    /**
+     * THE ONE RECORD OF THIS STORE WE CANNOT WRITE (2026-09-16).
+     *
+     * Beside attest_this_purchase because it is the same move — the
+     * required input handed over at the moment the buyer holds it —
+     * and the opposite trade. That one sells an artifact we sign
+     * about the chain; this one costs us nothing, earns us nothing,
+     * and produces a row in the ERC-8004 Reputation Registry that
+     * belongs to the buyer. The contract forbids the agent owner from
+     * submitting, so we could not write it if we wanted to, and could
+     * not delete it afterwards.
+     *
+     * SKIPPED FOR HOUSE WALLETS, and not out of tidiness: this
+     * store's own wallet OWNS agent 86957, so the call the invite
+     * describes would revert for exactly that payer. Handing a house
+     * buyer an instruction that cannot execute is the class of thing
+     * this shop files corrections about.
+     */
+    ...(payment.transaction && payment.network && !isHouseWallet(env, payment.payer ?? "")
+      ? {
+          feedback_invite: feedbackInvite({
+            base: env.STORE_BASE_URL,
+            settlementTx: payment.transaction,
+            network: payment.network,
+            ...(payment.payer ? { payer: payment.payer } : {}),
+          }),
         }
       : {}),
     /**

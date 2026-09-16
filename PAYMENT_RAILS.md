@@ -307,6 +307,35 @@ listing had been rendering an amount with no unit. `price_usdc` and
 `x-payment.price_usdc_options` did not move, and they are what this
 store's own readers (`openapiPriceFor`) have always read.
 
+**Proving the origin, rather than asserting it (2026-09-16).** The
+same validator reads `x-agentcash-provenance.ownershipProofs` from the
+root of `openapi.json` (older fallback: `x-discovery.ownershipProofs`)
+and verifies each entry as a signature over THE BARE ORIGIN STRING —
+`https://scvd.store`, no trailing slash and no path — by one of the
+payTo addresses the accepts name. A match moves the origin from
+`origin_hosted` to `ownership_verified` and marks each matching accept
+verified. The proofs arrive by `wrangler secret put
+ORIGIN_OWNERSHIP_PROOFS`; unset, the extension is absent, because an
+origin with nothing to prove should say nothing rather than publish
+`ownershipProofs: []` and look like it passed. The private key is the
+keeper's and never enters this repository or an agent session in it:
+sign the origin, paste the signature.
+
+    cast wallet sign --private-key $KEY "https://scvd.store"
+
+Two checks, because they fail differently and neither covers the
+other. `test/origin-ownership-proof.spec.ts` guards the MECHANISM —
+that the message a keeper signs is the message a reader verifies, that
+a trailing slash or a stranger's wallet fails, and that an unset
+secret publishes no claim. `npm run ownership:check` guards the VALUE
+by reading the DEPLOYED document, and exists for one ordinary event
+that silently falsifies a true claim: rotating the payTo wallet. The
+old proof goes on verifying against a wallet nobody is paid at, the
+new wallet is unproved, every served surface still looks right, and
+nothing else here would notice. `npm run ownership:test` is that
+script's own guard, since a verifier stuck at "false" would report the
+failure forever and one stuck at "true" would never report it.
+
 Two flags from the same run are NOT ours to clear, and are recorded
 here so nobody spends a day on them twice:
 
