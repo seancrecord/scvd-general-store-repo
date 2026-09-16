@@ -443,12 +443,16 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 /** Both Workers share discovery checks; authenticated replay lives in the gate. */
-export const doorChecks: readonly MiddlewareHandler<HonoEnv>[] = [
-  noStore,
-  mppCheckoutCors,
-  shelfCheck,
-  bookRefusalBeforeGate,
-  argCheck,
-  admissionCheck,
-  paymentGate,
-];
+export function createDoorChecks(gate: MiddlewareHandler<HonoEnv> = paymentGate): readonly MiddlewareHandler<HonoEnv>[] {
+  return [
+    noStore,
+    mppCheckoutCors,
+    shelfCheck,
+    bookRefusalBeforeGate,
+    argCheck,
+    admissionCheck,
+    gate,
+  ];
+}
+
+export const doorChecks = createDoorChecks();

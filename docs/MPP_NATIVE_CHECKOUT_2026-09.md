@@ -80,6 +80,9 @@ explicitly, rather than applying a legacy x402 correction to it.
 
 ## Validation and next release
 
+The keeper/operator steps and acceptance evidence are in
+[the live qualification runbook](MPP_LIVE_QUALIFICATION_2026-09.md).
+
 `test/mpp-checkout.spec.ts` exercises the real route with the stock client,
 both Workers, deferred submission, changed input/key/credential refusal,
 expiry, concurrent requests, cross-protocol ownership, receipt persistence,
@@ -105,3 +108,12 @@ guide capability declarations for enabled surfaces; MCP transport qualification;
 remaining fulfillment families; and separate network/asset qualification.
 No Stripe, subscription, Solana or client-broadcast hash method follows from
 this Base/USDC pilot.
+
+The first CI run passed all four test shards but caught the doors bundle at
+1,616,795 bytes, above its existing 1,000,000-byte limit. A dynamic import in
+the shared payment gate still bundled native settlement into both Workers.
+The store now supplies the native loader at route assembly; discovery checks
+and the x402 gate implementation remain shared. The corrected local doors
+bundle is 935,710 bytes with the budget unchanged. An import-graph regression
+test fails before that separation and passes afterward, alongside real-route
+native checkout and public-door parity tests.
