@@ -1,0 +1,223 @@
+# THE GO HALF OF "ONE LAW IN THREE LANGUAGES".
+#
+# There is no registry to push to. A Go module is published by pushing
+# a git tag; proxy.golang.org fetches it from this repo the first time
+# somebody asks for it. So this workflow's whole job is to make the tag
+# correctly, and to refuse to make it when something is off.
+#
+# THE TAG IS PATH-PREFIXED, AND IT HAS TO BE. The module lives in a
+# subdirectory, so its tags are `x402-preflight-go/vX.Y.Z`, not
+# `vX.Y.Z`. A bare `v0.1.0` tag on this repo would advertise a module
+# at the repository root, which does not exist. The prefix is built
+# below from the directory name rather than typed, so the two cannot
+# drift apart.
+#
+# A TAG IS MORE PERMANENT THAN AN npm PUBLISH. The module proxy caches
+# by (module, version) forever and serves that copy to everyone; there
+# is no unpublish and no 72-hour window. Deleting the tag here does not
+# recall it. That is why this refuses to tag anything but a commit that
+# is already on the default branch: whatever gets a version number has
+# been through review, not just through somebody's branch.
+#
+# RULE 30 IS INTACT. workflow_dispatch ONLY: never on push, never on a
+# tag, never on a merge, never on a schedule. Nothing is published
+# unless a human presses the button. Do not add a trigger to this file.
+#
+# NO ONE-TIME SETUP. Unlike npm (a token) and PyPI (a trusted
+# publisher), this needs no account, no secret and no prior
+# authorisation — it pushes a tag to this repo with the token the run
+# already has.
+name: Publish Go module
+
+# Least privilege (OpenSSF Token-Permissions). `contents: write` is
+# granted on the job, not here, and is used for exactly one thing:
+# pushing the version tag.
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      module:
+        description: "Which module to publish"
+        required: true
+        type: choice
+        options:
+          - x402-preflight-go
+      # NO DEFAULT, ON PURPOSE — the same reasoning as the npm, PyPI
+      # and skill publishers. A prefilled version is a number that
+      # reads as current because nothing marks it as old, and one tap
+      # on a phone would ship it.
+      version:
+        description: "Version being published, without the v — must match the module's CHANGELOG"
+        required: true
+        type: string
+      dry_run:
+        description: "Check everything, tag nothing"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the version tag. Nothing else.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The whole history, because the check below has to prove
+          # this commit is an ancestor of the default branch, and a
+          # shallow clone cannot answer that.
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false # stdlib only; there is nothing to cache.
+
+      # THE REFUSALS THAT MAKE THE TYPED VERSION WORTH TYPING. A Go
+      # version is permanent once the proxy has seen it, so every one
+      # of these is cheaper than the mistake it prevents.
+      - name: Check the module against what you typed
+        id: check
+        env:
+          MODULE: ${{ inputs.module }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          # 1. The version must not carry the v. The tag adds it; a
+          #    typed "v0.1.0" would otherwise become "vv0.1.0".
+          case "$VERSION" in
+            v*) echo "::error::Type the version without the leading v — the tag adds it. You typed $VERSION."; exit 1 ;;
+          esac
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::$VERSION is not a MAJOR.MINOR.PATCH version."
+            exit 1
+          fi
+
+          # 2. The module directory must exist and be a module.
+          if [ ! -f "$MODULE/go.mod" ]; then
+            echo "::error::$MODULE/go.mod does not exist."
+            exit 1
+          fi
+
+          # 3. The module path in go.mod must be the one the proxy will
+          #    derive from this repo and this directory. If these
+          #    disagree, `go get` fails for everyone after the tag is
+          #    already permanent.
+          DECLARED=$(awk '$1 == "module" { print $2; exit }' "$MODULE/go.mod")
+          EXPECTED="github.com/${GITHUB_REPOSITORY}/${MODULE}"
+          if [ "$DECLARED" != "$EXPECTED" ]; then
+            echo "::error::$MODULE/go.mod declares $DECLARED; a tag from this repo publishes $EXPECTED."
+            exit 1
+          fi
+
+          # 4. The CHANGELOG must already name this version. Same
+          #    derive-or-refuse rule as the npm publisher: the
+          #    committed, reviewed file is the source of truth and the
+          #    typed number is a second pair of eyes (AT_SCALE rule 1).
+          if ! grep -Eq "^## ${VERSION//./\\.} " "$MODULE/CHANGELOG.md"; then
+            echo "::error::$MODULE/CHANGELOG.md has no '## $VERSION' heading. Write the entry in a commit first — this workflow confirms a version, it does not set one."
+            exit 1
+          fi
+
+          # 5. The tag must be new. Go versions are immutable at the
+          #    proxy; re-tagging does not republish, it just lies.
+          TAG="${MODULE}/v${VERSION}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::Tag ${TAG} already exists. Go module versions are immutable; bump and try again."
+            exit 1
+          fi
+
+          # 6. This commit must already be on the default branch. See
+          #    the header: a permanent version number only goes on
+          #    reviewed code.
+          DEFAULT="origin/${{ github.event.repository.default_branch }}"
+          if ! git merge-base --is-ancestor HEAD "$DEFAULT"; then
+            echo "::error::$(git rev-parse --short HEAD) is not on ${{ github.event.repository.default_branch }}. Merge first, then run this from the default branch."
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "${TAG} is new, on the default branch, and matches the CHANGELOG. Proceeding."
+
+      # The module is standard-library only by design, so its supply
+      # chain is empty and these run in seconds. A broken tag is worse
+      # than a broken tarball — it cannot be taken back.
+      - name: Vet, format and test
+        working-directory: ${{ inputs.module }}
+        run: |
+          set -euo pipefail
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "::error::gofmt would rewrite: $UNFORMATTED"
+            exit 1
+          fi
+          go vet ./...
+          go test ./...
+
+      # Prove the module builds the way a stranger will get it: from a
+      # clean module cache, by path, with nothing from this checkout on
+      # the side. This is the last cheap moment to find out that a file
+      # the tests import is not actually in the commit.
+      - name: Build the command as a consumer would
+        working-directory: ${{ inputs.module }}
+        run: go build ./...
+
+      - name: Create and push the tag
+        if: ${{ !inputs.dry_run }}
+        env:
+          TAG: ${{ steps.check.outputs.tag }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "$TAG"
+          git push origin "refs/tags/${TAG}"
+
+      # Ask the proxy for it once, so the first stranger to run
+      # `go get` is not also the one who waits for the fetch. A failure
+      # here is not a failed publish — the tag is pushed and the proxy
+      # will fetch it on demand — so it does not fail the run.
+      - name: Warm the module proxy
+        if: ${{ !inputs.dry_run }}
+        continue-on-error: true
+        env:
+          MODULE: ${{ inputs.module }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -fsS --retry 3 --retry-delay 5 \
+            "https://proxy.golang.org/github.com/${GITHUB_REPOSITORY}/${MODULE}/@v/v${VERSION}.info" \
+            || echo "Proxy has not fetched it yet; it will on first use."
+
+      - name: Say what happened
+        env:
+          MODULE: ${{ inputs.module }}
+          VERSION: ${{ inputs.version }}
+          TAG: ${{ steps.check.outputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            {
+              echo "### Dry run — nothing was tagged"
+              echo ""
+              echo "\`${TAG}\` passed every check: the module path matches this repo, the CHANGELOG names \`${VERSION}\`, the tag is new, this commit is on the default branch, and vet, gofmt, tests and build are clean."
+              echo "Run again with **dry_run unchecked** to tag and publish it."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Published \`${TAG}\`"
+              echo ""
+              echo "\`\`\`"
+              echo "go get github.com/${GITHUB_REPOSITORY}/${MODULE}@v${VERSION}"
+              echo "\`\`\`"
+              echo ""
+              echo "- https://pkg.go.dev/github.com/${GITHUB_REPOSITORY}/${MODULE}@v${VERSION}"
+              echo "- The tag is permanent: the module proxy caches by version and there is no unpublish."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
