@@ -65,8 +65,10 @@ a general-purpose wallet, may serve several doors, and may have
 received funds for reasons unrelated to the endpoint advertising it.
 The balances here make that caution concrete rather than decorative:
 the median is 1.717 USDC, the largest is 193.74, and **22 of the 64
-hold less than one dollar**. Those are not revenue figures and nothing
-here should be quoted as one.
+hold less than one dollar**. (Stated precisely, since the count is even
+and the convention matters: the two middle balances of the 64 are
+1.717 and 2.00, and the figure quoted here is the lower of them.)
+Those are not revenue figures and nothing here should be quoted as one.
 
 The 12 NOT_ESTABLISHED rows are the honest shape of the same limit: a
 zero balance with a non-zero nonce means funds may have arrived and
