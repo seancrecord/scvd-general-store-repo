@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import {
@@ -34,6 +36,49 @@ disagreementsRoutes.get("/disagreements", (c) => {
   const base = c.env.STORE_BASE_URL;
   const newestFirst = [...DISAGREEMENTS].sort((a, b) => b.published_on.localeCompare(a.published_on));
   const open = openDisagreements();
+
+  /*
+
+   * Hoisted so the markdown twin below renders the same
+
+   * object the JSON serves rather than a second copy.
+
+   */
+
+  const pagePayload = {
+    title: "Disagreements",
+    summary: DISAGREEMENTS_STANDFIRST,
+    states: DISAGREEMENTS_STATES,
+    triggered_not_scheduled: DISAGREEMENTS_TRIGGERED,
+    private_first: DISAGREEMENTS_PRIVATE_FIRST,
+    counterpart: COUNTERPART,
+    open: open.length,
+    on_record: DISAGREEMENTS.length,
+    none_open: open.length === 0 ? disagreementsNoneOpenLine() : undefined,
+    disagreements: newestFirst.map((entry) => ({ ...entry })),
+    what_this_is_not: DISAGREEMENTS_NOT,
+    disagreements_url: `${base}/disagreements`,
+    vocabulary: `${base}/defects`,
+    corrections: CORRECTIONS_POINTER,
+  };
+
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+
+    return jsonDocumentMarkdownResponse({
+
+      base,
+
+      path: "/disagreements",
+
+      title: "Disagreements",
+
+      description: "Where this store's reading and another instrument's diverge: both readings with their derivations, a state a reader can check, never a joint statement and never settled while it is not.",
+
+      document: pagePayload as unknown as Record<string, unknown>,
+
+    });
+
+  }
 
   if (wantsHtml(c.req.header("Accept"))) {
     const reading = (label: string, r: (typeof DISAGREEMENTS)[number]["ours"]) =>
@@ -82,20 +127,5 @@ disagreementsRoutes.get("/disagreements", (c) => {
     );
   }
 
-  return c.json({
-    title: "Disagreements",
-    summary: DISAGREEMENTS_STANDFIRST,
-    states: DISAGREEMENTS_STATES,
-    triggered_not_scheduled: DISAGREEMENTS_TRIGGERED,
-    private_first: DISAGREEMENTS_PRIVATE_FIRST,
-    counterpart: COUNTERPART,
-    open: open.length,
-    on_record: DISAGREEMENTS.length,
-    none_open: open.length === 0 ? disagreementsNoneOpenLine() : undefined,
-    disagreements: newestFirst.map((entry) => ({ ...entry })),
-    what_this_is_not: DISAGREEMENTS_NOT,
-    disagreements_url: `${base}/disagreements`,
-    vocabulary: `${base}/defects`,
-    corrections: CORRECTIONS_POINTER,
-  });
+  return c.json(pagePayload);
 });

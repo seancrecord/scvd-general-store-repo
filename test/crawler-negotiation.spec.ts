@@ -25,8 +25,20 @@ const BASE = "https://scvd.store";
  * a crawler that states a preference or for an unnamed agent.
  */
 
-/** Rooms that negotiate but serve no markdown: every named crawler gets the page. */
-const NEGOTIATED_PAGE_ONLY = ["/what"];
+/**
+ * Rooms that negotiate but serve no markdown: every named crawler
+ * gets the page.
+ *
+ * EMPTY SINCE 2026-09-16, and left here rather than deleted because
+ * the rule it guards has not gone anywhere — a reader that states no
+ * preference gets the PAGE wherever no markdown exists. What changed
+ * is that nowhere does. /what was the last entry; the sweep that
+ * followed the first markdown pass found eighty-two rooms with no
+ * markdown representation and closed all of them, so the list has
+ * nothing true to hold. A room added later that serves HTML and no
+ * markdown belongs here, and this loop will check it.
+ */
+const NEGOTIATED_PAGE_ONLY: readonly string[] = [];
 /**
  * Rooms with a real markdown twin: a reader gets it, an indexer gets
  * the page.
@@ -48,6 +60,7 @@ const NEGOTIATED_PAGE_ONLY = ["/what"];
 const NEGOTIATED_WITH_MARKDOWN = [
   "/menu/hello",
   "/menu/settlement_attestation",
+  "/what",
   "/conformance",
   "/corpus",
   "/doors",

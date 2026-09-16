@@ -7,6 +7,8 @@ import {
 } from "@/services/market";
 import { escapeHtml } from "@/lib/sanitize";
 import { datasetEnvelope } from "@/lib/dataset-envelope";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   readRegistryPulse,
@@ -361,8 +363,11 @@ registryRoutes.get("/atlas.json", async (c) => {
 registryRoutes.get("/inflows", async (c) => {
   const { readInflowPulse } = await import("@/services/inflow-pulse");
   const pulse = await readInflowPulse(c.env);
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
       ...datasetEnvelope({
         name: "Inflows to advertised x402 payment addresses",
         description:
@@ -389,7 +394,18 @@ registryRoutes.get("/inflows", async (c) => {
         ],
       }),
       ...pulse,
+    };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: c.env.STORE_BASE_URL,
+      path: "/inflows",
+      title: "Inflows",
+      description: "What arrived at the payment addresses public x402 doors advertise in their own 402 challenges, read from Base and Polygon over roughly a day per weekly round. Counts only: no address, host or sender appears here.",
+      document: pagePayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(pagePayload);
   }
   const latest = pulse.weeks[pulse.weeks.length - 1];
   const bodyHtml = `<section>
@@ -471,16 +487,11 @@ registryRoutes.get("/inflows", async (c) => {
 registryRoutes.get("/registry", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const pulse = await readRegistryPulse(c.env);
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    /*
-     * THE JSON HALF GETS THE CAVEATS THE HTML HALF ALREADY HAD.
-     * This page has carried careful JSON-LD in its markup since the
-     * corrections that fixed its vocabulary — and served the same
-     * numbers bare to anyone who asked for JSON, which is what an
-     * agent does. The reader least able to see a paragraph was the
-     * one handed the naked ratio.
-     */
-    return c.json({
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
       ...datasetEnvelope({
         name: "State of the public x402 registry",
         description:
@@ -503,7 +514,26 @@ registryRoutes.get("/registry", async (c) => {
         ],
       }),
       ...pulse,
+    };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/registry",
+      title: "State of the registry",
+      description: "A weekly running tally of the public x402 discovery list: how many listed doors answer a well-formed payment challenge, how many serve structurally valid signed offers, what the market charges, and how concentrated it is. Aggregates only, no names.",
+      document: pagePayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    /*
+     * THE JSON HALF GETS THE CAVEATS THE HTML HALF ALREADY HAD.
+     * This page has carried careful JSON-LD in its markup since the
+     * corrections that fixed its vocabulary — and served the same
+     * numbers bare to anyone who asked for JSON, which is what an
+     * agent does. The reader least able to see a paragraph was the
+     * one handed the naked ratio.
+     */
+    return c.json(pagePayload);
   }
   const latest = pulse.weeks[pulse.weeks.length - 1];
   const newestFirst = [...pulse.weeks].reverse();

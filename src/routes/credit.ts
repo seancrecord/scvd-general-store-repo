@@ -3,6 +3,8 @@ import { Hono } from "hono";
 import { recoverMessageAddress } from "viem";
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { isRecord } from "@/types";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -142,8 +144,11 @@ function creditJsonLd(base: string): string {
 creditRoutes.get("/credit", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const outstanding = usd(await creditOutstandingAtomic(c.env));
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
       terms: creditTerms(base),
       what_this_is: `Regulars' credit: ${CREDIT_RATE * 100}% of each eligible organic certificate purchase banks to the wallet that paid. A closed-loop rebate — the store's IOU, redeemable as USDC back to the earning wallet only, never transferable, never a token.`,
       rate_pct: CREDIT_RATE * 100,
@@ -153,7 +158,18 @@ creditRoutes.get("/credit", async (c) => {
       outstanding_all_wallets_usd: outstanding,
       read_a_balance: `${base}/api/credit/{wallet}`,
       cash_out: `POST ${base}/api/credit/challenge, sign it, then POST ${base}/api/credit/redeem`,
+    };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/credit",
+      title: "Regulars' credit",
+      description: `We reward our regulars: ${CREDIT_RATE * 100}% of eligible certificate purchases banks back to the wallet that paid it, so coming back costs less. No account, no signup — the wallet is the card. A closed-loop USDC rebate redeemable only by the wallet that earned it; never transferable, never a token.`,
+      document: pagePayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(pagePayload);
   }
   return c.html(
     renderSimplePage({

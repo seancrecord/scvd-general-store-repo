@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { MENU_ITEMS } from "@/store/menu";
@@ -406,6 +408,15 @@ howItWorksRoutes.get("/how-it-works.json", (c) => c.json(bodyJson(c.env.STORE_BA
 
 howItWorksRoutes.get("/how-it-works", (c) => {
   const base = c.env.STORE_BASE_URL;
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/how-it-works",
+      title: "How this store works",
+      description: "How scvd.store turns an observation of somebody else's payment endpoint into signed evidence a third party can check without trusting us — and what happens to your money if you buy our labour on top of it.",
+      document: bodyJson(base) as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({

@@ -1,5 +1,5 @@
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
-import { markdownCell } from "@/lib/json-markdown";
+import { jsonDocumentMarkdownResponse, markdownCell } from "@/lib/json-markdown";
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { EVIDENCE_DIGEST_DATED, readEvidence } from "@/services/corpus-evidence";
 import { mppCensusLine } from "@/services/mpp-census";
@@ -720,20 +720,32 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
     );
   }
   const roundCite = { base, what: "corpus round", which: `${brief.week} (snapshot ${brief.sequence})`, observed_at: brief.taken_at, url: `${base}/corpus/${brief.sequence}.json`, verify_url: `${base}/corpus/round/${brief.week}` };
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json(
-      {
-        ...brief,
-        weeks_held: known_weeks,
-        corrections: CORRECTIONS_POINTER,
-        ...citeBlock(roundCite),
-        cite_json: citeRow(base, { week: brief.week, sequence: brief.sequence, taken_at: brief.taken_at, digest: brief.digest, entry_url: `${base}/corpus/${brief.sequence}.json` }).json,
-      },
-      200,
-      lastModifiedOf(brief.taken_at),
-    );
-  }
+  /*
+   * Hoisted out of the c.json() call so the markdown twin below
+   * renders the same document the JSON serves rather than a second
+   * copy of it.
+   */
+  const payload = {
+    ...brief,
+    weeks_held: known_weeks,
+    corrections: CORRECTIONS_POINTER,
+    ...citeBlock(roundCite),
+    cite_json: citeRow(base, { week: brief.week, sequence: brief.sequence, taken_at: brief.taken_at, digest: brief.digest, entry_url: `${base}/corpus/${brief.sequence}.json` }).json,
+  };
   const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519; see its timestamp status and verify completed Bitcoin proofs independently. Not a ranking.`;
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: `/corpus/round/${brief.week}`,
+      title: `x402 endpoint readiness, week ${brief.week}`,
+      description,
+      dataUrl: `${base}/corpus/${brief.sequence}.json`,
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(payload, 200, lastModifiedOf(brief.taken_at));
+  }
   return c.html(
     renderSimplePage({
       title: `x402 endpoint readiness, week ${brief.week}: ${brief.doors.payable} of ${brief.doors.probed} probed doors payable`,
