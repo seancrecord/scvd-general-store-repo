@@ -19,6 +19,17 @@ five positive cases and three non-trigger cases. The signed-offer
 prompts contain the complete public fixtures and public verification
 key; there are no paste-later placeholders.
 
+The optional verifier skill is in
+[`chatgpt/scvd-x402-verifier/SKILL.md`](chatgpt/scvd-x402-verifier/SKILL.md),
+with its MCP dependency in `agents/openai.yaml`. Upload
+[`chatgpt/scvd-x402-verifier.zip`](chatgpt/scvd-x402-verifier.zip) in the
+portal's Skills section when ready to include it. The ZIP contains that
+skill folder and must be rebuilt if either source file changes. File
+validation and archive/source equality were checked; activation and
+tool routing still need testing in the target ChatGPT environment.
+Adding the skill does not change the live server or resolve the paid
+service offers currently included in preflight responses.
+
 **Name:** SCVD x402 Verifier
 **Subtitle:** Check x402 doors and receipts
 **Category:** DEVELOPER_TOOLS
