@@ -227,9 +227,39 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     )
     .join("\n");
 
+  /**
+   * A FILTERED DESK MUST SAY SO, LOUDLY. Every count below it is of
+   * MATCHING rows only, and a reader who missed one line of small
+   * print would otherwise read "3 intent-bearing declines" as the
+   * whole store rather than as one client on one door.
+   */
+  const f = r.filter;
+  const filterNote = !f
+    ? ""
+    : `<p style="border-left:4px solid #8c2f1b;padding-left:0.75em">
+      <strong>This is a FILTERED view.</strong> Every number on this page counts only rows
+      matching ${[
+        f.item ? `item <code>${escapeHtml(f.item)}</code>` : "",
+        f.ua ? `client containing <code>${escapeHtml(f.ua)}</code>` : "",
+        f.reason ? `reason containing <code>${escapeHtml(f.reason)}</code>` : "",
+        f.since ? `at or after <code>${escapeHtml(f.since)}</code>` : "",
+        f.before ? `before <code>${escapeHtml(f.before)}</code>` : "",
+      ]
+        .filter(Boolean)
+        .join(", ")} &mdash; not the store.
+      The scan walked ${r.index_rows} index rows and ${r.rows_scanned} raw rows to find them,
+      reaching back to <code>${escapeHtml(r.oldest_row_seen ?? "(nothing)")}</code>.
+      ${
+        r.declines.length === 0
+          ? "<strong>Nothing matched inside that reach</strong> &mdash; which is not the same as never happened, and the desk will not say the stronger thing."
+          : ""
+      }
+      <a href="/admin/declines">Drop the filter.</a></p>`;
+
   const body = `
   <section>
-    <h2>The decline desk</h2>
+    <h2>The decline desk${f ? " (filtered)" : ""}</h2>
+    ${filterNote}
     <p><strong>${r.index_rows}</strong> read from the decline index${r.index_complete ? " — every decline it holds, so nothing here is hidden by a cap" : " (index scan hit its cap: there are more)"},
     plus <strong>${r.rows_scanned}</strong> raw rows${r.capped ? " (that scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.
     <small>The index carries one key per decline and began on 2026-09-06; the raw stream carries every event ever booked, so a decline older than the index is only found if the capped scan reaches it. Before the index, a busy month could spend the whole cap on corpus reads and leave this desk reporting none while the funnel counted refusals.</small>

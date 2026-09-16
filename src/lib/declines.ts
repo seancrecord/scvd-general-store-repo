@@ -32,6 +32,75 @@ import { KV_KEYS } from "@/lib/kv-keys";
 const SCAN_CAP = 3000;
 const LIST_PAGE = 1000;
 
+/**
+ * THE DAY THE DESK OUTGREW ITS OWN CAP (2026-09-16).
+ *
+ * The index fixed the 2026-09-05 failure — a cap spent on corpus reads
+ * before it reached a single decline — by giving every decline a
+ * second key under a prefix where every key is one. That works until
+ * the DECLINES themselves outnumber the cap. On 2026-09-16 the newest
+ * 3000 index rows were all one day's, and the burst the keeper wanted
+ * to read (2026-09-15, one client, 48 seconds) sat just beyond reach
+ * with no way to ask for it.
+ *
+ * Raising SCAN_CAP for everyone buys one more day and costs every
+ * reader the reads. A FILTER is the better instrument: say which item,
+ * client, reason or window you want and the scan spends its budget
+ * walking PAST the rows you did not ask for, which is how you reach
+ * last week through this week's flood. The unfiltered desk is
+ * untouched and still stops at SCAN_CAP.
+ *
+ * The deeper budget is bounded and named, because an unnamed cap is a
+ * silent one — the same rule the raw scan's cap is written under.
+ */
+const FILTERED_SCAN_CAP = 40000;
+
+/** What the keeper asked to see. Every field narrows; empty means the whole desk. */
+export interface DeclineFilter {
+  /** Exact item key, as the books store it. */
+  item?: string;
+  /** Substring of the user-agent, case-insensitive. */
+  ua?: string;
+  /** Substring of the raw reason, case-insensitive. */
+  reason?: string;
+  /** ISO instant; rows at or after it. */
+  since?: string;
+  /** ISO instant; rows strictly before it. */
+  before?: string;
+}
+
+export function filterIsActive(filter: DeclineFilter | undefined): boolean {
+  return Boolean(
+    filter &&
+      (filter.item || filter.ua || filter.reason || filter.since || filter.before),
+  );
+}
+
+/** Whether one event is what was asked for. An absent field never narrows. */
+export function declineMatches(
+  event: { item: string; at: string; user_agent?: string; note?: string },
+  filter: DeclineFilter,
+): boolean {
+  if (filter.item && event.item !== filter.item) return false;
+  if (
+    filter.ua &&
+    !(event.user_agent ?? "(no user-agent)")
+      .toLowerCase()
+      .includes(filter.ua.toLowerCase())
+  ) {
+    return false;
+  }
+  if (
+    filter.reason &&
+    !(event.note ?? "").toLowerCase().includes(filter.reason.toLowerCase())
+  ) {
+    return false;
+  }
+  if (filter.since && event.at < filter.since) return false;
+  if (filter.before && event.at >= filter.before) return false;
+  return true;
+}
+
 /** Local input refusal precedes payment parsing/verification and settlement. */
 export type DeclineStage = "input" | "verify" | "settle";
 
@@ -129,6 +198,14 @@ export interface DeclineReport {
    * invisible; x402 v2 carries no "I would have paid on X".
    */
   rails_asked_for: Record<string, number>;
+  /**
+   * The oldest row the scan actually SAW, matching or not. Not the
+   * oldest decline: the reach of the look, so an empty filtered result
+   * can say "not found in this window" rather than "never happened".
+   */
+  oldest_row_seen: string | null;
+  /** What was asked for, echoed so the page cannot misreport its own counts. */
+  filter?: DeclineFilter;
   /**
    * Declines recorded with no reason attached. The verify-side reason
    * is remembered in-isolate by nonce, so a cross-isolate retry can
@@ -691,7 +768,13 @@ export function escalateSharedReasons(report: DeclineReport): SharedReason[] {
 export async function readDeclines(
   env: Env,
   scanCap = SCAN_CAP,
+  filter?: DeclineFilter,
 ): Promise<DeclineReport> {
+  // A filter buys depth, not breadth: the budget goes on walking past
+  // rows nobody asked for, which is the only way to reach last week
+  // through this week. Unfiltered, nothing about this scan changes.
+  const active = filterIsActive(filter);
+  const cap = active ? Math.max(scanCap, FILTERED_SCAN_CAP) : scanCap;
   const report: DeclineReport = {
     rows_scanned: 0,
     capped: false,
@@ -704,6 +787,8 @@ export async function readDeclines(
     infrastructure_clients: [],
     by_reason: {},
     clients_by_reason: {},
+    oldest_row_seen: null,
+    ...(filterIsActive(filter) ? { filter } : {}),
     rails_asked_for: {},
     unspecified: 0,
   };
@@ -713,7 +798,14 @@ export async function readDeclines(
 
   /** One decline row, folded into the report. Deduped: the index and the raw stream both carry it. */
   const take = (event: MetricEvent): void => {
+    // Reach is recorded before anything narrows, and for every row the
+    // scan touched — a filtered look that found nothing must still be
+    // able to say how far back it got.
+    if (report.oldest_row_seen === null || event.at < report.oldest_row_seen) {
+      report.oldest_row_seen = event.at;
+    }
     if (event.kind !== "decline") return;
+    if (active && !declineMatches(event, filter as DeclineFilter)) return;
     const raw = event.note ?? "unspecified";
     const identity = `${event.at}|${event.item}|${raw}`;
     if (seen.has(identity)) return;
@@ -781,7 +873,7 @@ export async function readDeclines(
    * turned away" in a month the funnel counted refusals in.
    */
   let indexCursor: string | undefined;
-  while (report.index_rows < scanCap) {
+  while (report.index_rows < cap) {
     const listed = await kvList(env.COUNTERS, {
       prefix: KV_KEYS.declineEventPrefix,
       limit: LIST_PAGE,
@@ -790,13 +882,13 @@ export async function readDeclines(
     const names = listed.keys.map((key) => key.name);
     const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
     for (const name of names) {
-      if (report.index_rows >= scanCap) break;
+      if (report.index_rows >= cap) break;
       const event = values.get(name);
       if (!event) continue;
       report.index_rows += 1;
       take(event);
     }
-    if (listed.list_complete || report.index_rows >= scanCap) {
+    if (listed.list_complete || report.index_rows >= cap) {
       report.index_complete = listed.list_complete;
       break;
     }
@@ -810,7 +902,7 @@ export async function readDeclines(
    * less than it did before the index existed.
    */
   let cursor: string | undefined;
-  while (report.rows_scanned < scanCap) {
+  while (report.rows_scanned < cap) {
     const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
@@ -819,7 +911,7 @@ export async function readDeclines(
     const names = listed.keys.map((key) => key.name);
     const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
     for (const name of names) {
-      if (report.rows_scanned >= scanCap) {
+      if (report.rows_scanned >= cap) {
         report.capped = true;
         break;
       }
@@ -828,7 +920,7 @@ export async function readDeclines(
       report.rows_scanned += 1;
       take(event);
     }
-    if (listed.list_complete || report.rows_scanned >= scanCap) {
+    if (listed.list_complete || report.rows_scanned >= cap) {
       report.capped = report.capped || !listed.list_complete;
       break;
     }
