@@ -112,7 +112,7 @@
     "exit": 0
   },
   "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/718",
-  "release_status": "PR integration pending push; deployment not yet qualified",
+  "release_status": "Merged and production-verified in PR #718; bounded wallet original-good acceptance passed. See production-release.json.",
   "ci_followup": {
     "check_url": "https://github.com/seancrecord/scvd-general-store-repo/runs/104498278041",
     "reported_alerts": 2,
@@ -126,6 +126,43 @@
       "restored_exactly": true,
       "source_sha256": "7ecb7dfe90fb50664e46ccb93561fc691c1916250c18699f066c2d630a7f5288"
     },
-    "new_security_check_status": "pending rerun on follow-up commit"
+    "new_security_check_status": "SUCCESS on aab943247888dc257422edff410bad2453444c99",
+    "successful_check_url": "https://github.com/seancrecord/scvd-general-store-repo/runs/104499933120"
+  },
+  "final_merged_tree_qualification": {
+    "head": "aab943247888dc257422edff410bad2453444c99",
+    "base": "ac3ad96d3bafe4371440d7f92436b045134635a5",
+    "tested_tree": "7f87a8e0633101d9ec517bc0056a22aae2a26e47",
+    "conflicts": false,
+    "typecheck": "passed",
+    "affected_tests": {
+      "files": 15,
+      "passed": 226,
+      "duration_seconds": 168.79,
+      "exit": 0
+    },
+    "builds": {
+      "workers": 2,
+      "exit": 0,
+      "deployed": false
+    },
+    "qualification": "Targeted final-main integration; not a new full-suite result. Exact-head full GitHub CI remains the merge gate.",
+    "logs_sha256": {
+      "scvd-buyer718-latest-main-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "scvd-buyer718-latest-main-affected.log": "7336714ca03261e2279ac13e00b328c2ba657eeed6f30aeca1b34c8e16b8ac41",
+      "scvd-buyer718-latest-main-build.log": "215a90ec9c4828a35b0edc73db4bccb2adee0dee955e74996418eeda40d6ec9a"
+    },
+    "merged_tree_matches_tested_tree": true,
+    "full_suite": {
+      "status": "passed",
+      "command": "npm test -- --maxWorkers=4",
+      "exit": 0,
+      "files_passed": 725,
+      "tests_passed": 14208,
+      "existing_skips": 1,
+      "duration_seconds": 3954.03,
+      "tree_unchanged_after_run": true,
+      "log_sha256": "198c9343deac0f300361d78cc6641cf2aba26b63b810d1c8dd21bdda99b8df9e"
+    }
   }
 }
