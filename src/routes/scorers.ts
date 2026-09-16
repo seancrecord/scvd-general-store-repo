@@ -15,6 +15,7 @@ import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { securityBlock } from "@/store/surface-contract";
 import { SCORERS_FOR_MONEY, SCORERS_FREE_FIRST, SCORERS_OPENED, SCORERS_PROPOSITION } from "@/store/copy/scorers";
 import { RESULT_CLASS_RULE } from "@/services/reproduce";
+import { feedbackChannel } from "@/store/agent-feedback";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { HonoEnv } from "@/types";
 
@@ -283,6 +284,22 @@ scorersRoutes.get("/scorers", (c) => {
     enables: ENABLES,
     resell_on_account: `${base}/trade`,
     misuse: MISUSE_CLAUSE,
+    /**
+     * SCORING US BACK (2026-09-16).
+     *
+     * Every other block on this page is about consuming what this
+     * store observed of somebody else. This one runs the other way,
+     * and it belongs here precisely because the page's whole argument
+     * is that a scorer should work from records rather than claims:
+     * the store would be a poor advertisement for that if the only
+     * record of ITSELF were its own signed word.
+     *
+     * It is not a request for a good rating and it is not a channel
+     * we can curate — the contract forbids the agent owner from
+     * submitting, and we own the agent. A scorer that wants to write
+     * down what it found here can do so where we cannot reach it.
+     */
+    scoring_this_store: feedbackChannel(base),
     named_integrations: integrations,
     license: "https://creativecommons.org/licenses/by/4.0/",
     compact_index: `${base}/corpus/index.json`,
