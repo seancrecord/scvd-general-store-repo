@@ -1883,7 +1883,8 @@ export const REACHED_LEVEL_MEANING = reachedLevelMeaning();
  *
  * So each unclimbed rung now names what climbs it: the item, the
  * price, the tool, and the URL. Prices are read from the menu rather
- * than typed here (rule 1), so a repriced shelf follows this block.
+ * than typed here (rule 55: the claim ships with the path that
+ * produced it), so a repriced shelf follows this block.
  *
  * NO BUTTON, ANYWHERE. The evidence card still carries none of this —
  * `mcp-apps.ts` refuses ui metadata to anything that moves money and a

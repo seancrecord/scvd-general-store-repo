@@ -88,7 +88,7 @@ function serverInfo(base: string): Record<string, unknown> {
 
 function instructions(base: string): string {
   const names = mcpResourceCatalog().map((resource) => resource.name);
-  return `${POSITION_LINE} This is the documentation door: ${names.length} readable resources (${names.join(", ")}) and one tool, ${DOCS_TOOL_NAME}, which returns any of them by name for a host that hides resources. Nothing here acts, spends, or probes. The instruments are on ${base}/mcp (the store, paid shelves included) and ${base}/mcp/verifier (read-only tools only); ${base}/mcp.md says which to use. ${NEVER_A_RANKING_SENTENCE} ${POSITION_NOT}`;
+  return `${POSITION_LINE} This is the documentation door: ${names.length} readable resources (${names.join(", ")}) and one tool, ${DOCS_TOOL_NAME}, which returns any of them by name for a host that hides resources. Nothing here acts, spends, or probes. The instruments are on ${base}/mcp (the store, paid shelves included) and ${base}/mcp/verifier (free verification tools); ${base}/mcp.md says which to use. ${NEVER_A_RANKING_SENTENCE} ${POSITION_NOT}`;
 }
 
 /** The one tool, its enum derived from the shelf so it cannot name a resource that is not there. */

@@ -1381,3 +1381,70 @@ an already-returned recovery header in the page-local result/cache. No
 new background work, binding, request, key operation or settlement path.
 The original regressions fail on the pre-integration source; this task
 keeps local doubles distinct from a real wallet or paid browser test.
+
+### September 16 — approved verifier submission corrections
+
+The keeper approved the source corrections. An isolated worktree on
+`codex/verifier-submission`, based on `f31aaa17`, now sets all verifier
+readOnly hints false, discloses traffic and the public asked-for queue,
+keeps readiness open-world and artifact verification closed-world, and
+corrects the artifact result description. The generated import covers
+all five tools, five positive cases and three non-trigger cases. The
+metadata regression tests failed on the old source before passing with
+the correction. The relevant 99 tests pass after rerunning the package
+content check; all three starter tests pass. Typecheck and both Worker
+bundle checks pass. The starter copy update requires version 0.1.1 and
+a fresh local content record; nothing was published.
+
+Read current Cloudflare Workers best practices while checking the source.
+The public privacy policy still needs to explain traffic statistics and
+the public asked-for queue before submission; the guide records that
+finding. Readiness lookup and defect definition still omit outputSchema.
+The import describes corrected source, not the older live deployment.
+Deploy and reread live tools/list, then exercise the portal test cases on
+ChatGPT web/mobile. No deployment, commit, push or portal submission was
+performed. The prior generation gate is now satisfied.
+
+### September 16 — verifier PR integration authorized
+
+The keeper authorized updating and merging the existing verifier PR #735.
+Integrated main's newer MPP core reading and payment reporting without
+reverting either, and resolved the full-guide digest for the combined copy.
+The public privacy policy now states the traffic-statistics and public
+asked-for-queue effects already disclosed by the verifier descriptors.
+The generated JSON is unchanged. This source integration is not a portal
+submission or a ChatGPT web/mobile routing observation. Those remain
+separate from local tests, CI, and deployment.
+
+Local full-suite integration run: 14,422 passed, one skipped and five
+failures across four recovery files. All original failures passed in the
+retry; different recovery cases timed out. Per AGENTS.md this moving
+failure pattern is load-related, not a clean full-suite pass. Required
+GitHub CI remains the merge gate. Concurrent branch updates were retained,
+including the newer probe-method resolution and native MPP qualification;
+the focused integration tests and typecheck were rerun on that combined
+source. No timeout was increased and no assertion was removed.
+
+PR #735 merged concurrently at 14:43 UTC. The remaining JSON and metadata/
+privacy corrections therefore ship in a follow-up PR, preserving the
+merged transport fixes and subsequent main changes. The full CI gate is
+retained for automatic merge; the Downloads copy remains byte-identical
+to the submission import in this branch.
+
+### September 16 — verifier output-schema recommendations
+
+Read the MCP tools specification at
+https://modelcontextprotocol.io/specification/draft/server/tools#tool.
+Output schemas describe structuredContent, not the surrounding JSON-RPC
+response. Added the two missing verifier contracts from the actual
+readiness artifact and defect vocabulary implementations. Refused host
+input carries empty evidence; defect lookup has index and detail shapes,
+while an unknown id remains a JSON-RPC error. Vocabulary versions are
+strings, as served. No annotation or tool behavior changes, and the
+submission import is unchanged.
+
+All four regression cases failed before the schemas were added. Tests
+validate real tools/call responses for unseen, stored and missing hosts,
+the vocabulary index, and every registered defect definition, and reject
+missing fields and wrong types. No live unknown-host lookup was needed;
+the corpus record in the test is a local fixture, not a signed observation.
