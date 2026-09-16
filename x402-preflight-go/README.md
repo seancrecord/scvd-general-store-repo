@@ -88,6 +88,24 @@ payable 402 to one request at one moment. Not a delivery claim: no
 probe can establish what a door does after payment. Nothing here
 derives a verdict; every line printed is the store's own answer.
 
+## Releasing
+
+A Go module has no registry to push to: it publishes by git tag, and
+the proxy fetches it from GitHub on first request. Because this module
+lives in a subdirectory, the tag has to carry that directory as its
+prefix or `go get` will not find it:
+
+```
+git tag x402-preflight-go/v0.1.0
+git push origin x402-preflight-go/v0.1.0
+```
+
+Tag a commit on `main`, not a branch: the tag is the version, and a
+version pointing at history that never landed is a version nobody else
+can fetch. Once pushed, `go get <module>@v0.1.0` resolves through
+proxy.golang.org, which caches immutably — the same rule npm and PyPI
+enforce, arrived at from the other direction.
+
 ## Versioning
 
 Versions are immutable once published. Minor versions add functions

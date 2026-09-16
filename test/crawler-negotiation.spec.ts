@@ -60,6 +60,15 @@ const NEGOTIATED_PAGE_ONLY: readonly string[] = [];
 const NEGOTIATED_WITH_MARKDOWN = [
   "/menu/hello",
   "/menu/settlement_attestation",
+  /*
+   * /disagreements and /observatory joined on 2026-09-16, when they
+   * gained JSON-LD. Until then they served an indexer a page with no
+   * structured data on it, so the assertion below — indexer gets HTML
+   * that still contains application/ld+json — would have failed for
+   * an honest reason rather than a regression.
+   */
+  "/disagreements",
+  "/observatory",
   "/what",
   "/conformance",
   "/corpus",

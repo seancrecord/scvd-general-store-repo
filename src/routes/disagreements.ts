@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -12,6 +13,7 @@ import {
   DISAGREEMENTS_STANDFIRST,
   DISAGREEMENTS_STATES,
   DISAGREEMENTS_TRIGGERED,
+  type Disagreement,
   disagreementsNoneOpenLine,
   openDisagreements,
 } from "@/store/disagreements";
@@ -31,6 +33,78 @@ const STATE_WORDS: Record<string, string> = {
   withdrawn_by_them: "withdrawn by them",
   both_stand: "both stand, re-read",
 };
+
+/**
+ * THE REGISTER AS A DATASET — AND NOT AS A ClaimReview (2026-09-16).
+ *
+ * This page carried no structured data at all, so an answer engine got
+ * the prose and nothing it could lift. The obvious vocabulary for "two
+ * readings of the same subject disagree" is ClaimReview, and it is the
+ * wrong one here. ClaimReview exists to carry a `reviewRating`: it
+ * models one party adjudicating another's claim, and emitting it would
+ * publish, in machine form, the exact thing this register refuses —
+ * that this store rates the instrument it diverges from. House rule 51
+ * is that both readings stand with their derivations and neither is
+ * authoritative over the other; a vocabulary that cannot say that is a
+ * vocabulary this page does not get to use.
+ *
+ * Dataset says what is true: a dated, licensed, free-to-read record,
+ * with each divergence an ItemList entry naming its subject, its two
+ * readings by instrument and URL, and the state it rests in. A reader
+ * follows the URLs and checks both sides where they are published,
+ * which is the whole instruction on the page.
+ */
+function disagreementsJsonLd(base: string, entries: readonly Disagreement[], openCount: number): string {
+  const newest = entries[0]?.published_on;
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Disagreements — where this store's reading and another instrument's diverge",
+    description: DISAGREEMENTS_STANDFIRST,
+    url: `${base}/disagreements`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    isAccessibleForFree: true,
+    creator: organizationRef(base),
+    publisher: organizationRef(base),
+    ...(newest ? { dateModified: newest } : {}),
+    variableMeasured: [
+      "the subject the two readings are about",
+      "the named event that triggered the look",
+      "each instrument's reading, with the derivation it rests on",
+      "the state the divergence rests in: open, withdrawn by either side, or both stand",
+      "the date it went privately to the other side, and the date it was published here",
+    ],
+    /*
+     * Counted rather than ranked. How many still stand open is a fact
+     * about this register; which side is right is not one it holds.
+     */
+    measurementTechnique: `${entries.length} divergence${entries.length === 1 ? "" : "s"} on record, ${openCount} still open. Each is a dated read of another instrument's published surface, sent to them before it was published here.`,
+    hasPart: {
+      "@type": "ItemList",
+      numberOfItems: entries.length,
+      itemListOrder: "https://schema.org/ItemListOrderDescending",
+      itemListElement: entries.map((entry, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "CreativeWork",
+          "@id": `${base}/disagreements#${entry.id}`,
+          name: entry.subject,
+          datePublished: entry.published_on,
+          creativeWorkStatus: entry.state,
+          about: entry.subject,
+          citation: [entry.ours, entry.theirs].map((reading) => ({
+            "@type": "CreativeWork",
+            url: reading.url,
+            author: { "@type": "Organization", name: reading.instrument },
+            abstract: reading.said,
+            dateRead: reading.read_on,
+          })),
+        },
+      })),
+    },
+  });
+}
 
 disagreementsRoutes.get("/disagreements", (c) => {
   const base = c.env.STORE_BASE_URL;
@@ -108,7 +182,7 @@ disagreementsRoutes.get("/disagreements", (c) => {
           "Where this store's reading and another instrument's diverge: both readings with their derivations, a state a reader can check, never a joint statement and never settled while it is not.",
         path: "/disagreements",
         feedAlt: { path: "/feeds/disagreements.xml", title: "Disagreements, as Atom" },
-        bodyHtml: `<section>
+        bodyHtml: `${disagreementsJsonLd(base, newestFirst, open.length)}<section>
           <p class="menu-desc">${escapeHtml(DISAGREEMENTS_STANDFIRST)}</p>
           <p class="menu-desc"><strong>${escapeHtml(DISAGREEMENTS_STATES)}</strong></p>
           <p class="menu-desc">${escapeHtml(DISAGREEMENTS_TRIGGERED)}</p>

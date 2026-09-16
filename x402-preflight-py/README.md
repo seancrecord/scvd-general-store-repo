@@ -75,6 +75,21 @@ payable 402 to one request at one moment. Not a delivery claim: no
 probe can establish what a door does after payment. Nothing here
 derives a verdict; every line printed is the store's own answer.
 
+## Releasing
+
+`.github/workflows/publish-pypi.yml`, run by hand from the Actions tab,
+with a dry run as the default. It refuses three ways before it can do
+damage: the name in `pyproject.toml` disagreeing with the button, the
+version disagreeing with what was typed, or that version already being
+on PyPI.
+
+Authentication is PyPI Trusted Publishing over GitHub OIDC — there is
+no token to store or rotate. It has to be authorised once on PyPI's
+side (project → Publishing → add a GitHub publisher naming this repo
+and `publish-pypi.yml`); until then the upload step gets a 403 and
+nothing is sent, which is the correct failure for a publisher nobody
+authorised.
+
 ## Versioning
 
 Versions are immutable once published. Minor versions add functions
