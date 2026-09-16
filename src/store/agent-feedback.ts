@@ -98,6 +98,12 @@ interface InviteInput {
   settlementTx: string;
   /** CAIP-2 network the payment settled on. */
   network: string;
+  /**
+   * The item that was bought, so `endpoint` names the door the
+   * feedback is actually about. See endpoint_field below for why this
+   * is required rather than optional.
+   */
+  itemId: string;
   /** The buyer's address, as the rail spells it. */
   payer?: string;
   /**
@@ -168,7 +174,23 @@ export function feedbackInvite(input: InviteInput): Record<string, unknown> {
       ...(input.payer ? { fromAddress: input.payer } : {}),
       how: "Put this block in the off-chain JSON you point feedbackURI at, under `proofOfPayment`, and pass its keccak256 as feedbackHash. Both are OPTIONAL — feedback with neither is still valid, just harder for a third party to weigh. `toAddress` is left for you to fill from the settlement itself; we would rather you read it off the chain than take our word for which address received it.",
     },
-    endpoint_field: `${input.base}/api/buy/`,
+    /**
+     * THE DOOR THIS FEEDBACK IS ABOUT, AND IT SHIPPED AS A 404.
+     *
+     * This field was `${base}/api/buy/` — the bare prefix, which is
+     * not a route and answers 404. The ERC's `endpoint` is a URI
+     * identifying what the feedback concerns, and a client following
+     * this literally would have written a dead URL into permanent
+     * on-chain feedback: unfixable by us, in the one channel whose
+     * whole value is that we cannot touch it. Worse than a broken
+     * link on a page, because the page can be corrected.
+     *
+     * The item id makes it the door that was actually bought, which
+     * is both live and the thing a reader of that row wants to know.
+     * Required rather than optional in the input for that reason: an
+     * invite with no door to name should not be assembled at all.
+     */
+    endpoint_field: `${input.base}/api/buy/${input.itemId}`,
     limit: FEEDBACK_LIMIT,
     /**
      * DERIVED, and it was typed in the first draft — `$0.001`, by

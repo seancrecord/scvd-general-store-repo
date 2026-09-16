@@ -9,6 +9,7 @@ import {
 } from "@/store/agent-feedback";
 import { SCVD_AGENT_ID } from "@/store/agent-identity";
 import { storeIdentity } from "@/lib/identity";
+import { MENU_ITEMS } from "@/store";
 
 const BASE = "https://scvd.store";
 
@@ -67,6 +68,7 @@ describe("the ERC-8004 feedback channel", () => {
       base: BASE,
       settlementTx: "0xabc123",
       network: "eip155:8453",
+      itemId: "hello",
       payer: "0x1111111111111111111111111111111111111111",
     }) as Record<string, any>;
     expect(invite.proof_of_payment.txHash).toBe("0xabc123");
@@ -88,6 +90,7 @@ describe("the ERC-8004 feedback channel", () => {
       base: BASE,
       settlementTx: "5xyz",
       network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      itemId: "hello",
     }) as Record<string, any>;
     expect(invite.proof_of_payment.chainId).toBeUndefined();
     expect(invite.proof_of_payment.network).toBe(
@@ -105,8 +108,48 @@ describe("the ERC-8004 feedback channel", () => {
       base: BASE,
       settlementTx: "5xyz",
       network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      itemId: "hello",
     }) as Record<string, any>;
     expect(invite.feedback_chain).toBe("eip155:8453");
+  });
+
+  it("names a door that exists, because this one goes on chain", async () => {
+    /*
+     * THE DEFECT THIS GUARDS, found live on 2026-09-16 and shipped by
+     * me two days before. `endpoint_field` was `${base}/api/buy/` —
+     * the bare prefix, which is not a route and answers 404.
+     *
+     * A dead link on a page is a nuisance someone can fix. This one
+     * is handed to a client as the value to write into ERC-8004
+     * feedback: permanent, and unwritable by THIS STORE, which is the
+     * entire point of the channel. We would have had no way to
+     * correct a dead URL we told somebody to publish about us.
+     */
+    /* A real shelf id, read off the menu rather than typed. */
+    const itemId = MENU_ITEMS[0]!.id;
+    const invite = feedbackInvite({
+      base: BASE,
+      settlementTx: "0xabc",
+      network: "eip155:8453",
+      itemId,
+    }) as Record<string, any>;
+    expect(invite.endpoint_field).toBe(`${BASE}/api/buy/${itemId}`);
+    expect(invite.endpoint_field).not.toMatch(/\/api\/buy\/$/);
+
+    /*
+     * ROUTED, which is the thing that was wrong — not a particular
+     * status, which this pool cannot produce. The buy door needs
+     * payment configuration the test isolate does not carry, so it
+     * answers 500 here and 402 in production. 404 is the one answer
+     * that means what the bug meant: no route behind the URL. That is
+     * the distinction worth pinning, and asserting 402 instead would
+     * be testing the isolate's secrets rather than the link.
+     */
+    const response = await SELF.fetch(invite.endpoint_field);
+    expect(
+      response.status,
+      "the door named for on-chain feedback is not a route",
+    ).not.toBe(404);
   });
 
   it("promises no score, and says we cannot write the rows", () => {
