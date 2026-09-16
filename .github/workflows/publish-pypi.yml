@@ -140,17 +140,43 @@ jobs:
       # file is here. `twine check` also catches the README failing to
       # render, which PyPI accepts silently and then displays as raw
       # text on the project page.
+      # TWINE IS PINNED HERE, AND IT IS PINNED TO THE ACTION'S TWINE.
+      #
+      # THE BUG THIS EXISTS TO PREVENT, 2026-09-16. This step used to
+      # `pip install twine` unpinned, which resolved to 7.0.0 and
+      # passed. The publish step then handed the same wheel to the
+      # action's OWN bundled twine — 6.1.0 at the version pinned then —
+      # which rejected it: hatchling writes `Metadata-Version: 2.5` and
+      # twine did not learn that version until 7.0.0. So the dry run
+      # said yes and the real run said no, about the same file, on the
+      # same commit, minutes apart.
+      #
+      # That is worse than no dry run. A rehearsal that validates with a
+      # DIFFERENT tool than the one gating the real thing cannot predict
+      # the real thing, and its green tick reads as though it can. The
+      # pin makes the rehearsal use the gate's own tool.
+      #
+      # IF YOU BUMP THE ACTION BELOW, BUMP THIS TO MATCH. Read the
+      # version out of that release's requirements/runtime.txt; do not
+      # guess it. The two drifting apart is the exact failure above.
       - name: Show exactly what would be published
         working-directory: ${{ steps.resolve.outputs.dir }}
         run: |
-          python -m pip install --quiet twine
+          python -m pip install --quiet 'twine==7.0.0'
+          python -m twine --version
           ls -l dist
           python -m twine check dist/*
           python -c "import zipfile,glob; w=glob.glob('dist/*.whl')[0]; [print(n) for n in sorted(zipfile.ZipFile(w).namelist())]"
 
+      # v1.14.2, NOT v1.12.4, AND THE REASON IS THE WHOLE STORY ABOVE.
+      # The action runs its own twine check inside its container before
+      # it uploads, using the twine IT pins — v1.12.4 pinned twine
+      # 6.1.0, which predates core metadata 2.5 and refused the wheel.
+      # v1.14.2 pins twine 7.0.0; its release notes say in as many
+      # words that it exists to make metadata 2.5 publishable.
       - name: Publish
         if: ${{ !inputs.dry_run }}
-        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: ${{ steps.resolve.outputs.dir }}/dist
 
@@ -173,5 +199,6 @@ jobs:
               echo ""
               echo "- https://pypi.org/project/$PACKAGE/$VERSION/"
               echo "- Uploaded by Trusted Publishing: no token was stored or used."
+              echo "- PEP 740 attestations are on by default from action v1.14.2, so the uploaded files carry signed provenance binding them to this repo, commit and workflow — the same bar \`npm publish --provenance\` holds our npm packages to."
             } >> "$GITHUB_STEP_SUMMARY"
           fi
