@@ -1,0 +1,158 @@
+{
+  "captured_from": "2026-09-15T15:01:43.075Z",
+  "captured_to": "2026-09-15T15:11:02.295Z",
+  "checked_at": "2026-09-15T15:11:26.987Z",
+  "inventory_lists_complete": true,
+  "certificates": {
+    "listed": 418,
+    "verified": 417,
+    "unavailable": 1
+  },
+  "reports": {
+    "listed": 41,
+    "verified": 41
+  },
+  "links": {
+    "signed_certificates_with_attests": 100,
+    "matched_verified_report": 41,
+    "not_found_in_verified_inventory": 59,
+    "signed_saw_not_collected": 277
+  },
+  "timestamps": {
+    "eligible_signed_certificates": 417,
+    "stored_states": {
+      "complete": 405,
+      "pending": 12
+    },
+    "digest_mismatches": 0,
+    "proof_present": 417,
+    "independently_verified": 0
+  },
+  "limits": [
+    "Denominator: keys enumerated in the recorded storage reads; not all purchases, not proof no records were withheld. KV listings and values can change during capture.",
+    "Reports cover the declared immutable PATRONS storage families only. Hosted latest-wins projections, recovery-only observations, caller-held attestations, sheaves, A2A journals and historical saw preimages are not collected. An unresolved hash is not proof its report never existed.",
+    "Signature and report hash checks use independently supplied issuer keys, not keys selected by records. No key service-window or factual-truth claim.",
+    "Stored complete and a matching digest do not verify a Bitcoin timestamp. Independently verified stays zero unless a separate proof/header pass is recorded."
+  ],
+  "certificate_inventory_complete": true,
+  "unenumerated_families": [],
+  "families": [
+    {
+      "name": "certificates",
+      "status": "readable",
+      "listed": 418,
+      "read": 418,
+      "complete": true
+    },
+    {
+      "name": "service_audit",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    },
+    {
+      "name": "good_buyer",
+      "status": "readable",
+      "listed": 7,
+      "read": 7,
+      "complete": true
+    },
+    {
+      "name": "signature_agent_card",
+      "status": "readable",
+      "listed": 2,
+      "read": 2,
+      "complete": true
+    },
+    {
+      "name": "onpage_audit",
+      "status": "readable",
+      "listed": 2,
+      "read": 2,
+      "complete": true
+    },
+    {
+      "name": "launch_check",
+      "status": "readable",
+      "listed": 7,
+      "read": 7,
+      "complete": true
+    },
+    {
+      "name": "provenance_check",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    },
+    {
+      "name": "wallet_statement",
+      "status": "readable",
+      "listed": 4,
+      "read": 4,
+      "complete": true
+    },
+    {
+      "name": "mandate",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    },
+    {
+      "name": "settlement_reconciliation",
+      "status": "readable",
+      "listed": 8,
+      "read": 8,
+      "complete": true
+    },
+    {
+      "name": "case_file",
+      "status": "readable",
+      "listed": 2,
+      "read": 2,
+      "complete": true
+    }
+  ],
+  "counter_reads": [
+    {
+      "key": "patron_number",
+      "status": "readable",
+      "value": 411
+    },
+    {
+      "key": "cert_anchor_cursor",
+      "status": "readable",
+      "value": {
+        "head": 411,
+        "backfill": 0
+      }
+    },
+    {
+      "key": "cert_anchor_sweep",
+      "status": "readable",
+      "value": {
+        "submitted": 10,
+        "backfilled": 0,
+        "resubmitted": 0,
+        "upgraded": 0,
+        "still_pending": 12,
+        "behind_head": 0,
+        "behind_backfill": 0,
+        "pending_truncated": false,
+        "key_scan_ran": true,
+        "key_scan_listed": 418,
+        "key_scan_submitted": 2,
+        "key_scan_requeued": 0,
+        "key_scan_unreadable": 0,
+        "key_scan_invalid_signature": 0,
+        "key_scan_deferred": 0,
+        "key_scan_has_more": false,
+        "key_scan_cursor_missing": false,
+        "key_scan_cycle_complete": true,
+        "observed_at": "2026-09-15T14:31:14.773Z"
+      }
+    }
+  ]
+}

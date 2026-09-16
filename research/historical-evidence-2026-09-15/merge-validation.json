@@ -1,0 +1,165 @@
+{
+  "kind": "historical_evidence_merged_tree_validation",
+  "date": "2026-09-15",
+  "feature_commit": "d377777d7944b92b8bf719dc9f14a41e776e1780",
+  "main_parent": "b62b30b2d2c76e2386d70016ef8519c098607b14",
+  "full_suite": {
+    "status": "completed_with_failures",
+    "exit_code": 1,
+    "command": "caffeinate -i npm test -- --maxWorkers=6 --reporter=default",
+    "files": {
+      "failed": 7,
+      "passed": 722
+    },
+    "tests": {
+      "failed": 10,
+      "passed": 14323,
+      "skipped": 1
+    },
+    "duration_seconds": 1873.91,
+    "log_sha256": "58e4cbcea42ebd54a5a424e3cfca0cce9b26ea368ac98e0826461169968fb111"
+  },
+  "limits": [
+    "Original captures, aggregates and validation are unchanged.",
+    "This record validates integration, not a new historical observation or live payment."
+  ],
+  "earlier_integration_attempts": [
+    {
+      "main_parent": "a407dd5fd8eb01bd8950d11e19d8715a18f32dca",
+      "status": "interrupted_after_failures",
+      "exit_code": 130,
+      "reason": "macOS power log confirms repeated sleep during the run; no green result inferred.",
+      "reported_file_results": 723,
+      "log_sha256": "44d1ccaa18fb4a3df229bdbee57df2fd64f140bb079b121c084386c568c6d445"
+    }
+  ],
+  "checks": [
+    {
+      "command": "npm run typecheck",
+      "status": "passed",
+      "log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "command": "npm run evidence:test",
+      "status": "passed",
+      "log_sha256": "1d6759b5e8ccd9ba92f91f3af416b114c52249ceae1892e14ceb4635b88767e5",
+      "batch_test_counts": [
+        36,
+        16,
+        5
+      ]
+    },
+    {
+      "command": "npm run build:check",
+      "status": "passed",
+      "log_sha256": "996081b080255fc4f4671d48be2a391a078f1f326bf1c9d3f6a7e161b4fa85be"
+    },
+    {
+      "command": "npm run audit",
+      "status": "passed",
+      "log_sha256": "ade20d576a9a9ee55f90fafbbdc3cf6e4987f8443adee000f70b524d1b5bf1b9"
+    },
+    {
+      "command": "npm run claims",
+      "status": "passed",
+      "log_sha256": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99"
+    },
+    {
+      "command": "npm run docs:check",
+      "status": "passed",
+      "log_sha256": "0daa5989285b4edc4d4b66f0c27f376273ca03f3b1e1cc4ac80c616958131561"
+    }
+  ],
+  "host_sleep_observation": {
+    "source": "macOS pmset -g log, read during validation",
+    "local_time": "2026-09-15 20:26:12 -0400",
+    "reason": "Clamshell Sleep",
+    "reported_sleep_seconds": 383,
+    "limit": "The caffeinate assertion prevented idle sleep, not lid-close sleep. This observation does not by itself excuse every failure; all failed files must be rechecked."
+  },
+  "failed_file_rerun": {
+    "status": "passed",
+    "files": [
+      "test/buyer-capacity-lifecycle.spec.ts",
+      "test/front-porch.spec.ts",
+      "test/launch-paid-recovery.spec.ts",
+      "test/referrals.spec.ts",
+      "test/shared-reason-escalation.spec.ts",
+      "test/solana-purchase-replay.spec.ts",
+      "test/url-observation-paid-recovery.spec.ts"
+    ],
+    "max_workers": 2,
+    "limit": "Every assertion runs again. These reruns do not relabel the full run green.",
+    "exit_code": 0,
+    "results": {
+      "log_sha256": "4441701bfafd2f3ae2e5b9b7b3011f4a7fb63cda174b3a6c03101de43c62dd34",
+      "files": {
+        "passed": 7
+      },
+      "tests": {
+        "passed": 1032
+      },
+      "duration_seconds": 747.44
+    }
+  },
+  "fixture_repair": {
+    "file": "test/shared-reason-escalation.spec.ts",
+    "scope": "Fixed distinct event timestamps and matching index keys; assertions and production reader unchanged.",
+    "before_log_sha256": "3a7b8257297b5629fd88131359c43d419b10ca10fd9f4b7f2f0f3fe390db2f61",
+    "after_log_sha256": "57449d9ef07a61540d3b238a6bc135bffb64ff93ebafe9d63e50eef2dba445a6",
+    "before_failed_tests": 2,
+    "after_passed_tests": 11,
+    "old_file_sha256": "41d20f229f2df88244825ea1369320cf9f23a0138192432833a817c5b24d8fa5",
+    "new_file_sha256": "46a3a9c27a1ba6b2a05e8b615403fa033a4e3d3a1c6946f0327e7a6594c5e2f7"
+  },
+  "privacy_scan": {
+    "scope": "Added lines against release main plus all untracked feature files",
+    "captured_identifiers_checked": 418,
+    "status": "passed"
+  },
+  "unchanged_original_records": [
+    {
+      "file": "research/historical-evidence-2026-09-15/catalog-candidates.json",
+      "sha256": "1fecaceb07774741bbfcfde4a49148be4f4aee151602e559e58cc3480d7ac28f"
+    },
+    {
+      "file": "research/historical-evidence-2026-09-15/catalog-current.json",
+      "sha256": "04517f6a5c014691376c35e2489e9b0f7fd42d54f19573c3f229ec5f983c7947"
+    },
+    {
+      "file": "research/historical-evidence-2026-09-15/catalog-with-history.json",
+      "sha256": "a440078039abe8a07b90280a8a1c2beab55ba17c2c6a7d230030dfd3956a5bd7"
+    },
+    {
+      "file": "research/historical-evidence-2026-09-15/inventory-initial.json",
+      "sha256": "a4275bfdb44cc16612edbaecdbba23b96038d0721ccc1b9eb42e957aa053a044"
+    },
+    {
+      "file": "research/historical-evidence-2026-09-15/inventory-with-retry.json",
+      "sha256": "4203e7cfc3d4b73ec6836418e6473e95baa39c2c61b282c9c2a923c439f1816c"
+    },
+    {
+      "file": "research/historical-evidence-2026-09-15/provenance.json",
+      "sha256": "5b425d5fb4a694045f7e2fa99b3ca0ff8ffaf71c5afdfffe30eb82fa15d152e0"
+    },
+    {
+      "file": "research/historical-evidence-2026-09-15/retention.json",
+      "sha256": "bb26de2b741b6c9e7c4a8d6090dd05f11b32a6eac733e82893362edfed2727e0"
+    },
+    {
+      "file": "research/historical-evidence-2026-09-15/validation.json",
+      "sha256": "be9fb2bbc8b194d22ee97333be8ab8767427d20154896edc462ed91d36ea7e48"
+    }
+  ],
+  "retained_supplement_recheck": {
+    "status": "passed",
+    "outcomes": {
+      "no_signed_saw": 141,
+      "matched_catalog_preimage": 277
+    },
+    "certificate_count": 418
+  },
+  "recorded_at": "2026-09-16T01:01:32.944876+00:00",
+  "node_version": "v22.13.1",
+  "merge_condition": "The full local run completed with recorded failures; every failed file then passed. A green independent full GitHub CI run remains required before merging."
+}

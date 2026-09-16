@@ -1209,6 +1209,20 @@ Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/wor
 
 The primary sources in the recovery follow-up entry above support the repair boundary: an Approval names an allowance but a Transfer does not identify the spender or spending mechanism, so same-receipt ordering and owner/recipient equality do not establish consumed allowance. Only the independently paired EIP-3009 fixed value remains observed here. The reconciliation reader now reuses the already-reviewed chain/receipt validators before signing; explicit null is distinct from unestablished context. No new platform API or dependency was introduced. RPC assertions and local fixtures do not establish consensus, finality, historical incidence or live buyer impact. The new correction preserves those limits and historical signatures.
 
+## 2026-09-15 — historical evidence storage reads
+
+Read https://developers.cloudflare.com/kv/reference/kv-commands/ for the existing
+`kv key list` / `kv key get`, explicit remote storage and configured bindings.
+The capture uses the locked Wrangler version and existing operator access.
+A successful bounded list establishes access, not a historical snapshot or
+complete purchase population; each value is retained with its own checksum
+and read date. No KV write or production deployment is part of this pass.
+Local sources for catalog reconstruction: `src/discovery/receipt-surface.ts`,
+`src/lib/jcs.ts`, `src/store/menu.ts` and the catalog input schema. An exact
+`saw` hash match recovers three committed fields; it does not recover an HTTP
+response, accepted quote, settlement or report. MPP remains under development
+and is outside this first capture.
+
 
 ## 2026-09-15 — PQ measurement publication
 
@@ -1221,3 +1235,13 @@ inferred from raw signature bytes. Retained records, script hashes and raw timin
 samples supply this report's measurements; no new benchmark date is claimed.
 Production key-history and corpus anchoring were read separately: only bytes
 actually committed inherit the verified timestamp, not arbitrary linked records.
+
+### September 15 — historical merge and payment release status
+
+Read GitHub's PR records for #714 and #715, their base branch names and merge
+commits, and compared both commits against main `b62b30b2` with Git ancestry
+and source inspection. Both PRs merged into stacked feature branches and
+their changes are absent from this main revision. #712 merged into main.
+This is source-release status, not a live deployment or payment observation.
+The payment follow-through document now names that distinction. No protocol
+capability, paid purchase or production activation follows from this read.
