@@ -64,6 +64,10 @@ export interface DeclineRow {
   user_agent?: string;
   channel: string;
   house: boolean;
+  /** The address that signed, where the row carries one. */
+  payer?: string;
+  /** The first field disagreement, and both values. */
+  mismatch?: { field: string; we_offered: string; you_sent: string };
 }
 
 export interface DeclineReport {
@@ -433,7 +437,7 @@ export function readReason(raw: string): {
     return {
       fault: "unknown",
       reading:
-        "The facilitator refused because the payment's `from` and `to` were the SAME address — and our `to` is the store's own payTo, so this was signed from the wallet the store receives at. Not a funds problem and not a signing problem: the envelope decoded, the accepted matched, and the signature was examined, which makes this the furthest into the pipe any decline gets before dying. Check in this order. (1) Was it the house? The store's RECEIVING address is not listed in src/store/house-wallets.json, so a keeper or an agent paying from it books as an OUTSIDE decline and lands on this desk as demand — read the payer off the row before anything else. (2) Was it the browser till? This arrives from a browser far more often than from an SDK, and a till that pre-fills `from` with the payTo it just read out of the challenge produces exactly this. (3) Only if neither: a hand-rolled client copied payTo into both fields, which is theirs and is worth saying in the 402.",
+        "The facilitator refused because the payment's `from` and `to` were the SAME address — and our `to` is the store's own payTo, so this was signed from the wallet the store receives at. Not a funds problem and not a signing problem: the envelope decoded, the accepted matched, and the signature was examined, which makes this the furthest into the pipe any decline gets before dying. From 2026-09-16 this is classified rather than guessed: a payer equal to any of our payTo addresses books as HOUSE (isHouseTraffic, lib/channel.ts) and leaves the demand columns, and the decline row carries the payer, so the answer is in the row rather than in a hunt. A row dated BEFORE that carries neither — the payer was never written to a decline — so for those the question stays open and the 402 the buyer got is the only record of who signed. What is left to check on a row that is still not house: the browser till, which arrives here far more often than an SDK and which produces exactly this if it pre-fills `from` with the payTo it just read out of the challenge; failing that, a hand-rolled client copied payTo into both fields, which is theirs and worth saying in the 402.",
     };
   }
   /**
@@ -732,6 +736,8 @@ export async function readDeclines(
       ...(event.user_agent ? { user_agent: event.user_agent } : {}),
       channel: event.channel,
       house: event.house,
+      ...(event.payer ? { payer: event.payer } : {}),
+      ...(event.mismatch ? { mismatch: event.mismatch } : {}),
     });
 
     if (event.house) {
