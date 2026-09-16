@@ -4,6 +4,7 @@ import { app } from "@/index";
 import { HANDED_HEADER, doors, doorsReady } from "@/lib/doors-app";
 import { edgeMiddleware } from "@/lib/edge";
 import { doorChecks } from "@/routes/door-checks";
+import { storeDoorChecks } from "@/routes/buy";
 import { markKeeperSeen } from "@/services/shutter";
 import { MENU_ITEMS } from "@/store";
 import { RETIRED_ITEMS } from "@/store/retired";
@@ -398,13 +399,15 @@ describe("the same functions in the same order", () => {
     return out;
   }
 
-  it("the store's sequence up to delivery is the doors' sequence, by reference", () => {
+  it("both Workers share every pre-gate check; only the store loads native settlement", () => {
     const fromStore = handlersFor(app as never, "/api/buy/hello");
     const fromDoors = handlersFor(doors as never, "/api/buy/hello");
     expect(fromStore.length).toBe(edgeMiddleware.length + doorChecks.length + 1);
     const storeBeforeDelivery = fromStore.slice(0, -1);
     // doors: [handOverFirst, ...edge, ...checks, handOverPassed, handOverElsewhere]
-    expect(fromDoors.slice(1, 1 + storeBeforeDelivery.length)).toEqual(storeBeforeDelivery);
+    expect(fromDoors.slice(1, storeBeforeDelivery.length)).toEqual(storeBeforeDelivery.slice(0, -1));
+    expect(fromDoors[storeBeforeDelivery.length]).toBe(doorChecks.at(-1));
+    expect(storeBeforeDelivery.at(-1)).toBe(storeDoorChecks.at(-1));
     expect(fromDoors.length).toBe(storeBeforeDelivery.length + 3);
     // and the delivery handler itself is not in the doors at all
     expect(fromDoors).not.toContain(fromStore[fromStore.length - 1]);
@@ -419,6 +422,6 @@ describe("the same functions in the same order", () => {
   it("the lists both entries register are the lists the store runs", () => {
     const fromStore = handlersFor(app as never, "/api/buy/hello");
     expect(fromStore.slice(0, edgeMiddleware.length)).toEqual([...edgeMiddleware]);
-    expect(fromStore.slice(edgeMiddleware.length, edgeMiddleware.length + doorChecks.length)).toEqual([...doorChecks]);
+    expect(fromStore.slice(edgeMiddleware.length, edgeMiddleware.length + doorChecks.length)).toEqual([...storeDoorChecks]);
   });
 });

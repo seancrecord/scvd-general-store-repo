@@ -1294,6 +1294,7 @@ function isSettleTimeout(error: unknown): error is Error {
 }
 
 export interface PaymentStack {
+  facilitator: KvWarmFacilitatorClient;
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
 }
@@ -1484,7 +1485,7 @@ export function getPaymentStack(env: Env): PaymentStack {
     });
     const routes = buildRoutesConfig(env);
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
-    cachedStack = { httpServer, initialized: httpServer.initialize() };
+    cachedStack = { facilitator, httpServer, initialized: httpServer.initialize() };
     // A failed first sync shouldn't poison the isolate forever.
     cachedStack.initialized.catch(() => {
       cachedStack = undefined;

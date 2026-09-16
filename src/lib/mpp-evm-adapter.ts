@@ -10,7 +10,7 @@ import { BASE_NETWORK } from "@/lib/payment-networks";
 import { sha256Hex } from "@/lib/idempotency";
 import { mppEvmPurchasePayment } from "@/lib/purchase-payment";
 
-/** Qualification seam only. No route calls this or advertises MPP checkout. */
+/** Verified EVM boundary used by the explicitly enabled native HTTP pilot. */
 export interface MppEvmTerms {
   /** Dedicated challenge key; never the artifact signing key or wallet key. */
   secretKey: string;

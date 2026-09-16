@@ -58,6 +58,8 @@ export interface PurchaseIntent {
   reconciliation_reference?: string;
   reconciliation?: { start_block?: number; next_block?: number; before_signature?: string; checked_at: string };
   delivery?: Record<string, unknown>;
+  /** Retained before submission; bookkeeping must survive delivery and lost acknowledgements. */
+  mpp?: { challenge_id: string; house: boolean; accounted?: true };
 
 }
 
@@ -230,6 +232,7 @@ type PurchaseInput = {
   path: string; door: "http" | "mcp";
   idempotency?: { surface: string; key: string };
   terms: PaymentRequirements; request: string; item?: MenuItem; commission?: CommissionPurchase; publication?: PublicationSnapshot;
+  mpp?: PurchaseIntent["mpp"];
 };
 
 /** Called only after x402 verification, at the last seam before settlement. */
@@ -278,6 +281,7 @@ export async function beginVerifiedPurchaseIntent(env: Env, input: PurchaseInput
     const observationDigest = supportsObservationRecovery(input.item) ? requestDigest : undefined;
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 2, id,
       payment_context: input.payment, request_digest: requestDigest,
+      ...(input.mpp ? { mpp: input.mpp } : {}),
       token: crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", ""),
       path: input.path, door: input.door, payer, terms: input.terms, request: input.request,
       payment_proof: input.payment.proof_digest,

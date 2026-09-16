@@ -27,6 +27,15 @@ const sources = import.meta.glob("/src/**/*.ts", {
   eager: true,
 }) as Record<string, string>;
 
+it("native settlement is reachable from the store but never from the public doors", () => {
+  const store = reachable("/src/routes/buy.ts");
+  const doors = reachable("/src/doors.ts");
+  for (const module of ["/src/lib/mpp-checkout.ts", "/src/lib/mpp-evm-adapter.ts"]) {
+    expect(store.has(module), `store must exercise ${module}`).toBe(true);
+    expect(doors.has(module), `doors must forward rather than load ${module}`).toBe(false);
+  }
+});
+
 /** Modules that can produce a payment signature. Pinned on purpose. */
 const KNOWN_SIGNERS = ["/src/services/launch-check.ts"];
 
