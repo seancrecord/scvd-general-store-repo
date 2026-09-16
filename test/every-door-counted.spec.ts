@@ -185,6 +185,21 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "POST /api/tab/delta",
   "GET /api/tab/pool",
   /**
+   * THE UCP SUPPORTING DOCUMENTS (2026-09-16). The profile and the two
+   * catalog operations ARE counted — they are where a platform
+   * arrives. These four are the documents the profile points AT: two
+   * JSON Schemas and their two prose specs, fetched by a negotiator
+   * that has already been counted at the profile and by nobody else.
+   * Counting them would record the same visit up to five times and
+   * call it footfall, which is the failure the trade-counter note
+   * below describes one aisle over.
+   */
+  "GET /ucp/schemas/items/:file",
+  "GET /ucp/schemas/payment/usdc-x402.json",
+  "GET /ucp/schemas/shopping-inputs.json",
+  "GET /ucp/specs/payment/usdc-x402",
+  "GET /ucp/specs/shopping-inputs",
+  /**
    * THE TRADE COUNTER, which books its own ledger rows for what it
    * settles but no porch row for who reads or knocks.
    */

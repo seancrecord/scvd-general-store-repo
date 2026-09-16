@@ -33,6 +33,28 @@ import { app } from "@/index";
  * fails the staleness checks below.
  */
 const DELIBERATELY_QUIET: Record<string, string> = {
+  /*
+   * THE UCP SUPPORTING DOCUMENTS (2026-09-16). /ucp, /ucp/v1 and the
+   * two catalog operations are named in the guide and reachable from
+   * there; these are the documents those doors point AT. A UCP
+   * platform never guesses them — it reads /.well-known/ucp, which is
+   * listed, and follows the `schema` and `spec` URLs the profile
+   * hands it. Listing six schema files in a guide a human reads would
+   * advertise six doors that are one door, the same argument the
+   * redirect block below makes.
+   */
+  "/.well-known/ucp.json":
+    "alias of /.well-known/ucp, the path the protocol names and the guide lists; served so a reader who guessed .json gets the profile instead of a 404 that reads as 'no UCP here'",
+  "/ucp/schemas/items":
+    "per-item purchase-input schemas, generated from the same buyInputSchema() the 402 and the MCP shelf use; each variant's metadata links its own, so a reader arrives holding the URL",
+  "/ucp/schemas/payment/usdc-x402.json":
+    "the payment handler's JSON Schema; the profile's payment_handlers entry carries this URL, which is how a negotiator reaches it",
+  "/ucp/schemas/shopping-inputs.json":
+    "the purchase-inputs extension schema; the profile's capability entry carries this URL",
+  "/ucp/specs/payment/usdc-x402":
+    "the human-readable half of the payment handler, linked from the handler's own spec field",
+  "/ucp/specs/shopping-inputs":
+    "the human-readable half of the inputs extension, linked from the capability's own spec field",
   "/webhooks/desvela-registry":
     "private Desvela Registry Watch ingress authenticated by a per-watch HMAC secret; registered separately by the keeper, documented in docs/DESVELA_REGISTRY_WATCH.md, and reviewed at /admin/desvela-registry.json. It is not a shopping or discovery capability for visiting agents",
   // ---- keeper-ruled redirects, not rooms (they 301 to real pages;

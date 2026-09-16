@@ -39,7 +39,7 @@ function cloneFor(key) {
   if (clones.has(key)) return clones.get(key);
   const source = sources.get(key);
   if (!source) throw new Error(`spec-pins: pin names unknown source "${key}"`);
-  const dir = cloneAtHead(source.url, join(cacheDir, key));
+  const dir = cloneAtHead(source.url, join(cacheDir, key), source.ref);
   clones.set(key, dir);
   return dir;
 }

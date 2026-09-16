@@ -7,6 +7,7 @@ import {
   SCVD_EXTENSION_VERSION,
   SCVD_NAMESPACE,
   UCP_NAMESPACE,
+  UCP_SCHEMA_BASE,
   UCP_VERSION,
 } from "@/lib/ucp/version";
 import { coreCommerceItems, requireCommerce } from "@/store/commerce";
@@ -31,14 +32,22 @@ import type { Env } from "@/types";
  * the MCP door, and both are named below so the answer to "then how do
  * I pay you" is in the same document as the refusal.
  *
- * The payment handler is in the same position: its spec and schema are
- * written and served, because a reader deciding whether this shelf is
- * worth integrating should be able to see exactly how settlement
- * works. It is NOT declared under `ucp.payment_handlers`, because
- * that field is an offer to transact through UCP and this store cannot
- * honour one yet. Naming a protocol you do not speak is the flattering
- * placeholder /corrections exists to catch; naming a payment method
- * you cannot accept is the same mistake with money attached.
+ * THE PAYMENT HANDLER IS DECLARED, AND THAT WAS A CORRECTION.
+ *
+ * It was held out of `ucp.payment_handlers` on the reasoning that a
+ * handler is an offer to transact and this store has no UCP checkout
+ * to transact through. Then the pinned schema was actually read:
+ * ucp.json's business_schema REQUIRES `services` and
+ * `payment_handlers`, so a profile without them is not a cautious
+ * profile, it is an invalid one — and an invalid profile is a worse
+ * answer to "can I trust this merchant" than an honest declaration.
+ *
+ * The declaration is true on its own terms: this store does take USDC
+ * on those rails, by that scheme, at those addresses, today. What a
+ * negotiator must not conclude is that it can drive that handler
+ * through UCP, and the thing that says so is the absence of a checkout
+ * CAPABILITY — which is the field negotiation actually reads — plus
+ * the status block below, in words.
  */
 
 export interface UcpProfile {
@@ -75,9 +84,28 @@ export function ucpProfile(env: Env): UcpProfile {
           },
         ],
       },
+      /**
+       * EVERY CAPABILITY CARRIES ITS SCHEMA URL, because
+       * capability.json's business_schema requires one: a platform
+       * composing capabilities during negotiation fetches it. For the
+       * capabilities UCP defines, the canonical schema is UCP's own —
+       * the `$id` the specification publishes — not a copy of it on
+       * this origin. The store vendors those schemas to validate
+       * itself against; it does not claim authorship of them.
+       */
       capabilities: {
-        [`${UCP_NAMESPACE}.shopping.catalog.search`]: [{ version: UCP_VERSION }],
-        [`${UCP_NAMESPACE}.shopping.catalog.lookup`]: [{ version: UCP_VERSION }],
+        [`${UCP_NAMESPACE}.shopping.catalog.search`]: [
+          {
+            version: UCP_VERSION,
+            schema: `${UCP_SCHEMA_BASE}/shopping/catalog_search.json`,
+          },
+        ],
+        [`${UCP_NAMESPACE}.shopping.catalog.lookup`]: [
+          {
+            version: UCP_VERSION,
+            schema: `${UCP_SCHEMA_BASE}/shopping/catalog_lookup.json`,
+          },
+        ],
         /**
          * The store's own extension, in the store's own namespace,
          * resolving to the store's own schema. `store.scvd.*` rather
@@ -92,6 +120,15 @@ export function ucpProfile(env: Env): UcpProfile {
             schema: `${base}/ucp/schemas/shopping-inputs.json`,
           },
         ],
+      },
+      /**
+       * Required by the business schema, and true: these are the rails
+       * the till settles on today. Generated from checkoutNetworks(env)
+       * so a rail with no receiving wallet cannot appear here while the
+       * checkout refuses it.
+       */
+      payment_handlers: {
+        [USDC_HANDLER_TYPE]: handlers,
       },
     },
     /**
@@ -113,17 +150,17 @@ export function ucpProfile(env: Env): UcpProfile {
         guide: `${base}/agents.md`,
       },
       /**
-       * Served, documented, and deliberately not declared as a UCP
-       * payment handler: see the note at the top of this file.
+       * The handler above, said again in words, because the field it
+       * sits in cannot express the one thing a reader most needs.
        */
-      payment_handler_preview: {
+      payment_handler_note: {
         type: USDC_HANDLER_TYPE,
-        advertised: false,
+        settles_today: true,
+        drivable_through_ucp: false,
         reason:
-          "A payment handler is an offer to transact through UCP. This store has no UCP checkout to transact through, so the handler is published for review rather than declared for negotiation.",
+          "The business schema requires payment_handlers, and the declaration is true: this store takes USDC on these rails by this scheme today. It is not drivable through UCP, because there is no UCP checkout capability to drive it from — which is why no checkout capability is advertised above. Pay over x402 directly, or through the MCP door.",
         spec: `${base}/ucp/specs/payment/usdc-x402`,
         schema: `${base}/ucp/schemas/payment/usdc-x402.json`,
-        instances: handlers,
       },
       catalog: {
         products_total: MENU_ITEMS.length,
@@ -133,8 +170,8 @@ export function ucpProfile(env: Env): UcpProfile {
           reason: `Priced below one cent. UCP quotes a price as an integer number of an ISO-4217 currency's minor units, so the smallest USD price that can be written is one cent. These items cost ${excludedPrices}, and they are still for sale at those prices over x402 — what they are not is rounded into a catalog row quoting a price the till would not charge.`,
           still_listed_at: `${base}/menu.json`,
         },
-        search: `${base}/ucp/v1/catalog/search?q={query}`,
-        lookup: `${base}/ucp/v1/catalog/lookup?id={product_variant_sku_or_item_id}`,
+        search: `POST ${base}/ucp/v1/catalog/search`,
+        lookup: `POST ${base}/ucp/v1/catalog/lookup with {"ids": [...]}`,
       },
       operator: {
         name: STORE_METADATA.name,

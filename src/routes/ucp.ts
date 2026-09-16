@@ -1,6 +1,10 @@
 import { Hono } from "hono";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
-import { lookupItem, searchCatalog, ucpCatalog, ucpProduct } from "@/lib/ucp/catalog";
+import {
+  clampLimit,
+  lookupResponse,
+  searchResponse,
+} from "@/lib/ucp/responses";
 import {
   FINALITY_NOTE,
   handlerSchemaUrl,
@@ -36,8 +40,6 @@ import type { HonoEnv } from "@/types";
  */
 export const ucpRoutes = new Hono<HonoEnv>();
 
-const MAX_SEARCH_LIMIT = 50;
-
 ucpRoutes.get("/.well-known/ucp", (c) => c.json(ucpProfile(c.env)));
 
 /**
@@ -61,99 +63,124 @@ ucpRoutes.get("/ucp/v1", (c) => {
     version: UCP_VERSION,
     transport: "rest",
     operations: {
-      "catalog.search": `${base}/ucp/v1/catalog/search?q={query}&limit={n}`,
-      "catalog.lookup": `${base}/ucp/v1/catalog/lookup?id={identifier}`,
+      "catalog.search": {
+        method: "POST",
+        url: `${base}/ucp/v1/catalog/search`,
+        body: { query: "string", pagination: { limit: "integer" } },
+      },
+      "catalog.lookup": {
+        method: "POST",
+        url: `${base}/ucp/v1/catalog/lookup`,
+        body: { ids: ["product id, variant id, handle, SKU or shelf item id"] },
+      },
     },
+    also_readable_by_get:
+      "Both operations answer GET with ?q= and ?id= as a convenience for people and crawlers. That spelling is not the protocol and is not what the profile advertises.",
     not_implemented: ["checkout", "order"],
     to_buy: `${base}/api/buy/{item_id} over x402 v2, or the MCP door at ${base}/mcp.`,
     profile: `${base}/.well-known/ucp`,
   });
 });
 
-ucpRoutes.get("/ucp/v1/catalog/search", (c) => {
+/**
+ * THE TRANSPORT IS POST WITH A JSON BODY, NOT GET WITH A QUERY STRING.
+ *
+ * That is not a style choice: the pinned REST contract
+ * (source/services/shopping/rest.openapi.json at release/2026-08-25)
+ * defines `search_catalog` and `lookup_catalog` as POST operations with
+ * required request bodies, and lookup as a BATCH over `ids[]`. The
+ * first cut of this file served GET with `?q=` and `?id=`, which no
+ * conforming platform would ever call. Reading the contract is what
+ * found it.
+ *
+ * The GET spellings below are kept as a convenience for humans and
+ * crawlers, clearly marked non-normative. They are not what the
+ * profile advertises.
+ */
+ucpRoutes.post("/ucp/v1/catalog/search", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const query = c.req.query("q") ?? c.req.query("query") ?? "";
-  const requested = Number(c.req.query("limit") ?? 20);
-  const limit =
-    Number.isFinite(requested) && requested > 0
-      ? Math.min(Math.floor(requested), MAX_SEARCH_LIMIT)
-      : 20;
-  const products = query.trim()
-    ? searchCatalog(base, query, limit)
-    : ucpCatalog(base).slice(0, limit);
-  return c.json({
-    ucp: { version: UCP_VERSION },
-    query,
-    products,
-    /**
-     * Said on every result rather than in a document the caller has
-     * to go and find: a row here is not a reservation.
-     */
-    [SCVD_NAMESPACE]: {
-      availability_is_not_a_commitment:
-        "Prices and availability here are the shelf's current listing, not a held quote. The 402 at the buy door is what actually binds.",
-      total_in_catalog: coreCommerceItems().length,
-    },
-  });
+  let body: Record<string, unknown> = {};
+  try {
+    const parsed = await c.req.json();
+    if (parsed && typeof parsed === "object") body = parsed as Record<string, unknown>;
+  } catch {
+    // An empty or unparseable body searches the whole shelf rather
+    // than refusing: the schema makes every request field optional.
+  }
+  const query = typeof body.query === "string" ? body.query : "";
+  const pagination = (body.pagination ?? {}) as Record<string, unknown>;
+  return c.json(searchResponse(base, query, clampLimit(pagination.limit)));
 });
 
-ucpRoutes.get("/ucp/v1/catalog/lookup", (c) => {
+/**
+ * Batch, because the contract is batch. Every returned variant carries
+ * `inputs`, which is required on a lookup response: it says WHICH of
+ * the caller's identifiers resolved to this variant and how — `exact`
+ * when they named the variant or its SKU, `featured` when they named
+ * the product and the store picked its representative variant. A
+ * caller that sent five ids needs to know which answer is whose.
+ */
+ucpRoutes.post("/ucp/v1/catalog/lookup", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const identifier = c.req.query("id") ?? c.req.query("sku") ?? "";
-  if (!identifier.trim()) {
+  let ids: string[] = [];
+  try {
+    const body = (await c.req.json()) as Record<string, unknown>;
+    if (Array.isArray(body?.ids)) {
+      ids = body.ids.filter((id): id is string => typeof id === "string");
+    }
+  } catch {
+    ids = [];
+  }
+  if (ids.length === 0) {
     return c.json(
       {
-        error: "Pass ?id= — a product gid, a variant gid, a handle, an SKU, or the plain item id.",
-        example: `${base}/ucp/v1/catalog/lookup?id=service_audit`,
+        ucp: { version: UCP_VERSION, status: "error" },
+        products: [],
+        messages: [
+          {
+            type: "error",
+            code: "not_found",
+            severity: "unrecoverable",
+            content:
+              'Send {"ids": [...]} with at least one product id, variant id, handle, SKU or shelf item id.',
+          },
+        ],
       },
       400,
     );
   }
-  const item = lookupItem(identifier);
-  if (!item) {
-    /**
-     * A SHELF ITEM THAT EXISTS AND IS NOT IN THIS CATALOG GETS A
-     * DIFFERENT ANSWER FROM ONE THAT DOES NOT EXIST.
-     *
-     * The four sub-cent items are real, for sale, and absent here. A
-     * bare 404 would tell a reader they had the wrong id, which is
-     * false and is the sort of wrong answer that ends up in somebody
-     * else's directory as a delisting.
-     */
-    const shelved = getMenuItem(identifier);
-    if (shelved && commerceFor(shelved.id)?.visibility === "extension_only") {
-      return c.json(
-        {
-          error: "not_in_ucp_catalog",
-          item_id: shelved.id,
-          sku: requireCommerce(shelved).sku,
-          price_usdc: shelved.price_usdc,
-          reason: `$${shelved.price_usdc} is less than one cent, and a UCP catalog price is an integer number of an ISO-4217 currency's minor units. There is no honest USD figure for this item, so it has no catalog row rather than a rounded one.`,
-          still_for_sale: true,
-          buy_url: `${base}/api/buy/${shelved.id}`,
-          listing_url: `${base}/menu/${shelved.id}`,
-        },
-        404,
-      );
-    }
-    return c.json({ error: "not_found", id: identifier }, 404);
-  }
-  if (requireCommerce(item).visibility !== "core") {
+  return c.json(lookupResponse(c.env.STORE_BASE_URL, ids), 200);
+});
+
+/**
+ * NON-NORMATIVE GET SPELLINGS. A person with a browser and a crawler
+ * with no POST both deserve an answer; neither is what the profile
+ * points at.
+ */
+ucpRoutes.get("/ucp/v1/catalog/search", (c) =>
+  c.json(
+    searchResponse(
+      c.env.STORE_BASE_URL,
+      c.req.query("q") ?? c.req.query("query") ?? "",
+      clampLimit(c.req.query("limit")),
+    ),
+  ),
+);
+
+ucpRoutes.get("/ucp/v1/catalog/lookup", (c) => {
+  const identifier = c.req.query("id") ?? c.req.query("sku") ?? "";
+  if (!identifier.trim()) {
     return c.json(
       {
-        error: "not_in_ucp_catalog",
-        item_id: item.id,
-        price_usdc: item.price_usdc,
-        still_for_sale: true,
-        buy_url: `${base}/api/buy/${item.id}`,
+        error:
+          "Pass ?id= — a product gid, a variant gid, a handle, an SKU, or the plain item id. The normative operation is POST with {\"ids\": [...]}.",
+        example: `${c.env.STORE_BASE_URL}/ucp/v1/catalog/lookup?id=service_audit`,
       },
-      404,
+      400,
     );
   }
-  return c.json({
-    ucp: { version: UCP_VERSION },
-    product: ucpProduct(item, base),
-  });
+  const body = lookupResponse(c.env.STORE_BASE_URL, [identifier]);
+  return c.json(body, body.products.length > 0 ? 200 : 404);
 });
 
 ucpRoutes.get("/ucp/schemas/payment/usdc-x402.json", (c) =>
@@ -286,8 +313,16 @@ ucpRoutes.get("/ucp", (c) => {
     title: "Universal Commerce Protocol at this store",
     ucp_version: UCP_VERSION,
     profile: `${base}/.well-known/ucp`,
-    catalog_search: `${base}/ucp/v1/catalog/search?q=x402%20audit`,
-    catalog_lookup: `${base}/ucp/v1/catalog/lookup?id=service_audit`,
+    catalog_search: {
+      method: "POST",
+      url: `${base}/ucp/v1/catalog/search`,
+      example_body: { query: "x402 audit" },
+    },
+    catalog_lookup: {
+      method: "POST",
+      url: `${base}/ucp/v1/catalog/lookup`,
+      example_body: { ids: ["service_audit"] },
+    },
     what_works: "Catalog search and lookup, over REST, pinned to UCP " + UCP_VERSION + ".",
     what_does_not:
       "Checkout and order. They are not built, so they are not advertised in the profile. To buy, use x402 at /api/buy/{item_id} or the MCP door at /mcp.",

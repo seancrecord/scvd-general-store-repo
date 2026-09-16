@@ -30,8 +30,26 @@ describe("/.well-known/ucp", () => {
     expect(profile.ucp.capabilities["dev.ucp.shopping.catalog.lookup"]).toBeDefined();
     const endpoint = profile.ucp.services["dev.ucp.shopping"][0].endpoint;
     expect(endpoint).toBe(`${BASE}/ucp/v1`);
-    const search = await SELF.fetch(`${endpoint}/catalog/search?q=audit`);
+    // POST, because the pinned REST contract says POST.
+    const search = await SELF.fetch(`${endpoint}/catalog/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "audit" }),
+    });
     expect(search.status).toBe(200);
+    /*
+     * A UCP-defined capability resolves to UCP's own schema, not to a
+     * copy on this origin: the store vendors those files to validate
+     * itself, it does not claim authorship of them.
+     */
+    for (const name of [
+      "dev.ucp.shopping.catalog.search",
+      "dev.ucp.shopping.catalog.lookup",
+    ]) {
+      expect(profile.ucp.capabilities[name][0].schema).toContain(
+        "https://ucp.dev/schemas/",
+      );
+    }
   });
 
   it("does NOT advertise a capability this store has not built", async () => {
@@ -41,9 +59,22 @@ describe("/.well-known/ucp", () => {
     const capabilities = Object.keys(profile.ucp.capabilities);
     expect(capabilities).not.toContain("dev.ucp.shopping.checkout");
     expect(capabilities).not.toContain("dev.ucp.shopping.order");
-    // And an offer to transact is not made either.
-    expect(profile.ucp.payment_handlers).toBeUndefined();
     expect(profile["store.scvd"].status.checkout).toBe("not implemented");
+    /*
+     * payment_handlers IS declared, and that was a correction rather
+     * than a reversal of intent. The business schema requires it, so
+     * omitting it produced an invalid profile rather than a cautious
+     * one. The declaration is true — the store takes USDC on these
+     * rails today — and the thing that tells a negotiator it cannot
+     * drive them through UCP is the absent checkout capability above,
+     * which is the field negotiation actually reads.
+     */
+    expect(Object.keys(profile.ucp.payment_handlers)).toEqual([
+      "store.scvd.payment.usdc",
+    ]);
+    expect(profile["store.scvd"].payment_handler_note.drivable_through_ucp).toBe(
+      false,
+    );
   });
 
   it("tells a reader that cannot use UCP how to actually pay", async () => {

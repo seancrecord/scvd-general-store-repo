@@ -34,6 +34,9 @@ export interface UcpDescription {
 
 export interface UcpAvailability {
   available: boolean;
+  /** Open vocabulary; `in_stock` is the one that fits a shelf that
+   * makes its goods on demand. */
+  status: string;
   /** Whose gate decides, said plainly, because it is not this one. */
   decided_at: "checkout";
   /** Declared weekly ceiling, when the item has one. */
@@ -55,6 +58,21 @@ export interface UcpVariant {
   metadata: Record<string, unknown>;
 }
 
+/**
+ * A CATEGORY IS AN OBJECT WITH A NAMED TAXONOMY, not a bare string.
+ *
+ * shopping/types/category.json requires `value` and takes an optional
+ * `taxonomy` naming where the value came from. These are the store's
+ * own shelves rather than a Google or Shopify taxonomy id, so they say
+ * `merchant` — which is the honest answer and the one that stops a
+ * platform trying to resolve "endpoint-audit" against a taxonomy that
+ * has never heard of it.
+ */
+export interface UcpCategory {
+  value: string;
+  taxonomy: "merchant";
+}
+
 export interface UcpProduct {
   id: string;
   handle: string;
@@ -63,9 +81,8 @@ export interface UcpProduct {
   url: string;
   price_range: { min: UcpMoney; max: UcpMoney };
   variants: UcpVariant[];
-  categories: string[];
+  categories: UcpCategory[];
   tags: string[];
-  policies: UcpPolicy[];
   metadata: Record<string, unknown>;
   media?: { type: "image"; url: string; alt: string }[];
 }
@@ -88,6 +105,7 @@ const BUYER_SPECIFIC: Record<string, string> = {
 function availabilityFor(item: MenuItem): UcpAvailability {
   return {
     available: true,
+    status: "in_stock",
     decided_at: "checkout",
     ...(item.weekly_inventory !== undefined
       ? { weekly_inventory: item.weekly_inventory }
@@ -305,9 +323,11 @@ export function ucpProduct(item: MenuItem, base: string): UcpProduct {
       max: { amount: Math.max(...amounts), currency: "USD" },
     },
     variants,
-    categories: [...commerce.categories],
+    categories: commerce.categories.map((value) => ({
+      value,
+      taxonomy: "merchant" as const,
+    })),
     tags: [...commerce.tags, ...derivedTags(item)],
-    policies: policiesFor(item, base),
     metadata: { [SCVD_NAMESPACE]: itemMetadata(item, base) },
     ...(media ? { media } : {}),
   };
@@ -316,6 +336,37 @@ export function ucpProduct(item: MenuItem, base: string): UcpProduct {
 /** Every shelf row a standard catalog can carry, in shelf order. */
 export function ucpCatalog(base: string): UcpProduct[] {
   return coreCommerceItems().map((item) => ucpProduct(item, base));
+}
+
+/**
+ * THE POLICIES FOR A SET OF PRODUCTS, TARGETED THE WAY THE SCHEMA SAYS.
+ *
+ * They were on the product until the conformance gate read
+ * common/types/policy.json: policies are a RESPONSE field, and each
+ * one names the nodes it covers with an RFC 9535 JSONPath relative to
+ * the response root. `$.products[3]` covers that product and
+ * everything nested under it, variants included — which is exactly the
+ * scope these have.
+ *
+ * Emitting them where the schema puts them is not pedantry: a platform
+ * reads `policies` off the response, so a licence sitting on the
+ * product is a licence nobody is looking at.
+ */
+export function catalogPolicies(
+  products: UcpProduct[],
+  base: string,
+): UcpPolicy[] {
+  const policies: UcpPolicy[] = [];
+  products.forEach((product, index) => {
+    const itemId = (product.metadata[SCVD_NAMESPACE] as Record<string, unknown>)
+      .item_id as string;
+    const item = getMenuItem(itemId);
+    if (!item) return;
+    for (const policy of policiesFor(item, base)) {
+      policies.push({ ...policy, applies_to: [`$.products[${index}]`] });
+    }
+  });
+  return policies;
 }
 
 /**

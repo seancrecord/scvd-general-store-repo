@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { LAYER3 } from "./lib/git-source.mjs";
 import {
   PINS,
   checkPin,
@@ -119,7 +120,15 @@ test("every shipped pin names where the claim is written and what to do when it 
     assert.ok(pin.claim, `${pin.id} has no claim`);
     assert.ok(pin.cited_in, `${pin.id} does not say where it is written down`);
     assert.ok(pin.on_drift, `${pin.id} has no instruction for a human`);
-    assert.ok(["x402", "mpp", "tempo"].includes(pin.source), `${pin.id} names an unknown source`);
+    // Derived from LAYER3 rather than retyped (2026-09-16): a literal
+    // list here fails a NEW source rather than an unknown one, which
+    // is the opposite of what this assertion is for. The check is
+    // still exactly as strict — a pin naming a source no registry
+    // entry defines has nothing to clone.
+    assert.ok(
+      LAYER3.some((source) => source.key === pin.source),
+      `${pin.id} names an unknown source`,
+    );
   }
   assert.equal(new Set(PINS.map((p) => p.id)).size, PINS.length, "pin ids must be unique");
 });

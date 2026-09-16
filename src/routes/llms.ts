@@ -496,7 +496,7 @@ catalog, searchable at ${base}/ucp/v1/catalog/search and readable one
 product at a time at ${base}/ucp/v1/catalog/lookup. Catalog only: this
 store has no UCP checkout and the profile advertises none, so a
 platform that speaks UCP can read what is here and then has to pay the
-way everyone else does — x402 at ${base}/api/buy/{item_id}, or MCP.
+way everyone else does — x402 at \`${base}/api/buy/{item_id}\`, or MCP.
 Four sub-cent items are missing from that catalog and nowhere else;
 ${base}/ucp says which and why.
 Coverage matrix (class × chain × depth, absence stated as none):

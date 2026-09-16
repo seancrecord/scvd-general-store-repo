@@ -1017,8 +1017,15 @@ const BASE = "https://scvd.store";
 // from that catalog and nowhere else. Verified the same way: with only
 // that paragraph removed from this tree, the prior 1162c211 digest
 // reproduced, and this copy reproduces the new one.
+// 2026-09-16, same paragraph, one character class: its
+// `/api/buy/{item_id}` now travels inside backticks. The guard in
+// test/markdown-discoverability.spec.ts requires every templated URL
+// in this document to be code rather than a bare link, for the reason
+// it was written — an agent that follows a literal `{item_id}` has
+// been sent somewhere that does not exist. The paragraph is otherwise
+// unchanged; the digest moved because the backticks are bytes.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "2a725f457903f0f7c0ee76027d8fed35d30583dbce1c394e4e8e52cbf4e90ea8";
+  "7a90afbd02a318496c8569283e86dd8c988d4ee5724fe08186ced908972b3136";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

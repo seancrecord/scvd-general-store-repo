@@ -16,11 +16,28 @@ import type { MenuItem } from "@/types";
  * whose `url` 404s is worse than no policy, so the paths are the ones
  * the store already serves.
  */
+/**
+ * `description` IS AN OBJECT, NOT A STRING, and that is the schema's
+ * word rather than a preference: common/types/policy.json requires
+ * `type` and `description`, and `description` is common/types/
+ * description.json — at least one of plain, html or markdown. A
+ * string there fails validation, which is how the conformance gate
+ * found this one.
+ */
 export interface UcpPolicy {
   type: string;
-  title: string;
-  description: string;
+  description: { plain: string };
+  /** Not a schema field; carried because additionalProperties is open
+   * and a one-line label is worth more to a reader than a paragraph. */
+  title?: string;
   url?: string;
+  /**
+   * RFC 9535 JSONPath targets, relative to the response root. Policies
+   * ride the RESPONSE rather than the product — that is where the
+   * schema puts them and therefore where a platform looks — so each
+   * one has to say which products it covers.
+   */
+  applies_to?: string[];
   [key: string]: unknown;
 }
 
@@ -77,7 +94,7 @@ export function licensePolicy(item: MenuItem, base: string): UcpPolicy {
     class: commerce.license_policy,
     status: TERMS_STATUS,
     title: terms.title,
-    description: terms.description,
+    description: { plain: terms.description },
     url: `${base}/rights`,
   };
 }
@@ -99,7 +116,9 @@ export function serviceTermPolicy(item: MenuItem, base: string): UcpPolicy | nul
   return {
     type: `${SCVD_NAMESPACE}.policy.service_term`,
     title: `Prepaid ${item.term_days}-day term`,
-    description: `One payment covers ${item.term_days} days and then stops. Nothing renews: this store holds no mandate and no card, so there is no mechanism that could charge again. Buy it a second time if you want a second term.`,
+    description: {
+      plain: `One payment covers ${item.term_days} days and then stops. Nothing renews: this store holds no mandate and no card, so there is no mechanism that could charge again. Buy it a second time if you want a second term.`,
+    },
     term_days: item.term_days,
     auto_renews: false,
     url: `${base}/menu/${item.id}`,
@@ -112,7 +131,9 @@ export function fulfillmentPolicy(item: MenuItem, base: string): UcpPolicy {
     return {
       type: `${SCVD_NAMESPACE}.policy.fulfillment`,
       title: `Human fulfillment within ${item.sla_hours ?? 168} hours`,
-      description: `${REFUND_POLICY.commitment} ${REFUND_POLICY.mechanism}`,
+      description: {
+        plain: `${REFUND_POLICY.commitment} ${REFUND_POLICY.mechanism}`,
+      },
       mode: "human_queue",
       sla_hours: item.sla_hours ?? 168,
       url: `${base}/fulfillment-log`,
@@ -121,7 +142,7 @@ export function fulfillmentPolicy(item: MenuItem, base: string): UcpPolicy {
   return {
     type: `${SCVD_NAMESPACE}.policy.fulfillment`,
     title: "Delivered in the purchase response",
-    description: REFUND_POLICY.instant_items,
+    description: { plain: REFUND_POLICY.instant_items },
     mode: "instant",
     url: `${base}/fulfillment-log`,
   };
@@ -138,7 +159,7 @@ export function settlementRiskPolicy(base: string): UcpPolicy {
   return {
     type: `${SCVD_NAMESPACE}.policy.settlement_risk`,
     title: "Not escrow",
-    description: REFUND_POLICY.what_this_is_not,
+    description: { plain: REFUND_POLICY.what_this_is_not },
     escrow: false,
     custodial: false,
     url: `${base}/rights`,

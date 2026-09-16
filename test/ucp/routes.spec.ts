@@ -6,9 +6,20 @@ import { coreCommerceItems, requireCommerce } from "@/store/commerce";
 
 const BASE = "https://scvd.store";
 
+const post = (path: string, body: unknown) =>
+  SELF.fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+
 describe("/ucp/v1 catalog", () => {
   it("returns products for a query and caps the page size", async () => {
-    const res = await SELF.fetch(`${BASE}/ucp/v1/catalog/search?q=x402&limit=500`);
+    const res = await post("/ucp/v1/catalog/search", {
+      query: "x402",
+      pagination: { limit: 500 },
+    });
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, any>;
     expect(body.products.length).toBeGreaterThan(0);
@@ -16,24 +27,60 @@ describe("/ucp/v1 catalog", () => {
     expect(body["store.scvd"].availability_is_not_a_commitment).toContain("402");
   });
 
-  it("lists the shelf when no query is given", async () => {
+  it("applies the schema's recommended default page size", async () => {
     const body = (await (
-      await SELF.fetch(`${BASE}/ucp/v1/catalog/search`)
+      await post("/ucp/v1/catalog/search", {})
     ).json()) as Record<string, any>;
-    expect(body.products.length).toBe(20);
+    // pagination.json RECOMMENDS 10 when a caller names no page size.
+    expect(body.products.length).toBe(10);
+    expect(body.pagination.has_next_page).toBe(true);
+    expect(body.pagination.total_count).toBe(coreCommerceItems().length);
     expect(body["store.scvd"].total_in_catalog).toBe(coreCommerceItems().length);
+  });
+
+  it("is a batch operation, and says which identifier resolved to what", async () => {
+    const body = (await (
+      await post("/ucp/v1/catalog/lookup", {
+        ids: ["service_audit", "SCVD-HELLO"],
+      })
+    ).json()) as Record<string, any>;
+    expect(body.products.length).toBe(2);
+    const ids = body.products.map(
+      (product: any) => product.metadata["store.scvd"].item_id,
+    );
+    expect(ids.sort()).toEqual(["hello", "service_audit"]);
+    for (const product of body.products) {
+      for (const variant of product.variants) {
+        // Required on a lookup response: which request id resolved here.
+        expect(Array.isArray(variant.inputs)).toBe(true);
+        expect(variant.inputs.length).toBeGreaterThan(0);
+        expect(["exact", "featured", "related"]).toContain(
+          variant.inputs[0].match,
+        );
+      }
+    }
+  });
+
+  it("refuses a lookup with no ids, the way the schema shapes an error", async () => {
+    const res = await post("/ucp/v1/catalog/lookup", {});
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as Record<string, any>;
+    expect(body.messages[0].type).toBe("error");
+    expect(typeof body.messages[0].content).toBe("string");
+    expect(body.messages[0].severity).toBe("unrecoverable");
   });
 
   it("looks up an item and hands back a variant id a checkout could use", async () => {
     const body = (await (
-      await SELF.fetch(`${BASE}/ucp/v1/catalog/lookup?id=service_audit`)
+      await post("/ucp/v1/catalog/lookup", { ids: ["service_audit"] })
     ).json()) as Record<string, any>;
-    expect(body.product.id).toBe("gid://scvd.store/Product/service_audit");
-    expect(body.product.variants[0].id).toBe(
-      "gid://scvd.store/Variant/service_audit",
-    );
-    expect(body.product.variants[0].sku).toBe("SCVD-SERVICE-AUDIT");
-    expect(body.product.variants[0].price).toEqual({ amount: 500, currency: "USD" });
+    const product = body.products[0];
+    expect(product.id).toBe("gid://scvd.store/Product/service_audit");
+    expect(product.variants[0].id).toBe("gid://scvd.store/Variant/service_audit");
+    expect(product.variants[0].sku).toBe("SCVD-SERVICE-AUDIT");
+    expect(product.variants[0].price).toEqual({ amount: 500, currency: "USD" });
+    // The store's own shelves, named as the store's own taxonomy.
+    expect(product.categories[0].taxonomy).toBe("merchant");
   });
 
   it("asks for an identifier rather than guessing when none is given", async () => {
@@ -47,17 +94,25 @@ describe("/ucp/v1 catalog", () => {
    * a reason a reader can act on.
    */
   it("distinguishes 'not in this catalog' from 'no such item'", async () => {
-    const res = await SELF.fetch(`${BASE}/ucp/v1/catalog/lookup?id=spot_check`);
-    expect(res.status).toBe(404);
-    const body = (await res.json()) as Record<string, any>;
-    expect(body.error).toBe("not_in_ucp_catalog");
-    expect(body.still_for_sale).toBe(true);
-    expect(body.price_usdc).toBe(0.001);
-    expect(body.buy_url).toBe(`${BASE}/api/buy/spot_check`);
+    const body = (await (
+      await post("/ucp/v1/catalog/lookup", {
+        ids: ["spot_check", "no_such_item", "service_audit"],
+      })
+    ).json()) as Record<string, any>;
+    // One resolved; the other two are warnings, not a failed request.
+    expect(body.products.length).toBe(1);
+    const excluded = body.messages.find(
+      (message: any) => message.code === "store.scvd.catalog.excluded",
+    );
+    expect(excluded.type).toBe("warning");
+    expect(excluded["store.scvd"].still_for_sale).toBe(true);
+    expect(excluded["store.scvd"].price_usdc).toBe(0.001);
+    expect(excluded["store.scvd"].buy_url).toBe(`${BASE}/api/buy/spot_check`);
 
-    const missing = await SELF.fetch(`${BASE}/ucp/v1/catalog/lookup?id=no_such_item`);
-    expect(missing.status).toBe(404);
-    expect(((await missing.json()) as Record<string, any>).error).toBe("not_found");
+    const missing = body.messages.find(
+      (message: any) => message.code === "not_found",
+    );
+    expect(missing["store.scvd"].id).toBe("no_such_item");
   });
 });
 
@@ -154,13 +209,14 @@ describe("UCP agrees with the surfaces already published", () => {
       const listed = priced.get(item.id);
       if (listed === undefined) continue;
       const body = (await (
-        await SELF.fetch(`${BASE}/ucp/v1/catalog/lookup?id=${item.id}`)
+        await post("/ucp/v1/catalog/lookup", { ids: [item.id] })
       ).json()) as Record<string, any>;
-      const settlement = body.product.variants[0].metadata["store.scvd"].settlement;
+      const settlement =
+        body.products[0].variants[0].metadata["store.scvd"].settlement;
       expect(Number(settlement.amount_usdc), item.id).toBe(listed);
       // The minimum tier is the price the menu quotes; the catalog
       // price is that same money in cents.
-      expect(body.product.variants[0].price.amount, item.id).toBe(
+      expect(body.products[0].variants[0].price.amount, item.id).toBe(
         Math.round(listed * 100),
       );
     }
@@ -189,12 +245,13 @@ describe("UCP agrees with the surfaces already published", () => {
   it("uses the item ids and listing URLs the rest of the store uses", async () => {
     for (const item of coreCommerceItems().slice(0, 6)) {
       const body = (await (
-        await SELF.fetch(`${BASE}/ucp/v1/catalog/lookup?id=${item.id}`)
+        await post("/ucp/v1/catalog/lookup", { ids: [item.id] })
       ).json()) as Record<string, any>;
-      expect(body.product.metadata["store.scvd"].item_id).toBe(item.id);
-      expect(body.product.metadata["store.scvd"].sku).toBe(requireCommerce(item).sku);
-      expect(body.product.url).toBe(`${BASE}/menu/${item.id}`);
-      const listing = await SELF.fetch(body.product.url, {
+      const product = body.products[0];
+      expect(product.metadata["store.scvd"].item_id).toBe(item.id);
+      expect(product.metadata["store.scvd"].sku).toBe(requireCommerce(item).sku);
+      expect(product.url).toBe(`${BASE}/menu/${item.id}`);
+      const listing = await SELF.fetch(product.url, {
         headers: { Accept: "application/json" },
       });
       expect(listing.status, item.id).toBe(200);

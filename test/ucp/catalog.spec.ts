@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { lookupItem, searchCatalog, ucpCatalog, ucpProduct } from "@/lib/ucp/catalog";
+import {
+  catalogPolicies,
+  lookupItem,
+  searchCatalog,
+  ucpCatalog,
+  ucpProduct,
+} from "@/lib/ucp/catalog";
 import { priceTiersUsdc } from "@/lib/payments";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { coreCommerceItems, requireCommerce } from "@/store/commerce";
@@ -140,10 +146,13 @@ describe("UCP catalog projection", () => {
   it("states the term and that nothing renews, for every term item", () => {
     const terms = coreCommerceItems().filter((item) => item.cadence === "term");
     expect(terms.length).toBeGreaterThan(0);
+    const policies = catalogPolicies(ucpCatalog(BASE), BASE);
     for (const item of terms) {
-      const product = ucpProduct(item, BASE);
-      const policy = product.policies.find(
-        (row) => row.type === "store.scvd.policy.service_term",
+      const index = coreCommerceItems().findIndex((row) => row.id === item.id);
+      const policy = policies.find(
+        (row) =>
+          row.type === "store.scvd.policy.service_term" &&
+          row.applies_to?.includes(`$.products[${index}]`),
       );
       expect(policy, item.id).toBeDefined();
       expect(policy!.term_days).toBe(item.term_days);
@@ -152,17 +161,30 @@ describe("UCP catalog projection", () => {
   });
 
   it("gives every product a license policy and never invents a default", () => {
-    for (const item of coreCommerceItems()) {
-      const product = ucpProduct(item, BASE);
-      const license = product.policies.find(
-        (row) => row.type === "store.scvd.policy.license",
+    // Policies ride the RESPONSE with a JSONPath target, which is
+    // where common/types/policy.json puts them and therefore where a
+    // platform reads them. They were on the product until the
+    // conformance gate read the schema.
+    const products = ucpCatalog(BASE);
+    const policies = catalogPolicies(products, BASE);
+    products.forEach((product, index) => {
+      const itemId = (product.metadata["store.scvd"] as Record<string, any>)
+        .item_id as string;
+      const license = policies.find(
+        (row) =>
+          row.type === "store.scvd.policy.license" &&
+          row.applies_to?.includes(`$.products[${index}]`),
       );
-      expect(license, item.id).toBeDefined();
-      expect(license!.class).toBe(requireCommerce(item).license_policy);
+      expect(license, itemId).toBeDefined();
+      expect(license!.class).toBe(
+        requireCommerce(getMenuItem(itemId)!).license_policy,
+      );
       // The class is settled; the wording is not, and the wire says so
       // until the keeper's ruling replaces it.
       expect(license!.status).toBe("draft");
-    }
+      // A description is an object, not a string: the schema says so.
+      expect(typeof (license!.description as any).plain).toBe("string");
+    });
   });
 
   it("says a catalog row is not a reservation on the capped and gated items", () => {
