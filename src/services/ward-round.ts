@@ -59,6 +59,12 @@ import {
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
+import {
+  declaredMethod,
+  PROBE_POST_BODY,
+  probeWithMethod,
+  type ProbeMethod,
+} from "@/lib/probe-method";
 import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
@@ -165,7 +171,24 @@ export interface WardHostResult {
    * claims, excluded from the ready arithmetic and the delta until
    * discovery hands us a real door to knock on.
    */
-  verdict: "ready" | "not_ready" | "unreachable" | "not_probed";
+  verdict: "ready" | "not_ready" | "unreachable" | "not_probed" | "method_unresolved";
+  /**
+   * "method_unresolved" (2026-09-16): the door refused every HTTP
+   * method this probe sends — 405 or 501 to GET and to the one
+   * fallback — so NO check ran and nothing was observed about its
+   * challenge. It is a statement about our reach, not a finding
+   * against the host, and it is kept apart from `not_probed` on
+   * purpose: not_probed means we chose not to knock (a leaderboard
+   * row's origin is a homepage), this means we knocked and could not
+   * find the verb. Welding those two into one word is the exact
+   * defect the tri-state check vector exists to prevent.
+   *
+   * Excluded from the ready arithmetic and the listed/gone delta the
+   * same way not_probed is. Before this existed the row read
+   * `not_ready` with a failed `status-402`, which is how a door
+   * serving a valid POST challenge came to be published as "listed,
+   * but serves no payment challenge".
+   */
   failed: string[];
   advisories: string[];
   /**
@@ -227,6 +250,16 @@ export interface WardHostResult {
    * written down at the moment of the knock.
    */
   signer_kids?: string[];
+  /**
+   * WHICH VERB THIS ROW IS ABOUT (2026-09-16). Absent on rows walked
+   * before the census resolved the method, where GET is what was
+   * sent; a reader comparing a pre-2026-09-16 not_ready against a
+   * later ready needs to be able to tell a door that changed from a
+   * probe that did.
+   */
+  probe_method?: ProbeMethod;
+  /** Every method sent, in order. Length > 1 means the first was refused as a method. */
+  probe_methods_attempted?: ProbeMethod[];
   /** How long this door took to answer, in ms. Free; the probe timed itself anyway. */
   latency_ms?: number;
   /**
@@ -983,7 +1016,20 @@ export async function readDiscoveryList(
     }
   }
   const seen = new Set<string>(options.skipHosts ?? []);
-  const hosts: { host: string; url: string; catalog: CatalogTerms | null }[] = [];
+  const hosts: {
+    host: string;
+    url: string;
+    catalog: CatalogTerms | null;
+    /**
+     * THE METHOD THE FEED DECLARED, when it declared one (2026-09-16).
+     * Read off the same row `catalogTermsFromRow` already has in hand,
+     * so it costs nothing. Most feeds declare nothing — the two this
+     * round reads hardest keep only a host or a resource URL — so this
+     * is the cheap half of the method fix and the fallback in
+     * probeHost is the half that carries it.
+     */
+    method?: ProbeMethod;
+  }[] = [];
   for (const row of rows) {
     const url = (row["resourceUrl"] ?? row["resource_url"] ?? row["resource"] ?? row["url"]) as unknown;
     if (typeof url !== "string" || !url.startsWith("https://")) continue;
@@ -995,7 +1041,8 @@ export async function readDiscoveryList(
     }
     if (host === ownHost || seen.has(host)) continue;
     seen.add(host);
-    hosts.push({ host, url, catalog: catalogTermsFromRow(row) });
+    const method = declaredMethod(row);
+    hosts.push({ host, url, catalog: catalogTermsFromRow(row), ...(method ? { method } : {}) });
   }
   return {
     hosts,
@@ -1064,6 +1111,26 @@ export async function pooled<T, R>(
  * (SOLANA_RPC_URL, PublicNode, dRPC, mainnet-beta), so that branch is
  * rare. Rare is not never.
  */
+/**
+ * DOES THIS ROW CARRY A VERDICT ABOUT THE DOOR? (2026-09-16)
+ *
+ * Every reader that computes a ready fraction used to spell this
+ * `verdict !== "not_probed"`, in eight places, because not_probed was
+ * the only verdict-shaped thing that was not a verdict. Adding a
+ * second one — `method_unresolved`, a door we knocked on and could
+ * not find the verb for — would have silently added those rows to
+ * every DENOMINATOR while they could never join a numerator, quietly
+ * deflating the ecosystem's readiness on eight public surfaces at
+ * once. That is rule 52 wearing arithmetic.
+ *
+ * So the question is asked once, here, and the next non-verdict
+ * somebody adds is handled by editing this function rather than by
+ * remembering eight call sites.
+ */
+export function carriesVerdict(row: { verdict: WardHostResult["verdict"] }): boolean {
+  return row.verdict !== "not_probed" && row.verdict !== "method_unresolved";
+}
+
 export async function probeHost(
   env: Env,
   url: string,
@@ -1075,6 +1142,14 @@ export async function probeHost(
    * and then no reading is written.
    */
   catalog?: { listed: boolean; terms: CatalogTerms | null },
+  /**
+   * The method the feed's row declared for this resource, when it
+   * declared one (`declaredMethod`). Passing it means no verb is
+   * guessed and no fallback request is spent. Most feeds declare
+   * nothing — including, as it turns out, the one that surfaced this
+   * whole defect — so the fallback below is what carries the fix.
+   */
+  method?: ProbeMethod,
 ): Promise<Omit<WardHostResult, "host" | "url">> {
   /*
    * 3.1: the probe times itself. Not writing the number down was
@@ -1086,18 +1161,68 @@ export async function probeHost(
   const startedAt = Date.now();
   const observedAt = new Date(startedAt).toISOString();
   try {
-    const response = await fetch(url, {
-      method: "GET",
-      redirect: "manual",
-      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-      // The census knocks on strangers' doors weekly; since
-      // 2026-08-11 the knock is signed (Web Bot Auth) where the
-      // egress key allows, so a host reading its logs can verify who
-      // asked rather than trust a spoofable user-agent string.
-      headers: await webBotAuthHeaders(env, url, {
-        Accept: "application/json",
-      }),
-    });
+    /*
+     * THE VERB IS RESOLVED, NOT ASSUMED (2026-09-16). This fetch read
+     * `method: "GET"` until an operator wrote in to ask why his door
+     * was published not_ready. It answered 405 to GET and a flawless
+     * x402 v2 challenge to POST — the method his own OpenAPI declares
+     * — and this round had scored the 405 as a failed `status-402`,
+     * put it on his passport page, and mailed him about it.
+     *
+     * THE CENSUS IS WHY THIS COULD NOT BE FIXED IN THE BATTERY ALONE.
+     * probeHost imports runChecks from the preflight but never its
+     * fetch, so the free preflight and this round each carried their
+     * own hard-coded verb. The law now lives in lib/probe-method.ts
+     * and all three probes call it — the third copy is how the
+     * private-address hole got in, and this was the fourth.
+     *
+     * The catalog's declared method is used when the feed gave one
+     * (no guess, no second request); otherwise GET first, with one
+     * fallback on a method refusal.
+     */
+    const { response, reading } = await probeWithMethod(
+      async (probeMethod) =>
+        fetch(url, {
+          method: probeMethod,
+          redirect: "manual",
+          signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+          // The census knocks on strangers' doors weekly; since
+          // 2026-08-11 the knock is signed (Web Bot Auth) where the
+          // egress key allows, so a host reading its logs can verify
+          // who asked rather than trust a spoofable user-agent string.
+          headers: {
+            ...(await webBotAuthHeaders(env, url, { Accept: "application/json" })),
+            ...(probeMethod === "POST" ? { "Content-Type": "application/json" } : {}),
+          },
+          ...(probeMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+        }),
+      { ...(method ? { method } : {}) },
+    );
+    /*
+     * WE NEVER REACHED THE DOOR. Returning before the evidence
+     * capture is the point: a method refusal carries no challenge, no
+     * offers and no signers, and every reading below would render its
+     * own emptiness as an observation. `method_unresolved` is walked
+     * (the host WAS knocked on) but carries no verdict to publish
+     * against anyone, and the ready arithmetic excludes it the same
+     * way it excludes not_probed.
+     */
+    if (reading.unresolved) {
+      await response.body?.cancel().catch(() => undefined);
+      return {
+        verdict: "method_unresolved",
+        failed: [],
+        advisories: ["method-unresolved"],
+        observed_at: observedAt,
+        probe_method: reading.used,
+        probe_methods_attempted: reading.attempted,
+        latency_ms: Date.now() - startedAt,
+        battery: CENSUS_BATTERY,
+        ...(catalog
+          ? { catalog: compareCatalogToDoor(catalog.terms, null, catalog.listed) }
+          : {}),
+      };
+    }
     /*
      * READ, NOT CANCELLED (1.2). This body used to be thrown away and
      * runChecks told `false` about truncation it could not have known.
@@ -1127,6 +1252,8 @@ export async function probeHost(
       response,
       evidence.body_truncated,
       bodyText,
+      url,
+      reading,
     );
     const failed = checks.filter((check) => !check.ok).map((check) => check.name);
     const advisoryNames = advisories.map((advisory) => advisory.name);
@@ -1172,6 +1299,8 @@ export async function probeHost(
       failed,
       advisories: advisoryNames,
       observed_at: observedAt,
+      probe_method: reading.used,
+      probe_methods_attempted: reading.attempted,
       ...mppReading,
       ...(offer ? { offer } : {}),
       ...(catalog
@@ -1449,7 +1578,7 @@ async function sealRound(
    * back, and the likely cause is the list feed changing shape.
    */
   const previousProbed = previous
-    ? previous.hosts.filter((h) => h.verdict !== "not_probed").length
+    ? previous.hosts.filter(carriesVerdict).length
     : 0;
   if (previousProbed >= 10 && walked < previousProbed * 0.6) {
     round.coverage_drop = {
@@ -1590,7 +1719,7 @@ async function assembleWalkRound(
   const { presence, doors } = await ourSearchReading(env);
   const { readWalkResults } = await import("@/services/long-walk");
   const { rows, batches_missing } = await readWalkResults(env, walk);
-  const walked = rows.filter((entry) => entry.verdict !== "not_probed").length;
+  const walked = rows.filter(carriesVerdict).length;
   const widened = await readWidenedSources(env, ownHost);
   const wellKnownStore = await (await import("@/services/well-known-doors")).readWellKnownStore(env);
   const sources: SourceResult[] = [
@@ -1775,6 +1904,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     url: string;
     source: "discovery" | "leaderboard" | "both" | "revisit" | "well-known" | "directory";
     catalog?: CatalogTerms | null;
+    method?: ProbeMethod;
   }[] = [
     ...probeList.slice(0, WARD_CAP),
     ...revisits.map((entry) => ({ ...entry, source: "revisit" as const })),
@@ -1786,12 +1916,17 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     const probe =
       entry.source === "leaderboard"
         ? { verdict: "not_probed" as const, failed: [], advisories: [] }
-        : await probeHost(env, entry.url, {
-            // A revisit is a door no index row named this round; the
-            // catalog column says so rather than comparing nothing.
-            listed: namedByFeed(entry.source),
-            terms: entry.catalog ?? null,
-          });
+        : await probeHost(
+            env,
+            entry.url,
+            {
+              // A revisit is a door no index row named this round; the
+              // catalog column says so rather than comparing nothing.
+              listed: namedByFeed(entry.source),
+              terms: entry.catalog ?? null,
+            },
+            entry.method,
+          );
     return {
       host: entry.host,
       url: entry.url,
@@ -1801,7 +1936,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     } satisfies WardHostResult;
   });
   const { presence, doors } = await ourSearchReading(env);
-  const walked = results.filter((entry) => entry.verdict !== "not_probed").length;
+  const walked = results.filter(carriesVerdict).length;
   /**
    * THE CENSUS RIDES THE FEEDS THIS ROUND ALREADY READ — no extra
    * fetches, so counting the population costs nothing on top of

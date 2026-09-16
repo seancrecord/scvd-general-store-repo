@@ -1,18 +1,18 @@
 {
   "what_this_is": "A snapshot of https://scvd.store/defects.json cut from the store's own source at the version below (npm run defects:cut). The live document is the authority; fetchLatest() reads it, and isStale() says whether this file is behind.",
-  "version": "17",
+  "version": "18",
   "url": "https://scvd.store/defects",
   "cross_instrument_mappings_read_on": "2026-08-23",
   "classes": [
     {
       "id": "no-402",
       "title": "Listed, but serves no payment challenge",
-      "asserts": "The URL a directory lists answers 402 Payment Required to an unpaid GET.",
+      "asserts": "The URL a directory lists answers 402 Payment Required to an unpaid request using a method the resource accepts — the method its catalog, challenge or specification declares, or, where none is declared, a method the endpoint does not refuse as a method.",
       "costs": "Every buyer routed here finds no challenge at all. The listing is an advertisement for a door that does not open.",
       "detectable": "unpaid",
       "our_signal": "status-402",
-      "falsified_by": "The same URL answering 402 with a parseable challenge to an unauthenticated GET at the stated moment. A 402 that appears only for some callers is a different finding, not this one.",
-      "repair_hint": "Serve 402 with a PAYMENT-REQUIRED challenge at the exact URL your listing names. The commonest causes are a listing that points at a marketing page instead of the paid resource, and a proxy or CDN answering before your x402 middleware does. If the door moved, update the listing.",
+      "falsified_by": "The same URL answering 402 with a parseable challenge to an unauthenticated request, by ANY HTTP method, at the stated moment. A 405 or 501 to the probing instrument's method falsifies a finding of this class outright: a method refusal is an observation about the request, not about the challenge, and an instrument that reports this class without having tried a method the door accepts has published a claim it has no evidence for. A 402 that appears only for some callers is a different finding, not this one.",
+      "repair_hint": "Serve 402 with a PAYMENT-REQUIRED challenge at the exact URL your listing names. The commonest causes are a listing that points at a marketing page instead of the paid resource, and a proxy or CDN answering before your x402 middleware does. If the door moved, update the listing. If your door takes POST rather than GET, both halves of RFC 9110 §15.5.6 are worth serving on the refusal — the 405 AND an Allow header naming the method — because an indexer or preflight that reads Allow finds your door on the first try, and one that does not will keep asking the wrong question.",
       "buyer_hint": "Do not pay, and do not retry with money: there is no challenge to sign against. Treat the listing as pointing somewhere other than the paid resource; if you hold a different URL for the same service, preflight that one instead."
     },
     {
@@ -514,6 +514,12 @@
       "date": "2026-09-15",
       "at_the_instigation_of": "the keeper, closing the half of v15 that was left open: a class marked detectable: \"paid\" whose our_signal named only a research ledger",
       "what_changed": "advertised-version-unpayable becomes obtainable. Its assertion, falsifier, costs and boundary are UNCHANGED; what moved is our_signal, which named `walkabout ledger: advertised_version_unpayable` — a file in this store's research directory. A class is marked detectable: \"paid\" to tell a buyer the finding exists on the other side of money, and pointing that buyer at our field notes tells them we saw it once. The launch check now reads every refusal on its settle stage rather than only recording the status: it compares the offer the door serves AFTER refusing a correctly signed payment against the offer it served unpaid, on the five material terms alone, and reports advertised-version-unpayable present, not present, or not checked. So the signal a reader joins on is now a stage of a paid instrument they can commission, with the ledger kept beside it because the research reading is still real and still reproducible. The comparator is the corrected one from v15 — scheme, network, payTo, asset, amount, with nonces, expiries and timeouts free to rotate — and it keeps the v15 rule that it never returns a quiet clean: a refusal carrying no readable challenge reads `not checked`, which is a different fact from `not present` and says so in the stage line a buyer reads."
+    },
+    {
+      "version": "18",
+      "date": "2026-09-16",
+      "at_the_instigation_of": "the operator of a POST-only endpoint this store had published not_ready, who asked for the exact method, URL, headers and timestamp our probe used",
+      "what_changed": "`no-402`'s ASSERTION AND FALSIFIER CHANGE — the first time this vocabulary has narrowed a class because it authorised a wrong finding of ours. Both texts named GET: the class asserted a 402 \"to an unpaid GET\" and was falsified only by a 402 \"to an unauthenticated GET\". Every probe this store runs sent GET and nothing else, so a door that declares POST in its own OpenAPI, answers 405 to GET and serves a valid x402 v2 challenge to POST satisfied the class as written. It was published not_ready on its passport page, entered the corpus, and an automated note went to the operator's security contact naming the failed check. The class now asserts a 402 to a method THE RESOURCE ACCEPTS, and a 405 or 501 to the probing instrument's method now FALSIFIES a finding of this class outright. The old text stays readable above, per the append rule. Nothing already signed is re-scored: rows sealed under v17 were rendered under the criteria as they stood and stand as history. The repair hint gains the Allow header, because the door that caught us sends none and an indexer that reads Allow would have found it. Cross-instrument consequence, stated plainly: any instrument mapping to this class that probes with a single hard-coded method is making a claim v18 does not support."
     }
   ],
   "license": "CC BY 4.0 for the names; MIT for the code that carries them."

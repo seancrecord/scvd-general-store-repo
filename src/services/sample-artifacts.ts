@@ -155,6 +155,7 @@ export async function sampleOnceOver(
     outcome.bodyOverLimit,
     outcome.body,
     SAMPLE_SUBJECT_URL,
+    outcome.method,
   );
   const v1Verdict = ran.checks.every((check) => check.ok) ? "ready" : "not_ready";
   const v2Checks = [...ran.checks, ...(ran.l3b ?? [])];
