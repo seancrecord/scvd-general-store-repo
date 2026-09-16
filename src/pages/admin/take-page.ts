@@ -25,6 +25,7 @@ export interface TakePageData {
 
 export function renderTakePage(data: TakePageData): string {
   const body = `
+  <p><a href="/admin/purchases">Inspect a purchase by its purchase ID</a></p>
   ${data.stats?.payments ? paymentRollupHtml(data.stats.payments, data.stats.payment_sources) : ""}
   ${(data.stats?.payment_sources ?? []).filter(source => source.amounts).map(source => {
     const amounts = source.amounts!;

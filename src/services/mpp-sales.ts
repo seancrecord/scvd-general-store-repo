@@ -15,18 +15,24 @@ export interface MppSalesSummary {
   house_amount_atomic: string;
 }
 
-/** The durable receipt, not the HTTP response, owns this idempotent write. */
-export async function recordMppSale(env: Env, record: PurchaseIntent): Promise<void> {
+/** Shared by the writer and the read-only comparison; one definition of a sale. */
+export function mppSaleEvidence(record: PurchaseIntent) {
   if (purchaseProtocol(record) !== "mpp" || record.state !== "settled" || !record.payment || !record.mpp ||
     record.terms.network !== BASE_NETWORK || record.terms.asset.toLowerCase() !== BASE_USDC.toLowerCase() || record.item?.id !== MPP_CHECKOUT_ITEM) {
     throw new Error("MPP sale is not confirmed");
   }
-  if (!env.COUNTER_LEDGER) throw new Error("MPP sales ledger unavailable");
   const month = record.created_at.slice(0, 7);
-  await env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${month}/mpp-sales`)).recordMppSale({
+  return {
     id: record.id, month, payer: record.payer, transaction: record.payment.transaction,
     amount: record.terms.amount, house: record.mpp.house,
-  });
+  };
+}
+
+/** The durable receipt, not the HTTP response, owns this idempotent write. */
+export async function recordMppSale(env: Env, record: PurchaseIntent): Promise<void> {
+  const sale = mppSaleEvidence(record);
+  if (!env.COUNTER_LEDGER) throw new Error("MPP sales ledger unavailable");
+  await env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${sale.month}/mpp-sales`)).recordMppSale(sale);
 }
 
 /** Calendar-bounded mirrors, like the legacy till; no scan over all purchases. */

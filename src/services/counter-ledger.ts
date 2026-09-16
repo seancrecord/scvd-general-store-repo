@@ -75,6 +75,15 @@ export class CounterLedger extends DurableObject<Env> {
     return sql;
   }
 
+  /** Inspect one retained sale without modifying an empty or existing ledger. */
+  async readMppSale(id: string): Promise<string | null> {
+    if (!/^[a-f0-9]{64}$/.test(id)) throw new Error("Invalid purchase ID");
+    // An inspection must not initialize schema, arm an alarm or flush a mirror.
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return null;
+    return sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales WHERE id = ?", id).toArray()[0]?.evidence ?? null;
+  }
+
   /** One monthly source, disjoint from every legacy x402 counter. */
   async recordMppSale(sale: { id: string; month: string; payer: string; transaction: string; amount: string; house: boolean }): Promise<void> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||
