@@ -1,3 +1,4 @@
+import { getMenuItem } from "@/store/menu";
 import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
 import { type RemediationRow, remediationRows } from "@/services/remediation";
@@ -615,6 +616,9 @@ export interface PreflightReport {
   single_probe_note: string;
   what_this_cannot_tell_you: string[];
   our_conflict_of_interest: string;
+  /** Per unclimbed rung: what climbs it, at what price, called how. */
+  the_rest_of_the_ladder: ReturnType<typeof theRestOfTheLadder>;
+  this_is_not_advice: string;
   /**
    * WHAT THIS ENDPOINT WILL AND WILL NOT KEEP DOING FOR YOU (0.13).
    * Both ceilings have been enforced since 2026-08-03; publishing
@@ -655,7 +659,6 @@ export interface PreflightReport {
   protocols_spoken: ("x402" | "mpp")[];
   /** The MPP battery's own block: spoken or not, its checks when spoken, its advisories, what it cannot tell you. */
   mpp: MppBlock;
-  next_steps: Record<string, string>;
 }
 
 function report(
@@ -703,12 +706,9 @@ function report(
     our_conflict_of_interest: CONFLICT,
     rate_limit: statedRateLimit(base),
     store_identity: storeIdentity(base),
-    next_steps: {
-      conformance_desk: `POST ${base}/api/conformance/v1 — full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free.`,
-      signed_report: `${base}/api/buy/service_audit — this exact readout, signed, bound into a certificate and served at a permanent URL, for when you need to hand it to somebody rather than run it yourself.`,
-      across_a_week: `${base}/api/buy/conformance_watch — this exact battery once a day for seven days, each day signed alone, for catching a deploy that breaks the challenge mid-week. Our missed days are published against us.`,
-      behavioral_check: `${base}/api/buy/standing_watch — the paid rung of the same ladder: a week of signed, out-of-band hourly probes on your endpoint, for when you need evidence rather than a readout.`,
-    },
+    the_rest_of_the_ladder: theRestOfTheLadder(PREFLIGHT_BATTERY, base),
+    this_is_not_advice:
+      "This is an observation, not advice. It says what was seen and what was not; whether that is enough to spend on is yours to decide, and you know your own risk appetite better than we ever will.",
   };
 }
 
@@ -1694,8 +1694,110 @@ export function reachedLevel(
     : "L2";
 }
 
-export const REACHED_LEVEL_MEANING =
-  "How far this one unpaid probe got, on the L0-L6 evidence ladder: none = the probe never completed (network failure, sub-class unlocalized — this platform cannot tell DNS from TCP from TLS from timeout, so we refuse to guess); L1 = HTTP answered; L2 = 402 with a parseable PAYMENT-REQUIRED header (a header present but unparseable scores L1 — this battery cannot split presence from parseability); L3a = challenge well-formed (version and accepts). This battery does not measure L3b internal consistency, L3c authenticity, L3d cross-probe consistency, or L4-L6 purchasability through delivery — those rungs are absent because they were not climbed, not because they passed.";
+/**
+ * ⚑ THIS SENTENCE WAS DENYING A CHECK THE SAME PAYLOAD PERFORMS
+ * (corrected 2026-09-16). It said "this battery does not measure L3b
+ * internal consistency" while `also_under` — three keys later in the
+ * same response — announced that v2 folds exactly those checks into
+ * its verdict. Rule 10, on the string more agents read than any other
+ * this store serves: the ladder moved in 2.1c and the paragraph
+ * describing it did not.
+ *
+ * So it is no longer one frozen string. The unclimbed half is derived
+ * from which battery answered, and a rung that later goes into a
+ * verdict leaves this list the same deploy it arrives.
+ */
+const LADDER_CLIMBED_HERE =
+  "How far this one unpaid probe got, on the L0-L6 evidence ladder: none = the probe never completed (network failure, sub-class unlocalized — this platform cannot tell DNS from TCP from TLS from timeout, so we refuse to guess); L1 = HTTP answered; L2 = 402 with a parseable PAYMENT-REQUIRED header (a header present but unparseable scores L1 — this battery cannot split presence from parseability); L3a = challenge well-formed (version and accepts).";
+
+/** What a given battery leaves unclimbed, named rather than lumped. */
+export function reachedLevelMeaning(battery: string = PREFLIGHT_BATTERY): string {
+  const foldsL3b = battery === PREFLIGHT_BATTERY_NEXT;
+  const l3b = foldsL3b
+    ? "L3b internal consistency is measured here and folded into the verdict (payto-payable, amount-atomic, network-mainnet, transfer-method-signable)."
+    : "This battery reports the L3b consistency observations as advisories, outside its verdict; the next battery folds them into it.";
+  return `${LADDER_CLIMBED_HERE} ${l3b} Not measured by any unpaid probe: L3c authenticity (is the offer this door served signed by who it names), L3d cross-probe consistency (does it serve the same challenge tomorrow), and L4-L6 purchasability through delivery. Those rungs are absent because they were not climbed, not because they passed — and what climbs each one is named in the_rest_of_the_ladder.`;
+}
+
+/** @deprecated Kept for readers pinned to the v1 wording. */
+export const REACHED_LEVEL_MEANING = reachedLevelMeaning();
+
+/**
+ * THE REST OF THE LADDER (2026-09-16, the keeper's ask).
+ *
+ * The reading has always said which rungs it did not climb, and
+ * separately offered four URLs, and never joined the two. A buyer
+ * holding "L4-L6 not climbed" had to work out for themselves that
+ * `standing_watch` is the thing that climbs it, what it costs, and how
+ * to call it in the protocol they were already speaking. That is not a
+ * payment problem — over MCP the payment is call, take the 402, sign,
+ * call again — it is a DISCOVERY problem, and it was ours.
+ *
+ * So each unclimbed rung now names what climbs it: the item, the
+ * price, the tool, and the URL. Prices are read from the menu rather
+ * than typed here (rule 1), so a repriced shelf follows this block.
+ *
+ * NO BUTTON, ANYWHERE. The evidence card still carries none of this —
+ * `mcp-apps.ts` refuses ui metadata to anything that moves money and a
+ * test pins it. Naming a price is not moving money; rule 54 asks that
+ * refusal stay easier than acceptance, and a line of text beside a
+ * rung leaves the press in the client's own chrome where it belongs.
+ *
+ * AND THE HONEST LIMIT IS STATED, not hidden behind the offer: L4-L6
+ * cannot be given away, because climbing it means paying a stranger's
+ * door to find out whether it delivers, and that costs money every
+ * time it is asked.
+ */
+function climbedBy(itemId: string, base: string): Record<string, unknown> | null {
+  const item = getMenuItem(itemId);
+  if (!item) return null;
+  return {
+    item_id: item.id,
+    price_usdc: item.price_usdc,
+    tool: "buy_observation",
+    /*
+     * WHICH DOOR THE TOOL IS ON, because this reading is served from
+     * two of them. /mcp/verifier lists five read-only tools and no
+     * buy at all, so an agent reading this block there would look for
+     * buy_observation on its own tool list and not find it. Naming
+     * the door is the difference between a dead end and a direction —
+     * and it keeps the verifier door's promise exact: nothing
+     * REACHABLE HERE can spend money.
+     */
+    tool_door: `${base}/mcp`,
+    url: `${base}/api/buy/${item.id}`,
+    what_you_get: item.name,
+  };
+}
+
+export function theRestOfTheLadder(battery: string, base: string): Record<string, unknown> {
+  const climbed = ["L1", "L2", "L3a", ...(battery === PREFLIGHT_BATTERY_NEXT ? ["L3b"] : [])];
+  return {
+    climbed,
+    unclimbed: [
+      {
+        rung: "L3c",
+        what_it_is: "Authenticity: is the signed offer this door served actually signed by who it names?",
+        climbs_it: null,
+        why_not: "Built and not yet served. Nothing you can buy here climbs it today, and saying otherwise to sell a watch would be the thing this store exists not to do.",
+      },
+      {
+        rung: "L3d",
+        what_it_is: "Cross-probe consistency: does this door serve the same challenge tomorrow, and the day after?",
+        climbs_it: climbedBy("conformance_watch", base),
+        why_not: "One probe cannot see a second day. Repeated probes cost repeatedly, which is why this rung is sold rather than given.",
+      },
+      {
+        rung: "L4-L6",
+        what_it_is: "Purchasability through delivery: does paying this door actually produce the goods?",
+        climbs_it: climbedBy("standing_watch", base),
+        why_not: "No unpaid probe can climb this, ours or anyone's. Finding out whether a door delivers means paying it, and that is a cost per attempt rather than a feature we are withholding.",
+      },
+    ],
+    already_free: `POST ${base}/api/conformance/v1 — full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free, and it needs no account.`,
+    signed_copy_of_this_reading: climbedBy("service_audit", base),
+  };
+}
 
 /**
  * ROADMAP 2.1a — THE TRI-STATE VECTOR (ledger B1, one layer down).

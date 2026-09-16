@@ -511,7 +511,15 @@ export function mcpSignals(c: Context<HonoEnv>): EventSignals {
 
 export function toolText(payload: Record<string, unknown>): unknown {
   return {
-    content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+    /*
+     * COMPACT, NOT PRETTY (2026-09-16). This text is the
+     * backwards-compatible twin of structuredContent — every byte is
+     * sent twice by convention, and the two-space indent was adding a
+     * fifth again to the larger half for a field no reader opens as
+     * text. A 19.8 KB preflight through the verifier door is a real
+     * risk on a mobile client; this is the cheapest byte back.
+     */
+    content: [{ type: "text", text: JSON.stringify(payload) }],
     structuredContent: payload,
   };
 }
@@ -1817,11 +1825,11 @@ mcpRoutes.post("/mcp", handleMcpPost);
 const MCP_STREAM_KEEPALIVE_MS = 20_000;
 const MCP_STREAM_LIFETIME_MS = 5 * 60_000;
 
-function acceptsEventStream(c: Context<HonoEnv>): boolean {
+export function acceptsEventStream(c: Context<HonoEnv>): boolean {
   return (c.req.header("accept") ?? "").toLowerCase().includes("text/event-stream");
 }
 
-function openListeningStream(): Response {
+export function openListeningStream(): Response {
   const encoder = new TextEncoder();
   let keepalive: ReturnType<typeof setInterval> | undefined;
   let lifetime: ReturnType<typeof setTimeout> | undefined;

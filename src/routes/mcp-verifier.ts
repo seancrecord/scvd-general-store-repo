@@ -3,7 +3,7 @@ import { findMcpTool, type McpTool } from "@/lib/mcp-tools";
 import { runEvidenceTask } from "@/services/a2a-evidence";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import { recordPorchVisit } from "@/lib/metrics";
-import { withMcpProtocol, MODERN_PROTOCOL_VERSIONS, DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, callFreeTool, mcpSignals, toolText } from "@/routes/mcp";
+import { acceptsEventStream, openListeningStream, withMcpProtocol, MODERN_PROTOCOL_VERSIONS, DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, callFreeTool, mcpSignals, toolText } from "@/routes/mcp";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import { DEFECT_CLASSES, DEFECT_VOCABULARY_VERSION, defectClass } from "@/store/defect-vocabulary";
@@ -42,11 +42,35 @@ export const mcpVerifierRoutes = new Hono<HonoEnv>();
 export const VERIFIER_SERVER_NAME = "scvd-x402-verifier";
 export const VERIFIER_TITLE = "SCVD x402 Verifier";
 
+/**
+ * OPEN WORLD IS A FACT ABOUT THE TOOL, NOT A DEFAULT (2026-09-16).
+ *
+ * This list carried `openWorldHint: entry.name !== "get_defect_definition"`
+ * — one negation standing in for five separate readings. It was wrong
+ * about verify_scvd_artifact, which /mcp declares closed and this door
+ * declared open: the same tool, two doors, contradicting each other
+ * about whether calling it reaches outside the store. That is the one
+ * thing this file promises cannot happen, and an annotation a reviewer
+ * asks you to justify is exactly where a convenient default gets
+ * caught.
+ *
+ * The reading is per tool, and it is about what the CALL touches, not
+ * what the answer is ABOUT. Two reach outward: preflight fetches a URL
+ * the caller names, and the receipt desk may resolve a did:web key
+ * against the issuer's host. Three do not: the readiness lookup reads
+ * this store's own signed chain, the defect definition is in-process,
+ * and artifact verification checks an id this store itself issued
+ * against this store's own key. The readiness lookup is the one worth
+ * saying out loud — its SUBJECT is the open internet and its
+ * INTERACTION is a read of our own dataset, and the hint describes the
+ * second.
+ */
 /** Task-shaped name → the base tool on /mcp it runs, or null when the tool is this door's own. */
-export const VERIFIER_TOOLS: ReadonlyArray<{ name: string; base: string | null; title: string; description: string }> = [
+export const VERIFIER_TOOLS: ReadonlyArray<{ name: string; base: string | null; title: string; description: string; openWorld: boolean }> = [
   {
     name: "preflight_x402_endpoint",
     base: "preflight_endpoint",
+    openWorld: true,
     title: "Preflight an x402 endpoint",
     description:
       "Preflight an x402 endpoint before paying it: one unpaid probe answering whether the URL serves a well-formed x402 v2 challenge a stock client could sign — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch — with every check named and what a single probe cannot tell you. A shape check at one moment, never an uptime or delivery claim.",
@@ -54,6 +78,7 @@ export const VERIFIER_TOOLS: ReadonlyArray<{ name: string; base: string | null; 
   {
     name: "verify_x402_receipt",
     base: "check_conformance",
+    openWorld: true,
     title: "Verify an x402 receipt or signed offer",
     description:
       "Verify an x402 signed receipt or offer from any issuer: structure, signature against the issuer's key (pass public_key_hex for a fully offline check; otherwise the did:web key is resolved), liveness. A verdict with every check named. Establishes the bytes and the key, never settlement or delivery.",
@@ -61,6 +86,7 @@ export const VERIFIER_TOOLS: ReadonlyArray<{ name: string; base: string | null; 
   {
     name: "lookup_endpoint_readiness",
     base: null,
+    openWorld: false,
     title: "Look up an endpoint's readiness history",
     description:
       "Read what the signed weekly x402 readiness corpus holds about one host: rounds probed of rounds since first sighting, the last signed verdict, the tier with its fraction, the gaps counted against the observer. From the chain, not a live probe; a host never met comes back as never met.",
@@ -68,6 +94,7 @@ export const VERIFIER_TOOLS: ReadonlyArray<{ name: string; base: string | null; 
   {
     name: "get_defect_definition",
     base: null,
+    openWorld: false,
     title: "Get an x402 defect definition",
     description:
       "The definition of one named x402 defect class from the store's registered vocabulary: what a clear door asserts, what a buyer loses when it is present, whether it is detectable without paying, which check reports it, and what observation would disprove it. Pass no id to list every class.",
@@ -75,6 +102,7 @@ export const VERIFIER_TOOLS: ReadonlyArray<{ name: string; base: string | null; 
   {
     name: "verify_scvd_artifact",
     base: "verify_artifact",
+    openWorld: false,
     title: "Verify an artifact this store signed",
     description:
       "Verify a certificate, stamp or anchor id this store issued: the exact signed bytes and the ed25519 key, so the check can be repeated offline. Free forever, whether or not anyone bought the thing.",
@@ -103,7 +131,7 @@ function serverInfo(base: string): Record<string, unknown> {
 export function verifierToolCatalog(base: string): Record<string, unknown>[] {
   return VERIFIER_TOOLS.map((entry) => {
     const baseTool: McpTool | undefined = entry.base ? findMcpTool(entry.base, base) : undefined;
-    const annotations = { title: entry.title, readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: entry.name !== "get_defect_definition" };
+    const annotations = { title: entry.title, readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: entry.openWorld };
     if (baseTool) {
       const { itemId: _itemId, itemIds: _itemIds, name: _name, description: _description, annotations: _annotations, ...rest } = baseTool as McpTool & { itemIds?: string[] };
       return { ...rest, name: entry.name, title: entry.title, description: entry.description, annotations };
@@ -204,7 +232,31 @@ async function dispatch(c: Context<HonoEnv>, body: Record<string, unknown>): Pro
 
 mcpVerifierRoutes.post("/mcp/verifier", handle);
 
+/**
+ * THE TRAILING SLASH, AND THE LISTENING CHANNEL (2026-09-16, after a
+ * red team of this door found both missing).
+ *
+ * /mcp learned all of this in September when the OpenAI plugin portal's
+ * tool scan failed with "MCP SSE probe returned 404": its client opens
+ * a GET expecting text/event-stream BEFORE it POSTs anything, and read
+ * the spec-permitted answer as no server at all. This door was built
+ * separately, a week later, and inherited none of it — so it was about
+ * to fail the same scan the same way.
+ *
+ * THE FIX IMPORTS RATHER THAN REPEATS. `acceptsEventStream` and
+ * `openListeningStream` are /mcp's own, exported for this. A second
+ * copy of a bounded empty stream is a second thing to keep in step,
+ * and the reason this bug existed twice is that the door was written
+ * twice.
+ */
+mcpVerifierRoutes.on(["GET", "POST", "DELETE"], "/mcp/verifier/", (c) =>
+  c.redirect(`${c.env.STORE_BASE_URL}/mcp/verifier`, 308),
+);
+
 mcpVerifierRoutes.get("/mcp/verifier", (c) => {
+  // A client asking for the stream gets one: bounded, empty, and never
+  // carrying an event, because this door speaks only when spoken to.
+  if (acceptsEventStream(c)) return openListeningStream();
   const base = c.env.STORE_BASE_URL;
   return c.json({
     title: VERIFIER_TITLE,
