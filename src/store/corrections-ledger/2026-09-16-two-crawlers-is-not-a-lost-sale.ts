@@ -6,7 +6,7 @@ export const correction: Correction = {
   how_long:
     "About six hours, from the merge of the escalation on 2026-09-16 until this correction. It was visible on the live desk for at least one reading.",
   found_by:
-    "The keeper, reading the live desk and pasting it back. The three escalated rows were printed side by side, which is what made the odd one out legible: two of them named a real client among their clients and the third named none.",
+    "The keeper, reading the live desk and pasting it back. The escalated rows were printed side by side, which is what made the odd one out legible: the rest named a client the store counts as a buyer among those refused, and this one named only machinery.",
   what_changed:
     "The report now carries outside_clients_by_reason beside clients_by_reason — the same map with the noise floor left out — and SharedReason gained outside_clients and machinery_only. The fault moves only when at least one intent-bearing client is among those refused. Where every client is machinery the row reads 'discoverability only', keeps the fault it had, and says in the reading that the finding is real but that none of these was going to pay, so calling it ours would borrow the word for money nobody was going to spend; the moment a buyer joins them it becomes ours in the same breath, and a test pins both directions. The machinery clause is scoped to the missing-input family alone, so the rail and v1-envelope readings — which annotate and never escalate — keep their own words. The discoverability count still includes the noise floor, because whether a crawler can find a required input is evidence about the CHALLENGE and always was; what changed is that it stops being counted as a lost sale.",
 };
