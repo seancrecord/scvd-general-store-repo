@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { adminPurchaseRoutes } from "@/routes/admin-purchases";
 import { basicAuth } from "hono/basic-auth";
 import { isHouseWallet } from "@/lib/channel";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
@@ -313,8 +314,18 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
 };
 
+// Applied before authentication so refusals also cannot be cached.
+for (const path of ["/admin/purchases", "/admin/purchases/*"]) adminRoutes.use(path, async (c, next) => {
+  c.header("Cache-Control", "no-store");
+  c.header("Vary", "Authorization, Accept");
+  await next();
+  // HTTPException responses from the auth gate replace pre-set headers.
+  c.res.headers.set("Cache-Control", "no-store");
+  c.res.headers.set("Vary", [...new Set([...(c.res.headers.get("Vary") ?? "").split(",").map(value => value.trim()).filter(Boolean), "Authorization", "Accept"])].join(", "));
+});
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
+adminRoutes.route("/admin/purchases", adminPurchaseRoutes);
 
 /**
  * THE SIGNING DESK — POST /admin/wba/sign (2026-09-04).

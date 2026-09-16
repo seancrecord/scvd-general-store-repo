@@ -102,8 +102,12 @@ private recovery, native ledger, x402 count, public rollup and admin amount.
 Disabling both flags stops new native settlement while retained recovery
 continues. Retain durable records and the ledger during rollback.
 
-Before broader rollout: native historical house corrections and per-sale
-admin drill-down; protocol-aware aggregate operational telemetry; catalog and
+The follow-up admin lookup at `/admin/purchases` reads retained purchase
+facts and compares each native sale against its durable ledger entry; its
+release is a prerequisite for the live accounting check. Neither that build
+nor the disabled checkout establishes live qualification.
+
+Before broader rollout: native historical house corrections; protocol-aware aggregate operational telemetry; catalog and
 guide capability declarations for enabled surfaces; MCP transport qualification;
 remaining fulfillment families; and separate network/asset qualification.
 No Stripe, subscription, Solana or client-broadcast hash method follows from

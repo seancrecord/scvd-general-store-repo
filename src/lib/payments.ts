@@ -589,6 +589,13 @@ const USDC_ASSET_BY_NETWORK: Record<string, string> = {
   [SOLANA_NETWORK]: SOLANA_USDC_MINT,
 };
 
+/** Historical inspection uses the asset identity, never today's enabled rails. */
+export function settlementAssetMetadata(network: string, asset: string): { symbol: string; decimals: number } | null {
+  const expected = USDC_ASSET_BY_NETWORK[network];
+  const matches = expected && (network.startsWith("eip155:") ? expected.toLowerCase() === asset.toLowerCase() : expected === asset);
+  return matches ? { symbol: "USDC", decimals: USDC_DECIMALS } : null;
+}
+
 export function manifestAccepts(
   env: Env,
   tiersUsdc: number[],

@@ -23,8 +23,11 @@ not evidence of independent customer demand.
 
 ## Before enabling
 
-1. Merge the native checkout PR only after every required CI check passes.
-   Verify both production Worker versions correspond to the approved release.
+1. Merge and deploy both the native checkout and admin purchase-inspection
+   PRs only after every required CI check passes. The admin lookup is a
+   release prerequisite, not a configuration toggle. Verify both production
+   Worker versions correspond to the approved release and open
+   `/admin/purchases` with keeper authentication before approving the live run.
 2. Confirm that the configured facilitator supports the exact Base USDC
    EIP-3009 authorization used by the pinned SDK, including its validity
    window, and that its account terms allow this use. Record the dated
@@ -111,11 +114,14 @@ counts by hand to make the qualification pass.
 
 - Exactly one native purchase owns the transaction. Its durable purchase
   has delivery and completed accounting; its monthly MPP ledger entry has
-  the same identity, transaction, amount and house classification. The current
-  admin page exposes aggregate amounts, not this per-sale ledger evidence.
-  Establish an authenticated read-only inspection path before claiming this
-  check passed; per-sale admin drill-down is the next implementation gap.
-  Public aggregates do not substitute for inspecting the retained evidence.
+  the same identity, transaction, amount and house classification. Open
+  `/admin/purchases`, enter the purchase ID from the recovery handle and
+  require `payment_state: settled`, `delivery_state: delivered`,
+  `accounting_recorded: true`, `ledger.state: matched` and
+  `accounting_check: confirmed`. The authenticated JSON equivalent is
+  `GET /admin/purchases/{purchase_id}` with `Accept: application/json`.
+  Missing, mismatched or unavailable evidence does not pass. Public
+  aggregates do not substitute for inspecting the retained evidence.
 - MPP **house** purchases increase by one, and its house amount increases by
   the exact quoted atomic amount. MPP organic purchases do not increase for
   this run. Replays leave both unchanged.
@@ -144,20 +150,32 @@ Passing qualifies only this HTTP product/method/network/asset combination.
 It does not qualify MCP checkout, other products, currencies or networks,
 and it does not establish organic demand.
 
-## Next implementation PR: inspect a purchase in admin
+## Admin purchase inspection implementation
 
-Add a bounded, authenticated read by purchase ID under the existing admin
-surface, using the normalized purchase record for both x402 and MPP. Show
+The implementation adds `/admin/purchases` and a bounded, authenticated
+lookup by purchase ID under the existing admin surface, using the normalized
+purchase record for both x402 and MPP. It shows
 protocol, network, asset/decimals, exact amount, transaction, fulfillment
-state and accounting state. Never return the recovery token, payment proof,
-signature or arbitrary retained buyer inputs. Preserve the existing admin
-authentication and no-cache behavior.
+state and accounting state. It never returns the recovery token, payment
+proof, signature or arbitrary retained buyer inputs. The existing admin
+authentication applies, and responses including authentication refusals are
+marked `no-store`. The take page links to the lookup.
 
-For MPP, derive the monthly ledger object from the retained purchase's
-creation date and look up its one sale ID. Compare the ledger evidence with
-the purchase instead of scanning all objects or treating a KV summary as the
-individual sale. Report missing evidence separately from unavailable storage.
-The read must not settle, reconcile, retry accounting or change a counter.
+For MPP, the reader derives the monthly ledger object from the retained
+purchase's creation date and looks up its one sale ID. It compares the ledger
+evidence with the purchase using the writer's definition of a native sale,
+without scanning all objects or treating a KV summary as the individual
+sale. Missing evidence is distinct from unavailable storage. The read does
+not settle, reconcile, retry accounting, create SQL tables or change a
+counter/alarm. A ledger match with a missing purchase acknowledgement is
+reported as `acknowledgement_pending`, not confirmed accounting. The two
+records are read separately; repeat an intermediate reading after concurrent
+settlement/accounting completes. This is store evidence, not a chain audit.
+
+x402 v1 and v2 purchase facts are readable, but legacy accounting is explicitly
+`not_inspected`; this feature does not claim per-sale x402 ledger parity.
+Unknown assets retain their exact identity and atomic amount, with unknown
+currency/decimals rather than a guessed USDC label.
 
 Acceptance tests cover unauthorized access, legacy x402 and native records,
 unresolved payment, delivered-but-unaccounted payment, a matching native
