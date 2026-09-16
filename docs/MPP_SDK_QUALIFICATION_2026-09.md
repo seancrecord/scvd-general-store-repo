@@ -1,9 +1,9 @@
 # MPP EVM SDK qualification — September 16, 2026
 
-This is the SDK boundary before native checkout. No production route imports
-this adapter, no flag enables it, and no discovery surface advertises MPP
-payment acceptance. The next checkout PR must wire admission, fulfillment,
-recovery and accounting before enabling even the first product.
+This records the SDK qualification before native checkout. At that boundary,
+no production route imported the adapter. The subsequent disabled HTTP pilot
+is documented in `MPP_NATIVE_CHECKOUT_2026-09.md`; it wires admission,
+fulfillment, recovery and accounting without activating production payments.
 
 ## Dependency decision
 

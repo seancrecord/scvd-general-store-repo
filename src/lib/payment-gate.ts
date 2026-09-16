@@ -1,3 +1,4 @@
+import { mppPaymentHeader, mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
 import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { publicationResponse, type PublicationSnapshot } from "@/lib/publication-recovery";
@@ -779,7 +780,10 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const startedAt = Date.now();
   let response: Response | void;
   try {
-    response = await runPaymentGate(c, next);
+    const mpp = mppPaymentHeader(c.req.header("Authorization"));
+    response = mpp
+      ? await (await import("@/lib/mpp-checkout")).runMppCheckout(c, next, mpp)
+      : await runPaymentGate(c, next);
   } catch (error) {
     /*
      * THE GATE THREW, AND THIS USED TO RECORD NOTHING AT ALL.
@@ -796,6 +800,10 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const status = response?.status ?? c.res?.status;
   if (status === 402) {
     attachChallengeHint(c, response);
+    if (!paymentHeaderOf(c) && !mppPaymentHeader(c.req.header("Authorization")) && mppCheckoutEnabled(c.env, c.req.path, c.req.method)) {
+      // Optional negotiation cannot take the independently usable x402 door down.
+      try { await (await import("@/lib/mpp-checkout")).attachMppChallenge(c, response ?? c.res); } catch { /* no native offer */ }
+    }
     const elapsed = Date.now() - startedAt;
     try {
       c.executionCtx.waitUntil(

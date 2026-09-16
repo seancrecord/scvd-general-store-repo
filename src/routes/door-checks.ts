@@ -1,3 +1,4 @@
+import { mppPaymentHeader, mppCheckoutCors } from "@/lib/mpp-checkout-capability";
 import { recoverSignedPurchase } from "@/services/signed-purchase-recovery";
 import { decodePaymentHeader } from "@/lib/decline-diagnosis";
 import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
@@ -64,7 +65,9 @@ export function buyItemId(c: { req: { path: string } }): string {
 export const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
   c.res.headers.set("Cache-Control", "no-store");
-  c.res.headers.set("Vary", PAYMENT_VARY);
+  c.res.headers.set("Vary", [...new Set([
+    ...PAYMENT_VARY.split(", "), ...(c.res.headers.get("Vary") ?? "").split(",").map(value => value.trim()).filter(Boolean),
+  ])].join(", "));
 };
 
 /**
@@ -223,7 +226,7 @@ const inventoryCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 export function isBuying(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): boolean {
   return Boolean(
     c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT"),
-  );
+  ) || !!mppPaymentHeader(c.req.header("Authorization"));
 }
 
 /**
@@ -442,6 +445,7 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 /** Both Workers share discovery checks; authenticated replay lives in the gate. */
 export const doorChecks: readonly MiddlewareHandler<HonoEnv>[] = [
   noStore,
+  mppCheckoutCors,
   shelfCheck,
   bookRefusalBeforeGate,
   argCheck,

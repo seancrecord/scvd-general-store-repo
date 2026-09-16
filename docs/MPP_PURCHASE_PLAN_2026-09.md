@@ -173,6 +173,17 @@ payment or flag activation remains a separately recorded, bounded release
 step under the existing rail-intake process; this plan is not proof of a
 live MPP purchase.
 
+## Native pilot implementation (2026-09-16)
+
+`docs/MPP_NATIVE_CHECKOUT_2026-09.md` records the implemented HTTP pilot,
+its exact boundaries, tests and activation checklist. Both Worker flags remain
+false. The existing `context_anchor` minimum Base/USDC entitlement now has a
+native challenge/credential path behind that flag, with shared durable
+admission, artifact recovery, retained receipts, a disjoint idempotent sales
+ledger, and shared public/admin reporting. Provider/live qualification and
+whole-store expansion below remain release work; fixture success is not proof
+that MPP is live.
+
 ## Whole-store expansion and release
 
 Expand only after the first flow is qualified. EVM chains can share adapter

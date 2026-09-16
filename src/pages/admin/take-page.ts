@@ -1,4 +1,6 @@
 import { paymentRollupHtml } from "@/pages/payment-rollup";
+import { formatUnits } from "viem";
+import { escapeHtml } from "@/lib/sanitize";
 import type { StoreStats } from "@/services/stats";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { takeSectionHtml } from "@/pages/admin/office-page";
@@ -24,6 +26,13 @@ export interface TakePageData {
 export function renderTakePage(data: TakePageData): string {
   const body = `
   ${data.stats?.payments ? paymentRollupHtml(data.stats.payments, data.stats.payment_sources) : ""}
+  ${(data.stats?.payment_sources ?? []).filter(source => source.amounts).map(source => {
+    const amounts = source.amounts!;
+    return `<section><h2>${escapeHtml(source.protocol)} settlement amounts</h2><p>${escapeHtml(source.currency)} on ${escapeHtml(amounts.network)};
+      asset ${escapeHtml(amounts.asset)}. Organic: ${formatUnits(BigInt(amounts.organic_atomic), amounts.decimals)}.
+      House: ${formatUnits(BigInt(amounts.house_atomic), amounts.decimals)}.</p>
+      <p>Confirmed settlements, before refunds. These amounts are separate from purchase counts.</p></section>`;
+  }).join("")}
   <section>
     <h2>The take — all-time</h2>
     <p><small>Real money off the certificates, split by shelf kind. This

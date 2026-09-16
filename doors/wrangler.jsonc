@@ -61,6 +61,7 @@
     { "binding": "CORPUS_R2", "bucket_name": "scvd-corpus" }
   ],
   "vars": {
+    "MPP_CHECKOUT_ENABLED": "false",
     "STORE_BASE_URL": "https://scvd.store",
     "BASE_RPC_URL": "https://mainnet.base.org",
     "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"

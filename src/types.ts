@@ -26,6 +26,9 @@ export interface TradeSettlement {
 }
 
 export interface Env {
+  /** Native MPP checkout stays dark unless explicitly enabled; dedicated HMAC key. */
+  MPP_CHECKOUT_ENABLED?: string;
+  MPP_CHALLENGE_KEY?: string;
   /**
    * The store itself, as a service binding — present only in the doors
    * Worker (doors/wrangler.jsonc), which answers the unpaid knock on
