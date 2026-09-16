@@ -322,6 +322,18 @@ keeper's and never enters this repository or an agent session in it:
 sign the origin, paste the signature.
 
     cast wallet sign --private-key $KEY "https://scvd.store"
+    ORIGIN_SIGNING_KEY=... npm run ownership:sign   # either rail, no Foundry
+
+**The Solana rail signs the SAME string, and one obvious tool gets it
+wrong.** The reader verifies ed25519 over the RAW message bytes, which
+is what a wallet's own message-signing produces. `solana
+sign-offchain-message` instead signs a domain-prefixed envelope
+(`\xffsolana offchain` + headers), so its output is a perfectly valid
+signature of a different message and verifies nowhere. `npm run
+ownership:sign` handles both rails from the key format — 64 hex chars
+is secp256k1, base58 or a JSON byte array is ed25519 — and refuses to
+print a signature whose signer is not a payTo the store currently
+advertises.
 
 Two checks, because they fail differently and neither covers the
 other. `test/origin-ownership-proof.spec.ts` guards the MECHANISM —

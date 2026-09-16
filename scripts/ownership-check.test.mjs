@@ -128,3 +128,58 @@ test("no proof published is a missing claim, not a failure — unless --require-
   const strict = await check(doc, ["--require-proof"]);
   assert.equal(strict.code, 1, "--require-proof must fail an unproved origin");
 });
+
+
+/**
+ * THE SECOND RAIL, END TO END. `ownership:sign` and `ownership:check`
+ * are separate programs and could drift into agreeing with themselves
+ * and nobody else: ed25519 over the RAW message bytes is what the
+ * reader does, and `solana sign-offchain-message` — the obvious CLI
+ * to reach for — signs a domain-prefixed envelope instead, which
+ * verifies nowhere. So the signer's real output is fed to the
+ * checker's real verifier here rather than re-implemented in the test.
+ */
+test("a Solana signature from ownership:sign verifies in ownership:check", async () => {
+  const ed = await import("@noble/ed25519");
+  const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  const enc = (bytes) => {
+    const digits = [0];
+    for (const byte of bytes) {
+      let carry = byte;
+      for (let i = 0; i < digits.length; i++) { carry += digits[i] << 8; digits[i] = carry % 58; carry = (carry / 58) | 0; }
+      while (carry > 0) { digits.push(carry % 58); carry = (carry / 58) | 0; }
+    }
+    let out = "";
+    for (const byte of bytes) { if (byte !== 0) break; out += B58[0]; }
+    return out + digits.reverse().map((d) => B58[d]).join("");
+  };
+
+  const seed = new Uint8Array(32).fill(9);
+  const publicKey = await ed.getPublicKeyAsync(seed);
+  const address = enc(publicKey);
+  const exported = new Uint8Array(64);
+  exported.set(seed, 0);
+  exported.set(publicKey, 32);
+
+  const probe = await serve(docWith([], address));
+  try {
+    // The signer, run for real, against the origin this listener answers on.
+    // execFile, never execFileSync: the document server lives in THIS
+    // process, so a synchronous child blocks the event loop that would
+    // answer its fetch, and both sides wait forever.
+    const { stdout } = await run("node", ["scripts/sign-origin.mjs", `--base=${probe.base}`], {
+      env: { ...process.env, ORIGIN_SIGNING_KEY: enc(exported) },
+    });
+    const signature = stdout.split("\n").map((l) => l.trim()).find((l) => /^[1-9A-HJ-NP-Za-km-z]{80,}$/.test(l));
+    assert.ok(signature, "signer printed no base58 signature");
+
+    probe.held.doc = docWith([signature], address);
+    const { stdout: checked } = await run("node", ["scripts/ownership-check.mjs", `--base=${probe.base}`, "--json"]);
+    const reading = JSON.parse(checked);
+    assert.equal(reading.trust_tier, "ownership_verified");
+    assert.deepEqual(reading.verified_addresses, [address]);
+    assert.equal(reading.unmatched_proofs, 0);
+  } finally {
+    await probe.close();
+  }
+});
