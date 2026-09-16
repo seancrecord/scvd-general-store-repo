@@ -1,3 +1,4 @@
+import { MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
 import { WORLD_NETWORK } from "@/lib/payment-networks";
 /**
  * SUBJECT DIMENSIONS — the ONE registry of what an observation is
@@ -91,7 +92,7 @@ export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
    * Payments Protocol, read only, versioned by the spec drafts the
    * battery read. The row arrives WITH the battery.
    */
-  { id: "mpp", versions: ["draft-00"] },
+  { id: "mpp", versions: ["draft-00", MPP_CORE_SPEC.draft] },
   /** The signed offer/receipt extension battery (offer-receipt rev 1). */
   { id: "x402-offer-receipt", versions: ["rev1"] },
   /**

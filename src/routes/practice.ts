@@ -221,7 +221,7 @@ practiceRoutes.get("/api/practice/:scenario", (c) => {
     return c.json(
       { type: "https://paymentauth.org/problems/payment-required", title: "Payment Required", status: 402, ...body },
       402,
-      { "Content-Type": "application/problem+json", "WWW-Authenticate": found.mpp_challenge },
+      { "Content-Type": "application/problem+json", "WWW-Authenticate": found.mpp_challenge, "Cache-Control": "no-store" },
     );
   }
   return c.json(body, 402, {

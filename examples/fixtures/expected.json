@@ -1,6 +1,6 @@
 {
   "what_this_is": "One expectations file for both decide implementations (decide.mjs, decide.py). Each case names a recorded reading in this directory — the store's own before-you-pay answer, which carries the preflight report as the_door — a policy, optional accepts as a client would read them, and the decision the shared logic must derive. Reasons are substrings each `because` list must contain.",
-  "recorded": "2026-09-03, cut offline from the store's battery and dry run over synthetic doors (test/zz-cut, not kept); test/examples.spec.ts holds these readings to the live battery's shape.",
+  "recorded": "2026-09-03, cut offline from the store's battery and dry run over synthetic doors (test/zz-cut, not kept); test/examples.spec.ts holds these readings to the live battery's shape. 2026-09-15: additive mpp_core blocks generated offline with the core reader from the recorded 402/absence or unreachable conditions, at a fixed fixture time. Response bodies were not retained, so Problem Details remain unmeasured. These are synthetic readings, not fresh network observations.",
   "cases": [
     {
       "case": "a well-formed door a stock client would sign",
