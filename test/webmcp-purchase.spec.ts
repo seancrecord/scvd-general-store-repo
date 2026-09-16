@@ -29,6 +29,7 @@ describe("WebMCP exposes an explicit quote and signed-payment retry", () => {
     } });
     expect(complete).toMatchObject({ type: "object", properties: {
       status: { type: "integer" }, body: {}, payment_response: {},
+      purchase_recovery: { type: ["string", "null"] },
       idempotency_key: { type: "string" }, error: { type: "string" },
     } });
   });

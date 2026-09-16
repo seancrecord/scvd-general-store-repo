@@ -48,6 +48,12 @@ function declineRowHtml(row: DeclineRow): string {
     <td${colour}><strong>${escapeHtml(FAULT_LABEL[row.fault] ?? row.fault)}</strong></td>
     <td>${escapeHtml(row.channel)}${isNoiseFloor(row) && !row.house ? " <em>(noise floor)</em>" : ""}</td>
     <td>${escapeHtml(row.user_agent ?? "(no user-agent)")}${row.house ? " <em>(house)</em>" : ""}</td>
+    <td>${row.payer ? `<code>${escapeHtml(row.payer)}</code>` : "<em>not recorded</em>"}</td>
+    <td>${
+      row.mismatch
+        ? `<code>${escapeHtml(row.mismatch.field)}</code>: we offered <code>${escapeHtml(row.mismatch.we_offered)}</code>, they sent <code>${escapeHtml(row.mismatch.you_sent)}</code>`
+        : "&mdash;"
+    }</td>
   </tr>`;
 }
 
@@ -253,11 +259,21 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     <p>The <code>reason</code> column is the facilitator's verdict verbatim. The
     <code>fault</code> column is OUR READING of it and nothing more — the raw string is
     the fact, and it is printed next to the guess on purpose.</p>
+    <p><small><strong>payer</strong> and <strong>the disagreement</strong> have been booked
+    since 2026-09-16, and read <em>not recorded</em> on every row older than that — not
+    &quot;no payer&quot;, which would be a claim the books cannot support. Declines never
+    carried the signer: the payer lives inside the base64 payload and the signal reader
+    never opened it, so the store learned a buyer's address only when they got through, and
+    the house test met every decline with no wallet to match. The disagreement is the first
+    field <code>describeMismatch</code> found, with BOTH values — the 402 always carried
+    it to the buyer while the books kept only the field's name, which is why fifteen
+    <code>requirement_mismatch:amount</code> rows from one client could not be told from a
+    client that was one unit conversion away.</small></p>
     ${
       r.declines.length === 0
         ? "<p>Nothing in the window.</p>"
         : `<table>
-      <tr><th>when</th><th>item</th><th>reason (verbatim)</th><th>stage</th><th>fault</th><th>channel</th><th>client</th></tr>
+      <tr><th>when</th><th>item</th><th>reason (verbatim)</th><th>stage</th><th>fault</th><th>channel</th><th>client</th><th>payer</th><th>the disagreement</th></tr>
       ${r.declines.map(declineRowHtml).join("\n")}
     </table>`
     }

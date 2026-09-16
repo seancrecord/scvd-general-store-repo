@@ -232,6 +232,36 @@ export interface MetricEvent {
    * presence checks were recorded. Presence does not prove validity.
    */
   missing_required?: string[];
+  /**
+   * THE ADDRESS THAT SIGNED, ON A DECLINE (2026-09-16).
+   *
+   * Settles have written payer rows since the till opened. Declines
+   * never carried one: gateSignals reads headers and query, and the
+   * payer lives inside the base64 payload, so `isHouseTraffic` met
+   * every decline with no wallet to match and the desk could not say
+   * WHO had been turned away. The store learned a buyer's address only
+   * if they got through.
+   *
+   * That is the same blindness recorded twice in lib/channel.ts — CV's
+   * field run and the cold read, both "no payer to match against the
+   * wallet list" — and it is why a self-send from our own receiving
+   * address booked as outside demand. Public on-chain either way; the
+   * decline desk is behind the admin wall regardless.
+   */
+  payer?: string;
+  /**
+   * THE FIELD THAT DISAGREED, for a requirement mismatch.
+   *
+   * describeMismatch has always built the whole report — which entry
+   * came closest, which fields differ, and BOTH VALUES — and the 402
+   * carried it to the buyer. The books kept a reason code with a field
+   * NAME in it and nothing else, so `requirement_mismatch:amount`
+   * fifteen times from one client could not be told from a client that
+   * was one unit conversion away. Bounded to the first disagreement and
+   * to short strings, because the values are the buyer's and ours, not
+   * vendor prose, but they are still not a place for an unbounded blob.
+   */
+  mismatch?: { field: string; we_offered: string; you_sent: string };
 }
 
 export interface EventSignals extends ChannelSignals, HouseSignals {
@@ -240,6 +270,29 @@ export interface EventSignals extends ChannelSignals, HouseSignals {
   missingRequired?: string[];
   /** Raw Signature-Agent header, if the visitor sent one. A claim. */
   signatureAgent?: string;
+  /** The first field disagreement; see MetricEvent.mismatch. */
+  mismatch?: { field: string; we_offered: string; you_sent: string };
+}
+
+/**
+ * One FieldMismatch, flattened to the bounded strings the books take.
+ * Values are stringified here rather than at the call sites so every
+ * door renders `undefined`, an object and a number the same way.
+ */
+export function mismatchSignal(
+  report: { mismatches: ReadonlyArray<{ field: string; we_offered: unknown; you_sent: unknown }> } | undefined,
+): { field: string; we_offered: string; you_sent: string } | undefined {
+  const first = report?.mismatches[0];
+  if (!first) {
+    return undefined;
+  }
+  const show = (value: unknown): string =>
+    typeof value === "string" ? value : JSON.stringify(value) ?? String(value);
+  return {
+    field: first.field,
+    we_offered: show(first.we_offered),
+    you_sent: show(first.you_sent),
+  };
 }
 
 function buildEvent(
@@ -269,6 +322,16 @@ function buildEvent(
   }
   if (signals.missingRequired !== undefined) {
     event.missing_required = signals.missingRequired.slice(0, 4);
+  }
+  if (signals.payer) {
+    event.payer = signals.payer.slice(0, 64);
+  }
+  if (signals.mismatch) {
+    event.mismatch = {
+      field: signals.mismatch.field.slice(0, 64),
+      we_offered: signals.mismatch.we_offered.slice(0, 80),
+      you_sent: signals.mismatch.you_sent.slice(0, 80),
+    };
   }
   return event;
 }

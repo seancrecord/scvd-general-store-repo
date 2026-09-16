@@ -1245,3 +1245,47 @@ their changes are absent from this main revision. #712 merged into main.
 This is source-release status, not a live deployment or payment observation.
 The payment follow-through document now names that distinction. No protocol
 capability, paid purchase or production activation follows from this read.
+
+### September 16 UTC — unsigned payment reach qualification
+
+Read Coinbase's [buyer quickstart](https://docs.cdp.coinbase.com/x402/buyer/quickstart),
+[client configuration](https://docs.cdp.coinbase.com/x402/buyer/client-configuration)
+and [MCP payments](https://docs.cdp.coinbase.com/x402/buyer/mcp-payments).
+Inspected the installed x402 2.25.0 public pre-payment hook and spend-control
+implementation, and CDP's managed-client initialization. The generic SDK was
+exercised only through selection and an explicit abort; the managed client
+was not instantiated. Default Base configuration and documented signer
+adapters do not establish funded reach on every store network.
+
+Read [World's contract directory](https://docs.world.org/world-chain/reference/useful-contracts)
+and matched its USDC address to the existing source constant before testing
+an explicit client allowlist with an atomic cap. The default client refusal,
+positive selection and wrong-asset/network/over-cap controls are retained.
+No signing, facilitator or settlement follows from these selection checks.
+
+Read the [WebMCP draft](https://webmachinelearning.github.io/webmcp/) for
+`getTools`, `executeTool`, registered tools and annotations. The actual
+Chrome 152 API required serialized JSON input where the current draft names
+an `any` input. The runtime's parse failure remains an instrument limitation;
+the successful quote and unsigned completion refusal do not prove paid
+completion or browser consent behavior.
+
+Read public npm registry metadata and integrity-checked tarballs for the
+eight packages named in `research/payment-reach-2026-09-16/qualification.json`.
+No package hook or published code ran. Read GitHub's #714/#715 base branches
+and checked their merge commits against main `c3dfe160`; neither is an
+ancestor. Also checked #726's active `main-green-only` required-CI rule before
+enabling automatic merge. The dated reach report separates source, release,
+registry, live quote and real paid evidence; it enables no MPP checkout.
+
+### September 16 — integrating the existing browser recovery patch
+
+Read current Cloudflare [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and fetched `@cloudflare/workers-types` 5.20260916.1 into a temporary review
+directory; `Headers.get` returns string or null. The locked project
+dependencies and Worker configuration are unchanged. Reviewed the complete
+browser bridge and its serving route: the existing #714 patch preserves
+an already-returned recovery header in the page-local result/cache. No
+new background work, binding, request, key operation or settlement path.
+The original regressions fail on the pre-integration source; this task
+keeps local doubles distinct from a real wallet or paid browser test.

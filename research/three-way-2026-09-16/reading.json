@@ -1,0 +1,197 @@
+{
+  "what_this_is": "Whether anyone has paid each door's advertised payTo, read to a named block height. Never a ranking: rule 43 forbids ordering one host against another, and these rows are in the order they were given.",
+  "definition_from": "StillOS Notary (stillosdigitalholdings.com), supplied 2026-09-15 on issue #622 after they withdrew their own implementation. The definition is theirs; this reader is ours, so that a defect in one is not a defect in both.",
+  "read_at": "2026-09-16T10:33:31.260Z",
+  "rail": "eip155:8453",
+  "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  "window": {
+    "from_block": 50918945,
+    "at_block": 51316142,
+    "log_span": 2000
+  },
+  "chain_head_when_read": 51382669,
+  "distinct_counterparty_means": "a unique sending address. A facilitator settling for ten buyers counts once, so this measures settling addresses and not customers.",
+  "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+  "what_this_is_not": "Not a statement that a door has never been paid: the strongest negative here is ZERO_OBSERVED over the named window, and only a row whose scope reads all_time (the nonce-zero argument) reaches further back than from_block. Not a measure of demand, revenue or quality. Not comparable with any reading taken at a different height.",
+  "posed_inputs": null,
+  "doors": [
+    {
+      "name": "daxpt",
+      "url": "https://daxpt.com/pack/crypto",
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0x6D16fce290c4db81e7F02fe2Bd5d14F7690b5191",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "ZERO_OBSERVED",
+          "established_by": "the transfer window to this address in blocks 50918945-51316142 was read complete and contained no inbound USDC, AND the balance is zero at a transaction count of zero: nothing can ever have left, so the balance is monotonically non-decreasing and this zero holds at every block in this address's history, not only inside the window",
+          "scope": "all_time",
+          "scope_caveat": null,
+          "established_twice": "a complete empty window and the nonce argument, independently",
+          "distinct_payers": 0,
+          "total_received_atomic": "0"
+        },
+        {
+          "rail": "xrpl:0",
+          "pay_to": null,
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "UNKNOWN",
+          "established_by": "this door advertises r9juqAptQBRtgJG6ku4kG3RPvNyQEUrT2X on xrpl:0, which this instrument does not read; UNKNOWN is a gap in the observer, not a finding about the door",
+          "advertised_pay_to": "r9juqAptQBRtgJG6ku4kG3RPvNyQEUrT2X"
+        }
+      ],
+      "pinned_rails": 2,
+      "door": {
+        "name": "daxpt",
+        "rails_read": 2,
+        "rail_verdicts": [
+          "ZERO_OBSERVED",
+          "UNKNOWN"
+        ],
+        "rule": "ZERO_OBSERVED requires every advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN. PAID survives an unreadable rail because an observed settlement cannot be undone by one we did not read. StillOS Notary, 2026-09-15.",
+        "verdict": "UNKNOWN",
+        "established_by": "1 of 2 advertised rail(s) could not be resolved, and a zero is a claim about every way money could have arrived"
+      }
+    },
+    {
+      "name": "xrpreflight",
+      "url": "https://destinationpreflight.com/v1/payer-ready",
+      "rails": [
+        {
+          "rail": "xrpl:0",
+          "pay_to": null,
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "UNKNOWN",
+          "established_by": "this door advertises rEB3eMYcrd1L7WXQMrAAWKfFiM1fRtpggt on xrpl:0, which this instrument does not read; UNKNOWN is a gap in the observer, not a finding about the door",
+          "advertised_pay_to": "rEB3eMYcrd1L7WXQMrAAWKfFiM1fRtpggt"
+        }
+      ],
+      "pinned_rails": 1,
+      "door": {
+        "name": "xrpreflight",
+        "rails_read": 1,
+        "rail_verdicts": [
+          "UNKNOWN"
+        ],
+        "rule": "ZERO_OBSERVED requires every advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN. PAID survives an unreadable rail because an observed settlement cannot be undone by one we did not read. StillOS Notary, 2026-09-15.",
+        "verdict": "UNKNOWN",
+        "established_by": "1 of 1 advertised rail(s) could not be resolved, and a zero is a claim about every way money could have arrived"
+      }
+    },
+    {
+      "name": "stumble",
+      "url": "https://stumble.vimabrosta.com/v1/checks",
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0xd63e74bCB00757C8fDb1817F1558ed8b97C608b6",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "PAID",
+          "established_by": "3 inbound USDC transfer(s) observed in blocks 50918945-51316142, read complete",
+          "scope": "window",
+          "distinct_payers": 2,
+          "distinct_payers_means": "unique sending addresses, not customers: a facilitator settling for many buyers counts once",
+          "total_received_atomic": "515000"
+        },
+        {
+          "rail": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+          "pay_to": null,
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "UNKNOWN",
+          "established_by": "this door advertises 8c9r8kxtkcsv7wARq3wBy2csm1ySRQQmdy6hrPnga4qs on solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp, which this instrument does not read; UNKNOWN is a gap in the observer, not a finding about the door",
+          "advertised_pay_to": "8c9r8kxtkcsv7wARq3wBy2csm1ySRQQmdy6hrPnga4qs"
+        }
+      ],
+      "pinned_rails": 2,
+      "door": {
+        "name": "stumble",
+        "rails_read": 2,
+        "rail_verdicts": [
+          "PAID",
+          "UNKNOWN"
+        ],
+        "rule": "ZERO_OBSERVED requires every advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN. PAID survives an unreadable rail because an observed settlement cannot be undone by one we did not read. StillOS Notary, 2026-09-15.",
+        "verdict": "PAID",
+        "established_by": "1 of 2 advertised rail(s) showed an observed settlement"
+      }
+    },
+    {
+      "name": "humanmirror",
+      "url": "https://humanmirror.fr/api/x402/clean-json/",
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0x395aA00B990004d4Ed3ecedF10d17716c5f5AAF4",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "PAID",
+          "established_by": "1 inbound USDC transfer(s) observed in blocks 50918945-51316142, read complete",
+          "scope": "window",
+          "distinct_payers": 1,
+          "distinct_payers_means": "unique sending addresses, not customers: a facilitator settling for many buyers counts once",
+          "total_received_atomic": "10000"
+        }
+      ],
+      "pinned_rails": 1,
+      "door": {
+        "name": "humanmirror",
+        "rails_read": 1,
+        "rail_verdicts": [
+          "PAID"
+        ],
+        "rule": "ZERO_OBSERVED requires every advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN. PAID survives an unreadable rail because an observed settlement cannot be undone by one we did not read. StillOS Notary, 2026-09-15.",
+        "verdict": "PAID",
+        "established_by": "1 of 1 advertised rail(s) showed an observed settlement"
+      }
+    },
+    {
+      "name": "wall-street-wiki-canon",
+      "url": "https://canon.wallstreet.wiki/v1/corpus",
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0xaCe97f9d5c73D1c0661E32294B25864682Ef3D71",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "ZERO_OBSERVED",
+          "established_by": "the transfer window to this address in blocks 50918945-51316142 was read complete and contained no inbound USDC, AND the balance is zero at a transaction count of zero: nothing can ever have left, so the balance is monotonically non-decreasing and this zero holds at every block in this address's history, not only inside the window",
+          "scope": "all_time",
+          "scope_caveat": null,
+          "established_twice": "a complete empty window and the nonce argument, independently",
+          "distinct_payers": 0,
+          "total_received_atomic": "0"
+        }
+      ],
+      "pinned_rails": 1,
+      "door": {
+        "name": "wall-street-wiki-canon",
+        "rails_read": 1,
+        "rail_verdicts": [
+          "ZERO_OBSERVED"
+        ],
+        "rule": "ZERO_OBSERVED requires every advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN. PAID survives an unreadable rail because an observed settlement cannot be undone by one we did not read. StillOS Notary, 2026-09-15.",
+        "verdict": "ZERO_OBSERVED",
+        "established_by": "every one of this door's 1 advertised rail(s) was read and resolved empty"
+      }
+    }
+  ]
+}

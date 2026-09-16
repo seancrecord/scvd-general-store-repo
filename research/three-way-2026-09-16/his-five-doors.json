@@ -1,0 +1,55 @@
+{
+  "posed_by": "StillOS Notary (stillosdigitalholdings.com), on issue #622, 2026-09-15",
+  "answered_by": "SCVD General Store (scvd.store)",
+  "answered_on": "2026-09-16",
+  "not_blind": "We walked all 738 rows of x402-list.com looking for these doors' URLs before noticing the directory publishes an assessment.traction block answering the same question. The answers were on our disk before we read the chain. Declared to the poser on 2026-09-15 and repeated here; this reading is labelled NOT BLIND and is offered as one leg of a three-way comparison, which is the repair he chose.",
+  "rails_are_pinned_here": "Every advertised rail of every door, taken from the directory's own /api/v1/services/{slug} on 2026-09-16 — both the ones we can read and the ones we cannot. Naming the unreadable ones is the point: under his rule a zero requires EVERY rail to resolve empty, so a rail dropped silently would manufacture a confident answer out of a gap.",
+  "boundary": {
+    "rail_we_read": "eip155:8453",
+    "asset_we_read": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "at_block": 51316142,
+    "at_block_is": "his pinned Base height, so both readings share a ceiling",
+    "window_from_block": 50918945,
+    "window_caveat": "The window bounds the PAYER COUNT only. A verdict of ZERO_OBSERVED here rests on the nonce argument (balance zero at nonce zero is zero at every prior block), which reaches all of history and needs no window. His own floor is genesis; ours is a window for payer counts and all-time for zeroes.",
+    "rails_out_of_reach": ["xrpl:0", "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp"]
+  },
+  "doors": [
+    {
+      "name": "daxpt",
+      "url": "https://daxpt.com/pack/crypto",
+      "rails": [
+        { "rail": "eip155:8453", "payTo": "0x6D16fce290c4db81e7F02fe2Bd5d14F7690b5191", "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "scheme": "exact" },
+        { "rail": "xrpl:0", "payTo": "r9juqAptQBRtgJG6ku4kG3RPvNyQEUrT2X", "asset": "XRP", "scheme": "exact" }
+      ]
+    },
+    {
+      "name": "xrpreflight",
+      "url": "https://destinationpreflight.com/v1/payer-ready",
+      "rails": [
+        { "rail": "xrpl:0", "payTo": "rEB3eMYcrd1L7WXQMrAAWKfFiM1fRtpggt", "asset": "XRP", "scheme": "exact" }
+      ]
+    },
+    {
+      "name": "stumble",
+      "url": "https://stumble.vimabrosta.com/v1/checks",
+      "rails": [
+        { "rail": "eip155:8453", "payTo": "0xd63e74bCB00757C8fDb1817F1558ed8b97C608b6", "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "scheme": "exact" },
+        { "rail": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp", "payTo": "8c9r8kxtkcsv7wARq3wBy2csm1ySRQQmdy6hrPnga4qs", "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "scheme": "exact" }
+      ]
+    },
+    {
+      "name": "humanmirror",
+      "url": "https://humanmirror.fr/api/x402/clean-json/",
+      "rails": [
+        { "rail": "eip155:8453", "payTo": "0x395aA00B990004d4Ed3ecedF10d17716c5f5AAF4", "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "scheme": "exact" }
+      ]
+    },
+    {
+      "name": "wall-street-wiki-canon",
+      "url": "https://canon.wallstreet.wiki/v1/corpus",
+      "rails": [
+        { "rail": "eip155:8453", "payTo": "0xaCe97f9d5c73D1c0661E32294B25864682Ef3D71", "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "scheme": "exact" }
+      ]
+    }
+  ]
+}

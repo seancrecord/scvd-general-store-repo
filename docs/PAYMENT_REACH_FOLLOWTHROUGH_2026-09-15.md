@@ -5,6 +5,11 @@ MPP still under development. The completed evidence reading is in
 [HISTORICAL_EVIDENCE_2026-09-15](HISTORICAL_EVIDENCE_2026-09-15.md).
 This note scopes the next work; it enables no payment method.
 
+The subsequent [September 16 UTC reach reading](PAYMENT_REACH_QUALIFICATION_2026-09-16.md)
+qualifies live unpaid HTTP/MCP/WebMCP quotes, stock-client selection and
+public-package parity. It records World's client-policy boundary, stacked
+PR release gaps, browser limits and the still-unperformed paid-client test.
+
 ## What was checked
 
 This checkout starts at `da0341788d03d7cabd3300b35bed0edacaa0974e`.
@@ -112,3 +117,12 @@ fresh observations cannot fill them. Payment reach now needs the other tasks'
 final release evidence and a concrete client/method for checkout qualification.
 These are separate inputs, and neither requires reopening production PQ or
 the standalone screening/backup experiment.
+
+## September 16 release follow-through
+
+Historical PR #726 merged after successful required CI at `bc294edb`.
+The reach branch starts from main `01a97e7d` and integrates the existing
+#714 WebMCP recovery patch, tests and client guidance; it does not pull in
+unrelated stacked-branch changes. The dated observations above and the new
+qualification aggregate remain unchanged. Source integration is not yet
+production verification. #715 and MPP checkout remain separate work.
