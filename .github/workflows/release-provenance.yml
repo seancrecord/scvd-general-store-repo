@@ -51,14 +51,22 @@ jobs:
 
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.0.6
 
       - name: Sign archive (keyless, OIDC)
         env:
           TAG: ${{ github.ref_name }}
+          SIGSTORE_IDENTITY: ${{ github.server_url }}/${{ github.workflow_ref }}
         run: |
+          # Cosign v3 writes verification material as a bundle. The old
+          # signature/certificate flags are ignored and leave no output path.
           cosign sign-blob --yes "scvd-store-${TAG}.tar.gz" \
-            --output-signature "scvd-store-${TAG}.tar.gz.sig" \
-            --output-certificate "scvd-store-${TAG}.tar.gz.pem"
+            --bundle "scvd-store-${TAG}.tar.gz.sigstore.json"
+          cosign verify-blob "scvd-store-${TAG}.tar.gz" \
+            --bundle "scvd-store-${TAG}.tar.gz.sigstore.json" \
+            --certificate-identity "$SIGSTORE_IDENTITY" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
 
       - name: Attach archive + signature to the release
         env:
@@ -67,8 +75,7 @@ jobs:
         run: |
           gh release upload "${TAG}" \
             "scvd-store-${TAG}.tar.gz" \
-            "scvd-store-${TAG}.tar.gz.sig" \
-            "scvd-store-${TAG}.tar.gz.pem" \
+            "scvd-store-${TAG}.tar.gz.sigstore.json" \
             --clobber
 
   provenance:

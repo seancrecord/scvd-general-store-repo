@@ -73,7 +73,7 @@ jobs:
         run: npm run self-row
       # Exercise the actual partitioner and merge gate before trusting them.
       - name: CI partition and gate regression tests
-        run: node --test scripts/ci-workflow.test.mjs
+        run: node --test scripts/ci-workflow.test.mjs scripts/release-provenance.test.mjs
       - name: Catalog consistency smoke detector, offline
         run: node --test scripts/catalog-review-smoke.test.mjs
       # THE TAB'S OWN TESTS — a filesystem product cannot run in the
