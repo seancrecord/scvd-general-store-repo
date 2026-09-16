@@ -3,6 +3,7 @@ import { findMcpTool, type McpTool } from "@/lib/mcp-tools";
 import { runEvidenceTask } from "@/services/a2a-evidence";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import { recordPorchVisit } from "@/lib/metrics";
+import { DEFECT_OUTPUT_SCHEMA, READINESS_OUTPUT_SCHEMA } from "@/lib/verifier-output-schemas";
 import { acceptsEventStream, openListeningStream, withMcpProtocol, MODERN_PROTOCOL_VERSIONS, DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, callFreeTool, mcpSignals, toolText } from "@/routes/mcp";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
@@ -142,6 +143,7 @@ export function verifierToolCatalog(base: string): Record<string, unknown>[] {
         title: entry.title,
         description,
         inputSchema: { type: "object", properties: { host: { type: "string", description: "A hostname, or a URL whose host is read.", maxLength: 2048 } }, required: ["host"], additionalProperties: false },
+        outputSchema: READINESS_OUTPUT_SCHEMA,
         annotations,
       };
     }
@@ -150,6 +152,7 @@ export function verifierToolCatalog(base: string): Record<string, unknown>[] {
       title: entry.title,
       description,
       inputSchema: { type: "object", properties: { id: { type: "string", description: `A defect class id from the vocabulary (v${DEFECT_VOCABULARY_VERSION}), e.g. status-402. Omit to list every class.`, maxLength: 80 } }, additionalProperties: false },
+      outputSchema: DEFECT_OUTPUT_SCHEMA,
       annotations,
     };
   });

@@ -1430,3 +1430,21 @@ privacy corrections therefore ship in a follow-up PR, preserving the
 merged transport fixes and subsequent main changes. The full CI gate is
 retained for automatic merge; the Downloads copy remains byte-identical
 to the submission import in this branch.
+
+### September 16 — verifier output-schema recommendations
+
+Read the MCP tools specification at
+https://modelcontextprotocol.io/specification/draft/server/tools#tool.
+Output schemas describe structuredContent, not the surrounding JSON-RPC
+response. Added the two missing verifier contracts from the actual
+readiness artifact and defect vocabulary implementations. Refused host
+input carries empty evidence; defect lookup has index and detail shapes,
+while an unknown id remains a JSON-RPC error. Vocabulary versions are
+strings, as served. No annotation or tool behavior changes, and the
+submission import is unchanged.
+
+All four regression cases failed before the schemas were added. Tests
+validate real tools/call responses for unseen, stored and missing hosts,
+the vocabulary index, and every registered defect definition, and reject
+missing fields and wrong types. No live unknown-host lookup was needed;
+the corpus record in the test is a local fixture, not a signed observation.

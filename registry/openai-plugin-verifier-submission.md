@@ -118,9 +118,10 @@ These were direct MCP checks, not ChatGPT web/mobile routing tests.
 4. Confirm account/domain verification in the portal. The earlier guide
    reported business verification completed September 15; this session
    did not inspect the account or confirm domain verification.
-5. Add outputSchema to lookup_endpoint_readiness and get_defect_definition
-   for more reliable tool result handling. Their absence is a skill
-   warning, not a JSON-generation blocker.
+5. Refresh the MCP tool scan after deployment. Every verifier tool now
+   declares outputSchema; the readiness schema covers refused inputs and
+   held corpus readings, and the defect schema covers both list and detail
+   results. The import JSON is unchanged because it does not carry schemas.
 
 The verifier exposes no widget resources or widget CSP metadata.
 Its inspected input schemas do not solicit credentials, private keys,
