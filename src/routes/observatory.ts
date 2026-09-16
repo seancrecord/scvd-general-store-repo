@@ -46,7 +46,7 @@ observatoryRoutes.get("/observatory", async (c) => {
       document: observatory as unknown as Record<string, unknown>,
     });
   }
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(observatory);
   }
   return c.html(

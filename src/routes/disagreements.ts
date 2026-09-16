@@ -80,7 +80,7 @@ disagreementsRoutes.get("/disagreements", (c) => {
 
   }
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const reading = (label: string, r: (typeof DISAGREEMENTS)[number]["ours"]) =>
       `<p class="menu-desc"><strong>${escapeHtml(label)} (${escapeHtml(r.instrument)}) said:</strong> ${escapeHtml(r.said)}</p>
        <p class="menu-meta">Derivation: ${escapeHtml(r.derivation)} Published at <a href="${escapeHtml(r.url)}">${escapeHtml(r.url)}</a>, read ${escapeHtml(r.read_on)}.</p>`;

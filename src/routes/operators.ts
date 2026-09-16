@@ -173,7 +173,7 @@ operatorsRoutes.get("/operators", (c) => {
       document: pagePayload as unknown as Record<string, unknown>,
     });
   }
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(pagePayload);
   }
   const sections = rows

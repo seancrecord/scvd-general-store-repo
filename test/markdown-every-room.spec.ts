@@ -170,4 +170,50 @@ describe("every room that was missing a markdown representation", () => {
     }
     expect(failures, `negotiation regressions:\n${failures.join("\n")}`).toEqual([]);
   });
+  /*
+   * THE /scorers DEFECT, CLOSED ACROSS THE WHOLE SURFACE.
+   *
+   * The 2026-09-02 rule is that a crawler this store names in
+   * robots.txt gets the PAGE when it states no preference — title,
+   * description, and whatever structured data the page carries —
+   * rather than a JSON body with none of it. /scorers broke that rule
+   * for thirteen days by calling wantsHtml() without the User-Agent,
+   * and the sweep that followed found three more rooms doing the same:
+   * /disagreements, /observatory and /operators.
+   *
+   * One call site forgetting one argument is not a thing a reviewer
+   * reliably catches, so it is asserted over every room instead of
+   * fixed four times and hoped about.
+   */
+  it("hands a named indexer the page, never the JSON twin", async () => {
+    const failures: string[] = [];
+    for (const path of ROOMS) {
+      const response = await SELF.fetch(`${BASE}${path}`, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; OAI-SearchBot/1.0)", Accept: "*/*" },
+      });
+      const type = response.headers.get("content-type") ?? "";
+      if (!type.includes("text/html")) failures.push(`${path} -> ${type}`);
+    }
+    expect(failures, `rooms answering an indexer with JSON:\n${failures.join("\n")}`).toEqual([]);
+  });
+
+  /*
+   * THE SUFFIX TRAP. An unconstrained :param matches the `.md` too,
+   * answers its own 404 for an id nobody has, and the twin handler in
+   * notFound never runs. The Town Directory had it; so did the shelf,
+   * where all thirty-five item pages are in the sitemap, have served
+   * markdown by negotiation since the catalog shipped, and 404'd on
+   * the suffix a reader actually types.
+   */
+  it("lets the .md suffix past the shelf's item route", async () => {
+    const failures: string[] = [];
+    for (const id of ["hello", "settlement_attestation", "spot_check"]) {
+      const twin = await SELF.fetch(`${BASE}/menu/${id}.md`);
+      const type = twin.headers.get("content-type") ?? "";
+      if (!twin.ok || !type.includes("text/markdown")) {
+        failures.push(`/menu/${id}.md -> ${twin.status} ${type}`);
+      }
+    }
+    expect(failures, `shelf twins:\n${failures.join("\n")}`).toEqual([]);
+  });
 });

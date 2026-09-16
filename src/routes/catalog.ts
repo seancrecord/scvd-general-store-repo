@@ -915,7 +915,19 @@ function serveMenuIndex(c: Context<HonoEnv>) {
 catalogRoutes.get("/menu", serveMenuIndex);
 catalogRoutes.get("/menu/", serveMenuIndex);
 
-catalogRoutes.get("/menu/:item_id", serveMenuItem);
+/*
+ * THE ITEM ID EXCLUDES A DOT (2026-09-16), so `/menu/hello.md` is not
+ * swallowed as an item named "hello.md".
+ *
+ * Item pages have served markdown by negotiation since the catalog
+ * shipped, and all thirty-five of them are in the sitemap — but the
+ * suffix a reader actually types reached this route first, matched an
+ * item nobody sells, and 404'd. The `.md` handler lives in notFound
+ * and never ran. Same defect the Town Directory had: an unconstrained
+ * param is a suffix trap, and every id here is lowercase, digits,
+ * underscore or hyphen.
+ */
+catalogRoutes.get("/menu/:item_id{[a-z0-9_-]+}", serveMenuItem);
 catalogRoutes.get("/menu/:item_id/", serveMenuItem);
 
 /**
