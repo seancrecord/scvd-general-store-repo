@@ -16,6 +16,7 @@ import { SCVD_NAMESPACE, UCP_VERSION } from "@/lib/ucp/version";
 import { acceptedNetworks } from "@/lib/payment-networks";
 import { ucpCheckoutStore, type StoredCheckout } from "@/services/ucp-checkout-store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { capacityVerdict } from "@/services/queue-capacity";
 import { getMenuItem } from "@/store/menu";
 import type { HonoEnv } from "@/types";
 
@@ -203,6 +204,49 @@ ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions", async (c) => {
       },
       200,
     );
+  }
+
+  /**
+   * CAPACITY IS CHECKED BEFORE A QUOTE IS ISSUED, NOT AFTER THE MONEY.
+   *
+   * Two of these items are capped at a handful of the keeper's hours a
+   * week. Quoting a checkout the shelf cannot honour and discovering
+   * it at settlement would be taking money for a window the store can
+   * already see it would miss. capacityVerdict is the same fail-closed
+   * read the 402 door uses — an unknown load is not a low one — so
+   * both doors refuse for the same reason in the same words.
+   *
+   * THIS IS A READ, NOT A HOLD, and the distinction is worth stating.
+   * It closes the case where the shelf is visibly full. It does not by
+   * itself close the race where two checkouts are quoted against one
+   * remaining slot; what closes that is the atomic claim at
+   * completion, which is where the x402 door already makes it
+   * (services/labor-reservations) and where the UCP completion seam
+   * will make it too. A hold at quote time would need an expiry
+   * release this store does not yet have for UCP, and a reservation
+   * nothing ever releases strands a weekly slot on an abandoned
+   * checkout.
+   */
+  for (const line of lines) {
+    const item = getMenuItem(line.item_id);
+    if (!item) continue;
+    const capacity = await capacityVerdict(c.env, item);
+    if (!capacity.ok) {
+      return c.json(
+        checkoutDocument(checkout, base, {
+          paymentHandlers: handlersFor(c, checkout),
+          messages: [
+            {
+              type: "error",
+              code: "out_of_stock",
+              severity: "recoverable",
+              content: capacity.reason,
+            },
+          ],
+        }),
+        200,
+      );
+    }
   }
 
   /**

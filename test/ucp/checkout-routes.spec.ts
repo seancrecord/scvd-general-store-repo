@@ -118,6 +118,32 @@ describe("creating a checkout", () => {
   });
 });
 
+describe("capacity is read before a quote is issued", () => {
+  it("quotes a keeper-time item while the bench has room", async () => {
+    const { res, body } = await createCheckout({
+      line_items: [{ item: { id: variantGid("aura_walk") }, quantity: 1 }],
+      "store.scvd": { inputs: { url: "https://example.test/door" } },
+    });
+    expect(res.status).toBe(201);
+    expect(body.status).toBe("ready_for_complete");
+    expect(body.line_items[0].item.price).toBe(15_000);
+  });
+
+  it("carries the weekly ceiling into the checkout's own policies", async () => {
+    const { body } = await createCheckout({
+      line_items: [{ item: { id: variantGid("aura_walk") }, quantity: 1 }],
+      "store.scvd": { inputs: { url: "https://example.test/door" } },
+    });
+    const fulfillment = body.policies.find(
+      (policy: any) => policy.type === "store.scvd.policy.fulfillment",
+    );
+    expect(fulfillment.mode).toBe("human_queue");
+    expect(fulfillment.sla_hours).toBe(168);
+    // Every policy targets the line it is about.
+    expect(fulfillment.applies_to).toEqual(["$.line_items[0]"]);
+  });
+});
+
 describe("reading and cancelling a checkout", () => {
   it("reads back exactly what it issued", async () => {
     const { body: created } = await createCheckout(ONE_AUDIT);
