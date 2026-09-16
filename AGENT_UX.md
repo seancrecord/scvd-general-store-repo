@@ -22,7 +22,115 @@ reader's reasoning, prove buyer intent or attribute a sale causally.
 The cold passes still supply the transcripts those counters cannot.
 The dated readings below retain their original scope and dates.
 
-That is the same shape as the Bazaar attribution gap found on
+## Baselines and later runs — catalogued 2026-09-16
+
+The August entries below are not the end of the record. Start with
+this catalogue when checking whether an earlier failure acquired a
+safeguard. A completed research run is not a completed repair.
+Report dates, catalogue sizes and installed SDK versions belong to
+their recorded baseline; do not carry them forward as current facts.
+
+### August gap-finding baseline
+
+The [running series index](docs/GAP_FINDING_SERIES_2026-08.md)
+preserves the seven prompts from 2026-08-25. Its “Done” heading means
+the readings were written, not that the findings were fixed. These
+are code/live-response audits, distinct from the cold-agent walks.
+
+| Run | Preserved report | Safeguard to revisit |
+|---|---|---|
+| 1 — Dependency defaults | [Silent defaults](docs/SILENT_DEFAULTS_2026-08.md) | Buyer-side caps, defaults and overrides across the whole current shelf. |
+| 2 — Client refusals | [Client aborts, Part I](docs/CLIENT_ABORTS_AND_PUBLISHED_COUNTS_2026-08.md) | Refusal before a paid second request, including selection and signing failures. |
+| 3 — Published counters | [Published counts, Part II](docs/CLIENT_ABORTS_AND_PUBLISHED_COUNTS_2026-08.md) | Writer, unit, population and time window behind each number and proposed ratio. |
+| 4 — SDK versus store | [Library versus store](docs/LIBRARY_VS_STORE_2026-08.md) | Actual middleware, initialization, settlement and recovery ordering; stale comments. |
+| 5 — Catalogue constraints | [Catalogue constraints](docs/CATALOGUE_CONSTRAINTS_2026-08.md) | Every item/rail/input combination, response-header budgets and pre-payment refusals. |
+| 6 — Discovery agreement | [Discovery surfaces](docs/DISCOVERY_SURFACES_2026-08.md) | Agreement beyond item IDs, third-party listings and the mechanism that refreshes each claim. |
+| 7 — Instrument gaps | [Uninstrumented failures](docs/UNINSTRUMENTED_FAILURES_2026-08.md) | Failures that flatter published results first, then invisible buyer aborts. |
+
+The series describes five preceding latency reports, but its index
+does not identify five separate source artifacts. Their individual
+provenance remains to be located; the seven follow-up papers must not
+be counted as those five original runs.
+
+### September buyer baseline and repair evidence
+
+The [buyer audit log](research/BUYER_AUDIT_LOG.md) records baseline
+`325a2fe2d3856f7fe9e0d4515c4634d3a04739aa` (2026-09-06) and retains
+the original `BUY-*` finding IDs. Use the
+[repair checklist](research/BUYER_REPAIR_CHECKLIST.md) for repair
+status, the [progress log](research/buyer-repair-progress-2026-09-06.md)
+for validation, and the [repair plan](research/BUYER_REPAIR_PLAN.md)
+for acceptance criteria. A checked repair does not establish deployment.
+Original “Open” paragraphs in the audit log can sit beneath later
+repair annotations; do not tally those paragraphs as current status.
+
+| Audit family, 2026-09-06 | Baseline report |
+|---|---|
+| Required inputs and paid-door validation | [Paid-door inputs](research/buyer-paid-door-inputs-2026-09-06.md) |
+| Input preservation, signatures and retry | [Input survival](research/buyer-input-survival-2026-09-06.md) |
+| HTTP/MCP outcome parity | [Door equivalence](research/buyer-door-equivalence-2026-09-06.md) |
+| Quote expiry, dependency and capacity changes | [Quote to fulfillment](research/buyer-quote-fulfillment-2026-09-06.md) |
+| Lost acknowledgements, expiry and duplicate attempts | [Payment ambiguity](research/buyer-payment-ambiguity-2026-09-06.md) |
+| Rail-specific identity and receipts | [Cross-rail audit](research/buyer-cross-rail-2026-09-06.md) |
+| Quoted, settled and advertised prices | [Price integrity](research/buyer-price-integrity-2026-09-06.md) |
+| What the recipient can actually prove | [Wrong goods](research/buyer-wrong-good-2026-09-06.md) |
+| Field limits, Unicode and optional inputs | [Boundary fuzzing](research/buyer-boundary-fuzz-2026-09-06.md) |
+| Targets, callbacks and refusal explanations | [Target selection](research/buyer-target-selection-2026-09-06.md) |
+| Human orders, capacity and completion | [Human queue](research/buyer-human-queue-2026-09-06.md) |
+| Failures after payment | [Post-settlement injection](research/buyer-post-settlement-2026-09-06.md) |
+
+### Later acceptance runs
+
+| Run | Evidence and limits |
+|---|---|
+| Deployment boundary, September 11–12 | [Report](research/deployment-boundary-2026-09-11/REPORT.md) and [benchmark](research/BUYER_DEPLOYMENT_BOUNDARY.md). Recorded Base purchases and an isolated human-order control; identical deployed module bytes do not prove changed-code/schema compatibility. The report does not close earlier findings. |
+| Four-wave buyer run, September 12 | [Report](research/buyer-waves-2026-09-12/REPORT.md) and [run order](research/BUYER_RUN_ORDER.md). Wave 1 partial; waves 2–4 not executed in that run. Cold-to-quote success does not establish purchase or purchased-artifact verification. |
+
+### Repair status and remaining acceptance gaps
+
+Checked against `main` at `38702413` on 2026-09-16: the repair
+checklist records BUY-001–039 complete. An earlier draft of this index
+read an older checkout and incorrectly carried their open status
+forward. Use the latest checklist and its dated follow-through; the
+September 12 report is not the last acceptance run.
+
+- **Original-good recovery and live completion:** the
+  [September 15 acceptance report](research/buyer-remaining-acceptance-2026-09-15/REPORT.md)
+  records the released wallet-proof recovery case. Full historical,
+  all-product and transaction-only recovery coverage, other funded
+  rails, interrupted settlement, human/term completion, anchoring,
+  inventory and multi-region propagation remain acceptance gaps.
+- **Discovery and input coverage:** the
+  [public recheck](research/buyer-public-recheck-2026-09-15/REPORT.md)
+  and [collector repair](research/buyer-public-recheck-fixed-2026-09-15/REPORT.md)
+  supersede parts of the earlier wave reading. Full surface semantics,
+  recursive crawl, all error contracts, alternate MCP profile and paid
+  cold-entry completion remain unestablished.
+- **Links and formats:** the
+  [bounded follow-through](research/buyer-link-followthrough-2026-09-15/REPORT.md)
+  records successful bounded checks while explicitly leaving the full
+  recursive/reference crawl and paid cold-entry path open.
+- **Launch-check interpretation:** the checklist retains two questions:
+  distinguishing original-artifact retrieval from fresh fulfillment
+  when a replay lacks a transaction reference, and tying a seller-named
+  receipt to the exact authorization and amount.
+
+These are recorded coverage limits, not a fresh reproduction or a
+count of harmed buyers. Re-walk repaired input, capacity, identity,
+callback and recovery guards as regressions; do not reopen them from
+the original report alone. Search the whole implementation before
+concluding a guard is absent.
+
+For each re-walk, retain the original finding ID and record the tested
+revision, entry point, product/rail scope, failing-before control,
+passing-after evidence and remaining exclusions. Record deployed
+verification separately. Re-read the checklist before choosing a fix;
+these pointers must not become a second repair-status ledger. Build
+ordering stays on `ROADMAP.md`, keeper decisions on `KEEPER_LIST.md`.
+
+## Why the cold passes still matter
+
+The gap in reader reasoning is the same shape as the Bazaar attribution gap found on
 2026-08-02 — a question our instruments structurally cannot answer —
 with one important difference. That one is blocked on referrer headers
 nobody sends and cannot be fixed from here. This one is fixable by
