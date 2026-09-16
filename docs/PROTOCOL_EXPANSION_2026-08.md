@@ -9,6 +9,19 @@
 > They are dated observations, not a fresh check of either directory.
 > Current code/publication state is mapped in THE_MAP_2026-09.md.
 
+> **D6 partially reversed, 2026-09-16.** The row below reads "NO as a
+> merchant. YES as a subject the observatory reads." The catalog half of
+> that no longer holds: the store now serves a UCP business profile at
+> `/.well-known/ucp` and UCP Catalog search and lookup over REST, pinned
+> to UCP 2026-08-25, projected from `MENU_ITEMS` rather than from a
+> second product table. The merchant half still holds and is stated in
+> the profile itself: there is no UCP checkout and no UCP order, the
+> profile advertises neither, and nothing on this shelf can be bought
+> through UCP. The August reading sized D6 as "catalog feeds, carts,
+> merchant application, Stripe account"; a read-only catalog over the
+> shelf that already exists turned out to cost none of those. Carts,
+> the merchant application and the Stripe account remain refused.
+
 **A read of the whole agentic-payment surface on 2026-08-30, sized against
 this store's own intake rule, product by product.**
 

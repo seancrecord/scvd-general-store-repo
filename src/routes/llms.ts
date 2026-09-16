@@ -491,6 +491,14 @@ When to reach for this store, machine-readable:
 ${base}/.well-known/agent-instructions — the same situations listed
 under "When you'd use this store" below, at a path you can guess.
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
+UCP business profile: ${base}/.well-known/ucp — the shelf as a UCP
+catalog, searchable at ${base}/ucp/v1/catalog/search and readable one
+product at a time at ${base}/ucp/v1/catalog/lookup. Catalog only: this
+store has no UCP checkout and the profile advertises none, so a
+platform that speaks UCP can read what is here and then has to pay the
+way everyone else does — x402 at ${base}/api/buy/{item_id}, or MCP.
+Four sub-cent items are missing from that catalog and nowhere else;
+${base}/ucp says which and why.
 Coverage matrix (class × chain × depth, absence stated as none):
 ${base}/.well-known/coverage.json and ${base}/coverage.json
 Where our numbers come from, and when each source last answered:

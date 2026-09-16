@@ -27,7 +27,8 @@ export type DiscoverySurfaceKind =
   | "x402_thin"
   | "a2a_agent_card"
   | "mcp_well_known"
-  | "agents_md";
+  | "agents_md"
+  | "ucp_profile";
 
 export interface OwnedDiscoverySurface {
   id: string;
@@ -67,6 +68,25 @@ export const OWNED_DISCOVERY_SURFACES: readonly OwnedDiscoverySurface[] = [
     id: "mcp_well_known",
     path: "/.well-known/mcp",
     kind: "mcp_well_known",
+    carries_shelf: false,
+  },
+  {
+    /**
+     * The UCP business profile (2026-09-16). A new agent-facing door
+     * onto this store's shelf, so it goes in the inventory the day it
+     * exists rather than the next time somebody remembers.
+     *
+     * carries_shelf is FALSE. The profile is a negotiation document:
+     * it points at the catalog and counts it, and names no item ids at
+     * all, so there is nothing here for the join to disagree with —
+     * the same reason agents.md below is false. Requiring ids here
+     * would turn a profile into a second typed shelf. The UCP
+     * catalog's own agreement with MENU_ITEMS is held instead by
+     * test/ucp/routes.spec.ts, which diffs it against /menu.json.
+     */
+    id: "ucp_profile",
+    path: "/.well-known/ucp",
+    kind: "ucp_profile",
     carries_shelf: false,
   },
   {

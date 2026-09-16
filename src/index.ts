@@ -100,6 +100,7 @@ import {
   goodBuyerRoutes,
   preflightRoutes,
   discoveryRoutes,
+  ucpRoutes,
   launchCheckRoutes,
   openingDayRoutes,
   provenanceRoutes,
@@ -217,6 +218,7 @@ app.route("/", lookRoutes);
 /* The signed half of the same reading, served forever and free. */
 app.route("/", goodBuyerRoutes);
 app.route("/", discoveryRoutes);
+app.route("/", ucpRoutes);
 app.route("/", launchCheckRoutes);
 app.route("/", openingDayRoutes);
 app.route("/", provenanceRoutes);

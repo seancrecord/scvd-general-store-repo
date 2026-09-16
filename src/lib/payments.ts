@@ -164,8 +164,24 @@ export async function recordPolygonSettle(
   }
 }
 
-/** Tier multipliers for pay-what-it-deserves items: minimum, generous, patron-of-the-arts. */
-const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
+/**
+ * Tier multipliers for pay-what-it-deserves items: minimum, generous,
+ * patron-of-the-arts.
+ *
+ * EXPORTED 2026-09-16, when the UCP adapter needed to name the tiers
+ * it was projecting as catalog variants. A second copy of [1, 2, 5]
+ * beside this one would be a pricing table that could drift from the
+ * till without anything failing, so the adapter imports these instead
+ * — and derives the tier prices themselves from priceTiersUsdc().
+ */
+export const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
+
+/** The same three tiers in the words the store already uses for them. */
+export const PWID_TIER_LABELS = [
+  "minimum",
+  "generous",
+  "patron-of-the-arts",
+] as const;
 
 export function pennyPageTiersUsdc(): number[] {
   return PWID_TIER_MULTIPLIERS.map(multiplier => Math.round(PENNY_PAGE_USDC * multiplier * 100) / 100);
