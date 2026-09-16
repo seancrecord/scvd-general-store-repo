@@ -74,6 +74,8 @@ jobs:
       # Exercise the actual partitioner and merge gate before trusting them.
       - name: CI partition and gate regression tests
         run: node --test scripts/ci-workflow.test.mjs
+      - name: Catalog consistency smoke detector, offline
+        run: node --test scripts/catalog-review-smoke.test.mjs
       # THE TAB'S OWN TESTS — a filesystem product cannot run in the
       # Workers pool (no fs in an isolate), so scvd-tab tests ride
       # Node's own runner. Zero framework, same as zero dependencies.

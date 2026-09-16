@@ -1448,3 +1448,31 @@ validate real tools/call responses for unseen, stored and missing hosts,
 the vocabulary index, and every registered defect definition, and reject
 missing fields and wrong types. No live unknown-host lookup was needed;
 the corpus record in the test is a local fixture, not a signed observation.
+
+### September 16 — live catalog review and shared MCP effects
+
+Read the current MCP ToolAnnotations definition at
+https://modelcontextprotocol.io/specification/draft/schema#toolannotations
+and the 2025-11-25 schema reference. readOnlyHint covers environment
+modification; idempotentHint covers additional effects on repetition.
+The shared preflight, conformance and artifact-verification handlers now
+use the verifier door's conservative policy: persistent traffic records
+count as additive changes. The general catalog owns their annotations;
+aliases inherit every behavioral field and change only the display title.
+Browser eligibility remains separate from these effects so the correction
+does not remove free verification from WebMCP or function-calling discovery.
+Other tools' annotation policies are outside this repair.
+
+Read Cloudflare's current Workers best-practices page at
+https://developers.cloudflare.com/workers/best-practices/workers-best-practices/.
+The change adds no binding, secret, payment authorization or settlement
+behavior. New disclosure derives from MENU_ITEMS, buyInputSchema,
+acceptedNetworks and the installed @x402/core 2.25.0 exported spending cap.
+The SDK's setSpendControls implementation and dollar-valued top-level limit
+were checked locally; no claim is made about every client version.
+
+Production observation and explicit gaps: docs/REVIEW_CONSISTENCY_2026-09-16.md.
+The repair was prepared against 834fd186, then applied cleanly to 6d29feb5
+in an isolated release worktree after keeper authorization. The active
+checkout has older source and unfinished work and is preserved. The dated
+release record, not this source reading, carries deployment evidence.

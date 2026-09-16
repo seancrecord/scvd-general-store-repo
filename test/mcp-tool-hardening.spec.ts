@@ -74,15 +74,15 @@ describe("annotations", () => {
     }
   });
 
-  it("the free readers are read-only and idempotent; the free writers are neither", () => {
+  it("existing reader hints remain; shared verification declares its metering effects", () => {
     const byName = new Map(tools.map((t) => [t.name, t]));
-    for (const reader of ["read_store_guide", "verify_artifact"]) {
+    for (const reader of ["read_store_guide"]) {
       expect(byName.get(reader)?.annotations?.readOnlyHint, reader).toBe(true);
       expect(byName.get(reader)?.annotations?.idempotentHint, reader).toBe(
         true,
       );
     }
-    for (const writer of ["ring_bell", "sign_guestbook"]) {
+    for (const writer of ["ring_bell", "sign_guestbook", "verify_artifact", "preflight_endpoint", "check_conformance"]) {
       expect(byName.get(writer)?.annotations?.readOnlyHint, writer).toBe(
         false,
       );

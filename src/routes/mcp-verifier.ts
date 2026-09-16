@@ -1,3 +1,4 @@
+import { METERED_TOOL_EFFECTS } from "@/lib/mcp-tool-effects";
 import { Hono, type Context } from "hono";
 import { findMcpTool, type McpTool } from "@/lib/mcp-tools";
 import { runEvidenceTask } from "@/services/a2a-evidence";
@@ -131,7 +132,9 @@ export function verifierToolCatalog(base: string): Record<string, unknown>[] {
     const baseTool: McpTool | undefined = entry.base ? findMcpTool(entry.base, base) : undefined;
     // The submission skill counts bookkeeping writes as state changes.
     // Every call records traffic; readiness may also update the public queue.
-    const annotations = { title: entry.title, readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: entry.openWorld };
+    const annotations = baseTool
+      ? { ...baseTool.annotations, title: entry.title }
+      : { title: entry.title, ...METERED_TOOL_EFFECTS, openWorldHint: entry.openWorld };
     const description = `${entry.description} ${USAGE_DISCLOSURE}`;
     if (baseTool) {
       const { itemId: _itemId, itemIds: _itemIds, name: _name, description: _description, annotations: _annotations, ...rest } = baseTool as McpTool & { itemIds?: string[] };

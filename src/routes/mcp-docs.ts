@@ -157,8 +157,8 @@ async function callDocsTool(
     const item = getMenuItem(args["item_id"]);
     if (!item) return "No catalog item by that identifier.";
     return args["view"] === "full"
-      ? { ...compactItemContract(item, c.env.STORE_BASE_URL), spec: listingSpec(item, c.env.STORE_BASE_URL) }
-      : compactItemContract(item, c.env.STORE_BASE_URL);
+      ? { ...compactItemContract(item, c.env.STORE_BASE_URL, c.env), spec: listingSpec(item, c.env.STORE_BASE_URL) }
+      : compactItemContract(item, c.env.STORE_BASE_URL, c.env);
   }
   if (args["view"] !== undefined) return "view requires name=catalog and item_id.";
   const entry = shelf.find((resource) => resource.name === wanted);

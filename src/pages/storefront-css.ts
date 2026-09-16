@@ -678,4 +678,7 @@ code {
   white-space: nowrap;
   border: 0;
 }
+
+.first-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 24px 0; }
+.first-actions .door-cta { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 12px; box-sizing: border-box; text-align: center; }
 `;

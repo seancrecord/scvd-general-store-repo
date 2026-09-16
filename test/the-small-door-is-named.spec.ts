@@ -1,3 +1,4 @@
+import { isVerificationTool } from "@/lib/mcp-tool-effects";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 
@@ -116,7 +117,7 @@ describe("the free instruments are named where a buyer stands", () => {
      * never have matched anything: a guard that passes whatever
      * happens. These two conditions are the ones the derivation
      * actually turns on (webmcpTools drops anything carrying an
-     * itemId and anything not marked read-only), so either of them
+     * itemId; metered verification remains a free instrument), so either of them
      * going false is a paid door arriving in a free list.
      */
     const paid = list.filter((tool) => String(tool.function?.name ?? "").startsWith("buy_"));
@@ -125,9 +126,9 @@ describe("the free instruments are named where a buyer stands", () => {
     );
 
     const notReadOnly = list
-      .filter((tool) => tool["x-scvd"]?.read_only !== true)
+      .filter((tool) => tool["x-scvd"]?.read_only !== !isVerificationTool(String(tool.function?.name ?? "")))
       .map((tool) => tool.function?.name);
-    expect(notReadOnly, "a tool here is not marked read-only; free and read-only is the claim").toEqual(
+    expect(notReadOnly, "a free instrument has incorrect declared effects").toEqual(
       [],
     );
   });
