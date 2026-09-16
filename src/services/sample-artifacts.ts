@@ -1,3 +1,4 @@
+import { readMppCore } from "@/services/mpp-core";
 import { sampleA2AKit } from "@/services/a2a-sample";
 import { surfacesSectionOf, type SurfaceReads } from "@/services/surface-reads";
 import { NO_VERDICT } from "@/services/case-file";
@@ -207,6 +208,8 @@ export async function sampleOnceOver(
        */
       surfaces: surfacesSectionOf(sampleSurfaceReads(), ran.accepts ?? null, SAMPLE_OBSERVED_AT,
         { status: outcome.response.status, www_authenticate: outcome.response.headers.get("WWW-Authenticate") }),
+      mpp_core: readMppCore({ status: outcome.response.status, headers: outcome.response.headers,
+        url: SAMPLE_SUBJECT_URL, bodyText: outcome.body, bodyOverLimit: outcome.bodyOverLimit, now: new Date(SAMPLE_OBSERVED_AT) }),
       scope: AUDIT_SCOPE,
     },
   };

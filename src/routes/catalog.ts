@@ -236,6 +236,7 @@ catalogRoutes.get("/menu.json", async (c) => {
      * drift this sweep exists to end.
      */
     description: STORE_METADATA.description,
+    ...(stats ? { payments: stats.payments } : {}),
     store: {
       ...STORE_METADATA,
       chains: checkoutNetworks(c.env).map(row => row.key),

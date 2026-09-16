@@ -1,3 +1,4 @@
+import { readMppCore, type MppCoreBlock } from "@/services/mpp-core";
 import { readSurfaces, surfacesSectionOf, type SurfacesSection } from "@/services/surface-reads";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
@@ -131,6 +132,8 @@ export interface ServiceAuditObservation {
    * audit only, where the extra reads are paid for.
    */
   surfaces?: SurfacesSection;
+  /** Separately versioned core reading, absent on older artifacts. */
+  mpp_core?: MppCoreBlock;
   /** Stable digest of the observed facts above. */
   evidence_hash: string;
   scope: string;
@@ -206,6 +209,8 @@ export async function performServiceAudit(
   url: string,
   options: AuditOptions = {},
 ): Promise<SignedServiceAudit> {
+  const now = options.now ?? new Date();
+  let mppCore = readMppCore({ status: null, headers: { get: () => null }, url, now });
   let checks: PreflightCheck[];
   let advisories: PreflightAdvisory[];
   let verdict: ServiceAuditObservation["verdict"];
@@ -228,10 +233,16 @@ export async function performServiceAudit(
      * charge on for the surface reads below, which would all be reads
      * around a door we never opened. The audit says what happened and
      * names it as our reach.
+     *
+     * BEFORE the MPP core read below, deliberately: that reader would
+     * otherwise render its own confident absence about a door nobody
+     * opened, which is the same defect one protocol over.
      */
     if (ran.method_unresolved) {
       throw new MethodUnresolved(ran.method_note ?? "the door refused every method this probe sends");
     }
+    mppCore = readMppCore({ status: outcome.response.status, headers: outcome.response.headers, url,
+      bodyText: outcome.body, bodyOverLimit: outcome.bodyOverLimit, now });
     advisories = ran.advisories;
     /*
      * S8 TIER B: the door's other surfaces, on the paid audit only.
@@ -243,7 +254,7 @@ export async function performServiceAudit(
     surfaces = surfacesSectionOf(
       await readSurfaces(env, url, resourceUrlOf(outcome.response), options.fetch ?? fetch),
       ran.accepts ?? null,
-      (options.now ?? new Date()).toISOString(),
+      now.toISOString(),
       { status: outcome.response.status, www_authenticate: outcome.response.headers.get("WWW-Authenticate") },
     );
     /*
@@ -350,7 +361,7 @@ export async function performServiceAudit(
   const core = {
     audit_id: `saudit_${newEntryId()}`,
     url,
-    observed_at: (options.now ?? new Date()).toISOString(),
+    observed_at: now.toISOString(),
     criteria: auditCriteriaNote(env.STORE_BASE_URL),
     verdict,
     checks,
@@ -359,6 +370,7 @@ export async function performServiceAudit(
     // advisories, inside evidence_hash and the signature alike.
     ...(alsoUnder ? { also_under: alsoUnder } : {}),
     ...(surfaces ? { surfaces } : {}),
+    mpp_core: mppCore,
   };
   const observation: ServiceAuditObservation = {
     ...core,

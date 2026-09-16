@@ -1,3 +1,4 @@
+import { readMppCore, type MppCoreBlock } from "@/services/mpp-core";
 import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
 import { type RemediationRow, remediationRows } from "@/services/remediation";
@@ -688,6 +689,8 @@ export interface PreflightReport {
   protocols_spoken: ("x402" | "mpp")[];
   /** The MPP battery's own block: spoken or not, its checks when spoken, its advisories, what it cannot tell you. */
   mpp: MppBlock;
+  /** Additive observable draft-01 core reading; absent in older stored reports. */
+  mpp_core?: MppCoreBlock;
   next_steps: Record<string, string>;
 }
 
@@ -708,6 +711,7 @@ function report(
     mpp?: MppBlock & { protocols_spoken: ("x402" | "mpp")[] };
     /** What the probe did about the method. Absent only where no probe ran. */
     method?: ProbeMethodReading;
+    mppCore?: MppCoreBlock;
   } = {},
 ): PreflightReport {
   const battery = options.battery ?? PREFLIGHT_VERSION;
@@ -736,6 +740,7 @@ function report(
         ? methodNote(options.method)
         : "Probed with GET.",
     },
+    mpp_core: options.mppCore ?? readMppCore({ status: null, headers: { get: () => null }, url: "", now: new Date() }),
     single_probe_note:
       options.method && options.method.attempted.length > 1
         ? `One moment, two requests: the first ${options.method.attempted[0]} was refused as a method, so this reading is of the ${options.method.used} that followed. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.`
@@ -2148,6 +2153,8 @@ export async function preflightUrl(
    * extra contact; nothing here touches the x402 verdict.
    */
   const mpp = runMppChecks({ headers: outcome.response.headers, url: url.toString(), bodyText: outcome.body });
+  const mppCore = readMppCore({ status: outcome.response.status, headers: outcome.response.headers,
+    url: url.toString(), bodyText: outcome.body, bodyOverLimit: outcome.bodyOverLimit, now: new Date() });
   /*
    * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
    *
@@ -2256,6 +2263,7 @@ export async function preflightUrl(
       battery: asked,
       mpp,
       method: outcome.method,
+      mppCore,
       alsoUnder: {
         version: otherVersion,
         verdict: otherVerdict,

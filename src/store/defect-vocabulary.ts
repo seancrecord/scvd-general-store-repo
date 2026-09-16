@@ -45,8 +45,10 @@
  * survives contact with a taxonomy or the taxonomy goes.
  */
 
+export const MPP_CORE_DEFECT = "mpp-core-observable-invalid";
+
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "18";
+export const DEFECT_VOCABULARY_VERSION = "19";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -207,10 +209,16 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
   {
     version: "18",
     date: "2026-09-16",
+    at_the_instigation_of: "the keeper, completing separately versioned draft-01 core support",
+    what_changed: "Added an unpaid MPP observable-core finding under mpp-core-v1 and core draft-01. It identifies failed named checks, with unmeasured binding, registry and payment behavior separate. The historical mpp-v1 battery and its assertions remain unchanged.",
+  },
+  {
+    version: "19",
+    date: "2026-09-16",
     at_the_instigation_of:
       "the operator of a POST-only endpoint this store had published not_ready, who asked for the exact method, URL, headers and timestamp our probe used",
     what_changed:
-      "`no-402`'s ASSERTION AND FALSIFIER CHANGE — the first time this vocabulary has narrowed a class because it authorised a wrong finding of ours. Both texts named GET: the class asserted a 402 \"to an unpaid GET\" and was falsified only by a 402 \"to an unauthenticated GET\". Every probe this store runs sent GET and nothing else, so a door that declares POST in its own OpenAPI, answers 405 to GET and serves a valid x402 v2 challenge to POST satisfied the class as written. It was published not_ready on its passport page, entered the corpus, and an automated note went to the operator's security contact naming the failed check. The class now asserts a 402 to a method THE RESOURCE ACCEPTS, and a 405 or 501 to the probing instrument's method now FALSIFIES a finding of this class outright. The old text stays readable above, per the append rule. Nothing already signed is re-scored: rows sealed under v17 were rendered under the criteria as they stood and stand as history. The repair hint gains the Allow header, because the door that caught us sends none and an indexer that reads Allow would have found it. Cross-instrument consequence, stated plainly: any instrument mapping to this class that probes with a single hard-coded method is making a claim v18 does not support.",
+      "`no-402`'s ASSERTION AND FALSIFIER CHANGE — the first time this vocabulary has narrowed a class because it authorised a wrong finding of ours. Both texts named GET: the class asserted a 402 \"to an unpaid GET\" and was falsified only by a 402 \"to an unauthenticated GET\". Every probe this store runs sent GET and nothing else, so a door that declares POST in its own OpenAPI, answers 405 to GET and serves a valid x402 v2 challenge to POST satisfied the class as written. It was published not_ready on its passport page, entered the corpus, and an automated note went to the operator's security contact naming the failed check. The class now asserts a 402 to a method THE RESOURCE ACCEPTS, and a 405 or 501 to the probing instrument's method now FALSIFIES a finding of this class outright. The old text stays readable above, per the append rule. Nothing already signed is re-scored: rows sealed under v17 were rendered under the criteria as they stood and stand as history. The repair hint gains the Allow header, because the door that caught us sends none and an indexer that reads Allow would have found it. Cross-instrument consequence, stated plainly: any instrument mapping to this class that probes with a single hard-coded method is making a claim v19 does not support.",
   },
 ];
 
@@ -703,6 +711,19 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
    * not a class (a door with no Payment challenge speaks another
    * wire); the four MPP advisories are advisories, not classes.
    */
+  {
+    id: MPP_CORE_DEFECT,
+    title: "An observable MPP core requirement fails",
+    asserts: "The named observable core check passes under mpp-core-v1 and its cited draft-01 source. The field, response condition and failed challenge indexes determine the assertion; unmeasured registry, binding and payment behavior make no assertion.",
+    costs: "A buyer can receive an ambiguous or malformed challenge, select an unsupported credential header, or reuse cacheable or expired payment terms. The observation identifies the failing condition without claiming a payment was attempted.",
+    detectable: "unpaid",
+    our_signal: "mpp_core.checks with state fail, under the core block's cited battery and source digest",
+    falsified_by: "The captured response satisfying the named check under the same battery at the observation time, or evidence that the required field was not captured and the check should have remained unmeasured.",
+    repair_hint: "Correct the named auth parameter, encoding, expiry or response header in the challenge producer, then obtain a fresh read. A passing core subset does not establish method validity or payment delivery.",
+    buyer_hint: "Keep the cited check and observation time. Resolve the reported condition before constructing a credential, and independently validate the chosen method and payment terms; this store's till does not speak MPP.",
+    sourced_by: "Observable requirements of draft-httpauth-payment-01, read from tempoxyz/mpp-specs on 2026-09-15. The aggregation into one named core-subset class is this store's reading rule.",
+    registered: "2026-09-15",
+  },
   {
     id: "mpp-challenge-id",
     title: "MPP challenge with no id",

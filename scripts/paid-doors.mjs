@@ -21,7 +21,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoorRail,
+  PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail,
 } from "./lib/paid-doors.mjs";
 
 const RPC = process.env.BASE_RPC_URL ?? "https://mainnet.base.org";
@@ -139,37 +139,68 @@ console.log(`reading ${doors.length} doors over Base blocks ${fromBlock}-${atBlo
 console.log(`${spans} log page(s) per door at the RPC's ${LOG_SPAN}-block ceiling\n`);
 
 const readings = [];
+
+/** One EVM rail, read. Split out so a multi-rail door reuses it. */
+async function readEvmRail({ payTo, scheme }) {
+  const [balance, nonce, window] = await Promise.all([
+    rpc("eth_call", [{ to: USDC_BASE, data: `0x70a08231${payTo.slice(2).toLowerCase().padStart(64, "0")}` }, hex(atBlock)]).catch(() => null),
+    rpc("eth_getTransactionCount", [payTo, hex(atBlock)]).catch(() => null),
+    transferWindow(payTo, fromBlock, atBlock),
+  ]);
+  const row = readDoorRail({
+    rail: "eip155:8453", payTo, atBlock, fromBlock, scheme: scheme ?? null,
+    balance: balance === null ? null : BigInt(balance),
+    nonce: nonce === null ? null : Number(BigInt(nonce)),
+    logs: window.logs, logsComplete: window.complete,
+  });
+  if (!window.complete) row.incomplete_because = window.incomplete_because;
+  return row;
+}
+
+/**
+ * A rail this instrument cannot read at all. Emitted with its own name
+ * rather than dropped, because under the door rule an unread rail is
+ * what collapses a zero — silently skipping it would manufacture a
+ * confident answer out of a gap.
+ */
+function outOfReachRail({ rail, payTo }) {
+  const row = readDoorRail({ rail: rail ?? "non-evm", payTo: null, atBlock, fromBlock });
+  row.advertised_pay_to = payTo ?? null;
+  row.established_by = `this door advertises ${payTo ?? "an address"} on ${rail ?? "an unnamed rail"}, which this instrument does not read; UNKNOWN is a gap in the observer, not a finding about the door`;
+  return row;
+}
+
 for (const door of doors) {
-  const resolved = door.payTo
-    ? { payTo: door.payTo, rail: door.rail ?? "eip155:8453", scheme: door.scheme ?? null }
-    : await resolvePayTo(door.url);
-  const entry = { name: door.name, url: door.url, resolved_pay_to: resolved.payTo, resolved_rail: resolved.rail, resolution: resolved.all_accepts ?? resolved.unparsed ?? null, rails: [] };
-  if (!resolved.payTo) {
-    entry.rails.push(readDoorRail({ rail: resolved.rail ?? "unresolved", payTo: null, atBlock, fromBlock }));
+  const entry = { name: door.name, url: door.url, rails: [] };
+
+  if (Array.isArray(door.rails) && door.rails.length > 0) {
+    // PINNED MULTI-RAIL. Every advertised rail is read or named, which
+    // is what the door rule requires before a zero may stand.
+    entry.pinned_rails = door.rails.length;
+    for (const rail of door.rails) {
+      const isEvm = typeof rail.payTo === "string" && rail.payTo.startsWith("0x");
+      entry.rails.push(isEvm ? await readEvmRail(rail) : outOfReachRail(rail));
+    }
   } else {
-    const [balance, nonce, window] = await Promise.all([
-      rpc("eth_call", [{ to: USDC_BASE, data: `0x70a08231${resolved.payTo.slice(2).toLowerCase().padStart(64, "0")}` }, hex(atBlock)]).catch(() => null),
-      rpc("eth_getTransactionCount", [resolved.payTo, hex(atBlock)]).catch(() => null),
-      transferWindow(resolved.payTo, fromBlock, atBlock),
-    ]);
-    entry.rails.push(readDoorRail({
-      rail: "eip155:8453", payTo: resolved.payTo, atBlock, fromBlock,
-      scheme: resolved.scheme ?? null,
-      balance: balance === null ? null : BigInt(balance),
-      nonce: nonce === null ? null : Number(BigInt(nonce)),
-      logs: window.logs, logsComplete: window.complete,
-    }));
-    if (!window.complete) entry.rails[0].incomplete_because = window.incomplete_because;
-    // Any non-EVM accept is named as out of reach rather than silently skipped.
-    for (const a of resolved.all_accepts ?? []) {
-      if (a.payTo && !String(a.payTo).startsWith("0x")) {
-        entry.rails.push(readDoorRail({ rail: a.rail ?? "non-evm", payTo: null, atBlock, fromBlock }));
-        entry.rails.at(-1).established_by = `this door also advertises ${a.payTo} on ${a.rail ?? "an unnamed rail"}, which this instrument does not read; UNKNOWN is a gap in the observer, not a finding about the door`;
+    const resolved = door.payTo
+      ? { payTo: door.payTo, rail: door.rail ?? "eip155:8453", scheme: door.scheme ?? null }
+      : await resolvePayTo(door.url);
+    entry.resolved_pay_to = resolved.payTo;
+    entry.resolved_rail = resolved.rail;
+    entry.resolution = resolved.all_accepts ?? resolved.unparsed ?? null;
+    if (!resolved.payTo) {
+      entry.rails.push(readDoorRail({ rail: resolved.rail ?? "unresolved", payTo: null, atBlock, fromBlock }));
+    } else {
+      entry.rails.push(await readEvmRail(resolved));
+      for (const a of resolved.all_accepts ?? []) {
+        if (a.payTo && !String(a.payTo).startsWith("0x")) entry.rails.push(outOfReachRail({ rail: a.rail, payTo: a.payTo }));
       }
     }
   }
-  const v = entry.rails.map((r) => r.verdict).join("/");
-  console.log(`  ${String(door.name).padEnd(34)} ${v}`);
+
+  // THE DOOR, from every rail — never picked from one.
+  entry.door = readDoor({ name: door.name, rails: entry.rails });
+  console.log(`  ${String(door.name).padEnd(26)} ${entry.door.verdict.padEnd(14)} rails: ${entry.rails.map((r) => r.verdict).join("/")}`);
   readings.push(entry);
 }
 
