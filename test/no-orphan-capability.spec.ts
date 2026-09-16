@@ -43,6 +43,23 @@ const DELIBERATELY_QUIET: Record<string, string> = {
    * advertise six doors that are one door, the same argument the
    * redirect block below makes.
    */
+  /*
+   * THE CHECKOUT DOORS (2026-09-16), quiet on purpose and quiet for a
+   * reason that is written down in the profile itself: this store
+   * cannot settle a payment through UCP yet, so it advertises no
+   * checkout capability. Listing these doors on the surfaces agents
+   * read would be advertising a way to buy that does not work — the
+   * exact overclaim the missing capability exists to prevent. They go
+   * on the surfaces the day Complete settles, and not before.
+   */
+  "/ucp/v1/checkout-sessions":
+    "the checkout is built but cannot settle yet, and the profile advertises no checkout capability for that reason; listing it where agents read would advertise a way to buy that does not work",
+  // The walk probes a static prefix, so the two sub-doors need their
+  // own rows. Same reason, and it will be the same removal.
+  "/ucp/v1/checkout-sessions/cancel":
+    "withdraws a checkout the caller already holds; reached from that checkout, not from a discovery surface, and quiet for the same reason the checkout is",
+  "/ucp/v1/checkout-sessions/complete":
+    "cannot settle yet and refuses in writing, naming the x402 door that does take the money; it goes on the surfaces the day it works",
   "/.well-known/ucp.json":
     "alias of /.well-known/ucp, the path the protocol names and the guide lists; served so a reader who guessed .json gets the profile instead of a 404 that reads as 'no UCP here'",
   "/ucp/schemas/items":

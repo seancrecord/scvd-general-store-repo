@@ -153,6 +153,16 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/ucp/v1", "ucp"],
   ["/ucp/v1/catalog/search", "ucp:catalog"],
   ["/ucp/v1/catalog/lookup", "ucp:catalog"],
+  /**
+   * Opening a checkout is a visit worth counting: it is the moment a
+   * platform stops browsing and tries to buy, and whether that ever
+   * happens is the whole open question about this protocol. The
+   * id-scoped doors beside it are inventoried as uncounted instead —
+   * reading or cancelling a checkout you already hold is the same
+   * visit continuing, and counting it would fill the porch with one
+   * buyer's polling and call it footfall.
+   */
+  ["/ucp/v1/checkout-sessions", "ucp:checkout"],
   ["/trade", "trade"],
   ["/trade.json", "trade.json"],
   ["/trade.md", "trade.md"],
@@ -292,6 +302,7 @@ const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
   "well-known": "storefront",
   ucp: "storefront",
   "ucp:catalog": "storefront",
+  "ucp:checkout": "storefront",
   "oasf-record": "storefront",
   zodiac: "storefront",
   onpage: "instrument",

@@ -202,6 +202,16 @@ const UNCOUNTED_TODAY: readonly string[] = [
    * call it footfall, which is the failure the trade-counter note
    * below describes one aisle over.
    */
+  /**
+   * The id-scoped checkout doors (2026-09-16). Opening a checkout IS
+   * counted; reading, cancelling or completing the one you already
+   * hold is the same visit continuing, and counting each poll would
+   * record one buyer five times and call it footfall — the argument
+   * the trade-counter door card makes below.
+   */
+  "GET /ucp/v1/checkout-sessions/:id",
+  "POST /ucp/v1/checkout-sessions/:id/cancel",
+  "POST /ucp/v1/checkout-sessions/:id/complete",
   "GET /ucp/schemas/items/:file",
   "GET /ucp/schemas/payment/usdc-x402.json",
   "GET /ucp/schemas/shopping-inputs.json",

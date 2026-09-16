@@ -101,6 +101,7 @@ import {
   preflightRoutes,
   discoveryRoutes,
   ucpRoutes,
+  ucpCheckoutRoutes,
   launchCheckRoutes,
   openingDayRoutes,
   provenanceRoutes,
@@ -219,6 +220,7 @@ app.route("/", lookRoutes);
 app.route("/", goodBuyerRoutes);
 app.route("/", discoveryRoutes);
 app.route("/", ucpRoutes);
+app.route("/", ucpCheckoutRoutes);
 app.route("/", launchCheckRoutes);
 app.route("/", openingDayRoutes);
 app.route("/", provenanceRoutes);

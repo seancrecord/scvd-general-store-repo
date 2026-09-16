@@ -27,6 +27,15 @@ function randomToken(length: number): string {
   return token;
 }
 
+/**
+ * A UCP checkout id. Prefixed because it is handed to somebody else's
+ * system and read back later by name: `chk_` says what it is without a
+ * lookup, the way `cert_` and `ord_` already do here.
+ */
+export function newCheckoutId(): string {
+  return `chk_${randomToken(12)}`;
+}
+
 export function newOrderId(): string {
   return `ord_${randomToken(10)}`;
 }
