@@ -198,7 +198,7 @@ describe("the MCP till rescues too", () => {
       await mcpPaymentFor("hello"),
       { userAgent: "settle-rescue-spec" },
       undefined,
-      "asked_for=rescue",
+      JSON.stringify({ purpose: "rescue" }),
     );
     expect(outcome.kind).toBe("authorized");
     if (outcome.kind !== "authorized") throw new Error("unreachable");
