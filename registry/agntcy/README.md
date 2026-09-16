@@ -206,3 +206,15 @@ AGNTCY runs an open testbed for decentralised discovery, and invites
 participants. That is the route to the grant above, and the round-trip
 it would let us run is the one thing this listing cannot currently
 claim.
+
+**The ask is filed.** [agntcy/dir#2153][issue], opened 2026-09-16,
+states the case: the record, the local round-trip with its CID and key
+id, the exact `PermissionDenied` and the principal it names, and a
+question about whether write access is granted or whether the testbed
+is the route in. It carries the two documentation divergences above as
+well, since they cost the reader nothing and were found by running the
+thing. Unanswered as of this commit. If it stays unanswered, nothing
+already shipped changes: "What does not depend on that grant" above is
+the honest position either way, and a filed request is not a result.
+
+[issue]: https://github.com/agntcy/dir/issues/2153
