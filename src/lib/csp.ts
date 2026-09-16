@@ -35,6 +35,45 @@
  *   frame-ancestors is absent there because CSP3 ignores it in a
  *   meta element (lib/mcp-apps.ts says why).
  *
+ * FIVE DIRECTIVES JOINED THE FENCE ON 2026-09-15, after a readiness
+ * scan graded the page policy 3/4 on directive coverage and the walk
+ * that followed found the gaps were real even where the grade's
+ * reasoning was not. Every one of these was previously UNSET, which
+ * in CSP means the browser default, which for each of them is
+ * "anywhere". So all five are tightenings, and none of them is a new
+ * permission:
+ *
+ *   form-action — where a form on these pages may post. No public
+ *   page has a form at all; every <form> in this store is under
+ *   /admin, which this middleware skips by path. 'self' rather than
+ *   'none' because the true statement today and the safe statement
+ *   tomorrow differ here by one broken page, and a form added to a
+ *   public room should not fail silently on a policy written before
+ *   it existed. This is also the directive that fences a redirect
+ *   out of the origin, which is why a scanner looks for it.
+ *
+ *   img-src — every image these pages load is this origin's own:
+ *   /favicon.svg, /p/*.svg, the card faces rasterised in-Worker. No
+ *   external host, no data: URI anywhere in src/pages or src/routes
+ *   outside /admin, checked before this line was written.
+ *
+ *   style-src — one inline <style> block per page, first-party, no
+ *   style attributes outside /admin. 'unsafe-inline' is therefore
+ *   load-bearing and named rather than worked around: the stylesheet
+ *   is built into the page for the round trip it saves, and with
+ *   script-src 'self' above it there is no path by which an attacker
+ *   puts CSS in this document that they could not more usefully put
+ *   script in. Saying 'self' beside it still removes every OTHER
+ *   origin, which is the part that was missing.
+ *
+ *   font-src — the store loads no webfont. The one TTF it ships is
+ *   read by the Worker to rasterise a card, server-side, and never
+ *   fetched by a page. 'self' is the honest ceiling.
+ *
+ *   frame-src — these pages embed nothing. frame-ancestors above says
+ *   who may frame US; this says whom we may frame, and the answer has
+ *   always been nobody.
+ *
  * Derived from the base URL rather than typed, so the origin in the
  * header is the one the store is actually served from.
  */
@@ -56,6 +95,11 @@ export function firstPartyScriptCsp(base: string): string {
     "base-uri 'none'",
     `connect-src 'self' ${origin}`,
     `frame-ancestors 'self' ${FRAME_ANCESTOR_HOSTS.join(" ")}`,
+    "form-action 'self'",
+    "img-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self'",
+    "frame-src 'none'",
   ].join("; ");
 }
 

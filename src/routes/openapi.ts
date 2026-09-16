@@ -216,7 +216,7 @@ const PROBLEM_RESPONSE = (description: string): OpenApiObject => ({
  * RateLimit / RateLimit-Policy form, and the unmetered paths still
  * emit nothing, for the reason they always did.
  */
-const NO_APP_RATE_LIMIT = `The free preflight is limited — ${PROBES_PER_MINUTE} probes per isolate per minute, ${GLOBAL_PROBES_PER_MINUTE} global — because it spends outbound requests to a host the caller chooses. EVERY answer from it carries the IETF RateLimit fields: RateLimit-Limit / -Remaining / -Reset report whichever of the two buckets is closer to binding, and RateLimit / RateLimit-Policy name both. Past either ceiling it returns 429 with Retry-After. No other operation enforces an application-level ceiling, and so returns no RateLimit headers: declaring a ceiling nothing enforces would be worse than declaring none. A 429 can also arrive from the edge under abuse conditions. A refused request is never charged for. The two figures above are read from the limiter's own constants, not restated here — this string asserted that NO limit existed for a day after one shipped.`;
+const NO_APP_RATE_LIMIT = `The free preflight is limited — ${PROBES_PER_MINUTE} probes per isolate per minute, ${GLOBAL_PROBES_PER_MINUTE} global — because it spends outbound requests to a host the caller chooses. Every answer the limiter METERED carries the IETF RateLimit fields — the 200 and the 429 — so you can pace against the live number instead of discovering the ceiling by being refused: RateLimit-Limit / -Remaining / -Reset report whichever of the two buckets is closer to binding, and RateLimit / RateLimit-Policy name both. Past either ceiling it returns 429 with Retry-After. A validation refusal (400, e.g. a missing or unprobeable URL) returns BEFORE either bucket is touched and carries no RateLimit fields, because a malformed request never spent a probe; this contract used to declare them on those responses too, which described a header that had never been sent. No other operation enforces an application-level ceiling, and so returns no RateLimit headers: declaring a ceiling nothing enforces would be worse than declaring none. A 429 can also arrive from the edge under abuse conditions. A refused request is never charged for. The two figures above are read from the limiter's own constants, not restated here — this string asserted that NO limit existed for a day after one shipped.`;
 
 /** The fields the metered path actually returns, named for a reader. */
 const RATE_LIMIT_HEADER_SPEC: OpenApiObject = {
@@ -4899,13 +4899,35 @@ function tabDeltaSchema(): OpenApiObject {
 }
 
 /**
- * Hang the RateLimit fields on every response an operation can give.
+ * Hang the RateLimit fields on the responses the limiter METERED.
  *
- * ON THE 200 AS WELL AS THE 429, and that is the whole point of the
- * change: a client that only learns its budget from the refusal has
- * already been refused. Applied by wrapping rather than by hand, so
- * the two batteries cannot end up documented differently.
+ * ON THE 200 AS WELL AS THE 429, and that was the whole point of the
+ * change that introduced this: a client that only learns its budget
+ * from the refusal has already been refused. Applied by wrapping
+ * rather than by hand, so the two batteries cannot end up documented
+ * differently.
+ *
+ * NOT ON THE 4xx AND 5xx, corrected 2026-09-15. The first draft hung
+ * them on every status an operation could give, which read as
+ * thorough and was a false contract: preflightUrl() returns its
+ * validation refusals BEFORE either bucket is touched — deliberately,
+ * because a malformed request never spent a probe — so a declared
+ * RateLimit-Limit on the 400 described a header that has never once
+ * been sent. An outside scan found the mismatch from the other end,
+ * reporting the fields "documented but not observed" after probing
+ * only paths that refuse. The headers were always there on the
+ * answers that cost something; the spec was describing answers that
+ * did not.
+ *
+ * The fix is the spec, not the limiter. Emitting a budget reading on
+ * a refusal would mean a KV read per malformed body, bought to
+ * decorate an error with a number the caller's own next successful
+ * call carries anyway — and the house rule is that a contract states
+ * what the store does, rather than the store growing work to match a
+ * contract nobody checked.
  */
+const METERED_STATUSES: ReadonlySet<string> = new Set(["200", "429"]);
+
 function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
   const responses = operation["responses"] as Record<string, OpenApiObject>;
   return {
@@ -4913,6 +4935,7 @@ function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
     responses: Object.fromEntries(
       Object.entries(responses).map(([status, response]) => {
         const concrete = inlineSharedResponse(response);
+        if (!METERED_STATUSES.has(status)) return [status, concrete];
         return [
           status,
           {

@@ -3,6 +3,8 @@ import type { Context } from "hono";
 import { recordBountyClaim, type EventSignals } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   bountyRailNames,
@@ -416,19 +418,37 @@ function bountyBoardJsonLd(base: string): string {
 bountyRoutes.get("/bounties", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const board = await bountyBoard(c.env);
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
-      ...boardWords(base),
-      board: `${base}/api/bounties`,
-      what_the_walks_show: crowdFindings(board.bounties),
-      ...board,
+  /*
+   * Hoisted out of the c.json() call so the markdown twin renders the
+   * same object the JSON serves. /api/bounties keeps its own shape
+   * and stays JSON-only: it is the machine contract for the board,
+   * and a markdown twin of a contract is a second thing to keep true.
+   */
+  const payload = {
+    ...boardWords(base),
+    board: `${base}/api/bounties`,
+    what_the_walks_show: crowdFindings(board.bounties),
+    ...board,
+  };
+  const description =
+    "Get paid to shop somebody else's x402 door: walk a posted endpoint with your own wallet, submit the settlement transaction, and the store returns the door's price plus a finder's fee as a signed EIP-3009 authorization you redeem yourself. No account, no signup.";
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/bounties",
+      title: "The Bounty Board",
+      description,
+      dataUrl: `${base}/api/bounties`,
+      document: payload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(payload);
   }
   return c.html(
     renderSimplePage({
       title: "The Bounty Board",
-      description:
-        "Get paid to shop somebody else's x402 door: walk a posted endpoint with your own wallet, submit the settlement transaction, and the store returns the door's price plus a finder's fee as a signed EIP-3009 authorization you redeem yourself. No account, no signup.",
+      description,
       path: "/bounties",
       bodyHtml: boardHtml(base, board, crowdFindings(board.bounties)),
     }),

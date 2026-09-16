@@ -1,0 +1,116 @@
+{
+  "date": "2026-09-15",
+  "scope": "historical_evidence_followthrough_branch_validation",
+  "checks": [
+    {
+      "name": "existing_retained_and_journal_baseline",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "name": "focused_catalog_retained_and_journal",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "name": "catalog_digest_join_negative_control",
+      "status": "expected_failure_observed",
+      "restored": true
+    },
+    {
+      "name": "evidence_test",
+      "status": "passed",
+      "batch_test_counts": [
+        36,
+        16
+      ]
+    },
+    {
+      "name": "typecheck",
+      "status": "passed"
+    },
+    {
+      "name": "both_worker_dry_run_bundles",
+      "status": "passed"
+    },
+    {
+      "name": "docs_check",
+      "status": "passed_with_existing_staleness_advisories"
+    },
+    {
+      "name": "final_private_catalog_supplement_offline_verification",
+      "status": "passed"
+    },
+    {
+      "name": "collector_source_hashes_and_public_json",
+      "status": "passed"
+    },
+    {
+      "name": "full_application_suite_sandboxed",
+      "status": "startup_failed",
+      "reason": "localhost_listen_not_permitted"
+    },
+    {
+      "name": "full_application_suite_unsandboxed",
+      "status": "stopped_incomplete",
+      "reason": "Worker_internal_errors_before_test_results"
+    },
+    {
+      "name": "full_application_suite_two_workers",
+      "status": "stopped_incomplete",
+      "reason": "Worker_internal_error_before_test_results"
+    },
+    {
+      "name": "single_worker_runtime_diagnostic",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "name": "evidence_test_sandboxed_closeout",
+      "status": "failed_environment",
+      "reason": "Two local fixture servers were refused localhost listen permission; rerun with local networking passed."
+    },
+    {
+      "name": "evidence_test_closeout",
+      "status": "passed",
+      "batch_test_counts": [
+        36,
+        16
+      ]
+    },
+    {
+      "name": "typecheck_closeout",
+      "status": "passed"
+    },
+    {
+      "name": "private_manifest_and_collector_hash_recheck",
+      "status": "passed"
+    },
+    {
+      "name": "private_identifier_publication_scan",
+      "status": "passed",
+      "captured_identifiers_checked": 418
+    },
+    {
+      "name": "full_application_suite_closeout",
+      "status": "passed",
+      "command": "npm test -- --maxWorkers=6 --reporter=default",
+      "files_passed": 716,
+      "tests_passed": 14096,
+      "tests_skipped": 1,
+      "duration_seconds": 2476.1,
+      "log_sha256": "b7720070150d876425b6d1fd2172f6bb1918a2a684ca882fb4bc0702f37436c4"
+    }
+  ],
+  "release": {
+    "deployed": false,
+    "full_application_suite_passed": true
+  },
+  "limits": [
+    "Earlier interrupted runs remain incomplete; the separately recorded final run is a complete green application suite with one existing skip.",
+    "No production Worker, payment behavior, signing key, dependency or published package changed.",
+    "Private capture results remain operator-verified aggregates with the cohort limits recorded in provenance.json."
+  ],
+  "completed_at": "2026-09-15T16:57:24.525115+00:00",
+  "runner_note": "Vitest 4.1.11 selects the quieter agent reporter in an agent environment. Earlier incomplete runs were stopped after diagnostics or to change reporting/concurrency; those diagnostics alone did not establish failed tests or failed startup. The explicit default-reporter closeout completed with exit 0. No isolation, timeouts, test selection or assertions were weakened."
+}

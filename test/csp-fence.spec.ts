@@ -31,6 +31,24 @@ describe("the first-party script fence", () => {
     expect(csp).toContain(
       `frame-ancestors 'self' ${FRAME_ANCESTOR_HOSTS.join(" ")}`,
     );
+    /*
+     * THE FIVE THAT JOINED 2026-09-15. Each was unset before, and
+     * unset in CSP means the browser default, which for every one of
+     * them is "anywhere" — so these are tightenings, and a policy
+     * that quietly loses one is a policy that reopened a door.
+     *
+     * form-action is the one an outside scan looks for (it fences a
+     * redirect out of the origin); the rest are the asset ceilings.
+     * style-src names 'unsafe-inline' rather than working around it:
+     * the stylesheet is built into the page, and with script-src
+     * 'self' above there is no path by which an attacker puts CSS in
+     * this document that they could not more usefully put script in.
+     */
+    expect(csp).toContain("form-action 'self'");
+    expect(csp).toContain("img-src 'self'");
+    expect(csp).toContain("style-src 'self' 'unsafe-inline'");
+    expect(csp).toContain("font-src 'self'");
+    expect(csp).toContain("frame-src 'none'");
     // A base with a path or trailing slash still yields a bare origin.
     expect(firstPartyScriptCsp("https://scvd.store/")).toBe(csp);
   });

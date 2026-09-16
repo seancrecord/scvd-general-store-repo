@@ -17,7 +17,7 @@ export async function checkedJson(directory,row) {
  if(digest(bytes)!==row.sha256)throw Error('Capture checksum failed');
  return JSON.parse(bytes);
 }
-export async function unresolvedCertificates(directory,keysFile) {
+export async function verifiedCertificateCensus(directory,keysFile) {
  const manifestBytes=await boundedFile(join(directory,'manifest.json'));
  const manifest=JSON.parse(manifestBytes);
  const trustedKeys=JSON.parse(await boundedFile(keysFile));
@@ -27,6 +27,24 @@ export async function unresolvedCertificates(directory,keysFile) {
  if(manifest.format!=='scvd-private-inventory/v1'||!family?.complete)throw Error('A complete certificate enumeration is required');
  const names=await checkedJson(directory,family);
  if(!Array.isArray(names)||names.length!==family.listed||new Set(names.map(x=>x.name)).size!==names.length)throw Error('Certificate denominator mismatch');
+ const certificates=[];
+ const prefix=schema.inventoryFamilies.find(x=>x.mode==='certificate').prefix;
+ for(const k of names){
+  if(typeof k.name!=='string'||!k.name.startsWith(prefix))throw Error('Invalid certificate key');
+  const rows=manifest.reads.filter(x=>x.family==='certificates'&&x.key===k.name);
+  if(rows.length!==1||rows[0].status!=='readable')throw Error('Every enumerated certificate must be readable for a targeted follow-through');
+  const checked=checkCertificate(await checkedJson(directory,rows[0]),trustedKeys,schema.canonicalizeCertificate,schema.canonicalizeCertificateLegacy);
+  if(checked.status!=='verified')throw Error('Certificate signature did not verify');
+  const claims=JSON.parse(checked.payload);
+  if(k.name!==prefix+claims.cert_id)throw Error('Certificate key mismatch');
+  certificates.push(claims);
+ }
+ return {certificates,trustedKeys,schema,manifest,source_manifest_sha256:digest(manifestBytes),source_certificate_count:names.length};
+}
+
+export async function unresolvedCertificates(directory,keysFile) {
+ const census=await verifiedCertificateCensus(directory,keysFile);
+ const {manifest,schema,trustedKeys}=census;
  const hashes=new Set();
  for(const f of schema.inventoryFamilies.filter(x=>x.mode!=='certificate')){
   const listing=manifest.families.find(x=>x.name===f.name);if(!listing?.file)continue;
@@ -39,19 +57,7 @@ export async function unresolvedCertificates(directory,keysFile) {
    try{const checked=checkReport(await checkedJson(directory,rows[0]),f.mode,trustedKeys);if(checked.status==='verified')hashes.add(checked.evidence_hash);}catch{/* Failed reads stay unresolved. */}
   }
  }
- const certificates=[];
- const prefix=schema.inventoryFamilies.find(x=>x.mode==='certificate').prefix;
- for(const k of names){
-  if(typeof k.name!=='string'||!k.name.startsWith(prefix))throw Error('Invalid certificate key');
-  const rows=manifest.reads.filter(x=>x.family==='certificates'&&x.key===k.name);
-  if(rows.length!==1||rows[0].status!=='readable')throw Error('Every enumerated certificate must be readable for a targeted follow-through');
-  const checked=checkCertificate(await checkedJson(directory,rows[0]),trustedKeys,schema.canonicalizeCertificate,schema.canonicalizeCertificateLegacy);
-  if(checked.status!=='verified')throw Error('Certificate signature did not verify');
-  const claims=JSON.parse(checked.payload);
-  if(k.name!==prefix+claims.cert_id)throw Error('Certificate key mismatch');
-  if(checked.attests&&!hashes.has(checked.attests))certificates.push(claims);
- }
- return {certificates,trustedKeys,schema,source_manifest_sha256:digest(manifestBytes),source_certificate_count:names.length};
+ return {...census,certificates:census.certificates.filter(c=>c.attests&&!hashes.has(c.attests))};
 }
 
 /** Refuse every Git checkout, including sibling worktrees and symlinked paths. */

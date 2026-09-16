@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { BADGE_SURFACES, badgesTodayLine } from "@/store/badges";
 import { ARTIFACT_CLASSES, TRUST_MODELS } from "@/store/attestation-spec";
@@ -180,6 +182,15 @@ criteriaRoutes.get("/criteria", (c) => {
     becoming: `${base}/becoming`,
     limit: CRITERIA_HONEST_LIMIT,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/criteria",
+      title: "What verified means here",
+      description: "What this store checks, against which rule, and what a verdict does and does not assert. Every tier printed with the rule that made it.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

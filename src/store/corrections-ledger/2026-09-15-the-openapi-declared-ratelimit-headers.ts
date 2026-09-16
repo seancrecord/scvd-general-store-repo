@@ -1,0 +1,13 @@
+import type { Correction } from "./types";
+
+export const correction: Correction = {
+  date: "2026-09-15",
+  what_was_wrong:
+    "The OpenAPI contract declared the IETF RateLimit headers on EVERY response of the five metered doors — /api/preflight/v1, /v2 and /batch, /api/before-you-pay/v1 and /api/look/v1 — including their 400, 404 and 500. Those responses have never carried them: preflightUrl() returns its validation refusals before either probe bucket is touched, deliberately, because a malformed request never spent a probe. The prose said it twice more, on /developers and in the spec's own rate-limit note: \"EVERY answer from it carries the IETF RateLimit fields\". A client generated from the contract could reasonably read RateLimit-Remaining off a 400 and find nothing there, and a client that paced on it would have been pacing on absence.",
+  how_long:
+    "From the day withRateLimitHeaders() shipped, which hung the header refs on every status an operation could give, until 2026-09-15. The wrapper's own commit is the start; no earlier bound is claimed.",
+  found_by:
+    "An outside agent-readiness scan, from the other end. It reported the rate-limit headers \"documented in OpenAPI spec, but not observed on a live response\" and gave a reason of its own — that the API requires authentication — which is not true of any door here: the preflight is free and anonymous, and it emits all five fields on a 200. What the scan had actually done was probe paths that refuse. Its conclusion was wrong and its observation was right, and the observation was the half worth keeping.",
+  what_changed:
+    "The contract now declares the RateLimit fields only on the statuses the limiter metered — the 200 and the 429 — and the two prose claims say so, naming the 400 as the case that carries none and why. The fix is the spec rather than the limiter on purpose: emitting a budget reading on a refusal would mean a KV read per malformed body, bought to decorate an error with a number the caller's own next successful call already carries. A contract states what the store does; the store does not grow work to match a contract nobody checked. The mechanism is a test, not a constant: test/openapi-rate-limit-headers.spec.ts walks every operation in the SERVED contract and fails the build if any response outside the metered statuses declares a RateLimit field, fails if none declares them at all (a guard that passes by finding nothing is not a guard), asserts a live 400 carries none of the five, and asserts both prose claims say what the headers do. METERED_STATUSES in routes/openapi.ts is the one set the wrapper reads, so a future metered door cannot be documented one way and served another without that test going red.",
+};

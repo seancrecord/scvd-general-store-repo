@@ -20,10 +20,13 @@ import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
 
+// The reader deduplicates the same event across two streams by timestamp,
+// item and reason. Distinct fixture events must not depend on how quickly
+// the host's wall clock advances between KV writes.
+const FIXTURE_TIME = Date.parse("2026-09-15T12:00:00.000Z");
 let seq = 0;
 async function seedIndexRow(event: MetricEvent): Promise<void> {
-  seq += 1;
-  const inverted = String(10_000_000_000_000 - (Date.now() + seq)).padStart(14, "0");
+  const inverted = String(10_000_000_000_000 - Date.parse(event.at)).padStart(14, "0");
   await testEnv.COUNTERS.put(
     `declevt:${inverted}:${seq.toString(36).padStart(6, "0")}`,
     JSON.stringify(event),
@@ -31,12 +34,13 @@ async function seedIndexRow(event: MetricEvent): Promise<void> {
 }
 
 function decline(partial: Partial<MetricEvent>): MetricEvent {
+  seq += 1;
   return {
     kind: "decline",
     item: "settlement_attestation",
     channel: "direct",
     house: false,
-    at: new Date().toISOString(),
+    at: new Date(FIXTURE_TIME + seq).toISOString(),
     ...partial,
   };
 }
@@ -48,7 +52,10 @@ async function clear(): Promise<void> {
   }
 }
 
-beforeEach(clear);
+beforeEach(async () => {
+  seq = 0;
+  await clear();
+});
 
 /**
  * THE RULE THE DESK PRINTED AND COULD NEVER APPLY.

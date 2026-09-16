@@ -10,6 +10,8 @@ import { firstPartyScriptCsp } from "@/lib/csp";
 import { CENSUS_FINDING, CENSUS_WHY_IT_MATTERS } from "@/store/copy/census";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
 
@@ -276,6 +278,15 @@ const DESK_DESCRIPTION =
 
 conformanceLandingRoutes.get("/conformance", (c) => {
   const base = c.env.STORE_BASE_URL;
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/conformance",
+      title: "The conformance desk",
+      description: DESK_DESCRIPTION,
+      document: landingJson(base) as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     // Shipping a script means shipping a fence — the P7 ruling's
     // condition, the same constant the storefront and the till pages
