@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { listCorpus } from "@/services/corpus";
 import { sourceRegister } from "@/services/source-liveness";
@@ -362,15 +364,26 @@ async function loadLedger(env: HonoEnv["Bindings"], week?: string) {
 ledgerRoutes.get("/ledger", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const { ledger, known_weeks } = await loadLedger(c.env);
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
-      artifact: "week_ledger_index",
-      ...fiveAnswers(base),
-      weeks_held: known_weeks,
-      latest: ledger ? `${base}/ledger/${ledger.week}.json` : null,
-      what_this_is:
-        "One reading per signed week: the doors, the movement, the defects and the gaps, with findings derived from the week's own fields. Derived at read from the signed chain, never stored.",
+  const indexPayload = {
+    artifact: "week_ledger_index",
+    ...fiveAnswers(base),
+    weeks_held: known_weeks,
+    latest: ledger ? `${base}/ledger/${ledger.week}.json` : null,
+    what_this_is:
+      "One reading per signed week: the doors, the movement, the defects and the gaps, with findings derived from the week's own fields. Derived at read from the signed chain, never stored.",
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/ledger",
+      title: "The Week's Ledger",
+      description:
+        "One reading per signed week: the doors, the movement, the defects and the gaps, derived at read from the signed chain.",
+      document: indexPayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(indexPayload);
   }
   const newest = [...known_weeks].reverse();
   return c.html(
@@ -473,7 +486,18 @@ ledgerRoutes.get("/ledger/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
     );
   }
 
-  if (!html) return c.json({ ...fiveAnswers(base), ...ledger, weeks_held: known_weeks });
+  const weekPayload = { ...fiveAnswers(base), ...ledger, weeks_held: known_weeks };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: `/ledger/${ledger.week}`,
+      title: `The Week's Ledger — ${ledger.week}`,
+      description: `What this store's weekly round observed in ${ledger.week}: doors reached, doors payable, what moved, and what the instrument could not see.`,
+      dataUrl: `${base}/ledger/${ledger.week}.json`,
+      document: weekPayload as unknown as Record<string, unknown>,
+    });
+  }
+  if (!html) return c.json(weekPayload);
   return c.html(
     renderSimplePage({
       title: `The Week's Ledger — ${ledger.week}`,

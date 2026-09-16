@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   NEIGHBOUR_RECEIPTS,
@@ -26,6 +28,48 @@ neighboursRoutes.get("/neighbours", (c) => {
   const totalPaidUsdc = Number(
     rows.reduce((sum, row) => sum + row.paid_usdc, 0).toFixed(3),
   );
+
+  /*
+
+   * Hoisted so the markdown twin below renders the same
+
+   * object the JSON serves rather than a second copy.
+
+   */
+
+  const pagePayload = {
+    title: "What we bought from the neighbours",
+    summary: NEIGHBOURS_STANDFIRST,
+    own_score_note: NEIGHBOURS_OWN_SCORE_NOTE,
+    scope: NEIGHBOURS_SCOPE_NOTE,
+    corrections: NEIGHBOURS_CORRECTION_NOTE,
+    receipts: rows.map((row) => ({ ...row })),
+    count: rows.length,
+    total_paid_usdc: totalPaidUsdc,
+    // Stated so nobody reads a short table as a short field.
+    coverage:
+      "Only services this store has actually paid. Absence from this list says nothing about a service except that we have not bought from it.",
+    house_ledger: `${c.env.STORE_BASE_URL}/house-ledger.json`,
+    mailbox: `${c.env.STORE_BASE_URL}/api/letter`,
+  };
+
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+
+    return jsonDocumentMarkdownResponse({
+
+      base: c.env.STORE_BASE_URL,
+
+      path: "/neighbours",
+
+      title: "What we bought from the neighbours",
+
+      description: "Receipts from other agent services this store has actually paid: what it cost, what was asked, and what came back. No row without a purchase behind it.",
+
+      document: pagePayload as unknown as Record<string, unknown>,
+
+    });
+
+  }
 
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const table = rows
@@ -66,19 +110,5 @@ neighboursRoutes.get("/neighbours", (c) => {
     );
   }
 
-  return c.json({
-    title: "What we bought from the neighbours",
-    summary: NEIGHBOURS_STANDFIRST,
-    own_score_note: NEIGHBOURS_OWN_SCORE_NOTE,
-    scope: NEIGHBOURS_SCOPE_NOTE,
-    corrections: NEIGHBOURS_CORRECTION_NOTE,
-    receipts: rows.map((row) => ({ ...row })),
-    count: rows.length,
-    total_paid_usdc: totalPaidUsdc,
-    // Stated so nobody reads a short table as a short field.
-    coverage:
-      "Only services this store has actually paid. Absence from this list says nothing about a service except that we have not bought from it.",
-    house_ledger: `${c.env.STORE_BASE_URL}/house-ledger.json`,
-    mailbox: `${c.env.STORE_BASE_URL}/api/letter`,
-  });
+  return c.json(pagePayload);
 });

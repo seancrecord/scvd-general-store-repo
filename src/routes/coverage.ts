@@ -3,6 +3,8 @@ import { publicCoverageDocument } from "@/evidence";
 import { COVERAGE_DEPTHS, DEPTH_MEANS, coverageMatrix } from "@/evidence/coverage";
 import { KNOWN_CHAINS } from "@/evidence/subject";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { CoverageDepth } from "@/evidence/types";
 import type { HonoEnv } from "@/types";
@@ -54,6 +56,15 @@ table.coverage td:first-child { white-space: nowrap; }
 coverageRoutes.get("/coverage", (c) => {
   const base = c.env.STORE_BASE_URL;
   const doc = publicCoverageDocument(base);
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/coverage",
+      title: "What we observe, and what we do not",
+      description: "The derived coverage matrix: every observation class against every chain we know, with the depth we actually reach — and `none` stated rather than left out.",
+      document: doc as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(doc);
 
   const chains = [...KNOWN_CHAINS];

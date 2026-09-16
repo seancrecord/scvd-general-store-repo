@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   WIND_DOWN_CLASSES,
@@ -29,6 +31,15 @@ windDownRoutes.get("/wind-down", (c) => {
     decided_on: "2026-07-30",
     note: "Decided while the store was open and nothing turned on the answer.",
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: c.env.STORE_BASE_URL,
+      path: "/wind-down",
+      title: "If the lights go off",
+      description: "What happens to anything this store holds for you if it closes for good: signed artifacts, private confessions, held grudges and the public wall.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

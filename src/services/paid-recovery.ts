@@ -15,7 +15,7 @@ import { idempotentPurchaseSlot } from "@/lib/idempotency";
 import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { evmChainOf } from "@/lib/base-rpc";
-import type { PurchaseIntent } from "@/services/purchase-intent";
+import { purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
 import { kvPut } from "@/lib/kv-retry";
@@ -205,6 +205,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
 
   async beginPurchase(proposalJson: string): Promise<{ started: boolean; record: string }> {
     const proposal = JSON.parse(proposalJson) as PurchaseIntent;
+    purchaseProtocol(proposal);
     return this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<PurchaseIntent>("purchase");
       if (prior) {

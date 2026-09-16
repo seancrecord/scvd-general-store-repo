@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { catalogLastUpdated } from "@/lib/freshness";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import directoryData from "@/store/directory.json";
 import { TRUST_LIST_ENTRIES } from "@/store/trust-list";
@@ -151,6 +153,24 @@ function listingJsonLd(listing: DirectoryListing, base: string): string {
 
 directoryRoutes.get("/directory", (c) => {
   const base = c.env.STORE_BASE_URL;
+  const indexPayload = {
+    ...DIRECTORY,
+    listings: DIRECTORY.listings.map((listing) => listingJson(listing, base)),
+    suggest_a_listing: `POST ${base}/api/request with a suggest_listing field (name + URL, one line). The keeper visits before he lists.`,
+    no_pay_for_placement:
+      "There is no fee and no placement to buy. Every line here is the keeper's own, written after he used the thing.",
+    signed_list: `${base}/trust-list.json`,
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/directory",
+      title: "Town Directory",
+      description:
+        "Other services in the neighbourhood, listed by hand with what each one does. A short book, kept short on purpose.",
+      document: indexPayload as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const listingsHtml =
       DIRECTORY.listings.length > 0
@@ -173,17 +193,20 @@ directoryRoutes.get("/directory", (c) => {
       }),
     );
   }
-  return c.json({
-    ...DIRECTORY,
-    listings: DIRECTORY.listings.map((listing) => listingJson(listing, base)),
-    suggest_a_listing: `POST ${base}/api/request with a suggest_listing field (name + URL, one line). The keeper visits before he lists.`,
-    no_pay_for_placement:
-      "There is no fee and no placement to buy. Every line here is the keeper's own, written after he used the thing.",
-    signed_list: `${base}/trust-list.json`,
-  });
+  return c.json(indexPayload);
 });
 
-directoryRoutes.get("/directory/:slug", (c) => {
+/*
+ * THE SLUG EXCLUDES A DOT (2026-09-16), so `/directory/x.md` is not
+ * swallowed as a listing named "x.md".
+ *
+ * An unconstrained :slug matches the suffix too, answers its own 404
+ * for a listing nobody has, and the `.md` twin handler in index.ts
+ * never runs — it lives in notFound, and this route was not letting
+ * the request get there. Every listing had a markdown representation
+ * and no way to ask for it by suffix.
+ */
+directoryRoutes.get("/directory/:slug{[a-z0-9-]+}", (c) => {
   const base = c.env.STORE_BASE_URL;
   const slug = c.req.param("slug");
   const listing = DIRECTORY.listings.find((entry) => entry.slug === slug);
@@ -204,6 +227,20 @@ directoryRoutes.get("/directory/:slug", (c) => {
       404,
     );
   }
+  const listingPayload = {
+    ...listingJson(listing, base),
+    district: DIRECTORY.district,
+    directory: `${base}/directory`,
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: `/directory/${listing.slug}`,
+      title: `${listing.name} in the Town Directory`,
+      description: `${listing.name} in the Town Directory: what it does, and what this store can and cannot say about it.`,
+      document: listingPayload as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
@@ -218,9 +255,5 @@ directoryRoutes.get("/directory/:slug", (c) => {
       }),
     );
   }
-  return c.json({
-    ...listingJson(listing, base),
-    district: DIRECTORY.district,
-    directory: `${base}/directory`,
-  });
+  return c.json(listingPayload);
 });

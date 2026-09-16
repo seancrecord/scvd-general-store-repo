@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { ladderRung } from "@/services/menu-markdown";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
@@ -126,8 +128,11 @@ const NOT =
 operatorsRoutes.get("/operators", (c) => {
   const base = c.env.STORE_BASE_URL;
   const rows = stages(base);
-  if (!wantsHtml(c.req.header("Accept"))) {
-    return c.json({
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
       title: "For operators",
       /*
        * THE FIVE ANSWERS (house rule 60.4) and the three sentences
@@ -158,7 +163,18 @@ operatorsRoutes.get("/operators", (c) => {
       all_items: `${base}/menu.json`,
       how_paying_works: `${base}/how-it-works`,
       if_you_resell_rather_than_run_a_door: `${base}/trade`,
+    };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/operators",
+      title: "For operators",
+      description: "The shelf from the seller's side, in the order a launch happens: what is free first at each moment, and what is for sale when you need it signed and servable. Never a score.",
+      document: pagePayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(pagePayload);
   }
   const sections = rows
     .map(

@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { buildTrustPanel } from "@/services/trust-panel";
 import { ASSURANCE_LADDER } from "@/store/assurance";
@@ -29,8 +31,11 @@ export const trustRoutes = new Hono<HonoEnv>();
 trustRoutes.get("/trust", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const panel = await buildTrustPanel(c.env);
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
       ...panel,
       assurance_ladder: ASSURANCE_LADDER,
       independent_records: {
@@ -41,7 +46,18 @@ trustRoutes.get("/trust", async (c) => {
       },
       what_this_is_not:
         "Not an escrow, not a guarantor, not a dispute court, no chargebacks, no third-party audit. One operator, one live signing key (history Bitcoin-anchored). Treat artifacts as evidence to verify, never as institutional assurance.",
+    };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/trust",
+      title: "The trust panel",
+      description: "Every trust surface in one place: the signing key and its Bitcoin-anchored history, the assurance ladder, real verifiable sample artifacts, corrections, the corpus, and every independent third-party record of this store with what each one does and does not prove.",
+      document: pagePayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(pagePayload);
   }
 
   const ladderRows = ASSURANCE_LADDER.map(
