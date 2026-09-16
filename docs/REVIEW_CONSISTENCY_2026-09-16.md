@@ -1,12 +1,35 @@
 # September 16 catalog and verifier review
 
-Status: release candidate, authorized September 16. The prepared repair
-applies cleanly to main at `6d29feb5`, including the newer Solana origin
-signing work. The keeper's unfinished checkout remains untouched.
+Status: merged and deployed September 16 in [PR #751](https://github.com/seancrecord/scvd-general-store-repo/pull/751),
+merge `a0dd8922`. The keeper's unfinished checkout remains untouched.
 Post-deployment results belong in the dated [release record](https://github.com/seancrecord/scvd-general-store-repo/releases/tag/2026-09-16-catalog-verifier);
 the observations below are the retained pre-deployment baseline.
 
+At 19:21–19:22 UTC, the deployed catalog walk passed for all 35 items and
+five offered rails; all 49 verifier cases passed, including the three
+annotation comparisons. Mobile Chrome confirmed all four first actions,
+generated pricing/checklists and the 14-tool WebMCP inventory. The release
+assets retain results, timestamps, deployment identifiers and limitations.
+The PR's full four-shard gate passed 14,527 tests across 749 files, with one
+skip. After intervening main merges, the exact merged revision passed
+typecheck and 81 focused tests; its later full main run was superseded in
+the queue, so it is not claimed as a second full-suite pass.
+
+The release note and smoke assets published successfully. Its archive
+signer failed on deprecated Cosign flags; [the signing repair](RELEASE_PROVENANCE.md)
+keeps the original tag and its failed run visible. Archive provenance is
+separate from the production observations.
+
 ## Production baseline
+
+Follow-through at 20:11 UTC: the stricter [verifier reading](review-consistency-2026-09-16/verifier-strict-live.json)
+passes all 49 cases. The smoke now requires the specific expected refusal,
+validates schemas on readiness refusals, and rejects uncorrelated or malformed
+JSON-RPC responses. Previously any error could count as a refusal; the released
+observations were also checked manually, but that manual step did not protect
+future runs. Eight mutated-response tests now exercise the real CLI and fail
+without the repair; the unchanged happy path passes. These detector tests run
+in CI. The retained reading does not add a paid or unknown-host exercise.
 
 The alleged $19 Hosted Profile price and 24-item menu did not reproduce.
 Fresh unsigned requests found 35 active items. Catalog, individual item

@@ -1476,3 +1476,35 @@ The repair was prepared against 834fd186, then applied cleanly to 6d29feb5
 in an isolated release worktree after keeper authorization. The active
 checkout has older source and unfinished work and is preserved. The dated
 release record, not this source reading, carries deployment evidence.
+
+### September 16 — release archive signing with Cosign v3
+
+Read Sigstore's [blob signing](https://docs.sigstore.dev/cosign/signing/signing_with_blobs/)
+and [verification](https://docs.sigstore.dev/cosign/verifying/verify/) documentation.
+Cosign v3 stores signature, certificate and transparency-log material in
+`--bundle`; the old separate-output flags no longer supply an output path.
+The dated catalog release exposed this existing workflow incompatibility.
+The repair pins the observed installer version, verifies the bundle against
+the exact tagged workflow identity before upload, and preserves the original
+tag. Offline tests execute the workflow shell against a v3-shaped boundary,
+including a verification failure that must prevent upload. Both tests failed
+before the repair. A successful hosted release run remains the OIDC proof.
+
+### September 16 — verifier smoke refusal and response correlation
+
+Re-read the MCP [base protocol](https://modelcontextprotocol.io/specification/2025-11-25/basic)
+and [tool error handling](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
+JSON-RPC responses preserve the request ID and carry either result or error.
+Protocol errors and tool execution failures are different outcomes; any error
+is not interchangeable with a particular expected refusal. The smoke checker
+now asserts this store's existing invalid-parameter error code for missing or
+private input, and validates both schema and exact result for refused readiness
+input. It rejects mismatched response IDs and malformed envelopes before
+scoring the matrix. This pins current store behavior, not a universal rule
+requiring every MCP input refusal to use a protocol-level error.
+
+The real CLI is tested against a local fake MCP server. Its happy path passed
+before the repair; eight mutated-response regressions failed before and pass
+afterward. The mutations include internal server errors, tool failures,
+malformed/wrong readiness refusals and uncorrelated protocol responses. No
+new paid flow or unknown-host demand-queue input is added to the live matrix.
