@@ -2,7 +2,7 @@ import { readAuthorizationTransfer } from "@/lib/authorization-receipt";
 import { publicationDelivery } from "@/lib/publication-recovery";
 import { observationCheckpoint } from "@/services/purchase-observation";
 import type { Env } from "@/types";
-import type { PurchaseIntent } from "@/services/purchase-intent";
+import { purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { atomicToUsdc, tipFromPaid } from "@/lib/payments";
 import { evmChainOf, getFinalizedBlockNumber, getBlockTimestamp, findAuthorizationUseInRange,
   getReceipt, isSameAddress, type EvmChain } from "@/lib/base-rpc";
@@ -28,6 +28,7 @@ async function firstBlock(env: Env, chain: EvmChain, head: number, since: number
 
 /** A nonce event alone does not prove that this buyer paid these terms. */
 export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promise<Pick<PurchaseIntent, "payment" | "reconciliation">> {
+  purchaseProtocol(record);
   if (record.state !== "unknown") return {};
   if (record.solana) return reconcileSolanaPurchase(env, record);
   const chain = evmChainOf(record.terms.network);
@@ -72,6 +73,7 @@ export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promi
 
 /** Resume only goods whose partial effects already have a durable checkpoint. */
 export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent): Promise<Record<string, unknown> | null> {
+  purchaseProtocol(record);
   const { item, payment } = record;
   if (record.state !== "settled" || !payment) return null;
   if (payment.network !== record.terms.network || !payment.transaction || !payment.payer ||
