@@ -32,3 +32,28 @@ export function variantGid(itemId: string, tierIndex?: number): string {
 export function productHandle(itemId: string): string {
   return itemId.replace(/_/g, "-");
 }
+
+/**
+ * THE VARIANT ID READ BACK, because a checkout must never learn which
+ * tier was bought from the amount that was paid.
+ *
+ * A pay-what-it-deserves item offers three exact amounts. If the tier
+ * were inferred at settlement — $600 arrived, therefore the generous
+ * tier — then paying a different tier's legitimate price would
+ * silently buy a different thing, and an overpayment would upgrade an
+ * order nobody upgraded. So the tier is chosen in the checkout by ID,
+ * frozen there, and the price is re-derived from it server-side. This
+ * is the function that reads it back; nothing else parses these.
+ */
+export function parseVariantGid(
+  gid: string,
+): { itemId: string; tierIndex?: number } | null {
+  const match = gid.match(
+    /^gid:\/\/scvd\.store\/Variant\/([a-z0-9_]+)(?:\/tier-([1-9][0-9]*))?$/,
+  );
+  if (!match?.[1]) return null;
+  const tier = match[2];
+  return tier === undefined
+    ? { itemId: match[1] }
+    : { itemId: match[1], tierIndex: Number(tier) - 1 };
+}
