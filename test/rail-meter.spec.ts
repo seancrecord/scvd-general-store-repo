@@ -297,7 +297,7 @@ describe("the shopfront says what happened to the record, not to the money", () 
       computed_at: "2026-08-06T00:00:00.000Z",
     });
     expect(line).toBe(
-      "6 organic sales — 3 on Base, 2 on Solana, 1 from before we logged the rail.",
+      "6 organic purchases via x402.",
     );
   });
 });
