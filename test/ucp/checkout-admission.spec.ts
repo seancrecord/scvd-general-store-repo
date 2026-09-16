@@ -430,14 +430,16 @@ describe("some items cannot have ownership taken before their goods exist", () =
       verify: accepts(),
     });
     /*
-     * The shared admission refuses: "Original observation must precede
-     * settlement". That is produce-before-settle enforced at the
-     * ownership atom, not a UCP problem — the /api/buy door meets the
-     * same rule and satisfies it by preparing first. Nothing is
-     * recorded as owned, and the checkout stays payable.
+     * This item's goods are made before its payment is owned, and no
+     * preparer was supplied — so the refusal comes from the ordering
+     * itself rather than from the shared admission's "Original
+     * observation must precede settlement", which is what it used to
+     * be before the ordering was made explicit. The buyer gets a
+     * sentence they can act on instead of a sentence about a journal.
+     * Nothing is recorded as owned and the checkout stays payable.
      */
     expect(outcome.ok).toBe(false);
-    if (!outcome.ok) expect(outcome.code).toBe("admission_unavailable");
+    if (!outcome.ok) expect(outcome.code).toBe("preparation_unavailable");
     const stored = await ucpCheckoutStore(testEnv, checkout.id).readUcpCheckout();
     expect(stored?.status).toBe("ready_for_complete");
     expect(stored?.completion).toBeUndefined();

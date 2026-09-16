@@ -1,6 +1,11 @@
 import { createUcpX402Adapter, UcpPaymentRefused, type FacilitatorVerify } from "@/lib/ucp/checkout/adapter";
 import { completionIdentity, completionRequest } from "@/lib/ucp/checkout/completion";
 import { asRequirements } from "@/lib/ucp/checkout/requirements";
+import { purchasePreparation } from "@/services/purchase-preparation";
+import type {
+  ObservationCheckpoint,
+  PreparedObservation,
+} from "@/services/purchase-observation";
 import {
   beginVerifiedPurchaseIntent,
   purchaseIntentStore,
@@ -62,11 +67,32 @@ function completionPath(checkout: StoredCheckout): string {
   return `/ucp/v1/checkout-sessions/${checkout.id}`;
 }
 
+/**
+ * What happened to the goods on the way through, said plainly because
+ * "prepared" and "reused a prepared one" are different facts and only
+ * one of them means external work was done.
+ */
+export type PreparationOutcome = "not_required" | "made" | "reused";
+
 export type UcpAdmissionOutcome =
-  | { ok: true; checkout: StoredCheckout; payment_identity: string; recovered: boolean }
+  | {
+      ok: true;
+      checkout: StoredCheckout;
+      payment_identity: string;
+      recovered: boolean;
+      prepared: PreparationOutcome;
+    }
   | {
       ok: false;
-      code: "not_found" | "wrong_state" | "stale_version" | "expired" | "payment_refused" | "admission_unavailable";
+      code:
+        | "not_found"
+        | "wrong_state"
+        | "stale_version"
+        | "expired"
+        | "payment_refused"
+        | "preparation_failed"
+        | "preparation_unavailable"
+        | "admission_unavailable";
       detail: string;
       checkout?: StoredCheckout;
     };
@@ -89,6 +115,14 @@ export async function admitUcpCompletion(
     verify: FacilitatorVerify;
     expectedVersion?: number;
     nowMs?: number;
+    /**
+     * Produces this product's goods. Called ONLY for items whose
+     * ordering requires the goods before ownership, and only when the
+     * journal does not already hold them — so a retry never repeats
+     * paid or external work. The real per-item production is the
+     * fulfillment machinery's; this is the seam it plugs into.
+     */
+    prepare?: (checkpoint: ObservationCheckpoint) => Promise<PreparedObservation>;
   },
 ): Promise<UcpAdmissionOutcome> {
   const nowMs = input.nowMs ?? Date.now();
@@ -113,6 +147,7 @@ export async function admitUcpCompletion(
   }
   const checkout: StoredCheckout = { ...precheck.checkout };
   const quote = checkout.quote!;
+  const item = getMenuItem(checkout.lines[0]?.item_id ?? "");
 
   /**
    * THE TERMS COME OUT OF THE CHECKOUT, NOT OFF TODAY'S SHELF. A price
@@ -146,6 +181,101 @@ export async function admitUcpCompletion(
   }
 
   /**
+   * THE ORDERING THIS PRODUCT REQUIRES, ASKED FOR RATHER THAN ASSUMED.
+   *
+   * For most goods, ownership comes first and the goods follow. For
+   * the ones that are fully prepared before settlement, the shared
+   * admission will refuse ownership unless the prepared observation is
+   * already retained — so they are prepared here, before admission,
+   * and the checkpoint is what makes that durable.
+   */
+  const completionDigest = await purchaseRequestDigest(
+    env,
+    "ucp",
+    completionPath(checkout),
+    completionRequest(checkout),
+  );
+  const ordering = purchasePreparation(
+    env,
+    item,
+    verified.payment.identity,
+    completionPath(checkout),
+    completionDigest,
+  );
+  let prepared: PreparationOutcome = "not_required";
+
+  if (ordering.mode === "before_admission") {
+    /**
+     * READ FIRST, ALWAYS. A prepared observation is an artifact, not a
+     * cache: it was signed, it may have cost a real payment at
+     * somebody else's door, and it is what the buyer is owed. A retry
+     * that regenerated it would produce different bytes for the same
+     * purchase and throw away the ones already promised.
+     */
+    let existing: PreparedObservation | null = null;
+    try {
+      existing = await ordering.checkpoint.read();
+    } catch {
+      return {
+        ok: false,
+        code: "preparation_unavailable",
+        detail:
+          "The goods for this purchase could not be read just now. Nothing was charged and nothing was recorded; present the same payment again.",
+        checkout,
+      };
+    }
+
+    if (existing) {
+      prepared = "reused";
+    } else if (!input.prepare) {
+      return {
+        ok: false,
+        code: "preparation_unavailable",
+        detail:
+          "This item's goods are made before its payment is owned, and this door cannot make them yet. Buy it over x402 at the buy door, where that path is built.",
+        checkout,
+      };
+    } else {
+      let made: PreparedObservation;
+      try {
+        made = await input.prepare(ordering.checkpoint);
+      } catch (error) {
+        /**
+         * Preparation failed BEFORE anything was owned. That is the
+         * cheap failure this ordering exists to make possible: no
+         * ownership, no money, and a checkout still payable.
+         */
+        return {
+          ok: false,
+          code: "preparation_failed",
+          detail:
+            error instanceof Error && error.message
+              ? error.message
+              : "The goods for this purchase could not be made. Nothing was charged.",
+          checkout,
+        };
+      }
+      try {
+        await ordering.checkpoint.save(made);
+      } catch {
+        /**
+         * Made but not retained. Ownership must not be taken on goods
+         * the store cannot prove it holds, so this fails the same way
+         * a failed preparation does.
+         */
+        return {
+          ok: false,
+          code: "preparation_unavailable",
+          detail:
+            "The goods were made but could not be retained, so this purchase was not admitted. Nothing was charged; present the same payment again.",
+          checkout,
+        };
+      }
+      prepared = "made";
+    }
+  }
+
+  /**
    * ALREADY BOUND? THEN COMPARE BEFORE ADMITTING ANYTHING.
    *
    * An identical retry and a second, different payment look the same
@@ -163,6 +293,7 @@ export async function admitUcpCompletion(
         checkout,
         payment_identity: verified.payment.identity,
         recovered: true,
+        prepared,
       };
     }
     return {
@@ -182,7 +313,6 @@ export async function admitUcpCompletion(
    * have made replay ownership protocol-scoped, which is the same
    * payment spendable once per protocol.
    */
-  const item = getMenuItem(checkout.lines[0]?.item_id ?? "");
   let intent: PurchaseIntent;
   try {
     intent = await beginVerifiedPurchaseIntent(env, {
@@ -297,5 +427,6 @@ export async function admitUcpCompletion(
     payment_identity: verified.payment.identity,
     /** True when the binding was already ours: a recovered completion, not a second one. */
     recovered: bound.checkout.completion?.at !== new Date(nowMs).toISOString(),
+    prepared,
   };
 }
