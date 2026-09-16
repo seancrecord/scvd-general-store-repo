@@ -3,6 +3,8 @@ import { renderCardPng } from "@/lib/pixel-card";
 import { CATALOG_PATHS } from "@/discovery/self-module";
 import { loopbackCatalogFetcher } from "@/lib/self-fetch";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { citeBlock, citeHtml } from "@/lib/cite";
 import {
@@ -216,8 +218,11 @@ passportRoutes.get("/passport", async (c) => {
     new Date(),
     loopbackCatalogFetcher(c),
   );
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
       what: "One canonical, signed, expiring object per endpoint: the census's evidence about one host, with a freshness state an agent can act on mechanically. Ready-side hosts only — names appear only on the ready side, everywhere in this store.",
       how: `GET ${base}/passport/{host} — JSON by default, HTML for eyes. Refusals distinguish no observation, no passing protocol, an unmeasured protocol and a retracted reading.`,
       freshness_rule: `fresh <= ${FRESH_DAYS}d, aging <= ${AGING_DAYS}d, expired after; broken when the latest verdict is not ready. Refuse expired passports.`,
@@ -225,7 +230,18 @@ passportRoutes.get("/passport", async (c) => {
       decision_meaning: DECISION_MEANING,
       read_first: "payload.summary — the whole one-glance read, inside the signature.",
       the_example: self,
+    };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/passport",
+      title: "Endpoint passports",
+      description: "The pre-pay evidence object for one host: what SCVD observed, what it did not observe, how fresh it is, what failed, and where to verify the signed record. One signed, expiring object with a machine-actionable decision. Free.",
+      document: pagePayload as unknown as Record<string, unknown>,
     });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(pagePayload);
   }
   const bodyHtml = `<section>
     <p class="menu-desc"><strong>An Endpoint Passport is the pre-pay

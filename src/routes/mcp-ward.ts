@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   MCP_DIRECTORIES_UNREAD,
@@ -124,6 +126,15 @@ mcpWardRoutes.get("/mcp-ward", async (c) => {
     readMcpRegister(c.env),
     readMcpWalk(c.env),
   ]);
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: c.env.STORE_BASE_URL,
+      path: "/mcp-ward",
+      title: "The MCP ward",
+      description: "A weekly enumeration of the official MCP registry, kept as its own population with its own denominators — it counts registrations and knocks on nothing.",
+      document: wardTwin(c.env.STORE_BASE_URL, pass, register, walk) as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(wardTwin(c.env.STORE_BASE_URL, pass, register, walk));
   }

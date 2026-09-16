@@ -244,6 +244,8 @@ const REPORT_FIELDS: Record<keyof PreflightReport, true> = {
       remediation: true,
       protocols_spoken: true,
       mpp: true,
+  probe_method: true,
+  mpp_core: true,
   single_probe_note: true,
   what_this_cannot_tell_you: true,
   our_conflict_of_interest: true,

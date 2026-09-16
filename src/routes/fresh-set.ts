@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { freshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
 import type { HonoEnv } from "@/types";
@@ -76,18 +78,29 @@ function freshSetDatasetJsonLd(base: string, set: FreshSet): string {
 freshSetRoutes.get("/fresh-set", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const set = await freshSet(c.env);
+  /*
+   * One payload for both the empty and the populated case, hoisted so
+   * the markdown twin renders the same document the JSON serves.
+   */
+  const payload = set
+    ? { ...set, corrections: CORRECTIONS_POINTER }
+    : {
+        rows: [],
+        corrections: CORRECTIONS_POINTER,
+        note: "No census round has completed yet; the first walk populates this surface.",
+      };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/fresh-set",
+      title: "The fresh set",
+      description:
+        "The hosts this store's most recent census round reached, with what one unpaid probe saw at each. One round, one moment, never a ranking.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    if (!set) {
-      return c.json(
-        {
-          rows: [],
-          corrections: CORRECTIONS_POINTER,
-          note: "No census round has completed yet; the first walk populates this surface.",
-        },
-        200,
-      );
-    }
-    return c.json({ ...set, corrections: CORRECTIONS_POINTER });
+    return c.json(payload, 200);
   }
 
   const bodyHtml = set

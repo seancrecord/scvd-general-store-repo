@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   registerFindings,
@@ -288,8 +290,22 @@ sourceRoutes.get("/sources", async (c) => {
     sourceRegister(c.env),
     readHeartbeat(c.env),
   ]);
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = { ...fiveAnswers(c.env.STORE_BASE_URL), ...register, heartbeat };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: c.env.STORE_BASE_URL,
+      path: "/sources",
+      title: "Where our numbers come from",
+      description: "The directories this store's ecosystem counts are built from, each with the last time it actually answered — derived from stored rounds, not maintained by hand.",
+      document: pagePayload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({ ...fiveAnswers(c.env.STORE_BASE_URL), ...register, heartbeat });
+    return c.json(pagePayload);
   }
   return c.html(
     renderSimplePage({

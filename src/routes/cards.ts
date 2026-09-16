@@ -5,6 +5,8 @@ import { jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGet, kvGetBytes, kvPut, kvPutBytes } from "@/lib/kv-retry";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { renderCardFace, renderSpecimenFace } from "@/services/card-svg";
 import { renderBinderSheet, renderShareSheet } from "@/services/card-share";
@@ -333,6 +335,16 @@ cardRoutes.get("/design", async (c) => {
   const releases = await releaseStates(c.env);
   const packs = await packsOpened(c.env);
   const twin = roomTwin(base, set, seed, yesterday, releases, packs);
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/design",
+      title: "The card table",
+      description:
+        "The season's cards, the odds they are drawn at, what has been opened and what is still in the window — the same record the JSON twin carries.",
+      document: twin as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(twin);
   const pack = getMenuItem(PACK_ITEM);
   const pick = getMenuItem(WINDOW_ITEM);

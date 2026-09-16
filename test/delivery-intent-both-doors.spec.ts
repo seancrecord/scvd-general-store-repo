@@ -58,7 +58,7 @@ describe("the MCP till opens the delivery intent when money moves", () => {
       await paymentFor("hello"),
       { userAgent: "delivery-intent-spec" },
       undefined,
-      "asked_for=the-exact-thing-the-buyer-wanted",
+      JSON.stringify({ purpose: "the-exact-thing-the-buyer-wanted" }),
     );
     expect(outcome.kind).toBe("authorized");
     if (outcome.kind !== "authorized") return;

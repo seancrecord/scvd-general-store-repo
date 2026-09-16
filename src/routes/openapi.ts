@@ -1,5 +1,6 @@
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
+import { MPP_CORE_BATTERY, MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
 import { PURCHASE_RECOVERY_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
 import { CLAIM_CERT_ID, CLAIM_GOOD_INSTRUCTIONS } from "@/lib/claims-contract";
 import { AUDIT_REPORT_VERDICT, GOOD_BUYER_REPORT_VERDICT, LAUNCH_REPORT_VERDICT, ONPAGE_REPORT_VERDICT, RECONCILIATION_REPORT_VERDICT } from "@/lib/report-verdicts";
@@ -1144,6 +1145,7 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     "remediation",
     "protocols_spoken",
     "mpp",
+    "probe_method",
     "single_probe_note",
     "what_this_cannot_tell_you",
     "our_conflict_of_interest",
@@ -1155,9 +1157,9 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     },
     verdict: {
       type: "string",
-      enum: ["ready", "not_ready", "unreachable"],
+      enum: ["ready", "not_ready", "unreachable", "method_unresolved"],
       description:
-        "ready = every structural check passed. not_ready = reachable but failed at least one. unreachable = the probe itself could not complete, which says nothing about their code — the detail says whose side the failure was on.",
+        "ready = every structural check passed. not_ready = reachable but failed at least one. unreachable = the probe itself could not complete, which says nothing about their code — the detail says whose side the failure was on. method_unresolved = the door refused every HTTP method this probe sends (405/501), so NO check ran and nothing was observed about the challenge; it is a statement about our reach, never a finding against the endpoint, and it is deliberately not scorable as ready or not_ready.",
     },
     reached_level: {
       type: "string",
@@ -1229,6 +1231,16 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
       description:
         "Which protocols the 402 speaks, derived from its headers: x402 when PAYMENT-REQUIRED is present, mpp when a WWW-Authenticate: Payment challenge parses. The verdict keeps meaning x402-ready, permanently; read this for the union.",
     },
+    mpp_core: {
+      type: "object",
+      description: `The additive ${MPP_CORE_BATTERY} observable core reading under ${MPP_CORE_SPEC.draft}. Separates failed checks from unmeasured requirements; never changes the x402 verdict or historical MPP battery. The store's till does not speak MPP.`,
+      properties: {
+        battery: { type: "string", enum: [MPP_CORE_BATTERY] },
+        spec: { type: "object" }, state: { type: "string" }, observed_at: { type: "string", format: "date-time" },
+        checks: { type: "array", items: { type: "object" } }, challenges: { type: "array", items: { type: "object" } },
+        counts: { type: "object" }, problem: { type: "object" }, gaps: { type: "array", items: { type: "string" } },
+      },
+    },
     mpp: {
       type: "object",
       required: ["battery", "spec", "spoken", "challenges", "checks", "advisories", "what_this_cannot_tell_you"],
@@ -1265,10 +1277,31 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
         },
       },
     },
+    probe_method: {
+      type: "object",
+      description:
+        "Which question the door actually answered. The probe sends GET first (or the method a catalog declared for the resource) and, if that is refused AS a method with 405 or 501, sends exactly one more — the method named in Allow when the 405 carries one, POST otherwise. At most two requests per call, to the same URL, and only ever about the verb.",
+      required: ["used", "attempted", "source", "note"],
+      properties: {
+        used: { type: "string", enum: ["GET", "POST"], description: "The method whose response produced the checks below." },
+        attempted: {
+          type: "array",
+          items: { type: "string", enum: ["GET", "POST"] },
+          description: "Every method sent, in order. More than one means the first was refused as a method.",
+        },
+        source: {
+          type: "string",
+          enum: ["declared", "allow-header", "fallback", "default"],
+          description:
+            "Where the method came from: declared = a catalog or challenge declared it for this resource and nothing was guessed; allow-header = the door's own 405 named it; fallback = POST, tried once after a method refusal that named nothing; default = GET, what a buyer's client sends first.",
+        },
+        note: { type: "string", description: "The same story in plain English, for a human reading the readout." },
+      },
+    },
     single_probe_note: {
       type: "string",
       description:
-        "One request, one moment. A passing preflight quoted as an uptime claim is a misquote, and this field is where the response says so.",
+        "One moment. A passing preflight quoted as an uptime claim is a misquote, and this field is where the response says so. It also says when the reading took two requests rather than one, which happens only on a method refusal.",
     },
     what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
     our_conflict_of_interest: {
@@ -4662,10 +4695,36 @@ const COMPACT_MENU_ROW_SCHEMA: OpenApiObject = {
   },
 };
 
+const PURCHASE_GROUPS_SCHEMA: OpenApiObject = {
+  type: "array",
+  items: {
+    type: "object",
+    required: ["name", "purchases"],
+    properties: {
+      name: { type: "string" },
+      purchases: { type: "integer", minimum: 0 },
+    },
+  },
+};
+
+const PAYMENT_ROLLUP_SCHEMA: OpenApiObject = {
+  type: "object",
+  description: "The same organic purchases grouped independently by payment protocol, network and currency. Counts, not revenue; do not add dimensions together. Shared with /stats, /rails and scvd://payments.",
+  required: ["organic_purchases", "by_protocol", "by_network", "by_currency", "method"],
+  properties: {
+    organic_purchases: { type: "integer", minimum: 0 },
+    by_protocol: PURCHASE_GROUPS_SCHEMA,
+    by_network: { ...PURCHASE_GROUPS_SCHEMA, nullable: true },
+    by_currency: PURCHASE_GROUPS_SCHEMA,
+    method: { type: "string" },
+  },
+};
+
 const MENU_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["as_of", "checked_at", "description", "store", "items"],
   properties: {
+    payments: PAYMENT_ROLLUP_SCHEMA,
     as_of: {
       type: "string",
       description: "ISO week the catalog was last written, e.g. 2026-W35.",
@@ -5120,25 +5179,52 @@ const PAYMENT_REQUIRED_REF: OpenApiObject = {
  * removing one breaks somebody quietly.
  */
 /**
- * The discovery spec's flat price hint: one tier is `fixed` with its
- * price; several are `dynamic` with the range, since a buyer choosing
- * a tier is exactly what that mode describes. Decimal strings, never
- * numbers — the spec reads strings, and a float that prints in
- * exponent form would be a different number to a parser.
+ * The discovery spec's price hint, as ONE OBJECT under `price`.
+ *
+ * WHY IT IS NOT FLAT ANY MORE (2026-09-16). The flat spelling —
+ * `pricingMode` beside `price`/`minPrice`/`maxPrice` as siblings of
+ * `protocols` — was written on 2026-09-11 because the nested form was
+ * rejected by the reader of the day. It is now the LEGACY shape in
+ * `@agentcash/discovery`, the validator x402scan, mppscan and
+ * AgentCash all run, and the flat spelling does not merely age badly:
+ * it changes which parser reads the whole block. `resolvePaymentInfo`
+ * routes on `typeof raw.price`. An object goes to the structured
+ * parser, which keeps `protocols` as written. A STRING goes to
+ * `normalizeLegacyProtocols`, which walks the array and keeps only
+ * entries that are strings — so `[{ x402: {} }]`, the exact shape
+ * that validator's own integration spec asks for, was dropped on the
+ * floor, and every paid door here was read as a paid door declaring
+ * no payment protocol at all. Read against v1.7.5 of the package, not
+ * inferred: 37 paid operations, 74 protocol notices (one per
+ * operation at each of two layers) and one legacy-format notice, all
+ * of which this one change clears. The currency comes back too — the
+ * legacy path drops `currency` on a fixed price, so the listing
+ * rendered an amount with no unit beside it.
+ *
+ * One tier is `fixed` with its amount; several are `dynamic` with the
+ * range, since a buyer choosing a tier is exactly what that mode
+ * describes. Decimal strings, never numbers — the spec reads strings,
+ * and a float that prints in exponent form would be a different
+ * number to a parser. `price_usdc` and `x-payment.price_usdc_options`
+ * are untouched beside it, and they are what this store's own readers
+ * (`openapiPriceFor`) have always read, so nothing here depends on
+ * the spelling that moved.
  */
 export function discoveryPriceHint(
   priceUsdcOptions: number[],
-): Record<string, string> {
+): { price: Record<string, string> } {
   const tiers = [...new Set(priceUsdcOptions)].sort((a, b) => a - b);
   const decimal = (price: number): string => price.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
   if (tiers.length <= 1) {
-    return { pricingMode: "fixed", price: decimal(tiers[0] ?? 0), currency: "USD" };
+    return { price: { mode: "fixed", amount: decimal(tiers[0] ?? 0), currency: "USD" } };
   }
   return {
-    pricingMode: "dynamic",
-    minPrice: decimal(tiers[0] ?? 0),
-    maxPrice: decimal(tiers[tiers.length - 1] ?? 0),
-    currency: "USD",
+    price: {
+      mode: "dynamic",
+      min: decimal(tiers[0] ?? 0),
+      max: decimal(tiers[tiers.length - 1] ?? 0),
+      currency: "USD",
+    },
   };
 }
 
@@ -5182,11 +5268,11 @@ function paidOp(
        * mppscan reads as well, so the string was the store's own
        * dialect and the array is the shared one. Both stay: the
        * string predates the array and readers generated against it.
-       * `pricingMode`, `price` and `currency` beside it are the same
-       * spec's flat price hint, the shape its validator accepts
-       * today (its documented nested form is rejected by its own
-       * parser, per x402scan issue 1014). Decimal USD, derived from
-       * the same tiers the accepts are, so the two cannot drift.
+       * `price` beside it is the same spec's price hint, and it is
+       * the OBJECT form on purpose — see `discoveryPriceHint`, where
+       * the flat spelling this block used to carry is what made the
+       * array below unreadable. Decimal USD, derived from the same
+       * tiers the accepts are, so the two cannot drift.
        */
       protocols: [{ x402: {} }],
       ...discoveryPriceHint(priceUsdcOptions),

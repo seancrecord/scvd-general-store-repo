@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { derivedFromCorpus, type CorpusRecord } from "@/services/corpus-list";
 import { deriveWeeklyBrief } from "@/services/weekly-brief";
@@ -276,8 +278,22 @@ const FEEDS_STANDFIRST =
 feedsRoutes.get("/feeds", (c) => {
   const base = c.env.STORE_BASE_URL;
   const rows = FEEDS.map((feed) => ({ ...feed, url: `${base}${feed.path}` }));
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = { title: "Feeds", summary: FEEDS_STANDFIRST, feeds: rows, corrections: CORRECTIONS_POINTER };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/feeds",
+      title: "Feeds",
+      description: "Four Atom feeds derived from the store's own record: the week's doors, the corpus chain, the corrections and the disagreements. Never a ranking.",
+      document: pagePayload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({ title: "Feeds", summary: FEEDS_STANDFIRST, feeds: rows, corrections: CORRECTIONS_POINTER });
+    return c.json(pagePayload);
   }
   return c.html(
     renderSimplePage({
