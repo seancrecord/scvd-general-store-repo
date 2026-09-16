@@ -277,6 +277,52 @@ payable here, add its object to that array in `paidOp()`
 pins the array to exactly `[{ x402: {} }]` and will fail until it is
 updated, so the reminder is a test, not a memory.
 
+**The array was written correctly and read as absent for five days
+(2026-09-16 note).** x402scan's Add API run listed 191 resources and
+then reported, once per paid operation at each of two layers, that a
+paid endpoint declares no supported payment protocols — 74 notices —
+plus one saying the document uses the legacy flat `x-payment-info`
+format. Read against the validator all three indexers actually run,
+`@agentcash/discovery` v1.7.5, not inferred from the message: its
+`resolvePaymentInfo` chooses a parser from `typeof
+x-payment-info.price`. An OBJECT goes to the structured parser, which
+keeps `protocols` as written. A STRING — which is what the flat hint
+added on 2026-09-11 made it — goes to `normalizeLegacyProtocols`,
+which keeps only array entries that are themselves strings and
+therefore drops `[{ x402: {} }]` entirely. So the flat price hint was
+not a second, harmless spelling beside the array; it was what decided
+the array would never be read. `discoveryPriceHint()` now returns the
+structured `price: { mode, amount | min/max, currency }` object and
+the flat `pricingMode`/`price`/`minPrice`/`maxPrice`/`currency` keys
+are gone; the test pins them ABSENT, because their return is silent.
+Two things came back with it: the protocol labels the listing renders,
+and `currency`, which the legacy path drops from a fixed price — the
+listing had been rendering an amount with no unit. `price_usdc` and
+`x-payment.price_usdc_options` did not move, and they are what this
+store's own readers (`openapiPriceFor`) have always read.
+
+Two flags from the same run are NOT ours to clear, and are recorded
+here so nobody spends a day on them twice:
+
+- **`WWW-Authenticate` contains no Payment challenges** (reported as an
+  error, once per paid door). That check is `getWarningsForMppHeader`
+  — the MPP rulebook — and it fires on any 402 carrying a
+  `WWW-Authenticate` header that has no `Payment` challenge in it.
+  Ours carries `X402 resource_metadata="…"`, which is the RFC 9110
+  form pointing at the OAuth protected-resource document. The store
+  does not speak MPP (Part B, still WAIT-AND-SEE), so there is no
+  Payment challenge to add. Dropping the header to silence the check
+  would cost a correct discovery pointer to satisfy a rulebook we
+  have not opted into. Left as written.
+- **`/api/purchase-status/{purchase_id}` has no auth mode.** Its
+  `purchaseStatusToken` scheme is `type: http, scheme: bearer`, which
+  is the correct OpenAPI spelling for `Authorization: Bearer
+  <status_token>`. The validator's `resolveSecurityFlags` recognises
+  only `type: apiKey` and its own SIWX extension, so a bearer scheme
+  reads as no auth mode at all. Respelling it `apiKey` would clear
+  the flag and tell every generated client to send the token WITHOUT
+  the `Bearer ` prefix, which would break the door. Left as written.
+
 Part B ruled MPP to WAIT-AND-SEE on 2026-08-04 and named its own two
 reopening conditions: a named counterparty asking to pay that way, OR
 the scheme showing up as ecosystem-adopted in drift data. A full read
