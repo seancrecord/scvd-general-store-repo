@@ -23,10 +23,30 @@ import { join } from "node:path";
 import {
   PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail,
 } from "./lib/paid-doors.mjs";
+import { railFor } from "./lib/evm-chains.mjs";
+import { useEnvProxy } from "./lib/proxy-fetch.mjs";
 
-const RPC = process.env.BASE_RPC_URL ?? "https://mainnet.base.org";
-/** The public Base RPC's own ceiling, reported as -32614 / HTTP 413. */
-const LOG_SPAN = BigInt(process.env.BASE_LOG_SPAN ?? 2000);
+// Node's fetch ignores HTTPS_PROXY; in a proxied sandbox that reads as
+// "host unreachable" when the host is merely unrouted. See the module.
+await useEnvProxy();
+
+/**
+ * The rail this run reads, from the store's own registry rather than a
+ * constant private to this file. --rail takes a CAIP-2 id; Base stays
+ * the default so every existing invocation keeps its meaning.
+ */
+const RAIL_FLAG = process.argv.includes("--rail")
+  ? process.argv[process.argv.indexOf("--rail") + 1]
+  : "eip155:8453";
+const RAIL = railFor(RAIL_FLAG);
+if (!RAIL) {
+  console.error(`\n✗ --rail ${RAIL_FLAG}: this instrument does not read that rail. It reads: ${Object.keys(await import("./lib/evm-chains.mjs").then((m) => m.EVM_RAILS)).join(", ")}\n`);
+  process.exit(1);
+}
+const RPC = process.env.BASE_RPC_URL ?? RAIL.rpc;
+/** The public endpoint's own eth_getLogs ceiling, per rail. */
+const LOG_SPAN = BigInt(process.env.BASE_LOG_SPAN ?? RAIL.logSpan);
+const RAIL_USDC = RAIL.usdc;
 const UA = "scvd-paid-doors/1.0 (+https://scvd.store/what) read-only";
 const flags = {};
 for (let i = 2; i < process.argv.length; i += 1) {
@@ -107,7 +127,7 @@ async function transferWindow(payTo, fromBlock, toBlock, span = LOG_SPAN) {
     const to = from + span - 1n > end ? end : from + span - 1n;
     try {
       const page = await rpc("eth_getLogs", [{
-        address: USDC_BASE, topics: [TRANSFER_TOPIC, null, topicOf(payTo)],
+        address: RAIL_USDC, topics: [TRANSFER_TOPIC, null, topicOf(payTo)],
         fromBlock: hex(from), toBlock: hex(to),
       }]);
       for (const l of page) {
@@ -135,7 +155,7 @@ mkdirSync(outDir, { recursive: true });
 const head = Number(BigInt(await rpc("eth_blockNumber", [])));
 if (atBlock > head) fail(`--at-block ${atBlock} is past the chain head ${head}`);
 const spans = Math.ceil((atBlock - fromBlock + 1) / Number(LOG_SPAN));
-console.log(`reading ${doors.length} doors over Base blocks ${fromBlock}-${atBlock} (head ${head})`);
+console.log(`reading ${doors.length} doors on ${RAIL.label} (${RAIL_FLAG}) over blocks ${fromBlock}-${atBlock} (head ${head})`);
 console.log(`${spans} log page(s) per door at the RPC's ${LOG_SPAN}-block ceiling\n`);
 
 const readings = [];
@@ -143,12 +163,12 @@ const readings = [];
 /** One EVM rail, read. Split out so a multi-rail door reuses it. */
 async function readEvmRail({ payTo, scheme }) {
   const [balance, nonce, window] = await Promise.all([
-    rpc("eth_call", [{ to: USDC_BASE, data: `0x70a08231${payTo.slice(2).toLowerCase().padStart(64, "0")}` }, hex(atBlock)]).catch(() => null),
+    rpc("eth_call", [{ to: RAIL_USDC, data: `0x70a08231${payTo.slice(2).toLowerCase().padStart(64, "0")}` }, hex(atBlock)]).catch(() => null),
     rpc("eth_getTransactionCount", [payTo, hex(atBlock)]).catch(() => null),
     transferWindow(payTo, fromBlock, atBlock),
   ]);
   const row = readDoorRail({
-    rail: "eip155:8453", payTo, atBlock, fromBlock, scheme: scheme ?? null,
+    rail: RAIL_FLAG, payTo, atBlock, fromBlock, scheme: scheme ?? null,
     balance: balance === null ? null : BigInt(balance),
     nonce: nonce === null ? null : Number(BigInt(nonce)),
     logs: window.logs, logsComplete: window.complete,
@@ -208,7 +228,7 @@ const report = {
   what_this_is: "Whether anyone has paid each door's advertised payTo, read to a named block height. Never a ranking: rule 43 forbids ordering one host against another, and these rows are in the order they were given.",
   definition_from: "StillOS Notary (stillosdigitalholdings.com), supplied 2026-09-15 on issue #622 after they withdrew their own implementation. The definition is theirs; this reader is ours, so that a defect in one is not a defect in both.",
   read_at: new Date().toISOString(),
-  rail: "eip155:8453", asset: USDC_BASE,
+  rail: RAIL_FLAG, rail_label: RAIL.label, asset: RAIL_USDC,
   window: { from_block: fromBlock, at_block: atBlock, log_span: Number(LOG_SPAN) },
   chain_head_when_read: head,
   distinct_counterparty_means: "a unique sending address. A facilitator settling for ten buyers counts once, so this measures settling addresses and not customers.",
