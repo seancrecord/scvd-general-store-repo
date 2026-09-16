@@ -5206,6 +5206,43 @@ export function discoveryPriceHint(
   };
 }
 
+/**
+ * OWNERSHIP OF THIS ORIGIN, IN THE ONE PLACE THREE INDEXERS LOOK.
+ *
+ * `@agentcash/discovery` reads `x-agentcash-provenance.ownershipProofs`
+ * from the root of this document (falling back to the older
+ * `x-discovery.ownershipProofs`), then verifies each entry as a
+ * signature over THE ORIGIN STRING — `https://scvd.store`, bare, no
+ * trailing slash and no path — by one of the payTo addresses the
+ * accepts actually name. A match moves the origin from `origin_hosted`
+ * to `ownership_verified` and marks each matching accept verified.
+ *
+ * The proofs come from a secret, never from this file: see
+ * `ORIGIN_OWNERSHIP_PROOFS` in `src/types.ts` for why, and
+ * `scripts/ownership-check.mjs` for the check that re-reads the LIVE
+ * document and fails when a published proof stops matching the payTo
+ * the store is currently advertising — a rotated wallet silently
+ * un-proves an origin, and nothing else here would notice.
+ *
+ * EMPTY MEANS ABSENT. Whitespace, commas, or a value that parses to
+ * nothing leave the extension off the document entirely rather than
+ * publishing `ownershipProofs: []`, which claims a proof mechanism is
+ * in use and then supplies none.
+ */
+export function ownershipProofs(env: Env): string[] {
+  return (env.ORIGIN_OWNERSHIP_PROOFS ?? "")
+    .split(/[\s,]+/)
+    .map((proof) => proof.trim())
+    .filter((proof) => proof.length > 0);
+}
+
+function provenanceExtension(env: Env): Record<string, unknown> {
+  const proofs = ownershipProofs(env);
+  return proofs.length > 0
+    ? { "x-agentcash-provenance": { ownershipProofs: proofs } }
+    : {};
+}
+
 function paidOp(
   env: Env,
   summary: string,
@@ -5654,6 +5691,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
      * here is the kind of thing /corrections exists to catch: one
      * operator, one key. What is guaranteed is NOTICE, not permanence.
      */
+    ...provenanceExtension(c.env),
     "x-rate-limiting": {
       /*
        * TRUE SINCE 2026-08-03 AND SAID FALSE HERE UNTIL 2026-08-26,
