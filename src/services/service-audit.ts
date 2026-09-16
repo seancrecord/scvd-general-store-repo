@@ -84,7 +84,7 @@ export function auditCriteriaNote(base: string): string {
  * point of a sample is that it shows what a buyer gets.
  */
 export const AUDIT_SCOPE =
-  "One GET at one moment, against the published criteria named above, then two to four more GETs on the same origin for the surfaces section (llms.txt, the OpenAPI document, the challenge's resource URL, and the 402 read again), none of which move the verdict. This reports what the endpoint answered then: it is not an endorsement, not an uptime claim, and says nothing about whether anything is delivered after payment. An unreachable verdict is a fact about the network path between this store and that host at that moment — it does not prove the endpoint is down. Produced automatically; no human looked, and that is the point: a report commissioned by anyone reads the same.";
+  "One unpaid knock at one moment — GET, or the method the resource declares or accepts, with at most one fallback request when a door refuses the verb — against the published criteria named above, then two to four more GETs on the same origin for the surfaces section (llms.txt, the OpenAPI document, the challenge's resource URL, and the 402 read again), none of which move the verdict. This reports what the endpoint answered then: it is not an endorsement, not an uptime claim, and says nothing about whether anything is delivered after payment. An unreachable verdict is a fact about the network path between this store and that host at that moment — it does not prove the endpoint is down. Produced automatically; no human looked, and that is the point: a report commissioned by anyone reads the same.";
 
 export interface ServiceAuditObservation {
   audit_id: string;
@@ -98,7 +98,13 @@ export interface ServiceAuditObservation {
    * union so a paid, signed report can never call our own refusal a
    * fact about the buyer's network.
    */
-  verdict: "ready" | "not_ready" | "unreachable" | "refused";
+  /**
+   * `method_unresolved` (2026-09-16): the door refused every method
+   * this probe sends, so the battery ran no checks. A paid,
+   * signed artifact is exactly the wrong place to render that
+   * emptiness as a clean bill — or as a fault. It names our reach.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "refused" | "method_unresolved";
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
   /**
@@ -189,6 +195,15 @@ function resourceUrlOf(response: Response): string | null {
   return null;
 }
 
+/**
+ * THE DOOR REFUSED EVERY VERB WE SEND (2026-09-16). Thrown rather
+ * than returned so the paid path unwinds BEFORE the surface reads,
+ * the rail read and the blacklist read — every one of which is a read
+ * around a door nobody opened, and each of which would otherwise
+ * produce its own confident absence to bind into the certificate.
+ */
+export class MethodUnresolved extends Error {}
+
 export async function performServiceAudit(
   env: Env,
   url: string,
@@ -203,7 +218,29 @@ export async function performServiceAudit(
   let surfaces: SurfacesSection | undefined;
   try {
     const outcome = await probeOnce(url, options.fetch ?? fetch, "", env);
-    const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body, url);
+    const ran = runChecks(
+      outcome.response,
+      outcome.bodyOverLimit,
+      outcome.body,
+      url,
+      outcome.method,
+    );
+    /*
+     * NOTHING WAS OBSERVED, SO NOTHING IS SOLD AS AN OBSERVATION
+     * (2026-09-16). A door that refused every method we send produced
+     * no checks, and the paid audit must not bind an empty battery
+     * into a signed certificate as though it were a clean one — nor
+     * charge on for the surface reads below, which would all be reads
+     * around a door we never opened. The audit says what happened and
+     * names it as our reach.
+     *
+     * BEFORE the MPP core read below, deliberately: that reader would
+     * otherwise render its own confident absence about a door nobody
+     * opened, which is the same defect one protocol over.
+     */
+    if (ran.method_unresolved) {
+      throw new MethodUnresolved(ran.method_note ?? "the door refused every method this probe sends");
+    }
     mppCore = readMppCore({ status: outcome.response.status, headers: outcome.response.headers, url,
       bodyText: outcome.body, bodyOverLimit: outcome.bodyOverLimit, now });
     advisories = ran.advisories;
@@ -290,7 +327,16 @@ export async function performServiceAudit(
      * should never run. It is here so that if it ever does, the report
      * is still true.
      */
-    if (error instanceof ProbeTargetRefused) {
+    if (error instanceof MethodUnresolved) {
+      verdict = "method_unresolved";
+      checks = [
+        {
+          name: "method-unresolved",
+          ok: false,
+          detail: `${error.message} No check in this battery ran, so this certificate asserts NOTHING about the challenge at that URL — not that it is absent, not that it is malformed. It is a statement about which HTTP methods this store's probe is willing to send. If your door takes a method we do not send, or your 405 can carry an Allow header naming the one it takes, either will resolve this on a free re-run at /api/preflight/v1.`,
+        },
+      ];
+    } else if (error instanceof ProbeTargetRefused) {
       verdict = "refused";
       checks = [
         {

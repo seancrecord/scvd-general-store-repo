@@ -133,6 +133,14 @@ purchase linkage; this foundation does not introduce a public quote ID.
 PR #732's writer remains x402/USDC-only. No MPP observation is a store sale,
 and no MPP credential is accepted by this foundation alone.
 
+## SDK qualification before native checkout
+
+The pinned EVM adapter and stock-client Worker tests are described in
+`docs/MPP_SDK_QUALIFICATION_2026-09.md`. This isolates non-mutating validation,
+challenge binding and settlement-result preservation before a production
+route can invoke them. It does not complete the native checkout acceptance
+below; provider policy, expired recovery, transport and accounting remain.
+
 ## Following PR: native MPP on one existing Base/USDC product
 
 Pin and qualify a maintained SDK in the real Worker runtime before adding
@@ -164,6 +172,17 @@ round trip with controlled settlement fixtures is required. Any production
 payment or flag activation remains a separately recorded, bounded release
 step under the existing rail-intake process; this plan is not proof of a
 live MPP purchase.
+
+## Native pilot implementation (2026-09-16)
+
+`docs/MPP_NATIVE_CHECKOUT_2026-09.md` records the implemented HTTP pilot,
+its exact boundaries, tests and activation checklist. Both Worker flags remain
+false. The existing `context_anchor` minimum Base/USDC entitlement now has a
+native challenge/credential path behind that flag, with shared durable
+admission, artifact recovery, retained receipts, a disjoint idempotent sales
+ledger, and shared public/admin reporting. Provider/live qualification and
+whole-store expansion below remain release work; fixture success is not proof
+that MPP is live.
 
 ## Whole-store expansion and release
 

@@ -1,5 +1,6 @@
 import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
 import { OASF_RECORD_PATH } from "@/lib/oasf-record";
+import { feedbackChannel } from "@/store/agent-feedback";
 
 /**
  * THE STORE'S IDENTITY, IN EVERY VOCABULARY A READER MIGHT ARRIVE
@@ -151,6 +152,22 @@ export function chainIdentity(base: string): Record<string, unknown> {
       note: "No key, no account, no cooperation from this store. A reverting call means the token id is wrong before it means anything else.",
     },
     viewers: IDENTITY_VIEWERS,
+    /**
+     * THE HALF OF THE IDENTITY WE CANNOT WRITE (2026-09-16).
+     *
+     * An identity says who we are; this says what our clients said,
+     * from their own addresses, in a contract that forbids the agent
+     * owner from submitting. It sits inside the identity block rather
+     * than beside it because a reader asking "is this a real party"
+     * and a reader asking "what happened to people who paid them" are
+     * the same reader one question apart — and the second answer is
+     * the one that is not our word.
+     *
+     * Reading comes before writing in that block, deliberately. A
+     * diligence pass wants to know what is already recorded; being
+     * asked for an opinion it has not formed is the wrong first move.
+     */
+    client_feedback: feedbackChannel(base),
     /**
      * The boundary, in the same voice the rest of the store uses for
      * its refusals. An identity is not a reputation, and this store

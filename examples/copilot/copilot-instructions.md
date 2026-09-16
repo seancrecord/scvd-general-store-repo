@@ -24,4 +24,4 @@ Only `decision === "pay"` may proceed to the payment client. `do_not_pay` and `c
 - Preflight (the door's shape): `POST https://scvd.store/api/preflight/v2` `{"url"}`
 - Dry run (will my client pay it): `POST https://scvd.store/api/before-you-pay/v1` `{"url", "client_profile"?}`
 - Conformance desk (any issuer's signed offer or receipt): `POST https://scvd.store/api/conformance/v1`
-- Read-only MCP door, no paid tools: `https://scvd.store/mcp/verifier`
+- Verifier MCP door, no paid tools: `https://scvd.store/mcp/verifier`

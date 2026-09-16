@@ -34,7 +34,7 @@
     "others:check": "node scripts/others-artifacts-guard.mjs",
     "blindness": "node scripts/blindness-audit.mjs",
     "skill:publish": "node scripts/publish-skill.mjs",
-    "build:check": "wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors",
+    "build:check": "wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors && node scripts/mpp-sdk-build-check.mjs",
     "bazaar:validate": "node scripts/bazaar-validate.mjs",
     "protocol-screen": "node scripts/protocol-screen.mjs",
     "spec-pins": "node scripts/spec-pins.mjs",
@@ -103,6 +103,7 @@
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@noble/ed25519": "^3.2.0",
     "@resvg/resvg-wasm": "^2.6.2",
     "@x402/core": "^2.25.0",
@@ -111,6 +112,7 @@
     "@x402/hono": "^2.25.0",
     "@x402/svm": "~2.25.0",
     "hono": "^4.13.7",
+    "mppx": "0.10.1",
     "viem": "^2.56.3"
   },
   "devDependencies": {

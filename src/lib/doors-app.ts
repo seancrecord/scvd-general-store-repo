@@ -1,3 +1,4 @@
+import { mppPaymentHeader, MPP_CHECKOUT_PATH } from "@/lib/mpp-checkout-capability";
 /**
  * THE DOORS — a Worker that answers one question: what does this door
  * cost? (2026-09-05, the x402-list night read.)
@@ -120,7 +121,7 @@ async function handToStore(
  */
 export const handOverFirst: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!doorsReady(c.env)) return handToStore(c, "not-ready");
-  if (paymentHeaderOf(c)) return handToStore(c, "paid");
+  if (paymentHeaderOf(c) || mppPaymentHeader(c.req.header("Authorization"))) return handToStore(c, "paid");
   // These validations use store-only capabilities: the field wallet, or
   // an operator fixture and its store-owned rate limiter. The doors Worker
   // must not mistake a secret it never receives for a closed store shelf.
@@ -140,6 +141,7 @@ export const handOverFirst: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // when the target is present, which is exactly when the store-only
   // capability is consulted. It errs toward handing over, since a blank
   // url is a probe the store will answer anyway.
+  if (c.env.MPP_CHECKOUT_ENABLED === "true" && c.req.path === MPP_CHECKOUT_PATH) return handToStore(c, "passed");
   const itemPath = c.req.path.replace(/\/+$/, "");
   if (["/api/buy/launch_check", "/api/buy/opening_day", "/api/buy/a2a_repair_kit"].includes(itemPath) &&
     new URL(c.req.url).searchParams.has("url")) return handToStore(c, "passed");

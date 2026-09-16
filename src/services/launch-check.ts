@@ -2,6 +2,11 @@ import {
   advertisedVersionDetail,
   advertisedVersionUnpayable,
 } from "./advertised-version";
+import {
+  PROBE_POST_BODY,
+  probeWithMethod,
+  type ProbeMethod,
+} from "@/lib/probe-method";
 import { privateKeyToAccount } from "viem/accounts";
 import { decodeSettlementResponse } from "../../defects/settlement-response.js";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -747,12 +752,48 @@ export async function performLaunchCheck(
   walk: {
     // STAGE 1 — approach, unpaid, calling card out.
     let first: Response;
+    /*
+     * THE VERB, RESOLVED ON THE UNPAID APPROACH AND THEN FIXED FOR
+     * THE WHOLE WALK (2026-09-16). This walk is a purchase, so the
+     * method matters twice over: a door that takes POST was not only
+     * reported as serving no challenge, it was reported as unpayable
+     * by an instrument that never asked it to sell anything. Every
+     * later stage below reuses `walkMethod` and none of them
+     * re-resolves — presenting payment by a different verb than the
+     * one the challenge was served to would make the paid stage a
+     * different request than the unpaid one, and the whole artifact
+     * is the claim that they are the same door.
+     */
+    let walkMethod: ProbeMethod = "GET";
     try {
-      first = await fetchImpl(targetUrl, {
-        redirect: "manual",
-        signal: AbortSignal.timeout(KNOCK_TIMEOUT_MS),
-        headers: { "User-Agent": LAUNCH_CHECK_UA, Accept: "application/json" },
-      });
+      const approach = await probeWithMethod(
+        async (probeMethod) =>
+          fetchImpl(targetUrl, {
+            method: probeMethod,
+            redirect: "manual",
+            signal: AbortSignal.timeout(KNOCK_TIMEOUT_MS),
+            headers: {
+              "User-Agent": LAUNCH_CHECK_UA,
+              Accept: "application/json",
+              ...(probeMethod === "POST" ? { "Content-Type": "application/json" } : {}),
+            },
+            ...(probeMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+          }),
+      );
+      first = approach.response;
+      walkMethod = approach.reading.used;
+      if (approach.reading.unresolved) {
+        await first.body?.cancel().catch(() => undefined);
+        stages.push({
+          stage: "approach",
+          ok: false,
+          detail: `the door refused every HTTP method this walk sends (${approach.reading.attempted.join(", ")}) as a method${
+            approach.reading.allow ? `, naming Allow: ${approach.reading.allow}` : " and carried no Allow header"
+          }. No payment was attempted and nothing is asserted about the challenge at that URL — this names this instrument's reach, not your door.`,
+        });
+        verdict = "unreachable";
+        break walk;
+      }
     } catch (error) {
       stages.push({
         stage: "approach",
@@ -1146,13 +1187,19 @@ export async function performLaunchCheck(
     let second: Response;
     try {
       second = await fetchImpl(targetUrl, {
+        // The verb the unpaid approach settled on. Never re-resolved:
+        // a paid presentation by a different method than the one the
+        // challenge answered would not be the same request.
+        method: walkMethod,
         redirect: "manual",
         signal: AbortSignal.timeout(KNOCK_TIMEOUT_MS),
         headers: {
           "User-Agent": LAUNCH_CHECK_UA,
           Accept: "application/json",
           "PAYMENT-SIGNATURE": paymentHeader,
+          ...(walkMethod === "POST" ? { "Content-Type": "application/json" } : {}),
         },
+        ...(walkMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
       });
     } catch (error) {
       stages.push({
@@ -1224,13 +1271,18 @@ export async function performLaunchCheck(
       let replayError: string | null = null;
       try {
         replayResponse = await fetchImpl(targetUrl, {
+          // Byte-identical to stage 6, verb included — a replay that
+          // changed the method would not be a replay.
+          method: walkMethod,
           redirect: "manual",
           signal: AbortSignal.timeout(KNOCK_TIMEOUT_MS),
           headers: {
             "User-Agent": LAUNCH_CHECK_UA,
             Accept: "application/json",
             "PAYMENT-SIGNATURE": paymentHeader,
+            ...(walkMethod === "POST" ? { "Content-Type": "application/json" } : {}),
           },
+          ...(walkMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
         });
       } catch (error) {
         replayError = String(error);

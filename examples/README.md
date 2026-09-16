@@ -28,7 +28,7 @@ x402 client and your wallet; these examples say whether to reach it.
 | `shared/decide.mjs` | The walk and the decision, zero dependencies, Node 18+. `readChallenge`, `preflight`, `beforeYouPay`, `decide`, `beforeYouPayWalk`. |
 | `shared/decide.py` | The same, standard library only, Python 3.9+. |
 | `fixtures/` | Five readings recorded from the store's own battery and dry run over synthetic doors, plus `expected.json`: the decision each must derive under each policy. |
-| `openai-agents/agent.mjs` | OpenAI Agents SDK: a local tool, and the store's read-only MCP door (`/mcp/verifier`) as a hosted MCP tool. |
+| `openai-agents/agent.mjs` | OpenAI Agents SDK: a local tool, and the store's free verifier MCP door (`/mcp/verifier`) as a hosted MCP tool. |
 | `vercel-ai-sdk/agent.mjs` | Vercel AI SDK `tool()` + `generateText`. |
 | `langgraph/agent.mjs` | LangChain / LangGraph prebuilt ReAct agent. |
 | `crewai/agent.py` | CrewAI `@tool`, one agent, one task. |

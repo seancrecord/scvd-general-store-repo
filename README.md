@@ -253,7 +253,7 @@ without the extension get exactly the JSON they always got.
 
 **Three doors on one origin.** `/mcp` is the store (the free
 instruments and the paid shelves); `/mcp/verifier` serves five
-read-only tools under task-shaped names and no shelf; `/mcp/docs`
+free verification tools under task-shaped names and no shelf; `/mcp/docs`
 (also `POST /mcp.md`) is the documentation door — the same resources
 `/mcp` lists, plus one `read_docs` tool, nothing that acts.
 
@@ -539,7 +539,7 @@ defects/          # scvd-defects: the vocabulary as data, both halves of
                   # the remediation, recorded 402 doors and settlement
                   # responses as fixtures, and the settlement-response reader
 mcp-starter/      # scvd-mcp-starter: a stdio MCP server, one file, that
-                  # serves the read-only verifier door to any client
+                  # serves the free verifier door to any client
 tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # builder's running account of every tool they sign
                   # up for — trial warnings, burn, price drift, signup

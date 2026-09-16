@@ -1025,7 +1025,7 @@ const FREE_TOOLS: McpTool[] = [
           "How far the probe got on the evidence ladder: none | L1 | L2 | L3a.",
         ),
         reached_level_meaning: str("What that rung does and does not claim."),
-        single_probe_note: str("One request, one moment — the standing caveat."),
+        single_probe_note: str("One moment — the standing caveat. Two requests only where a door refuses the first verb."),
       },
       required: ["verdict", "reached_level"],
     },

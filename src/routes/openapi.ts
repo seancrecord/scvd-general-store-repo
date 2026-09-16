@@ -1145,6 +1145,7 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     "remediation",
     "protocols_spoken",
     "mpp",
+    "probe_method",
     "single_probe_note",
     "what_this_cannot_tell_you",
     "our_conflict_of_interest",
@@ -1156,9 +1157,9 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     },
     verdict: {
       type: "string",
-      enum: ["ready", "not_ready", "unreachable"],
+      enum: ["ready", "not_ready", "unreachable", "method_unresolved"],
       description:
-        "ready = every structural check passed. not_ready = reachable but failed at least one. unreachable = the probe itself could not complete, which says nothing about their code — the detail says whose side the failure was on.",
+        "ready = every structural check passed. not_ready = reachable but failed at least one. unreachable = the probe itself could not complete, which says nothing about their code — the detail says whose side the failure was on. method_unresolved = the door refused every HTTP method this probe sends (405/501), so NO check ran and nothing was observed about the challenge; it is a statement about our reach, never a finding against the endpoint, and it is deliberately not scorable as ready or not_ready.",
     },
     reached_level: {
       type: "string",
@@ -1276,10 +1277,31 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
         },
       },
     },
+    probe_method: {
+      type: "object",
+      description:
+        "Which question the door actually answered. The probe sends GET first (or the method a catalog declared for the resource) and, if that is refused AS a method with 405 or 501, sends exactly one more — the method named in Allow when the 405 carries one, POST otherwise. At most two requests per call, to the same URL, and only ever about the verb.",
+      required: ["used", "attempted", "source", "note"],
+      properties: {
+        used: { type: "string", enum: ["GET", "POST"], description: "The method whose response produced the checks below." },
+        attempted: {
+          type: "array",
+          items: { type: "string", enum: ["GET", "POST"] },
+          description: "Every method sent, in order. More than one means the first was refused as a method.",
+        },
+        source: {
+          type: "string",
+          enum: ["declared", "allow-header", "fallback", "default"],
+          description:
+            "Where the method came from: declared = a catalog or challenge declared it for this resource and nothing was guessed; allow-header = the door's own 405 named it; fallback = POST, tried once after a method refusal that named nothing; default = GET, what a buyer's client sends first.",
+        },
+        note: { type: "string", description: "The same story in plain English, for a human reading the readout." },
+      },
+    },
     single_probe_note: {
       type: "string",
       description:
-        "One request, one moment. A passing preflight quoted as an uptime claim is a misquote, and this field is where the response says so.",
+        "One moment. A passing preflight quoted as an uptime claim is a misquote, and this field is where the response says so. It also says when the reading took two requests rather than one, which happens only on a method refusal.",
     },
     what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
     our_conflict_of_interest: {
@@ -1288,15 +1310,43 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     },
     rate_limit: { type: "object" },
     store_identity: { type: "object" },
-    next_steps: {
+    the_rest_of_the_ladder: {
       type: "object",
-      description: "Where to go for what one probe deliberately cannot answer.",
+      description:
+        "The rungs this probe did not climb, and what climbs each one. Replaced next_steps 2026-09-16: the reading named the missing rungs in one place and the paid instruments in another, and a buyer had to join them. Each unclimbed rung carries the item, its price in USDC, the tool that calls it and the URL; a rung nothing can buy today says so rather than being sold a near-miss.",
       properties: {
-        conformance_desk: { type: "string" },
-        signed_report: { type: "string" },
-        across_a_week: { type: "string" },
-        behavioral_check: { type: "string" },
+        climbed: { type: "array", items: { type: "string" } },
+        unclimbed: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              rung: { type: "string" },
+              what_it_is: { type: "string" },
+              climbs_it: {
+                type: ["object", "null"],
+                description: "Null when nothing on the shelf climbs this rung.",
+                properties: {
+                  item_id: { type: "string" },
+                  price_usdc: { type: "number" },
+                  tool: { type: "string" },
+                  tool_door: { type: "string", description: "The MCP door that tool is on. This reading is served from more than one, and the verifier door at /mcp/verifier lists no buy tool at all." },
+                  url: { type: "string" },
+                  what_you_get: { type: "string" },
+                },
+              },
+              why_not: { type: "string" },
+            },
+          },
+        },
+        already_free: { type: "string" },
+        signed_copy_of_this_reading: { type: ["object", "null"] },
       },
+    },
+    this_is_not_advice: {
+      type: "string",
+      description:
+        "That the reading is an observation and the spending decision is the reader's, whose risk appetite they know better than this store does.",
     },
   },
 };
