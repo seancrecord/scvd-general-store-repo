@@ -4,7 +4,7 @@ import { admitUcpCompletion } from "@/services/ucp-admission";
 import { ucpCheckoutStore } from "@/services/ucp-checkout-store";
 import { variantGid } from "@/lib/ucp/ids";
 import { beginVerifiedPurchaseIntent, purchaseIntentStore } from "@/services/purchase-intent";
-import { x402PurchasePayment } from "@/lib/purchase-payment";
+import { mppEvmPurchasePayment, x402PurchasePayment } from "@/lib/purchase-payment";
 import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -44,6 +44,23 @@ function credential(nonce = "a".repeat(64), value = "500000") {
 }
 
 const accepts = () => vi.fn(async () => ({ isValid: true, payer: PAYER }));
+
+/** The terms a $0.50 hello quotes on Base, as the other doors see them. */
+const TERMS = {
+  scheme: "exact",
+  network: "eip155:8453",
+  asset: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  amount: "500000",
+  payTo: "0x1111111111111111111111111111111111111111",
+  maxTimeoutSeconds: 300,
+  extra: {},
+} as unknown as Parameters<typeof x402PurchasePayment>[0];
+
+const wireFor = (nonce: string) => ({
+  x402Version: 2,
+  accepted: TERMS,
+  payload: credential(nonce).payload,
+});
 
 /**
  * `hello` is used throughout because admission can stand alone for it.
@@ -281,24 +298,13 @@ describe("one payment cannot be owned twice, across doors or at once", () => {
 
   it("refuses a payment that already bought something at another door", async () => {
     const nonce = "3".repeat(64);
-    const terms = {
-      scheme: "exact",
-      network: "eip155:8453",
-      asset: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      amount: "500000",
-      payTo: "0x1111111111111111111111111111111111111111",
-      maxTimeoutSeconds: 300,
-      extra: {},
-    } as unknown as Parameters<typeof x402PurchasePayment>[0];
-
     // The SAME authorization, admitted first through the HTTP door's
     // own admission — the real one, not a hand-built record.
-    const wire = { x402Version: 2, accepted: terms, payload: credential(nonce).payload };
-    const payment = await x402PurchasePayment(terms, PAYER, wire);
+    const payment = await x402PurchasePayment(TERMS, PAYER, wireFor(nonce));
     await beginVerifiedPurchaseIntent(testEnv, {
       path: "/api/buy/hello",
       door: "http",
-      terms,
+      terms: TERMS,
       request: "",
       payment,
     });
@@ -318,6 +324,76 @@ describe("one payment cannot be owned twice, across doors or at once", () => {
     const stored = await ucpCheckoutStore(testEnv, checkout.id).readUcpCheckout();
     expect(stored?.status).toBe("ready_for_complete");
     expect(stored?.completion).toBeUndefined();
+  });
+
+  it("refuses a payment the MCP door already owns", async () => {
+    const nonce = "4".repeat(64);
+    const payment = await x402PurchasePayment(TERMS, PAYER, wireFor(nonce));
+    // The MCP door's admission, with its own request shape.
+    await beginVerifiedPurchaseIntent(testEnv, {
+      path: "/mcp",
+      door: "mcp",
+      terms: TERMS,
+      request: JSON.stringify({ tool: "buy_hello", agent_name: "someone" }),
+      payment,
+    });
+
+    const checkout = await openCheckout();
+    const outcome = await admitUcpCompletion(testEnv, {
+      checkoutId: checkout.id,
+      credential: credential(nonce),
+      verify: accepts(),
+    });
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.code).toBe("payment_refused");
+    const stored = await ucpCheckoutStore(testEnv, checkout.id).readUcpCheckout();
+    expect(stored?.status).toBe("ready_for_complete");
+    expect(stored?.completion).toBeUndefined();
+  });
+
+  /**
+   * THE PROTOCOL IS NOT PART OF THE IDENTITY, AND THIS IS THE TEST OF
+   * IT. An MPP wrapper around the same EIP-3009 authorization resolves
+   * to the same settlement identity as its x402 form, so it competes
+   * for the same durable owner rather than getting one of its own.
+   */
+  it("refuses a payment an MPP representation of the same authorization already owns", async () => {
+    const nonce = "5".repeat(64);
+    const authorization = {
+      from: PAYER,
+      to: TERMS.payTo,
+      value: TERMS.amount,
+      nonce: `0x${nonce}`,
+      validAfter: "0",
+      validBefore: "99999999999",
+    };
+    const mpp = await mppEvmPurchasePayment(TERMS, PAYER, authorization, "c".repeat(64));
+    const x402 = await x402PurchasePayment(TERMS, PAYER, wireFor(nonce));
+    // Two protocols, two proof digests, ONE settlement identity.
+    expect(mpp.protocol).toBe("mpp");
+    expect(x402.protocol).toBe("x402");
+    expect(mpp.proof_digest).not.toBe(x402.proof_digest);
+    expect(mpp.identity).toBe(x402.identity);
+
+    await beginVerifiedPurchaseIntent(testEnv, {
+      path: "/api/buy/hello",
+      door: "http",
+      terms: TERMS,
+      request: "",
+      payment: mpp,
+    });
+
+    const checkout = await openCheckout();
+    const outcome = await admitUcpCompletion(testEnv, {
+      checkoutId: checkout.id,
+      credential: credential(nonce),
+      verify: accepts(),
+    });
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.code).toBe("payment_refused");
+    expect(
+      (await ucpCheckoutStore(testEnv, checkout.id).readUcpCheckout())?.completion,
+    ).toBeUndefined();
   });
 
   it("gives the same settlement identity whichever door presents the payment", async () => {
