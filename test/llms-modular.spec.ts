@@ -1007,8 +1007,18 @@ const BASE = "https://scvd.store";
 // is exactly the pair a reader can confuse. Verified across the merge:
 // with only that paragraph removed from the merged tree, main's 293280bf
 // reproduced, and this copy reproduces the new one.
+// 2026-09-16: the guide names the UCP business profile. The store now
+// serves one at /.well-known/ucp with UCP Catalog search and lookup
+// behind it, and a discovery surface that no discovery document points
+// at is a door in a wall nobody walks past — so it joins the
+// machine-surfaces block beside x402 discovery and the OASF record. The
+// paragraph carries the refusal as well as the offer: catalog only, no
+// UCP checkout, pay over x402 or MCP, and four sub-cent items missing
+// from that catalog and nowhere else. Verified the same way: with only
+// that paragraph removed from this tree, the prior 1162c211 digest
+// reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1162c2112ed86a20eacc133e71d56c439a5d1c78a0bb5ee88d5be17a285d929d";
+  "2a725f457903f0f7c0ee76027d8fed35d30583dbce1c394e4e8e52cbf4e90ea8";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
