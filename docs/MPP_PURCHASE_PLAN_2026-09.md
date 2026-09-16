@@ -133,6 +133,14 @@ purchase linkage; this foundation does not introduce a public quote ID.
 PR #732's writer remains x402/USDC-only. No MPP observation is a store sale,
 and no MPP credential is accepted by this foundation alone.
 
+## SDK qualification before native checkout
+
+The pinned EVM adapter and stock-client Worker tests are described in
+`docs/MPP_SDK_QUALIFICATION_2026-09.md`. This isolates non-mutating validation,
+challenge binding and settlement-result preservation before a production
+route can invoke them. It does not complete the native checkout acceptance
+below; provider policy, expired recovery, transport and accounting remain.
+
 ## Following PR: native MPP on one existing Base/USDC product
 
 Pin and qualify a maintained SDK in the real Worker runtime before adding
