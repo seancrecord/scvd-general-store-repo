@@ -6,7 +6,7 @@ protocols. He approved the purchase-system scope and asked for a small CI
 performance PR first, carrying this plan. This document is a plan, not a
 claim that the store accepts MPP. No payment activation occurs in this PR.
 
-## This PR: shorten the wait, retain the full gate
+## CI foundation: shorten the wait, retain the full gate
 
 The baseline is CI run [35085849636](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35085849636),
 commit `8c010f47cd0abd68ea2a677b1bb77adee4d73d23`: the Tests step took
@@ -30,7 +30,10 @@ failure alerts still depend on that check. New PR commits cancel stale PR
 runs; main runs are not cancelled. Timeouts, isolation, assertions and
 existing tests are unchanged. Parallelism can add runner minutes; actual
 speedup must be read from this PR's completed CI, not inferred from four
-runners. No numerical speedup is claimed before that reading.
+runners. The completed PR #734 run took approximately 21 minutes 15 seconds,
+compared with approximately 48 minutes for the baseline workflow. All four
+shards and the quality gate passed. This is one measured run, not a latency
+guarantee.
 
 During development: typecheck and focused affected tests before a commit;
 bundle checks for imports/config/non-TypeScript changes. Full CI is still
@@ -60,7 +63,7 @@ replacement of the merge gate is introduced.
   Its legacy till source is x402/USDC; MPP must not enter that writer and
   inherit the wrong label. Integrate against its merged implementation.
 
-## Next PR: make the existing purchase lifecycle protocol-aware
+## Purchase foundation: make the existing lifecycle protocol-aware
 
 Deliver a versioned internal purchase/payment contract with the existing
 x402 path as its first real producer. Include protocol, method, exact asset
@@ -95,6 +98,40 @@ charge; completed recovery returns original goods after expiry. Add a
 synthetic second-protocol adapter to exercise those boundaries without
 advertising an MPP checkout or moving money. Accounting tests demonstrate
 one source attribution and one purchase, including cross-protocol retries.
+
+## Purchase foundation implementation (2026-09-16)
+
+New purchases retain a v2 record with verified protocol/method, exact
+settlement terms, proof digest and original request digest. Both existing
+x402 gates use the shared admission function through their existing wrapper.
+Historical v1 records remain x402, with their original bytes and identifiers.
+The private status response names the recorded payment protocol. Unknown
+record versions and inconsistent payment metadata refuse admission/recovery.
+
+The synthetic MPP EVM adapter projects already-verified authorization facts;
+it is not a signature verifier or an enabled checkout route. Protocol is
+excluded from the existing payment identity. A second wrapper for one
+EIP-3009 authorization therefore reaches the same durable record. Existing
+payer-owned idempotency slots connect separate attempts, including across
+EVM rails; uncertain settlement retains ownership, definitive non-payment
+releases it, and completed recovery returns the original goods. This does
+not authenticate a Solana identity with an EVM signature. HTTP/MCP input and
+interface binding remain in place, including recovery after payment expiry.
+
+Tests cover these shared boundaries, exact-term mismatch, legacy evidence,
+source attribution on the one retained record, and both real x402 entry
+points before a settlement failure. The checkout tests fail against the
+previous implementation. Existing purchase, capacity, expiry and Solana
+recovery tests continue to supply regression coverage; the protocol tests
+do not duplicate the whole product suite.
+
+Remaining in the native-adapter PR: immutable MPP challenge/quote issuance,
+expiry checks for new settlement, authenticated attempt ownership on the
+wire, cryptographic SDK qualification, protocol-specific receipts and
+sales-ledger attribution. The existing idempotency key is the current
+purchase linkage; this foundation does not introduce a public quote ID.
+PR #732's writer remains x402/USDC-only. No MPP observation is a store sale,
+and no MPP credential is accepted by this foundation alone.
 
 ## Following PR: native MPP on one existing Base/USDC product
 

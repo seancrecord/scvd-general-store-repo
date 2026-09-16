@@ -243,7 +243,7 @@ export async function runMcpPayment(
   signals: EventSignals,
   onVerifiedPayer?: VerifiedPayerCheck,
   /**
-   * What the buyer actually asked for, serialized by the route — the
+   * What the buyer actually asked for, serialized as JSON arguments by the route — the
    * delivery intent carries it so a mint that dies after settlement
    * can still be finished by hand (the 2026-08-10 lesson: the one
    * fact needed to produce the artifact was the one fact nobody
