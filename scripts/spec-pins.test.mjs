@@ -9,6 +9,7 @@ import {
   checkPin,
   digestOf,
   lockEntry,
+  nextLock,
   renderReport,
   summarise,
   treeLines,
@@ -149,4 +150,96 @@ test("a drift report carries the claim, its home, and the instruction", () => {
   assert.match(md, /src\/services\/preflight\.ts/);
   assert.match(md, /accusing doors that implement it/);
   assert.match(md, /scheme_upto\.md/);
+});
+
+/* ------------------------------------------------------------------ *
+ * A RE-PIN ATTESTS TO WHAT IT NAMES, AND TO NOTHING ELSE.
+ *
+ * The defect this closes was in the instrument rather than in a spec:
+ * `--update` rewrote every entry, so locking two freshly-read UCP pins
+ * could only be done by also stamping an unread x402 drift as read.
+ * The file's own header calls that the one use that makes this thing
+ * worse than not having it, and the tool was making it the only use.
+ * ------------------------------------------------------------------ */
+
+const LOCKED_X402 = {
+  digest: "sha256:aaaa",
+  read_date: "2026-09-14",
+  files: 26,
+  lines: ["aaaa specs/schemes/exact/scheme_exact_casper.md"],
+};
+const LOCKED_MPP = {
+  digest: "sha256:bbbb",
+  read_date: "2026-09-14",
+  files: 19,
+  lines: ["bbbb specs/methods/evm.md"],
+};
+
+/** What today's run computed for every pin — including drift nobody read. */
+const FRESH = new Map([
+  ["x402-scheme-families", { digest: "sha256:DRIFTED", read_date: "2026-09-14", files: 27, lines: ["drifted"] }],
+  ["mpp-methods", { digest: "sha256:MOVED", read_date: "2026-09-14", files: 20, lines: ["moved"] }],
+  ["ucp-shopping-schemas", { digest: "sha256:ucp1", read_date: "2026-09-16", files: 116, lines: ["ucp1"] }],
+  ["ucp-shopping-rest", { digest: "sha256:ucp2", read_date: "2026-09-16", files: 1, lines: ["ucp2"] }],
+]);
+
+const PIN_LIST = [
+  { id: "x402-scheme-families" },
+  { id: "mpp-methods" },
+  { id: "ucp-shopping-schemas" },
+  { id: "ucp-shopping-rest" },
+];
+
+test("a selective UCP re-pin cannot alter an x402 or MPP pin", () => {
+  const locked = { "x402-scheme-families": LOCKED_X402, "mpp-methods": LOCKED_MPP };
+  const next = nextLock({
+    pins: PIN_LIST,
+    locked,
+    fresh: FRESH,
+    selected: new Set(["ucp-shopping-schemas", "ucp-shopping-rest"]),
+    today: "2026-09-16",
+  });
+
+  // Byte for byte, not merely equal-looking: the same objects the lock held.
+  assert.deepEqual(next["x402-scheme-families"], LOCKED_X402);
+  assert.deepEqual(next["mpp-methods"], LOCKED_MPP);
+  assert.equal(next["x402-scheme-families"].digest, "sha256:aaaa", "the unread drift is NOT stamped as read");
+  assert.equal(next["x402-scheme-families"].read_date, "2026-09-14", "and keeps the date somebody actually read it");
+
+  // The two that were read are locked, at today's date.
+  assert.equal(next["ucp-shopping-schemas"].digest, "sha256:ucp1");
+  assert.equal(next["ucp-shopping-schemas"].read_date, "2026-09-16");
+  assert.equal(next["ucp-shopping-rest"].read_date, "2026-09-16");
+});
+
+test("a pin nobody has read stays out of the lock, so it goes on reporting unpinned", () => {
+  const next = nextLock({
+    pins: PIN_LIST,
+    locked: { "x402-scheme-families": LOCKED_X402 },
+    fresh: FRESH,
+    selected: new Set(["ucp-shopping-schemas"]),
+    today: "2026-09-16",
+  });
+  assert.ok(!("ucp-shopping-rest" in next), "an unread, never-locked pin is not written unread");
+  assert.ok(!("mpp-methods" in next), "and neither is one that was never locked to begin with");
+});
+
+test("the blunt form still re-pins everything, for somebody who read everything", () => {
+  const next = nextLock({
+    pins: PIN_LIST,
+    locked: { "x402-scheme-families": LOCKED_X402, "mpp-methods": LOCKED_MPP },
+    fresh: FRESH,
+    selected: null,
+    today: "2026-09-16",
+  });
+  for (const pin of PIN_LIST) {
+    assert.equal(next[pin.id].read_date, "2026-09-16", `${pin.id} re-pinned`);
+  }
+  assert.equal(next["x402-scheme-families"].digest, "sha256:DRIFTED");
+});
+
+test("re-pinning nothing leaves the lock exactly as it was", () => {
+  const locked = { "x402-scheme-families": LOCKED_X402, "mpp-methods": LOCKED_MPP };
+  const next = nextLock({ pins: PIN_LIST, locked, fresh: FRESH, selected: new Set(), today: "2026-09-16" });
+  assert.deepEqual(next, locked);
 });

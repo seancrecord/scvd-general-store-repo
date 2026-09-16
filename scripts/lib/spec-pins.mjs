@@ -265,6 +265,52 @@ export function lockEntry(pin, lines) {
   return { digest: digestOf(lines), read_date: pin.read_date, files: lines.length, lines };
 }
 
+/**
+ * WHICH LOCK ENTRIES A RE-PIN IS ALLOWED TO TOUCH (2026-09-16).
+ *
+ * `--update` used to rewrite every pin in the file. That is a quiet
+ * incentive problem, and it bit the first time somebody had genuinely
+ * re-read one source: two freshly reviewed UCP pins could only be
+ * locked by also stamping an unread x402 drift as read. The header of
+ * scripts/spec-pins.mjs says running this to clear a red check without
+ * reading anything is the one use that makes the instrument worse than
+ * not having it — and the tool was making that the only available use.
+ *
+ * So a re-pin now names what it attests to. `selected` is the set of
+ * pin ids a human said they re-read; everything else is copied out of
+ * the old lock BYTE FOR BYTE, and a pin that was never locked stays
+ * unlocked rather than being written unread.
+ *
+ * `selected === null` is the blunt form (`--update` with no ids) and
+ * still means all of them. It is kept because it is the honest thing
+ * to run after actually reading everything, and the runner prints the
+ * full list it is attesting to before it writes.
+ *
+ * @param {object} args
+ * @param {Array<{id: string}>} args.pins        every pin, in file order
+ * @param {Record<string, object>} args.locked    the lock's current pins
+ * @param {Map<string, object>} args.fresh        pin id -> newly computed entry
+ * @param {Set<string>|null} args.selected        ids being re-pinned, or null for all
+ * @param {string} args.today                     read date stamped on re-pinned entries
+ */
+export function nextLock({ pins, locked, fresh, selected, today }) {
+  const next = {};
+  for (const pin of pins) {
+    const entry = fresh.get(pin.id);
+    const prior = locked[pin.id];
+    const chosen = selected === null || selected.has(pin.id);
+    if (chosen && entry) {
+      next[pin.id] = { ...entry, read_date: today };
+      continue;
+    }
+    // Unselected: whatever the lock already said, unchanged. A pin with
+    // nothing in the lock stays out of it, so it goes on reporting
+    // UNPINNED until somebody reads it and says so.
+    if (prior) next[pin.id] = prior;
+  }
+  return next;
+}
+
 /** Exit code: 0 all clear, 1 anything drifted, missing or unpinned. */
 export function summarise(results) {
   const by = (state) => results.filter((r) => r.state === state);
