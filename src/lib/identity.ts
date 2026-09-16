@@ -1,4 +1,6 @@
 import { STORE_SERVICE_NAME } from "@/store";
+import { SCVD_AGENT_ID } from "@/store/agent-identity";
+import { REPUTATION_REGISTRY } from "@/store/agent-feedback";
 
 /**
  * THE STORE'S OUTBOUND IDENTITY — one string, every call site.
@@ -134,6 +136,28 @@ export interface StoreIdentity {
   what: string;
   homepage: string;
   verify: string;
+  /**
+   * THE ONE LINE HERE THAT POINTS SOMEWHERE WE CANNOT EDIT.
+   *
+   * Everything else in this block is the store describing itself, and
+   * a self-description is worth exactly what the reader thinks the
+   * signer is worth. This field names the one record about this store
+   * that the store is forbidden from writing: the ERC-8004 Reputation
+   * Registry, where clients write from their own addresses and the
+   * contract rejects the agent owner.
+   *
+   * IT BELONGS IN THIS BLOCK FOR THE REASON THE BLOCK EXISTS. An
+   * artifact in a stranger's hands explains itself here; "and here is
+   * what other buyers said, at an address I do not control" is the
+   * most useful sentence that block can carry, and the only one whose
+   * value does not depend on trusting us. It rides every certificate
+   * and every verify response, including artifacts minted months ago,
+   * because this is assembled at serve time and stored nowhere.
+   *
+   * ⚑ Wording is the keeper's under rule 7, like the rest of the
+   * block. The field existing is architecture.
+   */
+  feedback: string;
   rights: string;
 }
 
@@ -157,6 +181,25 @@ export function storeIdentity(base: string): StoreIdentity {
      * half its surfaces, one fetch over instead of one file over.
      */
     verify: `Anyone can check this artifact without asking us and without an account: ${base}/api/verify/{id}, free and permanent. The signing key is at ${base}/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST ${base}/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.`,
+    /**
+     * THE WORDING AVOIDS FOUR WORDS ON PURPOSE: score, rating, rank,
+     * confidence.
+     *
+     * This block rides the discovery inventory artifact, and
+     * test/discovery-inventory holds that artifact to carrying none of
+     * those four anywhere in its bytes — the instrument reports what
+     * it observed and never grades it. The first draft of this line
+     * ended "publishes no score from it", which is a REFUSAL of a
+     * score and still tripped the guard, because a substring check
+     * cannot tell a denial from a claim.
+     *
+     * The guard was right to be blunt and the line was wrong to argue
+     * with it. A reader of an evidence artifact should not have to
+     * parse a negation to find out we do not grade; "turns none of it
+     * into a number" says the same thing without putting the word
+     * into an artifact that promises not to contain it.
+     */
+    feedback: `What this store's clients said about it, at an address this store cannot write to: ERC-8004 agent ${SCVD_AGENT_ID} in the Reputation Registry at ${REPUTATION_REGISTRY} on Base (eip155:8453). Buyers write from their own addresses; the contract rejects the agent owner, so none of it is ours. Read it with getClients, or leave your own — the call and a pre-filled proof-of-payment ride every purchase response. This store turns none of it into a number, about itself or anyone.`,
     /**
      * The line that keeps this from reading as branding. It is also
      * simply true, and stating it is what makes the rest a courtesy
