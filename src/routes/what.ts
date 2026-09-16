@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
 import { jsonLdBody } from "@/lib/jsonld";
 import { escapeHtml, linkStoreUrls } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { CAPABILITY_QUERY, SPEC_RETURNS } from "@/store/spec";
@@ -59,6 +61,27 @@ whatRoutes.get("/what", (c) => {
   const base = c.env.STORE_BASE_URL;
   const pairs = whatFaq(base);
   const longTail = longTailFaq(base);
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
+    what: WHAT_COPY.directAnswer,
+    for_whom: WHAT_COPY.forWhom,
+    faq: pairs,
+    one_question_per_shelf: longTail,
+    standing_policy: WHAT_COPY.standingPolicyJson,
+    questions: `POST ${base}/api/request, a human reads every one on Sundays.`,
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/what",
+      title: "What is scvd.store? Independent x402 verification, signed evidence, and endpoint-readiness data",
+      description: "scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. What it is, what it is not, what it costs, and how to check the signatures.",
+      document: pagePayload as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const pairsHtml = pairs
       .map(
@@ -107,12 +130,5 @@ whatRoutes.get("/what", (c) => {
       }),
     );
   }
-  return c.json({
-    what: WHAT_COPY.directAnswer,
-    for_whom: WHAT_COPY.forWhom,
-    faq: pairs,
-    one_question_per_shelf: longTail,
-    standing_policy: WHAT_COPY.standingPolicyJson,
-    questions: `POST ${base}/api/request, a human reads every one on Sundays.`,
-  });
+  return c.json(pagePayload);
 });

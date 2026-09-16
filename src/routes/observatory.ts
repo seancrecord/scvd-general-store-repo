@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { computeObservatory, type ObservatoryMonth } from "@/services/observatory";
 import type { HonoEnv } from "@/types";
@@ -33,11 +35,20 @@ function monthTable(month: ObservatoryMonth): string {
 }
 
 observatoryRoutes.get("/observatory", async (c) => {
+  const base = c.env.STORE_BASE_URL;
   const observatory = await computeObservatory(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/observatory",
+      title: "The observatory",
+      description: "What gets read here, counted: every surface the porch counts, per month, organic visits beside the house and infrastructure buckets kept out of them. In name order, never by count.",
+      document: observatory as unknown as Record<string, unknown>,
+    });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(observatory);
   }
-  const base = c.env.STORE_BASE_URL;
   return c.html(
     renderSimplePage({
       title: "The observatory",

@@ -5,6 +5,8 @@ import { A2A_FREE, A2A_MONEY, A2A_PRICE_USDC, A2A_PROPOSITION, A2A_REPAIR_RECIPE
 import { kitStore } from "@/services/a2a-kit";
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript } from "@/lib/jsonld";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
 import runner from "@/store/a2a-runner.md";
@@ -47,7 +49,21 @@ a2aDeskRoutes.get("/a2a-desk", async c => {
   const requested = c.req.query("url");
   const checked = requested ? await freeA2ACheck(c.env, requested) : null;
   if (checked) c.header("Cache-Control", "no-store");
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json({ ...doc, ...(checked ? { card_check: checked.body } : {}) });
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = { ...doc, ...(checked ? { card_check: checked.body } : {}) };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: c.env.STORE_BASE_URL,
+      path: "/a2a-desk",
+      title: "A2A checks and repair kits",
+      description: "Test your A2A agent, get reproducible failures and repair guidance, then verify the repair with a dated signed report and a week of card checks.",
+      document: pagePayload as unknown as Record<string, unknown>,
+    });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(pagePayload);
   const reading = checked?.status === 200 ? checked.body.reading as A2AReading : null;
   const refusal = checked && !reading ? doc.errors[String(checked.body.error) as keyof typeof doc.errors] ?? "The check could not run. See the full instructions for the next step." : "";
   const resultHtml = checked ? `<section><h2>Your card check</h2>${reading ? `<p>Runtime behavior has not been tested.</p>${readingHtml(reading)}` : `<p>${escapeHtml(refusal)}</p>`}<details><summary>Card-check evidence and gaps</summary><pre>${escapeHtml(JSON.stringify(checked.body, null, 2))}</pre></details>${reading?.protocol_version === "0.3.0" ? `<p><a href="/menu/a2a_repair_kit?url=${escapeHtml(encodeURIComponent(requested!))}">Continue to the repair kit for this card</a></p>` : ""}</section>` : "";

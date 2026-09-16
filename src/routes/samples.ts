@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { priceLine } from "@/services/menu-markdown";
 import { SAMPLES, sampleOnceOver } from "@/services/sample-artifacts";
@@ -109,6 +111,28 @@ samplesRoutes.get("/samples/:slug{[a-z0-9-]+\\.json}", async (c) => {
 samplesRoutes.get("/samples", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const artifact = await sampleOnceOver(c.env, onceOverPrice());
+  /*
+   * Hoisted so the markdown twin below renders the same
+   * object the JSON serves rather than a second copy.
+   */
+  const pagePayload = {
+    what_this_is: artifact.what_this_is,
+    samples: SAMPLES.map((entry) => `${base}/samples/${entry.slug}.json`),
+    previews: MENU_ITEMS.map((item) => ({ item: item.id, url: `${base}${item.sample_url}`, kind: item.sample_kind ?? "unsigned_specimen" })),
+    of_items: Object.fromEntries(SAMPLES.map((entry) => [entry.item, `${base}/samples/${entry.slug}.json`])),
+    free: "Yes. Nothing on this surface is charged for, now or later.",
+    the_real_thing: `${base}/api/buy/service_audit`,
+    check_your_own_door_free: `${base}/api/preflight/v1`,
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/samples",
+      title: "What a purchase hands back",
+      description: "A free, unsigned sample of the Once-Over — the $5 signed audit of one x402 endpoint. Every field a buyer gets, run against a door that fails on purpose so the sample shows the instrument working.",
+      document: pagePayload as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
@@ -120,13 +144,5 @@ samplesRoutes.get("/samples", async (c) => {
       }),
     );
   }
-  return c.json({
-    what_this_is: artifact.what_this_is,
-    samples: SAMPLES.map((entry) => `${base}/samples/${entry.slug}.json`),
-    previews: MENU_ITEMS.map((item) => ({ item: item.id, url: `${base}${item.sample_url}`, kind: item.sample_kind ?? "unsigned_specimen" })),
-    of_items: Object.fromEntries(SAMPLES.map((entry) => [entry.item, `${base}/samples/${entry.slug}.json`])),
-    free: "Yes. Nothing on this surface is charged for, now or later.",
-    the_real_thing: `${base}/api/buy/service_audit`,
-    check_your_own_door_free: `${base}/api/preflight/v1`,
-  });
+  return c.json(pagePayload);
 });

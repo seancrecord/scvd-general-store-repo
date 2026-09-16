@@ -3,6 +3,8 @@ import { acceptedNetworks, paymentNetworkGuide } from "@/lib/payment-networks";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { readRailCountersByMonth, type RailMonth } from "@/services/rails";
 import { computeStats } from "@/services/stats";
@@ -146,6 +148,15 @@ railsRoutes.get("/rails", async (c) => {
     the_books: `${base}/stats`,
     trade_counter: tradeCounter,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/rails",
+      title: "Where the money settles",
+      description: "Organic x402 settlements at this store by chain — by recorded settlement network — month by month, drawn from the same live books as /stats. House traffic excluded at the till. With the method and the honest gaps named.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }
