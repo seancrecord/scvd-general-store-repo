@@ -201,3 +201,34 @@ test("the settlement-scheme door and the door rule agree with each other", () =>
   assert.equal(rail.verdict, "UNKNOWN");
   assert.equal(readDoor({ name: "batch door", rails: [rail] }).verdict, "UNKNOWN");
 });
+
+test("two independent reasons for one zero report the stronger scope", () => {
+  // A complete empty window and the nonce argument both settle a zero,
+  // and they do not settle the same zero: the window covers the window,
+  // the nonce argument covers all of history. Reporting the weaker one
+  // because its branch ran first under-claims a fact we can prove.
+  const both = readDoorRail({
+    rail: "eip155:8453", payTo: "0xaaa", fromBlock: 50918945, atBlock: 51316142,
+    logs: [], logsComplete: true, balance: 0n, nonce: 0,
+  });
+  assert.equal(both.verdict, "ZERO_OBSERVED");
+  assert.equal(both.scope, "all_time");
+  assert.equal(both.scope_caveat, null);
+  assert.match(both.established_by, /not only inside the window/);
+  assert.ok(both.established_twice);
+
+  // Without the nonce argument the same empty window is still only a
+  // windowed zero, and says so.
+  const windowOnly = readDoorRail({
+    rail: "eip155:8453", payTo: "0xbbb", fromBlock: 50918945, atBlock: 51316142,
+    logs: [], logsComplete: true, balance: 0n, nonce: 7,
+  });
+  assert.equal(windowOnly.scope, "window");
+  assert.match(windowOnly.scope_caveat, /this address has moved funds out at some point/);
+  assert.equal(windowOnly.established_twice, undefined);
+
+  // And a door is only as strong as its rails: an all-time zero on the
+  // one rail read still cannot carry a door with a rail out of reach.
+  const outOfReach = readDoorRail({ rail: "xrpl:0", payTo: null, atBlock: 51316142 });
+  assert.equal(readDoor({ name: "two rails", rails: [both, outOfReach] }).verdict, "UNKNOWN");
+});

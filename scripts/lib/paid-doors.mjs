@@ -159,13 +159,34 @@ export function readDoorRail({
         distinct_payers: null,
       };
     }
+    // THE STRONGER ARGUMENT WINS (2026-09-16). A complete empty window
+    // and the nonce argument are two independent reasons for the same
+    // zero, and the nonce one reaches further: it covers all of
+    // history rather than the window. Reporting `window` here because
+    // the window branch happened to run first UNDER-CLAIMS a zero we
+    // can actually prove outright — found by reading a counterparty's
+    // five, where two doors we could prove empty for all history were
+    // being handed back as merely empty since the floor.
+    const allTimeToo = balance !== null && BigInt(balance) === 0n && nonce === 0;
+    if (allTimeToo) {
+      return {
+        ...base,
+        verdict: "ZERO_OBSERVED",
+        established_by: `the transfer window to this address ${inWindow} was read complete and contained no inbound USDC, AND the balance is zero at a transaction count of zero: nothing can ever have left, so the balance is monotonically non-decreasing and this zero holds at every block in this address's history, not only inside the window`,
+        scope: "all_time",
+        scope_caveat: null,
+        established_twice: "a complete empty window and the nonce argument, independently",
+        distinct_payers: 0,
+        total_received_atomic: "0",
+      };
+    }
     return {
       ...base,
       verdict: "ZERO_OBSERVED",
       established_by: `the transfer window to this address ${inWindow} was read complete and contained no inbound USDC`,
       scope: window ? "window" : "all_time",
       scope_caveat: window
-        ? `this is a zero IN blocks ${window} and says nothing about any block before ${fromBlock}. Only the nonce-zero path below establishes an all-time zero.`
+        ? `this is a zero IN blocks ${window} and says nothing about any block before ${fromBlock}. The nonce argument does not apply here: this address has moved funds out at some point, so its balance is not monotonically non-decreasing.`
         : null,
       distinct_payers: 0,
       total_received_atomic: "0",
