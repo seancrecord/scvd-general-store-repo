@@ -50,6 +50,19 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put(purchaseKey, purchase);',
     'await txn.put("case:latest", latest);',
   ],
+  /*
+   * The UCP checkout's own state, one Durable Object instance per
+   * checkout. Every write here is inside a storage transaction — which
+   * is the point of them: a version bump, a quote and a completion
+   * binding each have to be all-or-nothing, and the serialization is
+   * what stops two completions racing for one checkout. Not KV, so no
+   * retry to ride; listed rather than exempted by filename so a KV
+   * alias appearing in this service still fails the guard.
+   */
+  "/src/services/ucp-checkout-store.ts": [
+    "await txn.put(ROW, checkout);",
+    "await txn.put(ROW, next);",
+  ],
   "/src/services/patron-anchors.ts": [
     'await txn.put("patron-anchor", record);',
   ],
