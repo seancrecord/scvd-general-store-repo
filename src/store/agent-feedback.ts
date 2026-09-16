@@ -1,4 +1,5 @@
 import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
+import { cheapestLabel } from "@/store/identity-lead";
 
 /**
  * THE ONE REPUTATION THIS STORE CAN HAVE THAT IS NOT ITS OWN WORD.
@@ -169,7 +170,17 @@ export function feedbackInvite(input: InviteInput): Record<string, unknown> {
     },
     endpoint_field: `${input.base}/api/buy/`,
     limit: FEEDBACK_LIMIT,
-    why_you_might_not: "No reason to spend gas praising a $0.001 purchase, and this store would rather say so than pretend otherwise. The rows worth writing are the ones where something went wrong, or where a purchase carried real weight and you want the next buyer to know.",
+    /**
+     * DERIVED, and it was typed in the first draft — `$0.001`, by
+     * hand, in the same change that shipped a test insisting the
+     * registry description derive its price floor. The claims
+     * register caught it: one unbound claim against a budget of
+     * zero. Worth leaving on the record, because the rule is not
+     * "remember to derive prices" but "a typed price is a claim with
+     * a shelf life", and the shelf moved under this very sentence
+     * once already this week.
+     */
+    why_you_might_not: `No reason to spend gas praising a ${cheapestLabel()} purchase, and this store would rather say so than pretend otherwise. The rows worth writing are the ones where something went wrong, or where a purchase carried real weight and you want the next buyer to know.`,
   };
 }
 
