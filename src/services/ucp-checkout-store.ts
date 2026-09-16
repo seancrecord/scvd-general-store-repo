@@ -5,6 +5,7 @@ import {
   isTerminal,
   type CheckoutStatus,
 } from "@/lib/ucp/checkout/state";
+import type { FrozenRequirements } from "@/lib/ucp/checkout/requirements";
 import type { CheckoutLineTerms, PaymentTerms } from "@/lib/ucp/checkout/terms";
 import type { Env } from "@/types";
 
@@ -35,8 +36,20 @@ export interface StoredCheckout {
   created_at: string;
   expires_at: string;
   lines: CheckoutLineTerms[];
-  /** The quote this store issued, and the digest it issued with it. */
-  quote?: { terms: PaymentTerms; digest: string };
+  /**
+   * The quote this store issued: the digest-bearing commercial terms
+   * AND the exact x402 requirements they resolve to.
+   *
+   * The requirements are stored rather than rebuilt at Complete. A
+   * checkout that recomputed them from today's shelf would quote one
+   * price and verify against another the moment somebody edited the
+   * menu in between — the gap the snapshot exists to close.
+   */
+  quote?: {
+    terms: PaymentTerms;
+    digest: string;
+    requirements: FrozenRequirements;
+  };
   /** Buyer-supplied product inputs, frozen with the rest of the terms. */
   inputs?: Record<string, string>;
   /** Set once, when settlement is confirmed. */
@@ -139,6 +152,7 @@ export class UcpCheckoutStore {
   async quote(input: {
     terms: PaymentTerms;
     digest: string;
+    requirements: FrozenRequirements;
     nowMs: number;
   }): Promise<CheckoutAdmission> {
     return this.storage.transaction(async (txn) => {
@@ -155,7 +169,11 @@ export class UcpCheckoutStore {
       }
       const next: StoredCheckout = {
         ...checkout,
-        quote: { terms: input.terms, digest: input.digest },
+        quote: {
+          terms: input.terms,
+          digest: input.digest,
+          requirements: input.requirements,
+        },
         status: "ready_for_complete",
       };
       assertTransition(checkout.status, next.status);

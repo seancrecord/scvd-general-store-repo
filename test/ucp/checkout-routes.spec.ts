@@ -118,6 +118,29 @@ describe("creating a checkout", () => {
   });
 });
 
+/**
+ * The snapshot is only a snapshot if Complete reads it back rather
+ * than rebuilding it. This proves the checkout carries the exact x402
+ * requirements a buyer will sign against, resolved at Create.
+ */
+describe("the checkout stores the requirements it will be paid against", () => {
+  it("freezes the resolved x402 terms, not just the price", async () => {
+    const { body: created } = await createCheckout(ONE_AUDIT);
+    const read = (await (
+      await SELF.fetch(`${BASE}/ucp/v1/checkout-sessions/${created.id}`)
+    ).json()) as Record<string, any>;
+    const terms = read["store.scvd"].payment_terms;
+    expect(terms.amount_atomic).toBe("5000000");
+    expect(terms.checkout_id).toBe(created.id);
+    expect(terms.checkout_version).toBe(1);
+    expect(terms.terms_digest).toMatch(/^[0-9a-f]{64}$/);
+    // And the handler quotes the same money, not a second opinion.
+    expect(
+      read.ucp.payment_handlers["store.scvd.payment.usdc"][0].config.amount_atomic,
+    ).toBe(terms.amount_atomic);
+  });
+});
+
 describe("capacity is read before a quote is issued", () => {
   it("quotes a keeper-time item while the bench has room", async () => {
     const { res, body } = await createCheckout({

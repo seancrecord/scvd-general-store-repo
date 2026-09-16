@@ -25,6 +25,49 @@ import type { Env } from "@/types";
  * the same rail are the same bytes, which is what makes them
  * comparable at all.
  */
+/**
+ * THE STORED SHAPE, spelled out rather than borrowed from the SDK.
+ *
+ * A Durable Object RPC argument has to be structured-cloneable, and
+ * the SDK's PaymentRequirements carries `Record<string, unknown>` for
+ * `extra`, which TypeScript will not accept across that boundary.
+ * Writing the concrete shape here is not duplication for its own
+ * sake: it is the declaration that what a checkout stores is data,
+ * with no class, no branded type and no behaviour riding along.
+ * `asFrozen` and `asRequirements` are the only two places that cross.
+ */
+export interface FrozenRequirements {
+  scheme: string;
+  network: string;
+  asset: string;
+  amount: string;
+  payTo: string;
+  maxTimeoutSeconds: number;
+  extra: Record<string, string | number | boolean>;
+}
+
+export function asFrozen(terms: PaymentRequirements): FrozenRequirements {
+  const extra: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(terms.extra ?? {})) {
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      extra[key] = value;
+    }
+  }
+  return {
+    scheme: terms.scheme,
+    network: terms.network,
+    asset: terms.asset,
+    amount: terms.amount,
+    payTo: terms.payTo,
+    maxTimeoutSeconds: terms.maxTimeoutSeconds,
+    extra,
+  };
+}
+
+export function asRequirements(frozen: FrozenRequirements): PaymentRequirements {
+  return { ...frozen, extra: { ...frozen.extra } } as unknown as PaymentRequirements;
+}
+
 export class NoSuchRail extends Error {
   constructor(readonly network: string) {
     super(`This store does not settle on ${network}.`);

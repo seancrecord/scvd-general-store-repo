@@ -10,6 +10,7 @@ import {
   type CheckoutLineTerms,
   type PaymentTerms,
 } from "@/lib/ucp/checkout/terms";
+import { asFrozen, frozenRequirements } from "@/lib/ucp/checkout/requirements";
 import { quotedUsdcHandler } from "@/lib/ucp/payments/usdc-x402";
 import { usdcPaymentHandlers } from "@/lib/ucp/payments/usdc-x402";
 import { SCVD_NAMESPACE, UCP_VERSION } from "@/lib/ucp/version";
@@ -132,7 +133,7 @@ async function quoteFor(
   c: { env: HonoEnv["Bindings"] },
   checkout: StoredCheckout,
   network: string,
-): Promise<{ terms: PaymentTerms; digest: string } | null> {
+): Promise<NonNullable<StoredCheckout["quote"]> | null> {
   const base = c.env.STORE_BASE_URL;
   const rail = usdcPaymentHandlers(c.env, base).find(
     (instance) => instance.config.network === network,
@@ -153,7 +154,18 @@ async function quoteFor(
     pay_to: rail.config.pay_to,
     expires_at: checkout.expires_at,
   };
-  return { terms, digest: await termsDigest(terms) };
+  /**
+   * The x402 requirements the buyer will actually sign against, built
+   * here and stored — so Complete verifies against what Create
+   * committed to rather than against whatever the shelf says later.
+   */
+  return {
+    terms,
+    digest: await termsDigest(terms),
+    requirements: asFrozen(
+      frozenRequirements(c.env, rail.config.network, totals.total_amount_atomic),
+    ),
+  };
 }
 
 ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions", async (c) => {
