@@ -3,6 +3,34 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.19.0 — 2026-09-16
+
+Vocabulary v19: `no-402`'s assertion and falsifier narrow.
+
+This is the first time a class here has changed because the
+definition authorised a wrong finding of the publisher's own.
+
+Both texts named GET. The class asserted a 402 "to an unpaid GET" and
+was falsified only by a 402 "to an unauthenticated GET". Every probe
+scvd.store runs sent GET and nothing else — so an endpoint that
+declares POST in its own OpenAPI, answers 405 to GET, and serves a
+valid x402 v2 challenge to POST satisfied `no-402` exactly as
+written. It was published `not_ready`, entered the corpus, and an
+automated note went to its operator naming the failed check.
+
+v19 asserts a 402 to a method THE RESOURCE ACCEPTS — declared by its
+catalog, challenge or specification, or, absent a declaration, any
+method the endpoint does not refuse as a method. A 405 or 501 to the
+probing instrument's method now falsifies a finding of this class
+outright: a method refusal is an observation about the request, not
+about the challenge.
+
+The v17 text remains readable in the changelog, per the append rule.
+Nothing already signed is re-scored.
+
+If you consume this class: an instrument that probes with a single
+hard-coded method is making a claim v19 does not support.
+
 ## 0.18.0 — 2026-09-16
 
 Vocabulary v18 adds `mpp-core-observable-invalid` for failed named checks

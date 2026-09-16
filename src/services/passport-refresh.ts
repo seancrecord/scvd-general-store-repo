@@ -34,7 +34,7 @@ export interface RefreshObservation {
   host: string;
   url: string;
   observed_at: string;
-  verdict: "ready" | "not_ready" | "unreachable";
+  verdict: "ready" | "not_ready" | "unreachable" | "method_unresolved";
   failed: string[];
   advisories: string[];
   instrument: string;
@@ -98,6 +98,13 @@ export async function performPassportRefresh(
     host: url.host.toLowerCase(),
     url: url.toString(),
     observed_at: probe.observed_at ?? now.toISOString(),
+    /*
+     * method_unresolved is NOT folded into unreachable: the host
+     * answered, our probe just never found the verb its door takes.
+     * A buyer paying for a fresh observation is owed the difference
+     * between "your host did not respond" and "we could not reach
+     * your door", and only one of those is about them.
+     */
     verdict: probe.verdict === "not_probed" ? "unreachable" : probe.verdict,
     failed: probe.failed,
     advisories: probe.advisories,
@@ -106,7 +113,7 @@ export async function performPassportRefresh(
     ...(probe.mpp ? { mpp: probe.mpp } : {}),
     ...(probe.mpp_read_error ? { mpp_read_error: probe.mpp_read_error } : {}),
     instrument:
-      "the weekly census's own probe (one GET, Web Bot Auth) — buyer-commissioned observations stay byte-comparable with the weekly ones",
+      "the weekly census's own probe (Web Bot Auth; GET, or the method the door declares or accepts, at most one fallback request) — buyer-commissioned observations stay byte-comparable with the weekly ones",
     what_this_buys:
       "One fresh observation, folded into the endpoint passport wherever it is newest. Never a grade: a broken door refreshes to a broken passport and a dark chip, and that is the product working.",
   };

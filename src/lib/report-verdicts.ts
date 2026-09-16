@@ -15,10 +15,23 @@ const auditOutcomes = {
   not_ready: true,
   unreachable: true,
   refused: true,
+  /*
+   * 2026-09-16. NOT shared with the onpage audit below, which reads
+   * HTML pages with a GET that is always the right verb — hence the
+   * two records split here rather than one being reused for both.
+   * An exhaustive record is only worth having if it is allowed to
+   * stop matching.
+   */
+  method_unresolved: true,
 } satisfies Record<ServiceAuditObservation["verdict"], true>;
 
 export const AUDIT_REPORT_VERDICT = verdictSchema(auditOutcomes);
-export const ONPAGE_REPORT_VERDICT = verdictSchema(auditOutcomes satisfies Record<OnpageAuditObservation["verdict"], true>);
+export const ONPAGE_REPORT_VERDICT = verdictSchema({
+  ready: true,
+  not_ready: true,
+  unreachable: true,
+  refused: true,
+} satisfies Record<OnpageAuditObservation["verdict"], true>);
 
 export const GOOD_BUYER_REPORT_VERDICT = verdictSchema({
   would_sign: true,

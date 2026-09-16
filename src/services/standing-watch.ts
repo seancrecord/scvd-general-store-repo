@@ -9,6 +9,11 @@ import type { ObserverStatus } from "@/lib/observer-control";
 import { PREFLIGHT_BATTERY, runChecks } from "@/services/preflight";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
+import {
+  PROBE_POST_BODY,
+  probeWithMethod,
+  type ProbeMethod,
+} from "@/lib/probe-method";
 import { sweepWatches } from "@/services/watch-sweep";
 import {
   captureWatchEvidenceKeepingBody,
@@ -122,6 +127,18 @@ const WATCH_SCAN_CAP = 500;
  * edited off the record without breaking the row.
  */
 export const REFUSED_CHECK = "probe-target-refused";
+/**
+ * THE TOKEN FOR A DOOR WHOSE VERB WE NEVER FOUND (2026-09-16). Same
+ * discipline as REFUSED_CHECK above and for the same reason: the
+ * reason goes in `failed`, which is inside the signature, because
+ * canonicalizeProbe's FIELD ORDER is the contract a verifier
+ * reproduces. Adding a key to the signed body would change the
+ * preimage for every row this store has ever signed and invalidate
+ * the lot; a field published outside the signature would be worse,
+ * being alterable without breaking anything. One stable token, inside
+ * the signed set, with the prose behind it in lib/probe-method.ts.
+ */
+export const METHOD_UNRESOLVED_CHECK = "method-unresolved";
 
 export interface WatchProbe {
   at: string;
@@ -133,7 +150,14 @@ export interface WatchProbe {
    * so no request was made. Recording that as `unreachable` would print
    * our policy as a fact about somebody's endpoint.
    */
-  verdict: "ready" | "not_ready" | "unreachable" | "refused";
+  /**
+   * `method_unresolved` (2026-09-16): the door refused every method
+   * this probe sends, so no check ran. Distinct from `unreachable`
+   * (the host said nothing) and from `not_ready` (a check failed) —
+   * folding it into either would put a reading in a paying customer's
+   * signed week that nobody made.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "refused" | "method_unresolved";
   /**
    * WHOSE FAILURE A FAILED PROBE WAS (3.4/B6). "ok": the control
    * beacon answered in the same tick, so an unreachable verdict is
@@ -189,6 +213,14 @@ export interface StandingWatchRecord {
   url: string;
   started_at: string;
   ends_at: string;
+  /**
+   * THE VERB THIS WATCH ASKS WITH, settled on the first tick that
+   * found it and stable for the term (2026-09-16). Absent on watches
+   * opened before this field existed, where GET is what was sent —
+   * so a reader comparing an old not_ready to a new ready can tell a
+   * door that changed from a probe that did.
+   */
+  probe_method?: ProbeMethod;
   /**
    * THE WALLET THAT PAID, so a lost watch id can be recovered by
    * proving you hold it — the claims door's whole purpose, and the
@@ -309,20 +341,39 @@ async function burstProbe(
   env: Env,
   record: StandingWatchRecord,
   delayMs: number,
+  /** The verb the primary probe settled on this tick. Never re-resolved here. */
+  method: ProbeMethod = "GET",
 ): Promise<BurstProbe> {
   if (delayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
   const started = Date.now();
   try {
-    const response = await fetch(record.url, {
-      method: "GET",
-      redirect: "manual",
-      signal: AbortSignal.timeout(WATCH_PROBE_TIMEOUT_MS),
-      headers: await webBotAuthHeaders(env, record.url, {
-        Accept: "application/json",
-      }),
-    });
+    /*
+     * THE BURST USES THE VERB THE PRIMARY PROBE RESOLVED (2026-09-16)
+     * and never re-resolves it. Three looks inside one tick that
+     * disagreed about the METHOD would be three looks at different
+     * questions, and the row would average them into a "verdict" about
+     * a door nobody asked consistently.
+     */
+    const { response, reading } = await probeWithMethod(
+      async (probeMethod) =>
+        fetch(record.url, {
+          method: probeMethod,
+          redirect: "manual",
+          signal: AbortSignal.timeout(WATCH_PROBE_TIMEOUT_MS),
+          headers: {
+            ...(await webBotAuthHeaders(env, record.url, { Accept: "application/json" })),
+            ...(probeMethod === "POST" ? { "Content-Type": "application/json" } : {}),
+          },
+          ...(probeMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+        }),
+      { method, fallback: false },
+    );
+    if (reading.unresolved) {
+      await response.body?.cancel().catch(() => undefined);
+      return { verdict: "unreachable" };
+    }
     const latency = Date.now() - started;
     const kept = await captureWatchEvidenceKeepingBody(response);
     const { checks } = runChecks(
@@ -403,18 +454,56 @@ async function probeOnce(
       public_key: await cachedPublicKeyHex(env.SIGNING_KEY),
     };
   }
+  /*
+   * THE VERB IS RESOLVED ONCE PER WATCH, NOT ONCE PER TICK
+   * (2026-09-16). `record.probe_method` is written the first time a
+   * tick finds the door's method and read by every tick after, so a
+   * seven-day series is 168 looks at the SAME question. Re-resolving
+   * hourly would let a door that starts answering GET mid-week
+   * silently change what the week's rows are comparable to, and the
+   * signed row has nowhere to say that happened: canonicalizeProbe's
+   * field order is frozen, so there is no room for a per-row method.
+   * Stability in the record is how that constraint is honoured
+   * instead of worked around.
+   */
+  let resolvedMethod: ProbeMethod = record.probe_method ?? "GET";
   try {
-    const response = await fetch(record.url, {
-      method: "GET",
-      redirect: "manual",
-      signal: AbortSignal.timeout(WATCH_PROBE_TIMEOUT_MS),
-      // Identity, signed where the egress key allows (Web Bot Auth):
-      // the party being watched consented to the watching, and the
-      // least we owe them is a probe they can attribute and verify.
-      headers: await webBotAuthHeaders(env, record.url, {
-        Accept: "application/json",
-      }),
-    });
+    const { response, reading } = await probeWithMethod(
+      async (probeMethod) =>
+        fetch(record.url, {
+          method: probeMethod,
+          redirect: "manual",
+          signal: AbortSignal.timeout(WATCH_PROBE_TIMEOUT_MS),
+          // Identity, signed where the egress key allows (Web Bot
+          // Auth): the party being watched consented to the watching,
+          // and the least we owe them is a probe they can attribute
+          // and verify.
+          headers: {
+            ...(await webBotAuthHeaders(env, record.url, { Accept: "application/json" })),
+            ...(probeMethod === "POST" ? { "Content-Type": "application/json" } : {}),
+          },
+          ...(probeMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+        }),
+      { method: record.probe_method ?? "GET" },
+    );
+    if (reading.unresolved) {
+      await response.body?.cancel().catch(() => undefined);
+      const unresolvedBody = {
+        at,
+        verdict: "method_unresolved" as const,
+        failed: [METHOD_UNRESOLVED_CHECK],
+      };
+      const { signature: unresolvedSignature } = await signMessage(
+        canonicalizeProbe(record.watch_id, record.url, unresolvedBody),
+        env.SIGNING_KEY,
+      );
+      return {
+        ...unresolvedBody,
+        signature: unresolvedSignature,
+        public_key: await cachedPublicKeyHex(env.SIGNING_KEY),
+      };
+    }
+    resolvedMethod = reading.used;
     latency = Date.now() - started;
     status = response.status;
     // KeepingBody so the battery reads BOTH offer placements (the
@@ -422,7 +511,7 @@ async function probeOnce(
     // capture, never inside the signed row.
     const kept = await captureWatchEvidenceKeepingBody(response);
     evidence = kept.evidence;
-    const { checks } = runChecks(response, evidence.body_truncated, kept.bodyText, record.url);
+    const { checks } = runChecks(response, evidence.body_truncated, kept.bodyText, record.url, reading);
     failed = checks.filter((check) => !check.ok).map((check) => check.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";
     /*
@@ -484,7 +573,7 @@ async function probeOnce(
   if (mayBurst) {
     const extras = await Promise.all(
       Array.from({ length: BURST_PROBES - 1 }, (_, index) =>
-        burstProbe(env, record, (index + 1) * burstGapMs),
+        burstProbe(env, record, (index + 1) * burstGapMs, resolvedMethod),
       ),
     );
     const primary: BurstProbe = {
@@ -683,6 +772,8 @@ export interface WatchHistory {
      * to count as one, silently inflating coverage.
      */
     probes_refused: number;
+    /** Ticks where the door refused every method we send, so no check ran. Our reach, not their uptime. */
+    probes_method_unresolved: number;
     /**
      * 3.4/B6: ticks where OUR vantage was blind — the target failed
      * and the control beacon failed in the same tick. Excluded from
@@ -776,11 +867,24 @@ export function watchHistoryOf(
   );
   const tally = { ready: 0, not_ready: 0, unreachable: 0 };
   let refused = 0;
+  let methodUnresolved = 0;
   let degraded = 0;
   const latencies: number[] = [];
   for (const probe of record.probes) {
     if (probe.verdict === "refused") {
       refused += 1;
+      continue;
+    }
+    /*
+     * COUNTED UNDER ITS OWN NAME, NEVER IN THE TALLY (2026-09-16). A
+     * tick whose verb we could not find observed nothing, so it is
+     * neither a ready nor a not_ready nor an outage of theirs. Adding
+     * it to `unreachable` would book our own reach as the customer's
+     * downtime, which is the same error the observer-degraded branch
+     * below exists to refuse.
+     */
+    if (probe.verdict === "method_unresolved") {
+      methodUnresolved += 1;
       continue;
     }
     if (
@@ -809,6 +913,7 @@ export function watchHistoryOf(
       probes_expected: hoursElapsed,
       probes_recorded: tally.ready + tally.not_ready + tally.unreachable,
       probes_refused: refused,
+      probes_method_unresolved: methodUnresolved,
       probes_observer_degraded: degraded,
       // Hours with no row at ALL — the missed crons. Refused and
       // degraded rows account for their hour under their own names.

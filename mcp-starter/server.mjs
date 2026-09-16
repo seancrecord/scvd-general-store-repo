@@ -4,7 +4,7 @@
  *
  * MCP over stdio is newline-delimited JSON-RPC 2.0. This server
  * answers `initialize`, `ping` and the notifications itself, and hands
- * `tools/list` and `tools/call` to scvd.store's read-only verifier
+ * `tools/list` and `tools/call` to scvd.store's free verifier
  * door (POST /mcp/verifier) over HTTPS: five tools, none of them paid,
  * every answer naming its checks and what it cannot tell you. It holds
  * no key, asks for nothing, and cannot spend money — the upstream door
@@ -27,13 +27,13 @@ function trimSlashes(value) {
 
 
 export const UPSTREAM = trimSlashes(process.env.SCVD_MCP_UPSTREAM ?? "https://scvd.store/mcp/verifier");
-export const SERVER_INFO = { name: "scvd-mcp-starter", title: "scvd x402 verifier (starter)", version: "0.1.0" };
+export const SERVER_INFO = { name: "scvd-mcp-starter", title: "scvd x402 verifier (starter)", version: "0.1.1" };
 const PROTOCOL = "2025-11-25";
 
 export async function forward(request, { upstream = UPSTREAM, fetch: fetchImpl = fetch } = {}) {
   const response = await fetchImpl(upstream, {
     method: "POST",
-    headers: { "content-type": "application/json", accept: "application/json", "user-agent": "scvd-mcp-starter/0.1.0" },
+    headers: { "content-type": "application/json", accept: "application/json", "user-agent": `${SERVER_INFO.name}/${SERVER_INFO.version}` },
     body: JSON.stringify(request),
     signal: AbortSignal.timeout(60_000),
   });
@@ -48,7 +48,7 @@ export async function handle(message, options = {}) {
   const { id, method } = message;
   if (method.startsWith("notifications/")) return null;
   if (method === "initialize") {
-    return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: SERVER_INFO, instructions: `Five read-only x402 verifier tools, forwarded to ${options.upstream ?? UPSTREAM}. Nothing here can pay or act; every answer names its checks and what it cannot tell you. Never a ranking.` } };
+    return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: SERVER_INFO, instructions: `Five free x402 verifier tools, forwarded to ${options.upstream ?? UPSTREAM}. Nothing here can pay. Calls record traffic statistics upstream; readiness lookups for eligible unprobed hosts publish their names in the asked-for queue for a later sweep. Never a ranking.` } };
   }
   if (method === "ping") return { jsonrpc: "2.0", id, result: {} };
   if (method === "tools/list" || method === "tools/call") {

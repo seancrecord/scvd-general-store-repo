@@ -1,5 +1,6 @@
 import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
+import { carriesVerdict } from "@/services/ward-round";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 
 /**
@@ -446,7 +447,7 @@ export function marketAggregates(
   );
   const probedRows = hosts.filter(
     (h) =>
-      h.verdict !== "not_probed" &&
+      carriesVerdict(h) &&
       !(h.verdict === "unreachable" && h.observer_status === "degraded"),
   );
   const ready = probedRows.filter((h) => h.verdict === "ready");

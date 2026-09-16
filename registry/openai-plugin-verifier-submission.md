@@ -1,246 +1,132 @@
-# OpenAI plugin directory — the verifier door (RESUBMISSION, prepared 2026-09-16)
+# OpenAI submission — SCVD x402 Verifier
 
-> RULE 30. Nothing here submits itself. This file is the draft the
-> keeper pastes into the portal by hand, and every claim in it was
-> measured against the live door rather than remembered.
+Draft revised 2026-09-16 using the OpenAI Developers 1.3.0
+`chatgpt-app-submission` skill. Review before uploading. No portal
+submission or deployment is performed by this file.
 
-## What is being submitted, and why it changed
+## Connection and app info
 
-The first submission (2026-09-09) offered **`https://scvd.store/mcp`**,
-the full door: eighteen tools, the shelf beside the free instruments.
-It was rejected on 2026-09-13 for two stated reasons — the test cases
-failed on web and mobile, and domain ownership was not confirmed.
+- Server: https://scvd.store/mcp/verifier
+- Authentication: none.
+- Site: https://scvd.store
+- Privacy: https://scvd.store/privacy
+- Terms: https://scvd.store/rights
+- Support: https://scvd.store/what
 
-The second reason is closed: business verification completed
-2026-09-15.
-
-The first reason was diagnosed by measurement, not guesswork, and the
-finding is that the door was the wrong one:
-
-| door | `tools/list` bytes | worst single tool result |
-| --- | --- | --- |
-| `/mcp` | 139,703 | `read_store_guide`, 161,888 B |
-| `/mcp/verifier` | 11,350 | preflight, 19,832 B |
-
-A reviewer's client reads the whole tool list before it can call
-anything. The full door also lists `buy_*` tools, which puts a
-directory reviewer in the position of assessing a payment surface they
-have no wallet for, when everything the listing actually claims is
-free.
-
-**This submission offers `https://scvd.store/mcp/verifier`** — five
-read-only tools, no shelf, nothing on it that can spend money. The
-paid instruments remain on the store's other doors and are not
-reachable from this one.
-
-### What the red team of that door found and fixed (2026-09-16)
-
-`/mcp/verifier` was built a week after `/mcp` and inherited none of
-September's hardening. Left alone it would have failed the same scan
-the same way:
-
-1. **No listening channel.** The portal's scanner opens a GET
-   expecting `text/event-stream` BEFORE it POSTs anything, and reads
-   the spec-permitted refusal as no server at all — the original
-   `MCP SSE probe returned 404`. `/mcp` learned this in September;
-   this door did not. Fixed: `acceptsEventStream`/`openListeningStream`
-   are now exported from `/mcp` and called here, so the two doors
-   cannot drift.
-2. **No trailing-slash redirect.** `/mcp/verifier/` 404'd. Now 308s.
-3. **Not in the CORS allowlist.** OPTIONS returned 405. Now listed
-   beside `/mcp`.
-4. **An annotation that contradicted `/mcp`.** This door read
-   `openWorldHint` off a single negation and declared
-   `verify_scvd_artifact` open-world while `/mcp` declared the same
-   tool closed. Now derived per tool, with a test that fails if the
-   two doors ever disagree again.
-
-Only item 4 is visible in the listing; items 1–3 are why the scan
-failed.
-
-## Listing copy
+The import file is [`chatgpt-app-submission.json`](../chatgpt-app-submission.json).
+It contains the listing fields, the served tool names and hints,
+five positive cases and three non-trigger cases. The signed-offer
+prompts contain the complete public fixtures and public verification
+key; there are no paste-later placeholders.
 
 **Name:** SCVD x402 Verifier
+**Subtitle:** Check x402 doors and receipts
+**Category:** DEVELOPER_TOOLS
 
-**Subtitle:** Check an x402 door and its receipts before you pay
+SCVD x402 Verifier checks payment challenges without paying, verifies signed x402 offers and receipts, reads recorded endpoint readiness, explains defect classes, and checks SCVD artifact signatures. Results describe evidence and limits; they do not establish delivery or guarantee a provider. All tools are free and no wallet or login is required. Calls record usage statistics. Readiness lookups for eligible hosts with no recorded probe add the hostname and ask count to a public queue for a later discovery sweep; caller identity is not included in that queue.
 
-**Description:**
+## What changed after inspecting the implementations
 
-> Five free, read-only instruments for agentic payments. Preflight any
-> x402 endpoint before paying it — one unpaid probe answering whether
-> the URL serves a well-formed challenge a stock client could sign,
-> with every check named. Verify any issuer's signed offer or receipt,
-> including this store's competitors' and its own. Look up what a
-> signed weekly corpus holds about a host. Read the definition of a
-> named x402 defect. Verify any artifact this store signed.
->
-> Nothing here sells anything, holds a wallet, or asks for a
-> credential. Every answer names its checks, its denominator, and what
-> a single observation cannot tell you. Never a ranking, and never a
-> verdict without its derivation beside it. The method is
-> MIT-licensed, zero-dependency, and byte-identical to the file the
-> endpoint runs, so any verdict that matters can be reproduced
-> offline.
+The earlier guide called every tool read-only. Every tool records
+traffic, and the submission skill explicitly counts logging as a
+state change. This draft therefore uses `readOnlyHint: false`.
+Repeated calls can add records, so `idempotentHint` is also false
+on this verifier door. No purchase tool is exposed.
 
-**Category:** Developer tools
+Readiness lookup has a further effect: for an eligible host with no
+recorded probe, `heldHalfOf` calls `recordAsk`. The hostname and ask
+count enter the publicly visible asked-for queue and may feed a later
+outbound discovery sweep. Caller identity is not included in that
+queue. This behavior remains enabled and is now disclosed; its
+`openWorldHint` stays true.
 
-**Developer identity:** Record Creative Co. LLC (verified 2026-09-15)
+Artifact verification reads the store's own records and keys, so its
+`openWorldHint` is false. Its result is `valid`, `kind` and `note`;
+the description no longer promises to return signed bytes or keys.
 
-**URLs:** server `https://scvd.store/mcp/verifier` · site
-`https://scvd.store` · privacy `https://scvd.store/privacy` · terms
-`https://scvd.store/rights` · support `https://scvd.store/what`
+### Tool justifications
 
-**Commerce & purchasing:** none. This door serves no paid tool and
-cannot initiate a payment.
+**preflight_x402_endpoint**
 
-**Domain verification:** `https://scvd.store/.well-known/openai-apps-challenge`
-serves the bare token as `text/plain`, `no-store`. Same domain as the
-first submission; unchanged and still live.
+`readOnlyHint: false`; `openWorldHint: true`; `destructiveHint: false`.
 
-## Positive test cases (5)
+Performs an unpaid probe and writes internal traffic and rate-limit counters without initiating a payment.
+Fetches a caller-selected public HTTPS endpoint, subject to the server's address restrictions.
+The probe sends no payment authorization and cannot delete records or move funds.
 
-Every input below is one that cannot move: the store's own signed
-artifact, its own published fixtures, its own defect vocabulary, a
-host already in the signed chain, and `example.com`. Expected results
-were captured from the live door on 2026-09-16.
+**verify_x402_receipt**
 
-**1 — Preflight a URL that is not an x402 door.**
+`readOnlyHint: false`; `openWorldHint: true`; `destructiveHint: false`.
 
-> Preflight `https://example.com/` as an x402 endpoint and tell me
-> what failed.
+Computes signature, structure and time checks while recording internal traffic statistics.
+May fetch the issuer's did:web document from an external host named in the artifact; supplying a public key avoids that fetch.
+Checks a supplied signed artifact without submitting a payment, modifying it or revoking access.
 
-Expect: `verdict: not_ready`, `reached_level: L1`, the `status-402`
-check failing with "answered 200 instead of 402", and the remaining
-rows marked `not_reached` with `blocked_by: status-402` rather than
-guessed. The point of the case is that a probe that stopped early says
-so instead of inventing the rest.
+**lookup_endpoint_readiness**
 
-**2 — Verify a valid signed offer, entirely offline.**
+`readOnlyHint: false`; `openWorldHint: true`; `destructiveHint: false`.
 
-> Verify this x402 signed offer against public key
-> `2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12`:
-> *(paste the `offer` string from
-> `verifier/fixtures/offer-valid.json`)*
+Records traffic and, for eligible hosts without a recorded probe, updates the publicly visible asked-for queue with the hostname and ask count.
+Can enqueue a caller-selected hostname for a later sweep of external discovery documents and discovered endpoints.
+Updates a bounded discovery queue without deleting caller-owned data, revoking access or moving funds.
 
-Expect: `verdict: conforms`, `key_resolution: offline`, and the
-`parse`, `alg`, `kid`, `schema`, `key-resolution`, `signature` and
-`expiry` checks all passing — plus the `offer-self-issued` advisory
-noting the signer's host is not the host serving the resource, which
-is an observation and not an accusation. No outbound request is made
-when the key is supplied.
+**get_defect_definition**
 
-**3 — Catch a tampered offer.**
+`readOnlyHint: false`; `openWorldHint: false`; `destructiveHint: false`.
 
-> Verify this offer against the same public key: *(paste the `offer`
-> string from `verifier/fixtures/offer-tampered-payload.json`)*
+Reads the registered defect vocabulary and records internal traffic statistics for the call.
+Uses the store's built-in vocabulary without contacting external hosts.
+Does not modify the vocabulary, delete records, send messages or initiate payments.
 
-Expect: `verdict: does_not_conform`, with exactly one non-advisory
-failure — `signature`: "signature does NOT verify against the resolved
-key". Same bytes as case 2 but for one flipped field.
+**verify_scvd_artifact**
 
-**4 — Read a defect definition.**
+`readOnlyHint: false`; `openWorldHint: false`; `destructiveHint: false`.
 
-> What does the x402 defect class `wrong-network` mean?
+Checks a stored artifact signature and records internal usage and verification statistics.
+Reads artifacts and verification keys held by the store without contacting an external issuer.
+Checks existing artifacts without changing their signed bytes, revoking them or moving funds.
 
-Expect vocabulary v17's entry: title "Offered on a network the buyer
-is not on", `detectable: unpaid`, `our_signal: testnet-network`, and
-both the seller repair hint and the buyer hint — the buyer hint being
-the one that matters ("do not let a mainnet wallet sign a testnet
-offer: the payment settles nowhere real"). Calling the tool with no id
-lists all 30 classes.
+## Tests and their limits
 
-**5 — Look up a host's readiness history.**
+The positive cases cover every exposed tool. Offer verification calls
+the same tool twice to distinguish the valid fixture from its tampered
+copy. The negative cases are genuinely out of scope: purchasing,
+provider/investment rankings, and wallet custody or signing.
 
-> What does the signed corpus say about `api.onesource.io`?
+An own-host preflight refusal remains a useful additional check, but
+is not a non-trigger case: it intentionally invokes the preflight tool.
 
-Expect a read from the chain, not a live probe: 6 rounds probed of 6
-since first sighting (2026-08-09), last observed 2026-09-07, the last
-signed verdict `ready`, the tier with its fraction, and a
-`verification_url` at `/corpus/host/api.onesource.io.json`. The
-`does_not_establish` block must be present and must say that this is
-silent on whether the door answers now and on whether to pay. The tier
-line advances as rounds are added; the shape and the disclaimers do
-not.
+Live checks on 2026-09-16 at 13:42 UTC returned the expected results
+for example.com, both offer fixtures, wrong-network, api.onesource.io,
+certificate cert_et6zuesrrn and the own-host refusal. The defect
+vocabulary was v18; tests should read its returned version instead of
+assuming v17. Readiness dates and coverage may advance with new rounds.
 
-## Negative test cases (3)
+These were direct MCP checks, not ChatGPT web/mobile routing tests.
 
-**1 — It will not pay for you.**
+## Before submitting
 
-> Buy me the cheapest thing on scvd.store.
+1. Deploy the reviewed source changes, including the listening channel,
+   trailing-slash and CORS repairs already on the submission branch.
+   At 13:43 UTC the live endpoint still returned JSON to an event-stream
+   request, 404 on the trailing slash and 405 on OPTIONS.
+2. Re-read live tools/list and confirm its hints match the JSON. The
+   import file describes the corrected source, not the older deployment.
+3. Run the cases in ChatGPT on web and mobile. Confirm the deployed privacy
+   policy includes the corrected traffic-statistics and public asked-for
+   queue disclosures, matching the tool and import descriptions.
+4. Confirm account/domain verification in the portal. The earlier guide
+   reported business verification completed September 15; this session
+   did not inspect the account or confirm domain verification.
+5. Add outputSchema to lookup_endpoint_readiness and get_defect_definition
+   for more reliable tool result handling. Their absence is a skill
+   warning, not a JSON-generation blocker.
 
-Expect: no purchase, and no tool call that could make one. This door
-lists no `buy_*` tool at all, so the correct behaviour is to say the
-verifier sells nothing and point at the store's other doors. Nothing
-reachable from this server can move money or ask for a wallet.
+The verifier exposes no widget resources or widget CSP metadata.
+Its inspected input schemas do not solicit credentials, private keys,
+wallet seeds or similarly sensitive identifiers; public keys are public.
+A caller-supplied receipt or hostname may still contain contextual
+information, and the public queue effect must remain disclosed.
 
-**2 — It will not rank or recommend.**
-
-> Which x402 endpoint is the most trustworthy? Give me a top five.
-
-Expect a refusal to rank, in the door's own words: never a ranking,
-and never a verdict without its derivation and denominator beside it.
-The tools can report what was observed about one named host on dated
-rounds; they cannot order operators, and a ranking assembled from
-them would be the caller's interpretation, not this store's.
-
-**3 — It will not pretend to see its own door.**
-
-> Preflight `https://scvd.store/api/buy/hello`.
-
-Expect a named refusal rather than a verdict: a Cloudflare Worker
-cannot fetch its own hostname, so the tool says so, says our own 402s
-pass these checks in CI on every build, and tells the caller not to
-take our word for it — the checks are published, so their own probe is
-as good as ours. A fabricated pass here would be the single most
-self-serving answer this store could give, and it declines to give it.
-
-## Tool annotation justifications (5)
-
-All five are `readOnlyHint: true`, `destructiveHint: false`,
-`idempotentHint: true`. The honest reading per field:
-
-- **`readOnlyHint: true`** — none of the five writes anything a caller
-  can observe. They probe, verify, or read; no order is placed, no
-  record is created, no state of the caller's is touched. The store
-  does count that a door was knocked on, for its own published
-  traffic figures; that is bookkeeping about us, not a modification of
-  anything the caller owns or can address.
-- **`destructiveHint: false`** — follows from read-only. There is no
-  delete, no overwrite, no irreversible effect anywhere on this door.
-- **`idempotentHint: true`** — the hint is about *additional effect*,
-  not identical output. Calling preflight twice probes twice and may
-  see a door that changed in between; what it will never do is leave
-  anything different behind on the second call than it did on the
-  first. Same for the other four.
-- **`openWorldHint`** — read per tool, and it describes what the CALL
-  touches, not what the answer is about:
-  - `preflight_x402_endpoint` — **true.** Fetches a URL the caller
-    names. Unbounded outbound.
-  - `verify_x402_receipt` — **true.** May resolve a `did:web` key
-    against the issuer's host. (Supply `public_key_hex` and it makes
-    no request at all — but the hint describes what the tool *may*
-    do.)
-  - `lookup_endpoint_readiness` — **false.** Its subject is every host
-    on the public discovery list; its interaction is a read of this
-    store's own signed chain, with no outbound request.
-  - `get_defect_definition` — **false.** In-process, from this store's
-    own registered vocabulary.
-  - `verify_scvd_artifact` — **false.** Checks an id this store itself
-    issued against this store's own key. This is the one that was
-    wrong before 2026-09-16, and the one a test now pins.
-
-## Release notes
-
-> New door: five free read-only instruments for x402 — preflight,
-> receipt and offer verification, signed readiness history, the defect
-> vocabulary, and artifact verification. No paid tool is reachable
-> here. Adds the listening channel and trailing-slash redirect the
-> tool scanner expects, and corrects one tool annotation that
-> contradicted the store's other MCP door.
-
-## After submitting
-
-Record the outcome in `docs/SPEC_READS.md` with its date — accepted or
-rejected, and on what stated grounds. The first rejection's real cause
-took a day to find because nothing had written down what was actually
-measured.
+After the keeper submits, record the dated outcome and stated review
+grounds in docs/SPEC_READS.md. No approval outcome is implied here.

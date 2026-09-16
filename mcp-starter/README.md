@@ -1,13 +1,15 @@
 # scvd-mcp-starter
 
 A zero-dependency MCP server over stdio that serves
-[scvd.store](https://scvd.store)'s five read-only x402 verifier tools
+[scvd.store](https://scvd.store)'s five free x402 verifier tools
 to any MCP client: `preflight_x402_endpoint`, `verify_x402_receipt`,
 `lookup_endpoint_readiness`, `get_defect_definition`,
 `verify_scvd_artifact`. It answers the handshake itself and forwards
 `tools/list` and `tools/call` to `POST https://scvd.store/mcp/verifier`
-over HTTPS. Nothing here can pay or act: the upstream door has no paid
+over HTTPS. Nothing here can pay: the upstream door has no paid
 tool to reach, and this file holds no key and asks for nothing.
+Calls record traffic statistics upstream. Readiness lookups for eligible
+unprobed hosts publish their names in the asked-for queue for a later sweep.
 
 ```
 npx scvd-mcp-starter

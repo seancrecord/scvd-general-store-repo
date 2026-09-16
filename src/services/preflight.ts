@@ -8,6 +8,13 @@ import { PROBE_DOOR_ERRORS } from "@/store/surface-contract";
 import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget, parseProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
+import {
+  methodNote,
+  probeWithMethod,
+  PROBE_POST_BODY,
+  type ProbeMethod,
+  type ProbeMethodReading,
+} from "@/lib/probe-method";
 import { readPayTo } from "@/lib/pay-to";
 import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
 import {
@@ -55,9 +62,22 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
  * THE FETCH IS A REQUEST TO AN ADDRESS A STRANGER CHOSE, so it wears
  * every guard the did:web fetcher wears (https-only, no redirects, a
  * hard timeout, a size ceiling, a global per-minute budget) plus one
- * of its own: EXACTLY ONE outbound request per call, ever. No chasing
- * bazaar URLs, no resolving the offers' did:web — the response says
- * where to take those next steps instead of taking them in your name.
+ * of its own: AT MOST TWO outbound requests per call, ever, and the
+ * second only when the first was refused AS A METHOD (405/501). No
+ * chasing bazaar URLs, no resolving the offers' did:web — the
+ * response says where to take those next steps instead of taking
+ * them in your name.
+ *
+ * THAT CEILING WAS ONE UNTIL 2026-09-16, and the day it changed is
+ * worth keeping here rather than in a changelog. A door that took
+ * POST — declared POST in its own OpenAPI, served a flawless x402 v2
+ * challenge to POST — was probed with a bare GET, answered 405, and
+ * was published `not_ready` on its passport page and mailed about.
+ * The one-request rule was protecting a real thing (a stranger's host
+ * must not be able to make this store fan out) and it is still
+ * protecting it: the extra request is the SAME request to the SAME
+ * URL with the verb the door will answer. What it stopped protecting
+ * was an operator from our own instrument.
  */
 
 /**
@@ -601,7 +621,7 @@ export interface PreflightReport {
    * complete, which says nothing about their code and the detail says
    * whose side the failure is on.
    */
-  verdict: "ready" | "not_ready" | "unreachable";
+  verdict: "ready" | "not_ready" | "unreachable" | "method_unresolved";
   /**
    * 2.1b: the rung this probe reached and the tri-state vector,
    * published beside the legacy checks list. `checks` stays exactly
@@ -615,6 +635,19 @@ export interface PreflightReport {
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
   single_probe_note: string;
+  /**
+   * WHICH QUESTION YOUR DOOR ANSWERED (2026-09-16), published on
+   * every report so a reader never has to assume the method. Carries
+   * the method used, every method attempted in order, and where the
+   * choice came from. When the verdict is `method_unresolved` this
+   * block is the whole finding, and it is a finding about US.
+   */
+  probe_method: {
+    used: string;
+    attempted: string[];
+    source: string;
+    note: string;
+  };
   what_this_cannot_tell_you: string[];
   our_conflict_of_interest: string;
   /** Per unclimbed rung: what climbs it, at what price, called how. */
@@ -679,6 +712,8 @@ function report(
     };
     /** The MPP battery's reading of the same bytes; absent on an unreachable probe. */
     mpp?: MppBlock & { protocols_spoken: ("x402" | "mpp")[] };
+    /** What the probe did about the method. Absent only where no probe ran. */
+    method?: ProbeMethodReading;
     mppCore?: MppCoreBlock;
   } = {},
 ): PreflightReport {
@@ -700,13 +735,23 @@ function report(
     mpp: options.mpp
       ? (({ protocols_spoken: _spoken, ...block }) => block)(options.mpp)
       : runMppChecks({ headers: { get: () => null }, url: "" }),
+    probe_method: {
+      used: options.method?.used ?? "GET",
+      attempted: options.method?.attempted ?? ["GET"],
+      source: options.method?.source ?? "default",
+      note: options.method
+        ? methodNote(options.method)
+        : "Probed with GET.",
+    },
     mpp_core: options.mppCore ?? readMppCore({ status: null, headers: { get: () => null }, url: "", now: new Date() }),
     single_probe_note:
-      "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.",
+      options.method && options.method.attempted.length > 1
+        ? `One moment, two requests: the first ${options.method.attempted[0]} was refused as a method, so this reading is of the ${options.method.used} that followed. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.`
+        : "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.",
     what_this_cannot_tell_you: [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",
       "Whether the endpoint stays up. This was one request at one moment.",
-      "Whether the signed offers verify — this probe deliberately makes no second request, so the offers' did:web was not resolved. POST one to the conformance desk for that.",
+      "Whether the signed offers verify — this probe resolves no did:web, so the offers' issuer key was never fetched. The only second request it will ever make is the same request to the same URL with a different HTTP method, and only when the first was refused as a method; it never follows a link this door gave it. POST one to the conformance desk for that.",
     ],
     our_conflict_of_interest: CONFLICT,
     rate_limit: statedRateLimit(base),
@@ -722,21 +767,58 @@ export interface ProbeOutcome {
   bodyOverLimit: boolean;
   /** The bytes already read to enforce the size ceiling. */
   body: string;
+  /**
+   * WHICH QUESTION THE DOOR ANSWERED (2026-09-16). Always present, so
+   * no caller has to assume a method the probe may not have sent.
+   * `method.unresolved` means nothing was observed about the door and
+   * the caller MUST NOT score it — see lib/probe-method.ts.
+   */
+  method: ProbeMethodReading;
+}
+
+export interface ProbeOptions {
+  /**
+   * The method to send first, when the caller holds a declaration
+   * from a catalog row or a previous challenge. Omitted means GET,
+   * which is what a buyer's client sends first.
+   */
+  method?: ProbeMethod;
+  /**
+   * Whether a method refusal (405/501) may cost ONE more request.
+   * Defaults TRUE, so the next x402 door somebody adds inherits the
+   * fix rather than the defect — the same reasoning that put the
+   * probe-target law in this function. Document readers that fetch a
+   * fixed path (discovery catalogs, `.well-known` files) pass false:
+   * a 405 there is a real answer about the document, and retrying
+   * would have this store POSTing at strangers' well-known paths.
+   */
+  fallback?: boolean;
 }
 
 /**
- * THE ONE GUARDED OUTBOUND REQUEST, factored out so the paid service
+ * THE GUARDED OUTBOUND REQUEST, factored out so the paid service
  * audit runs EXACTLY the fetch the free preflight runs — same hard
  * timeout, same refusal to follow redirects, same bounded read. One
  * battery, two doors; the paid door must never quietly grow a longer
  * leash than the free one. Throws on network failure: the caller
  * decides what an unreachable moment means for its artifact.
+ *
+ * AT MOST TWO REQUESTS, AND ONLY EVER FOR THE METHOD (2026-09-16).
+ * This said "EXACTLY ONE outbound request per call, ever" until a
+ * POST-only door was published `not_ready` on the strength of a 405
+ * this probe caused. The bound is now two, the second fires only on
+ * a method refusal, and it is a method refusal only — no redirect
+ * chasing, no did:web resolution, no bazaar walk. Everything the old
+ * promise was protecting (a stranger's host cannot make this store
+ * fan out) still holds; what changed is that a door refusing our verb
+ * gets asked the right one instead of being scored on the wrong one.
  */
 export async function probeOnce(
   url: string,
   fetchImpl: typeof fetch = fetch,
   ownHost = "",
   env?: WbaEnv,
+  options: ProbeOptions = {},
 ): Promise<ProbeOutcome> {
   /*
    * THE BACKSTOP. Every door validates before charging, and a caller
@@ -749,26 +831,40 @@ export async function probeOnce(
   if (!verdict.ok) {
     throw new ProbeTargetRefused(verdict.reason ?? "refused target");
   }
-  const response = await fetchImpl(url, {
-    method: "GET",
-    redirect: "manual",
-    signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-    /**
-     * The probe introduces itself, verifiably, when it can (Web Bot
-     * Auth, 2026-08-11): identity plus signature when the caller
-     * passed env and the egress key is set, bare Accept otherwise.
-     * Decoration on the probe, never a condition of it.
-     */
-    headers: env
-      ? await webBotAuthHeaders(env, url, { Accept: "application/json" })
-      : { Accept: "application/json" },
-  });
+  const { response, reading } = await probeWithMethod(
+    async (method) =>
+      fetchImpl(url, {
+        method,
+        redirect: "manual",
+        signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+        /**
+         * The probe introduces itself, verifiably, when it can (Web
+         * Bot Auth, 2026-08-11): identity plus signature when the
+         * caller passed env and the egress key is set, bare Accept
+         * otherwise. Decoration on the probe, never a condition of it.
+         *
+         * The covered components are ("@authority" "signature-agent"),
+         * NOT "@method" — checked in lib/web-bot-auth.ts rather than
+         * assumed, because a signature covering the method would have
+         * to be recomputed for the fallback request.
+         */
+        headers: {
+          ...(env
+            ? await webBotAuthHeaders(env, url, { Accept: "application/json" })
+            : { Accept: "application/json" }),
+          ...(method === "POST" ? { "Content-Type": "application/json" } : {}),
+        },
+        ...(method === "POST" ? { body: PROBE_POST_BODY } : {}),
+      }),
+    options,
+  );
   // Bound the read before anything parses it.
   const raw = await response.text();
   return {
     response,
     bodyOverLimit: raw.length > MAX_BODY_BYTES,
     body: raw,
+    method: reading,
   };
 }
 
@@ -949,9 +1045,30 @@ export function runChecks(
    * the read, never a fabricated pass.
    */
   probedUrl?: string,
+  /**
+   * WHICH METHOD PRODUCED THIS RESPONSE (2026-09-16). Omitted by
+   * callers that hold a synthetic Response and by the CI test that
+   * aims this battery at our own 402; both are genuine GETs. When
+   * `method.unresolved` is set the battery emits NO checks at all
+   * and says so in `method_unresolved` — see below.
+   */
+  method?: ProbeMethodReading,
 ): {
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
+  /**
+   * THE DOOR WAS NEVER REACHED. Set when every method the probe was
+   * willing to send was refused as a method, so `checks` is EMPTY —
+   * not "all passing". A caller computing `failed.length === 0 ?
+   * "ready" : "not_ready"` over an empty list would publish `ready`
+   * for a door nobody knocked on, which is rule 52's flattering
+   * answer exactly. Every call site must branch on this BEFORE it
+   * reads `checks`, and test/bounded-read-honesty.spec.ts fails the
+   * build for any that does not.
+   */
+  method_unresolved?: true;
+  /** The plain-English method story, for the readout. Present whenever a method reading was handed in. */
+  method_note?: string;
   /**
    * The offer entries this battery parsed, handed back so a caller
    * that needs the NETWORK (the Solana receivability read, which
@@ -974,13 +1091,33 @@ export function runChecks(
   const checks: PreflightCheck[] = [];
   const advisories: PreflightAdvisory[] = [];
 
+  /*
+   * NOTHING OBSERVED, SO NOTHING JUDGED (2026-09-16). This returns
+   * before the status read on purpose. The alternative — emitting a
+   * failed `status-402` saying "answered 405 instead of 402" — is the
+   * exact sentence that went out against a door serving a valid
+   * challenge one verb over, and it is a claim this probe has no
+   * evidence for. An empty `checks` here is not a clean bill: it is
+   * the absence of a reading, and `method_unresolved` beside it is
+   * what stops a caller rendering that absence as a pass.
+   */
+  if (method?.unresolved) {
+    return {
+      checks,
+      advisories,
+      method_unresolved: true,
+      method_note: methodNote(method),
+    };
+  }
+  const methodRead = method ? { method_note: methodNote(method) } : {};
+
   if (response.status >= 300 && response.status < 400) {
     checks.push({
       name: "status-402",
       ok: false,
       detail: `answered ${response.status}: a redirect. Payment clients will not follow it, and neither did this probe — the 402 must live at the URL a buyer actually calls.`,
     });
-    return { checks, advisories };
+    return { checks, advisories, ...methodRead };
   }
 
   checks.push(
@@ -989,15 +1126,21 @@ export function runChecks(
       : {
           name: "status-402",
           ok: false,
-          detail: `answered ${response.status} instead of 402. ${
+          detail: `answered ${response.status} instead of 402${
+            method ? ` to ${method.used}` : ""
+          }. ${
             response.status === 200
               ? "A 200 here is the 'listed but functionally absent' shape: directories will list this URL as an x402 endpoint and every buyer probing it finds no payment challenge at all."
               : "A buyer's payment client keys the entire flow off a 402; anything else reads as 'not a paid resource'."
+          }${
+            method && method.attempted.length > 1
+              ? ` We first sent ${method.attempted[0]} and were refused as a method, so this reading is of the ${method.used} that followed.`
+              : ""
           }`,
         },
   );
   if (response.status !== 402) {
-    return { checks, advisories };
+    return { checks, advisories, ...methodRead };
   }
 
   const header = response.headers.get("PAYMENT-REQUIRED");
@@ -1008,7 +1151,7 @@ export function runChecks(
       detail:
         "the 402 carries no PAYMENT-REQUIRED header. x402 v2 clients read the challenge from that header (base64 JSON), not from the body — a body-only challenge fails every standard client while looking fine in a browser.",
     });
-    return { checks, advisories };
+    return { checks, advisories, ...methodRead };
   }
 
   let challenge: Record<string, unknown>;
@@ -1026,7 +1169,7 @@ export function runChecks(
       detail:
         "PAYMENT-REQUIRED header present but not base64-encoded JSON. The exact failure a client reports as an unparseable challenge.",
     });
-    return { checks, advisories };
+    return { checks, advisories, ...methodRead };
   }
 
   checks.push(
@@ -1049,7 +1192,7 @@ export function runChecks(
       detail:
         "accepts is missing or empty — the challenge offers a buyer nothing to sign against.",
     });
-    return { checks, advisories };
+    return { checks, advisories, ...methodRead };
   }
   const holes: string[] = [];
   for (let index = 0; index < accepts.length; index += 1) {
@@ -1618,7 +1761,7 @@ export function runChecks(
         ? {
             name: "signed-offers",
             ok: true,
-            detail: `${offers.length} signed offer${offers.length === 1 ? "" : "s"} present in ${offerPlacement}, each a structurally valid JWS. Signatures NOT verified here — that needs the issuer's key, which is a second request this probe refuses to make. The conformance desk does it free.`,
+            detail: `${offers.length} signed offer${offers.length === 1 ? "" : "s"} present in ${offerPlacement}, each a structurally valid JWS. Signatures NOT verified here — that needs the issuer's key, which is a request to an address YOUR challenge chose, and this probe follows no link a door hands it. The conformance desk does it free.`,
           }
         : {
             name: "signed-offers",
@@ -1664,7 +1807,7 @@ export function runChecks(
     });
   }
 
-  return { checks, advisories, accepts, l3b };
+  return { checks, advisories, accepts, l3b, ...methodRead };
 }
 
 /**
@@ -1951,7 +2094,7 @@ export async function preflightUrl(
       body: refusal(
         base,
         "url_missing",
-        'Send {"url": "https://your-endpoint/..."} — the URL a buyer would GET, expecting your 402.',
+        'Send {"url": "https://your-endpoint/..."} — the URL a buyer would call, expecting your 402. We send GET first and fall back to POST once if your door refuses the method.',
         battery,
       ),
     };
@@ -2068,16 +2211,44 @@ export async function preflightUrl(
           ok: false,
           detail: `the probe could not complete: ${String(error)}. This is a fact about the network path between us and that host at this moment — it does not prove the endpoint is down, and a buyer elsewhere may reach it fine.`,
         },
-      ], []),
+      ], [], { battery }),
     };
   }
 
-  const { checks, advisories, accepts, l3b } = runChecks(
+  const ran = runChecks(
     outcome.response,
     outcome.bodyOverLimit,
     outcome.body,
     url.toString(),
+    outcome.method,
   );
+  /*
+   * WE NEVER REACHED THE DOOR (2026-09-16), so nothing below runs.
+   * Returning here rather than falling through is deliberate: every
+   * reading past this point — the rail read, the MPP battery, the
+   * l3b trio — would be computed over a response that is a method
+   * refusal, and each one would render its own confident absence as
+   * a finding. The verdict says what happened and whose gap it is.
+   */
+  if (ran.method_unresolved) {
+    return {
+      status: 200,
+      headers: budgetHeaders,
+      body: report(
+        base,
+        "method_unresolved",
+        [],
+        [
+          {
+            name: "method-unresolved",
+            detail: ran.method_note ?? methodNote(outcome.method),
+          },
+        ],
+        { battery, method: outcome.method },
+      ),
+    };
+  }
+  const { checks, advisories, accepts, l3b } = ran;
   /*
    * THE SAME ONE GET, PARSED TWICE (roadmap V3 PR 1): the MPP battery
    * reads the response's WWW-Authenticate for Payment challenges. Zero
@@ -2193,6 +2364,7 @@ export async function preflightUrl(
     body: report(base, servedVerdict, servedChecks, advisories, {
       battery: asked,
       mpp,
+      method: outcome.method,
       mppCore,
       alsoUnder: {
         version: otherVersion,
