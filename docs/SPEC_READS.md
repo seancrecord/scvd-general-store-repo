@@ -1,5 +1,52 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-16 — Red team of /mcp/verifier before resubmitting to OpenAI
+
+The 2026-09-09 plugin submission offered `/mcp` and was rejected on
+2026-09-13: test cases failed on web and mobile, and domain ownership
+was unconfirmed. Ownership is now closed (business verification
+2026-09-15). The test-case half was diagnosed by measuring rather than
+guessing: `/mcp` serves 139,703 B of `tools/list` against the verifier
+door's 11,350 B, and its largest single tool result (`read_store_guide`,
+161,888 B) is not on the verifier door at all. The resubmission offers
+`https://scvd.store/mcp/verifier`.
+
+⚑ THE LESSON, AND IT IS RULE 61 TURNED INWARD AGAIN. `/mcp/verifier`
+was built a week after `/mcp` and inherited none of September's
+hardening. Red-teaming it found four defects, three of which would
+have failed the same scan the same way:
+
+  1. No listening channel. The portal's client opens a GET expecting
+     `text/event-stream` BEFORE it POSTs — the original
+     "MCP SSE probe returned 404". `/mcp` learned this in September.
+     Fixed by EXPORTING `acceptsEventStream`/`openListeningStream` from
+     `/mcp` rather than writing a second copy: the reason this bug
+     existed twice is that the door was written twice.
+  2. `/mcp/verifier/` 404'd where `/mcp/` had 308'd since September.
+  3. Not in the CORS allowlist — OPTIONS returned 405.
+  4. `openWorldHint` read off a single negation, which made this door
+     declare `verify_scvd_artifact` open-world while `/mcp` declared
+     the same tool closed. Two doors, one tool, two answers, on the
+     field a directory reviewer reads first. Now derived per tool,
+     with a test that fails if they ever disagree again.
+
+A second surface built from the same handlers does NOT inherit the
+first surface's transport fixes, and nothing in the suite was watching
+for that. The guard added is behavioural rather than a note: the
+annotation-drift test compares every renamed tool against its base.
+
+Also corrected under rule 10: `reached_level_meaning` had been denying
+that the battery measures L3b internal consistency while `also_under`,
+three keys later in the same payload, announced that v2 folds exactly
+those checks into its verdict. The ladder moved in 2.1c and the
+paragraph describing it did not. It is now derived from which battery
+answered.
+
+The submission draft is `registry/openai-plugin-verifier-submission.md`.
+Per rule 30 nothing there submits itself; the keeper pastes it. Record
+the outcome here with its date — the first rejection's real cause took
+a day to find because nothing had written down what was measured.
+
 ## 2026-09-15 — Confidence review and compatibility correction
 
 The initial catalog patch renamed `store.zodiac`. Retain that original

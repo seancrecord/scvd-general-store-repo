@@ -69,6 +69,9 @@ const DISCOVERY_EXACT = new Set([
   // prefix below. The card being readable while the endpoint is
   // unreachable is the same failure one hop later.
   "/mcp",
+  // The verifier door answers the same preflight; it was omitted
+  // when that door was added and returned 405 to OPTIONS (2026-09-16).
+  "/mcp/verifier",
 ]);
 
 function isDiscoveryPath(path: string): boolean {
