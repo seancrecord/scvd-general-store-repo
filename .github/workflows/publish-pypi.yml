@@ -147,7 +147,17 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           if [ "$DRY_RUN" = "true" ]; then
-            echo "Dry run: $PACKAGE $VERSION built and checked, nothing uploaded."
+            {
+              echo "### Dry run — nothing was published"
+              echo ""
+              echo "\`$PACKAGE $VERSION\` passed every check; the wheel contents are in the log above."
+              echo "Run again with **dry_run unchecked** to publish it."
+            } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Published $PACKAGE $VERSION to PyPI: https://pypi.org/project/$PACKAGE/$VERSION/"
+            {
+              echo "### Published \`$PACKAGE $VERSION\`"
+              echo ""
+              echo "- https://pypi.org/project/$PACKAGE/$VERSION/"
+              echo "- Uploaded by Trusted Publishing: no token was stored or used."
+            } >> "$GITHUB_STEP_SUMMARY"
           fi

@@ -92,13 +92,32 @@ function disagreementsJsonLd(base: string, entries: readonly Disagreement[], ope
           name: entry.subject,
           datePublished: entry.published_on,
           creativeWorkStatus: entry.state,
-          about: entry.subject,
+          about: { "@type": "Thing", name: entry.subject },
+          /*
+           * WHEN EACH SIDE WAS READ, IN PROSE, ON PURPOSE.
+           *
+           * The read date belongs in this node — a divergence is a
+           * DATED read, and without the date it reads as a standing
+           * claim about the other instrument rather than a snapshot of
+           * one surface on one day. There is no correct typed property
+           * for it. `dateRead` exists but its domain is Message, not
+           * CreativeWork. `lastReviewed` is domain-valid on WebPage and
+           * was the near miss: it means the date the content was
+           * reviewed, but it is read as the PUBLISHER's review, and on
+           * this page of all pages a property that could be read as
+           * "they reviewed it on this date" puts a date in the other
+           * instrument's mouth. Same reasoning that kept ClaimReview
+           * off this node: a vocabulary that cannot say the true thing
+           * without implying a false one does not get used here.
+           */
+          description: [entry.ours, entry.theirs]
+            .map((reading) => `${reading.instrument}'s reading read at ${reading.url} on ${reading.read_on}.`)
+            .join(" "),
           citation: [entry.ours, entry.theirs].map((reading) => ({
             "@type": "CreativeWork",
             url: reading.url,
             author: { "@type": "Organization", name: reading.instrument },
             abstract: reading.said,
-            dateRead: reading.read_on,
           })),
         },
       })),
