@@ -374,7 +374,7 @@ were each fetched individually and the status is what came back.
 | `paymentauth.org` | **no** (refused) | The full rendered spec, all methods and extensions. Also the host of the problem-details type URIs our `MPP_PROBLEM_TYPES` prefix quotes. |
 | `mpp.dev` | **no** (refused) | The protocol site and the **service directory** — the population source decision 1 would draw on. `github.com/tempoxyz/mpp` holds its source. |
 | SDKs: `wevm/mppx` (TypeScript), `tempoxyz/pympp` (Python), `tempoxyz/mpp-rs` (Rust), `tempoxyz/mpp-go` (Go), `stripe/mpp-rb` (Ruby) | listed in the README | Read-only interest: how implementers actually serialize challenges is evidence about what a reader will meet. We depend on none of them and should not. |
-| mppscan, x402scan, AgentCash discovery spec | — | The indexers that read `x-payment-info.protocols`. See `PAYMENT_RAILS.md` Part E's 2026-09-11 note and `test/openapi-discovery-shape.spec.ts`, which pins our array to exactly `[{ x402: {} }]` and will fail the day a second protocol belongs in it. |
+| mppscan, x402scan, AgentCash discovery spec | — | The indexers that read `x-payment-info.protocols`. See `PAYMENT_RAILS.md` Part E's 2026-09-11 and 2026-09-16 notes and `test/openapi-discovery-shape.spec.ts`, which pins our array to exactly `[{ x402: {} }]` and will fail the day a second protocol belongs in it. The 09-16 note is the one to read first: the shared validator picks its parser from `typeof x-payment-info.price`, so a flat price hint beside a correct `protocols` array makes the array unreadable. |
 
 Our own record of the wire, which is still the fastest way in:
 `docs/MPP_READ_ONLY_2026-09.md` §"What the wire looks like, from one

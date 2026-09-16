@@ -5120,25 +5120,52 @@ const PAYMENT_REQUIRED_REF: OpenApiObject = {
  * removing one breaks somebody quietly.
  */
 /**
- * The discovery spec's flat price hint: one tier is `fixed` with its
- * price; several are `dynamic` with the range, since a buyer choosing
- * a tier is exactly what that mode describes. Decimal strings, never
- * numbers — the spec reads strings, and a float that prints in
- * exponent form would be a different number to a parser.
+ * The discovery spec's price hint, as ONE OBJECT under `price`.
+ *
+ * WHY IT IS NOT FLAT ANY MORE (2026-09-16). The flat spelling —
+ * `pricingMode` beside `price`/`minPrice`/`maxPrice` as siblings of
+ * `protocols` — was written on 2026-09-11 because the nested form was
+ * rejected by the reader of the day. It is now the LEGACY shape in
+ * `@agentcash/discovery`, the validator x402scan, mppscan and
+ * AgentCash all run, and the flat spelling does not merely age badly:
+ * it changes which parser reads the whole block. `resolvePaymentInfo`
+ * routes on `typeof raw.price`. An object goes to the structured
+ * parser, which keeps `protocols` as written. A STRING goes to
+ * `normalizeLegacyProtocols`, which walks the array and keeps only
+ * entries that are strings — so `[{ x402: {} }]`, the exact shape
+ * that validator's own integration spec asks for, was dropped on the
+ * floor, and every paid door here was read as a paid door declaring
+ * no payment protocol at all. Read against v1.7.5 of the package, not
+ * inferred: 37 paid operations, 74 protocol notices (one per
+ * operation at each of two layers) and one legacy-format notice, all
+ * of which this one change clears. The currency comes back too — the
+ * legacy path drops `currency` on a fixed price, so the listing
+ * rendered an amount with no unit beside it.
+ *
+ * One tier is `fixed` with its amount; several are `dynamic` with the
+ * range, since a buyer choosing a tier is exactly what that mode
+ * describes. Decimal strings, never numbers — the spec reads strings,
+ * and a float that prints in exponent form would be a different
+ * number to a parser. `price_usdc` and `x-payment.price_usdc_options`
+ * are untouched beside it, and they are what this store's own readers
+ * (`openapiPriceFor`) have always read, so nothing here depends on
+ * the spelling that moved.
  */
 export function discoveryPriceHint(
   priceUsdcOptions: number[],
-): Record<string, string> {
+): { price: Record<string, string> } {
   const tiers = [...new Set(priceUsdcOptions)].sort((a, b) => a - b);
   const decimal = (price: number): string => price.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
   if (tiers.length <= 1) {
-    return { pricingMode: "fixed", price: decimal(tiers[0] ?? 0), currency: "USD" };
+    return { price: { mode: "fixed", amount: decimal(tiers[0] ?? 0), currency: "USD" } };
   }
   return {
-    pricingMode: "dynamic",
-    minPrice: decimal(tiers[0] ?? 0),
-    maxPrice: decimal(tiers[tiers.length - 1] ?? 0),
-    currency: "USD",
+    price: {
+      mode: "dynamic",
+      min: decimal(tiers[0] ?? 0),
+      max: decimal(tiers[tiers.length - 1] ?? 0),
+      currency: "USD",
+    },
   };
 }
 
@@ -5182,11 +5209,11 @@ function paidOp(
        * mppscan reads as well, so the string was the store's own
        * dialect and the array is the shared one. Both stay: the
        * string predates the array and readers generated against it.
-       * `pricingMode`, `price` and `currency` beside it are the same
-       * spec's flat price hint, the shape its validator accepts
-       * today (its documented nested form is rejected by its own
-       * parser, per x402scan issue 1014). Decimal USD, derived from
-       * the same tiers the accepts are, so the two cannot drift.
+       * `price` beside it is the same spec's price hint, and it is
+       * the OBJECT form on purpose — see `discoveryPriceHint`, where
+       * the flat spelling this block used to carry is what made the
+       * array below unreadable. Decimal USD, derived from the same
+       * tiers the accepts are, so the two cannot drift.
        */
       protocols: [{ x402: {} }],
       ...discoveryPriceHint(priceUsdcOptions),
