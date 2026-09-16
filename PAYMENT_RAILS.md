@@ -22,6 +22,12 @@ Base browser-till test is recorded in
 `docs/BROWSER_CHECKOUT_2026-09-06.md`; it does not prove paid WebMCP
 completion, every chain, or every browser/extension combination.
 
+September 16 UTC qualification: all 35 discovered catalog GET quotes parsed
+with the locked x402 2.25.0 client; World required an explicit token policy
+with a spending cap. This establishes unpaid offer selection, not new paid
+acceptance on every rail. MCP, browser, package and release boundaries are
+recorded in [the dated reach reading](docs/PAYMENT_REACH_QUALIFICATION_2026-09-16.md).
+
 ## Historical work orders and decisions
 
 September 15 follow-through: historical catalog recovery has a completed
