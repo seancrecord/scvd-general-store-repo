@@ -12,10 +12,24 @@
 # publisher already relies on. It has to be configured once on PyPI's
 # side before the first run:
 #
-#   1. pypi.org → your project (or "Publishing" for a new one) →
-#      Add a new trusted publisher → GitHub.
-#   2. Owner: seancrecord. Repository: scvd-general-store-repo.
-#      Workflow name: publish-pypi.yml. Environment: leave blank.
+# THE PROJECT DOES NOT EXIST ON PyPI YET, so this is a PENDING
+# publisher, not a trusted publisher on an existing project. They are
+# different forms in different places, and the project-level one is
+# unreachable until a first release exists — which cannot happen until
+# this is configured. The pending form is what breaks that circle: it
+# authorises a publisher for a name nobody has claimed, and the first
+# successful run creates the project and converts it automatically.
+#
+#   1. https://pypi.org/manage/account/publishing/ — that exact page,
+#      NOT the project view. (PyPI requires 2FA on the account.)
+#   2. Under "Add a new pending publisher", GitHub tab:
+#        PyPI Project Name: scvd-preflight
+#        Owner:             seancrecord
+#        Repository name:   scvd-general-store-repo
+#        Workflow name:     publish-pypi.yml
+#        Environment name:  leave blank
+#      The workflow name is the FILENAME, not a path and not the
+#      `name:` field below.
 #
 # Until that exists the publish step fails with a 403 from PyPI and
 # nothing is uploaded, which is the correct failure: a publisher that

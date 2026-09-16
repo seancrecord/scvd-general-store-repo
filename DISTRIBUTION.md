@@ -385,12 +385,19 @@ Both are standard-library only, so neither adds a supply chain.
   `.github/workflows/publish-pypi.yml`. Trusted Publishing, not a
   token: PyPI accepts a short-lived OIDC credential minted by the run,
   so there is no `PYPI_TOKEN` to store, rotate or leak. THAT NEEDS ONE
-  BROWSER SETUP BEFORE THE FIRST RUN — pypi.org → Publishing → add a
-  GitHub publisher naming `seancrecord` / `scvd-general-store-repo` /
-  `publish-pypi.yml`, environment blank. Until it exists the upload
-  step gets a 403 and nothing is uploaded, which is the correct
-  failure: a publisher that was never authorised should not be able to
-  guess its way in.
+  BROWSER SETUP BEFORE THE FIRST RUN, and it is the PENDING publisher
+  form, not the project one: `scvd-preflight` does not exist on PyPI
+  (404, checked 2026-09-16), and the project-level form is unreachable
+  until a first release exists — which cannot happen until this is
+  configured. The pending form breaks that circle, and the first
+  successful run creates the project and converts it. At
+  https://pypi.org/manage/account/publishing/ (2FA required), add a
+  pending publisher naming project `scvd-preflight`, owner
+  `seancrecord`, repository `scvd-general-store-repo`, workflow
+  `publish-pypi.yml` (the filename, not a path), environment blank.
+  Until it exists the upload step gets a 403 and nothing is uploaded,
+  which is the correct failure: a publisher that was never authorised
+  should not be able to guess its way in.
 
 * **Go** — `x402-preflight-go/`, published by
   `.github/workflows/publish-go.yml`. No registry, no account, no
@@ -415,6 +422,13 @@ directory as a prefix (`x402-preflight-go/v0.1.0`) because a bare
 `v0.1.0` would advertise a module at the repository root that does not
 exist — and the prefix is derived from the directory name, never typed,
 so the two spellings cannot drift.
+
+NEITHER BUTTON EXISTS UNTIL THESE FILES ARE ON `main`. GitHub lists a
+`workflow_dispatch` workflow in the Actions tab only when the file is
+on the default branch, so both presses are gated on the merge — the
+PyPI one as much as the Go one. The PyPI browser setup above is the
+only half that can be done beforehand, because it happens on PyPI's
+side and knows nothing about our branches.
 
 Until both presses happen, every surface naming a Python or Go client
 is a forward reference, the same posture as the npm row above and worth
