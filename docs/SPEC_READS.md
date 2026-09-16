@@ -1246,6 +1246,51 @@ This is source-release status, not a live deployment or payment observation.
 The payment follow-through document now names that distinction. No protocol
 capability, paid purchase or production activation follows from this read.
 
+## 2026-09-15 — separately versioned MPP core draft-01 reading
+
+Read the full `specs/core/draft-httpauth-payment-01.md` from
+[tempoxyz/mpp-specs](https://github.com/tempoxyz/mpp-specs/blob/main/specs/core/draft-httpauth-payment-01.md)
+through GitHub's contents API. The raw URL failed through the web reader.
+The retrieved bytes have SHA-256
+`30dd795d27e3b0df832daffdcf2441975d10099a01a6e8f74aece19d9500d54c`.
+
+The draft requires lowercase-letter method identifiers, an unpadded JCS
+request, a nonempty id, a realm parameter, the exact alternate credential
+header value when supplied, a flat string-map JCS opaque value, lowercase
+custom names, no-store on 402 responses, and no receipt on error responses.
+RFC 9110 auth-parameter names remain case-insensitive and duplicates are
+ambiguous. Core request schemas belong to method specifications; the core
+alone does not justify amount/currency/recipient checks or a registry claim.
+The proposed intent registry is initially empty in this draft. Unknown
+parameters are ignored, not interpreted as failed payment semantics.
+
+Challenge binding is normative but unobservable without the server's state
+or secret. Credentials, settlement, replay, concurrency, delivery and
+preference negotiation are not tested by a single unpaid GET. The new
+`mpp-core-v1` block publishes these gaps. Its problem-body reader follows the
+expanded error table as a recommendation; `mpp-v1` remains pinned to its
+original draft and keeps its historical advisory list.
+
+Re-read Cloudflare Workers best practices, and checked the retrieved
+Workers types 5.20260915.1 for fatal UTF-8 decoding and BOM preservation.
+No new dependency, binding, compatibility date or payment path is added.
+Implementation scope and acceptance: `docs/MPP_CORE_DRAFT01_2026-09.md`.
+
+The source file was fetched again at immutable revision
+`2e3de24c07a9218456bd8814d6746a0dad941d06`; its SHA-256 matched the
+reviewed bytes. The emitted source link pins that revision. Wrangler's
+current command reference was read before the dry-run Worker bundles.
+
+
+## 2026-09-16 — MPP core integration onto main
+
+Re-read the current Cloudflare Workers best-practices page and Wrangler
+command reference before integrating the already reviewed core reader.
+No new runtime API, dependency, binding or compatibility flag is introduced.
+The immutable draft-01 source and digest above remain the reader's source.
+Git ancestry and public specimen, OpenAPI and practice reads distinguish
+feature-branch merge status from actual production capability; these reads
+are not a paid MPP encounter or general conformance evidence.
 ### September 16 UTC — unsigned payment reach qualification
 
 Read Coinbase's [buyer quickstart](https://docs.cdp.coinbase.com/x402/buyer/quickstart),
