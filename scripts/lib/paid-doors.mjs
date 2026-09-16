@@ -26,7 +26,27 @@
  * and only the nonce-zero path widens that window to all of history.
  */
 
-export const USDC_BASE = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
+import { EVM_RAILS, railFor } from "./evm-chains.mjs";
+
+/**
+ * KEPT, and no longer the only rail. This constant was the whole of
+ * this reader's chain knowledge until 2026-09-16, beside a seven-chain
+ * registry the store had been using for months. Exported still because
+ * callers and tests name it; new code should ask railFor(caip2).
+ */
+export const USDC_BASE = EVM_RAILS["eip155:8453"].usdc;
+
+/** Every rail this instrument can read, by CAIP-2. */
+export const READABLE_RAILS = Object.freeze(Object.keys(EVM_RAILS));
+
+/**
+ * The USDC contract for a rail, or null when the rail is out of reach.
+ * A rail we cannot read is named UNKNOWN rather than skipped: that is
+ * the rail rule, and skipping is how a gap becomes a confident answer.
+ */
+export function usdcFor(caip2) {
+  return railFor(caip2)?.usdc ?? null;
+}
 export const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
