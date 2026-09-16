@@ -189,6 +189,13 @@ export interface DeclineReport {
    */
   clients_by_reason: Record<string, string[]>;
   /**
+   * The same map, INTENT-BEARING CLIENTS ONLY — the noise floor left
+   * out. Two crawlers failing the same way is evidence about the
+   * challenge; it is not a buyer who could not get through, and the
+   * fault column answers the second question. See sharedReasons.
+   */
+  outside_clients_by_reason: Record<string, string[]>;
+  /**
    * THE RAILS ASKED FOR AND NOT OFFERED (2026-09-11). A payment signed
    * for a network absent from the challenge books as
    * `local:requirement_mismatch:network:<caip-2>`, and this tallies
@@ -706,8 +713,28 @@ export const SHARED_REASON_ESCALATION = 2;
 export interface SharedReason {
   reason: string;
   clients: string[];
+  /** Those of them the store counts as buyers rather than machinery. */
+  outside_clients: string[];
   /** True when the shared count moved the fault, not just annotated it. */
   escalated: boolean;
+  /**
+   * TWO CRAWLERS IS NOT A LOST SALE (2026-09-16).
+   *
+   * The first cut of this rule escalated on any two distinct clients,
+   * so `local:input_missing:confession` read OURS on the strength of
+   * x402lint and vet402 — both already on the store's own machinery
+   * table, neither ever going to pay. Beside it sat tx_hash, escalated
+   * on python-httpx AND a crawler, which is a different claim
+   * entirely: there a real client was turned away.
+   *
+   * The desk's own question is "whose problem is it", and its own
+   * answer for OURS is "money the store turned away". A crawler was
+   * never going to spend any, so calling its refusal OURS in the fault
+   * column overstates in the page's own terms. The discoverability
+   * finding is still real and still printed — it just stops borrowing
+   * the word for a sale nobody was going to make.
+   */
+  machinery_only: boolean;
 }
 
 /**
@@ -739,9 +766,20 @@ export function sharedReasons(report: DeclineReport): SharedReason[] {
   const shared: SharedReason[] = [];
   for (const [reason, clients] of Object.entries(report.clients_by_reason)) {
     if (clients.length < SHARED_REASON_ESCALATION) continue;
-    const escalated = escalatesWhenShared(reason);
-    if (!escalated && !annotatesWhenShared(reason)) continue;
-    shared.push({ reason, clients: [...clients], escalated });
+    const outside = report.outside_clients_by_reason[reason] ?? [];
+    const machineryOnly = outside.length === 0;
+    // The fault only moves when a client the store counts as a BUYER
+    // was among those turned away. Machinery alone is a finding about
+    // the challenge, printed as one, and not a sale that was lost.
+    const escalated = escalatesWhenShared(reason) && !machineryOnly;
+    if (!escalated && !annotatesWhenShared(reason) && !machineryOnly) continue;
+    shared.push({
+      reason,
+      clients: [...clients],
+      outside_clients: [...outside],
+      escalated,
+      machinery_only: machineryOnly,
+    });
   }
   return shared;
 }
@@ -749,11 +787,13 @@ export function sharedReasons(report: DeclineReport): SharedReason[] {
 /** Applies the count, mutating each affected row's fault and reading. */
 export function escalateSharedReasons(report: DeclineReport): SharedReason[] {
   const shared = sharedReasons(report);
-  for (const { reason, clients, escalated } of shared) {
+  for (const { reason, clients, escalated, machinery_only } of shared) {
     const who = clients.map((client) => `\`${client}\``).join(", ");
     const note = escalated
       ? ` ESCALATED BY THE DESK: ${clients.length} DIFFERENT clients hit this same code in this window (${who}), which is the condition the sentence above names. Two implementations do not independently forget the same parameter. The requirement is not discoverable where they are looking, and that is OURS to fix in the challenge rather than theirs to fix in their clients. Check what the PAYMENT-REQUIRED header actually carries before reading any of these rows as a careless buyer.`
-      : ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — the condition the sentence above names. The fault is unchanged and correctly so; what changed is that this is now a pattern rather than one client, which is what the reading asked you to watch for.`;
+      : machinery_only && escalatesWhenShared(reason)
+        ? ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — AND EVERY ONE OF THEM IS MACHINERY the store's own table already names. That is a real finding about the CHALLENGE: two independent implementations read it and could not find this input, which is the discoverability test passing its condition. It is NOT a lost sale, and the fault stays where it was: none of these was ever going to pay, so calling it OURS would borrow the word for money nobody was going to spend. If a client the store counts as a buyer joins them, this becomes ours in the same breath.`
+        : ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — the condition the sentence above names. The fault is unchanged and correctly so; what changed is that this is now a pattern rather than one client, which is what the reading asked you to watch for.`;
 
     for (const row of report.declines) {
       if (row.reason !== reason) continue;
@@ -789,6 +829,7 @@ export async function readDeclines(
     infrastructure_clients: [],
     by_reason: {},
     clients_by_reason: {},
+    outside_clients_by_reason: {},
     oldest_row_seen: null,
     ...(filterIsActive(filter) ? { filter } : {}),
     rails_asked_for: {},
@@ -857,6 +898,14 @@ export async function readDeclines(
       report.infrastructure_count += 1;
       machines.add(who);
       return;
+    }
+
+    // Past the noise-floor split: these are the clients the store
+    // counts as buyers, and the only ones whose refusal can move the
+    // fault to OURS. See SharedReason.machinery_only.
+    const outsideForReason = (report.outside_clients_by_reason[raw] ??= []);
+    if (!outsideForReason.includes(who)) {
+      outsideForReason.push(who);
     }
     report.outside_count += 1;
     report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;

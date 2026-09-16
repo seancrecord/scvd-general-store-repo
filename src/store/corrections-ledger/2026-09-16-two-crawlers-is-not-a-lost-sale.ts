@@ -1,0 +1,12 @@
+import type { Correction } from "./types";
+export const correction: Correction = {
+  date: "2026-09-16",
+  what_was_wrong:
+    "The shared-reason escalation shipped the same morning moved a decline's fault to OURS whenever two DISTINCT clients hit the same missing-input code, and it counted the noise floor toward that two. So `local:input_missing:confession` read OURS on the strength of x402lint/0.1 and vet402-observatory-l1/1.0 — both already on the store's own machinery table, neither of which was ever going to pay. Beside it on the same page sat `local:input_missing:tx_hash`, escalated on python-httpx AND a crawler, which is a different claim entirely: there a client the store counts as a buyer was turned away. The page presented the two identically. On this desk OURS means, in its own words, 'money the store turned away', and no money was ever going to come from a conformance walker. The headline count was not inflated — noise-floor rows are excluded from it — but the verdict beside each row was, and a reader cannot be expected to re-derive that exclusion from the fault column.",
+  how_long:
+    "About six hours, from the merge of the escalation on 2026-09-16 until this correction. It was visible on the live desk for at least one reading.",
+  found_by:
+    "The keeper, reading the live desk and pasting it back. The three escalated rows were printed side by side, which is what made the odd one out legible: two of them named a real client among their clients and the third named none.",
+  what_changed:
+    "The report now carries outside_clients_by_reason beside clients_by_reason — the same map with the noise floor left out — and SharedReason gained outside_clients and machinery_only. The fault moves only when at least one intent-bearing client is among those refused. Where every client is machinery the row reads 'discoverability only', keeps the fault it had, and says in the reading that the finding is real but that none of these was going to pay, so calling it ours would borrow the word for money nobody was going to spend; the moment a buyer joins them it becomes ours in the same breath, and a test pins both directions. The machinery clause is scoped to the missing-input family alone, so the rail and v1-envelope readings — which annotate and never escalate — keep their own words. The discoverability count still includes the noise floor, because whether a crawler can find a required input is evidence about the CHALLENGE and always was; what changed is that it stops being counted as a lost sale.",
+};

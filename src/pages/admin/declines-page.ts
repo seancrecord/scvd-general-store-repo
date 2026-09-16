@@ -195,14 +195,31 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     so. The noise floor is counted <em>here</em> and nowhere else on the page, on purpose
     &mdash; a conformance crawler that read our challenge and could not find a required
     input is evidence about the challenge whatever it intended to spend.</p>
+    <p><small><strong>Two crawlers is not a lost sale.</strong> Where every client behind a
+    reason is machinery the store's own table already names, the row reads
+    <em>discoverability only</em> and the fault is left where it was. The finding is real
+    &mdash; two independent implementations read the challenge and could not find the input
+    &mdash; but none of them was ever going to pay, and <code>ours</code> on this desk means
+    money the store turned away. The moment a client counted as a buyer joins them, it
+    becomes ours in the same breath.</small></p>
     <table>
-      <tr><th>reason</th><th>clients</th><th>who</th><th>moved the fault</th></tr>
+      <tr><th>reason</th><th>clients</th><th>who</th><th>buyers among them</th><th>moved the fault</th></tr>
       ${shared
         .map(
           (row) =>
             `<tr><td><code>${escapeHtml(row.reason)}</code></td><td>${row.clients.length}</td><td>${row.clients
               .map((client) => `<code>${escapeHtml(client)}</code>`)
-              .join(", ")}</td><td>${row.escalated ? "<strong>yes &mdash; now ours</strong>" : "no, annotated only"}</td></tr>`,
+              .join(", ")}</td><td>${
+              row.machinery_only
+                ? "<em>none &mdash; all machinery</em>"
+                : `${row.outside_clients.length}`
+            }</td><td>${
+              row.escalated
+                ? "<strong>yes &mdash; now ours</strong>"
+                : row.machinery_only
+                  ? "no &mdash; discoverability only"
+                  : "no, annotated only"
+            }</td></tr>`,
         )
         .join("\n")}
     </table>
