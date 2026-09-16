@@ -1,3 +1,4 @@
+import { isVerificationTool } from "@/lib/mcp-tool-effects";
 import purchaseSource from "../../webmcp/purchase.js";
 import { MENU_ITEMS } from "@/store";
 import { Hono } from "hono";
@@ -46,13 +47,13 @@ export const TOOL_ENDPOINTS: Readonly<
   look_in_window: { method: "GET", path: "/api/paywall/window" },
 };
 
-/** The free instrument set, derived from MCP; purchase tools are defined below. */
+/** Free instruments include metered verification; counters do not make a tool paid. */
 export function webmcpTools(): McpTool[] {
   return mcpToolCatalog("https://scvd.store").filter(
     (tool) =>
       !tool.itemId &&
       !tool.itemIds &&
-      tool.annotations?.readOnlyHint === true,
+      (tool.annotations?.readOnlyHint === true || isVerificationTool(tool.name)),
   );
 }
 

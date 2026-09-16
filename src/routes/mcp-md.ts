@@ -159,7 +159,8 @@ on \`document.modelContext\` with no connection to configure.
 Discovery is arrival.
 
 **Registered:** ${browser.map((n) => `\`${n}\``).join(", ")} — derived
-from the catalog above, filtered to free AND read-only. Two purchase tools
+from the catalog above, filtered to free instruments, including verification
+calls that update usage counters. Two purchase tools
 are also registered: \`quote_store_purchase\` gets a free x402 quote;
 \`complete_store_purchase\` submits a payment already signed by the buyer's
 wallet or payment client. It may transfer USDC and is marked consequential.

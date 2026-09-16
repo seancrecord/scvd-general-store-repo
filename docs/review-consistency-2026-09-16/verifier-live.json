@@ -1,0 +1,642 @@
+{
+  "observed_at": "2026-09-16T18:12:24.591Z",
+  "base": "https://scvd.store",
+  "scope": "Shared handlers on both doors; readiness and vocabulary are registered only on the verifier door. Local fixture receipt checked offline with its public key. No payment sent.",
+  "gaps": [
+    "Unknown-host production lookup not run: eligible unseen hosts enter the public demand queue. Covered with an isolated fixture by test/verifier-output-schemas.spec.ts.",
+    "No fresh outbound preflight or paid delivery exercised.",
+    "Schema formats are not validated by this smoke; structure and types are."
+  ],
+  "registered_defects": 31,
+  "rows": [
+    {
+      "case": "annotations:preflight_endpoint",
+      "passed": false,
+      "effects": [
+        {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        }
+      ]
+    },
+    {
+      "case": "annotations:check_conformance",
+      "passed": false,
+      "effects": [
+        {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        }
+      ]
+    },
+    {
+      "case": "annotations:verify_artifact",
+      "passed": false,
+      "effects": [
+        {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        }
+      ]
+    },
+    {
+      "path": "/mcp",
+      "name": "preflight_endpoint",
+      "arguments": {},
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": null,
+      "error": {
+        "code": -32602,
+        "message": "Send {\"url\": \"https://your-endpoint/...\"} — the URL a buyer would call, expecting your 402. We send GET first and fall back to POST once if your door refuses the method.",
+        "data": {
+          "code": "bad_request",
+          "charged": false
+        }
+      }
+    },
+    {
+      "path": "/mcp",
+      "name": "preflight_endpoint",
+      "arguments": {
+        "url": "https://127.0.0.1/private"
+      },
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": null,
+      "error": {
+        "code": -32602,
+        "message": "That address is private, loopback, link-local or otherwise not on the public internet. This probe only looks at endpoints a buyer could reach, and an endpoint no buyer can reach is not one we can report on.",
+        "data": {
+          "code": "bad_request",
+          "charged": false
+        }
+      }
+    },
+    {
+      "path": "/mcp",
+      "name": "check_conformance",
+      "arguments": {
+        "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJwYXllciI6IjB4MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsImlzc3VlZEF0IjoxNzY3MjI1NjAwLCJ0cmFuc2FjdGlvbiI6IjB4YWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYiJ9.ejuDi0c6vesOF34lLIZDZZ2oAKj_Bbfnm87SsyjDWJ_uw1BOLDVZ18vj08qWC7HsKGs-ZxxlrfZc6fVWeLNPBQ",
+        "public_key_hex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12"
+      },
+      "expected": "conforms",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "conforms"
+    },
+    {
+      "path": "/mcp",
+      "name": "check_conformance",
+      "arguments": {
+        "artifact": "not-a-signed-artifact"
+      },
+      "expected": "does_not_conform",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "does_not_conform"
+    },
+    {
+      "path": "/mcp",
+      "name": "verify_artifact",
+      "arguments": {},
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": null,
+      "error": {
+        "code": -32602,
+        "message": "Verification needs an id, cert_, stamp_, or anchor_.",
+        "data": {
+          "code": "bad_request",
+          "charged": false
+        }
+      }
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "preflight_x402_endpoint",
+      "arguments": {},
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": null,
+      "error": {
+        "code": -32602,
+        "message": "Send {\"url\": \"https://your-endpoint/...\"} — the URL a buyer would call, expecting your 402. We send GET first and fall back to POST once if your door refuses the method."
+      }
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "preflight_x402_endpoint",
+      "arguments": {
+        "url": "https://127.0.0.1/private"
+      },
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": null,
+      "error": {
+        "code": -32602,
+        "message": "That address is private, loopback, link-local or otherwise not on the public internet. This probe only looks at endpoints a buyer could reach, and an endpoint no buyer can reach is not one we can report on."
+      }
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "verify_x402_receipt",
+      "arguments": {
+        "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJwYXllciI6IjB4MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsImlzc3VlZEF0IjoxNzY3MjI1NjAwLCJ0cmFuc2FjdGlvbiI6IjB4YWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYiJ9.ejuDi0c6vesOF34lLIZDZZ2oAKj_Bbfnm87SsyjDWJ_uw1BOLDVZ18vj08qWC7HsKGs-ZxxlrfZc6fVWeLNPBQ",
+        "public_key_hex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12"
+      },
+      "expected": "conforms",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "conforms"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "verify_x402_receipt",
+      "arguments": {
+        "artifact": "not-a-signed-artifact"
+      },
+      "expected": "does_not_conform",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "does_not_conform"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "verify_scvd_artifact",
+      "arguments": {},
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": null,
+      "error": {
+        "code": -32602,
+        "message": "Verification needs an id, cert_, stamp_, or anchor_."
+      }
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "lookup_endpoint_readiness",
+      "arguments": {},
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "refused: host_missing"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "lookup_endpoint_readiness",
+      "arguments": {
+        "host": "https://"
+      },
+      "expected": "refusal",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "refused: host_missing"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "lookup_endpoint_readiness",
+      "arguments": {
+        "host": "402signal.com"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "last_signed_round: ready"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {},
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "no-402"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "no-402"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "unparseable-challenge"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "unparseable-challenge"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "unsignable-offer"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "unsignable-offer"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "transfer-method-unrecognized"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "transfer-method-unrecognized"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "unpayable-payto"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "unpayable-payto"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "rail-cannot-receive"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "rail-cannot-receive"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "wrong-network"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "wrong-network"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "amount-not-atomic"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "amount-not-atomic"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "inputs-undeclared"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "inputs-undeclared"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "replay-accepted"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "replay-accepted"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "nonce-unbound-from-settlement"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "nonce-unbound-from-settlement"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "re-challenges-spent-authorization"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "re-challenges-spent-authorization"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "advertised-version-unpayable"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "advertised-version-unpayable"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "settlement-error"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "settlement-error"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "delivered-nothing"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "delivered-nothing"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "payto-moved"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "payto-moved"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "discovery-info-invalid"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "discovery-info-invalid"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "offer-contradicts-challenge"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "offer-contradicts-challenge"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "surface-contradicts-challenge"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "surface-contradicts-challenge"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-core-observable-invalid"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-core-observable-invalid"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-challenge-id"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-challenge-id"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-challenge-realm"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-challenge-realm"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-method-unregistered"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-method-unregistered"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-intent-unregistered-or-missing"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-intent-unregistered-or-missing"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-request-undecodable"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-request-undecodable"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-request-not-canonical"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-request-not-canonical"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-amount-not-integer"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-amount-not-integer"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-currency-unnamed"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-currency-unnamed"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-recipient-missing"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-recipient-missing"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-challenge-expired-at-issue"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-challenge-expired-at-issue"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "mpp-challenge-over-http"
+      },
+      "expected": "structured",
+      "status": 200,
+      "passed": true,
+      "schema_valid": true,
+      "result": "mpp-challenge-over-http"
+    },
+    {
+      "path": "/mcp/verifier",
+      "name": "get_defect_definition",
+      "arguments": {
+        "id": "review-unknown-defect"
+      },
+      "expected": "error",
+      "status": 200,
+      "passed": true,
+      "schema_valid": null,
+      "error": {
+        "code": -32602,
+        "message": "No defect class named review-unknown-defect in vocabulary v19. Call with no id to list every class."
+      }
+    }
+  ],
+  "passed": false
+}

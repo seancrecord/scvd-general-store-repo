@@ -134,8 +134,6 @@
             "title": "Preflight an x402 Endpoint",
             "description": "Is this door's x402 challenge well-formed right now? One unpaid probe returns the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. Shape at one moment: not uptime, not delivery, and not this store's record of the host, which look_at_door holds. Free and rate limited; the ceiling travels with the result.",
             "scopes": [
-              "read_only",
-              "idempotent",
               "external"
             ]
           },
@@ -164,19 +162,13 @@
             "title": "Conformance Desk",
             "description": "Verifies any issuer's signed x402 offer or receipt (a compact JWS): structure, the signature against the issuer's did:web key, and liveness. Returns a verdict with every check named. With public_key_hex supplied the check runs fully offline. Free; the method is MIT-licensed and identical to the published verifier.",
             "scopes": [
-              "read_only",
-              "idempotent",
               "external"
             ]
           },
           {
             "name": "verify_artifact",
             "title": "Verify an Artifact",
-            "description": "Verifies a certificate, visit stamp or context anchor by its id against the store's own ed25519 key. Returns valid (true or false), the artifact kind, and a one-line note. Free and unlimited, for artifacts anyone bought or none.",
-            "scopes": [
-              "read_only",
-              "idempotent"
-            ]
+            "description": "Verifies a certificate, visit stamp or context anchor by its id against the store's own ed25519 key. Returns valid (true or false), the artifact kind, and a one-line note. Free and unlimited, for artifacts anyone bought or none."
           },
           {
             "name": "check_order",

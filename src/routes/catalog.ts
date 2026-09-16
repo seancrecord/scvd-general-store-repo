@@ -1,3 +1,4 @@
+import { purchaseChecklist, purchaseChecklistHtml } from "@/lib/purchase-checklist";
 import { publicationCollections } from "@/lib/publication-checkout";
 import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
@@ -154,6 +155,7 @@ catalogRoutes.get("/menu.json", async (c) => {
   const items: CatalogItem[] = await Promise.all(
     MENU_ITEMS.map(async (item) => ({
       ...item,
+      purchase_checklist: purchaseChecklist(item, c.env),
       buy_url: `${base}/api/buy/${item.id}`,
       ...buyerLinks(item, base),
       ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
@@ -222,6 +224,7 @@ catalogRoutes.get("/menu.json", async (c) => {
     })),
   );
   return c.json({
+    active_item_count: MENU_ITEMS.length,
     compact_catalog_url: `${base}/menu.json?view=compact`,
     ...freshness(),
     /**
@@ -633,6 +636,7 @@ function renderItemPage(
       <section>
         <h2>The facts</h2>
         ${factsHtml}
+        ${purchaseChecklistHtml(item, paymentConfig)}
         ${item.sample_url ? `<p class="menu-meta">A sample, free: <a href="${escapeHtml(item.sample_url)}"><code>${escapeHtml(item.sample_url)}</code></a></p>` : ""}
         ${tradeShelfEntry(item.id) && tradeEligible(item) ? `<p class="menu-meta">Also on account at <a href="/trade">the trade counter</a>, for marketplaces reselling this shelf: $${tradePriceUsd(item, TRADE_EXAMPLE_SHARE_BPS).toFixed(2)} at a ${TRADE_EXAMPLE_SHARE_BPS / 100}% partner share, by the published rule.</p>` : ""}
         <p class="menu-meta">${escapeHtml(TILL_WALLET_LIMIT)}</p>
@@ -710,7 +714,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
       404,
     );
   }
-  if (c.req.query("view") === "compact") return c.json(compactItemContract(item, base));
+  if (c.req.query("view") === "compact") return c.json(compactItemContract(item, base, c.env));
   /**
    * A CANONICAL SAYS SO, EVEN ON JSON. These pages are in the sitemap
    * and content-negotiate two bodies at one URL, and a JSON page has
@@ -786,6 +790,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   c.header("Link", canonical.Link);
   return c.json({
     ...item,
+    purchase_checklist: purchaseChecklist(item, c.env),
     ...buyerLinks(item, base),
     buy_url: `${base}/api/buy/${item.id}`,
     ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
@@ -1005,6 +1010,7 @@ function matchesQuery(item: MenuItem, needle: string): boolean {
 export function searchCatalog(
   base: string,
   input: { q?: string; maxPriceUsdc?: string | number; itemId?: string },
+  paymentConfig?: PaymentNetworkConfig,
 ): { status: 200 | 400 | 404; body: Record<string, unknown> } {
   const rawQuery = sanitizeText(String(input.q ?? ""), 120) ?? "";
   const needle = rawQuery.trim().toLowerCase();
@@ -1061,7 +1067,7 @@ export function searchCatalog(
         items: [
           {
             ...catalogRow(item, base),
-            ...compactItemContract(item, base),
+            ...compactItemContract(item, base, paymentConfig),
             description: item.description,
             at_a_glance: atAGlance(item, base, artifactClassForItem(item.id)),
           },
@@ -1106,6 +1112,6 @@ catalogRoutes.get("/api/catalog/v1", (c) => {
     q: c.req.query("q"),
     maxPriceUsdc: c.req.query("max_price_usdc"),
     itemId: c.req.query("item_id"),
-  });
+  }, c.env);
   return c.json(found.body, found.status);
 });

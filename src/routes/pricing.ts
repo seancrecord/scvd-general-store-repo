@@ -1,3 +1,7 @@
+import { purchaseChecklist, purchaseChecklistHtml } from "@/lib/purchase-checklist";
+import type { PaymentNetworkConfig } from "@/lib/payment-networks";
+import { freshness } from "@/lib/freshness";
+import { priceLine, fulfillmentLine } from "@/services/menu-markdown";
 import { Hono } from "hono";
 import {
   MARKDOWN_MEDIA_TYPE,
@@ -153,6 +157,27 @@ function priceRows(base: string): string {
     .join("\n");
 }
 
+function priceList(base: string, config: PaymentNetworkConfig) {
+  return MENU_ITEMS.filter(item => item.price_usdc > 0)
+    .slice().sort((a, b) => a.price_usdc - b.price_usdc || a.name.localeCompare(b.name))
+    .map(item => ({ id: item.id, name: item.name, price_tiers_usdc: priceTiersUsdc(item),
+      listing_url: `${base}/menu/${item.id}`, cadence: item.cadence,
+      purchase_checklist: purchaseChecklist(item, config) }));
+}
+
+function priceListHtml(config: PaymentNetworkConfig): string {
+  return `<section data-price-list><h2>The price list</h2>
+    <p class="menu-meta">${pricedDoorCount()} active priced doors. Prices, inputs and checkout networks are generated from the current catalog and configuration. Stock and subject eligibility are checked at the door.</p>
+    ${MENU_ITEMS.filter(item => item.price_usdc > 0).slice()
+      .sort((a,b) => a.price_usdc - b.price_usdc || a.name.localeCompare(b.name))
+      .map(item => `<article class="menu-item" data-item="${escapeHtml(item.id)}">
+        <h3><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a></h3>
+        <p class="menu-desc">USDC ${escapeHtml(priceLine(item))}; ${escapeHtml(fulfillmentLine(item))}.</p>
+        ${purchaseChecklistHtml(item, config)}
+      </article>`).join('')}
+  </section>`;
+}
+
 function pricingMarkdown(
   base: string,
   floorUsd: number,
@@ -277,6 +302,10 @@ pricingRoutes.get("/pricing", async (c) => {
     : null;
 
   const payload = {
+    ...freshness(),
+    active_item_count: MENU_ITEMS.length,
+    priced_item_count: pricedDoorCount(),
+    items: priceList(base, c.env),
     what_this_is:
       "The pricing charter: this store's standing, signed commitment about how prices are set. Clauses are promises — changing a word is a new version with a new signature, in public.",
     version: PRICING_CHARTER_VERSION,
@@ -363,6 +392,7 @@ pricingRoutes.get("/pricing", async (c) => {
         <p class="menu-desc"><strong>Nobody gets a different price here, and you don't have to take our word for that — the promise is signed.</strong></p>
         <p class="menu-desc">This charter is version ${escapeHtml(PRICING_CHARTER_VERSION)}, effective ${escapeHtml(PRICING_CHARTER_EFFECTIVE)}. Changing a word means a new version and a new signature, in public. The current floor on the shelf: <strong>$${escapeHtml(String(floorUsd))}</strong> — computed from the live menu as this page rendered, because a typed number would be a promise with an expiry date.</p>
       </section>
+      ${priceListHtml(c.env)}
       <section>
         <h2>The clauses</h2>
         ${clauses}

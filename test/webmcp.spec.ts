@@ -1,3 +1,4 @@
+import { isVerificationTool } from "@/lib/mcp-tool-effects";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
@@ -12,22 +13,22 @@ import { WEBMCP_ORIGIN_TRIAL_TOKENS } from "@/pages/storefront-page";
 /**
  * THE WEBMCP SURFACE (P7, 2026-08-27). The store's second executable
  * surface, and the same two construction guarantees the ruling asked
- * for are what this file pins for the free subset: read-only and
- * derived from MCP. The explicit buyer-signed purchase bridge is
+ * for are what this file pins for the free subset: no payment and
+ * derived from MCP, including persistent metering effects. The explicit buyer-signed purchase bridge is
  * exercised separately in webmcp/purchase.test.mjs.
  */
 
 const BASE = "https://scvd.store";
 
-describe("the free instrument subset remains read-only", () => {
-  it("registers only free, read-only tools", () => {
+describe("the free instrument subset retains its declared effects", () => {
+  it("registers free instruments with honest metering hints", () => {
     for (const tool of webmcpTools()) {
       expect(tool.itemId, `${tool.name} is paid`).toBeUndefined();
       expect(tool.itemIds, `${tool.name} is a paid shelf`).toBeUndefined();
       expect(
         tool.annotations?.readOnlyHint,
-        `${tool.name} is not read-only`,
-      ).toBe(true);
+        `${tool.name} has incorrect effects`,
+      ).toBe(!isVerificationTool(tool.name));
     }
   });
 
@@ -41,8 +42,8 @@ describe("the free instrument subset remains read-only", () => {
         ).toBe(false);
       }
     }
-    // The write-shaped errands stay off too: the browser surface is
-    // read-only by derivation, not by list.
+    // Visitor-entry errands stay off too; metered verification is the
+    // explicit exception to the catalog's read-only eligibility rule.
     expect(registered.has("ring_bell")).toBe(false);
     expect(registered.has("sign_guestbook")).toBe(false);
   });
