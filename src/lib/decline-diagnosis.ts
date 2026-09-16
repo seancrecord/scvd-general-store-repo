@@ -169,15 +169,112 @@ export function payloadProblemsFor(paymentHeader: string): PayloadFieldProblem[]
 }
 
 /**
+ * THE DIAGNOSIS WENT TO THE BUYER AND NOT TO THE BOOKS (2026-09-15).
+ *
+ * A facilitator refusal arrives in two parts: a short `invalidReason`
+ * CODE and a free-text `invalidMessage`. The 402 gets both —
+ * payment-gate's firstSuspect reads `${reason} ${message}` and can
+ * tell the buyer their wallet is probably short. recordPaymentDecline
+ * takes only the reason, so the books get the code alone.
+ *
+ * That is why an alert can read "invalid_payload ... the signature did
+ * not verify. UNCLEAR, needs a read" for a decline whose own 402 had
+ * already named the balance. CDP's `invalid_payload` is overloaded —
+ * malformed payload, already-settled nonce, and a verify-time revert
+ * all book as that one code — and every reading in readReason that
+ * would tell them apart (revert, insufficient, expired, valid_after,
+ * replay) keys on words that only ever existed in the MESSAGE. Those
+ * readings were unreachable from a booked row.
+ *
+ * The message itself must never go into the books verbatim: it is
+ * vendor English that can reword without notice, and slugging it would
+ * put an unbounded string family into by_reason — the same mistake
+ * local:sdk_threw exists to avoid. So the message is read down to ONE
+ * of a closed set of classes here, and rides as a bounded suffix in
+ * the `+payload:` style: `invalid_payload+verdict:revert`.
+ *
+ * The class names are deliberately the words readReason's existing
+ * rules already match on, so a suffixed row routes to the reading that
+ * was written for it and no rule has to change. A test pins each one.
+ */
+export type VerdictClass =
+  | "revert"
+  | "replay"
+  | "insufficient"
+  | "expired"
+  | "valid_after";
+
+/**
+ * Ordered, and the order is the reading. `revert` goes first for the
+ * reason firstSuspect puts it first: a reverted simulation is the
+ * balance question wearing a contract error, and a revert message that
+ * also says "insufficient" is still a revert. `replay` next because
+ * "authorization nonce already submitted" is the most specific string
+ * any of these carry.
+ */
+const VERDICT_MESSAGE_CLASSES: ReadonlyArray<readonly [VerdictClass, RegExp]> = [
+  ["revert", /revert/],
+  ["replay", /already (been )?(submitted|used|settled|on-chain)|nonce already|replay/],
+  ["insufficient", /insufficient|balance/],
+  ["expired", /expired|valid_?before/],
+  ["valid_after", /valid_?after|not yet valid/],
+];
+
+/** The one class a facilitator's free text earns, or none. */
+export function classifyVerdictMessage(
+  message: string | undefined,
+): VerdictClass | undefined {
+  if (!message) {
+    return undefined;
+  }
+  const text = message.toLowerCase();
+  return VERDICT_MESSAGE_CLASSES.find(([, pattern]) => pattern.test(text))?.[0];
+}
+
+/**
+ * The verdict class as a bounded suffix, when it says something the
+ * code did not already say. Skipped for our own `local:` refusals —
+ * the facilitator was never called, so there is no message of theirs
+ * to read, and readReason answers those before it reaches any of the
+ * rules this suffix is for.
+ */
+export function withVerdictClass(
+  reason: string,
+  message: string | undefined,
+): string {
+  if (reason.startsWith("local:") || reason.includes("+verdict:")) {
+    return reason;
+  }
+  const verdict = classifyVerdictMessage(message);
+  if (!verdict || reason.toLowerCase().includes(verdict)) {
+    return reason;
+  }
+  return `${reason}+verdict:${verdict}`;
+}
+
+/**
  * The books take one string. When the facilitator's verdict is opaque
  * (`verify_error` tells us nothing) and we found a concrete field
  * problem, the row carries both: the verdict, then ours, split by a +.
  * The verdict is never replaced — it is the fact, ours is the reading.
+ *
+ * THE FACILITATOR'S OWN WORDS OUTRANK OURS. When its message earns a
+ * class, that is what the row carries and our field note is left off:
+ * a non-blocking problem (the ERC-1271 signature length, reported and
+ * let through) riding on an underfunded payload would otherwise book
+ * as `+payload:payload.signature` and be read as a signature fault,
+ * because readReason checks `+payload:` before it checks revert. The
+ * balance is the better answer and it came from the party that judged.
  */
 export function bookedReason(
   reason: string,
   problems: PayloadFieldProblem[],
+  message?: string,
 ): string {
+  const withVerdict = withVerdictClass(reason, message);
+  if (withVerdict !== reason) {
+    return withVerdict;
+  }
   const first = problems[0];
   if (!first) {
     return reason;

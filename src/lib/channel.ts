@@ -296,9 +296,51 @@ export function isHouseWallet(env: Env, address: string): boolean {
   return houseWallets(env).includes(address.toLowerCase());
 }
 
+/**
+ * THE ADDRESS THE STORE RECEIVES AT (2026-09-16, off the decline desk).
+ *
+ * Every rail's payTo, read straight off the secrets rather than
+ * through lib/payments, because this file is imported by the metrics
+ * writer and a cycle there would be paid for on every event.
+ *
+ * These are NOT in house-wallets.json and should not be: that file is
+ * the register of wallets that SPEND here, published by who/since/why,
+ * and the till's receiving address is a different fact about the same
+ * business. But a payment signed FROM the address the store receives
+ * at is family by any reading, and until today it booked as an
+ * outside decline — the facilitator refusing it `self_send_not_allowed`
+ * was the only reason the keeper ever heard about it.
+ */
+export function houseReceivingAddresses(env: Env): string[] {
+  return [
+    env.PAY_TO_ADDRESS,
+    env.SOLANA_PAY_TO,
+    env.POLYGON_PAY_TO,
+    env.ARBITRUM_PAY_TO,
+    env.WORLD_PAY_TO,
+  ]
+    .filter((address): address is string => (address ?? "").trim().length > 0)
+    .map((address) => address.trim().toLowerCase());
+}
+
 export function isHouseTraffic(env: Env, signals: HouseSignals): boolean {
-  if (signals.payer && houseWallets(env).includes(signals.payer.toLowerCase())) {
-    return true;
+  if (signals.payer) {
+    const payer = signals.payer.toLowerCase();
+    if (houseWallets(env).includes(payer)) {
+      return true;
+    }
+    /**
+     * PAYING OURSELVES IS NOT DEMAND. A payer equal to one of our own
+     * payTo addresses is the house whatever wallet list it is on, and
+     * the direction of this error is the whole argument, same as the
+     * HOUSE_AGENTS test above: counting it as house REMOVES it from
+     * the organic figures, which understates the store. Counting it as
+     * a stranger inflates them, and inflating organic is the failure
+     * the house rules exist to prevent.
+     */
+    if (houseReceivingAddresses(env).includes(payer)) {
+      return true;
+    }
   }
   // The agent test runs BEFORE the secret, and needs neither a payer
   // nor a header — which is the point: it is the only one of the three
