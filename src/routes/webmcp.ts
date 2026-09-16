@@ -109,6 +109,7 @@ export function webmcpPurchaseTools() {
       outputSchema: { type: "object", properties: {
         ...resultProperties,
         payment_response: { type: ["string", "null"], description: "The PAYMENT-RESPONSE header, when supplied by the store." },
+        purchase_recovery: { type: ["string", "null"], description: "Private Purchase-Recovery header, unchanged base64 JSON. Save privately; decode purchase_id and status_token for the free check_purchase tool. Null when absent; JSON goods may carry recovery in body.recovery." },
       } },
       annotations: { readOnlyHint: false, consequentialHint: true },
       operation: "complete",

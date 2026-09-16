@@ -1,0 +1,478 @@
+{
+  "schema": "scvd-payment-reach-qualification/v1",
+  "reading_date_utc": "2026-09-16",
+  "source_commit": "b62b30b2d2c76e2386d70016ef8519c098607b14",
+  "scope": "Dated unsigned qualification and source/public-package parity. No wallet signature, payment, settlement, delivery or paid recovery was attempted in this pass.",
+  "http": {
+    "started_at": "2026-09-16T00:56:10.791Z",
+    "completed_at": "2026-09-16T00:56:13.956Z",
+    "versions": {
+      "@x402/core": "2.25.0",
+      "@x402/evm": "2.25.0",
+      "@x402/svm": "2.25.0"
+    },
+    "catalog_denominator": 35,
+    "scheme_payload_calls": 0,
+    "quotes_decoded": 35,
+    "all_quotes_402": true,
+    "networks_per_quote": [
+      5
+    ],
+    "selection_by_network": {
+      "eip155:8453": {
+        "selected_then_aborted": 21,
+        "refused_before_signing": 14,
+        "spending_cap_refusals": 14
+      },
+      "eip155:137": {
+        "selected_then_aborted": 21,
+        "refused_before_signing": 14,
+        "spending_cap_refusals": 14
+      },
+      "eip155:42161": {
+        "selected_then_aborted": 21,
+        "refused_before_signing": 14,
+        "spending_cap_refusals": 14
+      },
+      "eip155:480": {
+        "refused_before_signing": 35,
+        "asset_policy_refusals": 35
+      },
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": {
+        "selected_then_aborted": 21,
+        "refused_before_signing": 14,
+        "spending_cap_refusals": 14
+      }
+    },
+    "payment_required_header_bytes": {
+      "min": 8068,
+      "max": 12100
+    },
+    "no_store_count": 35,
+    "limitations": [
+      "Client selection uses default SDK spending policy; its refusals are not settlement failures.",
+      "Timing is sequential mixed-product wall time from this host, without a controlled cold/warm state; not service p95 or a latency comparison.",
+      "Decoded header bytes are reconstructed from Fetch headers, not HTTP wire/compression bytes.",
+      "Successful parsing/selection does not establish chain funding, signature compatibility, facilitator acceptance or payment."
+    ]
+  },
+  "mcp": {
+    "grouped_root_tool": "buy_simple",
+    "item_scoped_tool": "buy_small_blessing",
+    "item_scoped_path": "/mcp?item_id=small_blessing",
+    "legacy": {
+      "http_status": 200,
+      "jsonrpc_error_code": 402
+    },
+    "tool_result": {
+      "http_status": 200,
+      "isError": true,
+      "x402Version": 2,
+      "accepts": 5,
+      "text_matches_structured": true,
+      "meta_keys": [
+        "x402/idempotency-key",
+        "scvd/idempotency-replay-ttl-seconds",
+        "scvd/required-params",
+        "scvd/input-contract"
+      ]
+    },
+    "initial_wrong_scope_calls": 2,
+    "initial_wrong_scope_error": "unknown_tool",
+    "correction": "The first root MCP calls used an item-scoped tool at the grouped root. buy_small_blessing is valid on /mcp?item_id=small_blessing. The earlier private note calling it obsolete was wrong; both initial unknown_tool responses remain in the record."
+  },
+  "world_policy": {
+    "observed_at": "2026-09-16T01:05:59.679Z",
+    "quote_observed_at": "2026-09-16T00:59:14.991Z",
+    "scope": "Offline selection of a retained live unpaid quote. No claim that expired offers remain payable. Synthetic boundary controls are separately named.",
+    "asset_source": "https://docs.world.org/world-chain/reference/useful-contracts",
+    "policy": {
+      "allowedAssets": [
+        {
+          "network": "eip155:480",
+          "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+          "maxAmountPerPayment": "1000000"
+        }
+      ]
+    },
+    "scheme_payload_calls": 0,
+    "checks": [
+      {
+        "name": "observed_quote_default_policy",
+        "status": "refused_before_signing",
+        "network": "eip155:480",
+        "amount": "5000",
+        "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+        "reason": "All payment requirements were rejected by spendControls: only default assets or entries in spendControls.allowedAssets are allowed. Add an allowedAssets entry for non-default tokens, set allowedAssets: true, or set spendControls: false."
+      },
+      {
+        "name": "observed_quote_explicit_allowlist_and_cap",
+        "status": "selected_then_aborted",
+        "network": "eip155:480",
+        "amount": "5000",
+        "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+        "reason": "Payment creation aborted: UNPAID_QUALIFICATION"
+      },
+      {
+        "name": "exact_cap_synthetic_control",
+        "status": "selected_then_aborted",
+        "network": "eip155:480",
+        "amount": "1000000",
+        "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+        "reason": "Payment creation aborted: UNPAID_QUALIFICATION"
+      },
+      {
+        "name": "over_cap_synthetic_control",
+        "status": "refused_before_signing",
+        "network": "eip155:480",
+        "amount": "1000001",
+        "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+        "reason": "All payment requirements were rejected by spendControls.allowedAssets maxAmountPerPayment. Raise the per-asset cap, or omit maxAmountPerPayment to allow uncapped (default assets then fall back to the top-level USD cap)."
+      },
+      {
+        "name": "different_asset_synthetic_control",
+        "status": "refused_before_signing",
+        "network": "eip155:480",
+        "amount": "5000",
+        "asset": "0x1111111111111111111111111111111111111111",
+        "reason": "All payment requirements were rejected by spendControls: only default assets or entries in spendControls.allowedAssets are allowed. Add an allowedAssets entry for non-default tokens, set allowedAssets: true, or set spendControls: false."
+      },
+      {
+        "name": "different_network_synthetic_control",
+        "status": "refused_before_signing",
+        "network": "eip155:1",
+        "amount": "5000",
+        "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+        "reason": "No network/scheme registered for x402 version: 2 which comply with the payment requirements. {\"x402Version\":2,\"paymentRequirements\":[{\"scheme\":\"exact\",\"network\":\"eip155:1\",\"amount\":\"5000\",\"asset\":\"0x79a02482a880bce3f13e09da970dc34db4cd24d1\",\"payTo\":\"0xDD350976B8cfFc65938C0464d39A2C78BE079bd0\",\"maxTimeoutSeconds\":300,\"extra\":{\"name\":\"USDC\",\"version\":\"2\",\"assetTransferMethod\":\"eip3009\"}}],\"x402Versions\":[2],\"networks\":[\"eip155:480\"],\"schemes\":[\"exact\"]}"
+      }
+    ],
+    "limits": [
+      "No wallet, signature, facilitator or settlement exercised.",
+      "The per-asset cap is atomic units. Unknown assets need this cap because the top-level USD cap cannot value them.",
+      "Default-asset rules remain enabled. This client registers only the one qualified network."
+    ]
+  },
+  "browser": {
+    "observed_at": "2026-09-16T01:00:10.607Z",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "registered_tools": 14,
+    "quote_payment_sent": false,
+    "networks": [
+      "eip155:8453",
+      "eip155:137",
+      "eip155:42161",
+      "eip155:480",
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+    ],
+    "unsigned_completion": {
+      "isError": true,
+      "message": "A signed x402 v2 JSON payload is required. Signing belongs in the buyer's wallet; no payment was sent.",
+      "new_resource_entries": 0
+    },
+    "runtime_argument_encoding": "JSON string",
+    "runtime_limitation": "Object input failed to parse before execution in Chrome 152; serialized JSON succeeded. This differs from the current draft any-input signature and is not attributed to the store.",
+    "module": {
+      "observed_at": "2026-09-16T01:07:14.659Z",
+      "url": "https://scvd.store/webmcp.js",
+      "status": 200,
+      "bytes": 47866,
+      "sha256": "9474714c80344017752365c127a2ae517a5f06bb0a628c3b1ce696cf375638b9",
+      "containsPurchaseRecoveryHeader": false,
+      "containsPurchaseRecoveryField": false,
+      "containsQuoteTool": true,
+      "containsCompleteTool": true
+    },
+    "origin_trials": {
+      "observed_at": "2026-09-16T01:08:48.031Z",
+      "tokens": [
+        {
+          "token_sha256": "37f336874b796ea69196fa57b2f8c4c2f0edbbf94fff242521d3ede5b93d7c9c",
+          "payload": {
+            "origin": "https://scvd.store:443",
+            "feature": "WebMCP",
+            "expiry": 1794873600
+          },
+          "expires_at": "2026-11-17T00:00:00.000Z"
+        },
+        {
+          "token_sha256": "ccc9b444a58cdf2ebdd8695e006362f7ef4d1dd0410dbc2fef54ede69211ac00",
+          "payload": {
+            "origin": "https://scvd.store:443",
+            "feature": "WebMCP",
+            "expiry": 1792069907
+          },
+          "expires_at": "2026-10-15T13:11:47.000Z"
+        }
+      ],
+      "limit": "Decoded expiry; browser-vendor signature not independently verified. Earlier first-brace parser could not decode one token because arbitrary signature bytes included a brace."
+    }
+  },
+  "cross_origin": [
+    {
+      "path": "/api/buy/small_blessing",
+      "method": "OPTIONS",
+      "status": 405,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "vary": "PAYMENT-SIGNATURE, X-PAYMENT, Accept, Accept-Encoding, User-Agent"
+      }
+    },
+    {
+      "path": "/mcp",
+      "method": "OPTIONS",
+      "status": 204,
+      "headers": {
+        "access-control-allow-headers": "payment-signature,idempotency-key,content-type",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-max-age": "86400"
+      }
+    },
+    {
+      "path": "/api/buy/small_blessing",
+      "method": "GET",
+      "status": 402,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "vary": "PAYMENT-SIGNATURE, X-PAYMENT, Accept, Accept-Encoding, User-Agent"
+      }
+    }
+  ],
+  "six_doors": {
+    "taken_at": "2026-09-16T00:56:15.416Z",
+    "tallies": {
+      "raw_api": {
+        "met": 7,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "backend_mcp": {
+        "met": 5,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "computer_use": {
+        "met": 4,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "browser_automation": {
+        "met": 4,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "webmcp": {
+        "met": 4,
+        "partial": 1,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "site_assistant": {
+        "met": 3,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      }
+    },
+    "diff": {
+      "regressions": [
+        {
+          "key": "webmcp/origin_trial_unexpired",
+          "was": "met",
+          "now": "partial",
+          "note": "an origin trial ends 2026-10-15, in 29 days (2 tokens, soonest shown)"
+        }
+      ],
+      "improvements": [],
+      "added": [
+        {
+          "key": "raw_api/openapi_fetchable",
+          "now": "met",
+          "note": "openapi.json is 622 KB, inside the 684 KB budget"
+        },
+        {
+          "key": "raw_api/document_and_door_agree",
+          "now": "met",
+          "note": "5 rails, and the document and the door name the same ones"
+        }
+      ],
+      "removed": []
+    },
+    "reviews_due": [],
+    "record_used": false
+  },
+  "packages": {
+    "observed_at": "2026-09-16T00:23:41.690588+00:00",
+    "source_commit": "b62b30b2d2c76e2386d70016ef8519c098607b14",
+    "scope": "Public tarballs verified against registry SHA-512; compared with npm pack --dry-run --ignore-scripts file lists. No package code or hooks executed.",
+    "rows": [
+      {
+        "name": "x402-verify",
+        "directory": "verifier",
+        "source_version": "1.3.0",
+        "published_version": "1.3.0",
+        "published_files": 16,
+        "identical_files": 16,
+        "changed_files": [],
+        "published_only": [],
+        "source_pack_only": []
+      },
+      {
+        "name": "x402-sign",
+        "directory": "signer",
+        "source_version": "1.0.3",
+        "published_version": "1.0.3",
+        "published_files": 5,
+        "identical_files": 5,
+        "changed_files": [],
+        "published_only": [],
+        "source_pack_only": []
+      },
+      {
+        "name": "scvd-cli",
+        "directory": "cli",
+        "source_version": "0.3.0",
+        "published_version": "0.3.0",
+        "published_files": 5,
+        "identical_files": 5,
+        "changed_files": [],
+        "published_only": [],
+        "source_pack_only": []
+      },
+      {
+        "name": "scvd-tab",
+        "directory": "tab",
+        "source_version": "0.11.1",
+        "published_version": "0.11.1",
+        "published_files": 14,
+        "identical_files": 13,
+        "changed_files": [
+          {
+            "path": "README.md",
+            "published_sha256": "e6421fab495c06a3fcd99850feba5d34dc39d716990949a711050fc2b7c94b4c",
+            "source_sha256": "e67ecdf5c549752b3de74ee068977fa89cef6f32438978152e5b9a04f977e8f4"
+          }
+        ],
+        "published_only": [],
+        "source_pack_only": []
+      },
+      {
+        "name": "scvd-preflight",
+        "directory": "x402-preflight",
+        "source_version": "0.1.0",
+        "published_version": "0.1.0",
+        "published_files": 11,
+        "identical_files": 11,
+        "changed_files": [],
+        "published_only": [],
+        "source_pack_only": []
+      },
+      {
+        "name": "scvd-corpus-client",
+        "directory": "corpus-client",
+        "source_version": "0.1.0",
+        "published_version": "0.1.0",
+        "published_files": 7,
+        "identical_files": 7,
+        "changed_files": [],
+        "published_only": [],
+        "source_pack_only": []
+      },
+      {
+        "name": "scvd-defects",
+        "directory": "defects",
+        "source_version": "0.17.0",
+        "published_version": "0.15.0",
+        "published_files": 31,
+        "identical_files": 28,
+        "changed_files": [
+          {
+            "path": "defects.json",
+            "published_sha256": "2b5b7b7c0f9a100211f420edda63b6988fb38d96dffbfd19d085d7413f15e1c6",
+            "source_sha256": "fbf800f806f370cc9e24567edcac3a27506659dc8770f7c5108c6145a7537804"
+          },
+          {
+            "path": "package.json",
+            "published_sha256": "dab8a2b3532a220c254b365c593d52135cb50a9cb97dc604f6af555683af622e",
+            "source_sha256": "82f9a4767713102acba3371616f7f88906027658c3acab422082930ae371c671"
+          },
+          {
+            "path": "CHANGELOG.md",
+            "published_sha256": "7c2ceb0a801893baabba9774ae54925d9ef9c28c3349f676344aa8fda529f2b2",
+            "source_sha256": "e2a3a352e3c22d92c62a536e20544c71d5ca2db3b98024db7ec5009e8505d0e6"
+          }
+        ],
+        "published_only": [],
+        "source_pack_only": []
+      },
+      {
+        "name": "scvd-mcp-starter",
+        "directory": "mcp-starter",
+        "source_version": "0.1.0",
+        "published_version": "0.1.0",
+        "published_files": 6,
+        "identical_files": 6,
+        "changed_files": [],
+        "published_only": [],
+        "source_pack_only": []
+      }
+    ]
+  },
+  "release": {
+    "as_of_main": "c3dfe1608cc2a7e0b20bb0294f9329c3edc95233",
+    "source_package_paths_changed_since_reading": false,
+    "stacked_prs_not_on_main": [
+      {
+        "number": 714,
+        "merge_commit": "ed5f9433480a263bde091d9390148f5c25a1ccfa",
+        "base": "codex/agent-catalog-readability"
+      },
+      {
+        "number": 715,
+        "merge_commit": "da9b777ee286160c95731bf7544ad7f779fbe21b",
+        "base": "codex/mpp-discovery-comparison-pr"
+      }
+    ],
+    "mpp_checkout_qualified": false
+  },
+  "not_qualified": [
+    "New paid WebMCP completion",
+    "CDP-managed wallet payment",
+    "Paid completion on every advertised chain",
+    "Every wallet/browser or smart-account/PDA combination",
+    "Publication purchase recovery through WebMCP",
+    "MPP checkout",
+    "Controlled latency or service p95",
+    "Independent chain settlement verification in this pass",
+    "Provider CDN/proxy maximum header compatibility"
+  ],
+  "instrument_controls": [
+    "Positive default Base selection; public hook aborts before scheme payload creation.",
+    "Over-budget requirement and malformed payment header refuse.",
+    "World explicit allowlist passes observed quote and exact cap; rejects wrong asset/network and one atomic unit over cap.",
+    "No-signature browser completion refuses; no new Resource Timing entries.",
+    "Actual live MCP catalog was read after the initial wrong-scope probes.",
+    "Initial token parser failure remains retained; corrected reader considers braces in the binary signature prefix."
+  ],
+  "private_input_hashes": {
+    "scvd-reach-unsigned-live.json": "3a7571fa1c7943b1067635cebef7a47b1a34f1a8df537172b6d753243447ae34",
+    "scvd-reach-mcp-catalog.json": "72ab34d83eff072e260992aa19b0b01af0b68da52cc4925048c4d6a5b7aac694",
+    "scvd-reach-mcp-quotes.json": "b6177b36f4e34fb5e49eba96c050be6aeb6021c27eb138da4903594e6e955ed9",
+    "scvd-reach-transport.json": "fa8101758978b543064d5c87eccad87a5b4dff3a6e98b365d8ccb3c518590b5b",
+    "scvd-reach-world-policy.json": "f0d0e8712c6d11dcfa580cbd123609c3b05e9a7c8253bc85cb737feffcbc1835",
+    "scvd-reach-browser-quote.json": "26282a78e94c7c9fdcbc0d68b82f2fa71f9dabaeac5b49bc40c3c8fdc42f70b3",
+    "scvd-reach-browser-refusal.json": "57e53725376a2ceb95ed396884c669c0bb479acf31ac86b556d8564b2f3bd170",
+    "scvd-reach-browser-assets.json": "a1514a80958f5b8bc1702e8b14d836e42799fe48953931959c1a06a1042fc6fb",
+    "scvd-reach-browser-module.json": "6a5b7386e2f35ee896eddf02df7017ed02f82c13c31a76b60d8efeb722224e89",
+    "scvd-reach-browser-trials.json": "d47e66484dfd3ae04e57c23d3afb568bee604865289f4786dd7ea9cdaf685a3b",
+    "scvd-reach-six-doors.json": "b39abd5cb9e81d614080f82d8ec20ddedb584f04c8c1f1cc7625e23224710e9b",
+    "scvd-reach-package-versions.json": "00bb41ac88d4c4a35d324db76f0ddfa61eceb3b524693160af14b5a4df605c9b",
+    "scvd-reach-package-parity.json": "8b4aa589d1fd1255f8dba45ed2f4c4b0dc13d6f67291e46d85258217a9882d52"
+  }
+}
