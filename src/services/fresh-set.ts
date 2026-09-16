@@ -2,7 +2,8 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGetJson } from "@/lib/kv-retry";
 import { latestCorpusEntry } from "@/services/corpus";
 import { corpusFingerprint, derivedValue } from "@/services/corpus-list";
-import { latestWardRound } from "@/services/ward-round";
+import {
+  carriesVerdict, latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -101,7 +102,7 @@ export interface FreshSetCrowdRow {
   tx_hash: string;
   amount_usd: number;
   /** This store's own unpaid knock at claim time, when one was taken. */
-  house_probe_verdict?: "ready" | "not_ready" | "unreachable";
+  house_probe_verdict?: "ready" | "not_ready" | "unreachable" | "method_unresolved";
   history_url: string;
 }
 
@@ -237,7 +238,7 @@ export async function buildFreshSet(env: Env): Promise<FreshSet | null> {
   const base = env.STORE_BASE_URL;
 
   const rows = freshRows(round, base);
-  const probed = round.hosts.filter((h) => h.verdict !== "not_probed");
+  const probed = round.hosts.filter(carriesVerdict);
   const count = (verdict: string) =>
     probed.filter((h) => h.verdict === verdict).length;
 

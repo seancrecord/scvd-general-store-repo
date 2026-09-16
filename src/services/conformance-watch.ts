@@ -6,7 +6,7 @@ import { readObserverStatus } from "@/lib/observer-control";
 import type { ObserverStatus } from "@/lib/observer-control";
 import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
 import { ProbeTargetRefused } from "@/lib/probe-target";
-import { REFUSED_CHECK } from "@/services/standing-watch";
+import { METHOD_UNRESOLVED_CHECK, REFUSED_CHECK } from "@/services/standing-watch";
 import { sweepWatches } from "@/services/watch-sweep";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
@@ -55,7 +55,13 @@ export interface ConformancePass {
    * `refused` is OURS, not theirs — see standing-watch. No request was
    * made, so there is nothing to say about the endpoint.
    */
-  verdict: "ready" | "not_ready" | "unreachable" | "refused";
+  /**
+   * `method_unresolved` (2026-09-16): the door refused every method
+   * this probe sends, so the battery ran no checks at all. Kept apart
+   * from `not_ready` because a paid week that records a finding
+   * nobody made is worse than one that records a gap.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "refused" | "method_unresolved";
   /** HTTP status seen, absent when unreachable. */
   status?: number;
   /** Names of failed checks, empty when ready. */
@@ -180,11 +186,32 @@ async function passOnce(
   try {
     const outcome = await probeOnce(record.url, fetch, "", env);
     status = outcome.response.status;
-    const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body, record.url);
-    failed = ran.checks.filter((check) => !check.ok).map((check) => check.name);
+    const ran = runChecks(
+      outcome.response,
+      outcome.bodyOverLimit,
+      outcome.body,
+      record.url,
+      outcome.method,
+    );
     advisories = ran.advisories.map((advisory) => advisory.name);
-    verdict = failed.length === 0 ? "ready" : "not_ready";
-    battery = PREFLIGHT_BATTERY;
+    /*
+     * BRANCH BEFORE READING `checks` (2026-09-16). When the door
+     * refused every method we send, `checks` is EMPTY — and the line
+     * below would have read that emptiness as "nothing failed" and
+     * signed `ready` into a customer's paid week for a door nobody
+     * knocked on correctly. Rule 52's flattering answer, in one
+     * ternary. Every caller of runChecks now asks this question
+     * first, and test/bounded-read-honesty.spec.ts fails the build
+     * for any that stops.
+     */
+    if (ran.method_unresolved) {
+      verdict = "method_unresolved";
+      failed = [METHOD_UNRESOLVED_CHECK];
+    } else {
+      failed = ran.checks.filter((check) => !check.ok).map((check) => check.name);
+      verdict = failed.length === 0 ? "ready" : "not_ready";
+      battery = PREFLIGHT_BATTERY;
+    }
   } catch (error) {
     /*
      * REFUSED IS NOT UNREACHABLE. probeOnce carries this store's own
@@ -317,7 +344,7 @@ export function conformanceWatchHistoryOf(
     0,
     Math.floor((end - Date.parse(record.started_at)) / (24 * 3600_000)),
   );
-  const tally = { ready: 0, not_ready: 0, unreachable: 0, refused: 0 };
+  const tally = { ready: 0, not_ready: 0, unreachable: 0, refused: 0, method_unresolved: 0 };
   // Drift is plain set arithmetic over the signed rows — a reader can
   // recompute it without trusting this summary: sort each reachable
   // pass's failed names and compare across the week. Unreachable
@@ -331,11 +358,22 @@ export function conformanceWatchHistoryOf(
     // our blindness; neither is an observation of the endpoint.
     if (
       pass.verdict !== "refused" &&
+      pass.verdict !== "method_unresolved" &&
       !(pass.verdict === "unreachable" && pass.observer_status === "degraded")
     ) {
       observed += 1;
     }
-    if (pass.verdict !== "unreachable" && pass.verdict !== "refused") {
+    /*
+     * A method-unresolved pass contributes NO readout (2026-09-16).
+     * Its `failed` holds one token naming our own reach, and letting
+     * that into the drift set would report "the door's conformance
+     * changed this week" on a week where only our probe did.
+     */
+    if (
+      pass.verdict !== "unreachable" &&
+      pass.verdict !== "refused" &&
+      pass.verdict !== "method_unresolved"
+    ) {
       readouts.add(JSON.stringify([...pass.failed].sort()));
     }
   }

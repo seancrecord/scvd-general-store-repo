@@ -379,3 +379,209 @@ describe("a check that judged nothing must not report a clean pass", () => {
     }
   });
 });
+
+/**
+ * A PROBE THAT ASKED THE WRONG QUESTION MUST NOT ANSWER "NO" EITHER
+ * (2026-09-16).
+ *
+ * The third face of rule 52 in this file, and it arrived the way the
+ * other two did: from outside. An operator asked why his endpoint was
+ * published `not_ready`. It answers 405 to GET — the verb every probe
+ * this store runs hard-coded — and a flawless x402 v2 challenge to
+ * POST, the method his own OpenAPI declares. The battery scored the
+ * 405 as a failed `status-402` check, the census published it on his
+ * passport page, and the outreach desk mailed his security contact
+ * naming the check that failed.
+ *
+ * The 2026-09-04 correction extended this file rather than starting a
+ * new one, on the grounds that rule 52 already forbade the defect and
+ * only its ENFORCEMENT was too narrow. Same here, so same file. What
+ * the guard below actually holds:
+ *
+ *   1. A method refusal produces NO checks — not a failing one.
+ *   2. The fallback finds a door that only answers POST.
+ *   3. `method_unresolved` never reads as `ready` through the
+ *      `failed.length === 0` idiom every caller of runChecks uses.
+ *      That idiom over an EMPTY check list is the flattering answer
+ *      in one ternary, and it is the specific way this fix could be
+ *      undone without anybody noticing.
+ *   4. The census — not the free preflight — is walked, because the
+ *      census is the surface that published the wrong verdict and it
+ *      carries its own fetch.
+ */
+describe("a probe that asked the wrong question must not answer no", () => {
+  /** The door that caught us, reduced to its two observed behaviours. */
+  const postOnlyDoor = (challenge: string) =>
+    (async (_url: string, init?: RequestInit) =>
+      (init?.method ?? "GET") === "POST"
+        ? new Response(challenge, {
+            status: 402,
+            headers: {
+              "PAYMENT-REQUIRED": btoa(challenge),
+              "content-type": "application/json",
+            },
+          })
+        : // 405 with NO Allow header — RFC 9110 §15.5.6 makes it
+          // mandatory and the real door omits it, so a fallback that
+          // required Allow would have failed this operator too.
+          new Response(null, { status: 405 })) as unknown as typeof fetch;
+
+  const CHALLENGE = JSON.stringify({
+    x402Version: 2,
+    accepts: [
+      {
+        scheme: "exact",
+        network: "eip155:8453",
+        amount: "1000000",
+        payTo: "0xb5a05466712fd5bcdf2883f43cC6B1799428032d",
+        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        maxTimeoutSeconds: 60,
+      },
+    ],
+  });
+
+  it("finds the challenge on a door that answers only POST", async () => {
+    const { probeOnce, runChecks } = await import("@/services/preflight");
+    const outcome = await probeOnce(
+      "https://agents.example/api/gateway/topup",
+      postOnlyDoor(CHALLENGE),
+    );
+    expect(outcome.method.attempted).toEqual(["GET", "POST"]);
+    expect(outcome.method.used).toBe("POST");
+    expect(outcome.method.unresolved).toBe(false);
+    const ran = runChecks(outcome.response, false, outcome.body, "", outcome.method);
+    expect(ran.method_unresolved).toBeUndefined();
+    expect(
+      ran.checks.find((check) => check.name === "status-402")?.ok,
+      "a door serving a valid challenge to POST was still scored as serving none",
+    ).toBe(true);
+  });
+
+  it("emits NO checks when every method is refused, rather than a failing one", async () => {
+    const { probeOnce, runChecks } = await import("@/services/preflight");
+    const refusesEverything = (async () =>
+      new Response(null, { status: 405 })) as unknown as typeof fetch;
+    const outcome = await probeOnce("https://agents.example/door", refusesEverything);
+    expect(outcome.method.attempted).toEqual(["GET", "POST"]);
+    expect(outcome.method.unresolved).toBe(true);
+    const ran = runChecks(outcome.response, false, outcome.body, "", outcome.method);
+    expect(ran.method_unresolved).toBe(true);
+    expect(
+      ran.checks,
+      "a method refusal produced a check, which is an observation nobody made",
+    ).toEqual([]);
+    expect(
+      ran.checks.some((check) => check.name === "status-402"),
+      "status-402 was scored against a door we never reached",
+    ).toBe(false);
+  });
+
+  it("never lets an empty check list read as ready", async () => {
+    const { probeOnce, runChecks } = await import("@/services/preflight");
+    const refusesEverything = (async () =>
+      new Response(null, { status: 501 })) as unknown as typeof fetch;
+    const outcome = await probeOnce("https://agents.example/door", refusesEverything);
+    const ran = runChecks(outcome.response, false, outcome.body, "", outcome.method);
+    /*
+     * THE IDIOM, REPRODUCED EXACTLY as every caller of runChecks
+     * writes it. If `method_unresolved` ever stops being set, this
+     * line computes "ready" for a door nobody knocked on and the
+     * assertion below is what catches it.
+     */
+    const naive = ran.checks.filter((c) => !c.ok).length === 0 ? "ready" : "not_ready";
+    expect(naive).toBe("ready");
+    expect(
+      ran.method_unresolved,
+      "the flattering answer is reachable: an empty battery scores ready and nothing says otherwise",
+    ).toBe(true);
+  });
+
+  it("a document read does not grow a POST fallback", async () => {
+    const { probeOnce } = await import("@/services/preflight");
+    const sent: string[] = [];
+    const impl = (async (_url: string, init?: RequestInit) => {
+      sent.push(init?.method ?? "GET");
+      return new Response(null, { status: 405 });
+    }) as unknown as typeof fetch;
+    await probeOnce("https://agents.example/.well-known/x402", impl, "", undefined, {
+      fallback: false,
+    });
+    expect(
+      sent,
+      "a fixed catalog path was POSTed at; a 405 there is an answer about the document",
+    ).toEqual(["GET"]);
+  });
+
+  it("the census — which carries its own fetch — resolves the method too", async () => {
+    /*
+     * THE POINT OF THIS CASE. The brief that opened this work said one
+     * function backed every probing surface. It did not: probeHost
+     * imports the battery and not the fetch, and probeHost is what
+     * published the wrong verdict. A fix proven only through
+     * preflight.probeOnce would have left the census exactly as it
+     * was, so the guard walks the census.
+     */
+    const ward = await import("@/services/ward-round");
+    expect(
+      typeof ward.carriesVerdict,
+      "the shared non-verdict predicate is gone; ready fractions are counting rows nobody read",
+    ).toBe("function");
+    expect(
+      ward.carriesVerdict({ verdict: "method_unresolved" }),
+      "a door whose verb we never found is being counted in a ready denominator",
+    ).toBe(false);
+    expect(
+      ward.carriesVerdict({ verdict: "not_ready" }),
+      "a real verdict stopped counting",
+    ).toBe(true);
+  });
+
+  it("no probe at a stranger's x402 door hard-codes its verb", () => {
+    /*
+     * THE STRUCTURAL HALF (rule 46: a guard that cannot fail argues
+     * for the lie). The probes below are the ones that knock on
+     * strangers' PAYMENT DOORS. Each carried its own verb until
+     * today — three by hard-coding `method: "GET"` and the fourth by
+     * omitting the field, which defaults to the same thing and is
+     * why grepping for the string alone was not enough to find them.
+     * That is how a fix to any single one would have been mistaken
+     * for a fix to all of them.
+     */
+    /*
+     * COMMENTS ARE STRIPPED FIRST, and the first draft of this guard
+     * did not strip them — it failed on the prose that explains the
+     * fix, which is a guard reporting the cure as the disease. Rule 46
+     * cuts both ways: a check that fires on its own documentation is
+     * as useless as one that cannot fire at all.
+     */
+    const code = (source: string): string =>
+      source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    const DOOR_PROBES = [
+      "../src/services/preflight.ts",
+      "../src/services/ward-round.ts",
+      "../src/services/standing-watch.ts",
+      /*
+       * THE FOURTH, found while fixing the other three and not in the
+       * scoping that opened this work: the paid launch check walks a
+       * door to actual settlement and its unpaid approach stage was
+       * GET-only too. A POST-only door was not merely reported as
+       * serving no challenge — it was reported as unpayable by an
+       * instrument that never asked it to sell anything.
+       */
+      "../src/services/launch-check.ts",
+    ];
+    for (const path of DOOR_PROBES) {
+      const raw = SOURCES[path];
+      expect(raw, `${path} is not in the walked source set`).toBeTruthy();
+      const source = code(raw!);
+      expect(
+        source.includes('method: "GET"'),
+        `${path} hard-codes GET at a stranger's payment door; the verb is resolved in lib/probe-method.ts`,
+      ).toBe(false);
+      expect(
+        source.includes("probeWithMethod"),
+        `${path} probes a payment door without the shared method law`,
+      ).toBe(true);
+    }
+  });
+});

@@ -187,7 +187,7 @@ function landingHtml(base: string): string {
       <p class="menu-desc">Check an artifact — a signed offer or a signed receipt, from any issuer:</p>
       <pre class="menu-desc"><code>${escapeHtml(curlConformance)}</code></pre>
       <p class="menu-desc">Supply <code>public_key_hex</code> alongside the artifact and the check runs entirely offline, making no request in your name; leave it out and the key named by the artifact's <code>kid</code> is resolved for you (did:web).</p>
-      <p class="menu-desc">Checking an endpoint rather than an artifact — does a seller's door answer a well-formed x402 v2 payment challenge at all — is the free preflight, one probe, one moment:</p>
+      <p class="menu-desc">Checking an endpoint rather than an artifact — does a seller's door answer a well-formed x402 v2 payment challenge at all — is the free preflight, one door, one moment (GET, or the method your door takes):</p>
       <pre class="menu-desc"><code>${escapeHtml(curlPreflight)}</code></pre>
     </section>
     <section>

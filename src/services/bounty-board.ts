@@ -403,8 +403,16 @@ export interface BountyRecord {
      * theirs. Absent when the knock could not be taken; never a
      * refusal, the claim pays on the chain's part alone.
      */
+    /**
+     * `method_unresolved` (2026-09-16) rides through under its own
+     * name rather than being folded into `unreachable`: the host DID
+     * answer, we just could not find the verb its door takes. A claim
+     * is paid on the settlement, never on this knock, so an
+     * unresolved verb changes no payout — it only stops the record
+     * saying we saw something we did not.
+     */
     house_probe?: {
-      verdict: "ready" | "not_ready" | "unreachable";
+      verdict: "ready" | "not_ready" | "unreachable" | "method_unresolved";
       failed: string[];
       advisories: string[];
       battery?: string;
@@ -1549,8 +1557,9 @@ export async function claimBounty(
     /*
      * OUR OWN KNOCK, beside their claim. The settlement above is
      * proven; what the door looks like is something this store can
-     * see for itself, so it looks — one unpaid GET, the census's
-     * battery, fail-soft: a knock that cannot be taken changes
+     * see for itself, so it looks — one unpaid knock with the census's
+     * battery (GET, or the verb the door will answer),
+     * fail-soft: a knock that cannot be taken changes
      * nothing about the payout. Dynamic import: ward-round must not
      * be a static dependency of the board (it imports nothing from
      * here today, and a cycle here is the kind that deadlocks a

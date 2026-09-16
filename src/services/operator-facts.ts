@@ -1,4 +1,5 @@
 import type { CorpusRecord } from "@/services/corpus";
+import { carriesVerdict } from "@/services/ward-round";
 import type { WardHostResult } from "@/services/ward-round";
 import { payToDigest } from "@/lib/pay-to-digest";
 
@@ -132,7 +133,7 @@ export async function deriveWalletFacts(
     week: latest.snapshot.week,
     sequence: latest.snapshot.sequence,
     digest: latest.digest,
-    hosts_probed: hosts.filter((h) => h.verdict !== "not_probed").length,
+    hosts_probed: hosts.filter(carriesVerdict).length,
     hosts_with_offer: hostsWithOffer,
     hosts_with_pay_to: hostsWithPayTo,
     distinct_addresses: clusters.size,

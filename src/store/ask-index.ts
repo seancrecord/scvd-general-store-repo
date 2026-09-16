@@ -111,7 +111,7 @@ const STANDING_ENTRIES: readonly AskEntry[] = [
     path: "/api/preflight",
     name: "The free preflight check",
     description:
-      "Send any x402 door's URL and get back what its 402 actually serves: the offer shape, the accepts, the named defects it carries. Free, no account, one outbound request per call.",
+      "Send any x402 door's URL and get back what its 402 actually serves: the offer shape, the accepts, the named defects it carries. Free, no account. GET, or the method your door declares or accepts — at most two requests per call, and the second only when the first is refused as a method.",
     schemaType: "WebAPI",
     keywords:
       "preflight check x402 door endpoint 402 free test probe shape accepts defects",

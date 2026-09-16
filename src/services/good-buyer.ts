@@ -162,7 +162,17 @@ export async function performGoodBuyerReading(
       outcome.bodyOverLimit,
       outcome.body,
       url,
+      outcome.method,
     );
+    /*
+     * A DRY RUN NEEDS A CHALLENGE (2026-09-16). When the door refused
+     * every method we send there are no accepts, and the reason is
+     * ours rather than theirs — so it is reported as the gap it is
+     * instead of as "we read your offers and could not pay them".
+     */
+    if (ran.method_unresolved) {
+      couldNotRead = ran.method_note ?? "the door refused every method this probe sends";
+    }
     accepts = ran.accepts ?? [];
     simulation = simulatePayment(accepts, profile);
     verdict = simulation.outcome;
