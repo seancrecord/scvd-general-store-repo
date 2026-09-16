@@ -20,6 +20,18 @@ WBA_SIGNING_KEY=
 # spends). Must be listed in src/store/house-wallets.json first. Unset,
 # the launch_check door refuses new purchases before any money moves.
 FIELD_WALLET_KEY=
+# Optional. Ownership proof(s) for this origin: whitespace- or
+# comma-separated signatures, each one a signature over THE BARE ORIGIN
+# STRING (https://scvd.store — no trailing slash, no path) by one of the
+# payTo addresses the accepts name. Published at the root of
+# /openapi.json as x-agentcash-provenance.ownershipProofs, where
+# x402scan, mppscan and AgentCash read it; a match moves the origin from
+# origin_hosted to ownership_verified. Unset, the extension is absent and
+# the origin is simply unproved. Sign with the PAY_TO wallet, e.g.
+#   cast wallet sign --private-key $KEY "https://scvd.store"
+# and paste only the signature — the private key never belongs here.
+# Verify what is deployed with: npm run ownership:check
+ORIGIN_OWNERSHIP_PROOFS=
 
 # NOTE: this file feeds `wrangler dev` — the Worker, locally. The
 # walkabout runner (scripts/walkabout.mjs) is a separate Node process

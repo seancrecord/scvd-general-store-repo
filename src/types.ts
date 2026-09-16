@@ -87,6 +87,37 @@ export interface Env {
    * Set with: wrangler secret put GLAMA_CLAIM
    */
   GLAMA_CLAIM?: string;
+  /**
+   * OWNERSHIP OF THIS ORIGIN, PROVED RATHER THAN ASSERTED (2026-09-16).
+   *
+   * Whitespace- or comma-separated signatures, each one a signature
+   * over THE ORIGIN STRING ITSELF — `https://scvd.store`, no trailing
+   * slash, no path — by one of the payTo addresses this store's
+   * accepts actually name. `@agentcash/discovery` (v1.7.5, the
+   * validator x402scan, mppscan and AgentCash share) reads them from
+   * `x-agentcash-provenance.ownershipProofs` at the root of
+   * `openapi.json`, recovers the signer with viem's
+   * `recoverMessageAddress` for an EVM address or checks ed25519 for
+   * a Solana one, and moves the origin's trust tier from
+   * `origin_hosted` to `ownership_verified`.
+   *
+   * A SIGNATURE IS PUBLIC, and this is a secret anyway, for the same
+   * reason GLAMA_CLAIM above is: not confidentiality — it is served
+   * at a public URL, that is the mechanism — but the ability to set,
+   * rotate or withdraw it without a code change, and to keep a value
+   * bound to a wallet out of git history where a withdrawn proof
+   * would stay readable forever. The PRIVATE KEY never comes near
+   * this repository or any agent working in it: the keeper signs the
+   * origin string and pastes only the signature.
+   *
+   * UNSET, THE EXTENSION IS ABSENT, and that is the feature. An
+   * unproved origin says nothing rather than carrying an empty or
+   * placeholder proof, which would be a document failing its own
+   * check while looking like it passed.
+   *
+   * Set with: wrangler secret put ORIGIN_OWNERSHIP_PROOFS
+   */
+  ORIGIN_OWNERSHIP_PROOFS?: string;
   /** Registry Watch HMAC secret; set via wrangler secret put. Absent means 401. */
   DESVELA_REGISTRY_SECRET?: string;
   GUESTBOOK: KVNamespace;
