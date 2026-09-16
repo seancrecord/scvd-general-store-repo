@@ -34,14 +34,14 @@
     },
     "scvd-defects": {
       "directory": "defects",
-      "version": "0.17.0",
+      "version": "0.19.0",
       "files": {
-        "CHANGELOG.md": "e2a3a352e3c22d92c62a536e20544c71d5ca2db3b98024db7ec5009e8505d0e6",
+        "CHANGELOG.md": "fa3246746b75f7215f73ac627d06fadb20b9b01d112b03d946ac55f6421f3a3b",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
         "README.md": "a996389653109330299875cd729de8094422910aea01fde6c273ca11a79525b3",
         "defects.d.ts": "257437a540dcb8e6a0972bbf41f757d554c9e2c4c9fc2d75cd6f3fbc4862fc2d",
         "defects.js": "74ab30908291d9695caf67a1a53b208473dda697cc2fe9ef8ffd701b4f02d7f0",
-        "defects.json": "fbf800f806f370cc9e24567edcac3a27506659dc8770f7c5108c6145a7537804",
+        "defects.json": "11307304f034a3f4adc004f13c4bf1f4e08e2b05ed336c5a6b56008633977574",
         "example.mjs": "c4c75683eae390b6380e855468ac40a46d5e0380fe160ba7d3315588767ec613",
         "fixtures/doors/accepts-empty.json": "aa34f4b20327d658971a9bd5e545d3b446acac1c0b5e236aa17dff7ace7179a5",
         "fixtures/doors/accepts-missing-asset.json": "25626ded86e7a66a5a3ad42b9d6d695d971407fabe7c9a7defb9379d208dde93",
@@ -64,21 +64,21 @@
         "fixtures/settlement-responses/settled-v1-network-name.json": "8e7c89ba622e5ee3b390f32ab2a61285d92f6fd6c2bcb1e34d0be7d3ba2a1a7d",
         "fixtures/settlement-responses/success-not-boolean.json": "09616d198e6d7750decf658854f2ace39d09466ca9c78c78fe467b02fe876172",
         "fixtures/settlement-responses/success-with-error-reason.json": "e4efad6e699fb553d528d036fb79965b905846bb8a9ad0b11b55bbf8dd6a53b6",
-        "package.json": "82f9a4767713102acba3371616f7f88906027658c3acab422082930ae371c671",
+        "package.json": "c7933e5d20f861ac0ebbd94bf309aa09b7276561b3388f60cbc63f33b7a2f4a6",
         "settlement-response.d.ts": "77e3d8441a1a0a80915f8dd5f54111c2a3fefbe20a8fe54ecee82a82c74b0fca",
         "settlement-response.js": "c1317d1f0dcea48108498883fa80170585613adf74e5a1126ae956823e5a4dbc"
       }
     },
     "scvd-mcp-starter": {
       "directory": "mcp-starter",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "files": {
-        "CHANGELOG.md": "acdc18ecfa412c3443958e824f22392d795ef985a9b2c0a6246392c294cac985",
+        "CHANGELOG.md": "293c5644215e43b14903078de7f9abac17989a37e7196aaab41a31f5c2bd3be1",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
-        "README.md": "32d651067e20e96391c0daa1a1821b46fc0df960592436e11eaac816a47394c0",
+        "README.md": "6f1e56197d661eee9436c37922890f3395f71486defb49507ab12409e7b19e52",
         "example.mjs": "a5df1f770c3abff570eeb18b196410eed112b4b76473f4d94acdcabc1a99cf41",
-        "package.json": "d83dc21b8da45bb1b925e93fb431c84ae19f0416f9b58db2c985e4efb3935c8c",
-        "server.mjs": "dad53e0c48f6bffe89c8cfec2b67f306be333c2d2769905facc0900de86cd018"
+        "package.json": "6b0b2d122652723e5e8296802976a5637481f5ee7060180ea71045fee4603def",
+        "server.mjs": "07917f85890e5057ba18d35fe5f170e829385a24ad8d7f6ffc0b8aabb4367d5d"
       }
     }
   }

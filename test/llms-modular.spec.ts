@@ -1007,8 +1007,12 @@ const BASE = "https://scvd.store";
 // is exactly the pair a reader can confuse. Verified across the merge:
 // with only that paragraph removed from the merged tree, main's 293280bf
 // reproduced, and this copy reproduces the new one.
+// 2026-09-16: the guide names the shared payment breakdown and its MCP
+// resource. Counts are grouped by protocol, network and currency; the
+// existing checkout remains x402/USDC. No purchase instructions changed.
+// The merged verifier paragraph discloses traffic records and the public queue.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1162c2112ed86a20eacc133e71d56c439a5d1c78a0bb5ee88d5be17a285d929d";
+  "2f16469c44da300ee5403328d1c234a554f6dced5504d3de176429cd6dfb7cde";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

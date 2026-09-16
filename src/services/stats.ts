@@ -1,3 +1,10 @@
+import { MPP_CHECKOUT_ITEM } from "@/lib/mpp-checkout-capability";
+import { BASE_NETWORK } from "@/lib/payment-networks";
+import { BASE_USDC } from "@/lib/base-rpc";
+import { USDC_DECIMALS } from "@/lib/payments";
+import { readMppSales, MPP_PAYER_PREFIX } from "@/services/mpp-sales";
+import { settlementNetworkLabels } from "@/lib/payment-networks";
+import { SETTLEMENT_ACCOUNTING, paymentRollup, purchaseHeadline, type PaymentRollup, type PaymentSource } from "@/lib/settlement-accounting";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { isHouseWallet } from "@/lib/channel";
@@ -102,6 +109,9 @@ export const HOUSE_FLAG_POLICY =
   "House traffic (the proprietors' own wallets and tests) is flagged at the till and excluded from every organic figure. Family doesn't make the paper.";
 
 export interface StoreStats {
+  /** Disjoint payment sources; absent only on older saved fixtures. */
+  payment_sources?: PaymentSource[];
+  payments?: PaymentRollup;
   operating_since: string;
   settled_purchases_total: number;
   organic_settlements: number;
@@ -264,12 +274,16 @@ export interface BooksDiagnostics {
 export async function countDistinctOrganicBuyers(
   env: Env,
 ): Promise<number | null> {
-  const listed = await listKeys(env.COUNTERS, {
-    prefix: KV_KEYS.payerPrefix,
-    cap: PAYER_SCAN_CAP,
-  }).catch(() => null);
-  if (!listed || listed.truncated) return null;
+  const [listed, mpp] = await Promise.all([
+    listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_SCAN_CAP }).catch(() => null),
+    listKeys(env.COUNTERS, { prefix: MPP_PAYER_PREFIX, cap: PAYER_SCAN_CAP }).catch(() => null),
+  ]);
+  if (!listed || listed.truncated || !mpp || mpp.truncated) return null;
   const wallets = new Set<string>();
+  for (const name of mpp.names) {
+    const address = name.slice(MPP_PAYER_PREFIX.length);
+    if (address && !isHouseWallet(env, address)) wallets.add(address.toLowerCase());
+  }
   for (const name of listed.names) {
     const address = name.slice(KV_KEYS.payerPrefix.length);
     if (!address || isHouseWallet(env, address)) continue;
@@ -307,9 +321,10 @@ export async function computeStatsDiagnosed(
    * tally and the key-list that is the customer list. Neither reads
    * the other's result, and /stats is a free door.
    */
-  const [artifactsRaw, distinctOrganicBuyers] = await Promise.all([
+  const [artifactsRaw, distinctOrganicBuyers, mpp] = await Promise.all([
     kvGet(env.COUNTERS, KV_KEYS.patronNumber),
     countDistinctOrganicBuyers(env),
+    readMppSales(env),
   ]);
   const artifactsIssued = parseInt(artifactsRaw ?? "0", 10);
   let organic = 0;
@@ -484,6 +499,30 @@ export async function computeStatsDiagnosed(
       : {}),
     computed_at: new Date().toISOString(),
   };
+  stats.payment_sources = [{
+    ...SETTLEMENT_ACCOUNTING,
+    organic: stats.organic_settlements,
+    house: stats.house_settlements,
+  }];
+  if (mpp.organic + mpp.house > 0) {
+    stats.payment_sources.push({ protocol: "mpp", currency: "USDC", organic: mpp.organic, house: mpp.house,
+      amounts: { network: BASE_NETWORK, asset: BASE_USDC, decimals: USDC_DECIMALS,
+        organic_atomic: mpp.organic_amount_atomic, house_atomic: mpp.house_amount_atomic } });
+    stats.organic_settlements += mpp.organic;
+    stats.house_settlements += mpp.house;
+    stats.settled_purchases_total += mpp.organic + mpp.house;
+    if (stats.organic_by_rail) stats.organic_by_rail.base += mpp.organic;
+    else stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0,
+      rail_not_recorded: organicSettlements, computed_at: new Date().toISOString() };
+    const nativeTill = tillByItem[MPP_CHECKOUT_ITEM] ??= { organic: 0, house: 0 };
+    nativeTill.organic += mpp.organic;
+    nativeTill.house += mpp.house;
+  }
+  const rail = stats.organic_by_rail;
+  stats.payments = paymentRollup(stats.payment_sources, rail ? [
+    ...settlementNetworkLabels().map(row => ({ name: row.label, purchases: rail[row.key] ?? 0 })),
+    { name: "Network not recorded", purchases: rail.rail_not_recorded },
+  ] : null);
   return {
     stats,
     till_by_item: tillByItem,
@@ -518,6 +557,7 @@ export function trackRecordLine(stats: StoreStats, base: string): string {
     `Operating since ${stats.operating_since}.`,
     `Settled purchases: ${stats.settled_purchases_total} — ${parts.join(" + ")}.`,
     `Only the organic figure counts as proof.`,
+    ...(stats.payments ? [purchaseHeadline(stats.payments)] : []),
     ...(stats.organic_by_rail ? [railSentence(stats.organic_by_rail)] : []),
     `Every number here is computed live from ${base}/stats; every artifact ever issued (${stats.artifacts_issued}, free shelf included) verifies at ${base}/api/verify/{id}.`,
   ].join(" ");
@@ -534,46 +574,11 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
   return `Of the organic figure, ${rail.base} settled in USDC on Base${polygon}, ${rail.solana} in USDC on Solana${additional}${tail}.`;
 }
 
-/**
- * THE SAME BOOKS, AT THE LENGTH A SHOPFRONT CAN CARRY.
- *
- * The front of the store used to print trackRecordLine whole: four
- * sentences, six figures, two URLs and the house-flagging policy, set
- * in 0.72rem grey under the neon. It is the right paragraph — for
- * /stats, for the skill, for the catalog, where a reader arrived
- * wanting the ledger. On the storefront it was a wall of small type
- * between the sign and the shelves, and the keeper read it the way
- * everybody else did: not at all.
- *
- * So the shopfront gets the one number that is the claim — organic
- * sales, the figure this whole store is built to earn — split by the
- * rail the money came in on, and the paragraph stays one click away.
- * Same source, same instant, no second copy to drift: this function
- * takes the same StoreStats the long line does.
- */
+/** One total on the storefront; the three detailed dimensions live on /rails. */
 export function storefrontLedgerLine(stats: StoreStats): string {
-  const sales = `${stats.organic_settlements} organic ${stats.organic_settlements === 1 ? "sale" : "sales"}`;
-  const rail = stats.organic_by_rail;
-  if (!rail || rail.base + rail.polygon + rail.solana + (rail.arbitrum ?? 0) + (rail.world ?? 0) === 0) {
-    return `${sales}, from wallets we don't control.`;
-  }
-  /**
-   * "unattributed" was the first word here and it was the wrong one on
-   * a shopfront: beside a page that says it takes two chains, it reads
-   * as a third chain we can't name, or as money we lost track of. It
-   * was neither — it was a penny page sold before the till wrote the
-   * rail down. The count says what happened to the RECORD, not to the
-   * money, and it cannot grow.
-   */
-  const parts = [
-    ...(rail.base > 0 ? [`${rail.base} on Base`] : []),
-    ...(rail.polygon > 0 ? [`${rail.polygon} on Polygon`] : []),
-    ...(rail.arbitrum ? [`${rail.arbitrum} on Arbitrum`] : []),
-    ...(rail.world ? [`${rail.world} on World`] : []),
-    ...(rail.solana > 0 ? [`${rail.solana} on Solana`] : []),
-    ...(rail.rail_not_recorded > 0
-      ? [`${rail.rail_not_recorded} from before we logged the rail`]
-      : []),
-  ];
-  return `${sales} — ${parts.join(", ")}.`;
+  return purchaseHeadline(stats.payments ?? paymentRollup([{
+    ...SETTLEMENT_ACCOUNTING,
+    organic: stats.organic_settlements,
+    house: stats.house_settlements,
+  }], null));
 }

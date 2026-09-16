@@ -28,7 +28,8 @@ import { WindowRefused } from "@/services/cards";
 import { getMenuItem, VOICE } from "@/store";
 import { orderStatusBody } from "@/lib/order-status";
 import type { HonoEnv, MenuItem } from "@/types";
-import { doorChecks, noStore } from "@/routes/door-checks";
+import { createDoorChecks, noStore } from "@/routes/door-checks";
+import { createPaymentGate } from "@/lib/payment-gate";
 
 /**
  * GET /api/buy/:item_id, x402-gated purchases (settled before minting).
@@ -49,12 +50,12 @@ import { doorChecks, noStore } from "@/routes/door-checks";
 export const buyRoutes = new Hono<HonoEnv>({ strict: false });
 
 /*
- * Every refusal before the gate, and the gate itself, live in
- * routes/door-checks.ts now: the doors Worker (src/doors.ts) answers
- * the unpaid knock on these paths with the same list, so the list is
- * written once and registered here in the order it was always run.
+ * The shared list preserves every pre-payment check and its order.
+ * Only this store entry supplies the native checkout loader to the
+ * gate; the public doors forward native requests over their binding.
  */
-for (const check of doorChecks) {
+export const storeDoorChecks = createDoorChecks(createPaymentGate(() => import("@/lib/mpp-checkout")));
+for (const check of storeDoorChecks) {
   buyRoutes.use("/api/buy/*", check);
 }
 buyRoutes.use("/api/order/*", noStore);

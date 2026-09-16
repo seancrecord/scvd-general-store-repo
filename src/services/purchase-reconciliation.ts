@@ -2,7 +2,7 @@ import { readAuthorizationTransfer } from "@/lib/authorization-receipt";
 import { publicationDelivery } from "@/lib/publication-recovery";
 import { observationCheckpoint } from "@/services/purchase-observation";
 import type { Env } from "@/types";
-import type { PurchaseIntent } from "@/services/purchase-intent";
+import { purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { atomicToUsdc, tipFromPaid } from "@/lib/payments";
 import { evmChainOf, getFinalizedBlockNumber, getBlockTimestamp, findAuthorizationUseInRange,
   getReceipt, isSameAddress, type EvmChain } from "@/lib/base-rpc";
@@ -28,6 +28,7 @@ async function firstBlock(env: Env, chain: EvmChain, head: number, since: number
 
 /** A nonce event alone does not prove that this buyer paid these terms. */
 export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promise<Pick<PurchaseIntent, "payment" | "reconciliation">> {
+  purchaseProtocol(record);
   if (record.state !== "unknown") return {};
   if (record.solana) return reconcileSolanaPurchase(env, record);
   const chain = evmChainOf(record.terms.network);
@@ -57,10 +58,18 @@ export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promi
         nonce: record.authorization.nonce, recipient: record.terms.payTo, amount_atomic: record.terms.amount }, chain);
       if (paired.status !== "matched") throw new Error("Settlement does not match purchase");
       const paidUsdc = atomicToUsdc(record.terms.amount);
+      const settleHeaders: Record<string, string> = {};
+      if (purchaseProtocol(record) === "mpp") {
+        const { Receipt } = await import("mppx");
+        settleHeaders["Payment-Receipt"] = Receipt.serialize({ method: "evm", status: "success",
+          reference: transaction, timestamp: new Date().toISOString() });
+      }
       return { payment: { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, record.publication?.minimum_usdc ?? record.item?.price_usdc ?? paidUsdc),
         payer: record.payer, network: record.terms.network, transaction,
-        // This is chain evidence. Do not invent a lost facilitator receipt.
-        settleHeaders: {} }, reconciliation: { start_block: start, next_block: from, checked_at: new Date().toISOString() } };
+        // The MPP server can acknowledge independently confirmed chain evidence.
+        // This never invents an x402 facilitator receipt or a second payment.
+        settleHeaders },
+        reconciliation: { start_block: start, next_block: from, checked_at: new Date().toISOString() } };
     }
     from = to + 1;
   }
@@ -72,6 +81,7 @@ export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promi
 
 /** Resume only goods whose partial effects already have a durable checkpoint. */
 export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent): Promise<Record<string, unknown> | null> {
+  purchaseProtocol(record);
   const { item, payment } = record;
   if (record.state !== "settled" || !payment) return null;
   if (payment.network !== record.terms.network || !payment.transaction || !payment.payer ||

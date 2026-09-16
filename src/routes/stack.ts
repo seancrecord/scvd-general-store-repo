@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { signMessage } from "@/lib/signing";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { STORE_SERVICE_NAME } from "@/store";
 import {
@@ -65,6 +67,23 @@ stackRoutes.get(STACK_PATH, async (c) => {
       "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
   };
 
+  /*
+   * MARKDOWN NAMES THE JSON AS THE SIGNED FORM. The signature covers
+   * the JSON bytes this route serves, so the markdown is a reading of
+   * a signed document rather than the signed document itself, and its
+   * front matter points at the twin a verifier should fetch.
+   */
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: STACK_PATH,
+      title: "What this store rests on",
+      description:
+        "Every dependency this store runs on and what each one can see, declared and signed. Not an endorsement of any of them.",
+      dataUrl: `${base}${STACK_PATH}`,
+      document: signed as unknown as Record<string, unknown>,
+    });
+  }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const rows = STACK_DEPENDENCIES.map(
       (entry) => `<div class="menu-item">

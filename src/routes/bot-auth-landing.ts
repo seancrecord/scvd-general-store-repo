@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { DIRECTORY_PATH, signedDirectory } from "@/lib/web-bot-auth";
 import { CARD_CRITERIA_VERSION } from "@/services/bot-auth-card";
@@ -56,6 +58,15 @@ botAuthLandingRoutes.get("/bot-auth", async (c) => {
       "A dated look at one document at one moment. Not an endorsement of the agent, not an identity check on who operates the key, and no statement that any particular request was ever signed with it.",
     found_us_in_your_logs: `If a request tagged "scvd-general-store/1.0 (+${base})" knocked on your endpoint: that was our weekly census of doors listed in public x402 discovery — one GET per host per week, no payload, signed with the key directory above so your logs can verify it was really us and not someone borrowing the string. Being knocked on means a public directory lists you as an x402 endpoint. What yours answered is free to check yourself, no account: POST ${base}/api/preflight with {"url": "https://your-endpoint"}.`,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/bot-auth",
+      title: "The Web Bot Auth desk",
+      description: "Signed agent identity, checked: a free battery for Web Bot Auth key directories, and a signed card for when somebody else has to believe the readout.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

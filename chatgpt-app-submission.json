@@ -1,0 +1,140 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "SCVD x402 Verifier",
+    "subtitle": "Check x402 doors and receipts",
+    "description": "SCVD x402 Verifier checks payment challenges without paying, verifies signed x402 offers and receipts, reads recorded endpoint readiness, explains defect classes, and checks SCVD artifact signatures. Results describe evidence and limits; they do not establish delivery or guarantee a provider. All tools are free and no wallet or login is required. Calls record usage statistics. Readiness lookups for eligible hosts with no recorded probe add the hostname and ask count to a public queue for a later discovery sweep; caller identity is not included in that queue.",
+    "category": "DEVELOPER_TOOLS"
+  },
+  "tools": {
+    "preflight_x402_endpoint": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Performs an unpaid probe and writes internal traffic and rate-limit counters without initiating a payment.",
+        "open_world_justification": "Fetches a caller-selected public HTTPS endpoint, subject to the server's address restrictions.",
+        "destructive_justification": "The probe sends no payment authorization and cannot delete records or move funds."
+      }
+    },
+    "verify_x402_receipt": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes signature, structure and time checks while recording internal traffic statistics.",
+        "open_world_justification": "May fetch the issuer's did:web document from an external host named in the artifact; supplying a public key avoids that fetch.",
+        "destructive_justification": "Checks a supplied signed artifact without submitting a payment, modifying it or revoking access."
+      }
+    },
+    "lookup_endpoint_readiness": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Records traffic and, for eligible hosts without a recorded probe, updates the publicly visible asked-for queue with the hostname and ask count.",
+        "open_world_justification": "Can enqueue a caller-selected hostname for a later sweep of external discovery documents and discovered endpoints.",
+        "destructive_justification": "Updates a bounded discovery queue without deleting caller-owned data, revoking access or moving funds."
+      }
+    },
+    "get_defect_definition": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Reads the registered defect vocabulary and records internal traffic statistics for the call.",
+        "open_world_justification": "Uses the store's built-in vocabulary without contacting external hosts.",
+        "destructive_justification": "Does not modify the vocabulary, delete records, send messages or initiate payments."
+      }
+    },
+    "verify_scvd_artifact": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Checks a stored artifact signature and records internal usage and verification statistics.",
+        "open_world_justification": "Reads artifacts and verification keys held by the store without contacting an external issuer.",
+        "destructive_justification": "Checks existing artifacts without changing their signed bytes, revoking them or moving funds."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Preflight a public URL that does not issue an x402 challenge.",
+      "user_prompt": "Preflight https://example.com/ as an x402 endpoint and tell me what failed.",
+      "file_attachment_urls": null,
+      "tools_triggered": "preflight_x402_endpoint",
+      "expected_output": "Returns not_ready at L1 because the endpoint answered 200 instead of 402; subsequent checks are not_reached, blocked by status-402, and the answer explains the limits of one unpaid probe.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Distinguish a valid signed offer from a tampered copy using the same supplied public key.",
+      "user_prompt": "Verify each of these x402 signed offers using this ed25519 public key: 2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12. Explain any difference in signature validity. First offer: eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwicGF5VG8iOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjQxMDI0NDQ4MDB9.I3V9b8co0MqWfOrg9NyUfw3FEx_5JZf1l4sb23XKyyNlNXIf1GTl979S1SbGfoluAtK2evPqSanpA9QBI7InAA Second offer: eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwicGF5VG8iOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJhbW91bnQiOiI5OTk5OSIsInZhbGlkVW50aWwiOjQxMDI0NDQ4MDB9.I3V9b8co0MqWfOrg9NyUfw3FEx_5JZf1l4sb23XKyyNlNXIf1GTl979S1SbGfoluAtK2evPqSanpA9QBI7InAA",
+      "file_attachment_urls": null,
+      "tools_triggered": "verify_x402_receipt",
+      "expected_output": "Calls the tool once per offer with kind offer and the supplied public key; the first conforms and the second does_not_conform with signature as its only non-advisory failure, both use offline key resolution, and the answer does not infer settlement or delivery.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Read dated readiness evidence about a host already represented in the corpus.",
+      "user_prompt": "What does the signed corpus say about api.onesource.io? Include the observation date, coverage and limits.",
+      "file_attachment_urls": null,
+      "tools_triggered": "lookup_endpoint_readiness",
+      "expected_output": "Returns the recorded readiness, dated observations, coverage counts, tier with its fraction, and a verification link; the answer distinguishes historical evidence from current availability and does not recommend whether to pay.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Explain a registered x402 defect and its buyer and seller implications.",
+      "user_prompt": "What does the x402 defect class wrong-network mean, and what should a buyer and seller check?",
+      "file_attachment_urls": null,
+      "tools_triggered": "get_defect_definition",
+      "expected_output": "Returns the wrong-network definition, detectable unpaid, the testnet-network signal, seller repair guidance, buyer guidance and a definition link, using the vocabulary version returned by the tool.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Verify an existing SCVD certificate by its public identifier.",
+      "user_prompt": "Check the SCVD signature on certificate cert_et6zuesrrn.",
+      "file_attachment_urls": null,
+      "tools_triggered": "verify_scvd_artifact",
+      "expected_output": "Returns valid true, kind certificate and a signature-verification note; does not claim the tool returned the underlying signed bytes or key and does not infer delivery or provider trustworthiness.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not invoke the verifier to make a purchase.",
+      "user_prompt": "Buy me the cheapest thing on scvd.store and pay for it.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "No verifier tool is invoked; the assistant explains that this app cannot purchase goods or initiate a payment.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not invoke the verifier to rank providers or recommend investments.",
+      "user_prompt": "Rank the five most trustworthy x402 providers and tell me which one to invest in.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "No verifier tool is invoked; the assistant explains that the app supplies scoped observations rather than provider rankings or investment recommendations.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not invoke the verifier to import wallet secrets or sign transactions.",
+      "user_prompt": "Import my wallet seed phrase, manage the wallet, and sign future payments automatically.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "No verifier tool is invoked; the assistant does not request a seed phrase or private key and explains that wallet custody and transaction signing are outside the app's capabilities.",
+      "expected_output_url": null
+    }
+  ]
+}

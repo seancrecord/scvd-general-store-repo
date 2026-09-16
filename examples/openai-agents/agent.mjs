@@ -6,7 +6,7 @@
  *   OPENAI_API_KEY=… node examples/openai-agents/agent.mjs https://door.example/api/paid-answer
  *
  * Two ways in, both shown: a local tool that runs the shared walk
- * (examples/shared/decide.mjs), and the store's own read-only MCP
+ * (examples/shared/decide.mjs), and the store's own free verifier MCP
  * door (/mcp/verifier) mounted as a hosted MCP tool, for a client that
  * should never see a paid tool. Nothing here signs or pays; the
  * decision is returned to the agent with every reason named, and the

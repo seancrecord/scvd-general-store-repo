@@ -32,6 +32,77 @@ import { KV_KEYS } from "@/lib/kv-keys";
 const SCAN_CAP = 3000;
 const LIST_PAGE = 1000;
 
+/**
+ * ASKING THE BOOKS A QUESTION (2026-09-16).
+ *
+ * WHAT THIS IS NOT, recorded because the first diagnosis was wrong and
+ * the wrong one is the more tempting story. The decline INDEX has not
+ * outgrown its cap: on 2026-09-16 it held 37 declines and reported
+ * index_complete, so nothing on the desk was ever hidden. The cap the
+ * keeper hit was the RAW stream's — 3000 rows of openapi.json reads
+ * and catalogue challenges — and it bit the client TRACE, not the
+ * desk. The burst was on the page the whole time; what could not be
+ * reached was the surrounding traffic. See TraceWindow, which is the
+ * fix for the failure that actually happened.
+ *
+ * This budget exists anyway, for both readers, because the shape of
+ * the question is the same: a cap spent on rows nobody asked for. Say
+ * which item, client, reason or window you want and the scan spends
+ * its budget walking PAST the rest. The unfiltered desk is untouched
+ * and still stops at SCAN_CAP, so nobody pays for depth they did not
+ * ask for.
+ *
+ * Bounded and named, because an unnamed cap is a silent one — the same
+ * rule the raw scan's cap is written under.
+ */
+const FILTERED_SCAN_CAP = 40000;
+
+/** What the keeper asked to see. Every field narrows; empty means the whole desk. */
+export interface DeclineFilter {
+  /** Exact item key, as the books store it. */
+  item?: string;
+  /** Substring of the user-agent, case-insensitive. */
+  ua?: string;
+  /** Substring of the raw reason, case-insensitive. */
+  reason?: string;
+  /** ISO instant; rows at or after it. */
+  since?: string;
+  /** ISO instant; rows strictly before it. */
+  before?: string;
+}
+
+export function filterIsActive(filter: DeclineFilter | undefined): boolean {
+  return Boolean(
+    filter &&
+      (filter.item || filter.ua || filter.reason || filter.since || filter.before),
+  );
+}
+
+/** Whether one event is what was asked for. An absent field never narrows. */
+export function declineMatches(
+  event: { item: string; at: string; user_agent?: string; note?: string },
+  filter: DeclineFilter,
+): boolean {
+  if (filter.item && event.item !== filter.item) return false;
+  if (
+    filter.ua &&
+    !(event.user_agent ?? "(no user-agent)")
+      .toLowerCase()
+      .includes(filter.ua.toLowerCase())
+  ) {
+    return false;
+  }
+  if (
+    filter.reason &&
+    !(event.note ?? "").toLowerCase().includes(filter.reason.toLowerCase())
+  ) {
+    return false;
+  }
+  if (filter.since && event.at < filter.since) return false;
+  if (filter.before && event.at >= filter.before) return false;
+  return true;
+}
+
 /** Local input refusal precedes payment parsing/verification and settlement. */
 export type DeclineStage = "input" | "verify" | "settle";
 
@@ -64,6 +135,10 @@ export interface DeclineRow {
   user_agent?: string;
   channel: string;
   house: boolean;
+  /** The address that signed, where the row carries one. */
+  payer?: string;
+  /** The first field disagreement, and both values. */
+  mismatch?: { field: string; we_offered: string; you_sent: string };
 }
 
 export interface DeclineReport {
@@ -114,6 +189,13 @@ export interface DeclineReport {
    */
   clients_by_reason: Record<string, string[]>;
   /**
+   * The same map, INTENT-BEARING CLIENTS ONLY — the noise floor left
+   * out. Two crawlers failing the same way is evidence about the
+   * challenge; it is not a buyer who could not get through, and the
+   * fault column answers the second question. See sharedReasons.
+   */
+  outside_clients_by_reason: Record<string, string[]>;
+  /**
    * THE RAILS ASKED FOR AND NOT OFFERED (2026-09-11). A payment signed
    * for a network absent from the challenge books as
    * `local:requirement_mismatch:network:<caip-2>`, and this tallies
@@ -125,6 +207,14 @@ export interface DeclineReport {
    * invisible; x402 v2 carries no "I would have paid on X".
    */
   rails_asked_for: Record<string, number>;
+  /**
+   * The oldest row the scan actually SAW, matching or not. Not the
+   * oldest decline: the reach of the look, so an empty filtered result
+   * can say "not found in this window" rather than "never happened".
+   */
+  oldest_row_seen: string | null;
+  /** What was asked for, echoed so the page cannot misreport its own counts. */
+  filter?: DeclineFilter;
   /**
    * Declines recorded with no reason attached. The verify-side reason
    * is remembered in-isolate by nonce, so a cross-isolate retry can
@@ -433,7 +523,7 @@ export function readReason(raw: string): {
     return {
       fault: "unknown",
       reading:
-        "The facilitator refused because the payment's `from` and `to` were the SAME address — and our `to` is the store's own payTo, so this was signed from the wallet the store receives at. Not a funds problem and not a signing problem: the envelope decoded, the accepted matched, and the signature was examined, which makes this the furthest into the pipe any decline gets before dying. Check in this order. (1) Was it the house? The store's RECEIVING address is not listed in src/store/house-wallets.json, so a keeper or an agent paying from it books as an OUTSIDE decline and lands on this desk as demand — read the payer off the row before anything else. (2) Was it the browser till? This arrives from a browser far more often than from an SDK, and a till that pre-fills `from` with the payTo it just read out of the challenge produces exactly this. (3) Only if neither: a hand-rolled client copied payTo into both fields, which is theirs and is worth saying in the 402.",
+        "The facilitator refused because the payment's `from` and `to` were the SAME address — and our `to` is the store's own payTo, so this was signed from the wallet the store receives at. Not a funds problem and not a signing problem: the envelope decoded, the accepted matched, and the signature was examined, which makes this the furthest into the pipe any decline gets before dying. From 2026-09-16 this is classified rather than guessed: a payer equal to any of our payTo addresses books as HOUSE (isHouseTraffic, lib/channel.ts) and leaves the demand columns, and the decline row carries the payer, so the answer is in the row rather than in a hunt. A row dated BEFORE that carries neither — the payer was never written to a decline — so for those the question stays open and the 402 the buyer got is the only record of who signed. What is left to check on a row that is still not house: the browser till, which arrives here far more often than an SDK and which produces exactly this if it pre-fills `from` with the payTo it just read out of the challenge; failing that, a hand-rolled client copied payTo into both fields, which is theirs and worth saying in the 402.",
     };
   }
   /**
@@ -623,8 +713,28 @@ export const SHARED_REASON_ESCALATION = 2;
 export interface SharedReason {
   reason: string;
   clients: string[];
+  /** Those of them the store counts as buyers rather than machinery. */
+  outside_clients: string[];
   /** True when the shared count moved the fault, not just annotated it. */
   escalated: boolean;
+  /**
+   * TWO CRAWLERS IS NOT A LOST SALE (2026-09-16).
+   *
+   * The first cut of this rule escalated on any two distinct clients,
+   * so `local:input_missing:confession` read OURS on the strength of
+   * x402lint and vet402 — both already on the store's own machinery
+   * table, neither ever going to pay. Beside it sat tx_hash, escalated
+   * on python-httpx AND a crawler, which is a different claim
+   * entirely: there a real client was turned away.
+   *
+   * The desk's own question is "whose problem is it", and its own
+   * answer for OURS is "money the store turned away". A crawler was
+   * never going to spend any, so calling its refusal OURS in the fault
+   * column overstates in the page's own terms. The discoverability
+   * finding is still real and still printed — it just stops borrowing
+   * the word for a sale nobody was going to make.
+   */
+  machinery_only: boolean;
 }
 
 /**
@@ -656,9 +766,20 @@ export function sharedReasons(report: DeclineReport): SharedReason[] {
   const shared: SharedReason[] = [];
   for (const [reason, clients] of Object.entries(report.clients_by_reason)) {
     if (clients.length < SHARED_REASON_ESCALATION) continue;
-    const escalated = escalatesWhenShared(reason);
-    if (!escalated && !annotatesWhenShared(reason)) continue;
-    shared.push({ reason, clients: [...clients], escalated });
+    const outside = report.outside_clients_by_reason[reason] ?? [];
+    const machineryOnly = outside.length === 0;
+    // The fault only moves when a client the store counts as a BUYER
+    // was among those turned away. Machinery alone is a finding about
+    // the challenge, printed as one, and not a sale that was lost.
+    const escalated = escalatesWhenShared(reason) && !machineryOnly;
+    if (!escalated && !annotatesWhenShared(reason) && !machineryOnly) continue;
+    shared.push({
+      reason,
+      clients: [...clients],
+      outside_clients: [...outside],
+      escalated,
+      machinery_only: machineryOnly,
+    });
   }
   return shared;
 }
@@ -666,11 +787,13 @@ export function sharedReasons(report: DeclineReport): SharedReason[] {
 /** Applies the count, mutating each affected row's fault and reading. */
 export function escalateSharedReasons(report: DeclineReport): SharedReason[] {
   const shared = sharedReasons(report);
-  for (const { reason, clients, escalated } of shared) {
+  for (const { reason, clients, escalated, machinery_only } of shared) {
     const who = clients.map((client) => `\`${client}\``).join(", ");
     const note = escalated
       ? ` ESCALATED BY THE DESK: ${clients.length} DIFFERENT clients hit this same code in this window (${who}), which is the condition the sentence above names. Two implementations do not independently forget the same parameter. The requirement is not discoverable where they are looking, and that is OURS to fix in the challenge rather than theirs to fix in their clients. Check what the PAYMENT-REQUIRED header actually carries before reading any of these rows as a careless buyer.`
-      : ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — the condition the sentence above names. The fault is unchanged and correctly so; what changed is that this is now a pattern rather than one client, which is what the reading asked you to watch for.`;
+      : machinery_only && escalatesWhenShared(reason)
+        ? ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — AND EVERY ONE OF THEM IS MACHINERY the store's own table already names. That is a real finding about the CHALLENGE: two independent implementations read it and could not find this input, which is the discoverability test passing its condition. It is NOT a lost sale, and the fault stays where it was: none of these was ever going to pay, so calling it OURS would borrow the word for money nobody was going to spend. If a client the store counts as a buyer joins them, this becomes ours in the same breath.`
+        : ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — the condition the sentence above names. The fault is unchanged and correctly so; what changed is that this is now a pattern rather than one client, which is what the reading asked you to watch for.`;
 
     for (const row of report.declines) {
       if (row.reason !== reason) continue;
@@ -687,7 +810,13 @@ export function escalateSharedReasons(report: DeclineReport): SharedReason[] {
 export async function readDeclines(
   env: Env,
   scanCap = SCAN_CAP,
+  filter?: DeclineFilter,
 ): Promise<DeclineReport> {
+  // A filter buys depth, not breadth: the budget goes on walking past
+  // rows nobody asked for, which is the only way to reach last week
+  // through this week. Unfiltered, nothing about this scan changes.
+  const active = filterIsActive(filter);
+  const cap = active ? Math.max(scanCap, FILTERED_SCAN_CAP) : scanCap;
   const report: DeclineReport = {
     rows_scanned: 0,
     capped: false,
@@ -700,6 +829,9 @@ export async function readDeclines(
     infrastructure_clients: [],
     by_reason: {},
     clients_by_reason: {},
+    outside_clients_by_reason: {},
+    oldest_row_seen: null,
+    ...(filterIsActive(filter) ? { filter } : {}),
     rails_asked_for: {},
     unspecified: 0,
   };
@@ -709,7 +841,14 @@ export async function readDeclines(
 
   /** One decline row, folded into the report. Deduped: the index and the raw stream both carry it. */
   const take = (event: MetricEvent): void => {
+    // Reach is recorded before anything narrows, and for every row the
+    // scan touched — a filtered look that found nothing must still be
+    // able to say how far back it got.
+    if (report.oldest_row_seen === null || event.at < report.oldest_row_seen) {
+      report.oldest_row_seen = event.at;
+    }
     if (event.kind !== "decline") return;
+    if (active && !declineMatches(event, filter as DeclineFilter)) return;
     const raw = event.note ?? "unspecified";
     const identity = `${event.at}|${event.item}|${raw}`;
     if (seen.has(identity)) return;
@@ -732,6 +871,8 @@ export async function readDeclines(
       ...(event.user_agent ? { user_agent: event.user_agent } : {}),
       channel: event.channel,
       house: event.house,
+      ...(event.payer ? { payer: event.payer } : {}),
+      ...(event.mismatch ? { mismatch: event.mismatch } : {}),
     });
 
     if (event.house) {
@@ -758,6 +899,14 @@ export async function readDeclines(
       machines.add(who);
       return;
     }
+
+    // Past the noise-floor split: these are the clients the store
+    // counts as buyers, and the only ones whose refusal can move the
+    // fault to OURS. See SharedReason.machinery_only.
+    const outsideForReason = (report.outside_clients_by_reason[raw] ??= []);
+    if (!outsideForReason.includes(who)) {
+      outsideForReason.push(who);
+    }
     report.outside_count += 1;
     report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
     const wanted = railAskedFor(raw);
@@ -775,7 +924,7 @@ export async function readDeclines(
    * turned away" in a month the funnel counted refusals in.
    */
   let indexCursor: string | undefined;
-  while (report.index_rows < scanCap) {
+  while (report.index_rows < cap) {
     const listed = await kvList(env.COUNTERS, {
       prefix: KV_KEYS.declineEventPrefix,
       limit: LIST_PAGE,
@@ -784,13 +933,13 @@ export async function readDeclines(
     const names = listed.keys.map((key) => key.name);
     const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
     for (const name of names) {
-      if (report.index_rows >= scanCap) break;
+      if (report.index_rows >= cap) break;
       const event = values.get(name);
       if (!event) continue;
       report.index_rows += 1;
       take(event);
     }
-    if (listed.list_complete || report.index_rows >= scanCap) {
+    if (listed.list_complete || report.index_rows >= cap) {
       report.index_complete = listed.list_complete;
       break;
     }
@@ -804,7 +953,7 @@ export async function readDeclines(
    * less than it did before the index existed.
    */
   let cursor: string | undefined;
-  while (report.rows_scanned < scanCap) {
+  while (report.rows_scanned < cap) {
     const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
@@ -813,7 +962,7 @@ export async function readDeclines(
     const names = listed.keys.map((key) => key.name);
     const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
     for (const name of names) {
-      if (report.rows_scanned >= scanCap) {
+      if (report.rows_scanned >= cap) {
         report.capped = true;
         break;
       }
@@ -822,7 +971,7 @@ export async function readDeclines(
       report.rows_scanned += 1;
       take(event);
     }
-    if (listed.list_complete || report.rows_scanned >= scanCap) {
+    if (listed.list_complete || report.rows_scanned >= cap) {
       report.capped = report.capped || !listed.list_complete;
       break;
     }
@@ -858,6 +1007,35 @@ export interface ClientTrace {
   capped: boolean;
   /** Timestamp of the oldest row reached, so "nothing found" has a floor. */
   oldest_row_seen: string | null;
+  /** The window asked for, echoed so the page cannot misreport its reach. */
+  window?: TraceWindow;
+}
+
+/**
+ * THE TRACE COULD NOT REACH YESTERDAY (2026-09-16).
+ *
+ * The decline desk reads the index, where every key is a decline, so
+ * 37 declines fit inside any sane cap. The TRACE reads the raw `evt:`
+ * stream, where a decline is one row in thousands of openapi.json
+ * reads and catalogue challenges — and on a store being walked at
+ * catalogue speed, 3000 rows is about two hours.
+ *
+ * So the keeper could see a client's burst on the desk and could not
+ * see what that client DID around it: the trace stopped at 12:10 the
+ * same morning and said so honestly, which is the instrument working
+ * and the answer still being out of reach.
+ *
+ * A window fixes it cheaply, and cheaply is the point. Rows arrive
+ * newest-first, so a `since` lets the scan STOP the moment it passes
+ * below the window instead of reading to its budget — the deeper
+ * budget is there to walk forward through today's traffic, not to
+ * read the whole stream.
+ */
+export interface TraceWindow {
+  /** ISO instant; rows at or after it. Also where the scan stops reading. */
+  since?: string;
+  /** ISO instant; rows strictly before it. */
+  before?: string;
 }
 
 /**
@@ -870,13 +1048,21 @@ export async function traceClient(
   env: Env,
   userAgent: string,
   scanCap = SCAN_CAP,
+  window?: TraceWindow,
 ): Promise<ClientTrace> {
   const trail: MetricEvent[] = [];
   let cursor: string | undefined;
   let scanned = 0;
   let capped = false;
   let oldest: string | null = null;
-  while (scanned < scanCap) {
+  const windowed = Boolean(window?.since || window?.before);
+  // Depth only where it was asked for; the bare trace is unchanged.
+  const cap = windowed ? Math.max(scanCap, FILTERED_SCAN_CAP) : scanCap;
+  // Newest-first ordering is what makes this affordable: once the scan
+  // passes below `since`, everything after it is older and there is
+  // nothing left to find.
+  let reachedPast = false;
+  while (scanned < cap && !reachedPast) {
     const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
@@ -890,20 +1076,28 @@ export async function traceClient(
       if (!event) continue;
       // Rows arrive newest-first, so every row seen lowers the floor.
       if (oldest === null || event.at < oldest) oldest = event.at;
+      if (window?.since && event.at < window.since) {
+        reachedPast = true;
+        continue;
+      }
+      if (window?.before && event.at >= window.before) continue;
       if ((event.user_agent ?? "(no user-agent)") === userAgent) {
         trail.push(event);
       }
     }
     if (listed.list_complete) break;
     cursor = listed.cursor;
-    if (scanned >= scanCap) capped = true;
+    if (scanned >= cap) capped = true;
   }
   // Rows arrive newest-first; the sequence reads forward.
   return {
     user_agent: userAgent,
     events: trail.reverse(),
     rows_scanned: scanned,
-    capped,
+    // A scan that stopped because it walked PAST the window is not a
+    // scan that ran out of budget, and must not report as one.
+    capped: capped && !reachedPast,
     oldest_row_seen: oldest,
+    ...(windowed ? { window } : {}),
   };
 }

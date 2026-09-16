@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
 import { A2A_STATE_DESCRIPTION } from "@/services/a2a-tasks";
@@ -38,7 +40,7 @@ const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
     head: "What this store does not collect",
     body: [
       "No accounts and no signups exist here, so there is nothing account-shaped to collect: no names required, no email required, no passwords, no profiles.",
-      "No cookies, no client-side tracking, no analytics scripts, no fingerprinting. What you read here is not observed.",
+      "No cookies, no client-side tracking, no analytics scripts, no fingerprinting. Requests contribute to server-side traffic statistics.",
       "The browser till, /till.js, is served on pages that sell something and asks your wallet to sign a payment. It is first-party, unminified, byte-identical to its source in the public repository, and it makes no request to anything but this origin. It sets no cookie and writes nothing to browser storage. It never sees a key — a wallet returns a signature and keeps the key, which is exactly what every agent buying here already does. With scripting off, the page you are reading is unchanged and every instruction on it still works.",
       "The A2A regression runner is a separate downloadable program at /api/a2a/runner.mjs. It is served as an attachment, never automatically executed by a page. It reads the public card, and runs runtime tests only with the caller-selected --runtime flag and the operator authorization fixture. Its exact source and build recipe are in the repository.",
       "The application keeps no IP address logs. Our host (Cloudflare) processes IPs to serve traffic, as every host does; the store's own code neither reads nor stores them.",
@@ -80,6 +82,7 @@ const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
     head: "The MCP server",
     body: [
       "The MCP door (/mcp) is stateless and processes tool inputs exactly as the HTTP doors do: purchase inputs are handled as purchases, free reads as reads, and nothing about a session is retained between calls.",
+      "The free verifier door (/mcp/verifier) records traffic statistics for tool calls. A readiness lookup for an eligible host with no recorded probe adds its hostname and ask count to the public queue at /corpus/asked.json for a later sweep of its discovery documents and any discovered endpoint. The queue does not include caller identity. Submit only public hostnames you intend to have listed there.",
     ],
   },
   {
@@ -104,6 +107,15 @@ privacyRoutes.get("/privacy", (c) => {
     effective: "2026-08-21",
     contact: `${base}/api/letter`,
   };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base: base,
+      path: "/privacy",
+      title: "Privacy",
+      description: "The privacy policy: no accounts, no cookies, no tracking, no kept IP logs. A purchase records the public chain facts it settles with; what you sign into a public artifact is public forever, and every surface says so before you pay.",
+      document: payload as unknown as Record<string, unknown>,
+    });
+  }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }

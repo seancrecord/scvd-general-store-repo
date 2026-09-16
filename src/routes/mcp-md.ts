@@ -90,10 +90,12 @@ Add it as a custom connector, or point any MCP client at the URL.
 
 ### The other two doors on this origin
 
-- **The verifier, \`POST ${base}/mcp/verifier\`** — ${VERIFIER_TOOLS.length} read-only
+- **The verifier, \`POST ${base}/mcp/verifier\`** — ${VERIFIER_TOOLS.length} free verification
   tools under task-shaped names (${VERIFIER_TOOLS.map((t) => `\`${t.name}\``).join(", ")}),
   the same handlers as the main door, and no shelf: for a client that
-  should never see a paid tool.
+  should never see a paid tool. Calls record traffic statistics; readiness
+  lookups for eligible unprobed hosts add their names to the public
+  asked-for queue for a later sweep.
 - **The documentation door, \`POST ${base}/mcp/docs\`** — and \`POST\` on
   this very address, \`${base}/mcp.md\`: a JSON-RPC server whose whole
   catalog is the reference material. The same ${shelves} resources the

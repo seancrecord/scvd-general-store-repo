@@ -7,12 +7,13 @@ import { VERIFIER_SERVER_NAME, VERIFIER_TOOLS, verifierToolCatalog } from "@/rou
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { DEFECT_CLASSES } from "@/store/defect-vocabulary";
 import { FREE_DOORS } from "@/store/atlas";
+import { readAskedFor } from "@/services/asked-queue";
 
 /**
  * THE VERIFIER DOOR (2026-09-03, roadmap A3). What this file holds:
  *
  *   - tools/list serves exactly five tools, none of them a buy, each
- *     read-only by annotation, under task-shaped names;
+ *     declaring its bookkeeping writes, under task-shaped names;
  *   - the three renamed tools carry the base tool's input schema, so
  *     a client built against /mcp's shapes works here unchanged;
  *   - tools/call runs the same handlers: a receipt verifies here as
@@ -50,20 +51,71 @@ describe("the porch counts this door", () => {
     expect(after.surfaces["mcp-verifier:tools/list"]?.["organic:mcp"]).toBe(listBefore + 1);
     expect(after.surfaces["mcp-verifier:tool:get_defect_definition"]?.["organic:mcp"]).toBe(toolBefore + 1);
     expect(after.surfaces["mcp-verifier:tool:buy_observation"]).toBeUndefined();
+    const catalog = verifierToolCatalog(BASE);
+    for (const entry of catalog) {
+      // Every listed tool takes the same traffic-writing dispatch path.
+      expect(entry["annotations"]).toMatchObject({ readOnlyHint: false });
+    }
   });
 });
 
 describe("tools/list", () => {
-  it("serves exactly five read-only tools under task-shaped names and no buy", async () => {
+  it("serves the verifier roster with explicit effects and no buy", async () => {
     const { result } = await rpc("tools/list");
     const names = result.tools.map((tool: { name: string }) => tool.name);
     expect(names).toEqual(VERIFIER_TOOLS.map((tool) => tool.name));
     expect(names.some((name: string) => name.startsWith("buy_"))).toBe(false);
     for (const tool of result.tools) {
-      expect(tool.annotations.readOnlyHint).toBe(true);
+      expect(tool.annotations.readOnlyHint).toBe(false);
       expect(tool.annotations.destructiveHint).toBe(false);
       expect(typeof tool.inputSchema).toBe("object");
     }
+  });
+
+  it("never contradicts /mcp about whether a renamed tool reaches outside the store", () => {
+    /*
+     * 2026-09-16. This door read openWorldHint off one negation
+     * ("everything but the defect vocabulary is open"), and so told
+     * clients that verify_scvd_artifact reaches outward while /mcp
+     * told them the same tool does not. The same tool, two doors,
+     * two answers — the drift this file exists to make impossible,
+     * on the field a directory reviewer reads first.
+     *
+     * A tool renamed from /mcp inherits its base's reading. A tool
+     * this door owns has no base to disagree with and is asserted
+     * below by name.
+     */
+    const here = verifierToolCatalog(BASE);
+    const full = mcpToolCatalog(BASE);
+    for (const entry of VERIFIER_TOOLS.filter((tool) => tool.base)) {
+      const mine = here.find((tool) => tool["name"] === entry.name)!;
+      const theirs = full.find((tool) => tool.name === entry.base)!;
+      expect(
+        (mine["annotations"] as Record<string, unknown>)["openWorldHint"],
+        `${entry.name} and ${entry.base} disagree about openWorldHint`,
+      ).toBe(theirs.annotations?.openWorldHint);
+    }
+  });
+
+  it("reads open world as what the call touches, not what the answer is about", () => {
+    /*
+     * The two doors this store's own tools own. The readiness lookup
+     * is the interesting one: its SUBJECT is every host on the public
+     * discovery list, and an unprobed host joins the public queue
+     * for a later outbound sweep. That queued work is part of the
+     * interaction even though this call does not probe the host.
+     */
+    const here = verifierToolCatalog(BASE);
+    const reading = Object.fromEntries(
+      here.map((tool) => [tool["name"], (tool["annotations"] as Record<string, unknown>)["openWorldHint"]]),
+    );
+    expect(reading).toEqual({
+      preflight_x402_endpoint: true,
+      verify_x402_receipt: true,
+      lookup_endpoint_readiness: true,
+      get_defect_definition: false,
+      verify_scvd_artifact: false,
+    });
   });
 
   it("the renamed tools carry the base tool's input schema from /mcp", () => {
@@ -87,6 +139,12 @@ describe("tools/call", () => {
     const readiness = await rpc("tools/call", { name: "lookup_endpoint_readiness", arguments: { host: "never-met.example" } }, 3);
     expect(readiness.result.structuredContent.result).toBe("never_met");
     expect(readiness.result.structuredContent.does_not_establish.join(" ")).toMatch(/whether to pay/);
+    const asked = await readAskedFor(env as unknown as Env);
+    expect(asked.hosts["never-met.example"]?.surfaces).toContain("look");
+    const lookup = verifierToolCatalog(BASE).find((tool) => tool["name"] === "lookup_endpoint_readiness")!;
+    expect(lookup["annotations"]).toMatchObject({ readOnlyHint: false, openWorldHint: true });
+    expect(lookup["description"]).toMatch(/public.*queue/);
+    expect(lookup["description"]).toContain("later sweep");
     const first = DEFECT_CLASSES[0]!;
     const defect = await rpc("tools/call", { name: "get_defect_definition", arguments: { id: first.id } }, 4);
     expect(defect.result.structuredContent.id).toBe(first.id);

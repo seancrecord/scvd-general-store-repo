@@ -217,7 +217,7 @@ export function ardManifest(base: string): ArdManifest {
       type: TYPE_MCP_SERVER,
       url: `${base}/mcp/verifier`,
       description:
-        `A second MCP door (${VERIFIER_SERVER_NAME}) serving only read-only x402 verification tools under task-shaped names, on the same handlers as the store's full door, with no paid tool reachable. For a client that should never see a shelf.`,
+        `A second MCP door (${VERIFIER_SERVER_NAME}) serving free x402 verification tools under task-shaped names, on the same handlers as the store's full door, with no paid tool reachable. For a client that should never see a shelf.`,
       capabilities: VERIFIER_TOOLS.map((tool) => tool.name),
       representativeQueries: ["preflight an x402 endpoint", "verify an x402 receipt", "look up an endpoint's readiness history", "what does this x402 defect class mean"],
       tags: [...STORE_TAGS],

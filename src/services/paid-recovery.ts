@@ -15,7 +15,7 @@ import { idempotentPurchaseSlot } from "@/lib/idempotency";
 import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { evmChainOf } from "@/lib/base-rpc";
-import type { PurchaseIntent } from "@/services/purchase-intent";
+import { purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
 import { kvPut } from "@/lib/kv-retry";
@@ -205,10 +205,11 @@ export class PaidRecoveryStore extends DurableObject<Env> {
 
   async beginPurchase(proposalJson: string): Promise<{ started: boolean; record: string }> {
     const proposal = JSON.parse(proposalJson) as PurchaseIntent;
+    purchaseProtocol(proposal);
     return this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<PurchaseIntent>("purchase");
       if (prior) {
-        if (!prior.delivery && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+        if ((!prior.delivery || (prior.mpp && !prior.mpp.accounted)) && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
         return { started: false, record: JSON.stringify(prior) };
       }
       if (proposal.observation_digest) {
@@ -268,10 +269,32 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     }
   }
 
+  async accountMppPurchase(): Promise<void> {
+    const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
+    if (!record?.mpp || record.mpp.accounted || record.state !== "settled") return;
+    const { recordMppSale } = await import("@/services/mpp-sales");
+    await recordMppSale(this.env, record);
+    await this.ctx.storage.transaction(async txn => {
+      const latest = await txn.get<PurchaseIntent>("purchase");
+      if (latest?.mpp) await txn.put("purchase", { ...latest, mpp: { ...latest.mpp, accounted: true } });
+    });
+  }
+
+  /** Same paid journal as recovery, so a lost response never mints a second good. */
+  async completeMppPurchase(delivery: Record<string, unknown>): Promise<void> {
+    await this.ctx.storage.transaction(async txn => {
+      const record = await txn.get<PurchaseIntent>("purchase");
+      if (!record?.mpp || record.state !== "settled") throw new Error("MPP purchase not confirmed");
+      if (!record.delivery) await txn.put("purchase", { ...record, delivery });
+      if (!await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+    });
+    await this.accountMppPurchase();
+  }
+
   async schedulePurchaseRecovery(): Promise<void> {
     await this.ctx.storage.transaction(async (txn) => {
       const record = await txn.get<PurchaseIntent>("purchase");
-      if (record && !record.delivery && record.state !== "not_settled" && !await txn.getAlarm()) {
+      if (record && (!record.delivery || (record.mpp && !record.mpp.accounted)) && record.state !== "not_settled" && !await txn.getAlarm()) {
         await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
       }
     });
@@ -281,7 +304,15 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     if (await this.watches.repair()) return;
     if (await this.patronage.repair()) return;
     const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
-    if (!record || record.delivery || record.state === "not_settled") return;
+    if (!record || record.state === "not_settled") return;
+    if (record.delivery) {
+      if (record.mpp && !record.mpp.accounted) {
+        await this.ctx.storage.setAlarm(purchaseRecoveryAlarmAt(300_000));
+        await this.accountMppPurchase();
+      }
+      await this.ctx.storage.deleteAlarm();
+      return;
+    }
     // Unsupported goods/unknown rails retain their record for the delivery
     // desk. Do not schedule an endless no-op for every successful sale.
     if (record.state === "settled" && !record.publication && !supportsArtifactRecovery(record.item)) return;
@@ -306,6 +337,8 @@ export class PaidRecoveryStore extends DurableObject<Env> {
         await this.ctx.storage.deleteAlarm();
         return;
       }
+      // Complete the durable accounting obligation even when the goods already exist.
+      if (latest.mpp) await this.accountMppPurchase();
       const delivery = await deliverRecordedPurchase(this.env, latest);
       if (!delivery) return;
       await this.ctx.storage.transaction(async (txn) => {

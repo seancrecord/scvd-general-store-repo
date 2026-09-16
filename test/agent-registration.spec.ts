@@ -15,6 +15,7 @@ import {
 } from "@/lib/oasf-record";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store/metadata";
 import { registryDescription } from "@/store/identity-lead";
+import { GIVE_FEEDBACK_SIGNATURE, REPUTATION_REGISTRY } from "@/store/agent-feedback";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { MENU_ITEMS } from "@/store";
 import { checkoutWallets, type PaymentNetworkConfig } from "@/lib/payment-networks";
@@ -287,14 +288,43 @@ describe("ERC-8004 registration file", () => {
   it("claims no trust model it has not wired", async () => {
     const doc = await fetchRegistration();
     /*
-     * supportedTrust is OPTIONAL, and absent means "discovery, not
-     * trust" by the ERC's own sentence. That is where this store
-     * stands until a trust model is actually connected. This case
-     * exists so adding one is a deliberate edit with a failing test
-     * in front of it, not something that drifts in beside a nicer
-     * word.
+     * THE FIELD WAS ABSENT UNTIL 2026-09-16, and this case is what
+     * made adding it a deliberate edit rather than a drift. It stays
+     * a whitelist for the same reason: the two values NOT here are
+     * the ones a nicer word would have slipped in.
+     *
+     * crypto-economic means stake at risk — no bond, no slashing
+     * condition, nothing an aggrieved client could seize, and this
+     * store is explicitly not an escrow or a guarantor.
+     * tee-attestation means attested hardware; the work runs in a
+     * Worker and on a keeper's hands. Both would be legible to a
+     * machine and false, which is the worst kind: nobody catches it
+     * by reading.
      */
-    expect(doc.supportedTrust).toBeUndefined();
+    expect(doc.supportedTrust).toEqual(["reputation"]);
+    expect(doc.supportedTrust).not.toContain("crypto-economic");
+    expect(doc.supportedTrust).not.toContain("tee-attestation");
+  });
+
+  it("only claims reputation because the channel behind it exists", async () => {
+    const doc = await fetchRegistration();
+    /*
+     * A declared trust model that leads nowhere is worse than an
+     * absent one: it is legible, checkable, and wrong. So the claim
+     * is tied to the thing that makes it true — the feedback channel
+     * published on the store's own surfaces, carrying the registry
+     * address and the verified call. If that channel is ever removed
+     * the declaration has to go with it, and this fails first.
+     */
+    expect(doc.supportedTrust).toContain("reputation");
+
+    const trust = (await (
+      await SELF.fetch(`${BASE}/.well-known/trust.json`)
+    ).json()) as Record<string, any>;
+    const channel = trust.chain_identity?.client_feedback;
+    expect(channel, "reputation is declared with no channel behind it").toBeTruthy();
+    expect(channel.reputation_registry).toBe(REPUTATION_REGISTRY);
+    expect(channel.write_it.call).toBe(GIVE_FEEDBACK_SIGNATURE);
   });
 
   it("is reachable from the x402 discovery catalog", async () => {

@@ -157,3 +157,21 @@ test("a cancelled submission retains its retry identity and never retries itself
   assert.equal(f.requests[2].init.headers["Idempotency-Key"], quote.idempotency_key);
   assert.equal(f.requests[2].url, quote.buy_url);
 });
+
+
+test("publication completion preserves the private recovery header across cached replies", async () => {
+  const recovery = btoa(JSON.stringify({ purchase_id: "fixture-purchase", status_token: "fixture-private-token", status_url: origin + "/api/purchase-status/fixture-purchase" }));
+  const f = fixture(async (_url, _init, n) => {
+    if (n === 1) return response();
+    const paid = response(200, "# Retained publication");
+    paid.headers.set("Purchase-Recovery", recovery);
+    return paid;
+  });
+  const quote = (await f.quote({ buy_url: "/almanac/retained-page" })).structuredContent;
+  const result = await f.complete({ quote_id: quote.quote_id, signed_payment: signed });
+  assert.equal(result.structuredContent.purchase_recovery, recovery);
+  assert.equal(result.structuredContent.body, "# Retained publication");
+  const again = await f.complete({ quote_id: quote.quote_id, signed_payment: signed });
+  assert.equal(again.structuredContent.purchase_recovery, recovery);
+  assert.equal(f.requests.length, 2);
+});

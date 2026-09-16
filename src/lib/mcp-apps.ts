@@ -331,7 +331,7 @@ function preflightCardHtml(): string {
         <span class="qual" id="qual"></span>
       </div>
       <div class="age">
-        <span>observed just now</span><span>one probe, one moment</span>
+        <span>observed just now</span><span>one door, one moment</span>
         <span><b>this card does not re-probe</b></span>
       </div>
     </div>

@@ -187,6 +187,14 @@ Or, in Claude Code, one line:
 claude mcp add --transport http scvd-store https://scvd.store/mcp
 ```
 
+For standard x402 payment clients, including CDP-backed `@x402/mcp`
+clients, connect to **`https://scvd.store/mcp?payment=tool-result`**.
+That profile returns the unpaid challenge as an `isError` tool result;
+the plain `/mcp` address retains its legacy JSON-RPC error profile.
+The catalog's per-item `mcp_url` already selects the standard profile.
+A generic MCP connection exposes tools but does not provide a wallet.
+See [payment client paths and their verification limits](docs/PAYMENT_INTERFACES_2026-09-15.md).
+
 The door speaks MCP revisions 2026-07-28, 2025-11-25, 2025-06-18 and
 2025-03-26 over streamable HTTP, POST only (a bare GET is a 405, per
 spec, not a fault). Revision 2026-07-28 is served statelessly from
@@ -245,7 +253,7 @@ without the extension get exactly the JSON they always got.
 
 **Three doors on one origin.** `/mcp` is the store (the free
 instruments and the paid shelves); `/mcp/verifier` serves five
-read-only tools under task-shaped names and no shelf; `/mcp/docs`
+free verification tools under task-shaped names and no shelf; `/mcp/docs`
 (also `POST /mcp.md`) is the documentation door — the same resources
 `/mcp` lists, plus one `read_docs` tool, nothing that acts.
 
@@ -257,11 +265,12 @@ honest list of what is not built. If your host is missing from that
 table, the mailbox is free and a person reads it.
 
 **In the browser (WebMCP).** `https://scvd.store/webmcp.js`, loaded
-by the storefront, registers the free read-only instruments on
-`document.modelContext` for an agent living in the visitor's browser.
-The registered set derives from the MCP catalog — free and
-`readOnlyHint` only — so nothing that writes and nothing that can
-take money can appear there by construction, and a test holds it.
+by the storefront, registers free instruments derived from MCP plus
+`quote_store_purchase` and `complete_store_purchase` on
+`document.modelContext`. Quoting is free. Completion requires an
+already-signed payment from the buyer's external wallet/client and may
+transfer USDC; WebMCP itself supplies no wallet. Save the returned goods,
+receipt, and private recovery handle. See the payment client paths above.
 
 ## License
 
@@ -530,7 +539,7 @@ defects/          # scvd-defects: the vocabulary as data, both halves of
                   # the remediation, recorded 402 doors and settlement
                   # responses as fixtures, and the settlement-response reader
 mcp-starter/      # scvd-mcp-starter: a stdio MCP server, one file, that
-                  # serves the read-only verifier door to any client
+                  # serves the free verifier door to any client
 tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # builder's running account of every tool they sign
                   # up for — trial warnings, burn, price drift, signup

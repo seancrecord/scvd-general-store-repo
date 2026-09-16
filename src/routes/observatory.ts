@@ -1,5 +1,8 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { computeObservatory, type ObservatoryMonth } from "@/services/observatory";
 import type { HonoEnv } from "@/types";
@@ -32,19 +35,76 @@ function monthTable(month: ObservatoryMonth): string {
     </table>`;
 }
 
+/**
+ * WHAT GETS READ HERE, AS A DATASET (2026-09-16).
+ *
+ * This page carried no structured data, so the one surface that says
+ * how much of this store is actually read handed an answer engine
+ * nothing it could lift. Dataset is the honest type: dated figures,
+ * per month, per surface, free and licensed, derived at read from the
+ * porch's own counters.
+ *
+ * WHAT THE NODE DOES NOT CLAIM. `organic_visits` is the house's own
+ * count of its own pages, with infrastructure buckets kept out — not
+ * an audited figure and not comparable to anybody else's analytics,
+ * because the floors and the exclusions are ours. The measurement
+ * technique says so rather than leaving a number to be read as more
+ * than it is, and the same sentence the page prints in prose is the
+ * one the node carries.
+ */
+function observatoryJsonLd(base: string, observatory: Awaited<ReturnType<typeof computeObservatory>>): string {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "The observatory — what gets read at this store, counted",
+    description: observatory.what_this_is,
+    url: `${base}/observatory`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    isAccessibleForFree: true,
+    creator: organizationRef(base),
+    publisher: organizationRef(base),
+    dateModified: observatory.computed_at,
+    ...(observatory.months.length > 0
+      ? {
+          temporalCoverage: `${observatory.months[observatory.months.length - 1]!.month}/${observatory.months[0]!.month}`,
+        }
+      : {}),
+    variableMeasured: [
+      "organic visits per month, house and infrastructure buckets excluded",
+      "visits per counted surface, per month",
+      "whether a month's ledger was truncated by the key cap",
+    ],
+    measurementTechnique: `${observatory.what_this_is_not} Counted by name only: a surface absent from the counted list is not counted, which is not the same as unvisited. ${observatory.house_flag_policy}`,
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: `${base}/observatory`,
+    },
+  });
+}
+
 observatoryRoutes.get("/observatory", async (c) => {
+  const base = c.env.STORE_BASE_URL;
   const observatory = await computeObservatory(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({
+      base,
+      path: "/observatory",
+      title: "The observatory",
+      description: "What gets read here, counted: every surface the porch counts, per month, organic visits beside the house and infrastructure buckets kept out of them. In name order, never by count.",
+      document: observatory as unknown as Record<string, unknown>,
+    });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(observatory);
   }
-  const base = c.env.STORE_BASE_URL;
   return c.html(
     renderSimplePage({
       title: "The observatory",
       description:
         "What gets read here, counted: every surface the porch counts, per month, organic visits beside the house and infrastructure buckets kept out of them. In name order, never by count.",
       path: "/observatory",
-      bodyHtml: `<section>
+      bodyHtml: `${observatoryJsonLd(base, observatory)}<section>
         <p class="menu-desc">${escapeHtml(observatory.what_this_is)}</p>
         <p class="menu-desc"><strong>${escapeHtml(observatory.what_this_is_not)}</strong></p>
       </section>

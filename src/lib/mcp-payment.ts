@@ -14,6 +14,7 @@ import { persistBazaarObservations } from "@/lib/bazaar-observer";
 import {
   JUDGED_NOTE,
   bookedReason,
+  withVerdictClass,
   decodePaymentHeader,
   diagnoseDecline,
   isNeverJudged,
@@ -27,6 +28,7 @@ import {
 import type { EventSignals } from "@/lib/metrics";
 import {
   recordChallengeIssued,
+  mismatchSignal,
   recordPaymentDecline,
   recordSettlement,
 } from "@/lib/metrics";
@@ -241,7 +243,7 @@ export async function runMcpPayment(
   signals: EventSignals,
   onVerifiedPayer?: VerifiedPayerCheck,
   /**
-   * What the buyer actually asked for, serialized by the route — the
+   * What the buyer actually asked for, serialized as JSON arguments by the route — the
    * delivery intent carries it so a mint that dies after settlement
    * can still be finished by hand (the 2026-08-10 lesson: the one
    * fact needed to produce the artifact was the one fact nobody
@@ -347,8 +349,23 @@ export async function runMcpPayment(
         bookedReason(
           diagnosis.decline?.reason ?? "unspecified:reason_not_captured",
           diagnosis.payloadProblems,
+          // Both doors read one instrument: the MCP door had no
+          // decline reading at all until 2026-07-29, and the same rule
+          // applies to the facilitator's words. See withVerdictClass.
+          diagnosis.decline?.message,
         ),
-        signals,
+        {
+          ...signals,
+          // Same two facts the HTTP gate now books: who signed, and
+          // which field disagreed. One door getting the good
+          // instrument is the failure this file was written to end.
+          ...(payerFromPaymentHeader(paymentHeader)
+            ? { payer: payerFromPaymentHeader(paymentHeader) }
+            : {}),
+          ...(mismatchSignal(diagnosis.mismatch)
+            ? { mismatch: mismatchSignal(diagnosis.mismatch) }
+            : {}),
+        },
       ).catch(() => undefined);
       if (diagnosis.decline) {
         body = {
@@ -633,7 +650,10 @@ export async function runMcpPayment(
       await recordPaymentDecline(
         env,
         path,
-        `settle:${settlement.errorReason}`,
+        withVerdictClass(
+          `settle:${settlement.errorReason}`,
+          settlement.errorMessage,
+        ),
         signals,
       ).catch(() => undefined);
       /*

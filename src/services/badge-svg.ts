@@ -145,7 +145,7 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
 
 export interface AuditBadgeOptions {
   host: string;
-  verdict: "ready" | "not_ready" | "unreachable" | "refused";
+  verdict: "ready" | "not_ready" | "unreachable" | "refused" | "method_unresolved";
   /** ISO timestamp; the date is the loudest true thing on the label. */
   observedAt: string;
   criteria: string;
@@ -178,6 +178,18 @@ const VERDICT_LABEL: Record<AuditBadgeOptions["verdict"], { line: string; sub: s
     sub: "the target failed our probe-target law",
     color: FADED,
   },
+  /*
+   * 2026-09-16, and it renders in FADED rather than ACCENT on
+   * purpose. The whole reason this verdict exists is that a door we
+   * could not find the verb for was being drawn in the same red as a
+   * door that failed a check, on a badge an operator embeds in their
+   * own README. The colour is part of the claim.
+   */
+  method_unresolved: {
+    line: "NOT PROBED",
+    sub: "the door refused every method we send",
+    color: FADED,
+  },
 };
 
 /**
@@ -187,7 +199,7 @@ const VERDICT_LABEL: Record<AuditBadgeOptions["verdict"], { line: string; sub: s
  * rather than retires, and it is never a ranking. So
  * the date shares the line with the verdict, the criteria version is
  * printed, and the whole label links to the signed report anyone can
- * verify without us. All four verdicts render — a store that badges
+ * verify without us. Every verdict renders — a store that badges
  * only good news is selling endorsements, which is the thing this is
  * not.
  */

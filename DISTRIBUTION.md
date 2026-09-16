@@ -363,6 +363,77 @@ row was "a stranger installs it"; the count of workflows that do is
 not observable from here, so the porch's `preflight` channel is the
 only number this will ever produce.
 
+## 4d. PyPI and the Go module proxy — the same law, for the other two runtimes
+
+BUILT 2026-09-16, both waiting on one press each. `scvd-preflight` went
+to npm the day it was written and nowhere else. An outside agent-
+readiness scan counted that honestly: an SDK in one package manager is
+an SDK for the people who already use that one. An agent written in
+Python could read the store's prose about a preflight client and then
+not have one.
+
+So the client is now three ports of one law, and the two new ones read
+the SAME recorded reports as the JavaScript client — from
+`x402-preflight/fixtures`, by relative path, not copied. A fixture
+that changes changes all three suites at once, which is the only way
+three implementations stay one law rather than three dialects. Output
+and exit codes are verified identical to the JavaScript command for the
+same door; all three print the same usage and exit 2 on a bad flag.
+Both are standard-library only, so neither adds a supply chain.
+
+* **PyPI** — `x402-preflight-py/`, published by
+  `.github/workflows/publish-pypi.yml`. Trusted Publishing, not a
+  token: PyPI accepts a short-lived OIDC credential minted by the run,
+  so there is no `PYPI_TOKEN` to store, rotate or leak. THAT NEEDS ONE
+  BROWSER SETUP BEFORE THE FIRST RUN, and it is the PENDING publisher
+  form, not the project one: `scvd-preflight` does not exist on PyPI
+  (404, checked 2026-09-16), and the project-level form is unreachable
+  until a first release exists — which cannot happen until this is
+  configured. The pending form breaks that circle, and the first
+  successful run creates the project and converts it. At
+  https://pypi.org/manage/account/publishing/ (2FA required), add a
+  pending publisher naming project `scvd-preflight`, owner
+  `seancrecord`, repository `scvd-general-store-repo`, workflow
+  `publish-pypi.yml` (the filename, not a path), environment blank.
+  Until it exists the upload step gets a 403 and nothing is uploaded,
+  which is the correct failure: a publisher that was never authorised
+  should not be able to guess its way in.
+
+* **Go** — `x402-preflight-go/`, published by
+  `.github/workflows/publish-go.yml`. No registry, no account, no
+  secret: a Go module publishes by git tag and proxy.golang.org fetches
+  it on first request. Nothing to set up, so this one is a press alone.
+
+Both are `workflow_dispatch` only with `dry_run` defaulting to true and
+no default version, same as npm and the skill publisher (rule 30), and
+both confirm a version rather than setting one — the number typed must
+already match `pyproject.toml` or the `CHANGELOG` heading.
+
+THE GO TAG DESERVES ITS OWN WARNING, because it is the most permanent
+thing this repository can publish. npm and PyPI have narrow unpublish
+windows; proxy.golang.org has none. It caches by (module, version)
+forever and serves that copy to everyone, and deleting the tag does not
+recall it. The workflow therefore refuses five ways before tagging: a
+version carrying a leading `v` or not `MAJOR.MINOR.PATCH`; a `go.mod`
+module path that is not what this repo and directory actually publish;
+a version the `CHANGELOG` does not already name; a tag that exists; and
+a commit that is not an ancestor of `main`. The tag carries the
+directory as a prefix (`x402-preflight-go/v0.1.0`) because a bare
+`v0.1.0` would advertise a module at the repository root that does not
+exist — and the prefix is derived from the directory name, never typed,
+so the two spellings cannot drift.
+
+NEITHER BUTTON EXISTS UNTIL THESE FILES ARE ON `main`. GitHub lists a
+`workflow_dispatch` workflow in the Actions tab only when the file is
+on the default branch, so both presses are gated on the merge — the
+PyPI one as much as the Go one. The PyPI browser setup above is the
+only half that can be done beforehand, because it happens on PyPI's
+side and knows nothing about our branches.
+
+Until both presses happen, every surface naming a Python or Go client
+is a forward reference, the same posture as the npm row above and worth
+closing for the same reason.
+
 ## 5. Other client directories (lower priority, same shape)
 
 **WHERE THE STORE IS LISTED IS NOT ANSWERED HERE.**

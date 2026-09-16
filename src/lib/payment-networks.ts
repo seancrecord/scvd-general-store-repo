@@ -74,6 +74,11 @@ const NETWORKS = [
   { key: 'solana', explorer: 'https://solscan.io', label: 'Solana', network: SOLANA_NETWORK, enabled: (env: PaymentNetworkConfig) => Boolean(solanaPayTo(env)) },
 ] as const;
 
+/** Historical books retain a network's name even when its checkout is disabled. */
+export function settlementNetworkLabels() {
+  return NETWORKS.map(({ key, label }) => ({ key, label }));
+}
+
 export function checkoutNetworks(env: PaymentNetworkConfig) {
   return NETWORKS.filter(network => network.enabled(env));
 }

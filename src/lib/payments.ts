@@ -75,6 +75,7 @@ export const PAYMENT_VARY = "PAYMENT-SIGNATURE, X-PAYMENT";
 
 export const PENNY_PAGE_USDC = 0.01;
 export const USDC_DECIMALS = 6;
+export const EVM_USDC_DOMAIN = { name: "USD Coin", version: "2" } as const;
 
 /**
  * THE RECONCILIATION CAP (the ruling PAYMENT_RAILS.md required before
@@ -588,6 +589,13 @@ const USDC_ASSET_BY_NETWORK: Record<string, string> = {
   [SOLANA_NETWORK]: SOLANA_USDC_MINT,
 };
 
+/** Historical inspection uses the asset identity, never today's enabled rails. */
+export function settlementAssetMetadata(network: string, asset: string): { symbol: string; decimals: number } | null {
+  const expected = USDC_ASSET_BY_NETWORK[network];
+  const matches = expected && (network.startsWith("eip155:") ? expected.toLowerCase() === asset.toLowerCase() : expected === asset);
+  return matches ? { symbol: "USDC", decimals: USDC_DECIMALS } : null;
+}
+
 export function manifestAccepts(
   env: Env,
   tiersUsdc: number[],
@@ -608,8 +616,8 @@ export function manifestAccepts(
     };
     if (network.startsWith("eip155:")) {
       entry.extra = {
-        name: network === WORLD_NETWORK ? "USDC" : "USD Coin",
-        version: "2",
+        name: network === WORLD_NETWORK ? "USDC" : EVM_USDC_DOMAIN.name,
+        version: EVM_USDC_DOMAIN.version,
         assetTransferMethod: EVM_TRANSFER_METHOD,
       };
     }
@@ -1293,6 +1301,7 @@ function isSettleTimeout(error: unknown): error is Error {
 }
 
 export interface PaymentStack {
+  facilitator: KvWarmFacilitatorClient;
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
 }
@@ -1483,7 +1492,7 @@ export function getPaymentStack(env: Env): PaymentStack {
     });
     const routes = buildRoutesConfig(env);
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
-    cachedStack = { httpServer, initialized: httpServer.initialize() };
+    cachedStack = { facilitator, httpServer, initialized: httpServer.initialize() };
     // A failed first sync shouldn't poison the isolate forever.
     cachedStack.initialized.catch(() => {
       cachedStack = undefined;

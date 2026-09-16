@@ -38,7 +38,7 @@ describe("the front of the store, trimmed", () => {
     expect(page).not.toContain("house-flagged proprietor tests");
     expect(page).not.toContain("free shelf included");
     // And the claim itself is still on the page, with its door to the books.
-    expect(page).toMatch(/\d+ organic sale/);
+    expect(page).toMatch(/\d+ organic purchase/);
     expect(page).toContain('href="/stats"');
   });
 
@@ -106,11 +106,11 @@ describe("the front of the store, trimmed", () => {
     const stats = await computeStats(testEnv);
     expect(stats.organic_by_rail).toBeUndefined();
     // And the line still stands on the number that is the claim.
-    expect(storefrontLedgerLine(stats)).toContain("organic sale");
+    expect(storefrontLedgerLine(stats)).toContain("organic purchase");
     expect(storefrontLedgerLine(stats)).not.toContain("Base");
   });
 
-  it("names both rails on the line once the walk has run", () => {
+  it("names the payment protocol on the line, leaving networks to the rollup", () => {
     const line = storefrontLedgerLine({
       operating_since: "2026-07-22",
       settled_purchases_total: 92,
@@ -129,10 +129,10 @@ describe("the front of the store, trimmed", () => {
       },
       computed_at: "2026-08-06T00:00:00.000Z",
     });
-    expect(line).toBe("6 organic sales — 4 on Base, 2 on Solana.");
+    expect(line).toBe("6 organic purchases via x402.");
   });
 
-  it("prints what neither record could place, rather than absorbing it", () => {
+  it("keeps an incomplete network reading out of the homepage protocol line", () => {
     const line = storefrontLedgerLine({
       operating_since: "2026-07-22",
       settled_purchases_total: 92,
@@ -160,7 +160,7 @@ describe("the front of the store, trimmed", () => {
     // a third chain we couldn't name or as money we'd lost. This says
     // what actually happened: the sale is fine, the bookkeeping was
     // late.
-    expect(line).toContain("1 from before we logged the rail");
+    expect(line).toBe("6 organic purchases via x402.");
     expect(line).not.toContain("unattributed");
   });
 });

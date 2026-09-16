@@ -1,0 +1,10 @@
+interface:
+  display_name: "SCVD x402 Verifier"
+  short_description: "Check x402 endpoints and signed artifacts"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "scvd-x402-verifier"
+      description: "Free x402 endpoint, receipt, history, defect, and SCVD signature checks"
+      transport: "streamable_http"
+      url: "https://scvd.store/mcp/verifier"

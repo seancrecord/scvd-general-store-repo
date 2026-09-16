@@ -73,7 +73,11 @@ describe("a 500 leaves a trace that outlives the request", () => {
     const source = (
       await import("../src/lib/payment-gate.ts?raw")
     ).default as unknown as string;
-    const wrapper = source.slice(source.indexOf("export const paymentGate"));
+    const start = source.indexOf("export function createPaymentGate");
+    const end = source.indexOf("export const paymentGate = createPaymentGate()");
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const wrapper = source.slice(start, end);
     // The gate used to skip the instrument entirely when it threw:
     // the one path most worth measuring left no trace.
     expect(wrapper).toContain("recordGateOutcome(c, \"threw\")");

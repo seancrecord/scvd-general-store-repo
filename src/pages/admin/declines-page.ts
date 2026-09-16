@@ -48,6 +48,12 @@ function declineRowHtml(row: DeclineRow): string {
     <td${colour}><strong>${escapeHtml(FAULT_LABEL[row.fault] ?? row.fault)}</strong></td>
     <td>${escapeHtml(row.channel)}${isNoiseFloor(row) && !row.house ? " <em>(noise floor)</em>" : ""}</td>
     <td>${escapeHtml(row.user_agent ?? "(no user-agent)")}${row.house ? " <em>(house)</em>" : ""}</td>
+    <td>${row.payer ? `<code>${escapeHtml(row.payer)}</code>` : "<em>not recorded</em>"}</td>
+    <td>${
+      row.mismatch
+        ? `<code>${escapeHtml(row.mismatch.field)}</code>: we offered <code>${escapeHtml(row.mismatch.we_offered)}</code>, they sent <code>${escapeHtml(row.mismatch.you_sent)}</code>`
+        : "&mdash;"
+    }</td>
   </tr>`;
 }
 
@@ -61,11 +67,37 @@ export function reachHtml(trace: ClientTrace): string {
   const oldest = trace.oldest_row_seen
     ? `${escapeHtml(trace.oldest_row_seen.slice(0, 19).replace("T", " "))} UTC`
     : "no rows at all";
+  /**
+   * A WINDOWED SCAN IS A THIRD STATE. It did not run out of budget and
+   * it did not read the whole log — it stopped where it was told to.
+   * Saying "the whole log" of a windowed walk would be the page
+   * claiming a reach it never had, which is the one thing this
+   * function exists to prevent.
+   */
+  if (trace.window) {
+    const asked = [
+      trace.window.since ? `at or after <code>${escapeHtml(trace.window.since)}</code>` : "",
+      trace.window.before ? `before <code>${escapeHtml(trace.window.before)}</code>` : "",
+    ]
+      .filter(Boolean)
+      .join(" and ");
+    return `<p><strong>A WINDOWED look, ${asked}.</strong> It walked
+       ${trace.rows_scanned} rows back to ${oldest}${
+         trace.capped
+           ? ` and <strong style="color:#8c2f1b">still hit its cap before reaching the window's floor</strong>, so rows inside it may be unread`
+           : ", which is past the window, so everything inside it was read"
+       }. Nothing outside the window was looked at at all — this is not the
+       client's whole trail and must not be read as one.
+       <a href="/admin/trace?ua=${encodeURIComponent(trace.user_agent)}">Drop the window.</a></p>`;
+  }
   return trace.capped
     ? `<p style="color:#8c2f1b"><strong>The scan hit its cap.</strong> It walked
        ${trace.rows_scanned} rows back to ${oldest} and stopped with rows still
        unread. Anything this client did before that is NOT REACHED, not absent —
-       and an absent settle here is not evidence they never bought.</p>`
+       and an absent settle here is not evidence they never bought.
+       <small>To reach further back, ask for a window:
+       <code>?since=2026-09-15T03:00:00Z&amp;before=2026-09-15T05:00:00Z</code> —
+       the scan then walks past today's traffic instead of stopping in it.</small></p>`
     : `<p><small>Walked ${trace.rows_scanned} rows, the whole log, back to ${oldest}.
        Nothing is behind a cap: what is missing above did not happen, within the
        ninety days rows are kept.</small></p>`;
@@ -163,14 +195,31 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     so. The noise floor is counted <em>here</em> and nowhere else on the page, on purpose
     &mdash; a conformance crawler that read our challenge and could not find a required
     input is evidence about the challenge whatever it intended to spend.</p>
+    <p><small><strong>Two crawlers is not a lost sale.</strong> Where every client behind a
+    reason is machinery the store's own table already names, the row reads
+    <em>discoverability only</em> and the fault is left where it was. The finding is real
+    &mdash; two independent implementations read the challenge and could not find the input
+    &mdash; but none of them was ever going to pay, and <code>ours</code> on this desk means
+    money the store turned away. The moment a client counted as a buyer joins them, it
+    becomes ours in the same breath.</small></p>
     <table>
-      <tr><th>reason</th><th>clients</th><th>who</th><th>moved the fault</th></tr>
+      <tr><th>reason</th><th>clients</th><th>who</th><th>buyers among them</th><th>moved the fault</th></tr>
       ${shared
         .map(
           (row) =>
             `<tr><td><code>${escapeHtml(row.reason)}</code></td><td>${row.clients.length}</td><td>${row.clients
               .map((client) => `<code>${escapeHtml(client)}</code>`)
-              .join(", ")}</td><td>${row.escalated ? "<strong>yes &mdash; now ours</strong>" : "no, annotated only"}</td></tr>`,
+              .join(", ")}</td><td>${
+              row.machinery_only
+                ? "<em>none &mdash; all machinery</em>"
+                : `${row.outside_clients.length}`
+            }</td><td>${
+              row.escalated
+                ? "<strong>yes &mdash; now ours</strong>"
+                : row.machinery_only
+                  ? "no &mdash; discoverability only"
+                  : "no, annotated only"
+            }</td></tr>`,
         )
         .join("\n")}
     </table>
@@ -221,9 +270,39 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     )
     .join("\n");
 
+  /**
+   * A FILTERED DESK MUST SAY SO, LOUDLY. Every count below it is of
+   * MATCHING rows only, and a reader who missed one line of small
+   * print would otherwise read "3 intent-bearing declines" as the
+   * whole store rather than as one client on one door.
+   */
+  const f = r.filter;
+  const filterNote = !f
+    ? ""
+    : `<p style="border-left:4px solid #8c2f1b;padding-left:0.75em">
+      <strong>This is a FILTERED view.</strong> Every number on this page counts only rows
+      matching ${[
+        f.item ? `item <code>${escapeHtml(f.item)}</code>` : "",
+        f.ua ? `client containing <code>${escapeHtml(f.ua)}</code>` : "",
+        f.reason ? `reason containing <code>${escapeHtml(f.reason)}</code>` : "",
+        f.since ? `at or after <code>${escapeHtml(f.since)}</code>` : "",
+        f.before ? `before <code>${escapeHtml(f.before)}</code>` : "",
+      ]
+        .filter(Boolean)
+        .join(", ")} &mdash; not the store.
+      The scan walked ${r.index_rows} index rows and ${r.rows_scanned} raw rows to find them,
+      reaching back to <code>${escapeHtml(r.oldest_row_seen ?? "(nothing)")}</code>.
+      ${
+        r.declines.length === 0
+          ? "<strong>Nothing matched inside that reach</strong> &mdash; which is not the same as never happened, and the desk will not say the stronger thing."
+          : ""
+      }
+      <a href="/admin/declines">Drop the filter.</a></p>`;
+
   const body = `
   <section>
-    <h2>The decline desk</h2>
+    <h2>The decline desk${f ? " (filtered)" : ""}</h2>
+    ${filterNote}
     <p><strong>${r.index_rows}</strong> read from the decline index${r.index_complete ? " — every decline it holds, so nothing here is hidden by a cap" : " (index scan hit its cap: there are more)"},
     plus <strong>${r.rows_scanned}</strong> raw rows${r.capped ? " (that scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.
     <small>The index carries one key per decline and began on 2026-09-06; the raw stream carries every event ever booked, so a decline older than the index is only found if the capped scan reaches it. Before the index, a busy month could spend the whole cap on corpus reads and leave this desk reporting none while the funnel counted refusals.</small>
@@ -253,11 +332,21 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     <p>The <code>reason</code> column is the facilitator's verdict verbatim. The
     <code>fault</code> column is OUR READING of it and nothing more — the raw string is
     the fact, and it is printed next to the guess on purpose.</p>
+    <p><small><strong>payer</strong> and <strong>the disagreement</strong> have been booked
+    since 2026-09-16, and read <em>not recorded</em> on every row older than that — not
+    &quot;no payer&quot;, which would be a claim the books cannot support. Declines never
+    carried the signer: the payer lives inside the base64 payload and the signal reader
+    never opened it, so the store learned a buyer's address only when they got through, and
+    the house test met every decline with no wallet to match. The disagreement is the first
+    field <code>describeMismatch</code> found, with BOTH values — the 402 always carried
+    it to the buyer while the books kept only the field's name, which is why fifteen
+    <code>requirement_mismatch:amount</code> rows from one client could not be told from a
+    client that was one unit conversion away.</small></p>
     ${
       r.declines.length === 0
         ? "<p>Nothing in the window.</p>"
         : `<table>
-      <tr><th>when</th><th>item</th><th>reason (verbatim)</th><th>stage</th><th>fault</th><th>channel</th><th>client</th></tr>
+      <tr><th>when</th><th>item</th><th>reason (verbatim)</th><th>stage</th><th>fault</th><th>channel</th><th>client</th><th>payer</th><th>the disagreement</th></tr>
       ${r.declines.map(declineRowHtml).join("\n")}
     </table>`
     }
