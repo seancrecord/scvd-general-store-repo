@@ -295,12 +295,12 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
        */
       apiEntry({
         anchor: `${base}/mcp/verifier`,
-        title: `${VERIFIER_TITLE} — MCP server (${VERIFIER_SERVER_NAME}, read-only tools only)`,
+        title: `${VERIFIER_TITLE} — MCP server (${VERIFIER_SERVER_NAME}, free verification tools)`,
         desc: [
           {
             href: `${base}/mcp/verifier`,
             type: "application/json",
-            title: `The door's own document: ${VERIFIER_TOOLS.length} read-only tools by name, the handshake, and the full door beside it`,
+            title: `The door's own document: ${VERIFIER_TOOLS.length} free verification tools by name, the handshake, and the full door beside it`,
           },
         ],
         doc: [

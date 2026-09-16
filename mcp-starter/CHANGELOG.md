@@ -3,6 +3,12 @@
 Versions are immutable once published. Minor versions add methods and
 never change an existing answer's shape.
 
+## 0.1.1 — 2026-09-16
+
+Correct the verifier description to disclose traffic records and the
+public asked-for queue used by readiness lookup. No protocol or
+forwarding behavior changed. This version has not been published.
+
 ## 0.1.0 — 2026-09-03
 
 First publish, roadmap C5: the stdio handshake, `ping`, notifications
