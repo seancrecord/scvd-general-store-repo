@@ -24,6 +24,12 @@ completion, every chain, or every browser/extension combination.
 
 ## Historical work orders and decisions
 
+September 15 follow-through: historical catalog recovery has a completed
+reading, and payment reach is next. The active MPP census/passport and
+discovery work observes other services; it does not enable this till.
+Current scope, buyer-task coordination, package effects and acceptance
+criteria are in [PAYMENT_REACH_FOLLOWTHROUGH_2026-09-15](docs/PAYMENT_REACH_FOLLOWTHROUGH_2026-09-15.md).
+
 CV's MPP integration spec (2026-08-03), revised by the desk the same
 day with the amendments evidence demanded, and adopted as the standing
 process for EVERY future rail — MPP, Solana-exact, whatever arrives.

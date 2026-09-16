@@ -1,5 +1,12 @@
 # Retained evidence follow-through — September 9, 2026
 
+September 15 follow-through: the keeper prioritized historical evidence before
+payment reach. A new read-only capture and catalog-preimage recovery pass is
+recorded in [the current follow-through](HISTORICAL_EVIDENCE_2026-09-15.md).
+The known temporary locations no longer contain the September 9 private census
+or retention captures. Its published aggregates remain dated observations; a
+new capture cannot silently replace that frozen population.
+
 The keeper asked to keep going after the reader release. This pass reads
 original evidence for the 44 signed `attests` bindings left unmatched by
 the earlier census. It does not issue replacement observations.
