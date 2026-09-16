@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import ciYml from "../.github/workflows/ci.yml?raw";
+import readme from "../README.md?raw";
 import publishYml from "../.github/workflows/publish-npm.yml?raw";
 import rootPackage from "../package.json";
 import snapshot from "../defects/defects.json";
@@ -185,5 +186,70 @@ describe.each([corpusPackage, defectsPackage, starterPackage, preflightPackage])
     const lines = publishYml.split("\n").map((line) => line.trim().replace(/\s+/g, " "));
     expect(lines).toContain(`${name}) DIR=${directory} ;;`);
     expect(lines).toContain(`${name}) node --test ${directory}/*.test.mjs ;;`);
+  });
+});
+
+/**
+ * THE MAP HAS TO COVER THE TREE (2026-09-16).
+ *
+ * README.md carries a directory map that names each publishable
+ * directory beside the package it becomes. It is the first place
+ * anybody looks to find out what is in here, which makes it the first
+ * place that can lie by omission.
+ *
+ * IT DID. x402-preflight-py/ and x402-preflight-go/ were published to
+ * PyPI and the Go module proxy and never added to the map, so for the
+ * length of a day the map said this repository holds one preflight
+ * client when it holds three. Nothing failed, because nothing was
+ * checking — a map that is a subset of the tree reads as complete, and
+ * that is worse than no map at all.
+ *
+ * So the map is now derived against, not trusted. Every top-level
+ * directory carrying a package manifest — package.json, pyproject.toml
+ * or go.mod, which is to say every directory that CAN be published —
+ * must appear in the map. The set comes from the tree at build time via
+ * import.meta.glob rather than from a list somebody has to remember to
+ * edit, because a hand-maintained list of things-to-check has the exact
+ * failure mode this test exists to catch.
+ *
+ * This is deliberately one-directional. A directory in the map without
+ * a manifest is fine and there are several — till/, src/, action/ — and
+ * they are there because a reader needs them, which is the map's job.
+ * The rule is only that nothing publishable is invisible.
+ */
+describe("the README's directory map covers everything publishable", () => {
+  const MANIFESTS: Record<string, string> = {
+    ...(import.meta.glob("../*/package.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+    ...(import.meta.glob("../*/pyproject.toml", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+    ...(import.meta.glob("../*/go.mod", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+  };
+
+  /** Top-level directory names that carry a manifest, deduped. */
+  const publishable = [
+    ...new Set(
+      Object.keys(MANIFESTS)
+        .map((path) => path.split("/")[1]!)
+        .filter((dir) => dir !== "node_modules"),
+    ),
+  ].sort();
+
+  it("finds the publishable directories from the tree, not from a list", () => {
+    // If this number moves, a package was added or removed — which is
+    // exactly when the map below needs looking at.
+    expect(publishable.length, `found: ${publishable.join(", ")}`).toBeGreaterThanOrEqual(10);
+    expect(publishable).toContain("x402-preflight");
+    expect(publishable).toContain("x402-preflight-py");
+    expect(publishable).toContain("x402-preflight-go");
+  });
+
+  it.each(publishable)("names %s in the map", (dir) => {
+    // The map's own spelling: the directory at the start of a line,
+    // with its trailing slash, the way every existing entry is written.
+    const named = new RegExp(`^${dir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/`, "m").test(readme);
+    expect(
+      named,
+      `${dir}/ carries a package manifest but does not appear in README.md's directory map. ` +
+        `A reader looking for it will not find it. Add a line for it beside the others.`,
+    ).toBe(true);
   });
 });
