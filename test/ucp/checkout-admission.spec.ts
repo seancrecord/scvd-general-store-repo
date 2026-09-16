@@ -15,10 +15,15 @@ const PAYER = "0x2222222222222222222222222222222222222222";
  * ADMISSION, ON ITS OWN.
  *
  * Nothing here settles, prepares or delivers. What these tests hold is
- * one sentence: after a UCP completion is admitted,
- * `complete_in_progress` means the store's GLOBAL durable purchase
- * ownership has been acquired for that payment — not that a request
- * arrived.
+ * one sentence: an admitted UCP completion means the store's GLOBAL
+ * durable purchase ownership has been acquired for that payment — not
+ * that a request arrived.
+ *
+ * That ownership is a BINDING on the checkout, and the public status
+ * does not move for it. `complete_in_progress` is a promise that an
+ * outcome is coming; it belongs to the settlement boundary, the first
+ * point at which anything is in flight to have an outcome — see
+ * settlement-boundary.spec.ts.
  *
  * The verifier is stubbed on purpose. Whether the facilitator can
  * check a signature is its business and is tested where it lives; what
@@ -92,7 +97,7 @@ async function openCheckout(body?: unknown) {
 const read = (id: string) => ucpCheckoutStore(testEnv, id).readUcpCheckout();
 
 describe("a UCP completion acquires the store's global purchase ownership", () => {
-  it("admits a valid payment and only then reports complete_in_progress", async () => {
+  it("admits a valid payment and binds it to the checkout", async () => {
     const checkout = await openCheckout();
     const verify = accepts();
     const outcome = await admitUcpCompletion(testEnv, {
@@ -104,7 +109,7 @@ describe("a UCP completion acquires the store's global purchase ownership", () =
     expect(verify).toHaveBeenCalledOnce();
 
     const stored = await read(checkout.id);
-    expect(stored?.status).toBe("complete_in_progress");
+    expect(stored?.status).toBe("ready_for_complete");
     expect(stored?.completion?.protocol).toBe("ucp");
     expect(stored?.completion?.payment_identity).toMatch(/^[0-9a-f]{64}$/);
     expect(stored?.completion?.checkout_version).toBe(1);
@@ -161,7 +166,7 @@ describe("a UCP completion acquires the store's global purchase ownership", () =
     const after = await read(checkout.id);
     // Byte-identical binding: the retry finished nothing new.
     expect(after?.completion).toEqual(before?.completion);
-    expect(after?.status).toBe("complete_in_progress");
+    expect(after?.status).toBe("ready_for_complete");
   });
 
   it("refuses a second, different payment for a checkout already completing", async () => {
@@ -439,7 +444,7 @@ describe("some items cannot have ownership taken before their goods exist", () =
      */
     expect(outcome.ok).toBe(true);
     const stored = await ucpCheckoutStore(testEnv, checkout.id).readUcpCheckout();
-    expect(stored?.status).toBe("complete_in_progress");
+    expect(stored?.status).toBe("ready_for_complete");
     expect(stored?.completion?.payment_identity).toMatch(/^[0-9a-f]{64}$/);
   });
 

@@ -2,7 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { describe, expect, it, vi } from "vitest";
 import { admitUcpCompletion } from "@/services/ucp-admission";
 import { ucpCheckoutStore } from "@/services/ucp-checkout-store";
-import { settlementEligibility } from "@/services/settlement-eligibility";
+import { mayEnterSettlementFulfillment } from "@/services/settlement-preconditions";
 import { preparesBeforeAdmission } from "@/services/purchase-preparation";
 import { completionRequest } from "@/lib/ucp/checkout/completion";
 import { purchaseRequestDigest } from "@/services/purchase-intent";
@@ -96,7 +96,7 @@ async function eligibilityOf(checkoutId: string, itemId: string, nonce: string) 
   );
   const path = `/ucp/v1/checkout-sessions/${checkoutId}`;
   const digest = await purchaseRequestDigest(testEnv, "ucp", path, completionRequest({ ...stored! }));
-  return settlementEligibility(testEnv, {
+  return mayEnterSettlementFulfillment(testEnv, {
     item: getMenuItem(itemId),
     paymentIdentity: id,
     path,
@@ -173,12 +173,12 @@ describe("every product this catalog sells can be prepared through the shared se
       });
       expect(outcome.ok, `${item.id}: ${outcome.ok ? "" : outcome.detail}`).toBe(true);
       if (outcome.ok) expect(outcome.prepared).toBe("made");
-      expect((await read(body.id))?.status).toBe("complete_in_progress");
+      expect((await read(body.id))?.status).toBe("ready_for_complete");
 
       // Owned AND prepared: the money increment's precondition holds.
       const eligible = await eligibilityOf(body.id, item.id, nonce);
-      expect(eligible.eligible, item.id).toBe(true);
-      if (eligible.eligible) expect(eligible.requires_preparation).toBe(true);
+      expect(eligible.ok, item.id).toBe(true);
+      if (eligible.ok) expect(eligible.requires_preparation).toBe(true);
     });
   }
 
@@ -195,7 +195,7 @@ describe("every product this catalog sells can be prepared through the shared se
       if (outcome.ok) {
         // It managed after all — then it must be genuinely prepared.
         expect(outcome.prepared, item.id).toBe("made");
-        expect(stored?.status).toBe("complete_in_progress");
+        expect(stored?.status).toBe("ready_for_complete");
         return;
       }
       // The cheap failure this ordering exists to make possible.
@@ -225,33 +225,33 @@ describe("every product this catalog sells can be prepared through the shared se
       expect(prepare).not.toHaveBeenCalled();
 
       const eligible = await eligibilityOf(body.id, item.id, nonce);
-      expect(eligible.eligible, item.id).toBe(true);
-      if (eligible.eligible) expect(eligible.requires_preparation).toBe(false);
+      expect(eligible.ok, item.id).toBe(true);
+      if (eligible.ok) expect(eligible.requires_preparation).toBe(false);
     });
   }
 });
 
-describe("settlement eligibility refuses what it should", () => {
+describe("the settlement precondition refuses what it should", () => {
   it("refuses a payment nobody owns", async () => {
-    const verdict = await settlementEligibility(testEnv, {
+    const verdict = await mayEnterSettlementFulfillment(testEnv, {
       item: getMenuItem("hello"),
       paymentIdentity: undefined,
       path: "/p",
       requestDigest: "a".repeat(64),
     });
-    expect(verdict.eligible).toBe(false);
-    if (!verdict.eligible) expect(verdict.reason).toBe("not_owned");
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.reason).toBe("not_owned");
   });
 
   it("refuses a prepare-first product whose journal holds nothing", async () => {
-    const verdict = await settlementEligibility(testEnv, {
+    const verdict = await mayEnterSettlementFulfillment(testEnv, {
       item: getMenuItem("service_audit"),
       paymentIdentity: "d".repeat(64),
       path: "/ucp/v1/checkout-sessions/chk_nothing",
       requestDigest: "e".repeat(64),
     });
-    expect(verdict.eligible).toBe(false);
-    if (!verdict.eligible) {
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) {
       expect(verdict.reason).toBe("preparation_missing");
       expect(verdict.detail).toContain("cannot prove it made");
     }

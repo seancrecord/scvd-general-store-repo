@@ -108,6 +108,15 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("artifact", record);',
     'await txn.put(key, proposal);',
     'await txn.put("artifact:credit_started", true);',
+    /*
+     * The settlement-submission claim and its resolution. Both are
+     * DurableObjectTransaction writes against the same record that
+     * proves ownership, and both have to be all-or-nothing with the
+     * reads above them: a claim that could be separated from its
+     * check is a mechanism for submitting one payment twice.
+     */
+    'await txn.put(SUBMISSION_ROW, submission);',
+    'await txn.put(SUBMISSION_ROW, next);',
   ],
 };
 

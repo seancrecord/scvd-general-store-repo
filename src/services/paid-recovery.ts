@@ -9,6 +9,12 @@ import { PatronAnchorStore, type PatronAnchorRecord } from "@/services/patron-an
 import { humanResolutionKey, type HumanResolutionRecord } from "@/services/human-resolution-record";
 import { HostedObservationStore, type HostedObservation, type HostedPurchase } from "@/services/hosted-observation";
 import { UcpCheckoutStore } from "@/services/ucp-checkout-store";
+import {
+  SUBMISSION_ROW,
+  type SettlementSubmission,
+  type SubmissionClaim,
+  type SubmissionOutcome,
+} from "@/services/settlement-submission";
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
 import { recordDeliveredSettlement } from "@/services/settlement-records";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
@@ -146,6 +152,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   bindUcpCompletion(input: Parameters<UcpCheckoutStore["bindCompletion"]>[0]) { return this.ucpCheckout.bindCompletion(input); }
   completeUcpCheckout(input: Parameters<UcpCheckoutStore["complete"]>[0]) { return this.ucpCheckout.complete(input); }
   declineUcpCheckout() { return this.ucpCheckout.declined(); }
+  enterUcpSettlement(input: Parameters<UcpCheckoutStore["enterSettlement"]>[0]) { return this.ucpCheckout.enterSettlement(input); }
   cancelUcpCheckout() { return this.ucpCheckout.cancel(); }
 
   private readonly hosted = new HostedObservationStore(this.ctx.storage, this.env);
@@ -254,6 +261,77 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     if (!record || token.length !== record.token.length) return null;
     const bytes = new TextEncoder();
     return crypto.subtle.timingSafeEqual(bytes.encode(token), bytes.encode(record.token)) ? JSON.stringify(record) : null;
+  }
+
+  /**
+   * ONE EXECUTION MAY SUBMIT THIS PAYMENT, and it is decided here
+   * because here is where ownership already lives.
+   *
+   * Taken in the same transaction that reads the purchase record, so
+   * the checks and the write cannot be separated by a scheduler: the
+   * record must exist, must be this payment's, must be the request
+   * that took ownership, and must not already have a claim. A second
+   * caller is told `already_started` and must never submit.
+   *
+   * No lease and no expiry: see services/settlement-submission.ts for
+   * why re-granting a claim would be a double-submission mechanism
+   * wearing a reliability costume.
+   */
+  async claimSettlementSubmission(proposalJson: string): Promise<string> {
+    const proposal = JSON.parse(proposalJson) as SettlementSubmission;
+    return this.ctx.storage.transaction(async (txn) => {
+      const purchase = await txn.get<PurchaseIntent>("purchase");
+      if (!purchase) {
+        return JSON.stringify({ won: false, reason: "not_owned" } satisfies SubmissionClaim);
+      }
+      if (purchase.id !== proposal.purchase_id) {
+        return JSON.stringify({ won: false, reason: "not_owned" } satisfies SubmissionClaim);
+      }
+      if (purchase.request_digest !== undefined && purchase.request_digest !== proposal.request_digest) {
+        return JSON.stringify({ won: false, reason: "wrong_request" } satisfies SubmissionClaim);
+      }
+      const prior = await txn.get<SettlementSubmission>(SUBMISSION_ROW);
+      if (prior) {
+        return JSON.stringify({
+          won: false,
+          reason: prior.outcome ? "already_resolved" : "already_started",
+          submission: prior,
+        } satisfies SubmissionClaim);
+      }
+      const submission: SettlementSubmission = { ...proposal };
+      await txn.put(SUBMISSION_ROW, submission);
+      return JSON.stringify({ won: true, submission } satisfies SubmissionClaim);
+    });
+  }
+
+  /** Read the claim without taking one. Used by a losing execution to watch. */
+  async readSettlementSubmission(): Promise<string | null> {
+    const submission = await this.ctx.storage.get<SettlementSubmission>(SUBMISSION_ROW);
+    return submission ? JSON.stringify(submission) : null;
+  }
+
+  /**
+   * Record what the submission turned into. `unknown` is a real
+   * outcome, not a missing one, and it never releases the claim: a
+   * payment whose fate nobody knows stays claimed so that no second
+   * execution can decide to find out by submitting it again.
+   */
+  async resolveSettlementSubmission(outcome: SubmissionOutcome, reference?: string): Promise<string | null> {
+    return this.ctx.storage.transaction(async (txn) => {
+      const prior = await txn.get<SettlementSubmission>(SUBMISSION_ROW);
+      if (!prior) return null;
+      // A resolved claim never changes its mind on a delayed writer,
+      // the same rule updatePurchase applies to a confirmed state.
+      if (prior.outcome && prior.outcome !== "unknown") return JSON.stringify(prior);
+      const next: SettlementSubmission = {
+        ...prior,
+        outcome,
+        resolved_at: new Date().toISOString(),
+        ...(reference ? { reconciliation_reference: reference } : {}),
+      };
+      await txn.put(SUBMISSION_ROW, next);
+      return JSON.stringify(next);
+    });
   }
 
   async updatePurchase(update: { state?: PurchaseIntent["state"]; payment?: SettledPayment; reconciliation_reference?: string }): Promise<void> {

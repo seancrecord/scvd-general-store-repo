@@ -110,7 +110,7 @@ describe("goods that must exist before anyone owns the payment for them", () => 
     expect(outcome.ok).toBe(true);
     if (outcome.ok) expect(outcome.prepared).toBe("made");
     expect(prepare).toHaveBeenCalledOnce();
-    expect((await read(checkout.id))?.status).toBe("complete_in_progress");
+    expect((await read(checkout.id))?.status).toBe("ready_for_complete");
   });
 
   it("never repeats the work on an identical retry", async () => {
@@ -195,7 +195,7 @@ describe("goods that must exist before anyone owns the payment for them", () => 
     });
     expect(outcome.ok).toBe(true);
     if (outcome.ok) expect(outcome.prepared).toBe("made");
-    expect((await read(checkout.id))?.status).toBe("complete_in_progress");
+    expect((await read(checkout.id))?.status).toBe("ready_for_complete");
   });
 
   it("journals the real signed artifact, not a placeholder", async () => {
@@ -318,14 +318,16 @@ describe("goods that follow ownership rather than precede it", () => {
     expect(outcome.ok).toBe(true);
     if (outcome.ok) expect(outcome.prepared).toBe("not_required");
     expect(prepare).not.toHaveBeenCalled();
-    expect((await read(checkout.id))?.status).toBe("complete_in_progress");
+    expect((await read(checkout.id))?.status).toBe("ready_for_complete");
   });
 });
 
 /**
- * The definition that must not weaken: complete_in_progress means this
- * completion owns the store's global durable purchase right. It does
- * not mean "we started doing work".
+ * The definition that must not weaken: a binding on the checkout means
+ * this completion owns the store's global durable purchase right. It
+ * does not mean "we started doing work", and it is not yet the public
+ * complete_in_progress — that one says a settlement submission is
+ * durably claimed.
  */
 describe("preparation never moves the checkout on its own", () => {
   it("leaves the checkout payable for as long as ownership is unowned", async () => {

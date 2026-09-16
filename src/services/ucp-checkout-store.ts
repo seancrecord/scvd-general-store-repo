@@ -253,25 +253,26 @@ export class UcpCheckoutStore {
   }
 
   /**
-   * THE PUBLIC TRANSITION COMES LAST, AFTER DURABLE OWNERSHIP EXISTS.
+   * THE BINDING IS INTERNAL. THE PUBLIC STATE IS NOT.
    *
-   * This used to transition into complete_in_progress first and verify
-   * afterwards, and the ordering was wrong in a way worth writing
-   * down. `complete_in_progress` tells a platform that its Complete
-   * was ACCEPTED — that it should stop initiating completions and
-   * watch the checkout instead. Entering it before the store's global
-   * purchase admission has granted ownership of the payment means a
-   * crash in between leaves an authoritative checkout claiming a
-   * completion the purchase system has never heard of, and a platform
-   * correctly waiting for an outcome nobody is working towards.
+   * This binds the admitted payment to the checkout and DOES NOT move
+   * the public status. That is a correction to an earlier design in
+   * this same branch, and the reason is the store's own rule about
+   * credentials: it never retains them.
    *
-   * So the order is: verify, admit through the shared purchase
-   * ownership, and only then bind the result here. A crash AFTER
-   * admission but BEFORE this write is the recoverable case: the next
-   * identical Complete verifies again, meets the ownership that
-   * already exists, recognises the same payment identity and request
-   * digest, and finishes the binding rather than opening a second
-   * purchase.
+   * `complete_in_progress` tells a platform its Complete was accepted
+   * — stop sending completions, watch the checkout. If that state were
+   * entered at ownership and the process then died, nothing could
+   * resume: the credential is gone by design, there is no autonomous
+   * settlement worker, and a client obediently polling would wait
+   * forever for an outcome nobody can produce. Ownership is real, but
+   * it is too early for a public promise.
+   *
+   * So the public status stays `ready_for_complete` until the payment
+   * is actually at the settlement boundary — see enterSettlement. A
+   * client that polls before then is told, truthfully, that the
+   * checkout is still waiting to be paid, and an identical retry finds
+   * this binding and resumes rather than admitting a second purchase.
    *
    * ONE PAYMENT OWNS A COMPLETION. Rebinding with the SAME identity is
    * that recovery and returns success. Rebinding with a DIFFERENT one
@@ -311,7 +312,7 @@ export class UcpCheckoutStore {
       }
       const next: StoredCheckout = {
         ...checkout,
-        status: "complete_in_progress",
+        // Status deliberately unchanged: see the note above.
         completion: {
           protocol: "ucp",
           payment_identity: input.payment_identity,
@@ -322,6 +323,41 @@ export class UcpCheckoutStore {
           at: new Date(input.nowMs).toISOString(),
         },
       };
+      await txn.put(ROW, next);
+      return { ok: true, checkout: next } as const;
+    });
+  }
+
+  /**
+   * THE PUBLIC PROMISE, MADE WHEN IT CAN BE KEPT.
+   *
+   * Called once the payment has reached the settlement boundary and
+   * this execution holds the submission claim — which is to say, once
+   * something is genuinely in flight that a poll can learn the outcome
+   * of. Only then does the checkout say `complete_in_progress`.
+   *
+   * Idempotent: an execution that already made the promise may say so
+   * again without it meaning a second attempt.
+   */
+  async enterSettlement(input: {
+    payment_identity: string;
+  }): Promise<CheckoutAdmission> {
+    return this.storage.transaction(async (txn) => {
+      const checkout = await txn.get<StoredCheckout>(ROW);
+      if (!checkout) return { ok: false, reason: "not_found" } as const;
+      if (!checkout.completion) {
+        return { ok: false, reason: "wrong_state", checkout } as const;
+      }
+      if (checkout.completion.payment_identity !== input.payment_identity) {
+        return { ok: false, reason: "wrong_state", checkout } as const;
+      }
+      if (checkout.status === "complete_in_progress") {
+        return { ok: true, checkout } as const;
+      }
+      if (checkout.status !== "ready_for_complete") {
+        return { ok: false, reason: "wrong_state", checkout } as const;
+      }
+      const next: StoredCheckout = { ...checkout, status: "complete_in_progress" };
       assertTransition(checkout.status, next.status);
       await txn.put(ROW, next);
       return { ok: true, checkout: next } as const;

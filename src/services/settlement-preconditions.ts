@@ -2,17 +2,21 @@ import { preparesBeforeAdmission, purchasePreparation } from "@/services/purchas
 import type { Env, MenuItem } from "@/types";
 
 /**
- * MAY THIS PURCHASE BE SETTLED AT ALL?
+ * MAY THIS PURCHASE ENTER SETTLEMENT FULFILLMENT?
  *
- * Not "should it" — that is the settlement orchestrator's question,
- * and it does not exist yet. This is the structural precondition, and
- * it exists now so that the increment which finally moves money starts
- * from a function that can refuse rather than from a comment asking
- * somebody to remember:
+ * NOT "may it be settled". The rename is the point, and it corrects a
+ * name this branch had for one commit. A function returning
+ * `eligible: true` sitting beside a facilitator is an invitation to
+ * read it as permission to submit, and for ordinary products it never
+ * was: their real production still has to happen, above the settle
+ * line, during the fulfillment this predicate merely allows to begin.
+ *
+ * What it answers is the structural precondition for entering that
+ * fulfillment at all:
  *
  *     purchase owned
  *   AND required preparation durable
- *   = eligible to attempt settlement
+ *   = may begin the fulfillment whose last line is settlement
  *
  * WHY IT IS ITS OWN CONCEPT rather than a line inside the settler.
  * The two orderings this store runs make "prepared" mean different
@@ -36,11 +40,17 @@ export type EligibilityReason =
   | "preparation_missing"
   | "preparation_unreadable";
 
-export type SettlementEligibility =
-  | { eligible: true; requires_preparation: boolean }
-  | { eligible: false; reason: EligibilityReason; detail: string };
+export type SettlementPreconditions =
+  | { ok: true; requires_preparation: boolean }
+  | { ok: false; reason: EligibilityReason; detail: string };
 
-export async function settlementEligibility(
+/**
+ * THE ONLY THING THAT ACTUALLY SUBMITS is the `settle` callback inside
+ * fulfillPurchase, which is reached only after every pre-money step of
+ * a product has succeeded. This function never grants that; it decides
+ * whether the attempt may begin.
+ */
+export async function mayEnterSettlementFulfillment(
   env: Env,
   args: {
     item: MenuItem | undefined;
@@ -49,10 +59,10 @@ export async function settlementEligibility(
     path: string;
     requestDigest: string;
   },
-): Promise<SettlementEligibility> {
+): Promise<SettlementPreconditions> {
   if (!args.paymentIdentity) {
     return {
-      eligible: false,
+      ok: false,
       reason: "not_owned",
       detail:
         "No durable purchase ownership for this payment. Nothing may be submitted on a payment nobody has admitted.",
@@ -60,7 +70,7 @@ export async function settlementEligibility(
   }
 
   if (!preparesBeforeAdmission(args.item)) {
-    return { eligible: true, requires_preparation: false };
+    return { ok: true, requires_preparation: false };
   }
 
   const ordering = purchasePreparation(
@@ -75,7 +85,7 @@ export async function settlementEligibility(
     // agree, which a test requires across the whole shelf. Refusing
     // rather than assuming keeps the disagreement cheap if it ever happens.
     return {
-      eligible: false,
+      ok: false,
       reason: "preparation_missing",
       detail: "This product's preparation requirement could not be determined.",
     };
@@ -91,7 +101,7 @@ export async function settlementEligibility(
      * and treating it as a refusal costs only a retry.
      */
     return {
-      eligible: false,
+      ok: false,
       reason: "preparation_unreadable",
       detail:
         "The goods for this purchase could not be read, so it is not safe to settle. Nothing was charged.",
@@ -99,11 +109,11 @@ export async function settlementEligibility(
   }
   if (!retained) {
     return {
-      eligible: false,
+      ok: false,
       reason: "preparation_missing",
       detail:
         "This product's goods are made before its payment is taken, and the journal holds none for this purchase. Settling now would charge for something the store cannot prove it made.",
     };
   }
-  return { eligible: true, requires_preparation: true };
+  return { ok: true, requires_preparation: true };
 }
