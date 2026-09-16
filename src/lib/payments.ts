@@ -1312,6 +1312,23 @@ function isSettleTimeout(error: unknown): error is Error {
 export interface PaymentStack {
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
+  /**
+   * THE FACILITATOR ITSELF, exposed 2026-09-16 so a verified-payment
+   * adapter can reach the same verify/settle the HTTP gate uses.
+   *
+   * Nothing about the gate changes. What this makes possible is a
+   * caller that already holds its own frozen terms — a UCP checkout —
+   * asking the SAME facilitator the same question, instead of
+   * synthesizing an HTTP request to get at it, or worse, growing a
+   * second verification path. The MPP seam already takes its verifier
+   * as an injected callback for exactly this reason; this is where the
+   * production callback comes from.
+   *
+   * It is the client, not a new policy: no admission, no accounting,
+   * no decline bookkeeping and no settlement rules live on it. Those
+   * stay downstream where every protocol shares them.
+   */
+  facilitator: KvWarmFacilitatorClient;
 }
 
 /**
@@ -1500,7 +1517,7 @@ export function getPaymentStack(env: Env): PaymentStack {
     });
     const routes = buildRoutesConfig(env);
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
-    cachedStack = { httpServer, initialized: httpServer.initialize() };
+    cachedStack = { httpServer, initialized: httpServer.initialize(), facilitator };
     // A failed first sync shouldn't poison the isolate forever.
     cachedStack.initialized.catch(() => {
       cachedStack = undefined;
