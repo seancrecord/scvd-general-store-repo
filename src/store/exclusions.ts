@@ -109,6 +109,15 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 11,
     crawler_names: 72,
   },
+  {
+    date: "2026-09-15",
+    what_changed:
+      "One name for looking, `lint`, joined the crawler table off the decline desk. x402lint/0.1 (+https://x402lint.dev) sat in the intent-bearing column with two declines three seconds apart on two different doors, both local:input_missing — the walk of a conformance linter reading input contracts, not a buyer, and behaviourally identical to the observatory rows beside it. The table already held validator, verifier, checker, inspector, scanner and monitor; a linter lints, which is the same verb and was the only one of them missing. Kept as the bare word rather than the versioned string, and the generic clients walking beside it (node, curl, python-httpx, axios, Deno, the bare no-user-agent row) are still deliberately out, for the reason this register keeps repeating: a generic string promoted here is misclassified forever.",
+    effect:
+      "The organic 402 count falls by this client's asks, and its two declines move off the decline desk's intent-bearing column into the noise floor — 27 intent-bearing declines in the 2026-09-06 window become 25, from four outside clients to three. No settle moved: it never paid, and no conversion RATE published before today was computed from a denominator this changes downward without also naming it here.",
+    house_wallets: 11,
+    crawler_names: 73,
+  },
 ];
 
 export interface NamedExclusions {

@@ -41,6 +41,9 @@ describe("the self-row is a named CI step", () => {
     };
     expect(scripts.scripts["self-row"]).toBe(SELF_ROW_SCRIPT);
     expect(ciYml).toMatch(/- name: Self-row\n\s+run: npm run self-row/);
+    // A failed suite cannot go green; stop spending CI time after its first
+    // failure. Successful runs still execute every test.
+    expect(ciYml).toMatch(/- name: Tests\n\s+run: npm test -- --bail=1\b/);
   });
 });
 

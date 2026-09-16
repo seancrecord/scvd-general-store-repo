@@ -1,5 +1,13 @@
 # Checkpoint signature experiment
 
+## September 15 — measurements published in the repository; issuance parked
+
+Read the [measurement report](../../docs/PQ_MEASUREMENT_2026-09.md) for the
+retained size, local runtime, interoperability and selected-vector results.
+The production plan below is historical and conditional on a new issuance
+decision. No production custody, signing or verifier release is queued.
+
+
 Local-only, private package. It is outside both Worker import graphs and
 the dependency-free `x402-verify` package. No production key is read,
 created, migrated or changed.
@@ -32,8 +40,8 @@ or a claim to have restored historical authenticity.
 The dependency is exactly pinned with a lockfile. **Its README states
 that it has not been independently audited.** FIPS 204 standardization of
 ML-DSA does not make this package a FIPS-validated implementation. The
-pilot signs and verifies with the same ML-DSA library; cross-implementation
-interoperability remains untested. Benchmarks are Node on this laptop,
+pilot signs and verifies with the same ML-DSA library. The later
+independent probes below supersede its original lack of interoperability evidence. Benchmarks are Node on this laptop,
 under concurrent test load, not Workers CPU or request latency.
 
 Production adoption still needs an implementation/supply-chain review,
@@ -90,3 +98,20 @@ invalid-signature cases. Known test seeds and private keys from the public
 vectors are solely test inputs. No production key is read or written.
 Passing this selected sample is not complete FIPS conformance, a module
 validation, an implementation audit or production approval.
+
+## September 11 runtime record, published September 15
+
+`node runtime-qualification.mjs run <new-result.json>` runs three alternating,
+serial fresh processes per mode: Ed25519 and Ed25519 plus ML-DSA-65. Each
+records the first call and 50 warm calls, import time, process RSS, sampled
+memory, CPU, signature lengths and pinned source/dependency hashes.
+`npm test` also exercises entropy failure and a disposable bad-backend
+mutation that silently substitutes deterministic signing. Neither changes
+installed sources or uses production keys. See the report for timing limits.
+
+The interoperability runner includes empty, earlier experimental and proposed
+checkpoint contexts; the dated September 10 record remains unchanged.
+September 11 records are in `research/qualification-2026-09-11/`. The selected
+ACVP source manifest is embedded in `pq-acvp.json` as `sources`; save that
+object as `sources.json` and use the vector-download procedure above.
+The root evidence tests remain backend-neutral and do not import noble PQ.

@@ -175,12 +175,14 @@ export function oasfFreeInstrumentTools(): string[] {
  *
  * WHAT IT CLAIMS AND WHAT IT DOES NOT. It says this record and agent
  * 86957 are the same party, which `ownerOf(86957)` settles against
- * Base without asking us. It does not say the registration is fully
- * configured: as of 2026-09-14 the on-chain `tokenURI` still points at
- * the bare origin rather than the registration file, and explorers
- * reading the agent as "Unconfigured" are right to (docs/
- * ERC8004_AGENT_86957.md). A cross-link is not a status claim, and
- * this one would be false if it were dressed as one.
+ * Base without asking us. It is still not a status claim about the
+ * registration — it was true before the chain half was sent and it
+ * would be true again if the URI moved. As of 2026-09-15 the chain
+ * half IS sent: `tokenURI(86957)` names the registration file and
+ * that file names the agent back, so the binding closes in both
+ * directions (docs/ERC8004_AGENT_86957.md). The distinction is worth
+ * keeping precisely because the annotation did not change when the
+ * facts did.
  */
 export const OASF_ANNOTATIONS: Readonly<Record<string, string>> = {
   "scvd.payment.protocol": "x402",

@@ -1,5 +1,12 @@
 # Verification improvements — September 8, 2026
 
+September 15 PQ disposition: publish [the retained measurement](PQ_MEASUREMENT_2026-09.md)
+with its raw records and reproducible summary, and park production checkpoint
+issuance. The prior production plan remains conditional history. No production
+keys, signature scheme, trust-statement amendment or package release changes.
+MPP acceptance and broader screening remain separate decisions.
+
+
 September 15 release: Launch Check screen evidence merged in PR #700
 (`8483d147`). Full PR CI passed 712 files / 14,030 tests, one existing skip;
 main CI and both Cloudflare builds passed. Public reads confirmed the new

@@ -1,0 +1,144 @@
+{
+  "what_this_is": "Whether anyone has paid each door's advertised payTo, read to a named block height. Never a ranking: rule 43 forbids ordering one host against another, and these rows are in the order they were given.",
+  "definition_from": "StillOS Notary (stillosdigitalholdings.com), supplied 2026-09-15 on issue #622 after they withdrew their own implementation. The definition is theirs; this reader is ours, so that a defect in one is not a defect in both.",
+  "read_at": "2026-09-15T10:42:44.550Z",
+  "rail": "eip155:8453",
+  "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  "window": {
+    "from_block": 50918945,
+    "at_block": 51316142,
+    "log_span": 2000
+  },
+  "chain_head_when_read": 51339690,
+  "distinct_counterparty_means": "a unique sending address. A facilitator settling for ten buyers counts once, so this measures settling addresses and not customers.",
+  "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+  "what_this_is_not": "Not a statement that a door has never been paid: the strongest negative here is ZERO_OBSERVED over the named window, and only a row whose scope reads all_time (the nonce-zero argument) reaches further back than from_block. Not a measure of demand, revenue or quality. Not comparable with any reading taken at a different height.",
+  "posed_inputs": {
+    "rail": "eip155:8453",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "window_from_block": 50918945,
+    "window_at_block": 51316142,
+    "why_this_floor": "block 50918945 carries the first of this store's own 2026-09-05 settlements to these doors, so every answer has at least one payment in it that either side can name by transaction hash. The ceiling is StillOS Notary's own pinned Base height, so both halves of the exchange share a boundary.",
+    "why_a_floor_at_all": "the public Base RPC caps eth_getLogs at 2,000 blocks; an all-time index of one address is roughly 25,000 requests. An answer nobody can afford to reproduce is not an answer.",
+    "payTo_is_pinned": "The payTo for each door is frozen here rather than re-resolved at answer time. Two answerers resolving a door's 402 on different days can legitimately read different addresses, and that would make a disagreement about the door look like a disagreement about the chain."
+  },
+  "doors": [
+    {
+      "name": "batch-runner",
+      "url": "https://batch-runner.vercel.app/api/game/start",
+      "resolved_pay_to": "0xdddd576bAF106bAAe54bDE40BCac602bB4a7cf79",
+      "resolved_rail": "eip155:8453",
+      "resolution": null,
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0xdddd576bAF106bAAe54bDE40BCac602bB4a7cf79",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "advertised_scheme": "batch-settlement",
+          "settlement_residual": "This reads direct USDC Transfer events to the advertised payTo. A door whose challenge advertises a scheme other than `exact` — a batch or escrow settlement, typically carrying a receiverAuthorizer and a withdrawDelay — can be paid without any such transfer existing, because buyer funds move into the scheme's contract instead. On those doors ZERO_OBSERVED means this instrument found no DIRECT payment, never that the door was not paid.",
+          "verdict": "ZERO_OBSERVED",
+          "established_by": "the transfer window to this address in blocks 50918945-51316142 was read complete and contained no inbound USDC",
+          "scope": "window",
+          "scope_caveat": "this is a zero IN blocks 50918945-51316142 and says nothing about any block before 50918945. Only the nonce-zero path below establishes an all-time zero.",
+          "distinct_payers": 0,
+          "total_received_atomic": "0"
+        }
+      ]
+    },
+    {
+      "name": "gas.apitoll.cloud",
+      "url": "https://gas.apitoll.cloud/v1/base/gas",
+      "resolved_pay_to": "0xcc69d619E6053F88A4845066518f465bD06Fc96c",
+      "resolved_rail": "eip155:8453",
+      "resolution": null,
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0xcc69d619E6053F88A4845066518f465bD06Fc96c",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "PAID",
+          "established_by": "50 inbound USDC transfer(s) observed in blocks 50918945-51316142, read complete",
+          "scope": "window",
+          "distinct_payers": 20,
+          "distinct_payers_means": "unique sending addresses, not customers: a facilitator settling for many buyers counts once",
+          "total_received_atomic": "50000"
+        }
+      ]
+    },
+    {
+      "name": "api.bitrefill.com",
+      "url": "https://api.bitrefill.com/x402/checkout/info",
+      "resolved_pay_to": "0x480CD46E6faDe651a0437DeaddA53D5c8e7D846A",
+      "resolved_rail": "eip155:8453",
+      "resolution": null,
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0x480CD46E6faDe651a0437DeaddA53D5c8e7D846A",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "PAID",
+          "established_by": "1436 inbound USDC transfer(s) observed in blocks 50918945-51316142, read complete",
+          "scope": "window",
+          "distinct_payers": 533,
+          "distinct_payers_means": "unique sending addresses, not customers: a facilitator settling for many buyers counts once",
+          "total_received_atomic": "175130365829"
+        }
+      ]
+    },
+    {
+      "name": "tollbooth-hello",
+      "url": "https://tollbooth-hello.sjwilliams8.workers.dev/hello",
+      "resolved_pay_to": "0xb3e7993Ed2FC2C79FFF220620240f298BBa9bF5B",
+      "resolved_rail": "eip155:8453",
+      "resolution": null,
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0xb3e7993Ed2FC2C79FFF220620240f298BBa9bF5B",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "PAID",
+          "established_by": "8 inbound USDC transfer(s) observed in blocks 50918945-51316142, read complete",
+          "scope": "window",
+          "distinct_payers": 6,
+          "distinct_payers_means": "unique sending addresses, not customers: a facilitator settling for many buyers counts once",
+          "total_received_atomic": "35000"
+        }
+      ]
+    },
+    {
+      "name": "laso.finance",
+      "url": "https://laso.finance/auth",
+      "resolved_pay_to": "0x3291e96b3bff7ed56e3ca8364273c5b4654b2b37",
+      "resolved_rail": "eip155:8453",
+      "resolution": null,
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0x3291e96b3bff7ed56e3ca8364273c5b4654b2b37",
+          "at_block": 51316142,
+          "window_from_block": 50918945,
+          "window": "50918945-51316142",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "PAID",
+          "established_by": "349 inbound USDC transfer(s) observed in blocks 50918945-51316142, read complete",
+          "scope": "window",
+          "distinct_payers": 45,
+          "distinct_payers_means": "unique sending addresses, not customers: a facilitator settling for many buyers counts once",
+          "total_received_atomic": "17925723751"
+        }
+      ]
+    }
+  ]
+}
