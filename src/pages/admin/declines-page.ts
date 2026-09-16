@@ -67,11 +67,37 @@ export function reachHtml(trace: ClientTrace): string {
   const oldest = trace.oldest_row_seen
     ? `${escapeHtml(trace.oldest_row_seen.slice(0, 19).replace("T", " "))} UTC`
     : "no rows at all";
+  /**
+   * A WINDOWED SCAN IS A THIRD STATE. It did not run out of budget and
+   * it did not read the whole log — it stopped where it was told to.
+   * Saying "the whole log" of a windowed walk would be the page
+   * claiming a reach it never had, which is the one thing this
+   * function exists to prevent.
+   */
+  if (trace.window) {
+    const asked = [
+      trace.window.since ? `at or after <code>${escapeHtml(trace.window.since)}</code>` : "",
+      trace.window.before ? `before <code>${escapeHtml(trace.window.before)}</code>` : "",
+    ]
+      .filter(Boolean)
+      .join(" and ");
+    return `<p><strong>A WINDOWED look, ${asked}.</strong> It walked
+       ${trace.rows_scanned} rows back to ${oldest}${
+         trace.capped
+           ? ` and <strong style="color:#8c2f1b">still hit its cap before reaching the window's floor</strong>, so rows inside it may be unread`
+           : ", which is past the window, so everything inside it was read"
+       }. Nothing outside the window was looked at at all — this is not the
+       client's whole trail and must not be read as one.
+       <a href="/admin/trace?ua=${encodeURIComponent(trace.user_agent)}">Drop the window.</a></p>`;
+  }
   return trace.capped
     ? `<p style="color:#8c2f1b"><strong>The scan hit its cap.</strong> It walked
        ${trace.rows_scanned} rows back to ${oldest} and stopped with rows still
        unread. Anything this client did before that is NOT REACHED, not absent —
-       and an absent settle here is not evidence they never bought.</p>`
+       and an absent settle here is not evidence they never bought.
+       <small>To reach further back, ask for a window:
+       <code>?since=2026-09-15T03:00:00Z&amp;before=2026-09-15T05:00:00Z</code> —
+       the scan then walks past today's traffic instead of stopping in it.</small></p>`
     : `<p><small>Walked ${trace.rows_scanned} rows, the whole log, back to ${oldest}.
        Nothing is behind a cap: what is missing above did not happen, within the
        ninety days rows are kept.</small></p>`;

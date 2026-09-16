@@ -33,25 +33,27 @@ const SCAN_CAP = 3000;
 const LIST_PAGE = 1000;
 
 /**
- * THE DAY THE DESK OUTGREW ITS OWN CAP (2026-09-16).
+ * ASKING THE BOOKS A QUESTION (2026-09-16).
  *
- * The index fixed the 2026-09-05 failure — a cap spent on corpus reads
- * before it reached a single decline — by giving every decline a
- * second key under a prefix where every key is one. That works until
- * the DECLINES themselves outnumber the cap. On 2026-09-16 the newest
- * 3000 index rows were all one day's, and the burst the keeper wanted
- * to read (2026-09-15, one client, 48 seconds) sat just beyond reach
- * with no way to ask for it.
+ * WHAT THIS IS NOT, recorded because the first diagnosis was wrong and
+ * the wrong one is the more tempting story. The decline INDEX has not
+ * outgrown its cap: on 2026-09-16 it held 37 declines and reported
+ * index_complete, so nothing on the desk was ever hidden. The cap the
+ * keeper hit was the RAW stream's — 3000 rows of openapi.json reads
+ * and catalogue challenges — and it bit the client TRACE, not the
+ * desk. The burst was on the page the whole time; what could not be
+ * reached was the surrounding traffic. See TraceWindow, which is the
+ * fix for the failure that actually happened.
  *
- * Raising SCAN_CAP for everyone buys one more day and costs every
- * reader the reads. A FILTER is the better instrument: say which item,
- * client, reason or window you want and the scan spends its budget
- * walking PAST the rows you did not ask for, which is how you reach
- * last week through this week's flood. The unfiltered desk is
- * untouched and still stops at SCAN_CAP.
+ * This budget exists anyway, for both readers, because the shape of
+ * the question is the same: a cap spent on rows nobody asked for. Say
+ * which item, client, reason or window you want and the scan spends
+ * its budget walking PAST the rest. The unfiltered desk is untouched
+ * and still stops at SCAN_CAP, so nobody pays for depth they did not
+ * ask for.
  *
- * The deeper budget is bounded and named, because an unnamed cap is a
- * silent one — the same rule the raw scan's cap is written under.
+ * Bounded and named, because an unnamed cap is a silent one — the same
+ * rule the raw scan's cap is written under.
  */
 const FILTERED_SCAN_CAP = 40000;
 
@@ -956,6 +958,35 @@ export interface ClientTrace {
   capped: boolean;
   /** Timestamp of the oldest row reached, so "nothing found" has a floor. */
   oldest_row_seen: string | null;
+  /** The window asked for, echoed so the page cannot misreport its reach. */
+  window?: TraceWindow;
+}
+
+/**
+ * THE TRACE COULD NOT REACH YESTERDAY (2026-09-16).
+ *
+ * The decline desk reads the index, where every key is a decline, so
+ * 37 declines fit inside any sane cap. The TRACE reads the raw `evt:`
+ * stream, where a decline is one row in thousands of openapi.json
+ * reads and catalogue challenges — and on a store being walked at
+ * catalogue speed, 3000 rows is about two hours.
+ *
+ * So the keeper could see a client's burst on the desk and could not
+ * see what that client DID around it: the trace stopped at 12:10 the
+ * same morning and said so honestly, which is the instrument working
+ * and the answer still being out of reach.
+ *
+ * A window fixes it cheaply, and cheaply is the point. Rows arrive
+ * newest-first, so a `since` lets the scan STOP the moment it passes
+ * below the window instead of reading to its budget — the deeper
+ * budget is there to walk forward through today's traffic, not to
+ * read the whole stream.
+ */
+export interface TraceWindow {
+  /** ISO instant; rows at or after it. Also where the scan stops reading. */
+  since?: string;
+  /** ISO instant; rows strictly before it. */
+  before?: string;
 }
 
 /**
@@ -968,13 +999,21 @@ export async function traceClient(
   env: Env,
   userAgent: string,
   scanCap = SCAN_CAP,
+  window?: TraceWindow,
 ): Promise<ClientTrace> {
   const trail: MetricEvent[] = [];
   let cursor: string | undefined;
   let scanned = 0;
   let capped = false;
   let oldest: string | null = null;
-  while (scanned < scanCap) {
+  const windowed = Boolean(window?.since || window?.before);
+  // Depth only where it was asked for; the bare trace is unchanged.
+  const cap = windowed ? Math.max(scanCap, FILTERED_SCAN_CAP) : scanCap;
+  // Newest-first ordering is what makes this affordable: once the scan
+  // passes below `since`, everything after it is older and there is
+  // nothing left to find.
+  let reachedPast = false;
+  while (scanned < cap && !reachedPast) {
     const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
@@ -988,20 +1027,28 @@ export async function traceClient(
       if (!event) continue;
       // Rows arrive newest-first, so every row seen lowers the floor.
       if (oldest === null || event.at < oldest) oldest = event.at;
+      if (window?.since && event.at < window.since) {
+        reachedPast = true;
+        continue;
+      }
+      if (window?.before && event.at >= window.before) continue;
       if ((event.user_agent ?? "(no user-agent)") === userAgent) {
         trail.push(event);
       }
     }
     if (listed.list_complete) break;
     cursor = listed.cursor;
-    if (scanned >= scanCap) capped = true;
+    if (scanned >= cap) capped = true;
   }
   // Rows arrive newest-first; the sequence reads forward.
   return {
     user_agent: userAgent,
     events: trail.reverse(),
     rows_scanned: scanned,
-    capped,
+    // A scan that stopped because it walked PAST the window is not a
+    // scan that ran out of budget, and must not report as one.
+    capped: capped && !reachedPast,
     oldest_row_seen: oldest,
+    ...(windowed ? { window } : {}),
   };
 }

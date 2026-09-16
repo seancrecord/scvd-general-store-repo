@@ -3557,7 +3557,18 @@ adminRoutes.get("/admin/declines", async (c) => {
 adminRoutes.get("/admin/trace", async (c) => {
   const ua = c.req.query("ua") ?? "";
   if (!ua) return c.html(renderTracePage(null));
-  return c.html(renderTracePage(await traceClient(c.env, ua)));
+  /**
+   * THE WINDOW (2026-09-16). The raw stream is mostly catalogue
+   * traffic, so a flat cap reaches about two hours on a store being
+   * walked — the keeper could see a client's burst on the desk and not
+   * what it did around it. `since` also tells the scan where to STOP:
+   * rows arrive newest-first, so nothing below the window can match.
+   */
+  const window = {
+    ...(c.req.query("since") ? { since: c.req.query("since") as string } : {}),
+    ...(c.req.query("before") ? { before: c.req.query("before") as string } : {}),
+  };
+  return c.html(renderTracePage(await traceClient(c.env, ua, undefined, window)));
 });
 
 /**

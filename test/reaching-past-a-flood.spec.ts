@@ -1,6 +1,6 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { declineMatches, filterIsActive, readDeclines } from "@/lib/declines";
+import { declineMatches, filterIsActive, readDeclines, traceClient } from "@/lib/declines";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
 
@@ -151,5 +151,93 @@ describe("what counts as a match", () => {
   it("treats the window as since-inclusive and before-exclusive", () => {
     expect(declineMatches(row, { since: "2026-09-15T04:07:30.000Z" })).toBe(true);
     expect(declineMatches(row, { before: "2026-09-15T04:07:30.000Z" })).toBe(false);
+  });
+});
+
+/**
+ * THE TRACE IS WHAT ACTUALLY COULD NOT REACH. The desk reads the
+ * index, where 37 declines fit in any cap. The trace reads the raw
+ * stream, where a decline is one row in thousands of openapi.json
+ * reads — about two hours on a store being walked at catalogue speed.
+ */
+describe("tracing one client back past a day of catalogue traffic", () => {
+  async function seedRaw(event: MetricEvent): Promise<void> {
+    seq += 1;
+    const inverted = String(10_000_000_000_000 - Date.parse(event.at)).padStart(14, "0");
+    await testEnv.COUNTERS.put(
+      `evt:${inverted}:${seq.toString(36).padStart(6, "0")}`,
+      JSON.stringify(event),
+    );
+  }
+
+  it("walks past today's noise to yesterday's burst", async () => {
+    // Today: the catalogue walk that eats a flat cap.
+    for (let i = 0; i < 40; i += 1) {
+      await seedRaw({
+        kind: "challenge",
+        item: "openapi.json",
+        channel: "direct",
+        house: false,
+        at: `2026-09-16T13:${String(i % 60).padStart(2, "0")}:00.000Z`,
+        user_agent: "node",
+      } as MetricEvent);
+    }
+    // Yesterday: what the keeper is actually looking for.
+    await seedRaw({
+      kind: "challenge",
+      item: "small_blessing",
+      channel: "direct",
+      house: false,
+      at: "2026-09-15T04:07:00.000Z",
+      user_agent: "node",
+    } as MetricEvent);
+
+    // The flat trace returns the whole trail — today's noise included,
+    // which is what buries the day you wanted at real volume. (The cap
+    // itself is not simulable here: one KV list page holds far more
+    // rows than a test seeds, so the scan completes before it bites.)
+    const flat = await traceClient(testEnv, "node", 10);
+    expect(flat.events.length).toBeGreaterThan(40);
+    expect(flat.window).toBeUndefined();
+
+    const windowed = await traceClient(testEnv, "node", 10, {
+      since: "2026-09-15T00:00:00.000Z",
+      before: "2026-09-16T00:00:00.000Z",
+    });
+    expect(windowed.events).toHaveLength(1);
+    expect(windowed.events[0]!.item).toBe("small_blessing");
+  });
+
+  /**
+   * Stopping at the window is not running out of budget, and a page
+   * that conflates them claims a reach it never had.
+   */
+  it("does not report a windowed stop as a cap", async () => {
+    await seedRaw({
+      kind: "challenge", item: "hello", channel: "direct", house: false,
+      at: "2026-09-16T13:00:00.000Z", user_agent: "node",
+    } as MetricEvent);
+    await seedRaw({
+      kind: "challenge", item: "hello", channel: "direct", house: false,
+      at: "2026-09-14T13:00:00.000Z", user_agent: "node",
+    } as MetricEvent);
+
+    const windowed = await traceClient(testEnv, "node", 5000, {
+      since: "2026-09-15T00:00:00.000Z",
+    });
+    expect(windowed.capped).toBe(false);
+    expect(windowed.window).toEqual({ since: "2026-09-15T00:00:00.000Z" });
+    // The older row is outside the window and must not appear.
+    expect(windowed.events).toHaveLength(1);
+  });
+
+  it("leaves the bare trace exactly as it was", async () => {
+    await seedRaw({
+      kind: "challenge", item: "hello", channel: "direct", house: false,
+      at: "2026-09-16T13:00:00.000Z", user_agent: "node",
+    } as MetricEvent);
+    const bare = await traceClient(testEnv, "node");
+    expect(bare.window).toBeUndefined();
+    expect(bare.events).toHaveLength(1);
   });
 });
