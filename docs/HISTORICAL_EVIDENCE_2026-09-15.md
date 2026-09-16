@@ -168,3 +168,12 @@ of all seven failed files then passed all 1,032 tests with exit zero. The full
 run remains recorded as failed, not relabeled green. Independent full GitHub
 CI is the merge gate. Typecheck, all three offline evidence batches, both
 Worker builds, audit, claims and documentation checks also pass.
+
+## Release confirmed — September 16
+
+[PR #726](https://github.com/seancrecord/scvd-general-store-repo/pull/726)
+passed its required GitHub CI run `35042487901` and merged at
+`bc294edbbc0497404d81f6cf95fc30ea6e8d3ff1` at 02:20:12 UTC. The earlier
+local full-run failures and successful reruns remain recorded above; the
+independent green CI does not relabel those attempts. Catalog recovery
+and the remaining original-report gaps keep their stated scope.

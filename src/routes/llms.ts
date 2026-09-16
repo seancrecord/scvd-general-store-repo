@@ -509,7 +509,8 @@ The same door serves readable resources (resources/list, no tool call
 spent): scvd://guide (this document), scvd://manual (the operational
 manual), scvd://catalog (the live menu), scvd://criteria (what the
 observatory checks), scvd://when (which door answers which question),
-scvd://fresh-set (this week's routing data) — plus two ui:// card
+scvd://fresh-set (this week's routing data), scvd://payments (the public
+payment breakdown) — plus two ui:// card
 templates (MCP Apps) that render the preflight and verify readings in
 hosts that support them; hosts that don't get the same JSON as ever.
 WebMCP: ${base}/webmcp.js registers free instruments, quote_store_purchase
@@ -1635,7 +1636,12 @@ machine-readable stance stays at ${base}/.well-known/trust.json.
 
 ## Where the money settles, drawn
 
-${base}/rails charts this store's organic settlements by chain —
+${base}/rails groups the same organic purchases by payment protocol, network
+and currency. Its JSON, ${base}/stats, /menu.json and the MCP resource
+scvd://payments share the payment breakdown. Counts across dimensions must
+not be added together. House purchases are excluded; amounts in different
+currencies are never summed. The current till records x402 purchases in USDC.
+The page also charts settlements by chain —
 by recorded settlement network — month by month, derived live from the same
 books as ${base}/stats, house traffic excluded at the till. The table
 always rides beside the picture, and the JSON twin serves the same

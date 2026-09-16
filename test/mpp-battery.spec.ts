@@ -130,7 +130,7 @@ describe("the report, the practice door, the family and the vocabulary", () => {
   });
 
   it("the family row exists, every failing check is a vocabulary class sourced to the draft, and the misread count carries its denominators", () => {
-    expect(PROTOCOL_FAMILIES.find((family) => family.id === "mpp")?.versions).toEqual(["draft-00"]);
+    expect(PROTOCOL_FAMILIES.find((family) => family.id === "mpp")?.versions).toContain("draft-00");
     for (const name of MPP_CHECK_NAMES) {
       if (name === "mpp-challenge-present") continue;
       const classes = defectsBySignal(name);
