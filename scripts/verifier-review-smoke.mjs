@@ -6,13 +6,22 @@ const ajv = new Ajv2020({ strict: false, allErrors: true, validateFormats: false
 const rows = [];
 let sequence = 0;
 async function rpc(path, method, params = {}) {
+  const id = ++sequence;
   const response = await fetch(new URL(path, base), { method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', 'User-Agent': 'scvd-verifier-review/1 (+https://scvd.store)' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: ++sequence, method, params }), signal: AbortSignal.timeout(20000) });
+    body: JSON.stringify({ jsonrpc: '2.0', id, method, params }), signal: AbortSignal.timeout(20000) });
   const text = await response.text();
   const payload = response.headers.get('content-type')?.includes('text/event-stream')
     ? text.split('\n').filter(line => line.startsWith('data:')).map(line => line.slice(5).trim()).find(line => line.startsWith('{')) : text;
-  return { status: response.status, body: JSON.parse(payload) };
+  const body = JSON.parse(payload);
+  if (!body || typeof body !== 'object' || Array.isArray(body) || body.jsonrpc !== '2.0' || body.id !== id ||
+      Object.hasOwn(body, 'result') === Object.hasOwn(body, 'error')) {
+    throw new Error(`Invalid JSON-RPC response to ${path} ${method}`);
+  }
+  if (Object.hasOwn(body, 'error') && (!body.error || !Number.isInteger(body.error.code) || typeof body.error.message !== 'string')) {
+    throw new Error(`Invalid JSON-RPC error from ${path} ${method}`);
+  }
+  return { status: response.status, body };
 }
 try {
   const catalogs = {};
@@ -29,9 +38,12 @@ try {
     const schema = catalogs[path].find(t => t.name === name)?.outputSchema;
     const validate = schema ? ajv.compile(schema) : undefined;
     const schemaValid = data !== undefined && validate ? validate(data) : null;
-    // Refusal branches may use the protocol's error envelope instead of structuredContent.
-    const refused = Boolean(reply.body.error) || reply.body.result?.isError === true || (typeof data?.result === 'string' && data.result.startsWith('refused:'));
-    const passed = reply.status === 200 && (expected === 'error' ? reply.body.error?.code === -32602 : expected === 'refusal' ? refused : schemaValid === true && !reply.body.error && reply.body.result?.isError !== true && (expected === 'structured' || data?.verdict === expected) && (!args.id || data?.id === args.id));
+    // Assert this handler's actual refusal contract. An internal error or a
+    // schema-invalid refusal is a failed reading, not proof of safe refusal.
+    const expectedResult = expected.startsWith('refused:') ? data?.result === expected : expected === 'structured' || data?.verdict === expected;
+    const passed = reply.status === 200 && (expected === 'invalid_params'
+      ? reply.body.error?.code === -32602
+      : schemaValid === true && !reply.body.error && reply.body.result?.isError !== true && expectedResult && (!args.id || data?.id === args.id));
     rows.push({ path, name, arguments: args, expected, status: reply.status, passed, schema_valid: schemaValid,
       result: data?.result ?? data?.verdict ?? data?.id, error: reply.body.error,
       ...(schemaValid === false ? { schema_errors: validate.errors } : {}) });
@@ -42,21 +54,21 @@ try {
     ['/mcp','preflight_endpoint','check_conformance','verify_artifact'],
     ['/mcp/verifier','preflight_x402_endpoint','verify_x402_receipt','verify_scvd_artifact'],
   ]) {
-    await call(path, preflight, {}, 'refusal');
-    await call(path, preflight, { url: 'https://127.0.0.1/private' }, 'refusal');
+    await call(path, preflight, {}, 'invalid_params');
+    await call(path, preflight, { url: 'https://127.0.0.1/private' }, 'invalid_params');
     await call(path, conformance, { artifact: receipt.receipt, public_key_hex: receipt.publicKeyHex }, 'conforms');
     await call(path, conformance, { artifact: 'not-a-signed-artifact' }, 'does_not_conform');
-    await call(path, artifact, {}, 'refusal');
+    await call(path, artifact, {}, 'invalid_params');
   }
   const path = '/mcp/verifier';
-  await call(path, 'lookup_endpoint_readiness', {}, 'refusal');
-  await call(path, 'lookup_endpoint_readiness', { host: 'https://' }, 'refusal');
+  await call(path, 'lookup_endpoint_readiness', {}, 'refused: host_missing');
+  await call(path, 'lookup_endpoint_readiness', { host: 'https://' }, 'refused: host_missing');
   const stored = await call(path, 'lookup_endpoint_readiness', { host: '402signal.com' });
   if (stored?.evidence?.never_met !== false) rows.push({ case: 'stored_evidence', passed: false, reason: 'The named host had no stored evidence; no historical coverage inferred.' });
   const index = await call(path, 'get_defect_definition', {});
   if (!index?.classes?.length) throw new Error('Vocabulary index unavailable');
   for (const cls of index.classes) await call(path, 'get_defect_definition', { id: cls.id });
-  await call(path, 'get_defect_definition', { id: 'review-unknown-defect' }, 'error');
+  await call(path, 'get_defect_definition', { id: 'review-unknown-defect' }, 'invalid_params');
   const result = { observed_at: new Date().toISOString(), base,
     scope: 'Shared handlers on both doors; readiness and vocabulary are registered only on the verifier door. Local fixture receipt checked offline with its public key. No payment sent.',
     gaps: ['Unknown-host production lookup not run: eligible unseen hosts enter the public demand queue. Covered with an isolated fixture by test/verifier-output-schemas.spec.ts.', 'No fresh outbound preflight or paid delivery exercised.', 'Schema formats are not validated by this smoke; structure and types are.'],
