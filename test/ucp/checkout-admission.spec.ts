@@ -419,7 +419,7 @@ describe("one payment cannot be owned twice, across doors or at once", () => {
  * from it rather than rediscovering it.
  */
 describe("some items cannot have ownership taken before their goods exist", () => {
-  it("refuses admission for an observation-recoverable item with nothing prepared", async () => {
+  it("prepares an observation-recoverable item before taking ownership of its payment", async () => {
     const checkout = await openCheckout({
       line_items: [{ item: { id: variantGid("service_audit") }, quantity: 1 }],
       "store.scvd": { inputs: { url: "https://example.test/pay" } },
@@ -430,19 +430,17 @@ describe("some items cannot have ownership taken before their goods exist", () =
       verify: accepts(),
     });
     /*
-     * This item's goods are made before its payment is owned, and no
-     * preparer was supplied — so the refusal comes from the ordering
-     * itself rather than from the shared admission's "Original
-     * observation must precede settlement", which is what it used to
-     * be before the ordering was made explicit. The buyer gets a
-     * sentence they can act on instead of a sentence about a journal.
-     * Nothing is recorded as owned and the checkout stays payable.
+     * The ordering the item requires, performed: the real producer runs
+     * through the store's own fulfillment path, the produced bytes are
+     * journalled, and only then is the payment owned. Earlier in this
+     * branch's history the same call failed with the shared admission's
+     * "Original observation must precede settlement" — the invariant
+     * working, before anything satisfied it.
      */
-    expect(outcome.ok).toBe(false);
-    if (!outcome.ok) expect(outcome.code).toBe("preparation_unavailable");
+    expect(outcome.ok).toBe(true);
     const stored = await ucpCheckoutStore(testEnv, checkout.id).readUcpCheckout();
-    expect(stored?.status).toBe("ready_for_complete");
-    expect(stored?.completion).toBeUndefined();
+    expect(stored?.status).toBe("complete_in_progress");
+    expect(stored?.completion?.payment_identity).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("admits an item whose goods carry no prepared observation", async () => {

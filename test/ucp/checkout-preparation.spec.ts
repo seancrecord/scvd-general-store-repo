@@ -178,20 +178,63 @@ describe("goods that must exist before anyone owns the payment for them", () => 
     expect(stored?.completion).toBeUndefined();
   });
 
-  it("refuses rather than half-completing when this door cannot make the goods", async () => {
+  it("runs the store's real producer when nothing is injected", async () => {
+    /*
+     * No preparer supplied, so the seam falls through to
+     * prepareThroughFulfillment — the store's own fulfillment path with
+     * a settle that refuses. The audit's target does not answer in a
+     * test isolate, and that is not a failure: a network failure
+     * becomes a signed did-not-answer, because a dated
+     * did-not-answer is itself the observation.
+     */
     const checkout = await openCheckout(AUDIT);
     const outcome = await admitUcpCompletion(testEnv, {
       checkoutId: checkout.id,
       credential: credential("a5".repeat(32), "5000000"),
       verify: accepts(),
-      // No preparer supplied: the honest state of this door today.
     });
-    expect(outcome.ok).toBe(false);
-    if (!outcome.ok) {
-      expect(outcome.code).toBe("preparation_unavailable");
-      expect(outcome.detail).toContain("buy door");
-    }
-    expect((await read(checkout.id))?.status).toBe("ready_for_complete");
+    expect(outcome.ok).toBe(true);
+    if (outcome.ok) expect(outcome.prepared).toBe("made");
+    expect((await read(checkout.id))?.status).toBe("complete_in_progress");
+  });
+
+  it("journals the real signed artifact, not a placeholder", async () => {
+    const checkout = await openCheckout(AUDIT);
+    const nonce = "a9".repeat(32);
+    await admitUcpCompletion(testEnv, {
+      checkoutId: checkout.id,
+      credential: credential(nonce, "5000000"),
+      verify: accepts(),
+    });
+    const { settlementPurchaseIdentity } = await import("@/lib/purchase-payment");
+    const { id } = await settlementPurchaseIdentity(
+      "eip155:8453",
+      PAYER,
+      `0x${nonce}`,
+      "authorization",
+    );
+    const { purchaseRequestDigest } = await import("@/services/purchase-intent");
+    const { completionRequest } = await import("@/lib/ucp/checkout/completion");
+    const stored = await read(checkout.id);
+    const digest = await purchaseRequestDigest(
+      testEnv,
+      "ucp",
+      `/ucp/v1/checkout-sessions/${checkout.id}`,
+      completionRequest({ ...stored!, version: stored!.completion!.checkout_version }),
+    );
+    const ordering = purchasePreparation(
+      testEnv,
+      getMenuItem("service_audit"),
+      id,
+      `/ucp/v1/checkout-sessions/${checkout.id}`,
+      digest,
+    );
+    const retained = await ordering.checkpoint!.read();
+    // The store's own signed audit, with the evidence hash the
+    // certificate would bind — not a stub this test invented.
+    expect(retained?.serviceAudit).toBeDefined();
+    expect(retained?.serviceAudit?.evidence_hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(retained?.attests).toBe(retained?.serviceAudit?.evidence_hash);
   });
 
   it("finds the checkpoint again after a death between preparing and admitting", async () => {

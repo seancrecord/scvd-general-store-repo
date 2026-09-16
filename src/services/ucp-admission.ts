@@ -2,6 +2,7 @@ import { createUcpX402Adapter, UcpPaymentRefused, type FacilitatorVerify } from 
 import { completionIdentity, completionRequest } from "@/lib/ucp/checkout/completion";
 import { asRequirements } from "@/lib/ucp/checkout/requirements";
 import { purchasePreparation } from "@/services/purchase-preparation";
+import { prepareThroughFulfillment } from "@/services/ucp-preparation";
 import type {
   ObservationCheckpoint,
   PreparedObservation,
@@ -119,8 +120,14 @@ export async function admitUcpCompletion(
      * Produces this product's goods. Called ONLY for items whose
      * ordering requires the goods before ownership, and only when the
      * journal does not already hold them — so a retry never repeats
-     * paid or external work. The real per-item production is the
-     * fulfillment machinery's; this is the seam it plugs into.
+     * paid or external work.
+     *
+     * Defaults to the real producer: `prepareThroughFulfillment` runs
+     * the store's own fulfillment path with a settle that refuses, so
+     * every actual product implementation is exercised and the exact
+     * produced bytes are journalled, with no authorization presented.
+     * The parameter remains so a test can substitute a counter or a
+     * failure without standing up a chain.
      */
     prepare?: (checkpoint: ObservationCheckpoint) => Promise<PreparedObservation>;
   },
@@ -227,18 +234,26 @@ export async function admitUcpCompletion(
 
     if (existing) {
       prepared = "reused";
-    } else if (!input.prepare) {
+    } else if (!item) {
       return {
         ok: false,
         code: "preparation_unavailable",
-        detail:
-          "This item's goods are made before its payment is owned, and this door cannot make them yet. Buy it over x402 at the buy door, where that path is built.",
+        detail: "This checkout names an item this store no longer sells.",
         checkout,
       };
     } else {
+      const produce =
+        input.prepare ??
+        ((checkpoint: ObservationCheckpoint) =>
+          prepareThroughFulfillment(env, item, checkpoint, {
+            inputs: checkout.inputs ?? {},
+            payer: verified.payment.payer,
+            network: verified.payment.network,
+            paidUsdc: Number(verified.payment.amount_atomic) / 1e6,
+          }));
       let made: PreparedObservation;
       try {
-        made = await input.prepare(ordering.checkpoint);
+        made = await produce(ordering.checkpoint);
       } catch (error) {
         /**
          * Preparation failed BEFORE anything was owned. That is the
@@ -256,6 +271,13 @@ export async function admitUcpCompletion(
         };
       }
       try {
+        /**
+         * The real producer journals as it goes, so this is a no-op
+         * that returns what is already there. It stays because an
+         * injected preparer may not journal, and because the invariant
+         * this increment rests on is "durably retained before
+         * ownership" rather than "somebody remembered to save".
+         */
         await ordering.checkpoint.save(made);
       } catch {
         /**
