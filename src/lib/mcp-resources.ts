@@ -137,6 +137,18 @@ function definitions(): ResourceDefinition[] {
         return JSON.stringify(set, null, 2);
       },
     },
+    {
+      uri: `${SCHEME}://payments`,
+      name: "payment_breakdown",
+      title: "Purchases by protocol, network and currency",
+      description: "Free aggregate purchase counts from the same books as /stats and /rails. House purchases excluded; payment identities are not published. Counts are separate from revenue, delivery and endpoint observations.",
+      mimeType: "application/json",
+      read: async (env, base) => {
+        const { computeStats } = await import("@/services/stats");
+        const stats = await computeStats(env);
+        return JSON.stringify({ payments: stats.payments, computed_at: stats.computed_at, details: `${base}/rails` });
+      },
+    },
   ];
 }
 

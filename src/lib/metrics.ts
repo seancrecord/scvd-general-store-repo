@@ -1,3 +1,4 @@
+import { SETTLEMENT_ACCOUNTING } from "@/lib/settlement-accounting";
 import { ARBITRUM_NETWORK, WORLD_NETWORK } from "@/lib/payment-networks";
 import { canonicalAddress } from "@/lib/addresses";
 import { listKeys } from "@/lib/kv-list";
@@ -205,6 +206,10 @@ export type MetricEventKind =
   | "bounty";
 
 export interface MetricEvent {
+  /** Set by the checkout accounting source, never by a visitor header. */
+  payment_protocol?: string;
+  payment_currency?: string;
+  payment_network?: string;
   kind: MetricEventKind;
   item: string;
   channel: Channel;
@@ -897,6 +902,9 @@ export async function recordSettlement(
 ): Promise<void> {
   const month = metricsMonth();
   const event = buildEvent(env, "settle", itemKeyFromPath(path), signals);
+  event.payment_protocol = SETTLEMENT_ACCOUNTING.protocol;
+  event.payment_currency = SETTLEMENT_ACCOUNTING.currency;
+  if (signals.network) event.payment_network = signals.network;
   /*
    * ONE WAVE, NOT A QUEUE — rule 50, applied where the 402 fix
    * stopped.

@@ -1,3 +1,5 @@
+import { paymentRollupHtml } from "@/pages/payment-rollup";
+import type { StoreStats } from "@/services/stats";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { takeSectionHtml } from "@/pages/admin/office-page";
 import type { TakeSummary } from "@/services/books-summary";
@@ -11,6 +13,7 @@ import type { TillItemCount } from "@/services/stats";
  * asks for them instead of paying for them en route to something else.
  */
 export interface TakePageData {
+  stats?: StoreStats | null;
   take: TakeSummary | null;
   allTime: { organic: number; house: number } | null;
   /** The till's per-item counters, for the no-certificate table. */
@@ -20,6 +23,7 @@ export interface TakePageData {
 
 export function renderTakePage(data: TakePageData): string {
   const body = `
+  ${data.stats?.payments ? paymentRollupHtml(data.stats.payments, data.stats.payment_sources) : ""}
   <section>
     <h2>The take — all-time</h2>
     <p><small>Real money off the certificates, split by shelf kind. This

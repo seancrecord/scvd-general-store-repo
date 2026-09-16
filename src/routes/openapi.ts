@@ -4673,10 +4673,36 @@ const COMPACT_MENU_ROW_SCHEMA: OpenApiObject = {
   },
 };
 
+const PURCHASE_GROUPS_SCHEMA: OpenApiObject = {
+  type: "array",
+  items: {
+    type: "object",
+    required: ["name", "purchases"],
+    properties: {
+      name: { type: "string" },
+      purchases: { type: "integer", minimum: 0 },
+    },
+  },
+};
+
+const PAYMENT_ROLLUP_SCHEMA: OpenApiObject = {
+  type: "object",
+  description: "The same organic purchases grouped independently by payment protocol, network and currency. Counts, not revenue; do not add dimensions together. Shared with /stats, /rails and scvd://payments.",
+  required: ["organic_purchases", "by_protocol", "by_network", "by_currency", "method"],
+  properties: {
+    organic_purchases: { type: "integer", minimum: 0 },
+    by_protocol: PURCHASE_GROUPS_SCHEMA,
+    by_network: { ...PURCHASE_GROUPS_SCHEMA, nullable: true },
+    by_currency: PURCHASE_GROUPS_SCHEMA,
+    method: { type: "string" },
+  },
+};
+
 const MENU_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["as_of", "checked_at", "description", "store", "items"],
   properties: {
+    payments: PAYMENT_ROLLUP_SCHEMA,
     as_of: {
       type: "string",
       description: "ISO week the catalog was last written, e.g. 2026-W35.",
