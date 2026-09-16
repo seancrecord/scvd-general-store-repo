@@ -91,20 +91,33 @@ derives a verdict; every line printed is the store's own answer.
 ## Releasing
 
 A Go module has no registry to push to: it publishes by git tag, and
-the proxy fetches it from GitHub on first request. Because this module
-lives in a subdirectory, the tag has to carry that directory as its
-prefix or `go get` will not find it:
+the proxy fetches it from GitHub on first request.
+
+Actions tab → **Publish Go module** → pick the module, type the version
+without its `v`, leave **dry_run** checked for the rehearsal, then run
+it again unchecked to publish. Same shape as the npm and PyPI
+publishers next door, and the same rule 30: `workflow_dispatch` only,
+so nothing is ever published by a merge.
+
+What it refuses, before the irreversible step: a version that carries
+a `v` or is not `MAJOR.MINOR.PATCH`; a `go.mod` whose module path is
+not the one this repo and directory actually publish; a version the
+`CHANGELOG` does not already name; a tag that exists; and a commit that
+is not on `main`. The last two matter most. The tag IS the version, so
+a version pointing at history that never landed is a version nobody
+else can fetch — and proxy.golang.org caches by version permanently,
+with no unpublish and no window. Deleting a tag does not recall it.
+
+The tag it builds carries this directory as a prefix, because a module
+in a subdirectory is not findable without one:
 
 ```
-git tag x402-preflight-go/v0.1.0
-git push origin x402-preflight-go/v0.1.0
+x402-preflight-go/v0.1.0
 ```
 
-Tag a commit on `main`, not a branch: the tag is the version, and a
-version pointing at history that never landed is a version nobody else
-can fetch. Once pushed, `go get <module>@v0.1.0` resolves through
-proxy.golang.org, which caches immutably — the same rule npm and PyPI
-enforce, arrived at from the other direction.
+A bare `v0.1.0` would advertise a module at the repository root, which
+does not exist. The workflow derives the prefix from the directory name
+rather than taking it typed, so the two cannot drift.
 
 ## Versioning
 
