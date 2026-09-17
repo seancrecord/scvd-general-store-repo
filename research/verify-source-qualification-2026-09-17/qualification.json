@@ -1,0 +1,183 @@
+{
+  "recorded_at": "2026-09-17T21:38:10.136067+00:00",
+  "summary": {
+    "schema_version": 2,
+    "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+    "instrument_sha256": "17e7429db4cb2b76a26c2d113f8148f382ed18ab5eab7c6cdc0b57544798afe6",
+    "host_context_sha256": "e81893c4e27fa6150ce950adfe4923d483950103a5e17b23b0280c2617f4907f",
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "probed_at": "2026-09-17T21:31:39.386Z",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "/bin/zsh"
+        ]
+      },
+      "claude": {
+        "state": "incomplete",
+        "retention": "pass",
+        "local_check": "incomplete",
+        "denied": [],
+        "executed": [
+          "curl",
+          "node"
+        ]
+      }
+    },
+    "limits": [
+      "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+    ]
+  },
+  "hosts": {
+    "codex": {
+      "requested_model": "gpt-5.6-luna",
+      "cli": {
+        "available": true,
+        "reason": null,
+        "version": "codex-cli 0.153.4"
+      },
+      "started_at": "2026-09-17T21:31:39.509Z",
+      "ended_at": "2026-09-17T21:32:40.526Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 2,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 2349,
+        "files": [
+          {
+            "file": "evidence/public.bin",
+            "bytes": 2189,
+            "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+          },
+          {
+            "file": "evidence/capability.json",
+            "bytes": 160,
+            "sha256": "d426a1695a01b62bcaa6ca8b25e83049b0d56f074181ecb883501524aa6de131"
+          }
+        ],
+        "issues": []
+      },
+      "score": {
+        "schema_version": 1,
+        "host": "codex",
+        "state": "pass",
+        "retention": {
+          "state": "pass",
+          "reason": "Retained bytes match the runner's independent fetch.",
+          "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "local_check": {
+          "state": "pass",
+          "reason": "Reported signature results match the runner's vectors and a local command completed.",
+          "expected": {
+            "a": false,
+            "b": false,
+            "c": true,
+            "d": false
+          },
+          "reported": {
+            "a": false,
+            "b": false,
+            "c": true,
+            "d": false
+          },
+          "report_matches_retained": true
+        },
+        "commands": {
+          "executed": [
+            "/bin/zsh"
+          ],
+          "denied": [],
+          "failed": [
+            "/bin/zsh"
+          ]
+        },
+        "limits": [
+          "A pass shows this host, with this adapter, retained one public response and ran one local signature check; it is not a buyer result and names no service.",
+          "Command outcomes are read from host events; hidden host work and batched calls are not visible."
+        ]
+      },
+      "transcript_sha256": "012e8c347656ce24e7268f7ac88e1a11cb00b6bbb679f7ef3462506a7f93faac"
+    },
+    "claude": {
+      "requested_model": "sonnet",
+      "cli": {
+        "available": true,
+        "reason": null,
+        "version": "2.1.274 (Claude Code)"
+      },
+      "started_at": "2026-09-17T21:32:40.595Z",
+      "ended_at": "2026-09-17T21:36:40.922Z",
+      "runtime": {
+        "state": "failed",
+        "exit_code": 143,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": "wall_ms"
+      },
+      "tool_calls": 2,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 2189,
+        "files": [
+          {
+            "file": "evidence/public.bin",
+            "bytes": 2189,
+            "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+          }
+        ],
+        "issues": []
+      },
+      "score": {
+        "schema_version": 1,
+        "host": "claude",
+        "state": "incomplete",
+        "retention": {
+          "state": "pass",
+          "reason": "Retained bytes match the runner's independent fetch.",
+          "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "local_check": {
+          "state": "incomplete",
+          "reason": "No readable capability report was retained."
+        },
+        "commands": {
+          "executed": [
+            "curl",
+            "node"
+          ],
+          "denied": [],
+          "failed": []
+        },
+        "limits": [
+          "A pass shows this host, with this adapter, retained one public response and ran one local signature check; it is not a buyer result and names no service.",
+          "Command outcomes are read from host events; hidden host work and batched calls are not visible."
+        ]
+      },
+      "transcript_sha256": "d0a93cd078b3efdd4fa4957dc9167477f526d8d72be56c5603e2ddc433152d6a"
+    }
+  },
+  "review": {
+    "codex": "Two commands. Initial optional Python cryptography import failed; recovered using built-in Node crypto and saved the required report. No denied command.",
+    "claude": "Two completed allowed commands: curl retained the exact reference; node returned the correct vector results. No further exposed event after that tool result; the 240000ms cap terminated the process. Required evidence/capability.json and final report were absent. No denied command. The trace does not establish why the host stopped progressing.",
+    "claude_visible_signature_results": {
+      "a": true,
+      "b": false,
+      "c": false,
+      "d": true
+    },
+    "isolation": "Launch records and complete exposed commands reviewed: generic public URL and minted vectors only, no SCVD task data or prior sessions supplied. Hidden host behavior remains outside the trace."
+  }
+}
