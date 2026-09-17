@@ -17,6 +17,9 @@ import {
   rosterFrom,
   staleRows,
   stateOf,
+  walledReason,
+  walledRows,
+  WALLED_STATE,
 } from "./lib/listing-roster.mjs";
 
 const SIXTY =
@@ -221,6 +224,43 @@ test("a page that still names the store holds; one that answers but does not is 
   assert.equal(stateOf({ ok: true, status: 200, text: "<script>var a='scvd'</script><p>nothing</p>" }), "silent");
   assert.equal(stateOf({ ok: false, status: 404, text: "" }), "unreachable");
   assert.equal(stateOf({ ok: false, status: 0, text: "", error: "timeout" }), "unreachable");
+});
+
+test("a walled host that refuses is walled, not unreachable; one that answers is read on its merits", () => {
+  const listing = "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212";
+  // The venue's design, not an outage: its own state, outside the ladder.
+  assert.equal(stateOf({ ok: false, status: 403, text: "" }, listing), WALLED_STATE);
+  assert.match(walledReason(listing), /403/);
+  // The same refusal from a host nobody declared walled is the ordinary alarm.
+  assert.equal(stateOf({ ok: false, status: 403, text: "" }, "https://open.example/page"), "unreachable");
+  assert.equal(walledReason("https://open.example/page"), null);
+  assert.equal(walledReason("not a url"), null);
+  // The day the wall comes down, the row is judged like any other.
+  assert.equal(stateOf({ ok: true, status: 200, text: "<p>SCVD x402 Verifier</p>" }, listing), "holds");
+  assert.equal(stateOf({ ok: true, status: 200, text: "<p>Plugin not found</p>" }, listing), "silent");
+  // And the old one-argument call still reads exactly as it did.
+  assert.equal(stateOf({ ok: false, status: 403, text: "" }), "unreachable");
+});
+
+test("a walled row is neither a regression nor an advance, and is listed with its reason", () => {
+  const listing = "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212";
+  const baseline = { records: [{ url: listing, state: WALLED_STATE }, { url: "https://gone.example", state: "holds" }] };
+  const fresh = {
+    records: [
+      { url: listing, registry: "ChatGPT", state: "holds" },
+      { url: "https://gone.example", registry: "Gone", state: WALLED_STATE },
+      { url: "https://still.example", registry: "Still", state: WALLED_STATE },
+    ],
+  };
+  const { regressions, advances } = compareRoster(baseline, fresh);
+  // The wall coming down is not a climb; a host suddenly walled is not
+  // a fall. Both are outside the ladder until the next plain read.
+  assert.deepEqual(regressions, []);
+  assert.deepEqual(advances, []);
+  assert.deepEqual(
+    walledRows({ records: [{ url: listing, registry: "ChatGPT", state: WALLED_STATE }, { url: "https://holds.example", state: "holds" }] }).map((r) => [r.registry, /403/.test(r.reason)]),
+    [["ChatGPT", true]],
+  );
 });
 
 test("the marker match is case-insensitive and needs no exact spelling", () => {
