@@ -705,6 +705,30 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That VerifyMCP carries the second server this repo publishes, scvd-tab, and scored it from the npm package and the repository — the first third-party number on the tab at all. Not an endorsement and not an audit: their instrument, their rows, read on their page.",
   },
   {
+    /*
+     * THE FIRST VENUE THAT REVIEWED RATHER THAN INDEXED (2026-09-17).
+     *
+     * Every other row on this list is a directory that read a registry
+     * entry or pinged a door. This one is a human review process the
+     * store FAILED first — submitted 2026-09-09, rejected 2026-09-13
+     * on bad test results and unconfirmed ownership, resubmitted after
+     * business verification and a transport red team of the door, and
+     * admitted on the second attempt. That history is in
+     * docs/SPEC_READS.md, and it is the reason this row names the
+     * review rather than dressing it as an endorsement.
+     *
+     * IT IS THE VERIFIER DOOR, NOT THE STORE. What OpenAI reviewed and
+     * listed is /mcp/verifier: five read-only tools and no shelf. A
+     * reader who takes this row as evidence about the paid instruments
+     * has read it wrong, so the sentence says which door.
+     */
+    url: "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212",
+    registry: "ChatGPT Plugin Directory (chatgpt.com) — the verifier door",
+    confirmed: "2026-09-17",
+    what_it_proves:
+      "That OpenAI reviewed the free verifier door at /mcp/verifier against its own submission guidelines and admitted it to the plugin directory, on the second attempt. Not an endorsement and not an audit: a directory review checks a listing's claims, its test cases and its tool annotations, and says nothing about whether the goods on this store's other doors are worth buying. It covers the five read-only tools on that door only.",
+  },
+  {
     url: "https://mcpbeat.com/mcp-servers/scvd/general-store/",
     registry: "mcpbeat (mcpbeat.com)",
     confirmed: "2026-09-02",

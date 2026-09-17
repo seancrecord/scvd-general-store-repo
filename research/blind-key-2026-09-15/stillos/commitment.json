@@ -1,0 +1,11 @@
+{
+  "arrangement": "seancrecord/scvd-general-store-repo#622 — blind answer key, StillOS direction",
+  "committed_at": "2026-09-14T21:56:19.493Z",
+  "answer_commitment": {
+    "file": "answers.json",
+    "sha256": "0b0802613fec81ea0ab65cf1e5bbfeb2a03ab18302ebb6ea15c372ad08f92bd0",
+    "byte_length": 9286,
+    "hashed_over": "raw bytes of the file as written, not a re-serialisation of a parsed object"
+  },
+  "verify": "On reveal: sha256 the published answers.json as raw bytes and compare to the digest and byte length above. Both must match. `node core/blind_key_build.cjs --verify` does this locally."
+}
