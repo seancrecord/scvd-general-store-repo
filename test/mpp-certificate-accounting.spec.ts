@@ -175,3 +175,51 @@ it("does not amplify a native sale mistakenly imported by an earlier legacy repa
   const raised = await raiseCountersToRecords(bindings);
   expect(raised.organic_records).toBe(0); expect(raised.payer_rows_raised).toEqual([]);
 });
+
+/**
+ * THE RESCUED SETTLE (2026-09-17, found reading #771 before it deployed).
+ * The ambiguous-settle rescue relays no facilitator header, by design, so
+ * a rescued x402 Context Anchor kept a coordinator record with empty settle
+ * headers. Read by headers alone it was "unavailable" for good: paged
+ * hourly as native accounting, skipped by the legacy repair, dropped from
+ * the raise. The ledgers know what the headers do not.
+ */
+it("classifies a rescued x402 settle from its legacy record when no facilitator header was retained", async () => {
+  const record = await fixture("x402"); const cert = await certificate(record);
+  const store = bindings.PAID_RECOVERIES!.get(bindings.PAID_RECOVERIES!.idFromName(`${record.terms.network}:${record.payment!.transaction}`));
+  await runInDurableObject(store, async (_instance, state) => {
+    await state.storage.put("artifact", { digest: "test", purchase: { path: record.path, payment: { ...record.payment!, settleHeaders: {} } } });
+  });
+  await bindings.COUNTERS.put(KV_KEYS.payerSettle(record.payer, record.payment!.transaction),
+    JSON.stringify({ item: "context_anchor", at: now.toISOString(), transaction: record.payment!.transaction }));
+  expect(await certificateProtocol(bindings, cert)).toBe("x402");
+  const result = await certificatesWithoutSettleRecord(bindings);
+  expect(result.certificates).toEqual([]); expect(result.native).toEqual([]);
+  expect((await raiseCountersToRecords(bindings)).organic_records).toBe(1);
+  expect((await certificatesAgainstSettles(bindings, null)).certificates_with_payer).toBe(1);
+});
+
+it("classifies a native sale from its individual ledger when the coordinator record is absent", async () => {
+  const record = await fixture(); const cert = await certificate(record); await sale(record);
+  const store = bindings.PAID_RECOVERIES!.get(bindings.PAID_RECOVERIES!.idFromName(`${record.terms.network}:${record.payment!.transaction}`));
+  await runInDurableObject(store, async (_instance, state) => { await state.storage.deleteAll(); });
+  expect(await certificateProtocol(bindings, cert)).toBe("mpp");
+  const result = await certificatesWithoutSettleRecord(bindings);
+  expect(result.certificates).toEqual([]); expect(result.native).toEqual([]);
+  expect((await backfillPayerSettlesFromCertificates(bindings)).skipped_certificates).toEqual([{ cert_id: cert.cert_id, reason: "mpp" }]);
+});
+
+it("keeps a settle neither ledger holds undetermined, and never reads an unreadable native ledger as legacy", async () => {
+  const record = await fixture("x402"); const cert = await certificate(record);
+  const store = bindings.PAID_RECOVERIES!.get(bindings.PAID_RECOVERIES!.idFromName(`${record.terms.network}:${record.payment!.transaction}`));
+  await runInDurableObject(store, async (_instance, state) => {
+    await state.storage.put("artifact", { digest: "test", purchase: { path: record.path, payment: { ...record.payment!, settleHeaders: {} } } });
+  });
+  expect(await certificateProtocol(bindings, cert)).toBe("unavailable");
+  expect((await sweepBooksInvariants(bindings)).breaches.some(text => text.startsWith("certificate-native-accounting:"))).toBe(true);
+  // A legacy record cannot decide it while the native ledger cannot be read.
+  await bindings.COUNTERS.put(KV_KEYS.payerSettle(record.payer, record.payment!.transaction), "{}");
+  expect(await certificateProtocol({ ...bindings, COUNTER_LEDGER: undefined }, cert)).toBe("unavailable");
+  expect((await backfillPayerSettlesFromCertificates({ ...bindings, COUNTER_LEDGER: undefined })).skipped_certificates)
+    .toEqual([{ cert_id: cert.cert_id, reason: "unavailable" }]);
+});
