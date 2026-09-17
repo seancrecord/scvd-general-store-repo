@@ -1,0 +1,104 @@
+{
+  "kind": "directed_transfer_control",
+  "cold_acceptance": false,
+  "captured_at": "2026-09-16T20:18:54.523Z",
+  "sources": [
+    {
+      "url": "https://scvd.store/corpus/6.json",
+      "file": "source/snapshot.json",
+      "bytes": 11485079,
+      "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+    },
+    {
+      "url": "https://scvd.store/.well-known/scvd-signing-key",
+      "file": "source/issuer.json",
+      "bytes": 3139,
+      "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+    }
+  ],
+  "bundle": {
+    "file": "recipient/bundle.json",
+    "sha256": "afc5545857c7b59672561787241d363b631cda44ce634e174555dbdc2e1fa98c"
+  },
+  "recipient": {
+    "exit_code": 0,
+    "valid": true,
+    "evidence_complete": true,
+    "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+    "problems": [],
+    "network": "fetch disabled before CLI import",
+    "signed_top_level_fields": [
+      "version",
+      "sequence",
+      "taken_at",
+      "previous_digest",
+      "source",
+      "week",
+      "round"
+    ]
+  },
+  "tamper": {
+    "exit_code": 1,
+    "valid": false,
+    "evidence_complete": true,
+    "problems": [
+      "invalid_signature",
+      "timestamp_digest_mismatch"
+    ]
+  },
+  "semantic_review": {
+    "reviewer": "Codex implementation reviewer; not a cold recipient agent",
+    "signed_subject_pointer": "/round/hosts/50/url",
+    "signed_observed_at": "2026-09-07T02:30:20.531Z",
+    "meaning": "Historical endpoint observation; not current payment or delivery proof",
+    "cold_recipient_gate": false
+  },
+  "scorer_control": {
+    "kind": "synthetic_operator_control_not_native_run",
+    "capture": {
+      "state": "complete",
+      "bytes": 11488218,
+      "files": [
+        {
+          "file": "evidence/snapshot.json",
+          "bytes": 11485079,
+          "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+        },
+        {
+          "file": "evidence/issuer.json",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        }
+      ],
+      "issues": []
+    },
+    "verification": {
+      "state": "incomplete",
+      "signature": true,
+      "reason": "Recipient understanding has not been reviewed."
+    },
+    "usable": "incomplete"
+  },
+  "recipient_files": [
+    {
+      "file": "evidence-cli.mjs",
+      "sha256": "9e87839106c858ecaba6ff69dbfc58760561d24177cc1d4ff0f1ea09084563c3"
+    },
+    {
+      "file": "evidence-bundle.js",
+      "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+    },
+    {
+      "file": "x402-verify.js",
+      "sha256": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
+    },
+    {
+      "file": "deny-fetch.mjs",
+      "sha256": "ea47a6ca8b466f83078c541d030affa87ae8a95902348ef834246f6a87eeea5b"
+    },
+    {
+      "file": "verification.json",
+      "sha256": "aa171648771624f8fa88220271f8214a44985b8eab1e8e72b6fea69cfcb111f0"
+    }
+  ]
+}

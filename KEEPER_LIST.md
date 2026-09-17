@@ -1016,6 +1016,12 @@ what you ruled and what is still yours to look at.
 
 ### Decisions that unblock the roadmap
 
+- **RULED 2026-09-16 — takeoff readiness and A2A compatibility.** Buyer
+  before spending is first; canonical A2A v1 retains an explicitly separated,
+  bounded existing 0.3 contract, with no new legacy features. The keeper's
+  answer: "latter agreed lets do it". TR1 is the first implementation slice;
+  [design](docs/TAKEOFF_READINESS_2026-09.md). No new payment ceiling inferred.
+
 
 
 - **Rail run-through** (eleven checks, drafted against
@@ -1086,6 +1092,21 @@ what you ruled and what is still yours to look at.
   report goes on the completed order as the deliverable.
 
 ### Directory and listings (press is yours, rule 30)
+
+- **LOOK / PRESS — GitHub MCP and AGNTCY admission (2026-09-16).**
+  [September 16 packages](research/distribution-admission-2026-09-16/README.md)
+  are drafted under ROADMAP TR-D; the hand here is to inspect any
+  existing application and submit the finished package through the verified
+  channel. Nothing submitted or sent in this planning turn. Track request
+  reference/date and `submission pending`, `submitted / external review`,
+  `access granted / publication pending`, or `externally observed` as facts
+  warrant. GitHub's current admission route and any prior request need a
+  fresh read. AGNTCY's September 15 record reports local signing/name
+  verification and shared-node `PermissionDenied`; shared participation
+  and an independent consumer round trip remain unverified. Do not resubmit
+  an unknown-status application or block core buyer work on either venue.
+  [Package and acceptance contract](docs/TAKEOFF_READINESS_2026-09.md#external-admission-alongside-the-serial-builds).
+
 
 - **RULE: the crawler 404s are a secrets scan, not crawlers
   (2026-09-11).** The 4xx tab you pasted names the top paths:

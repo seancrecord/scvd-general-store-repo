@@ -1,0 +1,279 @@
+{
+  "schema_version": 2,
+  "discovery": {
+    "attempts": 4,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 4
+  },
+  "directed": {
+    "attempts": 2,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 2
+  },
+  "distinct_hosts_completed": 0,
+  "limitation": "Controlled cold usability evidence only; no organic adoption, paid completion or universal readiness claim.",
+  "scorer_sha256": "5754fbd397a14a2eddacaf676f0eb2bc81f99bbe09bf523bf0624ba28b20ff30",
+  "plan_sha256": "aa5c7aa56eeed5a80720ede22278d66da76a032a7d4437a8ff75015227188ef2",
+  "runs": [
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-intent-search",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "intent_search",
+        "entry": null,
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Review is absent or not bound to this transcript."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-catalogue",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "catalogue",
+        "entry": "https://registry.modelcontextprotocol.io",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Review is absent or not bound to this transcript."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "entry": "https://skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Review is absent or not bound to this transcript."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-intent-search",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "intent_search",
+        "entry": null,
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Runtime unavailable; not a product verdict."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-catalogue",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "catalogue",
+        "entry": "https://registry.modelcontextprotocol.io",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Runtime unavailable; not a product verdict."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "entry": "https://skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Runtime unavailable; not a product verdict."
+      ]
+    }
+  ]
+}
