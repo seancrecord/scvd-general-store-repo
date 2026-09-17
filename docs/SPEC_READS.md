@@ -2031,3 +2031,15 @@ The current local CLI, bundle constructor and verification code are the
 primary sources for export duplication and result expansion; the new command
 reuses those semantics. No new protocol or cryptographic algorithm is assumed.
 Registry availability and later native-host completion remain separate gates.
+
+
+### 2026-09-17 — MPP directory qualification
+
+Read the official [service submission guide](https://mpp.dev/services#list-your-service)
+and `tempoxyz/mpp` service PR template/schema at its current checkout. The
+curated entry can represent `evm/charge` with the actual Base USDC contract;
+Tempo examples must not replace live terms. MPPScan’s [discovery spec](https://mppscan.com/discovery/spec)
+requires structured protocol descriptors. Its pinned discovery 1.7.5 package
+recognizes SCVD’s query inputs but mislabels the live EVM network in probe mode.
+[Reproduction and report](https://github.com/Merit-Systems/x402scan/issues/1209).
+No listing has been registered on MPPScan.

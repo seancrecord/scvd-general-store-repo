@@ -75,8 +75,8 @@ Sources: [submission and published-version rules](https://developers.openai.com/
 | A2A — sing1ee/a2a-directory | Community source catalog | SCVD already listed; newly recorded in signals. No new PR. Downstream a2aprotocol.ai rendering not confirmed. |
 | A2A — a2aregistry.org | Community registry, operator prassanna-ravishankar | Initial documented search returned zero. Registration POST returned 503 `unconditional drop overload`; subsequent search also failed. Persistence cannot be confirmed; search again before retrying. |
 | A2A — a2a-registry.org | Different community registry, operator A2ARegistry | Public search returned zero. Documented `/public/ingest` POST returned 404. Public `/submit` UI offers URL scan; its scan/submit flow was not completed. Ownership verification is separate. |
-| MPP — mpp.dev/services | Official project's curated service directory | PR to `tempoxyz/mpp`, editing `schemas/services.ts`; generate discovery and run type/build checks per its contribution instructions. Requires a live production MPP service. Context Anchor now advertises native MPP EVM charge / Base / 1 USDC, with matching menu and OpenAPI capability declarations. Qualify the exact directory representation; other products are upcoming. |
-| MPP — MPPScan | Merit Systems discovery directory, linked by MPP project | URL registration at `mppscan.com/register`. Needs live MPP challenge and compatible OpenAPI metadata; native Context Anchor challenge is now live; discovery compatibility remains unqualified (`x-payment-info.protocols` still lists only x402). Endpoint-only fallback also needs a valid MPP challenge and input schema. |
+| MPP — mpp.dev/services | Official project's curated service directory | PR to `tempoxyz/mpp`, editing `schemas/services.ts`; generate discovery and run type/build checks per its contribution instructions. Requires a live production MPP service. Context Anchor now advertises native MPP EVM charge / Base / 1 USDC, with matching menu and OpenAPI capability declarations. Official [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; generation, types, build and 34 focused tests passed. Review pending. Other products are upcoming. |
+| MPP — MPPScan | Merit Systems discovery directory, linked by MPP project | URL registration at `mppscan.com/register`. Needs live MPP challenge and compatible OpenAPI metadata; native Context Anchor challenge is now live; discovery compatibility remains unqualified (`x-payment-info.protocols` still lists only x402). Pinned discovery 1.7.5 parses the live EVM/Base MPP option as `tempo:8453` and omits decimals; reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209). Registration remains unsubmitted. |
 | MCP / WebMCP / x402 | Existing discovery surfaces | Existing records preserved and grouped in README/trust. No new universal WebMCP registry was established by this pass; browser tool registration and MCP indexing are distinct. |
 | Skills + MCP — Awesome Copilot | Official GitHub-hosted community catalog | Submitted #3255; all automated gates passed; maintainer review pending. Agent Finder PR #34 remains a separate existing request. |
 | Skills + MCP — OpenAI | OpenAI plugin directory | Existing verifier published. Keeper completed the skill update September 17; updated-version review/publication remains unverified. |
@@ -147,3 +147,33 @@ tests passed; typecheck and whitespace checks passed. The existing evidence-limi
 test caught the first entry wording; corrected wording passed the rerun. No full
 suite or commit was run in this follow-up. Prior bundle and broader affected
 checks are recorded in README.md.
+
+
+### MPPScan qualification follow-up
+
+The pinned `@agentcash/discovery@1.7.5` endpoint check finds the required
+`summary` query parameter, input/output schemas and 1 USD price with no warnings,
+but its static protocols remain x402-only. Explicit unpaid probe mode finds the
+MPP option and incorrectly labels its Base chain as `tempo:8453`; it also omits
+`methodDetails.decimals`. An isolated mocked-response reproduction confirms
+the parser behavior independently of SCVD metadata.
+[Report #1209](https://github.com/Merit-Systems/x402scan/issues/1209) and
+[qualification receipt](observations/mppscan-qualification.json).
+The linked discovery source repository returns 404; the public scanner imports
+the same pinned library, so the report asks maintainers to transfer if needed.
+The website widget and completed CLI origin audit both found 194 routes.
+The CLI reports high route count and one route with missing auth mode at both
+discovery layers; Context Anchor has no warnings but is statically x402-only.
+This is discovery evidence, not registration or paid invocation. Fixing our protocol descriptor and
+resolving the method/network parser remain separate prerequisites.
+
+
+### Official MPP catalog submission
+
+[PR #991](https://github.com/tempoxyz/mpp/pull/991) proposes only SCVD Context Anchor’s live
+HTTP GET endpoint, EVM charge method and Base USDC terms. The description
+names the required summary input. Generation, typecheck, production build
+and 34 generator/catalog tests passed. Adding EVM exposed a generated-JSON
+type assertion error; the PR includes a documented boundary cast correction.
+[Submission receipt](observations/mpp-directory-submission.json).
+Admission is pending; no accepted listing or broader MPP checkout is claimed.
