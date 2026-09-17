@@ -1,0 +1,29 @@
+{
+  "cliVersion": "1.5.26",
+  "cwd": "/private/tmp/scvd-skill-install-final-aJw0xv",
+  "args": [
+    "/Users/seanrecord/.npm/_npx/ce22f0ddc7d4a641/node_modules/skills/bin/cli.mjs",
+    "add",
+    "/private/tmp/scvd-skill-progressive-disclosure/skills/scvd-general-store",
+    "--agent",
+    "codex",
+    "claude-code",
+    "--copy",
+    "--yes"
+  ],
+  "exitCode": 0,
+  "canonicalSha256": "7a3b88d1da84ae6b5f1c1fbe7ad0a5afb5dbc40e5d6a1495a846fe9845bcc986",
+  "installations": [
+    {
+      "path": "/private/tmp/scvd-skill-install-final-aJw0xv/.agents/skills/scvd-general-store",
+      "files": 11,
+      "treeSha256": "7a3b88d1da84ae6b5f1c1fbe7ad0a5afb5dbc40e5d6a1495a846fe9845bcc986"
+    },
+    {
+      "path": "/private/tmp/scvd-skill-install-final-aJw0xv/.claude/skills/scvd-general-store",
+      "files": 11,
+      "treeSha256": "7a3b88d1da84ae6b5f1c1fbe7ad0a5afb5dbc40e5d6a1495a846fe9845bcc986"
+    }
+  ],
+  "scope": "Local source, project installation, copy mode. No remote marketplace installation claim."
+}

@@ -20,7 +20,7 @@ import { artifactClassForItem } from "@/store/attestation-spec";
 import { CAPABILITY_QUERY, SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import type { Env } from "@/types";
 import { isRecord } from "@/types";
-import clawhubBundle from "../registry/clawhub/SKILL.md?raw";
+import { installedSkill as clawhubBundle } from "./helpers/installed-skill";
 import {
   installMultiPurchaseFacilitatorMock,
   type FacilitatorMockState,

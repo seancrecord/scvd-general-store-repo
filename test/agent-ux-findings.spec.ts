@@ -1,3 +1,4 @@
+import { installedSkill } from "./helpers/installed-skill";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
@@ -61,7 +62,7 @@ describe("the strongest trust signal arrives first, not fourth", () => {
   });
 
   it("leads the published bundle description with it too", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     const description = bundle
       .split("\n")
       .find((line) => line.startsWith("description:"));

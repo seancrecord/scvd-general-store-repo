@@ -33,6 +33,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Check installed skill tree
+        run: npm run skill:check
+
       - name: Typecheck
         run: npm run typecheck
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6

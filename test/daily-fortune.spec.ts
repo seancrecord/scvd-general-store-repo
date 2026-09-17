@@ -18,7 +18,7 @@ import {
   buildPaymentSignature,
   decodePaymentRequired,
 } from "./helpers/payment";
-import clawhubBundle from "../registry/clawhub/SKILL.md?raw";
+import { installedSkill as clawhubBundle } from "./helpers/installed-skill";
 
 /**
  * THE FORTUNE CAME BACK, 2026-09-02.

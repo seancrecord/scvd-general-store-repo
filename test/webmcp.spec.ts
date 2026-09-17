@@ -1,3 +1,4 @@
+import { installedSkill } from "./helpers/installed-skill";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
@@ -233,7 +234,7 @@ describe("the door itself", () => {
    * renewed and the bundle is not, this fails and names both dates.
    */
   it("prints the soonest expiry the tokens actually carry", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     const stated = bundle.match(/expires (\d{4}-\d{2}-\d{2})/);
     expect(stated, "the bundle no longer states a trial expiry").not.toBeNull();
     const soonest = Math.min(

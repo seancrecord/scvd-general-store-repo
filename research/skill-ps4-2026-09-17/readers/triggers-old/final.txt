@@ -1,0 +1,52 @@
+[
+  {
+    "id": "verification",
+    "activate": true,
+    "reason": "The request concerns free conformance checking of a signed receipt."
+  },
+  {
+    "id": "unsupported",
+    "activate": true,
+    "reason": "The request concerns interpreting a conformance-check result for a signed receipt."
+  },
+  {
+    "id": "preflight",
+    "activate": true,
+    "reason": "The skill provides evidence observations of endpoints and payments before purchase."
+  },
+  {
+    "id": "payment",
+    "activate": true,
+    "reason": "The request concerns an SCVD purchase, order, and payment retry."
+  },
+  {
+    "id": "history",
+    "activate": true,
+    "reason": "The skill is an evidence observatory for existing observations of endpoints and payments."
+  },
+  {
+    "id": "free-access",
+    "activate": true,
+    "reason": "The skill explicitly provides free conformance checking without requiring payment."
+  },
+  {
+    "id": "mpp",
+    "activate": true,
+    "reason": "The request concerns observing and interpreting evidence from a payment endpoint."
+  },
+  {
+    "id": "unrelated-poem",
+    "activate": false,
+    "reason": "The request is unrelated to SCVD, conformance checking, observations, or payments."
+  },
+  {
+    "id": "unrelated-css",
+    "activate": false,
+    "reason": "The request is unrelated to SCVD, conformance checking, observations, or payments."
+  },
+  {
+    "id": "unrelated-billing",
+    "activate": false,
+    "reason": "The request is unrelated to SCVD, conformance checking, observations, or payments."
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "verification",
+    "activate": true,
+    "reason": "Receipt verification is explicitly covered by the skill."
+  },
+  {
+    "id": "unsupported",
+    "activate": true,
+    "reason": "Diagnosing receipt verification results is covered by the skill."
+  },
+  {
+    "id": "preflight",
+    "activate": true,
+    "reason": "Inspecting endpoints before payment is explicitly covered."
+  },
+  {
+    "id": "payment",
+    "activate": true,
+    "reason": "Diagnosing payments and retrieving order history are covered."
+  },
+  {
+    "id": "history",
+    "activate": true,
+    "reason": "Retrieving host history is explicitly covered."
+  },
+  {
+    "id": "free-access",
+    "activate": true,
+    "reason": "Free receipt checks and wallet requirements are covered."
+  },
+  {
+    "id": "mpp",
+    "activate": true,
+    "reason": "Interpreting MPP and inspecting endpoints are explicitly covered."
+  },
+  {
+    "id": "unrelated-poem",
+    "activate": false,
+    "reason": "Writing an autumn poem is unrelated to the skill."
+  },
+  {
+    "id": "unrelated-css",
+    "activate": false,
+    "reason": "Fixing flexbox alignment is unrelated to the skill."
+  },
+  {
+    "id": "unrelated-billing",
+    "activate": false,
+    "reason": "Explaining a household electricity bill is unrelated to the skill."
+  }
+]

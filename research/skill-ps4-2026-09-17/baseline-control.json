@@ -1,0 +1,33 @@
+{
+  "baselineCommit": "7059dc8ab6207195776c85e4fd67a621240403d2",
+  "baselineMethod": "git archive HEAD into a separate directory with the same node_modules dependency tree; no PS4 edits applied",
+  "command": "npx vitest run test/counter-cadence.spec.ts test/bounty-asks-and-tiers.spec.ts test/passport-decision.spec.ts",
+  "baseline": {
+    "failed": 3,
+    "passed": 24,
+    "exitCode": 1,
+    "log": "baseline-three-failures.txt"
+  },
+  "checkpointIsolatedRerun": {
+    "failed": 3,
+    "passed": 24,
+    "exitCode": 1,
+    "log": "checkpoint-three-failures.txt"
+  },
+  "failures": [
+    {
+      "file": "test/counter-cadence.spec.ts",
+      "assertion": "Newest counter note must be within fourteen days; baseline is twenty days old."
+    },
+    {
+      "file": "test/bounty-asks-and-tiers.spec.ts",
+      "assertion": "Rendered bounty board must contain sprint."
+    },
+    {
+      "file": "test/passport-decision.spec.ts",
+      "assertion": "Rendered seeded passport must say READY; observation has expired at current date."
+    }
+  ],
+  "scope": "Existing baseline failures reproduced without PS4 edits. They remain unresolved in this draft checkpoint; no test was skipped or weakened.",
+  "upstreamInspection": "Fetched main already replaces both expired-clock test paths with controlled-clock router tests and adds newer counter notes. Source inspection only; no claim that current main was tested in this run."
+}

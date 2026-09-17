@@ -1,0 +1,72 @@
+[
+  {
+    "id": "verification",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/verification.md"],
+    "answer": "The receipt is valid: its signature verified against the supplied public test key. This does not establish merchant identity, signing-key authority, settlement, delivery, or authorization to spend. It does not authorize payment.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "unsupported",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/verification.md"],
+    "answer": "That interpretation is incorrect. The result is unsupported because ES256 was not checked; this is inconclusive, not a pass.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "preflight",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/inspection.md"],
+    "answer": "The endpoint was observed as x402-ready at 2026-09-17T12:00:00Z, with its x402 header check passing. Settlement, delivery, and permission to spend remain unknown.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "payment",
+    "completed": true,
+    "toolsUsed": ["check_order"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/payment-debugging.md"],
+    "answer": "The order is pending; settlement and delivery are unobserved. Preserve the original request and retry key original-retry-123, and use the recovery flow if needed. Do not generate a new key or authorize another payment merely to investigate.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "history",
+    "completed": true,
+    "toolsUsed": ["http_get"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/history.md"],
+    "answer": "Existing history contains one ready observation from 2026-09-10. The 2026-W38 record has a listed_not_walked gap, so the history is incomplete.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "free-access",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/verification.md"],
+    "answer": "The receipt check succeeded using the connected read-only tool. Neither installing x402-verify nor funding a wallet was necessary.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "mpp",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/mpp.md"],
+    "answer": "No. The observation only establishes that this instrument found the endpoint not ready for x402 while observing an MPP protocol and a valid MPP challenge. It does not establish that the endpoint is globally broken or unpayable by every client; settlement and delivery remain unknown.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  }
+]

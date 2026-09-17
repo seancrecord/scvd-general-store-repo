@@ -75,7 +75,9 @@
     "a2a:runner:test": "node --test scripts/a2a-runner.test.mjs",
     "evidence:test": "node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs scripts/evidence-coverage.test.mjs",
     "bazaar:validate:test": "node --test scripts/bazaar-validate.test.mjs",
-    "bazaar:regex:test": "node scripts/bazaar-regex-check.mjs"
+    "bazaar:regex:test": "node scripts/bazaar-regex-check.mjs",
+    "skill:build": "node scripts/skill-bundle.mjs --write",
+    "skill:check": "node scripts/skill-bundle.mjs && node --test scripts/skill-bundle.test.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

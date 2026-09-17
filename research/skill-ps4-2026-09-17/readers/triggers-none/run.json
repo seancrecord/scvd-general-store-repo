@@ -1,0 +1,13 @@
+{
+  "id": "triggers-none",
+  "variant": "none",
+  "mode": "triggers",
+  "modelRequested": "gpt-5.6-luna",
+  "cwd": "/private/tmp/scvd-ps4-triggers-none-t5aNrG",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 15113,
+  "inputHashes": {},
+  "unchanged": {}
+}

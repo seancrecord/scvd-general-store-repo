@@ -1,0 +1,495 @@
+{
+  "date": "2026-09-17",
+  "scope": "Six fresh CLI sessions: metadata-only selection and seven fixture-backed tasks per variant. Cases within a task session share context; not native host auto-triggering, real endpoint execution, or statistical reliability.",
+  "rows": [
+    {
+      "id": "triggers-old",
+      "variant": "old",
+      "mode": "triggers",
+      "qualified": true,
+      "passed": true,
+      "checks": [
+        {
+          "id": "verification",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "unsupported",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "preflight",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "payment",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "history",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "free-access",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "mpp",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "unrelated-poem",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unrelated-css",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unrelated-billing",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        }
+      ],
+      "elapsedMs": 26602,
+      "commandCount": 0,
+      "failedCommands": 0,
+      "commandOutputBytes": 0,
+      "usage": {
+        "input_tokens": 16737,
+        "cached_input_tokens": 8960,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 586,
+        "reasoning_output_tokens": 205
+      },
+      "measurementLimits": "Usage is host-reported; command output bytes include tool results and may be truncated. Reference names are self-reported and require trace review; neither measures exact needed context."
+    },
+    {
+      "id": "triggers-new",
+      "variant": "new",
+      "mode": "triggers",
+      "qualified": true,
+      "passed": true,
+      "checks": [
+        {
+          "id": "verification",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "unsupported",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "preflight",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "payment",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "history",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "free-access",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "mpp",
+          "expected": true,
+          "actual": true,
+          "passed": true
+        },
+        {
+          "id": "unrelated-poem",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unrelated-css",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unrelated-billing",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        }
+      ],
+      "elapsedMs": 19450,
+      "commandCount": 0,
+      "failedCommands": 0,
+      "commandOutputBytes": 0,
+      "usage": {
+        "input_tokens": 16728,
+        "cached_input_tokens": 8960,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 394,
+        "reasoning_output_tokens": 54
+      },
+      "measurementLimits": "Usage is host-reported; command output bytes include tool results and may be truncated. Reference names are self-reported and require trace review; neither measures exact needed context."
+    },
+    {
+      "id": "triggers-none",
+      "variant": "none",
+      "mode": "triggers",
+      "qualified": true,
+      "passed": true,
+      "checks": [
+        {
+          "id": "verification",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unsupported",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "preflight",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "payment",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "history",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "free-access",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "mpp",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unrelated-poem",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unrelated-css",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        },
+        {
+          "id": "unrelated-billing",
+          "expected": false,
+          "actual": false,
+          "passed": true
+        }
+      ],
+      "elapsedMs": 15113,
+      "commandCount": 0,
+      "failedCommands": 0,
+      "commandOutputBytes": 0,
+      "usage": {
+        "input_tokens": 16657,
+        "cached_input_tokens": 8960,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 224,
+        "reasoning_output_tokens": 25
+      },
+      "measurementLimits": "Usage is host-reported; command output bytes include tool results and may be truncated. Reference names are self-reported and require trace review; neither measures exact needed context."
+    },
+    {
+      "id": "tasks-old",
+      "variant": "old",
+      "mode": "tasks",
+      "qualified": true,
+      "passed": false,
+      "checks": [
+        {
+          "id": "verification",
+          "requiredCallObserved": true,
+          "interpretationPassed": false,
+          "referencesReported": [
+            "skill/SKILL.md"
+          ],
+          "passed": false
+        },
+        {
+          "id": "unsupported",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "preflight",
+          "requiredCallObserved": true,
+          "interpretationPassed": false,
+          "referencesReported": [
+            "skill/SKILL.md"
+          ],
+          "passed": false
+        },
+        {
+          "id": "payment",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "history",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "free-access",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "mpp",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md"
+          ],
+          "passed": true
+        }
+      ],
+      "elapsedMs": 100937,
+      "commandCount": 13,
+      "failedCommands": 0,
+      "commandOutputBytes": 32037,
+      "usage": {
+        "input_tokens": 177409,
+        "cached_input_tokens": 140288,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2491,
+        "reasoning_output_tokens": 783
+      },
+      "measurementLimits": "Usage is host-reported; command output bytes include tool results and may be truncated. Reference names are self-reported and require trace review; neither measures exact needed context."
+    },
+    {
+      "id": "tasks-new",
+      "variant": "new",
+      "mode": "tasks",
+      "qualified": true,
+      "passed": false,
+      "checks": [
+        {
+          "id": "verification",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/verification.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "unsupported",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/verification.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "preflight",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/inspection.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "payment",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/payment-debugging.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "history",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/history.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "free-access",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/verification.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "mpp",
+          "requiredCallObserved": true,
+          "interpretationPassed": false,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/mpp.md"
+          ],
+          "passed": false
+        }
+      ],
+      "elapsedMs": 44972,
+      "commandCount": 13,
+      "failedCommands": 0,
+      "commandOutputBytes": 24386,
+      "usage": {
+        "input_tokens": 80122,
+        "cached_input_tokens": 57344,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1832,
+        "reasoning_output_tokens": 473
+      },
+      "measurementLimits": "Usage is host-reported; command output bytes include tool results and may be truncated. Reference names are self-reported and require trace review; neither measures exact needed context."
+    },
+    {
+      "id": "tasks-none",
+      "variant": "none",
+      "mode": "tasks",
+      "qualified": true,
+      "passed": false,
+      "checks": [
+        {
+          "id": "verification",
+          "requiredCallObserved": true,
+          "interpretationPassed": false,
+          "referencesReported": [],
+          "passed": false
+        },
+        {
+          "id": "unsupported",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [],
+          "passed": true
+        },
+        {
+          "id": "preflight",
+          "requiredCallObserved": true,
+          "interpretationPassed": false,
+          "referencesReported": [],
+          "passed": false
+        },
+        {
+          "id": "payment",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [],
+          "passed": true
+        },
+        {
+          "id": "history",
+          "requiredCallObserved": false,
+          "interpretationPassed": false,
+          "referencesReported": [],
+          "passed": false
+        },
+        {
+          "id": "free-access",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [],
+          "passed": true
+        },
+        {
+          "id": "mpp",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [],
+          "passed": true
+        }
+      ],
+      "elapsedMs": 48951,
+      "commandCount": 6,
+      "failedCommands": 0,
+      "commandOutputBytes": 1591,
+      "usage": {
+        "input_tokens": 121052,
+        "cached_input_tokens": 108800,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1451,
+        "reasoning_output_tokens": 254
+      },
+      "measurementLimits": "Usage is host-reported; command output bytes include tool results and may be truncated. Reference names are self-reported and require trace review; neither measures exact needed context."
+    }
+  ],
+  "newSkillPassed": false
+}

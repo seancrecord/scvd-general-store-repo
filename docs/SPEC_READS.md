@@ -821,3 +821,33 @@ Installed Wrangler list/get help and implementation were inspected: remote
 key listing follows the provider's list cursors. Production read failed
 with authentication error 10000; no inventory count was inferred.
 Implementation and limits: `EVIDENCE_READER_COVERAGE_2026-09.md`.
+
+### September 17 — PS4 installed skill references and distribution
+
+Read [Agent Skills specification](https://agentskills.io/specification):
+metadata, an entry body and relative supporting references; progressive loading
+is a format convention, not proof of host behavior. Read the official
+[Skills CLI documentation](https://github.com/vercel-labs/skills): local sources,
+project agent selection and copy mode. Executed cached skills@1.5.26 locally:
+Codex and Claude-style project trees retain all eleven files. Read the official
+[ClawHub documentation](https://docs.openclaw.ai/clawhub); the older /tools/clawhub
+URL returned only a redirect page. Inspected cached ClawHub 0.23.3 source and
+executed its actual prepareSkillFilesForPublish/extractZipToDir functions with
+local bytes. No registry upload, remote install or native host auto-triggering
+was observed. Current local preflight implementation supplies the MPP wording;
+no new protocol support or fresh external MPP-spec claim is made.
+
+The skill-creator format validator passes using isolated PyYAML 6.0.2; system
+Python initially lacked that module. The package's existing Wrangler dry-run
+command was retained; no new CLI flags or Worker behavior were introduced.
+PS4 sources/results: docs/SKILL_PROGRESSIVE_DISCLOSURE_2026-09.md and
+research/skill-ps4-2026-09-17/. External fresh-reader transfer remains pending
+explicit payload/destination approval after automatic approval review rejection.
+
+September 17 follow-through: the user explicitly approved the payload and
+OpenAI destination, then authorized a commit and PR. All six prepared readers
+completed. Results and raw traces are retained in the evidence directory;
+behavioral acceptance is held because the new MPP answer overstated challenge
+presence as validity. A subsequent fetch identified newer main skill guidance
+that must be integrated before merge. No extra reader, publication or deploy
+was performed.

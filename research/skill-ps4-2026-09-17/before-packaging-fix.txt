@@ -1,0 +1,45 @@
+TAP version 13
+# Subtest: missing, escaping and orphaned references cannot pass a content audit
+ok 1 - missing, escaping and orphaned references cannot pass a content audit
+  ---
+  duration_ms: 0.930667
+  ...
+# Subtest: a reference-only change changes the release fingerprint
+ok 2 - a reference-only change changes the release fingerprint
+  ---
+  duration_ms: 6.802542
+  ...
+# Subtest: an isolated installed copy contains every reference and detects tampering
+not ok 3 - an isolated installed copy contains every reference and detects tampering
+  ---
+  duration_ms: 28.201458
+  location: '/private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing skill reference: references/buy.md'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    visit (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/lib/skill-tree.mjs:10:44)
+    visit (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/lib/skill-tree.mjs:21:7)
+    skillGraph (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/lib/skill-tree.mjs:24:3)
+    readSkillTree (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.mjs:17:3)
+    syncSkill (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.mjs:23:21)
+    TestContext.<anonymous> (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:32:5)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+    Test.postRun (node:internal/test_runner/test:1042:19)
+  ...
+# Subtest: canonical skill entry routes to task references; both payloads have the same graph
+ok 4 - canonical skill entry routes to task references; both payloads have the same graph
+  ---
+  duration_ms: 13.214667
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 114.036208

@@ -1,7 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import methodDoc from "../AGENT_UX.md?raw";
-import bundle from "../registry/clawhub/SKILL.md?raw";
+import { installedSkill as bundle } from "./helpers/installed-skill";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { SHELF_CLUSTERS } from "@/lib/mcp-tools";
 import { ROUTES as WHEN_TO_BUY } from "@/lib/when-to-buy";
