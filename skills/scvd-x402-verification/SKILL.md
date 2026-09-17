@@ -62,8 +62,9 @@ free historical evidence at `https://scvd.store/corpus/host/{host}.json`.
 Follow its cited signed snapshot, confirm the exact endpoint and observation
 date inside the signed data, and verify it locally with `scvd-evidence`.
 The corpus index is at `https://scvd.store/corpus/index.json`. A historical
-observation is not a fresh check; a missing row is a coverage gap. The
-verifier's corpus instructions below cover export and explicit size limits.
+observation is not a fresh check; a missing row is a coverage gap. Follow the
+verifier's [large corpus snapshot instructions](https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#large-corpus-snapshots-130)
+for export and explicit size limits.
 An unsigned merchant offer does not rule out a signed SCVD observation.
 One `never_met` lookup does not substitute for checking the corpus.
 

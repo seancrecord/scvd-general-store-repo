@@ -73,3 +73,9 @@ No paid/free wording, directory publication or public skill changed here.
 The remaining test is a newly declared, bounded qualification and buyer run,
 with original attempts retained regardless of outcome. No retry-until-green
 policy is introduced.
+
+September 17 follow-through: the [separate native qualification](../takeoff-workspace-qualification-2026-09-17/README.md)
+confirms cache propagation and writes on both hosts. Codex passed the generic
+probe; Claude left it incomplete, so the buyer cohort remains gated. The
+navigation correction and an error in the first cache control are recorded
+there without changing the original buyer attempts.

@@ -63,6 +63,12 @@ pass, and fresh native qualification remains required. The retained failures
 and pending interpretation/navigation findings are in the
 [workspace repair record](research/takeoff-session-workspace-2026-09-17/README.md).
 
+**TR3 native follow-through, September 17:** both hosts demonstrably inherit
+and write to the session cache. Fresh generic capability passed for Codex;
+Claude stopped after a refused compound command, so no buyer cohort ran.
+The focused skill's missing corpus-instructions reference is corrected.
+[Qualification, preserved control error and next gate](research/takeoff-workspace-qualification-2026-09-17/README.md).
+
 Ordered 2026-09-03 under his lens: value or potential value
 if the market takes off, not ROI now ("think of it as tech
 in 0% interest rate times"). A1–A3, the next three moves of
