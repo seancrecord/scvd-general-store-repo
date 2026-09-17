@@ -84,7 +84,9 @@ Raw outcomes for everything below are under
   submission ([run 35248851550](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248851550),
   excerpt in `listings-reading.txt`), reached the public ClawHub page but
   found no labelled version near the skill name, and read npm `x402-verify`
-  as 1.4.0 agreeing with the manifest.
+  as 1.4.0 agreeing with the manifest. A second read 39 minutes after
+  submission ([run 35252315597](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35252315597))
+  returned the same unknown row.
   This session's egress refuses `clawhub.ai` (proxy CONNECT 403), so
   `clawhub inspect scvd-general-store` and an exact-version remote install
   with the eleven-file tree comparison could not run from here. They remain

@@ -31,3 +31,11 @@ answered from the runner, but the instrument found no labelled version near the
 skill name, so it neither confirms nor denies that 3.17.0 is public. This is
 about six minutes after the CLI reported the update submitted and pending
 security scans. Not an installation and not a tree comparison.
+
+Second read, dispatched after main CI went green: run
+https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35252315597
+job 105307402838, 17:22–17:23 UTC (artifact id 10511295875). Same 15 facts,
+same result for the ClawHub row:
+unknown     clawhub skill version                   no labelled version near the skill name
+So 39 minutes after submission the public page still carried no version the
+instrument could label. Neither read establishes that 3.17.0 is public.
