@@ -18,8 +18,10 @@ Raw outcomes for everything below are under
 - Main moved twice between the PR's base and the merge (#770 and #771). A
   local trial merge against `7d4562e` produced no conflicts and no PR change.
 - Main CI on the merge commit: [run 35248262089](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248262089).
-  Queued behind the earlier #770 push run at the time of this record; result
-  to be appended below when it completes.
+  Queued behind the earlier #770 push run (whose own queued successor for
+  #771 was cancelled by the concurrency group), started 16:59 UTC and
+  completed 17:21 UTC: all four test shards, quality, check and green-main
+  succeeded, so main is green on the milestone commit.
 - Draft #768 was already closed as superseded before this session; nothing
   from its unrelated field-run ancestor was merged.
 
