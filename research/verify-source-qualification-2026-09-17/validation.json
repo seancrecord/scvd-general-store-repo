@@ -1,0 +1,22 @@
+{
+  "recorded_at": "2026-09-17T21:38:10.136756+00:00",
+  "scope": "Public release/qualification records only; no behavior or instrument change.",
+  "checks": {
+    "source_instrument_unchanged": true,
+    "publication_record_bound_to_freeze": true,
+    "plan_bound_to_freeze": true,
+    "frozen_buyer_controls": {
+      "passed": 59,
+      "log_sha256": "a5d50a9c03742d9653e5a769a9be14b05ae44dcc85215e09d1f3162970cca5a5"
+    },
+    "integrated_buyer_controls": {
+      "passed": 62,
+      "log_sha256": "a1acbd4143ef280eb7554a09cf9e91b71ba18d6b410bb13874af06727c663c95"
+    },
+    "typecheck": {
+      "state": "pass",
+      "log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    }
+  },
+  "full_ci": "Required before merge; recorded in the merge receipt."
+}
