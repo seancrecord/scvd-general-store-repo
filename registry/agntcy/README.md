@@ -4,6 +4,8 @@ House rule 30 applies here as everywhere in this drawer: **publishing
 is a queue — the keeper reviews, the keeper submits.** Nothing below
 runs on its own, and nothing below signs anything.
 
+**September 17 admission:** [Participation and representation request](https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204) sent on keeper authorization after checking the complete discussion for earlier SCVD requests. Await the access route and feedback; no shared publication or signature/scan badge is claimed.
+
 ## What this is
 
 `record.json` is this store's OASF record: the AGNTCY Agent Directory's
@@ -92,9 +94,12 @@ collapsing them would put the whole corpus in the blast radius of a
 listing. Revocation is a deploy — drop the key from the PEM, re-cut,
 ship, and every signature made under it stops verifying.
 
-**Still owed: the signature itself.** The private half lives with the
-keeper. Nothing in this repository can sign the record, and that is
-the point.
+**Current-byte signature still owed (reconciled 2026-09-17).** The September
+15 local receipt below proves signing and name verification for that historical
+CID. The corrected record has different bytes; that receipt does not cover it.
+The public JWKS is already served. The private half stays with the keeper.
+Shared-node admission, routing publication and independent discovery are separate
+unfinished steps; see [the current findings](../../research/distribution-2026-09-17/README.md).
 
 ## The release sequence
 

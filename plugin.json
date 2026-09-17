@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scvd-general-store",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
   "author": {
     "name": "Record Creative Co. LLC",

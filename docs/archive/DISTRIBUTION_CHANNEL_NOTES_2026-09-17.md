@@ -1,0 +1,611 @@
+> Archived September 17, 2026. Historical channel notes and receipts; not a current submission queue. Start at [DISTRIBUTION.md](../../DISTRIBUTION.md). Relative paths in the original text are relative to the repository root.
+
+# DISTRIBUTION.md — the agent-native channels, and exactly how to enter each
+
+September 10 adoption follow-through: scvd-defects, scvd-mcp-starter and
+scvd-preflight are published. Fresh registry installations match the
+reviewed archives and all shipped files, pass their own fixture suites,
+and verify registry signatures and provenance. The source directory for
+scvd-preflight remains `x402-preflight/`. These releases need no keeper
+press or credential change. Scope, release receipts and the separate
+website acceptance: `docs/ADOPTION_AND_LATENCY_2026-09.md`.
+
+**Version rule, refreshed 2026-09-06:** older numbered versions and
+package counts below belong to their dated readings. At a publish,
+read each version from that package's `package.json`, the actual
+package set from `.github/workflows/publish-npm.yml`, and ClawHub's
+receipt from `registry/clawhub/published.json`; compare the resulting
+registry artifact before recording completion. KEEPER_LIST is the
+current press queue. A build or old receipt does not establish today's
+registry state.
+
+**Registry identity read, before publication on September 10:** Verify 1.3.0 and Tab 0.11.1
+match every published file; Sign 1.0.2 and CLI 0.2.0 match executable
+files and had documentation corrections awaiting a patch. The npm
+`x402-preflight` package belongs to another repository; our client needs
+a distinct name before publication. Three other companion packages were
+unpublished at that reading. Details and retained comparison: `docs/OPENAPI_HEADROOM_2026-09.md`.
+
+
+**Package release, September 10:** CLI 0.3.0, Sign 1.0.3 and the corpus
+client's first release 0.1.0 are published. Fresh installs match the
+reviewed archives and shipped files; registry signatures and provenance
+verify, including the expected source commits and workflow runs. Verify
+and Tab already match their published artifacts and need no release.
+The served CLI command catalog now includes compact discovery. Receipts,
+checks and scope: `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
+
+Written 2026-08-21, the night the strategy was ruled: agents don't
+browse, they inherit. An agent reaches this store through four doors —
+its config (MCP connectors, skills), its model's memory (AEO, shipped),
+a live index it queries mid-task, or a link inside an artifact already
+in circulation (the evidence loop, owned by the other session's
+Passport work). This file is the submission checklist for the first
+and third doors. Rule 30 applies throughout: every actual send,
+submission, or account action is the keeper's hand; this file makes
+each one a five-minute job.
+
+## September 10 — compact packages published
+
+[scvd-cli 0.3.0](https://www.npmjs.com/package/scvd-cli/v/0.3.0) and
+[x402-sign 1.0.3](https://www.npmjs.com/package/x402-sign/v/1.0.3) were
+published from `680c5c051a89df85a18d459c836cb2a9d8f59e97` after its full
+CI passed. The provenance workflow receipts are
+[CLI](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34499849387)
+and [Sign](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34499852883).
+The tested package commit was published while #613 reconciled the overlapping
+release documentation; the compact API was already deployed in #592.
+No review or test gate was bypassed.
+
+The fresh CLI registry install matched the reviewed archive and every shipped
+file, verified its registry signature and provenance attestation, and read
+one live compact page with limits and continuation intact. Served command
+discovery includes the new command in the release closeout. Sign also
+matched its reviewed archive and all installed files, with its
+registry signature and provenance verified. Its first version read returned
+404 immediately after publication; the subsequent read succeeded without
+republication. The corpus client 0.1.0 was subsequently published from the tested,
+merged commit `64152f16924569221c889d64ec1ffde9e5e70db9` through
+[its provenance run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34504193625).
+Its fresh install also matches the reviewed archive and all files, verifies
+registry signature and provenance, and preserves an unreadable page with
+one request. All three provenance statements name this repository, the
+expected commit, the release workflow and their actual invocation.
+The corpus-client namespace was created successfully; no account change
+is required. Final records: `research/compact-corpus-packages-2026-09-10/`.
+
+## September 17 — verifier 1.4.0 and skill 3.17.0
+
+**Published:** [x402-verify 1.4.0](https://www.npmjs.com/package/x402-verify/v/1.4.0)
+from `3194d4d75bd6d7ec07671a1c260b67e106125521` (the #769 merge commit)
+through the [provenance workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248303297);
+transparency log entry https://search.sigstore.dev/?logIndex=2879124178.
+It adds the valid/invalid/unsupported/inconclusive result semantics,
+independent vectors and the packaged quickstart (PS1–PS3). A fresh install
+in a directory outside the repository matched the registry integrity, ran the
+packaged example's four outcomes and compiled a strict TypeScript consumer;
+nine installed files hash equal to the merged source, and the keeper's
+own fresh install matched all 24 packed files
+(`research/package-skill-integration-2026-09-17/registry-installation.json`).
+The attestation document was read but its signature was not verified from
+the agent's session, whose egress refuses the Sigstore trust-root host.
+
+**Published:** ClawHub skill 3.17.0 through the guarded
+[skill workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248307937),
+CLI 0.23.3. Submission first read "pending security scans"; the scan then
+returned clean and a normal exact-version public install from the keeper's
+machine matched all eleven payload files and the tree hash
+`50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606`
+(`research/package-skill-integration-2026-09-17/skill-registry-installation.json`).
+Record PR [#772](https://github.com/seancrecord/scvd-general-store-repo/pull/772),
+merged as `b4c0bbdb`, carries the published record and the closeout; the deployed `/skill.md`
+served 3.17.0 at 16:47 UTC. Two CI-side reads of the public page in the
+first 40 minutes found no labelled version, retained under
+`research/package-skill-release-2026-09-17/`. Closeout:
+`docs/PACKAGE_SKILL_HANDOFF_2026-09-17.md`.
+
+## September 9 — verifier publication follow-through
+
+**Subsequent reader release:** [x402-verify 1.3.0](https://www.npmjs.com/package/x402-verify/v/1.3.0)
+published from `f44df7b165c6534fe7c9cfcb0b2a12790e56eade` through the
+[provenance workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34398582831).
+It adds corpus-v1 exports and explicit bounded reader allowances. A fresh
+registry install verified its registry signature and provenance, matched
+the prepared tarball, and verified all six live corpus snapshots at 20:03
+UTC with their canonical signed bytes unchanged. The compact index deployed
+in PR #592. Records live under
+`research/verification-2026-09-09/reader-followthrough/`; commands and limits
+are in `verifier/README.md`. The 1.2.0 publication below remains historical
+fact; its immutable package has not changed.
+
+**Published:** [x402-verify 1.2.0](https://www.npmjs.com/package/x402-verify/v/1.2.0)
+from commit `4f452acee2690f112e6fcda2768630490ba270bd`, through the existing
+[provenance workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34353123366).
+The preceding [dry run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34352944736)
+also passed. The workflow now runs the verifier's own tests instead of
+falling through its no-tests branch.
+
+A fresh registry install, with install scripts disabled, verified the saved
+real receipt and correctly returned its missing `saw` evidence. Registry
+integrity exactly matched the locally reviewed tarball. `npm audit signatures`
+verified both the registry signature and provenance attestation. Public
+release metadata and the installed-package result are retained under
+`research/verification-2026-09-09/`. No credential value was retrieved into
+this task; the workflow used its existing repository secret.
+
+The package README carries installed CLI commands and a stable portable-
+evidence heading. Node-only checks leave Bitcoin validation to a separate
+OTS verifier; package publication does not expand that claim. The former
+1.1.0 publication item is superseded by this release.
+
+## 1. The official MCP Registry — PUBLISHED THREE TIMES, ONE POSITIONING BEHIND
+
+**Corrected 2026-08-29.** The paragraph that stood here said the
+republish was still waiting on the keeper and that the live entry
+carried the pre-reversal description. Both were true on 2026-08-21 and
+neither is true now; a read of the registry's own API on 2026-08-29
+found three publishes under `store.scvd/general-store`:
+
+| version | published | description |
+|---|---|---|
+| 0.1.0 | 2026-07-30 | "A general store for AI agents. Pay in USDC via x402…" |
+| 0.2.0 | 2026-08-11 | "The trust layer of the x402 economy…" |
+| 0.2.1 | 2026-08-21 | "The trust layer of the x402 economy…" *(isLatest)* |
+
+So the keeper did press it, twice. The pre-reversal listing is not
+what the ecosystem reads — it is three versions down the list, and
+nothing points at it.
+
+**The real gap is smaller and easier to miss.** `server.json` was
+edited after the 0.2.1 publish to the current sentence — "Evidence
+observatory for agentic commerce: free x402 conformance checks,
+corpus, agent store" — without a version bump. A PUBLISHED VERSION IS
+IMMUTABLE, exactly as npm's are (§4b learned the same thing about
+READMEs the expensive way), so that edit changed nothing anywhere. The
+registry, PulseMCP, and every aggregator downstream still say "trust
+layer of the x402 economy": one positioning behind, and invisible from
+inside the repo because the file on disk looks right.
+
+`server.json` is bumped to **0.2.2** and carries the observatory
+sentence, 93 characters against the registry's 100-char cap and held
+there by `test/first-pass-positioning.spec.ts`.
+
+Keeper's steps — a button now, not a terminal, and one secret first:
+
+    1. The ed25519 private key whose public half is in the store.scvd
+       TXT record → Repo → Settings → Secrets and variables → Actions →
+       New repository secret, named MCP_REGISTRY_KEY.
+    2. Actions tab → "Publish MCP registry listing" → Run workflow.
+       version: the number in server.json · dry_run: checked (it
+       validates the manifest against the registry's own schema and
+       proves the version is not already taken), then again unchecked.
+
+`.github/workflows/publish-mcp-registry.yml` is workflow_dispatch only
+(rule 30), refuses a version that disagrees with server.json, refuses a
+version the registry already holds — because that publish would be a
+silent no-op — and reads the listing back afterwards to prove the live
+entry now repeats what we publish. The install one-liner and the
+`login dns --domain scvd.store --private-key <key>` form were read off
+`mcp-publisher --help` itself rather than off documentation, because a
+button that fails when somebody presses it is worse than no button.
+
+From a laptop it is still two commands, and they still work:
+
+    mcp-publisher login dns --domain scvd.store --private-key <key>
+    mcp-publisher publish
+
+**0.2.3 WAITING (2026-09-02).** `server.json` is bumped again, this
+time for a protocol change rather than a sentence: the door now
+speaks MCP 2026-07-28 (stateless, `server/discover`, per-request
+`_meta`) beside the three handshake revisions, `MCP_SERVER_VERSION`
+is `0.5.0`, and every tool carries a worked example in its schema.
+Same press as before, same workflow, version `0.2.3`. The tab's
+`server.json` moved to `0.11.0` for the same reasons plus a full set
+of parameter descriptions; publish it to npm FIRST (the registry
+entry names the npm package) — and publish it from the Actions
+workflow, not the laptop: VerifyMCP's provenance row on the tab
+reads Fail because `0.10.0` went out by hand with no attestation.
+
+**DONE 2026-08-31.** The keeper pressed it: `0.2.2` is on the registry,
+marked `isLatest`, carrying the observatory sentence. PulseMCP and every
+other reader downstream now repeat what we serve.
+
+One thing was learned at the counter and is worth keeping. The
+workflow's read-back step slept five seconds and then checked — and the
+registry marks a new version `isLatest` a beat later than it accepts
+it, so the first real run reported "the registry latest does not repeat
+server.json" about a publish that had ALREADY SUCCEEDED. A red build
+for work that worked is the most expensive kind of false finding: it
+teaches the person holding the button to disbelieve the button. The
+step now polls for ninety seconds and only then gives a verdict, and
+says out loud that the failure may be propagation rather than failure.
+
+**And it is now watched.** `npm run doors:check` compares the
+registry's `isLatest` entry against `server.json` every week and goes
+red on a mismatch, so the next time the file and the listing part
+company nobody has to notice by hand. The first cut of that check read
+the OLDEST search hit and reported the 0.1.0 listing as current, which
+is how this section came to be wrong in the first place — the reader
+now selects the row the registry itself marks `isLatest`, with a test.
+
+(Recorded for honesty, from the older note: this session briefly
+overwrote server.json with a fresh GitHub-namespace manifest on
+2026-08-21 before finding the existing one; reverted same minute. The
+domain-namespaced manifest is authoritative.)
+
+MCPFind listing confirmed 2026-09-08: [SCVD General Store](https://mcpfind.org/servers/store-scvd-general-store)
+links the repository and describes preflight, receipt checks and
+settlement attestations. This is indexing, not connector acceptance
+or proof of a successful purchase. The shared trust record feeds the
+storefront's structured identity links and trust pages.
+
+Agenstry listings confirmed 2026-09-08: the [agent page](https://agenstry.com/agents/scvd.store)
+indexes the store's card and history; the [MCP page](https://agenstry.com/mcp/store.scvd/general-store)
+names the MCP endpoint and mirrors tool/resource metadata. Both clean
+URLs are in the shared trust record. These are directory records;
+Agenstry's grades, probe findings and catalog freshness remain its own.
+The keeper's decision, 2026-09-08: wait for Agenstry to refresh its
+assessment; its record cannot be edited from our side.
+
+Agent Plugins Directory was re-confirmed 2026-09-08 at its existing
+[scvd-general-store listing](https://agentpluginsdirectory.com/plugins/scvd-general-store).
+It lists the repository's plugin bundle, skill and MCP servers and
+publishes its own manifest-schema verification date. This is separate
+from acceptance into any client's marketplace or successful runtime use.
+
+Two more directory rows confirmed 2026-09-10 from the keeper's browser:
+[robinsaige.com](https://robinsaige.com/s/store.scvd/general-store), a
+server page under the official registry name, and
+[Crosspeel](https://crosspeel.com/endpoints/scvd-store/), a per-provider
+endpoint page. Both hosts refuse the build sandbox's egress, so the
+rows record the address and the keeper's hand and nothing the pages
+measure. The same day the keeper re-opened the existing 402.ad and
+VerifyMCP store pages; their confirmed dates moved, their rows did not.
+Indexing only; none of this is connector acceptance or purchase evidence.
+
+Later the same day, two more from the keeper's browser:
+[PublishYourSaaS](https://publishyoursaas.com/listing/scvd-store), a
+launch-directory listing opening with the sixty words' first
+sentence, and [AI Tools Capital](https://aitoolscapital.com/tools/scvd-general-store/),
+a review-shaped directory page. Both are trust rows; both hosts refuse
+the sandbox, so the rows carry what the search snippets showed. A web
+scan for the store's name the same afternoon found seven more pages
+nobody here has opened (Agent Economy Report's CCC rating among them);
+they are register rows and a LOOK on the desk, not trust rows, and
+`research/listing-scan-2026-09-10.md` holds the snippets.
+
+## 2. Claude Connectors Directory (claude.com/docs/connectors/building/submission)
+
+Status of the review gates, checked 2026-08-21:
+- Tool annotations (read-only/destructive hints on every tool): ALREADY
+  MET — every generated buy tool carries purchaseAnnotations, every
+  free tool is hand-annotated, and the idempotency reasoning is
+  documented in the code.
+- Public privacy policy: MET as of tonight — /privacy is a real room
+  (was a redirect to trust.json, which reviewers read as absence).
+- Remote server over streamable HTTP: MET (/mcp, stateless).
+
+Keeper's steps: claude.ai → your organization's settings → connector
+submission portal → submit https://scvd.store/mcp with the /privacy
+URL. Track in the submissions dashboard; escalations go to
+mcp-review@anthropic.com. Community-reported review time: two weeks
+to several months — submit early, it queues.
+
+## 3. The Agent Skills ecosystem
+
+- `npx skills add seancrecord/scvd-general-store-repo` WORKS as of
+  tonight (the frontmatter quoting fix — the CLI silently skipped us
+  before). Nothing to submit; the repo is the listing.
+- skills.sh: the individual skill listing was confirmed 2026-09-08 at
+  https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store.
+  It renders the named skill, its SKILL.md excerpt and installation
+  command. The former repo-only link omitted the skill name. This
+  confirms indexing; it does not prove installation or successful use.
+  explainx.ai and Tessl indexing remains unconfirmed.
+- ClawHub: published (3.4.0 live; 3.5.0 pending the next
+  `npm run skill:publish -- 3.5.0 "<changelog>"` after this merges).
+
+## 4. x402 ecosystem indexes
+
+- x402.org ecosystem page: check whether listings go via PR to the
+  coinbase/x402 repo's ecosystem data (the site is in that repo) —
+  draft PR adds scvd.store under services/tooling. Keeper approves the
+  PR text; I can prepare the branch on request.
+- x402scan / x402 Atlas / agent402.tools: each has its own
+  intake (agent402 already carries our volume claims via the census's
+  source). Submit the store's discovery document
+  (https://scvd.store/.well-known/x402.json) where a form exists.
+- Solana Agent Registry (solana.com/agent-registry): investigate
+  listing criteria — it bills itself "the trust layer for autonomous
+  agents," which is our positioning at platform scale; being listed
+  IN it beats arguing with it.
+
+## 4b. npm — the official CLI, BUILT AND WAITING ON THE KEEPER'S TOKEN
+
+Added 2026-08-26. A readiness audit scored the store partial on "CLI
+tool available": it found `scvd-tab` at /developers and correctly read
+it as a useful package that happens to be ours rather than as a
+command line for THIS store. `cli/` is now that command line — one
+zero-dependency file, MIT, tested (`npm run cli:test`, 13 cases
+against a local stub server so nothing in CI touches production).
+
+It wraps only free instruments, holds no key, and cannot sign a
+payment. That is a design constraint rather than a first version: the
+store never asks anyone for credentials, and a CLI is the easiest
+place in the world to break that quietly.
+
+Keeper's steps (rule 30 — the publish is his hand, not mine). One-time
+setup, then a button:
+
+    1. npmjs.com → Access Tokens → Generate New Token → Granular Access
+       Token, read+write on this account's packages.
+    2. Repo → Settings → Secrets and variables → Actions → New
+       repository secret, named NPM_TOKEN.
+    3. Actions tab → "Publish npm package" → Run workflow.
+       package: scvd-cli · version: the number in cli/package.json ·
+       dry_run: checked (look at the tarball listing in the log), then
+       run it again unchecked.
+
+DONE 2026-08-28: `scvd-cli@0.1.0` is on the registry, published from CI
+with provenance. Two things were learned at the counter and are worth
+keeping:
+
+  * npm refuses the bare name `scvd` permanently — its typosquat guard
+    calls it too close to scss/save/send. The package is `scvd-cli`;
+    the installed command is still `scvd`, because npm polices package
+    names and not bin names.
+  * A first publish cannot ship an accurate README. npm renders each
+    version's README from inside that version's own tarball, and
+    versions are immutable — so 0.1.0's page says "not on npm yet"
+    forever, because that was true in the tree that produced it. 0.1.1
+    is the correction, and cli/README.md no longer asserts a
+    publication state at all. Publish-state lives in
+    src/store/cli.ts, which every served surface reads.
+
+The workflow is `.github/workflows/publish-npm.yml`: workflow_dispatch
+only, refuses if the typed version disagrees with package.json or is
+already on the registry, and publishes with `--provenance` so the
+tarball carries a signed attestation binding it to this repo and
+commit. It covers all four packages here — scvd-cli, scvd-tab, x402-verify,
+x402-sign — so the next publish of any of them is the same button.
+`cd cli && npm publish --access public` from a laptop still works and
+produces no provenance; prefer the button.
+
+Everything that names the package already points at `npm i -g scvd-cli`
+(npm refused the bare name `scvd` — typosquat guard, 2026-08-28 — so
+the package is `scvd-cli` and the command stays `scvd`):
+/developers (HTML, JSON and markdown), /llms.txt, and the RFC 9727
+catalog at /.well-known/api-catalog. Those are honest as
+INSTRUCTIONS the day the publish runs and are a forward reference
+until then — the same posture as the MCP Registry republish above,
+and worth closing quickly for the same reason.
+
+## 4c. GitHub Action — the preflight in somebody else's deploy
+
+DONE 2026-09-02 (roadmap L7): `action/preflight/` is a composite
+GitHub Action, `uses: seancrecord/scvd-general-store-repo/action/preflight@main`,
+that POSTs each named door to `/api/preflight/v2` and fails the job on
+`not_ready` — the CLI's exit law, kept, `unreachable` exiting 0 unless
+the workflow says otherwise in writing. One file, no dependencies,
+tested offline against a local store (`npm run action:test`, in CI).
+Nothing to press: it is used by path from this repository at a ref
+the operator chooses. A Marketplace listing would be a press of yours
+(rule 30) and is not required for `uses:` to work. Demand tag on the
+row was "a stranger installs it"; the count of workflows that do is
+not observable from here, so the porch's `preflight` channel is the
+only number this will ever produce.
+
+## 4d. PyPI and the Go module proxy — the same law, for the other two runtimes
+
+BUILT 2026-09-16, both waiting on one press each. `scvd-preflight` went
+to npm the day it was written and nowhere else. An outside agent-
+readiness scan counted that honestly: an SDK in one package manager is
+an SDK for the people who already use that one. An agent written in
+Python could read the store's prose about a preflight client and then
+not have one.
+
+So the client is now three ports of one law, and the two new ones read
+the SAME recorded reports as the JavaScript client — from
+`x402-preflight/fixtures`, by relative path, not copied. A fixture
+that changes changes all three suites at once, which is the only way
+three implementations stay one law rather than three dialects. Output
+and exit codes are verified identical to the JavaScript command for the
+same door; all three print the same usage and exit 2 on a bad flag.
+Both are standard-library only, so neither adds a supply chain.
+
+* **PyPI** — `x402-preflight-py/`, published by
+  `.github/workflows/publish-pypi.yml`. Trusted Publishing, not a
+  token: PyPI accepts a short-lived OIDC credential minted by the run,
+  so there is no `PYPI_TOKEN` to store, rotate or leak. THAT NEEDS ONE
+  BROWSER SETUP BEFORE THE FIRST RUN, and it is the PENDING publisher
+  form, not the project one: `scvd-preflight` does not exist on PyPI
+  (404, checked 2026-09-16), and the project-level form is unreachable
+  until a first release exists — which cannot happen until this is
+  configured. The pending form breaks that circle, and the first
+  successful run creates the project and converts it. At
+  https://pypi.org/manage/account/publishing/ (2FA required), add a
+  pending publisher naming project `scvd-preflight`, owner
+  `seancrecord`, repository `scvd-general-store-repo`, workflow
+  `publish-pypi.yml` (the filename, not a path), environment blank.
+  Until it exists the upload step gets a 403 and nothing is uploaded,
+  which is the correct failure: a publisher that was never authorised
+  should not be able to guess its way in.
+
+* **Go** — `x402-preflight-go/`, published by
+  `.github/workflows/publish-go.yml`. No registry, no account, no
+  secret: a Go module publishes by git tag and proxy.golang.org fetches
+  it on first request. Nothing to set up, so this one is a press alone.
+
+Both are `workflow_dispatch` only with `dry_run` defaulting to true and
+no default version, same as npm and the skill publisher (rule 30), and
+both confirm a version rather than setting one — the number typed must
+already match `pyproject.toml` or the `CHANGELOG` heading.
+
+THE GO TAG DESERVES ITS OWN WARNING, because it is the most permanent
+thing this repository can publish. npm and PyPI have narrow unpublish
+windows; proxy.golang.org has none. It caches by (module, version)
+forever and serves that copy to everyone, and deleting the tag does not
+recall it. The workflow therefore refuses five ways before tagging: a
+version carrying a leading `v` or not `MAJOR.MINOR.PATCH`; a `go.mod`
+module path that is not what this repo and directory actually publish;
+a version the `CHANGELOG` does not already name; a tag that exists; and
+a commit that is not an ancestor of `main`. The tag carries the
+directory as a prefix (`x402-preflight-go/v0.1.0`) because a bare
+`v0.1.0` would advertise a module at the repository root that does not
+exist — and the prefix is derived from the directory name, never typed,
+so the two spellings cannot drift.
+
+NEITHER BUTTON EXISTS UNTIL THESE FILES ARE ON `main`. GitHub lists a
+`workflow_dispatch` workflow in the Actions tab only when the file is
+on the default branch, so both presses are gated on the merge — the
+PyPI one as much as the Go one. The PyPI browser setup above is the
+only half that can be done beforehand, because it happens on PyPI's
+side and knows nothing about our branches.
+
+Until both presses happen, every surface naming a Python or Go client
+is a forward reference, the same posture as the npm row above and worth
+closing for the same reason.
+
+## 5. Other client directories (lower priority, same shape)
+
+**WHERE THE STORE IS LISTED IS NOT ANSWERED HERE.**
+`src/store/trust-signals.ts` is the record: served at `/trust`, one
+dated row per venue, and the only one a reader can check. This file
+is doctrine and open work. When the two disagree, trust-signals is
+right and this file is stale — that has now happened twice
+(2026-09-06: Cursor below, and mcpbeat in the venue list that was
+archived the same day).
+
+- Cursor: LISTED. `cursor.directory/plugins/scvd-general-store-repo`,
+  generated from this repository's own Agent Plugins package. The row
+  is in `src/store/trust-signals.ts`; this line said "accepts
+  submissions" until 2026-09-06, which is what a hand-kept venue list
+  does when a directory indexes you without asking. Re-read by the
+  keeper 2026-09-10: both MCP connection configs match `mcp.json`,
+  one skill, the evidence-observatory lead; its tag cloud is a
+  cached snapshot of older GitHub topics and lags until their
+  rescan. Nothing to change on this side.
+- Perplexity connectors: developer-program submission; wants the
+  privacy policy and a remote MCP endpoint — the same two gates as
+  Claude's, both met.
+
+## 5b. ChatGPT Plugin Directory — SUBMITTED 2026-09-03, IN REVIEW
+
+Since 2026-07-09 OpenAI's unit of submission is a *plugin* (an MCP
+server plus optional skills); the App Directory folded into the
+Plugin Directory. One plugin, "With MCP", submitted from
+platform.openai.com/plugins under Record Creative Co. LLC. What it
+took, dated, so the next round does not rediscover it:
+
+- **Domain challenge (PR #423, #438).** The portal proves control of
+  the MCP host by fetching `/.well-known/openai-apps-challenge` at
+  the ORIGIN ROOT — the `/mcp` subpath is stripped server-side — and
+  wants the bare token as text/plain. Token lives in
+  `store/site-verification.ts` (`OPENAI_APPS_CHALLENGE`); unlike the
+  x402-list nonces it has no last day, because OpenAI asks that a
+  host's token stay up while a plugin uses it. Empty = 404, never an
+  empty 200.
+- **The GET listening channel (PR #423).** Their tool scan failed
+  "MCP SSE probe returned 404": the client opens a GET on the
+  endpoint expecting text/event-stream BEFORE it POSTs anything, and
+  read the spec-permitted 405 as no server. A GET asking for an
+  event stream now gets a bounded, empty one; a bare GET keeps the
+  405. `/mcp/` 308s to `/mcp`.
+- **Listing copy.** Name "SCVD General Store"; subtitle "Check x402
+  doors and receipts" (29 chars of 30); Developer Tools; support at
+  /what, terms at /rights, privacy at /privacy. All free tools only
+  in the three demo prompts and five test cases; three negative cases
+  (Stripe link, HS256 JWT, on-chain tx lookup) mark what the plugin
+  is NOT for.
+- **Tool annotations.** Every tool's readOnly/openWorld/destructive
+  hints were justified one by one from the handlers; the values are
+  the ones `lib/mcp-tools.ts` has always set.
+- **Skill.** The canonical SKILL.md, zipped one-folder-one-file, with
+  the single Claude model reference made provider-neutral for the
+  upload only; the repo copy is untouched because parity tests pin it.
+
+**THE OPEN RISK, stated before a reviewer finds it.** OpenAI's
+guideline: "plugins may conduct commerce only for physical goods;
+selling digital products or services … tokens, or credits — is not
+allowed, whether offered directly or indirectly." The submitted
+endpoint is `/mcp` unchanged, so the scan lists the six buy_* tools.
+Inside ChatGPT they can never complete — ChatGPT's client cannot
+present an x402 payment, so each returns the 402 terms and stops —
+and the crypto-transfers attestation was ticked on that basis. If
+review objects, the answer is a free-only surface, and since
+2026-09-03 evening it IS built: `POST /mcp/verifier` serves five
+read-only tools and nothing paid — `preflight_x402_endpoint`,
+`verify_x402_receipt`, `lookup_endpoint_readiness`,
+`get_defect_definition`, `verify_scvd_artifact` — the same handlers
+as `/mcp` under task-shaped names, server name `scvd-x402-verifier`,
+title "SCVD x402 Verifier" (roadmap A3, the memo's third move). Which
+submission carries it is the keeper's ruling on KEEPER_LIST. Do not
+overclaim the cards or WebMCP here; §6 governs.
+
+Review time, community-reported: weeks to months. One version in
+review at a time.
+
+## 6. What to say about the cards and the browser door (2026-08-28)
+
+Two capabilities shipped 2026-08-27 that every future submission
+will be tempted to overclaim. The honest lines, once, so a listing
+never has to invent them:
+
+**Evidence cards (MCP Apps).** SAY: the two free instruments carry
+`_meta.ui.resourceUri`; a host supporting the MCP Apps extension
+renders the reading as a card, and a host without it gets the same
+JSON it always did. DO NOT SAY: "renders in Claude/ChatGPT/etc." as
+a flat claim. Whether a card renders is the HOST's behaviour, we do
+not control it, and the current observation is mixed — local stdio
+renders, the remote-connector path does not, in the hosts tested.
+`https://scvd.store/mcp.md` carries that as a dated table; link it
+instead of asserting. A directory that wants a yes/no gets: the
+server implements the extension, correctly, and the wire is
+verifiable in one `resources/list` call.
+
+**WebMCP.** SAY: the storefront registers the free read-only
+instruments, `quote_store_purchase`, and `complete_store_purchase`
+on `document.modelContext`, so a browser-resident agent finds them
+by arriving. The quote is free; completion requires a buyer-authorized,
+already-signed x402 v2 payment from a compatible external client.
+The page never receives wallet keys. Chrome origin-trial token is registered
+through 2026-11-17. DO NOT SAY: any adoption or usage figure — the
+channel is instrumented (`?src=webmcp` in the ledger) and has no
+history worth quoting yet. "The surface exists" is the whole claim
+until the numbers do.
+
+**MCP Apps cards remain display-only; WebMCP has an explicit payment
+submission tool.** No `buy_*` tool carries ui metadata. The derived
+free WebMCP subset stays read-only; the separate completion bridge can
+submit a payment the buyer already signed. Registration and unsigned
+refusal were exercised in Chrome; paid WebMCP completion remains
+unverified. The keeper's browser-till purchase is a separate test,
+recorded with its limits in `docs/BROWSER_CHECKOUT_2026-09-06.md`.
+
+## What was verified tonight
+
+- /mcp speaks streamable HTTP (spec 2025-06-18), stateless.
+- All tools annotated; no secrets in any example.
+- /privacy live as a room; /privacy-policy aliases it.
+- The skills CLI finds and installs the skill from this repo.
+- (2026-08-28) /mcp.md serves the door-chooser with the rendering
+  gap dated; README, /developers, /what's FAQ and the agentic-market
+  submission draft all carry the two new doors. The submission
+  draft's "settles before it mints" line — stale since 2026-08-10 —
+  was corrected the same day it was found.
+
+## 7. The listings, read by machine (2026-09-03)
+
+`npm run listings:check` reads every mirror the homepage's sameAs
+list names and says which generation of the store's words it
+carries, then reads every registry the store is listed on — the MCP
+registry, npm, ClawHub, x402-list, agentic.market — and compares
+version, description and door count against this tree and the live
+shelf. One row per fact; never a score; nothing written to any
+index. `.github/workflows/listings-check.yml` runs it every Saturday
+08:30 UTC with no dependencies and goes red on drift, which is the
+alert. The first read (2026-09-03) found the MCP registry one version
+behind on both servers with the pre-bump description, and x402-list
+carrying thirty-one of thirty-two doors without the doctrine sentence
+— exactly the drift this file recorded by hand on 2026-08-29, found
+by a cron this time.

@@ -1,0 +1,194 @@
+
+> scvd-general-store@0.1.0 listings:test
+> node --test scripts/listings-check.test.mjs scripts/agentfinder-check.test.mjs scripts/findability-check.test.mjs scripts/findability-manifests.test.mjs scripts/waf-rule-doc.test.mjs
+
+TAP version 13
+# Subtest: the drawer has one publisher directory, named for the GitHub account
+ok 1 - the drawer has one publisher directory, named for the GitHub account
+  ---
+  duration_ms: 1.856
+  ...
+# Subtest: file names are kebab-case and one augment per file
+ok 2 - file names are kebab-case and one augment per file
+  ---
+  duration_ms: 0.864458
+  ...
+# Subtest: every entry passes the catalog's own validation rules
+ok 3 - every entry passes the catalog's own validation rules
+  ---
+  duration_ms: 0.542584
+  ...
+# Subtest: a skill entry points at a SKILL.md that exists in this repository, on main
+ok 4 - a skill entry points at a SKILL.md that exists in this repository, on main
+  ---
+  duration_ms: 1.127042
+  ...
+# Subtest: a plugin entry points at the Claude Code plugin manifest and names its capabilities
+ok 5 - a plugin entry points at the Claude Code plugin manifest and names its capabilities
+  ---
+  duration_ms: 0.808666
+  ...
+# Subtest: the MCP entry repeats server.json, never a hand-typed copy of it
+ok 6 - the MCP entry repeats server.json, never a hand-typed copy of it
+  ---
+  duration_ms: 0.335333
+  ...
+# Subtest: the table names each signal once, with a reader for every row
+ok 7 - the table names each signal once, with a reader for every row
+  ---
+  duration_ms: 0.343875
+  ...
+# Subtest: a repo signal is present or missing; a site signal is present on 2xx, missing otherwise, unreachable on a thrown read
+ok 8 - a repo signal is present or missing; a site signal is present on 2xx, missing otherwise, unreachable on a thrown read
+  ---
+  duration_ms: 0.148541
+  ...
+# Subtest: unreachable is never counted as missing, and the rendering says a missing row is a decision
+ok 9 - unreachable is never counted as missing, and the rendering says a missing row is a decision
+  ---
+  duration_ms: 0.474459
+  ...
+# Subtest: the Claude Code plugin manifest repeats plugin.json and points at the store's MCP door
+ok 10 - the Claude Code plugin manifest repeats plugin.json and points at the store's MCP door
+  ---
+  duration_ms: 0.930334
+  ...
+# Subtest: the marketplace lists exactly the plugin at the repository root
+ok 11 - the marketplace lists exactly the plugin at the repository root
+  ---
+  duration_ms: 0.701
+  ...
+# Subtest: the Gemini extension carries the same identity and MCP door without loading contributor instructions
+ok 12 - the Gemini extension carries the same identity and MCP door without loading contributor instructions
+  ---
+  duration_ms: 0.911875
+  ...
+# Subtest: CITATION.cff cites the corpus's concept DOI and this repository, and nothing it does not have
+ok 13 - CITATION.cff cites the corpus's concept DOI and this repository, and nothing it does not have
+  ---
+  duration_ms: 0.522917
+  ...
+# Subtest: the current generation is the sixty words' second sentence, which truncating mirrors keep
+ok 14 - the current generation is the sixty words' second sentence, which truncating mirrors keep
+  ---
+  duration_ms: 0.521959
+  ...
+# Subtest: each older generation is recognised by its own nouns, newest marker winning
+ok 15 - each older generation is recognised by its own nouns, newest marker winning
+  ---
+  duration_ms: 0.085292
+  ...
+# Subtest: the homepage yields the sixty words and the sameAs list
+ok 16 - the homepage yields the sixty words and the sameAs list
+  ---
+  duration_ms: 0.434334
+  ...
+# Subtest: visible text drops scripts, styles and tags, and decodes entities exactly once
+ok 17 - visible text drops scripts, styles and tags, and decodes entities exactly once
+  ---
+  duration_ms: 0.402167
+  ...
+# Subtest: a mirror that moved backwards is a regression; forwards is news; unreachable both times is silence
+ok 18 - a mirror that moved backwards is a regression; forwards is news; unreachable both times is silence
+  ---
+  duration_ms: 0.10475
+  ...
+# Subtest: the walk reads every mirror once and never throws on a dead one
+ok 19 - the walk reads every mirror once and never throws on a dead one
+  ---
+  duration_ms: 11.204709
+  ...
+# Subtest: the MCP registry reader takes the isLatest entry for one name, and says unknown for a name it has never seen
+ok 20 - the MCP registry reader takes the isLatest entry for one name, and says unknown for a name it has never seen
+  ---
+  duration_ms: 0.104791
+  ...
+# Subtest: the npm reader takes dist-tags.latest and that version's description
+ok 21 - the npm reader takes dist-tags.latest and that version's description
+  ---
+  duration_ms: 0.144209
+  ...
+# Subtest: x402-list is read off its JSON-LD WebAPI node: description, offer count, and whether the doctrine sentence survived
+ok 22 - x402-list is read off its JSON-LD WebAPI node: description, offer count, and whether the doctrine sentence survived
+  ---
+  duration_ms: 0.339
+  ...
+# Subtest: ClawHub and agentic.market readers say unknown rather than guess when the shape is not one they read
+ok 23 - ClawHub and agentic.market readers say unknown rather than guess when the shape is not one they read
+  ---
+  duration_ms: 0.432667
+  ...
+# Subtest: the comparison names ours and theirs on every differing fact, and never marks an unread index as differing
+ok 24 - the comparison names ours and theirs on every differing fact, and never marks an unread index as differing
+  ---
+  duration_ms: 0.231792
+  ...
+# Subtest: the versions walk reads every index once, never throws on a dead one, and carries the shelf
+ok 25 - the versions walk reads every index once, never throws on a dead one, and carries the shelf
+  ---
+  duration_ms: 0.748417
+  ...
+# Subtest: a page that still names the store holds; one that answers but does not is silent
+ok 26 - a page that still names the store holds; one that answers but does not is silent
+  ---
+  duration_ms: 0.260625
+  ...
+# Subtest: a walled host that refuses is walled, not unreachable; one that answers is read on its merits
+ok 27 - a walled host that refuses is walled, not unreachable; one that answers is read on its merits
+  ---
+  duration_ms: 0.093375
+  ...
+# Subtest: a walled row is neither a regression nor an advance, and is listed with its reason
+ok 28 - a walled row is neither a regression nor an advance, and is listed with its reason
+  ---
+  duration_ms: 0.100625
+  ...
+# Subtest: the marker match is case-insensitive and needs no exact spelling
+ok 29 - the marker match is case-insensitive and needs no exact spelling
+  ---
+  duration_ms: 0.030292
+  ...
+# Subtest: the roster comes from trust.json's external_records, and a document without one yields nothing
+ok 30 - the roster comes from trust.json's external_records, and a document without one yields nothing
+  ---
+  duration_ms: 0.100083
+  ...
+# Subtest: a confirmed date ages in whole days; an undated or unparseable row never goes stale
+ok 31 - a confirmed date ages in whole days; an undated or unparseable row never goes stale
+  ---
+  duration_ms: 0.072
+  ...
+# Subtest: a roster row that stops naming us is a regression; climbing back is news; a new row is neither
+ok 32 - a roster row that stops naming us is a regression; climbing back is news; a new row is neither
+  ---
+  duration_ms: 0.05375
+  ...
+# Subtest: the walk reads trust.json, then one page per row, and says so when the roster could not be read
+ok 33 - the walk reads trust.json, then one page per row, and says so when the roster could not be read
+  ---
+  duration_ms: 0.197
+  ...
+# Subtest: the live rule blocks on what is asked for, never on a user-agent alone
+ok 34 - the live rule blocks on what is asked for, never on a user-agent alone
+  ---
+  duration_ms: 0.322709
+  ...
+# Subtest: no probe fragment is a substring of any route the store serves
+ok 35 - no probe fragment is a substring of any route the store serves
+  ---
+  duration_ms: 23.3525
+  ...
+# Subtest: the superseded rule is kept for the record and named only roster crawlers
+ok 36 - the superseded rule is kept for the record and named only roster crawlers
+  ---
+  duration_ms: 0.430417
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 36
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 80.760375

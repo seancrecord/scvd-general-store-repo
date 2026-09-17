@@ -45,6 +45,36 @@
       "cites_since": null
     },
     {
+      "name": "8004agents",
+      "url": "https://8004agents.ai/base/agent/86957",
+      "what_it_scores": "Indexes ERC-8004 identities and declared services.",
+      "contact": null,
+      "found_on": "September 17 distribution audit: research/distribution-2026-09-17/README.md; confirmed profile/source, not endorsement.",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "8004scan",
+      "url": "https://8004scan.io/agents/base/86957",
+      "what_it_scores": "Indexes ERC-8004 identities and their MCP, A2A, OASF and x402 metadata, with cached endpoint health.",
+      "contact": "https://github.com/alt-research/8004scan-issue-tracker",
+      "found_on": "September 17 distribution audit: research/distribution-2026-09-17/README.md; confirmed profile/source, not endorsement.",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "A2A Directory",
+      "url": "https://github.com/sing1ee/a2a-directory#readme",
+      "what_it_scores": "Maintains a community source catalog of A2A agents, tools and x402 services.",
+      "contact": null,
+      "found_on": "September 17 distribution audit: research/distribution-2026-09-17/README.md; confirmed profile/source, not endorsement.",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "ACE — Autonomous Commerce Engine by Black Knight Technologies",
       "url": "https://blackknightstech.com",
       "what_it_scores": "Evidence-backed x402 assurance APIs for part identity, source commercial-use checks, evidence provenance, rights clearance, and release certification, paid in Base USDC.",
@@ -160,6 +190,16 @@
       "what_it_scores": "Thousands of services.",
       "contact": "https://agentic.market/about",
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Agentscan",
+      "url": "https://agentscan.info/agents/0711e5ab-eca5-42cc-a7ca-38b433689d56",
+      "what_it_scores": "Indexes ERC-8004 registration services and separately inferred AI classifications.",
+      "contact": null,
+      "found_on": "September 17 distribution audit: research/distribution-2026-09-17/README.md; confirmed profile/source, not endorsement.",
       "note_sent": null,
       "reply": null,
       "cites_since": null
@@ -950,6 +990,16 @@
       "what_it_scores": "Agent directory; carries a listing page for this store (an agentic.market urn).",
       "contact": null,
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "trust8004",
+      "url": "https://trust8004.xyz/agents/8453%3A86957",
+      "what_it_scores": "Indexes ERC-8004 identity, protocol services and x402 support metadata.",
+      "contact": null,
+      "found_on": "September 17 distribution audit: research/distribution-2026-09-17/README.md; confirmed profile/source, not endorsement.",
       "note_sent": null,
       "reply": null,
       "cites_since": null

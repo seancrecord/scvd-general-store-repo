@@ -1,5 +1,7 @@
 # External admission packages — September 16, 2026
 
+**September 17 follow-through:** the prepared [GitHub onboarding request](https://github.com/github/github-mcp-server/discussions/1257#discussioncomment-18487205) and [AGNTCY participation/representation request](https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204) are now sent on keeper authorization. Both await external response. [Current sent bodies and receipts](../distribution-2026-09-17/RELEASE.md) supersede the draft/send status below; no admission or federation publication is inferred.
+
 Preparation only. No application, comment, message, signature, publication or
 infrastructure deployment was made. These packages reuse the canonical records.
 Build order remains on ROADMAP TR-D; outward actions remain on KEEPER_LIST.

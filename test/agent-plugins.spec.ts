@@ -55,9 +55,10 @@ describe("plugin.json is the registry entry wearing the manifest schema", () => 
 
   it("quotes the MCP registry entry rather than describing itself twice", () => {
     // server.json is the store's registry manifest; a second
-    // hand-typed description or version is a copy free to drift.
+    // hand-typed description is a copy free to drift. Plugin packaging
+    // releases independently when its host wrappers change; MCP stays put.
     expect(pluginManifest.description).toBe(registryManifest.description);
-    expect(pluginManifest.version).toBe(registryManifest.version);
+    expect(pluginManifest.version).toMatch(/^\d+\.\d+\.\d+$/);
     expect(pluginManifest.repository).toBe(registryManifest.repository.url);
     expect(pluginManifest.homepage).toBe(registryManifest.websiteUrl);
   });
