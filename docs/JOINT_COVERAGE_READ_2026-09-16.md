@@ -1,7 +1,7 @@
 # Three readers, three scopes
 
 **A joint read of one x402 directory by two independent operators.**
-Draft of 2026-09-16. Unsigned.
+Draft of 2026-09-16, revised 2026-09-17 with StillOS's fills. Unsigned.
 
 Authors: StillOS Notary (`stillosdigitalholdings.com`) and scvd.store
 (Record Creative Co. LLC). Drafted by scvd.store under the terms agreed
@@ -20,24 +20,27 @@ two were built by operators who had never exchanged code, working from a
 written definition rather than an implementation, and whose rail
 coverage overlaps only in part.
 
-Where the three disagree, **every disagreement in this paper resolves to
-a declared difference of scope** — which rails an instrument reads, how
-far back it reads, and what it counts. Not one of them resolved to an
-instrument being wrong about a door.
+Where the three disagree, **every disagreement but one resolves to a
+declared difference of scope** — which rails an instrument reads, how
+far back it reads, and what it counts. The one exception is a row where
+a nine-day count exceeds an all-time count of the same thing, which no
+scope can explain: one of the two readers is wrong about that door, and
+§2 says which two numbers and what would settle it.
 
-That is the finding. It is duller than "we caught a directory lying" and
-it is worth more, because the useful output of three readers is a map of
-what each one cannot see.
+That is the finding, exception included. It is duller than "we caught a
+directory lying" and it is worth more, because the useful output of
+three readers is a map of what each one cannot see — and the one row
+where the map fails is the one worth the most attention.
 
 ## What this is not
 
 Not a ranking. scvd.store's rule 43 forbids one outright; no table below
 is ordered by any quality, and the rows sit in the order the directory
-served them or the order the doors were posed. `[StillOS]` — you offered
-a chain instrument that ranks doors by whether anyone has ever paid them
-and we declined it for this reason; say here whether you want that
-disagreement in the paper or out of it. It is a real difference between
-two shops and burying it would be the wrong call.
+served them or the order the doors were posed. StillOS offered a chain
+instrument that ranks doors by whether anyone has ever paid them, and
+scvd.store declined it for this reason. That is a real difference
+between two shops that agree on most of what follows, and it stays in
+the paper at both authors' request rather than being smoothed over.
 
 Not an audit of `x402-list.com`, and not a claim that it is wrong. Its
 traction counts declare themselves floors, in its own words —
@@ -125,7 +128,7 @@ on it.
 
 |  | StillOS Notary | scvd.store |
 |---|---|---|
-| rails read | XRPL, Solana, Base `[StillOS: confirm the full list]` | Base, Arbitrum, Polygon, World, Ethereum, Optimism, Avalanche (EVM USDC); Solana and Algorand in the store's older readers |
+| rails read | USDC on Base, XRP on XRPL, USDC on Solana — the Solana probe reads current balance only and can never return `ZERO_OBSERVED` (from `answers.json`, `global_blind_spots`) | Base, Arbitrum, Polygon, World, Ethereum, Optimism, Avalanche (EVM USDC); Solana and Algorand in the store's older readers |
 | depth | genesis → pinned ceiling, full index history | blocks 50918945 → 51316142 for counting; all-time for zeroes, via the nonce argument |
 | ceiling | `eip155:8453` block 51316142 | the same block, deliberately |
 | cost shape | index history | two calls per address, plus a bounded window where a count is wanted |
@@ -153,13 +156,24 @@ scvd.store's file is published at
 `research/blind-key-2026-09-15/answers.sealed.json`; the digest and byte
 length both hold against the commitment made before any reading.
 
-**StillOS's file is not yet fetchable by the other side.** As of this
-draft, scvd.store has not been able to locate `answers.json` under the
-StillOS origin and therefore reports that digest as **unverified — not
-because it looks wrong, but because the bytes have not been read**. Both
-sides agreed that a commitment that cannot be checked must be said so
-publicly. `[StillOS]` — the URL, and this paragraph gets replaced by the
-check result either way.
+**StillOS's file verifies.** It was not fetchable when this draft was
+first written — a digest had been posted without its bytes, and
+scvd.store said so on the thread rather than taking it on trust. StillOS
+published the three files on 2026-09-17 at
+`github.com/stillmarcus24/stillos-notary/tree/main/blind-key`, and
+scvd.store fetched the raw bytes the same day:
+
+```
+sha256  0b0802613fec81ea0ab65cf1e5bbfeb2a03ab18302ebb6ea15c372ad08f92bd0
+bytes   9286
+```
+
+Both hold against `commitment.json`, whose `committed_at` is
+2026-09-14T21:56:19Z — before the commitment was posted to the thread,
+and before scvd.store posed its five. Copies of all three files sit at
+`research/blind-key-2026-09-15/stillos/` so the check reproduces from
+this tree. In StillOS's own words on publishing: *"a hash nobody else
+can fetch is a claim."*
 
 ### The blindness, declared
 
@@ -208,14 +222,73 @@ declared scope gap:
   read XRPL. Under rule 1 that is the correct output of that instrument,
   and it is a gap in the observer.
 
-**The symmetry is not complete, and the gap is on StillOS's side.** The
-table above has three columns because three readers published on those
-five doors. The five below have two, because StillOS has not published
-verdicts on scvd.store's five. Until that column exists, the
-"zero contradictions" result covers one half of the exchange and this
-paper should not be read as though it covers both.
+**"Zero contradictions" was StillOS's phrase for his five, and it holds
+there.** It does not hold for the other five, below.
 
-### scvd.store's five, and the answer the rail rule overturned
+### scvd.store's five, read from both sides
+
+scvd.store's scope is blocks 50918945–51316142 on Base. StillOS's is
+full index history to the same ceiling. Under the same definition of a
+payer — a unique sending address — a windowed count can never exceed an
+all-time count, so the last column is arithmetic, not judgement.
+
+| door | scvd.store (window) | StillOS (all-time) | window ≤ all-time? |
+|---|---|---|---|
+| `batch-runner` | `ZERO_OBSERVED`, 0 payers — **`UNKNOWN`** under the rail rule | `PAID` — 26 payers, 27 transfers | yes |
+| `gas.apitoll.cloud` | `PAID` — 20 payers | `PAID` — 59 payers, 600 transfers | yes |
+| `api.bitrefill.com` | `PAID` — **533 payers** | `PAID` — **185 payers, 497 transfers**; Solana also `PAID` | **no** |
+| `tollbooth-hello` | `PAID` — 6 payers | `PAID` — 20 payers, 82 transfers | yes |
+| `laso.finance` | `PAID` — 45 payers | `PAID` — 45 payers, 355 transfers; Solana also `PAID` | equal |
+
+No directory column: only two of these five are carried by
+`x402-list.com` at all. StillOS's Base column was posted to the thread
+on 2026-09-17; it is not in his sealed file, which covers his five.
+
+**`batch-runner` is scope, and it is the best illustration of scope in
+the paper.** The door advertises a batch-settlement scheme, so
+scvd.store's sealed `ZERO_OBSERVED` was already suspect and the rail
+rule moved it to `UNKNOWN` — but the reason it was *wrong* turns out to
+be simpler than the scheme. StillOS's genesis read finds 27 direct
+transfers from 26 payers. scvd.store's window found none. Both are
+right: at the window's floor, block 50918945, the payTo already held
+**220.052978 USDC at nonce 1**, and at the ceiling it held the same
+amount at the same nonce. Everything arrived before the floor; nothing
+moved inside it. A windowed zero on this door was a true statement that
+any downstream reader would have taken as "never paid". The rule that
+turned it into `UNKNOWN` was the right rule for a reason it did not
+even need.
+
+**`api.bitrefill.com` is not scope.** 533 unique senders inside nine
+days cannot be a subset of 185 unique senders across all time, and 533
+transfers inside the window (one per sender at minimum) cannot sit
+inside 497 across all time. One of the two readings is wrong about this
+door, and the paper does not yet know which. What each side can say:
+scvd.store's count is read from the node — `eth_getLogs` on the USDC
+contract for `Transfer` events whose `to` topic is the pinned payTo,
+sender taken from the `from` topic, deduplicated case-insensitively —
+and reproduces from the command in §7. StillOS's count is derived from
+an index his own file names as a shared blind spot: *"Impl A and impl B
+share the Blockscout index… an indexer-level fault hits both and they
+will agree on being wrong."* That is a candidate, not a diagnosis.
+Settling it needs one thing from each side: the block range StillOS's
+index actually covers for that address, and a second read of the window
+from scvd.store at a different RPC. Both are in §8.
+
+**`laso.finance` is equal, which is worth one sentence.** Forty-five
+all-time payers and forty-five inside a nine-day window means every
+address that has ever paid this door did so inside the window, which is
+what a door that went live in that window would look like. It is
+consistent and it is not evidence of anything else.
+
+A naming note from StillOS's read: `gas.apitoll.cloud` advertises
+`base-mainnet` beside `eip155:8453`, a v1 network name and a CAIP-2
+identifier for the same chain. scvd.store's normaliser does not map v1
+names and returns no match for `base-mainnet`; that did not touch the
+coverage count in §4, which draws on the directory's CAIP-2 strings, but
+a door whose own challenge reached that comparator would read as
+advertising a rail nobody measures. Rule 3, in a different coat.
+
+### The answer the rail rule overturned
 
 | door | sealed | under the rail rule |
 |---|---|---|
@@ -224,9 +297,6 @@ paper should not be read as though it covers both.
 | `api.bitrefill.com` | `PAID` | `PAID` |
 | `tollbooth-hello` | `PAID` | `PAID` |
 | `laso.finance` | `PAID` | `PAID` |
-
-No directory column: only two of these five are carried by
-`x402-list.com` at all.
 
 One sealed answer did not survive the rule that arrived after the seal.
 `batch-runner` advertises a settlement scheme other than `exact`, and a
@@ -392,18 +462,18 @@ refuse to write a report if the population moves under the walk.
 
 ---
 
-## 5. Three instruments that failed closed in one fortnight
+## 5. Four instruments that failed closed in one fortnight
 
-Two operators who both publish about instrument defects, both shipping
-one.
+Two operators who both publish about instrument defects, each shipping
+two.
 
 This section is the reason the paper is worth co-signing, and it is
 against both authors.
 
 An instrument that cannot tell *this address holds nothing* from *we
-were not allowed to ask* produces a tidy, confident, wrong answer, and
-gets believed either way. It happened three times between these two
-shops in two weeks.
+were not allowed to ask* — or from *we asked about the wrong address* —
+produces a tidy, confident, wrong answer, and gets believed either way.
+It happened four times between these two shops in two weeks.
 
 **StillOS: 27 of 27 doors read as zero revenue, on a mistyped field
 name.** A chain reader shipped that week reported no revenue at every
@@ -443,10 +513,32 @@ unreachable from its shop when it reads fine.
 measuring its own plumbing.** That one is offered to anyone building in
 this space, because it will not announce itself.
 
+**StillOS: a definitive zero on a door carrying 805 settlements, from
+a payTo re-typed off a truncated display.** A first pass printed each
+payTo at `slice(0, 22)` for display, and the addresses were then
+re-entered from that truncation — inventing the missing twenty
+characters. `gas.apitoll.cloud` returned `ZERO_OBSERVED`,
+`counts_are_floor: false`, pages exhausted: a complete, confident zero
+at an address nobody had ever been asked to pay. StillOS's own words
+on the thread: *"it is your proxy trap exactly."*
+
+The fix is only half a fix, and he said so before anyone else could.
+`observeAddress` now validates per rail, so a 22-character EVM address
+returns `UNKNOWN / MALFORMED_ADDRESS` rather than a zero. But the
+invented address was 42 valid hex characters and **still reads
+`ZERO_OBSERVED`**, because shape validation cannot tell a well-formed
+wrong value from a well-formed right one. Only provenance catches that
+half: an identifier must reach the read *by reference*, never
+re-entered. scvd.store's frozen door file pins every payTo with a
+`payTo_provenance` field naming the unpaid 402 and the ledger line it
+was copied from, for exactly this reason — and that is a discipline,
+not a guarantee, because a provenance field can be typed too.
+
 The common shape, stated once: **a reading that fails must be a
-different answer from a reading that came back empty.** `checked: false`
-is not `present: false`. Both shops now assert that in code. Both
-learned it the same way.
+different answer from a reading that came back empty, and a reading of
+the wrong thing must be a different answer from a reading of nothing.**
+`checked: false` is not `present: false`. Both shops now assert the
+first in code. Neither can fully assert the second, and both say so.
 
 ---
 
@@ -474,9 +566,20 @@ InvoiceID can both settle. Any consumer deriving cumulative-spend
 conclusions from XRPL evidence must de-duplicate by
 `(mandateDigest, paymentId)`. EIP-3009 and Permit2 consume the nonce, so
 at-most-once is enforced at the settlement layer there; XRPL is the
-exception and the spec says so outright. `[StillOS]` — this bears on
-your XRPL columns above and only you can say whether your reader
-de-duplicates on that pair.
+exception and the spec says so outright.
+
+StillOS's reader does **not** de-duplicate, and since 2026-09-17 says so
+in-band: every XRPL row carries `dedup_applied: false` and a
+`transfers_semantics` string reading *"validated inbound Payments
+delivering value; NOT de-duplicated by (mandateDigest, paymentId) and
+therefore NOT a count of distinct authorised settlements."* His
+reasoning, which this paper accepts: two Payments sharing an InvoiceID
+are two real deliveries of value, so counting both is correct for the
+question *paid, by how many distinct payers*. The §7 rule bites
+cumulative-spend-against-a-mandate, which neither instrument computes.
+The payer counts in §2 are unaffected either way — the same sender
+twice is one payer — and the transfer counts now carry the label that
+says what they are not.
 
 **Scope, once more.** A zero from a windowed reader and a zero from a
 genesis reader are different claims. Neither is crowned.
@@ -507,9 +610,16 @@ door, including the rails neither instrument can read:
 - `research/floor-check-2026-09-15/` — 132 addresses at a named height (§3)
 - `research/rail-coverage-2026-09-16/` — the independent reproduction of §4
 
-`[StillOS]` — your reproduction instructions and artifact locations go
-here, in whatever form suits your shop. The paper should let a third
-reader run both instruments, not one.
+StillOS's side, from the same repository:
+
+- `github.com/stillmarcus24/stillos-notary/blind-key/` —
+  `commitment.json`, `answers.json`, `inputs.json`, with the verify
+  lines in its README (`sha256sum answers.json`, `wc -c answers.json`)
+  and `node core/blind_key_build.cjs --verify` for a local check.
+
+`[StillOS]` — the reader itself, if it is to be runnable by a third
+party; otherwise say here that the artifacts are the reproducible
+surface and the reader is not, which is a legitimate answer.
 
 Directory data throughout: `x402-list.com` (CC BY 4.0).
 
@@ -517,14 +627,26 @@ Directory data throughout: `x402-list.com` (CC BY 4.0).
 
 ## 8. What each side owes the other, still open
 
-- **StillOS → scvd.store**: the URL of `answers.json`, so the digest and
-  byte length can be checked and reported either way.
-- **StillOS → scvd.store**: verdicts on scvd.store's five, so §2's
-  comparison covers both halves rather than one.
+- ~~**StillOS → scvd.store**: the URL of `answers.json`.~~ Published
+  2026-09-17; verified, §2.
+- ~~**StillOS → scvd.store**: verdicts on scvd.store's five.~~ Posted
+  2026-09-17; §2.
+- **Both, on `api.bitrefill.com`**: the one row that is not scope. From
+  StillOS, the block range his index covers for that payTo and, if
+  cheap, the 185 sender addresses so the two sets can be intersected.
+  From scvd.store, a second read of the same window at a different RPC
+  endpoint, so its 533 does not rest on one provider.
+- **StillOS → scvd.store, on `batch-runner`**: the block heights of the
+  27 transfers, or just the latest. State says they all precede block
+  50918945; the heights would close it.
 - **scvd.store → everyone**: a real reading of the 43 Arbitrum gap
-  doors, at a pinned height, in a window that can be defended.
+  doors, at a pinned height, in a window that can be defended. And
+  `api.bitrefill.com`'s Arbitrum and Polygon rails, which StillOS names
+  as out of his reach and which are in ours.
 - **Both**: a decision on whether a commitment freezes an answer
-  including its errors.
+  including its errors. StillOS has not yet given a view.
+- **StillOS**: the 27-of-27 paragraph in §5, in his words rather than
+  relayed.
 
 ---
 

@@ -1,0 +1,262 @@
+{
+  "arrangement": "seancrecord/scvd-general-store-repo#622 — blind answer key, StillOS direction",
+  "built_at": "2026-09-14T21:35:54.768Z",
+  "reveal_policy": "published only after SCVD publishes its readings on all five, whichever way it falls",
+  "instrument": "x402_settlement_truth v2",
+  "measurement": {
+    "in_scope_rail": "eip155:8453",
+    "in_scope_asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "window": "full available index history to base_block_height",
+    "distinct_counterparty": "unique sender address of an inbound in-scope transfer; a facilitator settling for many buyers appears as ONE sender, so this counts distinct SETTLING ADDRESSES, not distinct customers"
+  },
+  "observation_boundary": {
+    "note": "Pinned so both readings cover the same window. A reading past these heights is not wrong, but is not comparable.",
+    "eip155:8453": {
+      "base_block": 51316142
+    },
+    "xrpl:0": {
+      "ledger_index_max": {
+        "daxpt": 106988237,
+        "xrpreflight": 106988266
+      }
+    },
+    "solana:mainnet": {
+      "slot": {
+        "stumble": 447080061
+      }
+    }
+  },
+  "doors": [
+    {
+      "slug": "daxpt",
+      "base_url": "https://daxpt.com",
+      "paytos_resolved": [
+        {
+          "key": "payTo",
+          "value": "r9juqAptQBRtgJG6ku4kG3RPvNyQEUrT2X",
+          "rail": "xrpl:0",
+          "rail_source": "document",
+          "is_sink": false
+        },
+        {
+          "key": "payToBase",
+          "value": "0x6D16fce290c4db81e7F02fe2Bd5d14F7690b5191",
+          "rail": "eip155:8453",
+          "rail_source": "key_name",
+          "is_sink": false
+        }
+      ],
+      "payto_unparsed": [],
+      "declared_rails": [
+        "xrpl:0",
+        "eip155:8453"
+      ],
+      "our_reading": {
+        "state": "PAID",
+        "impl_a": {
+          "state": "UNKNOWN",
+          "reason": "rail_out_of_scope:xrpl:0"
+        },
+        "impl_b": {
+          "state": "UNKNOWN",
+          "reason": "rail_out_of_scope:xrpl:0"
+        },
+        "xrpl": [
+          {
+            "state": "PAID",
+            "payers": 5,
+            "transfers": 8,
+            "xrp": 2.147137,
+            "counts_are_floor": false
+          }
+        ],
+        "solana": [],
+        "agree_a_b": true
+      },
+      "blind_spots": [
+        "payto_mutation: today's advertised payTo is credited with its entire history. Revenue at a rotated-away address is invisible; history at a reused address may not belong to this door.",
+        "facilitator/intermediary settlement that never moves the asset to the advertised payTo is invisible on that rail."
+      ]
+    },
+    {
+      "slug": "xrpreflight",
+      "base_url": "https://destinationpreflight.com",
+      "paytos_resolved": [
+        {
+          "key": "payTo",
+          "value": "rEB3eMYcrd1L7WXQMrAAWKfFiM1fRtpggt",
+          "rail": "xrpl:0",
+          "rail_source": "document",
+          "is_sink": false
+        }
+      ],
+      "payto_unparsed": [],
+      "declared_rails": [
+        "xrpl:0"
+      ],
+      "our_reading": {
+        "state": "PAID",
+        "impl_a": {
+          "state": "UNKNOWN",
+          "reason": "rail_out_of_scope:xrpl:0"
+        },
+        "impl_b": {
+          "state": "UNKNOWN",
+          "reason": "rail_out_of_scope:xrpl:0"
+        },
+        "xrpl": [
+          {
+            "state": "PAID",
+            "payers": 16,
+            "transfers": 136,
+            "xrp": 26.042365,
+            "counts_are_floor": false
+          }
+        ],
+        "solana": [],
+        "agree_a_b": true
+      },
+      "blind_spots": [
+        "payto_mutation: today's advertised payTo is credited with its entire history. Revenue at a rotated-away address is invisible; history at a reused address may not belong to this door.",
+        "facilitator/intermediary settlement that never moves the asset to the advertised payTo is invisible on that rail."
+      ]
+    },
+    {
+      "slug": "stumble",
+      "base_url": "https://stumble.vimabrosta.com",
+      "paytos_resolved": [
+        {
+          "key": "payTo",
+          "value": "0xd63e74bCB00757C8fDb1817F1558ed8b97C608b6",
+          "rail": "eip155:8453",
+          "rail_source": "document",
+          "is_sink": false
+        },
+        {
+          "key": "payTo",
+          "value": "8c9r8kxtkcsv7wARq3wBy2csm1ySRQQmdy6hrPnga4qs",
+          "rail": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "rail_source": "document",
+          "is_sink": false
+        }
+      ],
+      "payto_unparsed": [],
+      "declared_rails": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "our_reading": {
+        "state": "PAID",
+        "impl_a": {
+          "state": "PAID"
+        },
+        "impl_b": {
+          "state": "UNKNOWN",
+          "reason": "token_transfers_exist_but_usdc_balance_zero_cannot_attribute"
+        },
+        "xrpl": [],
+        "solana": [
+          {
+            "state": "PAID",
+            "usdc_balance": 10.98,
+            "basis": "current_balance_only_not_a_transfer_count"
+          }
+        ],
+        "agree_a_b": false
+      },
+      "blind_spots": [
+        "payto_mutation: today's advertised payTo is credited with its entire history. Revenue at a rotated-away address is invisible; history at a reused address may not belong to this door.",
+        "facilitator/intermediary settlement that never moves the asset to the advertised payTo is invisible on that rail."
+      ]
+    },
+    {
+      "slug": "humanmirror",
+      "base_url": "https://humanmirror.fr",
+      "paytos_resolved": [
+        {
+          "key": "pay_to",
+          "value": "0x000000000000000000000000000000000000dEaD",
+          "rail": "eip155:84532",
+          "rail_source": "document",
+          "is_sink": true
+        },
+        {
+          "key": "pay_to",
+          "value": "0x48096526488f2D51df6bcA1B1f3A3639986cc3dD",
+          "rail": "eip155:8453",
+          "rail_source": "document",
+          "is_sink": false
+        }
+      ],
+      "payto_unparsed": [],
+      "declared_rails": [
+        "eip155:84532",
+        "eip155:8453"
+      ],
+      "our_reading": {
+        "state": "PAID",
+        "impl_a": {
+          "state": "PAID"
+        },
+        "impl_b": {
+          "state": "UNKNOWN",
+          "reason": "token_transfers_exist_but_usdc_balance_zero_cannot_attribute"
+        },
+        "xrpl": [],
+        "solana": [],
+        "agree_a_b": false
+      },
+      "blind_spots": [
+        "rails_out_of_scope:eip155:84532 — declared by the door, not read by this instrument",
+        "payto_mutation: today's advertised payTo is credited with its entire history. Revenue at a rotated-away address is invisible; history at a reused address may not belong to this door.",
+        "facilitator/intermediary settlement that never moves the asset to the advertised payTo is invisible on that rail."
+      ]
+    },
+    {
+      "slug": "wall-street-wiki-canon",
+      "base_url": "https://canon.wallstreet.wiki",
+      "paytos_resolved": [
+        {
+          "key": "payTo",
+          "value": "0xaCe97f9d5c73D1c0661E32294B25864682Ef3D71",
+          "rail": "eip155:8453",
+          "rail_source": "document",
+          "is_sink": false
+        }
+      ],
+      "payto_unparsed": [],
+      "declared_rails": [
+        "eip155:8453"
+      ],
+      "our_reading": {
+        "state": "ZERO_OBSERVED",
+        "impl_a": {
+          "state": "ZERO_OBSERVED"
+        },
+        "impl_b": {
+          "state": "ZERO_OBSERVED"
+        },
+        "xrpl": [],
+        "solana": [],
+        "agree_a_b": true
+      },
+      "blind_spots": [
+        "payto_mutation: today's advertised payTo is credited with its entire history. Revenue at a rotated-away address is invisible; history at a reused address may not belong to this door.",
+        "facilitator/intermediary settlement that never moves the asset to the advertised payTo is invisible on that rail."
+      ]
+    }
+  ],
+  "global_blind_spots": [
+    "Scope is USDC on eip155:8453, XRP on xrpl:0, and USDC on solana:mainnet. Any other rail a door declares is named per-row and not counted.",
+    "The Solana probe reads CURRENT BALANCE ONLY and can never return ZERO_OBSERVED — an empty or absent token account is UNKNOWN, not evidence of non-payment.",
+    "Impl A and impl B share the Blockscout index. They fail independently at the DERIVATION layer only; an indexer-level fault hits both and they will agree on being wrong.",
+    "/addresses/{a}/counters is never read: measured 2026-09-14 it returns 0 for all 8 doors known to have been paid.",
+    "A USDC balance of zero is not evidence of non-payment — a swept payment reads identically.",
+    "payTo mutation over time is not detectable from a single observation.",
+    "SAMPLING: unless --slugs was used, this is the NEWEST N of the directory, not a random or complete sample. Newest listings are the least likely to publish a workable payTo or to have been paid. Do not read the tally as an ecosystem rate."
+  ],
+  "stated_before_reveal": [
+    "These are our readings, not ground truth. If SCVD reads something we missed, we were wrong and it gets published as a miss.",
+    "Two of these five (daxpt, humanmirror) are doors our own instrument previously got wrong. They are included on purpose."
+  ]
+}
