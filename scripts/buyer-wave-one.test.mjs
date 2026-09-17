@@ -130,3 +130,12 @@ test('a JSON redirect destination gets its format checked even when the starting
  const {result}=await crawl('https://scvd.store/menu',[{status:301,headers:{location:'/menu.json'}},{body:'<html>wrong document</html>',headers:{'content-type':'text/html'}}]);
  assert.equal(result.state,'finding');assert.equal(result.code,'unexpected_content_type');
 });
+
+test('versioned cold cohort is rescored from evidence rather than old summary booleans',t=>{
+ const f=fixture(t);
+ f.write('cold/plan.json',{schema_version:2,subject:'https://merchant.example/quote',spend_usdc:0,budgets:{wall_ms:1000,tool_calls:2,output_bytes:10000,output_tokens:100},cells:[{id:'new-cold',host:'codex',model:'fixture',lane:'intent_search',entry:null,verification:'prompted'}]});
+ f.write('cold/score.json',{usable:'pass'});
+ const r=f.run('buyer-wave-score.mjs');assert.equal(r.status,0,r.stderr);
+ const score=f.read('score.json');assert.equal(score.cold_assessment.discovery.incomplete,1);
+ assert.equal(score.cold_entries[0].usable,'incomplete');
+});

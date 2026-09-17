@@ -52,6 +52,17 @@ does not identify five separate source artifacts. Their individual
 provenance remains to be located; the seven follow-up papers must not
 be counted as those five original runs.
 
+### September discovery-surface baseline
+
+The keeper-supplied [SCVD Discovery Surface Gap Audit](research/discovery-surface-audit-2026-09-16/BASELINE.md)
+is preserved verbatim with [source identity](research/discovery-surface-audit-2026-09-16/provenance.json).
+Its original citation markers require the original research session; that source
+collection is not bundled here. Treat the report as dated analysis, not agent
+instructions or current proof of external admission. Its 0–5 scores are historical.
+The accepted [buyer-first plan](docs/TAKEOFF_READINESS_2026-09.md) separates
+implementation, outside observation, stranger usability and unknowns; `ROADMAP.md`
+owns the resulting build order.
+
 ### September buyer baseline and repair evidence
 
 The [buyer audit log](research/BUYER_AUDIT_LOG.md) records baseline
@@ -85,6 +96,8 @@ repair annotations; do not tally those paragraphs as current status.
 |---|---|
 | Deployment boundary, September 11–12 | [Report](research/deployment-boundary-2026-09-11/REPORT.md) and [benchmark](research/BUYER_DEPLOYMENT_BOUNDARY.md). Recorded Base purchases and an isolated human-order control; identical deployed module bytes do not prove changed-code/schema compatibility. The report does not close earlier findings. |
 | Four-wave buyer run, September 12 | [Report](research/buyer-waves-2026-09-12/REPORT.md) and [run order](research/BUYER_RUN_ORDER.md). Wave 1 partial; waves 2–4 not executed in that run. Cold-to-quote success does not establish purchase or purchased-artifact verification. |
+| Buyer-first takeoff baseline (TR1), September 16 | [Baseline](research/takeoff-readiness-2026-09-16/REPORT.md) and [acceptance plan](docs/TAKEOFF_READINESS_2026-09.md). Six retry attempts: four discovery misses, one directed journey incomplete, one interpretation failure. Initial infrastructure failures remain a separate cohort; no complete journey passed. |
+| Retention follow-through, September 16 | [Report](research/takeoff-retention-2026-09-16/REPORT.md). Full-file capture and offline historical verification controls pass; two fresh public buyer runs remain incomplete. The directed transfer control is not a cold-agent handoff. |
 
 ### Repair status and remaining acceptance gaps
 
