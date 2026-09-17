@@ -110,7 +110,9 @@ describe("the glance", () => {
     }
     expect(page).toContain('data-glance="decision" data-decision="');
     expect(page.indexOf('class="glance"')).toBeLessThan(page.indexOf('class="decision"'));
-    expect(page.indexOf('class="glance"')).toBeLessThan(page.indexOf("observer:"));
+    // Who looked stays above the figures: on the self passport that
+    // line says SELF-OBSERVED, and it must not sit under a READY cell.
+    expect(page.indexOf("observer:")).toBeLessThan(page.indexOf('class="glance"'));
     expect(page).toContain("eip155:8453");
     expect(page).toContain("0.001 USDC");
   });

@@ -412,10 +412,10 @@ export function passportCard(
   const p = passport.payload;
   return `<section class="passport-card">
     <h2>${escapeHtml(p.host)}</h2>
-    ${glanceStrip(passport)}
-    ${decisionBlock(passport)}
     <p class="menu-meta">issued ${escapeHtml(p.issued_at.slice(0, 16))}Z ·
     observer: ${escapeHtml(p.observer)}</p>
+    ${glanceStrip(passport)}
+    ${decisionBlock(passport)}
     ${options.timeline ? probeStrip(options.timeline, p.host) : ""}
     ${p.protocol_tiers ? `<section><h3>Each protocol's own history</h3><ul>${Object.entries(p.protocol_tiers).map(([protocol, reading]) => `<li>${escapeHtml(protocol)}: ${escapeHtml(reading.line)} · <a href="${escapeHtml(reading.criteria_url)}">the rule</a></li>`).join("")}</ul></section>` : ""}
     ${p.protocol_rule ? `<details class="protocol-rule"><summary>The protocol rule this passport rests on</summary><p class="menu-desc">${escapeHtml(p.protocol_rule)}</p></details>` : ""}
