@@ -2,7 +2,7 @@ import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { Hono } from "hono";
 import { createPaymentGate } from "@/lib/payment-gate";
-import { readPaymentOperations } from "@/lib/payment-operations";
+import { readPaymentOperations, recordPaymentOperation } from "@/lib/payment-operations";
 import type { Env, HonoEnv } from "@/types";
 const bindings = env as unknown as Env;
 beforeEach(async () => {
@@ -52,4 +52,15 @@ it("counts thrown and server-error responses, and a broken instrument cannot cha
 it("refuses malformed counters instead of reporting a measured zero", async () => {
   await bindings.COUNTERS.put("metric:2026-09:payment-http:mpp:success", "");
   await expect(readPaymentOperations(bindings)).rejects.toThrow("unreadable");
+});
+
+it("attributes both x402 header names, including empty malformed credentials, without storing their contents", async () => {
+  const app = new Hono<HonoEnv>();
+  app.get('*', c => { recordPaymentOperation(c, 400); return c.json({ code: "fixture_refusal" }, 400); });
+  for (const headers of [new Headers({ "PAYMENT-SIGNATURE": "fixture" }), new Headers({ "X-PAYMENT": "fixture" }), new Headers({ "X-PAYMENT": "" })]) {
+    const ctx = createExecutionContext();
+    await app.fetch(new Request('https://scvd.store/api/buy/context_anchor', { headers }), bindings, ctx);
+    await waitOnExecutionContext(ctx);
+  }
+  expect((await readPaymentOperations(bindings)).rows.find(row => row.protocol === "x402")).toMatchObject({ observed: true, client_error: 3 });
 });

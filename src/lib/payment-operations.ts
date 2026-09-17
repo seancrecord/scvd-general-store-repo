@@ -18,7 +18,7 @@ const key = (month: string, protocol: Protocol, outcome: Outcome) => `metric:${m
 /** Only bounded labels leave the request; no credential, URL, payer or error text. */
 export function recordPaymentOperation(c: Context<HonoEnv>, result: number | "threw"): void {
   const mpp = !!mppPaymentHeader(c.req.header("Authorization"));
-  const x402 = c.req.header("PAYMENT-SIGNATURE") !== undefined || c.req.header("X-PAYMENT") !== undefined || c.req.query("payment_payload") !== undefined;
+  const x402 = (c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT")) !== undefined || c.req.query("payment_payload") !== undefined;
   if (!mpp && !x402) return;
   const protocol: Protocol = mpp ? x402 ? "mixed" : "mpp" : "x402";
   const outcome: Outcome = result === "threw" ? "threw" : result >= 500 ? "server_error" : result >= 400 ? "client_error" : result >= 300 ? "redirect" : "success";

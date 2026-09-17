@@ -42,7 +42,8 @@ not evidence of independent customer demand.
 3. Choose a public payer address and confirm it is classified as house
    **before admission** through the existing house-wallet configuration or
    authenticated house marker. The pilot captures this classification at
-   admission; historical native reclassification is not implemented yet.
+   admission. The readiness release adds explicit per-purchase historical
+   house corrections; classify the test wallet before admission regardless.
 4. Prepare a short non-sensitive summary identifying the qualification run
    and one fresh UUID as `Idempotency-Key`. Keep the URL, summary and key
    identical for every retry. A Context Anchor is a retained signed artifact;
