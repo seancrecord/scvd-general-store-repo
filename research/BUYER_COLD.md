@@ -142,7 +142,12 @@ independent fetch, the reported signature results with the truth the host
 never saw, and requires a completed local command in the trace. Refusals are
 listed as host limits. A host that does not pass gets every cell of the
 cohort recorded as `capability_unqualified`, in the denominator, unlaunched.
-The probe qualifies a host and adapter; it is not a buyer result.
+The probe qualifies a host and adapter; it is not a buyer result. A
+proxied launch context passes its egress route and CA bundle variables to
+the child (`HTTPS_PROXY`, `NO_PROXY`, `NODE_EXTRA_CA_CERTS` and kin, listed
+in `launch.json`); API keys, tokens and parent session identifiers still do
+not. The first live probes are recorded in
+[the catalogue cohort directory](takeoff-catalogue-2026-09-17/README.md).
 
 ```sh
 node scripts/buyer-cold-isolated.mjs --capability PLAN.json --out /private/tmp/buyer-probe-NEW

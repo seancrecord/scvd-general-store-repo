@@ -5,7 +5,11 @@ import os from 'node:os';
 import path from 'node:path';
 import {createPublicKey, verify} from 'node:crypto';
 import {validatePlan, buildPrompt, adapter, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
-import {runCapabilityProbe, runCohort, scoreCohort} from './buyer-cold-isolated.mjs';
+import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment} from './buyer-cold-isolated.mjs';
+
+test('a proxied launch context passes its route and CA bundle, never an API key or token',()=>{
+ assert.deepEqual(childEnvironment({PATH:'/bin',HTTPS_PROXY:'http://127.0.0.1:1',NODE_EXTRA_CA_CERTS:'/ca.crt',ANTHROPIC_API_KEY:'secret',CLAUDE_CODE_OAUTH_TOKEN:'secret',OPENAI_API_KEY:'secret',CLAUDE_CODE_SESSION_ID:'parent'}),{PATH:'/bin',HTTPS_PROXY:'http://127.0.0.1:1',NODE_EXTRA_CA_CERTS:'/ca.crt'});
+});
 
 const budgets={wall_ms:120000,tool_calls:20,output_bytes:4000000,output_tokens:2000,artifact_bytes:8*1024*1024,artifact_files:16};
 const plan={schema_version:4,subject:'https://merchant.example/quote',spend_usdc:0,budgets,freshness:{max_age_ms:14*86400000},capability:{public_url:'https://www.rfc-editor.org/rfc/rfc8032.txt'},
@@ -40,7 +44,9 @@ test('capability vectors mix valid and tampered signatures and never name a serv
  const v=capabilityVectors();
  const states=Object.values(v.truth);
  assert.ok(states.includes(true)&&states.includes(false));
- for(const {id,signature} of v.signatures)assert.equal(verify(null,Buffer.from(v.message),keyOf(v.public_key),Buffer.from(signature,'hex')),v.truth[id]);
+ for(const {id,message,signature} of v.signatures)assert.equal(verify(null,Buffer.from(message),keyOf(v.public_key),Buffer.from(signature,'hex')),v.truth[id]);
+ assert.equal(new Set(v.signatures.map(s=>s.signature)).size,4,'every vector is distinct bytes');
+ assert.equal(new Set(v.signatures.map(s=>s.message)).size,4);
  const p=buildCapabilityPrompt(plan,'claude',v);
  assert.doesNotMatch(p,/scvd|preflight|x402/i);
  assert.match(p,/public\.bin/);assert.match(p,/capability\.json/);assert.match(p,new RegExp(v.public_key));

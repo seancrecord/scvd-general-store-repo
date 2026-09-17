@@ -13,8 +13,13 @@ export {retainArtifacts};
 const writeJson = (filename, value) => fs.writeFileSync(filename, JSON.stringify(value,null,2)+'\n', {mode:0o600});
 // CLI authentication remains internal to each host; wallet/API credentials
 // and the parent task's context are not copied into the child environment.
+// NETWORK CONTEXT (2026-09-17): a sandboxed launch context can reach the
+// world only through an egress proxy and its CA bundle. Those variables
+// name a route, not a credential, and without them the host cannot even
+// reach its own API; they ride along and are listed in launch.json.
+const NETWORK_CONTEXT=['HTTPS_PROXY','HTTP_PROXY','NO_PROXY','https_proxy','http_proxy','no_proxy','NODE_EXTRA_CA_CERTS','SSL_CERT_FILE','CURL_CA_BUNDLE','ANTHROPIC_BASE_URL'];
 export function childEnvironment(source=process.env) {
-  return Object.fromEntries(['PATH','HOME','TMPDIR','SHELL','USER','LANG'].filter(k=>source[k]).map(k=>[k,source[k]]));
+  return Object.fromEntries(['PATH','HOME','TMPDIR','SHELL','USER','LANG',...NETWORK_CONTEXT].filter(k=>source[k]).map(k=>[k,source[k]]));
 }
 export async function runChild(command, args, {cwd, output, prompt, host, budgets, env=childEnvironment()}) {
   const started_at = new Date().toISOString();

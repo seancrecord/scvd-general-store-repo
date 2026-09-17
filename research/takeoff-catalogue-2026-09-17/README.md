@@ -83,11 +83,51 @@ query. This is a bounded observation about four queries on one day. It
 does not establish absence from the catalogue, and it is not a reason to
 rename the server; it is the hypothesis the catalogue lane will test.
 
+## Live probe results, web sandbox, September 17
+
+The keeper asked whether the probe could run from the terminal. It can for
+the Claude host: this session is Claude Code on the web with a signed-in
+`claude` CLI, so the probe ran here twice, with the unchanged allowlist.
+[probe-web-2026-09-17.json](probe-web-2026-09-17.json) is the public record:
+both scores, every command with its outcome, the launch arguments and
+environment keys, the vectors' truth, and the hash of every private file.
+
+| Probe | Result | Tool events | Refused | What the host did |
+| --- | --- | --- | --- | --- |
+| first (`private/probe-web-2026-09-17`) | pass | 11 | two compound `curl … ; echo` commands | `curl -o` into `./evidence`, then `node` with `crypto.verify` over an SPKI-wrapped raw key; all four vectors right |
+| second, corrected vectors (`private/probe-web-2026-09-17-b`) | pass | 6 | one `cat` heredoc redirect | same path, straight through; wrote the report with `node` after the heredoc was refused |
+
+Codex is not installed in this sandbox and is recorded `unavailable`. The
+first probe exposed a defect in the instrument: one shared message under
+deterministic ed25519 made the valid signatures identical bytes, and the
+tampered ones too. The instrument now mints one message per vector; the
+second probe ran on the corrected collector, whose hashes the record carries.
+The first probe is retained as it was, not rescored.
+
+What the traces say about the September 17 confound: told which tools it
+had, this host used the permitted `node` path immediately. The refusals
+here were compound commands and a heredoc, not `curl` or `node` themselves.
+The host's own report blamed `curl` flag order for the first refusal; the
+trace shows the refused commands were the compound ones. Its second report
+listed no refusals while the trace shows one. Self-reports are statements.
+Two other host facts are recorded and not relied on: `ls` and `echo` ran
+without being on the allowlist, and a `curl … && echo` chain ran while the
+`;`-chained form was refused.
+
+**The buyer cohort did not run here.** The merchant subject is refused by
+this sandbox's egress policy (CONNECT 403 from the agent proxy), so a buyer
+cell launched here could only record an environment failure. The store, the
+skill source and the MCP registry are reachable. Raw traces and retained
+files stay under ignored `private/` and were handed to the keeper as an
+archive whose file hashes match the public record.
+
 ## Before running
 
 1. Merge the instrument; the plan hash binds to `plan.json` bytes only, but
    the probe and cohort freeze the collector bytes beside every acquisition.
-2. Run the probe on the keeper's machine with both native hosts signed in:
+2. Run the probe on the keeper's machine with both native hosts signed in
+   (the web-sandbox probes qualify the Claude host in that launch context
+   only; the cohort needs a probe from the machine that will run it):
    `node scripts/buyer-cold-isolated.mjs --capability research/takeoff-catalogue-2026-09-17/plan.json --out /private/tmp/buyer-probe-2026-09-XX --run`.
    Read `capability.json`. A host that fails is an instrument or host
    finding; changing the adapter is a new instrument hash, not a mid-cohort
