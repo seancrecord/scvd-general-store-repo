@@ -272,9 +272,28 @@ and reproduces from the command in §7. StillOS's count is derived from
 an index his own file names as a shared blind spot: *"Impl A and impl B
 share the Blockscout index… an indexer-level fault hits both and they
 will agree on being wrong."* That is a candidate, not a diagnosis.
-Settling it needs one thing from each side: the block range StillOS's
-index actually covers for that address, and a second read of the window
-from scvd.store at a different RPC. Both are in §8.
+
+A third reader sharpens it without closing it. The directory's own
+traction row for this door, read 2026-09-17, measures three rails via
+the Coinbase facilitator and reports **1,455 settlements all-time, 556
+in thirty days, 92 unique buyers in thirty days**, at the same Base
+payTo scvd.store pinned. 533 distinct senders in nine days beside 92
+distinct buyers in thirty is not a contradiction of a declared floor —
+but it is the balance residual made concrete: Bitrefill is a merchant
+with many inflows to one deposit address, the chain counts all of them,
+rule 2 counts all of them, and the x402 door is a fraction. scvd.store's
+533 is very likely a true count of inbound senders and very likely not
+a count of x402 payers. **That does not rescue 185.** Under rule 2 the
+two instruments count the same thing on the same address, and a window
+still cannot exceed all of history.
+
+scvd.store attempted the second-provider read on 2026-09-17 and could
+not complete it: the registry's first fallback answers `latest` and
+refuses every historical call without a token, and the run refused to
+publish a row resting on a failed read. Recorded at
+`research/blind-key-2026-09-15/bitrefill-second-rpc/`. Settling the row
+still needs the block range StillOS's index covers for that address,
+and an archive-capable second endpoint on our side. Both are in §8.
 
 **`laso.finance` is equal, which is worth one sentence.** Forty-five
 all-time payers and forty-five inside a nine-day window means every
@@ -663,8 +682,10 @@ Directory data throughout: `x402-list.com` (CC BY 4.0).
 - **Both, on `api.bitrefill.com`**: the one row that is not scope. From
   StillOS, the block range his index covers for that payTo and, if
   cheap, the 185 sender addresses so the two sets can be intersected.
-  From scvd.store, a second read of the same window at a different RPC
-  endpoint, so its 533 does not rest on one provider.
+  From scvd.store, a second read of the same window at an
+  archive-capable endpoint — attempted 2026-09-17 at the public
+  fallback, which refuses historical calls without a token; the run
+  refused to publish rather than carry a failed read as a verdict.
 - **StillOS → scvd.store, on `batch-runner`**: the block heights of the
   27 transfers, or just the latest. State says they all precede block
   50918945; the heights would close it.
