@@ -1,0 +1,2212 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-09-17T16:05:37.150786+00:00",
+  "qualification": "not_ready",
+  "plan_sha256": "85a26e6d648b703498da860ee756709f901c94ffbb4063fad0700991df023731",
+  "source_root": "/private/tmp/scvd-takeoff-postmerge-20260917-acquisition",
+  "retained_local_copy": "private/cohort",
+  "raw_traces_public": false,
+  "limitation": "Native traces include local host metadata and are retained privately; public summaries cannot substitute for the original traces. Every retained file and review reference was hash-checked before copying.",
+  "rows": [
+    {
+      "cell": {
+        "id": "codex-intent-search-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "intent_search",
+        "verification": "prompted",
+        "entry": null
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "started_at": "2026-09-17T15:43:35.726Z",
+      "ended_at": "2026-09-17T15:45:49.492Z",
+      "tool_calls": 10,
+      "output_bytes": 112075,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 77373,
+        "files": [
+          {
+            "file": "evidence/07-skill.headers",
+            "bytes": 868,
+            "sha256": "3f475c9ff2c83798ca04f670cb4eb0b278f29769c152d14c591224d53b719e2c"
+          },
+          {
+            "file": "evidence/08-wallet-screen.options.headers",
+            "bytes": 772,
+            "sha256": "e8810d84ada6bfbc4d035d86dab06c1787b2aa988307497f64a10cde790449ad"
+          },
+          {
+            "file": "evidence/04-x402-base.body",
+            "bytes": 1955,
+            "sha256": "b6270e24fa780c8bef36b6b76a5cb335fc1b2d4c22776946312534ce50c12582"
+          },
+          {
+            "file": "evidence/13-attestation-verification.txt",
+            "bytes": 444,
+            "sha256": "ab8de5a2be6e0296e28bd731c0247a5dcdf4b19cdb8c3dad870c05c0c12a470b"
+          },
+          {
+            "file": "evidence/06-for-agents.headers",
+            "bytes": 878,
+            "sha256": "5f651ab41b5bd2c083f8cbc24ab271c15ac95960dcf2d8ac51539ada77fca781"
+          },
+          {
+            "file": "evidence/10-status.body",
+            "bytes": 2156,
+            "sha256": "d5d3d837dcd3453c960ead94c61ddfd8c2e1d48febd2ef795a70da06d8554e83"
+          },
+          {
+            "file": "evidence/11-free-company.headers",
+            "bytes": 851,
+            "sha256": "97d8e9acbe48ec3e7e35f72e006eadfa360d1cf5c2dee19004431db857bcaa1f"
+          },
+          {
+            "file": "evidence/04-x402-base.headers",
+            "bytes": 870,
+            "sha256": "d3ad48e64bf49200faf2b389016df2cb7994092a2c12427bca1745b9226e1ae5"
+          },
+          {
+            "file": "evidence/07-skill.body",
+            "bytes": 3530,
+            "sha256": "65a07276a231ee792b6e4471950a3885b351a12f58ceaf8a93f2dcd4c792d112"
+          },
+          {
+            "file": "evidence/12-payment-required.decoded.json",
+            "bytes": 3174,
+            "sha256": "ce1fd6599b19d682372d4a1e6d669b5b612d2f07116b330caf03eddc1a9e3c80"
+          },
+          {
+            "file": "evidence/03-origin-root.body",
+            "bytes": 4137,
+            "sha256": "839d2b3b5bf1d28bb8e20375c091c85e7e8bc99e2501e346015fc924e9af8112"
+          },
+          {
+            "file": "evidence/09-free-sample.headers",
+            "bytes": 858,
+            "sha256": "25382444b6f6e28a151390928f95c311adfad8a8605ec47d8ab5e465ee9d6e7a"
+          },
+          {
+            "file": "evidence/SOURCES.txt",
+            "bytes": 2025,
+            "sha256": "4e8ca640944c87161203ff69bd271fe99666031a1447ed81ed353455502fa7c9"
+          },
+          {
+            "file": "evidence/05-catalog.headers",
+            "bytes": 875,
+            "sha256": "88d08d0b6aac51d6d8e214cd54ddf4e382d0c7bfd9bcebe07687f83d9362c371"
+          },
+          {
+            "file": "evidence/01-wallet-screen.body",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/11-free-company.body",
+            "bytes": 4083,
+            "sha256": "a6a78364f037ea1a85ccae23e3c48e968ba61d04b049f7597bc9392cd5b51db5"
+          },
+          {
+            "file": "evidence/06-for-agents.body",
+            "bytes": 4149,
+            "sha256": "8727a030a7bbed5ddf951b4e4a4d8ba1c852f80fbfbbe17ef4b76c91da63acd6"
+          },
+          {
+            "file": "evidence/02-x402-manifest.body",
+            "bytes": 16572,
+            "sha256": "8b7f6da430f87aa0233b4e99a950883640445d4da2dc21a604bef74bc0d3976e"
+          },
+          {
+            "file": "evidence/08-wallet-screen.options.body",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "file": "evidence/02-x402-manifest.headers",
+            "bytes": 877,
+            "sha256": "6477934b96b9d81a3752ec779a4b8039e8b7c5bc325f3559c0e4f9be1b2aec9a"
+          },
+          {
+            "file": "evidence/09-free-sample.body",
+            "bytes": 2189,
+            "sha256": "95bd7ba20b68b1f0af3ba4d1c743864309a42aa058621751b7a84d131442acbc"
+          },
+          {
+            "file": "evidence/03-origin-root.headers",
+            "bytes": 816,
+            "sha256": "2df5727a6ee14f4c39fb9c3da0602050a9da49757d483217237581f5e84e969b"
+          },
+          {
+            "file": "evidence/05-catalog.body",
+            "bytes": 21242,
+            "sha256": "975b9a3c816bb44ff3564f180517bff2a1a77088c734889536b1a0deffbecbf1"
+          },
+          {
+            "file": "evidence/01-wallet-screen.headers",
+            "bytes": 3193,
+            "sha256": "e0ef666a736e05a44097d94883b4d62424bc08ea0156762e9283cdc609287872"
+          },
+          {
+            "file": "evidence/10-status.headers",
+            "bytes": 857,
+            "sha256": "4b2d2b16a470224c1d1a0a183aef4b7f3a999d210e853832b50c90989ac294fe"
+          }
+        ],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "codex-cli 0.153.4"
+      },
+      "resolved_models": [],
+      "trace_sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+      "review_sha256": "8db4326e63b771f3a9108d6353d736c40e2b952367fa320dcd72d41ca3f5ce48",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T15:46:33.639402+00:00",
+        "transcript_sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed initial disclosure and every command/search/file-change event. Only public HTTPS data and files created inside this fresh session were accessed; no repository, credential, prior-session or payment action was observed.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "0d7ca1061c8355c463f3fa84cad6db301a29df1f228d34fe62b44025500c0d35"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "fail",
+            "reason": "The unbranded search returned other directories/observatories, and the agent stayed with the merchant. No SCVD selection or request occurred; this bounded miss does not prove catalogue absence.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+                "start_line": 30,
+                "end_line": 30
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46"
+              }
+            ]
+          },
+          "connect": {
+            "state": "incomplete",
+            "reason": "No SCVD connection was attempted.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+                "start_line": 30,
+                "end_line": 30
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46"
+              }
+            ]
+          },
+          "check": {
+            "state": "incomplete",
+            "reason": "Merchant quote inspection occurred, but no SCVD preflight or evidence instrument was used.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+                "start_line": 30,
+                "end_line": 30
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46"
+              }
+            ]
+          },
+          "decide": {
+            "state": "pass",
+            "reason": "The agent distinguished an unsigned quote, sample signature integrity, missing issuer identity and untested paid delivery. It did not authorize payment.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+                "start_line": 30,
+                "end_line": 30
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "incomplete",
+            "reason": "The retained signed object is the merchant\u2019s Stripe company sample, not SCVD evidence about the requested endpoint.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+                "start_line": 30,
+                "end_line": 30
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46"
+              }
+            ]
+          },
+          "verify": {
+            "state": "incomplete",
+            "reason": "Local checks of the merchant sample do not qualify as verification of SCVD evidence for this endpoint; no qualifying recipient handoff exists.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46",
+                "start_line": 30,
+                "end_line": 30
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "3b7f5db67300ca1010d499755c16c0171751d9675589e237358348b3c2e01b46"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only free reads and an unsigned challenge were exercised; paid retry remains untested."
+        },
+        "notes": [
+          "Native search results are represented by search actions and the agent\u2019s named sources, not a full search-results snapshot.",
+          "Merchant signature results were reported in the captured trace; no independent parent audit of that unrelated sample is claimed."
+        ]
+      }
+    },
+    {
+      "cell": {
+        "id": "claude-intent-search-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "intent_search",
+        "verification": "prompted",
+        "entry": null
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "started_at": "2026-09-17T15:45:49.499Z",
+      "ended_at": "2026-09-17T15:48:18.329Z",
+      "tool_calls": 13,
+      "output_bytes": 120748,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 0,
+        "files": [],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "2.1.274 (Claude Code)"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "trace_sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+      "review_sha256": "6eff8cae74c82a0b081200b0a8be1e4dea3885eff48f0e23cc52776635b2530a",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T15:49:21.082220+00:00",
+        "transcript_sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed initial disclosure and every tool request. Only public web reads and one denied local capture command were attempted; no repository, credential, prior-session or payment access was observed.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "d7caef34589cd54f262b9071bf4ab62efe91b2e1f8a43617024ce6af73d37863"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "fail",
+            "reason": "Public searches returned merchant listings, protocol documentation and an old issue. No SCVD selection or request occurred; this is a bounded discovery miss, not catalogue absence.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+                "start_line": 98,
+                "end_line": 98
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8"
+              }
+            ]
+          },
+          "connect": {
+            "state": "incomplete",
+            "reason": "No SCVD connection was attempted.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+                "start_line": 98,
+                "end_line": 98
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8"
+              }
+            ]
+          },
+          "check": {
+            "state": "incomplete",
+            "reason": "No SCVD instrument was used, and the exact merchant quote was not captured.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+                "start_line": 98,
+                "end_line": 98
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8"
+              }
+            ]
+          },
+          "decide": {
+            "state": "incomplete",
+            "reason": "The final clearly leaves payment and signatures unverified, but its standard-x402-gate conclusion exceeds the captured status-only probe. There is no SCVD reading to interpret.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+                "start_line": 98,
+                "end_line": 98
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "incomplete",
+            "reason": "No original response files were retained. A compound Bash command was denied; the agent then relied on summarized WebFetch results.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+                "start_line": 98,
+                "end_line": 98
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8"
+              }
+            ]
+          },
+          "verify": {
+            "state": "incomplete",
+            "reason": "No signed evidence or independently acquired issuer key was retained, and no local verification occurred.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+                "start_line": 98,
+                "end_line": 98
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only public free reads were completed; no paid retry."
+        },
+        "environment_confounds": [
+          {
+            "reason": "Restricted Bash denied a compound mkdir/curl/cat command. The model generalized that refusal to all Bash/file-writing capability; allowed simple commands were not independently tested in this cell. This is not an SCVD origin failure.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "13e89cfab3d37a380f1e374dbf60394f064dfdb63fffe1acc4aa6c8b7fe0aad8",
+                "start_line": 16,
+                "end_line": 18
+              }
+            ]
+          }
+        ],
+        "notes": [
+          "A guessed issuer-key URL from a WebFetch summary returned 404; the final explicitly recognized the guess.",
+          "No raw merchant quote or cryptographic artifact was retained; summarized WebFetch output is not original evidence."
+        ]
+      }
+    },
+    {
+      "cell": {
+        "id": "codex-directed-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "started_at": "2026-09-17T15:48:18.331Z",
+      "ended_at": "2026-09-17T15:50:49.692Z",
+      "tool_calls": 14,
+      "output_bytes": 1176465,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 23460750,
+        "files": [
+          {
+            "file": "evidence/x402-verify.js",
+            "bytes": 39503,
+            "sha256": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
+          },
+          {
+            "file": "evidence/service-audit-menu.url",
+            "bytes": 51,
+            "sha256": "fead79e56c9a201f7dbafde33de0746648200562d1bbc2823ff828a90f9794de"
+          },
+          {
+            "file": "evidence/merchant-wallet-screen.body",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/scvd-signing-key",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/merchant-wallet-screen-with-address.url",
+            "bytes": 100,
+            "sha256": "857c09f41beb272213cc1fc5b46135c6e73628de8e207a8859943152f45243b5"
+          },
+          {
+            "file": "evidence/preflight-v2.json",
+            "bytes": 15575,
+            "sha256": "23712821fb380582c326cbf92df40465e3221669bf5ed1e62f70a1d85283e20f"
+          },
+          {
+            "file": "evidence/merchant-wallet-screen-with-address.headers",
+            "bytes": 3263,
+            "sha256": "10ad1f200d5881456c54ebc2dabc131cc29875351427309691e0c471e598b8d4"
+          },
+          {
+            "file": "evidence/preflight-v2.url",
+            "bytes": 36,
+            "sha256": "5dd92496927dfa3945b376c57e4edf149e6dbb32374ddc8db1c638be7fad8675"
+          },
+          {
+            "file": "evidence/corpus-lionx402.url",
+            "bytes": 49,
+            "sha256": "bfd1414fe2fdbe5561117e2ffb766aacdf735deaf01593d4843f02609d28a36c"
+          },
+          {
+            "file": "evidence/verifier-page.html",
+            "bytes": 353636,
+            "sha256": "893648e7cd6992e61ea6ddfaa47994ff59511fd74ae211849e718efb6bdb85d8"
+          },
+          {
+            "file": "evidence/verifier-page.url",
+            "bytes": 74,
+            "sha256": "491877360dc01da927a30f63244519daf613b5f2f6755d6c98894c227ec2f611"
+          },
+          {
+            "file": "evidence/x402-verify.url",
+            "bytes": 99,
+            "sha256": "47802b66bf3927d78517f25f2699cfb1a7680285060599a6272df944010dbb51"
+          },
+          {
+            "file": "evidence/scvd-did.url",
+            "bytes": 40,
+            "sha256": "56395ffab5c262f4e064daa4abd9fc79ffd4675f88c35ba3ba8093aa57cd968b"
+          },
+          {
+            "file": "evidence/service-audit-menu.json",
+            "bytes": 9112,
+            "sha256": "898b7f932cd0279ae13854a03e32d9795ee6d1c44f0bc230c6a0d3cd93824cab"
+          },
+          {
+            "file": "evidence/evidence-bundle.js",
+            "bytes": 9551,
+            "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+          },
+          {
+            "file": "evidence/corpus-index.url",
+            "bytes": 31,
+            "sha256": "b707ce11847f25a5eeda9b27f85932000ec5741f869049cb58b10d70b10b4b57"
+          },
+          {
+            "file": "evidence/evidence-cli.mjs",
+            "bytes": 6740,
+            "sha256": "9e87839106c858ecaba6ff69dbfc58760561d24177cc1d4ff0f1ea09084563c3"
+          },
+          {
+            "file": "evidence/evidence-bundle.url",
+            "bytes": 103,
+            "sha256": "5bd949ca205fe4204f42c788167d0b7baa5efe4da4c6b86ec7158aef5dca5902"
+          },
+          {
+            "file": "evidence/merchant-wallet-screen.headers",
+            "bytes": 3201,
+            "sha256": "4a5cf1bd59c9a46bcc6b85d194df5baf035c86be2dc7c62b5ca2d2622673bf8d"
+          },
+          {
+            "file": "evidence/corpus-6.json",
+            "bytes": 11485079,
+            "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+          },
+          {
+            "file": "evidence/scvd-signing-key.url",
+            "bytes": 48,
+            "sha256": "9c1dab151aecc99365d1e61c37b0cb095f7b15b0439418284043570c296e765a"
+          },
+          {
+            "file": "evidence/corpus-lionx402.json",
+            "bytes": 9316,
+            "sha256": "3a903a1b90ed435e01610165724d8d2ff7450d6c1c54162980664d0e2ed3f277"
+          },
+          {
+            "file": "evidence/SKILL.md",
+            "bytes": 7172,
+            "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb"
+          },
+          {
+            "file": "evidence/scvd-did.json",
+            "bytes": 1761,
+            "sha256": "5e87062940e0235768c1076f2c3ec5e7322d0ce1e9f43c34590de52968f2a116"
+          },
+          {
+            "file": "evidence/verifier-README.md",
+            "bytes": 17872,
+            "sha256": "13c31b74ee028649724ffcb022c6cbd9211e1e3dec3aa9a1bb22355c2404fe2a"
+          },
+          {
+            "file": "evidence/verifier-README.url",
+            "bytes": 94,
+            "sha256": "2ccd385bba208330f4b79af506170674963e85673cfb7b5c1f5133aeaf979776"
+          },
+          {
+            "file": "evidence/merchant-wallet-screen-with-address.body",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/corpus-6.url",
+            "bytes": 33,
+            "sha256": "dea45bef93426264dfaa9a703d14d5d8523c820f0121dc0ff04c6fa12e18ae2c"
+          },
+          {
+            "file": "evidence/evidence-cli.url",
+            "bytes": 101,
+            "sha256": "560835ab405fa6f0acdf76b9f33c97e734bed90b28c0c88ffd95340593a90900"
+          },
+          {
+            "file": "evidence/merchant-wallet-screen.url",
+            "bytes": 49,
+            "sha256": "ed9f3775c48ae14c92ffd3f4d1a75441156bf2c03e2fdced469de54eafeef2d9"
+          },
+          {
+            "file": "evidence/corpus-index.json",
+            "bytes": 11494918,
+            "sha256": "d94d0ad9b9b3b450bfeae4947918a4423d571de9cdd52005c29143555b945092"
+          }
+        ],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "codex-cli 0.153.4"
+      },
+      "resolved_models": [],
+      "trace_sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+      "review_sha256": "3686901b883ccf8cee435175854138fcdc0cb924dc0b9aa49e32a6fd05cc2a6c",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T15:57:35.561526+00:00",
+        "transcript_sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed the launch, initial disclosure and every tool request. Executed reads were public HTTPS or files created inside this fresh session. No credential, prior-session, repository, wallet or payment access was observed. Denied requests, if any, remain recorded.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "811e23f870c3ea060a64c92f940068c1d72035979d2bda0e2bc6e75985af8cd6"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "not_applicable",
+            "reason": "Supplied public skill URL; discovery is excluded.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+                "start_line": 36,
+                "end_line": 36
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90"
+              }
+            ]
+          },
+          "connect": {
+            "state": "pass",
+            "reason": "Read the public skill and used its HTTP fallback successfully without a preconfigured SCVD connection.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+                "start_line": 36,
+                "end_line": 36
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90"
+              }
+            ]
+          },
+          "check": {
+            "state": "pass",
+            "reason": "Ran the exact-subject free preflight and read ready/L3a with its explicit unsigned scope and advisories; retained dated matching historical evidence.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+                "start_line": 36,
+                "end_line": 36
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90"
+              }
+            ]
+          },
+          "decide": {
+            "state": "pass",
+            "reason": "Separated present unpaid reachability, historical observation, signature integrity and issuer-key provenance from truth, paid settlement and delivery. No payment was attempted.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+                "start_line": 36,
+                "end_line": 36
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "pass",
+            "reason": "Retained complete original corpus/6.json and a separately requested issuer-key document; free historical evidence was delivered.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+                "start_line": 36,
+                "end_line": 36
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90"
+              }
+            ]
+          },
+          "verify": {
+            "state": "pass",
+            "reason": "The buyer locally reconstructed the canonical snapshot, matched its digest and verified Ed25519 against the separately fetched key. The existing portable verifier independently confirms the retained original, and a fresh recipient verified it and understood its historical limits.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+                "start_line": 36,
+                "end_line": 36
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90"
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+                "start_line": 29,
+                "end_line": 31
+              },
+              {
+                "file": "recipient/parent-verification.json",
+                "sha256": "d9c1cd02a9bbe6c8a1ef072b9644976ad12685f3ba0c0d72514accbd15edd811"
+              },
+              {
+                "file": "recipient/result.txt",
+                "sha256": "4397509e123aafcdcf991dfe23eb20d1a83878a4d1872b2263987dafa8d10e41"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only free requests, unsigned challenges and local processing were executed. Payment and paid delivery remain untested."
+        },
+        "notes": [
+          "stale_after is the frozen 14-day historical review window, not an issuer-declared expiry. Live preflight is one request at one moment and does not establish ongoing delivery.",
+          "The recipient received the exact original, captured issuer key and final buyer report plus separately labeled public verifier modules. No parent-created answer or verification verdict was supplied. The parent-derived bundle is review machinery; the buyer did not export a portable bundle.",
+          "The recipient correctly notes its subset contains only one signed historical row; the buyer\u2019s three-round/60% statements came from the separate unsigned host summary, which was not included in that subset.",
+          "Reviewed all recipient commands: no network or unrelated local reads; 12 tool events, completed before caps."
+        ],
+        "observation": {
+          "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+          "observed_at": "2026-09-07T02:30:20.531Z",
+          "stale_after": "2026-09-21T02:30:20.531Z"
+        },
+        "fulfillment": "delivered",
+        "verification": {
+          "format": "portable",
+          "artifact": {
+            "file": "evidence/corpus-6.json",
+            "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+          },
+          "issuer": {
+            "file": "evidence/scvd-signing-key",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+          "issuer_evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "0902f8a4e7ca9acaf6ae4d17cd57805f817fda372bd6e6240ea0f6a173619a90",
+              "start_line": 15,
+              "end_line": 18
+            },
+            {
+              "file": "evidence/scvd-signing-key.url",
+              "sha256": "9c1dab151aecc99365d1e61c37b0cb095f7b15b0439418284043570c296e765a"
+            }
+          ],
+          "subject_pointer": "/round/hosts/50/url",
+          "observed_at_pointer": "/round/hosts/50/observed_at"
+        },
+        "recipient": {
+          "state": "reviewed",
+          "understands": true,
+          "evidence": [
+            {
+              "file": "recipient/events.jsonl",
+              "sha256": "14aa847d7b436decd7dc8a1f8dfac19d2c8d1e1ee0eb4dda9248b2c2643db3ed"
+            },
+            {
+              "file": "recipient/result.txt",
+              "sha256": "4397509e123aafcdcf991dfe23eb20d1a83878a4d1872b2263987dafa8d10e41"
+            },
+            {
+              "file": "recipient/launch.json",
+              "sha256": "15e1815a59233e4e844eb2cf1006e9d0633a085588a3307c0be6622dcfbc8697"
+            },
+            {
+              "file": "recipient/input-manifest.json",
+              "sha256": "bb5fe1500f09c75ff0d23e2aba34ce86218f9ea16b1d239f9b3f26ffee266814"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "cell": {
+        "id": "claude-directed-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "started_at": "2026-09-17T15:50:49.730Z",
+      "ended_at": "2026-09-17T15:52:55.198Z",
+      "tool_calls": 18,
+      "output_bytes": 190692,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 11528749,
+        "files": [
+          {
+            "file": "evidence/skill_md_body.txt",
+            "bytes": 7172,
+            "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb"
+          },
+          {
+            "file": "evidence/target_endpoint_body.json",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/signing_key_headers.txt",
+            "bytes": 972,
+            "sha256": "3c489006b3f3ca89774fba78bf47869abb65c1296f712703f6d032e71e332c45"
+          },
+          {
+            "file": "evidence/skill_md_headers.txt",
+            "bytes": 897,
+            "sha256": "e426a097ec3a32d0f35ba31582fba2c78ef39d3eb53591d6a753b57f2cbb29ff"
+          },
+          {
+            "file": "evidence/corpus6_headers.txt",
+            "bytes": 1193,
+            "sha256": "cda848d93110fa1a0f549653004c70dba58fa616ab46eef08d3f9d6d36ac7692"
+          },
+          {
+            "file": "evidence/corpus_headers.txt",
+            "bytes": 1138,
+            "sha256": "a61df0c2501edf2afb2b4726c949038ec9c8c924407ac90112a306308ace77fd"
+          },
+          {
+            "file": "evidence/corpus6_body.json",
+            "bytes": 11485079,
+            "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+          },
+          {
+            "file": "evidence/preflight_headers.txt",
+            "bytes": 1075,
+            "sha256": "a69e50b36d5433d099affc8449abc52346acc37040acd4bdddaf01d3a62cd325"
+          },
+          {
+            "file": "evidence/corpus_body.json",
+            "bytes": 9316,
+            "sha256": "43cf61aaa36ea5b7a65fd53c56ef8bbf8ba9843654bcc9717db907e565f8e331"
+          },
+          {
+            "file": "evidence/preflight_body.json",
+            "bytes": 15575,
+            "sha256": "b3b0ad1726d6e9efea2d4773a502dba6953a55dab61554bb3aaff4fa28861099"
+          },
+          {
+            "file": "evidence/signing_key_body.txt",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/target_endpoint_headers.txt",
+            "bytes": 3191,
+            "sha256": "48db96a1f3e98d8e508455f88e5821d9ba2e91b65f723512ffc241c1f904f8f5"
+          }
+        ],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "2.1.274 (Claude Code)"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "trace_sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+      "review_sha256": "9abb0cc2f99808dc1010d470dc128148cf290458c6b70c38f4f8882b59a68434",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T16:02:22.219165+00:00",
+        "transcript_sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed the launch, initial disclosure and every tool request. Executed reads were public HTTPS or files created inside this fresh session. No credential, prior-session, repository, wallet or payment access was observed. Denied requests, if any, remain recorded.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "5af0d1a762fb1ab991149c0d63345e609b28767eff301b2038c1cca8316da405"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "not_applicable",
+            "reason": "Public skill URL supplied; this is a referral test, not discovery.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+                "start_line": 112,
+                "end_line": 112
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db"
+              }
+            ]
+          },
+          "connect": {
+            "state": "pass",
+            "reason": "Fetched the public skill and successfully called the documented HTTP preflight.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+                "start_line": 112,
+                "end_line": 112
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db"
+              }
+            ]
+          },
+          "check": {
+            "state": "pass",
+            "reason": "Used SCVD preflight on the exact requested endpoint and read structural checks plus historical coverage. The dated historical row remains within the frozen 14-day review window.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+                "start_line": 112,
+                "end_line": 112
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db"
+              }
+            ]
+          },
+          "decide": {
+            "state": "fail",
+            "reason": "The final report correctly withholds payment/delivery and crypto claims, but says no signed merchant commitment exists. The observed absence is confined to one challenge path; it cannot establish a universal absence. The report also says no red flags despite reporting retry-safety and authenticity gaps.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+                "start_line": 112,
+                "end_line": 112
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "pass",
+            "reason": "Retained the original signed corpus response and separately fetched issuer key as complete bytes. This is delivered free historical evidence, not a paid report.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+                "start_line": 112,
+                "end_line": 112
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db"
+              }
+            ]
+          },
+          "verify": {
+            "state": "incomplete",
+            "reason": "The buyer explicitly did not perform cryptographic verification. It inspected signature/key fields only; later parent verification cannot supply the missing buyer behavior.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db",
+                "start_line": 112,
+                "end_line": 112
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "438c7431bd652458b18131365060507033cc31fccdcd947d937ab7af35a879db"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only free requests, unsigned challenges and local processing were executed. Payment and paid delivery remain untested."
+        },
+        "notes": [
+          "Observation dates name the matching signed historical row, not the snapshot publication date. stale_after is the frozen 14-day review policy, not an issuer-declared expiry or a current-delivery guarantee.",
+          "A separate fresh recipient later verified the exact original. This does not repair the buyer\u2019s unperformed verification. All recipient tool requests were reviewed; no network or unrelated file reads were observed.",
+          "The recipient received only the signed original, issuer key and buyer report, with separately labeled public verifier modules. Other unsigned live/host summaries were outside that supplied subset."
+        ],
+        "observation": {
+          "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+          "observed_at": "2026-09-07T02:30:20.531Z",
+          "stale_after": "2026-09-21T02:30:20.531Z"
+        },
+        "environment_confounds": [
+          {
+            "reason": "The frozen Claude allowlist permits curl and node, but the buyer chose python3, base64 and openssl commands which were denied. Allowed node verification was not attempted. This is a host/choice confound, not an SCVD origin failure.",
+            "trace_lines": [
+              43,
+              45,
+              82,
+              84,
+              88,
+              90,
+              95,
+              97,
+              101,
+              103
+            ]
+          }
+        ],
+        "fulfillment": "delivered",
+        "recipient": {
+          "state": "reviewed",
+          "understands": false,
+          "reason": "The recipient verified the original and correctly identified subject, date, undeclared expiry and delivery limits, but incorrectly called the buyer\u2019s statement that it had not verified the signature false merely because the recipient verified it later. Later verification does not rewrite buyer behavior.",
+          "evidence": [
+            {
+              "file": "recipient/events.jsonl",
+              "sha256": "5835c8f44ba64b1dd15ad8c85226850fdd2569664de3b96a4032659f9eac47b8"
+            },
+            {
+              "file": "recipient/result.txt",
+              "sha256": "dace1f637506b1ecee804abe77ab3f20e7c77140478a2133aae3a696bb030376"
+            },
+            {
+              "file": "recipient/launch.json",
+              "sha256": "65b4dcf17d16963d2d5dc3767a4520e8bc39ed1ed7d63617b7e8bb099d4aac86"
+            },
+            {
+              "file": "recipient/input-manifest.json",
+              "sha256": "56aa46400544c30686980cd0926932a2218c4d235fdaf6ea3e9f484bb6ca98b6"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "cell": {
+        "id": "codex-intent-search-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "intent_search",
+        "verification": "prompted",
+        "entry": null
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "started_at": "2026-09-17T15:52:55.217Z",
+      "ended_at": "2026-09-17T15:56:02.927Z",
+      "tool_calls": 15,
+      "output_bytes": 158684,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 155014,
+        "files": [
+          {
+            "file": "evidence/status.headers.txt",
+            "bytes": 847,
+            "sha256": "19b7e9819845e43eda957cc142f296fef0e012224928c4c4ccf1e3eec760d2bf"
+          },
+          {
+            "file": "evidence/catalog.body",
+            "bytes": 21242,
+            "sha256": "975b9a3c816bb44ff3564f180517bff2a1a77088c734889536b1a0deffbecbf1"
+          },
+          {
+            "file": "evidence/for-agents.body",
+            "bytes": 4149,
+            "sha256": "8727a030a7bbed5ddf951b4e4a4d8ba1c852f80fbfbbe17ef4b76c91da63acd6"
+          },
+          {
+            "file": "evidence/openapi.body",
+            "bytes": 47315,
+            "sha256": "780fcadbf6411ca48c1389ffbd72f0652d06533206ee90d4dd40be9dda45d596"
+          },
+          {
+            "file": "evidence/status.body",
+            "bytes": 2156,
+            "sha256": "0d6ecb5bad5cc322926150718326110d49513046e3107dd878b39dfe3a126844"
+          },
+          {
+            "file": "evidence/skill.body",
+            "bytes": 3530,
+            "sha256": "65a07276a231ee792b6e4471950a3885b351a12f58ceaf8a93f2dcd4c792d112"
+          },
+          {
+            "file": "evidence/wallet-screen.headers.txt",
+            "bytes": 3241,
+            "sha256": "51cc84dc4d03bde4e038bc6f43ce6755aa30a72ffc2fe8ba97fd8a286787e001"
+          },
+          {
+            "file": "evidence/well-known-agent.headers.txt",
+            "bytes": 822,
+            "sha256": "55cd84c749cec7abb04a625f25b4c8b0c28c2674c4e0302d4499fa2529fb5bd7"
+          },
+          {
+            "file": "evidence/well-known-x402.headers.txt",
+            "bytes": 877,
+            "sha256": "2d4fac84cfa74b6bb4f7226b548229a40d0d77d3ecb5124780a7dfdfec69af7e"
+          },
+          {
+            "file": "evidence/wallet-screen.payment-required.pretty.json",
+            "bytes": 3174,
+            "sha256": "ce1fd6599b19d682372d4a1e6d669b5b612d2f07116b330caf03eddc1a9e3c80"
+          },
+          {
+            "file": "evidence/wallet-screen.payment-required.decoded.json",
+            "bytes": 1766,
+            "sha256": "e541f4ecf0699c796d6486546f4c89434ec57093756c01c06f07b567d4f10c5e"
+          },
+          {
+            "file": "evidence/query-address.body",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/well-known-x402-plain.body",
+            "bytes": 1955,
+            "sha256": "b6270e24fa780c8bef36b6b76a5cb335fc1b2d4c22776946312534ce50c12582"
+          },
+          {
+            "file": "evidence/SOURCES.txt",
+            "bytes": 871,
+            "sha256": "d399ca0b1cf51d81e80f9707e6b6b6d7c0941fde792bf84ce52af4bc1ef78b47"
+          },
+          {
+            "file": "evidence/catalog.headers.txt",
+            "bytes": 869,
+            "sha256": "4eb74b20d4c6a1c29b7c404bc8ef2f5a800d7dba9c1c5886f411b09b30c72f11"
+          },
+          {
+            "file": "evidence/wallet-screen.body.json",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/query-address.headers.txt",
+            "bytes": 3259,
+            "sha256": "9cfc240a9db926ad954eba902010b0d572dc1af8ed2ffa4a153720a9a0f44db5"
+          },
+          {
+            "file": "evidence/well-known-x402.body",
+            "bytes": 16572,
+            "sha256": "8b7f6da430f87aa0233b4e99a950883640445d4da2dc21a604bef74bc0d3976e"
+          },
+          {
+            "file": "evidence/REQUEST_LOG.txt",
+            "bytes": 1689,
+            "sha256": "9d4aed4edd1beef2d7f90386b07c478f8a654f89c2909765654fa91b376213e0"
+          },
+          {
+            "file": "evidence/for-agents.headers.txt",
+            "bytes": 884,
+            "sha256": "64d76e40136d3487c926dfa02809442fe8220d424460c675e5db22d8b1c6ba73"
+          },
+          {
+            "file": "evidence/lionx-agents.body",
+            "bytes": 32202,
+            "sha256": "3e744786ad9ed3b1ded6d71a60c803d1dd702934e9a2b858977c4b94527a4816"
+          },
+          {
+            "file": "evidence/well-known-agent.body",
+            "bytes": 21,
+            "sha256": "d2dfdc9511fbeaa0701d1f8730f4989313b062ca1b61a2bd8bed8f4f5d654b5d"
+          },
+          {
+            "file": "evidence/skill.headers.txt",
+            "bytes": 868,
+            "sha256": "b47e6391f4d338a233f612b9a266205db59c04aa397b4c53e5110e777ff39787"
+          },
+          {
+            "file": "evidence/well-known-x402-plain.headers.txt",
+            "bytes": 866,
+            "sha256": "6db7759bf0e187a529728078e8d398f6739c88943e3feb33dd05a7dea1360620"
+          },
+          {
+            "file": "evidence/DECISION_NOTES.txt",
+            "bytes": 1108,
+            "sha256": "255004acd316151cc6bee89ded1eedc24fd07abb7218387bffbf631bef5e6693"
+          },
+          {
+            "file": "evidence/ISSUER_KEY_OBSERVATIONS.txt",
+            "bytes": 745,
+            "sha256": "3113b15e3a64c0c22c5717df798f4c9c507c5ff0a07139efb7022e8664c7a944"
+          },
+          {
+            "file": "evidence/openapi.headers.txt",
+            "bytes": 881,
+            "sha256": "88c0da985d0d7b1c52de6ceef74992e6e7d8ea33c48b5f270034b6775cf78bf2"
+          },
+          {
+            "file": "evidence/SHA256SUMS.txt",
+            "bytes": 2874,
+            "sha256": "cd82ed5acba6d76e99b03f099f7665171336c95057803f3f18a5b7907f590878"
+          },
+          {
+            "file": "evidence/lionx-agents.headers.txt",
+            "bytes": 227,
+            "sha256": "ea241c6f08a0a013aa4b45d868048743f7d293171734bc2d133e7ed11f42c3ed"
+          }
+        ],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "codex-cli 0.153.4"
+      },
+      "resolved_models": [],
+      "trace_sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+      "review_sha256": "8796716a0ae302271c504d4dd4ea640d33e130a588fcd89bb2a01fb7d2a32a77",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T15:56:38.917957+00:00",
+        "transcript_sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed the launch, initial disclosure and every tool request. Executed reads were public HTTPS or files created inside this fresh session. No credential, prior-session, repository, wallet or payment access was observed. Denied requests, if any, remain recorded.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "afa3518b4adad55071c1f0a26a763c6b94ca630645521e609f7394a535bded17"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "fail",
+            "reason": "Unbranded merchant-focused searches selected merchant pages and other public references, with no SCVD selection/request. This is a bounded discovery miss, not evidence of catalogue absence.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+                "start_line": 42,
+                "end_line": 42
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708"
+              }
+            ]
+          },
+          "connect": {
+            "state": "incomplete",
+            "reason": "No SCVD connection attempted.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+                "start_line": 42,
+                "end_line": 42
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708"
+              }
+            ]
+          },
+          "check": {
+            "state": "incomplete",
+            "reason": "Merchant challenge was decoded and matched to published protocol format, but no SCVD instrument was used.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+                "start_line": 42,
+                "end_line": 42
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708"
+              }
+            ]
+          },
+          "decide": {
+            "state": "pass",
+            "reason": "Correctly distinguishes unsigned merchant metadata and challenge from paid settlement/delivery, and leaves attestation validity unexercised.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+                "start_line": 42,
+                "end_line": 42
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "incomplete",
+            "reason": "No signed SCVD evidence captured.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+                "start_line": 42,
+                "end_line": 42
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708"
+              }
+            ]
+          },
+          "verify": {
+            "state": "incomplete",
+            "reason": "No qualifying signed evidence or recipient handoff.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708",
+                "start_line": 42,
+                "end_line": 42
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "79f42898716003c638dea3f35f3da31a252198e3500beb2c3372e49b39219708"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only free requests, unsigned challenges and local processing were executed. Payment and paid delivery remain untested."
+        },
+        "notes": [
+          "All command/search/file-change requests reviewed; file changes were confined to public-evidence notes inside this neutral run.",
+          "Native search events do not retain a full result set."
+        ]
+      }
+    },
+    {
+      "cell": {
+        "id": "claude-intent-search-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "intent_search",
+        "verification": "prompted",
+        "entry": null
+      },
+      "runtime": {
+        "state": "failed",
+        "exit_code": 143,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": "tool_calls"
+      },
+      "started_at": "2026-09-17T15:56:02.936Z",
+      "ended_at": "2026-09-17T15:59:05.941Z",
+      "tool_calls": 21,
+      "output_bytes": 143902,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 3195,
+        "files": [
+          {
+            "file": "evidence/body_get.json",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/headers_get.txt",
+            "bytes": 3193,
+            "sha256": "d83eda0a91d30d9b960293c651e811577fad1c6d1a2ab643f7e2645b36cc32a9"
+          }
+        ],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "2.1.274 (Claude Code)"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "trace_sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+      "review_sha256": "2bbe2a31fc144b5c81458a87736ef7d8d087e65db87cb8c926a90d09175b6714",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T15:59:32.667327+00:00",
+        "transcript_sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed the launch, initial disclosure and every tool request. Executed reads were public HTTPS or files created inside this fresh session. No credential, prior-session, repository, wallet or payment access was observed. Denied requests, if any, remain recorded.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "6c9d8f786c865edaf765d6a434740c6d7ce6923ad628de4d40c7944bf0892209"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "incomplete",
+            "reason": "No SCVD selection/request was observed before the 21st tool event triggered the frozen 20-event guard. The capped journey is incomplete, not a completed product verdict.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+                "start_line": 114,
+                "end_line": 114
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085"
+              }
+            ]
+          },
+          "connect": {
+            "state": "incomplete",
+            "reason": "No SCVD connection before interruption.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+                "start_line": 114,
+                "end_line": 114
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085"
+              }
+            ]
+          },
+          "check": {
+            "state": "incomplete",
+            "reason": "Merchant quote acquired and eventually decoded, but no SCVD instrument was used.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+                "start_line": 114,
+                "end_line": 114
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085"
+              }
+            ]
+          },
+          "decide": {
+            "state": "incomplete",
+            "reason": "No final decision before the cap; tool-policy debugging consumed the remaining budget.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+                "start_line": 114,
+                "end_line": 114
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "incomplete",
+            "reason": "Only merchant headers and body retained; no signed SCVD evidence.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+                "start_line": 114,
+                "end_line": 114
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085"
+              }
+            ]
+          },
+          "verify": {
+            "state": "incomplete",
+            "reason": "No qualifying signed artifact or recipient handoff.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085",
+                "start_line": 114,
+                "end_line": 114
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "753535f7f19670e841cf03fcadc4f40fa663d4b748fc3ad6781851ee0a842085"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only free requests, unsigned challenges and local processing were executed. Payment and paid delivery remain untested."
+        },
+        "notes": [
+          "All tool requests reviewed. No external mutation, credential read or payment attempt observed.",
+          "This is a host-permission/model-choice confound, not an SCVD origin failure. Simple curl worked after a denied compound command. The model repeatedly used restricted write/decoding commands instead of the allowed node path."
+        ],
+        "environment_confounds": [
+          {
+            "reason": "Multiple compound commands, shell redirects and python3 were denied; simple curl and read-only Bash commands succeeded. The tool budget ended the run without a final response.",
+            "trace_lines": [
+              17,
+              19,
+              40,
+              42,
+              49,
+              50,
+              52,
+              54,
+              55,
+              57,
+              62,
+              64,
+              71,
+              73,
+              75,
+              77,
+              81,
+              83,
+              90,
+              92,
+              112,
+              114
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cell": {
+        "id": "codex-directed-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "started_at": "2026-09-17T15:59:05.944Z",
+      "ended_at": "2026-09-17T16:01:25.026Z",
+      "tool_calls": 10,
+      "output_bytes": 1137765,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 11532152,
+        "files": [
+          {
+            "file": "evidence/corpus-host.headers",
+            "bytes": 1139,
+            "sha256": "924c8479a883849e0f57e4ca93338eb5d438f91e0ef1b1edfc1e791449940ac3"
+          },
+          {
+            "file": "evidence/corpus6.headers",
+            "bytes": 1190,
+            "sha256": "b1795572c48be713d2da5b0d9f7b028481a33945a8089b884f7e50415c52056f"
+          },
+          {
+            "file": "evidence/corpus6.json",
+            "bytes": 11485079,
+            "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+          },
+          {
+            "file": "evidence/verification.txt",
+            "bytes": 1773,
+            "sha256": "c96932d0e8bc3f36c22b447a6c7c22225a8ec4c2f8008419ee621e29641380b3"
+          },
+          {
+            "file": "evidence/merchant.headers",
+            "bytes": 3185,
+            "sha256": "0cdde85c8e60388688c79270ffba001ff2a969877dd3f34213699e3dd1fa5b53"
+          },
+          {
+            "file": "evidence/corpus-host.json",
+            "bytes": 9316,
+            "sha256": "2380bdcdcdb1edfe692cfa2901c13179ff91fc19664f09cbcafd886cae1bbdcf"
+          },
+          {
+            "file": "evidence/merchant.body",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/hosts-week.json",
+            "bytes": 711,
+            "sha256": "8f48250e18ccb08840b8800eac4c7c86ddeb937141840971bdd26b7ecd5e1a24"
+          },
+          {
+            "file": "evidence/issuer-key.headers",
+            "bytes": 972,
+            "sha256": "39c84a1df9e3879ca00616dd875e18addd6c44ff72a9a26d8861dd3b9a450835"
+          },
+          {
+            "file": "evidence/issuer-key",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/skill.headers",
+            "bytes": 896,
+            "sha256": "659b9cacd19497afb822524e30f5fadc709920a46c3a5e4a8380ba7f5364daf3"
+          },
+          {
+            "file": "evidence/skill.md",
+            "bytes": 7172,
+            "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb"
+          },
+          {
+            "file": "evidence/preflight.headers",
+            "bytes": 1079,
+            "sha256": "3eff4786466071eaabebc4b88b05e4043b1a41fbafe889e17d78a7090c2724d5"
+          },
+          {
+            "file": "evidence/hosts-week.headers",
+            "bytes": 924,
+            "sha256": "bcc647e5ce14fd21d65914aa0cd0e74f91242eea8682b20d57d7d234571c514c"
+          },
+          {
+            "file": "evidence/preflight.json",
+            "bytes": 15575,
+            "sha256": "00281926b34c1b8f4e6715244cf27cf2cb47bd5f2b72c3af2b33f1b3c65e1bb3"
+          }
+        ],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "codex-cli 0.153.4"
+      },
+      "resolved_models": [],
+      "trace_sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+      "review_sha256": "168081d7daad5ec0615e1b91a7ee88835c028dfb1707c71e82cdb87a8bb1f9ba",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T16:04:14.383056+00:00",
+        "transcript_sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed the launch, initial disclosure and every tool request. Executed reads were public HTTPS or files created inside this fresh session. No credential, prior-session, repository, wallet or payment access was observed. Denied requests, if any, remain recorded.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "167cdb84b5ee3684afe52ab4288ec23d424dba36595861507cdf5ac805778f9c"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "not_applicable",
+            "reason": "Supplied public skill; discovery excluded.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+                "start_line": 31,
+                "end_line": 31
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29"
+              }
+            ]
+          },
+          "connect": {
+            "state": "pass",
+            "reason": "Fetched the current public skill and successfully used its HTTP preflight fallback.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+                "start_line": 31,
+                "end_line": 31
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29"
+              }
+            ]
+          },
+          "check": {
+            "state": "pass",
+            "reason": "Used preflight on the exact subject, correctly read L3a limitations and preserved both live response and dated historical evidence.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+                "start_line": 31,
+                "end_line": 31
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29"
+              }
+            ]
+          },
+          "decide": {
+            "state": "pass",
+            "reason": "Separated challenge structure and SCVD signature integrity from merchant authenticity, current delivery, settlement and spending authority.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+                "start_line": 31,
+                "end_line": 31
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "pass",
+            "reason": "Captured the complete signed corpus original and separately fetched issuer key within the frozen budget.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+                "start_line": 31,
+                "end_line": 31
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29"
+              }
+            ]
+          },
+          "verify": {
+            "state": "pass",
+            "reason": "The buyer verified the snapshot signature with native Node cryptography and independently fetched key. The scorer and fresh recipient checked the exact signed subject/time against the captured original.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+                "start_line": 31,
+                "end_line": 31
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29"
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+                "start_line": 20,
+                "end_line": 21
+              },
+              {
+                "file": "recipient/parent-verification.json",
+                "sha256": "12bd2942bbdb6fbce21285a7c8b91a028b033ab3b5125f5939e45fdcdcc3fe7c"
+              },
+              {
+                "file": "recipient/result.txt",
+                "sha256": "c5e12a62687bdeca75f0d162452f46291967a7f09bf777faa2ab39c67482e709"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only free requests, unsigned challenges and local processing were executed. Payment and paid delivery remain untested."
+        },
+        "notes": [
+          "The buyer\u2019s first host-row extraction failed and its guessed secondary host URL returned 404; these are retained. It nevertheless completed signature/digest verification on the original snapshot. The fresh recipient independently located the exact signed subject.",
+          "The raw JSON happened to have canonical field order. The independent scorer reconstructs canonical corpus-v1 bytes explicitly; this is stronger than relying on wire-object order.",
+          "stale_after is the frozen 14-day review policy, not an issuer-declared expiry or delivery promise.",
+          "The recipient received a subset: signed snapshot, issuer key and final buyer report plus separately labeled public verifier modules. It correctly could not reproduce the pay-to digest algorithm from that subset; the buyer had read and retained the host summary that describes the prefix/canonicalization.",
+          "All recipient requests were inspected: local provided files only, no network or unrelated local reads; completed with 11 tool events and no cap."
+        ],
+        "observation": {
+          "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+          "observed_at": "2026-09-07T02:30:20.531Z",
+          "stale_after": "2026-09-21T02:30:20.531Z"
+        },
+        "fulfillment": "delivered",
+        "verification": {
+          "format": "portable",
+          "artifact": {
+            "file": "evidence/corpus6.json",
+            "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+          },
+          "issuer": {
+            "file": "evidence/issuer-key",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+          "issuer_evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "f23a72440f3aeeb1e80d0c56517eec6c81c01935cd48914a44b8e08dbf7fce29",
+              "start_line": 17,
+              "end_line": 18
+            },
+            {
+              "file": "evidence/issuer-key.headers",
+              "sha256": "39c84a1df9e3879ca00616dd875e18addd6c44ff72a9a26d8861dd3b9a450835"
+            }
+          ],
+          "subject_pointer": "/round/hosts/50/url",
+          "observed_at_pointer": "/round/hosts/50/observed_at"
+        },
+        "recipient": {
+          "state": "reviewed",
+          "understands": true,
+          "evidence": [
+            {
+              "file": "recipient/events.jsonl",
+              "sha256": "d13e83c232dc352323b1245488816d24fcaa3398e2b44053c2e1c88f3a9e8421"
+            },
+            {
+              "file": "recipient/result.txt",
+              "sha256": "c5e12a62687bdeca75f0d162452f46291967a7f09bf777faa2ab39c67482e709"
+            },
+            {
+              "file": "recipient/launch.json",
+              "sha256": "b74e4e412abc56ff3553d7a135d00e3cd2afb91a8142c00528f2f1eadcee0966"
+            },
+            {
+              "file": "recipient/input-manifest.json",
+              "sha256": "cdf66dd9ab82d48bd64be2de06e845639e1bbf3b60e591e6e2544e2db1b353c7"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "cell": {
+        "id": "claude-directed-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "started_at": "2026-09-17T16:01:25.048Z",
+      "ended_at": "2026-09-17T16:03:11.907Z",
+      "tool_calls": 19,
+      "output_bytes": 144139,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 11525562,
+        "files": [
+          {
+            "file": "evidence/corpus_6.json",
+            "bytes": 11485079,
+            "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+          },
+          {
+            "file": "evidence/preflight_lionx402.json",
+            "bytes": 15575,
+            "sha256": "6b423aacd94dce2cdc7d4cbc9f71c2ac2eb33f4cb78dcd3c670335d887acb978"
+          },
+          {
+            "file": "evidence/signing_key_headers.txt",
+            "bytes": 972,
+            "sha256": "41e7daaec5dd2cf47453c5b591b89b7517ad2d3b0445f1b7fd0fd1994614628a"
+          },
+          {
+            "file": "evidence/skill_md_headers.txt",
+            "bytes": 897,
+            "sha256": "4106f42190270c1a362381b71b5f3325c3caf4fffc77770e51efbea6dcede37e"
+          },
+          {
+            "file": "evidence/scvd_signing_key.json",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/corpus_headers.txt",
+            "bytes": 1144,
+            "sha256": "5ac673f63d7bb1829d76c189a0c80c8d332147c1f6400f58a242653e7cdb55d8"
+          },
+          {
+            "file": "evidence/corpus_lionx402.json",
+            "bytes": 9316,
+            "sha256": "589297af6cd92ba932009ce0b86ac999712ab153d6ea1f5465eb00ccd751eeb7"
+          },
+          {
+            "file": "evidence/SKILL.md",
+            "bytes": 7172,
+            "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb"
+          },
+          {
+            "file": "evidence/preflight_headers.txt",
+            "bytes": 1074,
+            "sha256": "fe169161a2db109f4c7e28ac198800c47790dae593c9741250047eab32f005b5"
+          },
+          {
+            "file": "evidence/corpus_6_headers.txt",
+            "bytes": 1194,
+            "sha256": "c5011a5bb8c7f111036495a2ee0ab78d1bcb4b98393d4f70244bc1969ff9f6d2"
+          }
+        ],
+        "issues": []
+      },
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "2.1.274 (Claude Code)"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "trace_sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+      "review_sha256": "8faa135b090983128078b6b1ccd32c90a71866072408e447d6909c5dc81cc8d5",
+      "review": {
+        "schema_version": 2,
+        "reviewer": "Codex independent trace review",
+        "reviewed_at": "2026-09-17T16:05:35.951029+00:00",
+        "transcript_sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+        "isolation": {
+          "state": "clean",
+          "reason": "Reviewed the launch, initial disclosure and every tool request. Executed reads were public HTTPS or files created inside this fresh session. No credential, prior-session, repository, wallet or payment access was observed. Denied requests, if any, remain recorded.",
+          "evidence": [
+            {
+              "file": "launch.json",
+              "sha256": "2d241dd6e303ee4b364e7552ddc88a5529b3f975dd8bd030c0bf6c24d04d54bc"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1"
+            }
+          ]
+        },
+        "stages": {
+          "discover": {
+            "state": "not_applicable",
+            "reason": "Supplied public skill; discovery excluded.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+                "start_line": 93,
+                "end_line": 93
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1"
+              }
+            ]
+          },
+          "connect": {
+            "state": "pass",
+            "reason": "Recovered the raw skill after WebFetch summarized away URLs, then successfully called HTTP preflight.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+                "start_line": 93,
+                "end_line": 93
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1"
+              }
+            ]
+          },
+          "check": {
+            "state": "pass",
+            "reason": "Called SCVD on the exact subject, read the live structural checks and retained a dated matching historical row within the frozen window.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+                "start_line": 93,
+                "end_line": 93
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1"
+              }
+            ]
+          },
+          "decide": {
+            "state": "fail",
+            "reason": "Correctly withholds payment and cryptographic-verification claims, but turns no signed offer on this inspected challenge into a claim that the buyer has no committed terms. That broader absence is not established. Historical coverage also misstates the denominator: 60% is 3 of 5 rounds since first sighting, not 3 of all 6 chain rounds.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+                "start_line": 93,
+                "end_line": 93
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1"
+              }
+            ]
+          },
+          "obtain": {
+            "state": "pass",
+            "reason": "Retained complete original corpus bytes and independently requested issuer key; free historical evidence delivered.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+                "start_line": 93,
+                "end_line": 93
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1"
+              }
+            ]
+          },
+          "verify": {
+            "state": "incomplete",
+            "reason": "The buyer explicitly performed only key/digest field comparisons and no cryptographic verification. A verifier not being installed is not evidence that installation or allowed Node verification could not work.",
+            "evidence": [
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1",
+                "start_line": 93,
+                "end_line": 93
+              },
+              {
+                "file": "events.jsonl",
+                "sha256": "962b3ae03e2f4e14f065b595aaa30f21887e971539452eb6b734fa9cfd072ed1"
+              }
+            ]
+          }
+        },
+        "payment": {
+          "state": "not_needed",
+          "reason": "Only free requests, unsigned challenges and local processing were executed. Payment and paid delivery remain untested."
+        },
+        "notes": [
+          "The scope findings concern the buyer interpretation, not a claim of corrupted signatures or an origin failure.",
+          "stale_after is the frozen 14-day historical review policy, not a published expiry.",
+          "A fresh recipient independently verified the original with the separately supplied captured key and public verifier modules. All seven recipient commands were reviewed: provided local files only, no network or unrelated local access.",
+          "The recipient\u2019s later verification does not change the earlier buyer behavior. Only signed snapshot, issuer key and final report were included in the supplied subset."
+        ],
+        "observation": {
+          "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+          "observed_at": "2026-09-07T02:30:20.531Z",
+          "stale_after": "2026-09-21T02:30:20.531Z"
+        },
+        "environment_confounds": [
+          {
+            "reason": "An extraction command and python3 parsing were denied; curl and jq succeeded. No allowed node verification or public verifier installation was attempted. WebFetch initially returned a summary rather than raw guide text.",
+            "trace_lines": [
+              9,
+              10,
+              14,
+              17,
+              19,
+              46,
+              48,
+              52,
+              53
+            ]
+          }
+        ],
+        "fulfillment": "delivered",
+        "recipient": {
+          "state": "reviewed",
+          "understands": true,
+          "reason": "Verified the signature locally; identified exact subject, distinct subject/snapshot dates, undeclared expiry and historical/payment limits. Its phrase that the buyer understated the crypto result describes later recipient knowledge, not proof the buyer previously ran verification. The buyer verification stage remains incomplete.",
+          "evidence": [
+            {
+              "file": "recipient/events.jsonl",
+              "sha256": "0acf853e91fffa70e8c9750f1a3f8458a8665bc2484adff55f3739450ab731e7"
+            },
+            {
+              "file": "recipient/result.txt",
+              "sha256": "cc36cfbbbf0c769d662136e914dc4a035c1970256f2ffb6c2f97aa8936f18958"
+            },
+            {
+              "file": "recipient/launch.json",
+              "sha256": "f7a8956a81610daa7742c4baea2f6b29430983688259282e0b015110ecce7d49"
+            },
+            {
+              "file": "recipient/input-manifest.json",
+              "sha256": "8679ece6ba69f107827e18bac6f331a50c6a7bf458e75de2a2fec6fe23833633"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

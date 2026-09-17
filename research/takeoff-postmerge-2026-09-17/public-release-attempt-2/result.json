@@ -1,0 +1,42 @@
+{
+  "state": "pass",
+  "source_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+  "reads": [
+    {
+      "url": "https://scvd.store/.well-known/agent-skills/index.json",
+      "file": "index.json",
+      "status": 200,
+      "sha256": "8777578c3681b5b65ea82f424c4ec6d5ec5e7f169a5d6f7dd6f693cf9d8dc23b",
+      "bytes": 1635,
+      "observed_at": "2026-09-17T15:42:57.795Z"
+    },
+    {
+      "url": "https://scvd.store/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "file": "served-SKILL.md",
+      "status": 200,
+      "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+      "bytes": 7172,
+      "observed_at": "2026-09-17T15:42:57.822Z"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "file": "github-SKILL.md",
+      "status": 200,
+      "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+      "bytes": 7172,
+      "observed_at": "2026-09-17T15:42:57.964Z"
+    },
+    {
+      "url": "https://scvd.store/agents/general-store",
+      "file": "oasf.json",
+      "status": 200,
+      "sha256": "05513bd3d689adff5e6d5d7874894e2b419f2402e2e8c0ab0447285cff159047",
+      "bytes": 9120,
+      "observed_at": "2026-09-17T15:42:58.001Z"
+    }
+  ],
+  "gaps": [
+    "Directed release-byte observation; no cold discovery or buyer completion.",
+    "Directory signing and external admission untested."
+  ]
+}
