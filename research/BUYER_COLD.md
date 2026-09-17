@@ -1,4 +1,4 @@
-# Cold buyer instrument, plans 2 and 3
+# Cold buyer instrument, plans 2, 3 and 4
 
 The acceptance contract and feature order live in
 [the takeoff plan](../docs/TAKEOFF_READINESS_2026-09.md) and `ROADMAP.md`.
@@ -125,6 +125,53 @@ outside this score. Unknown formats remain **incomplete**, not invalid
 merchant findings. These are instrument coverage limits.
 Review references prove file identity, not the truth of the reviewer's
 interpretation. Do not manufacture a passing review from HTTP status.
+
+Schema 4 adds two things the September 17 cohort showed were missing, and
+changes nothing about how schema 2 and 3 acquisitions are read.
+
+**The host capability probe.** Both referred Claude buyers were allowed
+`curl` and `node`, chose python3, openssl and shell redirection, were
+refused, and never tried the permitted node path. Before a schema-4 cohort
+spends model usage, each host answers one generic session with the cohort's
+exact adapter and budgets: keep the bytes of a public URL frozen in
+`plan.capability.public_url` (which must not name the store), verify
+runner-minted ed25519 vectors with a random tampered subset, and write its
+report under `./evidence`. The runner fetches the reference bytes itself
+before launching the host; the score compares retained bytes with that
+independent fetch, the reported signature results with the truth the host
+never saw, and requires a completed local command in the trace. Refusals are
+listed as host limits. A host that does not pass gets every cell of the
+cohort recorded as `capability_unqualified`, in the denominator, unlaunched.
+The probe qualifies a host and adapter; it is not a buyer result.
+
+```sh
+node scripts/buyer-cold-isolated.mjs --capability PLAN.json --out /private/tmp/buyer-probe-NEW
+node scripts/buyer-cold-isolated.mjs --capability PLAN.json --out /private/tmp/buyer-probe-NEW --run
+node scripts/buyer-cold-isolated.mjs --plan PLAN.json --out /private/tmp/buyer-cold-NEW --run --qualified /private/tmp/buyer-probe-NEW
+```
+
+The first command prints the probe prompts and creates nothing. The probe
+and the cohort must be frozen from the same plan bytes; a probe for a
+different plan is refused. Changing the allowlist is an adapter change,
+frozen in the instrument hash, never a mid-cohort permission grant.
+
+**What the buyer is told about its host.** Every schema-4 prompt states the
+local tools the adapter actually allows, derived from the same list the
+adapter builds its allowlist from (`HOST_TOOLS`), so the prompt can never
+promise a command the host refuses and never widens the allowlist.
+
+**The catalogue lane keeps what the catalogue returned.** A catalogue cell is
+told to save each catalogue response it relies on under `./evidence` and to
+name its selection. A `discover` pass on that lane additionally requires
+`discovery.catalogue` with the catalogue `entry` (same origin as the cell's
+entry), the actual `query`, `returned` count, the retained `candidates` file
+(its hash must occur in the run's capture manifest), `selected` and
+`scvd_returned`. The score records `catalogue_observation` in the ward's own
+vocabulary — `found`, `not_returned` or `unchecked`, dated, with
+`search_basis: "buyer-query-v1"` and `complete: false` — because one buyer
+query and page is never a complete read. `catalogue_absence` stays
+`unverified`; an independent complete reading belongs to `ourSearchReading()`
+and its `our_doors` model, not to a second checker here.
 
 ```sh
 node scripts/buyer-cold-isolated.mjs --score /private/tmp/buyer-cold-NEW

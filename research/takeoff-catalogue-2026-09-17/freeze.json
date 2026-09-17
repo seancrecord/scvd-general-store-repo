@@ -1,0 +1,27 @@
+{
+  "frozen_at": "2026-09-17T16:30:03.413Z",
+  "plan_sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393",
+  "schema_version": 4,
+  "acquisition_started": false,
+  "capability_probe": {
+    "state": "not_run",
+    "required_before": "--run",
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "reference_sha256_operator_read": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+    "reference_bytes": 2189,
+    "note": "Pinned commit; the runner re-fetches the reference at probe time and a mismatch is recorded, not corrected."
+  },
+  "instrument_sha256_at_freeze": {
+    "scripts/buyer-cold-isolated.mjs": "0d77afaec0cb0959993b7352cd75be44b649b2ee9933f6adbf34dcb903e59e4b",
+    "scripts/lib/buyer-cold.mjs": "59d6a9562247c7b44340a23256c2e9aa0cc0ff2c1a45452eaf220991c53e4c41",
+    "scripts/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+    "scripts/lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+    "verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "verifier/x402-verify.js": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
+  },
+  "frozen_from": "implementation session, no native host launched",
+  "limits": [
+    "This freeze records the plan and instrument bytes only. No model was launched, no cell exists, no score exists.",
+    "The historical corpus observation used by the September 17 cohort (2026-09-07T02:30:20.531Z) leaves the frozen 14-day window after 2026-09-21; a later run must rely on newer signed snapshots or record the stage incomplete."
+  ]
+}
