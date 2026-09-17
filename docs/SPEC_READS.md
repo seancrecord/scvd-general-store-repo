@@ -1,5 +1,34 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-17 — Distribution formats exist; admission and parsing are separate
+
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) includes OASF in its
+registration example and permits a full registration at the domain acknowledgment
+path. SCVD already serves both directions of that link. An example IPFS URI is
+not proof that the historical Directory CID resolves through IPFS or covers the
+current record. Keep the working HTTPS service until exact immutable bytes are
+published and retrieved independently.
+
+[Awesome Copilot's contribution rules](https://github.com/github/awesome-copilot/blob/main/CONTRIBUTING.md)
+route external plugins through an issue form with an immutable public source,
+validation and maintainer approval. That is separate from existing Agent Finder
+PR #34. Reuse the root skill/MCP package; no manual external.json PR.
+
+[Gemini's release rules](https://geminicli.com/docs/extensions/releasing/) require
+the `gemini-cli-extension` repository topic for its daily gallery crawl.
+The [extension reference](https://geminicli.com/docs/extensions/reference/)
+documents optional context and automatic skill discovery. The current
+`contextFileName: AGENTS.md` loads internal contributor rules into a customer
+session; the local correction removes that setting and retains the skills.
+Neither static validation nor a gallery crawl proves a working host installation.
+
+[Dated external readings and drafts](../research/distribution-2026-09-17/README.md)
+retain the observed indexer discrepancies and the remaining unknowns.
+The keeper then requested protocol organization: the README and trust surfaces
+now group the existing records and four newly observed ERC-8004 index pages,
+with identity viewers separate and UCP explicitly planned. The JSON protocol
+index links into the canonical record list without repeating each description.
+
 ## 2026-09-17 — The verifier door is listed. What it cost to get there.
 
 `https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212`
@@ -1925,3 +1954,20 @@ captured, and no universal isolation claim follows from a local provider
 capture. A separately frozen native capability attempt uses unchanged prompts,
 models and permissions; record:
 [`research/takeoff-native-isolation-2026-09-17/freeze.json`](../research/takeoff-native-isolation-2026-09-17/freeze.json).
+
+### 2026-09-17 — additional plugin channels and tracking reconciliation
+
+- [Cursor plugins](https://cursor.com/docs/plugins): Agent Plugins 1.0 supported;
+  official marketplace separate from cursor.directory. Publisher form requires login.
+- [Claude submissions](https://code.claude.com/docs/en/plugins#submit-your-plugin-to-the-community-marketplace):
+  third-party review targets claude-community; curated official collection has no
+  application. Console form requires login. Strict local manifest validation passed;
+  content/runtime qualification is not implied. The installed CLI schema confirms
+  root `.mcp.json` supplements inline MCP; contributor browser tooling was separated.
+- [Kiro submission](https://kiro.dev/powers/submit/): Agent Plugins package accepted;
+  working package, stable MCP, README privacy/support and publisher contact required.
+- Fresh official MCP registry response confirms both source-manifest versions latest;
+  ClawHub receipt and September 12 listing baselines close stale keeper presses.
+- [Distribution map](../DISTRIBUTION.md) now identifies the sources of truth;
+  [plugin packet](../registry/plugin-submissions.md) contains fields and unrun gates.
+  [Receipts](../research/distribution-2026-09-17/README.md) retain actual outcomes.

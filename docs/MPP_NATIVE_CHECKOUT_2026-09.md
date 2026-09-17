@@ -1,6 +1,8 @@
 # Native MPP checkout pilot — September 16, 2026
 
-Both Worker configurations remain disabled following the bounded September 17
+The [scoped activation release](MPP_SCOPED_ACTIVATION_2026-09-17.md) sets both
+checked-in Worker flags to true; until it merges and both Workers deploy, both
+configurations remain disabled following the bounded September 17
 house qualification. One live HTTP Context Anchor / EVM / Base / USDC purchase,
 its signed delivery, expired/disabled recovery and exact native accounting were
 checked. [The dated result](MPP_LIVE_RESULT_2026-09-17.md) names the evidence

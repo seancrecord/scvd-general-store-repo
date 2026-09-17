@@ -1,0 +1,15 @@
+{
+  "observed_date": "2026-09-17",
+  "method": "Rendered in-app browser UI; no forms submitted",
+  "portals": [
+    {
+      "url": "https://cursor.com/marketplace/publish",
+      "state": "Sign in to apply; publisher application requires authentication"
+    },
+    {
+      "url": "https://platform.claude.com/plugins/submit",
+      "state": "Claude Platform sign-in form"
+    }
+  ],
+  "claude_source_note": "Installed Claude CLI binary schema says manifest MCP servers are in addition to those in .mcp.json; only this static schema was inspected, no MCP processes were started."
+}

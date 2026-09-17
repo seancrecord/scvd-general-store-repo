@@ -1,0 +1,60 @@
+{
+  "date_utc": "2026-09-17",
+  "browser_tool_names": [
+    "check_a2a_card",
+    "check_before_you_pay",
+    "check_conformance",
+    "check_order",
+    "check_purchase",
+    "complete_store_purchase",
+    "find_in_catalog",
+    "look_at_door",
+    "look_in_window",
+    "preflight_endpoint",
+    "quote_store_purchase",
+    "read_binder",
+    "read_store_guide",
+    "verify_artifact"
+  ],
+  "mcp_tool_names": [
+    "buy_human_task",
+    "buy_memory_anchor",
+    "buy_observation",
+    "buy_signed_record",
+    "buy_simple",
+    "buy_small_pleasure",
+    "check_a2a_card",
+    "check_before_you_pay",
+    "check_conformance",
+    "check_order",
+    "check_purchase",
+    "find_in_catalog",
+    "look_at_door",
+    "look_in_window",
+    "preflight_endpoint",
+    "read_binder",
+    "read_store_guide",
+    "ring_bell",
+    "sign_guestbook",
+    "verify_artifact"
+  ],
+  "browser_only": [
+    "complete_store_purchase",
+    "quote_store_purchase"
+  ],
+  "browser_names_also_on_mcp": [
+    "check_a2a_card",
+    "check_before_you_pay",
+    "check_conformance",
+    "check_order",
+    "check_purchase",
+    "find_in_catalog",
+    "look_at_door",
+    "look_in_window",
+    "preflight_endpoint",
+    "read_binder",
+    "read_store_guide",
+    "verify_artifact"
+  ],
+  "scope": "Read-only tools/list and browser getTools; browser-specific quote/complete purchase bridge is separate from MCP buys. No tool call or payment."
+}

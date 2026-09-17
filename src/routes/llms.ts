@@ -456,6 +456,10 @@ focused x402 buyer verification skill,
 each with the SHA-256 digest of the file it points at):
 ${base}/.well-known/agent-skills/index.json — the digested copies at
 \`${base}/.well-known/agent-skills/{name}/SKILL.md\`
+Canonical ERC-8004 identity and endpoint-domain acknowledgment:
+${base}/.well-known/agent-registration.json
+Public discovery records by protocol, with observation dates and limits:
+${base}/trust (also JSON with Accept: application/json).
 OASF record (AGNTCY Agent Directory, schema 1.1.0): ${base}/agents/general-store
 — the store's skills, domains and both MCP connections in the taxonomy a
 federated directory matches on, derived from the same catalogue /mcp

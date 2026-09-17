@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "strict": true,
+  "target": "/private/tmp/scvd-claude-validation-i02cop6j/.claude-plugin/plugin.json",
+  "manifest": {
+    "file": "/private/tmp/scvd-claude-validation-i02cop6j/.claude-plugin/plugin.json",
+    "type": "plugin",
+    "errors": [],
+    "warnings": [],
+    "notes": []
+  },
+  "contents": []
+}

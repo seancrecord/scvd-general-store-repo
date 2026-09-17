@@ -38,11 +38,13 @@ chain-reading support is broader. `PAYMENT_RAILS.md` distinguishes them.
 - The six doors: `npm run doors:check` (reads the live store down
   all six roads an agent can take — SIX_DOORS.md; read-only, and
   `--record` is a human's hand)
-- The seventh road is a browser, and `.mcp.json` is how you drive it.
-  It declares two servers: `chrome-devtools` (pinned
-  `chrome-devtools-mcp@1.8.0`) to load a page in real Chrome and read
-  what `document.modelContext` actually registered, and `scvd-store`
-  (the live `/mcp` door) to ask the server the same questions. The
+- The seventh road is a browser. `.mcp.json` declares `scvd-store`
+  (the live `/mcp` door). For the browser check, explicitly load
+  `scripts/chrome-devtools.mcp.json` as an additional MCP configuration
+  (Claude Code: `claude --mcp-config scripts/chrome-devtools.mcp.json`).
+  Its pinned `chrome-devtools` server loads a page in real Chrome and
+  reads what `document.modelContext` actually registered. The separate
+  file keeps contributor browser tooling out of customer plugin installs. The
   WebMCP surface is derived from the MCP tool catalogue, so the two
   answers disagreeing is a defect the unit tests cannot see — they
   read the same source. Both are read-only in practice: `tools/list`

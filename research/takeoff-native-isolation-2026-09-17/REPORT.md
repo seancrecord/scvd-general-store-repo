@@ -190,3 +190,8 @@ integrated checks and full-suite result. The document/whitespace checks pass. Fu
 results are recorded with the merge receipt; all CI shards must pass before
 merge. The first sandboxed full-suite launch was refused a localhost listener;
 the native launch is separately retained and is the relevant test run.
+
+The later integration of distribution PR #778 and scoped MPP activation #780
+preserves their changes and both workstreams’ roadmap entries. Separate
+[combined-branch checks](main-integration.json) passed; the earlier full local
+suite does not include those upstream changes. Full CI remains the merge gate.

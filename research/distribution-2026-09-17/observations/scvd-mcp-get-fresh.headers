@@ -1,0 +1,19 @@
+HTTP/2 405 
+date: Thu, 17 Sep 2026 18:34:12 GMT
+content-type: application/json
+content-length: 1069
+access-control-allow-origin: *
+allow: POST
+link: <https://scvd.store/.well-known/mcp>; rel="service-desc"; type="application/json"
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Accept, Accept-Encoding, User-Agent
+access-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version
+server-timing: isolate;desc=warm, age;dur=1142, req;dur=0
+x-house-rule: Argue properly. --7
+x-store: SCVD General Store (https://scvd.store)
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=RLV%2BOb98g3wOC%2BjZ%2BGzsRQtgiONDfVvpdR6C5%2BqNX0VBcC4INNaL9L5YZ9bbDwT4npnNMRtXe56s4kklNCgDIY997Q9%2BjB6KgZq%2Bd1XjQ4GgGMWxkYIJZOKFWzWFl4vO1GJ33yXXfZzD"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a3ca34236dfa4367-EWR
+alt-svc: h3=":443"; ma=86400
+
