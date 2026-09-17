@@ -2,10 +2,14 @@
 
 Picking this up? Start with [HANDOFF.md](HANDOFF.md).
 
+**Subsequent native qualification:** [NATIVE_HANDOFF.md](NATIVE_HANDOFF.md).
+Claude passed the capability probe; Codex failed. The buyer cohort is still
+unrun. The original freeze and web-session account below are preserved.
+
 This directory freezes the next buyer cohort after the
 [September 17 post-merge qualification](../takeoff-postmerge-2026-09-17/REPORT.md)
-and records the instrument changes it depends on. **No model was launched.**
-There are no cells, traces, reviews or scores here. The keeper asked to plan
+and records the instrument changes it depends on. **No model was launched
+when the plan was frozen.** There are no buyer cells or buyer scores here. The keeper asked to plan
 and validate the instrument before spending more model usage; that is what
 this is. The September 17 cohort is untouched and is not rescored.
 

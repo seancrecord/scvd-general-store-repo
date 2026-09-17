@@ -1883,3 +1883,24 @@ The earlier publication entry records the annotation mismatch as unresolved.
 PR #751 subsequently closed that mismatch for the shared verifier handlers:
 both doors derive those hints from one definition, and the parity test checks
 every annotation field. This is not a new audit of every general-only tool.
+
+## 2026-09-17 — Native cold-host qualification
+
+Read the native Codex 0.153.4 `exec`, `features list` and `debug prompt-input`
+help, plus OpenAI's current [non-interactive mode documentation](https://learn.chatgpt.com/docs/non-interactive-mode)
+and [skills documentation](https://learn.chatgpt.com/docs/build-skills).
+The former distinguishes ephemeral session storage from ignoring user
+configuration. The latter explains initial skill metadata and the shortened
+description warning. Native Claude Code 2.1.274 authenticated and completed
+its frozen probe; this is an observed launch, not a general platform claim.
+
+The native Codex trace emitted the shortened-skills warning despite the
+frozen isolation flags. No skill reads were visible, but the model-visible
+skill inventory is unestablished. Plugin discovery is a hypothesis, not a
+confirmed cause. The offline prompt debugger rejects exec's
+`--ignore-user-config` option, so it is not an equivalent launch proof.
+No source was unreachable during these reads; the unresolved gap is actual
+prompt context for that native exec session. No global configuration or
+adapter was changed. Both probes and the failed signature command's local
+reproduction are recorded in
+[`research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md`](../research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md).
