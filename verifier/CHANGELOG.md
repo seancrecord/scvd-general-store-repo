@@ -4,6 +4,20 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## 1.5.0 — source prepared 2026-09-17
+
+**Added.** `scvd-evidence verify-source` verifies an already-saved SCVD
+certificate response or corpus snapshot offline, with optional local bound
+attachments. It reuses the existing bundle verifier in memory and writes no
+export files. Its compact findings include the exact source-file SHA-256;
+large signed claims stay in the original instead of being repeated on stdout.
+Keep the original, source URL, independently established key and attachments
+for a recipient. A small result file alone is not an evidence handoff.
+
+Existing `export`, `verify`, library results, formats, limits and exit meanings
+remain unchanged. The new command is available from this source; a version
+in package.json is not proof of publication. Check installed `--help` before use.
+
 ## 1.4.0 — 2026-09-17
 
 **Developer activation.** A runnable packaged Node example, independent

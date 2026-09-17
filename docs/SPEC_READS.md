@@ -1913,6 +1913,19 @@ PR #751 subsequently closed that mismatch for the shared verifier handlers:
 both doors derive those hints from one definition, and the parity test checks
 every annotation field. This is not a new audit of every general-only tool.
 
+## 2026-09-17 — Native buyer npm cache placement
+
+Read npm's [v10 configuration documentation](https://docs.npmjs.com/cli/v10/using-npm/config/):
+environment configuration is case-insensitive, lowercase settings take
+precedence inside npm scripts, and the POSIX default cache is `~/.npm`.
+The runner supplies both cache spellings with one fresh workspace path.
+Real offline child-process checks with local npm 10.9.2 confirm that npm
+resolves that path and it is writable, with no user configuration changes.
+No source was unreachable. Native-model tool inheritance under the changed
+runner remains a separate qualification step; a successful Node child test
+does not prove a buyer completed. Evidence and scope:
+[`research/takeoff-session-workspace-2026-09-17/README.md`](../research/takeoff-session-workspace-2026-09-17/README.md).
+
 ## 2026-09-17 — Native cold-host qualification
 
 Read the native Codex 0.153.4 `exec`, `features list` and `debug prompt-input`
@@ -1934,6 +1947,26 @@ adapter was changed. Both probes and the failed signature command's local
 reproduction are recorded in
 [`research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md`](../research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md).
 
+### September 17 — native isolation repair
+
+Read OpenAI's [skill discovery and disabling documentation](https://learn.chatgpt.com/docs/build-skills)
+and [sample configuration](https://learn.chatgpt.com/docs/config-file/config-sample),
+plus local CLI 0.153.4 help. The documented per-skill `enabled=false`
+setting can be supplied as a launch override. User/admin skill roots and
+symlink behavior are documented; the legacy `.codex/skills` and bundled
+system entries were also directly observed in this machine's request.
+
+Native request construction was captured on localhost with an unauthenticated
+custom provider returning an error, without inference. The frozen adapter
+exposed 142 skill entries; disabling plugins alone still exposed 142.
+Explicit per-skill overrides exposed zero, both with the observed inventory
+and with the repaired runner's filesystem inventory. No global settings were
+changed. This isolates the metadata-loading issue, not the prior model's
+signature-handling error. Production-provider request contents were not
+captured, and no universal isolation claim follows from a local provider
+capture. A separately frozen native capability attempt uses unchanged prompts,
+models and permissions; record:
+[`research/takeoff-native-isolation-2026-09-17/freeze.json`](../research/takeoff-native-isolation-2026-09-17/freeze.json).
 
 ### 2026-09-17 — additional plugin channels and tracking reconciliation
 
@@ -1985,3 +2018,16 @@ on Base for 1 USDC alongside x402. Native capability declarations agree;
 `x-payment-info.protocols` still contains only x402. Other products are upcoming.
 No purchase or directory acceptance was exercised.
 [Sanitized observation](../research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+
+
+### 2026-09-17 — saved-response verification and npm cache boundary
+
+Read the [npm CLI configuration reference](https://docs.npmjs.com/cli/v11/using-npm/config/#cache):
+`cache` is a path setting, with `~/.npm` as the Posix default; command-line
+settings can select a writable local directory. The two retained Codex
+referred traces independently hit EPERM at that default and recovered with
+a temporary cache. No ownership change or global configuration edit is needed.
+The current local CLI, bundle constructor and verification code are the
+primary sources for export duplication and result expansion; the new command
+reuses those semantics. No new protocol or cryptographic algorithm is assumed.
+Registry availability and later native-host completion remain separate gates.

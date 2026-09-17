@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T19:54:40.903589+00:00",
+  "full_suite_summary": [
+    "Test Files  761 passed (761)",
+    "Tests  14698 passed | 1 skipped (14699)",
+    "Duration  1737.73s (transform 267.62s, setup 28.41s, import 13956.94s, tests 7611.17s, environment 39ms)"
+  ],
+  "checks": {
+    "buyer_controls": {
+      "state": "pass",
+      "log_sha256": "d718af0d0dc5b20c9b95c34b58c92371b277b0ddb234fec44418aa36177b07fa"
+    },
+    "typecheck": {
+      "state": "pass",
+      "log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "build_check": {
+      "state": "pass",
+      "log_sha256": "8339e7fe28ed99d10769e497a4615c441971c3142c414ef52083b15ee44ff281"
+    },
+    "docs_check": {
+      "state": "pass",
+      "log_sha256": "acfb7fb59c0c11928b2415aa32fa16fc6d965313f8561ccce75f10d9604836be"
+    },
+    "full_suite": {
+      "state": "pass",
+      "log_sha256": "473dea42ed9c3f90aa4a7ba0bd5ffe6b6a13548079d2b432d016338329972f44"
+    }
+  },
+  "regressions": {
+    "isolation_and_qualification": "Ten new isolation/qualification controls, including three initial regressions observed red before the implementation.",
+    "schema4_scoring": "Two regressions observed red before changing source, after the frozen acquisition started. Fixed after all eight cells ended.",
+    "buyer_controls_passed": 137,
+    "pre_integration_buyer_controls_passed": 134
+  },
+  "notes": [
+    "Initial sandbox full-suite launch failed because a localhost listener was refused. The native full-suite launch is the recorded completion.",
+    "Full CI shards still gate merge; the merge receipt records their exact head and conclusions.",
+    "Test logs are separate validation receipts in the durable backup, not changes to the immutable acquisition manifest."
+  ]
+}

@@ -41,7 +41,49 @@ test('collector refuses symlinks, marks its limits, and never treats partial byt
  }finally{fs.rmSync(d,{recursive:true,force:true});}
 });
 
-async function fixture(){
+for(const host of ['codex','claude'])test(`${host}: native child uses a writable session cache outside evidence`,async()=>{
+ const d=root();try{
+  const cwd=path.join(d,'session'),out=path.join(d,'out'),home=path.join(d,'home');
+  for(const dir of [cwd,out,home])fs.mkdirSync(dir);
+  const environment=runner.childEnvironment({PATH:process.env.PATH,HOME:home,NPM_CONFIG_CACHE:'/parent-cache',npm_config_cache:'/other-parent-cache',NPM_TOKEN:'must-not-inherit'});
+  const code=`const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
+    const result=spawnSync('npm',['config','get','cache','--offline'],{encoding:'utf8'});
+    if(result.status!==0)throw Error('npm config failed');
+    const cache=result.stdout.trim();fs.mkdirSync(cache,{recursive:true});fs.writeFileSync(path.join(cache,'write-probe'),'ok');
+    console.log(JSON.stringify({type:'result',cache,scratch:fs.existsSync('work'),token:process.env.NPM_TOKEN??null}));`;
+  const run=await runner.runChild(process.execPath,['-e',code],{cwd,output:out,prompt:'fixture',host,budgets,env:environment});
+  assert.equal(run.runtime.state,'completed');
+  const result=JSON.parse(fs.readFileSync(path.join(out,'events.jsonl'),'utf8'));
+  assert.equal(result.cache,path.join(cwd,'work/npm-cache'));
+  assert.equal(fs.readFileSync(path.join(result.cache,'write-probe'),'utf8'),'ok');
+  assert.equal(result.scratch,true);assert.equal(result.token,null);
+  assert.equal(fs.existsSync(path.join(home,'.npm')),false);
+  assert.deepEqual(run.local_workspace,{scratch:'work',evidence:'evidence',npm_cache:'work/npm-cache'});
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('scratch tooling does not consume the unchanged evidence file allowance',async()=>{
+ const d=root();try{
+  const cwd=path.join(d,'session'),out=path.join(d,'out');
+  fs.mkdirSync(path.join(cwd,'evidence'),{recursive:true});fs.mkdirSync(out);
+  const code=`const fs=require('node:fs');
+    if(!fs.existsSync('work'))throw Error('scratch folder missing');
+    fs.mkdirSync('work/tooling/node_modules',{recursive:true});
+    for(let i=0;i<50;i++)fs.writeFileSync('work/tooling/node_modules/dependency-'+i,'tooling');
+    fs.writeFileSync('evidence/original.json','original');fs.writeFileSync('evidence/issuer.json','public-key');`;
+  const run=await runner.runChild(process.execPath,['-e',code],{cwd,output:out,prompt:'fixture',host:'codex',budgets});
+  assert.equal(run.runtime.state,'completed');
+  const captured=runner.retainArtifacts(cwd,out,{...budgets,artifact_files:2});
+  assert.equal(captured.state,'complete');
+  assert.deepEqual(captured.files.map(f=>f.file).sort(),['evidence/issuer.json','evidence/original.json']);
+  fs.writeFileSync(path.join(cwd,'evidence','extra.json'),'still counts');
+  const overflow=path.join(d,'overflow');fs.mkdirSync(overflow);
+  const limited=runner.retainArtifacts(cwd,overflow,{...budgets,artifact_files:2});
+  assert.equal(limited.state,'incomplete');assert.ok(limited.issues.some(i=>i.reason==='file_limit'));
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+
+async function fixture(schema_version=3){
  const d=root();const save=(file,value)=>{const bytes=JSON.stringify(value);fs.writeFileSync(path.join(d,file),bytes);return{file,sha256:hash(bytes)};};
  const pair=generateKeyPairSync('ed25519'),key=pair.publicKey.export({format:'der',type:'spki'}).subarray(-32).toString('hex');
  const snapshot={version:1,sequence:6,taken_at:'2026-09-08T12:00:00Z',previous_digest:null,source:'ward_round',week:'2026-W37',round:{hosts:[{host:'merchant.example',url:plan.subject,observed_at:'2026-09-07T12:00:00Z',gaps:['no paid delivery']}]}};
@@ -49,12 +91,13 @@ async function fixture(){
  const bundle=await createEvidenceBundle(original);
  const events=JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Retained public bytes and local verification'}})+'\n';fs.writeFileSync(path.join(d,'events.jsonl'),events);const ref={file:'events.jsonl',sha256:hash(events)};
  const review={schema_version:2,reviewer:'fixture reviewer',reviewed_at:'2026-09-16T12:00:00Z',transcript_sha256:hash(events),isolation:{state:'clean',evidence:[ref]},stages:Object.fromEntries(['discover','connect','check','decide','obtain','verify'].map(k=>[k,{state:'pass',reason:'fixture stage',evidence:[ref]}])),observation:{subject:plan.subject,observed_at:'2026-09-16T11:00:00Z',stale_after:'2026-09-17T11:00:00Z'},fulfillment:'delivered',payment:{state:'not_needed'},recipient:{state:'reviewed',understands:true,evidence:[ref]},verification:{format:'portable',artifact:save('original.json',original),bundle:save('bundle.json',bundle),issuer:save('issuer.json',{public_key:key}),issuer_url:'https://scvd.store/.well-known/scvd-signing-key',issuer_evidence:[ref],subject_pointer:'/round/hosts/0/url',observed_at_pointer:'/round/hosts/0/observed_at'}};
- const run={schema_version:3,cell:plan.cells[0],subject:plan.subject,freshness:plan.freshness,ended_at:'2026-09-16T12:00:00Z',runtime:{state:'completed',exit_code:0},trace_sha256:hash(events),isolation:{fresh_directory:true,config_isolated:true,no_session_resume:true},retained_artifacts:{state:'complete',files:[review.verification.artifact,review.verification.issuer]}};
+ const run={schema_version,cell:plan.cells[0],subject:plan.subject,freshness:plan.freshness,ended_at:'2026-09-16T12:00:00Z',runtime:{state:'completed',exit_code:0},trace_sha256:hash(events),isolation:{fresh_directory:true,config_isolated:true,no_session_resume:true},retained_artifacts:{state:'complete',files:[review.verification.artifact,review.verification.issuer]}};
  return{d,save,original,bundle,review,run};
 }
 
-test('a historical corpus snapshot verifies without inventing an expiry, entirely offline',async()=>{
- const b=await fixture(),old=globalThis.fetch;globalThis.fetch=()=>{throw Error('no network permitted');};
+for(const version of [3,4]){
+test(`schema ${version}: a historical corpus snapshot verifies without inventing an expiry, entirely offline`,async()=>{
+ const b=await fixture(version),old=globalThis.fetch;globalThis.fetch=()=>{throw Error('no network permitted');};
  try{const r=await scoreColdRun(b.run,b.review,b.d);assert.equal(r.usable,'pass');assert.equal(r.verification.expiry,'not_declared');assert.equal(r.verification.signature,true);}finally{globalThis.fetch=old;fs.rmSync(b.d,{recursive:true,force:true});}
 });
 for(const [name,mutate] of [
@@ -66,4 +109,25 @@ for(const [name,mutate] of [
  ['missing recipient',b=>{delete b.review.recipient;}],
  ['partial capture',b=>{b.run.retained_artifacts.state='incomplete';}],
  ['future observation',b=>{b.run.ended_at='2026-09-01T00:00:00Z';}],
-])test(`portable acceptance refuses ${name}`,async()=>{const b=await fixture();try{mutate(b);assert.notEqual((await scoreColdRun(b.run,b.review,b.d)).usable,'pass');}finally{fs.rmSync(b.d,{recursive:true,force:true});}});
+])test(`schema ${version}: portable acceptance refuses ${name}`,async()=>{const b=await fixture(version);try{mutate(b);assert.notEqual((await scoreColdRun(b.run,b.review,b.d)).usable,'pass');}finally{fs.rmSync(b.d,{recursive:true,force:true});}});
+test(`schema ${version}: incomplete capture remains an explicit exclusion even when retained signatures verify`,async()=>{
+ const b=await fixture(version);try{
+  b.run.retained_artifacts.state='incomplete';
+  const r=await scoreColdRun(b.run,b.review,b.d);
+  assert.ok(r.exclusions.includes('Artifact capture incomplete; no full acceptance claim.'));
+  assert.equal(r.verification.signature,true);
+  assert.equal(r.usable,'incomplete');
+ }finally{fs.rmSync(b.d,{recursive:true,force:true});}
+});
+test(`schema ${version}: standalone signed envelopes cannot bypass incomplete capture`,async()=>{
+ const b=await fixture(version);try{
+  const pair=generateKeyPairSync('ed25519'),public_key=pair.publicKey.export({format:'der',type:'spki'}).subarray(-32).toString('hex');
+  const signed_payload=JSON.stringify({url:plan.subject,observed_at:'2026-09-16T11:00:00Z',expires_at:'2026-09-18T11:00:00Z'});
+  b.review.verification={artifact:b.save('envelope.json',{public_key,signed_payload,signature:sign(null,Buffer.from(signed_payload),pair.privateKey).toString('hex')}),issuer:b.save('issuer.json',{public_key}),issuer_url:'https://scvd.store/.well-known/scvd-signing-key',issuer_evidence:b.review.stages.verify.evidence,subject_pointer:'/url',observed_at_pointer:'/observed_at',expires_at_pointer:'/expires_at'};
+  b.run.retained_artifacts={state:'incomplete',files:[b.review.verification.artifact,b.review.verification.issuer]};
+  const r=await scoreColdRun(b.run,b.review,b.d);
+  assert.equal(r.verification.signature,true);
+  assert.equal(r.usable,'incomplete');
+ }finally{fs.rmSync(b.d,{recursive:true,force:true});}
+});
+}

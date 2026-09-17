@@ -1,0 +1,85 @@
+{
+  "schema_version": 4,
+  "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+  "spend_usdc": 0,
+  "budgets": {
+    "wall_ms": 240000,
+    "tool_calls": 20,
+    "output_bytes": 4000000,
+    "output_tokens": 2500,
+    "artifact_bytes": 33554432,
+    "artifact_files": 32
+  },
+  "freshness": {
+    "max_age_ms": 1209600000
+  },
+  "capability": {
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore"
+  },
+  "cells": [
+    {
+      "id": "codex-catalogue-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "catalogue",
+      "verification": "prompted",
+      "entry": "https://registry.modelcontextprotocol.io/v0.1/servers"
+    },
+    {
+      "id": "claude-catalogue-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "catalogue",
+      "verification": "prompted",
+      "entry": "https://registry.modelcontextprotocol.io/v0.1/servers"
+    },
+    {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "codex-catalogue-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "catalogue",
+      "verification": "prompted",
+      "entry": "https://registry.modelcontextprotocol.io/v0.1/servers"
+    },
+    {
+      "id": "claude-catalogue-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "catalogue",
+      "verification": "prompted",
+      "entry": "https://registry.modelcontextprotocol.io/v0.1/servers"
+    },
+    {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    }
+  ]
+}

@@ -7,17 +7,17 @@ capabilities and missing evidence. Zero runtime dependencies. MIT.
 ## Install and verify
 
 ```sh
-npm install x402-verify@1.4.0
+npm install x402-verify
 ```
 
 Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.4.0.tgz
+npm install ./x402-verify-1.5.0.tgz
 ```
 
-Structured status fields require this version; older versions may not expose
+Structured status fields require 1.4.0 or newer; older versions may not expose
 them. Source-tarball qualification and registry installation are separate checks.
 
 Save this as `verify.mjs` and run `node verify.mjs`. It uses a packaged
@@ -474,6 +474,45 @@ call home in this file — the store is a deployment of this library,
 not a dependency of it.
 
 ## Portable evidence
+
+### Check an original you already saved
+
+The 1.5.0 CLI adds `verify-source`; check your installed
+`scvd-evidence --help` before using it. Source and registry versions can
+differ. From this checkout:
+
+```sh
+node verifier/evidence-cli.mjs verify-source evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432
+```
+
+This reads a saved certificate response or corpus snapshot and optional
+`--evidence observation.json` attachments. It makes no network requests and
+writes no files. The existing bundle verifier checks the same signed bytes
+and bindings in memory. The JSON result includes the exact original file's
+`source_sha256`, signature/binding findings and scope limits, without printing
+all signed claims. Read the subject, observation date and gaps from the
+original and check them separately. A valid signature is not a freshness test.
+
+Keep the original response, its source URL, separately established issuer key
+and any attached evidence for the recipient. A result summary alone cannot
+be independently verified. This path avoids retaining duplicate export files;
+the in-memory bundle still has the same explicit `--max-bytes` ceiling.
+Missing linked evidence remains exit 3. Malformed or oversized sources refuse
+with exit 2; invalid signatures or absent trusted keys give exit 1.
+
+Install packages and keep their cache outside the evidence directory. In a
+sandbox where the default npm cache is unwritable, a local writable cache can
+be selected per command:
+
+```sh
+npm install --cache ./tooling-cache --prefix ./tooling \
+  --ignore-scripts --no-audit --no-fund x402-verify
+```
+
+Keep `tooling/` and `tooling-cache/` separate from retained response files.
+
+### Export a portable bundle
 
 The installed package also includes a portable-evidence CLI. For a saved
 SCVD certificate or corpus snapshot, use it after the local install above:

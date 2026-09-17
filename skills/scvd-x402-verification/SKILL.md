@@ -95,6 +95,17 @@ issuer again is not offline verification. Use the published `x402-verify`
 package's `scvd-evidence` command locally; installation and format details:
 https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence
 
+For an original response already saved locally, check whether the installed
+`scvd-evidence --help` lists `verify-source` (added in 1.5.0; source and
+registry versions can differ). If available, use
+`scvd-evidence verify-source original.json --public-key TRUSTED_PUBLIC_KEY_HEX`
+with the documented size allowance and any bound `--evidence` file. It checks
+the original offline without writing duplicate export files or printing the
+whole signed payload. Otherwise use the existing export/verify path below.
+Keep original responses, independent key observations and source URLs for a
+recipient; a short verification result is not a replacement for those files.
+Keep installed packages and their caches outside that evidence directory.
+
 Retain the purchase certificate, its exact `signed_payload`, signature,
 and the purchased report. Establish the issuer public key independently
 of the bundle, for example from a previously trusted issuer key record;

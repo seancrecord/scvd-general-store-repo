@@ -32,6 +32,17 @@ These are context controls, not proof of absence of pretrained knowledge
 or a filesystem security boundary against a malicious agent. Review the
 trace for local reads and hidden-context disclosures before accepting it.
 
+Each fresh session also has `./work` for tooling and temporary copies.
+Both capability and buyer launches set npm's cache inside that scratch
+directory, using the same shared launch function. The placement and actual
+environment key names are recorded in the launch and run records. No user
+configuration is edited and no package is preinstalled. Scratch files are
+not captured as evidence; the buyer must save its original public responses,
+issuer-key observations and verification artifacts in `./evidence`. The
+existing byte/file, symlink and directory-depth limits still apply there.
+This new instrument boundary requires fresh host qualification before a
+later live cohort. [Failure basis and offline checks](takeoff-session-workspace-2026-09-17/README.md).
+
 `intent_search` and `catalogue` prompts omit SCVD's name. `directed` supplies
 a public listing and measures subsequent use, with discovery excluded.
 Verification can be explicitly prompted or unprompted; do not combine the
@@ -160,6 +171,23 @@ and the cohort must be frozen from the same plan bytes; a probe for a
 different plan is refused. Changing the allowlist is an adapter change,
 frozen in the instrument hash, never a mid-cohort permission grant.
 
+The September 17 native isolation repair also binds qualification to the
+exact captured instrument and `host-context.json`: CLI versions, a hash of
+the permitted launch environment, and the local skill inventory. Missing
+bindings, changed snapshots or a different current context stop acquisition
+before the buyer output directory is created. Older probes remain readable
+historical evidence but cannot qualify the repaired runner.
+
+Codex's native skill-discovery flag still exposed local metadata in a
+local-only request capture. The adapter now disables plugins and supplies
+documented `skills.config` overrides for every local skill found under the
+native user, legacy/system and admin skill roots. Symlinks are followed,
+cycles bounded, and user files/configuration are never edited. The inventory
+and launch paths stay private. The capability prompt and tool permissions
+are unchanged. These controls are checked against captured request contents;
+flags alone still do not prove a buyer's isolation. See
+[the repair boundary](takeoff-native-isolation-2026-09-17/freeze.json).
+
 **What the buyer is told about its host.** Every schema-4 prompt states the
 local tools the adapter actually allows, derived from the same list the
 adapter builds its allowlist from (`HOST_TOOLS`), so the prompt can never
@@ -191,3 +219,14 @@ schema-1 `reviewed-metrics.json` remains readable with its original scope.
 
 Run `npm run buyer:test` for offline controls. Native live runs are dated
 observations, never a mandatory network dependency of the test suite.
+
+## September 17 schema-4 scoring correction
+
+Schema 4 inherits schema 3's retained-original and frozen historical-age
+contract. Portable verification must admit both versions, and the full-capture
+guard applies to both. The first native schema-4 cohort exposed stale version
+equality checks; two red-first regressions pin the correction, with negative
+portable controls exercised under both schemas. Preserve the acquisition-end
+score and a fully reviewed score from the frozen original scorer before
+recording a corrected score separately. This changes no acquisition bytes or
+acceptance scope. [Record](takeoff-native-isolation-2026-09-17/REPORT.md).

@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { generateKeyPairSync, sign } from "node:crypto";
+import { createHash, generateKeyPairSync, sign } from "node:crypto";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 const cli = new URL("./evidence-cli.mjs", import.meta.url);
@@ -69,4 +69,68 @@ test("corpus export above the default cap requires an explicit bounded allowance
     await writeFile(input, JSON.stringify(bundle));
     assert.equal((await run(["verify", input, "--public-key", key, "--max-bytes", String(32 * 1024 * 1024)])).code, 1);
   } finally { server.close(); await rm(dir, { recursive: true, force: true }); }
+});
+
+
+test("saved corpus verification stays offline, writes no duplicate files and emits bounded results", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-source-test-"));
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const key = publicKey.export({ type: "spki", format: "der" }).subarray(-32).toString("hex");
+  const snapshot = { version: 1, sequence: 1, taken_at: "2026-09-17T00:00:00Z", previous_digest: null, source: "ward_round", week: "2026-W38", round: { hosts: [], evidence: "x".repeat(11 * 1024 * 1024) } };
+  const payload = JSON.stringify(snapshot);
+  const digest = bytes => createHash("sha256").update(bytes).digest("hex");
+  const doc = { snapshot, digest: digest(payload), signature: sign(null, Buffer.from(payload), privateKey).toString("hex"), public_key: key };
+  const original = JSON.stringify(doc) + "\n", source = join(dir, "original.json");
+  const noNetwork = join(dir, "no-network.mjs");
+  await writeFile(source, original);
+  await writeFile(noNetwork, 'globalThis.fetch = () => { throw new Error("network_forbidden"); };');
+  try {
+    const args = ["verify-source", source, "--public-key", key, "--max-bytes", String(32 * 1024 * 1024)];
+    const result = await run(args, ["--import", noNetwork]);
+    assert.equal(result.code, 0, result.stderr);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.valid, true); assert.equal(report.evidence_complete, true);
+    assert.equal(report.source_sha256, digest(original));
+    assert.equal(Object.hasOwn(report, "signed_claims"), false);
+    assert.ok(Buffer.byteLength(result.stdout) < 4096);
+    assert.equal(await readFile(source, "utf8"), original);
+    assert.deepEqual((await readdir(dir)).sort(), ["no-network.mjs", "original.json"]);
+    assert.equal((await run(["verify-source", source, "--public-key", key])).code, 2);
+    assert.equal((await run(["verify-source", source, "--max-bytes", String(32 * 1024 * 1024)])).code, 1);
+    assert.equal((await run([...args, "--out", join(dir, "unexpected")])).code, 2);
+    const wrongKey = await run(["verify-source", source, "--public-key", "0".repeat(64), "--max-bytes", String(32 * 1024 * 1024)]);
+    assert.equal(wrongKey.code, 1);
+    assert.ok(JSON.parse(wrongKey.stdout).problems.includes("embedded_key_differs_from_trusted_key"));
+    doc.snapshot.version = 2;
+    await writeFile(source, JSON.stringify(doc));
+    assert.equal((await run(args)).code, 2);
+    doc.snapshot.version = 1;
+    doc.snapshot.round.evidence += "tampered";
+    await writeFile(source, JSON.stringify(doc));
+    assert.equal((await run(args)).code, 2); // The corpus digest no longer binds the snapshot.
+    doc.digest = digest(JSON.stringify(doc.snapshot));
+    await writeFile(source, JSON.stringify(doc));
+    const rehashed = await run(args);
+    assert.equal(rehashed.code, 1); assert.equal(JSON.parse(rehashed.stdout).valid, false);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test("saved certificate verification retains missing and tampered attachment failures", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-source-attachment-"));
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const key = publicKey.export({ type: "spki", format: "der" }).subarray(-32).toString("hex");
+  const report = '{"url":"https://merchant.example/","scope":"unpaid"}';
+  const payload = JSON.stringify({ cert_id: "cert_test", attests: createHash("sha256").update(report).digest("hex") });
+  const source = join(dir, "certificate.json"), attachment = join(dir, "report.json");
+  await writeFile(source, JSON.stringify({ algorithm: "ed25519", signed_payload: payload, signature: sign(null, Buffer.from(payload), privateKey).toString("hex"), public_key: key }));
+  await writeFile(attachment, report);
+  try {
+    const args = ["verify-source", source, "--public-key", key];
+    const missing = await run(args);
+    assert.equal(missing.code, 3); assert.deepEqual(JSON.parse(missing.stdout).missing_evidence, ["attests"]);
+    assert.equal((await run([...args, "--evidence", attachment])).code, 0);
+    await writeFile(attachment, report + " ");
+    assert.equal((await run([...args, "--evidence", attachment])).code, 2);
+    assert.equal((await run(["verify-source", "https://merchant.example/original.json", "--public-key", key])).code, 2);
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-17T19:04:06.475036+00:00",
+  "base_commit": "afe039269b6a3d7da64e916bed9b7d72d31826e5",
+  "plan_sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393",
+  "instrument_files": {
+    "scripts/buyer-cold-isolated.mjs": "a9cf77b92a57aec8e8c15ff01ef0f8651f1b9fa951cd10d2dadb7e5b93edbfcc",
+    "scripts/lib/buyer-cold.mjs": "df587ba8101be1b56d9b72ee28c0f8dcd8ec3d82274cdb87170c6e7daf677ecf",
+    "scripts/lib/buyer-host-context.mjs": "29ef1f922cec66ccf5acc674433491bc2ba120a122a078c433f52f61274addd3",
+    "scripts/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+    "scripts/lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+    "verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+  },
+  "reason": "New adapter boundary: explicit per-launch local skill disables and plugin disable; qualification bound to exact instrument and native host context. Original failed acquisition remains unchanged.",
+  "attempts": {
+    "capability_per_host": 1,
+    "buyer_cells_if_both_hosts_pass": 8,
+    "buyer_repetitions_per_host_and_lane": 2
+  },
+  "unchanged": [
+    "models",
+    "capability prompt",
+    "buyer prompts",
+    "plan bytes",
+    "budgets",
+    "tool permissions",
+    "freshness window"
+  ],
+  "local_context_capture": {
+    "baseline_skill_entries": 142,
+    "plugins_disabled_only_skill_entries": 142,
+    "explicit_skill_overrides_skill_entries": 0,
+    "repaired_adapter_skill_entries": 0,
+    "limit": "Native request construction captured on localhost with an unauthenticated custom provider that returns an error. No inference; not a capture of a request to the production model provider."
+  }
+}

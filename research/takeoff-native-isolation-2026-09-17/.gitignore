@@ -1,0 +1,2 @@
+# Native traces and request bodies contain local/session metadata.
+/private/

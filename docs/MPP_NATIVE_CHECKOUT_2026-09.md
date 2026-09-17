@@ -1,7 +1,9 @@
 # Native MPP checkout pilot — September 16, 2026
 
-Both Worker configurations remain disabled following the bounded September 17
-house qualification. One live HTTP Context Anchor / EVM / Base / USDC purchase,
+The [scoped activation release](MPP_SCOPED_ACTIVATION_2026-09-17.md) (#780,
+merged 2026-09-17 19:53 UTC) set both checked-in Worker flags to true; its
+release record holds the unsigned reads. Before it, both configurations were
+disabled following the bounded September 17 house qualification. One live HTTP Context Anchor / EVM / Base / USDC purchase,
 its signed delivery, expired/disabled recovery and exact native accounting were
 checked. [The dated result](MPP_LIVE_RESULT_2026-09-17.md) names the evidence
 sources and the unobserved before-expiry replay. Fixture tests alone establish

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T20:45:09.536847+00:00",
+  "kind": "fresh offline install of a local tarball; not registry publication or a native buyer run",
+  "package": "x402-verify",
+  "version": "1.5.0",
+  "tarball_sha256": "11eeca1308614eb7063abf1a3c358f88677b924d43fa60084041cfb772d28a5b",
+  "tarball_integrity": "sha512-W0sKF6rGn/fWsuHgf1vSr9RbDwQ0MfqfWfLL3gmtT95dfUCOC8kBY6m8QZ+bkA0h3DuOu5YCeyu4KnWXWWpbgg==",
+  "installation_exit": 0,
+  "verification_exit": 0,
+  "verification_output_bytes": 769,
+  "findings": {
+    "valid": true,
+    "evidence_complete": true,
+    "missing_evidence": [],
+    "problems": [],
+    "context_authenticated": false,
+    "timestamp": {
+      "status": "unverified",
+      "verified": false
+    },
+    "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+    "does_not_establish": [
+      "issuer identity without an independently trusted key",
+      "issue time or key authorization at issue time",
+      "Bitcoin anchoring without independent OTS verification",
+      "truth, settlement, delivery, completeness of the observed world",
+      "authenticity of context, filenames or captured key history"
+    ],
+    "source_sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+  },
+  "installed_files_match_source": [
+    {
+      "file": "evidence-cli.mjs",
+      "sha256": "af92a8fc0f080c98992be587c530cca5b2d8964e101c5f351f29032e0cfe70f9"
+    },
+    {
+      "file": "evidence-bundle.js",
+      "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+    },
+    {
+      "file": "x402-verify.js",
+      "sha256": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+    },
+    {
+      "file": "README.md",
+      "sha256": "ae469c705699f728ef92baa303ad1713a38a42e6b9b04acf4f7e913482580e34"
+    },
+    {
+      "file": "package.json",
+      "sha256": "95d3a84c30645e9ff436d927cdbd8be36cc2506995d9ae428b5d10db07842a2c"
+    }
+  ]
+}
