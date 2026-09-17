@@ -1934,6 +1934,26 @@ adapter was changed. Both probes and the failed signature command's local
 reproduction are recorded in
 [`research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md`](../research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md).
 
+### September 17 — native isolation repair
+
+Read OpenAI's [skill discovery and disabling documentation](https://learn.chatgpt.com/docs/build-skills)
+and [sample configuration](https://learn.chatgpt.com/docs/config-file/config-sample),
+plus local CLI 0.153.4 help. The documented per-skill `enabled=false`
+setting can be supplied as a launch override. User/admin skill roots and
+symlink behavior are documented; the legacy `.codex/skills` and bundled
+system entries were also directly observed in this machine's request.
+
+Native request construction was captured on localhost with an unauthenticated
+custom provider returning an error, without inference. The frozen adapter
+exposed 142 skill entries; disabling plugins alone still exposed 142.
+Explicit per-skill overrides exposed zero, both with the observed inventory
+and with the repaired runner's filesystem inventory. No global settings were
+changed. This isolates the metadata-loading issue, not the prior model's
+signature-handling error. Production-provider request contents were not
+captured, and no universal isolation claim follows from a local provider
+capture. A separately frozen native capability attempt uses unchanged prompts,
+models and permissions; record:
+[`research/takeoff-native-isolation-2026-09-17/freeze.json`](../research/takeoff-native-isolation-2026-09-17/freeze.json).
 
 ### 2026-09-17 — additional plugin channels and tracking reconciliation
 

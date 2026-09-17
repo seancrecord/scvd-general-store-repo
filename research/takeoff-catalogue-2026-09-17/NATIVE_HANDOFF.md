@@ -1,5 +1,7 @@
 # Native qualification — September 17, 2026
 
+**Subsequent acquisition:** [Native isolation repair and eight-buyer result](../takeoff-native-isolation-2026-09-17/REPORT.md) qualifies both hosts under a new adapter. This earlier failed probe remains unchanged. Start with the new report for current pickup.
+
 **The capability gate stopped the next buyer cohort.** Claude passed;
 Codex retained the public file but misverified the synthetic signatures.
 Both native sessions completed normally. No buyer or recipient cell was

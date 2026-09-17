@@ -75,14 +75,19 @@ ${plan.schema_version >= 3 && cell.verification === 'prompted' ? 'Save original 
 At the start, state whether any initial context already disclosed facts about the service you select. Keep an ordered account of actual searches, returned candidates, URLs, calls, responses, guesses and errors. Distinguish tool failures from origin responses, missing evidence from contradictions, and quotes from purchases. Do not claim an HTTP request occurred merely because a search snippet mentions it. State what was unexercised. Finish with a concise factual report, not a self-awarded pass.
 Stop within ${plan.budgets.tool_calls} tool calls and ${Math.ceil(plan.budgets.wall_ms / 1000)} seconds; aim for at most ${plan.budgets.output_tokens} output tokens. The runner records time/tool/output caps independently; the token target is advisory.`;
 }
-export function adapter(cell, cwd, output, budgets) {
-  if (cell.host === 'codex') return {command: 'codex', args: [
+export function adapter(cell, cwd, output, budgets, context) {
+  if (cell.host === 'codex') {
+    const skills=context?.codex?.disabled_skills;
+    if(!Array.isArray(skills)||skills.some(p=>typeof p!=='string'||!path.isAbsolute(p)))throw new Error('Codex requires a frozen local skill inventory.');
+    return {command: 'codex', args: [
     '--search', '-a', 'never', 'exec', '--ignore-user-config', '--ephemeral', '--skip-git-repo-check',
     '--sandbox', 'workspace-write', '--enable', 'skip_host_skill_discovery',
-    '--disable', 'apps', '--disable', 'hooks', '--disable', 'memories', '--disable', 'remote_plugin', '--disable', 'skill_search',
+    '--disable', 'apps', '--disable', 'hooks', '--disable', 'memories', '--disable', 'plugins', '--disable', 'remote_plugin', '--disable', 'skill_search',
+    '-c', 'skills.config=['+skills.map(p=>`{path=${JSON.stringify(p)},enabled=false}`).join(',')+']',
     '-c', 'project_doc_max_bytes=0', '-c', 'sandbox_workspace_write.network_access=true',
     '--cd', cwd, '--json', '--model', cell.model, '-o', path.join(output, 'result.txt'), '-'
   ]};
+  }
   if (cell.host === 'claude') return {command: 'claude', args: [
     '--print', '--safe-mode', '--restricted', '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
     '--no-session-persistence', '--disable-slash-commands', '--no-chrome', '--permission-mode', 'dontAsk',
