@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/sanitize";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import type { CardContent } from "@/lib/pixel-card";
 import { CHIP_LAYOUT } from "@/services/badge-svg";
 import {
@@ -406,4 +407,96 @@ export function decisionWord(decision: AgentDecision): string {
     <p class="decision-word">${escapeHtml(decision)}</p>
     <p class="menu-desc">${escapeHtml(DECISION_MEANING[decision])}</p>
   </section>`;
+}
+
+/**
+ * OPERATE THIS DOOR? (2026-09-17.) Read off robinsaige.com's record of
+ * this store's own MCP door, which ends every server page with one
+ * line to the operator: everything held is on this page, free, for
+ * anyone; wrong attribution, stale probe, misclassification — dispute
+ * it here. This store already had every door that line needs — the
+ * free mailbox, the corrections ledger, the free self-check, the
+ * notice desk — and the passport page named none of them where an
+ * operator reading their own record would look. Same doors, one
+ * block, on the record page itself. One code path for the page and
+ * the JSON, so the two cannot name different mailboxes.
+ */
+export interface ContestBlock {
+  what: string;
+  mailbox: string;
+  corrections_url: string;
+  self_check: string;
+  withdraw: string;
+}
+
+export function contestBlock(host: string, base: string): ContestBlock {
+  return {
+    what: `Everything this store holds about ${host} is on this page and in the signed history at ${base}/corpus/host/${host}.json — free, no account, for anyone. Wrong host, stale observation, or a reading you can show is wrong? The mailbox is free and a human reads it; what proves wrong is published dated at /corrections and never deleted, beside the reading it corrects. The same battery runs on your door right now at the free self-check. To have the page withdrawn, the notice desk is the door.`,
+    mailbox: `${base}/api/letter`,
+    corrections_url: `${base}/corrections`,
+    self_check: `${base}/api/preflight`,
+    withdraw: `${base}/notice`,
+  };
+}
+
+export function contestHtml(host: string, base: string): string {
+  const block = contestBlock(host, base);
+  return `<section class="contest"><h2>Operate this door?</h2>
+    <p class="menu-desc">${escapeHtml(block.what)}</p>
+    <p class="menu-meta">Dispute: <code>POST ${escapeHtml(block.mailbox)}</code> ·
+    the record of what we got wrong: <a href="/corrections">/corrections</a> ·
+    self-check: <code>POST ${escapeHtml(block.self_check)}</code> ·
+    withdraw the page: <a href="/notice">/notice</a></p>
+  </section>`;
+}
+
+/**
+ * THE QUESTION THE PAGE ANSWERS, AS DATA (2026-09-17). The same outside
+ * record carries a QAPage node — "Should my agent depend on this
+ * server?" with the verdict as the accepted answer — which is the
+ * shape an answer engine lifts a verdict from. This page had a WebPage
+ * node and a signed object and nothing that said, in a type a parser
+ * recognises, that it answers a question.
+ *
+ * WHAT THE ANSWER CARRIES, BY HOUSE RULE: never the decision word
+ * alone. The status it was derived from, the rule that derived it,
+ * the date, the expiry, the count of things not observed, and who the
+ * observer was — the derivation beside the verdict, in the node as on
+ * the page. Everything is read off the signed summary, so the node
+ * cannot say what the passport does not.
+ */
+export function passportQuestionJsonLd(passport: EndpointPassport, base: string): string {
+  const p = passport.payload;
+  const s = p.summary;
+  const url = `${base}/passport/${p.host}`;
+  const observed = s.observed_at ?? "no dated observation";
+  const text = [
+    `${s.decision} — as of ${observed}, derived from status "${s.status}" by the rule: ${s.decision_rule}`,
+    DECISION_MEANING[s.decision],
+    `Valid until ${s.valid_until}. ${s.not_observed.length} thing${s.not_observed.length === 1 ? "" : "s"} not observed, listed on the page beside the verdict; ${s.failed.length === 0 ? "no failing checks" : `failing checks: ${s.failed.join(", ")}`}.`,
+    `Observer: ${p.observer}`,
+    "A dated, ed25519-signed observation with its gaps counted against the observer. Not a warranty, not an endorsement, never a ranking; verify the signature yourself and refuse it after expiry.",
+  ].join(" ");
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "QAPage",
+    "@id": `${url}#question`,
+    url,
+    name: `Endpoint passport: ${p.host}`,
+    mainEntity: {
+      "@type": "Question",
+      name: `Should an agent treat ${p.host} as payable over ${(s.protocol ?? "x402").toUpperCase()} on scvd.store's evidence?`,
+      answerCount: 1,
+      dateModified: p.issued_at,
+      author: organizationRef(base),
+      acceptedAnswer: {
+        "@type": "Answer",
+        text,
+        url,
+        dateCreated: p.issued_at,
+        ...(s.observed_at ? { dateModified: s.observed_at } : {}),
+        author: organizationRef(base),
+      },
+    },
+  });
 }

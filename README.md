@@ -834,8 +834,11 @@ are not:
   carries is read by `npm run listings:check`, not asserted here.
 - **robinsaige.com** — [a server page](https://robinsaige.com/s/store.scvd/general-store)
   keyed on the official registry name, opened by the keeper
-  2026-09-10. The host refuses the build sandbox's egress, so what
-  the page measures is its own reading, on its page, not copied here.
+  2026-09-10 and read in full 2026-09-17: its own weekly probe of
+  the `/mcp` handshake, graded by its own method and signed with
+  its own key. What it measures and what this store took from it is
+  [`research/robinsaige-read-2026-09-17.md`](research/robinsaige-read-2026-09-17.md);
+  its verdict stays on its page, not copied here.
 - **Crosspeel** — [a per-provider endpoint page](https://crosspeel.com/endpoints/scvd-store/)
   for the store's x402 doors, opened by the keeper 2026-09-10. Same
   edge as the row above: an endpoint index proves the doors were

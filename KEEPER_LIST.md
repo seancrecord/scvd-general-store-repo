@@ -1442,6 +1442,17 @@ what you ruled and what is still yours to look at.
   each of the two new pages actually measures, so the row can say
   it in their words; and whether either offers a claim or refresh
   route. Indexing only, not an endorsement or proof of purchases.
+  robinsaige half DONE 2026-09-17 on your ask: the host answered
+  the sandbox, the page, dossier, feed and method were read in
+  full, the trust row now says what it measures in their words,
+  and three things it does that we did not — a per-host change
+  feed, a question node on the passport, the operator's line on
+  the record page — shipped the same day. The read, the side by
+  side and what was refused (percentiles, legibility bands):
+  `research/robinsaige-read-2026-09-17.md`. Their operator route
+  is `/operators#submit` (kind: invite), the way into their
+  truth-check lane; whether we want that is a RULE, drafted
+  there, nothing sent. Crosspeel half still open.
 - **PublishYourSaaS, AI Tools Capital, Cursor re-read.** DONE
   2026-09-10 (second press of the day): two more keeper-supplied
   pages are trust rows —

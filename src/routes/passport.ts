@@ -12,7 +12,10 @@ import {
   cardLines,
   colophonBlock,
   colophonText,
+  contestBlock,
+  contestHtml,
   passportEmbed,
+  passportQuestionJsonLd,
   decisionWord,
   passportCard,
 } from "@/pages/passport-card";
@@ -356,6 +359,10 @@ passportRoutes.get("/passport/:host", async (c) => {
            * learn it must not act. */
           decision: decisionOf("indeterminate"),
           decision_meaning: DECISION_MEANING["INDETERMINATE"],
+          /* A refusal is a record about the host too, and the operator
+           * of a not-ready door is exactly who would want to contest
+           * it (2026-09-17). */
+          contest: contestBlock(rawHost, base),
           /* The correction that withdrew the reading, so a reader who
            * gets `retracted-reading` can go straight to the dated
            * entry rather than take the sentence's word for it. */
@@ -377,7 +384,8 @@ passportRoutes.get("/passport/:host", async (c) => {
         extraCss: PASSPORT_CSS,
         bodyHtml: `<section><h2>No passport for ${escapeHtml(rawHost)}</h2>
         ${decisionWord("INDETERMINATE")}
-        <p class="menu-desc">${escapeHtml(passportOrRefusal.detail)}</p></section>`,
+        <p class="menu-desc">${escapeHtml(passportOrRefusal.detail)}</p></section>
+        ${contestHtml(rawHost, base)}`,
       }),
       status,
     );
@@ -391,6 +399,11 @@ passportRoutes.get("/passport/:host", async (c) => {
       ...passportOrRefusal.passport,
       colophon: colophonText(passportOrRefusal.passport, base),
       embed: passportEmbed(passportOrRefusal.passport, base),
+      /* The feed that moves when this host's record does (2026-09-17),
+       * and the operator's doors — both additive, outside the
+       * signature, like the colophon beside them. */
+      feed_url: `${base}/feeds/host/${passportOrRefusal.passport.payload.host}.xml`,
+      contest: contestBlock(passportOrRefusal.passport.payload.host, base),
       ...citeBlock(passportCite(passportOrRefusal.passport, base)),
     });
   }
@@ -401,12 +414,18 @@ passportRoutes.get("/passport/:host", async (c) => {
       path: `/passport/${rawHost}`,
       extraCss: PASSPORT_CSS,
       ogImage: `${base}/passport/card/${rawHost}.png`,
-      bodyHtml: `${passportCard(passportOrRefusal.passport)}
+      feedAlt: { path: `/feeds/host/${rawHost}.xml`, title: `${rawHost} — changes on the record, as Atom` },
+      bodyHtml: `${passportQuestionJsonLd(passportOrRefusal.passport, base)}
+      ${passportCard(passportOrRefusal.passport)}
       ${colophonBlock(passportOrRefusal.passport, base)}
       ${citeHtml(passportCite(passportOrRefusal.passport, base), escapeHtml)}
-      <section><p class="menu-desc">What a passport is, the four decisions it
+      <section><p class="menu-desc">Depend on this door? Its record has a feed
+      of its own — <a href="/feeds/host/${escapeHtml(rawHost)}.xml"><code>/feeds/host/${escapeHtml(rawHost)}.xml</code></a>
+      — that carries an entry only when the verdict or the receiving-address
+      set changes, no account needed. What a passport is, the four decisions it
       can return, and the expiry rule that governs this one:
-      <a href="/passport">the passport landing</a>. Reading is free forever.</p></section>`,
+      <a href="/passport">the passport landing</a>. Reading is free forever.</p></section>
+      ${contestHtml(rawHost, base)}`,
     }),
   );
 });

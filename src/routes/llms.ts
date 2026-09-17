@@ -1202,6 +1202,9 @@ carries a reason: no feed named it, a feed named it but we did not
 knock, the round hit its cap and it may have been in the tail, or the
 round recorded coverage trouble of its own. The gaps are the point —
 a timeline with the misses left out reads as continuous coverage.
+To be woken only when one host's record moves, subscribe to
+\`${base}/feeds/host/{host}.xml\`: Atom, one entry per verdict change or
+receiving-address change, derived from the same rows, no account.
 
 What that read will not give you is a ranking, or a figure without
 its working. The house sentence since 2026-09-02 is ${NEVER_A_RANKING}: a
