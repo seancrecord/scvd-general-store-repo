@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "frozen_at": "2026-09-17T20:43:23.158610+00:00",
+  "control_sha256": "0c9122995c99f106fb4b841294250bcbf108015886671cd4e435510772187163",
+  "initial_control_sha256": "c87c92df6dabf7c2f7f7a55f50a4ec909f6facd16e1c63219cc6d3d2406530f4",
+  "initial_source": "private/cache-control-v1.mjs",
+  "attempts_per_host": 1,
+  "correction": "Compare real parent directories instead of lexical macOS /var and /private/var aliases; require the expected cache basename. No application, runner, model, permission or budget change.",
+  "original_results_preserved": "cache-control.json",
+  "buyer_cells": 0
+}

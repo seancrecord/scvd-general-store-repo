@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-17T20:37:22.141119+00:00",
+  "instrument_commit": "cc65bc44575b4b0f4d77526dbe5905c367c421e4",
+  "plan_sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393",
+  "instrument_files": {
+    "scripts/buyer-cold-isolated.mjs": "aa431cb2d63d2aecf88aa3423641d3bdb0b4e4c36bd3e688f93761c1fb9449b5",
+    "scripts/lib/buyer-cold.mjs": "311084980f3247b7dfac3fc20ce30d42893167f522e2e501a54a2d7d3cfdb41f",
+    "scripts/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+    "scripts/lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+    "scripts/lib/buyer-host-context.mjs": "29ef1f922cec66ccf5acc674433491bc2ba120a122a078c433f52f61274addd3",
+    "verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+  },
+  "cache_control_sha256": "c87c92df6dabf7c2f7f7a55f50a4ec909f6facd16e1c63219cc6d3d2406530f4",
+  "attempts": {
+    "capability_per_host": 1,
+    "cache_control_per_host": 1,
+    "buyer_cells_this_acquisition": 0
+  },
+  "unchanged": [
+    "plan bytes",
+    "models",
+    "capability prompt",
+    "buyer budgets",
+    "native permissions",
+    "freshness window"
+  ],
+  "limits": [
+    "Only host qualification and native cache inheritance are acquired here. No buyer cohort is launched.",
+    "The separate skill navigation correction is not yet publicly observed; no usability improvement is claimed."
+  ]
+}
