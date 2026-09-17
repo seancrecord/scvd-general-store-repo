@@ -1452,7 +1452,15 @@ what you ruled and what is still yours to look at.
   `research/robinsaige-read-2026-09-17.md`. Their operator route
   is `/operators#submit` (kind: invite), the way into their
   truth-check lane; whether we want that is a RULE, drafted
-  there, nothing sent. Crosspeel half still open.
+  there, nothing sent. Second press the same day, on your "go for
+  it": the passport's face re-cut over the signed payload — the
+  because-line, the probe strip, the glance cells, the basis marks,
+  the host page no longer pasting the rule. Still yours to rule
+  from that read: a disputes ledger with a stated turnaround and a
+  reply window before a named finding; movers on the front page
+  against the names line; whether the MCP ward should cite their
+  handshake dossier instead of growing a battery of its own.
+  Crosspeel half still open.
 - **PublishYourSaaS, AI Tools Capital, Cursor re-read.** DONE
   2026-09-10 (second press of the day): two more keeper-supplied
   pages are trust rows —

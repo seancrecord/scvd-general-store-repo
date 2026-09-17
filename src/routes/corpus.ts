@@ -24,6 +24,7 @@ import { subjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { PASSPORT_CSS, probeStrip } from "@/pages/passport-card";
 import { citeBlock, citeHtml } from "@/lib/cite";
 import { deriveChanges, lastModifiedOf } from "@/services/corpus-changes";
 import { deriveAskedQueue, readAskedFor, recordAsk } from "@/services/asked-queue";
@@ -654,6 +655,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       </section>
       <section>
         <h2>Every round, including the ones we missed</h2>
+        ${probeStrip(history.timeline, host)}
         <table>
           <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Entry</th></tr></thead>
           <tbody>${rows}</tbody>
@@ -701,6 +703,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       description,
       path: `/corpus/host/${host}`,
       feedAlt: { path: `/feeds/host/${host}.xml`, title: `${host} — changes on the record, as Atom` },
+      extraCss: PASSPORT_CSS,
       bodyHtml,
     }),
   );

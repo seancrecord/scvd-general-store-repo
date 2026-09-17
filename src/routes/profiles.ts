@@ -224,7 +224,7 @@ profilesRoutes.get("/profiles/:host", async (c) => {
    */
   const outcome = await issuePassport(c.env, r.host, now);
   const evidenceHtml = outcome.issued
-    ? passportCard(outcome.passport)
+    ? passportCard(outcome.passport, { timeline: outcome.timeline })
     : refusalCard({
         host: r.host,
         reason: outcome.reason,

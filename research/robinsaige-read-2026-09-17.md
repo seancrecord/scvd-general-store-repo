@@ -129,15 +129,47 @@ instrument, and none is a ranking.
   no analogue for a payment door. The launch check, which pays the
   door and records every stage, is this store's version of "did it
   actually work".
-- **The ● ◐ ○ legend per figure.** Worth wanting. The passport
-  already separates observed rows from derived ones by name
-  (`observed_at` beside `status`, `derived` on every module) and the
-  history page names every gap with its reason; a per-figure glyph
-  would be a rendering change over a signed payload that already
-  says which is which. Noted, not built — a keeper's call on the
-  passport's face, which two outside reads have already shaped.
+- ~~**The ● ◐ ○ legend per figure.**~~ Taken after all, in the
+  second press the same day (below).
 - **RSS rather than Atom.** Their choice; ours was made on
   2026-09-03 for the dated `updated` and stable `id` Atom requires.
+
+## The second press, same day: the face
+
+The keeper read the list above and said "go for it" on the five
+items that are rendering over the signed passport and nothing else.
+All five shipped in `src/pages/passport-card.ts`, one code path for
+the passport page, the hosted profile and the history page:
+
+1. **The because-line.** The decision never appears alone: "READY —
+   because answered 402 and every check in the battery passed ●;
+   rails eip155:8453 ○; asks 0.001 USDC ○; tier established — ready
+   4 of 4 rounds, W34–W37 ◐; observed 10 days ago, aging until
+   2026-09-23 ◐. Not observed: …; never delivery, never anything
+   after payment." Every clause is read off `payload.summary`; the
+   same text rides the JSON as `because`, outside the signature.
+2. **The probe strip.** One tick per round on the chain, oldest
+   first, on the passport page and the history page: filled for
+   ready, hatched for not ready, hollow for unreachable, dotted for
+   a week we did not walk, with the reason on the tick. Shape carries
+   the outcome as well as colour, and the full table stays under it.
+   The timeline rides out of the issuer beside the passport rather
+   than being replayed twice.
+3. **The glance.** Decision, tier, rail, ask and evidence age as
+   cells above every paragraph, each wearing its basis mark.
+4. **The basis column.** Every summary row says observed, derived or
+   reported. ○ is narrower here than theirs: nothing on a passport
+   is copied from a directory, so "reported" means the door's own
+   402 declared it and the probe wrote it down.
+5. **The per-host page stops re-explaining.** The decision rule is
+   linked to the landing instead of pasted under every host's
+   decision word, and the protocol rule is folded.
+
+Rendered and looked at, desktop and phone width, before commit
+(`test/passport-glance.spec.ts` pins the five). Not built, still:
+percentiles, legibility bands, truth checks, the dispute ledger and
+reply window (a RULE), movers on the front page (a ruling on the
+names line), and the MCP ward question in the chat of 2026-09-17.
 
 ## What their record says about us that is worth a look
 

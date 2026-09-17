@@ -10,6 +10,7 @@ import { citeBlock, citeHtml } from "@/lib/cite";
 import {
   PASSPORT_CSS,
   cardLines,
+  becauseText,
   colophonBlock,
   colophonText,
   contestBlock,
@@ -77,7 +78,7 @@ function decisionLegend(): string {
         `<tr><td><code>${escapeHtml(decision)}</code></td><td>${escapeHtml(DECISION_MEANING[decision])}</td></tr>`,
     )
     .join("");
-  return `<section><h2>The agent decision view</h2>
+  return `<section id="decision"><h2>The agent decision view</h2>
   <p class="menu-desc">Every passport decides one of four words, and the
   decision is arithmetic over the freshness state — no judgement, the
   rule printed beside it, nothing to appeal.</p>
@@ -404,6 +405,9 @@ passportRoutes.get("/passport/:host", async (c) => {
        * signature, like the colophon beside them. */
       feed_url: `${base}/feeds/host/${passportOrRefusal.passport.payload.host}.xml`,
       contest: contestBlock(passportOrRefusal.passport.payload.host, base),
+      /* The one-line derivation the page prints under the decision,
+       * every clause read off payload.summary with its basis mark. */
+      because: becauseText(passportOrRefusal.passport),
       ...citeBlock(passportCite(passportOrRefusal.passport, base)),
     });
   }
@@ -416,7 +420,7 @@ passportRoutes.get("/passport/:host", async (c) => {
       ogImage: `${base}/passport/card/${rawHost}.png`,
       feedAlt: { path: `/feeds/host/${rawHost}.xml`, title: `${rawHost} — changes on the record, as Atom` },
       bodyHtml: `${passportQuestionJsonLd(passportOrRefusal.passport, base)}
-      ${passportCard(passportOrRefusal.passport)}
+      ${passportCard(passportOrRefusal.passport, { timeline: passportOrRefusal.timeline })}
       ${colophonBlock(passportOrRefusal.passport, base)}
       ${citeHtml(passportCite(passportOrRefusal.passport, base), escapeHtml)}
       <section><p class="menu-desc">Depend on this door? Its record has a feed

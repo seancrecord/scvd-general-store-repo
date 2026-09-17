@@ -239,7 +239,18 @@ export interface EndpointPassport {
 
 /** Passport refusal, with the reason a caller can act on. */
 export type PassportOutcome =
-  | { issued: true; passport: EndpointPassport }
+  | {
+      issued: true;
+      passport: EndpointPassport;
+      /**
+       * The replayed rounds the passport was derived from (2026-09-17),
+       * for the probe strip the page draws — carried out beside the
+       * artifact rather than re-replayed by the route, and outside the
+       * signed payload because the payload carries the counts. Absent
+       * on the self passport, which has no chain rounds.
+       */
+      timeline?: SubjectHistory["timeline"];
+    }
   | {
       issued: false;
       /**
@@ -584,7 +595,7 @@ export async function issuePassport(
     not_a_guarantee: NOT_A_GUARANTEE,
     modules,
   };
-  return { issued: true, passport: await signPassport(env, payload) };
+  return { issued: true, passport: await signPassport(env, payload), timeline: history.timeline };
 }
 
 /**
