@@ -83,6 +83,10 @@ previous score or published package changed.
 
 ## Next bounded work
 
+**Subsequent offline repair:** [SCORING_REPAIR.md](SCORING_REPAIR.md) records
+the schema-4 portable-evidence scoring mismatch and its regression controls.
+No further native probe or buyer cell was launched for that repair.
+
 1. Establish the actual skill context of the native Codex adapter before
    calling a later cohort cold. Investigate launch controls without changing
    the keeper's global configuration. Preserve this warning and failed probe.

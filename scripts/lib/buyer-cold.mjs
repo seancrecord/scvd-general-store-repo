@@ -257,7 +257,9 @@ async function verifyArtifact(run, review, root) {
 // a crypto verdict; unsigned response fields cannot stand in for signed facts.
 async function verifyPortable(run, review, root, original) {
   const v=review.verification;
-  if(run.schema_version!==3 || !Number.isSafeInteger(run.freshness?.max_age_ms) || run.freshness.max_age_ms<=0)
+  // Schema 4 adds host qualification and catalogue capture; it retains
+  // schema 3's signed-byte and historical-freshness contract.
+  if(![3,4].includes(run.schema_version) || !Number.isSafeInteger(run.freshness?.max_age_ms) || run.freshness.max_age_ms<=0)
     return {state:'incomplete',reason:'No frozen historical freshness policy.'};
   for (const ref of [v.artifact,v.issuer]) {
     if (!run.retained_artifacts?.files?.some(file=>file.file===ref?.file && file.sha256===ref.sha256))
@@ -343,7 +345,7 @@ export async function scoreColdRun(run, review, root) {
   const required = STAGES.filter(s => s !== 'discover' || run.cell.lane !== 'directed');
   if (required.some(s => stages[s].state === 'fail')) out.usable = 'fail';
   else if (required.every(s => stages[s].state === 'pass') && run.runtime.state === 'completed' && run.runtime.exit_code === 0 && !run.runtime.budget_stop && review.payment?.state === 'not_needed') out.usable = 'pass';
-  if (run.schema_version === 3 && run.retained_artifacts?.state !== 'complete') {
+  if ([3,4].includes(run.schema_version) && run.retained_artifacts?.state !== 'complete') {
     if (out.usable === 'pass') out.usable='incomplete';
     out.exclusions.push('Artifact capture incomplete; no full acceptance claim.');
   }
