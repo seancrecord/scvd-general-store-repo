@@ -1,0 +1,62 @@
+{
+  "arrangement": "seancrecord/scvd-general-store-repo#622 — blind answer key, StillOS direction",
+  "built_at": "2026-09-14T21:35:54.768Z",
+  "question": "For each door: resolve its advertised payTo(s) from its own discovery document, then for each rail you can read, state PAID, ZERO_OBSERVED or UNKNOWN, with distinct payer count and total received where the verdict is PAID.",
+  "verdicts": {
+    "PAID": "at least one inbound settlement to an advertised payTo was observed",
+    "ZERO_OBSERVED": "the full window was readable and contained none",
+    "UNKNOWN": "the window was not readable, or the rail is out of scope for your instrument"
+  },
+  "rules": [
+    "UNKNOWN is a legitimate answer and is NOT a miss. A rail you do not read is a gap in the observer, not a finding about the door.",
+    "A distinct counterparty is a unique sending address. A facilitator settling for many buyers is ONE.",
+    "Naming divergence is not disagreement: an also_known_as match requires the same observable, falsifier and boundary.",
+    "Five doors can prove a miss. Five doors cannot establish a rate.",
+    "payTo addresses are deliberately NOT given — resolving them from the door's own document is part of what is being tested."
+  ],
+  "observation_boundary": {
+    "note": "Pinned so both readings cover the same window. A reading past these heights is not wrong, but is not comparable.",
+    "eip155:8453": {
+      "base_block": 51316142
+    },
+    "xrpl:0": {
+      "ledger_index_max": {
+        "daxpt": 106988237,
+        "xrpreflight": 106988266
+      }
+    },
+    "solana:mainnet": {
+      "slot": {
+        "stumble": 447080061
+      }
+    }
+  },
+  "doors": [
+    {
+      "slug": "daxpt",
+      "base_url": "https://daxpt.com",
+      "listed_on": "https://x402-list.com/api/v1/services"
+    },
+    {
+      "slug": "xrpreflight",
+      "base_url": "https://destinationpreflight.com",
+      "listed_on": "https://x402-list.com/api/v1/services"
+    },
+    {
+      "slug": "stumble",
+      "base_url": "https://stumble.vimabrosta.com",
+      "listed_on": "https://x402-list.com/api/v1/services"
+    },
+    {
+      "slug": "humanmirror",
+      "base_url": "https://humanmirror.fr",
+      "listed_on": "https://x402-list.com/api/v1/services"
+    },
+    {
+      "slug": "wall-street-wiki-canon",
+      "base_url": "https://canon.wallstreet.wiki",
+      "listed_on": "https://x402-list.com/api/v1/services"
+    }
+  ],
+  "why_these_five": "Each exercises a different failure mode, including two that broke our own instrument. They are not a random sample and are not claimed to be one."
+}
