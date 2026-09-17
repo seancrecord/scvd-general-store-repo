@@ -1,0 +1,34 @@
+
+│
+●   codex  Agent detected — installing non-interactively
+[?25l│
+◇  Source: /private/tmp/scvd-buyer-evidence-handoff
+[?25h[?25l│
+◇  Local path validated
+[?25h[?25l│
+◇  Found 3 skills
+[?25h│
+●  Selected 1 skill: scvd-x402-verification
+
+│
+◇  Installation Summary ────────────────────╮
+│                                           │
+│  ./.agents/skills/scvd-x402-verification  │
+│    copy → Codex, Claude Code              │
+│                                           │
+├───────────────────────────────────────────╯
+[?25l│
+◇  Installation complete
+[?25h
+│
+◇  Installed 1 skill ───────────────────────────╮
+│                                               │
+│  ✓ scvd-x402-verification (copied)            │
+│    → ./.agents/skills/scvd-x402-verification  │
+│    → ./.claude/skills/scvd-x402-verification  │
+│                                               │
+├───────────────────────────────────────────────╯
+
+│
+└  Done!  Review skills before use; they run with full agent permissions.
+

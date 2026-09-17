@@ -134,3 +134,17 @@ suite: 751 files, 14557 tests and one existing skip. Typecheck, dry-run
 builds and generated legacy-runner checks passed. [Dated validation](../research/a2a-v1-2026-09-16/merge-validation-2026-09-17.json).
 Final stacked-head CI remains the merge gate; the earlier local-only protocol
 observations do not establish a deployed or cold-stranger pass.
+
+## September 17 public protocol qualification
+
+Merged in [PR #764](https://github.com/seancrecord/scvd-general-store-repo/pull/764)
+after all PR gates passed. At 15:08 UTC the official v1 client completed the
+three free task/lifecycle cases against `https://scvd.store`: private-target
+refusal, receipt verification and unknown-endpoint readiness. Every task was
+retrievable and terminal cancellation was refused. [Exact exchanges](../research/a2a-v1-2026-09-16/postmerge-2026-09-17-live.json).
+
+The existing [legacy checker](../research/a2a-v1-2026-09-16/postmerge-2026-09-17-legacy.json)
+also passed against production, covering the unversioned 0.3 cards and a free
+readiness task, retrieval and malformed requests. These are directed protocol
+observations, not cold discovery, signed-evidence acquisition, paid delivery or
+comprehensive certification. Cold-stranger qualification remains open.

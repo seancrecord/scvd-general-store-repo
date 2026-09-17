@@ -1,0 +1,20 @@
+{
+  "base_commit": "38702413",
+  "branch": "codex/buyer-evidence-handoff",
+  "application_tests": {
+    "passed": 62,
+    "files": 5
+  },
+  "node_tests": {
+    "passed": 23
+  },
+  "typecheck": "passed",
+  "build_check": "passed, all dry runs; no deployment",
+  "diff_check": "passed",
+  "red_before_green": [
+    "4 failures with unchanged source before fixes",
+    "actual audit-core extraction test failed with the original skill; repaired skill restored automatically"
+  ],
+  "full_suite": "not run; required before a future commit",
+  "final_skill_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb"
+}

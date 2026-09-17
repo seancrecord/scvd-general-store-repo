@@ -1,0 +1,130 @@
+{
+  "reviewer": "primary implementation agent; not an independent blind reviewer",
+  "schema_version": 1,
+  "rows": [
+    {
+      "cell": {
+        "id": "claude-listing-control",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "entry": "https://skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+        "verification": "prompted"
+      },
+      "started_at": "2026-09-16T19:22:52.371Z",
+      "ended_at": "2026-09-16T19:26:22.160Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 10,
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "trace_sha256": "845932cc573caf6d029f99c3866781a721a1c10ea612c05ddf3f306b3e5d3523",
+      "final_file": "public-results/claude-listing-control/final.md",
+      "review": "Fetched missing-listing content and merchant 402; did not connect to an SCVD instrument. Concluded no signed evidence exists and technically transactable too broadly. Local decode commands were repeatedly denied by the native host allowlist; this is a harness/environment confound.",
+      "full_acceptance": "not_established",
+      "limitations": [
+        "Directed entry; no unprompted discovery claim.",
+        "Published instructions only; candidate changes were not deployed.",
+        "No paid execution or independent recipient handoff."
+      ]
+    },
+    {
+      "cell": {
+        "id": "claude-public-source",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+        "verification": "prompted"
+      },
+      "started_at": "2026-09-16T19:26:22.169Z",
+      "ended_at": "2026-09-16T19:29:38.650Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 14,
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "trace_sha256": "265d33abcf8e93921fab8a8ac232d1392397a4b2533d7ea7ff0f3a0e66cea1da",
+      "final_file": "public-results/claude-public-source/final.md",
+      "review": "Read the public skill but no MCP server was configured. Did not discover HTTP preflight fallback. Browsed HTML corpus without following signed records, then overclaimed that no evidence exists without paying. Several local decode commands were denied by the native host allowlist.",
+      "full_acceptance": "not_established",
+      "limitations": [
+        "Directed entry; no unprompted discovery claim.",
+        "Published instructions only; candidate changes were not deployed.",
+        "No paid execution or independent recipient handoff."
+      ]
+    },
+    {
+      "cell": {
+        "id": "codex-listing-control",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "entry": "https://skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+        "verification": "prompted"
+      },
+      "started_at": "2026-09-16T19:17:59.889Z",
+      "ended_at": "2026-09-16T19:20:27.081Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 17,
+      "resolved_models": [],
+      "trace_sha256": "73fc85dd7ddcdddafd00d0b9dc3099a3d1bd07cd1bb2d9b23f586b36e4a59cf5",
+      "final_file": "public-results/codex-listing-control/final.md",
+      "review": "Recovered via public GitHub; called SCVD preflight (unreachable timeout) and before-you-pay (ready/L3a). No signed SCVD artifact verified. A listing miss was not the end of the run.",
+      "full_acceptance": "not_established",
+      "limitations": [
+        "Directed entry; no unprompted discovery claim.",
+        "Published instructions only; candidate changes were not deployed.",
+        "No paid execution or independent recipient handoff."
+      ]
+    },
+    {
+      "cell": {
+        "id": "codex-public-source",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+        "verification": "prompted"
+      },
+      "started_at": "2026-09-16T19:20:27.085Z",
+      "ended_at": "2026-09-16T19:22:52.355Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 15,
+      "resolved_models": [],
+      "trace_sha256": "d357cd2df8c5d3901c74ddf786ffab7869284d9ee82d93a56a9eafca0de7915a",
+      "final_file": "public-results/codex-public-source/final.md",
+      "review": "Called HTTP v2 preflight (ready/L3a), found exact-subject historical corpus evidence, and ran local Ed25519/digest verification successfully after two canonicalization failures. The full snapshot output was truncated by the host; no complete portable artifact or separate recipient review was retained. Partial success, not complete acceptance.",
+      "full_acceptance": "not_established",
+      "limitations": [
+        "Directed entry; no unprompted discovery claim.",
+        "Published instructions only; candidate changes were not deployed.",
+        "No paid execution or independent recipient handoff."
+      ]
+    }
+  ]
+}
