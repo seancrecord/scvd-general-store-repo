@@ -680,5 +680,20 @@ code {
 }
 
 .first-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 24px 0; }
-.first-actions .door-cta { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 12px; box-sizing: border-box; text-align: center; }
+/* The four first actions sit under the sign, on the night, not on a door's
+   paper: they wear the open-sign's tube (teal outline, spaced capitals, the
+   same hum) rather than the ink-on-paper button the doors below use. */
+.first-actions .door-cta {
+  display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 18px; box-sizing: border-box; text-align: center;
+  font-family: Georgia, 'Times New Roman', serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+  background: rgba(11,10,18,0.55); color: var(--teal) !important;
+  border: 1px solid var(--teal-dim); border-radius: 999px;
+  text-shadow: 0 0 10px rgba(93,230,200,0.5);
+  box-shadow: 0 0 12px rgba(93,230,200,0.14), inset 0 0 8px rgba(93,230,200,0.06);
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.first-actions .door-cta:hover, .first-actions .door-cta:focus-visible {
+  background: var(--teal); color: var(--night) !important; text-shadow: none;
+  box-shadow: 0 0 22px rgba(93,230,200,0.35);
+}
 `;
