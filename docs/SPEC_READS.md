@@ -1971,3 +1971,15 @@ models and permissions; record:
 - [Distribution map](../DISTRIBUTION.md) now identifies the sources of truth;
   [plugin packet](../registry/plugin-submissions.md) contains fields and unrun gates.
   [Receipts](../research/distribution-2026-09-17/README.md) retain actual outcomes.
+
+### 2026-09-17 — saved-response verification and npm cache boundary
+
+Read the [npm CLI configuration reference](https://docs.npmjs.com/cli/v11/using-npm/config/#cache):
+`cache` is a path setting, with `~/.npm` as the Posix default; command-line
+settings can select a writable local directory. The two retained Codex
+referred traces independently hit EPERM at that default and recovered with
+a temporary cache. No ownership change or global configuration edit is needed.
+The current local CLI, bundle constructor and verification code are the
+primary sources for export duplication and result expansion; the new command
+reuses those semantics. No new protocol or cryptographic algorithm is assumed.
+Registry availability and later native-host completion remain separate gates.

@@ -1,6 +1,6 @@
 {
   "name": "x402-verify",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: compact JWS (EdDSA/Ed25519), did:web resolution, local revision-1 schema checks, explicit result statuses, and optional anchored key history.",
   "type": "module",
   "main": "./x402-verify.js",

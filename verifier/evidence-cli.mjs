@@ -2,7 +2,7 @@
 import { open, mkdir, access, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { webcrypto } from "node:crypto";
-import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit } from "./evidence-bundle.js";
+import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit } from "./evidence-bundle.js";
 
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
 globalThis.crypto ??= webcrypto;
@@ -10,7 +10,9 @@ globalThis.crypto ??= webcrypto;
 const HELP = `scvd-evidence — free export and offline verification
   export <verify-response-or-corpus-snapshot-url> --out <new-directory> [--evidence <local-file> ...]
   verify <bundle.json> --public-key <independently-trusted-public-key-hex>
-  Both commands: [--max-bytes <integer>]
+  verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
+    [--evidence <local-file> ...]
+  All commands: [--max-bytes <integer>]
 
 Default input/output limit: ${EVIDENCE_BUNDLE_MAX_BYTES} bytes; explicit maximum:
 ${EVIDENCE_BUNDLE_HARD_MAX_BYTES} bytes. Bundles include unsigned context and can
@@ -21,7 +23,11 @@ This command checks one snapshot's signature, not continuity of the corpus.
 Export reads only the URL you name and its origin's public key document.
 No credentials, payments or private keys. Evidence files must match a hash
 inside the signed payload. Existing directories are never overwritten.
-Verify makes no network requests. The embedded key cannot establish identity.
+Verify and verify-source make no network requests. verify-source checks a saved
+original response using the same bundle verifier in memory, writes no files,
+and prints findings plus the original file SHA-256 without repeating claims.
+Keep that original, its source URL, any linked evidence and the independently
+established key. The embedded key cannot establish identity.
 Exit: 0 signature/bindings valid; 1 invalid or missing trusted key;
 3 valid signature but missing linked evidence; 2 command/read failure.
 Bitcoin timestamps remain unverified by this command. Where a proof exists,
@@ -61,6 +67,17 @@ async function remoteJson(url, maxBytes = EVIDENCE_BUNDLE_MAX_BYTES) {
   } finally { await reader.cancel(); }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
+async function localAttachments(evidence, maxBytes) {
+  const attachments = [];
+  let attachmentBytes = 0;
+  for (const path of evidence) {
+    const bytes = await localBytes(path, maxBytes);
+    attachmentBytes += bytes.length;
+    if (attachmentBytes > maxBytes) throw new Error("attachments_too_large");
+    attachments.push({ name: basename(path), bytes });
+  }
+  return attachments;
+}
 async function main(args) {
   if (!args.length || args.includes("--help")) { console.log(HELP); return; }
   const [command, input, ...rest] = args;
@@ -73,6 +90,19 @@ async function main(args) {
   if (flags["--max-bytes"] && !/^\d+$/.test(flags["--max-bytes"])) throw new Error("invalid_byte_limit");
   const maxBytes = evidenceByteLimit(flags["--max-bytes"] === undefined ? undefined : Number(flags["--max-bytes"]));
   if (!input) throw new Error("missing_input");
+  if (command === "verify-source") {
+    if (flags["--out"]) throw new Error("invalid_arguments");
+    const bytes = await localBytes(input, maxBytes);
+    const attachments = await localAttachments(evidence, maxBytes);
+    const bundle = await createEvidenceBundle(JSON.parse(bytes.toString("utf8")), { attachments, maxBytes });
+    const result = await verifyEvidenceBundle(bundle, { publicKey: flags["--public-key"], maxBytes });
+    // The saved original is the transport. Reprinting a whole corpus defeated
+    // the buyer's output budget even after its local signature check succeeded.
+    const { signed_claims, ...findings } = result;
+    console.log(JSON.stringify({ ...findings, source_sha256: await evidenceDigest(bytes) }, null, 2));
+    process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
+    return;
+  }
   if (command === "verify") {
     if (flags["--out"] || evidence.length) throw new Error("invalid_arguments");
     const result = await verifyEvidenceBundle(JSON.parse((await localBytes(input, maxBytes)).toString("utf8")), { publicKey: flags["--public-key"], maxBytes });
@@ -90,14 +120,7 @@ async function main(args) {
   let issuerDocument = null;
   try { issuerDocument = await remoteJson(new URL("/.well-known/scvd-signing-key", source)); }
   catch { /* The absence is preserved; export never makes this snapshot a trust root. */ }
-  const attachments = [];
-  let attachmentBytes = 0;
-  for (const path of evidence) {
-    const bytes = await localBytes(path, maxBytes);
-    attachmentBytes += bytes.length;
-    if (attachmentBytes > maxBytes) throw new Error("attachments_too_large");
-    attachments.push({ name: basename(path), bytes });
-  }
+  const attachments = await localAttachments(evidence, maxBytes);
   const bundle = await createEvidenceBundle(response, { sourceUrl: source.href, capturedAt: new Date().toISOString(), issuerDocument, attachments, maxBytes });
   await mkdir(flags["--out"]); // Exclusive directory creation also closes the preflight race.
   const out = flags["--out"];
