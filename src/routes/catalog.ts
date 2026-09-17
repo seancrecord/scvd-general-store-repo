@@ -1,3 +1,4 @@
+import { purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { purchaseChecklist, purchaseChecklistHtml } from "@/lib/purchase-checklist";
 import { publicationCollections } from "@/lib/publication-checkout";
 import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
@@ -138,7 +139,7 @@ catalogRoutes.get("/menu.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   varyOnAccept(c);
   if (c.req.query("view") === "compact") {
-    const page = compactCatalog(base, c.req.query("page"));
+    const page = compactCatalog(base, c.req.query("page"), c.env);
     return page ? c.json(page) : c.json({ code: "bad_page", charged: false }, 400);
   }
   if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
@@ -155,6 +156,7 @@ catalogRoutes.get("/menu.json", async (c) => {
   const items: CatalogItem[] = await Promise.all(
     MENU_ITEMS.map(async (item) => ({
       ...item,
+      payment_capabilities: purchaseCapabilities(item, c.env),
       purchase_checklist: purchaseChecklist(item, c.env),
       buy_url: `${base}/api/buy/${item.id}`,
       ...buyerLinks(item, base),
@@ -790,6 +792,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   c.header("Link", canonical.Link);
   return c.json({
     ...item,
+    payment_capabilities: purchaseCapabilities(item, c.env),
     purchase_checklist: purchaseChecklist(item, c.env),
     ...buyerLinks(item, base),
     buy_url: `${base}/api/buy/${item.id}`,

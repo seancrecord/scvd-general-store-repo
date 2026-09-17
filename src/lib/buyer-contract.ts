@@ -1,5 +1,5 @@
+import { purchaseCapabilities, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { purchaseChecklist } from "@/lib/purchase-checklist";
-import type { PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { publicationCollections } from "@/lib/publication-checkout";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
@@ -59,9 +59,13 @@ export function checkoutContract(base: string) {
   };
 }
 
-export function compactItemRow(item: MenuItem, base: string) {
+export function compactItemRow(item: MenuItem, base: string, config?: PurchaseCapabilityConfig) {
   const links = buyerLinks(item, base);
+  const capabilities = purchaseCapabilities(item, config);
   return {
+    // The compact document already carries the full x402 checkout contract.
+    // Spend its reading budget on an additional protocol only when enabled.
+    ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities } : {}),
     id: item.id,
     name: item.name,
     task: CAPABILITY_QUERY[item.id] ?? item.name,
@@ -79,10 +83,10 @@ export function compactItemRow(item: MenuItem, base: string) {
   };
 }
 
-export function compactItemContract(item: MenuItem, base: string, config?: PaymentNetworkConfig) {
+export function compactItemContract(item: MenuItem, base: string, config?: PurchaseCapabilityConfig) {
   const artifact = artifactClassForItem(item.id);
   return {
-    ...compactItemRow(item, base),
+    ...compactItemRow(item, base, config),
     buyer_guidance: buyerGuidance(item, base),
     purchase_checklist: purchaseChecklist(item, config),
     description: item.description,
@@ -97,13 +101,13 @@ export function compactItemContract(item: MenuItem, base: string, config?: Payme
 }
 
 /** Page numbers are limited by the actual shelf and reject malformed or out-of-range values. */
-export function compactCatalog(base: string, rawPage = "0") {
+export function compactCatalog(base: string, rawPage = "0", config?: PurchaseCapabilityConfig) {
   const pages = Math.max(1, Math.ceil(MENU_ITEMS.length / COMPACT_CATALOG_PAGE_SIZE));
   if (!/^\d{1,6}$/.test(rawPage) || Number(rawPage) >= pages) return null;
   const page = Number(rawPage);
   const offset = page * COMPACT_CATALOG_PAGE_SIZE;
   const items = MENU_ITEMS.slice(offset, offset + COMPACT_CATALOG_PAGE_SIZE)
-    .map(item => compactItemRow(item, base));
+    .map(item => compactItemRow(item, base, config));
   return {
     publications: publicationCollections(base),
     total: MENU_ITEMS.length,

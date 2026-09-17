@@ -1,7 +1,8 @@
+import { nativeCheckoutGuide, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
-import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { paymentNetworkNames } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
@@ -89,8 +90,9 @@ function pricedDoorCount(): number {
 export const llmsRoutes = new Hono<HonoEnv>();
 
 /** The whole front door as text. The MCP read_store_guide tool serves this too. */
-export function storeGuideText(base: string, paymentConfig?: PaymentNetworkConfig): string {
+export function storeGuideText(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
+  const nativeGuide = nativeCheckoutGuide(paymentConfig);
   return `# ${STORE_METADATA.name}
 
 ${paymentConfig ? `Current checkout networks: ${paymentNetworkNames(paymentConfig)}.` : ""}
@@ -601,7 +603,7 @@ them ${base}/what.
 
 ## How paying works here
 
-We take ${STORE_METADATA.currency} on a network offered in the current
+${nativeGuide ? `${nativeGuide}\n\n` : ""}We take ${STORE_METADATA.currency} on a network offered in the current
 payment quote over the ${STORE_METADATA.protocol} protocol, version 2.
 The quote is the source of current payment terms. It goes like this:
 
@@ -2070,7 +2072,7 @@ ${others}
  * local 30,000-character reading budget with room to spare, and every
  * sentence in it is the same sentence it was yesterday.
  */
-export function llmsIndex(base: string, paymentConfig?: PaymentNetworkConfig): string {
+export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   const { preamble, sections } = splitGuide(storeGuideText(base, paymentConfig));
   const kept = INDEX_SECTIONS.map((heading) =>
     sections.find((section) => section.heading === heading),
@@ -2101,7 +2103,7 @@ Every one of those areas is also a room a person can read: drop the
 }
 
 /** GET /{area}/llms.txt — one area's sections, whole. */
-export function llmsForArea(base: string, slug: string, paymentConfig?: PaymentNetworkConfig): string | null {
+export function llmsForArea(base: string, slug: string, paymentConfig?: PurchaseCapabilityConfig): string | null {
   const area = LLMS_AREAS.find((entry) => entry.slug === slug);
   if (!area) {
     return null;

@@ -13,6 +13,17 @@ export interface MppSalesSummary {
   house: number;
   organic_amount_atomic: string;
   house_amount_atomic: string;
+  /** Append-only adjustments; original sale evidence and raw totals remain intact. */
+  reclassified_house?: number;
+  reclassified_amount_atomic?: string;
+}
+export interface MppHouseCorrection {
+  id: string;
+  month: string;
+  payer: string;
+  amount: string;
+  at: string;
+  reason: string;
 }
 
 /** Shared by the writer and the read-only comparison; one definition of a sale. */
@@ -35,6 +46,17 @@ export async function recordMppSale(env: Env, record: PurchaseIntent): Promise<v
   await env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${sale.month}/mpp-sales`)).recordMppSale(sale);
 }
 
+/** Validate raw totals and their separate corrections before reading or changing them. */
+export function validateMppSalesSummary(row: MppSalesSummary): void {
+  if (![row.organic, row.house].every(n => Number.isSafeInteger(n) && n >= 0) ||
+    ![row.organic_amount_atomic, row.house_amount_atomic].every(n => typeof n === "string" && /^\d+$/.test(n))) throw new Error("MPP sales unreadable");
+  const corrected = row.reclassified_house ?? 0;
+  const amount = row.reclassified_amount_atomic ?? "0";
+  if (!Number.isSafeInteger(corrected) || corrected < 0 || corrected > row.organic ||
+    typeof amount !== "string" || !/^\d+$/.test(amount) || BigInt(amount) > BigInt(row.organic_amount_atomic) ||
+    (corrected === 0) !== (BigInt(amount) === 0n)) throw new Error("MPP correction unreadable");
+}
+
 /** Calendar-bounded mirrors, like the legacy till; no scan over all purchases. */
 export async function readMppSales(env: Env): Promise<MppSalesSummary> {
   const rows = await Promise.all(monthsSinceOpening().map(month => kvGet(env.COUNTERS, `${MPP_SALES_PREFIX}${month}`)));
@@ -42,12 +64,17 @@ export async function readMppSales(env: Env): Promise<MppSalesSummary> {
   for (const raw of rows) {
     if (raw === null) continue;
     const row = JSON.parse(raw) as MppSalesSummary;
-    if (![row.organic, row.house].every(n => Number.isSafeInteger(n) && n >= 0) ||
-      !/^\d+$/.test(row.organic_amount_atomic) || !/^\d+$/.test(row.house_amount_atomic)) throw new Error("MPP sales unreadable");
-    total.organic += row.organic;
-    total.house += row.house;
-    total.organic_amount_atomic = String(BigInt(total.organic_amount_atomic) + BigInt(row.organic_amount_atomic));
-    total.house_amount_atomic = String(BigInt(total.house_amount_atomic) + BigInt(row.house_amount_atomic));
+    validateMppSalesSummary(row);
+    const corrected = row.reclassified_house ?? 0;
+    const amount = row.reclassified_amount_atomic ?? "0";
+    total.organic += row.organic - corrected;
+    total.house += row.house + corrected;
+    total.organic_amount_atomic = String(BigInt(total.organic_amount_atomic) + BigInt(row.organic_amount_atomic) - BigInt(amount));
+    total.house_amount_atomic = String(BigInt(total.house_amount_atomic) + BigInt(row.house_amount_atomic) + BigInt(amount));
+    if (corrected) {
+      total.reclassified_house = (total.reclassified_house ?? 0) + corrected;
+      total.reclassified_amount_atomic = String(BigInt(total.reclassified_amount_atomic ?? "0") + BigInt(amount));
+    }
   }
   return total;
 }
