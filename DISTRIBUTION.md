@@ -95,8 +95,8 @@ returned clean and a normal exact-version public install from the keeper's
 machine matched all eleven payload files and the tree hash
 `50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606`
 (`research/package-skill-integration-2026-09-17/skill-registry-installation.json`).
-Record PR [#772](https://github.com/seancrecord/scvd-general-store-repo/pull/772)
-carries the published record and the closeout; the deployed `/skill.md`
+Record PR [#772](https://github.com/seancrecord/scvd-general-store-repo/pull/772),
+merged as `b4c0bbdb`, carries the published record and the closeout; the deployed `/skill.md`
 served 3.17.0 at 16:47 UTC. Two CI-side reads of the public page in the
 first 40 minutes found no labelled version, retained under
 `research/package-skill-release-2026-09-17/`. Closeout:
