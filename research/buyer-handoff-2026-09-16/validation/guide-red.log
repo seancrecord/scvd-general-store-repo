@@ -1,0 +1,28 @@
+(node:54981) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-buyer-evidence-handoff
+
+ ❯ test/preflight-evidence-handoff.spec.ts (3 tests | 1 failed | 2 skipped) 20ms
+     × the skill's extraction retains the real audit core, including gaps, and detects tampering 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/preflight-evidence-handoff.spec.ts > the unsigned preflight's evidence handoff > the skill's extraction retains the real audit core, including gaps, and detects tampering
+AssertionError: the guide must supply a runnable core extraction: expected null not to be null
+ ❯ test/preflight-evidence-handoff.spec.ts:54:80
+     52|     // Hashing a whole report or dropping a new core field must not pa…
+     53|     const extraction = /const \{ ([^}]+), \.\.\.core \} = audit;/.exec…
+     54|     expect(extraction, "the guide must supply a runnable core extracti…
+       |                                                                                ^
+     55|     const omitted = extraction![1]!.split(",").map((name) => name.trim…
+     56|     const core = Object.fromEntries(Object.entries(audit).filter(([nam…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  15:28:19
+   Duration  7.90s (transform 3.57s, setup 14ms, import 7.40s, tests 20ms, environment 0ms)
+

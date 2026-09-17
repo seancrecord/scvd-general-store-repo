@@ -1,0 +1,125 @@
+TAP version 13
+# Subtest: the JSONC reader keeps a URL's // inside a string and drops comments
+ok 1 - the JSONC reader keeps a URL's // inside a string and drops comments
+  ---
+  duration_ms: 0.971167
+  ...
+# Subtest: the doors Worker is its own name, entry and route, and nothing of the store's attachment
+ok 2 - the doors Worker is its own name, entry and route, and nothing of the store's attachment
+  ---
+  duration_ms: 0.105666
+  ...
+# Subtest: what the 402 is minted from is identical: runtime, KV, R2, vars
+ok 3 - what the 402 is minted from is identical: runtime, KV, R2, vars
+  ---
+  duration_ms: 0.173875
+  ...
+# Subtest: each Worker's cpu ceiling is sized to its own work, and the doors never exceed the store
+ok 4 - each Worker's cpu ceiling is sized to its own work, and the doors never exceed the store
+  ---
+  duration_ms: 0.072333
+  ...
+# Subtest: the doors hand everything else to the store by name
+ok 5 - the doors hand everything else to the store by name
+  ---
+  duration_ms: 0.049542
+  ...
+# Subtest: exact signed bytes and attached evidence verify offline against a separately held key
+ok 6 - exact signed bytes and attached evidence verify offline against a separately held key
+  ---
+  duration_ms: 5.7865
+  ...
+# Subtest: the embedded key never appoints itself trusted
+ok 7 - the embedded key never appoints itself trusted
+  ---
+  duration_ms: 0.575333
+  ...
+# Subtest: rejects changed signed payload
+ok 8 - rejects changed signed payload
+  ---
+  duration_ms: 0.705375
+  ...
+# Subtest: rejects changed signature
+ok 9 - rejects changed signature
+  ---
+  duration_ms: 0.890584
+  ...
+# Subtest: rejects changed embedded key
+ok 10 - rejects changed embedded key
+  ---
+  duration_ms: 0.535708
+  ...
+# Subtest: rejects changed algorithm
+ok 11 - rejects changed algorithm
+  ---
+  duration_ms: 0.2705
+  ...
+# Subtest: rejects changed format version
+ok 12 - rejects changed format version
+  ---
+  duration_ms: 0.446084
+  ...
+# Subtest: rejects changed attachment, including a forged new checksum
+ok 13 - rejects changed attachment, including a forged new checksum
+  ---
+  duration_ms: 0.673959
+  ...
+# Subtest: rejects changed attachment relabelled as unrelated
+ok 14 - rejects changed attachment relabelled as unrelated
+  ---
+  duration_ms: 0.666333
+  ...
+# Subtest: rejects changed duplicate attachment
+ok 15 - rejects changed duplicate attachment
+  ---
+  duration_ms: 0.895834
+  ...
+# Subtest: deleting evidence preserves the signature result but cannot preserve completeness
+ok 16 - deleting evidence preserves the signature result but cannot preserve completeness
+  ---
+  duration_ms: 1.211417
+  ...
+# Subtest: source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+ok 17 - source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+  ---
+  duration_ms: 0.636458
+  ...
+# Subtest: an issuer's bounded label and altered proof never become an independently verified timestamp
+ok 18 - an issuer's bounded label and altered proof never become an independently verified timestamp
+  ---
+  duration_ms: 0.712167
+  ...
+# Subtest: OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+ok 19 - OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+  ---
+  duration_ms: 0.107167
+  ...
+# Subtest: rejects malformed or oversized inputs and attachments without a signed binding
+ok 20 - rejects malformed or oversized inputs and attachments without a signed binding
+  ---
+  duration_ms: 45.936709
+  ...
+# Subtest: corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+ok 21 - corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+  ---
+  duration_ms: 0.871125
+  ...
+# Subtest: export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+ok 22 - export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+  ---
+  duration_ms: 330.661792
+  ...
+# Subtest: corpus export above the default cap requires an explicit bounded allowance and detects tampering
+ok 23 - corpus export above the default cap requires an explicit bounded allowance and detects tampering
+  ---
+  duration_ms: 1084.015417
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1489.480833

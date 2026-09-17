@@ -480,7 +480,7 @@ export async function computeStatsDiagnosed(
       organic + house + FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     organic_settlements: organicSettlements,
     house_settlements: house + reclassified,
-    reclassified_house: reclassified,
+    reclassified_house: reclassified + (mpp.reclassified_house ?? 0),
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     artifacts_issued: artifactsIssued,
     distinct_organic_buyers: distinctOrganicBuyers,
@@ -506,6 +506,7 @@ export async function computeStatsDiagnosed(
   }];
   if (mpp.organic + mpp.house > 0) {
     stats.payment_sources.push({ protocol: "mpp", currency: "USDC", organic: mpp.organic, house: mpp.house,
+      house_correction: { purchases: mpp.reclassified_house ?? 0, amount_atomic: mpp.reclassified_amount_atomic ?? "0" },
       amounts: { network: BASE_NETWORK, asset: BASE_USDC, decimals: USDC_DECIMALS,
         organic_atomic: mpp.organic_amount_atomic, house_atomic: mpp.house_amount_atomic } });
     stats.organic_settlements += mpp.organic;

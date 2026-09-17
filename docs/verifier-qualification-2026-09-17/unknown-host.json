@@ -1,0 +1,112 @@
+{
+  "observed_at": "2026-09-17T13:51:41.952Z",
+  "host": "developers.openai.com",
+  "purpose": "One disclosed test-generated ask for the public documentation host used by this submission. May enqueue a later discovery sweep. No claim of organic demand.",
+  "schema_valid": true,
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"task\":\"get_endpoint_readiness\",\"observed_at\":\"2026-09-17T13:51:40.531Z\",\"result\":\"never_met\",\"scope\":\"The signed chain has no round that met developers.openai.com. A fact about this store's coverage, not about the door.\",\"verification_url\":\"https://scvd.store/corpus/host/developers.openai.com.json\",\"artifact_url\":\"https://scvd.store/passport/developers.openai.com\",\"key_url\":\"https://scvd.store/.well-known/scvd-signing-key\",\"evidence\":{\"host\":\"developers.openai.com\",\"never_met\":true,\"rounds_in_chain\":6,\"rounds_since_first_sighting\":0,\"rounds_probed\":0,\"rounds_gapped\":0,\"first_observed\":null,\"last_observed\":null,\"gaps_by_reason\":{\"before_first_sighting\":6,\"not_listed\":0,\"listed_not_walked\":0,\"possibly_beyond_cap\":0,\"instrument_degraded\":0},\"tier\":{\"tier\":\"indeterminate\",\"line\":\"indeterminate — 0 of 0, no rounds\",\"protocol\":\"x402\",\"fraction\":{\"ready\":0,\"rounds\":0,\"first_week\":null,\"last_week\":null,\"weeks\":\"no rounds\"},\"rule\":\"fewer rounds than the rule needs, or our coverage of this host was suspect in the window\",\"latest\":{\"verdict\":null,\"observed_at\":null,\"source\":null},\"coverage_suspect\":false,\"window\":{\"rounds\":0,\"established_needs\":4,\"standing_needs\":8},\"rows\":[],\"criteria_url\":\"https://scvd.store/criteria\"},\"passport\":{\"decision\":\"INDETERMINATE\",\"freshness\":\"indeterminate\",\"observed_at\":null,\"verdict\":null,\"source\":null,\"url\":\"https://scvd.store/passport/developers.openai.com\"},\"last_probed_round\":null,\"verdict_changes\":0,\"what_this_cannot_see\":[\"Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.\",\"Why a verdict changed. We record what a probe saw, never the cause.\",\"Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.\",\"A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.\",\"Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.\",\"Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.\",\"Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did.\"],\"rows_url\":\"https://scvd.store/corpus/host/developers.openai.com.json\",\"derived_at\":\"2026-09-17T13:51:40.531Z\",\"held_for_seconds\":600},\"does_not_establish\":[\"whether the door answers now (that is the preflight task)\",\"whether the door delivers after payment\",\"anything about a host the chain never met, beyond that it never met it\",\"whether to pay\"],\"never_a_ranking\":\"Never a ranking, and never a verdict without its derivation and denominator beside it.\"}"
+        }
+      ],
+      "structuredContent": {
+        "task": "get_endpoint_readiness",
+        "observed_at": "2026-09-17T13:51:40.531Z",
+        "result": "never_met",
+        "scope": "The signed chain has no round that met developers.openai.com. A fact about this store's coverage, not about the door.",
+        "verification_url": "https://scvd.store/corpus/host/developers.openai.com.json",
+        "artifact_url": "https://scvd.store/passport/developers.openai.com",
+        "key_url": "https://scvd.store/.well-known/scvd-signing-key",
+        "evidence": {
+          "host": "developers.openai.com",
+          "never_met": true,
+          "rounds_in_chain": 6,
+          "rounds_since_first_sighting": 0,
+          "rounds_probed": 0,
+          "rounds_gapped": 0,
+          "first_observed": null,
+          "last_observed": null,
+          "gaps_by_reason": {
+            "before_first_sighting": 6,
+            "not_listed": 0,
+            "listed_not_walked": 0,
+            "possibly_beyond_cap": 0,
+            "instrument_degraded": 0
+          },
+          "tier": {
+            "tier": "indeterminate",
+            "line": "indeterminate — 0 of 0, no rounds",
+            "protocol": "x402",
+            "fraction": {
+              "ready": 0,
+              "rounds": 0,
+              "first_week": null,
+              "last_week": null,
+              "weeks": "no rounds"
+            },
+            "rule": "fewer rounds than the rule needs, or our coverage of this host was suspect in the window",
+            "latest": {
+              "verdict": null,
+              "observed_at": null,
+              "source": null
+            },
+            "coverage_suspect": false,
+            "window": {
+              "rounds": 0,
+              "established_needs": 4,
+              "standing_needs": 8
+            },
+            "rows": [],
+            "criteria_url": "https://scvd.store/criteria"
+          },
+          "passport": {
+            "decision": "INDETERMINATE",
+            "freshness": "indeterminate",
+            "observed_at": null,
+            "verdict": null,
+            "source": null,
+            "url": "https://scvd.store/passport/developers.openai.com"
+          },
+          "last_probed_round": null,
+          "verdict_changes": 0,
+          "what_this_cannot_see": [
+            "Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.",
+            "Why a verdict changed. We record what a probe saw, never the cause.",
+            "Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.",
+            "A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.",
+            "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
+            "Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.",
+            "Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did."
+          ],
+          "rows_url": "https://scvd.store/corpus/host/developers.openai.com.json",
+          "derived_at": "2026-09-17T13:51:40.531Z",
+          "held_for_seconds": 600
+        },
+        "does_not_establish": [
+          "whether the door answers now (that is the preflight task)",
+          "whether the door delivers after payment",
+          "anything about a host the chain never met, beyond that it never met it",
+          "whether to pay"
+        ],
+        "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+      }
+    }
+  },
+  "queue_before": null,
+  "queue_after": {
+    "host": "developers.openai.com",
+    "first_asked": "2026-09-17T13:51:40.531Z",
+    "last_asked": "2026-09-17T13:51:40.531Z",
+    "asks": 1,
+    "surfaces": [
+      "look"
+    ],
+    "state": "queued",
+    "history_url": "https://scvd.store/corpus/host/developers.openai.com.json"
+  },
+  "passed": true
+}

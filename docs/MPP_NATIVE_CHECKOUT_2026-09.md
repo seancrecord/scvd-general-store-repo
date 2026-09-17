@@ -1,8 +1,11 @@
 # Native MPP checkout pilot — September 16, 2026
 
-This implementation stays disabled in both Worker configurations. No live
-payment, provider acceptance or production activation is claimed by the
-fixture tests. MPP observation, census and passports remain independent.
+Both Worker configurations remain disabled following the bounded September 17
+house qualification. One live HTTP Context Anchor / EVM / Base / USDC purchase,
+its signed delivery, expired/disabled recovery and exact native accounting were
+checked. [The dated result](MPP_LIVE_RESULT_2026-09-17.md) names the evidence
+sources and the unobserved before-expiry replay. Fixture tests alone establish
+none of those live facts. MPP observation, census and passports remain independent.
 
 ## Implemented boundary
 
@@ -74,9 +77,12 @@ source through the shared stats reader. Admin's take page shows MPP house
 counts and organic/house amounts with network and asset identity. Its existing
 all-time certificate take also includes native certificates. Amounts are
 settlements before refunds, not net revenue. Unique buyers use a union of
-legacy and native wallet keys. House classification is captured at admission;
-future historical wallet reclassification needs the native ledger included
-explicitly, rather than applying a legacy x402 correction to it.
+legacy and native wallet keys. House classification is captured at admission. The authenticated purchase page
+can record a separate historical correction for a currently registered house
+buyer against matched, settled, accounted native evidence. The original purchase
+and sale remain intact; one correction per purchase atomically moves its exact
+amount and count in the native summary. Shared rollups expose those adjustments;
+x402 counters are unchanged. Reads never perform a correction.
 
 ## Validation and next release
 
@@ -102,13 +108,23 @@ private recovery, native ledger, x402 count, public rollup and admin amount.
 Disabling both flags stops new native settlement while retained recovery
 continues. Retain durable records and the ledger during rollback.
 
-The follow-up admin lookup at `/admin/purchases` reads retained purchase
-facts and compares each native sale against its durable ledger entry; its
-release is a prerequisite for the live accounting check. Neither that build
-nor the disabled checkout establishes live qualification.
+The released admin lookup at `/admin/purchases` supplied the keeper's individual
+ledger match during the September 17 run. It also reads any subsequent house
+correction separately. The original accounting evidence remains inspectable.
 
-Before broader rollout: native historical house corrections; protocol-aware aggregate operational telemetry; catalog and
-guide capability declarations for enabled surfaces; MCP transport qualification;
+The take now includes best-effort, current-month HTTP request outcomes by
+declared protocol (x402, MPP or mixed). These include retries and house requests,
+exclude free quotes and tool transports, and cannot be interpreted as sales.
+Missing observations are labeled; storage failure never changes checkout.
+
+Menu and compact contracts publish `payment_capabilities`; OpenAPI uses the
+store-specific `x-scvd-payment-capabilities`. Native declarations appear only
+for the configured HTTP lane and use the challenge's own offer terms. The
+payment guide names the exact scope. Existing x402 `x-payment-info` remains
+unchanged: its schema conflicts with the MPP draft's extension of the same name.
+A mixed object is not presented as draft-compliant native discovery.
+
+Before broader rollout: native discovery/indexer interoperability; MCP transport qualification;
 remaining fulfillment families; and separate network/asset qualification.
 No Stripe, subscription, Solana or client-broadcast hash method follows from
 this Base/USDC pilot.

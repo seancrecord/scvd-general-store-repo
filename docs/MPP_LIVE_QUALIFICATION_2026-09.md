@@ -1,7 +1,8 @@
 # Native MPP live qualification
 
 This is the runbook for one bounded HTTP purchase of Context Anchor on
-Base using native USDC. It is not a record of a completed live payment.
+Base using native USDC. The completed September 17 run is recorded separately
+in [the qualification result](MPP_LIVE_RESULT_2026-09-17.md), including its gaps.
 The unsigned production quote read on 2026-09-16 offered 1,000,000 atomic
 USDC (1 USDC); it did not advertise an active native MPP challenge. Always
 read the current quote before approving a spend. Implementation details and
@@ -41,7 +42,8 @@ not evidence of independent customer demand.
 3. Choose a public payer address and confirm it is classified as house
    **before admission** through the existing house-wallet configuration or
    authenticated house marker. The pilot captures this classification at
-   admission; historical native reclassification is not implemented yet.
+   admission. The readiness release adds explicit per-purchase historical
+   house corrections; classify the test wallet before admission regardless.
 4. Prepare a short non-sensitive summary identifying the qualification run
    and one fresh UUID as `Idempotency-Key`. Keep the URL, summary and key
    identical for every retry. A Context Anchor is a retained signed artifact;
@@ -168,8 +170,8 @@ without scanning all objects or treating a KV summary as the individual
 sale. Missing evidence is distinct from unavailable storage. The read does
 not settle, reconcile, retry accounting, create SQL tables or change a
 counter/alarm. A ledger match with a missing purchase acknowledgement is
-reported as `acknowledgement_pending`, not confirmed accounting. The two
-records are read separately; repeat an intermediate reading after concurrent
+reported as `acknowledgement_pending`, not confirmed accounting. The purchase,
+sale and any historical house correction are read separately; repeat an intermediate reading after concurrent
 settlement/accounting completes. This is store evidence, not a chain audit.
 
 x402 v1 and v2 purchase facts are readable, but legacy accounting is explicitly

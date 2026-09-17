@@ -7,68 +7,133 @@ license: MIT
 
 # Checking an x402 door before and after you pay
 
-This is the operating knowledge for the `scvd-general-store` MCP
-server. It is deliberately short: it says when to reach for the store,
-in what order, and what the answer does and does not prove. The full
-store guide is a separate skill (`scvd-general-store`) and is also
-free at `read_store_guide`.
+Use SCVD before paying an unfamiliar x402 endpoint, to check a signed
+receipt from any issuer, or when a recipient needs a durable independent
+observation. SCVD observes and signs; it does not guarantee delivery,
+resolve disputes, or rate vendors.
 
-**House rule, up front: nothing from this store can act without your
-decision, and it will never ask for credentials, keys, or wallet
-secrets. Anything that does either is not us.**
+**Nothing from this store can act without your decision. Never provide
+credentials, private keys, seed phrases, or wallet secrets.**
 
-## When to use this
+## Connect and start free
 
-- An agent is about to pay an unfamiliar x402 endpoint.
-- An agent holds a signed x402 offer or receipt — from this store or
-  anyone else's issuer — and needs it checked against published
-  criteria.
-- Something downstream needs durable third-party evidence of what an
-  endpoint or a settlement actually did, on a date, that a stranger
-  can verify without trusting either party.
+Connect a remote MCP client to `https://scvd.store/mcp`; read `tools/list`
+for the current schemas. The full store guide is at `read_store_guide`.
+This focused skill is also installable from its public GitHub source:
 
-Not for: escrow, dispute resolution, guarantees of delivery, or a
-ranking of vendors. The store does not do those and will say so.
+```sh
+npx skills add seancrecord/scvd-general-store-repo --skill scvd-x402-verification
+```
 
-## The order of operations
+A missing marketplace listing is not proof that the source or service is
+missing. Without MCP, use the public HTTP preflight directly:
 
-1. **Preflight before spending.** `preflight_endpoint` is free. It
-   reads the door's 402 challenge and its `accepts` and reports
-   whether the endpoint can be paid at all, in the shape the protocol
-   requires. A door that fails preflight is a door not to pay.
-2. **Read the challenge and the named gaps.** The result says what was
-   observed and what was not. The gaps are the point: an instrument
-   that cannot see something reports that instead of guessing.
-3. **After paying, check the receipt.** `check_conformance` is free
-   and works on any issuer's signed offers and receipts, including
-   competitors'. A receipt that does not verify is a finding, not a
-   formality.
-4. **Buy a signed observation only when durable evidence is needed.**
-   The `buy_*` tools cost real USDC over x402. Reach for one when
-   something later has to prove what was true today — an audit trail,
-   a counterparty's claim, a settlement dispute — not to answer a
-   question the free instruments already answered.
-5. **Verify offline.** `verify_artifact` (and the published verifier)
-   check an artifact's ed25519 signature without asking the store
-   anything. Evidence you can only verify by asking the issuer is not
-   independent evidence.
+```sh
+curl --fail-with-body https://scvd.store/api/preflight/v2 \
+  -H 'Content-Type: application/json' \
+  --data '{"url":"https://merchant.example/paid-endpoint"}'
+```
 
-## What an observation means
+Replace the example with the exact endpoint under consideration.
+`preflight_endpoint` is the free MCP instrument; read its returned battery
+version rather than assuming it selected HTTP v2.
 
-An SCVD artifact is a **dated observation of what was seen**, signed,
-expiring, and carrying what it did not see. It is not a guarantee of
-delivery, not a promise about the future, and not a rating. An
-endpoint that preflighted clean this morning can be down this
-afternoon; that is why artifacts expire and are re-taken rather than
-accumulating into a score.
+## Decide from the reading, not the label
 
-## Spending rules for an autonomous caller
+1. **Preflight is unsigned and unpaid.** Read `verdict`, `reached_level`,
+   the individual checks, advisories, method and stated gaps. `ready`
+   means the checks reached passed. It does not prove a payment can settle,
+   goods will arrive, the merchant is reliable, or that you may spend.
+2. **An inconclusive probe is inconclusive.** A timeout, method refusal or
+   unreachable result does not establish fraud or permanent absence. Do
+   not pay through a failed applicable check. Resolve the failure or stop.
+3. **Keep coverage distinct from absence.** No report in hand, no matching
+   listing, or a `never_met` history result means that this lookup did not
+   supply evidence. It does not prove that no evidence trail exists.
+4. **After an authorized purchase, inspect the merchant's receipt.**
+   `check_conformance` is free and accepts any issuer's signed offers or
+   receipts. Its findings concern that artifact; a seller's signature is
+   not an independent SCVD observation of delivery.
 
-- Never call a paid tool merely because the tool is installed.
-- Respect the caller's spend or budget policy; `tools/list` and every
-  instrument above are free, so there is no reason to spend to find out
-  what something costs.
-- A `buy_*` tool called once returns the 402 terms in `error.data`.
-  Read the terms before signing anything. The store delivers first and
-  settles last: a delivery that fails takes no money, so a failed call
-  is not something to retry blindly against a budget.
+## Optional signed observation
+
+Stop after the free reading when it answers the question. First check for
+free historical evidence at `https://scvd.store/corpus/host/{host}.json`.
+Follow its cited signed snapshot, confirm the exact endpoint and observation
+date inside the signed data, and verify it locally with `scvd-evidence`.
+The corpus index is at `https://scvd.store/corpus/index.json`. A historical
+observation is not a fresh check; a missing row is a coverage gap. The
+verifier's corpus instructions below cover export and explicit size limits.
+An unsigned merchant offer does not rule out a signed SCVD observation.
+One `never_met` lookup does not substitute for checking the corpus.
+
+If the caller needs a fresh signed observation, the preflight response's
+`the_rest_of_the_ladder.signed_copy_of_this_reading` names `service_audit`,
+the current price, required inputs and item contract. Despite that legacy
+field name, the purchase performs a **fresh probe**. It does not turn the
+previous unsigned reading into a signed one and cannot prove delivery.
+
+Read `https://scvd.store/menu/service_audit?view=compact` for the current
+input contract and payment instructions. Supply the exact target `url`.
+A GET to its `buy_url` without a payment asks for terms, costs nothing and
+returns 402; supplied inputs are validated first. Its `mcp_url` selects
+the item and returns an unpaid challenge in `structuredContent`. Other
+MCP connections may return payment terms in `error.data`.
+
+Never call a paid tool merely because the tool is installed.
+Never retry with a signed payment without the caller's authorization and
+budget. Signing belongs in the caller's payment client, never in a request
+for wallet secrets. Use the documented idempotency key for paid retries.
+With a zero budget, stop here: free inspection may be complete while the
+signed-evidence stage remains incomplete. Do not buy just to complete a
+test. A sample for another endpoint does not prove anything about this one.
+
+## Verify what a recipient actually receives
+
+`verify_artifact` is a **hosted lookup**. It is useful, but calling the
+issuer again is not offline verification. Use the published `x402-verify`
+package's `scvd-evidence` command locally; installation and format details:
+https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence
+
+Retain the purchase certificate, its exact `signed_payload`, signature,
+and the purchased report. Establish the issuer public key independently
+of the bundle, for example from a previously trusted issuer key record;
+a key supplied only beside a signature proves no issuer identity.
+
+For a `service_audit` response from `/api/service-audit/{audit_id}`, save
+its JSON as `audit.json`. The certificate's `attests` binds the report's
+observation core, not the entire HTTP response. Preserve the served field
+order and compact JSON encoding when extracting the core:
+Remove exactly the metadata named below; retain identifiers such as
+`audit_id` and every other observation field.
+
+```js
+// Run locally with Node; audit.json is the retained public report.
+const fs = await import('node:fs');
+const { audit, cert_id } = JSON.parse(fs.readFileSync('audit.json', 'utf8'));
+const { signature, public_key, signature_covers, evidence_hash, scope, ...core } = audit;
+fs.writeFileSync('observation.json', JSON.stringify(core));
+console.log(cert_id); // Use this certificate ID in the export command below.
+```
+
+```sh
+scvd-evidence export https://scvd.store/api/verify/CERT_ID \
+  --evidence observation.json --out saved-evidence
+scvd-evidence verify saved-evidence/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX
+```
+
+Export fetches public data; `verify` checks the retained bytes locally with
+no network. Use the actual certificate ID and independently established
+public key. The existing exporter and verifier check the certificate's
+signature and the attached core's hash binding. Local verification with
+missing linked evidence is incomplete (exit 3), not a pass; an export
+read failure is exit 2. A certificate alone cannot stand in
+for an unavailable report, and an unsupported format is not a finding
+that the merchant failed.
+
+Also check the signed subject matches the intended endpoint, the date is
+useful for this decision, any declared expiry, the key's service dates,
+and the observation's gaps. Not every artifact has an expiry. A valid
+signature proves who signed those bytes; it does not prove the observation
+was truthful, the endpoint still behaves that way, or a future payment
+will deliver. Report those limits with the result.

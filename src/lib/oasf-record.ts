@@ -142,7 +142,7 @@ export const OASF_SKILLS: readonly OasfClass[] = [
  * part every directory drops first.
  */
 export const OASF_DESCRIPTION =
-  "SCVD General Store is an x402 payment-verification and signed-evidence service for autonomous agents. It preflights payment-protected endpoints before spend, checks any issuer's signed x402 offers and receipts against published criteria, observes settlement on-chain, and returns dated ed25519-signed evidence that a third party can verify offline. Every artifact expires and names what was not observed. It is not an escrow, a guarantee, or a ranking. Free instruments — preflight and the conformance desk — answer before any money moves; the paid instruments produce durable third-party evidence. Reachable over MCP at a remote Streamable HTTP endpoint and through an installable stdio bridge.";
+  "SCVD General Store is an x402 payment-verification and signed-evidence service for autonomous agents. It preflights payment-protected endpoints before spend, checks any issuer's signed x402 offers and receipts against published criteria, observes settlement on-chain, and returns dated ed25519-signed evidence that a third party can verify offline. Signature validity is separate from the signed observation date, stated gaps and any declared expiry. It is not an escrow, a guarantee, or a ranking. Free instruments — preflight and the conformance desk — answer before any money moves; the paid instruments produce durable third-party evidence. Reachable over MCP at a remote Streamable HTTP endpoint and through an installable stdio bridge.";
 
 /**
  * The MCP tools the store's own roster counts as free instruments —
@@ -187,7 +187,7 @@ export function oasfFreeInstrumentTools(): string[] {
 export const OASF_ANNOTATIONS: Readonly<Record<string, string>> = {
   "scvd.payment.protocol": "x402",
   "scvd.service.role": "observer,verifier,merchant",
-  "scvd.evidence.model": "signed,dated,expiring,offline-verifiable",
+  "scvd.evidence.model": "signed,dated,offline-verifiable",
   "scvd.evidence.not": "escrow,guarantee,ranking",
   "scvd.free.instruments": oasfFreeInstrumentTools().join(","),
   "scvd.oasf.taxonomy_source": `https://github.com/agntcy/oasf/tree/${OASF_TAXONOMY_TAG}`,

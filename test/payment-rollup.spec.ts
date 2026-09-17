@@ -12,7 +12,7 @@ const base = "https://scvd.store";
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-09-16T12:00:00Z"));
-  for (const prefix of ["metric:", "house_reclass:", KV_KEYS.saleEventPrefix]) {
+  for (const prefix of ["metric:", "house_reclass:", "mpp:", KV_KEYS.saleEventPrefix]) {
     const keys = await testEnv.COUNTERS.list({ prefix });
     await Promise.all(keys.keys.map(key => testEnv.COUNTERS.delete(key.name)));
   }
@@ -105,4 +105,16 @@ describe("one purchase, three payment dimensions", () => {
     })]));
     expect((await computeStats(testEnv)).organic_settlements).toBe(102);
   });
+});
+
+it("applies native corrections only to their source while preserving all gross totals", async () => {
+  await testEnv.COUNTERS.put("mpp:sales:2026-09", JSON.stringify({ organic: 2, house: 1, organic_amount_atomic: "2000000", house_amount_atomic: "1000000", reclassified_house: 1, reclassified_amount_atomic: "1000000" }));
+  const stats = await computeStats(testEnv);
+  expect(stats.payment_sources).toEqual(expect.arrayContaining([
+    expect.objectContaining({ protocol: "x402", organic: 101, house: 9 }),
+    expect.objectContaining({ protocol: "mpp", organic: 1, house: 2, house_correction: { purchases: 1, amount_atomic: "1000000" },
+      amounts: expect.objectContaining({ organic_atomic: "1000000", house_atomic: "2000000" }) }),
+  ]));
+  expect(stats.payments?.organic_purchases).toBe(102);
+  expect(stats.house_settlements).toBe(11); expect(stats.reclassified_house).toBe(1);
 });

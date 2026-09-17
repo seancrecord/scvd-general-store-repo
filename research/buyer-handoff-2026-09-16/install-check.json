@@ -1,0 +1,40 @@
+[
+  {
+    "variant": "public",
+    "installer": "skills@1.5.26",
+    "telemetry": "DISABLE_TELEMETRY=1",
+    "scope": "isolated temporary project, --copy; Codex and Claude Code",
+    "source_sha256": "67eae3b0a28c9feee02b49666b24f29612916921ab7eb087107e50a47b7d2a24",
+    "files": [
+      {
+        "path": ".agents/skills/scvd-x402-verification/SKILL.md",
+        "sha256": "67eae3b0a28c9feee02b49666b24f29612916921ab7eb087107e50a47b7d2a24",
+        "matches_source": true
+      },
+      {
+        "path": ".claude/skills/scvd-x402-verification/SKILL.md",
+        "sha256": "67eae3b0a28c9feee02b49666b24f29612916921ab7eb087107e50a47b7d2a24",
+        "matches_source": true
+      }
+    ]
+  },
+  {
+    "variant": "final-candidate",
+    "installer": "skills@1.5.26",
+    "telemetry": "DISABLE_TELEMETRY=1",
+    "scope": "isolated temporary project, --copy; Codex and Claude Code",
+    "source_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+    "files": [
+      {
+        "path": ".agents/skills/scvd-x402-verification/SKILL.md",
+        "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+        "matches_source": true
+      },
+      {
+        "path": ".claude/skills/scvd-x402-verification/SKILL.md",
+        "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+        "matches_source": true
+      }
+    ]
+  }
+]

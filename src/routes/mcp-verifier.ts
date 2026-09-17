@@ -164,7 +164,32 @@ export function verifierToolCatalog(base: string): Record<string, unknown>[] {
 async function callVerifierTool(c: Context<HonoEnv>, name: string, args: Record<string, unknown>): Promise<Record<string, unknown> | string> {
   const entry = VERIFIER_TOOLS.find((tool) => tool.name === name);
   if (!entry) return `No tool by that name on this door: ${name}. This door serves ${VERIFIER_TOOLS.map((tool) => tool.name).join(", ")}.`;
-  if (entry.base) return callFreeTool(c, entry.base, args);
+  if (entry.base) {
+    const result = await callFreeTool(c, entry.base, args);
+    if (entry.base !== "preflight_endpoint" || typeof result === "string") return result;
+    // This free directory surface must not become a digital-service upsell.
+    // Keep the shared probe and its limits; project only the store's sales
+    // framing out of this door, before both text and structured output render.
+    const { the_rest_of_the_ladder: ladder, store_identity: identity, ...reading } = result;
+    return {
+      ...reading,
+      store_identity: {
+        name: VERIFIER_TITLE,
+        what: POSITION_LINE,
+        homepage: `${c.env.STORE_BASE_URL}/mcp/verifier`,
+        ...(isRecord(identity) ? { verify: identity["verify"] } : {}),
+      },
+      ...(isRecord(ladder) ? {
+        the_rest_of_the_ladder: {
+          climbed: ladder["climbed"],
+          unclimbed: Array.isArray(ladder["unclimbed"])
+            ? ladder["unclimbed"].filter(isRecord).map((rung) => ({ rung: rung["rung"], what_it_is: rung["what_it_is"] }))
+            : [],
+          already_free: ladder["already_free"],
+        },
+      } : {}),
+    };
+  }
   if (entry.name === "lookup_endpoint_readiness") {
     const outcome = await runEvidenceTask(c.env, "get_endpoint_readiness", args);
     return outcome.artifact as unknown as Record<string, unknown>;

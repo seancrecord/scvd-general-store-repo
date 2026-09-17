@@ -1,0 +1,228 @@
+
+> scvd-general-store@0.1.0 evidence:test
+> node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs scripts/evidence-coverage.test.mjs && node --test scripts/retained-evidence.test.mjs scripts/retained-journal-reader.test.mjs scripts/catalog-evidence.test.mjs && node --test research/pq-measurement-2026-09-14/verify-summary.test.mjs
+
+TAP version 13
+# Subtest: all required signatures verify over the same protected header and exact payload
+ok 1 - all required signatures verify over the same protected header and exact payload
+  ---
+  duration_ms: 1.041834
+  ...
+# Subtest: refuses payload
+ok 2 - refuses payload
+  ---
+  duration_ms: 0.284417
+  ...
+# Subtest: refuses purpose
+ok 3 - refuses purpose
+  ---
+  duration_ms: 0.156042
+  ...
+# Subtest: refuses algorithm
+ok 4 - refuses algorithm
+  ---
+  duration_ms: 0.106
+  ...
+# Subtest: refuses key identity
+ok 5 - refuses key identity
+  ---
+  duration_ms: 0.257708
+  ...
+# Subtest: refuses policy
+ok 6 - refuses policy
+  ---
+  duration_ms: 0.5205
+  ...
+# Subtest: refuses missing PQ signature
+ok 7 - refuses missing PQ signature
+  ---
+  duration_ms: 0.200833
+  ...
+# Subtest: refuses stripped PQ declaration and signature
+ok 8 - refuses stripped PQ declaration and signature
+  ---
+  duration_ms: 0.28025
+  ...
+# Subtest: refuses duplicate signature
+ok 9 - refuses duplicate signature
+  ---
+  duration_ms: 0.37275
+  ...
+# Subtest: refuses unsupported canonicalization
+ok 10 - refuses unsupported canonicalization
+  ---
+  duration_ms: 0.314125
+  ...
+# Subtest: refuses extra unsigned header
+ok 11 - refuses extra unsigned header
+  ---
+  duration_ms: 0.141375
+  ...
+# Subtest: does not accept a self-appointed key, missing backend, thrown backend, or absent expected policy
+ok 12 - does not accept a self-appointed key, missing backend, thrown backend, or absent expected policy
+  ---
+  duration_ms: 0.161417
+  ...
+# Subtest: verifies report bytes and recomputes the certificate binding; tampering does not pass
+ok 13 - verifies report bytes and recomputes the certificate binding; tampering does not pass
+  ---
+  duration_ms: 1.316667
+  ...
+# Subtest: missing and unreadable certificates stay in the denominator; unresolved links and partial lists stay explicit
+ok 14 - missing and unreadable certificates stay in the denominator; unresolved links and partial lists stay explicit
+  ---
+  duration_ms: 0.148709
+  ...
+# Subtest: certificate canonicalization follows production and excludes unsigned legacy bindings
+not ok 15 - certificate canonicalization follows production and excludes unsigned legacy bindings
+  ---
+  duration_ms: 137.546208
+  location: '/private/tmp/scvd-buyer-evidence-handoff/scripts/evidence-coverage.test.mjs:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Build failed with 1 error:
+    src/store/verification-skill.ts:1:21: ERROR: No loader is configured for ".md" files: skills/scvd-x402-verification/SKILL.md
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    failureErrorWithLog (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1748:15)
+    /private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1207:25
+    /private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1159:52
+    buildResponseToResult (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1205:7)
+    /private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1232:16
+    responseCallbacks.<computed> (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:884:9)
+    handleIncomingPacket (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:939:12)
+    Socket.readFromStdout (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:862:7)
+    Socket.emit (node:events:524:28)
+    addChunk (node:internal/streams/readable:561:12)
+  ...
+# Subtest: offline command preserves the listed denominator when a captured record is deleted
+not ok 16 - offline command preserves the listed denominator when a captured record is deleted
+  ---
+  duration_ms: 73.177209
+  location: '/private/tmp/scvd-buyer-evidence-handoff/scripts/evidence-coverage.test.mjs:49:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Build failed with 1 error:
+    src/store/verification-skill.ts:1:21: ERROR: No loader is configured for ".md" files: skills/scvd-x402-verification/SKILL.md
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    failureErrorWithLog (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1748:15)
+    /private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1207:25
+    /private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1159:52
+    buildResponseToResult (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1205:7)
+    /private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:1232:16
+    responseCallbacks.<computed> (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:884:9)
+    handleIncomingPacket (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:939:12)
+    Socket.readFromStdout (/private/tmp/scvd-buyer-evidence-handoff/node_modules/esbuild/lib/main.js:862:7)
+    Socket.emit (node:events:524:28)
+    addChunk (node:internal/streams/readable:561:12)
+  ...
+# Subtest: exact signed bytes and attached evidence verify offline against a separately held key
+ok 17 - exact signed bytes and attached evidence verify offline against a separately held key
+  ---
+  duration_ms: 6.060417
+  ...
+# Subtest: the embedded key never appoints itself trusted
+ok 18 - the embedded key never appoints itself trusted
+  ---
+  duration_ms: 0.701625
+  ...
+# Subtest: rejects changed signed payload
+ok 19 - rejects changed signed payload
+  ---
+  duration_ms: 0.926292
+  ...
+# Subtest: rejects changed signature
+ok 20 - rejects changed signature
+  ---
+  duration_ms: 1.656042
+  ...
+# Subtest: rejects changed embedded key
+ok 21 - rejects changed embedded key
+  ---
+  duration_ms: 0.819334
+  ...
+# Subtest: rejects changed algorithm
+ok 22 - rejects changed algorithm
+  ---
+  duration_ms: 0.775333
+  ...
+# Subtest: rejects changed format version
+ok 23 - rejects changed format version
+  ---
+  duration_ms: 1.016584
+  ...
+# Subtest: rejects changed attachment, including a forged new checksum
+ok 24 - rejects changed attachment, including a forged new checksum
+  ---
+  duration_ms: 0.886458
+  ...
+# Subtest: rejects changed attachment relabelled as unrelated
+ok 25 - rejects changed attachment relabelled as unrelated
+  ---
+  duration_ms: 1.002458
+  ...
+# Subtest: rejects changed duplicate attachment
+ok 26 - rejects changed duplicate attachment
+  ---
+  duration_ms: 0.671166
+  ...
+# Subtest: deleting evidence preserves the signature result but cannot preserve completeness
+ok 27 - deleting evidence preserves the signature result but cannot preserve completeness
+  ---
+  duration_ms: 0.515292
+  ...
+# Subtest: source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+ok 28 - source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+  ---
+  duration_ms: 0.485958
+  ...
+# Subtest: an issuer's bounded label and altered proof never become an independently verified timestamp
+ok 29 - an issuer's bounded label and altered proof never become an independently verified timestamp
+  ---
+  duration_ms: 0.891084
+  ...
+# Subtest: OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+ok 30 - OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+  ---
+  duration_ms: 0.139917
+  ...
+# Subtest: rejects malformed or oversized inputs and attachments without a signed binding
+ok 31 - rejects malformed or oversized inputs and attachments without a signed binding
+  ---
+  duration_ms: 73.435792
+  ...
+# Subtest: corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+ok 32 - corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+  ---
+  duration_ms: 3.628792
+  ...
+# Subtest: export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+ok 33 - export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+  ---
+  duration_ms: 396.509167
+  ...
+# Subtest: corpus export above the default cap requires an explicit bounded allowance and detects tampering
+ok 34 - corpus export above the default cap requires an explicit bounded allowance and detects tampering
+  ---
+  duration_ms: 1058.221542
+  ...
+# Subtest: loss, rotation and stolen-key backdating have different evidence boundaries
+ok 35 - loss, rotation and stolen-key backdating have different evidence boundaries
+  ---
+  duration_ms: 6.82925
+  ...
+# Subtest: the publication workflow actually runs the verifier package tests
+ok 36 - the publication workflow actually runs the verifier package tests
+  ---
+  duration_ms: 10.231083
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 34
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1518.489042

@@ -143,8 +143,21 @@ async function transferWindow(payTo, fromBlock, toBlock, span = LOG_SPAN) {
 
 const doorsFile = flags.doors ?? fail("need --doors <file.json>");
 const atBlock = Number(flags["at-block"] ?? fail("need --at-block <n>: a reading with no named height is not comparable with anyone's"));
-const fromBlock = Number(flags["from-block"] ?? fail("need --from-block <n>: an unnamed floor reads as all of history, and this instrument cannot afford all of history"));
-if (fromBlock > atBlock) fail(`--from-block ${fromBlock} is above --at-block ${atBlock}`);
+/**
+ * STATE ONLY (2026-09-17). Two calls per address — balance and
+ * transaction count at the named height — and no transfer window. A
+ * positive settles PAID from the balance alone; a zero settles only
+ * under the nonce argument and reaches all of history; anything else
+ * is UNKNOWN. Payer counts are not attempted and the row says so. This
+ * is what made 132 addresses affordable on Base, and it is how 43
+ * doors on a rail nobody measured get read at all: a 30-day window on
+ * Arbitrum is ~1,000 log pages per address.
+ */
+const STATE_ONLY = flags["state-only"] === true;
+const fromBlock = STATE_ONLY
+  ? null
+  : Number(flags["from-block"] ?? fail("need --from-block <n>: an unnamed floor reads as all of history, and this instrument cannot afford all of history (or pass --state-only for balance and nonce alone)"));
+if (fromBlock !== null && fromBlock > atBlock) fail(`--from-block ${fromBlock} is above --at-block ${atBlock}`);
 const outDir = flags.out ?? `research/paid-doors-${new Date().toISOString().slice(0, 10)}`;
 const doorsDoc = JSON.parse(readFileSync(doorsFile, "utf8"));
 // A bare list, or a posed question carrying its frozen inputs beside it.
@@ -154,26 +167,38 @@ mkdirSync(outDir, { recursive: true });
 
 const head = Number(BigInt(await rpc("eth_blockNumber", [])));
 if (atBlock > head) fail(`--at-block ${atBlock} is past the chain head ${head}`);
-const spans = Math.ceil((atBlock - fromBlock + 1) / Number(LOG_SPAN));
-console.log(`reading ${doors.length} doors on ${RAIL.label} (${RAIL_FLAG}) over blocks ${fromBlock}-${atBlock} (head ${head})`);
-console.log(`${spans} log page(s) per door at the RPC's ${LOG_SPAN}-block ceiling\n`);
+if (STATE_ONLY) {
+  console.log(`reading ${doors.length} doors on ${RAIL.label} (${RAIL_FLAG}) — state only at block ${atBlock} (head ${head})`);
+  console.log(`balance and transaction count per address; no transfer window, no payer counts\n`);
+} else {
+  const spans = Math.ceil((atBlock - fromBlock + 1) / Number(LOG_SPAN));
+  console.log(`reading ${doors.length} doors on ${RAIL.label} (${RAIL_FLAG}) over blocks ${fromBlock}-${atBlock} (head ${head})`);
+  console.log(`${spans} log page(s) per door at the RPC's ${LOG_SPAN}-block ceiling\n`);
+}
 
 const readings = [];
 
 /** One EVM rail, read. Split out so a multi-rail door reuses it. */
 async function readEvmRail({ payTo, scheme }) {
+  // A failed state read is recorded on the row, never folded into a
+  // null that reads as "holds nothing" — the 107-of-132 lesson.
+  let readError = null;
+  const swallow = (error) => { readError = readError ?? (error?.message ?? String(error)); return null; };
   const [balance, nonce, window] = await Promise.all([
-    rpc("eth_call", [{ to: RAIL_USDC, data: `0x70a08231${payTo.slice(2).toLowerCase().padStart(64, "0")}` }, hex(atBlock)]).catch(() => null),
-    rpc("eth_getTransactionCount", [payTo, hex(atBlock)]).catch(() => null),
-    transferWindow(payTo, fromBlock, atBlock),
+    rpc("eth_call", [{ to: RAIL_USDC, data: `0x70a08231${payTo.slice(2).toLowerCase().padStart(64, "0")}` }, hex(atBlock)]).catch(swallow),
+    rpc("eth_getTransactionCount", [payTo, hex(atBlock)]).catch(swallow),
+    STATE_ONLY ? Promise.resolve(null) : transferWindow(payTo, fromBlock, atBlock),
   ]);
   const row = readDoorRail({
     rail: RAIL_FLAG, payTo, atBlock, fromBlock, scheme: scheme ?? null,
     balance: balance === null ? null : BigInt(balance),
     nonce: nonce === null ? null : Number(BigInt(nonce)),
-    logs: window.logs, logsComplete: window.complete,
+    ...(window ? { logs: window.logs, logsComplete: window.complete } : {}),
   });
-  if (!window.complete) row.incomplete_because = window.incomplete_because;
+  if (balance !== null) row.balance_atomic = BigInt(balance).toString();
+  if (nonce !== null) row.nonce = Number(BigInt(nonce));
+  if (readError) { row.read_failed = true; row.read_error = readError; }
+  if (window && !window.complete) row.incomplete_because = window.incomplete_because;
   return row;
 }
 
@@ -224,12 +249,28 @@ for (const door of doors) {
   readings.push(entry);
 }
 
+/**
+ * THE NUMBER THAT MUST NEVER BE BURIED (carried over from floor-check,
+ * 2026-09-17). A row resting on a failed request is a gap in this
+ * reader, not in the door, and a run with many of them is a run to
+ * throw away rather than publish. Refuse above one in twenty.
+ */
+const railRows = readings.flatMap((r) => r.rails ?? []);
+const readFailures = railRows.filter((r) => r.read_failed).length;
+if (railRows.length > 0 && readFailures > railRows.length / 20) {
+  console.error(`\n✗ ${readFailures} of ${railRows.length} rail reads failed. That is a reading about our own request budget, not about these doors — not publishing it.\n`);
+  process.exit(1);
+}
 const report = {
+  read_failures: readFailures,
+  read_failures_note: "Rail rows whose balance or nonce request never answered after retries. They sit inside UNKNOWN and are a gap in this reader, never a finding about the door. A run where this is not near zero is not published.",
   what_this_is: "Whether anyone has paid each door's advertised payTo, read to a named block height. Never a ranking: rule 43 forbids ordering one host against another, and these rows are in the order they were given.",
   definition_from: "StillOS Notary (stillosdigitalholdings.com), supplied 2026-09-15 on issue #622 after they withdrew their own implementation. The definition is theirs; this reader is ours, so that a defect in one is not a defect in both.",
   read_at: new Date().toISOString(),
   rail: RAIL_FLAG, rail_label: RAIL.label, asset: RAIL_USDC,
-  window: { from_block: fromBlock, at_block: atBlock, log_span: Number(LOG_SPAN) },
+  window: STATE_ONLY
+    ? { state_only: true, from_block: null, at_block: atBlock, means: "balance and transaction count at the named height; no transfer window was read, so PAID rows carry no payer count and every ZERO_OBSERVED rests on the nonce argument" }
+    : { from_block: fromBlock, at_block: atBlock, log_span: Number(LOG_SPAN) },
   chain_head_when_read: head,
   distinct_counterparty_means: "a unique sending address. A facilitator settling for ten buyers counts once, so this measures settling addresses and not customers.",
   residual: PAID_RESIDUAL,

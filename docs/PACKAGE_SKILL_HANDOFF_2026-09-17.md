@@ -1,5 +1,16 @@
 # Package and skill milestone handoff — September 17, 2026
 
+## Saved checkpoint
+
+All PS1–PS4 implementation and evidence are committed and pushed as
+`a86c697636ba67ec0239b2d5e500b998908b5a0f` in consolidated PR
+https://github.com/seancrecord/scvd-general-store-repo/pull/769 . It is mergeable.
+The integrated local full suite passed. Remote CI is
+https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35242960702 .
+At this checkpoint CI, merge and publication are still pending; inspect current
+remote state before continuing. Original worktrees are preserved snapshots,
+not additional changes to merge after #769 lands.
+
 ## Scope and authorization
 
 The user authorized completion of steps 1–4: save PS1–PS3, finish PS4, integrate

@@ -232,3 +232,18 @@ test("two independent reasons for one zero report the stronger scope", () => {
   const outOfReach = readDoorRail({ rail: "xrpl:0", payTo: null, atBlock: 51316142 });
   assert.equal(readDoor({ name: "two rails", rails: [both, outOfReach] }).verdict, "UNKNOWN");
 });
+
+test("a state-only zero on an out-of-reach scheme is UNKNOWN for the scheme, and the row says so", () => {
+  // Found on the 43 Arbitrum doors, 2026-09-17: nonce 0, balance 0,
+  // scheme exact-prepay-proof. The verdict was right and the sentence
+  // beside it named a non-zero transaction count that did not exist.
+  const row = readDoorRail({ rail: "eip155:42161", payTo: "0x" + "ab".repeat(20), atBlock: 1, scheme: "exact-prepay-proof", balance: 0n, nonce: 0 });
+  assert.equal(row.verdict, "UNKNOWN");
+  assert.match(row.established_by, /exact-prepay-proof/);
+  assert.match(row.established_by, /transaction count of zero/);
+  assert.doesNotMatch(row.established_by, /non-zero transaction count/);
+  // And the same state on an in-reach scheme is the all-time zero it looks like.
+  const clean = readDoorRail({ rail: "eip155:42161", payTo: "0x" + "ab".repeat(20), atBlock: 1, scheme: "exact", balance: 0n, nonce: 0 });
+  assert.equal(clean.verdict, "ZERO_OBSERVED");
+  assert.equal(clean.scope, "all_time");
+});

@@ -1,3 +1,4 @@
+import { purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { MPP_CORE_BATTERY, MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
@@ -5521,6 +5522,9 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
       "passport_refused: the supplied endpoint lacks qualifying passport evidence. Nothing charged. Read the response's reason before choosing a target or requesting a free preflight.",
     );
   }
+  // The MPP draft and existing AgentCash schema use incompatible shapes for
+  // x-payment-info. Preserve that contract and name this additive one honestly.
+  operation["x-scvd-payment-capabilities"] = purchaseCapabilities(item, env);
   const paymentInfo = operation["x-payment-info"] as OpenApiObject;
   paymentInfo["input"] = {
     location: "query",
