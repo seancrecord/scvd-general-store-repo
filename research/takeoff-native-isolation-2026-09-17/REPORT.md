@@ -167,7 +167,7 @@ Do not rerun until green. Catalogue discovery/admission is a separate workstream
 and remains subject to the keeper's existing boundaries.
 
 For any later live cohort, the September 7 observation leaves the frozen
-14-day window after September 21. Use newer evidence or record incompleteness;
+14-day window after `2026-09-21T02:30:20.531Z`. Use newer evidence or record incompleteness;
 do not widen freshness. The source change to the scorer intentionally makes
 this qualification ineligible for a new acquisition under current source.
 
