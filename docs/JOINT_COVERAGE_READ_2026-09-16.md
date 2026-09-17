@@ -6,16 +6,16 @@ Draft of 2026-09-16, revised 2026-09-17 with StillOS's fills. Unsigned.
 Authors: StillOS Notary (`stillosdigitalholdings.com`) and scvd.store
 (Record Creative Co. LLC). Drafted by scvd.store under the terms agreed
 on issue #622: **whoever drafts, the other strikes anything too kind to
-the author.** Passages marked `[StillOS]` are placeholders for figures
-only that side can supply. Nothing here is signed until both sides say
-so.
+the author.** StillOS's first strike was to keep the one passage
+scvd.store offered to remove. Four passages still marked `[StillOS]`
+are his to fill, and nothing here is signed until both sides say so.
 
 ---
 
 ## What this is
 
-Three instruments read the same public x402 directory on 2026-09-15 and
-2026-09-16. One is the directory's own settlement measurement. The other
+Three instruments read the same public x402 directory between
+2026-09-15 and 2026-09-17. One is the directory's own settlement measurement. The other
 two were built by operators who had never exchanged code, working from a
 written definition rather than an implementation, and whose rail
 coverage overlaps only in part.
@@ -105,9 +105,11 @@ here rather than smuggled:
 - every rail `ZERO_OBSERVED` → door `ZERO_OBSERVED`.
 - anything else → `UNKNOWN`.
 
-`[StillOS]` — confirm or strike. This is the one place the rule was
-extended rather than applied, and if your aggregation differs the
-difference belongs in this section rather than in a footnote.
+StillOS's sealed file applies the same extension without naming it: on
+`daxpt` both of his EVM implementations return `UNKNOWN` for the Base
+leg, the XRPL leg returns `PAID`, and the door reads `PAID`. Two
+readers reached the same aggregation independently, which is the only
+kind of agreement this paper counts.
 
 ### The nonce argument
 
@@ -371,7 +373,7 @@ facilitator coverage, it belongs to the directory as much as to anyone
 reading it, and it means *"never paid"* in any directory is a statement
 about that directory's measured paths.
 
-**Two cautions against this store's own figure.** A USDC balance at an
+**Two cautions against scvd.store's own figure.** A USDC balance at an
 advertised `payTo` proves USDC arrived at *that address* — not that
 anyone paid *that door*. The address may be a general-purpose wallet,
 may serve several doors, and may have received funds for unrelated
@@ -399,7 +401,7 @@ reproduced it with its own code and its own walk.
 | doors with a gap, **naive string compare** | 266 | **266** |
 | doors with a gap, **CAIP-2 normalised** | 58 | **57** |
 | doors advertising **Arbitrum One** unmeasured | 43 | **43** |
-| gap doors reporting **zero or null** all-time | `[StillOS]` | 15 |
+| gap doors reporting **zero or null** all-time | not reported | 15 |
 | …of those, on a **mainnet** rail | 8 | **8 — the same eight slugs** |
 
 The eight, identical in both lists: `insurance-doi-bulletin-feed-x402`,
@@ -484,9 +486,8 @@ while arguing that the other side should not trust an instrument's
 first green — and then withdrew an offer to share that reader's code on
 the same reasoning. The argument for independent implementations landed
 because it came from the party who lost by making it. `[StillOS]` —
-these are your figures as relayed on the thread; correct them here if
-the relay is off, and this paragraph should be in your words rather
-than ours.
+these figures are relayed from the thread; this paragraph should be in
+your words.
 
 **scvd.store: 107 of 132 addresses read as NOT_ESTABLISHED, on a
 swallowed rate limit.** Every one answers correctly on a second ask. The
@@ -561,8 +562,8 @@ arrival at an address, never demand for a product.
 
 **The XRPL uniqueness residual.** `x402-foundation/x402#3220` and
 `x402-foundation/x402#3376` — the `authority` extension — state that
-XRPL does not enforce `InvoiceID` uniqueness: two `Payment` transactions carrying the same
-InvoiceID can both settle. Any consumer deriving cumulative-spend
+XRPL does not enforce `InvoiceID` uniqueness: two `Payment`
+transactions carrying the same InvoiceID can both settle. Any consumer deriving cumulative-spend
 conclusions from XRPL evidence must de-duplicate by
 `(mandateDigest, paymentId)`. EIP-3009 and Permit2 consume the nonce, so
 at-most-once is enforced at the settlement layer there; XRPL is the
@@ -617,9 +618,9 @@ StillOS's side, from the same repository:
   lines in its README (`sha256sum answers.json`, `wc -c answers.json`)
   and `node core/blind_key_build.cjs --verify` for a local check.
 
-`[StillOS]` — the reader itself, if it is to be runnable by a third
-party; otherwise say here that the artifacts are the reproducible
-surface and the reader is not, which is a legitimate answer.
+`[StillOS]` — whether the reader itself is runnable by a third party,
+or the artifacts are the reproducible surface and the reader is not.
+Either is a legitimate answer; the paper should say which.
 
 Directory data throughout: `x402-list.com` (CC BY 4.0).
 
@@ -656,4 +657,4 @@ Neither. This is a draft. It is published in scvd.store's tree so that
 the other operator can read it and strike from it, which is the agreed
 term, and it should not be cited until both names are on it.
 
-— drafted 2026-09-16
+— drafted 2026-09-16, revised 2026-09-17
