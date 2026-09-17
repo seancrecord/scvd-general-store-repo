@@ -1,0 +1,245 @@
+(node:48748) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-a2a-v1
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > lets the official client discover, execute, and retrieve a task without a legacy adapter
+{"knock":1,"cold":true,"age":0,"req":99,"method":"GET","path":"/.well-known/agent-card.json","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > lets the official client discover, execute, and retrieve a task without a legacy adapter
+{"knock":1,"cold":false,"age":0,"req":98,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+{"knock":1,"cold":false,"age":0,"req":1,"method":"GET","path":"/.well-known/agent-card.json","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > preserves positive and negative receipt verification, without upgrading signature validity to settlement
+{"knock":1,"cold":false,"age":0,"req":0,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > makes the negotiated card and POST usable from a browser
+{"knock":1,"cold":false,"age":1,"req":1,"method":"OPTIONS","path":"/a2a","status":405,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > negotiates separate cards at every alias and advertises only working A2A bindings
+{"knock":1,"cold":false,"age":1,"req":0,"method":"GET","path":"/.well-known/agent-card.json","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > returns v1 envelopes, enums and parts and retrieves the same stored evidence through both dialects
+{"knock":1,"cold":false,"age":1,"req":1,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses unsupported version 2.0 before executing
+{"knock":1,"cold":false,"age":1,"req":1,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses unsupported version 1.1 before executing
+{"knock":1,"cold":false,"age":1,"req":1,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses unsupported version garbage before executing
+{"knock":1,"cold":false,"age":1,"req":1,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"ea3a4aa7-9218-4467-a99e-8c50b9e9f253","role":"ROLE_USER","parts":[{"data":{},"text":"{}"}]}}
+{"knock":1,"cold":false,"age":1,"req":0,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"2677d93f-8da4-4473-b9bf-058015fc5628","role":"ROLE_USER","parts":[{"kind":"data","data":{}}]}}
+{"knock":1,"cold":false,"age":1,"req":1,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]}}
+{"knock":1,"cold":false,"age":1,"req":1,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"2be2b38f-1f67-47f8-8710-71c07061ada7","role":"user","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]}}
+{"knock":1,"cold":false,"age":1,"req":0,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"ca53719b-e3a3-485c-b997-ffa182710ce8","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]},"configuration":{"historyLength":-1}}
+{"knock":1,"cold":false,"age":1,"req":1,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"92323d1a-374b-4f9f-87ba-1894b109f0f9","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]},"configuration":{"historyLength":0.5}}
+{"knock":1,"cold":false,"age":2,"req":0,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses capabilities it does not provide and keeps method dialects separate
+{"knock":1,"cold":false,"age":2,"req":0,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+ ❯ test/a2a-v1.spec.ts (17 tests | 16 failed) 1564ms
+     × lets the official client discover, execute, and retrieve a task without a legacy adapter 314ms
+     × runs a real preflight through the official client against a controlled 402, without paying 94ms
+     × preserves positive and negative receipt verification, without upgrading signature validity to settlement 76ms
+     × makes the negotiated card and POST usable from a browser 66ms
+     × negotiates separate cards at every alias and advertises only working A2A bindings 88ms
+     × returns v1 envelopes, enums and parts and retrieves the same stored evidence through both dialects 4ms
+     × refuses unsupported version 2.0 before executing 76ms
+     × refuses unsupported version 1.1 before executing 65ms
+     × refuses unsupported version garbage before executing 71ms
+     × rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"ea3a4aa7-9218-4467-a99e-8c50b9e9f253","role":"ROLE_USER","parts":[{"data":{},"text":"{}"}]}} 64ms
+     × rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"2677d93f-8da4-4473-b9bf-058015fc5628","role":"ROLE_USER","parts":[{"kind":"data","data":{}}]}} 72ms
+     × rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]}} 281ms
+     × rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"2be2b38f-1f67-47f8-8710-71c07061ada7","role":"user","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]}} 63ms
+     × rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"ca53719b-e3a3-485c-b997-ffa182710ce8","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]},"configuration":{"historyLength":-1}} 40ms
+     × rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"92323d1a-374b-4f9f-87ba-1894b109f0f9","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]},"configuration":{"historyLength":0.5}} 56ms
+     × refuses capabilities it does not provide and keeps method dialects separate 32ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > lets the official client discover, execute, and retrieve a task without a legacy adapter
+RequestMalformedError: Method not found: SendMessage. This agent answers message/send; streaming and push are off on its card at https://scvd.store/.well-known/agent-card.json.
+ ❯ fromJsonRpcErrorResponse node_modules/@a2a-js/sdk/dist/client/index.js:1835:12
+    1833|   const semanticName = JSON_RPC_CODE_TO_ERROR[response.error.code] ?? …
+    1834|   if (semanticName) {
+    1835|     return new JSON_RPC_ERROR_CLASSES[semanticName]({
+       |            ^
+    1836|       message: response.error.message,
+    1837|       envelopeCode: response.error.code,
+ ❯ JsonRpcTransport._sendRpcRequest node_modules/@a2a-js/sdk/dist/client/index.js:5924:13
+ ❯ JsonRpcTransport.sendMessage node_modules/@a2a-js/sdk/dist/client/index.js:5799:25
+ ❯ Client.executeWithInterceptors node_modules/@a2a-js/sdk/dist/client/index.js:5651:20
+ ❯ test/a2a-v1.spec.ts:27:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+RequestMalformedError: Method not found: SendMessage. This agent answers message/send; streaming and push are off on its card at https://scvd.store/.well-known/agent-card.json.
+ ❯ fromJsonRpcErrorResponse node_modules/@a2a-js/sdk/dist/client/index.js:1835:12
+    1833|   const semanticName = JSON_RPC_CODE_TO_ERROR[response.error.code] ?? …
+    1834|   if (semanticName) {
+    1835|     return new JSON_RPC_ERROR_CLASSES[semanticName]({
+       |            ^
+    1836|       message: response.error.message,
+    1837|       envelopeCode: response.error.code,
+ ❯ JsonRpcTransport._sendRpcRequest node_modules/@a2a-js/sdk/dist/client/index.js:5924:13
+ ❯ JsonRpcTransport.sendMessage node_modules/@a2a-js/sdk/dist/client/index.js:5799:25
+ ❯ Client.executeWithInterceptors node_modules/@a2a-js/sdk/dist/client/index.js:5651:20
+ ❯ test/a2a-v1.spec.ts:47:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > preserves positive and negative receipt verification, without upgrading signature validity to settlement
+TypeError: Cannot read properties of undefined (reading 'task')
+ ❯ test/a2a-v1.spec.ts:64:32
+     62|     for (const [fixture, verdict] of [[receiptValid, "valid"], [receip…
+     63|       const { body } = await rpc("SendMessage", { message: { ...messag…
+     64|       const data = body.result.task.artifacts[0].parts[0].data;
+       |                                ^
+     65|       expect(data.result).toBe(verdict);
+     66|       expect(data.does_not_establish.join(" ")).toContain("settlement"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > makes the negotiated card and POST usable from a browser
+AssertionError: expected 405 to be 204 // Object.is equality
+
+- Expected
++ Received
+
+- 204
++ 405
+
+ ❯ test/a2a-v1.spec.ts:73:32
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > negotiates separate cards at every alias and advertises only working A2A bindings
+AssertionError: expected 'Accept, Accept-Encoding, User-Agent' to match /A2A-Version/i
+
+- Expected:
+/A2A-Version/i
+
++ Received:
+"Accept, Accept-Encoding, User-Agent"
+
+ ❯ test/a2a-v1.spec.ts:93:44
+     91|     for (const path of ["agent-card.json", "agent.json", "a2a.json"]) {
+     92|       const response = await SELF.fetch(`${BASE}/.well-known/${path}`,…
+     93|       expect(response.headers.get("Vary")).toMatch(/A2A-Version/i);
+       |                                            ^
+     94|       expect(response.headers.get("A2A-Version")).toBe("1.0");
+     95|       const card = await response.json() as Wire;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > returns v1 envelopes, enums and parts and retrieves the same stored evidence through both dialects
+AssertionError: expected { code: -32601, …(1) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "code": -32601,
+  "message": "Method not found: SendMessage. This agent answers message/send; streaming and push are off on its card at https://scvd.store/.well-known/agent-card.json.",
+}
+
+ ❯ test/a2a-v1.spec.ts:111:24
+    109|   it("returns v1 envelopes, enums and parts and retrieves the same sto…
+    110|     const { body } = await rpc("SendMessage", { message: message() });
+    111|     expect(body.error).toBeUndefined();
+       |                        ^
+    112|     const task = body.result.task;
+    113|     expect(task.kind).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses unsupported version 2.0 before executing
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses unsupported version 1.1 before executing
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses unsupported version garbage before executing
+AssertionError: expected -32601 to be -32009 // Object.is equality
+
+- Expected
++ Received
+
+- -32009
++ -32601
+
+ ❯ test/a2a-v1.spec.ts:128:89
+    126|
+    127|   it.each(["2.0", "1.1", "garbage"])("refuses unsupported version %s b…
+    128|     expect((await rpc("SendMessage", { message: message() }, version))…
+       |                                                                                         ^
+    129|     expect((await SELF.fetch(`${BASE}/.well-known/agent-card.json`, { …
+    130|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"ea3a4aa7-9218-4467-a99e-8c50b9e9f253","role":"ROLE_USER","parts":[{"data":{},"text":"{}"}]}}
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"2677d93f-8da4-4473-b9bf-058015fc5628","role":"ROLE_USER","parts":[{"kind":"data","data":{}}]}}
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]}}
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"2be2b38f-1f67-47f8-8710-71c07061ada7","role":"user","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]}}
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"ca53719b-e3a3-485c-b997-ffa182710ce8","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]},"configuration":{"historyLength":-1}}
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > rejects malformed v1 params before they reach the evidence engine: {"message":{"messageId":"92323d1a-374b-4f9f-87ba-1894b109f0f9","role":"ROLE_USER","parts":[{"data":{"task":"get_endpoint_readiness","host":"never-met.example"}}]},"configuration":{"historyLength":0.5}}
+AssertionError: expected -32601 to be -32602 // Object.is equality
+
+- Expected
++ Received
+
+- -32602
++ -32601
+
+ ❯ test/a2a-v1.spec.ts:140:64
+    138|     { message: message(), configuration: { historyLength: 0.5 } },
+    139|   ])("rejects malformed v1 params before they reach the evidence engin…
+    140|     expect((await rpc("SendMessage", params)).body.error.code).toBe(-3…
+       |                                                                ^
+    141|   });
+    142|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > refuses capabilities it does not provide and keeps method dialects separate
+AssertionError: expected -32601 to be -32004 // Object.is equality
+
+- Expected
++ Received
+
+- -32004
++ -32601
+
+ ❯ test/a2a-v1.spec.ts:145:97
+    143|   it("refuses capabilities it does not provide and keeps method dialec…
+    144|     for (const [configuration, code] of [[{ returnImmediately: true },…
+    145|       expect((await rpc("SendMessage", { message: message(), configura…
+       |                                                                                                 ^
+    146|     }
+    147|     expect((await rpc("message/send", { message: message() })).body.er…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed | 1 passed (17)
+   Start at  15:03:43
+   Duration  21.70s (transform 10.32s, setup 27ms, import 16.23s, tests 1.56s, environment 0ms)
+

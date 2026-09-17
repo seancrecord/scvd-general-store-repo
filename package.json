@@ -21,7 +21,7 @@
     "self-row": "vitest run test/self-row-blocker.spec.ts",
     "typecheck": "tsc --noEmit",
     "a2a:validation:build": "node scripts/a2a-validation-build.mjs",
-    "a2a:check": "node scripts/a2a-validation-build.mjs --check && node --test scripts/a2a-live.test.mjs && vitest run test/a2a-compliance.spec.ts test/a2a-evidence.spec.ts test/a2a-tasks.spec.ts",
+    "a2a:check": "node scripts/a2a-validation-build.mjs --check && node --test scripts/a2a-live.test.mjs && vitest run test/a2a-compliance.spec.ts test/a2a-evidence.spec.ts test/a2a-tasks.spec.ts test/a2a-v1.spec.ts test/a2a-card.spec.ts test/a2a-instrument.spec.ts",
     "a2a:live": "node scripts/a2a-live.mjs",
     "keys:generate": "node scripts/generate-signing-key.mjs",
     "keys:check": "node scripts/check-key-transcription.mjs",
@@ -102,7 +102,8 @@
     "ownership:check": "node scripts/ownership-check.mjs",
     "ownership:test": "node --test scripts/ownership-check.test.mjs",
     "ownership:sign": "node scripts/sign-origin.mjs",
-    "buyer:cold": "node scripts/buyer-cold-isolated.mjs"
+    "buyer:cold": "node scripts/buyer-cold-isolated.mjs",
+    "a2a:v1:live": "node scripts/a2a-v1-live.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",
@@ -119,6 +120,7 @@
     "viem": "^2.56.3"
   },
   "devDependencies": {
+    "@a2a-js/sdk": "1.1.0",
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20260911.1",
     "@types/node": "^26.5.1",
