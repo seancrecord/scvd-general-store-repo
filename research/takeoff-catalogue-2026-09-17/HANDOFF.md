@@ -1,5 +1,10 @@
 # Takeoff-readiness pickup for Codex — September 17, 2026, evening
 
+**Native follow-through:** [NATIVE_HANDOFF.md](NATIVE_HANDOFF.md) records the
+subsequent native probes: Claude passed, Codex failed, and the buyer cohort
+remains unlaunched. Start there for the current blocker; the record below
+preserves this handoff's original state.
+
 Read the repository's current `AGENTS.md`, `HOUSE_RULES.md`, `KEEPER_LIST.md`
 and `ROADMAP.md` first. This is a continuation brief, not an amendment to
 them. It follows the [morning handoff](../takeoff-postmerge-2026-09-17/HANDOFF.md),

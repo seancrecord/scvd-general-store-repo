@@ -1,0 +1,383 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-17",
+  "scope": "One native capability probe per host from the unchanged frozen schema-4 plan. No buyer or recipient trials launched.",
+  "repository_base": "ee432b17",
+  "plan_sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393",
+  "instrument": {
+    "schema_version": 2,
+    "files": {
+      "buyer-cold-isolated.mjs": "79e3b7c5e2ed17b2abfbf262372d1ccb9c19fda6873c9b3d29c5039e8611954b",
+      "lib/buyer-cold.mjs": "1a6b72775329ecb1e2322f00c3916dd8c1b4d2c2535afcbe36b9d45afbc99484",
+      "lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+      "lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+      "../verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "../verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+    }
+  },
+  "hosts": {
+    "codex": {
+      "cli": "codex-cli 0.153.4",
+      "requested_model": "gpt-5.6-luna",
+      "resolved_models": [],
+      "started_at": "2026-09-17T18:19:10.898Z",
+      "ended_at": "2026-09-17T18:20:16.477Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "trace_sha256": "ee59d25243e5a7086b1e4c8890f53b9a6a0b587a9930c4d3189e605461c07915",
+      "tool_calls": 3,
+      "capability": {
+        "schema_version": 1,
+        "host": "codex",
+        "state": "fail",
+        "retention": {
+          "state": "pass",
+          "reason": "Retained bytes match the runner's independent fetch.",
+          "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "local_check": {
+          "state": "fail",
+          "reason": "Reported signature results disagree with the runner's vectors.",
+          "expected": {
+            "a": true,
+            "b": true,
+            "c": false,
+            "d": true
+          },
+          "reported": {
+            "a": false,
+            "b": false,
+            "c": false,
+            "d": false
+          },
+          "report_matches_retained": true
+        },
+        "commands": {
+          "executed": [
+            "/bin/zsh"
+          ],
+          "denied": [],
+          "failed": [
+            "/bin/zsh",
+            "/bin/zsh"
+          ]
+        },
+        "limits": [
+          "A pass shows this host, with this adapter, retained one public response and ran one local signature check; it is not a buyer result and names no service.",
+          "Command outcomes are read from host events; hidden host work and batched calls are not visible."
+        ]
+      }
+    },
+    "claude": {
+      "cli": "2.1.274 (Claude Code)",
+      "requested_model": "sonnet",
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "started_at": "2026-09-17T18:20:16.539Z",
+      "ended_at": "2026-09-17T18:21:27.026Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "trace_sha256": "cc5f87526b135a974ea3da362191c630fbd6846c323ee4d5c0c316667493ea0b",
+      "tool_calls": 8,
+      "capability": {
+        "schema_version": 1,
+        "host": "claude",
+        "state": "pass",
+        "retention": {
+          "state": "pass",
+          "reason": "Retained bytes match the runner's independent fetch.",
+          "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "local_check": {
+          "state": "pass",
+          "reason": "Reported signature results match the runner's vectors and a local command completed.",
+          "expected": {
+            "a": false,
+            "b": true,
+            "c": true,
+            "d": false
+          },
+          "reported": {
+            "a": false,
+            "b": true,
+            "c": true,
+            "d": false
+          },
+          "report_matches_retained": true
+        },
+        "commands": {
+          "executed": [
+            "curl",
+            "node",
+            "node",
+            "node",
+            "node",
+            "node",
+            "node",
+            "node"
+          ],
+          "denied": [],
+          "failed": []
+        },
+        "limits": [
+          "A pass shows this host, with this adapter, retained one public response and ran one local signature check; it is not a buyer result and names no service.",
+          "Command outcomes are read from host events; hidden host work and batched calls are not visible."
+        ]
+      }
+    }
+  },
+  "cohort": {
+    "state": "not_launched",
+    "planned_cells": 8,
+    "reason": "Codex failed the capability gate; both hosts must pass before this cohort launches."
+  },
+  "operator_review": {
+    "merchant_unpaid_http_status": 402,
+    "merchant_limit": "Operator precheck only, not buyer evidence, settlement or paid completion.",
+    "codex_vector_crosscheck": {
+      "checkedAt": "2026-09-17T18:21:23.706Z",
+      "sourceSha256": "6a523212b5c86c096ab40023df15a6645616812b2c47508b84b8750ff11bdf04",
+      "scope": "Independent operator recheck of saved generic probe vectors, not a replacement native host result.",
+      "rows": [
+        {
+          "id": "a",
+          "expected": true,
+          "node": true,
+          "opensslExit": 0,
+          "opensslValid": true,
+          "opensslOutput": "Signature Verified Successfully"
+        },
+        {
+          "id": "b",
+          "expected": true,
+          "node": true,
+          "opensslExit": 0,
+          "opensslValid": true,
+          "opensslOutput": "Signature Verified Successfully"
+        },
+        {
+          "id": "c",
+          "expected": false,
+          "node": false,
+          "opensslExit": 1,
+          "opensslValid": false,
+          "opensslOutput": "Signature Verification Failure\n801E6EF501000000:error:030000EA:digital envelope routines:EVP_DigestVerify:provider signature failure:crypto/evp/m_sigver.c:770:ED25519 digest_verify:"
+        },
+        {
+          "id": "d",
+          "expected": true,
+          "node": true,
+          "opensslExit": 0,
+          "opensslValid": true,
+          "opensslOutput": "Signature Verified Successfully"
+        }
+      ]
+    },
+    "codex_command_reproduction": {
+      "checked_at": "2026-09-17T18:25:44.113084+00:00",
+      "scope": "Operator-only reproduction of reviewed local command over saved synthetic public vector a. No model rerun, network request, or change to original acquisition.",
+      "source_trace_sha256": "ee59d25243e5a7086b1e4c8890f53b9a6a0b587a9930c4d3189e605461c07915",
+      "event_id": "item_6",
+      "only_change": "Decode hexadecimal signature text to binary using xxd -r -p before OpenSSL reads it. All other inputs and process substitutions unchanged.",
+      "results": [
+        {
+          "variant": "original_hex_text_signature",
+          "command_sha256": "13820f19fe0fd18c1be91e050bacf387ac5cf465a43883c46518308252e2a4ca",
+          "exit_code": 1,
+          "stdout": "Signature Verification Failure",
+          "stderr": "801E6EF501000000:error:030000EA:digital envelope routines:EVP_DigestVerify:provider signature failure:crypto/evp/m_sigver.c:770:ED25519 digest_verify:"
+        },
+        {
+          "variant": "signature_decoded_to_bytes",
+          "command_sha256": "24c11f037f168cdd54bfb7e21441b63847210cbb505e0adc3d554f9935a2eb55",
+          "exit_code": 0,
+          "stdout": "Signature Verified Successfully",
+          "stderr": ""
+        }
+      ]
+    },
+    "claude_trace_review": "Read all visible commands and retained artifacts: curl retained the reference bytes; Node crypto.verify computed the reported a=false b=true c=true d=false. Eight successful command events, no recorded denials.",
+    "codex_isolation": {
+      "state": "unresolved",
+      "observation": "The trace reports shortened skill descriptions despite skip_host_skill_discovery and the frozen config controls. No explicit skill reads were observed. The warning does not identify which skills reached the model or prove SCVD-specific contamination."
+    }
+  },
+  "limits": [
+    "Capability pass is not a buyer result.",
+    "Operator corrections do not turn the failed Codex session into a pass.",
+    "Original acquisitions and earlier cohort scores are unchanged.",
+    "Output token targets are advisory; both hosts completed without a budget stop.",
+    "No native retries, payments, wallet access, directory signing, account creation or outbound admission messages."
+  ],
+  "private_files": {
+    "probe": {
+      "capability.json": {
+        "bytes": 895,
+        "sha256": "6d975bce688cb41b52ddede7398b2f64c9d44f3d5342ca77906802e3ba968bbf"
+      },
+      "claude/capability.json": {
+        "bytes": 1205,
+        "sha256": "2d5adbd3e8fb36ac8acb1cedb827a1e4a4e40cdafafaa270aa31cdb07b16d729"
+      },
+      "claude/events.jsonl": {
+        "bytes": 47496,
+        "sha256": "cc5f87526b135a974ea3da362191c630fbd6846c323ee4d5c0c316667493ea0b"
+      },
+      "claude/evidence/capability.json": {
+        "bytes": 159,
+        "sha256": "d208ef60ed8d4a671dada3614777e97bbaf41a76365f513e416169035e22a959"
+      },
+      "claude/evidence/public.bin": {
+        "bytes": 2189,
+        "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "claude/launch.json": {
+        "bytes": 874,
+        "sha256": "54aa05744e36065fda265787985354ee03464ad515a44624eda2d6a4b5514ca2"
+      },
+      "claude/prompt.txt": {
+        "bytes": 2456,
+        "sha256": "c7968e1857d99bb6209262a78a18de49cff0fdbf2095fe85a5e5c6a55bdda649"
+      },
+      "claude/reference.bin": {
+        "bytes": 2189,
+        "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "claude/run.json": {
+        "bytes": 6451,
+        "sha256": "6ea1b2e238396ee51fba24f91fadb95e9b2e20050a637d8d254a74a4e78d0eaa"
+      },
+      "claude/runtime.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "claude/vectors.json": {
+        "bytes": 1222,
+        "sha256": "170f82e09b832db51b7c77a410aaa6affbb0bf8f1397293ea0a65fc66eae0616"
+      },
+      "codex/capability.json": {
+        "bytes": 1129,
+        "sha256": "5eed9260c81f0098340adb262181131c3752a577b49dd64a5396da4cc114f9f0"
+      },
+      "codex/events.jsonl": {
+        "bytes": 11850,
+        "sha256": "ee59d25243e5a7086b1e4c8890f53b9a6a0b587a9930c4d3189e605461c07915"
+      },
+      "codex/evidence/capability.json": {
+        "bytes": 162,
+        "sha256": "fdac1a6c659cd649411e19c5902394ef7cfb40032348fc3fef0d9b33d04a0d8e"
+      },
+      "codex/evidence/public.bin": {
+        "bytes": 2189,
+        "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "codex/launch.json": {
+        "bytes": 1196,
+        "sha256": "70429735fd792e1987312fca1d4e5b79df19d6f4941b3fce8fba9dc1eb8bd306"
+      },
+      "codex/prompt.txt": {
+        "bytes": 2201,
+        "sha256": "ed2716fb04ee971365253cad6d0a0a2c1ff74227f3b5f8632502e5d87bf314ca"
+      },
+      "codex/reference.bin": {
+        "bytes": 2189,
+        "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "codex/result.txt": {
+        "bytes": 691,
+        "sha256": "c551d5dbd10129839fd2a5357226d82002fa3b21945ca65ac58e59a43315ec2c"
+      },
+      "codex/run.json": {
+        "bytes": 3223,
+        "sha256": "f2da28bbd8cbd6d1b0926293cdd13677f3f066dad8cd067a097304783eed4c21"
+      },
+      "codex/runtime.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "codex/vectors.json": {
+        "bytes": 1221,
+        "sha256": "6a523212b5c86c096ab40023df15a6645616812b2c47508b84b8750ff11bdf04"
+      },
+      "hosts.json": {
+        "bytes": 200,
+        "sha256": "0f710ff0c1127339b8a69ff028b1dba839aa9e4dcef8777a1e65bb2e89b0503a"
+      },
+      "instrument/buyer-cold-isolated.mjs": {
+        "bytes": 16873,
+        "sha256": "79e3b7c5e2ed17b2abfbf262372d1ccb9c19fda6873c9b3d29c5039e8611954b"
+      },
+      "instrument/lib/buyer-cold.mjs": {
+        "bytes": 33213,
+        "sha256": "1a6b72775329ecb1e2322f00c3916dd8c1b4d2c2535afcbe36b9d45afbc99484"
+      },
+      "instrument/lib/buyer-retention.mjs": {
+        "bytes": 2843,
+        "sha256": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1"
+      },
+      "instrument/lib/buyer-run-evidence.mjs": {
+        "bytes": 7590,
+        "sha256": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f"
+      },
+      "instrument.json": {
+        "bytes": 645,
+        "sha256": "9da08b552f2d26fdfc515c4d479aa71130e90c6e6deccc147ba36e3749fbb81a"
+      },
+      "plan.json": {
+        "bytes": 2586,
+        "sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393"
+      },
+      "verifier/evidence-bundle.js": {
+        "bytes": 9551,
+        "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+      },
+      "verifier/x402-verify.js": {
+        "bytes": 41419,
+        "sha256": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+      }
+    },
+    "diagnostics": {
+      "scvd-native-buyer-controls.txt": {
+        "bytes": 21566,
+        "sha256": "b6af141f38a605599d5e9f8d0c8caea9acb8c8a3b4370bc73af28da41d08a82f"
+      },
+      "scvd-native-probe-crosscheck.json": {
+        "bytes": 1147,
+        "sha256": "199bdf820de17f4a0feb1755819cd3821fd303e3b7ea21675056d07bee584b2c"
+      },
+      "scvd-native-probe-crosscheck.mjs": {
+        "bytes": 1468,
+        "sha256": "6d5dc7b8eb7109e372e95022b185f8a4f1a0f78aeff1fbbe3eda05fdf3ae8da0"
+      },
+      "scvd-native-signature-diagnosis.json": {
+        "bytes": 1161,
+        "sha256": "bdab3de66e81fe421123f284e213b1ac075f5bc65f502255036108ca843a83fb"
+      },
+      "scvd-native-signature-diagnosis.py": {
+        "bytes": 2109,
+        "sha256": "f015ecc18e8f844b8d2b0911566a3c74f5c43ec929acf3991fbb80593d8e793f"
+      },
+      "scvd-native-subject-body.json": {
+        "bytes": 2,
+        "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+      },
+      "scvd-native-subject-headers.txt": {
+        "bytes": 3191,
+        "sha256": "f3b800642a7fd4c398c14b0fae979929199e43003e923d845f866f4d3f320280"
+      }
+    }
+  }
+}
