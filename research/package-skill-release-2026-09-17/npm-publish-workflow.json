@@ -1,0 +1,16 @@
+{
+  "package": "x402-verify",
+  "version": "1.4.0",
+  "workflow": ".github/workflows/publish-npm.yml",
+  "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248303297",
+  "job": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248303297/job/105294015862",
+  "head_sha": "3194d4d75bd6d7ec07671a1c260b67e106125521",
+  "inputs": { "package": "x402-verify", "version": "1.4.0", "dry_run": false },
+  "conclusion": "success",
+  "steps_passed": ["Check the package against what you typed", "Run the package's own tests", "Reproduce independent verifier vectors", "Verify the installed quickstart", "Show exactly what would be published", "Publish"],
+  "tarball": { "filename": "x402-verify-1.4.0.tgz", "shasum": "f752f473eda07a3925b30224d0737f8c147300a6", "package_size": "53.8 kB", "unpacked_size": "285.8 kB", "total_files": 24 },
+  "provenance": { "transparency_log": "https://search.sigstore.dev/?logIndex=2879124178", "attestations": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.4.0", "source_commit": "3194d4d75bd6d7ec07671a1c260b67e106125521", "predicate": "https://slsa.dev/provenance/v1" },
+  "registry_before": { "latest": "1.3.0", "observed_at": "2026-09-17T16:41Z" },
+  "registry_after": { "latest": "1.4.0" },
+  "log_note": "npm warned that bin[scvd-evidence] was auto-corrected during publish (npm pkg fix); the published bin still resolves to ./evidence-cli.mjs. Not a release blocker; recorded for follow-up."
+}

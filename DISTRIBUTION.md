@@ -72,6 +72,36 @@ expected commit, the release workflow and their actual invocation.
 The corpus-client namespace was created successfully; no account change
 is required. Final records: `research/compact-corpus-packages-2026-09-10/`.
 
+## September 17 — verifier 1.4.0 and skill 3.17.0
+
+**Published:** [x402-verify 1.4.0](https://www.npmjs.com/package/x402-verify/v/1.4.0)
+from `3194d4d75bd6d7ec07671a1c260b67e106125521` (the #769 merge commit)
+through the [provenance workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248303297);
+transparency log entry https://search.sigstore.dev/?logIndex=2879124178.
+It adds the valid/invalid/unsupported/inconclusive result semantics,
+independent vectors and the packaged quickstart (PS1–PS3). A fresh install
+in a directory outside the repository matched the registry integrity, ran the
+packaged example's four outcomes and compiled a strict TypeScript consumer;
+nine installed files hash equal to the merged source, and the keeper's
+own fresh install matched all 24 packed files
+(`research/package-skill-integration-2026-09-17/registry-installation.json`).
+The attestation document was read but its signature was not verified from
+the agent's session, whose egress refuses the Sigstore trust-root host.
+
+**Published:** ClawHub skill 3.17.0 through the guarded
+[skill workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248307937),
+CLI 0.23.3. Submission first read "pending security scans"; the scan then
+returned clean and a normal exact-version public install from the keeper's
+machine matched all eleven payload files and the tree hash
+`50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606`
+(`research/package-skill-integration-2026-09-17/skill-registry-installation.json`).
+Record PR [#772](https://github.com/seancrecord/scvd-general-store-repo/pull/772),
+merged as `b4c0bbdb`, carries the published record and the closeout; the deployed `/skill.md`
+served 3.17.0 at 16:47 UTC. Two CI-side reads of the public page in the
+first 40 minutes found no labelled version, retained under
+`research/package-skill-release-2026-09-17/`. Closeout:
+`docs/PACKAGE_SKILL_HANDOFF_2026-09-17.md`.
+
 ## September 9 — verifier publication follow-through
 
 **Subsequent reader release:** [x402-verify 1.3.0](https://www.npmjs.com/package/x402-verify/v/1.3.0)

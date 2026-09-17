@@ -1,0 +1,118 @@
+
+===== npm install =====
+
+added 1 package in 422ms
+
+
+===== lock entry =====
+{
+  "version": "1.4.0",
+  "resolved": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.4.0.tgz",
+  "integrity": "sha512-OCPhvLadl+B8pZHYow0c7tA/QfkUnPHfSPiuNzHhFmPuMS0yBF273XwnUE6cFcwv+Laakyvk/gqRhAq/gzkOqw==",
+  "license": "MIT",
+  "bin": {
+    "scvd-evidence": "evidence-cli.mjs"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}
+
+===== npm view dist =====
+{
+  "integrity": "sha512-OCPhvLadl+B8pZHYow0c7tA/QfkUnPHfSPiuNzHhFmPuMS0yBF273XwnUE6cFcwv+Laakyvk/gqRhAq/gzkOqw==",
+  "shasum": "f752f473eda07a3925b30224d0737f8c147300a6",
+  "tarball": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.4.0.tgz",
+  "fileCount": 24,
+  "unpackedSize": 285789,
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.4.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "signatures": [
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEYCIQC9BwU2Hi1bw33hwBWzsK4qH0Ab11OHOG3zz4g98EX2NwIhANGPddTS705/1Rnz6DPJy9kq/nFMs5N4WDRI8QmdHKu0"
+    }
+  ]
+}
+
+===== npm audit signatures =====
+FAILED: npm error Failed to download
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-17T16_44_27_080Z-debug-0.log
+
+
+===== example valid =====
+{
+  "status": "valid",
+  "reasonCodes": [],
+  "scope": "Signature valid over the receipt's bytes against the key supplied by the caller; the receipt's fields pass this package's local offer-receipt schema checks (rev 1).",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ]
+}
+
+
+===== example tampered =====
+{
+  "status": "invalid",
+  "reasonCodes": [
+    "signature_invalid"
+  ],
+  "scope": "Not verified: signature: signature does NOT verify against the resolved key.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ]
+}
+
+
+===== example unsupported =====
+{
+  "status": "unsupported",
+  "reasonCodes": [
+    "unsupported_algorithm",
+    "signature_not_checked"
+  ],
+  "scope": "Not verified: alg: expected EdDSA, got ES256; signature: not checked: unsupported algorithm.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ]
+}
+
+
+===== example unavailable-key =====
+{
+  "status": "inconclusive",
+  "reasonCodes": [
+    "key_unavailable",
+    "signature_not_checked"
+  ],
+  "scope": "Not verified: key-resolution: key document HTTP 503; signature: not checked: no key to check against.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ]
+}
+
+
+===== tsc =====
+(no diagnostics)
+
+===== typed consumer =====
+{"status":"valid","action":"checks passed","reasonCodes":[]}
+{"status":"invalid","action":"required check failed","reasonCodes":["signature_invalid"]}
+{"status":"unsupported","action":"capability missing","reasonCodes":["unsupported_algorithm","signature_not_checked"]}
+{"status":"inconclusive","action":"evidence missing","reasonCodes":["key_unavailable","signature_not_checked"]}
