@@ -1,11 +1,5 @@
 # Package and skill milestone handoff — September 17, 2026
 
-**Superseded for current status** by the
-[release record](PACKAGE_SKILL_RELEASE_2026-09-17.md): #769 is merged as
-`3194d4d7`, `x402-verify` 1.4.0 is published and registry-verified, and
-skill 3.17.0 is submitted to ClawHub. The sections below describe the
-checkpoint as it stood before those steps and are kept unchanged.
-
 ## Saved checkpoint
 
 All PS1–PS4 implementation and evidence are committed and pushed as

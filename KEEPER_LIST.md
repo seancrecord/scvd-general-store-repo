@@ -64,18 +64,14 @@ build, it is on the roadmap.
   compact reader has shipped; remaining population coverage is ROADMAP VQ4.
   The directory note was sent September 9; no methodology reply is recorded here.
 
-- **LOOK: x402-verify 1.4.0 published, skill 3.17.0 submitted (2026-09-17).** Pressed
-  from the Actions button on the #769 merge commit with provenance; a fresh
-  registry install ran the packaged example's four outcomes and the strict
-  TypeScript consumer. Skill 3.17.0 went through the guarded ClawHub
-  workflow the same hour and came back "submitted, pending security scans".
-  What is yours: the agent's egress refuses clawhub.ai, so from your
-  machine run `npx clawhub@0.23.3 inspect scvd-general-store` and, once it
-  shows 3.17.0, install that exact version into an empty directory and
-  compare its eleven files against tree hash
-  `50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606`
-  (`node scripts/skill-bundle.mjs` prints it). Record and limits:
-  `docs/PACKAGE_SKILL_RELEASE_2026-09-17.md`.
+- **x402-verify 1.4.0 and skill 3.17.0 published (2026-09-17) — no press
+  needed.** Both went out from the Actions buttons on the #769 merge commit:
+  npm with provenance, ClawHub through the guarded workflow. A fresh registry
+  install ran the packaged example's four outcomes and the strict TypeScript
+  consumer; ClawHub's scan came back clean and a normal exact-version install
+  from your machine matched all eleven files and the tree hash. Evidence:
+  `research/package-skill-integration-2026-09-17/release.json`; ledger entry
+  in DISTRIBUTION.md; closeout in `docs/PACKAGE_SKILL_HANDOFF_2026-09-17.md`.
 
 - **x402-verify 1.3.0 published (2026-09-09).** The evidence CLI is on
   npm with verified provenance. A registry installation verified the
@@ -1370,9 +1366,11 @@ what you ruled and what is still yours to look at.
   `registry/clawhub/published.json`. 3.16.2 followed on 2026-09-10.
   3.17.0 (the 78-line router and ten references) was submitted through
   the guarded workflow on 2026-09-17 from the #769 merge commit; the
-  record carries its bundle and tree hashes. The public page and an
-  exact-version install are the LOOK in the 1.4.0 entry under TRUE
-  TODAY; the agent cannot reach clawhub.ai to read them.
+  record carries its bundle and tree hashes. The scan came back clean
+  and a normal exact-version install from your machine matched all
+  eleven files the same hour, so 3.17.0 is live; the published record
+  now names it. (The agent's egress cannot reach clawhub.ai; a
+  publication is read from your machine or from CI.)
 - **x402-list owner update, round five (09-02).** Submitted
   by your hand: the five doors listed W35-W36 and the
   description. Their token is served at

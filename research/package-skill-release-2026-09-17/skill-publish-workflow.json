@@ -5,14 +5,34 @@
   "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248307937",
   "job": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248307937/job/105294030570",
   "head_sha": "3194d4d75bd6d7ec07671a1c260b67e106125521",
-  "inputs": { "version": "3.17.0", "dry_run": false, "changelog": "3.17.0: 78-line task-router entry with ten guarded references and a whole-tree publish fingerprint. MPP challenge presence is reported separately from validity and observation dates are reported exactly. Retains the privacy, recovery, replay, archive, pinned-install and quote/settlement guidance from 3.16.x." },
+  "inputs": {
+    "version": "3.17.0",
+    "dry_run": false,
+    "changelog": "3.17.0: 78-line task-router entry with ten guarded references and a whole-tree publish fingerprint. MPP challenge presence is reported separately from validity and observation dates are reported exactly. Retains the privacy, recovery, replay, archive, pinned-install and quote/settlement guidance from 3.16.x."
+  },
   "clawhub_cli": "0.23.3",
   "conclusion": "success",
-  "freshness_suite": { "files": 5, "tests": 32, "passed": 32, "duration_s": 14.35 },
+  "freshness_suite": {
+    "files": 5,
+    "tests": 32,
+    "passed": 32,
+    "duration_s": 14.35
+  },
   "cli_line": "Update submitted for scvd-general-store@3.17.0; pending security scans before it becomes public.",
-  "record": { "version": "3.17.0", "bundle_sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8", "tree_sha256": "50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606", "published_at": "2026-09-17T16:44:32.097Z", "commit": "3194d4d75bd6d7ec07671a1c260b67e106125521" },
+  "record": {
+    "version": "3.17.0",
+    "bundle_sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
+    "tree_sha256": "50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606",
+    "published_at": "2026-09-17T16:44:32.097Z",
+    "commit": "3194d4d75bd6d7ec07671a1c260b67e106125521"
+  },
   "record_pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/772",
   "record_branch_commit": "213182d9bd83c61026546b44f37ed488b7d538c2",
-  "public_observation": "Not observed from this session: clawhub.ai is refused by the session's egress policy (proxy CONNECT 403), so neither `clawhub inspect scvd-general-store` nor a remote `clawhub skill install` could run here. The CLI's submitted line and the moderation/security-scan wait are the only remote signals retained. Public visibility, remote installed bytes and the 11-file tree comparison against tree_sha256 above remain to be observed from a machine that reaches clawhub.ai.",
-  "deployed_skill_md": { "url": "https://scvd.store/skill.md", "version_line": "version: 3.17.0", "observed_at": "2026-09-17T16:47Z", "note": "The served route is the separate full store guide; its version agrees with the release." }
+  "public_observation": "Not observed from this session: clawhub.ai is refused by the session's egress policy (proxy CONNECT 403), so neither `clawhub inspect scvd-general-store` nor a remote `clawhub skill install` could run here. The CLI's submitted line and the moderation/security-scan wait are the only remote signals retained. Public visibility, remote installed bytes and the 11-file tree comparison against tree_sha256 above remain to be observed from a machine that reaches clawhub.ai. The keeper-side session later observed 3.17.0 public with a clean scan and a matching normal install; see research/package-skill-integration-2026-09-17/skill-registry-installation.json.",
+  "deployed_skill_md": {
+    "url": "https://scvd.store/skill.md",
+    "version_line": "version: 3.17.0",
+    "observed_at": "2026-09-17T16:47Z",
+    "note": "The served route is the separate full store guide; its version agrees with the release."
+  }
 }

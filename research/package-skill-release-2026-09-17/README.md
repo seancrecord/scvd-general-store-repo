@@ -1,7 +1,15 @@
-# Package and skill release evidence — September 17, 2026
+# Package and skill release — agent-session reads, September 17, 2026
 
-Raw outcomes behind `docs/PACKAGE_SKILL_RELEASE_2026-09-17.md`. Nothing here
-replaces the earlier integration, PS3 or PS4 evidence directories.
+Supplementary raw outcomes from the remote agent session that merged #769
+and pressed both release workflows. The release index and the keeper-side
+installation evidence (24 npm files, 11 ClawHub files, clean scan) are in
+`research/package-skill-integration-2026-09-17/release.json` and beside it;
+the closeout is `docs/PACKAGE_SKILL_HANDOFF_2026-09-17.md`. Nothing here
+replaces those or the earlier integration, PS3 or PS4 evidence directories.
+What this folder adds: the provenance transparency-log entry and attestation
+document, a second independent fresh-directory npm install, the workflow
+step records, and two CI-side reads of the public ClawHub page in the first
+40 minutes after submission, when it still showed no labelled version.
 
 - `npm-publish-workflow.json` — the `publish-npm.yml` run for `x402-verify`
   1.4.0 on the #769 merge commit: steps, tarball digest, transparency-log
