@@ -38,6 +38,19 @@
         "verifier/x402-verify.js": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
       },
       "plan_sha256_unchanged": true
+    },
+    {
+      "revised_at": "2026-09-17T17:30:47.936Z",
+      "reason": "Rebased onto main after #769 and #771 merged; the verifier bytes the collector freezes beside an acquisition changed upstream (verifier/x402-verify.js). Buyer controls and typecheck re-run on this base.",
+      "instrument_sha256": {
+        "scripts/buyer-cold-isolated.mjs": "79e3b7c5e2ed17b2abfbf262372d1ccb9c19fda6873c9b3d29c5039e8611954b",
+        "scripts/lib/buyer-cold.mjs": "1a6b72775329ecb1e2322f00c3916dd8c1b4d2c2535afcbe36b9d45afbc99484",
+        "scripts/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+        "scripts/lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+        "verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+        "verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+      },
+      "plan_sha256_unchanged": true
     }
   ]
 }

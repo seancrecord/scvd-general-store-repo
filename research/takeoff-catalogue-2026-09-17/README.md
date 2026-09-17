@@ -1,5 +1,7 @@
 # Catalogue-entry cohort — frozen September 17, 2026, not run
 
+Picking this up? Start with [HANDOFF.md](HANDOFF.md).
+
 This directory freezes the next buyer cohort after the
 [September 17 post-merge qualification](../takeoff-postmerge-2026-09-17/REPORT.md)
 and records the instrument changes it depends on. **No model was launched.**
