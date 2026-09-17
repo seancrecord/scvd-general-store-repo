@@ -2,6 +2,7 @@ import { env } from "cloudflare:test";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { app } from "@/index";
 import { HANDED_HEADER, doors, doorsReady } from "@/lib/doors-app";
+import { MPP_CHECKOUT_PATH } from "@/lib/mpp-checkout-capability";
 import { edgeMiddleware } from "@/lib/edge";
 import { doorChecks } from "@/routes/door-checks";
 import { storeDoorChecks } from "@/routes/buy";
@@ -189,8 +190,16 @@ describe("byte parity: the unpaid knock", () => {
   it("every paid door answers the same 402, header for header, byte for byte", async () => {
     let challenged = 0;
     for (const item of MENU_ITEMS) {
-      const answer = await bothAnswerAlike(`/api/buy/${item.id}`, { headers: JSON_ACCEPT },
-        {});
+      // THE ONE DOOR THE DOORS DO NOT ANSWER (the scoped MPP activation,
+      // 2026-09-17). With the pilot flag on, the native product's unsigned
+      // knock is handed to the store, where the challenge key and the
+      // durable bindings live (lib/doors-app.ts); the doors carry no copy
+      // of the key. The answer must still be the store's, byte for byte,
+      // and marked as handed. Every other door is the doors' own answer.
+      const path = `/api/buy/${item.id}`;
+      const handedNative = doorsEnv.MPP_CHECKOUT_ENABLED === "true" && path === MPP_CHECKOUT_PATH;
+      const answer = await bothAnswerAlike(path, { headers: JSON_ACCEPT },
+        handedNative ? { handOver: "passed" } : {});
       if (answer.status === 402) {
         challenged += 1;
         expect(answer.headers["payment-required"], item.id).toBeTruthy();

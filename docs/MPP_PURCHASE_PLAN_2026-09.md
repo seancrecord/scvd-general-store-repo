@@ -176,8 +176,8 @@ live MPP purchase.
 ## Native pilot implementation (2026-09-16)
 
 `docs/MPP_NATIVE_CHECKOUT_2026-09.md` records the implemented HTTP pilot,
-its exact boundaries, tests and activation checklist. Both Worker flags remain
-false. The existing `context_anchor` minimum Base/USDC entitlement now has a
+its exact boundaries, tests and activation checklist. Both Worker flags stay
+false until the scoped activation release merges. The existing `context_anchor` minimum Base/USDC entitlement now has a
 native challenge/credential path behind that flag, with shared durable
 admission, artifact recovery, retained receipts, a disjoint idempotent sales
 ledger, and shared public/admin reporting. The September 17 bounded house run
