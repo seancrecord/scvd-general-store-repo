@@ -46,6 +46,16 @@ Verify the next sweep of `cert_5aa8cb3n33` against the retained test purchase;
 do not clear its old alert by running the legacy repair. Historical alarm rows
 remain history; this code change does not acknowledge or delete them.
 
+The reconciliation merged in #771 classifies a Context Anchor / Base
+certificate by the settle headers retained with its purchase. A rescued x402
+settle keeps no facilitator header by design, so #771 alone read such a sale
+as undetermined for good: paged hourly, skipped by the legacy repair, dropped
+from the counter raise. The follow-up lets the ledgers decide when headers
+cannot: a native sale naming the transaction is MPP; a legacy per-settle
+record with no native sale is x402; a settle neither ledger holds, or a native
+ledger that cannot be read, stays undetermined and keeps its alarm. Deploy that
+follow-up with the reconciliation and read one clean hourly sweep before
+activation.
 
 1. Confirm #766 is merged after the full shared CI gate, and record the store
    and doors deployment versions serving the readiness code.
