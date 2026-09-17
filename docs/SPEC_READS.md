@@ -1,5 +1,57 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-17 — The verifier door is listed. What it cost to get there.
+
+`https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212`
+is live. The submission that succeeded was the SECOND one, and the
+difference between them is worth writing down while it is still
+cheap to remember.
+
+**What failed (2026-09-09, rejected 2026-09-13).** `/mcp` was offered:
+139,703 bytes of `tools/list`, eighteen tools including the shelf, and
+a largest single tool result of 161,888 bytes. Stated grounds were
+test cases failing on web and mobile, plus unconfirmed ownership.
+Ownership closed with business verification on 2026-09-15.
+
+**What succeeded.** `/mcp/verifier` — 11,394 bytes, five read-only
+tools, nothing reachable that can spend money — after a transport red
+team found the door had inherited none of September's hardening (no
+SSE listening channel, no trailing-slash 308, missing from the CORS
+allowlist) and one annotation that contradicted what `/mcp` declared
+for the same tool. A second surface built from the same handlers does
+not inherit the first surface's transport fixes.
+
+**Three things this store did NOT learn until it had been rejected
+once**, recorded so the next venue does not re-teach them:
+
+  1. Size is a review criterion even when nobody says so. A reviewer's
+     client reads the whole tool list before it can call anything.
+  2. The portal's scanner opens a GET expecting `text/event-stream`
+     BEFORE it POSTs. The spec permits refusing that; the scanner
+     reads the refusal as no server.
+  3. A merge is not a deploy. Production served the old code for
+     several minutes after the fix merged, and submitting in that
+     window would have failed on a fix that was already written.
+
+**Corrected here, from the same round.** OpenAI's guidelines state
+`readOnlyHint` is false if a tool "can create, update, delete, send,
+enqueue, run jobs, write logs, start workflows, or otherwise mutate
+state", and that a justification cannot rescue an annotation the
+server contradicts. This store's first reading — that bookkeeping
+counters are not state changes — was wrong by that rule. The verifier
+door was corrected before submission; `/mcp` still declares
+`readOnlyHint: true` for twelve tools whose handlers write the same
+counters. The two doors therefore disagree, the cross-door guard in
+`test/mcp-verifier.spec.ts` compares only `openWorldHint` and does not
+catch it, and the keeper has deliberately left it that way for now
+rather than take the auto-approval friction that flipping `/mcp` would
+add to twelve free instruments. Named, dated, unresolved — not
+forgotten.
+
+The procedure that produced the successful submission is
+`.claude/skills/directory-submission/SKILL.md`. It exists because this
+took two attempts.
+
 ## 2026-09-16 — Red team of /mcp/verifier before resubmitting to OpenAI
 
 The 2026-09-09 plugin submission offered `/mcp` and was rejected on
