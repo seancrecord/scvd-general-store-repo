@@ -416,6 +416,19 @@ export class UcpCheckoutStore {
     return this.storage.transaction(async (txn) => {
       const checkout = await txn.get<StoredCheckout>(ROW);
       if (!checkout) return { ok: false, reason: "not_found" } as const;
+      /**
+       * A binding with no public transition is the crash between the
+       * settlement claim and enterSettlement. The purchase record has
+       * since said not_settled, which is definitive, so the binding
+       * is released exactly as it would be from complete_in_progress;
+       * the status has nowhere to move because it never left.
+       */
+      if (checkout.status === "ready_for_complete" && checkout.completion) {
+        const next: StoredCheckout = { ...checkout };
+        delete next.completion;
+        await txn.put(ROW, next);
+        return { ok: true, checkout: next } as const;
+      }
       if (checkout.status !== "complete_in_progress") {
         return { ok: false, reason: "wrong_state", checkout } as const;
       }

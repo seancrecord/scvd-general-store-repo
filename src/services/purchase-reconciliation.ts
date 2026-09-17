@@ -80,6 +80,17 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
     (payment.network.startsWith("eip155:") ? !isSameAddress(payment.payer, record.payer) : payment.payer !== record.payer)) {
     throw new Error("Recorded payment identity mismatch");
   }
+  /**
+   * A UCP PURCHASE IS NOT THIS DESK'S TO DELIVER. Its request is the
+   * JCS completion identity, not a query string, and its goods are
+   * finished by the checkout's Order, not by re-running fulfillment
+   * from here. Falling through to the HTTP branch below would rebuild
+   * inputs from a JSON document read as a query, look for a retained
+   * observation under the wrong digest, and produce it a second time.
+   * Refused by name, so the third door cannot be the first one by
+   * default (the same rule as purchaseRequestDigest).
+   */
+  if (record.door === "ucp") return null;
   const { recordedHumanResolution, resolvedHumanDelivery } = await import("@/services/resolved-human-purchase");
   const resolution = await recordedHumanResolution(env, record);
   if (resolution) return resolvedHumanDelivery(resolution);

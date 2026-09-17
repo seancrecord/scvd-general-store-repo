@@ -11,6 +11,12 @@ import type {
   SettlementSubmission,
   SubmissionClaim,
 } from "@/services/settlement-submission";
+import {
+  settleClaimedSubmission,
+  SettlementResolutionFailed,
+  type SettlementConvergence,
+  type SettlementProducer,
+} from "@/services/ucp-settlement-resolution";
 import { getMenuItem } from "@/store/menu";
 import type { PendingPayment } from "@/lib/payments";
 import type { Env } from "@/types";
@@ -31,6 +37,16 @@ import type { Env } from "@/types";
  * told to wait, is answered here where no money can be lost getting it
  * wrong.
  *
+ * WITH A PRODUCER, one more step happens before the refusal: the
+ * winning execution hands its claim and the producer to
+ * services/ucp-settlement-resolution, which asks the producer once and
+ * writes the answer onto the purchase, the row and the checkout in
+ * that order. The walk still stops at the boundary afterwards —
+ * fulfillment does not continue past settle in this increment, because
+ * delivery and the Order are the next chapter. The producer is
+ * synthetic today; the real x402 orchestration replaces it without this
+ * file changing shape.
+ *
  * WHY THE CLAIM LIVES INSIDE `pending.settle`. The callback is reached
  * only after fulfillPurchase has completed every pre-settlement step
  * for that product — the probes, the chain reads, the signatures. So
@@ -42,14 +58,23 @@ import type { Env } from "@/types";
  */
 
 export class SettlementBoundaryReached extends Error {
-  constructor(readonly submission: SettlementSubmission) {
+  constructor(
+    readonly submission: SettlementSubmission,
+    readonly resolution?: SettlementConvergence,
+  ) {
     super("Reached the settlement boundary; this increment does not cross it");
     this.name = "SettlementBoundaryReached";
   }
 }
 
 export type BoundaryOutcome =
-  | { ok: true; checkout: StoredCheckout; submission: SettlementSubmission }
+  | {
+      ok: true;
+      checkout: StoredCheckout;
+      submission: SettlementSubmission;
+      /** Present when a producer was supplied and its result was recorded. */
+      resolution?: SettlementConvergence;
+    }
   | {
       ok: false;
       code:
@@ -58,7 +83,8 @@ export type BoundaryOutcome =
         | "preconditions_failed"
         | "already_started"
         | "already_resolved"
-        | "production_failed";
+        | "production_failed"
+        | "resolution_failed";
       detail: string;
       checkout?: StoredCheckout;
       submission?: SettlementSubmission;
@@ -66,7 +92,7 @@ export type BoundaryOutcome =
 
 export async function walkToSettlementBoundary(
   env: Env,
-  input: { checkoutId: string; door?: string },
+  input: { checkoutId: string; door?: string; produce?: SettlementProducer },
 ): Promise<BoundaryOutcome> {
   const store = ucpCheckoutStore(env, input.checkoutId);
   const stored = await store.readUcpCheckout();
@@ -112,6 +138,7 @@ export async function walkToSettlementBoundary(
   }
 
   let claimed: SettlementSubmission | undefined;
+  let resolution: SettlementConvergence | undefined;
   let refusal: BoundaryOutcome | undefined;
 
   const pending: PendingPayment = {
@@ -165,13 +192,35 @@ export async function walkToSettlementBoundary(
        * the boundary, and a poll can learn what became of it.
        */
       await store.enterUcpSettlement({ payment_identity: completion.payment_identity });
-      throw new SettlementBoundaryReached(claim.submission);
+      if (input.produce) {
+        resolution = await settleClaimedSubmission(env, {
+          checkoutId: checkout.id,
+          claim,
+          produce: input.produce,
+        });
+      }
+      throw new SettlementBoundaryReached(claim.submission, resolution);
     },
   };
 
   try {
     await fulfillPurchase(env, item!, pending, fulfillmentInputFor(item!, checkout.inputs ?? {}));
   } catch (error) {
+    if (error instanceof SettlementResolutionFailed) {
+      /**
+       * The goods were made and the claim is held; what did not finish
+       * is the bookkeeping of the answer. Not a production failure,
+       * and not a reason to submit again: the next convergence pass
+       * reads the records and finishes writing them.
+       */
+      return {
+        ok: false,
+        code: "resolution_failed",
+        detail: "The settlement outcome could not be fully recorded. Nothing will be submitted again; read the checkout.",
+        checkout,
+        ...(claimed ? { submission: claimed } : {}),
+      };
+    }
     if (!(error instanceof SettlementBoundaryReached)) {
       /**
        * Production failed above the settle line, which is the cheap
@@ -200,5 +249,10 @@ export async function walkToSettlementBoundary(
     };
   }
   const after = await store.readUcpCheckout();
-  return { ok: true, checkout: { ...after! }, submission: claimed };
+  return {
+    ok: true,
+    checkout: { ...after! },
+    submission: resolution?.submission ?? claimed,
+    ...(resolution ? { resolution } : {}),
+  };
 }

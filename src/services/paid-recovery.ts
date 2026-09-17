@@ -315,14 +315,20 @@ export class PaidRecoveryStore extends DurableObject<Env> {
    * outcome, not a missing one, and it never releases the claim: a
    * payment whose fate nobody knows stays claimed so that no second
    * execution can decide to find out by submitting it again.
+   *
+   * WRITTEN ONCE. A delayed writer — a decline that arrives after this
+   * row already says unknown, a second confirmation, anything — is
+   * returned the row as it stands and changes nothing. That includes
+   * unknown: an unresolved outcome is a resolved local observation of
+   * an unresolved payment, and the only thing allowed to upgrade it is
+   * authoritative reconciliation, which will get its own writer here
+   * when it is built. Nothing on the request path is that writer.
    */
   async resolveSettlementSubmission(outcome: SubmissionOutcome, reference?: string): Promise<string | null> {
     return this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<SettlementSubmission>(SUBMISSION_ROW);
       if (!prior) return null;
-      // A resolved claim never changes its mind on a delayed writer,
-      // the same rule updatePurchase applies to a confirmed state.
-      if (prior.outcome && prior.outcome !== "unknown") return JSON.stringify(prior);
+      if (prior.outcome) return JSON.stringify(prior);
       const next: SettlementSubmission = {
         ...prior,
         outcome,
