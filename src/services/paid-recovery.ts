@@ -373,6 +373,22 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     });
   }
 
+  /** Reconciliation needs the protocol, never the retained receipt or goods. */
+  async readSettlementProtocol(identity: RecoveryIdentity): Promise<"mpp" | "x402" | null> {
+    const artifact = await this.ctx.storage.get<ArtifactPurchase>("artifact");
+    const attempt = artifact ? undefined : await this.ctx.storage.get<RecoveryAttempt>("attempt");
+    const purchase = artifact?.purchase ?? attempt?.purchase;
+    if (!purchase || !owns(purchase, identity)) return null;
+    const headers = purchase.payment.settleHeaders;
+    if (!headers || typeof headers !== "object") throw new Error("Settlement evidence unavailable");
+    const names = Object.entries(headers).filter(([, value]) => typeof value === "string" && value.length > 0)
+      .map(([name]) => name.toLowerCase());
+    const mpp = names.includes("payment-receipt");
+    const x402 = names.includes("payment-response") || names.includes("x-payment-response");
+    if (mpp === x402) return null;
+    return mpp ? "mpp" : "x402";
+  }
+
   /** Read-only: a missing result must never acquire permission to mint. */
   async readCompleted(identity: { path: string; payer: string; network: string; transaction: string }): Promise<{
     digest: string; response: string; payment: SettledPayment;

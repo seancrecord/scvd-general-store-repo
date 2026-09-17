@@ -1,3 +1,4 @@
+import { certificateProtocol } from "@/services/certificate-accounting";
 import { isHouseWallet } from "@/lib/channel";
 import { canonicalAddress } from "@/lib/addresses";
 import { counterLedger } from "@/lib/counter-ledger";
@@ -118,12 +119,13 @@ export async function raiseCountersToRecords(env: Env): Promise<CounterRaiseResu
     if (!record?.item || !record.at) continue;
     const wallet = name.slice(prefixLength).split(":")[0] ?? "";
     if (!wallet || isHouseWallet(env, wallet) || skipWallets.has(canonicalAddress(wallet))) continue;
+    const cert = record.transaction ? certByTx.get(record.transaction.toLowerCase()) : undefined;
+    if (cert && await certificateProtocol(env, cert) !== "x402") continue;
     organicRecords += 1;
     const month = record.at.slice(0, 7);
     const day = record.at.slice(8, 10);
     raise(KV_KEYS.metric(month, "paid", record.item), 1);
     raise(KV_KEYS.metric(month, "dpaid", day), 1);
-    const cert = record.transaction ? certByTx.get(record.transaction.toLowerCase()) : undefined;
     const amount = cert && typeof cert.paid_usdc === "number" ? cert.paid_usdc : priceOf(record.item);
     if (amount === null) {
       unpriced += 1;

@@ -1,3 +1,4 @@
+import { certificateProtocol } from "@/services/certificate-accounting";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -37,6 +38,8 @@ export interface WalletDisagreement {
 export interface CertificatesAgainstSettles {
   certificates_total: number;
   certificates_with_payer: number;
+  native_certificates: number;
+  protocol_unavailable: number;
   certificates_truncated: boolean;
   payer_rows: number;
   payer_rows_purchases: number;
@@ -63,11 +66,16 @@ export async function certificatesAgainstSettles(
   const certsByWallet = new Map<string, number>();
   let total = 0;
   let withPayer = 0;
+  let native = 0;
+  let unavailable = 0;
   for (const record of certs.values()) {
     const cert = record?.certificate;
     if (!cert) continue;
     total += 1;
     if (!cert.payer) continue;
+    const protocol = await certificateProtocol(env, cert);
+    if (protocol === "mpp") { native += 1; continue; }
+    if (protocol === "unavailable") { unavailable += 1; continue; }
     withPayer += 1;
     const wallet = canonicalAddress(cert.payer);
     certsByWallet.set(wallet, (certsByWallet.get(wallet) ?? 0) + 1);
@@ -98,12 +106,15 @@ export async function certificatesAgainstSettles(
   return {
     certificates_total: total,
     certificates_with_payer: withPayer,
+    native_certificates: native,
+    protocol_unavailable: unavailable,
     certificates_truncated: certKeys.truncated,
     payer_rows: rowsByWallet.size,
     payer_rows_purchases: rowPurchases,
     wallets_disagreeing: disagreeing,
     wallets_without_row: withoutRow,
-    reading: readCertificates(settles, withPayer, rowPurchases, disagreeing),
+    reading: readCertificates(settles, withPayer, rowPurchases, disagreeing) +
+      ` Native MPP certificates excluded from this legacy comparison: ${native}. Protocol unavailable: ${unavailable}; these are not established legacy sales.`,
   };
 }
 
