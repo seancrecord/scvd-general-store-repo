@@ -88,19 +88,58 @@ Recorded by the agent from the repository and the public store:
 - Both checked-in flags read `"false"` on main at that check; the unsigned
   Context Anchor door still quoted x402 only.
 
-Supplied by the keeper, not the agent; blank here means not yet supplied:
+Supplied by the keeper, not the agent, with where each stood at release:
 
-- Doors deploy id serving the reconciliation and follow-up. The doors Worker
-  exposes no public version; read it from the dashboard.
+- Doors deploy id serving the reconciliation and follow-up. The keeper chose
+  on 2026-09-17 not to read it from the dashboard; the public hand-over read
+  below is the evidence that the doors Worker carries the flag.
 - One clean hourly books sweep after 17:58 UTC: no `certificate-without-settle`
-  or `certificate-native-accounting` page. Sweep alarms reach the keeper only.
+  or `certificate-native-accounting` page. Sweep alarms reach the keeper only;
+  not confirmed to the agent at release.
 - The dated provider/account confirmation the qualification runbook requires.
-  One accepted live transaction does not establish commercial terms.
-- The decision to make this one offer ongoing and publicly callable, which
-  merging the activation change records.
+  The keeper chose on 2026-09-17 not to review the facilitator's account
+  terms; the same facilitator accepted one live native settlement on
+  2026-09-17. Not reviewed is the honest word, not confirmed.
+- The decision to make this one offer ongoing and publicly callable: the
+  keeper's "go live", 2026-09-17, recorded by merging #780.
 
-After merge, the unsigned release checks below produce the rest: release
-commit, both deployment versions, read times and observed headers.
+## Release record — 2026-09-17
+
+- Release: #780, squash-merged to main as `e874366` at 19:53:03 UTC.
+- Store: rebuilt from that push, deploy id
+  `8070b03b-bb49-44de-997d-e2b02c7c1829`, version timestamp 19:53:39 UTC.
+- Doors: no public version id. At 19:53:36 UTC, before the store rebuild, the
+  unsigned Context Anchor knock already answered `x-scvd-doors: passed`, so
+  the doors Worker had deployed its flag first; the store's x402-only answer
+  in that window is the documented fail-safe (a valid 402, no native
+  challenge).
+
+Unsigned reads through the public doors at 19:54:57 UTC, no wallet, no
+payment:
+
+- `GET /api/buy/context_anchor?summary=…` answered 402 with both
+  `WWW-Authenticate: Payment` and `PAYMENT-REQUIRED`, `x-scvd-doors: passed`,
+  `Cache-Control: no-store`, `Vary` carrying `Authorization, Idempotency-Key`
+  beside the x402 headers. Native terms decoded from the challenge: realm
+  `scvd.store`, method `evm`, intent `charge`, amount `1000000`, currency
+  `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`, chainId `8453`, decimals `6`,
+  credential type `authorization`, recipient
+  `0xDD350976B8cfFc65938C0464d39A2C78BE079bd0`, expiry about six minutes
+  after issue. The x402 offer beside it quoted the same amount and the same
+  recipient on Base, plus Polygon, Arbitrum, World and Solana as before.
+- `GET /api/buy/hello` answered 402 with the x402 challenge only.
+- The compact item contract and the OpenAPI `x-scvd-payment-capabilities`
+  for Context Anchor declare exactly the x402 row and one MPP row (HTTP GET,
+  evm/charge, `eip155:8453`, that asset, 6 decimals, `1000000` atomic). The
+  `hello` operation declares x402 only.
+- `/llms-full.txt` carries the "Native MPP checkout: HTTP GET
+  /api/buy/context_anchor" paragraph with the same terms.
+- `OPTIONS /api/buy/context_anchor` with an Origin answers 204 with the
+  reviewed CORS surface.
+- Public counts before and after: organic 106, house 322, total 429; by
+  protocol x402 106, mpp 0. Deployment created no sale.
+
+Rollback is unchanged: set both flags back to `"false"` and merge.
 
 ## Unsigned release checks
 
