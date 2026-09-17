@@ -1974,3 +1974,14 @@ host testing before selecting supported platforms. Only tested Claude Code was
 selected; the keeper explicitly authorized the contact address and linked
 [Software Directory Terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms).
 The form confirmed receipt; acceptance remains unverified.
+
+
+### 2026-09-17 — Context Anchor MPP activation read
+
+Unsigned live reads at 21:13 UTC of [Context Anchor checkout](https://scvd.store/api/buy/context_anchor),
+[compact menu](https://scvd.store/menu/context_anchor?view=compact) and
+[OpenAPI](https://scvd.store/openapi.json) confirm an advertised MPP EVM charge
+on Base for 1 USDC alongside x402. Native capability declarations agree;
+`x-payment-info.protocols` still contains only x402. Other products are upcoming.
+No purchase or directory acceptance was exercised.
+[Sanitized observation](../research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).

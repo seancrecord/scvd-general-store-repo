@@ -1111,9 +1111,14 @@ what you ruled and what is still yours to look at.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
   A2A Directory already lists SCVD; two new community API submissions failed
-  (503 and 404), with no new listing confirmed. MPP native checkout was not
-  advertised in the fresh quote; curated MPP/MPPScan submissions follow activation
-  and discovery qualification. UCP merchant intake remains separate from PS9's
+  (503 and 404), with no new listing confirmed. MPP is now live for Context
+  Anchor: the 21:13 UTC
+  read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
+  and OpenAPI capabilities. Other products are upcoming. Curated MPP/MPPScan
+  submissions still need discovery qualification; the directory-facing
+  `x-payment-info.protocols` currently lists only x402.
+  [Live receipt](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+  UCP merchant intake remains separate from PS9's
   inspection experiment. OASF clarification: endpoint only, no Cisco/Anro submission.
 
 - **GitHub catalogs, September 17 follow-through.** Awesome ERC-8004

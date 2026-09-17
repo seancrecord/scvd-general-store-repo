@@ -17,6 +17,15 @@ for the OpenAI skill update steps and expanded A2A/MPP/UCP admission map. Work i
 commit `b4c0bbdbde412a435129b00f07f2b1eb401e98ab`, because the original checkout has
 unrelated edits and predates the published assets.
 
+## MPP activation follow-up
+
+At 21:13 UTC, after the keeper reported activation, Context Anchor advertised
+MPP EVM charge / Base / 1 USDC alongside x402. Menu and OpenAPI capability
+declarations agree. Other products are upcoming. This unsigned read did not
+exercise payment; directory discovery compatibility remains open.
+[Receipt](observations/mpp-context-anchor-live.json) and
+[coverage](PROTOCOL_COVERAGE.md#mpp-activation-and-remaining-discovery-gate).
+
 ## Canonical identity is already connected
 
 The public Base RPC `tokenURI(86957)` resolves to
