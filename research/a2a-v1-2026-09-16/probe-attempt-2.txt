@@ -1,0 +1,44 @@
+(node:43066) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-a2a-v1
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+{"knock":1,"cold":false,"age":0,"req":0,"method":"GET","path":"/.well-known/agent-card.json","status":200,"ua":""}
+
+ ❯ test/a2a-v1.spec.ts (17 tests | 1 failed) 198ms
+     × runs a real preflight through the official client against a controlled 402, without paying 43ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+AssertionError: expected [ …(4) ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   StringMatching /delivery/i,
++ [
++   "whether the door delivers after payment",
++   "uptime, or anything about any moment but this one",
++   "whether your own client will sign what the door serves (that is the before-you-pay dry run)",
++   "whether to pay",
+  ]
+
+ ❯ test/a2a-v1.spec.ts:54:51
+     52|     if (content?.$case !== "data") throw new Error("Expected evidence"…
+     53|     expect(content.value?.["result"]).toBe("ready");
+     54|     expect(content.value?.["does_not_establish"]).toEqual(expect.array…
+       |                                                   ^
+     55|     expect(probe).toHaveBeenCalledTimes(1);
+     56|     const headers = new Headers(probe.mock.calls[0]?.[1]?.headers);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  14:56:46
+   Duration  8.03s (transform 3.48s, setup 16ms, import 7.36s, tests 198ms, environment 0ms)
+

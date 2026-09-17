@@ -52,6 +52,22 @@ The procedure that produced the successful submission is
 `.claude/skills/directory-submission/SKILL.md`. It exists because this
 took two attempts.
 
+## 2026-09-16 — external admission package reconciliation
+
+[GitHub's maintainer discussion](https://github.com/github/github-mcp-server/discussions/1257)
+still distinguishes initial curation from later upstream version sync. The public
+registry API returned no result for the exact SCVD name while the official entry
+was active/latest. The existing Agent Finder PR #34 is open and carries all four
+prepared descriptors; no duplicate was submitted.
+
+The [AGNTCY participation discussion](https://github.com/agntcy/dir/discussions/455)
+contains a July 24 maintainer reply opening participation beyond steering-group
+members. The earlier initial-phase restriction is historical; shared-node write
+authorization still needs a concrete decision. The official quickstart separates
+local records from network discovery. [Packages and dated observations](../research/distribution-admission-2026-09-16/README.md)
+preserve those boundaries. The canonical OASF expiry copy was corrected and its
+draft record regenerated; publication and a new record signature remain pending. No message, signing, publication or federation deployment occurred.
+
 ## 2026-09-16 — retained cold-buyer evidence and main reconciliation
 
 Re-read [Codex noninteractive mode](https://learn.chatgpt.com/docs/non-interactive-mode):
@@ -122,6 +138,23 @@ separates startup failures, bounded discovery misses, directed HTTP use,
 unsigned preflight and unexercised signed/paid completion. It does not
 establish organic adoption, catalogue absence, native MCP installation,
 A2A interoperability or general readiness.
+
+## 2026-09-16 — A2A v1 binding, bounded 0.3 compatibility
+
+Read the [pinned v1.0.0 specification](https://a2a-protocol.org/v1.0.0/specification/)
+and [official proto](https://raw.githubusercontent.com/a2aproject/A2A/v1.0.0/specification/a2a.proto),
+and inspected the official `@a2a-js/sdk@1.1.0` client. The missing-header rule
+selects 0.3; v1 uses A2A-Version, PascalCase methods, wrapped SendMessage
+results, named enums and parts without kind. The card must describe real
+A2A bindings. Structured error details are typed Any arrays.
+
+Implemented the three existing evidence tasks through a bounded v1 adapter,
+with legacy task storage and the paid 0.3 audit unchanged. Definition, failing
+baseline and independent local client exchanges are retained under
+`research/a2a-v1-2026-09-16/`. [Build and limits](A2A_V1_COMPAT_2026-09.md).
+This is local interoperability evidence, not production observation or a
+cold-stranger pass. No streaming, push, task listing or broader product work.
+
 
 ## 2026-09-16 — Red team of /mcp/verifier before resubmitting to OpenAI
 
@@ -1631,19 +1664,3 @@ before the repair; eight mutated-response regressions failed before and pass
 afterward. The mutations include internal server errors, tool failures,
 malformed/wrong readiness refusals and uncorrelated protocol responses. No
 new paid flow or unknown-host demand-queue input is added to the live matrix.
-
-## 2026-09-16 — external admission package reconciliation
-
-[GitHub's maintainer discussion](https://github.com/github/github-mcp-server/discussions/1257)
-still distinguishes initial curation from later upstream version sync. The public
-registry API returned no result for the exact SCVD name while the official entry
-was active/latest. The existing Agent Finder PR #34 is open and carries all four
-prepared descriptors; no duplicate was submitted.
-
-The [AGNTCY participation discussion](https://github.com/agntcy/dir/discussions/455)
-contains a July 24 maintainer reply opening participation beyond steering-group
-members. The earlier initial-phase restriction is historical; shared-node write
-authorization still needs a concrete decision. The official quickstart separates
-local records from network discovery. [Packages and dated observations](../research/distribution-admission-2026-09-16/README.md)
-preserve those boundaries. The canonical OASF expiry copy was corrected and its
-draft record regenerated; publication and a new record signature remain pending. No message, signing, publication or federation deployment occurred.

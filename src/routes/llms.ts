@@ -1,3 +1,4 @@
+import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-networks";
@@ -355,14 +356,17 @@ the resources /mcp lists plus one tool, read_docs, returning any by
 name. Nothing on it acts.
 
 If you delegate rather than call: the evidence agent at ${base}/a2a
-speaks A2A — POST JSON-RPC message/send with one data part holding
+speaks A2A v1 — send A2A-Version: ${A2A_CURRENT_VERSION} on card and RPC requests, then
+POST JSON-RPC SendMessage with one data part holding
 { task, ...input } — and answers three read-only tasks with one
 bounded artifact each: preflight_endpoint, verify_receipt,
 get_endpoint_readiness. Its card is ${base}/.well-known/agent-card.json.
-Each message needs kind "message", role "user", messageId and parts.
+Each v1 message needs role "ROLE_USER", messageId and parts (no kind).
+Absent/empty A2A-Version keeps the bounded legacy ${A2A_LEGACY_VERSION} binding: message/send,
+kind "message", role "user" and kind "data" on its data part.
 GET ${base}/a2a carries the full request example, task retrieval and
-retention policy; tasks/get reads a returned task, tasks/cancel refuses
-one already finished.
+retention policy; v1 GetTask reads a returned task, CancelTask refuses
+one already finished (legacy: tasks/get and tasks/cancel).
 It never says whether to pay or whom to trust; it hands back evidence
 with what it does not establish stated.
 
