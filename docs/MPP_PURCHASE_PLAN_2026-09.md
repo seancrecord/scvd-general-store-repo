@@ -180,9 +180,18 @@ its exact boundaries, tests and activation checklist. Both Worker flags remain
 false. The existing `context_anchor` minimum Base/USDC entitlement now has a
 native challenge/credential path behind that flag, with shared durable
 admission, artifact recovery, retained receipts, a disjoint idempotent sales
-ledger, and shared public/admin reporting. Provider/live qualification and
-whole-store expansion below remain release work; fixture success is not proof
-that MPP is live.
+ledger, and shared public/admin reporting. The September 17 bounded house run
+qualified this exact lane, including expired/disabled recovery and retained
+accounting, with the before-expiry replay gap recorded in
+[the dated result](MPP_LIVE_RESULT_2026-09-17.md). Checkout was disabled afterward.
+
+The readiness follow-up adds per-purchase native house corrections without
+rewriting original evidence, HTTP request outcomes by protocol in admin, and
+enabled capabilities derived across catalog/contracts/OpenAPI/guide. Existing
+x402 discovery stays intact; native canonical discovery/indexer interoperability
+is still unqualified because both draft schemas claim `x-payment-info` with
+incompatible shapes. Ongoing activation and the expansion below remain separate
+release work. Full CI remains one shared gate, not one suite per protocol.
 
 ## Whole-store expansion and release
 

@@ -1,7 +1,7 @@
 import { purchaseIntentStore, purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { settlementAssetMetadata } from "@/lib/payments";
 import { isRecord, type Env } from "@/types";
-import { mppSaleEvidence } from "@/services/mpp-sales";
+import { mppSaleEvidence, type MppHouseCorrection } from "@/services/mpp-sales";
 
 export const validPurchaseId = (id: string) => /^[a-f0-9]{64}$/.test(id);
 type LedgerState = "matched" | "missing" | "mismatch" | "unavailable" | "not_inspected";
@@ -23,6 +23,8 @@ export interface PurchaseInspection {
   transaction: string | null;
   delivery_state: "delivered" | "order_created" | "not_established_by_this_record";
   house: boolean | null;
+  effective_house?: boolean;
+  house_correction?: MppHouseCorrection;
   accounting_recorded: boolean | null;
   ledger: { state: LedgerState; month?: string; mismatched_fields?: string[];
     sale?: { purchase_id: string; month: string; payer: string; transaction: string; amount_atomic: string; house: boolean } };
@@ -33,7 +35,7 @@ export interface InspectionResult {
   body: { code: string; read_at: string; purchase?: PurchaseInspection; note: string };
 }
 
-/** Two bounded point reads. No status/recovery helper here: some resume work. */
+/** Bounded point reads. No status/recovery helper here: some resume work. */
 export async function inspectPurchase(env: Env, id: string): Promise<InspectionResult> {
   const read_at = new Date().toISOString();
   const failure = (status: InspectionResult["status"], code: string, note: string): InspectionResult => ({ status, body: { code, read_at, note } });
@@ -76,7 +78,8 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
   const month = record.created_at.slice(0, 7);
   try {
     if (!env.COUNTER_LEDGER) throw new Error("Ledger unavailable");
-    const raw = await env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${month}/mpp-sales`)).readMppSale(id);
+    const ledger = env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${month}/mpp-sales`));
+    const raw = await ledger.readMppSale(id);
     if (raw === null) {
       purchase.ledger = { state: "missing", month };
       purchase.accounting_check = purchase.accounting_recorded ? "inconsistent" : record.state === "settled" ? "missing"
@@ -93,6 +96,18 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
           transaction: String(sale.transaction), amount_atomic: String(sale.amount), house: sale.house } };
       purchase.accounting_check = mismatched_fields.length ? "inconsistent" : purchase.accounting_recorded ? "confirmed" : "acknowledgement_pending";
     }
+    const correctionRaw = await ledger.readMppHouseCorrection(id);
+    if (correctionRaw !== null) {
+      const correction: unknown = JSON.parse(correctionRaw);
+      if (!isRecord(correction) || correction.id !== id || correction.month !== month || correction.payer !== record.payer ||
+        correction.amount !== record.terms.amount || record.mpp!.house || purchase.ledger.state !== "matched" ||
+        typeof correction.reason !== "string" || !correction.reason.trim() || correction.reason.length > 500 ||
+        typeof correction.at !== "string" || !Number.isFinite(Date.parse(correction.at))) throw new Error("Invalid correction evidence");
+      // Project fields explicitly; never let extra persisted fields escape.
+      purchase.house_correction = { id, month, payer: correction.payer, amount: correction.amount,
+        at: correction.at, reason: correction.reason };
+    }
+    purchase.effective_house = record.mpp!.house || correctionRaw !== null;
   } catch {
     purchase.ledger = { state: "unavailable", month };
     purchase.accounting_check = "unavailable";
@@ -100,5 +115,5 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
       note: "The purchase was read, but its native ledger evidence could not be read or validated. No missing sale is inferred." } };
   }
   return { status: 200, body: { code: "purchase_inspected", read_at, purchase,
-    note: "Two retained records, read separately; a concurrent settlement or accounting acknowledgement can change the next reading. This is store evidence, not independent chain verification. This lookup performs no repair." } };
+    note: "Retained purchase, sale and any house correction, read separately; a concurrent settlement, correction or accounting acknowledgement can change the next reading. This is store evidence, not independent chain verification. This lookup performs no repair." } };
 }

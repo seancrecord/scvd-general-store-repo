@@ -1,11 +1,11 @@
+import { nativeCheckoutTerms } from "@/lib/purchase-capabilities";
 import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
 import type { Context, Next } from "hono";
-import type { PaymentRequirements } from "@x402/core/types";
 import { Credential, PaymentRequest } from "mppx";
 import { AuthorizationPayloadSchema } from "mppx/evm";
 import { createMppEvmAdapter } from "@/lib/mpp-evm-adapter";
 import { mppCheckoutEnabled, MPP_CHECKOUT_ITEM } from "@/lib/mpp-checkout-capability";
-import { getPaymentStack, manifestAccepts, priceTiersUsdc, atomicToUsdc, tipFromPaid,
+import { getPaymentStack, atomicToUsdc, tipFromPaid,
   SettlementUnknown, SettlementDeclined, type SettledPayment } from "@/lib/payments";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
@@ -22,15 +22,8 @@ import { openDeliveryIntent, closeDeliveryIntent } from "@/services/delivery-aud
 import { getMenuItem } from "@/store";
 import type { HonoEnv } from "@/types";
 
-function termsFor(c: Context<HonoEnv>): PaymentRequirements {
-  const item = getMenuItem(MPP_CHECKOUT_ITEM)!;
-  // The first native offer is the existing minimum entitlement, without a new price.
-  const terms = manifestAccepts(c.env, priceTiersUsdc(item)).find(row => row.network === BASE_NETWORK);
-  if (!terms) throw new Error("MPP terms unavailable");
-  return terms as PaymentRequirements;
-}
 async function adapterFor(c: Context<HonoEnv>, purchaseKey: string) {
-  const terms = termsFor(c);
+  const terms = nativeCheckoutTerms(c.env);
   const facilitator = getPaymentStack(c.env).facilitator;
   return { terms, adapter: createMppEvmAdapter({ secretKey: c.env.MPP_CHALLENGE_KEY!,
     realm: new URL(c.env.STORE_BASE_URL).host, scope: c.req.path,

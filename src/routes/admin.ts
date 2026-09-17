@@ -615,7 +615,7 @@ function stockNotice(
  */
 adminRoutes.get("/admin/take", async (c) => {
   const notes: string[] = [];
-  const [take, allTimeStats] = await Promise.allSettled([
+  const [take, allTimeStats, operations] = await Promise.allSettled([
     import("@/services/books-summary").then(({ takeSummary }) =>
       takeSummary(c.env),
     ),
@@ -624,6 +624,7 @@ adminRoutes.get("/admin/take", async (c) => {
     import("@/services/stats").then(({ computeStatsDiagnosed }) =>
       computeStatsDiagnosed(c.env),
     ),
+    import("@/lib/payment-operations").then(({ readPaymentOperations }) => readPaymentOperations(c.env)),
     /**
      * The rail split rides the certificate walk again, which is where
      * it always belonged: this page is the one paying for that walk
@@ -634,6 +635,7 @@ adminRoutes.get("/admin/take", async (c) => {
   ]);
   const books = shelf(allTimeStats, null, "all-time stats", notes);
   const body = renderTakePage({
+    operations: shelf(operations, null, "HTTP payment operations", notes),
     stats: books?.stats,
     take: shelf(take, null, "the take", notes),
     allTime: books

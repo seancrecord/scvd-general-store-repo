@@ -8,7 +8,7 @@ export const MPP_CHECKOUT_PATH = `/api/buy/${MPP_CHECKOUT_ITEM}`;
 export function mppPaymentHeader(authorization: string | undefined): string | undefined {
   return authorization && /^Payment(?:\s|$)/i.test(authorization) ? authorization : undefined;
 }
-export function mppCheckoutEnabled(env: Env, path: string, method: string): boolean {
+export function mppCheckoutEnabled(env: Pick<Env, "MPP_CHECKOUT_ENABLED" | "MPP_CHALLENGE_KEY" | "PAID_RECOVERIES" | "COUNTER_LEDGER">, path: string, method: string): boolean {
   return env.MPP_CHECKOUT_ENABLED === "true" && path === MPP_CHECKOUT_PATH && method === "GET" &&
     !!env.MPP_CHALLENGE_KEY && !!env.PAID_RECOVERIES && !!env.COUNTER_LEDGER;
 }

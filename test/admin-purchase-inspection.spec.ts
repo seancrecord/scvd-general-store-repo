@@ -9,6 +9,8 @@ import { USDC_DECIMALS } from "@/lib/payments";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { PaymentRequirements } from "@x402/core/types";
 import type { Env } from "@/types";
+import { houseWallets } from "@/lib/channel";
+import { mppSaleEvidence } from "@/services/mpp-sales";
 import { getMenuItem } from "@/store";
 
 const bindings = env as unknown as Env;
@@ -30,10 +32,9 @@ async function request(path: string, headers: Record<string, string> = auth, con
   await waitOnExecutionContext(ctx);
   return response;
 }
-async function fixture(protocol: "mpp" | "x402" = "mpp", version: 1 | 2 = 2) {
+async function fixture(protocol: "mpp" | "x402" = "mpp", version: 1 | 2 = 2, payer = `0x${"11".repeat(20)}`) {
   const terms: PaymentRequirements = { scheme: "exact", network: "eip155:8453", asset: BASE_USDC,
     amount: "1000000", payTo: `0x${"22".repeat(20)}`, maxTimeoutSeconds: 300, extra: {} };
-  const payer = `0x${"11".repeat(20)}`;
   const authorization = { from: payer, to: terms.payTo, value: terms.amount,
     nonce: `0x${crypto.randomUUID().replaceAll("-", "").repeat(2)}`, validAfter: "0", validBefore: "2000000000" };
   const payment_context = protocol === "mpp"
@@ -179,4 +180,54 @@ it("leaves purchase storage, SQL, alarms and mirrors unchanged, including an emp
   const afterSale = await snapshot(); const evidence = await ledger().readMppSale(record.id);
   await request(`/admin/purchases/${record.id}`);
   expect(await snapshot()).toEqual(afterSale); expect(await ledger().readMppSale(record.id)).toBe(evidence);
+});
+
+async function correct(id: string, headers: Record<string, string> = auth, reason = 'registered house buyer') {
+  const ctx = createExecutionContext();
+  const response = await app.fetch(new Request(`https://scvd.store/admin/purchases/${id}/house-correction`, {
+    method: "POST", headers, body: new URLSearchParams({ reason }),
+  }), bindings, ctx);
+  await waitOnExecutionContext(ctx); return response;
+}
+it("records an authenticated native house correction once and escapes its reason without changing admission evidence", async () => {
+  const payer = houseWallets(bindings).find(address => /^0x[0-9a-f]{40}$/.test(address))!;
+  const record = await fixture("mpp", 2, payer); record.mpp!.house = false; await save(record);
+  await ledger().recordMppSale(mppSaleEvidence(record));
+  const before = await purchaseIntentStore(bindings, record.id).existingPurchase();
+  expect((await correct(record.id, {})).status).toBe(401);
+  expect((await correct(record.id, { ...auth, Origin: "https://elsewhere.test" })).status).toBe(403);
+  expect(await ledger().readMppHouseCorrection(record.id)).toBeNull();
+  expect((await correct(record.id, auth, '<script>keeper reason</script>')).status).toBe(303);
+  expect((await correct(record.id, auth, "duplicate reason")).status).toBe(303);
+  expect(await purchaseIntentStore(bindings, record.id).existingPurchase()).toBe(before);
+  expect((await inspectPurchase(bindings, record.id)).body.purchase).toMatchObject({ house: false, effective_house: true,
+    house_correction: { reason: '<script>keeper reason</script>' }, accounting_check: "confirmed", ledger: { sale: { house: false } } });
+  const html = await (await request(`/admin/purchases/${record.id}`, { ...auth, Accept: "text/html" })).text();
+  expect(html).toContain('&lt;script&gt;keeper reason&lt;/script&gt;');
+  expect(html).not.toContain('<script>keeper reason');
+  expect(html).not.toContain('Record house correction');
+});
+it("refuses historical corrections for unregistered buyers or unmatched accounting", async () => {
+  const record = await fixture(); record.mpp!.house = false; await save(record);
+  expect((await correct(record.id)).status).toBe(409);
+  await ledger().recordMppSale(mppSaleEvidence(record));
+  expect((await correct(record.id)).status).toBe(409);
+  expect(await ledger().readMppHouseCorrection(record.id)).toBeNull();
+});
+it("does not confirm a mismatched correction", async () => {
+  const record = await fixture(); await sale(record);
+  await runInDurableObject(ledger(), async (_instance, state) => {
+    state.storage.sql.exec("CREATE TABLE mpp_house_corrections (id TEXT PRIMARY KEY, evidence TEXT NOT NULL)");
+    state.storage.sql.exec("INSERT INTO mpp_house_corrections VALUES (?, ?)", record.id, JSON.stringify({ id: record.id, month, payer: record.payer, amount: "2", at: now.toISOString(), reason: "bad amount" }));
+  });
+  expect((await inspectPurchase(bindings, record.id)).body.purchase?.accounting_check).toBe("unavailable");
+});
+
+it("treats malformed correction JSON as unavailable rather than silently absent", async () => {
+  const record = await fixture(); await sale(record);
+  await runInDurableObject(ledger(), async (_instance, state) => {
+    state.storage.sql.exec("CREATE TABLE mpp_house_corrections (id TEXT PRIMARY KEY, evidence TEXT NOT NULL)");
+    state.storage.sql.exec("INSERT INTO mpp_house_corrections VALUES (?, ?)", record.id, "null");
+  });
+  expect((await inspectPurchase(bindings, record.id)).body.purchase?.accounting_check).toBe("unavailable");
 });

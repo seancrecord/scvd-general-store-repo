@@ -1,3 +1,4 @@
+import { recordPaymentOperation } from "@/lib/payment-operations";
 import { mppPaymentHeader, mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
 import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
@@ -804,10 +805,12 @@ export function createPaymentGate(loadNative?: () => Promise<NativeCheckout>): M
        * most worth measuring — the one where a buyer is turned away —
        * was the single path guaranteed to leave no trace.
        */
+      recordPaymentOperation(c, "threw");
       recordGateOutcome(c, "threw");
       throw error;
     }
     const status = response?.status ?? c.res?.status;
+    if (status !== undefined) recordPaymentOperation(c, status);
     if (status === 402) {
       attachChallengeHint(c, response);
       if (loadNative && !paymentHeaderOf(c) && !mppPaymentHeader(c.req.header("Authorization")) && mppCheckoutEnabled(c.env, c.req.path, c.req.method)) {

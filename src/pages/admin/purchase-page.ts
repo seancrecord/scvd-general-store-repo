@@ -16,10 +16,14 @@ export function renderPurchasePage(result?: InspectionResult): string {
     ${result ? `<p>${escapeHtml(result.body.note)}</p><p>Read at ${escapeHtml(result.body.read_at)}. ${escapeHtml(result.body.code)}</p>` : ""}
     ${fields ? `<h3>Retained purchase</h3>
       ${fields.decimals !== null ? `<p>Quoted amount: ${escapeHtml(formatUnits(BigInt(fields.amount_atomic), fields.decimals))} ${escapeHtml(fields.currency ?? "")}</p>` : ""}
-      ${list(Object.fromEntries(Object.entries(fields).filter(([key]) => key !== "ledger")))}
+      ${list(Object.fromEntries(Object.entries(fields).filter(([key]) => key !== "ledger" && key !== "house_correction")))}
       <h3>Individual ledger evidence</h3>${list({ state: fields.ledger.state, month: fields.ledger.month ?? null,
         mismatched_fields: fields.ledger.mismatched_fields?.join(", ") || "none reported" })}
-      ${fields.ledger.sale ? list(fields.ledger.sale) : ""}` : ""}
+      ${fields.ledger.sale ? list(fields.ledger.sale) : ""}
+      ${fields.house_correction ? `<h3>House correction</h3>${list({ ...fields.house_correction })}<p>The original sale remains unchanged. Effective totals include this correction.</p>` : ""}
+      ${fields.protocol === "mpp" && fields.house === false && !fields.house_correction && fields.accounting_check === "confirmed" ?
+        `<h3>Correct house classification</h3><p>Register the buying wallet as house first. This moves this one purchase and its exact amount from organic to house; it preserves the original evidence.</p>
+        <form method="post" action="/admin/purchases/${escapeHtml(fields.purchase_id)}/house-correction"><label>Reason <input name="reason" required maxlength="500"></label><button type="submit">Record house correction</button></form>` : ""}` : ""}
     </section>`;
   return renderAdminShell("take", body);
 }

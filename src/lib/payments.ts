@@ -1,7 +1,7 @@
 import { commissionGuidance } from "@/lib/buyer-guidance";
 import type { ObservationCheckpoint } from "@/services/purchase-observation";
 import { publicationCheckout } from "@/lib/publication-checkout";
-import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, basePayTo, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
+import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, basePayTo, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo, type PaymentNetworkConfig } from "@/lib/payment-networks";
 export { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
 import { createFacilitatorConfig } from "@coinbase/x402";
 import {
@@ -473,7 +473,7 @@ export const SIGNING_WINDOW_SECONDS = 300;
  */
 export const EVM_TRANSFER_METHOD = "eip3009";
 
-export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
+export function railAccepts(env: PaymentNetworkConfig, tiersUsdc: number[]): PaymentOption[] {
   // EIP-55 on every EVM rail, Base included, so the two Workers quote
   // one spelling of the wallet however each secret was typed (see
   // evmAddress in lib/payment-networks.ts). A PAY_TO_ADDRESS that is
@@ -597,7 +597,7 @@ export function settlementAssetMetadata(network: string, asset: string): { symbo
 }
 
 export function manifestAccepts(
-  env: Env,
+  env: PaymentNetworkConfig,
   tiersUsdc: number[],
 ): ManifestAccept[] {
   return railAccepts(env, tiersUsdc).map((option) => {
