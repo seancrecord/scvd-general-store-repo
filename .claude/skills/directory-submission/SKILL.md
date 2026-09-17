@@ -179,16 +179,11 @@ from another surface must carry the same reading there, because two
 doors giving two answers about one tool is the first thing an
 annotation reviewer sees.
 
-**Known open discrepancy (2026-09-16):** `/mcp/verifier` now declares
-`readOnlyHint: false, idempotentHint: false` for its preflight and
-conformance tools, on the queue-and-counters reasoning above, while
-`/mcp` still declares `true, true` for the same handlers. Both cannot
-be right. `test/mcp-verifier.spec.ts` only compares `openWorldHint`
-across doors, so it does not catch this — widening that comparison to
-all four fields is the fix, and it will fail until the two doors are
-reconciled, which is the point (rule 46: a guard that cannot fail
-argues for the lie). Resolve this before submitting anything that
-quotes either door's annotations.
+**Resolved 2026-09-16, PR #751:** the shared handlers derive all behavioral
+annotations from `src/lib/mcp-tool-effects.ts`. Full-field parity is
+asserted in `test/review-consistency.spec.ts` and in the deployed verifier
+smoke; `test/mcp-verifier.spec.ts` also retains the earlier open-world
+regression. Re-check deployed annotations before every submission.
 
 ## 6. Write the draft into `registry/`, and let the keeper submit
 
