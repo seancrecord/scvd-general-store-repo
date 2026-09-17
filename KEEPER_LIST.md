@@ -1127,19 +1127,17 @@ what you ruled and what is still yours to look at.
   updated. Both await review. Cline needs its own installation
   test and icon; do not attest that another host's test qualifies it.
 
-- **LOOK / PRESS — GitHub MCP and AGNTCY admission (2026-09-16).**
-  [September 16 packages](research/distribution-admission-2026-09-16/README.md)
-  are drafted under ROADMAP TR-D; the hand here is to inspect any
-  existing application and submit the finished package through the verified
-  channel. Nothing submitted or sent in this planning turn. Track request
-  reference/date and `submission pending`, `submitted / external review`,
-  `access granted / publication pending`, or `externally observed` as facts
-  warrant. GitHub's current admission route and any prior request need a
-  fresh read. AGNTCY's September 15 record reports local signing/name
-  verification and shared-node `PermissionDenied`; shared participation
-  and an independent consumer round trip remain unverified. Do not resubmit
-  an unknown-status application or block core buyer work on either venue.
-  [Package and acceptance contract](docs/TAKEOFF_READINESS_2026-09.md#external-admission-alongside-the-serial-builds).
+- **Submitted / external review — GitHub MCP and AGNTCY admission (2026-09-17).**
+  The keeper-authorized [GitHub MCP onboarding request](https://github.com/github/github-mcp-server/discussions/1257#discussioncomment-18487205) and
+  [AGNTCY participation/representation request](https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204) were sent after reading
+  both complete discussions and finding no prior SCVD request. Continue those
+  threads; no duplicate submission. GitHub's registry search still returned zero
+  while the official MCP registry returned active/latest. AGNTCY publication,
+  current-byte signing and second-peer discovery remain unverified. The older
+  local signature and PermissionDenied are historical observations.
+  [Sent bodies and receipts](research/distribution-2026-09-17/RELEASE.md) preserve
+  the requested access route and taxonomy/MCP/x402 feedback. Neither request is
+  an acceptance, directory listing or verification badge.
 
 
 - **RULE: the crawler 404s are a secrets scan, not crawlers

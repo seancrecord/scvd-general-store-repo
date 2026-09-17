@@ -22,6 +22,10 @@
       "bytes": 31931,
       "sha256": "80fc92e20a8d3f7fb2bbf2d630d48a8e670a810782e980505a9b857ea1ef5653"
     },
+    "agntcy-admission-sent.json": {
+      "bytes": 155,
+      "sha256": "2e49eda930cdf7c20ef545062a136b335398345da2466acd98ae681d5bb34126"
+    },
     "anro.txt": {
       "bytes": 22,
       "sha256": "4bf7c8639bc34bbbae5aef4aba3c724f9a425cbdc0416ab6384f7745ae1acb96"
@@ -106,6 +110,14 @@
       "bytes": 1571,
       "sha256": "9f83348cffc72ae2baf10d954c0b7af00424bf4a2b91a2df6322c5771f9c18ef"
     },
+    "github-admission-sent.json": {
+      "bytes": 170,
+      "sha256": "908a7873b888ab75eadc6ebaa9583f5e36deac73579912cd8756d624eb437b5f"
+    },
+    "github-registry-at-request.json": {
+      "bytes": 78,
+      "sha256": "8cc4aeb57deaa132718f9a17cc8ccdef9b2bc57a5c8c9875e277cadb5044e75f"
+    },
     "github-repo.json": {
       "bytes": 7083,
       "sha256": "bbaf064702f64f2eacb0aa68941c06e8340c8be636015b25e95830e3d2a44ac5"
@@ -158,9 +170,17 @@
       "bytes": 85,
       "sha256": "797efa0f6cc72d625887a5ecb8fd278331f66d2ffd3abffc59c4a0c3391187b3"
     },
+    "oasf-at-request.json": {
+      "bytes": 9120,
+      "sha256": "05513bd3d689adff5e6d5d7874894e2b419f2402e2e8c0ab0447285cff159047"
+    },
     "oasf.txt": {
       "bytes": 9120,
       "sha256": "05513bd3d689adff5e6d5d7874894e2b419f2402e2e8c0ab0447285cff159047"
+    },
+    "official-mcp-at-request.json": {
+      "bytes": 723,
+      "sha256": "f84f957f1f31e66c18f0e8c905959cd56a36addfce46958fbc2a8a07a2869ac2"
     },
     "openai-zip-check.json": {
       "bytes": 507,
