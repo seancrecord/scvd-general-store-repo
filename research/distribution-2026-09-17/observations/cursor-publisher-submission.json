@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-09-17T20:12:37.480427+00:00",
+  "application_url": "https://cursor.com/marketplace/publish",
+  "publisher_name": "Record Creative Co. LLC",
+  "publisher_handle": "seancrecord",
+  "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+  "plugin_version": "0.2.4",
+  "outcome": "submitted_awaiting_review",
+  "confirmation_heading": "Thanks for applying",
+  "confirmation_text": "We've received your submission.",
+  "marketplace_admission_verified": false,
+  "disclosures": [
+    "Free MIT plugin; optional separately paid SCVD services require explicit buyer decision.",
+    "Both MCP servers loaded in Cursor CLI; free preflight negative control passed.",
+    "Bundled skills not exposed in this CLI session; desktop qualification remains outstanding."
+  ]
+}

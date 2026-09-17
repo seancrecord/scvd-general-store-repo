@@ -1413,16 +1413,18 @@ what you ruled and what is still yours to look at.
   rotation re-captures the envelope on its own; the EIP-712
   row should read pass again on that capture, and if it does
   not, the cause is new and not this one.
-- **Additional plugin publishers (researched 2026-09-17).**
-  [Prepared packet](registry/plugin-submissions.md): the keeper reports Cursor
-  already listed; the repo's recorded URL is cursor.directory. Reconcile any
-  additional official marketplace URL before another application. No duplicate
-  listing or second MCP server. Claude's portal requires sign-in in the inspected
-  browser. Claude's application is for its community marketplace,
-  not its separately curated official collection; finish TR-D's installed-scope
-  check before submitting. Kiro accepts the same portable package, with publisher
-  contact, published privacy/support links and host qualification still required.
-  No new application to these three was sent. OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
+- **Additional plugin publishers (updated 2026-09-17).**
+  [Prepared packet](registry/plugin-submissions.md): Cursor's official publisher
+  application is **submitted; review pending**, using the existing repository,
+  with a [confirmed receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json).
+  The cursor.directory community listing remains separate. Watch for Cursor's
+  review response; do not resubmit. Remaining Cursor skill discovery and desktop
+  qualification belong to TR-D. Claude's community plugin application is also **submitted for Claude Code; review
+  pending**. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
+  Cowork was not selected because it remains untested. Watch the existing
+  [submission](https://platform.claude.com/plugins/submissions); do not duplicate it.
+  Kiro still needs host qualification and publisher contact and remains unsubmitted.
+  OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
 - **skills.sh and MCPFind.** DONE 2026-09-08: the keeper supplied
   both listing URLs; live reads confirmed the named skill and server.
   Skills: https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store

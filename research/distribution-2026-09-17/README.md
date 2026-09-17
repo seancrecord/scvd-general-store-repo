@@ -230,12 +230,63 @@ commit, push, deployment or new publisher application was performed in this pass
 
 ### Follow-up: existing plugin updates and GitHub catalogs
 
-Keeper clarification: SCVD is already in Cursor marketplace. The repository's
-recorded public page is cursor.directory; any separate cursor.com URL remains
-unreconciled. No duplicate application or second server is proposed. OpenAI is an
-update to the existing verifier plugin, with new release notes for the skill.
+Keeper clarification, corrected September 17: SCVD has the plugin package and
+the cursor.directory community listing; official Cursor marketplace admission
+remains outstanding. The latest clarification supersedes the earlier claim of
+marketplace inclusion. Qualify and submit the existing skill-plus-MCP package
+through Cursor's publisher application. OpenAI is an update to the existing
+verifier plugin, with new release notes for the skill.
 
 [Additional GitHub catalog findings](GITHUB_CATALOGS.md) include the submitted
 [Awesome ERC-8004 issue #111](https://github.com/sudeepb02/awesome-erc8004/issues/111),
 awaiting review. This is a third GitHub issue in the overall distribution pass;
 it is not yet an external listing. Other candidate catalogs remain unsubmitted.
+
+
+### Cursor publisher application — September 17 follow-up
+
+The official [Cursor publisher application](https://cursor.com/marketplace/publish)
+was submitted for the existing repository, with the SCVD logo, website, privacy
+and support links. The page confirmed **Thanks for applying** and receipt.
+[Application record](observations/cursor-publisher-submission.json).
+This supersedes the earlier unsubmitted status above; marketplace admission is
+still pending and the cursor.directory community listing remains separate.
+
+[Cursor CLI qualification](observations/cursor-host-qualification.json) is partial:
+both MCP servers loaded, and one free preflight of `https://example.com` returned
+the expected `not_ready` / L1 / HTTP 200 negative control. The two bundled skills
+were not visible to the model. Native desktop automation timed out. The application
+disclosed these limitations and optional paid services. Skill discovery and desktop
+qualification remain on ROADMAP TR-D; review follow-up is on KEEPER_LIST. No
+marketplace acceptance was added to the public trust signals.
+
+
+### Claude qualification reconciliation
+
+The later Claude Code 2.1.274 test supersedes the first attempt's incomplete
+plugin MCP qualification. Both skills loaded and the plugin-scoped free preflight
+completed against `https://example.com/`; the expected negative control returned
+`not_ready`, L1, HTTP 200. [Sanitized follow-up](observations/claude-host-qualified-followup.json).
+The account connector was separated by a session-only setting. The original
+failure remains retained. No marketplace installation, Cowork runtime or paid
+operation is claimed. Console submission still requires sign-in.
+
+
+### Cursor normal Agent-mode follow-up
+
+[Three bounded discovery checks](observations/cursor-agent-mode-recheck.json)
+found neither skill in the model-visible catalog: the unchanged package loaded
+with `--plugin-dir`, the documented local-plugin directory, and a portable-only
+copy without other host wrappers. The earlier Ask-mode result therefore is not
+explained by mode alone. The cause remains unisolated; native desktop discovery
+is still outstanding. No package change or duplicate application was made.
+
+
+### Claude community application submitted
+
+After the keeper signed in and explicitly authorized contact sharing and the
+Software Directory Terms, the existing package was submitted for **Claude Code**.
+Cowork was left unselected because it remains untested. Anthropic confirmed
+**Plugin submitted for review** and receipt of the submission.
+[Sanitized application record](observations/claude-publisher-submission.json).
+Review is pending; no accepted listing is added to public trust signals.

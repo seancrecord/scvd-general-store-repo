@@ -1951,3 +1951,26 @@ reproduction are recorded in
 - [Distribution map](../DISTRIBUTION.md) now identifies the sources of truth;
   [plugin packet](../registry/plugin-submissions.md) contains fields and unrun gates.
   [Receipts](../research/distribution-2026-09-17/README.md) retain actual outcomes.
+
+
+### 2026-09-17 — Cursor application and Claude next submission
+
+Re-read [Cursor plugin reference](https://cursor.com/docs/reference/plugins) and
+[Claude community submission instructions](https://code.claude.com/docs/en/plugins#submit-your-plugin-to-the-community-marketplace).
+Cursor accepts the existing root Agent Plugins format; its publisher application
+confirmed receipt, with review pending. The bounded CLI Ask-mode check loaded MCP
+but did not expose skills; normal Agent-mode discovery is being checked separately.
+Claude's documented third-party route remains the community marketplace. The
+Console form rendered a sign-in page, so no new Claude application is claimed.
+A successful earlier plugin-scoped Claude CLI check is now retained in the
+[follow-up receipt](../research/distribution-2026-09-17/observations/claude-host-qualified-followup.json),
+without replacing the first failed attempt. Native Cursor desktop, marketplace
+installation and Cowork compatibility remain unmeasured.
+
+
+Claude's authenticated submission form was completed later the same day. It
+separates the plugin directory from the MCP Connectors Directory and asks for
+host testing before selecting supported platforms. Only tested Claude Code was
+selected; the keeper explicitly authorized the contact address and linked
+[Software Directory Terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms).
+The form confirmed receipt; acceptance remains unverified.
