@@ -1104,7 +1104,9 @@ what you ruled and what is still yours to look at.
   was filed after fresh reproduction. No duplicate requests needed. Other operator
   messages and the AGNTCY discussion follow-up are in the same package. After ROADMAP TR-D's Gemini
   context correction is released, replace the repository topic `agentic-ai`
-  with `gemini-cli-extension` and verify the gallery crawl and fresh install.
+  with `gemini-cli-extension` and verify the gallery crawl. A fresh isolated Gemini CLI 0.60.0 install from
+  the immutable release PR commit discovered both skills and connected SCVD MCP;
+  a model tool call and gallery listing remain unverified.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
   A2A Directory already lists SCVD; two new community API submissions failed
@@ -1119,7 +1121,9 @@ what you ruled and what is still yours to look at.
   that issue. [Other catalog findings and prepared entries](research/distribution-2026-09-17/GITHUB_CATALOGS.md)
   cover WebMCP, agentic commerce, x402 and Cline. WebMCP already has open
   [PR #41](https://github.com/webmachinelearning/awesome-webmcp/pull/41); continue
-  it with the current browser-tool scope, not another submission. Cline needs its own installation
+  it with the current browser-tool scope, not another submission. Merit [PR #715](https://github.com/Merit-Systems/awesome-agentic-commerce/pull/715)
+  submitted; existing x402 [PR #1024](https://github.com/xpaysh/awesome-x402/pull/1024)
+  updated. Both await review. Cline needs its own installation
   test and icon; do not attest that another host's test qualifies it.
 
 - **LOOK / PRESS — GitHub MCP and AGNTCY admission (2026-09-16).**

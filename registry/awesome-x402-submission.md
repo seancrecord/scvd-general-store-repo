@@ -1,4 +1,6 @@
-# awesome-x402 submission (keeper reviews, keeper submits)
+# awesome-x402 submission record
+
+**September 17 correction:** the upstream submission already exists as [xpaysh PR #1024](https://github.com/xpaysh/awesome-x402/pull/1024), opened July 27 and still pending. Its entry was updated to current evidence tools. [Merit PR #715](https://github.com/Merit-Systems/awesome-agentic-commerce/pull/715) was submitted September 17. Continue those requests; the older draft and wrong-fork account below are historical.
 
 Prepared 2026-07-22. Re-cut 2026-07-27 for the resubmission: the
 2026-07-22 PR went to brooks091/awesome-x402, a dead fork (0 stars,

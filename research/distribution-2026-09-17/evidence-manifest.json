@@ -26,6 +26,10 @@
       "bytes": 22,
       "sha256": "4bf7c8639bc34bbbae5aef4aba3c724f9a425cbdc0416ab6384f7745ae1acb96"
     },
+    "catalog-followthrough.json": {
+      "bytes": 611,
+      "sha256": "7b29387313c9264155e7bb6a2a6463962994d256f698576e90dc0cc2b894f33e"
+    },
     "chain.json": {
       "bytes": 295,
       "sha256": "c2754095bc2306b860ac7d6ea0ead64f526cd568d558b85f2d25901c097cdd44"
@@ -81,6 +85,22 @@
     "gemini-before.json": {
       "bytes": 302,
       "sha256": "51677cbc43c9fa1f4828b82d6061ec3e6b35ccb542786c83478b0623338e1f6d"
+    },
+    "gemini-extension-list.log": {
+      "bytes": 987,
+      "sha256": "7405e047f48f32eb79b7fd4b583609c03b71857a9f744c40ea5c842c14b62287"
+    },
+    "gemini-host-qualification.json": {
+      "bytes": 793,
+      "sha256": "3d06d3da49552bfa6aae2ac8187c7954cbea9586fe1bcfb2068df0281e8e797b"
+    },
+    "gemini-mcp-list.log": {
+      "bytes": 109,
+      "sha256": "290b57ee1c29a35b08bc0c0e375966f9d0bbd3e9a7cae511b34c4a8783de58a8"
+    },
+    "gemini-skills-list.log": {
+      "bytes": 1571,
+      "sha256": "9f83348cffc72ae2baf10d954c0b7af00424bf4a2b91a2df6322c5771f9c18ef"
     },
     "github-repo.json": {
       "bytes": 7083,

@@ -1,0 +1,17 @@
+{
+  "date_utc": "2026-09-17",
+  "webmcp": {
+    "existing_pr": "https://github.com/webmachinelearning/awesome-webmcp/pull/41",
+    "scope_update": "https://github.com/webmachinelearning/awesome-webmcp/pull/41#issuecomment-5719818436",
+    "state": "open; not listed"
+  },
+  "agentic_commerce": {
+    "submitted_pr": "https://github.com/Merit-Systems/awesome-agentic-commerce/pull/715",
+    "state": "open; not listed"
+  },
+  "x402": {
+    "existing_pr": "https://github.com/xpaysh/awesome-x402/pull/1024",
+    "entry_update_commit": "68b8265",
+    "state": "open; existing submission updated; not listed"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "date_utc": "2026-09-17",
+  "host": "Gemini CLI",
+  "host_version": "0.60.0",
+  "source": "https://github.com/seancrecord/scvd-general-store-repo",
+  "commit": "2aba2639c0dc5e6954f6ce0180f6288f43af2702",
+  "plugin_version": "0.2.4",
+  "profile": "isolated temporary GEMINI_CLI_HOME",
+  "install": "passed using full immutable commit",
+  "prior_attempt": "abbreviated SHA was rejected by remote fetch; no install resulted",
+  "skills": [
+    "scvd-general-store",
+    "scvd-x402-verification"
+  ],
+  "mcp": {
+    "name": "scvd-store",
+    "url": "https://scvd.store/mcp",
+    "transport": "http",
+    "status": "Connected"
+  },
+  "limitations": [
+    "No model task or tools/call performed.",
+    "No gallery listing yet verified.",
+    "No changes to existing user Gemini settings."
+  ]
+}

@@ -122,8 +122,11 @@ adding it to SCVD's trust records.
   against its smaller tool set without adapting it.
 - **Awesome Copilot:** [#3255](https://github.com/github/awesome-copilot/issues/3255)
   has passed automated intake; maintainer review pending. No duplicate submission.
-- **Gemini:** reuse `gemini-extension.json` and `skills/`; release the prepared
-  removal of contributor AGENTS.md context before gallery qualification.
+- **Gemini:** CLI 0.60.0 installed public commit `2aba2639c0dc5e6954f6ce0180f6288f43af2702`
+  in isolated temporary storage, discovered both skills and connected SCVD MCP.
+  [Receipt](../research/distribution-2026-09-17/observations/gemini-host-qualification.json).
+  No model tool call or gallery admission was tested. Release the correction
+  on main, add the gallery topic, and verify the crawl.
 
 ## What to record after each host test
 
