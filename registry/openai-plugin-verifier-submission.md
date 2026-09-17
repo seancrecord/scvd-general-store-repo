@@ -1,8 +1,21 @@
 # OpenAI submission — SCVD x402 Verifier
 
-Draft revised 2026-09-17 using the OpenAI Developers 1.3.0
-`chatgpt-app-submission` skill. Review before uploading. No portal
-submission or deployment is performed by this file.
+**Published September 17, 2026:** [SCVD x402 Verifier](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212).
+The keeper reports the skill update completed September 17, 2026. The upload/update
+press is closed. Approval and publication of the updated version have not been
+independently verified. Earlier no-upload notes describe the preceding audit.
+
+
+Submission copy revised using the OpenAI Developers 1.3.0
+`chatgpt-app-submission` skill. Retain the tested fields for subsequent updates.
+
+## Skill update in the existing plugin
+
+Use the existing plugin's edit/update flow and submit its next version. The skill
+addition needs updated release notes, review and publication; it does not require
+a duplicate plugin listing. [Suggested release notes](../research/distribution-2026-09-17/OPENAI_SKILL_RELEASE_NOTES.txt)
+describe just this change. Adjust them if other behavior changed in the draft.
+[Official submission guidance](https://developers.openai.com/plugins/deploy/submission).
 
 ## Connection and app info
 

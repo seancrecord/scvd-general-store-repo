@@ -22,6 +22,9 @@ joins or leaves.
 | [402.ad](https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api) | — |
 | [54ch10 Brief API](https://54ch10.uk/wire.md) | — |
 | [767-2676.com - POPCORN](https://767-2676.com/agents) | violet@briarwood.ai |
+| [8004agents](https://8004agents.ai/base/agent/86957) | — |
+| [8004scan](https://8004scan.io/agents/base/86957) | https://github.com/alt-research/8004scan-issue-tracker |
+| [A2A Directory](https://github.com/sing1ee/a2a-directory#readme) | — |
 | [ACE — Autonomous Commerce Engine by Black Knight Technologies](https://blackknightstech.com) | — |
 | [AEGIS](https://api.mcx-ventures.com/ui) | — |
 | [Aegis](https://borisinc.com) | — |
@@ -34,6 +37,7 @@ joins or leaves.
 | [AgentAge Catalog](https://catalog.agentage.io/mcp/store-scvd-general-store) | support@agentage.io |
 | [AgentBiz](https://agentbiz.mysterio.cloud) | — |
 | [agentic.market](https://agentic.market/services/scvd-store) | https://agentic.market/about |
+| [Agentscan](https://agentscan.info/agents/0711e5ab-eca5-42cc-a7ca-38b433689d56) | — |
 | [AI Tools Capital](https://aitoolscapital.com/tools/scvd-general-store/) | — |
 | [Audit Tools](https://audit-tools.ai) | — |
 | [Bounty Truth API](https://happybirthday.digitalshop.xin/bounty-truth/guide.md) | — |
@@ -113,6 +117,7 @@ joins or leaves.
 | [toll402](https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c) | https://toll402.com/contact |
 | [Tracevero](https://tracevero.com/mcp/store-scvd-general-store) | — |
 | [TradersZone Agents](https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage) | — |
+| [trust8004](https://trust8004.xyz/agents/8453%3A86957) | — |
 | [TrustFetch](https://trustfetch.duckdns.org) | — |
 | [verifymcp.io](https://verifymcp.io/servers/store-scvd-general-store/scvd) | hello@verifymcp.io |
 | [verza](https://verza.dev) | — |

@@ -1,0 +1,35 @@
+TAP version 13
+# Subtest: the Claude Code plugin manifest repeats plugin.json and points at the store's MCP door
+ok 1 - the Claude Code plugin manifest repeats plugin.json and points at the store's MCP door
+  ---
+  duration_ms: 0.618375
+  ...
+# Subtest: the marketplace lists exactly the plugin at the repository root
+ok 2 - the marketplace lists exactly the plugin at the repository root
+  ---
+  duration_ms: 0.515833
+  ...
+# Subtest: Claude's combined plugin MCP sources expose only the store, not contributor browser tools
+ok 3 - Claude's combined plugin MCP sources expose only the store, not contributor browser tools
+  ---
+  duration_ms: 0.206834
+  ...
+# Subtest: the Gemini extension carries the same identity and MCP door without loading contributor instructions
+ok 4 - the Gemini extension carries the same identity and MCP door without loading contributor instructions
+  ---
+  duration_ms: 0.342042
+  ...
+# Subtest: CITATION.cff cites the corpus's concept DOI and this repository, and nothing it does not have
+ok 5 - CITATION.cff cites the corpus's concept DOI and this repository, and nothing it does not have
+  ---
+  duration_ms: 0.261917
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 51.824958

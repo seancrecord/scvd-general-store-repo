@@ -4,6 +4,9 @@ import {
   POSITION_PARAGRAPH,
 } from "@/store/copy/position";
 import { STANDARDS_POSTURE } from "@/store/standards";
+import { DISCOVERY_PROTOCOLS, type DiscoveryProtocol } from "@/store/discovery-protocols";
+import { IDENTITY_VIEWERS } from "@/store/chain-identity";
+import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
 /**
  * THE TRUST LAYER, FOR MACHINE EYES ONLY.
  *
@@ -48,6 +51,8 @@ import { STANDARDS_POSTURE } from "@/store/standards";
  */
 
 export interface ExternalRecord {
+  /** What this particular record indexes, not a claim of conformance. */
+  protocols?: readonly DiscoveryProtocol[];
   /** Where the record lives. Must be a real, checked URL. */
   url: string;
   /** Who keeps it. */
@@ -73,10 +78,45 @@ export interface ExternalRecord {
  * an empty list by a wide margin: the whole point of the field is that
  * a reader can follow it, and a dead link in the one document
  * claiming legitimacy is the strongest possible argument against it.
- * The store's own environment cannot reach external hosts, so every
- * entry here is one the keeper confirmed by hand.
+ * Each entry names a dated keeper or agent observation; transport limits
+ * and partial reads stay explicit in its account.
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
+  {
+    url: "https://github.com/sing1ee/a2a-directory#readme",
+    registry: "A2A Directory — community source catalog",
+    protocols: ["a2a", "x402"],
+    confirmed: "2026-09-17",
+    what_it_proves: "That the community-maintained A2A Directory lists SCVD's evidence agent, its Agent Card and separate x402 instruments. Its source README includes SCVD in the tools, A2A agents and x402 service sections. This establishes a source-catalog listing, not inclusion in every downstream website or protocol certification. Not an endorsement and not an audit of purchases.",
+  },
+  {
+    url: `https://8004scan.io/agents/base/${SCVD_AGENT_ID}`,
+    registry: "8004scan — ERC-8004 agent index",
+    protocols: ["erc8004"],
+    confirmed: "2026-09-17",
+    what_it_proves: "That 8004scan indexes this Base identity and displays its MCP, A2A and OASF services. On the confirmation date its cached MCP health showed HTTP 405 while a fresh protocol initialization succeeded; the two observations have different times and scopes. Not an endorsement and not an audit of purchases; its health reading remains its own.",
+  },
+  {
+    url: "https://agentscan.info/agents/0711e5ab-eca5-42cc-a7ca-38b433689d56",
+    registry: "Agentscan — ERC-8004 agent index",
+    protocols: ["erc8004"],
+    confirmed: "2026-09-17",
+    what_it_proves: "That Agentscan indexes the store's Base identity and displays its current registration fields. On the confirmation date its separate AI taxonomy said Image Generation and Banking while its OASF service block showed the canonical payment, blockchain, fact-verification and API-schema taxonomy. Not an endorsement and not an audit; the conflicting classifications need reconciliation.",
+  },
+  {
+    url: `https://8004agents.ai/base/agent/${SCVD_AGENT_ID}`,
+    registry: "8004agents — ERC-8004 agent index",
+    protocols: ["erc8004"],
+    confirmed: "2026-09-17",
+    what_it_proves: "That 8004agents returns SCVD under its Base identity, with its name and owner in the search result. The observation establishes indexing, not a complete protocol check or a successful purchase. Not an endorsement and not an audit.",
+  },
+  {
+    url: `https://trust8004.xyz/agents/${SCVD_AGENT_REGISTRY.split(":")[1]}%3A${SCVD_AGENT_ID}`,
+    registry: "trust8004 — ERC-8004 agent index",
+    protocols: ["erc8004"],
+    confirmed: "2026-09-17",
+    what_it_proves: "That trust8004 indexes this identity. On the confirmation date its x402 flag and MCP/A2A skill labels differed from the canonical source: x402 was shown unsupported and OASF taxonomy labels appeared as protocol tools/skills. Refresh and parsing need reconciliation. Not an endorsement and not an audit; listing presence does not establish metadata accuracy.",
+  },
   /**
    * FOUR FROM THE KEEPER'S HAND (2026-09-10). The URLs came in from
    * the keeper's browser; every one of these hosts refuses this
@@ -108,13 +148,16 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://robinsaige.com/s/store.scvd/general-store",
     registry: "robinsaige.com — MCP server observatory",
+    protocols: ["mcp"],
     confirmed: "2026-09-17",
+
     what_it_proves:
       "That robinsaige.com keeps a verification record for this server under the official registry name, store.scvd/general-store, built from its own weekly probes of the live MCP door (initialize and tools/list, no tool ever fired), with a verdict, a because-clause, a signed receipt and a public dispute route on the page. Not an endorsement and not an audit by this store: an observatory's page proves the door was found and answered its handshake, its verdict is its instrument under its published method, and nothing on it establishes a purchase or a delivery.",
   },
   {
     url: "https://crosspeel.com/endpoints/scvd-store/",
     registry: "Crosspeel (crosspeel.com) — endpoint observer",
+    protocols: ["x402"],
     confirmed: "2026-09-10",
     what_it_proves:
       "That Crosspeel keeps a per-provider page for this store's x402 endpoints under the slug scvd-store — observations, price history and every stored response, in its own words, with named goods among them. Not an endorsement and not an audit: an observer's page proves the doors were found and knocked on, nothing about the goods behind them or whether a purchase ever settled.",
@@ -136,6 +179,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agenstry.com/agents/scvd.store",
     registry: "Agenstry — agent directory",
+    protocols: ["a2a"],
     confirmed: "2026-09-08",
     what_it_proves:
       "That Agenstry indexes the store's agent card and publishes its own observations and card history. Not an endorsement and not an audit by this store: Agenstry's grades and probe conclusions remain its own, and a listing does not establish successful purchases or delivery.",
@@ -143,6 +187,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agenstry.com/mcp/store.scvd/general-store",
     registry: "Agenstry — MCP directory",
+    protocols: ["mcp"],
     confirmed: "2026-09-08",
     what_it_proves:
       "That Agenstry lists SCVD General Store's MCP server, names https://scvd.store/mcp as its primary URL and publishes tool and resource metadata. Not an endorsement and not an audit: the listing establishes that the server was indexed, not that the mirrored catalog is complete or current or that a purchase succeeded.",
@@ -150,6 +195,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcpfind.org/servers/store-scvd-general-store",
     registry: "MCPFind",
+    protocols: ["mcp"],
     confirmed: "2026-09-08",
     what_it_proves:
       "That MCPFind lists SCVD General Store with its repository and describes its x402 preflight, receipt checks and settlement attestations. Not an endorsement and not an audit: the directory page establishes that the server was indexed, not that a purchase or delivery succeeded.",
@@ -157,6 +203,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA",
     registry: "Licium",
+    protocols: ["mcp"],
     confirmed: "2026-09-06",
     what_it_proves:
       "That Licium lists the store's MCP endpoint and publishes its endpoint history. Not an endorsement and not an audit of purchases: a directory record does not prove successful payment or delivery.",
@@ -226,6 +273,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
     registry: "agent-almanac (pjt222), a curated skills repository on GitHub",
+    protocols: ["skills", "x402"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That a curated third-party skills repository carries, by its maintainer's merge, a skill that instructs agents to test an x402 payment client against this store's cheapest door ($0.001 on 2026-09-03, the day this was recorded; the menu is the live price) and to check offers and receipts at the free conformance desk. The skill was written from this side (author cv-scvd) and accepted by theirs, so it proves a maintainer read it and kept it. Not an endorsement and not an audit: nobody independent vouches for the store by it. The prices and endpoints it names were checked against the menu on the day it was recorded.",
@@ -241,6 +289,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://mcppedia.org/s/store-scvd-general-store",
     registry: "MCPpedia",
+    protocols: ["mcp"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That an independent index discovered this store from the official MCP registry and scores it daily by a published algorithm over public data: known CVEs, tool-metadata poisoning patterns, maintenance signals, README structure and transports. Not an endorsement and not an audit: the score is a static read of metadata, says so on its own methodology page, and moves with the inputs. It proves the metadata was read by something that cannot be talked to.",
@@ -248,6 +297,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://www.getmcp.es/servers/general-store",
     registry: "getmcp.es",
+    protocols: ["mcp"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -255,6 +305,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://lightnow.ai/servers/store.scvd/general-store/versions",
     registry: "lightnow.ai",
+    protocols: ["mcp"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -262,6 +313,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcplookup.com/server/store.scvd/general-store",
     registry: "MCP Lookup",
+    protocols: ["mcp"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -269,6 +321,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
     registry: "Ronin Forge, State of MCP",
+    protocols: ["mcp"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -276,6 +329,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://socketcat.com/servers/store.scvd/general-store",
     registry: "socketcat",
+    protocols: ["mcp"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -283,6 +337,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://tracevero.com/mcp/store-scvd-general-store",
     registry: "Tracevero",
+    protocols: ["mcp"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -290,6 +345,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://signal402.com/services/scvd-store",
     registry: "signal402",
+    protocols: ["x402"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -297,6 +353,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
     registry: "402.ad",
+    protocols: ["x402"],
     confirmed: "2026-09-10",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03 and again 2026-09-10). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -304,6 +361,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
     registry: "Decipher Ranker",
+    protocols: ["x402"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
@@ -322,6 +380,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
     registry: "toll402",
+    protocols: ["x402"],
     confirmed: "2026-09-03",
     what_it_proves:
       "That an independent prober fetched the store's tiered doors on 2026-08-24 and recorded what a stock Node client saw: a 402 whose headers overflowed Node's 16KB limit. Not an endorsement and not an audit; a dated observation of a defect this store has since fixed and holds under test, and the row stands as they wrote it until they probe again.",
@@ -329,6 +388,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agentpluginsdirectory.com/plugins/scvd-general-store",
     registry: "Agent Plugins Directory",
+    protocols: ["skills", "mcp"],
     confirmed: "2026-09-08",
     what_it_proves:
       "That Agent Plugins Directory indexes the repository's plugin bundle, names Record Creative Co. LLC as author, lists its skill and MCP servers, and publishes its own manifest-schema verification date. Not an endorsement and not an audit of runtime behavior: a manifest check does not prove client marketplace acceptance, installation support, purchases or delivery.",
@@ -336,6 +396,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
     registry: "x402scan",
+    protocols: ["x402"],
     confirmed: "2026-07-27",
     /**
      * THE STRONGEST ENTRY ON THIS LIST AND THE ONLY ONE THAT IS MORE
@@ -353,6 +414,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agentic.market/services/scvd-store",
     registry: "The x402 Bazaar (Coinbase CDP), via agentic.market",
+    protocols: ["x402"],
     confirmed: "2026-07-27",
     what_it_proves:
       "That fourteen of this store's endpoints are registered to its wallet in the CDP discovery list, which is the authoritative index for x402 services rather than a browsable mirror. Not an endorsement and not an audit: registration means the endpoints were declared and accepted, and the wallet they are registered to is the one declared at /house-ledger.json.",
@@ -360,6 +422,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcpservers.org/servers/seancrecord/scvd-general-store-repo",
     registry: "mcpservers.org",
+    protocols: ["mcp"],
     confirmed: "2026-07-29",
     what_it_proves:
       "That the MCP server is listed and claimed by its operator, categorised under Finance. Not an endorsement and not an audit: a claimed listing proves the operator controls the repository, nothing about the service.",
@@ -367,6 +430,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo",
     registry: "Glama MCP server index",
+    protocols: ["mcp"],
     confirmed: "2026-07-31",
     what_it_proves:
       "That this store's MCP server was auto-indexed by a third-party directory that crawled it without being asked. Unclaimed, and it mirrors the repository README. Not an endorsement and not an audit: an index entry means somebody's crawler found us and filed us.",
@@ -374,6 +438,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
     registry: "x402-list.com",
+    protocols: ["x402"],
     confirmed: "2026-08-02",
     /**
      * A per-service page that RUNS CHECKS rather than just listing —
@@ -390,6 +455,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://glama.ai/mcp/connectors/store.scvd/general-store",
     registry: "Glama MCP connectors",
+    protocols: ["mcp"],
     confirmed: "2026-08-04",
     what_it_proves:
       "That Glama also carries this store as a connector page, distinct from its earlier auto-crawled server index entry. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service.",
@@ -397,6 +463,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcpindex.ai/server/store-scvd-general-store",
     registry: "mcpindex.ai",
+    protocols: ["mcp"],
     confirmed: "2026-08-04",
     what_it_proves:
       "That mcpindex.ai lists the MCP server with its own live verdict page. Not an endorsement and not an audit: their verdict is their instrument, read on their page — this record only proves the listing exists.",
@@ -433,6 +500,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agent-tools.cloud/services/scvd-store-bazaar",
     registry: "agent-tools.cloud (x402 services)",
+    protocols: ["x402"],
     confirmed: "2026-09-15",
     what_it_proves:
       "That agent-tools.cloud carries this origin among the x402 services it indexes, and that the operator proved control of the domain to them. Not an endorsement and not an audit: the page's description is the store's own words, and its quality grade is their measurement on their schedule — read it there rather than here.",
@@ -440,6 +508,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agent-tools.cloud/a2a/agents/scvd-evidence-agent",
     registry: "agent-tools.cloud (A2A agents)",
+    protocols: ["a2a"],
     confirmed: "2026-09-15",
     what_it_proves:
       "That the same directory carries the SCVD Evidence Agent in its A2A population, resolved from the agent card at /.well-known/agent-card.json. Not an endorsement and not an audit: it proves the card was fetched and parsed, nothing about what the agent does when asked.",
@@ -447,6 +516,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store",
     registry: "agent-tools.cloud (MCP servers)",
+    protocols: ["mcp"],
     confirmed: "2026-09-15",
     what_it_proves:
       "That the same directory carries this store's MCP server, listed against the endpoint at /mcp. Not an endorsement and not an audit: it proves the server was reachable and its card read, nothing about the tools behind it.",
@@ -454,6 +524,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://x402.fuchss.app/provider/scvd.store",
     registry: "x402.fuchss.app (provider index)",
+    protocols: ["x402"],
     confirmed: "2026-09-01",
     what_it_proves:
       "That an independent x402 provider index carries this origin as a provider — keyed on the domain rather than on a submitted listing. Not an endorsement and not an audit: an index proves the door was found, nothing about what comes through it.",
@@ -470,6 +541,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
     registry: "AgentIndex (agents.traderszone.net)",
+    protocols: ["x402"],
     confirmed: "2026-09-01",
     what_it_proves:
       "That AgentIndex carries this store's doors as resources it found on its own — this row is the certificate_of_patronage door as their crawl of the agentic.market listing saw it; the host page at agents.traderszone.net/explore?host=scvd.store lists the rest. Not an endorsement and not an audit: an index proves the door was found, and this one also proves how long a found listing can lag the shelf.",
@@ -501,6 +573,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
     registry: "skills.sh (open Agent Skills directory)",
+    protocols: ["skills"],
     confirmed: "2026-09-08",
     what_it_proves:
       "That the open Agent Skills directory publishes this repository's scvd-general-store skill, its SKILL.md excerpt and an installation command. Not an endorsement and not an audit: a skill index proves the skill was found under this repository, nothing about the store the skill walks into.",
@@ -584,6 +657,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://probe402.com/grade?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fsmall_blessing",
     registry: "probe402 — dated probe record",
+    protocols: ["x402"],
     confirmed: "2026-09-02",
     what_it_proves:
       "That an independent x402 prober reads the small_blessing door and publishes a dated record of what it saw — status, price, payTo, and how many observations stand behind the page. Not an endorsement and not an audit: it is their observation on their page, re-taken on their schedule, and it never buys anything, so it cannot speak to what comes through the door once money moves.",
@@ -606,6 +680,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
     registry: "Circle — Sell to Agents readiness score",
+    protocols: ["x402"],
     confirmed: "2026-09-01",
     what_it_proves:
       "That Circle's readiness scanner reaches this origin, fetches its OpenAPI contract and its live 402, and scores how legible the paid interface is to a buying agent. Scored per endpoint with no summary page, so one door stands for the set — every paid door here is described by the same contract and answers the same challenge, which is the fact the reading actually turns on. An instrument reading, not a listing and not an audit: it measures the shape of the door — payment terms declared, inputs described, guidance present — and never buys anything, so it says nothing about the goods behind it.",
@@ -627,6 +702,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://webmcpdirectory.com/tool/scvd-store",
     registry: "WebMCP Directory (webmcpdirectory.com)",
+    protocols: ["webmcp"],
     confirmed: "2026-09-06",
     what_it_proves:
       "That a directory of WebMCP-enabled sites carries a page for this store's browser surface. Not an endorsement and not an audit: it proves the origin declares tools an in-browser agent can find, and says nothing about whether those tools return anything worth having.",
@@ -634,6 +710,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://webmcp.ora.ai/scvd.store",
     registry: "Ora — WebMCP directory (webmcp.ora.ai)",
+    protocols: ["webmcp"],
     confirmed: "2026-09-06",
     what_it_proves:
       "That Ora's WebMCP directory carries this origin. Not an endorsement and not an audit: a directory page proves indexing. Their rows say HOW each site's support is known — a registry claim, tools observed live, or a full audit with its score — which is the same claim-versus-observation line this store draws in its own readings; what tier they give us is theirs to change and is deliberately not restated here.",
@@ -685,6 +762,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://www.getdrio.com/mcp/store-scvd-general-store",
     registry: "Drio (getdrio.com)",
+    protocols: ["mcp"],
     confirmed: "2026-09-01",
     what_it_proves:
       "That Drio's MCP index carries the server under its canonical name. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
@@ -692,6 +770,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
     registry: "ZBS Index (index.zbs.gg)",
+    protocols: ["mcp"],
     confirmed: "2026-09-01",
     what_it_proves:
       "That the ZBS MCP index carries the server, under the same canonical name every other registry resolved it to. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
@@ -709,6 +788,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://verifymcp.io/servers/store-scvd-general-store/scvd",
     registry: "VerifyMCP (verifymcp.io)",
+    protocols: ["mcp"],
     confirmed: "2026-09-10",
     what_it_proves:
       "That VerifyMCP connected to the live door, read its tools and scored what it found — endpoint security, schema quality, tool safety, spec recency — with the derivation of each row on the page. Not an endorsement and not an audit: an instrument reading on the shape of the door, taken by their probe on their schedule, which says nothing about the goods behind it. Their handshake name is verifymcp-probe.",
@@ -716,6 +796,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://verifymcp.io/servers/store-scvd-tab/scvd-tab",
     registry: "VerifyMCP (verifymcp.io) — the tab",
+    protocols: ["mcp"],
     confirmed: "2026-09-02",
     what_it_proves:
       "That VerifyMCP carries the second server this repo publishes, scvd-tab, and scored it from the npm package and the repository — the first third-party number on the tab at all. Not an endorsement and not an audit: their instrument, their rows, read on their page.",
@@ -740,6 +821,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212",
     registry: "ChatGPT Plugin Directory (chatgpt.com) — the verifier door",
+    protocols: ["skills", "mcp"],
     confirmed: "2026-09-17",
     what_it_proves:
       "That OpenAI reviewed the free verifier door at /mcp/verifier against its own submission guidelines and admitted it to the plugin directory, on the second attempt. Not an endorsement and not an audit: a directory review checks a listing's claims, its test cases and its tool annotations, and says nothing about whether the goods on this store's other doors are worth buying. It covers the five read-only tools on that door only.",
@@ -747,6 +829,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcpbeat.com/mcp-servers/scvd/general-store/",
     registry: "mcpbeat (mcpbeat.com)",
+    protocols: ["mcp"],
     confirmed: "2026-09-02",
     what_it_proves:
       "That mcpbeat lists the server, pings the door on a fifteen-minute loop, and shows the tool list it read there. Not an endorsement and not an audit: a liveness directory proves the door answered its last knock, nothing about the goods. Its handshake name is mcpbeat.",
@@ -754,6 +837,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcpbeat.com/mcp-servers/scvd/tab/",
     registry: "mcpbeat (mcpbeat.com) — the tab",
+    protocols: ["mcp"],
     confirmed: "2026-09-02",
     what_it_proves:
       "That mcpbeat carries scvd-tab too, from the same registry ingest. Not an endorsement and not an audit: a directory page proves indexing, nothing more.",
@@ -761,6 +845,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://catalog.agentage.io/mcp/store-scvd-general-store",
     registry: "agentage MCP Catalog (catalog.agentage.io)",
+    protocols: ["mcp"],
     confirmed: "2026-09-02",
     what_it_proves:
       "That the agentage catalog, synced from the official MCP registry, carries the server under its registry name. Their page says plainly that it holds only what the registry entry says; a directory page proves indexing, nothing about the goods. Not an endorsement and not an audit.",
@@ -768,6 +853,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://catalog.agentage.io/mcp/store-scvd-tab",
     registry: "agentage MCP Catalog (catalog.agentage.io) — the tab",
+    protocols: ["mcp"],
     confirmed: "2026-09-02",
     what_it_proves:
       "That the same catalog carries scvd-tab, from the same registry sync. Not an endorsement and not an audit: indexing, nothing more.",
@@ -775,6 +861,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcpservers.org/servers/scvd-store-llms-txt",
     registry: "mcpservers.org (llms.txt entry)",
+    protocols: ["mcp"],
     confirmed: "2026-08-04",
     what_it_proves:
       "That mcpservers.org carries a second, llms.txt-derived entry beside the claimed server listing above — the store's own machine-readable front door, independently ingested. Not an endorsement and not an audit.",
@@ -789,6 +876,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v",
     registry: "m8ven.ai",
+    protocols: ["mcp"],
     confirmed: "2026-08-18",
     /**
      * A SCANNER, NOT A MIRROR — the class of entry worth having even
@@ -807,6 +895,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcp-marketplace.io/server/store-scvd-general-store",
     registry: "mcp-marketplace.io",
+    protocols: ["mcp"],
     confirmed: "2026-08-04",
     what_it_proves:
       "That mcp-marketplace.io lists the MCP server and republishes an OpenSSF Scorecard reading against the repository — an instrument, not a listing we wrote. Not an endorsement and not an audit of the goods: its scorecard measures repository hygiene (workflow permissions, update tooling, review process), several items of which were fixed the day this record was added, and the reading lags the repo until its next crawl.",
@@ -814,6 +903,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7",
     registry: "x402-bazaar.com (Bazaar mirror)",
+    protocols: ["x402"],
     confirmed: "2026-08-04",
     what_it_proves:
       "That a Bazaar mirror the store never submitted to serves per-resource pages for its items — found by the keeper within hours of the registration run, which is the settle-triggered discovery pipeline observed propagating to a surface we did not know existed. ONE URL STANDS FOR THE SET on purpose: the mirror pages every registered resource separately and has no summary page, and a row per endpoint would repeat a single fact fourteen times, which is the logo wall this array's docblock refuses. Not an endorsement and not an audit: a mirror proves the source catalog carries us, nothing more.",
@@ -841,6 +931,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
     registry: "mcpmarket.com",
+    protocols: ["mcp"],
     confirmed: "2026-08-11",
     /**
      * ITS WRONG READINGS, recorded on arrival (the m8ven precedent):
@@ -875,6 +966,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://cursor.directory/plugins/scvd-general-store-repo",
     registry: "Cursor Directory",
+    protocols: ["skills", "mcp"],
     confirmed: "2026-09-10",
     /**
      * THE FIRST LISTING BUILT FROM THE REPO'S OWN PACKAGE rather than
@@ -903,6 +995,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://smithery.ai/servers/seancrecord/scvd-general-store",
     registry: "Smithery",
+    protocols: ["mcp"],
     confirmed: "2026-08-11",
     /**
      * ITS READING WAS WRONG, AND THEN IT WAS OURS (2026-09-01).
@@ -936,6 +1029,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://mcp.so/servers/scvd-store",
     registry: "mcp.so",
+    protocols: ["mcp"],
     confirmed: "2026-08-10",
     /**
      * ITS WRONG READINGS, recorded on arrival (the m8ven precedent):
@@ -1139,3 +1233,26 @@ export const TRUST_STANDFIRST =
 
 export const TRUST_LIMIT =
   "WHAT THIS DOCUMENT IS WORTH: it is self-published, like every trust page anywhere, and a store writing its own legitimacy statement is the weakest possible evidence of legitimacy. Two things here are NOT self-attested and they are the only two that matter — the ed25519 signature on every artifact we issue, which you check with your own library against a key we publish, and the on-chain settlement transaction bound into every certificate, which you check on the explorer for the certificate's recorded settlement network without asking us. Everything else on this page is our word. Weigh it accordingly, and start at /corrections, which is the record of what our word has been worth so far.";
+
+/** Group the same records for people and machines; pending applications stay off this list. */
+export function discoveryByProtocol(base: string) {
+  return DISCOVERY_PROTOCOLS.map((protocol) => ({
+    id: protocol.id,
+    label: protocol.label,
+    status: protocol.status,
+    scope: protocol.scope,
+    scvd_url: `${base}${protocol.path}`,
+    records: EXTERNAL_RECORDS.filter((record) =>
+      (record.protocols ?? ["general"]).includes(protocol.id)),
+    identity_viewers: protocol.id === "erc8004" ? IDENTITY_VIEWERS : [],
+  }));
+}
+
+/** The JSON index points into the existing records, rather than doubling every description. */
+export function discoveryProtocolIndex(base: string) {
+  return discoveryByProtocol(base).map(({ records, identity_viewers, ...protocol }) => ({
+    ...protocol,
+    records: records.map(({ url }) => ({ url })),
+    identity_viewers: identity_viewers.map(({ url }) => ({ url })),
+  }));
+}
