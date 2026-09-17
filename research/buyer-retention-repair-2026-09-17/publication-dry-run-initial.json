@@ -1,0 +1,10 @@
+{
+  "workflow_run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35272332421",
+  "head": "87430fffd2bd25e39d8aa6ed77f5784ce4d725f7",
+  "result": "failed",
+  "step": "Verify the installed quickstart",
+  "cause": "README local tarball install example still named the previous version; expected filename derives from npm pack.",
+  "published": false,
+  "failed_log_sha256": "7219c777b7bc2efaed6a08c2afab88367b5a3a03511f23adec5455404dd39a8e",
+  "correction": "Update the local tarball example to the prepared manifest version; keep the public registry example at the existing published version."
+}

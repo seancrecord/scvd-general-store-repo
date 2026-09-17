@@ -67,8 +67,21 @@
       "log_file": "scvd-retention-installed.txt",
       "sha256": "b12eb4c187ec2feb8132fe1152aa73b1437bd6caf53ae5a3d331f1d1e7a19ccd",
       "test_counts": []
+    },
+    {
+      "check": "final installed quickstart and typed consumer",
+      "exit_code": 0,
+      "log_file": "scvd-retention-activation-final.txt",
+      "sha256": "6b525a36494f4680cd6e8d224b1fe20a18520603add2d85e97e75c67218672a2"
+    },
+    {
+      "check": "final local package install",
+      "exit_code": 0,
+      "log_file": "scvd-retention-installed-final.txt",
+      "sha256": "d89e3f7d082fcf15c00d47b156203e64cc7febb7f9c106c0ab36875259bf0310"
     }
   ],
   "full_suite": "Required on the final PR head in CI before merge.",
-  "release": "Prepared local tarball only; registry publication and native acceptance are pending."
+  "release": "Prepared local tarball only; registry publication and native acceptance are pending.",
+  "release_dry_run_initial": "publication-dry-run-initial.json"
 }

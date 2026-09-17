@@ -4,7 +4,7 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
-## 1.5.0 — prepared 2026-09-17; registry release pending
+## 1.5.0 — source prepared 2026-09-17
 
 **Added.** `scvd-evidence verify-source` verifies an already-saved SCVD
 certificate response or corpus snapshot offline, with optional local bound

@@ -7,17 +7,17 @@ capabilities and missing evidence. Zero runtime dependencies. MIT.
 ## Install and verify
 
 ```sh
-npm install x402-verify@1.4.0
+npm install x402-verify
 ```
 
 Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.4.0.tgz
+npm install ./x402-verify-1.5.0.tgz
 ```
 
-Structured status fields require this version; older versions may not expose
+Structured status fields require 1.4.0 or newer; older versions may not expose
 them. Source-tarball qualification and registry installation are separate checks.
 
 Save this as `verify.mjs` and run `node verify.mjs`. It uses a packaged
@@ -477,9 +477,9 @@ not a dependency of it.
 
 ### Check an original you already saved
 
-The prepared 1.5.0 CLI adds `verify-source`; check your installed
-`scvd-evidence --help` before using it. Registry publication is separate from
-this source change. From this checkout:
+The 1.5.0 CLI adds `verify-source`; check your installed
+`scvd-evidence --help` before using it. Source and registry versions can
+differ. From this checkout:
 
 ```sh
 node verifier/evidence-cli.mjs verify-source evidence/original.json \

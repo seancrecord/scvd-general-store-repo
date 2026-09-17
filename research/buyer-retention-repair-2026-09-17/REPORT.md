@@ -64,7 +64,11 @@ explicit byte limits, absent/wrong independent keys, unsupported corpus
 versions, tampering with and without recomputing the digest, and missing or
 modified certificate attachments. Existing command tests still pass.
 
-The complete offline evidence suite passes. A [fresh local tarball install](installed-package.json)
+The complete offline evidence suite passes. The first publication dry run
+caught a stale local tarball filename in the README; the existing activation
+guard refused it. The corrected filename derives from the prepared version,
+and the installed quickstart plus typed consumer now pass. The
+[failed dry-run record](publication-dry-run-initial.json) remains preserved. A [fresh local tarball install](installed-package.json)
 verifies the retained public response and matches the reviewed package bytes.
 It is an installation control, not an independent buyer or registry-release
 claim. Test and build log hashes are in [validation.json](validation.json).

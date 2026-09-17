@@ -1,11 +1,10 @@
 {
   "schema_version": 1,
-  "recorded_at": "2026-09-17T20:45:09.536847+00:00",
   "kind": "fresh offline install of a local tarball; not registry publication or a native buyer run",
   "package": "x402-verify",
   "version": "1.5.0",
-  "tarball_sha256": "11eeca1308614eb7063abf1a3c358f88677b924d43fa60084041cfb772d28a5b",
-  "tarball_integrity": "sha512-W0sKF6rGn/fWsuHgf1vSr9RbDwQ0MfqfWfLL3gmtT95dfUCOC8kBY6m8QZ+bkA0h3DuOu5YCeyu4KnWXWWpbgg==",
+  "tarball_sha256": "910a2d70b927cecd6b08866838fe7ea49005e28f8b3eeb38b349f541d33233f5",
+  "tarball_integrity": "sha512-AhNC/wSvgsePLmBsLPkRUEiH0+HoVwTaSVtImc3xKslAOv2UbBK5NohACvPd6Zy4sdvyIPRn+Quwrg34IASiPg==",
   "installation_exit": 0,
   "verification_exit": 0,
   "verification_output_bytes": 769,
@@ -44,7 +43,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "ae469c705699f728ef92baa303ad1713a38a42e6b9b04acf4f7e913482580e34"
+      "sha256": "3e5d960ddecc1985546cd33cacf2ae45d0f72259efb8401c17a0f3bedf6da211"
     },
     {
       "file": "package.json",

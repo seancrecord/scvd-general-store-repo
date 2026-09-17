@@ -96,8 +96,8 @@ package's `scvd-evidence` command locally; installation and format details:
 https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence
 
 For an original response already saved locally, check whether the installed
-`scvd-evidence --help` lists `verify-source` (added in the prepared 1.5.0
-source; registry release is separate). If available, use
+`scvd-evidence --help` lists `verify-source` (added in 1.5.0; source and
+registry versions can differ). If available, use
 `scvd-evidence verify-source original.json --public-key TRUSTED_PUBLIC_KEY_HEX`
 with the documented size allowance and any bound `--evidence` file. It checks
 the original offline without writing duplicate export files or printing the
