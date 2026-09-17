@@ -87,6 +87,16 @@ export class CounterLedger extends DurableObject<Env> {
     return sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales WHERE id = ?", id).toArray()[0]?.evidence ?? null;
   }
 
+  /** Bounded reverse lookup for certificates minted before protocol linkage existed.
+   * Invalid JSON throws; corruption must not look like an absent booking. */
+  async readMppSaleIdsForTransaction(transaction: string): Promise<string[]> {
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return [];
+    return sql.exec<{ id: string }>(
+      "SELECT id FROM mpp_sales WHERE lower(json_extract(evidence, '$.transaction')) = lower(?) LIMIT 2", transaction,
+    ).toArray().map(row => row.id);
+  }
+
   /** One monthly source, disjoint from every legacy x402 counter. */
   async recordMppSale(sale: { id: string; month: string; payer: string; transaction: string; amount: string; house: boolean }): Promise<void> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||

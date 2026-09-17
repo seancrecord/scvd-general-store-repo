@@ -36,6 +36,17 @@ of activation.
 
 Before executing that change:
 
+The September 17 house test also exposed a legacy reconciliation gap: the
+certificate sweep looked only for x402 payer-settle records. The follow-up
+reconciliation fix must be deployed before activation. A matched native
+individual ledger is sufficient accounting evidence; native missing,
+inconsistent or unavailable evidence remains an alarm. The legacy repair must
+skip native and undetermined certificates rather than import them into x402.
+Verify the next sweep of `cert_5aa8cb3n33` against the retained test purchase;
+do not clear its old alert by running the legacy repair. Historical alarm rows
+remain history; this code change does not acknowledge or delete them.
+
+
 1. Confirm #766 is merged after the full shared CI gate, and record the store
    and doors deployment versions serving the readiness code.
 2. Retain the September 17 live qualification as evidence for this exact lane.

@@ -1,3 +1,5 @@
+import { certificateProtocol, inspectNativeCertificate } from "@/services/certificate-accounting";
+import type { Certificate } from "@/types";
 import { runDurableObjectAlarm, runInDurableObject } from "cloudflare:test";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { Challenge, Credential, Receipt } from "mppx";
@@ -64,6 +66,9 @@ it("stock MPP client buys through the real HTTP route and records one native sal
   expect(response.status).toBe(200);
   const body = await response.json<Record<string, unknown>>();
   expect(body).toHaveProperty("certificate");
+  const certificate = body.certificate as Certificate;
+  expect(await certificateProtocol(testEnv, certificate)).toBe("mpp");
+  expect(await inspectNativeCertificate(testEnv, certificate)).toBe("matched");
   expect(Receipt.deserialize(response.headers.get("Payment-Receipt")!)).toMatchObject({ method: "evm", status: "success" });
   expect(facilitator.settleCalls).toBe(1);
   expect(await readMppSales(testEnv)).toMatchObject({ organic: 1, house: 0 });

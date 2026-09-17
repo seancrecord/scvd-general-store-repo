@@ -1,3 +1,4 @@
+import { certificateProtocol, inspectNativeCertificate } from "@/services/certificate-accounting";
 import { sendAlert } from "@/lib/alerts";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -101,7 +102,7 @@ export interface UnbookedCertificate {
  */
 export async function certificatesWithoutSettleRecord(
   env: Env,
-): Promise<{ certificates: UnbookedCertificate[]; truncated: boolean }> {
+): Promise<{ certificates: UnbookedCertificate[]; native: Array<{ cert_id: string; state: string }>; truncated: boolean }> {
   const [certKeys, settleKeys] = await Promise.all([
     listKeys(env.PATRONS, { prefix: KV_KEYS.certPrefix, cap: CERT_SCAN_CAP }),
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: CERT_SCAN_CAP }),
@@ -109,9 +110,17 @@ export async function certificatesWithoutSettleRecord(
   const recorded = new Set(settleKeys.names);
   const certs = await bulkGetJson<CertificateRecord>(env.PATRONS, certKeys.names);
   const missing: UnbookedCertificate[] = [];
+  const native: Array<{ cert_id: string; state: string }> = [];
   for (const record of certs.values()) {
     const cert = record?.certificate;
     if (!cert?.payer || !cert.settlement_tx) continue;
+    const protocol = await certificateProtocol(env, cert);
+    if (protocol !== "x402") {
+      let state: string = protocol === "mpp" ? await inspectNativeCertificate(env, cert) : "unavailable";
+      if (state === "matched" && recorded.has(KV_KEYS.payerSettle(cert.payer, cert.settlement_tx))) state = "legacy_overlap";
+      if (state !== "matched") native.push({ cert_id: cert.cert_id, state });
+      continue;
+    }
     if (recorded.has(KV_KEYS.payerSettle(cert.payer, cert.settlement_tx))) continue;
     missing.push({
       cert_id: cert.cert_id,
@@ -122,7 +131,7 @@ export async function certificatesWithoutSettleRecord(
     });
   }
   missing.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-  return { certificates: missing, truncated: certKeys.truncated || settleKeys.truncated };
+  return { certificates: missing, native, truncated: certKeys.truncated || settleKeys.truncated };
 }
 
 export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
@@ -138,6 +147,10 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
     breaches.push(
       `certificate-without-settle: ${unbooked.certificates.length} certificate(s) carry a payer and a settlement transaction that the books never recorded — ${named}${unbooked.certificates.length > 5 ? "; …" : ""}. Money moved and the till did not book it. POST /admin/repair/payer-settles books each one from its certificate${unbooked.truncated ? " (the scan hit its cap; the count is a floor)" : ""}.`,
     );
+  }
+
+  if (unbooked.native.length) {
+    breaches.push(`certificate-native-accounting: ${unbooked.native.length} certificate(s) need protocol-aware accounting inspection — ${unbooked.native.slice(0, 5).map(row => `${row.cert_id} (${row.state})`).join("; ")}. Unavailable evidence does not establish missing money. Inspect the retained purchase and individual MPP ledger; do not use the legacy payer-settles repair.`);
   }
 
   // 2 & 3. The rail records against the organic count.
