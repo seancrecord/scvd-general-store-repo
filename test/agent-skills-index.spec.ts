@@ -7,6 +7,7 @@ import {
   type AgentSkillsIndex,
 } from "@/routes/agent-skills-index";
 import { sha256Hex } from "@/lib/idempotency";
+import verificationSkill from "../skills/scvd-x402-verification/SKILL.md?raw";
 
 const BASE = "https://scvd.store";
 
@@ -25,12 +26,13 @@ describe("the Agent Skills discovery index", () => {
     return (await response.json()) as AgentSkillsIndex;
   }
 
-  it("serves the RFC's v0.2.0 shape with both published skills", async () => {
+  it("serves the RFC's v0.2.0 shape with the published skills", async () => {
     const body = await index();
     expect(body.$schema).toBe(AGENT_SKILLS_SCHEMA);
     expect(body.skills.map((s) => s.name).sort()).toEqual([
       "execution-contract",
       "scvd-general-store",
+      "scvd-x402-verification",
     ]);
     for (const skill of body.skills) {
       expect(skill.name).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
@@ -41,6 +43,14 @@ describe("the Agent Skills discovery index", () => {
       expect(skill.url).toBe(`${BASE}/.well-known/agent-skills/${skill.name}/SKILL.md`);
       expect(skill.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
     }
+  });
+
+  it("serves the focused buyer skill unchanged from its installable source", async () => {
+    const body = await index();
+    const buyer = body.skills.find((skill) => skill.name === "scvd-x402-verification");
+    expect(buyer, "a buyer must discover the focused skill from the public index").toBeDefined();
+    const response = await SELF.fetch(buyer!.url);
+    expect(await response.text()).toBe(verificationSkill);
   });
 
   it("every digest matches the raw bytes at its url, and the description is the artifact's own", async () => {

@@ -1,0 +1,11 @@
+(node:55781) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-buyer-evidence-handoff
+
+
+ Test Files  5 passed (5)
+      Tests  62 passed (62)
+   Start at  15:30:03
+   Duration  19.49s (transform 22.86s, setup 110ms, import 72.52s, tests 4.19s, environment 1ms)
+

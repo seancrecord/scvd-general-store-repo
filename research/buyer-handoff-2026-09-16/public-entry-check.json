@@ -1,0 +1,48 @@
+{
+  "candidate-listing": {
+    "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+    "final_url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+    "http_status": 200,
+    "sha256": "f2009615d4f8b9bbf4377bcee068d50cece397325bc1204d7f0c22530e62bb8b",
+    "bytes": 42669,
+    "checked_at": "2026-09-16T19:15:24.918799+00:00",
+    "not_available_text": true,
+    "title": [
+      "scvd-x402-verification \u2014 seancrecord/scvd-general-store-repo"
+    ]
+  },
+  "existing-listing": {
+    "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
+    "final_url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
+    "http_status": 200,
+    "sha256": "bd5805db44c733ae6e2ee568d76d8081681392f5cdc2834ae3869ad4f4c4bc49",
+    "bytes": 131209,
+    "checked_at": "2026-09-16T19:15:25.542707+00:00",
+    "not_available_text": false,
+    "title": [
+      "scvd-general-store \u2014 seancrecord/scvd-general-store-repo"
+    ]
+  },
+  "public-skill": {
+    "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+    "final_url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+    "http_status": 200,
+    "sha256": "67eae3b0a28c9feee02b49666b24f29612916921ab7eb087107e50a47b7d2a24",
+    "bytes": 3546,
+    "checked_at": "2026-09-16T19:15:25.666516+00:00",
+    "not_available_text": false,
+    "title": []
+  },
+  "skills-faq": {
+    "url": "https://www.skills.sh/docs/faq",
+    "final_url": "https://www.skills.sh/docs/faq",
+    "http_status": 200,
+    "sha256": "3b8390f3fe9bc95ee7d6c222d3acf7ccbcd6222c4cedaf7c4a1d5c728528a526",
+    "bytes": 45864,
+    "checked_at": "2026-09-16T19:15:25.773254+00:00",
+    "not_available_text": false,
+    "title": [
+      "FAQ | Skills Documentation"
+    ]
+  }
+}

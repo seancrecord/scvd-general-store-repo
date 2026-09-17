@@ -2,11 +2,12 @@ import { Hono } from "hono";
 import { sha256Hex } from "@/lib/idempotency";
 import { renderExecutionContract } from "@/routes/execution-contract";
 import { renderSkillMarkdown } from "@/routes/skill";
+import { VERIFICATION_SKILL } from "@/store/verification-skill";
 import type { Env, HonoEnv } from "@/types";
 
 /**
  * /.well-known/agent-skills/index.json — the Agent Skills discovery
- * index (Cloudflare's agent-skills-discovery-rfc, v0.2.0), and the two
+ * index (Cloudflare's agent-skills-discovery-rfc, v0.2.0), and the
  * artifacts it names, at the paths the RFC says a client will guess.
  *
  * WHAT THIS IS FOR. The store has published a SKILL.md at /skill.md
@@ -59,6 +60,10 @@ const PUBLISHED_SKILLS: readonly PublishedSkill[] = [
     name: "execution-contract",
     render: (env) => renderExecutionContract(env.STORE_BASE_URL),
   },
+  {
+    name: VERIFICATION_SKILL.name,
+    render: () => VERIFICATION_SKILL.markdown,
+  },
 ];
 
 export function skillArtifactPath(name: string): string {
@@ -66,9 +71,8 @@ export function skillArtifactPath(name: string): string {
 }
 
 /**
- * The `description:` line of a SKILL.md's frontmatter, unquoted. Both
- * artifacts here are rendered from template literals whose frontmatter
- * puts the description on one line, so a one-line reader is the whole
+ * The `description:` line of a SKILL.md's frontmatter, unquoted. The
+ * artifacts here put the description on one line, so a one-line reader is the whole
  * parser; a frontmatter this store does not write is not this file's
  * problem.
  */

@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-09-17T15:01:04.941629+00:00",
+  "tested_parent": "c1ff405d7020f9823e8e94a5409bd8784dfc1f64",
+  "full_suite": {
+    "command": "npm test",
+    "exit_code": 0,
+    "files_passed": 752,
+    "tests_passed": 14561,
+    "skipped": 1,
+    "duration_seconds": 1800.29,
+    "log_sha256": "9d142876013b3ce728a9415c86acbdda68ee6e0dd855c042f2e95ade27473422"
+  },
+  "typecheck": "pass",
+  "build_check": "pass",
+  "scope": "Frozen stacked source before upstream documentation/listing reconciliation. Current pull request CI gates the final merge.",
+  "earlier_run": {
+    "files_passed": 750,
+    "files_failed": 1,
+    "tests_failed": 2,
+    "cause": "OASF source/generated-record wording changed during the earlier full run, mixing cached and current bytes. The unchanged final tree passed this clean full rerun. No earlier pass is claimed."
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "plan": {
+    "kind": "supplied-document interpretation; not public discovery or deployment acceptance",
+    "budgets": {
+      "wall_ms": 120000,
+      "tool_calls": 4,
+      "output_bytes": 500000,
+      "output_tokens": 1600
+    },
+    "spend_usdc": 0,
+    "rubric": [
+      "ready does not prove settlement or delivery",
+      "unsigned preflight is not signed evidence",
+      "never_met is a coverage gap, not proof of no evidence",
+      "zero budget stops before signed payment",
+      "consider free historical signed evidence without implying it must exist",
+      "service_audit is a fresh observation, not signing the prior preflight",
+      "verify_artifact is hosted; local verifier and separate trusted key are needed",
+      "retain certificate-bound core and report missing linked evidence as incomplete"
+    ],
+    "cells": [
+      {
+        "id": "codex-candidate",
+        "host": "codex",
+        "variant": "candidate",
+        "model": "gpt-5.6-luna",
+        "skill_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+        "prompt_sha256": "33ff885065dc76068919fb32a1efcc04b9d255dcf91e99cb5317851a623a56ae"
+      },
+      {
+        "id": "claude-candidate",
+        "host": "claude",
+        "variant": "candidate",
+        "model": "sonnet",
+        "skill_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+        "prompt_sha256": "33ff885065dc76068919fb32a1efcc04b9d255dcf91e99cb5317851a623a56ae"
+      }
+    ]
+  },
+  "results": [
+    {
+      "cell": {
+        "id": "codex-candidate",
+        "host": "codex",
+        "variant": "candidate",
+        "model": "gpt-5.6-luna",
+        "skill_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+        "prompt_sha256": "33ff885065dc76068919fb32a1efcc04b9d255dcf91e99cb5317851a623a56ae"
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 0,
+      "trace_sha256": "b425f5c541dc42c3ecd04fabad417beab806aac165342cfb533d206fc44ca568",
+      "response": "The free preflight result supports only this conclusion: the endpoint\u2019s tested checks passed to level L3a, with a `ready` verdict. It does not establish payment settlement, merchant reliability, delivery, or future performance.\n\nNext, I would:\n\n1. Review the individual checks, method, advisories, and stated gaps.\n2. Check the free SCVD corpus for a matching host and exact endpoint. If a cited signed snapshot exists, verify it locally and confirm its observation date and target.\n3. Treat `never_met` as \u201cthis lookup supplied no historical evidence,\u201d not as proof that no evidence exists.\n4. If fresh signed evidence is required, inspect the current `service_audit` contract and price\u2014but do not purchase without explicit authorization and funds.\n\nBecause the budget is zero and no signed offer is present, I would stop before payment. The free inspection may be complete, but the signed-evidence stage remains unavailable. I would report that independently verifiable fresh evidence was not obtained.\n\nFor a future purchased `service_audit`, a recipient should retain the purchase certificate, its exact `signed_payload`, signature, and the purchased report. The issuer\u2019s public key must be established independently; a key delivered only alongside the signature does not establish issuer identity.\n\nFor a report returned by `/api/service-audit/{audit_id}`, the certificate binds the report\u2019s observation core\u2014not the entire HTTP response. To reconstruct those bytes, remove exactly the named metadata fields (`signature`, `public_key`, `signature_covers`, `evidence_hash`, and `scope`), retain fields such as `audit_id` and all other observation fields, preserve served field order, and use compact JSON encoding. Verification then checks the certificate signature and the hash binding to those retained bytes.\n\nLinked evidence must also be available. Missing report evidence makes local verification incomplete, not successful; a certificate alone cannot substitute for the report. An export/read failure is an operational failure, and an unsupported format is not evidence that the merchant failed. Even a valid verification only proves that the trusted issuer signed those bytes; it does not prove the observation was truthful, remains current, or guarantees future delivery.\n\n`verify_artifact` itself is not an offline check: it performs a hosted lookup and therefore contacts the issuer. Offline verification requires retaining the bundle and evidence, independently obtaining the trusted public key, and running the local verifier without network access."
+    },
+    {
+      "cell": {
+        "id": "claude-candidate",
+        "host": "claude",
+        "variant": "candidate",
+        "model": "sonnet",
+        "skill_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+        "prompt_sha256": "33ff885065dc76068919fb32a1efcc04b9d255dcf91e99cb5317851a623a56ae"
+      },
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 0,
+      "trace_sha256": "3c5e6e8a7138424d9ed1502da23037cd5b256e9c45e17c79ab2898a33dc8bbc5",
+      "response": "Here's the analysis, no tools used.\n\n## What I can conclude now\n\nPreflight returned `ready` at `reached_level L3a` \u2014 unsigned, unpaid, and only as good as the checks it actually ran. That's a reasonable basis to *consider* proceeding, but it proves nothing about delivery, reliability, or that payment will settle. No signed offer was present, so there's nothing yet to run `check_conformance` against. The corpus/history lookup returned `never_met` \u2014 per the skill, that's a coverage gap, not evidence of absence or of fraud. It means this particular lookup found nothing, not that no trail exists elsewhere.\n\n## Honest stopping point\n\nBudget is zero. The next rung on the ladder \u2014 a fresh `service_audit` \u2014 is a paid, fresh probe (despite the \"signed copy\" naming), not a confirmation of the existing reading. With no budget, I stop before that purchase. The free stage (preflight + corpus/history check) is complete; the signed-evidence stage is not, and I won't buy just to close that gap. That's the honest state to report: ready-but-unsigned, with a documented absence of historical evidence, not a verified endpoint.\n\n## What \"independently verifiable evidence\" would actually require\n\nThe caller asked for independently verifiable evidence, but that's exactly the stage a zero budget can't reach. I'd say so plainly rather than stretching the preflight result to imply more confidence than it earns.\n\n## How a recipient would verify a future purchased service_audit report\n\n1. Retain the purchase certificate, its `signed_payload`, signature, and the raw `audit.json` from `/api/service-audit/{audit_id}`.\n2. Establish the issuer's public key independently of the bundle \u2014 e.g., from a previously trusted key record. A key shipped alongside its own signature proves nothing about issuer identity.\n3. Strip exactly the metadata fields (`signature`, `public_key`, `signature_covers`, `evidence_hash`, `scope`) from `audit`, preserving field order and compact encoding, to reconstruct the `observation.json` core.\n4. Run `scvd-evidence export` (network, fetches public data) then `scvd-evidence verify` (fully offline, local) against the retained bundle and the independently-sourced public key.\n5. Separately check: does the signed subject match the intended endpoint, is the observation date still relevant, is there a declared expiry, was the key in service on that date, and what gaps does the observation itself disclose.\n\n## What bytes the certificate binds\n\n`attests` binds the report's **observation core** \u2014 not the full HTTP response. That's why extraction must remove exactly the named metadata fields and nothing else, preserving order/encoding, before hashing/comparing. A certificate is a claim about that specific stripped-down core, not about the audit_id record wrapper, transport, or any field added after issuance.\n\n## How I'd treat missing linked evidence\n\nPer the skill, local verification with missing linked evidence is incomplete \u2014 exit code 3 \u2014 not a pass. I'd report it as unresolved, not as a soft confirmation. Separately, an export read failure (exit 2) is a distinct failure mode and also not a finding against the merchant. A certificate alone, without the linked report, cannot stand in for the missing evidence \u2014 I would not treat \"the signature checks out\" as \"the report is verified\" if the report itself isn't available to hash and compare.\n\n## Is verify_artifact an offline check?\n\nNo. `verify_artifact` is a hosted lookup \u2014 it calls back to the issuer's service, so it's re-asking the issuer, not an independent offline verification. The actual offline check is the local `scvd-evidence verify` step against the retained bundle and an independently-established public key, with no network call. That distinction matters here specifically because \"independently verifiable\" was the caller's stated requirement \u2014 a hosted round-trip to the same issuer doesn't satisfy it."
+    }
+  ]
+}

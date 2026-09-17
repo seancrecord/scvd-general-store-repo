@@ -1,0 +1,113 @@
+(node:53046) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-buyer-evidence-handoff
+
+ ❯ test/preflight-evidence-handoff.spec.ts (2 tests | 2 failed) 33ms
+     × distinguishes the unsigned reading from a fresh paid observation 5ms
+     × hands the buyer an actual item contract and an unpaid quote 26ms
+stdout | test/agent-skills-index.spec.ts > the Agent Skills discovery index > serves the RFC's v0.2.0 shape with the published skills
+{"knock":1,"cold":true,"age":0,"req":5,"method":"GET","path":"/.well-known/agent-skills/index.json","status":200,"ua":""}
+
+stdout | test/agent-skills-index.spec.ts > the Agent Skills discovery index > serves the focused buyer skill unchanged from its installable source
+{"knock":1,"cold":false,"age":0,"req":1,"method":"GET","path":"/.well-known/agent-skills/index.json","status":200,"ua":""}
+
+ ❯ test/agent-skills-index.spec.ts (6 tests | 2 failed) 89ms
+     × serves the RFC's v0.2.0 shape with the published skills 24ms
+     × serves the focused buyer skill unchanged from its installable source 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/agent-skills-index.spec.ts > the Agent Skills discovery index > serves the RFC's v0.2.0 shape with the published skills
+AssertionError: expected [ 'execution-contract', …(1) ] to deeply equal [ 'execution-contract', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "execution-contract",
+    "scvd-general-store",
+-   "scvd-x402-verification",
+  ]
+
+ ❯ test/agent-skills-index.spec.ts:32:51
+     30|     const body = await index();
+     31|     expect(body.$schema).toBe(AGENT_SKILLS_SCHEMA);
+     32|     expect(body.skills.map((s) => s.name).sort()).toEqual([
+       |                                                   ^
+     33|       "execution-contract",
+     34|       "scvd-general-store",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/agent-skills-index.spec.ts > the Agent Skills discovery index > serves the focused buyer skill unchanged from its installable source
+AssertionError: a buyer must discover the focused skill from the public index: expected undefined to be defined
+ ❯ test/agent-skills-index.spec.ts:51:84
+     49|     const body = await index();
+     50|     const buyer = body.skills.find((skill) => skill.name === "scvd-x40…
+     51|     expect(buyer, "a buyer must discover the focused skill from the pu…
+       |                                                                                    ^
+     52|     const response = await SELF.fetch(buyer!.url);
+     53|     expect(await response.text()).toBe(verificationSkill);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/preflight-evidence-handoff.spec.ts > the unsigned preflight's evidence handoff > distinguishes the unsigned reading from a fresh paid observation
+AssertionError: expected undefined to match object { signed: false, …(1) }
+
+- Expected:
+{
+  "proves_payment_or_delivery": false,
+  "signed": false,
+}
+
++ Received:
+undefined
+
+ ❯ test/preflight-evidence-handoff.spec.ts:15:36
+     13|   it("distinguishes the unsigned reading from a fresh paid observation…
+     14|     const ladder = theRestOfTheLadder(PREFLIGHT_BATTERY, BASE);
+     15|     expect(ladder.current_reading).toMatchObject({ signed: false, prov…
+       |                                    ^
+     16|     expect(ladder.signed_copy_of_this_reading).toMatchObject({
+     17|       observation: "fresh_probe",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/preflight-evidence-handoff.spec.ts > the unsigned preflight's evidence handoff > hands the buyer an actual item contract and an unpaid quote
+AssertionError: expected { item_id: 'service_audit', …(5) } to match object { required_params: [ 'url' ], …(2) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "input_contract_url": "https://scvd.store/menu/service_audit?view=compact",
+-   "mcp_url": "https://scvd.store/mcp?view=compact&item_id=service_audit&payment=tool-result",
+-   "required_params": [
+-     "url",
+-   ],
++   "item_id": "service_audit",
++   "price_usdc": 5,
++   "tool": "buy_observation",
++   "tool_door": "https://scvd.store/mcp",
++   "url": "https://scvd.store/api/buy/service_audit",
++   "what_you_get": "The Once-Over",
+  }
+
+ ❯ test/preflight-evidence-handoff.spec.ts:27:21
+     25|     const handoff = ladder.signed_copy_of_this_reading as Record<strin…
+     26|     const item = getMenuItem("service_audit")!;
+     27|     expect(handoff).toMatchObject(buyerLinks(item, BASE));
+       |                     ^
+     28|     expect(handoff.price_usdc).toBe(item.price_usdc);
+     29|     const contract = await SELF.fetch(String(handoff.input_contract_ur…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 4 passed (8)
+   Start at  15:22:08
+   Duration  20.38s (transform 15.68s, setup 47ms, import 30.76s, tests 122ms, environment 1ms)
+

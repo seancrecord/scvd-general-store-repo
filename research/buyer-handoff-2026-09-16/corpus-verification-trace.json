@@ -1,0 +1,15 @@
+{
+  "source_trace_sha256": "d357cd2df8c5d3901c74ddf786ffab7869284d9ee82d93a56a9eafca0de7915a",
+  "line": 32,
+  "event": {
+    "type": "item.completed",
+    "item": {
+      "id": "item_15",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc \"node - <<'NODE'\nconst https=require('https'),crypto=require('crypto');const get=u=>new Promise((a,b)=>https.get(u,r=>{let x='';r.on('data',d=>x+=d);r.on('end',()=>r.statusCode===200?a(x):b())}).on('error',b));function c(x){if(x===null||typeof x\"'!=='\"'object')return JSON.stringify(x);if(Array.isArray(x))return'['+x.map(c)+']';return'{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+c(x[k])).join(',')+'}'};(async()=>{let d=JSON.parse(await get('https://scvd.store/corpus/6.json')),k=JSON.parse(await get('https://scvd.store/.well-known/scvd-signing-key'));let s=d.snapshot,f={version:s.version,sequence:s.sequence,taken_at:s.taken_at,previous_digest:s.previous_digest,source:s.source,week:s.week,round:s.round};let der=Buffer.concat([Buffer.from('302a300506032b6570032100','hex'),Buffer.from(k.public_key,'hex')]);for(let [n,m] of Object.entries({'snapshot-json':JSON.stringify(s),'fields-json':JSON.stringify(f),'jcs-fields':c(f)})){let dg=crypto.createHash('sha256').update(m).digest('hex');let ok=crypto.verify(null,Buffer.from(m),{key:der,format:'der',type:'spki'},Buffer.from(d.signature,'hex'));console.log(n,dg===d.digest,ok,dg)}})().catch(()=>process.exit(1));\nNODE\"",
+      "aggregated_output": "snapshot-json true true 779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c\nfields-json true true 779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c\njcs-fields false false 1da7d8049907ff0c05f77b2fb3dc9232b294712ba178491db205e9f079efc0d6\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  }
+}
