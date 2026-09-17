@@ -123,12 +123,12 @@
       "sha256": "bbaf064702f64f2eacb0aa68941c06e8340c8be636015b25e95830e3d2a44ac5"
     },
     "hol-exact.txt": {
-      "bytes": 6973,
-      "sha256": "59bf768910a7720acca0daff56c0797a6e111843aa853fb40f0f5f4874f5d4ba"
+      "bytes": 6977,
+      "sha256": "2c3aa28de6006a00e930831ba48956543e9f5eb918bfe64359d4c7455a092d88"
     },
     "hol.txt": {
-      "bytes": 6973,
-      "sha256": "22174fce8003c48eb427513a2ef52fad7fbf54ecf3de18f18fdd8ba5dc22298b"
+      "bytes": 6977,
+      "sha256": "54441d969e3bcbef59ae77b04ceafdafef37af0333c8fdb5255bcfe28445a66e"
     },
     "jwks.txt": {
       "bytes": 215,
@@ -322,5 +322,9 @@
       "bytes": 378824,
       "sha256": "3877a292cace6f48dae17e93f9b034c4eca9c4272b1d2eaf856fafa143a92e1e"
     }
+  },
+  "redactions": {
+    "hol.txt": "Requester IP in Cloudflare error footer removed; hash covers redacted snapshot.",
+    "hol-exact.txt": "Requester IP in Cloudflare error footer removed; hash covers redacted snapshot."
   }
 }

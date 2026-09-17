@@ -104,7 +104,7 @@
       <span id="cf-footer-item-ip" class="cf-footer-item hidden sm:block sm:mb-1">
         Your IP:
         <button type="button" id="cf-footer-ip-reveal" class="cf-footer-ip-reveal-btn">Click to reveal</button>
-        <span class="hidden" id="cf-footer-ip">2a06:98c0:3600::103</span>
+        <span class="hidden" id="cf-footer-ip">[requester IP redacted]</span>
         <span class="cf-footer-separator sm:hidden">&bull;</span>
       </span>
       <span class="cf-footer-item sm:block sm:mb-1"><span>Performance &amp; security by</span> <a rel="noopener noreferrer" href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_504&#38;utm_campaign=registry.hashgraphonline.com" id="brand_link" target="_blank">Cloudflare</a></span>
