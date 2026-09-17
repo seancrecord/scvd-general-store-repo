@@ -98,7 +98,7 @@ repair annotations; do not tally those paragraphs as current status.
 | Four-wave buyer run, September 12 | [Report](research/buyer-waves-2026-09-12/REPORT.md) and [run order](research/BUYER_RUN_ORDER.md). Wave 1 partial; waves 2–4 not executed in that run. Cold-to-quote success does not establish purchase or purchased-artifact verification. |
 | Buyer-first takeoff baseline (TR1), September 16 | [Baseline](research/takeoff-readiness-2026-09-16/REPORT.md) and [acceptance plan](docs/TAKEOFF_READINESS_2026-09.md). Six retry attempts: four discovery misses, one directed journey incomplete, one interpretation failure. Initial infrastructure failures remain a separate cohort; no complete journey passed. |
 | Retention follow-through, September 16 | [Report](research/takeoff-retention-2026-09-16/REPORT.md). Full-file capture and offline historical verification controls pass; two fresh public buyer runs remain incomplete. The directed transfer control is not a cold-agent handoff. |
-| A2A compatibility (TR2), September 16 | [Local official-client proof](docs/A2A_V1_COMPAT_2026-09.md). Protocol evidence only; public and cold-stranger qualification remain open. |
+| A2A compatibility (TR2), September 16–17 | [Official-client proof and deployed qualification](docs/A2A_V1_COMPAT_2026-09.md#september-17-public-protocol-qualification). V1 and bounded legacy checks pass against production after #764. Directed protocol evidence only; cold-stranger qualification remains open. |
 | Buyer handoff repair (TR3), September 16 | [Repair and instruction comparisons](research/buyer-handoff-2026-09-16/REPORT.md). Candidate skill/index/preflight repair is local; deployed recipient journey unverified. |
 
 ### Repair status and remaining acceptance gaps

@@ -1,0 +1,807 @@
+{
+  "tested_at": "2026-09-17T15:08:39.034Z",
+  "base": "https://scvd.store",
+  "client": "@a2a-js/sdk@1.1.0",
+  "legacy_compat": false,
+  "checks": [
+    {
+      "task": "preflight_endpoint",
+      "result": "refused: target_refused",
+      "retrieved": true,
+      "terminal_cancel_refused": true
+    },
+    {
+      "task": "verify_receipt",
+      "result": "valid",
+      "retrieved": true,
+      "terminal_cancel_refused": true
+    },
+    {
+      "task": "get_endpoint_readiness",
+      "result": "never_met",
+      "retrieved": true,
+      "terminal_cancel_refused": true
+    }
+  ],
+  "calls": [
+    {
+      "path": "/.well-known/agent-card.json",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "name": "SCVD Evidence Agent",
+        "description": "scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design: independent signed observation of what other people's endpoints, artifacts and payments actually did, with the gaps counted against itself. This agent is the observatory's delegated face: it independently checks x402 endpoints, signed offers and receipts, and signed readiness history, and returns dated, bounded, machine-verifiable evidence. Three read-only tasks, free, no account, no conversation. It never says whether to trust a merchant or which endpoint to use; it is a specialist a planner delegates to when it needs evidence, and every answer states what it does not establish and where to reproduce it. Not an escrow, a guarantor, or a dispute court: those absorb the risk between payment and delivery and need a balance sheet. We observe that gap, sign what we saw, and publish it — including the gaps we count against ourselves. Read-only and free. Completed and failed task results can be retrieved with GetTask for 86400 seconds. The task ID grants access to its result; keep it private. Request messages and history are not retained. Terminal tasks cannot be canceled or restarted. Expired IDs return task not found. The paid instruments (signed audits, watches, settlement attestations) are x402 doors listed at https://scvd.store/menu.json and are not A2A tasks. Never a ranking, and never a verdict without its derivation and denominator beside it.",
+        "supportedInterfaces": [
+          {
+            "url": "https://scvd.store/a2a",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "1.0"
+          },
+          {
+            "url": "https://scvd.store/a2a",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "0.3"
+          }
+        ],
+        "provider": {
+          "organization": "Record Creative Co. LLC",
+          "url": "https://scvd.store"
+        },
+        "version": "1.1.0",
+        "documentationUrl": "https://scvd.store/a2a",
+        "capabilities": {
+          "streaming": false,
+          "pushNotifications": false,
+          "extendedAgentCard": false
+        },
+        "defaultInputModes": [
+          "application/json"
+        ],
+        "defaultOutputModes": [
+          "application/json"
+        ],
+        "skills": [
+          {
+            "id": "preflight_endpoint",
+            "name": "x402 endpoint preflight",
+            "description": "Preflight an x402 endpoint: one unpaid probe answering whether the URL serves a well-formed x402 v2 challenge a stock client could sign, with every check named and defined defects by name. A shape check at one moment; never an uptime or delivery claim.",
+            "tags": [
+              "x402",
+              "preflight",
+              "endpoint",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"preflight_endpoint\",\"url\":\"https://example.com/api/paid-answer\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          },
+          {
+            "id": "verify_receipt",
+            "name": "x402 receipt verification",
+            "description": "Verify an x402 signed offer or receipt: structure, signature against the issuer's key (supplied or resolved from its did:web), liveness; a verdict with every check named. Establishes the bytes and the key, never settlement or delivery.",
+            "tags": [
+              "x402",
+              "receipt",
+              "offer",
+              "signature",
+              "ed25519",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"verify_receipt\",\"receipt\":\"eyJ…\",\"public_key_hex\":\"…optional…\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          },
+          {
+            "id": "get_endpoint_readiness",
+            "name": "x402 endpoint-readiness dataset",
+            "description": "Read what the signed weekly corpus holds about one host: rounds probed of rounds since first sighting, the last signed verdict, the tier with its fraction, the gaps counted against the observer. From the chain, not a live probe; a host never met comes back as never met.",
+            "tags": [
+              "x402",
+              "readiness",
+              "corpus",
+              "history",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"get_endpoint_readiness\",\"host\":\"example.com\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          }
+        ],
+        "securitySchemes": {},
+        "securityRequirements": []
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "SendMessage",
+        "params": {
+          "message": {
+            "messageId": "816c1824-5cdd-47e9-9d7d-0f946fb1eff6",
+            "role": "ROLE_USER",
+            "parts": [
+              {
+                "data": {
+                  "task": "preflight_endpoint",
+                  "url": "http://localhost/private"
+                }
+              }
+            ]
+          },
+          "configuration": {}
+        },
+        "id": 1
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "task": {
+            "id": "task_49d5b287-ef74-40c5-b66c-0856a941d782",
+            "contextId": "20d41df0-f93f-400d-b639-dfc09510d15d",
+            "status": {
+              "state": "TASK_STATE_FAILED",
+              "timestamp": "2026-09-17T15:08:34.737Z"
+            },
+            "artifacts": [
+              {
+                "artifactId": "artifact_f14d9e19-cf98-4459-8257-39528886a98b",
+                "name": "preflight_endpoint",
+                "parts": [
+                  {
+                    "data": {
+                      "task": "preflight_endpoint",
+                      "observed_at": "2026-09-17T15:08:34.737Z",
+                      "result": "refused: target_refused",
+                      "scope": "Nothing was probed: https only. A payment endpoint on plain http is already failing a check no probe needs to run.",
+                      "verification_url": "https://scvd.store/api/preflight/v2",
+                      "artifact_url": null,
+                      "key_url": null,
+                      "evidence": {
+                        "error": "https only. A payment endpoint on plain http is already failing a check no probe needs to run.",
+                        "code": "target_refused",
+                        "next_action": "Name a public https URL on its default port. The refusal is a statement about US and never an observation about that host — we did not look.",
+                        "documentation_url": "https://scvd.store/api/preflight/v2"
+                      },
+                      "does_not_establish": [
+                        "whether the door delivers after payment",
+                        "uptime, or anything about any moment but this one",
+                        "whether your own client will sign what the door serves (that is the before-you-pay dry run)",
+                        "whether to pay"
+                      ],
+                      "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+                    }
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "expiresAt": "2026-09-18T15:08:34.737Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "GetTask",
+        "params": {
+          "id": "task_49d5b287-ef74-40c5-b66c-0856a941d782"
+        },
+        "id": 2
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "id": "task_49d5b287-ef74-40c5-b66c-0856a941d782",
+          "contextId": "20d41df0-f93f-400d-b639-dfc09510d15d",
+          "status": {
+            "state": "TASK_STATE_FAILED",
+            "timestamp": "2026-09-17T15:08:34.737Z"
+          },
+          "artifacts": [
+            {
+              "artifactId": "artifact_f14d9e19-cf98-4459-8257-39528886a98b",
+              "name": "preflight_endpoint",
+              "parts": [
+                {
+                  "data": {
+                    "task": "preflight_endpoint",
+                    "observed_at": "2026-09-17T15:08:34.737Z",
+                    "result": "refused: target_refused",
+                    "scope": "Nothing was probed: https only. A payment endpoint on plain http is already failing a check no probe needs to run.",
+                    "verification_url": "https://scvd.store/api/preflight/v2",
+                    "artifact_url": null,
+                    "key_url": null,
+                    "evidence": {
+                      "error": "https only. A payment endpoint on plain http is already failing a check no probe needs to run.",
+                      "code": "target_refused",
+                      "next_action": "Name a public https URL on its default port. The refusal is a statement about US and never an observation about that host — we did not look.",
+                      "documentation_url": "https://scvd.store/api/preflight/v2"
+                    },
+                    "does_not_establish": [
+                      "whether the door delivers after payment",
+                      "uptime, or anything about any moment but this one",
+                      "whether your own client will sign what the door serves (that is the before-you-pay dry run)",
+                      "whether to pay"
+                    ],
+                    "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+                  }
+                }
+              ]
+            }
+          ],
+          "metadata": {
+            "expiresAt": "2026-09-18T15:08:34.737Z"
+          }
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "CancelTask",
+        "params": {
+          "id": "task_49d5b287-ef74-40c5-b66c-0856a941d782"
+        },
+        "id": 3
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "error": {
+          "code": -32002,
+          "message": "Task cannot be canceled: it is already terminal."
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "SendMessage",
+        "params": {
+          "message": {
+            "messageId": "1e9012a5-7a94-48bc-a1a0-f68f499d5219",
+            "role": "ROLE_USER",
+            "parts": [
+              {
+                "data": {
+                  "task": "verify_receipt",
+                  "receipt": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJwYXllciI6IjB4MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsImlzc3VlZEF0IjoxNzY3MjI1NjAwLCJ0cmFuc2FjdGlvbiI6IjB4YWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYiJ9.ejuDi0c6vesOF34lLIZDZZ2oAKj_Bbfnm87SsyjDWJ_uw1BOLDVZ18vj08qWC7HsKGs-ZxxlrfZc6fVWeLNPBQ",
+                  "public_key_hex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12"
+                }
+              }
+            ]
+          },
+          "configuration": {}
+        },
+        "id": 4
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": {
+          "task": {
+            "id": "task_82e567d2-aaa0-41e6-bedc-5e1712ec1705",
+            "contextId": "e1a6ed1d-0e4c-4486-a434-df23d78a0141",
+            "status": {
+              "state": "TASK_STATE_COMPLETED",
+              "timestamp": "2026-09-17T15:08:35.773Z"
+            },
+            "artifacts": [
+              {
+                "artifactId": "artifact_6aa307a9-0e87-4d3f-9e6f-add2754be7ed",
+                "name": "verify_receipt",
+                "parts": [
+                  {
+                    "data": {
+                      "task": "verify_receipt",
+                      "observed_at": "2026-09-17T15:08:35.773Z",
+                      "result": "valid",
+                      "scope": "Signature valid over the artifact's bytes against the key supplied with the request; the fields conform to the offer-receipt schema; every check named in evidence.checks.",
+                      "verification_url": "https://scvd.store/api/conformance/v1",
+                      "artifact_url": null,
+                      "key_url": "https://scvd.store/.well-known/did.json",
+                      "evidence": {
+                        "version": "v1",
+                        "verdict": "conforms",
+                        "kind": "receipt",
+                        "checks": [
+                          {
+                            "name": "parse",
+                            "ok": true,
+                            "detail": "three base64url segments, header and payload are JSON"
+                          },
+                          {
+                            "name": "alg",
+                            "ok": true,
+                            "detail": "EdDSA"
+                          },
+                          {
+                            "name": "kid",
+                            "ok": true,
+                            "detail": "did:web:scvd.store#conformance-test-key"
+                          },
+                          {
+                            "name": "schema",
+                            "ok": true,
+                            "detail": "conforms to the receipt schema"
+                          },
+                          {
+                            "name": "key-resolution",
+                            "ok": true,
+                            "detail": "public key supplied by the caller"
+                          },
+                          {
+                            "name": "signature",
+                            "ok": true,
+                            "detail": "signature verifies over ASCII(header.payload)"
+                          }
+                        ],
+                        "live": null,
+                        "liveness": "Not applicable: a receipt records something that already happened and has no expiry to check.",
+                        "key_resolution": "offline",
+                        "anchored_key_history": null,
+                        "what_this_means": "This receipt is well-formed against the x402 signed-receipt schema, carries an EdDSA signature that checks out against the key it names, and is not expired. Read the limits below before treating that as trust.",
+                        "what_this_cannot_tell_you": [
+                          "THIS IS THE ARTIFACT YOU GAVE US, not the artifact an issuer served. We did not fetch it from their origin and cannot say they ever published it. A well-formed forgery of a schema is still well-formed.",
+                          "CONFORMANCE IS NOT ENDORSEMENT. A passing offer says the document is shaped correctly and signed by the key it names. It says nothing about whether the seller delivers, prices honestly, or exists tomorrow.",
+                          "WE CHECK STRUCTURE, SIGNATURE AND TIME. Not the goods, not the settlement, not whether the amount matches what was charged."
+                        ],
+                        "our_conflict_of_interest": "WE COMPETE WITH SOME OF THE ISSUERS YOU MIGHT SEND US. This store sells x402 goods, so a verdict from us about a rival's artifact is worth no more than the method behind it. That method is MIT-licensed, zero-dependency, and byte-identical to the file this endpoint runs — reproduce any verdict that matters offline, and check ours against it.",
+                        "run_it_yourself": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier — same code, runs on your machine, no network needed if you supply the public key. If this endpoint and that file ever disagree, the file is right and we want to hear about it at /api/letter."
+                      },
+                      "does_not_establish": [
+                        "merchant identity beyond the key the receipt was checked against",
+                        "payment settlement on any chain",
+                        "delivery of the purchased service"
+                      ],
+                      "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+                    }
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "expiresAt": "2026-09-18T15:08:35.773Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "GetTask",
+        "params": {
+          "id": "task_82e567d2-aaa0-41e6-bedc-5e1712ec1705"
+        },
+        "id": 5
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": {
+          "id": "task_82e567d2-aaa0-41e6-bedc-5e1712ec1705",
+          "contextId": "e1a6ed1d-0e4c-4486-a434-df23d78a0141",
+          "status": {
+            "state": "TASK_STATE_COMPLETED",
+            "timestamp": "2026-09-17T15:08:35.773Z"
+          },
+          "artifacts": [
+            {
+              "artifactId": "artifact_6aa307a9-0e87-4d3f-9e6f-add2754be7ed",
+              "name": "verify_receipt",
+              "parts": [
+                {
+                  "data": {
+                    "task": "verify_receipt",
+                    "observed_at": "2026-09-17T15:08:35.773Z",
+                    "result": "valid",
+                    "scope": "Signature valid over the artifact's bytes against the key supplied with the request; the fields conform to the offer-receipt schema; every check named in evidence.checks.",
+                    "verification_url": "https://scvd.store/api/conformance/v1",
+                    "artifact_url": null,
+                    "key_url": "https://scvd.store/.well-known/did.json",
+                    "evidence": {
+                      "version": "v1",
+                      "verdict": "conforms",
+                      "kind": "receipt",
+                      "checks": [
+                        {
+                          "name": "parse",
+                          "ok": true,
+                          "detail": "three base64url segments, header and payload are JSON"
+                        },
+                        {
+                          "name": "alg",
+                          "ok": true,
+                          "detail": "EdDSA"
+                        },
+                        {
+                          "name": "kid",
+                          "ok": true,
+                          "detail": "did:web:scvd.store#conformance-test-key"
+                        },
+                        {
+                          "name": "schema",
+                          "ok": true,
+                          "detail": "conforms to the receipt schema"
+                        },
+                        {
+                          "name": "key-resolution",
+                          "ok": true,
+                          "detail": "public key supplied by the caller"
+                        },
+                        {
+                          "name": "signature",
+                          "ok": true,
+                          "detail": "signature verifies over ASCII(header.payload)"
+                        }
+                      ],
+                      "live": null,
+                      "liveness": "Not applicable: a receipt records something that already happened and has no expiry to check.",
+                      "key_resolution": "offline",
+                      "anchored_key_history": null,
+                      "what_this_means": "This receipt is well-formed against the x402 signed-receipt schema, carries an EdDSA signature that checks out against the key it names, and is not expired. Read the limits below before treating that as trust.",
+                      "what_this_cannot_tell_you": [
+                        "THIS IS THE ARTIFACT YOU GAVE US, not the artifact an issuer served. We did not fetch it from their origin and cannot say they ever published it. A well-formed forgery of a schema is still well-formed.",
+                        "CONFORMANCE IS NOT ENDORSEMENT. A passing offer says the document is shaped correctly and signed by the key it names. It says nothing about whether the seller delivers, prices honestly, or exists tomorrow.",
+                        "WE CHECK STRUCTURE, SIGNATURE AND TIME. Not the goods, not the settlement, not whether the amount matches what was charged."
+                      ],
+                      "our_conflict_of_interest": "WE COMPETE WITH SOME OF THE ISSUERS YOU MIGHT SEND US. This store sells x402 goods, so a verdict from us about a rival's artifact is worth no more than the method behind it. That method is MIT-licensed, zero-dependency, and byte-identical to the file this endpoint runs — reproduce any verdict that matters offline, and check ours against it.",
+                      "run_it_yourself": "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier — same code, runs on your machine, no network needed if you supply the public key. If this endpoint and that file ever disagree, the file is right and we want to hear about it at /api/letter."
+                    },
+                    "does_not_establish": [
+                      "merchant identity beyond the key the receipt was checked against",
+                      "payment settlement on any chain",
+                      "delivery of the purchased service"
+                    ],
+                    "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+                  }
+                }
+              ]
+            }
+          ],
+          "metadata": {
+            "expiresAt": "2026-09-18T15:08:35.773Z"
+          }
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "CancelTask",
+        "params": {
+          "id": "task_82e567d2-aaa0-41e6-bedc-5e1712ec1705"
+        },
+        "id": 6
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "error": {
+          "code": -32002,
+          "message": "Task cannot be canceled: it is already terminal."
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "SendMessage",
+        "params": {
+          "message": {
+            "messageId": "7719bae3-977f-43ae-9778-9c73e751b033",
+            "role": "ROLE_USER",
+            "parts": [
+              {
+                "data": {
+                  "task": "get_endpoint_readiness",
+                  "host": "never-met.example"
+                }
+              }
+            ]
+          },
+          "configuration": {}
+        },
+        "id": 7
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": {
+          "task": {
+            "id": "task_a8e309ac-43cc-4dfb-b2c1-841d8f4b6f9e",
+            "contextId": "6704c51a-8b6d-4431-b7f6-f7c0477c9637",
+            "status": {
+              "state": "TASK_STATE_COMPLETED",
+              "timestamp": "2026-09-17T15:08:36.550Z"
+            },
+            "artifacts": [
+              {
+                "artifactId": "artifact_7ca6950b-78bd-4e3b-98d6-cf5ef0db8f2c",
+                "name": "get_endpoint_readiness",
+                "parts": [
+                  {
+                    "data": {
+                      "task": "get_endpoint_readiness",
+                      "observed_at": "2026-09-17T15:08:36.550Z",
+                      "result": "never_met",
+                      "scope": "The signed chain has no round that met never-met.example. A fact about this store's coverage, not about the door.",
+                      "verification_url": "https://scvd.store/corpus/host/never-met.example.json",
+                      "artifact_url": "https://scvd.store/passport/never-met.example",
+                      "key_url": "https://scvd.store/.well-known/scvd-signing-key",
+                      "evidence": {
+                        "host": "never-met.example",
+                        "never_met": true,
+                        "rounds_in_chain": 6,
+                        "rounds_since_first_sighting": 0,
+                        "rounds_probed": 0,
+                        "rounds_gapped": 0,
+                        "first_observed": null,
+                        "last_observed": null,
+                        "gaps_by_reason": {
+                          "before_first_sighting": 6,
+                          "not_listed": 0,
+                          "listed_not_walked": 0,
+                          "possibly_beyond_cap": 0,
+                          "instrument_degraded": 0
+                        },
+                        "tier": {
+                          "tier": "indeterminate",
+                          "line": "indeterminate — 0 of 0, no rounds",
+                          "protocol": "x402",
+                          "fraction": {
+                            "ready": 0,
+                            "rounds": 0,
+                            "first_week": null,
+                            "last_week": null,
+                            "weeks": "no rounds"
+                          },
+                          "rule": "fewer rounds than the rule needs, or our coverage of this host was suspect in the window",
+                          "latest": {
+                            "verdict": null,
+                            "observed_at": null,
+                            "source": null
+                          },
+                          "coverage_suspect": false,
+                          "window": {
+                            "rounds": 0,
+                            "established_needs": 4,
+                            "standing_needs": 8
+                          },
+                          "rows": [],
+                          "criteria_url": "https://scvd.store/criteria"
+                        },
+                        "passport": {
+                          "decision": "INDETERMINATE",
+                          "freshness": "indeterminate",
+                          "observed_at": null,
+                          "verdict": null,
+                          "source": null,
+                          "url": "https://scvd.store/passport/never-met.example"
+                        },
+                        "last_probed_round": null,
+                        "verdict_changes": 0,
+                        "what_this_cannot_see": [
+                          "Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.",
+                          "Why a verdict changed. We record what a probe saw, never the cause.",
+                          "Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.",
+                          "A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.",
+                          "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
+                          "Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.",
+                          "Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did."
+                        ],
+                        "rows_url": "https://scvd.store/corpus/host/never-met.example.json",
+                        "derived_at": "2026-09-17T15:08:36.550Z",
+                        "held_for_seconds": 600
+                      },
+                      "does_not_establish": [
+                        "whether the door answers now (that is the preflight task)",
+                        "whether the door delivers after payment",
+                        "anything about a host the chain never met, beyond that it never met it",
+                        "whether to pay"
+                      ],
+                      "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+                    }
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "expiresAt": "2026-09-18T15:08:36.550Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "GetTask",
+        "params": {
+          "id": "task_a8e309ac-43cc-4dfb-b2c1-841d8f4b6f9e"
+        },
+        "id": 8
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": {
+          "id": "task_a8e309ac-43cc-4dfb-b2c1-841d8f4b6f9e",
+          "contextId": "6704c51a-8b6d-4431-b7f6-f7c0477c9637",
+          "status": {
+            "state": "TASK_STATE_COMPLETED",
+            "timestamp": "2026-09-17T15:08:36.550Z"
+          },
+          "artifacts": [
+            {
+              "artifactId": "artifact_7ca6950b-78bd-4e3b-98d6-cf5ef0db8f2c",
+              "name": "get_endpoint_readiness",
+              "parts": [
+                {
+                  "data": {
+                    "task": "get_endpoint_readiness",
+                    "observed_at": "2026-09-17T15:08:36.550Z",
+                    "result": "never_met",
+                    "scope": "The signed chain has no round that met never-met.example. A fact about this store's coverage, not about the door.",
+                    "verification_url": "https://scvd.store/corpus/host/never-met.example.json",
+                    "artifact_url": "https://scvd.store/passport/never-met.example",
+                    "key_url": "https://scvd.store/.well-known/scvd-signing-key",
+                    "evidence": {
+                      "host": "never-met.example",
+                      "never_met": true,
+                      "rounds_in_chain": 6,
+                      "rounds_since_first_sighting": 0,
+                      "rounds_probed": 0,
+                      "rounds_gapped": 0,
+                      "first_observed": null,
+                      "last_observed": null,
+                      "gaps_by_reason": {
+                        "before_first_sighting": 6,
+                        "not_listed": 0,
+                        "listed_not_walked": 0,
+                        "possibly_beyond_cap": 0,
+                        "instrument_degraded": 0
+                      },
+                      "tier": {
+                        "tier": "indeterminate",
+                        "line": "indeterminate — 0 of 0, no rounds",
+                        "protocol": "x402",
+                        "fraction": {
+                          "ready": 0,
+                          "rounds": 0,
+                          "first_week": null,
+                          "last_week": null,
+                          "weeks": "no rounds"
+                        },
+                        "rule": "fewer rounds than the rule needs, or our coverage of this host was suspect in the window",
+                        "latest": {
+                          "verdict": null,
+                          "observed_at": null,
+                          "source": null
+                        },
+                        "coverage_suspect": false,
+                        "window": {
+                          "rounds": 0,
+                          "established_needs": 4,
+                          "standing_needs": 8
+                        },
+                        "rows": [],
+                        "criteria_url": "https://scvd.store/criteria"
+                      },
+                      "passport": {
+                        "decision": "INDETERMINATE",
+                        "freshness": "indeterminate",
+                        "observed_at": null,
+                        "verdict": null,
+                        "source": null,
+                        "url": "https://scvd.store/passport/never-met.example"
+                      },
+                      "last_probed_round": null,
+                      "verdict_changes": 0,
+                      "what_this_cannot_see": [
+                        "Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.",
+                        "Why a verdict changed. We record what a probe saw, never the cause.",
+                        "Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.",
+                        "A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.",
+                        "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
+                        "Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.",
+                        "Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did."
+                      ],
+                      "rows_url": "https://scvd.store/corpus/host/never-met.example.json",
+                      "derived_at": "2026-09-17T15:08:36.550Z",
+                      "held_for_seconds": 600
+                    },
+                    "does_not_establish": [
+                      "whether the door answers now (that is the preflight task)",
+                      "whether the door delivers after payment",
+                      "anything about a host the chain never met, beyond that it never met it",
+                      "whether to pay"
+                    ],
+                    "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+                  }
+                }
+              ]
+            }
+          ],
+          "metadata": {
+            "expiresAt": "2026-09-18T15:08:36.550Z"
+          }
+        }
+      }
+    },
+    {
+      "path": "/a2a",
+      "method": "POST",
+      "status": 200,
+      "request": {
+        "jsonrpc": "2.0",
+        "method": "CancelTask",
+        "params": {
+          "id": "task_a8e309ac-43cc-4dfb-b2c1-841d8f4b6f9e"
+        },
+        "id": 9
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "error": {
+          "code": -32002,
+          "message": "Task cannot be canceled: it is already terminal."
+        }
+      }
+    }
+  ],
+  "gaps": [
+    "Directed protocol smoke, not cold discovery or stranger usability.",
+    "Preflight case checks private-target refusal; controlled public 402 is covered in the Worker test.",
+    "No payment, purchase, new signature, production deployment or end-to-end signed evidence acquisition was tested."
+  ]
+}

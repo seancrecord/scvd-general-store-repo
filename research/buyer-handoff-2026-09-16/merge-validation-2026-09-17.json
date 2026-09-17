@@ -29,7 +29,7 @@
     "buyer_tests_passed": 91,
     "typecheck": "pass",
     "build_check": "pass",
-    "application_source": "Unchanged since the passing full suite; exact final-head CI still gates merge.",
+    "application_source": "The loader correction changes no application source. Full-suite and subsequent 47-test upstream-join results are recorded separately; exact final-head CI gates merge.",
     "logs": [
       {
         "file": "validation/loader-red.log",

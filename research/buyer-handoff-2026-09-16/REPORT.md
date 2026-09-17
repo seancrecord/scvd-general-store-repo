@@ -197,5 +197,6 @@ The first TR3 CI quality run caught a separate offline-bundler gap: the
 inventory canonicalizer loader could not import Markdown. Existing evidence
 tests reproduced it before the fix. The loader now accepts text modules, and
 the historical report reuses it. All 57 offline evidence tests and 91 buyer
-tests pass; typecheck and the Worker bundle pass. Application source is
-unchanged since the passing full suite; final-head CI gates this correction.
+tests pass; typecheck and the Worker bundle pass. The loader correction changes no application source. After the full suite,
+the upstream listing merge passed typecheck and 47 focused tests across five
+files. Final-head CI gates the combined correction.
