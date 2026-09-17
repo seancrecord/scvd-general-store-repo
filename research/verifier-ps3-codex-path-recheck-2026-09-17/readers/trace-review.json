@@ -1,0 +1,25 @@
+{
+  "unsupported-1": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "requestedLayoutObserved": true,
+    "exactAbsoluteInstallCommandObserved": true,
+    "workspaceBoundaryViolationObserved": false,
+    "consumerSourceReviewed": true,
+    "notes": [
+      "One logged verification, successful. Saved output is byte-identical to captured API stdout. No implementation or outside input read observed."
+    ]
+  },
+  "unsupported-2": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "requestedLayoutObserved": true,
+    "exactAbsoluteInstallCommandObserved": true,
+    "workspaceBoundaryViolationObserved": false,
+    "consumerSourceReviewed": true,
+    "notes": [
+      "Reader reports an initial tool refusal because consumer/ did not yet exist; no command-execution event is retained for that refusal. It created consumer/ and recovered unaided. Installation files and logger cwd confirm the requested nested layout.",
+      "Separate git-status probe suppresses its error; successful verification is evidenced independently. All content reads/writes stayed inside the assigned workspace."
+    ]
+  }
+}

@@ -14,8 +14,8 @@
  *      fresh version number, which is worse than not publishing,
  *      because the changelog then claims a fix that did not ship.
  *      Refused here on a dirty tree or an unpushed HEAD.
- *   3. The bundle is hand-maintained and drifts from the shelf. The
- *      freshness suite runs before anything leaves.
+ *   3. The marketplace tree is generated from skills/scvd-general-store.
+ *      Tree parity and reference-aware freshness run before anything leaves.
  *
  * AND THREE MORE, FOUND IN ONE RUN ON 2026-08-10, all the same shape:
  * this file telling the keeper something that used to be true.
@@ -43,6 +43,8 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { readSkillTree, syncSkill } from "./skill-bundle.mjs";
+import { skillFingerprint } from "./lib/skill-tree.mjs";
 import { readSuiteOutcome } from "./lib/suite-verdict.mjs";
 
 const BUNDLE = "registry/clawhub/SKILL.md";
@@ -221,15 +223,21 @@ try {
       `This publish will write one; the next will be checked.`,
   );
 }
+syncSkill("skills/scvd-general-store", BUNDLE_DIR);
+const treeHash = skillFingerprint(readSkillTree(BUNDLE_DIR));
 const bundleHash = createHash("sha256")
   .update(readFileSync(BUNDLE))
   .digest("hex");
-if (previous && previous.bundle_sha256 === bundleHash) {
+const unchangedSincePublish = previous?.tree_sha256
+  ? previous.tree_sha256 === treeHash
+  : previous?.bundle_sha256 === bundleHash &&
+    Object.keys(readSkillTree(BUNDLE_DIR)).length === 1;
+if (unchangedSincePublish) {
   die(
     `the bundle is byte-identical to what ${previous.version} published`,
-    `Publishing ${version} would ship the same file under a new number,`,
+    `Publishing ${version} would ship the same skill tree under a new number,`,
     `with a changelog claiming a change nobody can find in it.`,
-    `Either edit ${BUNDLE} first, or do not publish — an unchanged`,
+    `Either edit skills/scvd-general-store and run skill:build, or do not publish — an unchanged`,
     `bundle is not a release.`,
   );
 }
@@ -265,7 +273,7 @@ const suite = (() => {
       ok: true,
       output: execFileSync(
         "npx",
-        ["vitest", "run", "test/skill-bundle-freshness.spec.ts"],
+        ["vitest", "run", "test/skill-bundle-freshness.spec.ts", "test/skill-prices.spec.ts", "test/skill-parity.spec.ts", "test/skill-idempotency-copy.spec.ts", "test/installed-skill.spec.ts"],
         { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
       ),
     };
@@ -381,6 +389,7 @@ if (!dryRun) {
       {
         version,
         bundle_sha256: bundleHash,
+        tree_sha256: treeHash,
         published_at: new Date().toISOString(),
         commit: head,
         changelog,

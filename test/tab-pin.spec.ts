@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import tabPackage from "../tab/package.json";
 import mcpManifest from "../mcp.json";
-import pluginSkill from "../skills/scvd-general-store/SKILL.md?raw";
-import clawhubBundle from "../registry/clawhub/SKILL.md?raw";
+import { canonicalSkill as pluginSkill, installedSkill as clawhubBundle } from "./helpers/installed-skill";
 import tabReadme from "../tab/README.md?raw";
 
 /**

@@ -1,0 +1,11 @@
+{
+  "id": "unavailable-key-1",
+  "scenario": "unavailable-key",
+  "attempt": 1,
+  "cwd": "/private/tmp/scvd-reader-unavailable-key-1-ctYVp3",
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMs": 47089,
+  "readmeUnchanged": true,
+  "tarballUnchanged": true
+}

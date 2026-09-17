@@ -1,0 +1,22 @@
+[
+  {
+    "id": "preflight",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/inspection.md"],
+    "answer": "Observed at 2026-09-17T12:00:00Z: x402 preflight verdict is ready; x402-header passed. This is only a free observation. Payment settlement, delivery, and permission to spend remain unknown. No purchase was made.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "mpp",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/inspection.md", "skill/references/mpp.md"],
+    "answer": "Observed at 2026-09-17T12:00:00Z: verdict is not_ready for x402 because x402-header failed. The endpoint advertises MPP, and mpp-challenge-present passed. This does not establish that the endpoint is globally broken or unpayable by every client; it establishes only that x402 was not ready and an MPP challenge was observed. MPP challenge validity, authorization, settlement, delivery, and permission to spend remain unverified.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  }
+]

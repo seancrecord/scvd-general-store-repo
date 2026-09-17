@@ -1,0 +1,39 @@
+{
+  "id": "tasks-new",
+  "variant": "new",
+  "mode": "tasks",
+  "modelRequested": "gpt-5.6-luna",
+  "cwd": "/private/tmp/scvd-ps4-tasks-new-VaY903",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 29551,
+  "inputHashes": {
+    "eval-tool.mjs": "320fbfc6a1e64ea6d17cc76f388a1e5c439f7dbeccdd5a9d4523b0bc6bd04b54",
+    "skill/SKILL.md": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
+    "skill/references/buyer-seller-testing.md": "7723a5949216830f0d693d2718bb11f07e6113bbb7dcd9006b64ac0321e1b702",
+    "skill/references/history.md": "5669c25f5ae8e66f76195fdec370763ff005096fb53e0ba2fc8df9e50630669a",
+    "skill/references/inspection.md": "8153fe6d71ef17c604f0455e58f882533ba3187aaddfa3c68a9060d68ae09a38",
+    "skill/references/mpp.md": "fc1c64f97565972cea667c0b1c55203b0d97b8e79b438faa0c53a4050c95bdcc",
+    "skill/references/packages.md": "8a11350d10e7d80e73b79c48fb179d2e201ac18f6de845f36860a2c98132dee3",
+    "skill/references/payment-debugging.md": "44d1f58efb073e0d14fb066a43c6b5d4427bc09c268572c42b76d5ed43479741",
+    "skill/references/purchases.md": "11afbea798677a5c99de778b941c3bd8e4805c9469d2fe45ca03ad36b840c040",
+    "skill/references/store.md": "8af371157fa30a205dcb5018dafe4d627a0be6afc4f6cf940eb11e71d59714c8",
+    "skill/references/transports.md": "bde418d3918a770977c9f7b0333dbfbaa5894b8ec46c763e1dabbeebca815a17",
+    "skill/references/verification.md": "71ab4582047334af74d26b17b577b9b26c580761f058abd04e53193d97b541aa"
+  },
+  "unchanged": {
+    "eval-tool.mjs": true,
+    "skill/SKILL.md": true,
+    "skill/references/buyer-seller-testing.md": true,
+    "skill/references/history.md": true,
+    "skill/references/inspection.md": true,
+    "skill/references/mpp.md": true,
+    "skill/references/packages.md": true,
+    "skill/references/payment-debugging.md": true,
+    "skill/references/purchases.md": true,
+    "skill/references/store.md": true,
+    "skill/references/transports.md": true,
+    "skill/references/verification.md": true
+  }
+}

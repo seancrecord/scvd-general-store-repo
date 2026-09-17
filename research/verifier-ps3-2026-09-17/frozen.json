@@ -1,0 +1,11 @@
+{
+  "date": "2026-09-17",
+  "release": "x402-verify@1.4.0",
+  "tarballFilename": "x402-verify-1.4.0.tgz",
+  "hashes": {
+    "README.md": "b5916ffd3daff21c0d6bbeccc42d732da07413e77c617e39409a7884d4faa11f",
+    "x402-verify-1.4.0.tgz": "3b93ad331fea263e2b538b33198c230c7d8c6859cc938b324bb9c509f1e81c79"
+  },
+  "frozenDirectory": "/private/tmp/scvd-ps3-revision-2026-09-17-0nirhn_j",
+  "readerTrialsExecuted": 0
+}

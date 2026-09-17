@@ -1,0 +1,32 @@
+(node:2760) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-skill-progressive-disclosure
+
+ ❯ test/agent-ux-findings.spec.ts (5 tests | 1 failed) 211ms
+     × leads the published bundle description with it too 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/agent-ux-findings.spec.ts > the strongest trust signal arrives first, not fourth > leads the published bundle description with it too
+AssertionError: expected 'description: "a live x402 practice co…' to contain 'any issuer'
+
+Expected: "any issuer"
+Received: "description: "a live x402 practice counter from $0.001. use for signed receipt verification, endpoint preflight, payment diagnosis, host history, mpp inspection, buyer/seller testing, and scvd store tasks. free checks need no wallet; live purchases settle real usdc. also a general store for agents.""
+
+ ❯ test/agent-ux-findings.spec.ts:69:40
+     67|       .split("\n")
+     68|       .find((line) => line.startsWith("description:"));
+     69|     expect(description!.toLowerCase()).toContain("any issuer");
+       |                                        ^
+     70|     // "a competitor's" and "we compete with" both make the claim; the
+     71|     // description was rewritten to a trigger phrase on 2026-08-02 and
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  1 failed | 114 passed (115)
+   Start at  10:36:08
+   Duration  32.33s (transform 86.00s, setup 254ms, import 223.95s, tests 5.15s, environment 0ms)
+

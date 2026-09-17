@@ -1,0 +1,14 @@
+{
+  "status": "unsupported",
+  "reasonCodes": ["unsupported_algorithm", "signature_not_checked"],
+  "scope": "Not verified: alg: expected EdDSA, got ES256; signature: not checked: unsupported algorithm.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "observed.json",
+  "canAuthorizePayment": false,
+  "blockers": ["unsupported_algorithm", "signature_not_checked"]
+}

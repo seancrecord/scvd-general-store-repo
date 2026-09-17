@@ -1,0 +1,25 @@
+All preserved and unmodified. The task is complete.
+
+```json
+{
+  "status": "unsupported",
+  "reasonCodes": ["unsupported_algorithm", "signature_not_checked"],
+  "scope": "Not verified: alg: expected EdDSA, got ES256; signature: not checked: unsupported algorithm.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```
+
+Notes, per the README's guidance on explaining results:
+
+- The tarball installed cleanly offline (`npm install ... --offline --ignore-scripts --no-audit --no-fund`), and `consumer.mjs` (adapted from the README quickstart, `scenario = 'unsupported'`) ran successfully through `capture-verification.mjs` (exit code 0, empty stderr; record at `.verification-runs/cc4279e9-326c-4a20-90e7-a32ad62f2dd7.json`).
+- `receipt-es256.json` is genuinely signed with ES256, an algorithm this package does not implement. `status: "unsupported"` reports a missing verification capability, not a failed cryptographic check — the signature was never observed (`signature_not_checked`), so this is not evidence of bad cryptography or a broken artifact.
+- `canAuthorizePayment: false` — no status from this library (including `valid`) authorizes spending; that decision belongs to the caller's own payment policy, separate from the signing-key/resource-authorization exclusion listed in `doesNotEstablish`.
+- No blockers: install, execution, and capture all completed as specified.

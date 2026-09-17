@@ -1,0 +1,48 @@
+TAP version 13
+# Subtest: the supplied install command works unchanged at either directory depth, even with shell punctuation in the path
+not ok 1 - the supplied install command works unchanged at either directory depth, even with shell punctuation in the path
+  ---
+  duration_ms: 2661.906458
+  location: '/private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17-path-fix/reader-harness.test.mjs:12:1'
+  failureType: 'testCodeFailure'
+  error: 'fresh readers need an explicit absolute install command'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17-path-fix/reader-harness.test.mjs:25:12)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.start (node:internal/test_runner/test:829:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: prompt refuses a relative workspace or tarball path escaping its root
+not ok 2 - prompt refuses a relative workspace or tarball path escaping its root
+  ---
+  duration_ms: 0.200208
+  location: '/private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17-path-fix/reader-harness.test.mjs:33:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17-path-fix/reader-harness.test.mjs:34:10)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+    Test.postRun (node:internal/test_runner/test:1042:19)
+    Test.run (node:internal/test_runner/test:970:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2802.833166

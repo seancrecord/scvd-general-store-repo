@@ -1,0 +1,14 @@
+{
+  "id": "159a4ca9-5508-4ee6-978e-775e9e2cd478",
+  "cwd": ".",
+  "script": "consumer-script.mjs",
+  "args": [
+    "tampered"
+  ],
+  "scriptSha256": "65fbac6443ff1ad99b95758b16f5bc88209e0b2b65d5dc07745262c220d98b56",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/159a4ca9-5508-4ee6-978e-775e9e2cd478.stdout.txt",
+  "stderrFile": ".verification-runs/159a4ca9-5508-4ee6-978e-775e9e2cd478.stderr.txt"
+}

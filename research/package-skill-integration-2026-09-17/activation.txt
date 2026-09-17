@@ -1,0 +1,22 @@
+
+> scvd-general-store@0.1.0 verifier:activation:test
+> npm ci --prefix verifier/activation-tools --ignore-scripts --no-audit --no-fund && node scripts/verifier-start-here.mjs && node --test scripts/verifier-activation.test.mjs
+
+
+added 3 packages in 353ms
+{"checked":["receipt.json","receipt-tampered.json","receipt-es256.json","issuer-key.json"],"matrixSha256":"d97a7433f9323c9398770769a299377764b266a907c1caba743152802fb35b95"}
+TAP version 13
+# Subtest: the README example works from the actual package in a clean offline project
+ok 1 - the README example works from the actual package in a clean offline project
+  ---
+  duration_ms: 1705.275458
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1753.928167

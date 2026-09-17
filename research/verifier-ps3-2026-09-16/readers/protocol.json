@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-16",
+  "host": "Codex CLI",
+  "modelRequested": "gpt-5.6-luna",
+  "attemptsPerScenario": 2,
+  "scenarios": [
+    "valid",
+    "tampered",
+    "unsupported",
+    "unavailable-key"
+  ],
+  "timeoutSeconds": 180,
+  "resume": false,
+  "rescue": false,
+  "sourceAccess": "README plus local tarball only; no monorepo access is permitted in the prompt",
+  "isolationLimit": "Fresh ephemeral context and separate directory, not a security boundary against reading other filesystem paths. Trace is inspected for compliance.",
+  "readmeSha256": "c3ff6b2e25c3e4829391ce7f41a9e0f5757cf57eabaede9486018e8e4bd1c31e",
+  "tarballSha256": "a6d108b1d8bdc8b1ca57ae72e36b8bc27380287d2e25cee31c42006cf8fe658e",
+  "secondHost": {
+    "host": "Claude Code",
+    "status": "unavailable",
+    "reason": "Installed 2.1.273; claude auth status reported loggedIn:false. No sign-in or credential changes attempted."
+  },
+  "passRule": "Executed installed code yields correct status/reason/scope and exclusions; no payment authority inferred. Retain every attempt and tool failure. Missing host is not a pass."
+}

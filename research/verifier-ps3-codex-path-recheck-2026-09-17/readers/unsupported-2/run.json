@@ -1,0 +1,50 @@
+{
+  "id": "unsupported-2",
+  "scenario": "unsupported",
+  "attempt": 2,
+  "layout": "nested-consumer",
+  "cwd": "/private/tmp/scvd-reader-path-recheck-unsupported-2-wDuL7I",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 74048,
+  "unchanged": {
+    "README.md": true,
+    "x402-verify-1.4.0.tgz": true,
+    "capture-verification.mjs": true
+  },
+  "artifacts": [
+    {
+      "path": ".verification-runs/3569765a-65f0-4e08-a527-9cd70e412864.json",
+      "sha256": "44a82bc7d0eb49c1cd9b07c04eda2bc879a162f56825049c15d0db351764e8ac"
+    },
+    {
+      "path": ".verification-runs/3569765a-65f0-4e08-a527-9cd70e412864.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".verification-runs/3569765a-65f0-4e08-a527-9cd70e412864.stdout.txt",
+      "sha256": "e0dc4029e9919ea2562f3c1f776f4379063cb2859f3b8f8a161c6cc311796908"
+    },
+    {
+      "path": "capture-verification.mjs",
+      "sha256": "759fb950ca146565454ea94a7ecd137e33f29829aca14fcce7536a23922698ea"
+    },
+    {
+      "path": "consumer/consumer-script.mjs",
+      "sha256": "aa3448e162a1a0b355bf8a1ad854e902c32ce31ec2c3f1598334cb601c8eafb4"
+    },
+    {
+      "path": "consumer/package-lock.json",
+      "sha256": "8096f90113d3bd8a04c8cf8abbe3a991bb9fce34354911b291f2feebbb7a72cc"
+    },
+    {
+      "path": "consumer/package.json",
+      "sha256": "4762b684d2cec1ab4443254fb64c48eb971514a56a4a22980a2a79c7db7f2aed"
+    },
+    {
+      "path": "observed.json",
+      "sha256": "b1524cf1fd5422968da122dc44ad104c4bc548c3f08c40d54a09fe7546feaa78"
+    }
+  ]
+}

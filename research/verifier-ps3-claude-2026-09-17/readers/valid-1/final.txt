@@ -1,0 +1,22 @@
+Installation and execution completed successfully. Summary:
+
+```json
+{
+  "status": "valid",
+  "reasonCodes": [],
+  "scope": "Signature valid over the receipt's bytes against the key supplied by the caller; the receipt's fields pass this package's local offer-receipt schema checks (rev 1).",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-claude-reader-valid-1-g420H8/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```
+
+**How I got this:** installed the tarball into a `consumer/` subdirectory with the exact required offline command, wrote `consumer/verify.mjs` using the README's quickstart code verbatim, and ran it through `capture-verification.mjs verify.mjs valid`. Exit code was 0; the logger's own `.verification-runs/<id>.json` record and `.stdout.txt` file match the printed output, confirming this is real execution output, not the README's expected-results text.
+
+**Explaining the result, per the README's own guidance:** `valid` means the signature and this package's local schema checks passed against the fixture key I supplied — nothing more. It does **not** establish merchant identity beyond that key, payment settlement on any chain, delivery of the purchased service, or that the signing key was ever authorized for `resourceUrl` (now or at issuance). In particular, this result does not decide whether an agent may spend money — that's a separate policy decision the README explicitly says never comes from this result, which is why `canAuthorizePayment` is `false` here regardless of the `valid` status.

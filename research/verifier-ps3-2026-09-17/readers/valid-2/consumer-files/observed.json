@@ -1,0 +1,64 @@
+{
+  "kind": "receipt",
+  "valid": true,
+  "status": "valid",
+  "reasonCodes": [],
+  "scope": "Signature valid over the receipt's bytes against the key supplied by the caller; the receipt's fields pass this package's local offer-receipt schema checks (rev 1).",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "verificationUrl": "https://scvd.store/api/conformance/v1",
+  "checks": [
+    {
+      "name": "parse",
+      "ok": true,
+      "status": "valid",
+      "detail": "three base64url segments, header and payload are JSON"
+    },
+    {
+      "name": "alg",
+      "ok": true,
+      "status": "valid",
+      "detail": "EdDSA"
+    },
+    {
+      "name": "kid",
+      "ok": true,
+      "status": "valid",
+      "detail": "did:web:independent.example.test#signing-key"
+    },
+    {
+      "name": "schema",
+      "ok": true,
+      "status": "valid",
+      "detail": "conforms to the local revision-1 receipt schema checks"
+    },
+    {
+      "name": "key-resolution",
+      "ok": true,
+      "status": "valid",
+      "detail": "public key supplied by the caller"
+    },
+    {
+      "name": "signature",
+      "ok": true,
+      "status": "valid",
+      "detail": "signature verifies over ASCII(header.payload)"
+    }
+  ],
+  "issuer": {
+    "kid": "did:web:independent.example.test#signing-key",
+    "keyUrl": null
+  },
+  "payload": {
+    "version": 1,
+    "resourceUrl": "https://independent.example.test/resource",
+    "network": "eip155:8453",
+    "payer": "0x0000000000000000000000000000000000000002",
+    "issuedAt": 1767225540,
+    "transaction": "0xabababababababababababababababababababababababababababababababab"
+  }
+}

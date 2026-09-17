@@ -1,7 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import bundledSkill from "../registry/clawhub/SKILL.md?raw";
-import installedSkill from "../skills/scvd-general-store/SKILL.md?raw";
+import { installedSkill as bundledSkill, canonicalSkill as installedSkill } from "./helpers/installed-skill";
 const BASE = "https://scvd.store";
 const record = (value: unknown) => value as Record<string, unknown>;
 async function read(path: string) { const response = await SELF.fetch(BASE + path); expect(response.status).toBe(200); return response; }

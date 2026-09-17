@@ -1,0 +1,24 @@
+{
+  "unsupported-1": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true,
+    "requestedLayoutObserved": true
+  },
+  "unsupported-2": {
+    "packages": [
+      {
+        "directory": "consumer/node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true,
+    "requestedLayoutObserved": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "unsupported-2",
+  "scenario": "unsupported",
+  "attempt": 2,
+  "cwd": "/private/tmp/scvd-reader-unsupported-2-Cp7ztn",
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMs": 47927,
+  "readmeUnchanged": true,
+  "tarballUnchanged": true
+}

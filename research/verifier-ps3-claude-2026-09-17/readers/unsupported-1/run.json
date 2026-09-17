@@ -1,0 +1,52 @@
+{
+  "id": "unsupported-1",
+  "scenario": "unsupported",
+  "attempt": 1,
+  "cwd": "/private/tmp/scvd-claude-reader-unsupported-1-C2lm4Z",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 40914,
+  "unchanged": {
+    "README.md": true,
+    "x402-verify-1.4.0.tgz": true,
+    "capture-verification.mjs": true
+  },
+  "modelReported": "claude-sonnet-5",
+  "hostResultSubtype": "success",
+  "hostResultIsError": false,
+  "artifacts": [
+    {
+      "path": ".verification-runs/cc4279e9-326c-4a20-90e7-a32ad62f2dd7.json",
+      "sha256": "d179fa48683ca7311278c8a946e9dda3f4207e2e794adadc633ac43d6f5b0e5b"
+    },
+    {
+      "path": ".verification-runs/cc4279e9-326c-4a20-90e7-a32ad62f2dd7.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".verification-runs/cc4279e9-326c-4a20-90e7-a32ad62f2dd7.stdout.txt",
+      "sha256": "e0dc4029e9919ea2562f3c1f776f4379063cb2859f3b8f8a161c6cc311796908"
+    },
+    {
+      "path": "capture-verification.mjs",
+      "sha256": "759fb950ca146565454ea94a7ecd137e33f29829aca14fcce7536a23922698ea"
+    },
+    {
+      "path": "consumer.mjs",
+      "sha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8"
+    },
+    {
+      "path": "observed.json",
+      "sha256": "e0dc4029e9919ea2562f3c1f776f4379063cb2859f3b8f8a161c6cc311796908"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "bb63a49535a04856983a37ad737ce8c1991811b83098e1fe008b08942c0558d8"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4ad526f2f5e3e83b7ad6a13d65372750f01a8352eb5a5fda40ead63bc4f5281d"
+    }
+  ]
+}

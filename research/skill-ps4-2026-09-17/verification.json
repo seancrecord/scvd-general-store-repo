@@ -1,0 +1,63 @@
+{
+  "date": "2026-09-17",
+  "status": "Built locally; six-session comparison completed, behavioral acceptance held on MPP overstatement",
+  "baseCommit": "7059dc8ab6207195776c85e4fd67a621240403d2",
+  "branch": "codex/skill-progressive-disclosure",
+  "preparedVersion": "3.17.0",
+  "baselineSha256": "d156cf5f4e1ea64474055a0170e2ee8bb2edf328cedae83b54df96b248fc3e24",
+  "entry": {
+    "oldBytes": 51212,
+    "newBytes": 4351,
+    "oldLines": 926,
+    "newLines": 78,
+    "byteReductionPercent": 91.5
+  },
+  "canonicalFiles": {
+    "SKILL.md": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
+    "references/buyer-seller-testing.md": "7723a5949216830f0d693d2718bb11f07e6113bbb7dcd9006b64ac0321e1b702",
+    "references/history.md": "5669c25f5ae8e66f76195fdec370763ff005096fb53e0ba2fc8df9e50630669a",
+    "references/inspection.md": "7b63bd791f70e811879dbf25752d01bc8182e86d56a4fd0d78721fa620140c38",
+    "references/mpp.md": "7413ab905c75df99092028e0359f9ba48aa79193eeecafe65947fbb0497b23b8",
+    "references/packages.md": "57545e7ffa4001e2d37573ed31bcfd402f9b7e7be208a2fb589d9c3a5dde0a9f",
+    "references/payment-debugging.md": "44d1f58efb073e0d14fb066a43c6b5d4427bc09c268572c42b76d5ed43479741",
+    "references/purchases.md": "e5a1b82eb943d8a52e805527d10ca732c59aedb1804667710d2b15d3279ebfcd",
+    "references/store.md": "b7185a3a59af5a932b75cc30bcfdebe4a0e937a84b09155459f16c8aeaf936b0",
+    "references/transports.md": "4e79a1a7f69204f983ac66b2193d5ae9a4eb34684d6d5374daf47c869a5c750e",
+    "references/verification.md": "71ab4582047334af74d26b17b577b9b26c580761f058abd04e53193d97b541aa"
+  },
+  "qualification": {
+    "contentTests": {
+      "passed": 159,
+      "files": 16,
+      "log": "final-tests.txt"
+    },
+    "packagingTests": {
+      "passed": 4,
+      "log": "packaging-tests.txt"
+    },
+    "formatValidation": "passed",
+    "typecheck": "passed",
+    "bundleDryRun": "passed",
+    "localSkillsInstall": "installation-final.json",
+    "localClawHubPackaging": "clawhub-installation.json",
+    "freshHostTrialsStarted": 6,
+    "freshHostTrialsCompleted": 6,
+    "freshHostResults": "RESULTS.md",
+    "behavioralAcceptance": false
+  },
+  "fullRepositorySuite": {
+    "command": "npm test",
+    "exitCode": 1,
+    "passed": 10270,
+    "failed": 3,
+    "skipped": 1,
+    "filesPassed": 624,
+    "filesFailed": 3,
+    "durationSeconds": 1414.87,
+    "log": "full-suite.txt",
+    "baselineControl": "baseline-control.json",
+    "assessment": "All three failures reproduced on an untouched archive of the base commit and on a separate checkpoint rerun. No new skip was introduced. The full suite is not green; newer main contains relevant repairs that still require integration."
+  },
+  "release": "Commit and draft PR authorized; no merge, skill publication, deployment or live payment.",
+  "upstreamIntegration": "upstream-integration.json"
+}

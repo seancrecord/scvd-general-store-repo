@@ -38,7 +38,7 @@ describe("the npm package tells the truth about itself", () => {
   it("ships its verifier, evidence tools, types, fixtures and documentation", () => {
     const files = manifest["files"] as string[];
     expect([...files].sort()).toEqual(
-      ["CHANGELOG.md", "LICENSE", "README.md", "fixtures/", "x402-verify.d.ts", "x402-verify.js", "evidence-bundle.js", "evidence-bundle.d.ts", "evidence-cli.mjs"].sort(),
+      ["CHANGELOG.md", "LICENSE", "README.md", "fixtures/", "examples/", "x402-verify.d.ts", "x402-verify.js", "evidence-bundle.js", "evidence-bundle.d.ts", "evidence-cli.mjs"].sort(),
     );
     expect(changelog).toContain(`## ${manifest["version"]} — `);
     // The imports at the top of this file are the existence check:

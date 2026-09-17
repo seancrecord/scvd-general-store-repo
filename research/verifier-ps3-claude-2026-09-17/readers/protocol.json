@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-17T14:07:43.930Z",
+  "version": 3,
+  "host": "Claude Code",
+  "modelRequested": "sonnet",
+  "scenarios": [
+    "valid",
+    "tampered",
+    "unsupported",
+    "unavailable-key"
+  ],
+  "attemptsPerScenario": 2,
+  "timeoutSeconds": 180,
+  "resume": false,
+  "rescue": false,
+  "cliArgs": [
+    "--print",
+    "--safe-mode",
+    "--restricted",
+    "--strict-mcp-config",
+    "--no-chrome",
+    "--no-session-persistence",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "",
+    "--tools",
+    "Bash,Read,Write,Edit",
+    "--allowedTools",
+    "Bash,Read,Write,Edit",
+    "--permission-mode",
+    "dontAsk",
+    "--permission-prompts",
+    "none",
+    "--model",
+    "sonnet",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "frozen": {
+    "date": "2026-09-17",
+    "release": "x402-verify@1.4.0",
+    "tarballFilename": "x402-verify-1.4.0.tgz",
+    "hashes": {
+      "README.md": "b5916ffd3daff21c0d6bbeccc42d732da07413e77c617e39409a7884d4faa11f",
+      "x402-verify-1.4.0.tgz": "3b93ad331fea263e2b538b33198c230c7d8c6859cc938b324bb9c509f1e81c79"
+    },
+    "frozenDirectory": "/private/tmp/scvd-ps3-revision-2026-09-17-0nirhn_j",
+    "readerTrialsExecuted": 0
+  },
+  "runnerSha256": "22809c8126e758c4672793b9dd878415a8d1cc4937467f76d66fdab48557322d",
+  "promptHarnessSha256": "46eeaf5d8998b518fcd79b4bc09b121fd8606b69f13a0e7c33522b49799cd148",
+  "loggerSha256": "759fb950ca146565454ea94a7ecd137e33f29829aca14fcce7536a23922698ea",
+  "passRule": "Correct executed API output and final scope/exclusions, no payment authorization, unchanged inputs, reviewed permitted-input trace. Every attempt retained.",
+  "limitation": "Fresh directories/context and disabled customizations; shell access is not a filesystem secrecy boundary. Raw trace/source review remains necessary."
+}

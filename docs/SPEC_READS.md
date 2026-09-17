@@ -1665,6 +1665,189 @@ afterward. The mutations include internal server errors, tool failures,
 malformed/wrong readiness refusals and uncorrelated protocol responses. No
 new paid flow or unknown-host demand-queue input is added to the live matrix.
 
+### September 17 — PS4 installed skill references and distribution
+
+Read [Agent Skills specification](https://agentskills.io/specification):
+metadata, an entry body and relative supporting references; progressive loading
+is a format convention, not proof of host behavior. Read the official
+[Skills CLI documentation](https://github.com/vercel-labs/skills): local sources,
+project agent selection and copy mode. Executed cached skills@1.5.26 locally:
+Codex and Claude-style project trees retain all eleven files. Read the official
+[ClawHub documentation](https://docs.openclaw.ai/clawhub); the older /tools/clawhub
+URL returned only a redirect page. Inspected cached ClawHub 0.23.3 source and
+executed its actual prepareSkillFilesForPublish/extractZipToDir functions with
+local bytes. No registry upload, remote install or native host auto-triggering
+was observed. Current local preflight implementation supplies the MPP wording;
+no new protocol support or fresh external MPP-spec claim is made.
+
+The skill-creator format validator passes using isolated PyYAML 6.0.2; system
+Python initially lacked that module. The package's existing Wrangler dry-run
+command was retained; no new CLI flags or Worker behavior were introduced.
+PS4 sources/results: docs/SKILL_PROGRESSIVE_DISCLOSURE_2026-09.md and
+research/skill-ps4-2026-09-17/. External fresh-reader transfer remains pending
+explicit payload/destination approval after automatic approval review rejection.
+
+September 17 follow-through: the user explicitly approved the payload and
+OpenAI destination, then authorized a commit and PR. All six prepared readers
+completed. Results and raw traces are retained in the evidence directory;
+behavioral acceptance is held because the new MPP answer overstated challenge
+presence as validity. A subsequent fetch identified newer main skill guidance
+that must be integrated before merge. No extra reader, publication or deploy
+was performed.
+
+
+## 2026-09-16 — PS1 verifier result semantics
+
+Read the primary [x402 Signed Offers and Receipts extension](https://github.com/x402-foundation/x402/blob/main/specs/extensions/extension-offer-and-receipt.md)
+while reconciling the local verifier with current source and npm. Its
+formats include JWS and EIP-712; algorithm/key identification and resource
+authorization are separate concerns. A valid signature against a fetched
+key alone does not prove the resource owner authorized that key. The
+current offer schema makes `validUntil` optional; the package's existing
+revision-1 checks require it. PS1 preserves that behavior and explicitly
+documents the narrower local profile rather than claiming full conformance.
+
+The source baseline is `6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079`.
+The 1.3.0 local tarball matched the npm-published integrity on this date.
+PS1 prepares an unpublished 1.4.0 result-contract addition: valid,
+invalid, unsupported and inconclusive, with named findings and reasons.
+No algorithm expansion, signed-record migration or hosted-verdict redesign.
+See [implementation and compatibility boundaries](VERIFIER_RESULT_SEMANTICS_2026-09.md)
+and the retained baseline under `research/verifier-ps1-2026-09-16/`.
+
+### September 16 — PS2 independent verification matrix
+
+Read the pinned x402 offer/receipt extension at
+https://github.com/x402-foundation/x402/blob/69652a69798f0b08f95bef33318896e36e210f7e/specs/extensions/extension-offer-and-receipt.md
+and EIP-712 at
+https://github.com/ethereum/EIPs/blob/0b06de5e1203b35f1338d9e61d1ccc6965face91/EIPS/eip-712.md.
+Read RFC 8037 (Ed25519 JOSE), RFC 7518 (ES256), RFC 8812 (ES256K),
+https://github.com/paulmillr/noble-curves/tree/1.9.1 and
+https://docs.ethers.org/v5/api/utils/hashing/. Sources were reachable;
+exact source hashes are retained in research/verifier-ps2-2026-09-16/sources.json.
+
+The extension keeps format-labelled JWS/EIP-712 envelopes distinct, uses
+a fixed artifact-specific EIP-712 domain with chainId 1, and requires
+authority for the resource independently of signature recovery. Optional
+offer expiry and EIP-712 zero/empty defaults are reflected in the fixtures.
+The package's local schema and unsupported families remain unchanged.
+Ethers 5's exact version is pinned; its installed signing implementation
+uses elliptic, separate from viem's noble backend. Generator dependencies
+are test-only and excluded from the package. These are synthetic offline
+qualification results, not live authority, settlement, complete extension
+conformance, or deployed-runtime observations. No secondhand source was
+needed; untested runtimes and the bounded schema oracle remain named gaps.
+See docs/VERIFIER_INDEPENDENT_VECTORS_2026-09.md and the retained qualification
+record for local tests, reproducibility and release boundaries.
+
+### September 16 — PS3 installed developer activation
+
+Read https://nodejs.org/download/release/v18.17.0/docs/api/webcrypto.html
+for explicit Node WebCrypto and Ed25519 calls, and checked the actual
+installed Node/browser type declarations. A clean TypeScript 5.9.3 consumer
+with Node types 22.13.1 exposed incompatible unrelated SubtleCrypto overloads;
+the narrow declaration was verified red before the fix and green afterward.
+The README example runs from the frozen tarball on Node 18.17.0 and 22.13.1.
+
+Read https://developers.openai.com/codex/noninteractive and
+https://code.claude.com/docs/en/cli-usage, then checked installed CLI flags
+and sign-in status for the planned fresh-reader trials. Sources were reachable.
+Automatic approval review rejected starting a Codex trial pending explicit
+approval to transmit the unreleased package/README/trial data to OpenAI.
+Claude Code is installed but not signed in. No fresh-reader trial ran and
+no model usability or time-to-result claim was made. Local tarball, runtime
+and type checks do not establish the missing host or registry observations.
+See docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md and
+research/verifier-ps3-2026-09-16/verification.json.
+
+### September 16 — PS3 approved fresh-reader results
+
+After the user's explicit approval, all eight planned Codex CLI attempts ran
+against the frozen unpublished package and README, requesting gpt-5.6-luna.
+All saved API outputs are correct; six meet execution/protocol checks and
+four also retain the full key-authority caveat in the final explanation.
+One attempt lacks a successful execution witness in the retained trace;
+one inspected home npm-cache directory metadata outside its workspace; two
+compressed key/resource authorization into spending authorization. Failures
+were retained without rescue or replacement. Claude remains signed out.
+The initial blocked status above is historical and is superseded by this
+approved cohort. The two-host gate remains incomplete; PS4 has not started.
+See docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md and
+research/verifier-ps3-2026-09-16/readers/scores.json for the bounded result.
+
+### September 17 — PS3 scope and trial logging follow-up
+
+Revised the local package README to keep signing-key/resource authority and
+payment permission distinct, retaining scope and exclusions verbatim. Added
+separate consumer execution records, an absolute local npm cache that survives
+nested installs, and nested artifact collection. Local packed JavaScript and
+strict TypeScript checks pass; regression controls expose lost cache scope,
+lost nested artifacts and falsified zero exit status. No new specification
+claim, external reader trial or publication was made. The September 16 cohort
+is unchanged. See research/verifier-ps3-2026-09-17/verification.json and
+docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md.
+
+### September 17 — revised PS3 reader cohort
+
+Ran the next authorized eight Codex CLI sessions against the frozen revised
+package and README. Eight actual API outputs and eight final scope/exclusion
+explanations are correct; seven meet the strict protocol. One reader attempted
+to open a nonexistent tarball outside its workspace, recovered without help,
+and retained correct verification evidence. No outside file contents were read;
+the boundary failure remains counted. Source review and package hashes qualify
+the other seven. The original four-of-eight cohort is unchanged. Both copy and
+harness changed, so the comparison is descriptive. Claude remains signed out;
+no second-host trial or publication occurred. See
+research/verifier-ps3-2026-09-17/RESULTS.md.
+
+### September 17 — PS3 absolute install path
+
+Protocol 3 supplies the frozen tarball through a quoted absolute path, derived
+from its manifest. The same command is tested at the trial root and in a nested
+consumer, including shell punctuation in the path. Both regressions fail before
+and pass after the fix. No new host run occurred; prior cohorts and package
+bytes are unchanged. Claude Code is installed but signed out; local CLI help
+confirms `claude auth login` for the user's sign-in. See
+research/verifier-ps3-2026-09-17-path-fix/verification.json.
+
+### September 17 — Claude second-host setup
+
+Read https://code.claude.com/docs/en/headless and
+https://code.claude.com/docs/en/cli-reference and checked installed CLI help.
+Safe mode keeps subscription authentication while suppressing customizations;
+bare mode would not use that login. Prepared fresh nonpersistent sessions with
+explicit file/shell tools and no MCP/browser connection. The CLI confirms sign-in
+with normal macOS access. Automatic approval review rejected payload disclosure
+to Anthropic without explicit approval; no trial launched and no workaround was
+attempted. See research/verifier-ps3-claude-2026-09-17/verification.json.
+
+### September 17 — approved Claude fresh-reader results
+
+The user explicitly approved transmitting the unpublished package/README and
+synthetic trial results to Anthropic. All eight prepared Claude trials ran and
+passed with correct API output, verbatim scope/exclusions, execution records,
+unchanged installed files and reviewed permitted-input traces. Host init
+reported claude-sonnet-5, four file/shell tools and no plugins/MCP servers.
+Three in-workspace log-location mistakes were recovered unaided and retained.
+The host-event adapter preserves raw traces and rejects false success; its
+regression control failed with the guard removed. The second-host observation
+is now complete; the prior Codex boundary failure awaits a separately recorded
+check of the corrected instruction. No new specification claim or publication.
+See research/verifier-ps3-claude-2026-09-17/README.md.
+
+### September 17 — PS3 Codex path correction qualified
+
+Two authorized fresh Codex trials used the unchanged frozen package and
+corrected absolute installation command, at the trial root and in a nested
+consumer directory. Both passed the existing output/scope/execution rubric
+and additional layout review. The nested reader reported and recovered from
+a missing-directory tool refusal; commentary is retained although that refusal
+has no command-execution event. Installed files, frozen inputs and historical
+cohort hashes match. Earlier Codex 7/8 and Claude 8/8 results remain unchanged;
+the separate 2/2 corrective result closes local PS3 qualification, not registry
+or release qualification. No external specification claims were changed.
+Evidence: research/verifier-ps3-codex-path-recheck-2026-09-17/README.md.
+
 ## 2026-09-17 — Verifier resubmission qualification
 
 Re-read OpenAI's live [submission guide](https://developers.openai.com/plugins/deploy/submission),

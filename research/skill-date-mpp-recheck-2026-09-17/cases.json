@@ -1,0 +1,10 @@
+[
+  {
+    "id": "preflight",
+    "request": "Inspect https://merchant.example.test/paid before I consider paying. Do the available free check and tell me what remains unknown. Do not buy anything."
+  },
+  {
+    "id": "mpp",
+    "request": "Inspect https://mpp.example.test/pay. If it says not_ready, does that establish that the endpoint is globally broken or cannot be paid by any client? Explain the protocol-specific evidence."
+  }
+]

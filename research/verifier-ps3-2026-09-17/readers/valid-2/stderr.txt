@@ -1,0 +1,9 @@
+2026-09-17T13:40:55.262161Z  WARN sqlx::query: slow statement: execution time exceeded alert threshold summary="PRAGMA auto_vacuum = INCREMENTAL; …" db.statement="\n\nPRAGMA auto_vacuum = INCREMENTAL; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA synchronous = NORMAL; \n" rows_affected=0 rows_returned=1 elapsed=2.738294791s elapsed_secs=2.738294791 slow_threshold=1s
+2026-09-17T13:40:55.615543Z  WARN sqlx::pool::acquire: acquired connection, but time to acquire exceeded slow threshold acquired_after_secs=3.096052375 slow_acquire_threshold_secs=2.0
+2026-09-17T13:41:00.229716Z  WARN sqlx::query: slow statement: execution time exceeded alert threshold summary="PRAGMA wal_checkpoint(PASSIVE)" db.statement="" rows_affected=0 rows_returned=1 elapsed=4.383066917s elapsed_secs=4.383066917 slow_threshold=1s
+2026-09-17T13:41:00.837657Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T13:41:00.854529Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T13:41:00.858996Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T13:41:00.865436Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T13:41:00.870026Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T13:41:00.873750Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back

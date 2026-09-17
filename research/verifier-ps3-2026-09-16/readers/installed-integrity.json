@@ -1,0 +1,34 @@
+{
+  "valid-1": {
+    "files": 24,
+    "unchanged": true
+  },
+  "valid-2": {
+    "files": 24,
+    "unchanged": true
+  },
+  "tampered-1": {
+    "files": 24,
+    "unchanged": true
+  },
+  "tampered-2": {
+    "files": 24,
+    "unchanged": true
+  },
+  "unsupported-1": {
+    "files": 24,
+    "unchanged": true
+  },
+  "unsupported-2": {
+    "files": 24,
+    "unchanged": true
+  },
+  "unavailable-key-1": {
+    "files": 24,
+    "unchanged": true
+  },
+  "unavailable-key-2": {
+    "files": 24,
+    "unchanged": true
+  }
+}

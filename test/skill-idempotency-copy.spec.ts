@@ -1,3 +1,4 @@
+import { installedSkill } from "./helpers/installed-skill";
 import { describe, expect, it } from "vitest";
 import { SELF } from "cloudflare:test";
 import {
@@ -34,7 +35,7 @@ async function liveSkill(): Promise<string> {
 }
 
 async function bundle(): Promise<string> {
-  return (await import("../registry/clawhub/SKILL.md?raw")).default;
+  return installedSkill;
 }
 
 describe("both pre-purchase documents name the double-charge guard", () => {

@@ -1,0 +1,39 @@
+{
+  "id": "tasks-new",
+  "variant": "new",
+  "mode": "tasks",
+  "modelRequested": "gpt-5.6-luna",
+  "cwd": "/private/tmp/scvd-ps4-tasks-new-Df6PeO",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 44972,
+  "inputHashes": {
+    "eval-tool.mjs": "320fbfc6a1e64ea6d17cc76f388a1e5c439f7dbeccdd5a9d4523b0bc6bd04b54",
+    "skill/SKILL.md": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
+    "skill/references/buyer-seller-testing.md": "7723a5949216830f0d693d2718bb11f07e6113bbb7dcd9006b64ac0321e1b702",
+    "skill/references/history.md": "5669c25f5ae8e66f76195fdec370763ff005096fb53e0ba2fc8df9e50630669a",
+    "skill/references/inspection.md": "7b63bd791f70e811879dbf25752d01bc8182e86d56a4fd0d78721fa620140c38",
+    "skill/references/mpp.md": "7413ab905c75df99092028e0359f9ba48aa79193eeecafe65947fbb0497b23b8",
+    "skill/references/packages.md": "57545e7ffa4001e2d37573ed31bcfd402f9b7e7be208a2fb589d9c3a5dde0a9f",
+    "skill/references/payment-debugging.md": "44d1f58efb073e0d14fb066a43c6b5d4427bc09c268572c42b76d5ed43479741",
+    "skill/references/purchases.md": "e5a1b82eb943d8a52e805527d10ca732c59aedb1804667710d2b15d3279ebfcd",
+    "skill/references/store.md": "b7185a3a59af5a932b75cc30bcfdebe4a0e937a84b09155459f16c8aeaf936b0",
+    "skill/references/transports.md": "4e79a1a7f69204f983ac66b2193d5ae9a4eb34684d6d5374daf47c869a5c750e",
+    "skill/references/verification.md": "71ab4582047334af74d26b17b577b9b26c580761f058abd04e53193d97b541aa"
+  },
+  "unchanged": {
+    "eval-tool.mjs": true,
+    "skill/SKILL.md": true,
+    "skill/references/buyer-seller-testing.md": true,
+    "skill/references/history.md": true,
+    "skill/references/inspection.md": true,
+    "skill/references/mpp.md": true,
+    "skill/references/packages.md": true,
+    "skill/references/payment-debugging.md": true,
+    "skill/references/purchases.md": true,
+    "skill/references/store.md": true,
+    "skill/references/transports.md": true,
+    "skill/references/verification.md": true
+  }
+}

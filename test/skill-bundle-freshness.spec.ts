@@ -1,3 +1,4 @@
+import { installedSkill } from "./helpers/installed-skill";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { RETIRED_KEYS } from "@/store/key-registry";
@@ -69,7 +70,7 @@ describe("the ClawHub bundle keeps up with the shelf", () => {
  */
 describe("the published bundle states no fact that expires", () => {
   it("claims no item count of its own", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     const counts = [
       /\b(twenty|thirty)[- ](one|two|three|four|five|six|seven|eight|nine)\b/i,
       /\b\d{1,3}\s+items\b/i,
@@ -83,7 +84,7 @@ describe("the published bundle states no fact that expires", () => {
   });
 
   it("still points at menu.json as the source of truth", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     expect(bundle).toContain("menu.json");
     expect(bundle).toContain("source of truth");
   });
@@ -91,7 +92,7 @@ describe("the published bundle states no fact that expires", () => {
   it("keeps the credentials promise in the published copy too", async () => {
     // The live document and the bundle are maintained separately, so
     // the one line that must survive gets asserted in both places.
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     expect(bundle).toContain("act without your");
     expect(bundle).toContain("credentials");
   });
@@ -114,7 +115,7 @@ describe("the published bundle states no fact that expires", () => {
  */
 describe("the bundle never advertises something the code dropped", () => {
   it("names no item that is not on the shelf", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     // Every /api/buy/<id> the bundle tells an agent to call.
     const advertised = new Set(
       [...bundle.matchAll(/\/api\/buy\/([a-z_]+)/g)].map((match) => match[1]),
@@ -128,7 +129,7 @@ describe("the bundle never advertises something the code dropped", () => {
   });
 
   it("advertises at least the cheapest door, so the pitch is never empty", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     expect(bundle).toContain("/api/buy/small_blessing");
   });
 });
@@ -148,7 +149,7 @@ describe("the bundle never advertises something the code dropped", () => {
  */
 describe("the bundle does not contradict the key registry", () => {
   it("never claims a streak the registry says is over", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     if (RETIRED_KEYS.length > 0) {
       expect(
         bundle.toLowerCase(),
@@ -164,7 +165,7 @@ describe("the bundle does not contradict the key registry", () => {
   it("tells a holder where to check which key signed their artifact", async () => {
     // After a rotation, an artifact carries a key the reader has never
     // seen. Without key_history that reads as unattributable.
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     expect(bundle).toContain("key_history");
   });
 });
@@ -186,7 +187,7 @@ describe("the bundle does not contradict the key registry", () => {
  */
 describe("the published bundle carries the store's current position", () => {
   it("says what this store is, and what it is not", async () => {
-    const raw = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const raw = installedSkill;
     // Whitespace-normalized, because a markdown line wrap is not a
     // content change and a guard that thinks otherwise fails on
     // reflow. This one did, on its own first run, against the very

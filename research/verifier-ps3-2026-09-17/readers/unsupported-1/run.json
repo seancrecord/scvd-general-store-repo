@@ -1,0 +1,61 @@
+{
+  "id": "unsupported-1",
+  "scenario": "unsupported",
+  "attempt": 1,
+  "cwd": "/private/tmp/scvd-reader-v2-unsupported-1-X0ub1M",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 104692,
+  "unchanged": {
+    "README.md": true,
+    "x402-verify-1.4.0.tgz": true,
+    "capture-verification.mjs": true
+  },
+  "artifacts": [
+    {
+      "path": ".verification-runs/55996fbe-2ccb-4bf2-8610-439756ff6541.json",
+      "sha256": "f8936357bc46facf816e11794d7bfd6475bb9384b9fbfa92b41a886645167afc"
+    },
+    {
+      "path": ".verification-runs/55996fbe-2ccb-4bf2-8610-439756ff6541.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".verification-runs/55996fbe-2ccb-4bf2-8610-439756ff6541.stdout.txt",
+      "sha256": "67005d7cc37a0b67d5c0b1142ebf334536f4ed2e82bf67e9e713702d5aa7b885"
+    },
+    {
+      "path": ".verification-runs/bc2dce02-de69-46c9-bf93-2a5b21b46d1f.json",
+      "sha256": "a468925464f18bf4f2dbe9cb609f4e1321e95296c5b518392190de74603c2165"
+    },
+    {
+      "path": ".verification-runs/bc2dce02-de69-46c9-bf93-2a5b21b46d1f.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".verification-runs/bc2dce02-de69-46c9-bf93-2a5b21b46d1f.stdout.txt",
+      "sha256": "a9639ffeb6b29e0be1ea1ee04c711d95f355f9b63385caa9b58f306de9cfa507"
+    },
+    {
+      "path": "capture-verification.mjs",
+      "sha256": "759fb950ca146565454ea94a7ecd137e33f29829aca14fcce7536a23922698ea"
+    },
+    {
+      "path": "consumer/package-lock.json",
+      "sha256": "8096f90113d3bd8a04c8cf8abbe3a991bb9fce34354911b291f2feebbb7a72cc"
+    },
+    {
+      "path": "consumer/package.json",
+      "sha256": "4762b684d2cec1ab4443254fb64c48eb971514a56a4a22980a2a79c7db7f2aed"
+    },
+    {
+      "path": "consumer/unsupported-consumer.mjs",
+      "sha256": "7d3769eefeeb24c276b4fe264125ade1e38d87dfca50cc03f9ef18459912da6b"
+    },
+    {
+      "path": "observed.json",
+      "sha256": "b1524cf1fd5422968da122dc44ad104c4bc548c3f08c40d54a09fe7546feaa78"
+    }
+  ]
+}

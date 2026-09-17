@@ -1,0 +1,7 @@
+{
+  "date": "2026-09-17",
+  "userRequest": "please do 1-4; make sure all work is merged; consolidate and hand off",
+  "scope": "One corrective fresh reader, transmitting the revised skill and the same synthetic seven cases to OpenAI through signed-in Codex CLI. Existing payload/destination authorization and explicit requested step 2 apply. Merge and publication of qualified PS1\u2013PS4 authorized.",
+  "priorCohort": "../skill-ps4-2026-09-17/",
+  "budget": "One task session; no rescue or retry; 240-second cap."
+}

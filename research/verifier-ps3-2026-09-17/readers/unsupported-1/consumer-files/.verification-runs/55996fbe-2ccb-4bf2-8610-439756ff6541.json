@@ -1,0 +1,14 @@
+{
+  "id": "55996fbe-2ccb-4bf2-8610-439756ff6541",
+  "cwd": ".",
+  "script": "consumer/unsupported-consumer.mjs",
+  "args": [
+    "unsupported"
+  ],
+  "scriptSha256": "7b80d872eefec11edfeb4cc69390bb853e4fc0283e504dee80e81efbd0dcb5ad",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/55996fbe-2ccb-4bf2-8610-439756ff6541.stdout.txt",
+  "stderrFile": ".verification-runs/55996fbe-2ccb-4bf2-8610-439756ff6541.stderr.txt"
+}

@@ -1,0 +1,33 @@
+TAP version 13
+# Subtest: matching logs supplement the original rubric, never replace trace review or interpretation
+not ok 1 - matching logs supplement the original rubric, never replace trace review or interpretation
+  ---
+  duration_ms: 4.934792
+  location: '/private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17/score-readers.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17/score-readers.test.mjs:21:44)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.start (node:internal/test_runner/test:829:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 90.0255

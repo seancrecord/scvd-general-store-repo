@@ -81,6 +81,48 @@ time; draft copy goes in chat, not on a flag.
 
 ---
 
+## PACKAGE / SKILL ADOPTION PASS — bounded, after current priority work
+
+Keeper decision, September 16: developers integrating verification get the
+first excellent experience within this pass; agent inspection follows.
+This does not reorder NOW or replace the store-wide buyer-first takeoff
+objective. Urgent evidence and buyer repairs retain priority; active V3
+work continues. TR3 skill/installation repairs are reused, not rebuilt.
+One phase at a time once this lane is eligible; no parallel build queue.
+Detailed scope, dependencies, release boundaries and first handoff:
+[package and skill build plan](docs/PACKAGE_SKILL_ADOPTION_2026-09.md).
+
+PS1 and PS2 were authorized for implementation on September 16 and are built
+and locally qualified; integration and publication remain pending. PS3 is
+locally qualified after the September 17 targeted Codex path regression. PS4
+is integrated on `codex/package-skill-milestone`; the separately recorded
+final date/MPP correction passes 2/2, with earlier 6/7 cohorts retained.
+Integrated full suite passes: 14,649 tests, one existing skip, zero failures.
+Remote CI, merge and release remain pending; PS5 onward remains planned. The controlled API baseline, original/revised Codex
+cohorts, eight Claude attempts and two targeted Codex corrective attempts are
+retained separately; offline retention remains unmeasured. No analytics platform prerequisite.
+
+| # | Build / decision | Completion gate |
+| --- | --- | --- |
+| PS1 | **Built and locally qualified, September 16.** Verification semantics in `x402-verify`, prepared as unpublished 1.4.0 on `codex/verifier-result-semantics`. [Implementation and test record](docs/VERIFIER_RESULT_SEMANTICS_2026-09.md). | Explicit status/reason codes, retained legacy booleans and scope; unsupported and unavailable checks never masquerade as failed cryptography. Regression proof, direct callers, packed TypeScript consumer, typecheck and builds pass; broad suite and final targeted qualification recorded separately. Integration and publication remain pending. |
+| PS2 | **Built and locally qualified, September 16.** Independent verification matrix on `codex/verifier-independent-vectors`, carrying the PS1 prerequisite. [Evidence and test record](docs/VERIFIER_INDEPENDENT_VECTORS_2026-09.md). | Independent JWS/EIP-712 generation and separate cryptographic checks; payload, signature, key, authority, schema and domain controls; unsupported families remain unsupported. Node, local workerd, evidence suite and clean tarball consumer pass. Integration and publication remain pending; PS3 activation is next. |
+| PS3 | **Built and locally qualified, September 17.** Packaged quickstart, independent fixture/key provenance, scope guidance and Node WebCrypto typing fix on `codex/verifier-developer-activation`. [Implementation](docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md). | Clean tarball JavaScript/strict TypeScript and local Worker/evidence checks pass. Revised Codex cohort: eight correct results and complete scope explanations, seven strict passes; original path failure retained. Claude second-host cohort: eight of eight strict passes. Two separate Codex corrective trials pass with the absolute install command at root and in a nested consumer; package integrity and execution evidence verified. [Targeted regression and qualification limits](research/verifier-ps3-codex-path-recheck-2026-09-17/README.md). Prior cohorts remain unchanged; this does not claim a replacement clean eight-of-eight Codex cohort. Integration, public wording approval and publication remain pending. |
+| PS4 | **Built locally, September 17; behavioral acceptance pending.** One canonical skill tree with a 78-line entry and ten task references on `codex/skill-progressive-disclosure`; generated ClawHub payload, installed-graph content guards and whole-tree publication fingerprint. [Implementation and limits](docs/SKILL_PROGRESSIVE_DISCLOSURE_2026-09.md). | All 159 affected content checks, four packaging checks, format validation, typecheck and bundle dry-run pass. Actual local-source installation preserves all eleven files in Codex/Claude-style directories; ClawHub local preparation/extraction agrees. Six approved fresh readers completed: metadata 10/10 each; task rubric old 5/7, new 6/7, no skill 4/7. Original MPP wording overstated presence as validity; the integrated correction fixes it, with a retained timestamp omission (6/7). Explicit timestamp guidance then passes a separate final two-case date/MPP check (2/2), closing local corrective qualification without claiming a replacement seven-case cohort. Saved in commit `288948ed` and [draft PR #768](https://github.com/seancrecord/scvd-general-store-repo/pull/768). Full suite: 10,270 passed, three failures reproduced on the untouched base, one existing skip. Integrate newer main safety/recovery guidance before merge. No general reliability, remote install or publication claim. |
+| PS5 | One justified verifier interoperability increment. | Selected combination passes independent vectors and activation checks; capability inventory agrees with implementation and runtime. |
+| PS6 | Agent inspection across existing entry points. | Reachability, protocols, terms, verified claims and uncertainty remain distinct; read-only behavior and existing verdict/exit meanings preserved. Does not wait for every PS5 format. |
+| PS7 | Remaining MPP package/distribution integration. | Reconcile V3 first; only remaining deltas built, mixed histories preserved, MPP-only is not globally called broken. Existing V3 implementation does not wait on this phase. |
+| PS8 | Conditional signer addition. | Named issuer workflow and independent qualification; otherwise defer. |
+| PS9 | Bounded UCP inspection experiment. | One selected read-only job, recorded evidence and controls, explicit go/defer decision; no portfolio-wide support promise. |
+| PS10 | Internal extraction decision. | Two demonstrated consumers justify shared primitives, or record that no extraction is useful. UCP deferral does not force a rewrite or block this decision. |
+
+**Maintenance:** a reproduced standalone MCP-starter compatibility defect
+may take a small serial repair slot without waiting for PS8–PS10. Hosted
+MCP is not rebuilt. Tab, corpus client and defects expand only for a
+demonstrated workflow or necessary conformance/vocabulary maintenance.
+Keeper copy/publication actions are filed when the release is concrete.
+
+---
+
 ## LATER — option value, demand-tagged
 
 Hands in many pots, cheap, reversible. Build when a

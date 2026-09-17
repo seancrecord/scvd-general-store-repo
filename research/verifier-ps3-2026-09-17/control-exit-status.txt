@@ -1,0 +1,59 @@
+TAP version 13
+# Subtest: nested offline install keeps its cache local; all four real API results have separate execution records
+ok 1 - nested offline install keeps its cache local; all four real API results have separate execution records
+  ---
+  duration_ms: 831.743333
+  ...
+# Subtest: later shell failure cannot erase a successful record; consumer failure retains its own nonzero status
+not ok 2 - later shell failure cannot erase a successful record; consumer failure retains its own nonzero status
+  ---
+  duration_ms: 344.543458
+  location: '/private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17/reader-harness.test.mjs:55:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        0,
+    +   0
+    -   13
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 0
+    1: 13
+  actual:
+    0: 0
+    1: 0
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17/reader-harness.test.mjs:66:10)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+    Test.postRun (node:internal/test_runner/test:1042:19)
+    Test.run (node:internal/test_runner/test:970:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: artifact collection preserves nested consumers without following out-of-workspace symlinks
+ok 3 - artifact collection preserves nested consumers without following out-of-workspace symlinks
+  ---
+  duration_ms: 1.1045
+  ...
+# Subtest: an existing attempt is refused before launching any host
+ok 4 - an existing attempt is refused before launching any host
+  ---
+  duration_ms: 0.445459
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1343.245875

@@ -1,0 +1,20 @@
+Installed the package, ran the README's quickstart consumer script against the `tampered` scenario through the provided logger, and captured the actual stdout to `observed.json`. The run was clean (exit 0, empty stderr).
+
+```json
+{
+  "status": "invalid",
+  "reasonCodes": ["signature_invalid"],
+  "scope": "Not verified: signature: signature does NOT verify against the resolved key.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-claude-reader-tampered-2-u2aCAS/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```
+
+Per the README's guidance on explaining results: this `invalid`/`signature_invalid` outcome means the local library found a required failure — the signature does not verify over the receipt's bytes against the supplied key — using the packaged synthetic `receipt-tampered.json` fixture and separate `issuer-key.json` test key (traced in `fixtures/start-here/README.md` to the independent fixture matrix; no real service identity or network call is involved). It says nothing about the underlying cryptography being broken elsewhere, and it is **not** evidence bearing on delivery, settlement, merchant trust, or whether the signing key was ever authorized for `resourceUrl` — those four exclusions apply regardless of status, per the README. `canAuthorizePayment` is `false` because no `status`/result from this package ever authorizes spending; that decision is the caller's own policy, independent of this check.

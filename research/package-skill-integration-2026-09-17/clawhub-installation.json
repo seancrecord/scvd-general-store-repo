@@ -1,0 +1,20 @@
+{
+  "cliVersion": "0.23.3",
+  "files": [
+    "SKILL.md",
+    "references/buyer-seller-testing.md",
+    "references/history.md",
+    "references/inspection.md",
+    "references/mpp.md",
+    "references/packages.md",
+    "references/payment-debugging.md",
+    "references/purchases.md",
+    "references/store.md",
+    "references/transports.md",
+    "references/verification.md"
+  ],
+  "destination": "/private/tmp/scvd-clawhub-installed-ZURjRg",
+  "canonicalSha256": "50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606",
+  "installedSha256": "50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606",
+  "scope": "Executed ClawHub preparation and archive extraction locally; no auth, registry API, upload, or claim of remote installation."
+}

@@ -1,0 +1,22 @@
+The install and execution both completed successfully, and the observed output matches the README's documented "valid" scenario exactly. Per the README's guidance (scope + doesNotEstablish must be retained verbatim, and "does not authorize payment" is not a substitute for the signing-key/resource exclusion), here is the result:
+
+```json
+{
+  "status": "valid",
+  "reasonCodes": [],
+  "scope": "Signature valid over the receipt's bytes against the key supplied by the caller; the receipt's fields pass this package's local offer-receipt schema checks (rev 1).",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-claude-reader-valid-2-K8tuca/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```
+
+**Explanation, per README guidance:** `status: "valid"` means only that the signature verified against the caller-supplied key and the receipt's fields passed this package's local rev-1 schema checks — nothing more. It does not establish merchant identity beyond that key, payment settlement on any chain, delivery of the purchased service, or that the signing key was authorized for `resourceUrl` (now or at issuance). Payment authorization is a separate policy decision that never follows from this result, and that exclusion is distinct from — not replaced by — the signing-key/resource-authorization exclusion above.
+
+**How this was produced:** installed via the exact specified command from a `consumer/` subdirectory (`npm install '<abs-path>/x402-verify-1.4.0.tgz' --offline --ignore-scripts --no-audit --no-fund` → `added 1 package`), then ran the README's unmodified quickstart code (`consumer/verify.mjs`) for the `valid` scenario through `capture-verification.mjs`, which recorded exit code 0 and the stdout above in `.verification-runs/`. No verifier source was inspected; only README, fixtures, and type declarations were read.

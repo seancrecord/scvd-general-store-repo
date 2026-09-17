@@ -1,0 +1,20 @@
+{
+  "status": "unsupported",
+  "reasonCodes": [
+    "unsupported_algorithm",
+    "signature_not_checked"
+  ],
+  "scope": "Parsed the receipt and validated its local schema; ES256 was recognized but unsupported, so the signature was not verified.",
+  "doesNotEstablish": [
+    "merchant identity",
+    "payment settlement",
+    "service delivery",
+    "authorization to spend"
+  ],
+  "outputFile": "/private/tmp/scvd-reader-unsupported-2-Cp7ztn/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": [
+    "ES256 is unsupported",
+    "Signature verification was not performed"
+  ]
+}

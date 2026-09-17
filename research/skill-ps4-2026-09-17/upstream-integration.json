@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-09-17",
+  "comparisonBase": "7059dc8ab6207195776c85e4fd67a621240403d2",
+  "originMain": "57af0fc73c4e6f6cfd758ed5db5b5833ff98aba3",
+  "publishedSkillVersion": "3.16.2",
+  "declaredSkillVersion": "3.16.7",
+  "integrationStatus": "Pending; checkpoint preserves the exact evaluated skill tree. Do not merge before carrying forward newer main guidance and rerunning checks.",
+  "requiredGuidance": [
+    "Context-anchor storage/privacy and MCP request-body preference",
+    "Persistent purchase-key claims and evidence-backed payment recovery",
+    "Replay paid-call evidence endpoint",
+    "Archived Almanac status",
+    "Pinned tab installation and local execution scope",
+    "Quote hashes and per-attempt settlement state"
+  ]
+}

@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
+  "description": "Sean-Claude Van Damme's General Store \u2014 a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {
     "type": "git",
@@ -103,7 +103,11 @@
     "ownership:test": "node --test scripts/ownership-check.test.mjs",
     "ownership:sign": "node scripts/sign-origin.mjs",
     "buyer:cold": "node scripts/buyer-cold-isolated.mjs",
-    "a2a:v1:live": "node scripts/a2a-v1-live.mjs"
+    "a2a:v1:live": "node scripts/a2a-v1-live.mjs",
+    "skill:build": "node scripts/skill-bundle.mjs --write",
+    "skill:check": "node scripts/skill-bundle.mjs && node --test scripts/skill-bundle.test.mjs",
+    "verifier:vectors:check": "npm ci --prefix verifier/vector-tools --ignore-scripts --no-audit --no-fund && npm run check --prefix verifier/vector-tools && node --test verifier/vector-tools/workflow.test.mjs",
+    "verifier:activation:test": "npm ci --prefix verifier/activation-tools --ignore-scripts --no-audit --no-fund && node scripts/verifier-start-here.mjs && node --test scripts/verifier-activation.test.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

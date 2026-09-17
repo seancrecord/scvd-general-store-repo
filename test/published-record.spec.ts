@@ -1,3 +1,5 @@
+import { installedSkillFiles } from "./helpers/installed-skill";
+import { skillFingerprint } from "../scripts/lib/skill-tree.mjs";
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import PUBLISHED from "../registry/clawhub/published.json";
@@ -78,6 +80,8 @@ describe("the published record can be trusted by the guard that reads it", () =>
       expect(String(PUBLISHED.bundle_sha256)).toMatch(/^[0-9a-f]{64}$/);
       return;
     }
+    const treeHash = (PUBLISHED as Record<string, unknown>)["tree_sha256"];
+    if (treeHash !== undefined) expect(skillFingerprint(installedSkillFiles)).toBe(treeHash);
     expect(
       bundleHash,
       `registry/clawhub/SKILL.md has changed since ${PUBLISHED.version} was published, ` +

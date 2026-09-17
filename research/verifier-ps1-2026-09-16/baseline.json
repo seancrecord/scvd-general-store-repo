@@ -1,0 +1,229 @@
+{
+  "sourceCommit": "6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079",
+  "version": "1.3.0",
+  "runtime": "v22.13.1",
+  "scope": "Controlled local-tarball API baseline outside monorepo; no human/agent usability or organic-adoption claim.",
+  "pack": {
+    "id": "x402-verify@1.3.0",
+    "name": "x402-verify",
+    "version": "1.3.0",
+    "size": 31076,
+    "unpackedSize": 93161,
+    "shasum": "9d02d5424935316ab07bacb255339040ad703362",
+    "integrity": "sha512-2aEbVEYCyIeIVxGHtkjR9zkglXjtVDSarZrQePHkZ2207TMdNRHncRmD9sL5lHfWurQjYW8uqphGrtefnNsUgA==",
+    "filename": "x402-verify-1.3.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 1587,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 17872,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.d.ts",
+        "size": 1831,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.js",
+        "size": 9551,
+        "mode": 420
+      },
+      {
+        "path": "evidence-cli.mjs",
+        "size": 6740,
+        "mode": 493
+      },
+      {
+        "path": "fixtures/issuer-key-document.json",
+        "size": 344,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-expired-but-wellformed.json",
+        "size": 935,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-tampered-payload.json",
+        "size": 843,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-valid.json",
+        "size": 1110,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-missing-payer.json",
+        "size": 762,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-valid.json",
+        "size": 1090,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-wrong-key.json",
+        "size": 961,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1483,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.d.ts",
+        "size": 7481,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.js",
+        "size": 39503,
+        "mode": 420
+      }
+    ],
+    "entryCount": 16,
+    "bundled": []
+  },
+  "outcomes": [
+    {
+      "scenario": "valid",
+      "valid": true,
+      "status": null,
+      "reasonCodes": null,
+      "checks": [
+        {
+          "name": "parse",
+          "ok": true,
+          "detail": "three base64url segments, header and payload are JSON"
+        },
+        {
+          "name": "alg",
+          "ok": true,
+          "detail": "EdDSA"
+        },
+        {
+          "name": "kid",
+          "ok": true,
+          "detail": "did:web:scvd.store#conformance-test-key"
+        },
+        {
+          "name": "schema",
+          "ok": true,
+          "detail": "conforms to the receipt schema"
+        },
+        {
+          "name": "key-resolution",
+          "ok": true,
+          "detail": "public key supplied by the caller"
+        },
+        {
+          "name": "signature",
+          "ok": true,
+          "detail": "signature verifies over ASCII(header.payload)"
+        }
+      ]
+    },
+    {
+      "scenario": "wrong-key",
+      "valid": false,
+      "status": null,
+      "reasonCodes": null,
+      "checks": [
+        {
+          "name": "parse",
+          "ok": true,
+          "detail": "three base64url segments, header and payload are JSON"
+        },
+        {
+          "name": "alg",
+          "ok": true,
+          "detail": "EdDSA"
+        },
+        {
+          "name": "kid",
+          "ok": true,
+          "detail": "did:web:scvd.store#conformance-test-key"
+        },
+        {
+          "name": "schema",
+          "ok": true,
+          "detail": "conforms to the receipt schema"
+        },
+        {
+          "name": "key-resolution",
+          "ok": true,
+          "detail": "public key supplied by the caller"
+        },
+        {
+          "name": "signature",
+          "ok": false,
+          "detail": "signature does NOT verify against the resolved key"
+        }
+      ]
+    },
+    {
+      "scenario": "unsupported-algorithm",
+      "valid": false,
+      "status": null,
+      "reasonCodes": null,
+      "checks": [
+        {
+          "name": "parse",
+          "ok": true,
+          "detail": "three base64url segments, header and payload are JSON"
+        },
+        {
+          "name": "alg",
+          "ok": false,
+          "detail": "expected EdDSA, got ES256"
+        },
+        {
+          "name": "kid",
+          "ok": true,
+          "detail": "did:web:scvd.store#conformance-test-key"
+        },
+        {
+          "name": "schema",
+          "ok": true,
+          "detail": "conforms to the receipt schema"
+        },
+        {
+          "name": "key-resolution",
+          "ok": true,
+          "detail": "public key supplied by the caller"
+        },
+        {
+          "name": "signature",
+          "ok": false,
+          "detail": "signature does NOT verify against the resolved key"
+        }
+      ]
+    },
+    {
+      "scenario": "key-unavailable",
+      "valid": false,
+      "status": null,
+      "reasonCodes": null,
+      "checks": [
+        {
+          "name": "key-resolution",
+          "ok": false,
+          "detail": "issuer key document unreachable: Error: offline control"
+        }
+      ]
+    }
+  ]
+}
