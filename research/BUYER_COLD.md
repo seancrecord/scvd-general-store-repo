@@ -32,6 +32,17 @@ These are context controls, not proof of absence of pretrained knowledge
 or a filesystem security boundary against a malicious agent. Review the
 trace for local reads and hidden-context disclosures before accepting it.
 
+Each fresh session also has `./work` for tooling and temporary copies.
+Both capability and buyer launches set npm's cache inside that scratch
+directory, using the same shared launch function. The placement and actual
+environment key names are recorded in the launch and run records. No user
+configuration is edited and no package is preinstalled. Scratch files are
+not captured as evidence; the buyer must save its original public responses,
+issuer-key observations and verification artifacts in `./evidence`. The
+existing byte/file, symlink and directory-depth limits still apply there.
+This new instrument boundary requires fresh host qualification before a
+later live cohort. [Failure basis and offline checks](takeoff-session-workspace-2026-09-17/README.md).
+
 `intent_search` and `catalogue` prompts omit SCVD's name. `directed` supplies
 a public listing and measures subsequent use, with discovery excluded.
 Verification can be explicitly prompted or unprompted; do not combine the

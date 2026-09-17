@@ -1913,6 +1913,19 @@ PR #751 subsequently closed that mismatch for the shared verifier handlers:
 both doors derive those hints from one definition, and the parity test checks
 every annotation field. This is not a new audit of every general-only tool.
 
+## 2026-09-17 — Native buyer npm cache placement
+
+Read npm's [v10 configuration documentation](https://docs.npmjs.com/cli/v10/using-npm/config/):
+environment configuration is case-insensitive, lowercase settings take
+precedence inside npm scripts, and the POSIX default cache is `~/.npm`.
+The runner supplies both cache spellings with one fresh workspace path.
+Real offline child-process checks with local npm 10.9.2 confirm that npm
+resolves that path and it is writable, with no user configuration changes.
+No source was unreachable. Native-model tool inheritance under the changed
+runner remains a separate qualification step; a successful Node child test
+does not prove a buyer completed. Evidence and scope:
+[`research/takeoff-session-workspace-2026-09-17/README.md`](../research/takeoff-session-workspace-2026-09-17/README.md).
+
 ## 2026-09-17 — Native cold-host qualification
 
 Read the native Codex 0.153.4 `exec`, `features list` and `debug prompt-input`

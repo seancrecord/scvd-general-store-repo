@@ -56,6 +56,13 @@ this section is always the queue and nothing else.
 | B-WAVES | **Four-wave buyer acceptance — Wave 1 partially measured September 12.** Public collection and isolated cold-to-quote cohort complete at their bounded scope; buyer-grade shopping evidence collector built and fixture-tested. | Real buyers need correct goods, recoverable money and consistent terms, not just successful endpoint status. | Complete semantic discovery across all surfaces, recursive concrete-link and all-error coverage; rerun BUY-040/042/044 after repair. Then real cheap-rail scenarios, architecture representatives and offered full shelf in that order under the keeper's ceiling. Require chain reconciliation, correct subject, completed fulfillment and fresh-recipient understanding. No mocked or queued result promoted to paid delivery. EW-01–04; evidence and limits in `research/BUYER_RUN_ORDER.md`. |
 
 
+**TR3 workspace follow-through, September 17:** the native buyer's repeated
+npm-cache refusal has a per-session cache repair and a separate tooling
+scratch directory. Evidence limits are unchanged; local launcher controls
+pass, and fresh native qualification remains required. The retained failures
+and pending interpretation/navigation findings are in the
+[workspace repair record](research/takeoff-session-workspace-2026-09-17/README.md).
+
 Ordered 2026-09-03 under his lens: value or potential value
 if the market takes off, not ROI now ("think of it as tech
 in 0% interest rate times"). A1–A3, the next three moves of
