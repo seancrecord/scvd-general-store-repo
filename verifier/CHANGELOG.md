@@ -4,7 +4,7 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
-## 1.4.0 — 2026-09-16 (unreleased)
+## 1.4.0 — 2026-09-17
 
 **Developer activation.** A runnable packaged Node example, independent
 synthetic receipt and separately supplied test key now lead the README.

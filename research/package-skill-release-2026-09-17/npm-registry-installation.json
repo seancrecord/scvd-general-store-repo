@@ -1,0 +1,105 @@
+{
+  "package": "x402-verify",
+  "version": "1.4.0",
+  "node": "v22.22.2",
+  "npm": "10.9.7",
+  "typescript": "5.9.3",
+  "consumerDirectory": "/tmp/claude-0/-home-user-scvd-general-store-repo/32eb9d5a-b853-56b0-baaa-c5f6ac556439/scratchpad/x402-verify-registry-HBoYBU",
+  "resolved": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.4.0.tgz",
+  "integrity": "sha512-OCPhvLadl+B8pZHYow0c7tA/QfkUnPHfSPiuNzHhFmPuMS0yBF273XwnUE6cFcwv+Laakyvk/gqRhAq/gzkOqw==",
+  "distIntegrity": "sha512-OCPhvLadl+B8pZHYow0c7tA/QfkUnPHfSPiuNzHhFmPuMS0yBF273XwnUE6cFcwv+Laakyvk/gqRhAq/gzkOqw==",
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.4.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "dependencies": null,
+  "exampleMatchesReadme": true,
+  "outcomes": {
+    "valid": {
+      "status": "valid",
+      "reasonCodes": [],
+      "pass": true
+    },
+    "tampered": {
+      "status": "invalid",
+      "reasonCodes": [
+        "signature_invalid"
+      ],
+      "pass": true
+    },
+    "unsupported": {
+      "status": "unsupported",
+      "reasonCodes": [
+        "unsupported_algorithm",
+        "signature_not_checked"
+      ],
+      "pass": true
+    },
+    "unavailable-key": {
+      "status": "inconclusive",
+      "reasonCodes": [
+        "key_unavailable",
+        "signature_not_checked"
+      ],
+      "pass": true
+    }
+  },
+  "unknownScenario": "threw Unknown scenario",
+  "typedConsumerStatuses": [
+    "valid",
+    "invalid",
+    "unsupported",
+    "inconclusive"
+  ],
+  "typedConsumerPass": true,
+  "fileHashes": {
+    "x402-verify.js": {
+      "installedSha256": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6",
+      "sourceSha256": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6",
+      "matchesSource": true
+    },
+    "x402-verify.d.ts": {
+      "installedSha256": "1b85b8dd7b182b2cdf133f8807cec151e2d7e07b3500713223d0be956a540bec",
+      "sourceSha256": "1b85b8dd7b182b2cdf133f8807cec151e2d7e07b3500713223d0be956a540bec",
+      "matchesSource": true
+    },
+    "evidence-bundle.js": {
+      "installedSha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "sourceSha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "matchesSource": true
+    },
+    "evidence-bundle.d.ts": {
+      "installedSha256": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a",
+      "sourceSha256": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a",
+      "matchesSource": true
+    },
+    "evidence-cli.mjs": {
+      "installedSha256": "9e87839106c858ecaba6ff69dbfc58760561d24177cc1d4ff0f1ea09084563c3",
+      "sourceSha256": "9e87839106c858ecaba6ff69dbfc58760561d24177cc1d4ff0f1ea09084563c3",
+      "matchesSource": true
+    },
+    "examples/verify-receipt.mjs": {
+      "installedSha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+      "sourceSha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+      "matchesSource": true
+    },
+    "README.md": {
+      "installedSha256": "95feccf2d9f07456b121aba94d80d592712a179de74ba0ff4efb0e0c07d0d012",
+      "sourceSha256": "95feccf2d9f07456b121aba94d80d592712a179de74ba0ff4efb0e0c07d0d012",
+      "matchesSource": true
+    },
+    "CHANGELOG.md": {
+      "installedSha256": "40ea4eaf86e7ea12d30be250c7ab347cba26e0c398f96aef5b365eb8edff5c67",
+      "sourceSha256": "40ea4eaf86e7ea12d30be250c7ab347cba26e0c398f96aef5b365eb8edff5c67",
+      "matchesSource": true
+    },
+    "package.json": {
+      "installedSha256": "86c9fb1f11f4b88737796f705237a8cfa24b85cc85653039b5bf504a89e53d39",
+      "sourceSha256": "86c9fb1f11f4b88737796f705237a8cfa24b85cc85653039b5bf504a89e53d39",
+      "matchesSource": true
+    }
+  },
+  "scope": "Registry installation of the published version into a fresh directory outside the repository. Fixture-only outcomes; no issuer network requests. Source hashes compare the installed files with the merged commit checkout."
+}

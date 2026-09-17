@@ -48,6 +48,11 @@ PS3's 1.4.0 library remains explicitly described as an unpublished preview.
 No registry version is claimed to contain its new API. The new wording remains
 draft pending the keeper's publication review.
 
+Release note, September 17: the keeper authorized the release; 1.4.0 is
+published and 3.17.0 submitted. Current status is in
+[the release record](PACKAGE_SKILL_RELEASE_2026-09-17.md); the paragraph
+above describes this document's own date.
+
 ## Reuse of buyer-flow evidence
 
 Reviewed the September 12 cold skill trace in
