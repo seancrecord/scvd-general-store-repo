@@ -1,0 +1,30 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+const repo=process.cwd();
+const manifest=JSON.parse(fs.readFileSync('verifier/package.json'));
+assert.equal(manifest.name,'x402-verify');assert.match(manifest.version,/^\d+\.\d+\.\d+$/);
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'scvd-registry-verifier-'));
+const run=(exe,args,cwd=dir)=>execFileSync(exe,args,{cwd,encoding:'utf8',stdio:['ignore','pipe','pipe']});
+const view=JSON.parse(run('npm',['view',`${manifest.name}@${manifest.version}`,'dist','--json']));
+fs.writeFileSync(path.join(dir,'package.json'),'{"private":true,"type":"module"}\n');
+run('npm',['install',`${manifest.name}@${manifest.version}`,'--ignore-scripts','--no-audit','--no-fund']);
+const pack=JSON.parse(run('npm',['pack','./verifier','--ignore-scripts','--json','--pack-destination',dir],repo))[0];
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const installed=path.join(dir,'node_modules',manifest.name);
+const expectedPack=path.join(dir,'expected-pack');fs.mkdirSync(expectedPack);run('tar',['-xzf',path.join(dir,pack.filename),'-C',expectedPack]);
+const hashes={};
+for(const f of pack.files){const wanted=sha(fs.readFileSync(path.join(expectedPack,'package',f.path)));const actual=sha(fs.readFileSync(path.join(installed,f.path)));assert.equal(actual,wanted,f.path);hashes[f.path]=actual;}
+fs.copyFileSync(path.join(installed,'examples/verify-receipt.mjs'),path.join(dir,'verify.mjs'));
+const expected={valid:'valid',tampered:'invalid',unsupported:'unsupported','unavailable-key':'inconclusive'};
+const outcomes={};for(const [scenario,status] of Object.entries(expected)){const result=JSON.parse(run(process.execPath,['verify.mjs',scenario]));assert.equal(result.status,status);assert.ok(result.scope);assert.ok(result.doesNotEstablish.length);outcomes[scenario]=result;}
+const dev=JSON.parse(fs.readFileSync('verifier/activation-tools/package.json')).devDependencies;
+run('npm',['install','--save-dev',`typescript@${dev.typescript}`,`@types/node@${dev['@types/node']}`,'--ignore-scripts','--no-audit','--no-fund']);
+fs.copyFileSync('research/verifier-ps3-2026-09-16/consumer.mts',path.join(dir,'consumer.mts'));
+run(process.execPath,['node_modules/typescript/bin/tsc','--strict','--module','NodeNext','--moduleResolution','NodeNext','--target','ES2022','--outDir','built','consumer.mts']);
+const typed=run(process.execPath,['built/consumer.mjs']).trim().split('\n').map(JSON.parse);assert.deepEqual(typed.map(x=>x.status),Object.values(expected));
+const report={date:new Date().toISOString(),package:manifest.name,version:manifest.version,directory:dir,dist:view,localPackIntegrity:pack.integrity,installedFiles:hashes,outcomes,typescript:{compiled:true,statuses:typed.map(x=>x.status)},scope:'Fresh public-registry install; all packed file bytes match the release source; four JS and four strict TypeScript outcomes. No real issuer, payment or settlement test.'};
+fs.writeFileSync(path.join(repo,'research/package-skill-integration-2026-09-17/registry-installation.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({version:manifest.version,files:Object.keys(hashes).length,typescript:true,directory:dir}));
