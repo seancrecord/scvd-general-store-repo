@@ -2,6 +2,12 @@
   "note": "Wallets that belong to the house. A settlement from any of these is family and never counts as an organic sale (rule 13). Addresses are public on chain; nothing here is a secret. Single source of truth: src/lib/channel.ts reads it at runtime, scripts/shopping-run.mjs reads it before spending, and a test walks it.",
   "wallets": [
     {
+      "address": "0x91FacBaB94e21269A8723087a61A0D75c3BD0AD0",
+      "who": "the keeper's AgentCash qualification wallet (Base)",
+      "since": "2026-09-17",
+      "why": "Funded by the keeper for the bounded checkout qualification requested in the catalog/verifier review. Listed before its first purchase so this test cannot be counted as organic demand."
+    },
+    {
       "address": "0x137ae5e3c7ed176744226f67223de50ca3a19e5a",
       "who": "the founding burner",
       "since": "2026-07-22",

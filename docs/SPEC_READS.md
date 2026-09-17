@@ -1664,3 +1664,39 @@ before the repair; eight mutated-response regressions failed before and pass
 afterward. The mutations include internal server errors, tool failures,
 malformed/wrong readiness refusals and uncorrelated protocol responses. No
 new paid flow or unknown-host demand-queue input is added to the live matrix.
+
+## 2026-09-17 — Verifier resubmission qualification
+
+Re-read OpenAI's live [submission guide](https://developers.openai.com/plugins/deploy/submission),
+[MCP review requirements](https://developers.openai.com/plugins/deploy/app-review),
+and [plugin guidelines](https://developers.openai.com/plugins/app-guidelines).
+The portal requires five positive and three negative cases, accurate hints,
+a verified developer identity, Apps Management write access, and domain
+control. A public submission starts review; publication follows approval.
+The commerce rule excludes digital services and indirect freemium upsells.
+
+The verifier's free preflight still carried the shared report's paid watch
+and audit offers. This is a response-shaping defect on the directory door,
+not a reason to weaken the observation. The correction retains the shared
+probe, checks, evidence gaps and conflict disclosure while omitting sales
+framing on `/mcp/verifier`. Two response regressions failed before the fix.
+The general store retains its normal catalog guidance.
+
+The strict deployed matrix passed 49 cases. The unknown-host production
+branch also returned schema-valid `never_met` and queued one test-generated
+ask for `developers.openai.com`; no organic demand is inferred from it.
+The first candidate, `agentcash.dev`, was already in the signed record.
+See `docs/verifier-qualification-2026-09-17/` and the updated submission
+packet for dated evidence and the remaining client/account steps.
+The signed-in scvd.store organization showed version 1.0.0 Approved, the
+correct verifier URL, matching hints, and Domain verified. The keeper
+pressed Publish; the portal then showed **Published** with the public URL
+https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212.
+No duplicate submission was made. The portal did not expose detailed
+approval grounds. Paid checkout qualification is recorded separately.
+MPP activation is excluded from this work at the keeper's request.
+
+The earlier publication entry records the annotation mismatch as unresolved.
+PR #751 subsequently closed that mismatch for the shared verifier handlers:
+both doors derive those hints from one definition, and the parity test checks
+every annotation field. This is not a new audit of every general-only tool.
