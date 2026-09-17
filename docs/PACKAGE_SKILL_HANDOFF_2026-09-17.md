@@ -1,125 +1,120 @@
 # Package and skill milestone handoff — September 17, 2026
 
-## Saved checkpoint
+## Current outcome
 
-All PS1–PS4 implementation and evidence are committed and pushed as
-`a86c697636ba67ec0239b2d5e500b998908b5a0f` in consolidated PR
-https://github.com/seancrecord/scvd-general-store-repo/pull/769 . It is mergeable.
-The integrated local full suite passed. Remote CI is
-https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35242960702 .
-At this checkpoint CI, merge and publication are still pending; inspect current
-remote state before continuing. Original worktrees are preserved snapshots,
-not additional changes to merge after #769 lands.
+PS1–PS4 implementation and original evidence are merged in
+[PR #769](https://github.com/seancrecord/scvd-general-store-repo/pull/769),
+commit `3194d4d75bd6d7ec07671a1c260b67e106125521`.
+`x402-verify@1.4.0` and the `scvd-general-store` skill `3.17.0` are public;
+fresh registry installations were verified. The live `/skill.md` declares
+3.17.0. [PR #772](https://github.com/seancrecord/scvd-general-store-repo/pull/772)
+contains the publication record, final installation evidence and this closeout.
+Inspect that PR's current state before calling every closeout change merged.
+Original PS4 PR #768 is closed as superseded. Do not merge it separately.
 
 ## Scope and authorization
 
-The user authorized completion of steps 1–4: save PS1–PS3, finish PS4, integrate
-with current main and merge all THIS effort, publish the verifier and skill,
-and verify actual registry installations. User also requests consolidation
-because credits are low. Do not expand into PS5–PS10 or unrelated dirty work.
-Existing OpenAI/Anthropic payload approvals and completed trials are retained.
-No new Claude sign-in is needed. No payments or new third-party endpoint probes.
+The user authorized steps 1–4: save PS1–PS3, finish PS4, integrate and merge this
+effort, publish both releases and verify real registry installations. These
+are the authorized closeout actions; no renewed approval is needed to finish
+#772 if it is still open. Do not expand into PS5–PS10 or unrelated dirty work.
+No new Claude sign-in, reader cohort, payment or third-party endpoint probe is
+needed. Original OpenAI/Anthropic trial approvals and raw evidence are retained.
 
-## Current integration workspace
+## Verified releases and links
 
-- Repository: https://github.com/seancrecord/scvd-general-store-repo
-- Clean integration: `/private/tmp/scvd-package-skill-milestone`
-- Branch: `codex/package-skill-milestone`; base `30e9e00b`.
-- Original PS4 checkpoint: `288948ed`; draft https://github.com/seancrecord/scvd-general-store-repo/pull/768
-- Original PS1–PS3 source: `/private/tmp/scvd-verifier-developer-activation`,
-  branch `codex/verifier-developer-activation`, base `6d29feb5`.
-- Recovery backup: `/private/tmp/scvd-package-handoff-backup/` contains the
-  verifier tracked patch, untracked archive and base manifest. A durable local
-  copy is at `/Users/seanrecord/scvd-general-store-repo/research/package-skill-recovery-2026-09-17/`,
-  including an integrated-tree recovery patch/archive. These backup archives
-  are local recovery files, not additional changes to merge.
-- The main shared checkout `/Users/seanrecord/scvd-general-store-repo` has
-  unrelated dirty work. Do not reset, clean, stash or bulk-stage it.
+- [npm 1.4.0](https://www.npmjs.com/package/x402-verify/v/1.4.0): all 24 packed
+  files match the release source; a fresh public install returns valid,
+  invalid, unsupported and inconclusive in both JavaScript and strict TypeScript.
+  Registry metadata includes the npm provenance attestation URL.
+- [npm release workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248303297).
+- [Skill release workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248307937).
+  Submission initially awaited scans. The later normal ClawHub 0.23.3 public
+  installation succeeded without a force/scan bypass; all 11 payload files and
+  reference graph match. Client-added metadata is recorded separately.
+- Skill tree SHA-256:
+  `50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606`.
+- [Integration CI](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35245884302)
+  and [merged-main CI](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248262089)
+  passed every required group. Local full suite previously passed 14,649 tests,
+  one existing skip, zero failures across 753 files.
+- `research/package-skill-integration-2026-09-17/release.json` is the release
+  index; `registry-installation.json` and `skill-registry-installation.json`
+  hold the actual install results. Reproduction scripts are beside them.
 
-The old PS4 branch also contains an unrelated field-run ancestor. A merge into
-it was aborted. The clean branch applies only `288948ed` to current main and
-carries PS1–PS3 separately; it excludes that unrelated ancestor. Do not merge
-#768 independently after the consolidated PR. Preserve the old checkpoints.
+## What shipped and what the evidence means
 
-## Completed work
+PS1 supplies additive verifier result states/reasons and explicit scope while
+preserving legacy boolean decisions. PS2 supplies independently generated and
+checked vectors. PS3 supplies the packaged quickstart, independent fixture/key
+provenance, strict TypeScript compatibility and activation evidence. No new
+cryptographic algorithm is implemented.
 
-PS1 adds valid/invalid/unsupported/inconclusive result semantics without changing
-legacy boolean decisions. PS2 supplies independently generated and checked
-cryptographic vectors, with unsupported formats kept explicit. PS3 supplies the
-packaged developer example, fixture/key provenance, type declarations and
-activation evidence. Verifier prepared release: `x402-verify` 1.4.0; observed npm
-latest was 1.3.0 before release. No new algorithm is implemented.
+PS4 supplies one canonical skill identity: a 78-line entry and ten references,
+generated ClawHub payload, installed-graph guards and a complete-tree publish
+fingerprint. Main's later privacy/recovery/replay/archive/tab-pin/quote guidance
+is retained. The full served guide remains derived separately.
 
-PS4 keeps one skill identity with a 78-line entry and ten references; generated
-ClawHub tree, installed-graph guards and whole-tree publish fingerprint. Prepared
-skill version: 3.17.0. Main's later privacy/recovery/replay/archive/tab-pin/quote
-updates are retained. MPP presence-versus-validity and exact observation-date
-reporting are explicit. Final tree hash is in the integration evidence.
+Keep these results separate; do not rewrite historical failures:
 
-## Qualification already completed
+- PS3 revised Codex cohort: 7/8 strict; Claude: 8/8; separate path correction: 2/2.
+- Original PS4 task cohorts: old 5/7, new 6/7, no skill 4/7; metadata 10/10 each.
+- Integrated correction: 6/7, fixing MPP overstatement but omitting a timestamp.
+- Separate final date/MPP correction: 2/2. This is not a replacement clean
+  seven-case cohort or a general reliability claim.
+- Controlled usability and public installation do not establish outside adoption;
+  offline retention remains unmeasured.
 
-- Original PS3 revised Codex cohort: 7/8 strict; Claude 8/8; separate corrected
-  path checks 2/2. Original failures retained, not replaced.
-- Original PS4: old/new/no-skill task results 5/7, 6/7, 4/7; metadata 10/10 each.
-- Integrated skill corrective run: 6/7, with MPP fixed and date omitted.
-- Separate final date/MPP check: 2/2. No replacement clean seven-case claim.
-- Typecheck, independent vectors, package activation, evidence tests, bundle
-  builds, local skill installations/archives and adapted content guards pass.
-- Earlier old-base full suite: 10,270 pass, three reproduced baseline failures,
-  one existing skip. Those failures are NOT the integrated suite verdict.
-- Integrated full suite PASSED: 14,649 passed, one existing skip, zero failures
-  across 753 files in 1,742.99 seconds. Command: `npm test -- --maxWorkers=4`.
-  Full log and qualification record are in the integration evidence directory.
+## Workspace and recovery
 
-## Finish/release sequence
+- Repository: `/Users/seanrecord/scvd-general-store-repo`. This shared checkout
+  has unrelated dirty work. Do not reset, clean, stash or bulk-stage it.
+- Clean release workspace: `/private/tmp/scvd-package-skill-milestone`.
+  Implementation branch: `codex/package-skill-milestone`.
+  Release-record branch: `skill-record-3.17.0` (the workflow-created PR #772).
+- Initial consolidated checkpoint: `a86c6976`; conflict resolution: `5a5c8df2`.
+  The latter retained both additions to `docs/SPEC_READS.md`; verifier and skill
+  bytes did not change. Original PS4 checkpoint: `288948ed`.
+- Old PS1–PS3 trees under `/private/tmp/scvd-verifier-*` and the original
+  `/private/tmp/scvd-skill-progressive-disclosure` are preserved snapshots,
+  not extra work awaiting another merge. The old PS4 branch has an unrelated
+  field-run ancestor deliberately excluded from #769.
+- Durable local backups: `research/package-skill-recovery-2026-09-17/` in the
+  shared checkout; also `/private/tmp/scvd-package-handoff-backup/`. These
+  archives are recovery files, not additional changes to merge.
+- Original and revised PS3 frozen README/tarball bytes are committed under
+  `research/package-skill-integration-2026-09-17/frozen-inputs/`, matched to
+  the historical hashes. Old trial scripts refer to temporary paths; use the
+  archived inputs if reproducing instead of reconstructing them.
 
-1. Read AGENTS.md, HOUSE_RULES.md, KEEPER_LIST.md, ROADMAP.md. Inspect git status
-   and the current handoff/release record; do not repeat completed cohorts.
-2. Current main AGENTS.md (keeper-approved September 16) requires typecheck
-   and focused tests before commits, and all full CI shards before merge; it
-   no longer requires another local full run for every commit. This task also
-   started a local integrated full run under the earlier supplied instructions.
-   The integrated full-suite check has passed. Inherited tab/archive guards were
-   adapted during its run; their separate final 28-check pass is retained.
-   Resolve any genuine remaining regression, with meaningful red/green proof.
-3. Commit/push the clean consolidated branch with the repository footer, open a
-   consolidated PR, verify CI, merge it, and close #768 as superseded. Do not
-   merge unrelated branches or overwrite newer main updates.
-4. Publish using existing workflow_dispatch jobs, from the merged commit:
-   `publish-npm.yml`: package=x402-verify, version=1.4.0, dry_run=false;
-   `publish-skill.yml`: version=3.17.0, explicit changelog, dry_run=false.
-   First reconcile current registry versions. Use workflow secrets; never print
-   tokens. User authorized these releases; do not repeat an approval request.
-5. Wait for actual workflow results. A ClawHub submission is not yet public.
-   Inspect with `clawhub inspect scvd-general-store` (top-level inspect, NOT
-   `clawhub skill inspect`, which 0.23.3 rejects). Actual skill publishing is
-   `clawhub skill publish`; existing guarded script/workflow owns this step.
-6. Install the published npm version in a fresh external directory, execute the
-   packaged example for all four outcomes, and compile a strict TS consumer.
-   Install exact ClawHub version into a temporary directory and compare all 11
-   files/tree hash. Retain raw outcomes and hashes.
-7. Merge the skill publication-record PR generated by the workflow; otherwise
-   the next publication compares against stale bookkeeping. Record npm
-   provenance, workflow URLs, merge commits and installed hashes. Ensure the
-   deployed skill version agrees with the release; main merge normally deploys.
-8. Update roadmap/handoff/release record. Stop before PS5 unless newly requested.
+## Instructions for the next agent
 
-## Evidence and design entry points
+1. Read `AGENTS.md`, `HOUSE_RULES.md`, `KEEPER_LIST.md`, `ROADMAP.md`, this handoff
+   and `docs/PACKAGE_SKILL_ADOPTION_2026-09.md`. Inspect remote/current status.
+2. If #772 is open, let all its required CI groups pass, resolve actual conflicts
+   without overwriting newer main, and merge it. Do not republish immutable
+   versions or repeat the completed cohorts. Check the release evidence first.
+3. Confirm task-owned closeout changes are merged. Leave unrelated PRs and
+   dirty shared-checkout work with their owners.
+4. Resume goal discussion before new builds. PS5 is one selected verifier
+   interoperability increment; PS6 is agent inspection across existing entry
+   points; PS7 reconciles remaining MPP distribution gaps against newer V3 work.
+   PS8 signer work, PS9 UCP and PS10 extraction remain conditional decisions.
+   Completing this milestone does not authorize all those builds.
 
-- `docs/PACKAGE_SKILL_ADOPTION_2026-09.md`: accepted scope and remaining phases.
+Current main's keeper-approved test policy is typecheck plus affected checks
+before a commit and all full CI shards before merge. Do not re-run a half-hour
+local full suite solely for a documentation follow-up after CI is green.
+Historical implementation documents describe their own dated checkpoints;
+this handoff and the release evidence give the current publication state.
+
+## Design and evidence entry points
+
+- `docs/PACKAGE_SKILL_ADOPTION_2026-09.md`: accepted plan and later phase gates.
 - `docs/VERIFIER_RESULT_SEMANTICS_2026-09.md`
 - `docs/VERIFIER_INDEPENDENT_VECTORS_2026-09.md`
 - `docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md`
 - `docs/SKILL_PROGRESSIVE_DISCLOSURE_2026-09.md`
-- `research/package-skill-integration-2026-09-17/`: integrated checks and retained
-  six-of-seven correction attempt. `frozen-inputs/` archives the original and
-  revised verifier tarballs/READMEs, matched against original recorded hashes;
-  old trial scripts reference temporary paths, so use these archived bytes.
-- `research/skill-date-mpp-recheck-2026-09-17/`: final two-case correction.
-- `research/skill-ps4-2026-09-17/`: original six-session cohort and old-base tests.
-- `research/verifier-ps*`: all earlier baselines, failures and successful checks.
-
-Historical documents describe the state at their own date/step. This handoff
-and the final release record take precedence for current status, without
-rewriting historical evidence. Controlled usability is not outside adoption;
-offline repeat use remains unknown.
+- `research/package-skill-integration-2026-09-17/`
+- `research/skill-date-mpp-recheck-2026-09-17/`
+- `research/skill-ps4-2026-09-17/` and `research/verifier-ps*`: retained originals.
