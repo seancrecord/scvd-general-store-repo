@@ -92,8 +92,7 @@ JWKS at https://scvd.store/.well-known/jwks.json is already present but does not
 by itself confer a directory badge. Apply the same exact-record check at Anro.
 
 Ready-to-review community and parser messages are in
-[FOLLOWUPS.md](FOLLOWUPS.md). Only the 8004scan report has been sent; the other
-messages remain drafts.
+[FOLLOWUPS.md](FOLLOWUPS.md). The 8004scan report and [trust8004 report](https://github.com/trust8004/requests-issues/issues/1) have been sent; other operator messages remain drafts.
 
 ## Coding-agent distribution
 
@@ -167,7 +166,7 @@ form and 8004scan bug-report template were read. Required outward requests:
 | Skills / MCP | Awesome Copilot external plugin | Submitted; automated gates passed; maintainer review | [Issue #3255](https://github.com/github/awesome-copilot/issues/3255) · [Fields](COPILOT_SUBMISSION.md) · [official form](https://github.com/github/awesome-copilot/issues/new?template=external-plugin.yml) |
 | ERC-8004 / MCP | 8004scan cached health discrepancy | Submitted; operator response pending | [Issue #51](https://github.com/alt-research/8004scan-issue-tracker/issues/51) · [Issue body](8004SCAN_ISSUE.md) · [official form](https://github.com/alt-research/8004scan-issue-tracker/issues/new?template=bug_report.yml) |
 | OASF | AGNTCY admission and taxonomy feedback | Existing package; no new request | [Participation discussion](https://github.com/agntcy/dir/discussions/455) |
-| ERC-8004 | trust8004 field normalization; AgentERC ingestion | Drafts ready; support routes unresolved | [Follow-ups](FOLLOWUPS.md) |
+| ERC-8004 | trust8004 field normalization; AgentERC ingestion | [trust8004 #1](https://github.com/trust8004/requests-issues/issues/1) filed after fresh reproduction; AgentERC draft remains | [Follow-ups](FOLLOWUPS.md) |
 | ERC-8004 / OASF | Agentscan AI taxonomy conflict | Finding recorded; not sent | [Profile](https://agentscan.info/agents/0711e5ab-eca5-42cc-a7ca-38b433689d56) |
 
 The keeper's queue links this record. No issue number is invented for a draft.

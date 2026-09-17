@@ -1,0 +1,23 @@
+{
+  "date_utc": "2026-09-17",
+  "url": "https://github.com/trust8004/requests-issues/issues/1",
+  "state": "open",
+  "profile": "https://trust8004.xyz/agents/8453%3A86957?tab=metadata",
+  "reproduction": "Codex in-app browser: Metadata, View Complete JSON; Refresh profile did not visibly change fields",
+  "canonical": {
+    "x402Support": true,
+    "supportedTrust": [
+      "reputation"
+    ],
+    "registrations_count": 1,
+    "services_count": 14
+  },
+  "indexed": {
+    "x402support": false,
+    "supportedTrusts": [],
+    "registrations": [],
+    "services_count": 9,
+    "metadataStatus": "available"
+  },
+  "scope": "Metadata accuracy request; no score, verification, wallet or chain action."
+}

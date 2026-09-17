@@ -1099,12 +1099,13 @@ what you ruled and what is still yours to look at.
   historical CID does not cover the corrected bytes.
   On the keeper's authorization, Awesome Copilot
   [#3255](https://github.com/github/awesome-copilot/issues/3255) was submitted;
-  automated validation, both skills and install checks passed, maintainer review pending.
+  automated validation, both skills and install checks passed again for 0.2.4
+  at immutable pin `e7f6c068`; maintainer review pending.
   8004scan [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51)
-  was filed after fresh reproduction. No duplicate requests needed. Other operator
-  messages and the AGNTCY discussion follow-up are in the same package. After ROADMAP TR-D's Gemini
-  context correction is released, replace the repository topic `agentic-ai`
-  with `gemini-cli-extension` and verify the gallery crawl. A fresh isolated Gemini CLI 0.60.0 install from
+  was filed after fresh reproduction. [trust8004 #1](https://github.com/trust8004/requests-issues/issues/1)
+  now records its freshly reproduced source/cached-field mismatch. No duplicate requests needed. Other operator
+  messages and the AGNTCY discussion follow-up are in the same package. Gemini gallery
+  readback remains outstanding; the repository topic is the crawler opt-in. A fresh isolated Gemini CLI 0.60.0 install from
   the immutable release PR commit discovered both skills and connected SCVD MCP;
   a model tool call and gallery listing remain unverified.
   OpenAI skill update DONE by the keeper September 17; upload/update task

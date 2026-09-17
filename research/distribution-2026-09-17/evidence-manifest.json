@@ -1,6 +1,6 @@
 {
   "date_utc": "2026-09-17",
-  "scope": "Public reads, three GitHub issue submissions and two failed community A2A registration attempts; local validation and sanitized host qualification. No credentials or payment authorizations.",
+  "scope": "Public reads, catalog issues/PRs and updates, two failed community A2A registration attempts, local validation and sanitized host qualification. No credentials or payment authorizations.",
   "files": {
     "8004agents-profile.html": {
       "bytes": 4011,
@@ -57,6 +57,10 @@
     "cline-mcp-marketplace-readme.md": {
       "bytes": 5049,
       "sha256": "a9dc02d3456a6b79752c83a7fd6f7fdf35f15df4ee853e67d52429ac2e5b852a"
+    },
+    "copilot-024-intake.json": {
+      "bytes": 4346,
+      "sha256": "66caaa1df9e20fbf3f720edef1f56a435a82d8aaba373063dfdb734df9ee17a9"
     },
     "copilot-contributing.txt": {
       "bytes": 27458,
@@ -277,6 +281,14 @@
     "scvd-mpp-live.json": {
       "bytes": 17065,
       "sha256": "21ab333dbd4190958e9372e063f51a4c121edb2d50be9a2cbe1061e54facc16f"
+    },
+    "trust8004-canonical-at-report.json": {
+      "bytes": 2541,
+      "sha256": "12be68c097cb5e1d18305bdec1993ceef2035b72fadb14b99eaf19a28a13a484"
+    },
+    "trust8004-submitted.json": {
+      "bytes": 704,
+      "sha256": "081b92e3e2e849b550ba9654691be1d4e8b0ca7967f06e247935e92b122ce842"
     },
     "webmcp-fresh-browser.json": {
       "bytes": 5195,

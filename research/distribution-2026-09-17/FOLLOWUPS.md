@@ -1,3 +1,7 @@
+# Current send status — September 17
+
+8004scan [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51) and trust8004 [#1](https://github.com/trust8004/requests-issues/issues/1) are sent. Continue those issues, not duplicate reports. The remaining messages below are drafts. Exact trust8004 sent body: [TRUST8004_ISSUE_BODY.md](TRUST8004_ISSUE_BODY.md).
+
 # Directory follow-ups — submission status
 
 8004scan report submitted as [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51). Other messages below remain drafts.

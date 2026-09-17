@@ -22,11 +22,11 @@ _No response_
 
 ### Commit SHA to review
 
-b4c0bbdbde412a435129b00f07f2b1eb401e98ab
+e7f6c068e8989b5930dca8e2dbe18baae8c8177e
 
 ### Version
 
-0.2.3
+0.2.4
 
 ### License identifier
 

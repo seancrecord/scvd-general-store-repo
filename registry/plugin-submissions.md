@@ -21,9 +21,9 @@ MCP service identity in `server.json`.
 - Portable MCP configuration: [`mcp.json`](../mcp.json). It includes the HTTP store
   and local Tab server. Disclose both; the package is broader than the ChatGPT verifier.
 - Task guidance: [`skills/`](../skills/). Reuse these files across hosts.
-- Existing public package pin used by Copilot:
-  `b4c0bbdbde412a435129b00f07f2b1eb401e98ab`. Do not claim this pin contains the
-  later Gemini/Claude packaging fixes or the new README privacy/support links.
+- Public package pin now used by Copilot:
+  `e7f6c068e8989b5930dca8e2dbe18baae8c8177e`, plugin 0.2.4. Updated automated
+  intake passed. The earlier 0.2.3 pin remains only in historical receipts.
 
 Suggested long description:
 

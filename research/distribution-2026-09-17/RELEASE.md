@@ -23,3 +23,7 @@ Gemini CLI 0.60.0 installed the public immutable release PR commit, discovered b
 External follow-through: Merit [PR #715](https://github.com/Merit-Systems/awesome-agentic-commerce/pull/715) submitted; existing WebMCP [PR #41](https://github.com/webmachinelearning/awesome-webmcp/pull/41#issuecomment-5719818436) received a current-scope correction; existing x402 [PR #1024](https://github.com/xpaysh/awesome-x402/pull/1024) updated. None is claimed as an accepted listing.
 
 PR [#778](https://github.com/seancrecord/scvd-general-store-repo/pull/778) passed quality and Worker builds on its first head. CodeQL flagged URL substring assertions in the new test; they now use parsed exact hostnames. CI must pass on the final head before merge. Raw captured third-party responses retain original whitespace; authored files pass the whitespace check.
+
+The new-pin Copilot intake passed for 0.2.4 (`e7f6c068`); maintainer review remains. [Receipt](observations/copilot-024-intake.json). trust8004 [issue #1](https://github.com/trust8004/requests-issues/issues/1) was submitted after reproducing the cached-field conflict in its rendered Metadata tab and re-reading SCVD's canonical registration. [Receipt](observations/trust8004-submitted.json).
+
+Use [PR #778](https://github.com/seancrecord/scvd-general-store-repo/pull/778) for the final merge/deployment and repository-topic receipt; its final checks must all pass before merge. Subsequent external acceptance is not assumed from this release.

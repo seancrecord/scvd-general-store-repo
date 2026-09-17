@@ -120,6 +120,10 @@ x402 metadata and proposed native discovery use conflicting shapes, as recorded
 in the pilot report. Qualify this integration before registration, preserving
 existing x402 consumers. The URL form was inspected; no MPP listing was created.
 
+## September 17 release follow-through
+
+OpenAI update completed by the keeper. Gemini CLI 0.60.0 installed the public 0.2.4 package, discovered both skills and connected SCVD MCP; no model tool call or gallery listing is claimed. Copilot intake passed again for 0.2.4. [trust8004 #1](https://github.com/trust8004/requests-issues/issues/1) now records its reproduced metadata conflict. [Release record](RELEASE.md).
+
 ## Evidence and remaining scope
 
 Public response captures and the successful Copilot intake receipt are retained
