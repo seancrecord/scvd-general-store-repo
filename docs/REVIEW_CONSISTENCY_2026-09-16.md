@@ -22,6 +22,15 @@ separate from the production observations.
 
 ## Production baseline
 
+Follow-through at 20:11 UTC: the stricter [verifier reading](review-consistency-2026-09-16/verifier-strict-live.json)
+passes all 49 cases. The smoke now requires the specific expected refusal,
+validates schemas on readiness refusals, and rejects uncorrelated or malformed
+JSON-RPC responses. Previously any error could count as a refusal; the released
+observations were also checked manually, but that manual step did not protect
+future runs. Eight mutated-response tests now exercise the real CLI and fail
+without the repair; the unchanged happy path passes. These detector tests run
+in CI. The retained reading does not add a paid or unknown-host exercise.
+
 The alleged $19 Hosted Profile price and 24-item menu did not reproduce.
 Fresh unsigned requests found 35 active items. Catalog, individual item
 JSON, unsigned 402 quotes and the markdown price list agree, including

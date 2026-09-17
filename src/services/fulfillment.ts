@@ -811,6 +811,7 @@ export async function fulfillPurchase(
             base: env.STORE_BASE_URL,
             settlementTx: payment.transaction,
             network: payment.network,
+            itemId: item.id,
             ...(payment.payer ? { payer: payment.payer } : {}),
           }),
         }
