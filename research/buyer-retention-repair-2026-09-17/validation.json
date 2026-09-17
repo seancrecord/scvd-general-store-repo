@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T20:40:16.184847+00:00",
+  "checks": [
+    {
+      "check": "red controls",
+      "exit_code": 1,
+      "log_file": "scvd-retention-repair-red.txt",
+      "sha256": "4d08cc5f304a72d49b8b25fa165064934cea0bd5ebc48a0b3d52ddfc50a735e4",
+      "test_counts": [
+        4
+      ]
+    },
+    {
+      "check": "final CLI controls",
+      "exit_code": 0,
+      "log_file": "scvd-retention-final-cli.txt",
+      "sha256": "6cb5ceef14b77e2482f13d09e79239be62ce7da99bf99093963342ae9ffd0ea3",
+      "test_counts": [
+        4
+      ]
+    },
+    {
+      "check": "evidence suite",
+      "exit_code": 0,
+      "log_file": "scvd-retention-all-evidence.txt",
+      "sha256": "15eb183255b4e7f867d63c1c7e2c2be3f4b16598f2a8da677ac2a249b00a092d",
+      "test_counts": [
+        172,
+        16,
+        5
+      ]
+    },
+    {
+      "check": "typecheck",
+      "exit_code": 0,
+      "log_file": "scvd-retention-typecheck.txt",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "test_counts": []
+    },
+    {
+      "check": "build",
+      "exit_code": 0,
+      "log_file": "scvd-retention-build.txt",
+      "sha256": "6da7dd4cae4b4918c56385c335b334a1e47a4d8da65b7fd3947c4ed6c6211cde",
+      "test_counts": []
+    },
+    {
+      "check": "skill packaging",
+      "exit_code": 0,
+      "log_file": "scvd-retention-skill.txt",
+      "sha256": "2902d48378c96da931eb8899c380de606529a6effc834c6179a1190f35ec039b",
+      "test_counts": [
+        4
+      ]
+    },
+    {
+      "check": "documents",
+      "exit_code": 0,
+      "log_file": "scvd-retention-docs.txt",
+      "sha256": "dc55224efa110371b6e559c9d1217b9b7a1f1dd634b18512b1845e28c8d4398c",
+      "test_counts": []
+    },
+    {
+      "check": "local package install",
+      "exit_code": 0,
+      "log_file": "scvd-retention-installed.txt",
+      "sha256": "b12eb4c187ec2feb8132fe1152aa73b1437bd6caf53ae5a3d331f1d1e7a19ccd",
+      "test_counts": []
+    },
+    {
+      "check": "final installed quickstart and typed consumer",
+      "exit_code": 0,
+      "log_file": "scvd-retention-activation-final.txt",
+      "sha256": "6b525a36494f4680cd6e8d224b1fe20a18520603add2d85e97e75c67218672a2"
+    },
+    {
+      "check": "final local package install",
+      "exit_code": 0,
+      "log_file": "scvd-retention-installed-final.txt",
+      "sha256": "d89e3f7d082fcf15c00d47b156203e64cc7febb7f9c106c0ab36875259bf0310"
+    }
+  ],
+  "full_suite": "Required on the final PR head in CI before merge.",
+  "release": "Prepared local tarball only; registry publication and native acceptance are pending.",
+  "release_dry_run_initial": "publication-dry-run-initial.json"
+}

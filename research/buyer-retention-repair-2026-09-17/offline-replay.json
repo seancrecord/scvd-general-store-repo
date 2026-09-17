@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T20:36:49.864Z",
+  "kind": "offline replay of retained public response; not a new buyer run",
+  "source_reference": "takeoff-native-isolation-2026-09-17/private/cohort/codex-directed-r1/evidence/corpus-6.json",
+  "source_sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0",
+  "issuer_file_sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+  "original_bytes": 11485079,
+  "issuer_bytes": 3139,
+  "bundle_bytes": 23223817,
+  "payload_copy_bytes": 11482414,
+  "old_export_bundle_plus_payload_bytes": 34706231,
+  "old_cli_stdout_bytes": 12873400,
+  "new_cli_stdout_bytes": 769,
+  "new_original_and_key_bytes": 11488218,
+  "retention_budget_bytes": 33554432,
+  "new_findings": {
+    "valid": true,
+    "evidence_complete": true,
+    "missing_evidence": [],
+    "problems": [],
+    "context_authenticated": false,
+    "timestamp": {
+      "status": "unverified",
+      "verified": false
+    },
+    "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+    "does_not_establish": [
+      "issuer identity without an independently trusted key",
+      "issue time or key authorization at issue time",
+      "Bitcoin anchoring without independent OTS verification",
+      "truth, settlement, delivery, completeness of the observed world",
+      "authenticity of context, filenames or captured key history"
+    ],
+    "source_sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+  },
+  "findings_equal_except_source_hash_and_omitted_claims": true,
+  "network_requests": 0,
+  "source_unchanged": true,
+  "notes": [
+    "The old export size here excludes README and optional OTS files, so it is a lower bound.",
+    "This replay uses an already-retained original/key pair; it neither repairs the failed Codex cell nor counts as a buyer or recipient completion.",
+    "Default export and verify remain unchanged; the new command is opt-in."
+  ]
+}
