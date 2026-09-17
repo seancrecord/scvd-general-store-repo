@@ -70,6 +70,38 @@ activation.
 4. Run the existing full CI gate for the activation change. Do not create a
    second full test suite for MPP or multiply product tests by protocol.
 
+## Release evidence
+
+Prepared 2026-09-17 with the activation change itself. The change is the two
+checked-in flags; nothing activates until it merges and both Workers deploy.
+
+Recorded by the agent from the repository and the public store:
+
+- Readiness #766 merged as `86588f1` after the full shared CI gate.
+- Reconciliation #771 merged as `7d4562e`; the store rebuilt from the #769
+  push at 16:43 UTC, deploy id `afbfdd8a-5bb8-4b8b-bacb-5c8a9356dabb`.
+- Rescued-settle follow-up #773 merged as `ee432b1`; the store rebuilt at
+  17:58 UTC, deploy id `be7f5fb2-1c08-41b2-8f0f-de6ee620dac1`. At the 19:17 UTC
+  check the store served deploy `29fe0642-b2b8-4d11-b668-03ac6e1e0f5b` from
+  main `afe0392`, which carries all three. No `CI is red on main` issue was
+  open.
+- Both checked-in flags read `"false"` on main at that check; the unsigned
+  Context Anchor door still quoted x402 only.
+
+Supplied by the keeper, not the agent; blank here means not yet supplied:
+
+- Doors deploy id serving the reconciliation and follow-up. The doors Worker
+  exposes no public version; read it from the dashboard.
+- One clean hourly books sweep after 17:58 UTC: no `certificate-without-settle`
+  or `certificate-native-accounting` page. Sweep alarms reach the keeper only.
+- The dated provider/account confirmation the qualification runbook requires.
+  One accepted live transaction does not establish commercial terms.
+- The decision to make this one offer ongoing and publicly callable, which
+  merging the activation change records.
+
+After merge, the unsigned release checks below produce the rest: release
+commit, both deployment versions, read times and observed headers.
+
 ## Unsigned release checks
 
 Read through the public doors Worker after deployment:
