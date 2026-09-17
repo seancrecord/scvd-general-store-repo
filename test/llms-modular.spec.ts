@@ -1013,8 +1013,17 @@ const BASE = "https://scvd.store";
 // The merged verifier paragraph discloses traffic records and the public queue.
 // 2026-09-16: re-taken for A2A v1/legacy instructions and the focused buyer skill index paragraph.
 // Reversing just these reviewed edits reproduces the main fingerprint.
+// 2026-09-17: the corpus area's per-host paragraph gained three lines
+// naming /feeds/host/{host}.xml — the Atom feed of one host's verdict
+// and receiving-address changes, read off an outside observatory's
+// per-server change feed (research/robinsaige-read-2026-09-17.md).
+// The index did not change: the same sentence was first put in the
+// index's feeds paragraph and came out 66 characters over the 25,000
+// budget, so it lives in the area file only. Verified the same way:
+// with llms.ts restored to the prior commit the 364c0db6 digest above
+// reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "364c0db6d56cd1fea4f2a7b155aba46e39b03d9000dabd669f40dc290567133e";
+  "d9fc6754df22b7c0847d49dd06d6a1c6e6497ffc7c90d812f2c83f8ebfd3ae99";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

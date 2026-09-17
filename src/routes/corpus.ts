@@ -24,6 +24,7 @@ import { subjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { PASSPORT_CSS, probeStrip } from "@/pages/passport-card";
 import { citeBlock, citeHtml } from "@/lib/cite";
 import { deriveChanges, lastModifiedOf } from "@/services/corpus-changes";
 import { deriveAskedQueue, readAskedFor, recordAsk } from "@/services/asked-queue";
@@ -340,6 +341,9 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
   const { asked_at, ...stableHistory } = observation.history;
   return c.json({
     ...(c.req.query("view") === "stable" ? stableHistory : { ...stableHistory, asked_at }),
+    /* The Atom feed of this host's changes (2026-09-17): one entry per
+     * verdict or pay-to change, derived from these same rows. */
+    feed_url: `${base}/feeds/host/${host}.xml`,
     tier: deriveTier(
       tierInputFromHistory(observation.history, observation),
       `${base}/criteria`,
@@ -651,6 +655,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       </section>
       <section>
         <h2>Every round, including the ones we missed</h2>
+        ${probeStrip(history.timeline, host)}
         <table>
           <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Entry</th></tr></thead>
           <tbody>${rows}</tbody>
@@ -690,13 +695,15 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       })()}
       <section>
         <h2>Check it yourself</h2>
-        <p class="menu-desc">The free preflight runs the same battery on any door right now: <code>POST ${escapeHtml(base)}/api/preflight/v1</code> with <code>{"url": "https://${escapeHtml(host)}/…"}</code>. The signed rows behind this page are at <a href="/corpus/host/${escapeHtml(host)}.json"><code>/corpus/host/${escapeHtml(host)}.json</code></a>; every entry links the snapshot it came from and the chain at <a href="/corpus.json"><code>/corpus.json</code></a>. If you operate this host and want the page withdrawn, the <a href="/notice">notice desk</a> is the door. Corrections: <a href="/corrections">/corrections</a>.</p>
+        <p class="menu-desc">The free preflight runs the same battery on any door right now: <code>POST ${escapeHtml(base)}/api/preflight/v1</code> with <code>{"url": "https://${escapeHtml(host)}/…"}</code>. The signed rows behind this page are at <a href="/corpus/host/${escapeHtml(host)}.json"><code>/corpus/host/${escapeHtml(host)}.json</code></a>; every entry links the snapshot it came from and the chain at <a href="/corpus.json"><code>/corpus.json</code></a>. To be woken only when this record moves, the host's own Atom feed is <a href="/feeds/host/${escapeHtml(host)}.xml"><code>/feeds/host/${escapeHtml(host)}.xml</code></a>. If you operate this host and want the page withdrawn, the <a href="/notice">notice desk</a> is the door. Corrections: <a href="/corrections">/corrections</a>.</p>
       </section>${jsonLd}`;
   return c.html(
     renderSimplePage({
       title,
       description,
       path: `/corpus/host/${host}`,
+      feedAlt: { path: `/feeds/host/${host}.xml`, title: `${host} — changes on the record, as Atom` },
+      extraCss: PASSPORT_CSS,
       bodyHtml,
     }),
   );

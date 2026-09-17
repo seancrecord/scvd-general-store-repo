@@ -89,12 +89,28 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
    * forbids. `npm run listings:check` reads all four from CI and says
    * which generation of the store's text each carries.
    */
+  /*
+   * READ IN FULL 2026-09-17 (the host answered the sandbox this
+   * time). What the page measures, in its own words: a weekly census
+   * of the official MCP registry that sends each remote endpoint a
+   * real initialize handshake and tools/list, one pass, no retries,
+   * and grades what came back on four questions (does it answer,
+   * what is it, can it be checked, did it hold) into allow / warn /
+   * block with a because-clause, a cluster within its cohort, a
+   * legibility band for the tool catalogue, and an ed25519-signed
+   * receipt against a published key. It offers a JSON dossier, an
+   * RSS change feed per server, a README badge, a public dispute
+   * route and an operator-invited verification path. The read, with
+   * what it says about us and what this store took from it, is
+   * research/robinsaige-read-2026-09-17.md. Its verdict stays its
+   * own: read on its page, dated by its census, never copied here.
+   */
   {
     url: "https://robinsaige.com/s/store.scvd/general-store",
-    registry: "robinsaige.com — MCP server directory",
-    confirmed: "2026-09-10",
+    registry: "robinsaige.com — MCP server observatory",
+    confirmed: "2026-09-17",
     what_it_proves:
-      "That robinsaige.com carries a page for this server under the official registry name, store.scvd/general-store, with the registry description verbatim and a verdict of its own derived from the live door (its snippet reads 'allow — alive & usable' and counts the tools served). Not an endorsement and not an audit: a directory page proves indexing, and its verdict is its instrument, read on its page and not copied here.",
+      "That robinsaige.com keeps a verification record for this server under the official registry name, store.scvd/general-store, built from its own weekly probes of the live MCP door (initialize and tools/list, no tool ever fired), with a verdict, a because-clause, a signed receipt and a public dispute route on the page. Not an endorsement and not an audit by this store: an observatory's page proves the door was found and answered its handshake, its verdict is its instrument under its published method, and nothing on it establishes a purchase or a delivery.",
   },
   {
     url: "https://crosspeel.com/endpoints/scvd-store/",
