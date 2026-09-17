@@ -1,0 +1,38 @@
+(node:42845) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-a2a-v1
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+{"knock":1,"cold":false,"age":0,"req":0,"method":"GET","path":"/.well-known/agent-card.json","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+{"knock":1,"cold":false,"age":0,"req":17,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+ ❯ test/a2a-v1.spec.ts (17 tests | 1 failed) 161ms
+     × runs a real preflight through the official client against a controlled 402, without paying 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+AssertionError: expected 'unreachable' to be 'ready' // Object.is equality
+
+Expected: "ready"
+Received: "unreachable"
+
+ ❯ test/a2a-v1.spec.ts:47:39
+     45|     expect(content?.$case).toBe("data");
+     46|     if (content?.$case !== "data") throw new Error("Expected evidence"…
+     47|     expect(content.value?.["result"]).toBe("ready");
+       |                                       ^
+     48|     expect(content.value?.["does_not_establish"]).toEqual(expect.array…
+     49|     expect(probe).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 38 passed (39)
+   Start at  14:55:58
+   Duration  11.34s (transform 7.58s, setup 30ms, import 17.73s, tests 2.13s, environment 0ms)
+

@@ -1,0 +1,111 @@
+{
+  "integration_base": "85f2f5e40ef664b928d9c003c0ef34f146ae9e28",
+  "full_application_suite": {
+    "command": "npm test",
+    "exit_code": 1,
+    "files_passed": 751,
+    "files_failed": 1,
+    "tests_passed": 14548,
+    "tests_failed": 1,
+    "tests_skipped": 1,
+    "duration_seconds": 1421.76,
+    "only_failure": "llms-modular guide fingerprint retained the main value after intentional guide edits",
+    "correction": "Reviewed reversal control and refreshed per-branch/combined pins; corrected integration, A2A and handoff guide reruns each passed 13 tests",
+    "full_suite_rerun_after_correction": false
+  },
+  "typecheck": "pass after OASF correction",
+  "build_check": "pass",
+  "buyer_tests": 91,
+  "portable_and_configuration_tests": 23,
+  "docs_check": "pass after final report additions",
+  "logs": {
+    "typecheck": {
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "bytes": 54,
+      "local_log": "private/validation/typecheck.log"
+    },
+    "build": {
+      "sha256": "f9159cf06fef90615c3341aae6bb0051d3b2022cb9c6dfcab6dfdbeb289c7f21",
+      "bytes": 3924,
+      "local_log": "private/validation/build.log"
+    },
+    "buyer": {
+      "sha256": "3aa05b08d0d95b91b290548addf4d98762893e4e3aa145a47b8fd5e867347c80",
+      "bytes": 16632,
+      "local_log": "private/validation/buyer.log"
+    },
+    "portable": {
+      "sha256": "89184629538198c67fae4701c8c053e3478ff5ad08bc69a1219643779b4c794a",
+      "bytes": 4392,
+      "local_log": "private/validation/portable.log"
+    },
+    "docs": {
+      "sha256": "9b9769e128db7e1b2dae034e0115710d03e9f401f4ed5147b008e08c5573bbbc",
+      "bytes": 2968,
+      "local_log": "private/validation/docs.log"
+    },
+    "retention_red": {
+      "sha256": "8f92aec9d937325e4f0919451666bd6ac932552b81b0e39fc3860c6b12e86519",
+      "bytes": 4765,
+      "local_log": "private/validation/retention_red.log"
+    },
+    "guide_red": {
+      "sha256": "a8a480a99688cf6f39c3d1238a3b002b9fa1813f1effcfca06b324a5b53859c4",
+      "bytes": 1686,
+      "local_log": "private/validation/guide_red.log"
+    },
+    "guide_reversal": {
+      "sha256": "5d5a74eaf9b70cf37ce13a5611007847bc4b4e80e154aad4105f12d1ebd7d32b",
+      "bytes": 420,
+      "local_log": "private/validation/guide_reversal.log"
+    },
+    "guide_green": {
+      "sha256": "3ae7ef4852e37b3d4f9514d0664cc4b4069554c7954ce3a77b1ecdb2879ea529",
+      "bytes": 423,
+      "local_log": "private/validation/guide_green.log"
+    },
+    "a2a_guide_green": {
+      "sha256": "8440b36cac56ff5bbd6226fa8ace9e05e2964a458d212d1fc0894b459cf39263",
+      "bytes": 412,
+      "local_log": "private/validation/a2a_guide_green.log"
+    },
+    "handoff_guide_green": {
+      "sha256": "dd25981cc5791cf907115d96c5f30165d13a4cd40e1979aaa40d6a913134d621",
+      "bytes": 428,
+      "local_log": "private/validation/handoff_guide_green.log"
+    },
+    "application_full": {
+      "sha256": "3bf6329e9a0fe35cf339155fe4905281466689c88865d936636741fbadfa0df3",
+      "bytes": 352140,
+      "local_log": "private/validation/application_full.log"
+    },
+    "oasf_handoff_final": {
+      "sha256": "25c9d330eb85c398acfff36c8b9d78dbe81c439a7aadb6f50f30c4fde6f6b8cf",
+      "bytes": 426,
+      "local_log": "private/validation/oasf_handoff_final.log"
+    },
+    "typecheck_final": {
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "bytes": 54,
+      "local_log": "private/validation/typecheck_final.log"
+    }
+  },
+  "guide_fingerprint": {
+    "independent_reversal_control": "pass",
+    "initial_targeted_run": "1 failed, 12 passed; old fingerprint",
+    "corrected_integration": "13 passed",
+    "corrected_a2a_branch": "13 passed",
+    "corrected_handoff_branch": "13 passed"
+  },
+  "post_correction_application_checks": {
+    "command": "npx vitest run test/oasf-record.spec.ts test/llms-modular.spec.ts test/agent-skills-index.spec.ts test/preflight-evidence-handoff.spec.ts",
+    "exit_code": 0,
+    "files": 4,
+    "tests_passed": 38
+  },
+  "post_start_changes": [
+    "Reviewed guide fingerprint constants in tests",
+    "Canonical OASF description/annotation and regenerated draft record; verified by final 38-test run"
+  ],
+  "commit_or_publication": "not performed"
+}

@@ -1011,8 +1011,10 @@ const BASE = "https://scvd.store";
 // resource. Counts are grouped by protocol, network and currency; the
 // existing checkout remains x402/USDC. No purchase instructions changed.
 // The merged verifier paragraph discloses traffic records and the public queue.
+// 2026-09-16: re-taken for A2A v1/legacy instructions.
+// Reversing just these reviewed edits reproduces the main fingerprint.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "2f16469c44da300ee5403328d1c234a554f6dced5504d3de176429cd6dfb7cde";
+  "0b7b5a73cab2726070b2dd53f983bcec97e2b530d6046cf1310ef75f3376521f";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

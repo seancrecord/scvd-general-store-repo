@@ -1,0 +1,168 @@
+{
+  "reviewed_at": "2026-09-16T20:20:00Z",
+  "scope": "Independent trace review; no full acceptance claim",
+  "plan_sha256": "b558b91bfebb1e42ec4038c5658ca74592ebabba2db0c96caa944c7cca36da00",
+  "cells": [
+    {
+      "cell": {
+        "id": "codex-source-retention",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "started_at": "2026-09-16T20:13:31.671Z",
+      "ended_at": "2026-09-16T20:15:10.861Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "trace_sha256": "7404e300388e9dc420f224a1af5219618c79d4fb491db3a8419747aa1d6ed138",
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "codex-cli 0.153.4"
+      },
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 271931,
+        "files": [
+          {
+            "file": "evidence/agents.headers.txt",
+            "bytes": 976,
+            "sha256": "ba87764d3ac83ad2b257d7b92104d62b66228d0e059a9795303bcde73b0e3cb6"
+          },
+          {
+            "file": "evidence/agents.body.md",
+            "bytes": 18242,
+            "sha256": "0cdc527d114cd669da1aa020137aa375f94a80f409e3774af6cee3ba111fc6c0"
+          },
+          {
+            "file": "evidence/raw-repo.body.txt",
+            "bytes": 52723,
+            "sha256": "bb03dbb8560c3b9c33c0876359409946c3a67639908b968f218e30cc9e5cbed0"
+          },
+          {
+            "file": "evidence/wallet-screen.headers.txt",
+            "bytes": 3191,
+            "sha256": "c6e647c88674f9c5e7e159b839e5c92a925e98ea49a6d2c0c8ef8a548ad9f2a4"
+          },
+          {
+            "file": "evidence/scvd-home.body.html",
+            "bytes": 170286,
+            "sha256": "63fafda532e1e4859a49b38b49ee0da426703fd9875cf55e338ea0ef68e57fad"
+          },
+          {
+            "file": "evidence/scvd-home.headers.txt",
+            "bytes": 1609,
+            "sha256": "8459fb7b3f4679856932fe53362a35fd3a01957c894702fba780f5f3906a6bc3"
+          },
+          {
+            "file": "evidence/preflight.body.json",
+            "bytes": 13057,
+            "sha256": "e16f7f8f12fbe3ed4a2e7e5fa5e13c9de1dae916654a5f203c716d88d533ddf4"
+          },
+          {
+            "file": "evidence/SOURCES.txt",
+            "bytes": 1428,
+            "sha256": "e9403942d48f13ffbfb5842559126f1e8642714e77fc9cb0898194b68d1a61e0"
+          },
+          {
+            "file": "evidence/wallet-screen.body.json",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/RUN-LOG.md",
+            "bytes": 2230,
+            "sha256": "c266ce6c8f43711d11102d1d11453e1885938cebfa5bec0c627aaef42e30ba65"
+          },
+          {
+            "file": "evidence/skill.body.md",
+            "bytes": 3546,
+            "sha256": "67eae3b0a28c9feee02b49666b24f29612916921ab7eb087107e50a47b7d2a24"
+          },
+          {
+            "file": "evidence/preflight.headers.txt",
+            "bytes": 1083,
+            "sha256": "d2adba29071d6133fcc6656eb356917a7a05fea5bbaa4d134ab3a6090ebf31b4"
+          },
+          {
+            "file": "evidence/skill.headers.txt",
+            "bytes": 896,
+            "sha256": "da8afdfc2a4359e8a2620e8bfbf82155e65e3f9241addcebb91c654ff702a657"
+          },
+          {
+            "file": "evidence/raw-repo.headers.txt",
+            "bytes": 896,
+            "sha256": "3a617de02ffc36ac9e799509addca28c38b9249673a2a36c872184d66669010c"
+          },
+          {
+            "file": "evidence/payment-required.decoded.json",
+            "bytes": 1766,
+            "sha256": "e541f4ecf0699c796d6486546f4c89434ec57093756c01c06f07b567d4f10c5e"
+          }
+        ],
+        "issues": []
+      },
+      "freshness": {
+        "max_age_ms": 1209600000
+      },
+      "tool_events": 5,
+      "complete_buyer_journey": false
+    },
+    {
+      "cell": {
+        "id": "claude-source-retention",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "started_at": "2026-09-16T20:15:10.889Z",
+      "ended_at": "2026-09-16T20:17:32.176Z",
+      "runtime": {
+        "state": "failed",
+        "exit_code": 143,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": "tool_calls"
+      },
+      "trace_sha256": "98123a5efcbb1f42b62108f1e39f7da9ab2e94351edaba62f3ef13f21b6e5e21",
+      "host": {
+        "available": true,
+        "reason": null,
+        "version": "2.1.273 (Claude Code)"
+      },
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 3193,
+        "files": [
+          {
+            "file": "evidence/wallet-screen-json_GET_body.json",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/wallet-screen-json_GET_headers.txt",
+            "bytes": 3191,
+            "sha256": "5f8b32ad9cccb045649867d5e7ec4b9b4f66c917058ccf6aca69a2c0e2487f39"
+          }
+        ],
+        "issues": []
+      },
+      "freshness": {
+        "max_age_ms": 1209600000
+      },
+      "tool_events": 21,
+      "complete_buyer_journey": false
+    }
+  ]
+}

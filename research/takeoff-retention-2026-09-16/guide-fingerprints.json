@@ -1,0 +1,13 @@
+{
+  "reviewed_changes": [
+    "A2A v1 and bounded legacy instructions",
+    "Focused buyer skill in canonical index paragraph"
+  ],
+  "reversal_control": "passed: undoing only those two paragraphs reproduces main",
+  "digests": {
+    "integration": "364c0db6d56cd1fea4f2a7b155aba46e39b03d9000dabd669f40dc290567133e",
+    "a2a": "0b7b5a73cab2726070b2dd53f983bcec97e2b530d6046cf1310ef75f3376521f",
+    "handoff": "4ba1708ba0fff5c33f7e1836a7380e318d572697b7cb16bd70dbc6579b92d9f6",
+    "main": "2f16469c44da300ee5403328d1c234a554f6dced5504d3de176429cd6dfb7cde"
+  }
+}

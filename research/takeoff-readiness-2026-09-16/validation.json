@@ -1,0 +1,21 @@
+{
+  "buyer_tests": {
+    "passed": 79,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "build_check": "passed",
+  "full_application_suite": "not_run; no commit or merge",
+  "raw_log_hashes": {
+    "takeoff-typecheck.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "takeoff-build.log": "400463d07d95332b2463b23847beb13cd60b1a50258d9c214082310ea077792c",
+    "takeoff-red-key.log": "80eb23657a6f484e38b157b5cf111d734e16649f6c603258eff377d1229d671a",
+    "takeoff-red-initial.log": "b71fa6383f42e1b0c4816a394b4278b8776dd8a5be91d2acebde56653eab8cb0",
+    "takeoff-event-shape-red.log": "c597c8a7dc9f9345b316cdb524e7d500849a6d9c9f9a0cb3ecf6592414ebd0b1",
+    "takeoff-red-wave.log": "8e32ba0409bd7a3a9cc37966fa88f451b00772cd64dccae65e5415ba158bbcf4",
+    "takeoff-source-freeze-red.log": "89a15e9c92b2fc97747045bc41877a7dd52aa54a7ba32281cfcb0e0d0e75f201",
+    "takeoff-buyer-final.log": "76f30549dbb5479979bfdb734be0db19d390b5928504be51e4edfc314ca28cdc",
+    "takeoff-cap-red.log": "0b480708b72b31f61b832c56dd1f304ce8451c1cf76ce0746f4101a954c92dd0",
+    "takeoff-red-discovery.log": "10d1d97958344ab1b554b6dc7bcde26555feda379c6431883967420574ae62af"
+  }
+}

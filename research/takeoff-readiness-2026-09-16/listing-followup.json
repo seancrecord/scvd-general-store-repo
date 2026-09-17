@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-09-16T18:34:48Z",
+  "url": "https://skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+  "final_url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+  "statuses": [
+    308,
+    200
+  ],
+  "content_result": "Page displays 404 and says the skill is not available in the repository; suggests scvd-general-store.",
+  "scope": "Separate reviewer follow-up, never supplied to the cold agents. Candidate entry selected before external listing presence was confirmed; not evidence of removal or a previously working listing.",
+  "files": {
+    "takeoff-listing-follow-headers.txt": "a8ced18cb8059d2dcb3bb6542c54b15d30626889672052f9777bbd6194332564",
+    "takeoff-listing-follow-body.html": "f2009615d4f8b9bbf4377bcee068d50cece397325bc1204d7f0c22530e62bb8b",
+    "takeoff-listing-body.html": "7c040f8633b8823d72ed63da9b3b2dfe9846e912c66a64c9433ec9c4815d76c2",
+    "takeoff-listing-headers.txt": "6f58911c9b1992054b73f65cd73e0f6f7759da191e56d53c2eed1bb0897ca65c"
+  }
+}

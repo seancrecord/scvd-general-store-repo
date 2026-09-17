@@ -1,0 +1,571 @@
+{
+  "schema_version": 2,
+  "discovery": {
+    "attempts": 4,
+    "pass": 0,
+    "fail": 4,
+    "incomplete": 0
+  },
+  "directed": {
+    "attempts": 2,
+    "pass": 0,
+    "fail": 1,
+    "incomplete": 1
+  },
+  "distinct_hosts_completed": 0,
+  "limitation": "Controlled cold usability evidence only; no organic adoption, paid completion or universal readiness claim.",
+  "scorer_sha256": "5754fbd397a14a2eddacaf676f0eb2bc81f99bbe09bf523bf0624ba28b20ff30",
+  "plan_sha256": "aa5c7aa56eeed5a80720ede22278d66da76a032a7d4437a8ff75015227188ef2",
+  "runs": [
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-intent-search",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "intent_search",
+        "entry": null,
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "fail",
+          "reason": "The bounded journey selected the merchant itself, not SCVD. This does not prove catalogue absence.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d97263ca8740ab2f5c88c605b3a3d07cf47e10bb740c939505bc39ddaf72821a",
+              "start_line": 1,
+              "end_line": 24
+            }
+          ]
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d97263ca8740ab2f5c88c605b3a3d07cf47e10bb740c939505bc39ddaf72821a",
+              "start_line": 1,
+              "end_line": 24
+            }
+          ]
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d97263ca8740ab2f5c88c605b3a3d07cf47e10bb740c939505bc39ddaf72821a",
+              "start_line": 1,
+              "end_line": 24
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "Final answer correctly stops at the unsigned quote and limits the decision to unpaid technical inspection. This is a bounded buyer decision, not a SCVD-assisted result.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d97263ca8740ab2f5c88c605b3a3d07cf47e10bb740c939505bc39ddaf72821a",
+              "start_line": 23,
+              "end_line": 23
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d97263ca8740ab2f5c88c605b3a3d07cf47e10bb740c939505bc39ddaf72821a",
+              "start_line": 1,
+              "end_line": 24
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d97263ca8740ab2f5c88c605b3a3d07cf47e10bb740c939505bc39ddaf72821a",
+              "start_line": 1,
+              "end_line": 24
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-catalogue",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "catalogue",
+        "entry": "https://registry.modelcontextprotocol.io",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "fail",
+          "reason": "The bounded journey selected the merchant itself, not SCVD. This does not prove catalogue absence.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "4cb0829fb01020bd7506bb984d4bfd38f0f67bf93c99c655d1ebee3d6b7ea16c",
+              "start_line": 1,
+              "end_line": 50
+            }
+          ]
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "4cb0829fb01020bd7506bb984d4bfd38f0f67bf93c99c655d1ebee3d6b7ea16c",
+              "start_line": 1,
+              "end_line": 50
+            }
+          ]
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "4cb0829fb01020bd7506bb984d4bfd38f0f67bf93c99c655d1ebee3d6b7ea16c",
+              "start_line": 1,
+              "end_line": 50
+            }
+          ]
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "4cb0829fb01020bd7506bb984d4bfd38f0f67bf93c99c655d1ebee3d6b7ea16c",
+              "start_line": 1,
+              "end_line": 50
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "4cb0829fb01020bd7506bb984d4bfd38f0f67bf93c99c655d1ebee3d6b7ea16c",
+              "start_line": 1,
+              "end_line": 50
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "4cb0829fb01020bd7506bb984d4bfd38f0f67bf93c99c655d1ebee3d6b7ea16c",
+              "start_line": 1,
+              "end_line": 50
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [
+        "Runtime did not complete; retained stage findings are partial.",
+        "Run reached tool_calls cap; full completion unproven."
+      ],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "entry": "https://skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "The agent independently formed and executed the free preflight HTTPS POST from public entry information. No native MCP installation was exercised.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "46b63d9fcb20bf84be0d09a1c78606afdfe2ccd2458cc1a10354ee5a3022bac9",
+              "start_line": 18,
+              "end_line": 19
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "The preflight request concerns exactly the assigned endpoint and returned a fresh bounded L3a readout during this run. Five minutes is the reviewer's same-session freshness window, not an SCVD expiry guarantee.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "46b63d9fcb20bf84be0d09a1c78606afdfe2ccd2458cc1a10354ee5a3022bac9",
+              "start_line": 18,
+              "end_line": 19
+            },
+            {
+              "file": "preflight-response.json",
+              "sha256": "27db61a53a58317453c8a69a4563d9acefb3e9c50ab7a8d5cc8d7a13cb306b41"
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "The final answer distinguishes challenge shape from payment, delivery, authenticity and reliability. It does not turn ready into safe-to-buy.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "46b63d9fcb20bf84be0d09a1c78606afdfe2ccd2458cc1a10354ee5a3022bac9",
+              "start_line": 22,
+              "end_line": 22
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Complete unsigned preflight readout retained from the actual call. This is useful scoped evidence, not a signed certificate.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "46b63d9fcb20bf84be0d09a1c78606afdfe2ccd2458cc1a10354ee5a3022bac9",
+              "start_line": 18,
+              "end_line": 19
+            },
+            {
+              "file": "preflight-response.json",
+              "sha256": "27db61a53a58317453c8a69a4563d9acefb3e9c50ab7a8d5cc8d7a13cb306b41"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No SCVD signed artifact or independent recipient review. The buyer discussed absence of signatures in the merchant challenge but did not follow the signed_report purchase link in SCVD next_steps or reproduce the published method offline.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "46b63d9fcb20bf84be0d09a1c78606afdfe2ccd2458cc1a10354ee5a3022bac9",
+              "start_line": 18,
+              "end_line": 19
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "46b63d9fcb20bf84be0d09a1c78606afdfe2ccd2458cc1a10354ee5a3022bac9",
+              "start_line": 22,
+              "end_line": 22
+            }
+          ]
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-intent-search",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "intent_search",
+        "entry": null,
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "fail",
+          "reason": "Actual returned search results and the subsequent journey stayed with merchant listings and merchant inspection; SCVD was not selected. No catalogue absence claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+              "start_line": 8,
+              "end_line": 11
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+              "start_line": 1,
+              "end_line": 82
+            }
+          ]
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+              "start_line": 1,
+              "end_line": 82
+            }
+          ]
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+              "start_line": 1,
+              "end_line": 82
+            }
+          ]
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+              "start_line": 1,
+              "end_line": 82
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+              "start_line": 1,
+              "end_line": 82
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence was observed in this bounded journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+              "start_line": 1,
+              "end_line": 82
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-catalogue",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "catalogue",
+        "entry": "https://registry.modelcontextprotocol.io",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "fail",
+          "reason": "The agent selected the merchant's catalogue record and inspected that merchant directly; SCVD was not selected. No catalogue absence claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "3f1185680b3e73af6ee27777c6772e4371c43364343b4565df4737ddcbf852ea",
+              "start_line": 9,
+              "end_line": 19
+            }
+          ]
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence in this capped journey. Local command denials consumed the remaining tool budget.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "3f1185680b3e73af6ee27777c6772e4371c43364343b4565df4737ddcbf852ea",
+              "start_line": 1,
+              "end_line": 119
+            }
+          ]
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence in this capped journey. Local command denials consumed the remaining tool budget.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "3f1185680b3e73af6ee27777c6772e4371c43364343b4565df4737ddcbf852ea",
+              "start_line": 1,
+              "end_line": 119
+            }
+          ]
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence in this capped journey. Local command denials consumed the remaining tool budget.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "3f1185680b3e73af6ee27777c6772e4371c43364343b4565df4737ddcbf852ea",
+              "start_line": 1,
+              "end_line": 119
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence in this capped journey. Local command denials consumed the remaining tool budget.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "3f1185680b3e73af6ee27777c6772e4371c43364343b4565df4737ddcbf852ea",
+              "start_line": 1,
+              "end_line": 119
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No SCVD call or SCVD evidence in this capped journey. Local command denials consumed the remaining tool budget.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "3f1185680b3e73af6ee27777c6772e4371c43364343b4565df4737ddcbf852ea",
+              "start_line": 1,
+              "end_line": 119
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [
+        "Runtime did not complete; retained stage findings are partial.",
+        "Run reached tool_calls cap; full completion unproven."
+      ],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "entry": "https://skills.sh/seancrecord/scvd-general-store-repo/scvd-x402-verification",
+        "verification": "prompted"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No SCVD verification request or signed evidence in the observed journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "553d3fb65cf67ec7a63dfa84e19d31981467fc7c3b2a312ee0ead00f866658c0",
+              "start_line": 1,
+              "end_line": 104
+            }
+          ]
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No SCVD verification request or signed evidence in the observed journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "553d3fb65cf67ec7a63dfa84e19d31981467fc7c3b2a312ee0ead00f866658c0",
+              "start_line": 1,
+              "end_line": 104
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "Final answer concludes the buyer can transact from an unpaid quote and claims no merchant-specific verification trail exists from a limited link-chain search. These conclusions exceed the observed evidence. Manual decoding is disclosed, but cannot establish full payment usability or global evidence absence.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "553d3fb65cf67ec7a63dfa84e19d31981467fc7c3b2a312ee0ead00f866658c0",
+              "start_line": 103,
+              "end_line": 103
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No SCVD verification request or signed evidence in the observed journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "553d3fb65cf67ec7a63dfa84e19d31981467fc7c3b2a312ee0ead00f866658c0",
+              "start_line": 1,
+              "end_line": 104
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No SCVD verification request or signed evidence in the observed journey.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "553d3fb65cf67ec7a63dfa84e19d31981467fc7c3b2a312ee0ead00f866658c0",
+              "start_line": 1,
+              "end_line": 104
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    }
+  ]
+}

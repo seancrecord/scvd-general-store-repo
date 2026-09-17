@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-09-16T20:30:37.466553+00:00",
+  "sources": {
+    "official": "https://registry.modelcontextprotocol.io/v0.1/servers/store.scvd%2Fgeneral-store/versions/latest",
+    "github": "https://api.mcp.github.com/v0.1/servers?search=store.scvd%2Fgeneral-store",
+    "agentfinder": "https://github.com/github/agentfinder-catalog/pull/34"
+  },
+  "official_matches_local": {
+    "name": true,
+    "version": true,
+    "description": true,
+    "title": true,
+    "remotes": true,
+    "repository": true,
+    "websiteUrl": true
+  },
+  "files": [
+    {
+      "file": "observations/agentfinder-pr.json",
+      "bytes": 609,
+      "sha256": "7b5c0a78bb317e473a6dbfd752ade403d4accaef652416211ead7426103289ff"
+    },
+    {
+      "file": "observations/github.headers",
+      "bytes": 558,
+      "sha256": "1955aca9d6fbf9609ff9ab4c7af69852750c9413e2e095a7ed5e16d39531741d"
+    },
+    {
+      "file": "observations/github.json",
+      "bytes": 78,
+      "sha256": "8cc4aeb57deaa132718f9a17cc8ccdef9b2bc57a5c8c9875e277cadb5044e75f"
+    },
+    {
+      "file": "observations/official.headers",
+      "bytes": 183,
+      "sha256": "5876df2a66b1a0d97c26056fcbd247aa96897ae405ce6ccadea73c6d248d110f"
+    },
+    {
+      "file": "observations/official.json",
+      "bytes": 723,
+      "sha256": "f84f957f1f31e66c18f0e8c905959cd56a36addfce46958fbc2a8a07a2869ac2"
+    }
+  ],
+  "canonical_draft_files": [
+    {
+      "file": "server.json",
+      "sha256": "bbd1590fd8471e3144e3e6356838fdaab3f45ba36ff54ea48a40ceae9800c300"
+    },
+    {
+      "file": "registry/agntcy/record.json",
+      "sha256": "09c17cc459e15bde83c70af6722dd41959cbde16c4980257f89fd41476fcd67e"
+    },
+    {
+      "file": "registry/agntcy/record-signing-key.pub.pem",
+      "sha256": "bcaa3dbed29207a69aabce775ce92fa232cfe76066dcf437b0c952d1ea43d606"
+    }
+  ]
+}

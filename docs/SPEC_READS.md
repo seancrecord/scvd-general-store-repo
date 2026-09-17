@@ -52,6 +52,110 @@ The procedure that produced the successful submission is
 `.claude/skills/directory-submission/SKILL.md`. It exists because this
 took two attempts.
 
+## 2026-09-16 — external admission package reconciliation
+
+[GitHub's maintainer discussion](https://github.com/github/github-mcp-server/discussions/1257)
+still distinguishes initial curation from later upstream version sync. The public
+registry API returned no result for the exact SCVD name while the official entry
+was active/latest. The existing Agent Finder PR #34 is open and carries all four
+prepared descriptors; no duplicate was submitted.
+
+The [AGNTCY participation discussion](https://github.com/agntcy/dir/discussions/455)
+contains a July 24 maintainer reply opening participation beyond steering-group
+members. The earlier initial-phase restriction is historical; shared-node write
+authorization still needs a concrete decision. The official quickstart separates
+local records from network discovery. [Packages and dated observations](../research/distribution-admission-2026-09-16/README.md)
+preserve those boundaries. The canonical OASF expiry copy was corrected and its
+draft record regenerated; publication and a new record signature remain pending. No message, signing, publication or federation deployment occurred.
+
+## 2026-09-16 — retained cold-buyer evidence and main reconciliation
+
+Re-read [Codex noninteractive mode](https://learn.chatgpt.com/docs/non-interactive-mode):
+JSONL events and `--output-last-message` do not promise preservation of full
+HTTP artifacts inside tool output. Local workspace writes use the existing
+bounded native session; no API keys or payment capabilities were introduced.
+The observed truncation was in a dated run, not inferred from documentation.
+Reused the repository's portable verifier contract and corpus canonicalization.
+No Claude permission flags were broadened; decode-command denials remain a
+separate environment confound in the baseline.
+
+PR #753 (AGENT_UX baseline catalogue), #751 (catalog/verifier consistency),
+and #755 (archive signing) were confirmed merged through GitHub on this date.
+TR1, TR2 and TR3 rebased onto `85f2f5e4`; shared `AGENT_UX.md` was not overwritten.
+The retained-file and freshness rules are in [the instrument guide](../research/BUYER_COLD.md).
+
+## 2026-09-16 — takeoff readiness plan
+
+Read the [current A2A specification](https://a2a-protocol.org/latest/specification/),
+including interface declarations and migration guidance: v1 changes the
+message/part representation as well as the Agent Card, so replacing a
+validator is insufficient. Read [Coinbase buyer discovery](https://docs.cdp.coinbase.com/x402/buyer/discover-services):
+public discovery requires no CDP API key, search is bounded at twenty results
+and reports partial results, and list/merchant reads have pagination.
+These facts support independent observations with explicit incomplete reads,
+not a fresh claim about SCVD's current catalogue coverage.
+
+Opened [GitHub's MCP catalogue](https://github.com/mcp); this did not
+establish the current submission channel, SCVD admission or downstream
+version synchronization. The attempted GitHub how-to and A2A what's-new
+URL were unavailable in this reader; the main A2A specification was readable.
+No GitHub or AGNTCY application was submitted or status account inspected.
+
+Source comparison: `origin/main` at `834fd186` for the September 16
+repository state, alongside the older dirty shared checkout. The newer
+verification skill exists on main; it must not be reported absent because
+the working branch lacks it. A2A 0.3 validation and the hybrid card were
+confirmed in source. Existing `ourSearchReading()` already distinguishes
+found, missing and unchecked external entries. Existing buyer tooling
+supplies SCVD URLs and stops before payment; it is not unbranded discovery
+or evidence of completed paid use. AGNTCY's shared-node permission result
+is a repository-recorded September 15 observation, not a new live probe.
+
+Limits: no fresh client-install, cold-agent, payment, cryptographic artifact,
+catalogue completeness or federation test was run for this planning turn.
+The [takeoff plan](TAKEOFF_READINESS_2026-09.md) records the keeper's objective
+and build order, proposed cohort gate, the then-pending A2A choice and acceptance
+work; it claims no implementation or readiness pass.
+
+
+## 2026-09-16 — cold buyer instrument implementation (TR1)
+
+Implemented in an isolated branch from `origin/main` at `6d29feb5`, keeping
+the earlier shared checkout's unrelated work intact. The keeper approved
+canonical A2A v1 with bounded explicit 0.3 compatibility; this slice does
+not migrate A2A behavior.
+
+Read [Codex noninteractive documentation](https://learn.chatgpt.com/docs/non-interactive-mode)
+and [Claude CLI reference](https://code.claude.com/docs/en/cli-reference),
+and inspected the installed native CLI help. Used fresh native sessions,
+configuration isolation and JSON event streams, without SCVD-specific MCP
+configuration. Host runtime versions and any resolved model identifiers
+are retained per run; a requested model alias is not a resolved identity.
+
+The [instrument guide](../research/BUYER_COLD.md) states its scope and
+limitations. The [dated baseline](../research/takeoff-readiness-2026-09-16/REPORT.md)
+separates startup failures, bounded discovery misses, directed HTTP use,
+unsigned preflight and unexercised signed/paid completion. It does not
+establish organic adoption, catalogue absence, native MCP installation,
+A2A interoperability or general readiness.
+
+## 2026-09-16 — A2A v1 binding, bounded 0.3 compatibility
+
+Read the [pinned v1.0.0 specification](https://a2a-protocol.org/v1.0.0/specification/)
+and [official proto](https://raw.githubusercontent.com/a2aproject/A2A/v1.0.0/specification/a2a.proto),
+and inspected the official `@a2a-js/sdk@1.1.0` client. The missing-header rule
+selects 0.3; v1 uses A2A-Version, PascalCase methods, wrapped SendMessage
+results, named enums and parts without kind. The card must describe real
+A2A bindings. Structured error details are typed Any arrays.
+
+Implemented the three existing evidence tasks through a bounded v1 adapter,
+with legacy task storage and the paid 0.3 audit unchanged. Definition, failing
+baseline and independent local client exchanges are retained under
+`research/a2a-v1-2026-09-16/`. [Build and limits](A2A_V1_COMPAT_2026-09.md).
+This is local interoperability evidence, not production observation or a
+cold-stranger pass. No streaming, push, task listing or broader product work.
+
+
 ## 2026-09-16 — Red team of /mcp/verifier before resubmitting to OpenAI
 
 The 2026-09-09 plugin submission offered `/mcp` and was rejected on
