@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { build } from 'esbuild';
+import { loadInventorySchema } from './lib/load-inventory-schema.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const directory = join(root, 'research/verification-2026-09-09');
@@ -27,9 +27,7 @@ for (const row of manifest.reads) {
 }
 const json = name => JSON.parse(captured.get(name + '.json.gz'));
 // Use the production canonicalizer, not another manually maintained field list.
-const built = await build({ stdin: { contents: 'export { canonicalizeCorpusSnapshot } from "./src/services/corpus.ts";',
-  resolveDir: root, loader: 'ts' }, bundle: true, write: false, platform: 'node', format: 'esm', logLevel: 'silent' });
-const { canonicalizeCorpusSnapshot } = await import('data:text/javascript;base64,' + Buffer.from(built.outputFiles[0].text).toString('base64'));
+const { canonicalizeCorpusSnapshot } = await loadInventorySchema();
 const trustedKey = (await readJson(join(old, 'key.json'))).data.public_key;
 const publicKey = createPublicKey({ key: Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(trustedKey, 'hex')]), type: 'spki', format: 'der' });
 const temp = await mkdtemp(join(tmpdir(), 'scvd-header-report-'));

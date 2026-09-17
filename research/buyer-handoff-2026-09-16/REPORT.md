@@ -192,3 +192,10 @@ The canonical OASF description now states the observation/expiry distinction
 declaratively; no new directory signature or publication was performed.
 Public release-byte checks, independent A2A qualification and the frozen
 eight-attempt buyer cohort follow merge. No cold-journey pass is claimed here.
+
+The first TR3 CI quality run caught a separate offline-bundler gap: the
+inventory canonicalizer loader could not import Markdown. Existing evidence
+tests reproduced it before the fix. The loader now accepts text modules, and
+the historical report reuses it. All 57 offline evidence tests and 91 buyer
+tests pass; typecheck and the Worker bundle pass. Application source is
+unchanged since the passing full suite; final-head CI gates this correction.

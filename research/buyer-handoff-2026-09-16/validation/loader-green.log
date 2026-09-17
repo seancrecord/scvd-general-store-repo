@@ -1,0 +1,319 @@
+
+> scvd-general-store@0.1.0 evidence:test
+> node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs scripts/evidence-coverage.test.mjs && node --test scripts/retained-evidence.test.mjs scripts/retained-journal-reader.test.mjs scripts/catalog-evidence.test.mjs && node --test research/pq-measurement-2026-09-14/verify-summary.test.mjs
+
+TAP version 13
+# Subtest: all required signatures verify over the same protected header and exact payload
+ok 1 - all required signatures verify over the same protected header and exact payload
+  ---
+  duration_ms: 1.524041
+  ...
+# Subtest: refuses payload
+ok 2 - refuses payload
+  ---
+  duration_ms: 0.335083
+  ...
+# Subtest: refuses purpose
+ok 3 - refuses purpose
+  ---
+  duration_ms: 0.174333
+  ...
+# Subtest: refuses algorithm
+ok 4 - refuses algorithm
+  ---
+  duration_ms: 0.109416
+  ...
+# Subtest: refuses key identity
+ok 5 - refuses key identity
+  ---
+  duration_ms: 0.259625
+  ...
+# Subtest: refuses policy
+ok 6 - refuses policy
+  ---
+  duration_ms: 0.6705
+  ...
+# Subtest: refuses missing PQ signature
+ok 7 - refuses missing PQ signature
+  ---
+  duration_ms: 0.485125
+  ...
+# Subtest: refuses stripped PQ declaration and signature
+ok 8 - refuses stripped PQ declaration and signature
+  ---
+  duration_ms: 0.510917
+  ...
+# Subtest: refuses duplicate signature
+ok 9 - refuses duplicate signature
+  ---
+  duration_ms: 0.537917
+  ...
+# Subtest: refuses unsupported canonicalization
+ok 10 - refuses unsupported canonicalization
+  ---
+  duration_ms: 0.3435
+  ...
+# Subtest: refuses extra unsigned header
+ok 11 - refuses extra unsigned header
+  ---
+  duration_ms: 0.145542
+  ...
+# Subtest: does not accept a self-appointed key, missing backend, thrown backend, or absent expected policy
+ok 12 - does not accept a self-appointed key, missing backend, thrown backend, or absent expected policy
+  ---
+  duration_ms: 0.168958
+  ...
+# Subtest: verifies report bytes and recomputes the certificate binding; tampering does not pass
+ok 13 - verifies report bytes and recomputes the certificate binding; tampering does not pass
+  ---
+  duration_ms: 1.399084
+  ...
+# Subtest: missing and unreadable certificates stay in the denominator; unresolved links and partial lists stay explicit
+ok 14 - missing and unreadable certificates stay in the denominator; unresolved links and partial lists stay explicit
+  ---
+  duration_ms: 0.161541
+  ...
+# Subtest: certificate canonicalization follows production and excludes unsigned legacy bindings
+ok 15 - certificate canonicalization follows production and excludes unsigned legacy bindings
+  ---
+  duration_ms: 175.029375
+  ...
+# Subtest: offline command preserves the listed denominator when a captured record is deleted
+ok 16 - offline command preserves the listed denominator when a captured record is deleted
+  ---
+  duration_ms: 264.827333
+  ...
+# Subtest: exact signed bytes and attached evidence verify offline against a separately held key
+ok 17 - exact signed bytes and attached evidence verify offline against a separately held key
+  ---
+  duration_ms: 8.103583
+  ...
+# Subtest: the embedded key never appoints itself trusted
+ok 18 - the embedded key never appoints itself trusted
+  ---
+  duration_ms: 0.772959
+  ...
+# Subtest: rejects changed signed payload
+ok 19 - rejects changed signed payload
+  ---
+  duration_ms: 2.346209
+  ...
+# Subtest: rejects changed signature
+ok 20 - rejects changed signature
+  ---
+  duration_ms: 1.372542
+  ...
+# Subtest: rejects changed embedded key
+ok 21 - rejects changed embedded key
+  ---
+  duration_ms: 0.702541
+  ...
+# Subtest: rejects changed algorithm
+ok 22 - rejects changed algorithm
+  ---
+  duration_ms: 0.30275
+  ...
+# Subtest: rejects changed format version
+ok 23 - rejects changed format version
+  ---
+  duration_ms: 0.41525
+  ...
+# Subtest: rejects changed attachment, including a forged new checksum
+ok 24 - rejects changed attachment, including a forged new checksum
+  ---
+  duration_ms: 0.725375
+  ...
+# Subtest: rejects changed attachment relabelled as unrelated
+ok 25 - rejects changed attachment relabelled as unrelated
+  ---
+  duration_ms: 0.854542
+  ...
+# Subtest: rejects changed duplicate attachment
+ok 26 - rejects changed duplicate attachment
+  ---
+  duration_ms: 0.937459
+  ...
+# Subtest: deleting evidence preserves the signature result but cannot preserve completeness
+ok 27 - deleting evidence preserves the signature result but cannot preserve completeness
+  ---
+  duration_ms: 0.573917
+  ...
+# Subtest: source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+ok 28 - source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+  ---
+  duration_ms: 0.626792
+  ...
+# Subtest: an issuer's bounded label and altered proof never become an independently verified timestamp
+ok 29 - an issuer's bounded label and altered proof never become an independently verified timestamp
+  ---
+  duration_ms: 0.977542
+  ...
+# Subtest: OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+ok 30 - OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+  ---
+  duration_ms: 0.160625
+  ...
+# Subtest: rejects malformed or oversized inputs and attachments without a signed binding
+ok 31 - rejects malformed or oversized inputs and attachments without a signed binding
+  ---
+  duration_ms: 46.77125
+  ...
+# Subtest: corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+ok 32 - corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+  ---
+  duration_ms: 1.820708
+  ...
+# Subtest: export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+ok 33 - export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+  ---
+  duration_ms: 364.496458
+  ...
+# Subtest: corpus export above the default cap requires an explicit bounded allowance and detects tampering
+ok 34 - corpus export above the default cap requires an explicit bounded allowance and detects tampering
+  ---
+  duration_ms: 985.647709
+  ...
+# Subtest: loss, rotation and stolen-key backdating have different evidence boundaries
+ok 35 - loss, rotation and stolen-key backdating have different evidence boundaries
+  ---
+  duration_ms: 5.898
+  ...
+# Subtest: the publication workflow actually runs the verifier package tests
+ok 36 - the publication workflow actually runs the verifier package tests
+  ---
+  duration_ms: 8.754875
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 36
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1420.1395
+TAP version 13
+# Subtest: catalog candidates derive from production and match only exact bytes and item
+ok 1 - catalog candidates derive from production and match only exact bytes and item
+  ---
+  duration_ms: 2.991
+  ...
+# Subtest: changed candidate bytes, duplicate hashes and noncanonical encodings refuse
+ok 2 - changed candidate bytes, duplicate hashes and noncanonical encodings refuse
+  ---
+  duration_ms: 1.374209
+  ...
+# Subtest: changed catalog fields cannot recover an old commitment, and input order is preserved
+ok 3 - changed catalog fields cannot recover an old commitment, and input order is preserved
+  ---
+  duration_ms: 0.118542
+  ...
+# Subtest: offline command preserves the cohort and checks stored bytes, results and certificate signatures
+ok 4 - offline command preserves the cohort and checks stored bytes, results and certificate signatures
+  ---
+  duration_ms: 1753.55225
+  ...
+# Subtest: retained single observations verify exact signed payloads and require the certificate digest
+ok 5 - retained single observations verify exact signed payloads and require the certificate digest
+  ---
+  duration_ms: 2.96625
+  ...
+# Subtest: bundle verification checks every member and its original order
+ok 6 - bundle verification checks every member and its original order
+  ---
+  duration_ms: 0.921041
+  ...
+# Subtest: an empty sheaf binding is recognized but never counted as a verified report or bundle
+ok 7 - an empty sheaf binding is recognized but never counted as a verified report or bundle
+  ---
+  duration_ms: 0.05675
+  ...
+# Subtest: unsigned latest projections and opaque anchors remain different from signed reports
+ok 8 - unsigned latest projections and opaque anchors remain different from signed reports
+  ---
+  duration_ms: 0.262375
+  ...
+# Subtest: unknown goods and malformed bundles abstain instead of searching arbitrary nested signatures
+ok 9 - unknown goods and malformed bundles abstain instead of searching arbitrary nested signatures
+  ---
+  duration_ms: 0.340166
+  ...
+# Subtest: offline supplement keeps missing and tampered journal evidence in the original denominator
+ok 10 - offline supplement keeps missing and tampered journal evidence in the original denominator
+  ---
+  duration_ms: 812.026792
+  ...
+# Subtest: private capture refuses a Git checkout and bounds response bytes while streaming
+ok 11 - private capture refuses a Git checkout and bounds response bytes while streaming
+  ---
+  duration_ms: 18.240083
+  ...
+# Subtest: capture output guard fails closed when Git cannot establish repository membership
+ok 12 - capture output guard fails closed when Git cannot establish repository membership
+  ---
+  duration_ms: 0.942125
+  ...
+# Subtest: capture uses only existing read methods and never passes a proposed write
+ok 13 - capture uses only existing read methods and never passes a proposed write
+  ---
+  duration_ms: 1.135291
+  ...
+# Subtest: legacy completed journals are readable; absence, malformed data and provider failure differ
+ok 14 - legacy completed journals are readable; absence, malformed data and provider failure differ
+  ---
+  duration_ms: 0.238458
+  ...
+# Subtest: wrong or missing session authorization cannot reach a production binding
+ok 15 - wrong or missing session authorization cannot reach a production binding
+  ---
+  duration_ms: 18.849708
+  ...
+# Subtest: unknown items and oversized requests cannot reach a production binding
+ok 16 - unknown items and oversized requests cannot reach a production binding
+  ---
+  duration_ms: 0.968708
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1989.953708
+TAP version 13
+# Subtest: the published summary agrees with retained source hashes and samples
+ok 1 - the published summary agrees with retained source hashes and samples
+  ---
+  duration_ms: 54.737209
+  ...
+# Subtest: altering the summary fails the same checker
+ok 2 - altering the summary fails the same checker
+  ---
+  duration_ms: 46.768459
+  ...
+# Subtest: altering the raw record fails the same checker
+ok 3 - altering the raw record fails the same checker
+  ---
+  duration_ms: 41.740459
+  ...
+# Subtest: altering the measuring script fails the same checker
+ok 4 - altering the measuring script fails the same checker
+  ---
+  duration_ms: 43.261834
+  ...
+# Subtest: altering the published figure fails the same checker
+ok 5 - altering the published figure fails the same checker
+  ---
+  duration_ms: 52.185292
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 289.282583
