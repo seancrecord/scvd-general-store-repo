@@ -33,11 +33,49 @@
  * STALENESS IS REPORTED, NEVER FAILED. A `confirmed` date is the
  * keeper's hand (rule 30); an old one is a prompt to go and look, not
  * a fact about the commit.
+ *
+ * A WALLED VENUE IS REPORTED, NEVER JUDGED (2026-09-17, the day the
+ * ChatGPT plugin directory listed the verifier door). chatgpt.com
+ * answers 403 to any read without a session, so this instrument can
+ * never score that row better than "unreachable" — and a row that can
+ * only ever read unreachable is not a false alarm (a new row is
+ * neither regression nor advance) but something quieter and worse: a
+ * permanent entry that looks like a broken listing and can never do
+ * the one job the roster exists for. So a host on WALLED gets its own
+ * state, outside the rungs. It is tallied and printed with its
+ * reason, it never regresses and never advances, and the keeper's eye
+ * is the confirmation (rule 30, same as the date). The moment such a
+ * venue answers a plain read, it is judged like any other row.
  */
 import { readMirror, visibleText } from "./listings.mjs";
 
 /** Worst to best. A row that moves down this list is the alarm. */
 export const ROSTER_STATES = Object.freeze(["unreachable", "silent", "holds"]);
+
+/**
+ * Not a rung. A row in this state is outside the ladder: this
+ * instrument could not read the page, and that was expected.
+ */
+export const WALLED_STATE = "walled";
+
+/**
+ * Hosts that refuse an unauthenticated read, each with the reason in
+ * one sentence. Add a host here only when the keeper has confirmed
+ * the row by eye and the refusal is the venue's design, not an outage
+ * — an outage is exactly what the ladder is for.
+ */
+export const WALLED = Object.freeze({
+  "chatgpt.com": "answers 403 to any read without a ChatGPT session; the keeper confirms this row by eye",
+});
+
+/** The reason a URL's host is walled, or null when it is not. */
+export function walledReason(url) {
+  try {
+    return WALLED[new URL(url).hostname] ?? null;
+  } catch {
+    return null;
+  }
+}
 
 /** How old a `confirmed` date gets before the reading says to look again. */
 export const STALE_AFTER_DAYS = 180;
@@ -79,9 +117,14 @@ export function ageInDays(confirmed, now = new Date()) {
   return Math.floor((now.getTime() - then) / 86_400_000);
 }
 
-/** One row's state from one read. */
-export function stateOf(read) {
-  if (!read.ok) return "unreachable";
+/**
+ * One row's state from one read. A walled host that refuses is
+ * walled, not unreachable; a walled host that answers is read on its
+ * merits, because the wall coming down is the day the roster can
+ * finally watch that venue.
+ */
+export function stateOf(read, url = "") {
+  if (!read.ok) return walledReason(url) ? WALLED_STATE : "unreachable";
   return namesTheStore(visibleText(read.text)) ? "holds" : "silent";
 }
 
@@ -97,11 +140,22 @@ export function compareRoster(baseline, fresh) {
   for (const row of fresh.records) {
     const was = before.get(row.url);
     if (was === undefined || was === row.state) continue;
+    // A walled reading on either side is not a rung, so it is neither
+    // a fall nor a climb. The first plain read after a wall comes down
+    // becomes next week's baseline, the same as any new row.
+    if (was === WALLED_STATE || row.state === WALLED_STATE) continue;
     const move = { url: row.url, registry: row.registry, was, now: row.state };
     if (rankState(row.state) < rankState(was)) regressions.push(move);
     else advances.push(move);
   }
   return { regressions, advances };
+}
+
+/** Rows this instrument could not judge, each with the venue's reason. */
+export function walledRows(fresh) {
+  return fresh.records
+    .filter((row) => row.state === WALLED_STATE)
+    .map((row) => ({ ...row, reason: walledReason(row.url) }));
 }
 
 /** Rows whose `confirmed` date has aged past the window, oldest first. */
@@ -132,7 +186,7 @@ export async function readRoster(base, fetchImpl = fetch, now = new Date()) {
       confirmed: row.confirmed,
       age_days: ageInDays(row.confirmed, now),
       status: read.status,
-      state: stateOf(read),
+      state: stateOf(read, row.url),
     });
   }
   return { read_at: now.toISOString(), roster_read: trust.ok && parsed !== null, records };
