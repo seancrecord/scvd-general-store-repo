@@ -1,0 +1,56 @@
+(node:42436) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-a2a-v1
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+{"knock":1,"cold":false,"age":0,"req":1,"method":"GET","path":"/.well-known/agent-card.json","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+{"knock":1,"cold":false,"age":0,"req":14,"method":"POST","path":"/a2a","status":200,"ua":""}
+
+stdout | test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > makes the negotiated card and POST usable from a browser
+{"knock":1,"cold":false,"age":0,"req":1,"method":"OPTIONS","path":"/a2a","status":405,"ua":""}
+
+ ❯ test/a2a-v1.spec.ts (17 tests | 2 failed) 143ms
+     × runs a real preflight through the official client against a controlled 402, without paying 21ms
+     × makes the negotiated card and POST usable from a browser 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > runs a real preflight through the official client against a controlled 402, without paying
+AssertionError: expected 'unreachable' to be 'ready' // Object.is equality
+
+Expected: "ready"
+Received: "unreachable"
+
+ ❯ test/a2a-v1.spec.ts:46:39
+     44|     expect(content?.$case).toBe("data");
+     45|     if (content?.$case !== "data") throw new Error("Expected evidence"…
+     46|     expect(content.value?.["result"]).toBe("ready");
+       |                                       ^
+     47|     expect(content.value?.["does_not_establish"]).toEqual(expect.array…
+     48|     expect(probe).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a2a-v1.spec.ts > A2A v1 independent client and strict wire > makes the negotiated card and POST usable from a browser
+AssertionError: expected 405 to be 204 // Object.is equality
+
+- Expected
++ Received
+
+- 204
++ 405
+
+ ❯ test/a2a-v1.spec.ts:66:32
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 passed (17)
+   Start at  14:55:06
+   Duration  7.84s (transform 3.47s, setup 14ms, import 7.41s, tests 143ms, environment 0ms)
+

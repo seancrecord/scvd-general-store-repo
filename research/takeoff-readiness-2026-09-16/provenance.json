@@ -1,0 +1,283 @@
+{
+  "schema_version": 2,
+  "base_commit": "6d29feb5",
+  "cohorts": {
+    "a": {
+      "evidence_root": "private/cohort-a",
+      "files": {
+        "claude-catalogue/prompt.txt": "25bdba466ecb0efcdf123e6ebddad854b8faf24c8efb543e50d34b5983aea248",
+        "claude-catalogue/run.json": "e84e4ecac4118926f7390d0ed89b93a29b595cd5b6a2cc86392d835481b2c6b0",
+        "claude-directed/prompt.txt": "1c69afead4123b86b0fffb923269026c1efe23cb482eb68bcf4929a0077d04bf",
+        "claude-directed/run.json": "b5b5108e6a9e462ce2b8951e4fa5c223f7ff6f8ec4585fe648260dbbfa77eaa3",
+        "claude-intent-search/prompt.txt": "5045b81c4316b5189efa19863faedb6ee12a5c5dc3adc39f943a05ba7664aed2",
+        "claude-intent-search/run.json": "224814c55a401da5ec175720f6f5494452168ac687fb756d662efdf794b988bf",
+        "codex-catalogue/events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "codex-catalogue/launch.json": "9205a2d5e5bede3bb81b7daa4d48c3aa301ff582ce14ce9e6b380a6bd0c86d5a",
+        "codex-catalogue/prompt.txt": "25bdba466ecb0efcdf123e6ebddad854b8faf24c8efb543e50d34b5983aea248",
+        "codex-catalogue/run.json": "7ed966e62cdf5c3b187a4a1f831445ba9af0269b33889e9a30f908b97927eea9",
+        "codex-catalogue/runtime.log": "2d8b902fb51c4fb0108c58a40b037f3ed52641f00cdae67901d7cbda9b4b8473",
+        "codex-directed/events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "codex-directed/launch.json": "3903d89f0a099cc496b3ec5f039055dd35e597973a81981b6fb65f6c8bfa6a40",
+        "codex-directed/prompt.txt": "1c69afead4123b86b0fffb923269026c1efe23cb482eb68bcf4929a0077d04bf",
+        "codex-directed/run.json": "32b99a1ad2b21f08d3c894ee2aa42f48381412e2981ad7bbdab8e5f1294d458a",
+        "codex-directed/runtime.log": "2d8b902fb51c4fb0108c58a40b037f3ed52641f00cdae67901d7cbda9b4b8473",
+        "codex-intent-search/events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "codex-intent-search/launch.json": "fc749bccfc1fe014720a7732a70b8d8b21512084efbab59984f6165a6a5987b7",
+        "codex-intent-search/prompt.txt": "5045b81c4316b5189efa19863faedb6ee12a5c5dc3adc39f943a05ba7664aed2",
+        "codex-intent-search/run.json": "bba1475f382cff42faed01968038945f5d33964e7f31071d41dc198b90f45490",
+        "codex-intent-search/runtime.log": "2d8b902fb51c4fb0108c58a40b037f3ed52641f00cdae67901d7cbda9b4b8473",
+        "hosts.json": "c7fafaaf263b2ca10cef171653714d7025482e98b9016a1b6e69e8be31dd78ec",
+        "instrument/buyer-cold-isolated.mjs": "6402e427ad0fadfc56bd53820974a4f604766fab017f299b938f253fa023cbf1",
+        "instrument/lib/buyer-cold.mjs": "33911d9ea7f3a990f1451d08a02d144b3b63ef7e20ac2d32215dde2677738aab",
+        "instrument/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+        "instrument.json": "f48810ba0cca2eb6ec61158108e3045e8029ea39d1bde6ccba91dbb78b13f6b1",
+        "plan.json": "aa5c7aa56eeed5a80720ede22278d66da76a032a7d4437a8ff75015227188ef2",
+        "score.json": "3005e8dca7a6db31f376f0068fbcc77ec77a31b87b9968d4bfb77df8e35a4840"
+      },
+      "runs": [
+        {
+          "id": "codex-intent-search",
+          "host": "codex",
+          "runtime": {
+            "state": "failed",
+            "exit_code": 1,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": null
+          },
+          "requested_model": "gpt-5.6-luna",
+          "resolved_models": [],
+          "tool_calls": 0,
+          "started_at": "2026-09-16T18:22:15.856Z",
+          "ended_at": "2026-09-16T18:22:15.903Z"
+        },
+        {
+          "id": "codex-catalogue",
+          "host": "codex",
+          "runtime": {
+            "state": "failed",
+            "exit_code": 1,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": null
+          },
+          "requested_model": "gpt-5.6-luna",
+          "resolved_models": [],
+          "tool_calls": 0,
+          "started_at": "2026-09-16T18:22:15.903Z",
+          "ended_at": "2026-09-16T18:22:15.925Z"
+        },
+        {
+          "id": "codex-directed",
+          "host": "codex",
+          "runtime": {
+            "state": "failed",
+            "exit_code": 1,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": null
+          },
+          "requested_model": "gpt-5.6-luna",
+          "resolved_models": [],
+          "tool_calls": 0,
+          "started_at": "2026-09-16T18:22:15.925Z",
+          "ended_at": "2026-09-16T18:22:15.948Z"
+        },
+        {
+          "id": "claude-intent-search",
+          "host": "claude",
+          "runtime": {
+            "state": "unavailable",
+            "reason": "Claude CLI reports no active sign-in"
+          },
+          "requested_model": "sonnet",
+          "resolved_models": [],
+          "tool_calls": null,
+          "started_at": null,
+          "ended_at": null
+        },
+        {
+          "id": "claude-catalogue",
+          "host": "claude",
+          "runtime": {
+            "state": "unavailable",
+            "reason": "Claude CLI reports no active sign-in"
+          },
+          "requested_model": "sonnet",
+          "resolved_models": [],
+          "tool_calls": null,
+          "started_at": null,
+          "ended_at": null
+        },
+        {
+          "id": "claude-directed",
+          "host": "claude",
+          "runtime": {
+            "state": "unavailable",
+            "reason": "Claude CLI reports no active sign-in"
+          },
+          "requested_model": "sonnet",
+          "resolved_models": [],
+          "tool_calls": null,
+          "started_at": null,
+          "ended_at": null
+        }
+      ]
+    },
+    "b": {
+      "evidence_root": "private/cohort-b",
+      "files": {
+        "claude-catalogue/events.jsonl": "3f1185680b3e73af6ee27777c6772e4371c43364343b4565df4737ddcbf852ea",
+        "claude-catalogue/launch.json": "a512f39e02e16aead948bf96df79c31a93967aa7a93886bb8852deeed1d8ad74",
+        "claude-catalogue/prompt.txt": "25bdba466ecb0efcdf123e6ebddad854b8faf24c8efb543e50d34b5983aea248",
+        "claude-catalogue/review.json": "d2e5eb876882358245d92044edca2a4841043b34f3be61ac06a3b5938b5d647b",
+        "claude-catalogue/run.json": "6cfffd68510b8692e2ed12d9533daedebe9aa47679055d2cd0545cc794d6dfa8",
+        "claude-catalogue/runtime.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "claude-directed/events.jsonl": "553d3fb65cf67ec7a63dfa84e19d31981467fc7c3b2a312ee0ead00f866658c0",
+        "claude-directed/launch.json": "2d218e28d92d9f8637e87bfa487bdaabbd8fd6ef597fd9facaec0f2abcc0192b",
+        "claude-directed/prompt.txt": "1c69afead4123b86b0fffb923269026c1efe23cb482eb68bcf4929a0077d04bf",
+        "claude-directed/review.json": "866d6fb3ce3555087585fbbcdf40d64efa3e63e8b8b0de4858e2eccb76efeaee",
+        "claude-directed/run.json": "aab928a91e6aa1ff70ed0ff321e1f4849a1fb0564351d35d89c8134f5a5904a7",
+        "claude-directed/runtime.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "claude-intent-search/events.jsonl": "8bf2d81734a6c1e3a012f832caa0a30ab8400d16eca0fd7f9357cc54a32903bb",
+        "claude-intent-search/launch.json": "47d8dc4ca052286d0982723ec168ce410cb3d9b67c0c391d6427e215f3007fa7",
+        "claude-intent-search/prompt.txt": "5045b81c4316b5189efa19863faedb6ee12a5c5dc3adc39f943a05ba7664aed2",
+        "claude-intent-search/review.json": "20b73a133f94892f002baf2439e1ff4d9a7ac6ad62efc30652fa64ebcd6769f0",
+        "claude-intent-search/run.json": "8bf87b06c7880c2cbfc319f5eddd8b276258695d496bf7e76a6309834012b0b5",
+        "claude-intent-search/runtime.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "codex-catalogue/events.jsonl": "4cb0829fb01020bd7506bb984d4bfd38f0f67bf93c99c655d1ebee3d6b7ea16c",
+        "codex-catalogue/launch.json": "a9a6f35088c84a0bed39cd7cad6de0c5d4d6a14bbd7ac3be3dc3d7d3b391406a",
+        "codex-catalogue/prompt.txt": "25bdba466ecb0efcdf123e6ebddad854b8faf24c8efb543e50d34b5983aea248",
+        "codex-catalogue/review.json": "86eda66bb9da52df83ac1b32e464d0da654e7bf5717698119e3d2f3c45e53dd2",
+        "codex-catalogue/run.json": "4f06b6b378a79fb02c743fcdd2659d7be0974cedf2c9aa07b8c822700cd847ae",
+        "codex-catalogue/runtime.log": "9d915f86b41999a1a5da76868f8b251f7e88245ff7f54ac3cc1f7b4aaba73284",
+        "codex-directed/events.jsonl": "46b63d9fcb20bf84be0d09a1c78606afdfe2ccd2458cc1a10354ee5a3022bac9",
+        "codex-directed/launch.json": "5dbc116c3e9f1e1339095745529aa05a17bd9b83f6788fabfaa22f7a9564f38c",
+        "codex-directed/preflight-response.json": "27db61a53a58317453c8a69a4563d9acefb3e9c50ab7a8d5cc8d7a13cb306b41",
+        "codex-directed/prompt.txt": "1c69afead4123b86b0fffb923269026c1efe23cb482eb68bcf4929a0077d04bf",
+        "codex-directed/result.txt": "7bd0fa706485c461f1fe05561bb2acac90e3d06ad36f201afc19e540a29d0374",
+        "codex-directed/review.json": "baf68fc7d8bbab0a8b135a7ef24f302d6adda2a75f1b585a9ddb5756e655e283",
+        "codex-directed/run.json": "53810393527edb1dfcee7d42c08e69af50cc2502b9fc59ca38c03688ac55cb0b",
+        "codex-directed/runtime.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "codex-intent-search/events.jsonl": "d97263ca8740ab2f5c88c605b3a3d07cf47e10bb740c939505bc39ddaf72821a",
+        "codex-intent-search/launch.json": "5405b0c22306f1aa89be9e3bf8e6aa90c63fe8ff46565421e25f064adf19ab30",
+        "codex-intent-search/prompt.txt": "5045b81c4316b5189efa19863faedb6ee12a5c5dc3adc39f943a05ba7664aed2",
+        "codex-intent-search/result.txt": "9c40778d02bee41bedd66b3d856ed4e76c93f39a268a9502cba6458d406529bd",
+        "codex-intent-search/review.json": "266fd687e6ec1f54d38dfce31ab1a7a629523917ab989d8b81f43bb10f780144",
+        "codex-intent-search/run.json": "16436c5f76c44e2c21029add0f8fd76af7b12d19a15773a23847ac27ad4e2e4b",
+        "codex-intent-search/runtime.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hosts.json": "1c3e8991c649ed53255daf13ef46047f3740ba0724febc208d0633832335c036",
+        "instrument/buyer-cold-isolated.mjs": "6402e427ad0fadfc56bd53820974a4f604766fab017f299b938f253fa023cbf1",
+        "instrument/lib/buyer-cold.mjs": "33911d9ea7f3a990f1451d08a02d144b3b63ef7e20ac2d32215dde2677738aab",
+        "instrument/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+        "instrument.json": "f48810ba0cca2eb6ec61158108e3045e8029ea39d1bde6ccba91dbb78b13f6b1",
+        "plan.json": "aa5c7aa56eeed5a80720ede22278d66da76a032a7d4437a8ff75015227188ef2",
+        "score.json": "3ad84dfdacbc23d03810d84143bd93a8578abf1127f482e62035f9d9dcc63eb0"
+      },
+      "runs": [
+        {
+          "id": "codex-intent-search",
+          "host": "codex",
+          "runtime": {
+            "state": "completed",
+            "exit_code": 0,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": null
+          },
+          "requested_model": "gpt-5.6-luna",
+          "resolved_models": [],
+          "tool_calls": 8,
+          "started_at": "2026-09-16T18:22:36.130Z",
+          "ended_at": "2026-09-16T18:24:08.451Z"
+        },
+        {
+          "id": "codex-catalogue",
+          "host": "codex",
+          "runtime": {
+            "state": "failed",
+            "exit_code": null,
+            "signal": "SIGTERM",
+            "spawn_error": null,
+            "budget_stop": "tool_calls"
+          },
+          "requested_model": "gpt-5.6-luna",
+          "resolved_models": [],
+          "tool_calls": 21,
+          "started_at": "2026-09-16T18:24:08.475Z",
+          "ended_at": "2026-09-16T18:28:01.976Z"
+        },
+        {
+          "id": "codex-directed",
+          "host": "codex",
+          "runtime": {
+            "state": "completed",
+            "exit_code": 0,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": null
+          },
+          "requested_model": "gpt-5.6-luna",
+          "resolved_models": [],
+          "tool_calls": 8,
+          "started_at": "2026-09-16T18:28:01.982Z",
+          "ended_at": "2026-09-16T18:29:05.823Z"
+        },
+        {
+          "id": "claude-intent-search",
+          "host": "claude",
+          "runtime": {
+            "state": "completed",
+            "exit_code": 0,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": null
+          },
+          "requested_model": "sonnet",
+          "resolved_models": [
+            "claude-sonnet-5"
+          ],
+          "tool_calls": 14,
+          "started_at": "2026-09-16T18:29:05.833Z",
+          "ended_at": "2026-09-16T18:30:59.156Z"
+        },
+        {
+          "id": "claude-catalogue",
+          "host": "claude",
+          "runtime": {
+            "state": "failed",
+            "exit_code": 143,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": "tool_calls"
+          },
+          "requested_model": "sonnet",
+          "resolved_models": [
+            "claude-sonnet-5"
+          ],
+          "tool_calls": 21,
+          "started_at": "2026-09-16T18:30:59.159Z",
+          "ended_at": "2026-09-16T18:33:29.966Z"
+        },
+        {
+          "id": "claude-directed",
+          "host": "claude",
+          "runtime": {
+            "state": "completed",
+            "exit_code": 0,
+            "signal": null,
+            "spawn_error": null,
+            "budget_stop": null
+          },
+          "requested_model": "sonnet",
+          "resolved_models": [
+            "claude-sonnet-5"
+          ],
+          "tool_calls": 8,
+          "started_at": "2026-09-16T18:33:30.008Z",
+          "ended_at": "2026-09-16T18:36:50.957Z"
+        }
+      ]
+    }
+  }
+}

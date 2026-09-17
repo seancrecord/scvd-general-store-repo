@@ -1,0 +1,11 @@
+(node:48244) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-a2a-v1
+
+
+ Test Files  3 passed (3)
+      Tests  37 passed (37)
+   Start at  15:02:46
+   Duration  37.21s (transform 37.01s, setup 86ms, import 62.33s, tests 11.81s, environment 0ms)
+

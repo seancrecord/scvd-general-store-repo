@@ -1,0 +1,7 @@
+HTTP/2 200 
+date: Wed, 16 Sep 2026 20:28:35 GMT
+content-type: application/json
+content-length: 723
+vary: Origin
+strict-transport-security: max-age=31536000; includeSubDomains
+

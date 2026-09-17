@@ -1,0 +1,30 @@
+TAP version 13
+# Subtest: the live gate can pass a valid response and retrieval/cancellation lifecycle
+ok 1 - the live gate can pass a valid response and retrieval/cancellation lifecycle
+  ---
+  duration_ms: 15.631459
+  ...
+# Subtest: the live gate rejects the real captured defects even though the external CLI passed
+ok 2 - the live gate rejects the real captured defects even though the external CLI passed
+  ---
+  duration_ms: 1.387
+  ...
+# Subtest: unreachable or oversized responses fail the instrument instead of passing an empty check set
+ok 3 - unreachable or oversized responses fail the instrument instead of passing an empty check set
+  ---
+  duration_ms: 0.816958
+  ...
+# Subtest: a card cannot redirect the live gate to somebody else's task endpoint
+ok 4 - a card cannot redirect the live gate to somebody else's task endpoint
+  ---
+  duration_ms: 0.385958
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 133.410417

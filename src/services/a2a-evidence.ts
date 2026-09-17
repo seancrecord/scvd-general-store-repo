@@ -1,7 +1,7 @@
 import { checkConformance, type ConformanceRequest } from "@/services/conformance";
 import { heldHalfOf } from "@/services/look";
 import { PREFLIGHT_VERSION_NEXT, preflightUrl } from "@/services/preflight";
-import { LATEST_PROTOCOL } from "@/routes/mcp";
+import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION, type A2aVersion } from "@/lib/a2a-version";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import { OPERATOR } from "@/store/trust-signals";
@@ -22,7 +22,7 @@ import { A2A_STATE_DESCRIPTION, A2A_TASK_TTL_SECONDS, A2A_REQUEST_MAX_BYTES, A2A
  * whether to pay, which door to use, or whether a merchant can be
  * trusted — a planner asks for evidence and gets evidence.
  *
- * THE WIRE is A2A's JSON-RPC: `message/send` with one data part
+ * THE LEGACY WIRE is A2A 0.3 JSON-RPC: `message/send` with one data part
  * carrying `{ task, ...input }`, answered with a Task in the
  * `completed` state whose single artifact is the bounded result. The
  * agent retains terminal results for the declared window so tasks/get
@@ -32,7 +32,7 @@ import { A2A_STATE_DESCRIPTION, A2A_TASK_TTL_SECONDS, A2A_REQUEST_MAX_BYTES, A2A
  * verification, x402 endpoint-readiness dataset — never house names.
  */
 
-export const A2A_AGENT_VERSION = "1.0.1";
+export const A2A_AGENT_VERSION = "1.1.0";
 
 export type EvidenceTask = "preflight_endpoint" | "verify_receipt" | "get_endpoint_readiness";
 export const EVIDENCE_TASKS: readonly EvidenceTask[] = ["preflight_endpoint", "verify_receipt", "get_endpoint_readiness"];
@@ -241,35 +241,12 @@ export function evidenceAgentCard(base: string): Record<string, unknown> {
     name: "SCVD Evidence Agent",
     description: `${POSITION_LINE} This agent is the observatory's delegated face: it independently checks x402 endpoints, signed offers and receipts, and signed readiness history, and returns dated, bounded, machine-verifiable evidence. Three read-only tasks, free, no account, no conversation. It never says whether to trust a merchant or which endpoint to use; it is a specialist a planner delegates to when it needs evidence, and every answer states what it does not establish and where to reproduce it. ${POSITION_NOT}`,
     url: `${base}/a2a`,
-    /**
-     * BOTH DIALECTS ON ONE CARD (scanner finding C5, 2026-08-27,
-     * kept through the A2 rewrite). The 0.3 fields — preferredTransport
-     * and additionalInterfaces — stay for older readers; v1.0's
-     * supportedInterfaces rides beside them, first entry preferred.
-     *
-     * Until 2026-09-03 the card led with "MCP" because the store did
-     * not speak the A2A message protocol and a canonical binding would
-     * have been a false claim in machine form. It speaks it now:
-     * message/send at /a2a is answered, so "JSONRPC" is the truth, and
-     * it is the only canonical binding claimed — GRPC and HTTP+JSON are
-     * not served and are not named. The other doors are named by their
-     * protocols' URIs (§5.8), each with that protocol's own version.
-     */
     preferredTransport: "JSONRPC",
-    additionalInterfaces: [
-      { url: `${base}/a2a`, transport: "JSONRPC" },
-      { url: `${base}/mcp`, transport: "MCP" },
-      { url: `${base}/llms.txt`, transport: "HTTP+x402" },
-    ],
-    supportedInterfaces: [
-      { url: `${base}/a2a`, protocolBinding: "JSONRPC", protocolVersion: A2A_PROTOCOL_VERSION },
-      { url: `${base}/mcp`, protocolBinding: "https://modelcontextprotocol.io", protocolVersion: LATEST_PROTOCOL },
-      { url: `${base}/llms.txt`, protocolBinding: "https://www.x402.org", protocolVersion: "2" },
-    ],
+    additionalInterfaces: [{ url: `${base}/a2a`, transport: "JSONRPC" }],
     provider: { organization: OPERATOR.legal_entity, url: base },
     version: A2A_AGENT_VERSION,
     documentationUrl: `${base}/a2a`,
-    capabilities: { streaming: false, pushNotifications: false, stateTransitionHistory: false, extendedAgentCard: false },
+    capabilities: { streaming: false, pushNotifications: false, stateTransitionHistory: false },
     defaultInputModes: ["application/json"],
     defaultOutputModes: ["application/json"],
     skills: [
@@ -299,6 +276,19 @@ export function evidenceAgentCard(base: string): Record<string, unknown> {
     security: [],
     securitySchemes: {},
     x_scvd_note: `Read-only and free. ${A2A_STATE_DESCRIPTION} The paid instruments (signed audits, watches, settlement attestations) are x402 doors listed at ${base}/menu.json and are not A2A tasks. ${NEVER_A_RANKING_SENTENCE}`,
+  };
+}
+
+/** The v1 card contains only v1 fields; MCP and x402 are separate doors. */
+export function evidenceAgentCardV1(base: string): Record<string, unknown> {
+  const legacy = evidenceAgentCard(base);
+  return {
+    name: legacy["name"], description: `${legacy["description"]} ${String(legacy["x_scvd_note"]).replace("tasks/get", "GetTask")}`,
+    supportedInterfaces: [A2A_CURRENT_VERSION, A2A_LEGACY_VERSION].map(protocolVersion => ({ url: `${base}/a2a`, protocolBinding: "JSONRPC", protocolVersion })),
+    provider: legacy["provider"], version: legacy["version"], documentationUrl: legacy["documentationUrl"],
+    capabilities: { streaming: false, pushNotifications: false, extendedAgentCard: false },
+    defaultInputModes: legacy["defaultInputModes"], defaultOutputModes: legacy["defaultOutputModes"],
+    skills: legacy["skills"], securitySchemes: {}, securityRequirements: [],
   };
 }
 
@@ -437,13 +427,16 @@ async function handleA2aRequestChecked(env: Env, body: unknown, now: Date): Prom
 }
 
 /** The door's own document, rule 57's shape for a JSON-RPC door. */
-export function a2aDoc(base: string): Record<string, unknown> {
+export function a2aDoc(base: string, version: A2aVersion = A2A_LEGACY_VERSION): Record<string, unknown> {
+  const v1 = version === A2A_CURRENT_VERSION;
   return {
     title: "The evidence agent — an A2A specialist another agent hands work to",
     version: A2A_AGENT_VERSION,
     card: `${base}/.well-known/agent-card.json`,
+    protocol_version: version,
+    negotiation: `Send A2A-Version: ${A2A_CURRENT_VERSION} on card and RPC requests for v1. Absent or empty header selects legacy ${A2A_LEGACY_VERSION}; patch numbers are ignored. Dialects share task IDs and immutable evidence.`,
     summary:
-      "POST JSON-RPC 2.0 here: method message/send, one data part carrying { task, ...input }. Three read-only tasks, each answered with one bounded artifact: what was observed, when, what the result means and against what, what it does not establish, and where to reproduce it. Free, no account, no conversation, nothing paid.",
+      `POST JSON-RPC 2.0 here: method ${v1 ? "SendMessage" : "message/send"}, one data part carrying { task, ...input }. Three read-only tasks, each answered with one bounded artifact: what was observed, when, what the result means and against what, what it does not establish, and where to reproduce it. Free, no account, no conversation, nothing paid.`,
     tasks: {
       preflight_endpoint: { input: { url: "REQUIRED. The https x402 door a buyer would GET." }, reproduces: `${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}` },
       verify_receipt: { input: { receipt: "REQUIRED. The compact JWS.", public_key_hex: "OPTIONAL. Check offline against this key; else the issuer's did:web is resolved.", kind: 'OPTIONAL. "receipt" (default) or "offer".' }, reproduces: `${base}/api/conformance/v1` },
@@ -452,17 +445,18 @@ export function a2aDoc(base: string): Record<string, unknown> {
     example: {
       jsonrpc: "2.0",
       id: 1,
-      method: "message/send",
-      params: { message: { kind: "message", role: "user", messageId: "m-1", parts: [{ kind: "data", data: { task: "preflight_endpoint", url: "https://example.com/api/paid-answer" } }] } },
+      method: v1 ? "SendMessage" : "message/send",
+      params: v1 ? { message: { role: "ROLE_USER", messageId: "m-1", parts: [{ data: { task: "preflight_endpoint", url: "https://example.com/api/paid-answer" } }] } } : { message: { kind: "message", role: "user", messageId: "m-1", parts: [{ kind: "data", data: { task: "preflight_endpoint", url: "https://example.com/api/paid-answer" } }] } },
     },
     what_it_cannot_tell_you: [
       "Whether to pay, or which door to use. The reader draws that line; this agent does not.",
       "Whether a merchant can be trusted. It returns evidence about bytes, a probe and a chain, never a judgment about a person or a company.",
       "Anything a free read cannot: settlement and delivery are paid instruments on the shelf, sold as x402 doors, not as tasks here.",
     ],
-    state: A2A_STATE_DESCRIPTION,
+    state: v1 ? A2A_STATE_DESCRIPTION.replace("tasks/get", "GetTask") : A2A_STATE_DESCRIPTION,
     limits: { request_bytes: A2A_REQUEST_MAX_BYTES, retained_task_bytes: A2A_TASK_MAX_BYTES, retention_seconds: A2A_TASK_TTL_SECONDS },
-    methods: ["message/send", "tasks/get", "tasks/cancel"],
+    methods: v1 ? ["SendMessage", "GetTask", "CancelTask"] : ["message/send", "tasks/get", "tasks/cancel"],
+    unsupported: ["Streaming", "Push notifications", "Asynchronous returnImmediately", "Task enumeration", "Tenant routing", "Extended agent cards"],
     never_a_ranking: NEVER_A_RANKING_SENTENCE,
   };
 }

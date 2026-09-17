@@ -69,6 +69,8 @@ const DISCOVERY_EXACT = new Set([
   // prefix below. The card being readable while the endpoint is
   // unreachable is the same failure one hop later.
   "/mcp",
+  // A2A v1 clients negotiate with a request header and POST tasks.
+  "/a2a",
   // The verifier door answers the same preflight; it was omitted
   // when that door was added and returned 405 to OPTIONS (2026-09-16).
   "/mcp/verifier",
@@ -118,7 +120,7 @@ export const discoveryCors: MiddlewareHandler<HonoEnv> = async (c, next) => {
       c.res.headers.set("Access-Control-Allow-Origin", "*");
       c.res.headers.set(
         "Access-Control-Expose-Headers",
-        "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
+        "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version",
       );
     }
     return;
@@ -144,7 +146,7 @@ export const discoveryCors: MiddlewareHandler<HonoEnv> = async (c, next) => {
     c.res.headers.set("Access-Control-Allow-Origin", "*");
     c.res.headers.set(
       "Access-Control-Expose-Headers",
-      "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
+      "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version",
     );
   }
 };

@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-09-17T14:28:20.921299+00:00",
+  "standalone_base": "c3b3befc",
+  "full_suite": {
+    "command": "npm test",
+    "exit_code": 0,
+    "files_passed": 750,
+    "tests_passed": 14543,
+    "skipped": 1,
+    "duration_seconds": 3240.59,
+    "log_sha256": "af987e0c2aa4ab63c8fda03ffe4d47ec4ee9a20a34d0f3184b3581f0684292e2"
+  },
+  "typecheck": "pass",
+  "scope": "Standalone slice before stacking; final stacked-head CI gates merge.",
+  "additional_checks": {
+    "buyer": 91
+  }
+}
