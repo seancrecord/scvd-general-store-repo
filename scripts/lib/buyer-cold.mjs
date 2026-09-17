@@ -17,15 +17,15 @@ const dated = x => typeof x === 'string' && Number.isFinite(Date.parse(x));
 // python3, openssl and shell redirection, were refused, and never tried the
 // permitted node path. A buyer told nothing about its host cannot be scored
 // on the host's limits. The adapter's allowlist and the prompt's statement
-// of available tools derive from this one list, so the prompt can never
-// promise a command the host will refuse, and never widens the allowlist.
+// of permitted tools derive from this one list. Native policy can still
+// refuse an invocation; the declaration never widens the allowlist.
 export const HOST_TOOLS = {
   codex: {statement: 'Local tools in this session: web search and a shell with network access inside a workspace-write sandbox.'},
   claude: {commands: ['curl', 'node']},
 };
 export function localToolsStatement(host) {
   if (host === 'codex') return HOST_TOOLS.codex.statement;
-  if (host === 'claude') return `Local tools in this session: web search, web fetch, and shell commands whose first word is ${HOST_TOOLS.claude.commands.join(' or ')} (for example curl -o to save a response unchanged, or node -e for local computation and signature checks). Other programs, pipes into other programs, shell redirection and compound commands can be refused; a refusal is a host limit, not an origin response.`;
+  if (host === 'claude') return `Local tools in this session: web search, web fetch, and shell commands whose first word is ${HOST_TOOLS.claude.commands.join(' or ')} (for example curl -o to save a response unchanged, or node -e for local computation and signature checks). Other programs, pipes into other programs, shell redirection and compound commands can be refused; a refusal is a host limit, not an origin response. Report a refusal for the exact invocation attempted; it does not establish that untried permitted tools are unavailable. Respect the refusal and do not change permissions or retry a prohibited action.`;
   throw new Error('Unknown cold host.');
 }
 
@@ -170,6 +170,10 @@ export function scoreCapability(host, run, root, vectors, reference) {
   let trace = '';
   try { trace = fs.readFileSync(path.join(root, 'events.jsonl'), 'utf8'); } catch { /* Scored below as no executed command. */ }
   const commands = commandEvents(host, trace);
+  // A first word is only an index: `curl ... && shasum ...` being refused
+  // does not establish that standalone curl is forbidden. Keep the evidence.
+  result.command_events = commands;
+  result.limits.push('The commands lists contain first words of invocations, not tool-wide availability findings; command_events retains the full invocation and trace line.');
   result.commands = {executed: commands.filter(c => c.outcome === 'completed').map(c => c.program), denied: commands.filter(c => c.outcome === 'denied').map(c => c.program), failed: commands.filter(c => c.outcome === 'failed').map(c => c.program)};
   let report = null;
   const reportFile = find('capability.json');

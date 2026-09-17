@@ -69,6 +69,15 @@ Claude stopped after a refused compound command, so no buyer cohort ran.
 The focused skill's missing corpus-instructions reference is corrected.
 [Qualification, preserved control error and next gate](research/takeoff-workspace-qualification-2026-09-17/README.md).
 
+**TR3 refusal-scope follow-through, September 17:** one newly frozen generic
+attempt per host passed public-byte retention and local signature checks.
+The host statement scopes a refusal to the attempted invocation; diagnostics
+retain complete host-reported command events. Claude encountered no refusal
+in this attempt, so recovery is not established. No new buyer ran. The public
+registry still served verifier 1.4.0; acceptance of the saved-response repair
+waits for 1.5.0 publication and fresh installation, then a frozen buyer plan.
+[Results, preserved limits and pickup](research/takeoff-refusal-scope-2026-09-17/README.md).
+
 Ordered 2026-09-03 under his lens: value or potential value
 if the market takes off, not ROI now ("think of it as tech
 in 0% interest rate times"). A1–A3, the next three moves of

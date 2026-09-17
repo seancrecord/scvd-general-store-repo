@@ -1,0 +1,41 @@
+{
+  "reviewed_at": "2026-09-17T21:26:24.676085+00:00",
+  "buyer_cells_launched": 0,
+  "buyer_deferral": "The registry read still serves x402-verify 1.4.0; preserve the qualified host boundary and defer new buyer acceptance of the saved-response repair until 1.5.0 is published and independently installed. The frozen maximum of eight is unused, not eight attempted/incomplete buyers.",
+  "hosts": {
+    "codex": {
+      "state": "pass",
+      "trace_sha256": "017c01024216fa37f0dc019478e19ec3a99085a2932fafdc6c350b43e5cdc1bc",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 2,
+      "reported_output_tokens": 3239,
+      "retained_files": 2,
+      "retained_bytes": 2353,
+      "fetched_digest_agrees": true,
+      "limits": "Codex reports a refused rm cleanup in narrative, but its native trace provides no corresponding command event. The empty denied index is not evidence of no refusal."
+    },
+    "claude": {
+      "state": "pass",
+      "trace_sha256": "61a29e26cd7166bd886a6e5c0b2a619a129b18dac10557de332a168d78cbf369",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 3,
+      "reported_output_tokens": 5324,
+      "retained_files": 2,
+      "retained_bytes": 2348,
+      "fetched_digest_agrees": true,
+      "limits": "No refusal occurred in this attempt, so it does not demonstrate recovery from a refusal or establish a causal prompt improvement."
+    }
+  }
+}
