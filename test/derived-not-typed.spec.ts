@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import SKILL_BUNDLE from "../registry/clawhub/SKILL.md?raw";
+import { installedSkill as SKILL_BUNDLE } from "./helpers/installed-skill";
 import { MENU_ITEMS } from "@/store";
 import { app } from "@/index";
 

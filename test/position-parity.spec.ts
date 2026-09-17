@@ -1,3 +1,4 @@
+import { installedSkill } from "./helpers/installed-skill";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { POSITION_LINE } from "@/store/copy/position";
@@ -137,7 +138,7 @@ describe("nothing still claims the store settles first", () => {
     // The bundle is in someone else's catalogue the moment it is
     // published, out of our hands until a human republishes it. It is
     // the surface where a stale claim lives longest.
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     expect(bundle.toLowerCase()).not.toContain("settles first, then hands over");
     expect(bundle.toLowerCase()).toContain("delivers first and settles after");
   });
@@ -145,7 +146,7 @@ describe("nothing still claims the store settles first", () => {
 
 describe("the ClawHub bundle carries what the store actually has", () => {
   it("names the verification tier, not just the shelf", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     for (const capability of [
       "service_audit",
       "conformance_watch",
@@ -161,14 +162,14 @@ describe("the ClawHub bundle carries what the store actually has", () => {
   });
 
   it("names the corpus and the per-subject query", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     expect(bundle).toContain("/corpus/host/{host}.json");
     // The gap vocabulary is the differentiator, so it ships with it.
     expect(bundle).toContain("listed_not_walked");
   });
 
   it("names the second MCP server, which was on no listing anywhere", async () => {
-    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const bundle = installedSkill;
     expect(bundle).toContain("scvd-tab");
     // And is honest that the pooled layer is direction, not stock.
     expect(bundle.toLowerCase()).toContain("not built");

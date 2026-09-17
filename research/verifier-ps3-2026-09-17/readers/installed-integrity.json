@@ -1,0 +1,82 @@
+{
+  "tampered-1": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  },
+  "tampered-2": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  },
+  "unavailable-key-1": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  },
+  "unavailable-key-2": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  },
+  "unsupported-1": {
+    "packages": [
+      {
+        "directory": "consumer/node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  },
+  "unsupported-2": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  },
+  "valid-1": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  },
+  "valid-2": {
+    "packages": [
+      {
+        "directory": "node_modules/x402-verify",
+        "fileCount": 24,
+        "unchanged": true
+      }
+    ],
+    "installedPackageUnchanged": true
+  }
+}

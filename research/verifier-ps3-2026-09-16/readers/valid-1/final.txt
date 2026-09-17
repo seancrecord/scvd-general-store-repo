@@ -1,0 +1,14 @@
+{
+  "status": "valid",
+  "reasonCodes": [],
+  "scope": "Signature and local revision-1 receipt schema checks passed against the supplied fixture key.",
+  "doesNotEstablish": [
+    "merchant identity",
+    "payment settlement",
+    "service delivery",
+    "signing-key authorization for the resource"
+  ],
+  "outputFile": "/private/tmp/scvd-reader-valid-1-arr374/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}

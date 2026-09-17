@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-17",
+  "baseline": "../verifier-ps3-2026-09-16/readers/scores.json",
+  "revision": "readers/scores.json",
+  "baselineAttempts": 8,
+  "revisionAttempts": 8,
+  "baselinePassed": 4,
+  "revisionPassed": 7,
+  "baselineCorrectApiOutputs": 8,
+  "revisionCorrectApiOutputs": 8,
+  "baselineFinalKeyAuthorityExplicit": 6,
+  "revisionFinalKeyAuthorityExplicit": 8,
+  "revisionScopeAndExclusionsVerbatim": true,
+  "limitations": [
+    "Two small synthetic cohorts on one requested model/host; not a population success-rate estimate.",
+    "README and runner both changed; effects cannot be assigned to copy alone.",
+    "Prompt workspace restrictions are not a security boundary; trace review remains necessary.",
+    "Claude Code remains signed out; second-host trials untested."
+  ]
+}

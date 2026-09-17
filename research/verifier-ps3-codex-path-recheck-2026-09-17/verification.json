@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-17",
+  "status": "PS3 locally qualified after targeted Codex path regression",
+  "qualificationBasis": "Previously retained four-scenario/two-attempt cohorts on Codex and Claude, followed by two separate Codex corrective regression attempts. This is not a replacement clean full Codex cohort.",
+  "targetedAttempts": 2,
+  "targetedPasses": 2,
+  "priorCodexStrictPasses": 7,
+  "priorCodexAttempts": 8,
+  "claudeStrictPasses": 8,
+  "claudeAttempts": 8,
+  "unchangedFrozenInputs": {
+    "README.md": true,
+    "x402-verify-1.4.0.tgz": true
+  },
+  "historicalIntegrity": {
+    "originalCohort": {
+      "filesCompared": 90,
+      "changed": []
+    },
+    "revisedCohort": {
+      "filesCompared": 132,
+      "changed": []
+    }
+  },
+  "sourceHashes": {
+    "reader-harness.mjs": "1ebd7483bf7f50f9f182da64a2a2102b6bbed1073dbf9edb6f7344b8781f222a",
+    "score-readers.mjs": "a09a307395a8b650fe29e568f152651177f9f30cc34edebcdd56f9435116606a"
+  },
+  "limitations": [
+    "Bounded synthetic usability evidence, not statistical reliability.",
+    "Prompt restrictions and locally recorded traces are not independent security attestation.",
+    "Nested reader reports a missing-directory tool refusal not represented as a command-execution event; retained in its commentary and manual review.",
+    "No registry installation, integration, publication, commit or PS4 work."
+  ]
+}

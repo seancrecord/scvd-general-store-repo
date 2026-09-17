@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-17T15:23:02.501Z",
+  "modelRequested": "gpt-5.6-luna",
+  "variants": [
+    "new"
+  ],
+  "modes": [
+    "tasks"
+  ],
+  "cases": [
+    "preflight",
+    "mpp"
+  ],
+  "triggers": [
+    {
+      "id": "preflight",
+      "request": "Inspect https://merchant.example.test/paid before I consider paying. Do the available free check and tell me what remains unknown. Do not buy anything."
+    },
+    {
+      "id": "mpp",
+      "request": "Inspect https://mpp.example.test/pay. If it says not_ready, does that establish that the endpoint is globally broken or cannot be paid by any client? Explain the protocol-specific evidence."
+    },
+    {
+      "id": "unrelated-poem",
+      "request": "Write a short poem about autumn."
+    },
+    {
+      "id": "unrelated-css",
+      "request": "Fix the flexbox alignment in my recipe website."
+    },
+    {
+      "id": "unrelated-billing",
+      "request": "Explain why my household electricity bill rose in winter."
+    }
+  ],
+  "attemptsPerCell": 1,
+  "timeoutMs": 240000,
+  "resume": false,
+  "rescue": false,
+  "scope": "One separately recorded corrective task session on the integrated skill; two retained fixture-backed cases: timestamp reporting and MPP interpretation. No metadata recheck or replacement cohort. Cases within a task session share context; not native host auto-triggering, real endpoint execution, or statistical reliability.",
+  "sourceHashes": {
+    "acceptance.json": "a7f846805d2593965519669b4360034ce51f054f17935aa047daab6bff5d0bea",
+    "cases.json": "fca13134a35041423f328b29cb9e9a2f4a9c5b31e80ab8b584390612f4c8f526",
+    "eval-tool.mjs": "320fbfc6a1e64ea6d17cc76f388a1e5c439f7dbeccdd5a9d4523b0bc6bd04b54",
+    "run-readers.mjs": "07a95db17de116626462d880430069c42219def16722bdb79101b2773afad9ae",
+    "score-readers.mjs": "49065703214d019b0bb6eabb587af50635c25fab7344727321c3b15d23cf953e"
+  }
+}

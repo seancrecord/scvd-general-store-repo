@@ -1,3 +1,4 @@
+import { installedSkillEntry } from "./helpers/installed-skill";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 
@@ -39,7 +40,7 @@ async function servedSkill(): Promise<string> {
 }
 
 async function bundle(): Promise<string> {
-  return (await import("../registry/clawhub/SKILL.md?raw")).default;
+  return installedSkillEntry;
 }
 
 function frontmatterField(document: string, field: string): string {

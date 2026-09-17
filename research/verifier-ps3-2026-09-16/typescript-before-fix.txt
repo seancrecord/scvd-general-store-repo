@@ -1,0 +1,6 @@
+consumer.mts(27,5): error TS2322: Type 'import("crypto").webcrypto.SubtleCrypto' is not assignable to type 'SubtleCrypto'.
+  Types of property 'generateKey' are incompatible.
+    Type '{ (algorithm: RsaHashedKeyGenParams | EcKeyGenParams, extractable: boolean, keyUsages: readonly KeyUsage[]): Promise<CryptoKeyPair>; (algorithm: Pbkdf2Params | ... 1 more ... | HmacKeyGenParams, extractable: boolean, keyUsages: readonly KeyUsage[]): Promise<...>; (algorithm: AlgorithmIdentifier, extractable: boolean...' is not assignable to type '{ (algorithm: "Ed25519" | { name: "Ed25519"; }, extractable: boolean, keyUsages: readonly ("sign" | "verify")[]): Promise<CryptoKeyPair>; (algorithm: EcKeyGenParams | RsaHashedKeyGenParams, extractable: boolean, keyUsages: readonly KeyUsage[]): Promise<...>; (algorithm: AesKeyGenParams | ... 1 more ... | Pbkdf2Param...'.
+      Types of parameters 'algorithm' and 'algorithm' are incompatible.
+        Type '"Ed25519" | { name: "Ed25519"; }' is not assignable to type 'RsaHashedKeyGenParams | EcKeyGenParams'.
+          Type 'string' is not assignable to type 'RsaHashedKeyGenParams | EcKeyGenParams'.

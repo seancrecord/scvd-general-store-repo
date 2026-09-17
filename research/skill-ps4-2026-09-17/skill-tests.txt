@@ -1,0 +1,11 @@
+(node:2306) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-skill-progressive-disclosure
+
+
+ Test Files  7 passed (7)
+      Tests  44 passed (44)
+   Start at  10:33:48
+   Duration  21.41s (transform 30.82s, setup 372ms, import 57.84s, tests 698ms, environment 2ms)
+

@@ -1,0 +1,45 @@
+TAP version 13
+# Subtest: missing, escaping and orphaned references cannot pass a content audit
+ok 1 - missing, escaping and orphaned references cannot pass a content audit
+  ---
+  duration_ms: 1.64
+  ...
+# Subtest: a reference-only change changes the release fingerprint
+ok 2 - a reference-only change changes the release fingerprint
+  ---
+  duration_ms: 15.425041
+  ...
+# Subtest: an isolated installed copy contains every reference and detects tampering
+not ok 3 - an isolated installed copy contains every reference and detects tampering
+  ---
+  duration_ms: 85.588417
+  location: '/private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:38:12)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+    Test.postRun (node:internal/test_runner/test:1042:19)
+    Test.run (node:internal/test_runner/test:970:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: canonical skill entry routes to task references; both payloads have the same graph
+ok 4 - canonical skill entry routes to task references; both payloads have the same graph
+  ---
+  duration_ms: 90.461167
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 358.452542

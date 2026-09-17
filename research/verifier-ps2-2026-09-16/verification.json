@@ -1,0 +1,295 @@
+{
+  "date": "2026-09-16",
+  "sourceBase": "6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079",
+  "branch": "codex/verifier-independent-vectors",
+  "status": "locally qualified; uncommitted, not integrated, not deployed, not published",
+  "release": "1.4.0 (unpublished PS1 prerequisite)",
+  "prerequisite": "ps1-prerequisite.json",
+  "productionSourceUnchangedFromPS1": [
+    "verifier/x402-verify.js",
+    "verifier/x402-verify.d.ts",
+    "verifier/evidence-bundle.js",
+    "verifier/evidence-bundle.d.ts",
+    "verifier/evidence-cli.mjs"
+  ],
+  "runtimes": {
+    "node": "v22.13.1",
+    "openssl": "3.0.15+quic",
+    "workerd": "1.20260815.1",
+    "vitest": "4.1.11"
+  },
+  "unqualified": [
+    "minimum advertised Node",
+    "browser",
+    "Bun",
+    "Deno",
+    "deployed Workers",
+    "real service authorization",
+    "fresh-reader activation"
+  ],
+  "vectors": {
+    "total": 90,
+    "byFamily": {
+      "EdDSA": 22,
+      "ES256": 22,
+      "ES256K": 22,
+      "eip712": 24
+    },
+    "syntheticScvdIssuerCases": 2
+  },
+  "independentRegeneration": {
+    "exitCode": 0,
+    "command": "npm run verifier:vectors:check",
+    "finalOfflineCheck": "npm run check --prefix verifier/vector-tools",
+    "testOnlyDependencies": {
+      "@noble/curves": {
+        "version": "1.9.1",
+        "integrity": "sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==",
+        "license": "MIT"
+      },
+      "@noble/hashes": {
+        "version": "1.8.0",
+        "integrity": "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==",
+        "license": "MIT"
+      },
+      "ethers": {
+        "version": "5.8.0",
+        "integrity": "sha512-DUq+7fHrCg1aPDFCHx6UIPb3nmt2XMpM7Y/g2gLhsl3lIBqeAfOJIl1qEvRf2uq3BiKxmh6Fh5pfp2ieyek7Kg==",
+        "license": "MIT"
+      },
+      "viem": {
+        "version": "2.56.3",
+        "integrity": "sha512-vUObq3GO7D3lz9gPNEE/xd5jIUnMbeVDWewh252o54pDEDlW4pDe6FEd/qTGL5RyK52cGHMM7kQ3wjxhilEvkQ==",
+        "license": "MIT"
+      }
+    }
+  },
+  "nodeMatrix": {
+    "tests": [
+      95
+    ],
+    "pass": [
+      95
+    ],
+    "fail": [
+      0
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "nodeEvidenceSuites": {
+    "tests": [
+      170,
+      16,
+      5
+    ],
+    "pass": [
+      170,
+      16,
+      5
+    ],
+    "fail": [
+      0,
+      0,
+      0
+    ],
+    "skipped": [
+      0,
+      0,
+      0
+    ]
+  },
+  "workflowAndPartitionTests": {
+    "tests": [
+      5
+    ],
+    "pass": [
+      5
+    ],
+    "fail": [
+      0
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "workerTests": {
+    "files": 3,
+    "tests": 109,
+    "passed": 109,
+    "exitCode": 0,
+    "command": "npm test -- test/verifier-independent-vectors.spec.ts test/verifier-package.spec.ts test/verify-as-a-stranger.spec.ts"
+  },
+  "typecheck": {
+    "exitCode": 0,
+    "command": "npm run typecheck"
+  },
+  "bundleDryRuns": {
+    "exitCode": 0,
+    "command": "npm run build:check",
+    "deployed": false
+  },
+  "redControls": {
+    "initialMatrixAbsent": "test module fails to load missing fixture",
+    "workflowBeforeWiring": {
+      "tests": [
+        1
+      ],
+      "pass": [
+        0
+      ],
+      "fail": [
+        1
+      ],
+      "skipped": [
+        0
+      ]
+    },
+    "harnessMutants": [
+      "missing family",
+      "missing wrong-authority control",
+      "rehashed invalid signature",
+      "rehashed wrong authority",
+      "rehashed unavailable authority",
+      "rehashed false schema claim",
+      "changed EIP-712 domain digest",
+      "invalid EIP-712 signature"
+    ]
+  },
+  "pack": {
+    "id": "x402-verify@1.4.0",
+    "name": "x402-verify",
+    "version": "1.4.0",
+    "size": 50393,
+    "unpackedSize": 274647,
+    "shasum": "d4cf014441883a6183f1298bce9cc91709390593",
+    "integrity": "sha512-ipdL0ERQ6Ui4Mfoka8gon3frx3vvAdzeuWCfTWe70pu//cl2bLhI8sDQEvSjXKQFULtN7qtnbtwfaocyfyWZYw==",
+    "filename": "x402-verify-1.4.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 3666,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 23792,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.d.ts",
+        "size": 1831,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.js",
+        "size": 9551,
+        "mode": 420
+      },
+      {
+        "path": "evidence-cli.mjs",
+        "size": 6740,
+        "mode": 493
+      },
+      {
+        "path": "fixtures/independent/matrix.json",
+        "size": 164861,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/independent/README.md",
+        "size": 5590,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/issuer-key-document.json",
+        "size": 344,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-expired-but-wellformed.json",
+        "size": 935,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-tampered-payload.json",
+        "size": 843,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-valid.json",
+        "size": 1110,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-missing-payer.json",
+        "size": 762,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-valid.json",
+        "size": 1090,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-wrong-key.json",
+        "size": 961,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1494,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.d.ts",
+        "size": 8595,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.js",
+        "size": 41414,
+        "mode": 420
+      }
+    ],
+    "entryCount": 18,
+    "bundled": [],
+    "generatorAndToolDependenciesExcluded": true
+  },
+  "packedConsumer": {
+    "version": "1.4.0",
+    "runtime": "v22.13.1",
+    "vectors": 90,
+    "statuses": {
+      "valid": 9,
+      "invalid": 17,
+      "unsupported": 64
+    },
+    "unavailableKey": "inconclusive",
+    "dependencies": 0,
+    "liveNetwork": false
+  },
+  "fullWorkerSuite": {
+    "rerun": false,
+    "reason": "No production source changes relative to PS1; targeted tests plus complete Node evidence suite run. Full suite remains required before a commit/integration."
+  },
+  "sourceHashes": {
+    "verifier/fixtures/independent/matrix.json": "d97a7433f9323c9398770769a299377764b266a907c1caba743152802fb35b95",
+    "verifier/vector-tools/generate.mjs": "21d6fd396946477d1f6b8610802e0fe546385c57fc80482b8cb01f01f25e157b",
+    "verifier/vector-tools/package-lock.json": "c386cab744fe3732f77bf53e7ec1d7c3780db7bb085c737c044bfee5555dd7e3",
+    "verifier/test-support/independent-matrix.mjs": "a1b5f85cd7a05f20e5ba8cceac241729a45a6ea981f9064f580ec4b9736bd5a3",
+    "verifier/independent-vectors.test.mjs": "6c4f4844c60525fd430f5734bca6a7d635ec7d4786133786fb68e4bb97de5a0c",
+    "test/verifier-independent-vectors.spec.ts": "d2d843ba9500a31fffbb60026e23e627be94a569be570d1e64c1c3c9c9b1df77",
+    "verifier/x402-verify.js": "cda02030c75f8f676a15184d7bebc15a5692b562242e08da75efa0a43381fdda",
+    "verifier/x402-verify.d.ts": "0b426b853b3b5f42b7b81aad5a7f29b269d2c58d88d63e7cf2dc3ff44d771130",
+    "verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "verifier/evidence-bundle.d.ts": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a",
+    "verifier/evidence-cli.mjs": "9e87839106c858ecaba6ff69dbfc58760561d24177cc1d4ff0f1ea09084563c3"
+  }
+}

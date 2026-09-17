@@ -1,0 +1,45 @@
+{
+  "date": "2026-09-17",
+  "status": "eight approved Claude reader trials complete; all eight pass; prior Codex boundary-case recheck remains",
+  "host": "Claude Code",
+  "modelRequested": "sonnet",
+  "plannedAttempts": 8,
+  "executedAttempts": 8,
+  "authStatus": {
+    "loggedIn": true,
+    "method": "claude.ai",
+    "credentialMaterialReadOrCopied": false
+  },
+  "frozenInputs": {
+    "README.md": "b5916ffd3daff21c0d6bbeccc42d732da07413e77c617e39409a7884d4faa11f",
+    "x402-verify-1.4.0.tgz": "3b93ad331fea263e2b538b33198c230c7d8c6859cc938b324bb9c509f1e81c79"
+  },
+  "runnerSha256": "22809c8126e758c4672793b9dd878415a8d1cc4937467f76d66fdab48557322d",
+  "syntaxCheckExitCode": 0,
+  "sources": [
+    "https://code.claude.com/docs/en/headless",
+    "https://code.claude.com/docs/en/cli-reference"
+  ],
+  "publicationPerformed": false,
+  "passed": 8,
+  "modelReported": [
+    "claude-sonnet-5"
+  ],
+  "claudeGatePassed": true,
+  "fullTwoHostGatePassed": false,
+  "readerScores": "readers/scores.json",
+  "traceReview": "readers/trace-review.json",
+  "installedIntegrity": "readers/installed-integrity.json",
+  "normalizerTests": {
+    "passed": 2,
+    "failed": 0,
+    "log": "normalizer-tests.txt",
+    "falseSuccessControlFailed": true
+  },
+  "sourceHashes": {
+    "run-readers.mjs": "22809c8126e758c4672793b9dd878415a8d1cc4937467f76d66fdab48557322d",
+    "score-readers.mjs": "adcea38992ba636cd5728e7342c6fdf241d80a660d104cbb6b8520d60429bb2e",
+    "normalize-events.mjs": "6276d88964df7e6689d4d18b40825fd5e1ca37c7759f95d7a3ada5dbe0c8aa73",
+    "normalize-events.test.mjs": "7ecbc458d158c94deb7fa71243f6a5be931c85c7926aae2f5c603ba952cb9896"
+  }
+}

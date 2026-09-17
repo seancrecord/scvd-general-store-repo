@@ -167,6 +167,13 @@ jobs:
             *) echo "$PACKAGE ships no test file of its own; skipping." ;;
           esac
 
+      - name: Reproduce independent verifier vectors
+        if: ${{ inputs.package == 'x402-verify' }}
+        run: npm run verifier:vectors:check
+      - name: Verify the installed quickstart
+        if: ${{ inputs.package == 'x402-verify' }}
+        run: npm run verifier:activation:test
+
       # Print the exact tarball contents into the log BEFORE anything is
       # sent. A publish is irreversible in practice — unpublish windows
       # are narrow and burn the version number either way — so the last

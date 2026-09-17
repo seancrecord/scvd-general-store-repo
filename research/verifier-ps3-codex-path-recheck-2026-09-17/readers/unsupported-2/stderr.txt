@@ -1,0 +1,8 @@
+2026-09-17T14:25:09.368865Z  WARN sqlx::query: slow statement: execution time exceeded alert threshold summary="PRAGMA wal_checkpoint(PASSIVE)" db.statement="" rows_affected=0 rows_returned=1 elapsed=1.264589542s elapsed_secs=1.264589542 slow_threshold=1s
+2026-09-17T14:25:09.504297Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T14:25:09.510129Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T14:25:09.520219Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T14:25:09.539164Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T14:25:09.573446Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T14:25:09.582141Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-09-17T14:25:19.184659Z ERROR codex_core::tools::router: error=exec_command failed: CreateProcess { message: "Rejected(\"Failed to create unified exec process: No such file or directory (os error 2)\")" }

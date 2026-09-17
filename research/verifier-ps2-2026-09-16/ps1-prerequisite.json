@@ -1,0 +1,18 @@
+{
+  "base": "6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079",
+  "sourceWorktree": "/private/tmp/scvd-verifier-result-semantics",
+  "files": [
+    "docs/SPEC_READS.md",
+    "verifier/CHANGELOG.md",
+    "verifier/README.md",
+    "verifier/package.json",
+    "verifier/x402-verify.d.ts",
+    "verifier/x402-verify.js",
+    "docs/VERIFIER_RESULT_SEMANTICS_2026-09.md",
+    "research/verifier-ps1-2026-09-16/baseline.json",
+    "research/verifier-ps1-2026-09-16/consumer.mts",
+    "research/verifier-ps1-2026-09-16/verification.json",
+    "verifier/result-semantics.test.mjs"
+  ],
+  "note": "Uncommitted qualified PS1 prerequisite copied without changing its worktree."
+}

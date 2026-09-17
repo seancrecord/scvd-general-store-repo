@@ -1,0 +1,26 @@
+
+> scvd-general-store@0.1.0 verifier:vectors:check
+> npm ci --prefix verifier/vector-tools --ignore-scripts --no-audit --no-fund && npm run check --prefix verifier/vector-tools && node --test verifier/vector-tools/workflow.test.mjs
+
+
+added 58 packages in 2s
+
+> check
+> node generate.mjs --check
+
+90 independent vectors reproduced and checked; domain/signature harness mutants rejected.
+TAP version 13
+# Subtest: independent regeneration gates both CI and the verifier publish path
+ok 1 - independent regeneration gates both CI and the verifier publish path
+  ---
+  duration_ms: 1.369792
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 50.243917

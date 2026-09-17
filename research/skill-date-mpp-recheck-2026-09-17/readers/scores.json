@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-17",
+  "scope": "One separately recorded corrective task session on the integrated skill; two retained fixture-backed cases: timestamp reporting and MPP interpretation. No metadata recheck or replacement cohort. Cases within a task session share context; not native host auto-triggering, real endpoint execution, or statistical reliability.",
+  "rows": [
+    {
+      "id": "tasks-new",
+      "variant": "new",
+      "mode": "tasks",
+      "qualified": true,
+      "passed": true,
+      "checks": [
+        {
+          "id": "preflight",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/inspection.md"
+          ],
+          "passed": true
+        },
+        {
+          "id": "mpp",
+          "requiredCallObserved": true,
+          "interpretationPassed": true,
+          "referencesReported": [
+            "skill/SKILL.md",
+            "skill/references/inspection.md",
+            "skill/references/mpp.md"
+          ],
+          "passed": true
+        }
+      ],
+      "elapsedMs": 29551,
+      "commandCount": 4,
+      "failedCommands": 0,
+      "commandOutputBytes": 17295,
+      "usage": {
+        "input_tokens": 75081,
+        "cached_input_tokens": 61440,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1007,
+        "reasoning_output_tokens": 205
+      },
+      "measurementLimits": "Usage is host-reported; command output bytes include tool results and may be truncated. Reference names are self-reported and require trace review; neither measures exact needed context."
+    }
+  ],
+  "newSkillPassed": true
+}

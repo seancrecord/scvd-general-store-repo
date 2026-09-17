@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: nested offline install keeps its cache local; all four real API results have separate execution records
+not ok 1 - nested offline install keeps its cache local; all four real API results have separate execution records
+  ---
+  duration_ms: 413.032416
+  location: '/private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17/reader-harness.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '/private/var/folders/5x/qyv_rwr53n58jgbw2ypd92940000gn/T/scvd-reader-harness-test-FA93UE/consumer/.npm-cache'
+    - '/private/var/folders/5x/qyv_rwr53n58jgbw2ypd92940000gn/T/scvd-reader-harness-test-FA93UE/.npm-cache'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '/private/var/folders/5x/qyv_rwr53n58jgbw2ypd92940000gn/T/scvd-reader-harness-test-FA93UE/.npm-cache'
+  actual: '/private/var/folders/5x/qyv_rwr53n58jgbw2ypd92940000gn/T/scvd-reader-harness-test-FA93UE/consumer/.npm-cache'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-2026-09-17/reader-harness.test.mjs:29:10)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.start (node:internal/test_runner/test:829:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: later shell failure cannot erase a successful record; consumer failure retains its own nonzero status
+ok 2 - later shell failure cannot erase a successful record; consumer failure retains its own nonzero status
+  ---
+  duration_ms: 347.230708
+  ...
+# Subtest: artifact collection preserves nested consumers without following out-of-workspace symlinks
+ok 3 - artifact collection preserves nested consumers without following out-of-workspace symlinks
+  ---
+  duration_ms: 1.705042
+  ...
+# Subtest: an existing attempt is refused before launching any host
+ok 4 - an existing attempt is refused before launching any host
+  ---
+  duration_ms: 0.594125
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 811.725333

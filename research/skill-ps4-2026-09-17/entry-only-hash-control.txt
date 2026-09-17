@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: missing, escaping and orphaned references cannot pass a content audit
+ok 1 - missing, escaping and orphaned references cannot pass a content audit
+  ---
+  duration_ms: 0.986583
+  ...
+# Subtest: a reference-only change changes the release fingerprint
+not ok 2 - a reference-only change changes the release fingerprint
+  ---
+  duration_ms: 0.567208
+  location: '/private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:16:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    '1b94a14dc3ad952cff86142f45c934a5f4b074cd042b806b1c283d616e4f8e77'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '1b94a14dc3ad952cff86142f45c934a5f4b074cd042b806b1c283d616e4f8e77'
+  actual: '1b94a14dc3ad952cff86142f45c934a5f4b074cd042b806b1c283d616e4f8e77'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:17:10)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+    Test.postRun (node:internal/test_runner/test:1042:19)
+    Test.run (node:internal/test_runner/test:970:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: an isolated installed copy contains every reference and detects tampering
+not ok 3 - an isolated installed copy contains every reference and detects tampering
+  ---
+  duration_ms: 6.343542
+  location: '/private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-skill-progressive-disclosure/scripts/skill-bundle.test.mjs:29:12)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+    Test.postRun (node:internal/test_runner/test:1042:19)
+    Test.run (node:internal/test_runner/test:970:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: canonical skill entry routes to task references; both payloads have the same graph
+ok 4 - canonical skill entry routes to task references; both payloads have the same graph
+  ---
+  duration_ms: 2.135042
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 2
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75.490167

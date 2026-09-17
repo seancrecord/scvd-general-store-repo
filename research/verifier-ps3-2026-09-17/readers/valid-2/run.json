@@ -1,0 +1,49 @@
+{
+  "id": "valid-2",
+  "scenario": "valid",
+  "attempt": 2,
+  "cwd": "/private/tmp/scvd-reader-v2-valid-2-eLOH4q",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 89965,
+  "unchanged": {
+    "README.md": true,
+    "x402-verify-1.4.0.tgz": true,
+    "capture-verification.mjs": true
+  },
+  "artifacts": [
+    {
+      "path": ".verification-runs/375bb9d7-d42d-4973-8926-8625fd5a77f6.json",
+      "sha256": "e0c0ebe101a1be7ec8cb36f1c5731d6253283b549adca18862def8121ca76e07"
+    },
+    {
+      "path": ".verification-runs/375bb9d7-d42d-4973-8926-8625fd5a77f6.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".verification-runs/375bb9d7-d42d-4973-8926-8625fd5a77f6.stdout.txt",
+      "sha256": "0a755fb3982c29f1c5ae0c6ed7567dd5d850c3e91d22276ce65eada31a1970d0"
+    },
+    {
+      "path": "capture-verification.mjs",
+      "sha256": "759fb950ca146565454ea94a7ecd137e33f29829aca14fcce7536a23922698ea"
+    },
+    {
+      "path": "consumer-script.mjs",
+      "sha256": "f4806669df2f8acd55123f77e2608d911b2219eb1630fab8bc623c75141bfb5d"
+    },
+    {
+      "path": "observed.json",
+      "sha256": "ad0f12919a9d40959735993408c9a4f7276d1c86470bbb31971bddacd86371da"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "56004b56fff5be91effef8e0dd5ef25644e59a2233ffe7e48ced47a9bc939e72"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4ad526f2f5e3e83b7ad6a13d65372750f01a8352eb5a5fda40ead63bc4f5281d"
+    }
+  ]
+}

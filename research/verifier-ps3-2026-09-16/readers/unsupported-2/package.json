@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "x402-verify": "file:x402-verify-1.4.0.tgz"
+  }
+}

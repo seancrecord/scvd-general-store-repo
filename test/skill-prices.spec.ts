@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
-import bundle from "../registry/clawhub/SKILL.md?raw";
+import { installedSkill as bundle } from "./helpers/installed-skill";
 
 /**
  * A PRICE TYPED INTO THE PITCH IS A PRICE NOTHING WAS WATCHING.

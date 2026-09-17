@@ -1,0 +1,40 @@
+{
+  "readDate": "2026-09-16",
+  "sources": [
+    {
+      "url": "https://developers.openai.com/codex/noninteractive",
+      "use": "Fresh ephemeral non-interactive execution; installed CLI help confirms actual flags."
+    },
+    {
+      "url": "https://code.claude.com/docs/en/cli-usage",
+      "use": "CLI session and output controls; host auth status unavailable for trials."
+    },
+    {
+      "url": "https://nodejs.org/download/release/v18.17.0/docs/api/webcrypto.html",
+      "use": "Explicit webcrypto import and Ed25519 API."
+    }
+  ],
+  "primarySourceGaps": [],
+  "hostChecks": {
+    "codex": {
+      "version": "0.153.4",
+      "loggedIn": true,
+      "method": "ChatGPT"
+    },
+    "claude": {
+      "version": "2.1.273",
+      "loggedIn": false
+    }
+  },
+  "nodeArchive": {
+    "url": "https://nodejs.org/dist/v18.17.0/node-v18.17.0-darwin-arm64.tar.gz",
+    "sha256": "19731ef427e77ad9c5f476eb62bfb02a7f179d3012feed0bbded62e45f23e679",
+    "checksumSource": "https://nodejs.org/dist/v18.17.0/SHASUMS256.txt"
+  },
+  "failedSetup": [
+    {
+      "package": "node-darwin-arm64@18.17.0",
+      "outcome": "not available on npm; used exact official Node archive instead"
+    }
+  ]
+}

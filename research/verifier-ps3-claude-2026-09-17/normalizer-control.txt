@@ -1,0 +1,33 @@
+TAP version 13
+# Subtest: only paired successful shell results and successful terminal results become positive evidence
+not ok 1 - only paired successful shell results and successful terminal results become positive evidence
+  ---
+  duration_ms: 2.684958
+  location: '/private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-claude-2026-09-17/normalize-events.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-verifier-developer-activation/research/verifier-ps3-claude-2026-09-17/normalize-events.test.mjs:14:10)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:931:25)
+    Test.start (node:internal/test_runner/test:829:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.135708

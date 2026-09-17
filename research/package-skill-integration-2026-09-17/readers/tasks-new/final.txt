@@ -1,0 +1,72 @@
+[
+  {
+    "id": "verification",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/verification.md"],
+    "answer": "The artifact is valid: its signature was verified against the supplied public test key. This establishes only that checked signature relationship. It does not establish merchant identity, key authority, payment settlement, delivery, or permission to spend.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "unsupported",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/verification.md"],
+    "answer": "That interpretation is incorrect. The result is unsupported because ES256 was not checked; it is neither a pass nor proof that the artifact is valid.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "preflight",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/inspection.md"],
+    "answer": "The free preflight observed a ready x402 header at the endpoint. Payment settlement, delivery, and permission to spend remain unknown.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "payment",
+    "completed": true,
+    "toolsUsed": ["check_order"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/payment-debugging.md", "skill/references/purchases.md"],
+    "answer": "Order order-sample is pending; settlement and delivery are unobserved, and the original retry key is retained. Keep the original request and retry key, recover or recheck the order, and do not generate a new key or submit another payment while the outcome is unresolved.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "history",
+    "completed": true,
+    "toolsUsed": ["http_get"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/history.md"],
+    "answer": "Existing history shows one ready observation on 2026-09-10 from snapshot 2026-W37. It is incomplete: week 2026-W38 has a listed_not_walked gap, and no fresh request was made.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "free-access",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/verification.md", "skill/references/packages.md"],
+    "answer": "The free conformance check succeeded without installing x402-verify or using a wallet. Neither step was necessary for this one-off read-only check.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "mpp",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md", "skill/references/inspection.md", "skill/references/mpp.md"],
+    "answer": "No. The result is not_ready only for the x402 battery. The endpoint spoke MPP and presented an MPP challenge, but this does not establish that the endpoint is globally broken, universally unpayable, or that MPP settlement or delivery works.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  }
+]

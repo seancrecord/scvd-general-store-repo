@@ -1,0 +1,29 @@
+{
+  "cli": "skills@1.5.26 (cached local CLI)",
+  "command": [
+    "node",
+    "/Users/seanrecord/.npm/_npx/ce22f0ddc7d4a641/node_modules/skills/bin/cli.mjs",
+    "add",
+    "/private/tmp/scvd-skill-progressive-disclosure/skills/scvd-general-store",
+    "--agent",
+    "codex",
+    "claude-code",
+    "--copy",
+    "--yes"
+  ],
+  "cwd": "/private/tmp/scvd-skill-install-y8bv3j0b",
+  "exitCode": 0,
+  "installations": [
+    {
+      "entry": "/private/tmp/scvd-skill-install-y8bv3j0b/.claude/skills/scvd-general-store/SKILL.md",
+      "files": 11,
+      "matchesCanonical": true
+    },
+    {
+      "entry": "/private/tmp/scvd-skill-install-y8bv3j0b/.agents/skills/scvd-general-store/SKILL.md",
+      "files": 11,
+      "matchesCanonical": true
+    }
+  ],
+  "scope": "Local-source project copy install; not remote marketplace publication or download."
+}

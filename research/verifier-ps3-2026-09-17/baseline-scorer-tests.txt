@@ -1,0 +1,20 @@
+TAP version 13
+# Subtest: a completed correct response counts only with execution and trace review
+ok 1 - a completed correct response counts only with execution and trace review
+  ---
+  duration_ms: 3.412584
+  ...
+# Subtest: an unrelated trailing shell failure retains both API evidence and the tool error
+ok 2 - an unrelated trailing shell failure retains both API evidence and the tool error
+  ---
+  duration_ms: 0.313083
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 59.098167

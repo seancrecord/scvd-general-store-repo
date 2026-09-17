@@ -1,0 +1,14 @@
+{
+  "id": "df594d3c-194c-4535-a16a-e3651a5e2da0",
+  "cwd": ".",
+  "script": "consumer-script.mjs",
+  "args": [
+    "tampered"
+  ],
+  "scriptSha256": "0c76d741583fb85dae9c55a3145eacd2ec067efd2755384451317bbf66e121a0",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/df594d3c-194c-4535-a16a-e3651a5e2da0.stdout.txt",
+  "stderrFile": ".verification-runs/df594d3c-194c-4535-a16a-e3651a5e2da0.stderr.txt"
+}

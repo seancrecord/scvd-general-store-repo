@@ -1,0 +1,9 @@
+{
+  "publicKeyHex": "2c19da926c620bf758fd0dae021d639e80a3ddd04989ab01147dccc458e28a31",
+  "provenance": "Synthetic public test key from the independent noble generator; separately supplied to the verifier. Does not establish real service authorization.",
+  "sourceVector": "EdDSA/receipt/positive",
+  "sourceVectorSha256": "4f1efba0f53f7be8ab173cb10a7418ee1e8ecad24165770bf47ddb0a475939cf",
+  "sourceGenerator": "verifier/vector-tools/generate.mjs",
+  "generatorSha256": "21d6fd396946477d1f6b8610802e0fe546385c57fc80482b8cb01f01f25e157b",
+  "license": "MIT"
+}

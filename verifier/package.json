@@ -1,7 +1,7 @@
 {
   "name": "x402-verify",
-  "version": "1.3.0",
-  "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: JWS (EdDSA/Ed25519), did:web resolution, schema conformance, and externally anchored key history. Works on any issuer's artifacts.",
+  "version": "1.4.0",
+  "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: compact JWS (EdDSA/Ed25519), did:web resolution, local revision-1 schema checks, explicit result statuses, and optional anchored key history.",
   "type": "module",
   "main": "./x402-verify.js",
   "types": "./x402-verify.d.ts",
@@ -19,6 +19,7 @@
     "x402-verify.js",
     "x402-verify.d.ts",
     "fixtures/",
+    "examples/",
     "CHANGELOG.md",
     "README.md",
     "LICENSE",

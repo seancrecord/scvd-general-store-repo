@@ -1,0 +1,4850 @@
+{
+  "version": 1,
+  "clock": 1767225600,
+  "scope": "Synthetic offline vectors. Signature, bounded field-schema oracle and supplied authorization policy are separate. No live issuer authorization or settlement observation.",
+  "provenance": {
+    "license": "MIT",
+    "generatedBy": "verifier/vector-tools/generate.mjs",
+    "generatorSha256": "21d6fd396946477d1f6b8610802e0fe546385c57fc80482b8cb01f01f25e157b",
+    "helperSha256": "a1b5f85cd7a05f20e5ba8cceac241729a45a6ea981f9064f580ec4b9736bd5a3",
+    "lockSha256": "c386cab744fe3732f77bf53e7ec1d7c3780db7bb085c737c044bfee5555dd7e3",
+    "dependencies": {
+      "@noble/curves": {
+        "version": "1.9.1",
+        "integrity": "sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==",
+        "license": "MIT"
+      },
+      "@noble/hashes": {
+        "version": "1.8.0",
+        "integrity": "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==",
+        "license": "MIT"
+      },
+      "ethers": {
+        "version": "5.8.0",
+        "integrity": "sha512-DUq+7fHrCg1aPDFCHx6UIPb3nmt2XMpM7Y/g2gLhsl3lIBqeAfOJIl1qEvRf2uq3BiKxmh6Fh5pfp2ieyek7Kg==",
+        "license": "MIT"
+      },
+      "viem": {
+        "version": "2.56.3",
+        "integrity": "sha512-vUObq3GO7D3lz9gPNEE/xd5jIUnMbeVDWewh252o54pDEDlW4pDe6FEd/qTGL5RyK52cGHMM7kQ3wjxhilEvkQ==",
+        "license": "MIT"
+      }
+    },
+    "sources": [
+      {
+        "id": "x402",
+        "repository": "x402-foundation/x402",
+        "revision": "69652a69798f0b08f95bef33318896e36e210f7e",
+        "path": "specs/extensions/extension-offer-and-receipt.md",
+        "url": "https://raw.githubusercontent.com/x402-foundation/x402/69652a69798f0b08f95bef33318896e36e210f7e/specs/extensions/extension-offer-and-receipt.md",
+        "sha256": "51151bd2b7dd174bc4a44b712234c074e45ca6c752c44ce077a94a4d97596ae9",
+        "readDate": "2026-09-16"
+      },
+      {
+        "id": "eip712",
+        "repository": "ethereum/EIPs",
+        "revision": "0b06de5e1203b35f1338d9e61d1ccc6965face91",
+        "path": "EIPS/eip-712.md",
+        "url": "https://raw.githubusercontent.com/ethereum/EIPs/0b06de5e1203b35f1338d9e61d1ccc6965face91/EIPS/eip-712.md",
+        "sha256": "459086f5a0b2d6a0ac4e404faebf3660a49aa4b1712711521093380689f02304",
+        "readDate": "2026-09-16"
+      },
+      {
+        "id": "rfc8037",
+        "revision": "RFC 8037, January 2017",
+        "url": "https://www.rfc-editor.org/rfc/rfc8037"
+      },
+      {
+        "id": "rfc7518",
+        "revision": "RFC 7518, May 2015",
+        "url": "https://www.rfc-editor.org/rfc/rfc7518"
+      },
+      {
+        "id": "rfc8812",
+        "revision": "RFC 8812, June 2020",
+        "url": "https://www.rfc-editor.org/rfc/rfc8812"
+      }
+    ],
+    "independentVerification": {
+      "jws": "Node node:crypto / OpenSSL",
+      "eip712": "ethers 5.8.0 / elliptic 6.6.1"
+    },
+    "runtimeQualification": "See research/verifier-ps2-2026-09-16/verification.json; versions are observations, not generator inputs."
+  },
+  "families": [
+    {
+      "id": "EdDSA",
+      "curve": "Ed25519",
+      "specification": [
+        "x402",
+        "rfc8037"
+      ],
+      "independentVectors": true,
+      "implemented": "compact JWS signature and local revision-1 profile",
+      "expectedUnsupported": "format-labelled object envelope",
+      "runtimeTargets": [
+        "node",
+        "workerd"
+      ]
+    },
+    {
+      "id": "ES256",
+      "curve": "P-256",
+      "specification": [
+        "x402",
+        "rfc7518"
+      ],
+      "independentVectors": true,
+      "implemented": false,
+      "expectedUnsupported": "unsupported_algorithm for well-formed compact JWS",
+      "runtimeTargets": [
+        "node",
+        "workerd"
+      ]
+    },
+    {
+      "id": "ES256K",
+      "curve": "secp256k1",
+      "specification": [
+        "x402",
+        "rfc8812"
+      ],
+      "independentVectors": true,
+      "implemented": false,
+      "expectedUnsupported": "unsupported_algorithm for well-formed compact JWS",
+      "runtimeTargets": [
+        "node",
+        "workerd"
+      ]
+    },
+    {
+      "id": "eip712",
+      "curve": "secp256k1",
+      "specification": [
+        "x402",
+        "eip712"
+      ],
+      "independentVectors": true,
+      "implemented": false,
+      "expectedUnsupported": "unsupported_format for EIP-712 envelope",
+      "runtimeTargets": [
+        "node",
+        "workerd"
+      ]
+    }
+  ],
+  "issuerCases": [
+    {
+      "issuer": "SCVD conformance test key",
+      "family": "EdDSA",
+      "fixture": "receipt-valid.json",
+      "independence": "supplemental existing synthetic issuer fixture; neither independent generation nor a live production artifact",
+      "sha256": "147e0159ddbba84ef68697e204c95bc0c226a7369439d140c39e61670e1464a7"
+    },
+    {
+      "issuer": "SCVD conformance test key",
+      "family": "EdDSA",
+      "fixture": "offer-expired-but-wellformed.json",
+      "independence": "supplemental existing synthetic issuer fixture; neither independent generation nor a live production artifact",
+      "sha256": "9171245611be4659f31dd7dee441267ec111952388e8c030bc891a1810942d93"
+    }
+  ],
+  "vectors": [
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tACyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "EdDSA/offer/positive",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "c0374655854dbb74272107cee1a58be14d506aa9423a0e2bf5f2c24e2ce9a2ac"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMSIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tACyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "EdDSA/offer/payload-tamper",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "8af89f02490bde0b793ab62f9eeefd4905de4996a304102ae0041b8e46cfb71e"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tQCyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "EdDSA/offer/signature-tamper",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "3fabcb082d4fbc92e1e771d12988b2338a52a268a2714f78028dd59b77f5e7b1"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tACyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "HjDz9LQD_LSRPwlgru51UCVo9A0ivZwo5_qcv15txaY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "EdDSA/offer/wrong-key",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "dc88911dc76a5d34722f7f56170fa0573fde0a5bcc5328ba60ca468cca36ee06"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tACyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-key"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "EdDSA/offer/wrong-authority",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "f0ce1a85e31ad06ff04220d8357ddf5210a8f97a3add1e2e61592df5963242fd"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tACyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {},
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "EdDSA/offer/authority-unavailable",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "a36b501fb293834a33a98c01f0dffb25b4144f1bb456f4e2f499056b083b20fc"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5LW90aGVyIiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tACyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "header-tamper",
+      "id": "EdDSA/offer/header-tamper",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "d27637e8f7af45ea2159cc79499aa7f12793c5886d7d45a4a827cbeeb5c92812"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50Ijo0MiwidmFsaWRVbnRpbCI6MTc2NzIyOTIwMH0.bKbj8hNFiUwRTr7UaWJDb8rfiY_ncA-j8who1aXQ88Fc867J3tiRqxOFTh4HD2x8Pf_FgPO19JDxhHQ3oaewAw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": false,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "wrong-field-type",
+      "id": "EdDSA/offer/wrong-field-type",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "8b7083bbe71edd819a470d05d9b2a33d798677bd9fb9d33265cd215bbe8a2c9b"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCJ9.si1cBYlsGf3IzRzr2fQH2Bqn_b-pRW7Whh5XL3pub3gn0TO4QnwRFaZEoi2FPJlS1XYmJVh_7wedQSm2XP63Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "missing-expiry",
+      "id": "EdDSA/offer/missing-expiry",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "schema_invalid"
+        ],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "52ea49f12da4727b5994140cd765e18b4f6dbb5d9d984ceedd8d1b0bfaf3a0ce"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjU1OTl9.KwisCXKCAXS5TDq7iF4CeH8Itb6ynZmPzKKNpKDOacDFvVC92w766n3v4cvDWcneo161US0QEd4blmz4gFHVCA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "expired",
+      "id": "EdDSA/offer/expired",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "d8a2721848d4fd6636346f64d311bbdce284f554982380041505f8ba01174580"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": {
+        "format": "jws",
+        "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.tACyeYG4vv9uypL7LN_OM-77391WtihcDh0_BiSV3rOc6DPW8cUnEnOyjcE2zMfWKHIoEtSyCmu7ZKoQe-f3CA"
+      },
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "labelled-envelope",
+      "id": "EdDSA/offer/labelled-envelope",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "b590af6a7b8f45942dfcb7e01c2fc064181ab4c92f3f99223f0a80d567324f77"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "offer",
+      "artifact": "not.a.compact.jws",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "malformed",
+      "id": "EdDSA/offer/malformed",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "malformed_input"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "c8b3ddd28ab2d7dcaf91684b3625bd16987f2117bf1813c4f39f55b03db51f00"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zCUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "EdDSA/receipt/positive",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "4f1efba0f53f7be8ab173cb10a7418ee1e8ecad24165770bf47ddb0a475939cf"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDUiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zCUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "EdDSA/receipt/payload-tamper",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "0c5b07f0696943a485983f07c78bdf64381064dbf2de55d1377822ba28f568bc"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zSUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "EdDSA/receipt/signature-tamper",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "8cd1e1cbfef3bf9202683bf99def4d1dd035a776cd4dcb5071cbc56a7b28608c"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zCUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "HjDz9LQD_LSRPwlgru51UCVo9A0ivZwo5_qcv15txaY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "EdDSA/receipt/wrong-key",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "847e5200a4ecffdd09dc841cf9f87c56873664c46c31c26367c6260eed29f76f"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zCUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-key"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "EdDSA/receipt/wrong-authority",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "f3f7c68e8ef6b51eee3f7c300bf9b400b673916d0f166789d0ec25f3355ebecc"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zCUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {},
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "EdDSA/receipt/authority-unavailable",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "8bf27333b626dc29810ec72cc0358a4c3506c337744d90269ad7eafab40d655c"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5LW90aGVyIiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zCUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "header-tamper",
+      "id": "EdDSA/receipt/header-tamper",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "signature_invalid"
+        ],
+        "signature": "invalid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "6b5443cf1eef99d2c4996fb0c6863ff92edc7b361d9d00657cad40e96f0710fa"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOjQyLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.HZUpvce3ZFHFYLcaH2N3KRUUa_46USnXdinXUvhrDEYFLAU0hICY6Us1NVi-8mm8LULPsHU_UfXfEGmSz1g4CA",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": false,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "wrong-field-type",
+      "id": "EdDSA/receipt/wrong-field-type",
+      "expectedPackage": {
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "60928ccb4e8c5c3d725fc26d62ba7955cf413f6d08377948612c15d76e132870"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": {
+        "format": "jws",
+        "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.zCUP9NjWGC5w3g1mmhcaGqejubI7_8IATKRQ43BYA3xvkv8Vy9Q7Lf3pNj7k5LzCV4nSg9V2Al9xix5LIpi_Aw"
+      },
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "labelled-envelope",
+      "id": "EdDSA/receipt/labelled-envelope",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "537b0a81eb83e17972624322af6f25e9128858df7f1ee6f072b9b59db98a8bb3"
+    },
+    {
+      "family": "EdDSA",
+      "kind": "receipt",
+      "artifact": "not.a.compact.jws",
+      "publicJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "LBnakmxiC_dY_Q2uAh1jnoCj3dBJiasBFH3MxFjiijE"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "5c801b67bb6ae39b75291e3fd7cebe41d9c2bcc233261c63a291c02a90f0e743"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "malformed",
+      "id": "EdDSA/receipt/malformed",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "malformed_input"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8037"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "edc595c4eef934de978a2921a7712fb3ff2b75f7f8872413558f1082e2ac4134"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9fXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "ES256/offer/positive",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "609a342ee3065c2045bd1ceb9408feed3a73f663eb8c414828be2b9cdc1a1cd7"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMSIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9fXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "ES256/offer/payload-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "35663addb707e2d918fe5398077a89147983c8370bb23983e3b70a4551ad6daf"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9PXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "ES256/offer/signature-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "fb11764170cad09d81b37dd5155c084566c1f3fe2fedd63a3878e767109537d6"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9fXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "nxBdNmQha7F0cax_3WTwt_CPvF52O0QFUVFEBeH7OJc",
+        "y": "gzbXA8_wvCK9W2tmxoAVfzlROuY7ihHK5IXAmnqZNDc"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "ES256/offer/wrong-key",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "30cd3fe2bf7502b8d9c8fb93fa4279eb455e49537608d3daf7e68a801502e27b"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9fXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-key"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "ES256/offer/wrong-authority",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "59e4935f4c6ee1e5a7cf2855fe829369cac0eeee50f9404b8125a21472834640"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9fXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {},
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "ES256/offer/authority-unavailable",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "efa1d44cd12285449dc3c2bcfefde44d8d859283dae462ed5f7db0c5cfd75c6f"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5LW90aGVyIiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9fXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "header-tamper",
+      "id": "ES256/offer/header-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "5e55cb7ff6212ed7ff4ac22fec897745fd65a4e882b243e86d39b946d1ffe189"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50Ijo0MiwidmFsaWRVbnRpbCI6MTc2NzIyOTIwMH0.5SSLdtMwkLfVvWXwWM5tpsnZA_ZUZLbBGFbYGZ3ZcAZMP3obnV9f-aVkSpJA_-ap314lC2qF8y3fQeYy0Y2HIw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": false,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "wrong-field-type",
+      "id": "ES256/offer/wrong-field-type",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "8a6c139dc9a2410d32206fb76870535bfaa92d3f708b9dd1dd373fef0aebd7a3"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCJ9.-WP6oy7xfx2gBZfSORoEwVJBrC1iKcw8PWWWWXBwF6hBI-XcyXh7ct1rQnIid_FgE-cebYeRWMWWypc6y3-XBA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "missing-expiry",
+      "id": "ES256/offer/missing-expiry",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "schema_invalid"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "28ede895aa08b6f53ffcbbd0d0f616c7333d6c2539489aaa344aa45fed7975f1"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjU1OTl9.U5VGOEzpi-YJeeOO8J-OfzH6g7kophOMEdF3ZH8WeUxzM8987VEJl5c6nPxHLOElCdyNjWF7DkbPm1AzOd0gtA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "expired",
+      "id": "ES256/offer/expired",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "8e15a3a4e5fe5f6f5b2d7a444d213f0241ff615405156b08c3d15579ffe7fc9e"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": {
+        "format": "jws",
+        "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.9fXKOG1iaht3oQ8XrYBmcLRECb9mgeRrdDa8wvdbjk8yVYe4OVczIBktCB48KpeRLAt6_9CZqfqH1Z68VTdR7g"
+      },
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "labelled-envelope",
+      "id": "ES256/offer/labelled-envelope",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "5c45930fe9608792cc5216c4bbf4d632b2972a320cdd626361e48aba33029cf8"
+    },
+    {
+      "family": "ES256",
+      "kind": "offer",
+      "artifact": "not.a.compact.jws",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "malformed",
+      "id": "ES256/offer/malformed",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "malformed_input"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "bd098221d79a3eccb3b5cd9dbff578268958ee48cf991d33b10209376e420f3e"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AxjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "ES256/receipt/positive",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "527ed3ad6b6a2d1dd2dd5b24955634056d7d72f2633081650030a1f8709be432"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDUiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AxjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "ES256/receipt/payload-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "e8c3ab5baa751bdf86ea51c11e1373a2e1014fedb5314b98896e3c42e8061a72"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AhjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "ES256/receipt/signature-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "7b1217db51af73c9ebfad1565cf5fcba6af78526d62537336856eeac2209f2b6"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AxjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "nxBdNmQha7F0cax_3WTwt_CPvF52O0QFUVFEBeH7OJc",
+        "y": "gzbXA8_wvCK9W2tmxoAVfzlROuY7ihHK5IXAmnqZNDc"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "ES256/receipt/wrong-key",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "b8d7a5b63d6944033ac35eb6f078201c2f24859ee64474ecac82facac81a5659"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AxjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-key"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "ES256/receipt/wrong-authority",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "ade57c64a446b5f2af017a525319fa9b12679e5ec94e3457f4938e6d465b7796"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AxjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {},
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "ES256/receipt/authority-unavailable",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "017c7f5cef4d41ab4bd6132f941541695cd9611a5e12885bf75eace871743af4"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5LW90aGVyIiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AxjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "header-tamper",
+      "id": "ES256/receipt/header-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "dde5219af6b4ad4518192538189b5c95ff509d16e9d2195b7814459a58b50060"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOjQyLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.s3Kbj6U0B1QV8grDqYLB1nIbFu5JoIK0lc-CjDrQTcj_JbS092rxU5mf4TRii3fY5bbmRFN_Urva78kXkzgdXg",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": false,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "wrong-field-type",
+      "id": "ES256/receipt/wrong-field-type",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "4002d2273a8cf17b4d14ade176f4c8796d36e854e8e11ce08bbc9651a2d575a1"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": {
+        "format": "jws",
+        "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6aW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0I3NpZ25pbmcta2V5IiwidHlwIjoiSldUIn0.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.AxjE1M04XdOJC9tdL9fFBXE4o1-p4j6DZlfVH9j6la7JIZE7GCUlZi-uiwjSjPz6yqbHxu54DeuT2dIRr2pLnQ"
+      },
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "labelled-envelope",
+      "id": "ES256/receipt/labelled-envelope",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "7d8a664686a4ca89d049b38c30375232cdb96bb0904eef0f3e3443ed8c05ea5f"
+    },
+    {
+      "family": "ES256",
+      "kind": "receipt",
+      "artifact": "not.a.compact.jws",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "OKqFSDOepoJLOH12YjBm4g6lzV5uiFW70zN9C5L57_0",
+        "y": "_rQs2BN1bA9IuL97nzJB3FH1wQn4zMqGUESSevK76C4"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "afbe5367ebe9e68b83d4bac0366e17c9cc2b136639ed5a7da4901c58425e445c"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "malformed",
+      "id": "ES256/receipt/malformed",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "malformed_input"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc7518"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "e34b26e1c51708afce9a432749d3efbd12610f4eb99cda184c9d21ff6a4a0dcf"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7XheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "ES256K/offer/positive",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "86f80e8229618631bca8c1f1e939340f67af4ede7cf66f3f559dd77c976c2c94"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMSIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7XheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "ES256K/offer/payload-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "6d15c8337bcedbc417b060f8b1c328349ad450ee154adc1d50533b0bf220f3f9"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7HheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "ES256K/offer/signature-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "3f50850d528e69d6d646f302c0a2fab70a69cef8513b455bfdbb28734251ed5c"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7XheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "i-7bzfZf_TQIdIJxVX5jraLvpp_-OnefdfYXGIqY7Dw",
+        "y": "VGc0H5CLvMsi9PWCiMnuOdvsfzmPYeUsIQRbBZUyTYw"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "ES256K/offer/wrong-key",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "3cb244a6eac6db00fa9063e16acfa4b5ce10d798d8cce12ae2026be05e2c8242"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7XheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-key"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "ES256K/offer/wrong-authority",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "3b309ae3c1631847489a7a016242a2ef2e9958fff278119e0ad28d7df6c43c67"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7XheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {},
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "ES256K/offer/authority-unavailable",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "08020417a16a5d44c949884f0a7f3026fda1df1b3c5bf5a93e3fcae856f82f5d"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleS1vdGhlciIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7XheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "header-tamper",
+      "id": "ES256K/offer/header-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "71371049d9cc1325fbf87962bb4381d186158bbb18df4b993a237f1730817861"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50Ijo0MiwidmFsaWRVbnRpbCI6MTc2NzIyOTIwMH0.W4YSam4NXiAUeO5kjMn34ASIZyAIGbGmCoVJmRqaxe5HGh4CtnllsUR5Lm4Jam0tfX57AT92Qe3KAc0BzxqCBg",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": false,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "wrong-field-type",
+      "id": "ES256K/offer/wrong-field-type",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "7c91d83f45c7a03b84bf25c1b9fd897e2c9b3cc6773adf2ada95322b865f5b65"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCJ9.jem6wHC7-4gzPIKeeC4kBq0SeFwLi33wWMPpu22_C0FPJs8zZ9Tnp-hTzjYX38A9LkWehypcvoIdHYZ4nHc6mw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "missing-expiry",
+      "id": "ES256K/offer/missing-expiry",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "schema_invalid"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "372b337dc94616d43a0a822d6193778e281c6e73903a5061ac646d4af9371716"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjU1OTl9.tlkmQzVSyFNH72UawMrMj2Ek41OA9vDmd6oApbhPL30l6XJ5WBcAVDJN4b1N4HlDeJyBDMKlh_lnMNmepxHDwg",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "expired",
+      "id": "ES256K/offer/expired",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "2f1fb0ffe45281e28e08c8c20d8a1241f2df2c232b8836f6e5374893b3e0c2ea"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": {
+        "format": "jws",
+        "signature": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsInBheVRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwiYW1vdW50IjoiMTAwMCIsInZhbGlkVW50aWwiOjE3NjcyMjkyMDB9.7XheV6me-J7eFmU-jL4lOOCUG_dj0oGc1IfZcyplagB0A4JvAWPsBSUIRehLtGeJQHICS08jeN2Jywm0r2pPRA"
+      },
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "labelled-envelope",
+      "id": "ES256K/offer/labelled-envelope",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "ea1aea997d34de42094d61d9a57832bc19e65f73538b4adfdf64975b6f070105"
+    },
+    {
+      "family": "ES256K",
+      "kind": "offer",
+      "artifact": "not.a.compact.jws",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "malformed",
+      "id": "ES256K/offer/malformed",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "malformed_input"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "6a793a4ad43c8bebbc097f04be51e52269c1696a4627798b5f4d9e51083065ca"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aXUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "ES256K/receipt/positive",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "a438b3ebebe8eeab19c82983ae47771180a81344b58f0d31afb72f106d833e4f"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDUiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aXUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "ES256K/receipt/payload-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "3de929bc3aa165aa3309ff4a583c95163ad2d1a2032f963e30e4f7aaebed3a11"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aHUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "ES256K/receipt/signature-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "b7a6d3f53be4222d934e016d219d701619eea25b5603563afb7d5a1825e68994"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aXUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "i-7bzfZf_TQIdIJxVX5jraLvpp_-OnefdfYXGIqY7Dw",
+        "y": "VGc0H5CLvMsi9PWCiMnuOdvsfzmPYeUsIQRbBZUyTYw"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "ES256K/receipt/wrong-key",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "fc9ce611d09840f3d97c9a25cbdc6d915a2a5f2a1b9efe2fb053b0562c8f794c"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aXUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-key"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "ES256K/receipt/wrong-authority",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "666485404d953dd03c171cca73a798d55566c2c717fa46530743a8bbc876306d"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aXUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {},
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "ES256K/receipt/authority-unavailable",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "7118f2a78c104f498680c2ede8c5a4fb1677784b3ea324014c44ce7ab4efe9de"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleS1vdGhlciIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aXUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "header-tamper",
+      "id": "ES256K/receipt/header-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "972921436a9372c129719f3074666f64fef1c93b5addde41054e93df1187c981"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOjQyLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.NUwIbcUTqwtBAmgPmpN12D-pqP7nrF8ZIuXSEimkTzo_aQwLReWNpvrm-7gnV7PKZeTih-sP37hTtY2sRNui7g",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "jws",
+        "signature": true,
+        "schema": false,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "wrong-field-type",
+      "id": "ES256K/receipt/wrong-field-type",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "f3833a36caf623ea2dd23959e93b1aae50e682a0e17046f9764073944d6a9dfb"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": {
+        "format": "jws",
+        "signature": "eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6d2ViOmluZGVwZW5kZW50LmV4YW1wbGUudGVzdCNzaWduaW5nLWtleSIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vaW5kZXBlbmRlbnQuZXhhbXBsZS50ZXN0L3Jlc291cmNlIiwibmV0d29yayI6ImVpcDE1NTo4NDUzIiwicGF5ZXIiOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJpc3N1ZWRBdCI6MTc2NzIyNTU0MCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.aXUHiUI0nx61VmlWAD3dBLcD_dHhoXTFJ63SojnvSxkHUAfwu5_8J27S90KxgvAAEKwPCTbYqJRheoFDzuTxFw"
+      },
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "labelled-envelope",
+      "id": "ES256K/receipt/labelled-envelope",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "c39c3954deb501a8e14511ba9c1293ded0c977e4cdd8a0071a048d1bc24ec19e"
+    },
+    {
+      "family": "ES256K",
+      "kind": "receipt",
+      "artifact": "not.a.compact.jws",
+      "publicJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "e9vUQscP5N56Ul8w2p17t8APtOnRAcMtmTGDFzk-4U8",
+        "y": "_fp8mOP-RDBoWI3Ro098RQt1zFJICfsNQuUfIlRaooY"
+      },
+      "authorization": {
+        "https://independent.example.test": [
+          "46b3b533f2ae1eaee0f95b5f06e5aab2c6b50cf8d40b4132390c724c61cd3f87"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "malformed",
+      "id": "ES256K/receipt/malformed",
+      "expectedPackage": {
+        "status": "invalid",
+        "reasons": [
+          "malformed_input"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "rfc8812"
+        ],
+        "generator": "@noble/curves@1.9.1"
+      },
+      "sha256": "11e1da6bb8194fd1ca04a020c091ec0e0d0e2fd365b73ae3b1f3018b19e7d6f4"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xfe363dd12fac5c5cb3ab2a4aac793727c9999bac96239b860f2732fb311d69ba",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "eip712/offer/positive",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "ba55f61a3ff2f57d90958ff90f2839fe614da6984e64a4508856f71483d75414"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1001",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x7d7ab8f067b575b94885753c421e04e61b1cd42f325a30cb3df2da368c00af35",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "eip712/offer/payload-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "9d4b46394c305e6b7f27292e275c3130d5d532c91a0c5ac39ae50df58184e32e"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x45b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xfe363dd12fac5c5cb3ab2a4aac793727c9999bac96239b860f2732fb311d69ba",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "eip712/offer/signature-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "f6d3c894520f5ec6bba7b93e64c72e85fab3ebf32a44c2414ea62aafb57c2e21"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xfe363dd12fac5c5cb3ab2a4aac793727c9999bac96239b860f2732fb311d69ba",
+      "expectedSigner": "0x0000000000000000000000000000000000000003",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "eip712/offer/wrong-key",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "0a2c79b6dc022746ff5c3f73e3878a71b3a6656f69bce06ec3a7703794a972f7"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xfe363dd12fac5c5cb3ab2a4aac793727c9999bac96239b860f2732fb311d69ba",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-address"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "eip712/offer/wrong-authority",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "c5c8ebde9b3cf02e2da0dd26fe010eb9a0f6aefc95454f1b3adead4a05f2eefb"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xfe363dd12fac5c5cb3ab2a4aac793727c9999bac96239b860f2732fb311d69ba",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {},
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "eip712/offer/authority-unavailable",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "cad8528eff679b8a888843c5b605ffc4996f1a51e7e21ba82e368d200f166b81"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x320bbf03bf4c62966ff387d0deca4cf7fafcf3bd2b1e5ec36fffce0a8681b33e",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "domain-name",
+      "id": "eip712/offer/domain-name",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "01b08d399edc6e4ba0a46ad3f45263e5888b285de1564cd8313d194eaf2a1cd1"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "2",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x0e9324a6f88dce73521a7bea6a76dfc88d62574f9e2df86ac0ae740cafe7c7c8",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "domain-version",
+      "id": "eip712/offer/domain-version",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "15c467334dcc085b9d9ca9e0124bdc89b495b208ddf0c1bf4d929b5f219722db"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 8453
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xd978a4bbb81f2b16e407903bc05339bce58849fa6173110b4e750f874d527b2e",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "domain-chainId",
+      "id": "eip712/offer/domain-chainId",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "aa79eb5fc489604c3246e6a21b4d23cb874e0ec4f6042997446ec5f3fd5b98df"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "WrongType",
+        "types": {
+          "WrongType": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x983ee99c4ead2eff76760298710d3797ef6fa92d7bb14da5d119a4de2e8e35c0",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "primary-type",
+      "id": "eip712/offer/primary-type",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "72e4031977e086e72f216708b9296462cc5ab9be4d7c8c3893859c83fd07933c"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "jws",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 1767229200
+        },
+        "signature": "0x44b4e531928dcdd562dec2c5c3193edab8a185b288413c2e0358e9e89735bdbb56df5505e4fc97f5ac79ea8ce0a3803ba07bfbd41b1dd564e4b8a0ed54eeb7e41b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xfe363dd12fac5c5cb3ab2a4aac793727c9999bac96239b860f2732fb311d69ba",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "cross-format",
+      "id": "eip712/offer/cross-format",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "6229c849e684aa300a9b0eb083f00b79096cb515cff9ff30c6637c2683e0d1d1"
+    },
+    {
+      "family": "eip712",
+      "kind": "offer",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "asset": "0x0000000000000000000000000000000000000004",
+          "payTo": "0x0000000000000000000000000000000000000001",
+          "amount": "1000",
+          "validUntil": 0
+        },
+        "signature": "0x4ed41670f1dcda77a6ca78438f83dbee1adab7d39897aeb9e8b1d9d13b610bce06932cafc0743b01e95856718e18431318fa63b9146387b971712579be3422eb1c"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Offer",
+        "types": {
+          "Offer": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "scheme",
+              "type": "string"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "asset",
+              "type": "string"
+            },
+            {
+              "name": "payTo",
+              "type": "string"
+            },
+            {
+              "name": "amount",
+              "type": "string"
+            },
+            {
+              "name": "validUntil",
+              "type": "uint256"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xb218762bfbce6a28e95f277343477eff45523f9eb9ef72531294b89f5cf340cc",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "optional-default",
+      "id": "eip712/offer/optional-default",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "b413dc67872ea6c1599ce39c3ea7a772bb9650859f8a25f240612ef35bd33741"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x53e73bf1a481ace91a2e7842d28f8ba51d91283b66663bfd63f750a41545175d",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "positive",
+      "id": "eip712/receipt/positive",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "db9f5affe55193e8468b491d07140cf69462fe8d8971ddb6a313ca04ed591d22"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000005",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x923df7ea741b43db45e9dbb9545165465388293b9bfba5b1838e646d5b618b4f",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "payload-tamper",
+      "id": "eip712/receipt/payload-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "c7642a4696e43c34c502114e691906ec00f9fdaa7ae5d2322f491212fa93cea3"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x20463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x53e73bf1a481ace91a2e7842d28f8ba51d91283b66663bfd63f750a41545175d",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "signature-tamper",
+      "id": "eip712/receipt/signature-tamper",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "02048c9f1088445682aa8b3d6ae8a9a1fb3d07f2e15e6711e0480386361340d1"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x53e73bf1a481ace91a2e7842d28f8ba51d91283b66663bfd63f750a41545175d",
+      "expectedSigner": "0x0000000000000000000000000000000000000003",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-key",
+      "id": "eip712/receipt/wrong-key",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "744e60d574bf7cdc75f14777879020bbee4507778392a422a63851f7801210d6"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x53e73bf1a481ace91a2e7842d28f8ba51d91283b66663bfd63f750a41545175d",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "another-authorized-address"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "invalid",
+        "claim": "invalid"
+      },
+      "case": "wrong-authority",
+      "id": "eip712/receipt/wrong-authority",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "c05316f37ba7339a3052b2dafb2d7c16a6e7d8599110a683905205c488406f60"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x53e73bf1a481ace91a2e7842d28f8ba51d91283b66663bfd63f750a41545175d",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {},
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "inconclusive",
+        "claim": "inconclusive"
+      },
+      "case": "authority-unavailable",
+      "id": "eip712/receipt/authority-unavailable",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "ceb2c3510665cff8b3b64d397a1bc2724cdc445ff0056e34609c3053660b9d33"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 offer",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xcca021c59b823b7f761ffcc8212f8e1aca1d0be59e41ede101e61f0c07de8bbc",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "domain-name",
+      "id": "eip712/receipt/domain-name",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "d21e67808210eb69e5a8496c848fa4126ebfe347e038ee201e6abdd0e63b901d"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "2",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xa43fcdee56e91e573378d532d2e5c8f287eb81186200d3f324c3372ecdbd703f",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "domain-version",
+      "id": "eip712/receipt/domain-version",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "835e4650a19ae39bf409a72ae36e94ba963c9c204bf9f0f2232abebb855e71a5"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 8453
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x6616409364386ded1596ceb3d8b4c0fb29918b379118a718325cf16f629b5b56",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "domain-chainId",
+      "id": "eip712/receipt/domain-chainId",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "e5903efd372c9e329bc801816abbefae2bad73d8bd8ea9fe4c259c5c98735d5d"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "WrongType",
+        "types": {
+          "WrongType": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x36d9f18e804c574a7a1f87a5ce9e7ce568a1c5114412451f1a424950c76d99ba",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": false,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "invalid"
+      },
+      "case": "primary-type",
+      "id": "eip712/receipt/primary-type",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "7d5d20e20154f58b0c6d7a10399600ef934ad6310edc87952c6e169e6a137fd6"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "jws",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": "0xabababababababababababababababababababababababababababababababab"
+        },
+        "signature": "0x21463042a7166b066ac5538f3d159ee13bd22d90cc15424a88fd0e93bcde88e165292ff66df2a19a5e09020afa5648d7c85f524a9e738c630d65b8c0d79abf9d1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0x53e73bf1a481ace91a2e7842d28f8ba51d91283b66663bfd63f750a41545175d",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "transport"
+      },
+      "case": "cross-format",
+      "id": "eip712/receipt/cross-format",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "a3b4e7b6fdd7059ec9515db257c585a9d1ed51c7c025777df4c47d6cb897ac1b"
+    },
+    {
+      "family": "eip712",
+      "kind": "receipt",
+      "artifact": {
+        "format": "eip712",
+        "payload": {
+          "version": 1,
+          "resourceUrl": "https://independent.example.test/resource",
+          "network": "eip155:8453",
+          "payer": "0x0000000000000000000000000000000000000002",
+          "issuedAt": 1767225540,
+          "transaction": ""
+        },
+        "signature": "0x7e4bf991024bef1472b3c1617b9e37409b392fbfbe8c7da47592c4cb9bbda18a50159177f38d273e8437eae8d9694134008a39b05c906a21111e1b4f2c1d84cd1b"
+      },
+      "typedData": {
+        "domain": {
+          "name": "x402 receipt",
+          "version": "1",
+          "chainId": 1
+        },
+        "primaryType": "Receipt",
+        "types": {
+          "Receipt": [
+            {
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "name": "network",
+              "type": "string"
+            },
+            {
+              "name": "resourceUrl",
+              "type": "string"
+            },
+            {
+              "name": "payer",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint256"
+            },
+            {
+              "name": "transaction",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "typedDataHash": "0xced5b310d51de9e257bcb812feba0ed827eaf9d064df237eaba463c4c08da401",
+      "expectedSigner": "0xB2956f61C9E84A7610346b16F9F70FBf6dBF442c",
+      "authorization": {
+        "https://independent.example.test": [
+          "0xb2956f61c9e84a7610346b16f9f70fbf6dbf442c"
+        ]
+      },
+      "oracle": {
+        "encoding": "eip712",
+        "signature": true,
+        "schema": true,
+        "authorization": "valid",
+        "claim": "valid"
+      },
+      "case": "optional-default",
+      "id": "eip712/receipt/optional-default",
+      "expectedPackage": {
+        "status": "unsupported",
+        "reasons": [
+          "unsupported_format"
+        ]
+      },
+      "provenance": {
+        "license": "MIT",
+        "sources": [
+          "x402",
+          "eip712"
+        ],
+        "generator": "viem@2.56.3"
+      },
+      "sha256": "b519a657e030409fd413a59b58f82cf0e45226b07bffc82769519c8f3359b9bd"
+    }
+  ]
+}
