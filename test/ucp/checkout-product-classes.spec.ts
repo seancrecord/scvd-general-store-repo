@@ -321,10 +321,22 @@ describe("a tiered item prepares from the tier its checkout froze", () => {
 });
 
 /**
- * THE GLOBAL ASSERTION FOR THIS WHOLE CHAPTER.
+ * THE GLOBAL ASSERTION FOR THIS WHOLE CHAPTER, amended once.
+ *
+ * Until 44d6457 this read "nothing in the UCP path can settle". The
+ * real-settlement increment makes that false in exactly one file, so
+ * the assertion is not loosened — it is made precise. Settlement in
+ * the UCP path is reachable through ONE module, and that module
+ * reaches it only through the store's shared retry-and-rescue
+ * orchestration: no direct facilitator settle, no raw resource-server
+ * settle, and therefore no UCP-specific retry policy. Everything else
+ * under ucp — the routes, the checkout store, the resolver, the
+ * boundary walk — still cannot move money.
  */
-describe("nothing in the UCP path can settle", () => {
-  it("has no facilitator settle call anywhere in the UCP source", async () => {
+describe("settlement in the UCP path lives in exactly one place", () => {
+  const PRODUCER = "/src/services/ucp-settlement-producer.ts";
+
+  it("only the producer touches the machinery, and only through the shared orchestration", async () => {
     const sources = import.meta.glob("/src/**/ucp*.ts", {
       query: "?raw",
       import: "default",
@@ -337,12 +349,21 @@ describe("nothing in the UCP path can settle", () => {
     }) as Record<string, string>;
     const all = { ...sources, ...ucp };
     expect(Object.keys(all).length).toBeGreaterThan(8);
+    expect(all[PRODUCER], "the one settling module must exist").toBeDefined();
     for (const [path, text] of Object.entries(all)) {
-      // The adapter declares a settle() for the increment that will use
-      // it; nothing may CALL a facilitator settle today.
+      // Nobody in the UCP path calls a facilitator settle, holds the
+      // facilitator, or calls the resource server's settle directly:
+      // the retry is the store's, decided once in lib/payments.
       expect(text, path).not.toMatch(/facilitator\s*\.\s*settle\s*\(/);
       expect(text, path).not.toMatch(/\bstack\s*\.\s*facilitator\b/);
+      expect(text, path).not.toMatch(/\.\s*processSettlement\s*\(/);
+      if (path === PRODUCER) continue;
+      expect(text, path).not.toMatch(/processSettlementWithRetry|rescueAmbiguousSettle/);
     }
+    // And the one module that may settle does so through the shared
+    // orchestration, with the ambiguity rescue beside it.
+    expect(all[PRODUCER]).toMatch(/processSettlementWithRetry\s*\(/);
+    expect(all[PRODUCER]).toMatch(/rescueAmbiguousSettle\s*\(/);
   });
 
   it("prepares through a settle that refuses, by construction", async () => {

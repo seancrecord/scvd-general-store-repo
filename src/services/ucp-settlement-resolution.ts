@@ -1,12 +1,15 @@
 import {
   atomicToUsdc,
   tipFromPaid,
+  recordPolygonSettle,
+  recordSolanaSettle,
   INVALID_SETTLEMENT_RECEIPT_CODE,
   type SettledPayment,
 } from "@/lib/payments";
-import { SOLANA_NETWORK } from "@/lib/payment-networks";
+import { POLYGON_NETWORK, SOLANA_NETWORK } from "@/lib/payment-networks";
 import { decodeBase58 } from "@/lib/base58";
 import { recordSettlementUnknown } from "@/services/settlement-unknown";
+import { recordSpentNonce } from "@/lib/replay-guard";
 import { purchaseIntentStore, type PurchaseIntent } from "@/services/purchase-intent";
 import { ucpCheckoutStore, type StoredCheckout } from "@/services/ucp-checkout-store";
 import type { PaymentTerms } from "@/lib/ucp/checkout/terms";
@@ -67,9 +70,12 @@ export type SettlementResult =
   /**
    * `payer` is carried for the record and not used for the record:
    * the payer of record is the admitted purchase's, from the signed
-   * authorization, exactly as on the HTTP and MCP doors.
+   * authorization, exactly as on the HTTP and MCP doors. `nonce` is
+   * the EIP-3009 nonce AS PRESENTED on the wire, for the spent-nonce
+   * row: the replay guard keys on it verbatim, and both other doors
+   * record it that way.
    */
-  | { kind: "success"; transaction: unknown; network: unknown; payer?: unknown };
+  | { kind: "success"; transaction: unknown; network: unknown; payer?: unknown; nonce?: string };
 
 export type WonClaim = Extract<SubmissionClaim, { won: true }>;
 
@@ -143,6 +149,64 @@ function checkedReceipt(
     return { ok: true, transaction: tx };
   }
   return { ok: false, reason: `no receipt check for rail ${terms.network}` };
+}
+
+/**
+ * THE NONCE NAMES WHAT SPENT IT — on this lane as on the other two
+ * (test/nonce-bound-settlement.spec.ts, the class registered as
+ * nonce-unbound-from-settlement). Written right after the purchase is
+ * marked settled, which is where the HTTP and MCP doors write it. A
+ * Solana payment carries no EIP-3009 nonce; its identity is the
+ * transaction, and there is nothing to bind.
+ *
+ * ONLY UNDER THE NONCE AS PRESENTED. The replay guard stores and reads
+ * `payment_nonce:<nonce>` verbatim — nothing on the way in or out
+ * normalises it — and the purchase record keeps a lowercased copy for
+ * identity, not the wire spelling. So a repair pass that no longer
+ * holds the wire does not write this row at all: a key invented from
+ * the lowercased copy would restore the guard for lowercase wallets
+ * and silently miss for any other, while looking restored. Left
+ * unwritten, the chain's nonce-once and the purchase atom remain the
+ * truth, which they always were.
+ */
+async function bindSpentNonce(
+  env: Env,
+  purchase: PurchaseIntent,
+  transaction: string,
+  presented: string | undefined,
+): Promise<boolean> {
+  if (!presented) return false;
+  const validBefore = Number(purchase.authorization?.valid_before);
+  await recordSpentNonce(
+    env,
+    presented,
+    purchase.path,
+    transaction,
+    Number.isFinite(validBefore) && validBefore > 0 ? validBefore : null,
+  );
+  return true;
+}
+
+/**
+ * THE UNRECONCILED-CAP METERS SHIP WITH SETTLEMENT, not with the till.
+ * Solana and Polygon settles are unreconciled until their bank walks
+ * exist, so PAYMENT_RAILS.md bounds them: counted at the seam where
+ * money moved, alarmed past the cap, never a refusal. These are money
+ * oversight, not analytics, and the other doors count them on every
+ * confirmed settle — the UCP door is not a way around the bound. The
+ * item and rail sales counters (recordSettlement) are analytics keyed
+ * from /api/buy paths and wait for the Order chapter. Meter failure
+ * is swallowed exactly as at the other doors: the bound must never
+ * cost a paid buyer their answer.
+ */
+async function meterUnreconciledRail(env: Env, network: string, paidUsdc: number): Promise<void> {
+  const meter =
+    network === SOLANA_NETWORK
+      ? recordSolanaSettle(env, paidUsdc)
+      : network === POLYGON_NETWORK
+        ? recordPolygonSettle(env, paidUsdc)
+        : Promise.resolve();
+  await meter.catch(() => undefined);
 }
 
 /** The two authoritative records, read by the identity that names them. */
@@ -260,6 +324,8 @@ export async function settleClaimedSubmission(
           settleHeaders: {},
         };
         await purchases.updatePurchase({ state: "settled", payment });
+        await bindSpentNonce(env, purchase, receipt.transaction, result.nonce);
+        await meterUnreconciledRail(env, terms.network, paidUsdc);
         await purchases.resolveSettlementSubmission("confirmed");
         // The checkout stays complete_in_progress. `completed` is the
         // Order's to write, in one transaction with the order itself.
@@ -339,6 +405,14 @@ async function convergeKnown(
   switch (purchase.state) {
     case "settled": {
       if (submission && !submission.outcome) {
+        /**
+         * The crash between the purchase write and the row. The row is
+         * repaired; the spent-nonce binding is NOT — see bindSpentNonce
+         * for why a key without the wire spelling is worse than none —
+         * and the rail meter is not re-counted either, the same
+         * undercount-by-a-crash the other doors accept for a bound
+         * that alarms rather than refuses.
+         */
         await purchases.resolveSettlementSubmission("confirmed");
         repaired.push("submission:confirmed");
       }

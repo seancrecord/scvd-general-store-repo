@@ -61,7 +61,13 @@ function sameAddress(network: string, a: string, b: string): boolean {
 export function createUcpX402Adapter(config: {
   /** The checkout's frozen requirements. Cloned, so a later mutation cannot reach settlement. */
   requirements: PaymentRequirements;
-  verify: FacilitatorVerify;
+  /**
+   * Optional because the settlement producer builds an adapter only
+   * to bind and settle: it never verifies, admission already did, and
+   * an adapter with no verifier refuses validate() rather than
+   * pretending.
+   */
+  verify?: FacilitatorVerify;
 }) {
   const terms = structuredClone(config.requirements);
   if (
@@ -121,6 +127,14 @@ export function createUcpX402Adapter(config: {
     },
 
     /**
+     * The credential rebound to the frozen terms, and nothing else: no
+     * I/O, no verification, no submission. What settle() is handed.
+     */
+    bind(credential: unknown): PaymentPayload {
+      return boundPayload(credential);
+    },
+
+    /**
      * Verify only. Submits nothing, settles nothing, claims nothing.
      * The caller must hold durable purchase admission before settling.
      */
@@ -128,6 +142,7 @@ export function createUcpX402Adapter(config: {
       payment: PurchasePayment;
       payload: PaymentPayload;
     }> {
+      if (!config.verify) throw new Error("This adapter was built without a verifier");
       const payload = boundPayload(credential);
       const checked = await config.verify(payload, structuredClone(terms));
       if (!checked.isValid || !checked.payer) {
