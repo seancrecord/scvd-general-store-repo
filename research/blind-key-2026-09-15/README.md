@@ -188,3 +188,42 @@ neither is the correct one: ours is blocks 50918945–51316142, StillOS's
 is genesis to the same ceiling. Ours reproduces cheaply against the
 public RPC's 2,000-block `eth_getLogs` ceiling; theirs reaches further
 back. A zero from each of us is not the same claim.
+
+---
+
+# His side, 2026-09-17
+
+StillOS published `answers.json`, `commitment.json` and `inputs.json`
+at `github.com/stillmarcus24/stillos-notary/tree/main/blind-key`. Raw
+bytes fetched the same day and copied into `stillos/` here, unmodified:
+
+```
+sha256  0b0802613fec81ea0ab65cf1e5bbfeb2a03ab18302ebb6ea15c372ad08f92bd0
+bytes   9286
+```
+
+Both match the commitment he posted on 2026-09-15 and the
+`committed_at` inside his file, 2026-09-14T21:56:19Z. His half of the
+exchange verifies.
+
+He also posted his reading of our five, full index history to the same
+ceiling. Four rows are scope. One is not:
+
+| door | ours, window | his, all-time |
+|---|---|---|
+| batch-runner | 0 payers | 26 payers, 27 transfers |
+| gas.apitoll.cloud | 20 | 59 |
+| api.bitrefill.com | **533** | **185** |
+| tollbooth-hello | 6 | 20 |
+| laso.finance | 45 | 45 |
+
+A windowed count of unique senders cannot exceed an all-time count of
+the same thing. On `api.bitrefill.com` it does, so one of the two
+readings is wrong and this file does not yet know which. Ours is read
+from the node by `eth_getLogs` with the filter printed in
+`scripts/paid-doors.mjs`; his is derived from an index his file names
+as a shared blind spot. Open on both sides, in the joint write-up's §8.
+
+`batch-runner` is the clean case: at our floor block the payTo already
+held 220.052978 USDC at nonce 1, and at the ceiling the same. His 27
+transfers all precede our window, and our empty window is exactly that.

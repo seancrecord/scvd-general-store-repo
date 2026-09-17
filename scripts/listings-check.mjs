@@ -47,7 +47,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { compare, walk } from "./lib/listings.mjs";
 import { walkVersions } from "./lib/listing-versions.mjs";
-import { compareRoster, readRoster, staleRows, STALE_AFTER_DAYS } from "./lib/listing-roster.mjs";
+import { compareRoster, readRoster, staleRows, walledRows, STALE_AFTER_DAYS } from "./lib/listing-roster.mjs";
 
 const RECORD = new URL("../docs/listings/observation.json", import.meta.url);
 const ROSTER_RECORD = new URL("../docs/listings/roster.json", import.meta.url);
@@ -106,10 +106,11 @@ const roster = await readRoster(base);
 const rosterBaseline = existsSync(ROSTER_RECORD) ? JSON.parse(readFileSync(ROSTER_RECORD, "utf8")) : null;
 const rosterMoves = compareRoster(rosterBaseline, roster);
 const stale = staleRows(roster);
+const walled = walledRows(roster);
 
 if (flag("json")) {
   // One document for a pipe: the mirrors, the versions and the roster.
-  console.log(JSON.stringify({ mirrors: { ...fresh, regressions, advances }, versions, roster: { ...roster, ...rosterMoves, stale } }, null, 2));
+  console.log(JSON.stringify({ mirrors: { ...fresh, regressions, advances }, versions, roster: { ...roster, ...rosterMoves, stale, walled } }, null, 2));
 } else {
   console.log(`\nTHE VERSIONS AND THE SHELF — read ${versions.read_at.slice(0, 10)}`);
   const width = Math.max(...versions.rows.map((r) => `${r.index} ${r.field}`.length));
@@ -136,6 +137,10 @@ if (!flag("json")) {
     for (const r of rosterMoves.regressions) console.log(`REGRESSED  ${r.registry || r.url}: ${r.was} -> ${r.now}  ${r.url}`);
     for (const a of rosterMoves.advances) console.log(`advanced   ${a.registry || a.url}: ${a.was} -> ${a.now}`);
     if (!rosterBaseline) console.log("No roster baseline yet; --record writes one.");
+    if (walled.length > 0) {
+      console.log(`\n${walled.length} rows behind a login this instrument cannot pass — reported, never judged:`);
+      for (const r of walled) console.log(`  ${r.registry || r.url}: ${r.reason}`);
+    }
     if (stale.length > 0) {
       console.log(`\n${stale.length} rows confirmed over ${STALE_AFTER_DAYS} days ago — a look, not a failure:`);
       for (const r of stale.slice(0, 10)) console.log(`  ${String(r.age_days).padStart(4)}d  ${r.registry || r.url}`);
