@@ -449,11 +449,37 @@ operators' coverage is complementary rather than overlapping — which is
 the sentence that started this paper: *"You read Arbitrum; I read XRPL.
 Neither of us covers that directory alone, and it covers neither."*
 
-**Those 43 are not read in this paper.** scvd.store can now read them
-and has proved the rail end to end at a live height; a reading worth
-publishing needs a pinned height and a defensible window, and asserting
-one from a few hours of blocks would be the error this whole exchange
-has been about.
+### The 43, read
+
+scvd.store read all 43 on 2026-09-17 at Arbitrum block **506120000**,
+state only — balance and transaction count, two calls per address, no
+window, so `PAID` carries no payer count and every zero is all-time on
+the nonce argument. Every payTo copied by reference from the directory,
+with provenance on the row.
+
+| | doors |
+|---|---|
+| **PAID** — hold USDC on Arbitrum at the named height | **33** |
+| **ZERO_OBSERVED** — all-time | **8** |
+| **UNKNOWN** | 2 |
+| read failures | **0** |
+
+Two runs at the same height, identical rows. Full reading and README:
+`research/arbitrum-43-2026-09-17/`.
+
+**Of the eight quiet-mainnet doors, six advertise Arbitrum, and two of
+them hold USDC there** — `yiduochan-api-credits` (0.21 USDC at nonce 0)
+and `warppay402-mcp-gateway` (0.20 USDC at nonce 0), both reported by
+the directory as never paid on the rails it measures. That is the
+`daxpt` shape reproduced twice on a rail StillOS cannot read. Three
+more are all-time zeroes on Arbitrum too, which is the floor and the
+chain agreeing; one is `UNKNOWN` for its scheme.
+
+The balances are mostly dust — 28 of 33 under one dollar, middle values
+0.01 USDC — and 38 of the 43 advertise the same address on both rails.
+Arrival at an address, never demand. scvd.store's own door is among the
+43 and reads `PAID`; it is named in the artifact so nobody has to find
+it.
 
 ### And a page-versus-population trap sitting in the source
 
@@ -598,7 +624,8 @@ spends nothing and needs no key.
 ```
 npm run paid-doors -- --doors research/three-way-2026-09-16/his-five-doors.json \
                       --from-block 50918945 --at-block 51316142 --out <dir>
-npm run paid-doors -- --rail eip155:42161 --doors <file> --from-block <n> --at-block <n> --out <dir>
+npm run paid-doors -- --rail eip155:42161 --state-only \
+                      --doors research/arbitrum-43-2026-09-17/doors.json --at-block 506120000 --out <dir>
 npm run floor-check -- --at-block 51316142 --out <dir>
 npm run rail-coverage -- --out <dir>
 ```
@@ -610,6 +637,7 @@ door, including the rails neither instrument can read:
 - `research/three-way-2026-09-16/` — StillOS's five read three ways, with every advertised rail of every door pinned
 - `research/floor-check-2026-09-15/` — 132 addresses at a named height (§3)
 - `research/rail-coverage-2026-09-16/` — the independent reproduction of §4
+- `research/arbitrum-43-2026-09-17/` — the 43 Arbitrum doors, state only at a pinned height (§4)
 
 StillOS's side, from the same repository:
 
@@ -640,10 +668,10 @@ Directory data throughout: `x402-list.com` (CC BY 4.0).
 - **StillOS → scvd.store, on `batch-runner`**: the block heights of the
   27 transfers, or just the latest. State says they all precede block
   50918945; the heights would close it.
-- **scvd.store → everyone**: a real reading of the 43 Arbitrum gap
-  doors, at a pinned height, in a window that can be defended. And
-  `api.bitrefill.com`'s Arbitrum and Polygon rails, which StillOS names
-  as out of his reach and which are in ours.
+- ~~**scvd.store → everyone**: a real reading of the 43 Arbitrum gap
+  doors.~~ Read 2026-09-17, state only at a pinned height; §4. That
+  reading includes `api.bitrefill.com`'s Arbitrum rail (`PAID`). Its
+  Polygon rail remains unread.
 - **Both**: a decision on whether a commitment freezes an answer
   including its errors. StillOS has not yet given a view.
 - **StillOS**: the 27-of-27 paragraph in §5, in his words rather than
