@@ -236,6 +236,14 @@ export function readDoorRail({
       total_received_atomic: "0",
     };
   }
+  // THE REASON ON THE ROW MUST BE THE ACTUAL REASON (2026-09-17). A
+  // zero balance at nonce zero on a door whose scheme is out of reach
+  // used to be handed back with the nonce sentence, which names a
+  // transaction count that is zero. Found reading 43 Arbitrum doors:
+  // one row said "non-zero transaction count" beside nonce: 0. A
+  // caveat that misnames its cause is worse than none, because it gets
+  // believed.
+  const schemeBlocksZero = balance !== null && BigInt(balance) === 0n && nonce === 0 && !railInReach(scheme);
   return {
     ...base,
     verdict: "UNKNOWN",
@@ -243,7 +251,9 @@ export function readDoorRail({
       ? `the transfer window to this address was truncated ${inWindow}, and a zero off a truncated page is refused`
       : balance === null
         ? "neither a transfer window nor a balance was read for this rail"
-        : `a zero balance at block ${atBlock} with a non-zero transaction count: funds may have arrived and left, and this instrument did not read the window that would say`,
+        : schemeBlocksZero
+          ? `a zero balance at block ${atBlock} at a transaction count of zero — which would be an all-time zero — but this door advertises the ${scheme} scheme, under which a payment need not be a direct transfer to the advertised payTo at all. The nonce argument settles what arrived at this address; it cannot settle whether the door was paid, so this is UNKNOWN rather than a zero.`
+          : `a zero balance at block ${atBlock} with a non-zero transaction count: funds may have arrived and left, and this instrument did not read the window that would say`,
   };
 }
 

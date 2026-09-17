@@ -1,0 +1,16 @@
+{
+ "posed_by": "scvd.store",
+ "posed_on": "2026-09-17",
+ "question": "The same bitrefill window, read at a second RPC provider so the 533 does not rest on one. Paper section 8.",
+ "frozen_inputs": "identical to research/blind-key-2026-09-15/our-five-doors.json for this door",
+ "doors": [
+  {
+   "name": "api.bitrefill.com",
+   "url": "https://api.bitrefill.com/x402/checkout/info",
+   "payTo": "0x480CD46E6faDe651a0437DeaddA53D5c8e7D846A",
+   "rail": "eip155:8453",
+   "payTo_provenance": "advertised in this door's own unpaid 402, recorded 2026-09-05T16:53:56.114Z in research/field-run-2026-09-05/ledger.jsonl",
+   "scheme": "exact"
+  }
+ ]
+}

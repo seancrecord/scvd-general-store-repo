@@ -1,0 +1,596 @@
+{
+ "posed_by": "scvd.store, from StillOS Notary's 738-row generalisation on issue #622",
+ "posed_on": "2026-09-17",
+ "question": "For every door the directory lists as advertising USDC on Arbitrum One (eip155:42161) without measuring that rail: has anyone ever paid its advertised Arbitrum payTo? State at a pinned height \u2014 balance and transaction count \u2014 so zeroes rest on the nonce argument and reach all of history. No transfer window; counts are not attempted.",
+ "frozen_inputs": "payTo per door copied by reference from the directory's per-service endpoint, never re-typed. The directory is the source of the address, so a wrong address in the directory is a wrong address here; that is declared rather than resolved.",
+ "rail": "eip155:42161",
+ "source": "https://x402-list.com/api/v1/services (CC BY 4.0)",
+ "fetched_at": "2026-09-17T14:36:20Z",
+ "doors": [
+  {
+   "name": "yiduochan-api-credits",
+   "url": "https://yiduochan.com",
+   "payTo": "0x67164557fb0dd6ce00b95bac0931840ca1f6dbe5",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/yiduochan-api-credits endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:8453"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 0
+  },
+  {
+   "name": "phion-agent-trust",
+   "url": "https://phion.systems",
+   "payTo": "0x7beca68dd9ac733d4de6b16d16b85dc391c071e2",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/phion-agent-trust endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 110
+  },
+  {
+   "name": "agentbit",
+   "url": "https://agentbit.app",
+   "payTo": "0x4395c7e383b7e05665aad7f36ed77c01923dd965",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/agentbit endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 198
+  },
+  {
+   "name": "brian-booms-agent-merch-kit",
+   "url": "https://pay.brianbooms.com",
+   "payTo": "0x4cb662b1aaa109ddd603050a0a39687b1d4a1abb",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/brian-booms-agent-merch-kit endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 0
+  },
+  {
+   "name": "openzoo",
+   "url": "https://api.openzoo.fun",
+   "payTo": "0x26e8134ecc3af5cce32f34b03e7bd2f318b25158",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/openzoo endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 3426
+  },
+  {
+   "name": "cloudmaxi0x",
+   "url": "https://cloudmaxi0x.com",
+   "payTo": "0xa87fc63dacef58ed83f7b20ff57a757d9d308bc0",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/cloudmaxi0x endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 16
+  },
+  {
+   "name": "hostdefi-token-risk-api",
+   "url": "https://hostdefi.com/api",
+   "payTo": "0x82c1fe98ce2a3f444caf029dad81c46cf81ea58b",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/hostdefi-token-risk-api endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 1
+  },
+  {
+   "name": "warppay402-mcp-gateway",
+   "url": "https://api.warppay402.com",
+   "payTo": "0x226df5aabe192fd2181555367c2f6b99da39c184",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/warppay402-mcp-gateway endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 0
+  },
+  {
+   "name": "saylor-innovations-watchdog-token-intelligence",
+   "url": "https://saylorinnovations.com",
+   "payTo": "0xf8a376ebf123d7252cd7b66bcd77a727a4def22f",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/saylor-innovations-watchdog-token-intelligence endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 0
+  },
+  {
+   "name": "whaletape",
+   "url": "https://whaletape.xyz",
+   "payTo": "0x25a8b697da5c0baf698fd6bd9701b5e825214145",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/whaletape endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 320
+  },
+  {
+   "name": "eve-s-wire",
+   "url": "https://www.watchevelive.com",
+   "payTo": "0x80aa1fa83f7b771bf2ab815da9ba1236b1b91e3f",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/eve-s-wire endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 8
+  },
+  {
+   "name": "edge-agents-ai",
+   "url": "https://pay.edge-agents.ai",
+   "payTo": "0x408c4610f6879a75c25722cfcd18a2eff99dc20f",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/edge-agents-ai endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 1018
+  },
+  {
+   "name": "x402tap",
+   "url": "https://x402tap.com",
+   "payTo": "0xb810b599bc730aa85800babe7f5d160524322c86",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/x402tap endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 254
+  },
+  {
+   "name": "uhadev-pdf-data-inspection-api",
+   "url": "https://x402.uhadev.com",
+   "payTo": "0x4229bbc5949e9541cdf5941d53ce3a476559345c",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/uhadev-pdf-data-inspection-api endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [],
+   "directory_tx_count_all_time_on_measured_rails": null
+  },
+  {
+   "name": "x402-extract-api",
+   "url": "https://api.jomofagan.com",
+   "payTo": "0xad586c246b75982ec16c6a5efe4488222965408f",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/x402-extract-api endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 1
+  },
+  {
+   "name": "sean-claude-van-damme-s-general-store",
+   "url": "https://scvd.store",
+   "payTo": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 418
+  },
+  {
+   "name": "email-auth-check-spf-dmarc-dkim",
+   "url": "https://email-auth.use.x402atlas.com",
+   "payTo": "0x3731f5c2c1835e3ace2ac157c4e31b1cea0cb0e0",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/email-auth-check-spf-dmarc-dkim endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 270
+  },
+  {
+   "name": "url-unwrap-redirect-tracer",
+   "url": "https://unwrap.use.x402atlas.com",
+   "payTo": "0x492ec81ecf395fbea2f19fece203ee14d0544b71",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/url-unwrap-redirect-tracer endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 123
+  },
+  {
+   "name": "gdelt-news-search-and-timeline",
+   "url": "https://gdelt.use.x402atlas.com",
+   "payTo": "0x8d64a4834e262d96d1264e8900b5a4f1405b8982",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/gdelt-news-search-and-timeline endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 136
+  },
+  {
+   "name": "hyperliquid-prediction-markets-data-x402-atlas",
+   "url": "https://hyperliquid-predict.use.x402atlas.com",
+   "payTo": "0xa55b06462a2e48661badf22f5841f95ae654b716",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/hyperliquid-prediction-markets-data-x402-atlas endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 164
+  },
+  {
+   "name": "wikipedia-article-summary-mrtoqzsc-0",
+   "url": "https://wiki.use.x402atlas.com",
+   "payTo": "0x6a706d6fcf192c15fb592d7502258ed41425dd36",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/wikipedia-article-summary-mrtoqzsc-0 endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 124
+  },
+  {
+   "name": "places-local-business-search",
+   "url": "https://places.use.x402atlas.com",
+   "payTo": "0x59ea036c64f0f54cdd14a3be8a1a6586b58da71c",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/places-local-business-search endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 266
+  },
+  {
+   "name": "image-optimizer-webp-converter",
+   "url": "https://imgopt.use.x402atlas.com",
+   "payTo": "0x5a45010395d62e9c4a8a0931bde0493aaca4f657",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/image-optimizer-webp-converter endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 106
+  },
+  {
+   "name": "crypto-perp-signals",
+   "url": "https://perpsignals.use.x402atlas.com",
+   "payTo": "0x82096bf08d81c14c678e915a04fcf150958ee571",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/crypto-perp-signals endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 182
+  },
+  {
+   "name": "http-security-headers-check",
+   "url": "https://headers.use.x402atlas.com",
+   "payTo": "0x7f8043c400799643bcb62b41b84b297a8ecb7b9c",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/http-security-headers-check endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 131
+  },
+  {
+   "name": "x-twitter-media-downloader",
+   "url": "https://xmedia.use.x402atlas.com",
+   "payTo": "0xb708af3bce13517357e498f8ffd277de93db9ef5",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/x-twitter-media-downloader endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 126
+  },
+  {
+   "name": "hyperliquid-market-data",
+   "url": "https://hyperliquid.use.x402atlas.com",
+   "payTo": "0x383190a4f26f075fc2c73f6738eabf4dc6f33442",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/hyperliquid-market-data endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 705
+  },
+  {
+   "name": "atlas-market-data",
+   "url": "https://marketdata.use.x402atlas.com",
+   "payTo": "0x9d667bc76f166322df087b3b3927d4d83d44a5d0",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/atlas-market-data endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 358
+  },
+  {
+   "name": "apple-app-store-search-reviews-app-data",
+   "url": "https://appstore.use.x402atlas.com",
+   "payTo": "0x59ea036c64f0f54cdd14a3be8a1a6586b58da71c",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/apple-app-store-search-reviews-app-data endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 266
+  },
+  {
+   "name": "hyperliquid-account-intelligence",
+   "url": "https://hyperliquid-accounts.use.x402atlas.com",
+   "payTo": "0xe79aa9d55170f7e1ac420266ec93a6c28c436de8",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/hyperliquid-account-intelligence endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 223
+  },
+  {
+   "name": "defillama-data-api-x402-atlas",
+   "url": "https://defillama.use.x402atlas.com",
+   "payTo": "0xcb8025d951e5e45be7d288b658eeee6f05713006",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/defillama-data-api-x402-atlas endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 563
+  },
+  {
+   "name": "coingecko-crypto-price-data-x402-atlas",
+   "url": "https://coingecko.use.x402atlas.com",
+   "payTo": "0x32793f68dc2ea26bbc75eb900da120069e8b6d02",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/coingecko-crypto-price-data-x402-atlas endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 361
+  },
+  {
+   "name": "dns-whois-domain-lookup",
+   "url": "https://dns.use.x402atlas.com",
+   "payTo": "0x446e51deab3ae656c99e65369e8ef1148d23d7f7",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/dns-whois-domain-lookup endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 447
+  },
+  {
+   "name": "onchainpulse",
+   "url": "https://onchainpulse-nine.vercel.app",
+   "payTo": "0x50ab2018c06c6e4eaa9ba52057eb55ed284912fc",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/onchainpulse endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 11147
+  },
+  {
+   "name": "bitrefill",
+   "url": "https://api.bitrefill.com",
+   "payTo": "0x480cd46e6fade651a0437deadda53d5c8e7d846a",
+   "rail": "eip155:42161",
+   "scheme": "mixed:exact,upto",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/bitrefill endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 1455
+  },
+  {
+   "name": "google-trends-seo-keyword-data",
+   "url": "https://google-trends.use.x402atlas.com",
+   "payTo": "0x9aaceabad8e1858b72fcea1665381b168841b2fa",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/google-trends-seo-keyword-data endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 4083
+  },
+  {
+   "name": "agent402-tools",
+   "url": "https://agent402.tools",
+   "payTo": "0xabf4fabd7c416fb67202e5f9002389fc75e2a9d0",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/agent402-tools endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 31238
+  },
+  {
+   "name": "concierge-agent",
+   "url": "https://conc-exe.xyz",
+   "payTo": "0x94db8343ec6839131c082126ea1e723e30c256f3",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/concierge-agent endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:8453",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 182
+  },
+  {
+   "name": "eva-mcp",
+   "url": "https://api.ai.everything.inc",
+   "payTo": "0xc6b1e7f76dfc2eee534200a0182f136775789142",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/eva-mcp endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:8453"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 3
+  },
+  {
+   "name": "weather",
+   "url": "https://weather.x402.press",
+   "payTo": "0x3c74ce3f8566ff04b312320e7c264a691c409992",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/weather endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 1721
+  },
+  {
+   "name": "aviation-x402",
+   "url": "https://aviation.x402.press",
+   "payTo": "0x3c74ce3f8566ff04b312320e7c264a691c409992",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/aviation-x402 endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 1721
+  },
+  {
+   "name": "asterpay",
+   "url": "https://x402.asterpay.io",
+   "payTo": "0xd5f8481d8f25d3966d2010dbf9b47ffbdf745a9e",
+   "rail": "eip155:42161",
+   "scheme": "exact",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/asterpay endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137",
+    "eip155:8453"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 186
+  },
+  {
+   "name": "insurance-doi-bulletin-feed-x402",
+   "url": "https://api.dynsuplabs.com",
+   "payTo": "0xc899d17e9aa71a77640c938268aff997b484d548",
+   "rail": "eip155:42161",
+   "scheme": "exact-prepay-proof",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/insurance-doi-bulletin-feed-x402 endpoints[].pricing[] where network == eip155:42161, fetched 2026-09-17T14:36:20Z; not resolved from the door itself",
+   "directory_measured_networks": [
+    "eip155:137"
+   ],
+   "directory_tx_count_all_time_on_measured_rails": 0
+  }
+ ],
+ "failed": []
+}
