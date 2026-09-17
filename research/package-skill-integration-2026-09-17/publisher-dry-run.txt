@@ -1,0 +1,20 @@
+
+> scvd-general-store@0.1.0 skill:publish
+> node scripts/publish-skill.mjs 3.17.0 Task-focused entry and ten references; preserved purchase recovery and privacy guidance; explicit MPP and observation-date limits; complete-bundle validation and fingerprint. --source-commit=5a5c8df2e903957d48da304e399e537c1507f5ef --dry-run
+
+Checking the bundle against the shelf…
+
+ RUN  v4.1.11 /private/tmp/scvd-package-skill-milestone
+
+
+ Test Files  5 passed (5)
+      Tests  32 passed (32)
+   Start at  12:20:54
+   Duration  11.02s (transform 11.85s, setup 118ms, import 30.23s, tests 179ms, environment 3ms)
+
+
+Dry run scvd-general-store 3.17.0
+  commit   5a5c8df2e903957d48da304e399e537c1507f5ef
+  bundle   registry/clawhub/SKILL.md
+
+Would publish scvd-general-store@3.17.0
