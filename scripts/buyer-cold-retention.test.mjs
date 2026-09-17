@@ -41,6 +41,48 @@ test('collector refuses symlinks, marks its limits, and never treats partial byt
  }finally{fs.rmSync(d,{recursive:true,force:true});}
 });
 
+for(const host of ['codex','claude'])test(`${host}: native child uses a writable session cache outside evidence`,async()=>{
+ const d=root();try{
+  const cwd=path.join(d,'session'),out=path.join(d,'out'),home=path.join(d,'home');
+  for(const dir of [cwd,out,home])fs.mkdirSync(dir);
+  const environment=runner.childEnvironment({PATH:process.env.PATH,HOME:home,NPM_CONFIG_CACHE:'/parent-cache',npm_config_cache:'/other-parent-cache',NPM_TOKEN:'must-not-inherit'});
+  const code=`const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
+    const result=spawnSync('npm',['config','get','cache','--offline'],{encoding:'utf8'});
+    if(result.status!==0)throw Error('npm config failed');
+    const cache=result.stdout.trim();fs.mkdirSync(cache,{recursive:true});fs.writeFileSync(path.join(cache,'write-probe'),'ok');
+    console.log(JSON.stringify({type:'result',cache,scratch:fs.existsSync('work'),token:process.env.NPM_TOKEN??null}));`;
+  const run=await runner.runChild(process.execPath,['-e',code],{cwd,output:out,prompt:'fixture',host,budgets,env:environment});
+  assert.equal(run.runtime.state,'completed');
+  const result=JSON.parse(fs.readFileSync(path.join(out,'events.jsonl'),'utf8'));
+  assert.equal(result.cache,path.join(cwd,'work/npm-cache'));
+  assert.equal(fs.readFileSync(path.join(result.cache,'write-probe'),'utf8'),'ok');
+  assert.equal(result.scratch,true);assert.equal(result.token,null);
+  assert.equal(fs.existsSync(path.join(home,'.npm')),false);
+  assert.deepEqual(run.local_workspace,{scratch:'work',evidence:'evidence',npm_cache:'work/npm-cache'});
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('scratch tooling does not consume the unchanged evidence file allowance',async()=>{
+ const d=root();try{
+  const cwd=path.join(d,'session'),out=path.join(d,'out');
+  fs.mkdirSync(path.join(cwd,'evidence'),{recursive:true});fs.mkdirSync(out);
+  const code=`const fs=require('node:fs');
+    if(!fs.existsSync('work'))throw Error('scratch folder missing');
+    fs.mkdirSync('work/tooling/node_modules',{recursive:true});
+    for(let i=0;i<50;i++)fs.writeFileSync('work/tooling/node_modules/dependency-'+i,'tooling');
+    fs.writeFileSync('evidence/original.json','original');fs.writeFileSync('evidence/issuer.json','public-key');`;
+  const run=await runner.runChild(process.execPath,['-e',code],{cwd,output:out,prompt:'fixture',host:'codex',budgets});
+  assert.equal(run.runtime.state,'completed');
+  const captured=runner.retainArtifacts(cwd,out,{...budgets,artifact_files:2});
+  assert.equal(captured.state,'complete');
+  assert.deepEqual(captured.files.map(f=>f.file).sort(),['evidence/issuer.json','evidence/original.json']);
+  fs.writeFileSync(path.join(cwd,'evidence','extra.json'),'still counts');
+  const overflow=path.join(d,'overflow');fs.mkdirSync(overflow);
+  const limited=runner.retainArtifacts(cwd,overflow,{...budgets,artifact_files:2});
+  assert.equal(limited.state,'incomplete');assert.ok(limited.issues.some(i=>i.reason==='file_limit'));
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+
 async function fixture(schema_version=3){
  const d=root();const save=(file,value)=>{const bytes=JSON.stringify(value);fs.writeFileSync(path.join(d,file),bytes);return{file,sha256:hash(bytes)};};
  const pair=generateKeyPairSync('ed25519'),key=pair.publicKey.export({format:'der',type:'spki'}).subarray(-32).toString('hex');

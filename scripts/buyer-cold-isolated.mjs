@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawn, spawnSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
-import {adapter, buildPrompt, buildCapabilityPrompt, capabilityVectors, scoreCapability, validatePlan, normalizeTrace, hash, scoreColdRun, cohortSummary} from './lib/buyer-cold.mjs';
+import {adapter, buildPrompt, buildCapabilityPrompt, capabilityVectors, scoreCapability, validatePlan, normalizeTrace, hash, scoreColdRun, cohortSummary, SESSION_WORKSPACE} from './lib/buyer-cold.mjs';
 
 import {retainArtifacts} from './lib/buyer-retention.mjs';
 import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
@@ -22,12 +22,19 @@ const NETWORK_CONTEXT=['HTTPS_PROXY','HTTP_PROXY','NO_PROXY','https_proxy','http
 export function childEnvironment(source=process.env) {
   return Object.fromEntries(['PATH','HOME','TMPDIR','SHELL','USER','LANG',...NETWORK_CONTEXT].filter(k=>source[k]).map(k=>[k,source[k]]));
 }
+function sessionEnvironment(cwd, environment) {
+  // The native sandbox cannot write the keeper's default ~/.npm cache.
+  // Both spellings agree, including npm's lowercase lifecycle overrides.
+  const cache=path.join(cwd,SESSION_WORKSPACE.npm_cache);
+  return {...environment,NPM_CONFIG_CACHE:cache,npm_config_cache:cache};
+}
 export async function runChild(command, args, {cwd, output, prompt, host, budgets, env=childEnvironment()}) {
+  fs.mkdirSync(path.join(cwd,SESSION_WORKSPACE.scratch),{recursive:true,mode:0o700});
   const started_at = new Date().toISOString();
   const events = fs.openSync(path.join(output,'events.jsonl'),'wx',0o600);
   const logs = fs.openSync(path.join(output,'runtime.log'),'wx',0o600);
   let stdout='', stderr='', bytes=0, budget_stop=null, spawn_error=null, escalation;
-  const child = spawn(command,args,{cwd,env,detached:process.platform!=='win32',stdio:['pipe','pipe','pipe']});
+  const child = spawn(command,args,{cwd,env:sessionEnvironment(cwd,env),detached:process.platform!=='win32',stdio:['pipe','pipe','pipe']});
   const terminate = () => {
     try { if(process.platform!=='win32')process.kill(-child.pid,'SIGTERM');else child.kill('SIGTERM'); } catch { /* Already exited. */ }
     escalation = setTimeout(()=>{try{if(process.platform!=='win32')process.kill(-child.pid,'SIGKILL');else child.kill('SIGKILL');}catch{}},1000);
@@ -58,7 +65,7 @@ export async function runChild(command, args, {cwd, output, prompt, host, budget
   fs.closeSync(events);fs.closeSync(logs);
   const counts=normalizeTrace(host,stdout);
   const terminalFailure=stdout.split('\n').some(line=>{try{const r=JSON.parse(line);return r.type==='turn.failed'||(r.type==='result'&&r.is_error===true);}catch{return false;}});
-  return {started_at,ended_at:new Date().toISOString(),runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure?'completed':'failed',...result,spawn_error,budget_stop},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
+  return {started_at,ended_at:new Date().toISOString(),local_workspace:SESSION_WORKSPACE,runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure?'completed':'failed',...result,spawn_error,budget_stop},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
     output_bytes:bytes,limits:['Token target is advisory; wall time and retained bytes are bounded. Tool budget stops after an over-budget event is observed; batched calls can exceed it.','Host tool events do not establish origin-request count or absence of hidden context.']};
 }
 export async function scoreCohort(root) {
@@ -152,7 +159,7 @@ export async function runCapabilityProbe(plan, root) {
     }catch(error){skip('unavailable',`Runner could not capture reference bytes (${error.message}); host not launched.`);continue;}
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-capability-'));fs.mkdirSync(path.join(cwd,'evidence'),{mode:0o700});
     const cell=plan.cells.find(c=>c.host===host), launch=adapter(cell,cwd,dir,plan.budgets,context);
-    writeJson(path.join(dir,'launch.json'),{...launch,cwd,cli,environment_keys:Object.keys(environment),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
+    writeJson(path.join(dir,'launch.json'),{...launch,cwd,cli,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({host,state:'started'})+'\n');
     const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host,budgets:plan.budgets,env:environment});
     const run={schema_version:4,host,model:cell.model,...result,cli,reference,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)};
@@ -203,7 +210,7 @@ export async function runCohort(plan,root,options={}) {
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-session-'));
     if(plan.schema_version>=3)fs.mkdirSync(path.join(cwd,'evidence'),{mode:0o700});
     const launch=adapter(cell,cwd,dir,plan.budgets,context);
-    writeJson(path.join(dir,'launch.json'),{...launch,cwd,host,environment_keys:Object.keys(environment),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
+    writeJson(path.join(dir,'launch.json'),{...launch,cwd,host,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({cell:cell.id,state:'started'})+'\n');
     const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host:cell.host,budgets:plan.budgets,env:environment});
     writeJson(path.join(dir,'run.json'),{schema_version:plan.schema_version,cell,subject:plan.subject,...result,host,...(plan.schema_version>=3?{freshness:plan.freshness,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)}:{}),isolation:{fresh_directory:true,config_isolated:true,no_session_resume:true,review_required:true}});
