@@ -21,6 +21,8 @@ import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment"
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
+/** Deferred writes run beside the answer; in tests there is no waitUntil, so give the loop a turn. */
+const settled = () => new Promise((resolve) => setTimeout(resolve, 50));
 const AUTH = { Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`, Accept: "text/html" };
 
 /**
@@ -177,6 +179,7 @@ describe("the census counts the ignores beside the answers", () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ url: "https://nothing-here.invalid/api/x" }),
     });
+    await settled();
     const free = await readDisclosureCensus(testEnv, "free");
     expect(free.offered).toBe(2);
     expect(free.disclosed).toBe(1);
@@ -201,6 +204,7 @@ describe("at the till", () => {
   it("a buyer who says nothing gets no block, is counted, and pays the same", async () => {
     const quiet = await buy("");
     expect(quiet["disclosure"]).toBeUndefined();
+    await settled();
     expect((await readDisclosureCensus(testEnv, "paid")).ignored).toBe(1);
   });
 
@@ -221,6 +225,7 @@ describe("at the till", () => {
     const stranger = await buy(`?prior_cert_id=cert_doesnotexist1`);
     expect((stranger["disclosure"] as Record<string, unknown>)["returning"]).toBe("not_found");
 
+    await settled();
     const paid = await readDisclosureCensus(testEnv, "paid");
     expect(paid.offered).toBe(3);
     expect(paid.disclosed).toBe(3);
@@ -250,6 +255,7 @@ describe("at the till", () => {
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "preflight_endpoint", arguments: { url: "https://nothing-here.invalid/api/x", client: "cursor" } } }),
     });
     expect(res.status).toBeLessThan(500);
+    await settled();
     const free = await readDisclosureCensus(testEnv, "free");
     expect(free.offered).toBe(1);
     expect(free.values.client).toEqual({ cursor: 1 });

@@ -2234,6 +2234,14 @@ adminRoutes.get("/admin/disclosure", async (c) => {
   return c.html(renderDisclosurePage({ month, paid, free }));
 });
 
+adminRoutes.get("/admin/signals", async (c) => {
+  const { readBuyerSignals } = await import("@/services/buyer-signals");
+  const { renderSignalsPage } = await import("@/pages/admin/signals-page");
+  const monthQuery = c.req.query("month") ?? "";
+  const month = /^\d{4}-\d{2}$/.test(monthQuery) ? monthQuery : metricsMonth();
+  return c.html(renderSignalsPage({ signals: await readBuyerSignals(c.env, month) }));
+});
+
 adminRoutes.get("/admin/instruments", async (c) => {
   const { computeObservatory } = await import("@/services/observatory");
   const { computePulse } = await import("@/services/pulse");

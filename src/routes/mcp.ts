@@ -103,6 +103,7 @@ import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { storeGuideText } from "@/routes/llms";
 import { isRecord, type HonoEnv, type MenuItem } from "@/types";
+import { recordInputRefusal, recordPostPurchaseRead } from "@/services/buyer-signals";
 
 /** The free tools that carry the disclosure block in their schema (lib/mcp-tools). */
 const FREE_DISCLOSURE_TOOLS: ReadonlySet<string> = new Set(["preflight_endpoint", "look_at_door", "check_before_you_pay"]);
@@ -771,6 +772,7 @@ export async function callFreeTool(
       return `No order by that id: ${orderId}. ${VOICE.orderNotFound}`;
     }
     deferBookkeeping(c, recordPorchVisit(c.env, "order:mcp", mcpSignals(c)));
+    deferBookkeeping(c, recordPostPurchaseRead(c.env, "check_order", order.created_at));
     return orderStatusBody(c.env.STORE_BASE_URL, order);
   }
   if (name === "verify_artifact") {
@@ -902,6 +904,8 @@ async function callPurchaseTool(
         mcpSignals(c),
       ).catch(() => undefined);
     }
+    // Buyer signals (trial): the avoidable 400, counted beside the refusal.
+    if (refusal.status === 400) deferBookkeeping(c, recordInputRefusal(c.env, item.id, refusal.body));
     return rpcRefusal(
       id,
       refusalRpcCode(refusal),
@@ -1727,6 +1731,7 @@ async function dispatchRpc(
         );
       }
       if (name === "check_purchase") {
+        deferBookkeeping(c, recordPostPurchaseRead(c.env, "purchase_status"));
         const status = await readPurchaseStatus(c.env, args.purchase_id, args.status_token);
         return rpcResult(id, { ...toolText(status.body) as Record<string, unknown>, ...(status.status !== 200 ? { isError: true } : {}) });
       }

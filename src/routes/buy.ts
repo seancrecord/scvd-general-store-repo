@@ -31,6 +31,7 @@ import { orderStatusBody } from "@/lib/order-status";
 import type { HonoEnv, MenuItem } from "@/types";
 import { createDoorChecks, noStore } from "@/routes/door-checks";
 import { createPaymentGate } from "@/lib/payment-gate";
+import { recordPostPurchaseRead } from "@/services/buyer-signals";
 
 /**
  * GET /api/buy/:item_id, x402-gated purchases (settled before minting).
@@ -159,6 +160,7 @@ buyRoutes.get("/api/order/:order_id", async (c) => {
     return c.json({ error: VOICE.orderNotFound }, 404);
   }
   // One derivation with the MCP door's check_order (lib/order-status).
+  deferBookkeeping(c, recordPostPurchaseRead(c.env, "order_poll", order.created_at));
   return c.json(orderStatusBody(c.env.STORE_BASE_URL, order));
 });
 

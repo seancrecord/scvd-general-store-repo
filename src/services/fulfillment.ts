@@ -81,6 +81,7 @@ import { takeStockUnit } from "@/services/stock";
 import { bestowedNameNote, drawerNote } from "@/store/copy";
 import { getMenuItem, VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
+import { recordSettleSignal } from "@/services/buyer-signals";
 
 /**
  * What happens after money settles, on any channel: mint the
@@ -723,6 +724,21 @@ export async function fulfillPurchase(
    * never a sale.
    */
   const disclosureBlock = await disclosureAfterSettle(env, input.disclosure, payment.payer, hooks?.defer).catch(() => ({}));
+  /**
+   * BUYER SIGNALS (services/buyer-signals, a trial): the rail by door
+   * and the purpose, observed at settle, house skipped, deferred.
+   */
+  {
+    const signal = recordSettleSignal(env, {
+      door: input.source === "mcp" ? "mcp" : "http",
+      network: payment.network,
+      item: item.id,
+      purpose: minted.certificate.purpose,
+      house: isHouseWallet(env, payment.payer ?? ""),
+    }).catch(() => undefined);
+    if (hooks?.defer) hooks.defer(signal);
+    else void signal;
+  }
   /**
    * THE RAIL HOLO'S PERK (the Paywall, 2026-09-12): a wallet holding
    * Base Rail earns the plan's 5% back as store credit, accrued after
