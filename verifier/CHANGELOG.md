@@ -4,6 +4,14 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## Unreleased — September 18, 2026
+
+`verify-source --subject <exact-endpoint-url>` selects complete exact-URL
+corpus-v1 observation rows only after signature verification. It reports signed
+claim pointers, observation/packaging dates and output omissions separately;
+unsigned history cannot enter this reading. Signature/binding exit meanings
+stay unchanged. Source only; consult installed `--help` before assuming support.
+
 ## 1.5.0 — source prepared 2026-09-17
 
 **Added.** `scvd-evidence verify-source` verifies an already-saved SCVD

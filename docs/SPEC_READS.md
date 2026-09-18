@@ -48,6 +48,28 @@ Defect vocabulary version 20 records the wording change; no assertion,
 falsifier or reading rule changed, and signed observations are not
 rewritten.
 
+## 2026-09-18 — Requested MPP directory and parser follow-ups
+
+Read [MPP directory PR #991](https://github.com/tempoxyz/mpp/pull/991),
+[x402scan #1209](https://github.com/Merit-Systems/x402scan/issues/1209), and
+[SCVD WebMCP PR #813](https://github.com/seancrecord/scvd-general-store-repo/pull/813).
+The first two are awaiting external review; WebMCP was still awaiting merge
+when the follow-up was posted. The branch's
+[dated purchase record](https://github.com/seancrecord/scvd-general-store-repo/blob/40d04f15/docs/MPP_LIVE_RESULT_2026-09-18.md)
+classifies the stock-client outside-wallet purchase as house-funded; it is not
+organic demand. That record was read, not independently re-purchased here.
+
+At 18:08 UTC the installed `@agentcash/discovery@1.7.5` reader again mapped a
+live unsigned `evm/charge` Base challenge to `tempo:8453` without decimals.
+Its captured x402 `resource.url` preserved the exact requested query string.
+An unpaid live MCP tools/call also returned `org.paymentauth/*` metadata with
+EVM charge terms. These are bounded readbacks, not full-shelf paid acceptance.
+[Recorded findings and posted comments](../research/takeoff-subject-evidence-2026-09-18/directory-followups.json).
+No newer parser release or external admission is claimed. At 19:57 UTC, after
+#813 merged, the deployed `/webmcp-purchase.js` returned 200, carried the native
+credential/challenge fields, and matched merged source byte for byte. The same
+directory comment was updated in place at 19:58 UTC. [Readback](../research/takeoff-subject-evidence-2026-09-18/webmcp-readback.json); no browser payment was exercised.
+
 ## 2026-09-18 — Gallery readback and registry intake boundaries
 
 [Antigravity plugins](https://antigravity.google/docs/plugins) reuse skills but

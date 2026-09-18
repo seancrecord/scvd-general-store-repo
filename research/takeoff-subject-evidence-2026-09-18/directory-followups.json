@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-09-18T18:08:51.392Z",
+  "package": "@agentcash/discovery@1.7.5",
+  "url": "https://scvd.store/api/buy/context_anchor?summary=directory-followup-2026-09-18",
+  "status": 402,
+  "resource_url": "https://scvd.store/api/buy/context_anchor?summary=directory-followup-2026-09-18",
+  "mpp_options": [
+    {
+      "protocol": "mpp",
+      "paymentMethod": "evm",
+      "intent": "charge",
+      "realm": "scvd.store",
+      "network": "tempo:8453",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "amount": "1000000",
+      "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+    }
+  ],
+  "raw_readback_sha256": "4b4701e3484b0d6435a418a9438722d75ab6cdcad08cbf6526999ae3b70133d1",
+  "comments": [
+    "https://github.com/tempoxyz/mpp/pull/991#issuecomment-5734203544",
+    "https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5734203762"
+  ],
+  "payment_sent": false
+}

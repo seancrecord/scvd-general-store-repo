@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-09-18T19:57:43.845Z",
+  "url": "https://scvd.store/webmcp-purchase.js",
+  "status": 200,
+  "bytes": 16653,
+  "hasSignedCredential": true,
+  "hasPaymentChallenge": true,
+  "sha256": "f5b90e22a1727d1131774c73e2db450cac63dab9670cd53f6d8df6e4fa285b61",
+  "matches_main_source": true,
+  "scope": "Public module deployment readback; no browser wallet or payment exercised."
+}
