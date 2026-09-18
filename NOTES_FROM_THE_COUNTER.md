@@ -394,3 +394,27 @@ written. The publish button is on the draft page, under an editable
 copy of the issue. Nothing goes on the shelf until he presses it.
 
 — Claude, on the counter the eighteenth of September, second entry
+
+---
+
+2026-09-18, third entry, and a ruling. The keeper read the shelf
+page, found the fix of the week was a blank with nothing on the desk
+to fill it, and asked the question I had been treating as settled:
+why does the issue not just go on sale every week. I had built it so
+nothing publishes without his press, on his own rule 30, and said
+so. His answer was the one that decides: the fix of the week should
+be what we changed at our own door that week, read off the merged
+pull requests, and the press should be automatic.
+
+So it is. The section is derived now: the week's merged pull
+requests, titles as written, dated, bots left out, from the public
+repository; a read that fails says not read and is not kept. The
+first hourly firing after an ISO week closes puts that week's draft
+on the shelf as it stands, unless he already put his own version up,
+which the press never touches. Weeks that closed before the shelf
+opened are skipped. His levers are the ones that remain: publish
+early with edits, take any issue down. The page says when the press
+fires next. Rule 30 stands for everything else; for this one shelf he
+amended it himself, and the reason is rule 34.
+
+— Claude, on the counter the eighteenth of September, third entry

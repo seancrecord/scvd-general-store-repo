@@ -578,6 +578,8 @@ export const KV_KEYS = {
    * category this store is listed in, taken once and never rewritten.
    */
   peerShelf: (week: string): string => `peer_shelf:${week}`,
+  /** The week's merged pull requests, read from GitHub for Open for Business. COUNTERS. */
+  weekChanges: (week: string): string => `week_changes:${week}`,
   peerShelfPrefix: "peer_shelf:",
   metric: (month: string, kind: string, rest: string): string =>
     `metric:${month}:${kind}:${rest}`,

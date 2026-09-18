@@ -7,7 +7,10 @@ import { computeObservatory } from "@/services/observatory";
 import { computePulse, type LatencyRoute } from "@/services/pulse";
 import { readMcpClients } from "@/services/mcp-clients";
 import { latestCorpusEntry } from "@/services/corpus-list";
-import { currentWeekKey } from "@/lib/kv-keys";
+import { currentWeekKey, previousWeekKey, weekKeyMonday } from "@/lib/kv-keys";
+import { findOpenForBusinessIssue, saveOpenForBusinessIssue, type OpenForBusinessIssue } from "@/services/open-for-business-store";
+import { renderWeekChangesMarkdown, weekBounds, weekChanges, type PullsFetcher, type WeekChanges } from "@/services/week-changes";
+import { OPEN_FOR_BUSINESS_OPENED } from "@/store/copy/open-for-business";
 import type { Env } from "@/types";
 
 /**
@@ -25,11 +28,20 @@ import type { Env } from "@/types";
  * door or names one that did not consent. It is the position line
  * pointed at sellers: how not to turn agents away silently.
  *
- * WHAT THIS IS NOT. Not a publication surface. The draft is read on
- * /admin/open-for-business by the keeper, who writes the fix of the week in
- * his own words, cuts what the week does not support, and presses
- * publish himself (rule 30). Rule 34 is the reason the draft exists:
- * the Sunday read is half an hour when the tables are already laid.
+ * HOW IT GOES ON THE SHELF (the keeper's ruling, 2026-09-18, later
+ * the same day). The draft is read on /admin/open-for-business, where
+ * the keeper can edit it and press publish himself. If he has not,
+ * the first hourly firing after an ISO week closes puts that week's
+ * draft on the shelf as it stands (publishClosedWeek below): rule 30
+ * amended by the keeper for this shelf, because rule 34 is the harder
+ * constraint and a week that never went up sells nothing. His levers
+ * are the ones that remain: publish early with his own edits, which
+ * the press never overwrites, and take any issue down.
+ *
+ * THE FIX OF THE WEEK is derived, by the same ruling: the week's
+ * merged pull requests, titles as written, dated (week-changes.ts).
+ * What we changed at our own door is the one list of Monday-sized
+ * changes the store can stand behind without a pen.
  *
  * WHAT IT READS. Only readers that already exist and already serve
  * the admin desk — buyer signals, the disclosure census, the decline
@@ -65,8 +77,10 @@ export interface OpenForBusinessDraft {
   drafted_at: string;
   number_of_the_week: { sentence: string; source: string } | null;
   sections: DraftSection[];
-  /** Left blank on purpose: the keeper's pen. */
+  /** Derived from the week's merged pull requests, as markdown; the keeper may replace it before publishing. */
   fix_of_the_week: string;
+  /** The rows behind fix_of_the_week, with the honest flag. */
+  changes: WeekChanges;
   /** Readers that failed, by name, so the page can say so. */
   unread: string[];
 }
@@ -300,10 +314,11 @@ function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnTyp
   return null;
 }
 
-export async function draftOpenForBusiness(env: Env, now: Date = new Date()): Promise<OpenForBusinessDraft> {
+export async function draftOpenForBusiness(env: Env, now: Date = new Date(), pulls?: PullsFetcher): Promise<OpenForBusinessDraft> {
   const month = metricsMonth(now);
+  const week = currentWeekKey(now);
   const unread: string[] = [];
-  const [signals, paid, declines, ledger, observatory, pulse, clients, corpus] = await Promise.all([
+  const [signals, paid, declines, ledger, observatory, pulse, clients, corpus, changes] = await Promise.all([
     attempt("buyer signals", unread, () => readBuyerSignals(env, month)),
     attempt("disclosure census", unread, () => readDisclosureCensus(env, "paid", month)),
     attempt("decline desk", unread, () => readDeclines(env)),
@@ -312,9 +327,12 @@ export async function draftOpenForBusiness(env: Env, now: Date = new Date()): Pr
     attempt("pulse", unread, () => computePulse(env)),
     attempt("mcp client census", unread, () => readMcpClients(env, month)),
     attempt("corpus", unread, () => latestCorpusEntry(env)),
+    attempt("the week's changes", unread, () => weekChanges(env, week, now, pulls)),
   ]);
+  const weekChangeRows: WeekChanges = changes ?? { week, read: false, read_at: now.toISOString(), rows: [], truncated: false };
+  if (changes && !changes.read) unread.push("the week's changes");
   return {
-    week: currentWeekKey(now),
+    week,
     month,
     drafted_at: now.toISOString(),
     number_of_the_week: numberOfTheWeek(signals, corpus),
@@ -325,9 +343,57 @@ export async function draftOpenForBusiness(env: Env, now: Date = new Date()): Pr
       latency(pulse, corpus),
       whoLooked(signals),
     ],
-    fix_of_the_week: "",
+    fix_of_the_week: renderWeekChangesMarkdown(weekChangeRows),
+    changes: weekChangeRows,
     unread,
   };
+}
+
+/** The last instant of an ISO week, UTC: the draft for a closed week is laid as of then. */
+export function weekCloseInstant(week: string): Date {
+  return new Date(weekBounds(week).end.getTime() - 1000);
+}
+
+/** The week the hourly press would put up next, and when: the current week, on its first firing after it closes. */
+export function nextAutomaticIssue(now: Date = new Date()): { week: string; at: string } {
+  const week = currentWeekKey(now);
+  const end = weekBounds(week).end;
+  return { week, at: new Date(end.getTime() + 30 * 60 * 1000).toISOString() };
+}
+
+export interface ClosedWeekPress {
+  week: string;
+  outcome: "published" | "already_on_shelf" | "before_opening" | "refused";
+  issue?: OpenForBusinessIssue;
+  refused?: string;
+}
+
+/**
+ * THE MONDAY PRESS. On each hourly firing, the week that has just
+ * closed goes on the shelf if it is not there already. Idempotent per
+ * week: a keeper-published issue, or one an earlier firing put up,
+ * is never overwritten. Weeks that closed before the shelf opened are
+ * skipped, so the first deploy does not sell a week nobody drafted.
+ */
+export async function publishClosedWeek(env: Env, now: Date = new Date(), pulls?: PullsFetcher): Promise<ClosedWeekPress> {
+  const week = previousWeekKey(currentWeekKey(now));
+  const closedOn = weekCloseInstant(week).toISOString().slice(0, 10);
+  if (closedOn < OPEN_FOR_BUSINESS_OPENED) return { week, outcome: "before_opening" };
+  const held = await findOpenForBusinessIssue(env, week);
+  if (held) return { week, outcome: "already_on_shelf", issue: held };
+  const draft = await draftOpenForBusiness(env, weekCloseInstant(week), pulls);
+  const result = await saveOpenForBusinessIssue(env, {
+    week,
+    markdown: renderOpenForBusinessMarkdown(draft),
+    today: now.toISOString().slice(0, 10),
+  });
+  if (result.refused) return { week, outcome: "refused", refused: result.refused };
+  return { week, outcome: "published", issue: result.saved! };
+}
+
+/** Monday of the week, for the page. */
+export function weekMondayIso(week: string): string {
+  return weekKeyMonday(week).toISOString().slice(0, 10);
 }
 
 /** The draft as Markdown the keeper can paste, edit and sign. */
@@ -367,7 +433,7 @@ export function renderOpenForBusinessMarkdown(draft: OpenForBusinessDraft): stri
   }
   lines.push("## The fix of the week");
   lines.push("");
-  lines.push(draft.fix_of_the_week || "_Keeper's pen. One change a seller can make on Monday, with our own before and after._");
+  lines.push(draft.fix_of_the_week || renderWeekChangesMarkdown(draft.changes));
   lines.push("");
   if (draft.unread.length > 0) {
     lines.push(`_Readers that did not answer this draft: ${draft.unread.join(", ")}._`);

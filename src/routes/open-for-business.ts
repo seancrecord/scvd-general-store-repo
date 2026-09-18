@@ -38,11 +38,13 @@ import type { HonoEnv } from "@/types";
  * — the PAYMENT-RESPONSE header is the purchase record, the same
  * shape as every other publication here.
  *
- * WHAT IT SELLS is what the keeper published from the desk after
- * reading the instruments' draft: the numbers with their
- * denominators, the sections with what they could not see, the fix
- * of the week in his own words. Nothing on this shelf is written by
- * a machine and nothing is published by one (rule 30).
+ * WHAT IT SELLS is the week's issue as the instruments drafted it:
+ * the numbers with their denominators, the sections with what they
+ * could not see, and the fix of the week as the list of what changed
+ * at our own door that week. The keeper can publish a week early
+ * with his own edits; left alone, the hourly press puts the closed
+ * week up on its own (his ruling, 2026-09-18), and he can take any
+ * issue down.
  */
 export const openForBusinessRoutes = new Hono<HonoEnv>();
 

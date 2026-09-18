@@ -579,7 +579,9 @@ Open for Business, the weekly issue for sellers, at ${base}/open-for-business
 ${OPEN_FOR_BUSINESS_FOR_MONEY} ${OPEN_FOR_BUSINESS_FREE_FIRST} Each
 issue is \`GET ${base}/open-for-business/{week}\`, one 402, markdown
 back, no certificate; the PAYMENT-RESPONSE header is the receipt.
-Drafted by the instruments, published by the keeper by hand.
+Drafted by the instruments; a closed week goes on the shelf on its
+own, and the fix of the week is the list of what changed at our own
+door that week, from the merged pull requests.
 
 The Keeper's Almanac, his journal, serialized. Free index at
 ${base}/almanac; each dated page is $0.01 over x402, newest first.
