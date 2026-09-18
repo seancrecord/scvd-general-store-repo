@@ -83,6 +83,13 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent",
+    registry: "Global A2A Registry — community agent directory",
+    protocols: ["a2a"],
+    confirmed: "2026-09-17",
+    what_it_proves: "That this community registry lists SCVD Evidence Agent as unclaimed, with its canonical Agent Card, endpoint and three free evidence skills. We submitted the public URL and opened the resulting record. Ownership verification remains outstanding. Its summary renders Text defaults despite retaining application/json in the card, so listing presence does not establish parser accuracy. Not an endorsement and not an audit.",
+  },
+  {
     url: "https://github.com/sing1ee/a2a-directory#readme",
     registry: "A2A Directory — community source catalog",
     protocols: ["a2a", "x402"],

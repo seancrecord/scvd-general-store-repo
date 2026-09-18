@@ -1122,16 +1122,22 @@ what you ruled and what is still yours to look at.
   a model tool call and gallery listing remain unverified.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
-  A2A Directory already lists SCVD; two new community API submissions failed
-  (503 and 404), with no new listing confirmed. MPP is now live for Context
+  A2A Directory already lists SCVD. The earlier community API attempts returned
+  503 and 404; the Global A2A Registry web form subsequently registered
+  [SCVD Evidence Agent](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent).
+  The public listing is confirmed and unclaimed. Claiming and domain/account
+  verification remain a keeper press; do not resubmit. MPP is now live for Context
   Anchor: the 21:13 UTC
   read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
-  and OpenAPI capabilities. Other products are upcoming. Official MPP
+  and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
+  deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
   [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
   MPPScan still needs discovery qualification; the checker’s Base-network
   mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
-  The directory-facing
-  `x-payment-info.protocols` currently lists only x402.
+  The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
+  MPP descriptor alongside x402; the compiled local directory-reader check passes.
+  Deployment readback is tracked with that repair; external parser qualification
+  and admission remain separate.
   [Live receipt](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
   UCP merchant intake remains separate from PS9's
   inspection experiment. OASF clarification: endpoint only, no Cisco/Anro submission.

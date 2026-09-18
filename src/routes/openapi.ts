@@ -1,3 +1,4 @@
+import { getAddress } from "viem";
 import { purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
@@ -1234,7 +1235,7 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     },
     mpp_core: {
       type: "object",
-      description: `The additive ${MPP_CORE_BATTERY} observable core reading under ${MPP_CORE_SPEC.draft}. Separates failed checks from unmeasured requirements; never changes the x402 verdict or historical MPP battery. The store's till does not speak MPP.`,
+      description: `The additive ${MPP_CORE_BATTERY} observable core reading under ${MPP_CORE_SPEC.draft}. Separates failed checks from unmeasured requirements; never changes the x402 verdict or historical MPP battery.`,
       properties: {
         battery: { type: "string", enum: [MPP_CORE_BATTERY] },
         spec: { type: "object" }, state: { type: "string" }, observed_at: { type: "string", format: "date-time" },
@@ -5522,10 +5523,18 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
       "passport_refused: the supplied endpoint lacks qualifying passport evidence. Nothing charged. Read the response's reason before choosing a target or requesting a free preflight.",
     );
   }
-  // The MPP draft and existing AgentCash schema use incompatible shapes for
-  // x-payment-info. Preserve that contract and name this additive one honestly.
-  operation["x-scvd-payment-capabilities"] = purchaseCapabilities(item, env);
+  const capabilities = purchaseCapabilities(item, env);
+  operation["x-scvd-payment-capabilities"] = capabilities;
   const paymentInfo = operation["x-payment-info"] as OpenApiObject;
+  // Directory readers use AgentCash's protocol objects, not our capability
+  // extension. Derive the additive MPP entry from the same enabled offer.
+  const native = capabilities.find(row => row.protocol === "mpp");
+  if (native && "payment_method" in native) {
+    paymentInfo["protocols"] = [
+      ...(paymentInfo["protocols"] as OpenApiObject[]),
+      { mpp: { method: native.payment_method, intent: native.intent, currency: getAddress(native.asset) } },
+    ];
+  }
   paymentInfo["input"] = {
     location: "query",
     method: "GET",
