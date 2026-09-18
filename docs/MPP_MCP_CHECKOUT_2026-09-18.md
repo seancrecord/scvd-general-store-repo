@@ -75,6 +75,32 @@ the recovery lane doing its job, not a second sale.
 - `scripts/cold-local.mjs`: the doors script stays under its megabyte with
   the SDK-free key names.
 
+## Found on the live door the same day: the x402 resource URL
+
+CV, trying a real purchase of Context Anchor with the stock `mppx@0.10.1`
+client and a funded wallet, hit
+`x402 payment-required resource does not match response URL` before any
+signature was attempted. The mechanism, read in the SDK: its http transport
+collects every protocol's offer on a 402, and its x402 reader compares the
+envelope's `resource.url` to `response.url` with strict equality and throws
+on a difference, before the native `WWW-Authenticate` challenge is signed.
+The store's buy routes declared the bare door as their resource, while a door
+that requires a query (`?summary=`, `?host=`) is only ever bought with one,
+so the stock client could not buy those doors at all. Not a facilitator
+matter; the store's own envelope.
+
+The buy and commission routes no longer declare a static resource, so the
+x402 server names the URL that was actually asked, query and all; a bare
+knock still names the bare door, so indexers read what they always read, and
+the signed offers, derived from the envelope, name the asked URL too. The
+fixture harness had never seen the defect because a Response built by
+`app.fetch` carries no url, so the SDK skipped the comparison;
+`test/mpp-whole-store.spec.ts` now exposes the response URL the way a real
+fetch does, failed on every door that takes a query, and passes.
+
+The September 17 house run was made through the same SDK against the same
+door with a `?summary=`; why it passed is not established here.
+
 ## Not in this release
 
 WebMCP native checkout, the packages, other networks and assets, native tips,
