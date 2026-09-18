@@ -3,6 +3,7 @@ import { readPurchaseStatus } from "@/services/purchase-intent";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { Hono } from "hono";
 import { usableIdempotencyKey } from "@/lib/idempotency";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import {
   SettlementDeclined,
@@ -121,6 +122,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   try {
     return c.json(await fulfillPurchase(c.env, item, watched, input,
       supportsArtifactRecovery(item) ? { path: c.req.path, digest: await httpArtifactDigest(c.req.url) } : undefined,
+      { defer: (work) => deferBookkeeping(c, work) },
     ));
   } catch (error) {
     if (!settled && error instanceof ReceiptEvidenceUnavailable) return c.json(error.body(), 503);

@@ -31,14 +31,19 @@ export async function disclosureAfterSettle(
   env: Env,
   disclosure: Disclosure | undefined,
   payer: string | undefined,
+  defer?: (work: Promise<unknown>) => void,
 ): Promise<Record<string, unknown>> {
   const told = disclosure ?? {};
   let returning: ReturningVerdict | undefined;
   if (told.prior_cert_id) {
+    // The one awaited read: it decides a word in the answer.
     const prior = await getCertificate(env, told.prior_cert_id).catch(() => null);
     returning = returningVerdict(prior ? (prior.certificate.payer ?? "") : null, payer, canonicalAddress);
   }
-  await recordDisclosure(env, "paid", told, returning);
+  // The count goes beside the answer, never in front of it (rule 50).
+  const count = recordDisclosure(env, "paid", told, returning).catch(() => undefined);
+  if (defer) defer(count);
+  else void count;
   if (!disclosedAnything(told)) return {};
   return {
     disclosure: {

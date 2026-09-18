@@ -1186,7 +1186,7 @@ async function callPurchaseTool(
         if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
         response = saved;
       } else {
-        response = await fulfillPurchase(c.env, item, { ...outcome.pending, recovered: true }, input);
+        response = await fulfillPurchase(c.env, item, { ...outcome.pending, recovered: true }, input, undefined, { defer: (work) => deferBookkeeping(c, work) });
         if (!await stub.complete(claim.token, JSON.stringify(response))) {
           throw new Error("Paid recovery claim is not writable");
         }
@@ -1194,6 +1194,7 @@ async function callPurchaseTool(
     } else {
       response = await fulfillPurchase(c.env, item, outcome.recovered ? { ...outcome.pending, recovered: true } : outcome.pending, input,
         supportsArtifactRecovery(item) ? { digest: inputDigest, path: `/api/buy/${item.id}` } : undefined,
+        { defer: (work) => deferBookkeeping(c, work) },
       );
     }
     const settled = outcome.settledSoFar();

@@ -212,12 +212,25 @@ async function bundleEvidenceHash(
  * twice on Solana. Under this ordering the same dropped read costs the
  * buyer nothing at all: no settle call was ever made.
  */
+/**
+ * WHAT A DOOR LENDS FULFILLMENT THAT A RECORD CANNOT CARRY (rule 50).
+ * `defer` is the door's waitUntil: bookkeeping handed to it runs beside
+ * the answer, never in front of it. It is a function, so it never
+ * rides `input` (checkpoints serialize that) and never a checkpointed
+ * replay, where the absence simply means the write goes unguaranteed,
+ * which is the honest trade for a counter.
+ */
+export interface FulfillmentHooks {
+  defer?: (work: Promise<unknown>) => void;
+}
+
 export async function fulfillPurchase(
   env: Env,
   item: MenuItem,
   pending: PendingPayment,
   input: FulfillmentInput,
   recovery?: { digest: string; path: string; purchasedAt?: string; purchaseId?: string },
+  hooks?: FulfillmentHooks,
 ): Promise<Record<string, unknown>> {
   const retainHosted = async <T>(work: () => Promise<T>): Promise<T> => {
     try { return await work(); }
@@ -701,13 +714,15 @@ export async function fulfillPurchase(
     else storeCredit = await checkpoint.read<typeof storeCredit>("credit");
   }
   /**
-   * WHAT THE BUYER TOLD US, answered once the payer is known: the
-   * prior-certificate claim is checked against this payment's payer,
-   * the census takes its count, and the response carries a small
-   * block naming what was recorded and what was not. Fail-soft like
-   * the credit above: a KV hiccup here loses a count, never a sale.
+   * WHAT THE BUYER TOLD US, answered once the payer is known. The one
+   * read that changes the answer — a prior certificate's payer against
+   * this payment's — is awaited, and only when the buyer named one.
+   * The census write is handed to the door's `defer` and runs beside
+   * the answer (rule 50); a silent buyer costs no KV round trip at all.
+   * Fail-soft like the credit above: a hiccup here loses a count,
+   * never a sale.
    */
-  const disclosureBlock = await disclosureAfterSettle(env, input.disclosure, payment.payer).catch(() => ({}));
+  const disclosureBlock = await disclosureAfterSettle(env, input.disclosure, payment.payer, hooks?.defer).catch(() => ({}));
   /**
    * THE RAIL HOLO'S PERK (the Paywall, 2026-09-12): a wallet holding
    * Base Rail earns the plan's 5% back as store credit, accrued after
