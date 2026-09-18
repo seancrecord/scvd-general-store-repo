@@ -11,11 +11,14 @@ none of those live facts. MPP observation, census and passports remain independe
 
 ## Implemented boundary
 
-Only HTTP GET `/api/buy/context_anchor`, using the existing minimum price,
-Base and native USDC. The offer derives its amount, asset, recipient,
-authorization domain and expiry window from the existing catalog/payment
-configuration. There is no second product or price table. Native tips,
-other products, MCP, other networks and other assets are not enabled here.
+As piloted: only HTTP GET `/api/buy/context_anchor`, using the existing
+minimum price, Base and native USDC. Since the
+[whole-store release](MPP_WHOLE_STORE_2026-09-18.md) every HTTP door on the
+shelf carries the same offer at its own minimum; the boundaries below on
+transport, network, asset and tip are unchanged. The offer derives its
+amount, asset, recipient, authorization domain and expiry window from the
+existing catalog/payment configuration. There is no second price table.
+Native tips, MCP, other networks and other assets are not enabled here.
 
 When explicitly enabled, an unsigned request gets the existing x402 offer
 and a genuine MPP `WWW-Authenticate` challenge. The dedicated

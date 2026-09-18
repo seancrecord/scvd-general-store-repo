@@ -1,8 +1,7 @@
 import { env } from "cloudflare:test";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { app } from "@/index";
-import { HANDED_HEADER, doors, doorsReady } from "@/lib/doors-app";
-import { MPP_CHECKOUT_PATH } from "@/lib/mpp-checkout-capability";
+import { HANDED_HEADER, doors, doorsDoorChecks, doorsReady } from "@/lib/doors-app";
 import { edgeMiddleware } from "@/lib/edge";
 import { doorChecks } from "@/routes/door-checks";
 import { storeDoorChecks } from "@/routes/buy";
@@ -43,6 +42,18 @@ import { installFacilitatorMock } from "./helpers/facilitator-mock";
  */
 
 const testEnv = env as unknown as Env;
+/**
+ * THE KEY ON BOTH SIDES (whole store, 2026-09-18). Every door is a
+ * native door now, and a native 402 carries a challenge whose id is an
+ * HMAC under the challenge key. The doors mint their own from the SDK's
+ * core (lib/mpp-challenge-mint.ts), the store from the SDK's server;
+ * under one clock and one key the two headers must be the same bytes,
+ * which is the only proof that a credential a buyer signs against the
+ * doors' challenge is one the store will accept.
+ */
+/** The SDK refuses a key under 32 bytes; a short one 500s every native door. */
+const PARITY_KEY = "parity-challenge-key-0123456789abcdef";
+const storeEnv: Env = { ...testEnv, MPP_CHALLENGE_KEY: PARITY_KEY };
 const FROZEN = new Date("2026-09-05T18:00:00.000Z");
 
 /** Headers the isolate's own clock writes; everything else must match. */
@@ -80,7 +91,7 @@ function storeBinding(): { binding: Fetcher; handed: Handed } {
       handed.calls.push(request.clone());
       if (sentinel) return sentinel();
       const { ctx: executionCtx, settle } = ctx();
-      const answer = await app.fetch(request, testEnv, executionCtx);
+      const answer = await app.fetch(request, storeEnv, executionCtx);
       await settle();
       return answer;
     },
@@ -134,7 +145,7 @@ beforeAll(async () => {
   vi.setSystemTime(FROZEN);
   const bound = storeBinding();
   handed = bound.handed;
-  doorsEnv = { ...testEnv, STORE: bound.binding };
+  doorsEnv = { ...storeEnv, STORE: bound.binding };
 });
 
 afterAll(() => {
@@ -155,7 +166,7 @@ const JSON_ACCEPT = { Accept: "application/json" };
  */
 async function bothAnswerAlike(path: string, init: RequestInit = {}, allow: { handOver?: "passed" } = {}) {
   vi.setSystemTime(FROZEN);
-  const fromStore = await knock(app, testEnv, `${BASE}${path}`, init);
+  const fromStore = await knock(app, storeEnv, `${BASE}${path}`, init);
   vi.setSystemTime(FROZEN);
   const before = handed.calls.length;
   const { ctx: executionCtx, settle } = ctx();
@@ -190,19 +201,15 @@ describe("byte parity: the unpaid knock", () => {
   it("every paid door answers the same 402, header for header, byte for byte", async () => {
     let challenged = 0;
     for (const item of MENU_ITEMS) {
-      // THE ONE DOOR THE DOORS DO NOT ANSWER (the scoped MPP activation,
-      // 2026-09-17). With the pilot flag on, the native product's unsigned
-      // knock is handed to the store, where the challenge key and the
-      // durable bindings live (lib/doors-app.ts); the doors carry no copy
-      // of the key. The answer must still be the store's, byte for byte,
-      // and marked as handed. Every other door is the doors' own answer.
+      // EVERY DOOR IS A NATIVE DOOR (whole store, 2026-09-18), and with
+      // the key here the doors answer every one of them themselves: the
+      // x402 offer and the native challenge, both the store's bytes.
       const path = `/api/buy/${item.id}`;
-      const handedNative = doorsEnv.MPP_CHECKOUT_ENABLED === "true" && path === MPP_CHECKOUT_PATH;
-      const answer = await bothAnswerAlike(path, { headers: JSON_ACCEPT },
-        handedNative ? { handOver: "passed" } : {});
+      const answer = await bothAnswerAlike(path, { headers: JSON_ACCEPT }, {});
       if (answer.status === 402) {
         challenged += 1;
         expect(answer.headers["payment-required"], item.id).toBeTruthy();
+        expect(answer.headers["www-authenticate"], `${item.id}: the native challenge`).toMatch(/^Payment /);
         expect(answer.headers["x-robots-tag"], item.id).toBe("noindex");
       }
     }
@@ -210,6 +217,22 @@ describe("byte parity: the unpaid knock", () => {
     // something other than 402; the walk still compares them. But a
     // walk that challenged nothing would be comparing refusals only.
     expect(challenged).toBeGreaterThan(0);
+  });
+
+  it("without the challenge key, a native door is handed to the store, which has it", async () => {
+    // The doors as they stand until the keeper's press lands the key:
+    // no challenge to mint, so the store answers, and the answer is
+    // still the store's bytes, marked as handed.
+    const keyless = { ...doorsEnv, MPP_CHALLENGE_KEY: undefined } as Env;
+    const path = `/api/buy/${MENU_ITEMS[0]!.id}`;
+    const before = handed.calls.length;
+    const { ctx: executionCtx, settle } = ctx();
+    const raw = await doors.fetch(new Request(`${BASE}${path}`, { headers: JSON_ACCEPT }), keyless, executionCtx);
+    await settle();
+    expect(raw.status).toBe(402);
+    expect(raw.headers.get(HANDED_HEADER)).toBe("passed");
+    expect(raw.headers.get("WWW-Authenticate")).toMatch(/^Payment /);
+    expect(handed.calls.length).toBe(before + 1);
   });
 
   it("HEAD, a trailing slash, a trailing dot and a browser's Accept", async () => {
@@ -240,12 +263,13 @@ describe("byte parity: the unpaid knock", () => {
   });
 
   it("a CORS preflight, a POST with nothing to pay, and plain http", async () => {
-    // No CORS surface on a paid door: the preflight passes every check
-    // and the store's router answers it. The doors hand it over.
+    // A native door has a CORS surface (the reviewed browser checkout,
+    // lib/mpp-checkout-capability.ts), and both Workers answer the
+    // preflight themselves, the same bytes: the doors hold the key here.
     await bothAnswerAlike(
       "/api/buy/hello",
       { method: "OPTIONS", headers: { Origin: "https://example.test", "Access-Control-Request-Method": "GET" } },
-      { handOver: "passed" },
+      {},
     );
     // A POST with nothing to pay passes the gate the same way and meets
     // the store's method answer (405 with Allow); handed over, as HEAD is.
@@ -415,7 +439,12 @@ describe("the same functions in the same order", () => {
     const storeBeforeDelivery = fromStore.slice(0, -1);
     // doors: [handOverFirst, ...edge, ...checks, handOverPassed, handOverElsewhere]
     expect(fromDoors.slice(1, storeBeforeDelivery.length)).toEqual(storeBeforeDelivery.slice(0, -1));
-    expect(fromDoors[storeBeforeDelivery.length]).toBe(doorChecks.at(-1));
+    // Each Worker's gate is its own: the store's loads settlement, the
+    // doors' mints the challenge and hands a credential over. Neither is
+    // the bare gate, and the doors never hold the store's.
+    expect(fromDoors[storeBeforeDelivery.length]).toBe(doorsDoorChecks.at(-1));
+    expect(fromDoors[storeBeforeDelivery.length]).not.toBe(doorChecks.at(-1));
+    expect(fromDoors[storeBeforeDelivery.length]).not.toBe(storeDoorChecks.at(-1));
     expect(storeBeforeDelivery.at(-1)).toBe(storeDoorChecks.at(-1));
     expect(fromDoors.length).toBe(storeBeforeDelivery.length + 3);
     // and the delivery handler itself is not in the doors at all

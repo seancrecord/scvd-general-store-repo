@@ -2,6 +2,7 @@ import { purchaseIntentStore, purchaseProtocol, type PurchaseIntent } from "@/se
 import { settlementAssetMetadata } from "@/lib/payments";
 import { isRecord, type Env } from "@/types";
 import { mppSaleEvidence, type MppHouseCorrection } from "@/services/mpp-sales";
+import { LEGACY_NATIVE_ITEM } from "@/lib/mpp-checkout-capability";
 
 export const validPurchaseId = (id: string) => /^[a-f0-9]{64}$/.test(id);
 type LedgerState = "matched" | "missing" | "mismatch" | "unavailable" | "not_inspected";
@@ -27,7 +28,7 @@ export interface PurchaseInspection {
   house_correction?: MppHouseCorrection;
   accounting_recorded: boolean | null;
   ledger: { state: LedgerState; month?: string; mismatched_fields?: string[];
-    sale?: { purchase_id: string; month: string; payer: string; transaction: string; amount_atomic: string; house: boolean } };
+    sale?: { purchase_id: string; month: string; payer: string; transaction: string; amount_atomic: string; house: boolean; item?: string } };
   accounting_check: "confirmed" | "acknowledgement_pending" | "missing" | "inconsistent" | "awaiting_settlement_evidence" | "not_due" | "unavailable" | "not_inspected";
 }
 export interface InspectionResult {
@@ -86,14 +87,18 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
         : record.state === "unknown" ? "awaiting_settlement_evidence" : "not_due";
     } else {
       const sale: unknown = JSON.parse(raw);
-      if (!isRecord(sale) || ![sale.id, sale.month, sale.payer, sale.transaction, sale.amount].every(value => typeof value === "string") || typeof sale.house !== "boolean") throw new Error("Invalid ledger evidence");
+      if (!isRecord(sale) || ![sale.id, sale.month, sale.payer, sale.transaction, sale.amount].every(value => typeof value === "string") ||
+        typeof sale.house !== "boolean" || (sale.item !== undefined && typeof sale.item !== "string")) throw new Error("Invalid ledger evidence");
       const expected = record.state === "settled" ? mppSaleEvidence(record) :
-        { id, month, payer: record.payer, transaction: record.payment?.transaction, amount: record.terms.amount, house: record.mpp!.house };
-      const mismatched_fields = Object.entries(expected).filter(([key, value]) => sale[key] !== value).map(([key]) => key);
+        { id, month, payer: record.payer, transaction: record.payment?.transaction, amount: record.terms.amount, house: record.mpp!.house, item: record.item?.id };
+      // A row booked during the one-product pilot names no item; it is that product, not a mismatch.
+      const mismatched_fields = Object.entries(expected).filter(([key, value]) =>
+        !(key === "item" && sale.item === undefined && value === LEGACY_NATIVE_ITEM) && sale[key] !== value).map(([key]) => key);
       if (record.state !== "settled") mismatched_fields.push("payment_state");
       purchase.ledger = { state: mismatched_fields.length ? "mismatch" : "matched", month, mismatched_fields,
         sale: { purchase_id: String(sale.id), month: String(sale.month), payer: String(sale.payer),
-          transaction: String(sale.transaction), amount_atomic: String(sale.amount), house: sale.house } };
+          transaction: String(sale.transaction), amount_atomic: String(sale.amount), house: sale.house,
+          ...(sale.item !== undefined ? { item: String(sale.item) } : {}) } };
       purchase.accounting_check = mismatched_fields.length ? "inconsistent" : purchase.accounting_recorded ? "confirmed" : "acknowledgement_pending";
     }
     const correctionRaw = await ledger.readMppHouseCorrection(id);

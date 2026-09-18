@@ -1,4 +1,4 @@
-import { certificateProtocol } from "@/services/certificate-accounting";
+import { accountingContextFor, certificateProtocol } from "@/services/certificate-accounting";
 import { canonicalAddress } from "@/lib/addresses";
 import { houseWallets } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -203,12 +203,14 @@ export async function backfillPayerSettlesFromCertificates(
   };
   // Per wallet, the certificates that carry a settle, oldest first.
   const certsByWallet = new Map<string, Array<{ cert: CertificateRecord["certificate"]; key: string; wasRecorded: boolean }>>();
+  const context = await accountingContextFor(env, [...certs.values()].map((record) => record?.certificate),
+    (payer, transaction) => existing.has(KV_KEYS.payerSettle(payer, transaction)));
   for (const record of certs.values()) {
     const cert = record?.certificate;
     const payer = cert?.payer;
     const transaction = cert?.settlement_tx;
     if (!cert || !payer || !transaction) continue;
-    const protocol = await certificateProtocol(env, cert);
+    const protocol = await certificateProtocol(env, cert, context);
     if (protocol !== "x402") {
       result.skipped_certificates.push({ cert_id: cert.cert_id, reason: protocol });
       // A previous legacy repair may already have written this key. Do not
