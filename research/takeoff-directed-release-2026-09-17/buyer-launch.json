@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-09-18T00:21:32.697618+00:00",
+  "qualification_sha256": "813fb0e2724385502bf8bac30bdd03b7f2a4692a52bdffd508cb9626acba3db4",
+  "planned_cells": [
+    {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    }
+  ],
+  "gate": "Both one-attempt hosts passed; launch four cells once with no mid-run feedback or replacement attempts."
+}

@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-09-18T00:19:29.766875+00:00",
+  "source_sha256": "1ffca7516d9a9a813524420bfd98159b5e5e1dba478c06224c3b14c3a3ca44d5",
+  "source": "private/run-recipient.mjs",
+  "derived_from": "../takeoff-native-isolation-2026-09-17/REPORT.md",
+  "budgets": {
+    "wall_ms": 240000,
+    "tool_calls": 20,
+    "output_bytes": 4000000,
+    "output_tokens": 2500
+  },
+  "network": "disabled in native adapter",
+  "supplied": "Only eligible buyer-captured original/key pair, verbatim final report and two disclosed public verifier modules; local package.json declares module type. No later acquisition repairs or SCVD-specific private context.",
+  "recipient_limit": "One per eligible original/key pair. A recipient success does not replace a missing buyer-side verification or repair buyer interpretation."
+}
