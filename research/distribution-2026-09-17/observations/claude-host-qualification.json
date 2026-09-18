@@ -1,0 +1,21 @@
+{
+  "date_utc": "2026-09-17",
+  "plugin_version": "0.2.4",
+  "source": "local codex/distribution-followthrough worktree; uncommitted at observation",
+  "host": "Claude Code CLI",
+  "scope": "Isolated working directory, explicit plugin-dir, restricted settings and read/skill/free-preflight allowlist; no payment authorization",
+  "skills": [
+    "scvd-general-store:scvd-general-store",
+    "scvd-general-store:scvd-x402-verification"
+  ],
+  "skill_invocation": "succeeded",
+  "plugin_scoped_mcp_discovered": false,
+  "existing_account_scvd_connector_discovered": true,
+  "existing_connector_preflight": "permission denied by allowlist; no result obtained",
+  "qualification": "incomplete",
+  "limitations": [
+    "The existing account connector is not proof that the package MCP server loaded.",
+    "No Cowork test or marketplace admission.",
+    "Raw host output omitted because it includes unrelated account connector metadata."
+  ]
+}

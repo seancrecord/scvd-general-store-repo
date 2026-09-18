@@ -62,8 +62,9 @@ free historical evidence at `https://scvd.store/corpus/host/{host}.json`.
 Follow its cited signed snapshot, confirm the exact endpoint and observation
 date inside the signed data, and verify it locally with `scvd-evidence`.
 The corpus index is at `https://scvd.store/corpus/index.json`. A historical
-observation is not a fresh check; a missing row is a coverage gap. The
-verifier's corpus instructions below cover export and explicit size limits.
+observation is not a fresh check; a missing row is a coverage gap. Follow the
+verifier's [large corpus snapshot instructions](https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#large-corpus-snapshots-130)
+for export and explicit size limits.
 An unsigned merchant offer does not rule out a signed SCVD observation.
 One `never_met` lookup does not substitute for checking the corpus.
 
@@ -94,6 +95,17 @@ test. A sample for another endpoint does not prove anything about this one.
 issuer again is not offline verification. Use the published `x402-verify`
 package's `scvd-evidence` command locally; installation and format details:
 https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence
+
+For an original response already saved locally, check whether the installed
+`scvd-evidence --help` lists `verify-source` (added in 1.5.0; source and
+registry versions can differ). If available, use
+`scvd-evidence verify-source original.json --public-key TRUSTED_PUBLIC_KEY_HEX`
+with the documented size allowance and any bound `--evidence` file. It checks
+the original offline without writing duplicate export files or printing the
+whole signed payload. Otherwise use the existing export/verify path below.
+Keep original responses, independent key observations and source URLs for a
+recipient; a short verification result is not a replacement for those files.
+Keep installed packages and their caches outside that evidence directory.
 
 Retain the purchase certificate, its exact `signed_payload`, signature,
 and the purchased report. Establish the issuer public key independently

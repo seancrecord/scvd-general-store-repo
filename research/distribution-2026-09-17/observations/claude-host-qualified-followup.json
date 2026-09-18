@@ -1,0 +1,61 @@
+{
+  "host": "Claude Code",
+  "host_version": "2.1.274",
+  "plugin_version": "0.2.4",
+  "package_commit": "f5ee6942bdc4b3ebab5965f1c2af0ca041f0faaa",
+  "mode": "developer plugin directory, session-only account MCP connectors disabled to avoid endpoint deduplication",
+  "global_configuration_changed": false,
+  "paid_actions": false,
+  "tool_calls": [
+    {
+      "name": "mcp__plugin_scvd-general-store_scvd-store__preflight_endpoint",
+      "input": {
+        "url": "https://example.com/"
+      }
+    }
+  ],
+  "qualification_limits": [
+    "Not a marketplace install or approval",
+    "Not a Cowork test",
+    "One free negative-control probe; other tools and payment paths not exercised"
+  ],
+  "observed_result": {
+    "version": "v1",
+    "verdict": "not_ready",
+    "reached_level": "L1",
+    "checks_vector": [
+      {
+        "name": "status-402",
+        "state": "fail",
+        "detail": "answered 200 instead of 402 to GET. A 200 here is the 'listed but functionally absent' shape: directories will list this URL as an x402 endpoint and every buyer probing it finds no payment challenge at all."
+      },
+      {
+        "name": "payment-required-header",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "x402-version",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "accepts",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      }
+    ],
+    "advisories": [],
+    "protocols_spoken": []
+  },
+  "completed_without_error": true,
+  "permission_denials": [],
+  "date_utc": "2026-09-17",
+  "skills": [
+    "scvd-general-store:scvd-general-store",
+    "scvd-general-store:scvd-x402-verification"
+  ]
+}

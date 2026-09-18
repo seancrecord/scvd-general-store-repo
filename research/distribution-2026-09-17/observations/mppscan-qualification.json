@@ -1,0 +1,90 @@
+{
+  "observed_at": "2026-09-17T21:22:27.252Z",
+  "package": "@agentcash/discovery@1.7.5",
+  "scope": "Unsigned schema reads and explicit unpaid endpoint probes; no payment or registration.",
+  "url": "https://scvd.store/api/buy/context_anchor",
+  "openapi_check": {
+    "found": true,
+    "warnings": [],
+    "method": "GET",
+    "authMode": "paid",
+    "estimatedPrice": "1 USD",
+    "protocols": [
+      "x402"
+    ],
+    "required_query_parameters": [
+      "summary"
+    ],
+    "input_schema_present": true,
+    "output_schema_present": true
+  },
+  "runtime_mpp_option": {
+    "protocol": "mpp",
+    "paymentMethod": "evm",
+    "intent": "charge",
+    "realm": "scvd.store",
+    "network": "tempo:8453",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "amount": "1000000",
+    "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+  },
+  "observed_request": {
+    "method": "evm",
+    "intent": "charge",
+    "methodDetails": {
+      "chainId": 8453,
+      "decimals": 6,
+      "credentialTypes": [
+        "authorization"
+      ]
+    }
+  },
+  "defect": "The parser reports tempo:8453 for an evm/charge challenge on Base and omits methodDetails.decimals. An isolated mocked-response reproduction gives the same result.",
+  "report": "https://github.com/Merit-Systems/x402scan/issues/1209",
+  "registration": "Not submitted; MPP qualification blocked by parser mismatch and missing MPP OpenAPI descriptor.",
+  "source_hashes": {
+    "context-anchor-check.json": "33a72caca292c7abc229782d580024c8405d41d3c827dc34152bf46e3dc8e9f8",
+    "context-anchor-probe.json": "67362f096afc6c77d00be938f7b8b96f2cf1c7a212f028093450d6b9579507ae",
+    "network-reproduction.json": "edd60a7929615a2e79612bced3e3d241ebebe5ce15389a79f0ba56a3ce57bc5c",
+    "origin-discovery.json": "a1b8a430a45ef3935104e71ff39a1606b5a6542b456ec6e9219719d8ea1579a8"
+  },
+  "origin_discovery": {
+    "ok": true,
+    "resource_count": 194,
+    "warnings": [
+      {
+        "code": "L2_ROUTE_COUNT_HIGH",
+        "severity": "warn",
+        "message": "High route count (194) may exceed agent token budgets for zero-hop injection.",
+        "hint": "Consider grouping routes or reducing the advertised surface."
+      },
+      {
+        "code": "L2_AUTH_MODE_MISSING",
+        "severity": "warn",
+        "message": "Route GET /api/purchase-status/{purchase_id} is missing an auth mode declaration.",
+        "hint": "Reference a security scheme, add x-payment-info, or set `security: []` on the operation to mark it as explicitly public.",
+        "path": "/api/purchase-status/{purchase_id}"
+      },
+      {
+        "code": "L3_AUTH_MODE_MISSING",
+        "severity": "warn",
+        "message": "Endpoint has no auth mode in the spec.",
+        "hint": "Reference a security scheme, add x-payment-info, or set `security: []` on the operation to mark it as explicitly public."
+      }
+    ],
+    "context_anchor": {
+      "resourceKey": "https://scvd.store GET /api/buy/context_anchor",
+      "origin": "https://scvd.store",
+      "method": "GET",
+      "path": "/api/buy/context_anchor",
+      "summary": "Store a memory I can read back next session",
+      "source": "openapi",
+      "trustTier": "origin_hosted",
+      "authHint": "paid",
+      "priceHint": "1 USD",
+      "protocols": [
+        "x402"
+      ]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+
+> scvd-general-store@0.1.0 build:check
+> wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors && node scripts/mpp-sdk-build-check.mjs
+
+
+ ⛅️ wrangler 4.131.1
+────────────────────
+Total Upload: 8371.64 KiB / gzip: 2870.39 KiB
+Your Worker has access to the following bindings:
+Binding                                                                    Resource                     
+env.TRADE_NONCES (TradeNonceStore)                                         Durable Object               
+env.PAID_RECOVERIES (PaidRecoveryStore)                                    Durable Object               
+env.A2A_KITS (A2AKitStore)                                                 Durable Object               
+env.A2A_TASKS (A2ATaskStore)                                               Durable Object               
+env.BOUNTY_CLAIM_LOCKS (BountyClaimLocks)                                  Durable Object               
+env.COUNTER_LEDGER (CounterLedger)                                         Durable Object               
+env.ORDERS (4a23f9dd93f4434aad98295e592c8805)                              KV Namespace                 
+env.GUESTBOOK (93c5a5a59fbe4fa6ad96ed9af3852d70)                           KV Namespace                 
+env.COUNTERS (bc1397211dbd4b30876edb76b45a1142)                            KV Namespace                 
+env.PATRONS (b3b7dc0f951f4b4a9995afe7dc35e015)                             KV Namespace                 
+env.CORPUS_R2 (scvd-corpus)                                                R2 Bucket                    
+env.CF_VERSION_METADATA                                                    Worker Version Metadata      
+env.MPP_CHECKOUT_ENABLED ("false")                                         Environment Variable         
+env.STORE_BASE_URL ("https://scvd.store")                                  Environment Variable         
+env.BASE_RPC_URL ("https://mainnet.base.org")                              Environment Variable         
+env.SOLANA_PAY_TO ("DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYH...")             Environment Variable         
+
+--dry-run: exiting now.
+
+ ⛅️ wrangler 4.131.1
+────────────────────
+Total Upload: 924.02 KiB / gzip: 302.60 KiB
+Your Worker has access to the following bindings:
+Binding                                                                    Resource                  
+env.ORDERS (4a23f9dd93f4434aad98295e592c8805)                              KV Namespace              
+env.GUESTBOOK (93c5a5a59fbe4fa6ad96ed9af3852d70)                           KV Namespace              
+env.COUNTERS (bc1397211dbd4b30876edb76b45a1142)                            KV Namespace              
+env.PATRONS (b3b7dc0f951f4b4a9995afe7dc35e015)                             KV Namespace              
+env.CORPUS_R2 (scvd-corpus)                                                R2 Bucket                 
+env.STORE (scvd-general-store-repo)                                        Worker                    
+env.MPP_CHECKOUT_ENABLED ("false")                                         Environment Variable      
+env.STORE_BASE_URL ("https://scvd.store")                                  Environment Variable      
+env.BASE_RPC_URL ("https://mainnet.base.org")                              Environment Variable      
+env.SOLANA_PAY_TO ("DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYH...")             Environment Variable      
+
+--dry-run: exiting now.
+
+ ⛅️ wrangler 4.131.1
+────────────────────
+Total Upload: 1641.97 KiB / gzip: 311.19 KiB
+No bindings found.
+--dry-run: exiting now.

@@ -1,0 +1,23 @@
+Ripgrep is not available. Falling back to GrepTool.
+Loading extension: scvd-general-store
+Registering notification handlers for server 'scvd-store'. Capabilities: {
+  prompts: { listChanged: false },
+  resources: { subscribe: false, listChanged: false },
+  tools: { listChanged: false }
+}
+Server 'scvd-store' has tools but did not declare 'listChanged' capability. Listening anyway for robustness...
+Server 'scvd-store' has resources but did not declare 'listChanged' capability. Listening anyway for robustness...
+Server 'scvd-store' has prompts but did not declare 'listChanged' capability. Listening anyway for robustness...
+Scheduling MCP context refresh...
+Executing MCP context refresh...
+MCP context refresh complete.
+Discovered Agent Skills:
+
+scvd-general-store [Enabled]
+  Description: A live x402 practice counter from $0.001. Verify any issuer's signed receipts, including competitors; inspect endpoints, diagnose payments, retrieve host history, interpret MPP, test buyers/sellers, or use SCVD's general store. Free checks need no wallet; live purchases settle real USDC.
+  Location:    /private/tmp/scvd-gemini-qualification/.gemini/extensions/scvd-general-store/skills/scvd-general-store/SKILL.md
+
+scvd-x402-verification [Enabled]
+  Description: Check an x402 endpoint before paying it, and check the receipt after. Free instruments first; a paid signed observation only when durable third-party evidence is actually needed.
+  Location:    /private/tmp/scvd-gemini-qualification/.gemini/extensions/scvd-general-store/skills/scvd-x402-verification/SKILL.md
+

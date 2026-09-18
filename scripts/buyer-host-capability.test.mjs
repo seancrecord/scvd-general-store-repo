@@ -6,6 +6,7 @@ import path from 'node:path';
 import {createPublicKey, verify} from 'node:crypto';
 import {validatePlan, buildPrompt, adapter, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
 import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment} from './buyer-cold-isolated.mjs';
+import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
 
 test('a proxied launch context passes its route and CA bundle, never an API key or token',()=>{
  assert.deepEqual(childEnvironment({PATH:'/bin',HTTPS_PROXY:'http://127.0.0.1:1',NODE_EXTRA_CA_CERTS:'/ca.crt',ANTHROPIC_API_KEY:'secret',CLAUDE_CODE_OAUTH_TOKEN:'secret',OPENAI_API_KEY:'secret',CLAUDE_CODE_SESSION_ID:'parent'}),{PATH:'/bin',HTTPS_PROXY:'http://127.0.0.1:1',NODE_EXTRA_CA_CERTS:'/ca.crt'});
@@ -17,6 +18,74 @@ const plan={schema_version:4,subject:'https://merchant.example/quote',spend_usdc
         {id:'claude-directed',host:'claude',model:'sonnet',lane:'directed',entry:'https://scvd.store/skill.md',verification:'prompted'}]};
 const root=()=>fs.mkdtempSync(path.join(os.tmpdir(),'cold-capability-'));
 const keyOf=hex=>createPublicKey({format:'der',type:'spki',key:Buffer.concat([Buffer.from('302a300506032b6570032100','hex'),Buffer.from(hex,'hex')])});
+
+test('local skill inventory follows symlinks, includes system entries, and never edits metadata',()=>{
+ const d=root();try{
+  const skill=path.join(d,'.codex/skills/.system/a/SKILL.md');fs.mkdirSync(path.dirname(skill),{recursive:true});fs.writeFileSync(skill,'unaltered');
+  const external=path.join(d,'external');fs.mkdirSync(external);fs.writeFileSync(path.join(external,'SKILL.md'),'external');
+  fs.mkdirSync(path.join(d,'.agents/skills'),{recursive:true});fs.symlinkSync(external,path.join(d,'.agents/skills/linked'),'dir');fs.symlinkSync(d,path.join(external,'loop'),'dir');
+  const paths=disabledCodexSkills(d,path.join(d,'no-admin'));
+  assert.ok(paths.includes(skill));assert.ok(paths.includes(fs.realpathSync(path.join(external,'SKILL.md'))));
+  assert.ok(paths.includes(path.join(d,'.agents/skills/linked/SKILL.md')));
+  assert.equal(fs.readFileSync(skill,'utf8'),'unaltered');
+  assert.equal(fs.readFileSync(path.join(external,'SKILL.md'),'utf8'),'external');
+  assert.throws(()=>disabledCodexSkills('relative'),/absolute HOME/);
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('Codex disables local skill entries per launch without changing the sandbox or prompt',()=>{
+ const paths=['/tmp/skills/a/SKILL.md','/tmp/skills/space and "quote"/SKILL.md'];
+ const args=adapter(plan.cells[0],'/tmp/neutral','/tmp/out',budgets,{codex:{disabled_skills:paths}}).args;
+ const config=args.filter((_,i)=>args[i-1]==='-c');
+ assert.ok(config.includes('skills.config=['+paths.map(p=>`{path=${JSON.stringify(p)},enabled=false}`).join(',')+']'));
+ assert.equal(args[args.indexOf('--sandbox')+1],'workspace-write');
+ assert.ok(args.some((v,i)=>v==='--disable'&&args[i+1]==='plugins'));
+ assert.doesNotMatch(buildCapabilityPrompt(plan,'codex',capabilityVectors()),/SPKI|xxd|OpenSSL|decode.*hex/i);
+});
+
+test('qualification rejects a changed captured instrument before creating buyer output',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';
+  const probe=path.join(d,'probe');await runCapabilityProbe(plan,probe);
+  fs.appendFileSync(path.join(probe,'instrument/lib/buyer-cold.mjs'),'\n// changed after qualification\n');
+  await assert.rejects(runCohort(plan,path.join(d,'buyers'),{capability:probe}),/instrument/i);
+  assert.equal(fs.existsSync(path.join(d,'buyers')),false);
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('qualification rejects a new local skill after the probe before creating buyer output',async()=>{
+ const d=root(),savedPath=process.env.PATH,savedHome=process.env.HOME;
+ try{
+  process.env.PATH='';process.env.HOME=path.join(d,'home');fs.mkdirSync(process.env.HOME);
+  const probe=path.join(d,'probe');await runCapabilityProbe(plan,probe);
+  const skill=path.join(process.env.HOME,'.agents/skills/new/SKILL.md');fs.mkdirSync(path.dirname(skill),{recursive:true});fs.writeFileSync(skill,'new metadata');
+  await assert.rejects(runCohort(plan,path.join(d,'buyers'),{capability:probe}),/context|skill/i);
+  assert.equal(fs.existsSync(path.join(d,'buyers')),false);
+ }finally{process.env.PATH=savedPath;process.env.HOME=savedHome;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+for(const change of ['manifest','rehashed snapshot','missing snapshot','CLI version','environment','missing binding'])test(`qualification rejects changed ${change}`,async()=>{
+ const d=root(),savedPath=process.env.PATH,savedLang=process.env.LANG;
+ try{
+  process.env.PATH='';const probe=path.join(d,'probe');const capability=await runCapabilityProbe(plan,probe);
+  const manifestPath=path.join(probe,'instrument.json'),contextPath=path.join(probe,'host-context.json');
+  if(change==='manifest')fs.appendFileSync(manifestPath,' ');
+  if(change==='rehashed snapshot'){
+   const file=path.join(probe,'instrument/lib/buyer-cold.mjs');fs.appendFileSync(file,'\n// changed\n');
+   const manifest=JSON.parse(fs.readFileSync(manifestPath));manifest.files['lib/buyer-cold.mjs']=hash(fs.readFileSync(file));fs.writeFileSync(manifestPath,JSON.stringify(manifest));capability.instrument_sha256=hash(fs.readFileSync(manifestPath));
+  }
+  if(change==='missing snapshot')fs.unlinkSync(path.join(probe,'instrument/lib/buyer-cold.mjs'));
+  if(change==='CLI version'){
+   const context=JSON.parse(fs.readFileSync(contextPath));context.versions.codex='different';fs.writeFileSync(contextPath,JSON.stringify(context,null,2)+'\n');capability.host_context_sha256=hash(fs.readFileSync(contextPath));
+  }
+  if(change==='environment')process.env.LANG='changed-after-probe';
+  if(change==='missing binding')delete capability.instrument_sha256;
+  fs.writeFileSync(path.join(probe,'capability.json'),JSON.stringify(capability));
+  await assert.rejects(runCohort(plan,path.join(d,'buyers'),{capability:probe}),/instrument|context/i);
+  assert.equal(fs.existsSync(path.join(d,'buyers')),false);
+ }finally{process.env.PATH=savedPath;if(savedLang===undefined)delete process.env.LANG;else process.env.LANG=savedLang;fs.rmSync(d,{recursive:true,force:true});}
+});
 
 test('schema 4 freezes a generic public capability URL and refuses one naming the store',()=>{
  assert.equal(validatePlan(plan).schema_version,4);
@@ -85,6 +154,21 @@ test('a host that retained exact bytes and ran a correct local check passes, wit
   assert.deepEqual(s.commands.denied,['python3']);assert.ok(s.commands.executed.includes('node'));
  }finally{f.cleanup();}
 });
+test('capability diagnostics retain each invocation instead of treating its first word as a tool-wide refusal',()=>{
+ const f=probeFixture();try{
+  const compound='curl -o ./evidence/public.bin https://example.org/ && shasum -a 256 ./evidence/public.bin';
+  const standalone='curl -o ./evidence/public.bin https://example.org/';
+  const trace=claudeTrace([[compound,'denied'],[standalone,'completed'],['node -e "verify"','completed']]);
+  fs.writeFileSync(path.join(f.d,'events.jsonl'),trace);f.run.trace_sha256=hash(trace);
+  const s=scoreCapability('claude',f.run,f.d,f.vectors,f.reference);
+  assert.equal(s.state,'pass');
+  assert.deepEqual(s.command_events,[
+   {line:1,command:compound,outcome:'denied',program:'curl'},
+   {line:3,command:standalone,outcome:'completed',program:'curl'},
+   {line:5,command:'node -e "verify"',outcome:'completed',program:'node'},
+  ]);
+ }finally{f.cleanup();}
+});
 for(const [name,mutate,field,state] of [
  ['changed retained bytes',f=>{fs.writeFileSync(path.join(f.d,'evidence','public.bin'),'other');f.run.retained_artifacts.files[0].sha256=hash('other');},'retention','fail'],
  ['no retained public bytes',f=>{f.run.retained_artifacts.files.splice(0,1);},'retention','incomplete'],
@@ -112,9 +196,11 @@ test('a schema 4 acquisition refuses to start without a passed probe for the sam
   await assert.rejects(runCohort(plan,path.join(d,'a')),/capability/i);
   fs.mkdirSync(path.join(d,'probe'));fs.writeFileSync(path.join(d,'probe','capability.json'),JSON.stringify({schema_version:1,plan_sha256:'00'.repeat(32),hosts:{codex:{state:'pass'},claude:{state:'pass'}}}));
   await assert.rejects(runCohort(plan,path.join(d,'b'),{capability:path.join(d,'probe')}),/different plan/i);
-  const planBytes=JSON.stringify(plan,null,2)+'\n';
-  fs.writeFileSync(path.join(d,'probe','capability.json'),JSON.stringify({schema_version:1,plan_sha256:hash(planBytes),hosts:{codex:{state:'fail'},claude:{state:'pass'}}}));
-  const score=await runCohort(plan,path.join(d,'c'),{capability:path.join(d,'probe')});
+  const probe=path.join(d,'qualified');
+  const qualified=await runCapabilityProbe(plan,probe);
+  qualified.hosts={codex:{state:'fail'},claude:{state:'pass'}};
+  fs.writeFileSync(path.join(probe,'capability.json'),JSON.stringify(qualified));
+  const score=await runCohort(plan,path.join(d,'c'),{capability:probe});
   const codex=JSON.parse(fs.readFileSync(path.join(d,'c','codex-catalogue','run.json'),'utf8'));
   assert.equal(codex.runtime.state,'capability_unqualified');
   const claude=JSON.parse(fs.readFileSync(path.join(d,'c','claude-directed','run.json'),'utf8'));

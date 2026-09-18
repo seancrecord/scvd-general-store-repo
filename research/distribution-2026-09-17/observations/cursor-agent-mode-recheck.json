@@ -1,0 +1,30 @@
+{
+  "date_utc": "2026-09-17",
+  "host": "Cursor CLI",
+  "host_version": "2026.09.15-d2fe57e",
+  "plugin_version": "0.2.4",
+  "execution_mode": "normal Agent mode",
+  "source_commit": "f5ee6942bdc4b3ebab5965f1c2af0ca041f0faaa",
+  "runs": [
+    {
+      "method": "--plugin-dir, unchanged combined package",
+      "completed": true,
+      "model_report": "**Not registered \u2014 stopping.**\n\nFrom the injected available-skills catalog only:\n\n| Skill | Available? |\n|-------|------------|\n| `scvd-general-store` | No \u2014 not in the catalog (no registered name or source path) |\n| `scvd-x402-verification` | No \u2014 not in the catalog (no registered name or source path) |\n\nNeither skill appears in the session\u2019s skill list, so there is no SKILL.md to read via the normal skill/read path. No filesystem search, shell, MCP, wallet, or purchase actions were taken.",
+      "tool_calls": 0
+    },
+    {
+      "method": "documented user-local plugin directory, unchanged combined package",
+      "completed": true,
+      "model_report": "**Not registered \u2014 stopping.**\n\nFrom the injected available-skills catalog only:\n\n| Requested skill | Registered? |\n|---|---|\n| `scvd-general-store` | No \u2014 not present under that name (or any clear alias) |\n| `scvd-x402-verification` | No \u2014 not present under that name (or any clear alias) |\n\nNo registered names or source paths to report. Per your bounds, I am not reading any SKILL.md, searching the filesystem, calling MCP, or doing further discovery.",
+      "tool_calls": 0
+    },
+    {
+      "method": "--plugin-dir, portable root plugin.json/mcp.json/skills only; other host wrappers excluded",
+      "completed": true,
+      "model_report": "**Absent.** From the injected `available_skills` catalog only, neither `scvd-general-store` nor `scvd-x402-verification` is listed (no registered names or source paths). Stopping here as instructed.",
+      "tool_calls": 0
+    }
+  ],
+  "interpretation": "Skills were absent from the model-visible catalog in normal Agent mode with both the unchanged combined package and a portable-only control. The documented local-plugin path also did not expose them. This does not isolate parsing, local loading, account configuration or catalog injection as the cause. No published package changes made on this evidence.",
+  "paid_actions": false
+}

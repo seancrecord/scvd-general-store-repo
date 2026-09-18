@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T21:26:45.643143+00:00",
+  "files": [
+    {
+      "file": "private/npm-latest.json",
+      "bytes": 2120,
+      "sha256": "79fef9c5e23e02a4d7537b18fc7eaef799a2043585323da352c404c7b1734e37"
+    },
+    {
+      "file": "private/qualification/capability.json",
+      "bytes": 1019,
+      "sha256": "e96106adde94c7fa8d0fe5aabb1d6444a086ead13852e00869c96fa6cdc3fad4"
+    },
+    {
+      "file": "private/qualification/claude/capability.json",
+      "bytes": 4100,
+      "sha256": "39dcbb32a93604be27de78fa0a04e81eb308f4edf343c50d4e37eec135cef0b3"
+    },
+    {
+      "file": "private/qualification/claude/events.jsonl",
+      "bytes": 37526,
+      "sha256": "61a29e26cd7166bd886a6e5c0b2a619a129b18dac10557de332a168d78cbf369"
+    },
+    {
+      "file": "private/qualification/claude/evidence/capability.json",
+      "bytes": 159,
+      "sha256": "d208ef60ed8d4a671dada3614777e97bbaf41a76365f513e416169035e22a959"
+    },
+    {
+      "file": "private/qualification/claude/evidence/public.bin",
+      "bytes": 2189,
+      "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+    },
+    {
+      "file": "private/qualification/claude/launch.json",
+      "bytes": 1035,
+      "sha256": "c864926eeb9d4174a0f1ffc0b12433c1177f33b0ee799142827079f7b264906c"
+    },
+    {
+      "file": "private/qualification/claude/prompt.txt",
+      "bytes": 2657,
+      "sha256": "a6f976cecda015b210ff448aee95515f47aa4162f9e07b674c977a48d814a902"
+    },
+    {
+      "file": "private/qualification/claude/reference.bin",
+      "bytes": 2189,
+      "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+    },
+    {
+      "file": "private/qualification/claude/run.json",
+      "bytes": 5439,
+      "sha256": "a17652d5e1171d42be0b420aa30ddd3cb34ecd5e46823a5e3debc61c2d2bcabd"
+    },
+    {
+      "file": "private/qualification/claude/runtime.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "private/qualification/claude/vectors.json",
+      "bytes": 1222,
+      "sha256": "bf6f3b1f3af659efe52480a8bdb33ba423fc7843c9ccca5d12f011d3444d06b6"
+    },
+    {
+      "file": "private/qualification/codex/capability.json",
+      "bytes": 3363,
+      "sha256": "70ce657b5ce1e59597ffa171da6fc2e705819a803b30754a27879991890531a5"
+    },
+    {
+      "file": "private/qualification/codex/events.jsonl",
+      "bytes": 6719,
+      "sha256": "017c01024216fa37f0dc019478e19ec3a99085a2932fafdc6c350b43e5cdc1bc"
+    },
+    {
+      "file": "private/qualification/codex/evidence/capability.json",
+      "bytes": 164,
+      "sha256": "cc021eaba8fd95107dcc9560e6c32309dbc98de5ff25b9d3e9ec96256060c718"
+    },
+    {
+      "file": "private/qualification/codex/evidence/public.bin",
+      "bytes": 2189,
+      "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+    },
+    {
+      "file": "private/qualification/codex/launch.json",
+      "bytes": 19867,
+      "sha256": "4e13d89da52de151762e0279bf5725ccb7ca7fad860c7bf01413dc26930d3757"
+    },
+    {
+      "file": "private/qualification/codex/prompt.txt",
+      "bytes": 2201,
+      "sha256": "78571c5ea078bb479b3db6cc0b61c55da8b26b5cc150956c132975a5e1a6a548"
+    },
+    {
+      "file": "private/qualification/codex/reference.bin",
+      "bytes": 2189,
+      "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+    },
+    {
+      "file": "private/qualification/codex/result.txt",
+      "bytes": 686,
+      "sha256": "92a791e2da93274254050635cc3bd6506d1e65baabcd5f26aacd2ef08bf5ab4d"
+    },
+    {
+      "file": "private/qualification/codex/run.json",
+      "bytes": 2983,
+      "sha256": "5c8fea39521a0ede7949939c1ff4aaddfaaf86b79160782f0ccad401adb7aff6"
+    },
+    {
+      "file": "private/qualification/codex/runtime.log",
+      "bytes": 994,
+      "sha256": "e3755eb729a4dbe2e238329ad0f1654698335d8c0720aaa716a9b6ceb218e131"
+    },
+    {
+      "file": "private/qualification/codex/vectors.json",
+      "bytes": 1222,
+      "sha256": "b4bf454f192c4986f90325819ae2c09b1335545cef6a01ce207faf5148a1377a"
+    },
+    {
+      "file": "private/qualification/host-context.json",
+      "bytes": 16450,
+      "sha256": "e81893c4e27fa6150ce950adfe4923d483950103a5e17b23b0280c2617f4907f"
+    },
+    {
+      "file": "private/qualification/hosts.json",
+      "bytes": 200,
+      "sha256": "0f710ff0c1127339b8a69ff028b1dba839aa9e4dcef8777a1e65bb2e89b0503a"
+    },
+    {
+      "file": "private/qualification/instrument/buyer-cold-isolated.mjs",
+      "bytes": 19695,
+      "sha256": "aa431cb2d63d2aecf88aa3423641d3bdb0b4e4c36bd3e688f93761c1fb9449b5"
+    },
+    {
+      "file": "private/qualification/instrument/lib/buyer-cold.mjs",
+      "bytes": 34591,
+      "sha256": "08e7ac21684c033380adbb89fdff1972c3168f5db2a77466931fdc2532bd6a84"
+    },
+    {
+      "file": "private/qualification/instrument/lib/buyer-host-context.mjs",
+      "bytes": 1387,
+      "sha256": "29ef1f922cec66ccf5acc674433491bc2ba120a122a078c433f52f61274addd3"
+    },
+    {
+      "file": "private/qualification/instrument/lib/buyer-retention.mjs",
+      "bytes": 2843,
+      "sha256": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1"
+    },
+    {
+      "file": "private/qualification/instrument/lib/buyer-run-evidence.mjs",
+      "bytes": 7590,
+      "sha256": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f"
+    },
+    {
+      "file": "private/qualification/instrument.json",
+      "bytes": 747,
+      "sha256": "8e04396e502cc75c40e9fa678f3dee8231ce43117491caf80eb6f02727c8aee8"
+    },
+    {
+      "file": "private/qualification/plan.json",
+      "bytes": 2586,
+      "sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393"
+    },
+    {
+      "file": "private/qualification/verifier/evidence-bundle.js",
+      "bytes": 9551,
+      "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+    },
+    {
+      "file": "private/qualification/verifier/x402-verify.js",
+      "bytes": 41419,
+      "sha256": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+    },
+    {
+      "file": "private/qualification.log",
+      "bytes": 240,
+      "sha256": "9b6f81767bb43b7e90a4cc0e29219ad4d43850da8a0fab00bcc3f702bbb48f8c"
+    }
+  ]
+}

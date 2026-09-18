@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -42,13 +42,35 @@ test("the marketplace lists exactly the plugin at the repository root", () => {
   assert.equal(market.metadata.version, root.version);
 });
 
-test("the Gemini extension carries the same name, version, sentence and door, and reads AGENTS.md", () => {
+test("Claude's combined plugin MCP sources expose only the store, not contributor browser tools", () => {
+  // Claude adds the root .mcp.json to the inline manifest. Checking only
+  // the manifest missed the contributor Chrome server in customer installs.
+  const effective = {
+    ...read(".mcp.json").mcpServers,
+    ...read(".claude-plugin/plugin.json").mcpServers,
+  };
+  assert.deepEqual(effective, { "scvd-store": { type: "http", url: mcpUrl } });
+});
+
+test("the Gemini extension carries the same identity and MCP door without loading contributor instructions", () => {
   const gemini = read("gemini-extension.json");
   assert.equal(gemini.name, root.name);
   assert.equal(gemini.version, root.version);
   assert.equal(gemini.description, root.description);
   assert.deepEqual(gemini.mcpServers, { "scvd-store": { httpUrl: mcpUrl } });
-  assert.equal(gemini.contextFileName, "AGENTS.md");
+  // Gemini discovers skills/ itself. Loading this repository's AGENTS.md
+  // makes a customer session inherit our build, commit and keeper rules.
+  assert.equal(gemini.contextFileName, undefined);
+  assert.equal(existsSync(join(ROOT, "GEMINI.md")), false,
+    "review any new default context file before injecting it into customer sessions");
+  const skills = readdirSync(join(ROOT, "skills"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory());
+  assert.ok(skills.length > 0, "the extension must ship task guidance");
+  for (const skill of skills) {
+    const entry = readFileSync(join(ROOT, "skills", skill.name, "SKILL.md"), "utf8");
+    assert.ok(entry.startsWith("---\n"), `${skill.name} needs discoverable metadata`);
+    assert.match(entry, /^description: .+/m);
+  }
 });
 
 test("CITATION.cff cites the corpus's concept DOI and this repository, and nothing it does not have", () => {

@@ -104,6 +104,41 @@ describe("the panel and its room", () => {
  * stated edge plus the list's own omissions.
  */
 describe("the independent records on the panel", () => {
+  it("organizes discovery by protocol without turning pending work into an indexed record", async () => {
+    const read = async (path: string) => (await SELF.fetch(`${BASE}${path}`, {
+      headers: { Accept: "application/json" },
+    })).json() as Promise<{ discovery_by_protocol: {
+      id: string; status: string; scvd_url: string;
+      records: { url: string }[]; identity_viewers: { url: string }[];
+    }[] }>;
+    const panel = await read("/trust");
+    const machine = await read("/.well-known/trust.json");
+    expect(panel.discovery_by_protocol).toBeDefined();
+    expect(panel.discovery_by_protocol).toEqual(machine.discovery_by_protocol);
+    const groups = panel.discovery_by_protocol;
+    expect(groups.map((group) => group.id)).toEqual(expect.arrayContaining([
+      "x402", "mpp", "mcp", "webmcp", "erc8004", "a2a", "oasf", "ucp", "skills",
+    ]));
+    expect(groups.find((group) => group.id === "ucp")?.status).toBe("planned");
+    expect(groups.find((group) => group.id === "ucp")?.records).toEqual([]);
+    const urls = groups.flatMap((group) => group.records.map((record) => record.url));
+    for (const group of groups) {
+      for (const record of group.records) expect(Object.keys(record)).toEqual(["url"]);
+    }
+    expect(new Set(urls)).toEqual(new Set(EXTERNAL_RECORDS.map((record) => record.url)));
+    expect(urls.some((url) => new URL(url).hostname === "ai-catalog.outshift.io")).toBe(false);
+    expect(urls.some((url) => new URL(url).hostname === "agenterc.com")).toBe(false);
+    const erc = groups.find((group) => group.id === "erc8004")!;
+    expect(erc.records.some((record) => new URL(record.url).hostname === "8004scan.io" && new URL(record.url).pathname.startsWith("/agents/base/"))).toBe(true);
+    expect(erc.records.some((record) => new URL(record.url).hostname === "agentscan.info" && new URL(record.url).pathname.startsWith("/agents/"))).toBe(true);
+    expect(erc.identity_viewers.some((record) => new URL(record.url).hostname === "erc-8004.quicknode.com")).toBe(true);
+    const html = await (await SELF.fetch(`${BASE}/trust`, { headers: { Accept: "text/html" } })).text();
+    for (const group of groups) {
+      expect(html).toContain(`id="protocol-${group.id}"`);
+      expect(html).toContain(group.scvd_url);
+    }
+  });
+
   it("renders every record from the constant, with its date and its edge", async () => {
     await testEnv.COUNTERS.delete(KV_KEYS.trustPanelCache);
     const text = await (

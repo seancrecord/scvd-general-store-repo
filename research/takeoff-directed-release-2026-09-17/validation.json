@@ -1,0 +1,32 @@
+{
+  "base_commit": "82a419ffc236aff401444243b175699e3271e537",
+  "changes": "Research records, AGENT_UX and ROADMAP only; no runtime or collector modification.",
+  "typecheck": "pass",
+  "buyer_tests": {
+    "pass": 141,
+    "fail": 0
+  },
+  "full_suite": {
+    "files": 761,
+    "initial_pass": 14661,
+    "initial_fail": 9,
+    "initial_skip": 31,
+    "affected_files": [
+      "test/alert-snapshot-recovery.spec.ts",
+      "test/buyer-callback-retained.spec.ts",
+      "test/buyer-capacity-refusal-status.spec.ts",
+      "test/buyer-recovery-guidance.spec.ts",
+      "test/kv-blip-reconciliation.spec.ts",
+      "test/mcp-capacity-admission.spec.ts",
+      "test/mcp-paid-response-serialization.spec.ts",
+      "test/settlement-unknown.spec.ts"
+    ],
+    "rerun_pass": 335,
+    "rerun_fail": 0,
+    "reconciled_assertions": {
+      "passed": 14700,
+      "skipped": 1
+    },
+    "limit": "Initial run had timeout/hook failures and subsequent assertions in eight files. All eight files passed unchanged in a single-worker rerun; full initial and rerun reports retained. Timeouts were not increased."
+  }
+}

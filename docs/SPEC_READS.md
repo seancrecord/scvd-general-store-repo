@@ -1,5 +1,34 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-17 — Distribution formats exist; admission and parsing are separate
+
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) includes OASF in its
+registration example and permits a full registration at the domain acknowledgment
+path. SCVD already serves both directions of that link. An example IPFS URI is
+not proof that the historical Directory CID resolves through IPFS or covers the
+current record. Keep the working HTTPS service until exact immutable bytes are
+published and retrieved independently.
+
+[Awesome Copilot's contribution rules](https://github.com/github/awesome-copilot/blob/main/CONTRIBUTING.md)
+route external plugins through an issue form with an immutable public source,
+validation and maintainer approval. That is separate from existing Agent Finder
+PR #34. Reuse the root skill/MCP package; no manual external.json PR.
+
+[Gemini's release rules](https://geminicli.com/docs/extensions/releasing/) require
+the `gemini-cli-extension` repository topic for its daily gallery crawl.
+The [extension reference](https://geminicli.com/docs/extensions/reference/)
+documents optional context and automatic skill discovery. The current
+`contextFileName: AGENTS.md` loads internal contributor rules into a customer
+session; the local correction removes that setting and retains the skills.
+Neither static validation nor a gallery crawl proves a working host installation.
+
+[Dated external readings and drafts](../research/distribution-2026-09-17/README.md)
+retain the observed indexer discrepancies and the remaining unknowns.
+The keeper then requested protocol organization: the README and trust surfaces
+now group the existing records and four newly observed ERC-8004 index pages,
+with identity viewers separate and UCP explicitly planned. The JSON protocol
+index links into the canonical record list without repeating each description.
+
 ## 2026-09-17 — The verifier door is listed. What it cost to get there.
 
 `https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212`
@@ -1884,6 +1913,19 @@ PR #751 subsequently closed that mismatch for the shared verifier handlers:
 both doors derive those hints from one definition, and the parity test checks
 every annotation field. This is not a new audit of every general-only tool.
 
+## 2026-09-17 — Native buyer npm cache placement
+
+Read npm's [v10 configuration documentation](https://docs.npmjs.com/cli/v10/using-npm/config/):
+environment configuration is case-insensitive, lowercase settings take
+precedence inside npm scripts, and the POSIX default cache is `~/.npm`.
+The runner supplies both cache spellings with one fresh workspace path.
+Real offline child-process checks with local npm 10.9.2 confirm that npm
+resolves that path and it is writable, with no user configuration changes.
+No source was unreachable. Native-model tool inheritance under the changed
+runner remains a separate qualification step; a successful Node child test
+does not prove a buyer completed. Evidence and scope:
+[`research/takeoff-session-workspace-2026-09-17/README.md`](../research/takeoff-session-workspace-2026-09-17/README.md).
+
 ## 2026-09-17 — Native cold-host qualification
 
 Read the native Codex 0.153.4 `exec`, `features list` and `debug prompt-input`
@@ -1904,3 +1946,100 @@ prompt context for that native exec session. No global configuration or
 adapter was changed. Both probes and the failed signature command's local
 reproduction are recorded in
 [`research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md`](../research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md).
+
+### September 17 — native isolation repair
+
+Read OpenAI's [skill discovery and disabling documentation](https://learn.chatgpt.com/docs/build-skills)
+and [sample configuration](https://learn.chatgpt.com/docs/config-file/config-sample),
+plus local CLI 0.153.4 help. The documented per-skill `enabled=false`
+setting can be supplied as a launch override. User/admin skill roots and
+symlink behavior are documented; the legacy `.codex/skills` and bundled
+system entries were also directly observed in this machine's request.
+
+Native request construction was captured on localhost with an unauthenticated
+custom provider returning an error, without inference. The frozen adapter
+exposed 142 skill entries; disabling plugins alone still exposed 142.
+Explicit per-skill overrides exposed zero, both with the observed inventory
+and with the repaired runner's filesystem inventory. No global settings were
+changed. This isolates the metadata-loading issue, not the prior model's
+signature-handling error. Production-provider request contents were not
+captured, and no universal isolation claim follows from a local provider
+capture. A separately frozen native capability attempt uses unchanged prompts,
+models and permissions; record:
+[`research/takeoff-native-isolation-2026-09-17/freeze.json`](../research/takeoff-native-isolation-2026-09-17/freeze.json).
+
+### 2026-09-17 — additional plugin channels and tracking reconciliation
+
+- [Cursor plugins](https://cursor.com/docs/plugins): Agent Plugins 1.0 supported;
+  official marketplace separate from cursor.directory. Publisher form requires login.
+- [Claude submissions](https://code.claude.com/docs/en/plugins#submit-your-plugin-to-the-community-marketplace):
+  third-party review targets claude-community; curated official collection has no
+  application. Console form requires login. Strict local manifest validation passed;
+  content/runtime qualification is not implied. The installed CLI schema confirms
+  root `.mcp.json` supplements inline MCP; contributor browser tooling was separated.
+- [Kiro submission](https://kiro.dev/powers/submit/): Agent Plugins package accepted;
+  working package, stable MCP, README privacy/support and publisher contact required.
+- Fresh official MCP registry response confirms both source-manifest versions latest;
+  ClawHub receipt and September 12 listing baselines close stale keeper presses.
+- [Distribution map](../DISTRIBUTION.md) now identifies the sources of truth;
+  [plugin packet](../registry/plugin-submissions.md) contains fields and unrun gates.
+  [Receipts](../research/distribution-2026-09-17/README.md) retain actual outcomes.
+
+
+### 2026-09-17 — Cursor application and Claude next submission
+
+Re-read [Cursor plugin reference](https://cursor.com/docs/reference/plugins) and
+[Claude community submission instructions](https://code.claude.com/docs/en/plugins#submit-your-plugin-to-the-community-marketplace).
+Cursor accepts the existing root Agent Plugins format; its publisher application
+confirmed receipt, with review pending. The bounded CLI Ask-mode check loaded MCP
+but did not expose skills; normal Agent-mode discovery is being checked separately.
+Claude's documented third-party route remains the community marketplace. The
+Console form rendered a sign-in page, so no new Claude application is claimed.
+A successful earlier plugin-scoped Claude CLI check is now retained in the
+[follow-up receipt](../research/distribution-2026-09-17/observations/claude-host-qualified-followup.json),
+without replacing the first failed attempt. Native Cursor desktop, marketplace
+installation and Cowork compatibility remain unmeasured.
+
+
+Claude's authenticated submission form was completed later the same day. It
+separates the plugin directory from the MCP Connectors Directory and asks for
+host testing before selecting supported platforms. Only tested Claude Code was
+selected; the keeper explicitly authorized the contact address and linked
+[Software Directory Terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms).
+The form confirmed receipt; acceptance remains unverified.
+
+
+### 2026-09-17 — Context Anchor MPP activation read
+
+Unsigned live reads at 21:13 UTC of [Context Anchor checkout](https://scvd.store/api/buy/context_anchor),
+[compact menu](https://scvd.store/menu/context_anchor?view=compact) and
+[OpenAPI](https://scvd.store/openapi.json) confirm an advertised MPP EVM charge
+on Base for 1 USDC alongside x402. Native capability declarations agree;
+`x-payment-info.protocols` still contains only x402. Other products are upcoming.
+No purchase or directory acceptance was exercised.
+[Sanitized observation](../research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+
+
+### 2026-09-17 — saved-response verification and npm cache boundary
+
+Read the [npm CLI configuration reference](https://docs.npmjs.com/cli/v11/using-npm/config/#cache):
+`cache` is a path setting, with `~/.npm` as the Posix default; command-line
+settings can select a writable local directory. The two retained Codex
+referred traces independently hit EPERM at that default and recovered with
+a temporary cache. No ownership change or global configuration edit is needed.
+The current local CLI, bundle constructor and verification code are the
+primary sources for export duplication and result expansion; the new command
+reuses those semantics. No new protocol or cryptographic algorithm is assumed.
+Registry availability and later native-host completion remain separate gates.
+
+
+### 2026-09-17 — MPP directory qualification
+
+Read the official [service submission guide](https://mpp.dev/services#list-your-service)
+and `tempoxyz/mpp` service PR template/schema at its current checkout. The
+curated entry can represent `evm/charge` with the actual Base USDC contract;
+Tempo examples must not replace live terms. MPPScan’s [discovery spec](https://mppscan.com/discovery/spec)
+requires structured protocol descriptors. Its pinned discovery 1.7.5 package
+recognizes SCVD’s query inputs but mislabels the live EVM network in probe mode.
+[Reproduction and report](https://github.com/Merit-Systems/x402scan/issues/1209).
+No listing has been registered on MPPScan.

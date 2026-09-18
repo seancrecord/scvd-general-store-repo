@@ -5,9 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawn, spawnSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
-import {adapter, buildPrompt, buildCapabilityPrompt, capabilityVectors, scoreCapability, validatePlan, normalizeTrace, hash, scoreColdRun, cohortSummary} from './lib/buyer-cold.mjs';
+import {adapter, buildPrompt, buildCapabilityPrompt, capabilityVectors, scoreCapability, validatePlan, normalizeTrace, hash, scoreColdRun, cohortSummary, SESSION_WORKSPACE} from './lib/buyer-cold.mjs';
 
 import {retainArtifacts} from './lib/buyer-retention.mjs';
+import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
 export {retainArtifacts};
 
 const writeJson = (filename, value) => fs.writeFileSync(filename, JSON.stringify(value,null,2)+'\n', {mode:0o600});
@@ -21,12 +22,19 @@ const NETWORK_CONTEXT=['HTTPS_PROXY','HTTP_PROXY','NO_PROXY','https_proxy','http
 export function childEnvironment(source=process.env) {
   return Object.fromEntries(['PATH','HOME','TMPDIR','SHELL','USER','LANG',...NETWORK_CONTEXT].filter(k=>source[k]).map(k=>[k,source[k]]));
 }
+function sessionEnvironment(cwd, environment) {
+  // The native sandbox cannot write the keeper's default ~/.npm cache.
+  // Both spellings agree, including npm's lowercase lifecycle overrides.
+  const cache=path.join(cwd,SESSION_WORKSPACE.npm_cache);
+  return {...environment,NPM_CONFIG_CACHE:cache,npm_config_cache:cache};
+}
 export async function runChild(command, args, {cwd, output, prompt, host, budgets, env=childEnvironment()}) {
+  fs.mkdirSync(path.join(cwd,SESSION_WORKSPACE.scratch),{recursive:true,mode:0o700});
   const started_at = new Date().toISOString();
   const events = fs.openSync(path.join(output,'events.jsonl'),'wx',0o600);
   const logs = fs.openSync(path.join(output,'runtime.log'),'wx',0o600);
   let stdout='', stderr='', bytes=0, budget_stop=null, spawn_error=null, escalation;
-  const child = spawn(command,args,{cwd,env,detached:process.platform!=='win32',stdio:['pipe','pipe','pipe']});
+  const child = spawn(command,args,{cwd,env:sessionEnvironment(cwd,env),detached:process.platform!=='win32',stdio:['pipe','pipe','pipe']});
   const terminate = () => {
     try { if(process.platform!=='win32')process.kill(-child.pid,'SIGTERM');else child.kill('SIGTERM'); } catch { /* Already exited. */ }
     escalation = setTimeout(()=>{try{if(process.platform!=='win32')process.kill(-child.pid,'SIGKILL');else child.kill('SIGKILL');}catch{}},1000);
@@ -57,7 +65,7 @@ export async function runChild(command, args, {cwd, output, prompt, host, budget
   fs.closeSync(events);fs.closeSync(logs);
   const counts=normalizeTrace(host,stdout);
   const terminalFailure=stdout.split('\n').some(line=>{try{const r=JSON.parse(line);return r.type==='turn.failed'||(r.type==='result'&&r.is_error===true);}catch{return false;}});
-  return {started_at,ended_at:new Date().toISOString(),runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure?'completed':'failed',...result,spawn_error,budget_stop},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
+  return {started_at,ended_at:new Date().toISOString(),local_workspace:SESSION_WORKSPACE,runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure?'completed':'failed',...result,spawn_error,budget_stop},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
     output_bytes:bytes,limits:['Token target is advisory; wall time and retained bytes are bounded. Tool budget stops after an over-budget event is observed; batched calls can exceed it.','Host tool events do not establish origin-request count or absence of hidden context.']};
 }
 export async function scoreCohort(root) {
@@ -76,9 +84,10 @@ export async function scoreCohort(root) {
   return {...cohortSummary(rows),...(capability?{capability}:{}),scorer_sha256:hash(fs.readFileSync(new URL('lib/buyer-cold.mjs',import.meta.url))),plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),runs:rows};
 }
 // The exact collector bytes, frozen beside every acquisition and probe.
+const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','lib/buyer-cold.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','../verifier/evidence-bundle.js','../verifier/x402-verify.js'];
 function freezeInstrument(root) {
   const files = {};
-  for (const name of ['buyer-cold-isolated.mjs','lib/buyer-cold.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','../verifier/evidence-bundle.js','../verifier/x402-verify.js']) {
+  for (const name of INSTRUMENT_FILES) {
     const bytes=fs.readFileSync(new URL(name,import.meta.url)), destination=path.join(root,'instrument',name);
     fs.mkdirSync(path.dirname(destination),{recursive:true,mode:0o700});
     fs.writeFileSync(destination,bytes,{flag:'wx',mode:0o600});
@@ -101,6 +110,23 @@ function hostAvailability(names, environment) {
   }
   return hosts;
 }
+function hostContext(hosts,environment) {
+  return {schema_version:1,environment_sha256:hash(JSON.stringify(environment)),
+    versions:Object.fromEntries([...hosts].map(([name,cli])=>[name,cli.version])),
+    ...(hosts.has('codex')?{codex:{disabled_skills:disabledCodexSkills(environment.HOME),plugins:false}}:{})};
+}
+function checkQualification(root,capability,context) {
+  let bytes,manifest;
+  try {bytes=fs.readFileSync(path.join(root,'instrument.json'));manifest=JSON.parse(bytes);}
+  catch {throw new Error('Capability probe has no readable instrument manifest.');}
+  if(hash(bytes)!==capability.instrument_sha256||manifest.schema_version!==2||JSON.stringify(Object.keys(manifest.files??{}).sort())!==JSON.stringify([...INSTRUMENT_FILES].sort()))throw new Error('Capability instrument manifest is missing, changed or incompatible.');
+  for(const name of INSTRUMENT_FILES){
+    let retained;try{retained=fs.readFileSync(path.join(root,'instrument',name));}catch{throw new Error('Capability instrument snapshot is incomplete.');}
+    if(hash(retained)!==manifest.files[name]||hash(fs.readFileSync(new URL(name,import.meta.url)))!==manifest.files[name])throw new Error('Capability probe belongs to a different or changed instrument.');
+  }
+  let contextBytes;try{contextBytes=fs.readFileSync(path.join(root,'host-context.json'));}catch{throw new Error('Capability probe has no frozen host context.');}
+  if(hash(contextBytes)!==capability.host_context_sha256||contextBytes.toString()!==JSON.stringify(context,null,2)+'\n')throw new Error('Capability host context changed (CLI, environment or local skills); qualify again.');
+}
 // HOST CAPABILITY PROBE (2026-09-17). One generic session per host, with the
 // cohort's exact adapter and budgets, before any buyer cell spends usage.
 // The runner fetches the reference bytes itself first; a host is launched
@@ -113,7 +139,8 @@ export async function runCapabilityProbe(plan, root) {
   freezeInstrument(root);
   const environment=childEnvironment(), hosts=hostAvailability(plan.cells.map(c=>c.host),environment);
   writeJson(path.join(root,'hosts.json'),Object.fromEntries(hosts));
-  const summary={schema_version:1,plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),public_url:plan.capability.public_url,probed_at:new Date().toISOString(),hosts:{},
+  const context=hostContext(hosts,environment);writeJson(path.join(root,'host-context.json'),context);
+  const summary={schema_version:2,plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),instrument_sha256:hash(fs.readFileSync(path.join(root,'instrument.json'))),host_context_sha256:hash(fs.readFileSync(path.join(root,'host-context.json'))),public_url:plan.capability.public_url,probed_at:new Date().toISOString(),hosts:{},
     limits:['A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service.']};
   for(const [host,cli] of hosts){
     const dir=path.join(root,host);fs.mkdirSync(dir,{mode:0o700});
@@ -131,8 +158,8 @@ export async function runCapabilityProbe(plan, root) {
       reference={sha256:hash(bytes),bytes:bytes.length,fetched_at:new Date().toISOString()};
     }catch(error){skip('unavailable',`Runner could not capture reference bytes (${error.message}); host not launched.`);continue;}
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-capability-'));fs.mkdirSync(path.join(cwd,'evidence'),{mode:0o700});
-    const cell=plan.cells.find(c=>c.host===host), launch=adapter(cell,cwd,dir,plan.budgets);
-    writeJson(path.join(dir,'launch.json'),{...launch,cwd,cli,environment_keys:Object.keys(environment),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
+    const cell=plan.cells.find(c=>c.host===host), launch=adapter(cell,cwd,dir,plan.budgets,context);
+    writeJson(path.join(dir,'launch.json'),{...launch,cwd,cli,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({host,state:'started'})+'\n');
     const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host,budgets:plan.budgets,env:environment});
     const run={schema_version:4,host,model:cell.model,...result,cli,reference,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)};
@@ -155,12 +182,14 @@ export async function runCohort(plan,root,options={}) {
     capability={...JSON.parse(bytes),source_sha256:hash(bytes)};
     if(capability.plan_sha256!==hash(JSON.stringify(plan,null,2)+'\n'))throw new Error('The capability probe was frozen for a different plan.');
   }
+  const environment=childEnvironment(), hosts=hostAvailability(plan.cells.map(c=>c.host),environment),context=hostContext(hosts,environment);
+  if(capability)checkQualification(options.capability,capability,context);
   fs.mkdirSync(root,{mode:0o700}); // Must be new: never clobber a prior cohort.
   writeJson(path.join(root,'plan.json'),plan);
   if(capability)writeJson(path.join(root,'capability.json'),capability);
   freezeInstrument(root);
-  const environment=childEnvironment(), hosts=hostAvailability(plan.cells.map(c=>c.host),environment);
   writeJson(path.join(root,'hosts.json'),Object.fromEntries(hosts));
+  writeJson(path.join(root,'host-context.json'),context);
   // Freeze all assignments/prompts before any model runs. The evidence root
   // is outside each neutral working directory and is not supplied as context.
   for(const cell of plan.cells){
@@ -180,8 +209,8 @@ export async function runCohort(plan,root,options={}) {
     }
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-session-'));
     if(plan.schema_version>=3)fs.mkdirSync(path.join(cwd,'evidence'),{mode:0o700});
-    const launch=adapter(cell,cwd,dir,plan.budgets);
-    writeJson(path.join(dir,'launch.json'),{...launch,cwd,host,environment_keys:Object.keys(environment),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
+    const launch=adapter(cell,cwd,dir,plan.budgets,context);
+    writeJson(path.join(dir,'launch.json'),{...launch,cwd,host,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({cell:cell.id,state:'started'})+'\n');
     const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host:cell.host,budgets:plan.budgets,env:environment});
     writeJson(path.join(dir,'run.json'),{schema_version:plan.schema_version,cell,subject:plan.subject,...result,host,...(plan.schema_version>=3?{freshness:plan.freshness,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)}:{}),isolation:{fresh_directory:true,config_isolated:true,no_session_resume:true,review_required:true}});

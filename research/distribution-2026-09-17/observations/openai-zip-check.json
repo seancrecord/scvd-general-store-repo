@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-09-17T18:12:55.986028+00:00",
+  "zip_sha256": "f1f40cc27f6247af54b51467d6ef781edeb393f1c2bed88308aac9cbcb95286a",
+  "entries": [
+    "scvd-x402-verifier/SKILL.md",
+    "scvd-x402-verifier/agents/openai.yaml"
+  ],
+  "comparisons": [
+    {
+      "file": "SKILL.md",
+      "zip_entry": "scvd-x402-verifier/SKILL.md",
+      "identical": true
+    },
+    {
+      "file": "agents/openai.yaml",
+      "zip_entry": "scvd-x402-verifier/agents/openai.yaml",
+      "identical": true
+    }
+  ]
+}

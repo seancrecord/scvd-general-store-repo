@@ -63,6 +63,7 @@ import conformanceVectors from "../../conformance/offer-receipt-vectors.json";
 import {
   DATA_HANDLING,
   EXTERNAL_RECORDS,
+  discoveryProtocolIndex,
   NOT_CLAIMED,
   OPERATOR,
   RECORDS_NOT_LISTED,
@@ -189,6 +190,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * claiming legitimacy would be the strongest argument against it.
      */
     external_records: EXTERNAL_RECORDS,
+    discovery_by_protocol: discoveryProtocolIndex(base),
     external_records_omitted: RECORDS_NOT_LISTED,
     data_handling: DATA_HANDLING,
     not_claimed: NOT_CLAIMED,
