@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
 import {createPublicKey, verify} from 'node:crypto';
 import {validatePlan, buildPrompt, adapter, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
 import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment} from './buyer-cold-isolated.mjs';
@@ -241,4 +242,70 @@ test('a catalogue miss retains the bounded not-returned observation without clai
   const r=await scoreColdRun(f.run,f.review,f.d);
   assert.equal(r.stages.discover.state,'fail');assert.equal(r.catalogue_observation.state,'not_returned');assert.equal(r.catalogue_absence,'unverified');assert.equal(r.catalogue_observation.search_basis,'buyer-query-v1');
  }finally{f.cleanup();}
+});
+
+const recipientProtocol={host:'codex',model:'gpt-5.6-luna',network:'disabled',attempts_per_eligible_cell:1,input_scope:'signed-pair-and-buyer-report',budgets:{wall_ms:180000,tool_calls:12,output_bytes:4194304,output_tokens:1800}};
+const plan5={...plan,schema_version:5,recipient:recipientProtocol};
+test('schema 5 freezes explicit recipient budgets and supplied scope before acquisition',()=>{
+ assert.equal(validatePlan(plan5),plan5);
+ for(const change of [undefined,{...recipientProtocol,budgets:undefined},{...recipientProtocol,network:'enabled'},{...recipientProtocol,input_scope:'everything'},{...recipientProtocol,attempts_per_eligible_cell:2},{...recipientProtocol,model:''},{...recipientProtocol,budgets:{...recipientProtocol.budgets,wall_ms:0}}])assert.throws(()=>validatePlan({...plan5,recipient:change}));
+ // Old plans remain readable for their own records; they gain no new guarantees.
+ assert.equal(validatePlan(plan),plan);
+});
+test('recipient prompt labels the supplied subset and adapter uses only frozen offline limits',async()=>{
+ const {recipientLaunch}=await import('./lib/buyer-cold.mjs');
+ const prepared=recipientLaunch(plan5,'/tmp/neutral','/tmp/review',{codex:{disabled_skills:[]}});
+ assert.deepEqual(prepared.budgets,recipientProtocol.budgets);
+ assert.ok(prepared.args.includes('sandbox_workspace_write.network_access=false'));
+ assert.ok(prepared.args.includes('web_search="disabled"'));assert.ok(!prepared.args.includes('--search'));
+ assert.match(prepared.prompt,/subset/);assert.match(prepared.prompt,/not supplied does not mean not retained/);
+ assert.match(prepared.prompt,/12 tool calls/);assert.match(prepared.prompt,/180 seconds/);
+ assert.ok(prepared.prompt.includes(String(recipientProtocol.budgets.output_tokens)));
+ for(const file of prepared.inputs)assert.ok(prepared.prompt.includes(file));
+ assert.throws(()=>recipientLaunch(plan,'/tmp/n','/tmp/o',{codex:{disabled_skills:[]}}),/recipient|Schema 5/i);
+});
+
+test('schema 5 freezes recipient scope and exact prompt before any buyer can run',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const probe=path.join(d,'probe'),cohort=path.join(d,'cohort');
+  await runCapabilityProbe(plan5,probe);await runCohort(plan5,cohort,{capability:probe});
+  const frozen=JSON.parse(fs.readFileSync(path.join(cohort,'recipient-protocol.json')));
+  assert.deepEqual(frozen.budgets,recipientProtocol.budgets);
+  assert.equal(frozen.prompt_sha256,hash(fs.readFileSync(path.join(cohort,'recipient-prompt.txt'))));
+  assert.equal(frozen.input_scope,recipientProtocol.input_scope);
+  assert.equal(frozen.timing_policy.sample_interval_ms,1000);
+  const {recipientLaunch}=await import('./lib/buyer-cold.mjs');
+  const launch=recipientLaunch(plan5,'/tmp/n','/tmp/o',{codex:{disabled_skills:[]}});
+  assert.equal(frozen.protocol_sha256,launch.protocol_sha256);assert.equal(frozen.prompt_sha256,hash(launch.prompt));
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+test('a Claude-only buyer plan still freezes the offline Codex recipient context',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const selected={...plan5,cells:[plan5.cells[1]]};
+  const probe=path.join(d,'probe'),cohort=path.join(d,'cohort');
+  const result=await runCapabilityProbe(selected,probe);assert.deepEqual(Object.keys(result.hosts),['claude']);
+  const context=JSON.parse(fs.readFileSync(path.join(probe,'host-context.json')));assert.ok(Array.isArray(context.codex.disabled_skills));
+  await runCohort(selected,cohort,{capability:probe});assert.ok(fs.existsSync(path.join(cohort,'recipient-protocol.json')));
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('live CLI rejects a legacy plan before launching hosts while dry runs remain available',()=>{
+ const d=root();try{
+  const file=path.join(d,'plan.json'),out=path.join(d,'out');fs.writeFileSync(file,JSON.stringify(plan));
+  const args=['scripts/buyer-cold-isolated.mjs','--plan',file,'--out',out];
+  const live=spawnSync(process.execPath,[...args,'--run'],{encoding:'utf8'});
+  assert.equal(live.status,1);assert.match(live.stderr,/schema 5/);assert.equal(fs.existsSync(out),false);
+  const dry=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(dry.status,0);assert.equal(JSON.parse(dry.stdout).execution,'dry_run');
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+test('schema 5 dry run exposes the recipient prompt and limits without creating an acquisition',()=>{
+ const d=root();try{
+  const file=path.join(d,'plan.json'),out=path.join(d,'out');fs.writeFileSync(file,JSON.stringify(plan5));
+  const result=spawnSync(process.execPath,['scripts/buyer-cold-isolated.mjs','--plan',file,'--out',out],{encoding:'utf8'});
+  assert.equal(result.status,0);const preview=JSON.parse(result.stdout);
+  assert.deepEqual(preview.recipient.protocol,recipientProtocol);assert.match(preview.recipient.prompt,/not supplied does not mean not retained/);
+  assert.equal(fs.existsSync(out),false);
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
 });

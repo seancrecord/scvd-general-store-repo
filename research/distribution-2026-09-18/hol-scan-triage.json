@@ -1,0 +1,130 @@
+{
+  "scanner_version": "3.0.123",
+  "source_commit": "7f1c13c71da12c8edd05d123f81a929cd332b086",
+  "method": "Local scan of git archive, no environment-configured external analyzers; reported source locations reviewed",
+  "score": 82,
+  "summary": {
+    "gradeLabel": "Good",
+    "findings": {
+      "critical": 0,
+      "high": 32,
+      "medium": 2,
+      "low": 0,
+      "info": 0
+    },
+    "integrations": []
+  },
+  "unique_findings": [
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "vitest.config.ts",
+      "lineNumber": 92
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "cli/cli.test.mjs",
+      "lineNumber": 271
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "scripts/bazaar-check.mjs",
+      "lineNumber": 293
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "scripts/buyer-cold-retention.test.mjs",
+      "lineNumber": 48
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "src/pages/storefront-page.ts",
+      "lineNumber": 64
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "src/store/site-verification.ts",
+      "lineNumber": 73
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "src/store/trade-counter.ts",
+      "lineNumber": 234
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/alert-mutes.spec.ts",
+      "lineNumber": 23
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/desk-conditions.spec.ts",
+      "lineNumber": 28
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/desvela-registry.spec.ts",
+      "lineNumber": 10
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/glama-connector-claim.spec.ts",
+      "lineNumber": 37
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/high-shelf-wire.spec.ts",
+      "lineNumber": 174
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/purchase-protocol.spec.ts",
+      "lineNumber": 116
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/trade-auth.spec.ts",
+      "lineNumber": 21
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "test/trade-counter.spec.ts",
+      "lineNumber": 31
+    },
+    {
+      "ruleId": "HARDCODED_SECRET",
+      "severity": "high",
+      "filePath": "webmcp/purchase.test.mjs",
+      "lineNumber": 163
+    },
+    {
+      "ruleId": "GITHUB_ACTION_UNPINNED",
+      "severity": "medium",
+      "filePath": ".github/workflows/release-provenance.yml",
+      "lineNumber": null
+    }
+  ],
+  "triage": {
+    "high": "12 test fixture locations, printed PEM header example, public Chrome origin trial token, public domain challenge, deliberately public capped test-mode sandbox credential",
+    "medium": "One SLSA reusable-workflow semver reference counted twice; upstream requires full semver tag"
+  },
+  "limits": [
+    "Not a clean scan or general security review",
+    "No blanket suppressions or scanner CI changes",
+    "Local source commit may differ from the catalog runner checkout; counts and finding classes match"
+  ]
+}

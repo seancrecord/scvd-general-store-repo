@@ -72,7 +72,7 @@ export function renderDisclosurePage(data: DisclosurePageData): string {
     nothing here changes a price, and none of it reaches a certificate. Counts are floors: one key per door per month, read-modify-write,
     written beside the answer and never in front of it. Another month: <code>?month=YYYY-MM</code>.</small></p>
   </section>
-  ${doorSection("The paid door", data.paid, "One row per settled purchase, house wallets included (the census does not know the house list; the buyers page does).")}
+  ${doorSection("The paid door", data.paid, "One row per settled purchase, house wallets skipped at settle, the same rule as the buyers page.")}
   ${doorSection("The free door", data.free, "One row per call on the three pre-payment instruments, any door. A scanner calling preflight a hundred times is a hundred rows that filled nothing.")}
   <section>
     <p><small>If the ignores stay near the whole after a month, the ask is wrong, not the buyers, and rule 56 wants that said on /corrections rather than read as "agents don't disclose".</small></p>

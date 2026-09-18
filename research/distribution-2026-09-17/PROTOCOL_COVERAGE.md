@@ -1,5 +1,7 @@
 # Protocol discovery and admission — September 17, 2026
 
+**September 18 readback:** [current follow-through](../distribution-2026-09-18/README.md) confirms Gemini gallery 0.2.4, the deployed A2A display repair, and the remaining account/Anro admission gates. Earlier observations below retain their dates.
+
 Canonical home: https://scvd.store. Public protocol records are grouped at
 `/trust` by the prepared implementation; this document retains submission
 state and missing prerequisites. A pending issue is not an admitted listing.

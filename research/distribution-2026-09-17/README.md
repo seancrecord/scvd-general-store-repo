@@ -1,5 +1,7 @@
 # Distribution follow-through — September 17, 2026
 
+**September 18 readback:** [current follow-through](../distribution-2026-09-18/README.md) confirms Gemini gallery 0.2.4, the deployed A2A display repair, and the remaining account/Anro admission gates. Earlier observations below retain their dates.
+
 **Release follow-through:** the keeper completed the OpenAI skill update and authorized PR/merge. [Current release and host-check record](RELEASE.md) supersedes the earlier local-only status notes below.
 
 The foundation already exists. Reuse the published identity and plugin assets;

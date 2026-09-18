@@ -1,5 +1,28 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-18 — Gallery readback and registry intake boundaries
+
+[Antigravity plugins](https://antigravity.google/docs/plugins) reuse skills but
+require a minimal manifest; [MCP config](https://antigravity.google/docs/mcp/)
+uses `serverUrl`, not the existing `url` field. A local preview adapts the wrapper
+and preserves skill bytes. Native host execution and external gallery admission
+remain unverified. [Preparation](../registry/antigravity/README.md).
+
+The separate a2aregistry.org [smoke-test source](https://github.com/prassanna-ravishankar/a2a-registry/blob/19a44e5408a622ed8b61dde795bf3ff19b3b4cd9/backend/app/smoke_test.py)
+sends a fixed text greeting. SCVD's declared JSON task completed in a direct live
+check while the greeting was rejected; [issue #184](https://github.com/prassanna-ravishankar/a2a-registry/issues/184)
+records the compatibility gap without claiming the deployed SDK exception.
+
+[Gemini releasing](https://geminicli.com/docs/extensions/releasing/) and its
+[gallery](https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo)
+were read: SCVD 0.2.4 appears with MCP and Skills, without a Google endorsement.
+[Anro's directory](https://directory.anroagents.com/) directs external agents to
+publish a domain manifest; [hosted-agent docs](https://anroagents.com/docs/agent-discovery/)
+describe a paid publishing workflow. No direct external OASF upload or guaranteed
+crawl was established. SCVD's manifest is reachable but the publisher query is
+empty. The Global A2A Registry's [mode-display repair](https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7)
+was read back live; ownership still needs sign-in. [Dated receipts and limits](../research/distribution-2026-09-18/README.md).
+
 ## 2026-09-17 — Distribution formats exist; admission and parsing are separate
 
 [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) includes OASF in its

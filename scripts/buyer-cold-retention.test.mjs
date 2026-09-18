@@ -95,7 +95,7 @@ async function fixture(schema_version=3){
  return{d,save,original,bundle,review,run};
 }
 
-for(const version of [3,4]){
+for(const version of [3,4,5]){
 test(`schema ${version}: a historical corpus snapshot verifies without inventing an expiry, entirely offline`,async()=>{
  const b=await fixture(version),old=globalThis.fetch;globalThis.fetch=()=>{throw Error('no network permitted');};
  try{const r=await scoreColdRun(b.run,b.review,b.d);assert.equal(r.usable,'pass');assert.equal(r.verification.expiry,'not_declared');assert.equal(r.verification.signature,true);}finally{globalThis.fetch=old;fs.rmSync(b.d,{recursive:true,force:true});}

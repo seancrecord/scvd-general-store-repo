@@ -63,6 +63,20 @@ export function renderSignalsPage(data: SignalsPageData): string {
     readsByKind[kind] = (readsByKind[kind] ?? 0) + n;
   }
   const readsLine = `${total(s.reads)} post-purchase reads (${sorted(readsByKind).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ") || "none"}); ${total(s.verify_age)} organic re-verifications by age.`;
+  const readersByClass: Record<string, number> = {};
+  const readersOld: Record<string, number> = {};
+  for (const [k, n] of Object.entries(s.readers)) {
+    const [cls, age] = k.split(":");
+    readersByClass[cls ?? "unnamed"] = (readersByClass[cls ?? "unnamed"] ?? 0) + n;
+    if (age === "over_1w") readersOld[cls ?? "unnamed"] = (readersOld[cls ?? "unnamed"] ?? 0) + n;
+  }
+  const referrersNamed = Object.fromEntries(Object.entries(s.referrers).filter(([k]) => k !== "none" && k !== "own"));
+  const readersLine = total(s.readers) === 0
+    ? "No receipt reads since the signal went in."
+    : `${total(s.readers)} receipt reads: ${sorted(readersByClass).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ")}. Over a week after minting: ${sorted(readersOld).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ") || "none"}. Shown from ${Object.keys(referrersNamed).length} named host${Object.keys(referrersNamed).length === 1 ? "" : "s"}.`;
+  const examplesLine = total(s.examples) === 0
+    ? "No purchase carried a worked example as its input."
+    : `${total(s.examples)} purchases bought the worked example as-is: ${sorted(s.examples).slice(0, 3).map(([k, n]) => `<code>${escapeHtml(k)}</code> ×${n}`).join(", ")}.`;
   const purposesDetail = s.purposes.length === 0
     ? "<p><small>Nobody wrote a purpose this month.</small></p>"
     : `<table border="1" cellpadding="4"><tr><th>day</th><th>item</th><th>purpose, their words</th></tr>
@@ -78,8 +92,10 @@ export function renderSignalsPage(data: SignalsPageData): string {
   </section>
   ${reading("Which rail, by door", railLine, `<h3>HTTP</h3>${table(railHttp, ["network", "settles"])}<h3>MCP</h3>${table(railMcp, ["network", "settles"])}`,
     "The rails offered are on /rails. A rail nobody chooses is a fact; a rail chosen only over MCP is a client default showing through.")}
-  ${reading("Avoidable 400s, by item and field", refusalLine, table(s.refusal, ["item:field", "refusals"]),
-    "A pre-payment refusal costs the buyer a round trip and nothing else. The cold waves counted these by hand; a field that leads this table is a description to rewrite, not a buyer to blame.")}
+  ${reading("Avoidable 400s, by item, field and why", refusalLine, `${table(s.refusal, ["item:field:reason", "refusals"])}<h3>The worked example, bought as-is</h3><p>${examplesLine}</p>${table(s.examples, ["item:field", "purchases"])}`,
+    "missing: the field was absent. malformed: it failed the published pattern. example: the worked example was pasted back. other: an encoding or callback refusal. A field that leads this table is a description or an example to rewrite, not a buyer to blame; an example bought as-is is a signed reading of a placeholder, which is the same defect from the other side.")}
+  ${reading("Who reads receipts", readersLine, `<h3>By reader and artifact age</h3>${table(s.readers, ["reader:age", "reads"])}<h3>Where they were shown (referrer host)</h3>${table(s.referrers, ["host", "reads"])}`,
+    "Classed from headers the verify route already keeps for ninety days; nothing is placed on the receipt and nothing new is collected. browser is whoever negotiated HTML, crawler is the shared table, agent is the rest. A browser read over a week after minting is a person being shown proof; the host it came from is where the store's artifacts travel. own means a link from our own pages; none means no referrer was sent, which is most agents.")}
   ${reading("Does anyone read what they bought", readsLine, `<h3>Reads by kind and artifact age</h3>${table(s.reads, ["kind:age", "reads"])}<h3>Re-verifications by artifact age (organic, from the verify counters)</h3>${table(s.verify_age, ["age", "verifies"])}`,
     "replay is the integration kit at /api/replay; order_poll and check_order are humans and agents waiting on the keeper; purchase_status is the private recovery read. under_1h reads are the buyer itself; over_1w reads are somebody else, which is the value.")}
   ${reading("What they said it was for", `${s.purposes.length} purposes written this month${s.purposes_truncated ? ` (the list stopped at ${PURPOSES_CAP})` : ""}.`, purposesDetail,
