@@ -1,0 +1,53 @@
+{
+  "sourceCommit": "c95350d112571e79eeb727750ef72f0a85122343",
+  "cliVersion": "2.22.0",
+  "agentServerVersion": "0.66.0",
+  "method": "manual configuration supported by CLI docs; path and installedPowers shape verified against installed native loader",
+  "files": {
+    "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
+    "plugin.json": "7a8e190d50ef38a80d1cff469cf3eb270f5e432570c97b084ac55480ea15c4e0",
+    "README.md": "a44a475b0b77a4984eb5053f0c1a120acd1d778d513aa74b4f0db45524c7339a",
+    "mcp.json": "8a0dcedc5c87077272f4d8795a12f34d3672a5217f2a02f1db8ac47ff71c696c",
+    "skills/scvd-x402-verification/SKILL.md": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc",
+    "skills/scvd-general-store/SKILL.md": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
+    "skills/scvd-general-store/references/payment-debugging.md": "44d1f58efb073e0d14fb066a43c6b5d4427bc09c268572c42b76d5ed43479741",
+    "skills/scvd-general-store/references/mpp.md": "fc1c64f97565972cea667c0b1c55203b0d97b8e79b438faa0c53a4050c95bdcc",
+    "skills/scvd-general-store/references/inspection.md": "8153fe6d71ef17c604f0455e58f882533ba3187aaddfa3c68a9060d68ae09a38",
+    "skills/scvd-general-store/references/history.md": "5669c25f5ae8e66f76195fdec370763ff005096fb53e0ba2fc8df9e50630669a",
+    "skills/scvd-general-store/references/transports.md": "bde418d3918a770977c9f7b0333dbfbaa5894b8ec46c763e1dabbeebca815a17",
+    "skills/scvd-general-store/references/verification.md": "71ab4582047334af74d26b17b577b9b26c580761f058abd04e53193d97b541aa",
+    "skills/scvd-general-store/references/buyer-seller-testing.md": "7723a5949216830f0d693d2718bb11f07e6113bbb7dcd9006b64ac0321e1b702",
+    "skills/scvd-general-store/references/store.md": "8af371157fa30a205dcb5018dafe4d627a0be6afc4f6cf940eb11e71d59714c8",
+    "skills/scvd-general-store/references/packages.md": "8a11350d10e7d80e73b79c48fb179d2e201ac18f6de845f36860a2c98132dee3",
+    "skills/scvd-general-store/references/purchases.md": "0fcacfc56acb667c8485ad36ea040b30aba63e52254348d54c048aee413c8e2b"
+  },
+  "observed_on": "2026-09-18",
+  "skills_read": [
+    "scvd-general-store",
+    "scvd-x402-verification"
+  ],
+  "servers_exposed": [
+    "scvd-general-store",
+    "scvd-tab"
+  ],
+  "free_call": {
+    "tool": "preflight_endpoint",
+    "url": "https://example.com/",
+    "verdict": "not_ready",
+    "level": "L1",
+    "http_status": 200
+  },
+  "not_tested": [
+    "IDE installation",
+    "paid operations",
+    "Tab operations",
+    "offline verification"
+  ],
+  "submission": {
+    "status": "submitted-awaiting-review",
+    "confirmation": "Thank you. We\u2019ve received your message, and we\u2019ll review it soon.",
+    "url": "https://kiro.dev/powers/submit/",
+    "tracking": "https://github.com/seancrecord/scvd-general-store-repo/pull/800#issuecomment-5733234892"
+  },
+  "limit": "Power activation output was truncated by the host; both skill reads and the selected preflight call completed. No complete-catalog usability claim."
+}

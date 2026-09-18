@@ -3,7 +3,7 @@
 Prepared September 17, 2026. This is submission material; current human actions
 are in [KEEPER_LIST](../KEEPER_LIST.md), builds/qualification in
 [ROADMAP TR-D](../ROADMAP.md), and channel status in [DISTRIBUTION](../DISTRIBUTION.md).
-Cursor and Claude were submitted in the September 17 follow-up; both reviews are pending. Kiro remains unsubmitted.
+Cursor and Claude were submitted in the September 17 follow-up; both reviews are pending. Kiro was submitted September 18 after native CLI qualification; review is pending.
 
 Plugin packaging has its own version in `plugin.json`; host wrappers are held to
 it by tests. A packaging-only release does not require republishing the unchanged
@@ -103,23 +103,39 @@ paid tools were not qualified by this test.
 No additional POWER.md wrapper is required by that route. Its
 [creation guide](https://kiro.dev/docs/powers/create/) covers preparation/testing.
 The form requires a working tested package, stable MCP services, and README
-privacy/support links. Those links are added in this branch; publish them before
-submission. Kiro host testing and the stability qualification remain outstanding.
+privacy/support links. The published package was installed as a local Power in
+Kiro CLI 2.22.0 with its v3 engine (KAS 0.66.0): both skills loaded, both MCP
+servers were exposed and the free preflight completed. IDE installation, paid
+operations and Tab operations were not tested. The application was submitted
+September 18 with the keeper-approved company contact and publisher terms.
+Kiro confirmed receipt; review is pending. [Completion record](../research/distribution-2026-09-18/FOLLOW_THROUGH.md).
 
-Prepared form values:
+Submitted field reference (contact retained privately in the submission receipt):
 
 | Field | Value |
 | --- | --- |
 | First / last name | Sean / Record |
 | Organization | Read `author.name` in the root manifest |
-| Email | Publisher contact to be confirmed; do not invent one |
-| Use case | Verify agent commerce evidence |
+| Email | Keeper-approved company contact; do not substitute the earlier personal address |
+| Use case | x402 Preflight and Verification |
 | Public repository | https://github.com/seancrecord/scvd-general-store-repo |
 | Domain/problem | Agents need to understand a payment challenge and the limits of signed evidence before deciding to spend. SCVD supplies preflight, receipt and observation tools with explicit gaps. |
 
 The form links its publisher terms and privacy notice. Submission is not listing
 approval. Record the returned receipt, then verify the public power page before
 adding it to SCVD's trust records.
+
+## Cline catalog
+
+The official [cline/marketplace](https://github.com/cline/marketplace) accepts
+separate skill and MCP entries. [Skill PR #122](https://github.com/cline/marketplace/pull/122)
+and [MCP PR #123](https://github.com/cline/marketplace/pull/123) are submitted and
+awaiting review. Cline CLI 3.0.62 installed the skill and MCP configuration in
+isolated storage; a separate MCP SDK call using the saved configuration returned
+the expected free preflight result. A subsequent native Cline model run loaded
+the verification skill and completed that free preflight after sign-in and
+individual tool approvals; [receipt](../research/distribution-2026-09-18/cline-native-execution.json). Both catalog PR descriptions were updated and read back. This
+route supersedes the older mcp-marketplace issue/icon preparation for this pass.
 
 ## Existing channels to finish
 
@@ -136,10 +152,25 @@ adding it to SCVD's trust records.
 - **Gemini:** CLI 0.60.0 installed public commit `2aba2639c0dc5e6954f6ce0180f6288f43af2702`
   in isolated temporary storage, discovered both skills and connected SCVD MCP.
   [Receipt](../research/distribution-2026-09-17/observations/gemini-host-qualification.json).
-  No model tool call or gallery admission was tested. Release the correction
-  on main, add the gallery topic, and verify the crawl.
+  The September 18 [gallery readback](https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo) confirms version 0.2.4 with MCP and Skills labels. The correction is released and crawler opt-in is set. Model tool execution remains unverified.
 
 ## What to record after each host test
+
+**HOL community catalog:** [PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349)
+was submitted September 18 for the existing public package under Tools &
+Integrations. Local alphabetical and contribution-discovery checks passed;
+maintainer review and indexing remain pending. The catalog's optional scanner
+workflow is not installed. This GitHub route avoids a duplicate web submission.
+The required remote contribution gate passed; the advisory scanner reported
+findings. [Reviewed context](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349#issuecomment-5731442078)
+and [local triage](../research/distribution-2026-09-18/hol-scan-triage.json) preserve
+fixture/public-value matches and the SLSA tag requirement without suppressing
+the scanner or claiming a clean review.
+
+**Antigravity:** [A local preview and reproducible preparation](antigravity/README.md)
+now cover Google's current plugin layout. This is a host adapter, not another
+MCP service. Native installation, skill/tool discovery and a free call are still
+required; a public third-party marketplace intake was not established.
 
 Record the exact public commit, host/version, discovered skills, loaded servers,
 one free evidence call and its actual result, and whether anything unexpected

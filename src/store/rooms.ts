@@ -223,6 +223,13 @@ export const ROOMS: readonly Room[] = [
   // shouldnt be in there"). The founding edition stays a signed document.
   { path: "/gazette", name: "The Gazette", on_storefront: false, in_sitemap: false },
   { path: "/almanac", name: "The Keeper's Almanac" },
+  /**
+   * Open for Business (2026-09-18): the weekly issue for sellers, on
+   * the shelf at the keeper's price. Off the storefront on the same
+   * terms as /registry and /pulse until he rules on a front slot;
+   * every agent-read surface carries it from day one.
+   */
+  { path: "/open-for-business", name: "Open for Business", on_storefront: false },
   { path: "/directory", name: "Town Directory" },
   { path: "/train", name: "The train" },
   // The card table (2026-09-12): the set, the odds with their denominators, the specimen.

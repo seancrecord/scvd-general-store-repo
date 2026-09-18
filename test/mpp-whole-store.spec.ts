@@ -1,6 +1,6 @@
 import { runInDurableObject } from "cloudflare:test";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { Challenge, Receipt } from "mppx";
+import { Challenge, PaymentRequest, Receipt } from "mppx";
 import { Fetch } from "mppx/client";
 import { charge } from "mppx/evm/client";
 import { privateKeyToAccount } from "viem/accounts";
@@ -15,6 +15,7 @@ import { LEGACY_NATIVE_ITEM } from "@/lib/mpp-checkout-capability";
 import { manifestAccepts, priceTiersUsdc } from "@/lib/payments";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { MENU_ITEMS, getMenuItem } from "@/store";
+import { decodeBase64Json } from "@/lib/base64-json";
 import type { Certificate } from "@/types";
 
 /**
@@ -33,9 +34,19 @@ const buyer = privateKeyToAccount(`0x${"09".repeat(32)}`);
 const client = charge({ account: buyer, authorization: { name: "USD Coin", version: "2" }, networks: [8453] });
 const month = NOW.toISOString().slice(0, 7);
 const ledger = () => testEnv.COUNTER_LEDGER!.get(testEnv.COUNTER_LEDGER!.idFromName(`${month}/mpp-sales`));
+/**
+ * THE RESPONSE URL IS PART OF THE CONTRACT (CV, 2026-09-18). The SDK's
+ * http transport reads every protocol's offer on a 402, and its x402
+ * reader throws when the declared resource.url differs from
+ * response.url, before the native challenge is ever signed. A Response
+ * built by app.fetch carries no url, so the harness used to sidestep
+ * the check a real fetch always makes; this wrapper restores it.
+ */
 const native = Fetch.from({ methods: [client], fetch: async (input, init) => {
   const req = new Request(input, init);
-  return request(req.url, { method: req.method, headers: req.headers });
+  const response = await request(req.url, { method: req.method, headers: req.headers });
+  Object.defineProperty(response, "url", { value: req.url });
+  return response;
 } });
 
 beforeEach(async () => {
@@ -111,6 +122,55 @@ for (const door of DOORS) {
     }
   });
 }
+
+it("the x402 terms name the URL that was asked, query and all, so a strict client can pay a door that needs one", async () => {
+  // A door that requires a query (spot_check needs ?host=) declared the
+  // bare door as its resource; the stock client compared it to the URL
+  // it had asked and refused to sign anything. The bare knock is unchanged.
+  const path = "/api/buy/spot_check?host=strict-client.example";
+  const decode = (response: Response) => decodeBase64Json(response.headers.get("PAYMENT-REQUIRED")!) as { resource: { url: string } };
+  expect(decode(await request(path)).resource.url).toBe(`https://scvd.store${path}`);
+  expect(decode(await request("/api/buy/spot_check")).resource.url).toBe("https://scvd.store/api/buy/spot_check");
+  const response = await native(`https://scvd.store${path}`);
+  expect(response.status).toBe(200);
+  expect(facilitator.settleCalls).toBe(1);
+});
+
+it("a browser bridge's key binds the challenge, and the credential retries under it (WebMCP's native lane)", async () => {
+  // webmcp/purchase.js quotes with its own Idempotency-Key and pays with the
+  // credential in Authorization under the same key; the store's side of
+  // that is that a supplied key becomes the challenge's purchase key.
+  const path = "/api/buy/the_confession?confession=I%20told%20the%20browser%20it%20was%20done.";
+  const key = crypto.randomUUID();
+  const quote = await request(path, { headers: { "Idempotency-Key": key } });
+  expect(quote.status).toBe(402);
+  const challenge = Challenge.deserialize(quote.headers.get("WWW-Authenticate")!);
+  const meta = challenge.opaque ? PaymentRequest.deserialize(challenge.opaque) : challenge.meta;
+  expect(meta?.purchase_key, "the challenge is bound to the supplied key").toBe(key);
+  const header = await client.createCredential({ challenge: challenge as never, context: {} });
+  const paid = await request(path, { headers: { Authorization: header, "Idempotency-Key": key } });
+  expect(paid.status).toBe(200);
+  expect(Receipt.deserialize(paid.headers.get("Payment-Receipt")!)).toMatchObject({ method: "evm", status: "success" });
+  expect(facilitator.settleCalls).toBe(1);
+  const body = await paid.json<Record<string, unknown>>();
+  expect((body.certificate as Certificate).item).toBe("the_confession");
+  // The same credential under any key is the same purchase: its retained
+  // fingerprint is recognised before any key check, and nothing settles twice.
+  const again = await request(path, { headers: { Authorization: header, "Idempotency-Key": crypto.randomUUID() } });
+  expect(again.status).toBe(200);
+  expect((await again.json<Record<string, unknown>>()).charged_again).toBe(false);
+  expect(facilitator.settleCalls).toBe(1);
+  // A fresh credential sent under a key that is not its challenge's is
+  // refused before settlement.
+  const other = "/api/buy/the_confession?confession=I%20told%20the%20browser%20twice.";
+  const keyA = crypto.randomUUID();
+  const second = Challenge.deserialize((await request(other, { headers: { "Idempotency-Key": keyA } })).headers.get("WWW-Authenticate")!);
+  const fresh = await client.createCredential({ challenge: second as never, context: {} });
+  const mismatched = await request(other, { headers: { Authorization: fresh, "Idempotency-Key": crypto.randomUUID() } });
+  expect(mismatched.status).toBe(400);
+  expect(((await mismatched.json()) as { code: string }).code).toBe("mpp_purchase_key_mismatch");
+  expect(facilitator.settleCalls).toBe(1);
+});
 
 it("a row booked during the pilot reads as the pilot's product, beside the split", async () => {
   // The pilot's ledger rows carry no item. Their month's totals do not

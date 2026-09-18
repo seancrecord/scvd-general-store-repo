@@ -52,6 +52,16 @@ export function mppCheckoutEnabled(env: Pick<Env, "MPP_CHECKOUT_ENABLED" | "MPP_
   return nativeOfferAdvertised(env, path, method) && !!env.MPP_CHALLENGE_KEY && !!env.PAID_RECOVERIES && !!env.COUNTER_LEDGER;
 }
 
+/**
+ * The MCP door sells the same shelf through tools/call, and its native
+ * lane (lib/mcp-mpp-payment.ts) is enabled exactly when the item's HTTP
+ * door is: one flag, one key, the same durable bindings. Derived from
+ * the HTTP answer so the two doors cannot drift apart.
+ */
+export function nativeMcpCheckoutEnabled(env: Pick<Env, "MPP_CHECKOUT_ENABLED" | "MPP_CHALLENGE_KEY" | "PAID_RECOVERIES" | "COUNTER_LEDGER">, item: MenuItem): boolean {
+  return mppCheckoutEnabled(env, `/api/buy/${item.id}`, "GET");
+}
+
 /** This one reviewed browser surface carries a payment, not a cookie session. */
 export const mppCheckoutCors: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // Both Workers answer this surface; the doors have no durable bindings,

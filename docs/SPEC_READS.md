@@ -1,5 +1,98 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-18 — Maintainer resolves OASF admission route
+
+[AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned; the later planning comparison prices an unqualified single-VM candidate separately from the AWS control-plane floor. Individual OIDC writer access is no longer a pending route.
+
+## 2026-09-18 — OpenCode directory contribution routes
+
+The official [ecosystem page](https://opencode.ai/docs/ecosystem/) invites related-project PRs, while [CONTRIBUTING](https://github.com/anomalyco/opencode/blob/dev/CONTRIBUTING.md) requires an issue first and a complete issue template. A documentation-only Projects row is submitted in [#49834](https://github.com/anomalyco/opencode/pull/49834), linked to [#49833](https://github.com/anomalyco/opencode/issues/49833). The linked [awesome-opencode contribution guide](https://github.com/awesome-opencode/awesome-opencode/blob/main/contributing.md) uses YAML project entries with public, maintained, unique repositories. All 230 entries validated after adding SCVD; [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) carries setup instructions. The initial template warning was resolved and the bot confirmed compliance; review/admission remain unverified.
+
+## 2026-09-18 — OpenCode provider route
+
+OpenCode's [provider guide](https://opencode.ai/docs/providers/) documents native ChatGPT Plus/Pro OAuth. The isolated qualification profile now allows that provider alongside its earlier free-provider attempt; direct browser sign-in succeeded after a failed device flow. Native skill load and free preflight passed with gpt-5.5; the host-listed mini model was rejected. No credential reuse from another host or separate API billing. The guide distinguishes this from Zen's API-key/billing setup.
+
+## 2026-09-18 — Gemini consumer login retirement
+
+Google's [official deprecation notice](https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals) says consumer Google-account access to Gemini CLI ended June 18, 2026; Standard and Enterprise subscriptions remain supported. A fresh manual OAuth attempt with the current npm CLI reached that rejection after the keeper authorized it. Earlier authentication documentation still recommends Google login, so it did not resolve this account-tier boundary. [Sanitized native receipt](../research/distribution-2026-09-18/gemini-auth-retirement.json). Further Gemini qualification is skipped at the keeper's request; Antigravity remains a separate, unqualified preview. Do not erase the separately observed Gemini gallery listing or claim all authentication methods are retired.
+
+## 2026-09-18 — OASF writer access and host qualification
+
+The [Directory OIDC guide](https://blogs.agntcy.org/technical/directory/2026/08/10/dirctl-context-oidc-gateway.html) documents the public `dirctl` client. Authentication refreshed successfully, but record push remained unauthorized. [Federation setup](https://dir.agntcy.org/latest/dir/dir-federation-setup/) requires an operating node and reciprocal trust; the [staging onboarding route](https://github.com/agntcy/dir-staging/blob/main/onboarding/README.md) is not evidence of individual publisher writer access. [Dated retry and follow-up](../research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
+
+OpenCode's [skills](https://opencode.ai/docs/skills/) and [MCP configuration](https://opencode.ai/docs/mcp-servers/) support the existing assets. The [setup guide](../registry/opencode/README.md) derives MCP settings and copies skills unchanged; native skill/tool execution subsequently passed, while ecosystem admission remains pending.
+
+## 2026-09-18 — The till speaks MPP; the readings still do not
+
+Native MPP checkout, piloted on one door on 2026-09-17, now stands beside
+x402 on every HTTP door ([#790](https://github.com/seancrecord/scvd-general-store-repo/pull/790)),
+on MCP tools/call in the SDK's own transport convention
+([#804](https://github.com/seancrecord/scvd-general-store-repo/pull/804))
+and on the WebMCP quote-then-pay bridge. Two house purchases from an outside
+wallet with the stock `mppx@0.10.1` clients (HTTP and MCP) settled and were
+read back through the keeper's inspection; the [dated result](MPP_LIVE_RESULT_2026-09-18.md)
+names them. The SDK's http client compares the x402 envelope's
+`resource.url` to the response URL with strict equality before any native
+challenge is signed, so the buy routes stopped declaring a static resource
+([MCP release record](MPP_MCP_CHECKOUT_2026-09-18.md)). The challenge
+carries no EIP-712 domain; the stock client takes it from its asset
+registry or an explicit `authorization`, and the payment guide says so.
+
+The earlier position, "the store observes MPP; its till does not speak
+it" (2026-09 entries below), was true when written and is left as
+written. Every current reading surface that repeated it (battery, census,
+core, surface reads, passport rule, corpus dataset, defect vocabulary
+hint) now carries one spelled-once sentence instead: no reading rests on
+a payment, and the till speaking MPP says nothing about the door read.
+Defect vocabulary version 20 records the wording change; no assertion,
+falsifier or reading rule changed, and signed observations are not
+rewritten.
+
+## 2026-09-18 — Requested MPP directory and parser follow-ups
+
+Read [MPP directory PR #991](https://github.com/tempoxyz/mpp/pull/991),
+[x402scan #1209](https://github.com/Merit-Systems/x402scan/issues/1209), and
+[SCVD WebMCP PR #813](https://github.com/seancrecord/scvd-general-store-repo/pull/813).
+The first two are awaiting external review; WebMCP was still awaiting merge
+when the follow-up was posted. The branch's
+[dated purchase record](https://github.com/seancrecord/scvd-general-store-repo/blob/40d04f15/docs/MPP_LIVE_RESULT_2026-09-18.md)
+classifies the stock-client outside-wallet purchase as house-funded; it is not
+organic demand. That record was read, not independently re-purchased here.
+
+At 18:08 UTC the installed `@agentcash/discovery@1.7.5` reader again mapped a
+live unsigned `evm/charge` Base challenge to `tempo:8453` without decimals.
+Its captured x402 `resource.url` preserved the exact requested query string.
+An unpaid live MCP tools/call also returned `org.paymentauth/*` metadata with
+EVM charge terms. These are bounded readbacks, not full-shelf paid acceptance.
+[Recorded findings and posted comments](../research/takeoff-subject-evidence-2026-09-18/directory-followups.json).
+No newer parser release or external admission is claimed. At 19:57 UTC, after
+#813 merged, the deployed `/webmcp-purchase.js` returned 200, carried the native
+credential/challenge fields, and matched merged source byte for byte. The same
+directory comment was updated in place at 19:58 UTC. [Readback](../research/takeoff-subject-evidence-2026-09-18/webmcp-readback.json); no browser payment was exercised.
+
+## 2026-09-18 — Gallery readback and registry intake boundaries
+
+[Antigravity plugins](https://antigravity.google/docs/plugins) reuse skills but
+require a minimal manifest; [MCP config](https://antigravity.google/docs/mcp/)
+uses `serverUrl`, not the existing `url` field. A local preview adapts the wrapper
+and preserves skill bytes. Native host execution and external gallery admission
+remain unverified. [Preparation](../registry/antigravity/README.md).
+
+The separate a2aregistry.org [smoke-test source](https://github.com/prassanna-ravishankar/a2a-registry/blob/19a44e5408a622ed8b61dde795bf3ff19b3b4cd9/backend/app/smoke_test.py)
+sends a fixed text greeting. SCVD's declared JSON task completed in a direct live
+check while the greeting was rejected; [issue #184](https://github.com/prassanna-ravishankar/a2a-registry/issues/184)
+records the compatibility gap without claiming the deployed SDK exception.
+
+[Gemini releasing](https://geminicli.com/docs/extensions/releasing/) and its
+[gallery](https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo)
+were read: SCVD 0.2.4 appears with MCP and Skills, without a Google endorsement.
+[Anro's directory](https://directory.anroagents.com/) directs external agents to
+publish a domain manifest; [hosted-agent docs](https://anroagents.com/docs/agent-discovery/)
+describe a paid publishing workflow. No direct external OASF upload or guaranteed
+crawl was established. SCVD's manifest is reachable but the publisher query is
+empty. The Global A2A Registry's [mode-display repair](https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7)
+was read back live; ownership still needs sign-in. [Dated receipts and limits](../research/distribution-2026-09-18/README.md).
+
 ## 2026-09-17 — Distribution formats exist; admission and parsing are separate
 
 [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) includes OASF in its
@@ -2069,3 +2162,34 @@ establish present completion only. No model, global settings, permissions,
 credentials or timeout changed. The subsequent integrated qualification
 uses separately merged runner changes and preserves the earlier failed
 comparison. [Record](../research/integrated-buyer-2026-09-18/completion-diagnostics.json).
+
+
+### 2026-09-18 — Kiro submission and Cline catalog follow-through
+
+Read Kiro's [Power installation](https://kiro.dev/docs/powers/installation/) CLI
+tab, [creation guide](https://kiro.dev/docs/powers/create/), submission form and
+publisher terms. CLI v3 consumes installed Powers; Agent Plugins manifests are
+accepted. Checked the installed KAS 0.66.0 loader for the manual installed.json
+configuration, then qualified the unchanged public package with native skill
+reads and one free call. IDE installation and paid operations were not tested.
+The application confirmed receipt after keeper approval.
+
+Cline's official [catalog contribution guide](https://github.com/cline/marketplace/blob/main/CONTRIBUTING.md)
+provided a separate skill/MCP PR route. Native CLI installation was checked,
+then a separate SDK checked the saved MCP configuration; this is not Cline
+model execution. Existing PR states were re-read September 18.
+[Completion evidence and limits](../research/distribution-2026-09-18/FOLLOW_THROUGH.md).
+
+
+### 2026-09-18 — Zed and Windsurf route boundaries
+
+- **Zed:** its [publishing prerequisites](https://zed.dev/docs/extensions/publishing/prerequisites) say MCP extensions are headed for replacement by the MCP registry, restrict each extension to one MCP server, and require a native test. Agent-server extension submissions are already deprecated in favor of ACP. Recommendation: qualify SCVD through its existing MCP identity before considering a separate wrapper. No Zed listing or host compatibility is claimed.
+- **Windsurf:** the [extension marketplace](https://marketplace.windsurf.com/) is Open VSX, which distributes editor extensions. The [plugins documentation](https://docs.windsurf.com/plugins) describes installing Windsurf itself in other editors. Neither page establishes a submission route for our existing portable skill-plus-MCP package. A bounded docs search did not find an MCP Marketplace submission instruction; this is an unresolved route, not proof none exists.
+
+Also read OpenCode's [skill discovery](https://opencode.ai/docs/skills) and
+[ecosystem PR route](https://dev.opencode.ai/docs/ecosystem/), plus VoltAgent's
+[contribution requirements](https://github.com/VoltAgent/awesome-agent-skills/blob/main/CONTRIBUTING.md).
+No native OpenCode run or independent community-adoption evidence was established.
+These remain candidates, not submitted listings; see the same completion record.
+
+OpenCode follow-through, September 18: the documented npm CLI route installed version 1.18.31 in temporary storage. Native `debug skill` discovered both unchanged SCVD skills and `mcp list` connected both configured servers. [Receipt](../research/distribution-2026-09-18/opencode-qualification.json). This qualifies discovery/connection only. The listed free model returned a provider 403 FreeTierError before skill/tool execution; no successful execution is claimed. [CLI reference](https://opencode.ai/docs/cli/).

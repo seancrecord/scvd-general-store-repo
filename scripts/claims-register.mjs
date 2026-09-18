@@ -73,10 +73,10 @@ export const REGISTER = [
   {
     id: "identity.meta-description",
     file: "src/store/copy/storefront.ts",
-    match: "An evidence observatory for agentic commerce: preflight an x402 door before paying",
+    match: "An evidence observatory for agentic commerce: preflight an x402 endpoint before paying",
     resolution: "dated",
-    asOf: "2026-09-01",
-    why: "Short form of the sixty words inked 2026-09-01; a meta description cannot carry the whole paragraph. Owed a second edit whenever the canon moves.",
+    asOf: "2026-09-18",
+    why: "Short form of the sixty words inked 2026-09-01; a meta description cannot carry the whole paragraph. Re-cut 2026-09-18 to fit the 160-character budget it cites. Owed a second edit whenever the canon moves.",
   },
   {
     id: "identity.og-description",

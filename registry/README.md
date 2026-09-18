@@ -8,9 +8,10 @@ the keeper explicitly authorized the September 17 Copilot and 8004scan issues.
 
 | Asset | Purpose / current record |
 | --- | --- |
-| [Plugin submissions](plugin-submissions.md) | Shared fields and qualification steps for Cursor, Claude and Kiro; reuse existing skills and MCP. |
+| [Plugin submissions](plugin-submissions.md) | Shared fields and qualification steps for Cursor, Claude, Kiro and Cline; reuse existing skills and MCP. |
 | [OpenAI verifier](openai-plugin-verifier-submission.md) | Published ChatGPT verifier; keeper completed the skill update September 17. Updated-version review/publication remains unverified. |
 | [Agent Finder](agentfinder/README.md) | Existing PR #34 contains both skills and MCP/plugin descriptors. Continue it; do not repeat the old missing-entry instructions. |
+| [OpenCode setup](opencode/README.md) | Reuses both skills and derives MCP settings from the shared descriptor. Native discovery, connections, skill load and free preflight passed; ecosystem admission remains separate. |
 | [AGNTCY](agntcy/README.md) | Generated OASF record, published domain key, dated local signing receipt. Shared-node admission/current-record publication still unresolved. |
 | [ClawHub](clawhub/) | Public skill bundle and [publication receipt](clawhub/published.json). Source version is `SKILL_VERSION` in `src/store/spec.ts`. |
 | [Hugging Face](huggingface/README.md) | Existing dataset and prepared verifier Space; host publication status stays explicit. |

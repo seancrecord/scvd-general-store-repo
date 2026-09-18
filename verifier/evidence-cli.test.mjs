@@ -134,3 +134,82 @@ test("saved certificate verification retains missing and tampered attachment fai
     assert.equal((await run(["verify-source", "https://merchant.example/original.json", "--public-key", key])).code, 2);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+test("subject reading selects only authenticated exact-URL corpus rows and preserves gaps and dates", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-subject-test-"));
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const key = publicKey.export({ type: "spki", format: "der" }).subarray(-32).toString("hex");
+  const url = "https://merchant.example/paid?kind=one";
+  const row = { url, observed_at: "2026-09-07T00:00:00Z", verdict: "ready", failed: [], gaps: ["no payment made"] };
+  const snapshot = { version: 1, sequence: 1, taken_at: "2026-09-18T00:00:00Z", previous_digest: null, source: "ward_round", week: "2026-W38", round: { hosts: [row, { ...row, url: "https://merchant.example/paid?kind=two" }] } };
+  const source = join(dir, "original.json");
+  const save = async () => {
+    const payload = JSON.stringify(snapshot);
+    const doc = { snapshot, digest: createHash("sha256").update(payload).digest("hex"), signature: sign(null, Buffer.from(payload), privateKey).toString("hex"), public_key: key,
+      history: [{ ...row, observed_at: "2026-09-18T00:00:00Z" }, row, row] };
+    await writeFile(source, JSON.stringify(doc));
+    return doc;
+  };
+  const args = ["verify-source", source, "--public-key", key, "--subject", url];
+  try {
+    const doc = await save();
+    const original = await readFile(source, "utf8");
+    const good = await run(args);
+    assert.equal(good.code, 0, good.stderr);
+    const reading = JSON.parse(good.stdout).subject_evidence;
+    assert.equal(reading.status, "present");
+    assert.equal(reading.matched_observations, 1);
+    assert.equal(reading.snapshot_taken_at, snapshot.taken_at);
+    assert.deepEqual(reading.observations, [{ signed_claims_pointer: "/round/hosts/0", value: row }]);
+    assert.equal(reading.omitted_observations, 0);
+    assert.equal(await readFile(source, "utf8"), original);
+    assert.deepEqual(await readdir(dir), ["original.json"]);
+    const absent = await run([...args.slice(0, -1), "https://merchant.example/paid"]);
+    assert.equal(absent.code, 0); // Exit codes still describe signature/bindings, not subject presence.
+    assert.equal(JSON.parse(absent.stdout).subject_evidence.status, "absent_from_snapshot");
+    const badKey = await run(["verify-source", source, "--public-key", "0".repeat(64), "--subject", url]);
+    assert.equal(badKey.code, 1);
+    assert.equal(JSON.parse(badKey.stdout).subject_evidence.status, "not_verified");
+    assert.deepEqual(JSON.parse(badKey.stdout).subject_evidence.observations, []);
+    doc.snapshot.round.hosts[0].verdict = "tampered";
+    doc.digest = createHash("sha256").update(JSON.stringify(doc.snapshot)).digest("hex");
+    await writeFile(source, JSON.stringify(doc));
+    const tampered = await run(args);
+    assert.equal(tampered.code, 1);
+    assert.deepEqual(JSON.parse(tampered.stdout).subject_evidence.observations, []);
+    snapshot.round.hosts = Array.from({ length: 40 }, () => ({ ...row, large: "x".repeat(4096) }));
+    await save();
+    const cappedOutput = await run(args);
+    const capped = JSON.parse(cappedOutput.stdout).subject_evidence;
+    assert.equal(capped.matched_observations, 40);
+    assert.ok(capped.omitted_observations > 0);
+    assert.equal(capped.observations.length + capped.omitted_observations, 40);
+    assert.ok(Buffer.byteLength(JSON.stringify(capped.observations)) <= capped.observations_max_bytes);
+    assert.ok(Buffer.byteLength(cappedOutput.stdout) < capped.observations_max_bytes + 4096);
+    assert.deepEqual(capped.observations[0].value, snapshot.round.hosts[0]); // Whole rows, no hidden gap stripping.
+    snapshot.round.hosts = [{ ...row, large: "x".repeat(40000) }];
+    await save();
+    const oversized = JSON.parse((await run(args)).stdout).subject_evidence;
+    assert.equal(oversized.status, "present");
+    assert.equal(oversized.matched_observations, 1);
+    assert.equal(oversized.omitted_observations, 1);
+    assert.deepEqual(oversized.observations, []);
+    let nested = { gap: "not observed" };
+    for (let i = 0; i < 500; i++) nested = { nested };
+    snapshot.round.hosts = [{ ...row, nested, unicode: "🦖".repeat(10000) }, { ...row, nested }];
+    await save();
+    const nestedOutput = await run(args);
+    const nestedReading = JSON.parse(nestedOutput.stdout).subject_evidence;
+    assert.equal(nestedReading.matched_observations, 2);
+    assert.equal(nestedReading.omitted_observations, 1); // Count UTF-8 bytes, not JS characters.
+    assert.deepEqual(nestedReading.observations[0].value, snapshot.round.hosts[1]);
+    assert.ok(Buffer.byteLength(nestedOutput.stdout) < nestedReading.observations_max_bytes + 4096);
+    const payload = JSON.stringify({ cert_id: "cert_other", url });
+    await writeFile(source, JSON.stringify({ algorithm: "ed25519", signed_payload: payload, signature: sign(null, Buffer.from(payload), privateKey).toString("hex"), public_key: key }));
+    const unsupported = await run(args);
+    assert.equal(unsupported.code, 0);
+    assert.equal(JSON.parse(unsupported.stdout).subject_evidence.status, "unsupported_artifact");
+    assert.equal((await run([...args.slice(0, -1), "not-a-url"])).code, 2);
+    assert.equal((await run([...args.slice(0, -1), "https://user:secret@merchant.example/"])).code, 2);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});

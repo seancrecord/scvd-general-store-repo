@@ -7,7 +7,7 @@ import { target as a2aTarget } from "@/lib/a2a-instrument";
 import { a2aAdmission } from "@/lib/a2a-admission";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
-import { buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
+import { buyInputExample, buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
 import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
@@ -879,6 +879,16 @@ export function purchaseInputFrom(
    */
   const disclosure = readDisclosure(read);
   if (disclosedAnything(disclosure)) input.disclosure = disclosure;
+  /**
+   * THE EXAMPLE, BOUGHT AS-IS (buyer signals, 2026-09-18). A worked
+   * example that passes its own pattern is accepted and sold, so a
+   * cheap model that pastes it gets a signed reading of a placeholder.
+   * Noticed here, where the raw values still are, and counted at
+   * settle as a shape; the name alone rides, never the value.
+   */
+  const example = buyInputExample(item);
+  const copied = Object.keys(example).filter((field) => field !== "agent_name" && read(field) !== undefined && read(field)?.trim() === String(example[field]));
+  if (copied.length > 0) input.exampleCopied = copied;
 
   const agentName = read("agent_name") ?? "";
   if (agentName && item.id !== "the_confession") {

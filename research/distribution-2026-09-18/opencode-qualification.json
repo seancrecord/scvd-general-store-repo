@@ -1,0 +1,36 @@
+{
+  "observed_on": "2026-09-18",
+  "host": "OpenCode CLI 1.18.31",
+  "source_commit": "2dd2af818e0b7dd0a497f145bf2d754ff88e574b",
+  "method": "isolated project and XDG paths; --pure; native debug skill and mcp list",
+  "skills": [
+    {
+      "name": "scvd-x402-verification",
+      "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+    },
+    {
+      "name": "scvd-general-store",
+      "sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8"
+    }
+  ],
+  "mcp": {
+    "scvd-general-store": "connected",
+    "scvd-tab": "connected"
+  },
+  "configuration_source": "root mcp.json, translated to OpenCode remote/local configuration",
+  "model_execution": "passed with openai/gpt-5.5 after keeper-authorized ChatGPT OAuth",
+  "tool_execution": "verification skill loaded, one free example.com preflight returned not_ready / L1",
+  "paid_operations": "not tested",
+  "submission": "official ecosystem PR #49834 and community directory PR #736 submitted; review pending",
+  "model_error": {
+    "status": 403,
+    "type": "FreeTierError",
+    "message": "OpenCode's free tier can only be used from within OpenCode"
+  },
+  "existing_upstream_report": "https://github.com/anomalyco/opencode/issues/49678",
+  "native_execution_receipt": "opencode-native-execution.json",
+  "submissions": {
+    "official": "https://github.com/anomalyco/opencode/pull/49834",
+    "community": "https://github.com/awesome-opencode/awesome-opencode/pull/736"
+  }
+}

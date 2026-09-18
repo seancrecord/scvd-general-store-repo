@@ -1,0 +1,50 @@
+{
+  "recorded_at": "2026-09-18T19:54:57.022960+00:00",
+  "base_commit": "83b275c06fcf9bebf25a688068d01adcd6d00b1d",
+  "verifier_evidence_tests": {
+    "passed": 194,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "build_check": "passed",
+  "docs_check": "passed",
+  "source_syntax_and_diff_check": "passed",
+  "local_tarball": {
+    "cli_matches_source": true,
+    "one_invocation_verified": true,
+    "output_bytes": 1980,
+    "native_agent_acceptance": false
+  },
+  "negative_controls": [
+    "new subject regression fails without implementation",
+    "nested output allowance fails with pretty serialization"
+  ],
+  "full_worker_suite": {
+    "status": "required_ci_before_merge",
+    "local_unsharded": "interrupted after host sleep; exit 130",
+    "local_shards": "cancelled in favor of required hosted CI; all four exited 130; not counted as passed"
+  },
+  "source_hashes": {
+    "verifier/evidence-cli.mjs": "534332ca39b019fc0e041dab6b730c1db62cadeeb984bfd6bc3667dac8fdf5f0",
+    "verifier/evidence-cli.test.mjs": "4877a537d99706034d99d599ef5dda8def9aba6fe68b29bb4baff527dcb0fc56",
+    "verifier/README.md": "c12cbab60b98a17868fc81fb70dbc04fb0f16b51a5df9fb799afc9cbcbe87cbd",
+    "verifier/CHANGELOG.md": "e864fd46d5f38f2a8e551108fbe957a86bf5f39fce7b9d48172e921788a44344"
+  },
+  "log_hashes": {
+    "scvd-subject-red.log": "350a84c894c3efb97d0ea455ad058b9a9478af3bcf24c1b35d2eb35bfac5a107",
+    "scvd-subject-output-bound-red.log": "3dd01ad61e2641ce200fb8a56918ab34c0f72f13dbbb43543c28471d979fa4c5",
+    "scvd-subject-evidence-final.log": "0492a40d3df32107b8b71e10f6618f4718884f5d5c60266602d1945a336bfea6",
+    "scvd-subject-types.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-subject-build.log": "c6a81732d542d5d501ca4893fb142f44a035d66e089594ab8566ea414cf1af00",
+    "scvd-subject-docs-final.log": "a682222a222216b9d6da5fc74bb9fe16a6e62dd5e4f35ebc24d8d41ba271c324",
+    "scvd-subject-rebased-evidence.log": "e42df8f721066d373e60617f387d34aa773da8c9c6e31ab023c87a660a6f1ea8",
+    "scvd-subject-rebased-types.log": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "scvd-subject-rebased-build.log": "8517ff29455074331d82c93f4a4efe15c63949c64873e6799e83fd0969685639"
+  },
+  "rebased_onto": "8917068a267aa11a35d490a6307c928a07e308ff",
+  "rebased_checks": {
+    "evidence_tests_passed": 194,
+    "typecheck": "passed",
+    "build_check": "passed"
+  }
+}

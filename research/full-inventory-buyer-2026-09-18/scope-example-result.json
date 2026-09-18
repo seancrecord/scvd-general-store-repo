@@ -1,0 +1,38 @@
+{
+  "classification": "Offline example only; not shipped buyer guidance or a native acceptance result.",
+  "baseline": {
+    "valid": true,
+    "evidence_complete": true,
+    "snapshot_publication": "2026-09-18T14:22:58.378Z",
+    "authenticated_observations": [
+      {
+        "pointer": "/round/hosts/50",
+        "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+        "observed_at": "2026-09-07T02:30:20.531Z",
+        "verdict": "ready",
+        "declared_expiry": null
+      }
+    ],
+    "limits": [
+      "issuer identity without an independently trusted key",
+      "issue time or key authorization at issue time",
+      "Bitcoin anchoring without independent OTS verification",
+      "truth, settlement, delivery, completeness of the observed world",
+      "authenticity of context, filenames or captured key history"
+    ]
+  },
+  "unsigned_context_control": {
+    "input_historical_rows": 3,
+    "result_unchanged": true
+  },
+  "signed_tamper_control": {
+    "valid": false,
+    "error": "corpus_digest_mismatch",
+    "authenticated_observations": []
+  },
+  "rehash_tamper_control": {
+    "valid": false,
+    "evidence_complete": true,
+    "authenticated_observations": []
+  }
+}

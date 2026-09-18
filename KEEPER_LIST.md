@@ -26,18 +26,15 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- **PRESS — put the challenge key on the doors, 2026-09-18.** The
-  whole-shelf native release (`docs/MPP_WHOLE_STORE_2026-09-18.md`)
-  makes every HTTP door a native door, and the doors Worker mints the
-  challenge itself once it holds the same `MPP_CHALLENGE_KEY` the
-  store holds. Until it does, every unsigned knock on every door is
-  handed to the store — correct, and the cold start the doors exist
-  to remove. One press, the same value as the store's, at least 32
-  bytes: `npx wrangler secret put MPP_CHALLENGE_KEY -c doors/wrangler.jsonc`.
-  Then one unsigned knock on any door should answer without
-  `x-scvd-doors: passed` and with `WWW-Authenticate: Payment`. A short
-  key is refused by both Workers; the store answers 500 on every native
-  door with one, so set the same long key in both places.
+- **The doors mint the native challenge, 2026-09-18 — no press needed.**
+  The whole-shelf native release (`docs/MPP_WHOLE_STORE_2026-09-18.md`)
+  made every HTTP door a native door, and you put the store's
+  `MPP_CHALLENGE_KEY` on `scvd-doors` the same day: an unsigned knock on
+  any door now answers with `WWW-Authenticate: Payment` and without
+  `x-scvd-doors: passed`, in single-digit milliseconds of Worker time.
+  If the key is ever rotated, rotate it in both places to the same value,
+  at least 32 bytes; a short key is refused by both Workers and the
+  store answers 500 on every native door with one.
 - **The note audits stopped paging you, 2026-09-15 — no press needed.**
   You said of a `worker_health` page about a note this desk sent to
   delvorn.site: "I don't want to get this particular alarm anymore" —
@@ -1100,13 +1097,21 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **WAIT — OpenCode ecosystem submissions (September 18).** Native skill load and free preflight passed via keeper-authorized ChatGPT OAuth. [Official PR #49834](https://github.com/anomalyco/opencode/pull/49834), linked to the required [issue #49833](https://github.com/anomalyco/opencode/issues/49833), and [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) are submitted. Community schema validation passed; neither listing is accepted yet. [Native receipt](research/distribution-2026-09-18/opencode-native-execution.json).
+
+- **RULE / WAIT — September 18 continuation.** Current OASF validation passes. [Maintainer confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) the shared testbed is read-only: publishing requires our own federated node. [Prepared scope and planning costs](registry/agntcy/FEDERATION.md); hosting/budget and ongoing operation need a keeper decision. Anro publisher lookup remains empty; indexing email awaits send authorization. Gemini Google authorization reached a retired consumer-tier gate; keeper requested skipping Gemini September 18. Cline sign-in and native execution completed: verification skill loaded and a free preflight returned not_ready / L1. [Evidence and next steps](research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
+
 - **LOOK / PRESS — distribution follow-through (2026-09-17).**
   [Live findings and prepared submissions](research/distribution-2026-09-17/README.md):
   five ERC-8004 directories show SCVD; 8004scan transport health and trust8004
   metadata need operator follow-ups. Agentscan also has an AI taxonomy conflict
-  despite correctly parsing the canonical record. AgentERC did not return the identity;
+  despite correctly parsing the canonical record. AgentERC again did not return the identity September 18; its Base index status
+  was five days old while Ethereum was current. Investigate ingestion lag before
+  changing canonical metadata; [current readback/contact](research/distribution-2026-09-18/README.md).
   HOL/AgentRanking reads failed. Cisco search returned no SCVD result; Anro's
-  publisher query returned zero. Continue the existing AGNTCY access request,
+  publisher query returned zero again September 18. Its published external-agent
+  route is manifest crawling; SCVD already serves the manifest. Direct OASF
+  upload/admission remains unconfirmed. Continue the existing AGNTCY access request,
   then sign/publish the corrected record and verify remote discovery. The
   historical CID does not cover the corrected bytes.
   On the keeper's authorization, Awesome Copilot
@@ -1117,21 +1122,43 @@ what you ruled and what is still yours to look at.
   was filed after fresh reproduction. [trust8004 #1](https://github.com/trust8004/requests-issues/issues/1)
   now records its freshly reproduced source/cached-field mismatch. No duplicate requests needed. Other operator
   messages and the AGNTCY discussion follow-up are in the same package. Gemini gallery
-  readback remains outstanding; the repository topic is the crawler opt-in. A fresh isolated Gemini CLI 0.60.0 install from
+  readback DONE September 18: version 0.2.4 shows MCP and Skills in the
+  [official gallery](https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo); the repository topic is the crawler opt-in. A fresh isolated Gemini CLI 0.60.0 install from
   the immutable release PR commit discovered both skills and connected SCVD MCP;
-  a model tool call and gallery listing remain unverified.
+  a model tool call remains unverified.
+  HOL's GitHub-backed plugin catalog submission is now
+  [PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349),
+  submitted September 18 after local catalog validation and existing host-test
+  receipt checks. Review/indexing pending; do not submit the web form again.
+  HOL's ERC-8004 index remains separately unverified; its OpenAPI read returned
+  503 today, while AgentRanking again timed out. Neither failed read proves absence.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
   A2A Directory already lists SCVD. The earlier community API attempts returned
   503 and 404; the Global A2A Registry web form subsequently registered
   [SCVD Evidence Agent](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent).
-  The public listing is confirmed and unclaimed. Claiming and domain/account
-  verification remain a keeper press; do not resubmit. MPP is now live for Context
+  The keeper completed the ownership claim September 18; the public Verified label was confirmed. The operator fixed its JSON-mode
+  display; live readback and confirmation on [issue #7](https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7#issuecomment-5731122295) completed September 18.
+  The earlier Unauthorized (No Token) attempt is superseded; no claim press remains.
+  Do not resubmit. The separate a2aregistry.org submission completed September 18;
+  [public API record](https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a)
+  confirms the listing. Card/health checks pass, but its fixed text greeting fails
+  against JSON task inputs. Paired live checks reproduced that rejection and a
+  completed documented JSON task; [operator issue #184](https://github.com/prassanna-ravishankar/a2a-registry/issues/184)
+  is pending. Do not promote our direct task check into their task-verification result.
+  [Current receipt](research/distribution-2026-09-18/README.md). MPP is now live for Context
   Anchor: the 21:13 UTC
   read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
   and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
   deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
   [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  Keeper-requested follow-ups posted September 18:
+  [directory expansion update](https://github.com/tempoxyz/mpp/pull/991#issuecomment-5734203544)
+  and [fresh parser reproduction / exact-query URL](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5734203762).
+  The update labels the outside-wallet purchase as house-funded. The same
+  directory comment was refreshed at 19:58 UTC after #813 merged and the live
+  WebMCP bridge matched its source. No duplicate submission or expanded
+  listing was made; external review remains pending.
   MPPScan still needs discovery qualification; the checker’s Base-network
   mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
   The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
@@ -1150,8 +1177,13 @@ what you ruled and what is still yours to look at.
   [PR #41](https://github.com/webmachinelearning/awesome-webmcp/pull/41); continue
   it with the current browser-tool scope, not another submission. Merit [PR #715](https://github.com/Merit-Systems/awesome-agentic-commerce/pull/715)
   submitted; existing x402 [PR #1024](https://github.com/xpaysh/awesome-x402/pull/1024)
-  updated. Both await review. Cline needs its own installation
-  test and icon; do not attest that another host's test qualifies it.
+  updated. Both await review. Cline official catalog [skill #122](https://github.com/cline/marketplace/pull/122)
+  and [MCP #123](https://github.com/cline/marketplace/pull/123) submitted September 18.
+  Its CLI installed the skill and MCP configuration; a separate SDK free-call
+  check passed. Cline native model execution passed after sign-in: verification skill loaded and one free preflight completed; both catalog PR descriptions now carry the result. This catalog route does not
+  require the older intake's icon. AIFI [PR #13](https://github.com/0xBebis/aifi-directory/pull/13)
+  repairs issue #12's automation-permission failure; build passed, review pending.
+  [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md).
 
 - **Submitted / external review — GitHub MCP and AGNTCY admission (2026-09-17).**
   The keeper-authorized [GitHub MCP onboarding request](https://github.com/github/github-mcp-server/discussions/1257#discussioncomment-18487205) and
@@ -1449,7 +1481,12 @@ what you ruled and what is still yours to look at.
   pending**. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
   Cowork was not selected because it remains untested. Watch the existing
   [submission](https://platform.claude.com/plugins/submissions); do not duplicate it.
-  Kiro still needs host qualification and publisher contact and remains unsubmitted.
+  Cursor Directory text, both skills and pinned Tab config were updated and publicly
+  verified September 18; this does not resolve native Cursor skill discovery.
+  Kiro submitted September 18 with keeper-approved company contact and publisher terms;
+  the form confirmed receipt. Its CLI v3 engine loaded both skills, exposed both
+  MCP servers and completed the free preflight. Review pending; do not resubmit.
+  [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md).
   OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
 - **skills.sh and MCPFind.** DONE 2026-09-08: the keeper supplied
   both listing URLs; live reads confirmed the named skill and server.

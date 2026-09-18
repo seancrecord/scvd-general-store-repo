@@ -1,3 +1,4 @@
+import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { KNOWN_TESTNETS } from "@/lib/value-checks";
 import {
   MPP_BATTERY,
@@ -87,7 +88,7 @@ export const MPP_VERDICT_NOTE =
   "The top-level verdict keeps meaning x402-ready, permanently (the keeper's ruling, 2026-09-04): an existing ready must not change meaning under anyone's feet. A door that speaks only MPP reads not_ready on the x402 battery and that is a fact about which wire it speaks, not a defect; read protocols_spoken for the union and this block for the MPP battery's own checks.";
 
 const CANNOT_TELL = [
-  "Whether the door verifies a credential, delivers, or issues a Payment-Receipt: those exist only after money moves, and this store's till does not speak MPP.",
+  `Whether the door verifies a credential, delivers, or issues a Payment-Receipt: those exist only after money moves, and this free read never pays. ${UNPAID_READ_NOTE}`,
   "Whether the price advertised in the door's /openapi.json (x-payment-info) agrees with this challenge: the free preflight makes one request, and that read is the paid audit's.",
   "Whether the door stays up, or whether the same challenge is served to a paying client. One request, one moment.",
 ];

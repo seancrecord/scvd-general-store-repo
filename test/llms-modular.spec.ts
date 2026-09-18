@@ -1041,15 +1041,27 @@ const BASE = "https://scvd.store";
 // or MCP, four sub-cent items missing and named at /ucp. Verified
 // across the merge: with only that paragraph removed from the merged
 // tree, main's eb0b92aa reproduced, and this copy reproduces the new one.
-// 2026-09-18: the UCP paragraph now says what the profile says. The
-// suite runs with UCP checkout OPEN (vitest.config.ts), so the served
+// 2026-09-18: Open for Business, the weekly issue for sellers, on the
+// shelf at the keeper's price. The reading room gained its paragraph
+// (the rule 60 sentences, the issue URL shape) and the index's
+// evidence line gained the shelf's link, folded in rather than added
+// as a line because the index sits 30 characters under its budget.
+// Nothing else in the guide moved; the addition test below carries
+// the same retake.
+// Re-taken later 2026-09-18 on the keeper's ruling: the paragraph no
+// longer says the issue is published by hand. A closed week goes on
+// the shelf on its own and the fix of the week is the week's merged
+// pull requests; the guide says so (rule 45).
+// 2026-09-18, THE MERGE, once more: main's Open for Business and
+// sellers-line edits meet the UCP launch paragraph, which now says what
+// the profile says (the suite runs with UCP checkout OPEN, so the served
 // guide names the checkout door, the order door and the identical-
-// Complete guarantee; closed, it says checkout is switched off on this
-// deployment (lib/ucp/launch.ts writes both texts). Verified the same
-// way: with only that paragraph restored to its catalog-only wording,
-// the prior 7667179f reproduced, and this copy reproduces the new one.
+// Complete guarantee; closed, it says checkout is switched off here —
+// lib/ucp/launch.ts writes both texts). Verified across the merge: with
+// only that paragraph restored to its catalog-only wording, main's
+// 529e622f reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "131a99320f201e3548bff8ebcbbe52a0c7492a7022b22322cb77f239819e3331";
+  "81998b4df81639a226350ccd420656d9722ddb3b513764a459e61f31ff2b99b4";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1088,11 +1100,12 @@ describe("nothing was rewritten", () => {
     // is main's pre-addition text plus the UCP business-profile
     // paragraph. With that paragraph removed as well, main's d9fc6754
     // reproduced; this copy is the merged guide minus the addition.
-    // Later the same day the paragraph changed with the launch (see
-    // GUIDE_DIGEST_BEFORE_THE_SPLIT): with the catalog-only wording
-    // restored, b2d9ec8a reproduced, and this copy reproduces the new one.
+    // 2026-09-18: re-taken with the Open for Business paragraph and
+    // the sellers line in the guide (see GUIDE_DIGEST_BEFORE_THE_SPLIT).
+    // Then across the UCP launch merge: with the catalog-only wording
+    // restored, f6be9ead reproduced, and this copy reproduces the new one.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "5cf8a83f109222be3a3dd9c96c921adf0aebb20a13262b4662b3e92485eb11d5",
+      "a03d8e210ba749334447914c454ae47b87338af9a58b06d14d62e0e527a91ee4",
     );
   });
 

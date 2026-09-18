@@ -18,8 +18,9 @@ another network, asset, transport or price.
   never listed by hand; the guide's count is that derivation.
 - Method `evm/charge`, Base (`eip155:8453`), native USDC, six decimals, at the
   item's minimum from its existing Base offer. No native tip.
-- HTTP GET only. MCP, WebMCP and the packages keep x402. The guide says so in
-  the same paragraph that advertises the native doors.
+- HTTP GET only in this release; the [MCP release](MPP_MCP_CHECKOUT_2026-09-18.md)
+  of the same day adds tools/call. WebMCP and the packages keep x402. The
+  guide says so in the same paragraph that advertises the native doors.
 - One flag, both Workers: `MPP_CHECKOUT_ENABLED`. Rollback is unchanged.
 
 ## What changed underneath
@@ -89,7 +90,8 @@ native door: set the same long key in both places.
 
 ## Not in this release
 
-Other networks and assets, native tips, MCP and WebMCP native checkout,
+Other networks and assets, native tips (MCP and the WebMCP bridge followed
+the same day),
 Stripe, subscriptions, native refund automation, a public browser checkout
 beyond the reviewed CORS surface, and a services-directory claim. Canonical
 MPP discovery interoperability is tracked in the

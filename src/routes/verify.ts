@@ -83,6 +83,9 @@ import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { Certificate, HonoEnv } from "@/types";
+import { readerClass, recordReceiptRead } from "@/services/buyer-signals";
+import { isHouseAgent } from "@/lib/channel";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 
 /**
  * GET /api/verify/:cert_id, public verification of anything the store
@@ -278,6 +281,8 @@ const HOW_TO_VERIFY =
 async function noteVerify(
   c: Context<HonoEnv>,
   item: string,
+  /** The certificate id when the artifact is a purchase receipt: repeat reads per receipt. */
+  artifact?: string,
   /**
    * When the artifact was minted, where the record carries it. Feeds
    * the age bucket in metrics.ts — the one honest proxy available for
@@ -303,6 +308,25 @@ async function noteVerify(
   if (c.req.header("X-SCVD-Channel") === "mcp") {
     signals.viaMcp = true;
   }
+  /**
+   * WHO READS RECEIPTS (buyer signals, 2026-09-18). Classed from the
+   * same headers this function already holds — nothing new is asked
+   * of the reader and nothing is placed on the page — and handed to
+   * the door's waitUntil. Crawlers are named by the shared table;
+   * a browser is whoever negotiates HTML; everything else is an agent.
+   */
+  const accept = c.req.header("Accept");
+  deferBookkeeping(
+    c,
+    recordReceiptRead(c.env, {
+      reader: readerClass(userAgent, accept),
+      referrer,
+      ownHost: new URL(c.env.STORE_BASE_URL).hostname,
+      ...(mintedIso ? { mintedIso } : {}),
+      ...(artifact ? { artifact } : {}),
+      house: Boolean(houseHeader) || isHouseAgent(userAgent),
+    }),
+  );
   await recordVerifyCall(c.env, item, signals, mintedIso).catch(() => {
     // The count is a courtesy; verification itself never waits on it.
   });
@@ -572,7 +596,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
 
   const record = await getCertificate(c.env, id);
   if (record) {
-    await noteVerify(c, record.certificate.item, record.certificate.date);
+    await noteVerify(c, record.certificate.item, record.certificate.cert_id, record.certificate.date);
     const form = await certificateSignatureForm(
       record.certificate,
       record.signature,

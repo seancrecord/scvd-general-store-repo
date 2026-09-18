@@ -6,6 +6,10 @@ runs on its own, and nothing below signs anything.
 
 **September 17 admission:** [Participation and representation request](https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204) sent on keeper authorization after checking the complete discussion for earlier SCVD requests. Await the access route and feedback; no shared publication or signature/scan badge is claimed.
 
+**September 18 retry:** the current public record passed schema and taxonomy validation. Refreshed OIDC authentication succeeded, but shared-node push still returned `PermissionDenied`. [Follow-up sent](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505236); [dated findings](../../research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md). No new CID or publication is claimed.
+
+**September 18 maintainer answer:** [the shared testbed is read-only](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900); publishers must operate their own federated node. Stop treating OIDC writer access as a pending grant. [Infrastructure and admission preparation](FEDERATION.md); no federation deployment is claimed.
+
 ## What this is
 
 `record.json` is this store's OASF record: the AGNTCY Agent Directory's
@@ -188,8 +192,8 @@ the JWK field list was the first. Read the source.
 `ads.outshift.io:443` returns `PermissionDenied`: the principal
 `oidc:dex:seancrecord` authenticates but is not authorised for
 `StoreService/Push`. Note that AGNTCY's own CLI documentation only ever
-demonstrates `search` against that host — a read. Write access appears
-to be granted rather than self-serve.
+demonstrates `search` against that host — a read. The maintainer subsequently confirmed the shared testbed is read-only;
+publishing requires an independently operated federated node.
 
 So the federated half is untested: whether a record published on one
 peer can be found from another by its payment and blockchain taxonomy,
@@ -208,6 +212,5 @@ file, which needs nobody's permission.
 ## Federation testbed
 
 AGNTCY runs an open testbed for decentralised discovery, and invites
-participants. That is the route to the grant above, and the round-trip
-it would let us run is the one thing this listing cannot currently
-claim.
+participants. Participation requires our own federated node, as confirmed September 18.
+The peer-to-peer publication and retrieval round-trip remains untested.

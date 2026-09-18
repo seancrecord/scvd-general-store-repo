@@ -1,10 +1,14 @@
-# Current send status — September 17
+# Current send status — September 18
 
-8004scan [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51) and trust8004 [#1](https://github.com/trust8004/requests-issues/issues/1) are sent. Continue those issues, not duplicate reports. The remaining messages below are drafts. Exact trust8004 sent body: [TRUST8004_ISSUE_BODY.md](TRUST8004_ISSUE_BODY.md).
+The AGNTCY participation follow-up was also [sent September 17](https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204).
+Continue that request; do not send the historical draft again. September 18
+A2A and HOL follow-through is recorded [separately](../distribution-2026-09-18/README.md).
+
+8004scan [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51) and trust8004 [#1](https://github.com/trust8004/requests-issues/issues/1) are sent. Continue those issues, not duplicate reports. AgentERC remains an unsent draft; the September 18 note below identifies a published operator contact. Exact trust8004 sent body: [TRUST8004_ISSUE_BODY.md](TRUST8004_ISSUE_BODY.md).
 
 # Directory follow-ups — submission status
 
-8004scan report submitted as [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51). Other messages below remain drafts.
+The text below preserves submission preparation; the current status above governs which messages still need sending.
 
 Recheck each live finding and any existing request immediately before sending.
 Messages below ask for bounded corrections; none requests a trust score or
@@ -64,7 +68,13 @@ view still differs.
 
 ## AgentERC — existing Base registration ingestion
 
-Destination: operator's verified support/issue route; not yet identified.
+September 18 follow-through: [Odd Units](https://www.oddunits.dev/) identifies
+AgentERC as its project and publishes hello@oddunits.dev. Email remains unsent.
+The Agent Not Found result was reproduced. Its homepage reports Base indexing
+last updated September 13 while Ethereum is current; ask about ingestion lag
+before treating this as a canonical registration error.
+
+Destination candidate: hello@oddunits.dev, from that public project page.
 
 Could you check ingestion of Base ERC-8004 identity 86957, registry
 `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`? On September 17 a search for `scvd`

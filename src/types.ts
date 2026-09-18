@@ -88,6 +88,12 @@ export interface Env {
    */
   CONTROL_BEACON_URL?: string;
   /**
+   * A read-only GitHub token for the week's merged pull requests
+   * (services/week-changes.ts). Optional: the repository is public
+   * and answers without one; a token only lifts the rate limit.
+   */
+  GITHUB_READ_TOKEN?: string;
+  /**
    * GLAMA'S OWNERSHIP CLAIM TOKEN, for the HTTP challenge on the
    * connector listing. Optional and flag-gating: unset,
    * /.well-known/glama.json 404s exactly as it did before this

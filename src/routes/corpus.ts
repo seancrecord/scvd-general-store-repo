@@ -1,3 +1,4 @@
+import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse, markdownCell } from "@/lib/json-markdown";
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
@@ -33,6 +34,7 @@ import { latestWardRound } from "@/services/ward-round";
 import { readLongWalk } from "@/services/long-walk";
 import { missingWeeks } from "@/services/ward-heartbeat";
 import { escapeHtml } from "@/lib/sanitize";
+import { notePageRead } from "@/services/buyer-signals";
 import {
   CORPUS_DATASET_DESCRIPTION,
   CORPUS_DATASET_LICENSE,
@@ -196,7 +198,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "conformance verdict: ready, not_ready, unreachable or not_probed",
       "named failing checks and advisories",
       "protocols_spoken: x402, mpp, both or neither observed; absent means not measured",
-      "mpp: read-only challenge checks and advisories under the row's named battery; credentials, binding, delivery and receipts unobserved; this store's till does not speak MPP",
+      "mpp: read-only challenge checks and advisories under the row's named battery; credentials, binding, delivery and receipts unobserved. " + UNPAID_READ_NOTE,
       "mpp_read_error: reader_failed marks our inability to measure, not a defect of the door",
       "week-over-week delta: newly failing, newly fixed, flappers",
       "population known versus walked, and the coverage percentage between them",
@@ -335,6 +337,9 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
   // the reader's clock never pays for the queue's write.
   if (observation.history.rounds_probed === 0) {
     c.executionCtx.waitUntil(recordAsk(c.env, host, "corpus_host"));
+  }
+  if (observation.history.rounds_since_first_sighting > 0 || observation.history.listing) {
+    notePageRead(c, "corpus_host", "json", host);
   }
   const latestProbed = [...observation.history.timeline].reverse().find((round) => round.probed) ?? null;
   // Opt-in stable bytes let a buyer revalidate the evidence without a request
@@ -501,9 +506,8 @@ Latest observation: \`${tier.latest.verdict ?? "none"}\`${
 | --- | --- | --- | --- | --- | --- | --- |
 ${timeline}
 
-Protocols are read from one unpaid response under the named battery;
-this store's till does not speak MPP. A missing reading means not
-measured.
+Protocols are read from one unpaid response under the named battery.
+${UNPAID_READ_NOTE} A missing reading means not measured.
 
 A missed week is a fact about us, not about the door. Gaps by reason:
 ${gaps}.
@@ -568,6 +572,11 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       404,
     );
   }
+  /* Who reads a page about a host (buyer signals, 2026-09-18): the
+   * class, the crawler's name, the referrer's relation to the subject.
+   * After the 404, so only a host the chain has met is ever a key. */
+  const asMarkdown = prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"));
+  notePageRead(c, "corpus_host", asMarkdown ? "markdown" : "html", host);
   const tier = deriveTier(tierInputFromHistory(history, observation), `${base}/criteria`);
   const gone = delisting(host);
   const title = gone
@@ -599,7 +608,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
    * named in the front matter instead, which is the same facts in the
    * form that reader can actually use.
    */
-  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+  if (asMarkdown) {
     return new Response(hostMarkdown({ base, host, title, description, tier, history, gone }), {
       headers: { "Content-Type": MARKDOWN_MEDIA_TYPE, Vary: VARY_ACCEPT },
     });
@@ -661,7 +670,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
           <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Entry</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
-        <p class="menu-meta">Protocols are read from one unpaid response under the named battery; this store's till does not speak MPP. A missing reading means not measured.</p>
+        <p class="menu-meta">Protocols are read from one unpaid response under the named battery. ${escapeHtml(UNPAID_READ_NOTE)} A missing reading means not measured.</p>
         <p class="menu-meta">A missed week is a fact about us, not about the door. Gaps by reason: ${escapeHtml(
           Object.entries(history.gaps_by_reason)
             .filter(([, count]) => count > 0)

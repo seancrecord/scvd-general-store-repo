@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-09-18T15:13:28.936159+00:00",
+  "base_commit": "7f1c13c71da12c8edd05d123f81a929cd332b086",
+  "source_files": [
+    {
+      "file": "scripts/buyer-recipient-handoff.mjs",
+      "sha256": "6887db7544d2d368cef035e692b248d4a2264fe0125cbf05146832c73fe9c488"
+    },
+    {
+      "file": "scripts/buyer-handoff.test.mjs",
+      "sha256": "d9a651bdb8c060c9f43cd6962f6c4b1b5858e247260a4586a13cc64fcc3ff1e3"
+    },
+    {
+      "file": "scripts/buyer-cold-isolated.mjs",
+      "sha256": "f981086faaab032b4748eee1a05a0978158e3f5b4e3b635f28c93c15d7abad91"
+    },
+    {
+      "file": "scripts/lib/buyer-cold.mjs",
+      "sha256": "05acddcb479fa9a6f24938e670680e946f530fa91c58cd84c9820f0260d0bce2"
+    },
+    {
+      "file": "package.json",
+      "sha256": "56682fccbf9b559e3c1a6b2b5b3212c7b1402d1d3ffbd1d7ba278a454ccb4a5e"
+    }
+  ],
+  "checks": {
+    "cited_omission_guard_removed": {
+      "failed": 1,
+      "passed": 0
+    },
+    "raw_byte_regression_before_fix": {
+      "failed": 1,
+      "passed": 0
+    },
+    "buyer_suite": {
+      "passed": 156,
+      "failed": 0
+    },
+    "typecheck": "pass",
+    "worker_and_sdk_bundles": "pass",
+    "docs_check": "pass (advisory freshness notices)",
+    "full_worker_suite": {
+      "command": "npm test -- --maxWorkers=4 --reporter=json --outputFile=/private/tmp/scvd-harness-full.json",
+      "state": "initial_run_failed",
+      "files_reported": 782,
+      "missing_files": [],
+      "passed": 14894,
+      "failed": 2,
+      "pending_or_skipped": 150,
+      "failed_files": [
+        "test/human-order-paid-recovery.spec.ts",
+        "test/inflow-census.spec.ts",
+        "test/legacy-human-recovery.spec.ts",
+        "test/mcp-paid-reconstruction.spec.ts"
+      ],
+      "note": "Two assertion/hook failures and two suite setup timeouts. Original failed run retained; no source or timeout changes for the rerun."
+    },
+    "intermediate_message_regressions_before_fix": {
+      "failed": 2,
+      "passed": 0
+    },
+    "worker_rerun": {
+      "command": "npm test -- test/human-order-paid-recovery.spec.ts test/inflow-census.spec.ts test/legacy-human-recovery.spec.ts test/mcp-paid-reconstruction.spec.ts --maxWorkers=1",
+      "files": 4,
+      "passed": 269,
+      "failed": 0,
+      "state": "pass"
+    },
+    "reconciled_worker_coverage": {
+      "files": 782,
+      "passed": 15045,
+      "intentional_skipped": 1,
+      "failed": 0,
+      "limit": "Reconciles the initial run and unchanged reruns; does not relabel the initial full invocation as passing."
+    }
+  },
+  "logs": [
+    {
+      "file": "scvd-handoff-guard-red.log",
+      "sha256": "c43089d21da8ebf3ffd4326cd263a9c4cd68b6ec125cbd3ab914376cbb442947"
+    },
+    {
+      "file": "scvd-handoff-bytes-red.log",
+      "sha256": "7bf9c2683d283adfa1cbca6a5c327bd5131f166197d0a06ab031f051fcac2fe6"
+    },
+    {
+      "file": "scvd-harness-buyer-tests.log",
+      "sha256": "8202417fb7eaedd80452047328523586ec442dbcc4af824e6ba9744cc5965e52"
+    },
+    {
+      "file": "scvd-harness-typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "scvd-harness-build.log",
+      "sha256": "47195ad0441c22e8a57bf4389f7a00743a48772c556cf36996ae1ff3f0f3e041"
+    },
+    {
+      "file": "scvd-harness-docs.log",
+      "sha256": "c00a20f314acacb9e44a2f102419a3397132f2a09df2ee4d463cdd79bcfa6eea"
+    },
+    {
+      "file": "scvd-handoff-final-red.log",
+      "sha256": "248f40d09d5f7a6d416040b371a5bd9b90e0b98046c1b7625c22c8ff15a05bb2"
+    },
+    {
+      "file": "scvd-harness-full.json",
+      "sha256": "b6f53e8212f7180e78a1cab9fe96f20501e46a3a4bdf33906ada56e00be7cba8"
+    },
+    {
+      "file": "scvd-harness-full.log",
+      "sha256": "fd03449777d79606cc0db16d87d0943b8e4f6b88c6204732e368bb8754ab7b61"
+    },
+    {
+      "file": "scvd-harness-rerun.json",
+      "sha256": "eda797d3570b1b63fcd2e5a72841fe0e44afdd205c3ef9b543b5b254ecae86c1"
+    },
+    {
+      "file": "scvd-harness-rerun.log",
+      "sha256": "e0a733e3e025f8d22869180446fc37984a71a12fdaabb1e9fa06c2ca148df588"
+    }
+  ],
+  "backup": "/Users/seanrecord/scvd-takeoff-handoff-2026-09-17/recipient-scope-2026-09-18",
+  "limits": [
+    "No native buyer, recipient, or capability session launched.",
+    "No payment signed or sent.",
+    "Original acquisition bytes, reviews and scores unchanged.",
+    "Timing and native recipient protocol work is owned by the concurrent roadmap task; this PR prepares files only.",
+    "An initial full-suite invocation used unsupported --minWorkers and failed before running tests; the corrected command is recorded above."
+  ]
+}

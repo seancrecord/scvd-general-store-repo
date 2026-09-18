@@ -17,6 +17,17 @@ import { jcsCanonicalize } from "@/lib/jcs";
  * PAYMENT-REQUIRED is not MPP.
  */
 
+/**
+ * WHAT THE READINGS ARE NOT (reconciled 2026-09-18). Every MPP surface
+ * here used to end "this store's till does not speak MPP", which was the
+ * honest boundary of a read-only observatory until the native till
+ * opened (docs/MPP_WHOLE_STORE_2026-09-18.md and the MCP and WebMCP
+ * records of the same day). The boundary that still holds is the
+ * reader's, not the till's: no reading rests on a payment. Spelled once,
+ * apostrophe-free so an HTML-escaped page carries the same bytes.
+ */
+export const UNPAID_READ_NOTE = "No reading here rests on a payment: the till of this store has spoken MPP since 2026-09-18, and that says nothing about the door read.";
+
 export const MPP_BATTERY = "mpp-v1";
 /** The draft this battery read; a change re-versions it, never edits it. */
 export const MPP_SPEC_DRAFT = "draft-00";

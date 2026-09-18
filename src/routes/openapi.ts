@@ -1,4 +1,5 @@
 import { getAddress } from "viem";
+import { ucpLaunchStatus } from "@/lib/ucp/launch";
 import { purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
@@ -39,6 +40,7 @@ import {
 import { buyInputSchema, buyInputExample, itemsRequiring } from "@/lib/bazaar-discovery";
 import { DISCLOSURE_FIELDS, DISCLOSURE_LINE, DISCLOSURE_PROPERTIES, type DisclosureField } from "@/lib/disclosure";
 import {
+  openForBusinessTiersUsdc,
   pennyPageTiersUsdc,
   SIGNING_WINDOW_SECONDS,
   manifestAccepts,
@@ -46,6 +48,7 @@ import {
 } from "@/lib/payments";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { listAlmanacEntries } from "@/services/almanac-store";
+import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 import { API_VERSIONS, isRetiring } from "@/store/api-lifecycle";
 import {
   TAB_DELTA_FIELDS,
@@ -331,6 +334,7 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
   "/doors": ["application/json", "text/html"],
   "/zodiac": ["application/json", "text/html"],
   "/almanac": ["application/json", "text/html"],
+  "/open-for-business": ["application/json", "text/markdown", "text/html"],
   "/gazette": ["application/json", "text/html"],
   "/directory": ["application/json", "text/html"],
 };
@@ -2674,6 +2678,29 @@ const DIRECTORY_SCHEMA: OpenApiObject = {
     suggest_a_listing: { type: "string", format: "uri" },
     updated: { type: "string" },
     note: { type: "string" },
+  },
+};
+
+/** Open for Business: the issues on the shelf, the price, and the five answers. */
+const OPEN_FOR_BUSINESS_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["issues", "price_usdc", "what_this_is", "price"],
+  properties: {
+    what_this_is: { type: "string" },
+    price: { type: "string" },
+    price_usdc: { type: "number" },
+    issues: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["week", "title", "url"],
+        properties: {
+          week: { type: "string" },
+          title: { type: "string" },
+          url: { type: "string", format: "uri" },
+        },
+      },
+    },
   },
 };
 
@@ -5326,6 +5353,29 @@ function provenanceExtension(env: Env): Record<string, unknown> {
     : {};
 }
 
+/**
+ * THE UCP POINTER, ONCE (2026-09-18). UCP is one door for the whole
+ * shelf — a business profile, a catalog, a checkout — not a property
+ * of each paid operation, and this document has a byte ceiling
+ * (test/agent-catalog-readability.spec.ts) that thirty-five copies of
+ * the same four fields would spend on saying less reliably what the
+ * profile says once. So the per-item `ucp` capability row stays on
+ * menu.json, where a shelf reader looks, and OpenAPI carries a single
+ * root pointer: the profile, and whether this deployment advertises
+ * checkout in it. Same switch, same answer.
+ */
+function ucpExtension(env: Env): Record<string, unknown> {
+  const base = env.STORE_BASE_URL;
+  const launch = ucpLaunchStatus(env);
+  return {
+    // Two fields: the ceiling is measured in bytes and main sits at it.
+    "x-scvd-ucp": {
+      profile: `${base}/.well-known/ucp`,
+      checkout: launch.open ? "advertised" : "not advertised",
+    },
+  };
+}
+
 function paidOp(
   env: Env,
   summary: string,
@@ -5563,7 +5613,8 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     );
   }
   const capabilities = purchaseCapabilities(item, env);
-  operation["x-scvd-payment-capabilities"] = capabilities;
+  // The UCP row is the shelf's, not the operation's: see ucpExtension.
+  operation["x-scvd-payment-capabilities"] = capabilities.filter((row) => row.protocol !== "ucp");
   const paymentInfo = operation["x-payment-info"] as OpenApiObject;
   // Directory readers use AgentCash's protocol objects, not our capability
   // extension. Derive the additive MPP entry from the same enabled offer.
@@ -5796,6 +5847,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
      * operator, one key. What is guaranteed is NOTICE, not permanence.
      */
     ...provenanceExtension(c.env),
+    ...ucpExtension(c.env),
     "x-rate-limiting": {
       /*
        * TRUE SINCE 2026-08-03 AND SAID FALSE HERE UNTIL 2026-08-26,
@@ -8139,6 +8191,20 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "A keeper journal page as markdown. Choose a current slug from the free /almanac index; the enum is refreshed with that index on each contract read.",
             pennyPageTiersUsdc(), true),
           parameters: [pathParam("slug", "A currently published Almanac page.", almanac.map(entry => entry.slug))],
+        },
+      },
+      "/open-for-business": {
+        get: returns(
+          freeOp("Open for Business index", "Free index of the weekly issue for sellers, with the x402 checkout shape."),
+          OPEN_FOR_BUSINESS_INDEX_SCHEMA,
+        ),
+      },
+      "/open-for-business/{week}": {
+        get: {
+          ...paidOp(c.env, "Open for Business issue",
+            `One weekly issue for sellers, as markdown, $${OPEN_FOR_BUSINESS_USDC}. Pick a week from the free index.`,
+            openForBusinessTiersUsdc(), true),
+          parameters: [pathParam("week", "An ISO week on the free index.")],
         },
       },
       "/gazette": {

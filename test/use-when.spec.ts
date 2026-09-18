@@ -61,8 +61,19 @@ describe("the situation index", () => {
     const home = await (
       await SELF.fetch(`${BASE}/`, { headers: { Accept: "text/html" } })
     ).text();
-    // The search title has to say what this is, not only who we are.
-    expect(home).toContain("x402 goods for AI agents");
+    // The search title has to say what this is, not only who we are —
+    // and file us under the display name, like every other surface
+    // (2026-09-18; the full name was the one holdout, and Google was
+    // rewriting the 64-character result).
+    const title = /<title>([^<]*)<\/title>/.exec(home)?.[1] ?? "";
+    expect(title).toBe("SCVD General Store — x402 verification for AI agents");
+    expect(title.length).toBeLessThanOrEqual(60);
+    // And the description stays inside the ~160-character budget a
+    // search listing truncates at.
+    const description =
+      /<meta name="description" content="([^"]*)"/.exec(home)?.[1] ?? "";
+    expect(description.length).toBeGreaterThan(50);
+    expect(description.length).toBeLessThanOrEqual(160);
     // And the catalogue is in the structured data now, with prices.
     expect(home).toContain('"@type":"Offer"');
     expect(home).toContain('"priceCurrency":"USD"');

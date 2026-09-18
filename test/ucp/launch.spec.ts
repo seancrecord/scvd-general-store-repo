@@ -419,6 +419,14 @@ describe("the doors are on the surfaces agents read, exactly while open", () => 
     const shut = await getJson("/menu.json", closed());
     const helloShut = shut.body.items.find((row: { id: string }) => row.id === "hello");
     expect(helloShut.payment_capabilities.some((row: { protocol: string }) => row.protocol === "ucp")).toBe(false);
+    // OpenAPI carries the pointer once at its root, never per operation
+    // (the document has a byte ceiling), and says whether checkout is
+    // advertised here.
+    const openapi = await getJson("/openapi.json");
+    expect(openapi.body["x-scvd-ucp"]).toEqual({ profile: `${BASE}/.well-known/ucp`, checkout: "advertised" });
+    expect(openapi.body.paths["/api/buy/hello"].get["x-scvd-payment-capabilities"].some((row: { protocol: string }) => row.protocol === "ucp")).toBe(false);
+    const openapiShut = await getJson("/openapi.json", closed());
+    expect(openapiShut.body["x-scvd-ucp"].checkout).toBe("not advertised");
     // Narrowed: only the open item carries it.
     const narrowed = await getJson("/menu.json", { ...testEnv, UCP_CHECKOUT_ITEMS: "hello" });
     const audit = narrowed.body.items.find((row: { id: string }) => row.id === "service_audit");

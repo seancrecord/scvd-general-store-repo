@@ -494,12 +494,43 @@ and bindings in memory. The JSON result includes the exact original file's
 all signed claims. Read the subject, observation date and gaps from the
 original and check them separately. A valid signature is not a freshness test.
 
+The source checkout also supports an exact endpoint reading (check installed
+`--help` for `--subject` before using a registry package):
+
+```sh
+node verifier/evidence-cli.mjs verify-source evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \
+  --subject 'https://merchant.example/paid?kind=one'
+```
+
+`subject_evidence` selects matching `round.hosts` rows only from verified
+corpus-v1 claims. It includes each complete row, its pointer within
+`signed_claims`, the exact match count and any rows omitted by its output
+allowance. Queries are part of the subject: a different query or bare host is
+not a match. Unsigned host history and live preflight do not become signed
+evidence because they accompanied a valid snapshot. `snapshot_taken_at` is
+packaging time; use each row's `observed_at` for your freshness policy.
+
+An invalid signature yields `not_verified` with no selected observations;
+other artifact families yield `unsupported_artifact`. `absent_from_snapshot`
+means only that this snapshot contains no exact URL match. Exit codes still
+describe signature/binding checks, so exit 0 alone does not establish a
+matching, fresh observation. Read `status` and `omitted_observations` too.
+
 Keep the original response, its source URL, separately established issuer key
 and any attached evidence for the recipient. A result summary alone cannot
 be independently verified. This path avoids retaining duplicate export files;
 the in-memory bundle still has the same explicit `--max-bytes` ceiling.
 Missing linked evidence remains exit 3. Malformed or oversized sources refuse
 with exit 2; invalid signatures or absent trusted keys give exit 1.
+
+Save response bytes directly to disk before interpreting them; large JSON
+does not need to be printed into an agent's context. Keep that file unchanged
+after verification, even when handing off a short subject reading. A recipient
+can rerun the same offline command against the original. A distilled verdict,
+hash, selected row or `signature_verified: true` report cannot replace the
+original signed artifact. If the original exceeds a retention limit, report
+the handoff as incomplete instead of silently substituting a summary.
 
 Install packages and keep their cache outside the evidence directory. In a
 sandbox where the default npm cache is unwritable, a local writable cache can

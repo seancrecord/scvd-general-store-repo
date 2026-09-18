@@ -18,7 +18,11 @@ shelf carries the same offer at its own minimum; the boundaries below on
 transport, network, asset and tip are unchanged. The offer derives its
 amount, asset, recipient, authorization domain and expiry window from the
 existing catalog/payment configuration. There is no second price table.
-Native tips, MCP, other networks and other assets are not enabled here.
+Since the [MCP release](MPP_MCP_CHECKOUT_2026-09-18.md) the MCP door
+carries the same offer on tools/call in the SDK's MCP wire shape, and since
+the [browser bridge release](MPP_WEBMCP_CHECKOUT_2026-09-18.md) the WebMCP
+quote carries it too. Native tips, other networks and other assets are not
+enabled here.
 
 When explicitly enabled, an unsigned request gets the existing x402 offer
 and a genuine MPP `WWW-Authenticate` challenge. The dedicated
@@ -132,8 +136,8 @@ inputs remain unchanged. This is the directory profile, not a claim of
 conformance to the separate draft extension with the same name. Runtime
 challenges remain authoritative; directory admission is a separate check.
 
-After the whole-shelf HTTP rollout: native discovery/indexer interoperability,
-MCP transport qualification, broader live paid qualification and separate
+After the whole-shelf HTTP rollout and the MCP door: native discovery/indexer
+interoperability, broader live paid qualification and separate
 network/asset qualification remain open.
 No Stripe, subscription, Solana or client-broadcast hash method follows from
 this Base/USDC pilot.

@@ -1019,7 +1019,14 @@ export function renderStorefront(data: StorefrontData): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <meta name="description" content="${escapeHtml(`${COPY.metaDescription} ${paymentMethod(data.paymentConfig)}.`)}">
+  <!--
+    THE META DESCRIPTION STOPS AT THE BUDGET (2026-09-18). The payment
+    sentence used to ride behind it, which put the tag past 230
+    characters, and a search engine cut it mid-clause at ~160 or
+    threw it out and wrote its own. The networks still ship in the
+    WebSite JSON-LD below and in the footer, where there is no budget.
+  -->
+  <meta name="description" content="${escapeHtml(COPY.metaDescription)}">
   <link rel="canonical" href="${data.base ?? "https://scvd.store"}/">
   <link rel="alternate" type="text/markdown" href="${data.base ?? "https://scvd.store"}/index.md">
   <!--

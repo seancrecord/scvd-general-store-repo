@@ -83,11 +83,25 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a",
+    registry: "A2A Registry — community API register",
+    protocols: ["a2a"],
+    confirmed: "2026-09-18",
+    what_it_proves: "That this separate community registry retained SCVD's canonical Agent Card and three evidence skills after submission. Its public API reports card conformance and endpoint health, but its task smoke test failed with category OTHER. The published test sends a plain-text greeting; a fresh direct check rejected that greeting and completed the documented JSON readiness task. Issue #184 asks the operator to distinguish probe compatibility; their task verification remains failed. This is listing evidence, not certification. Not an endorsement and not an audit of purchases.",
+  },
+  {
+    url: "https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo",
+    registry: "Gemini CLI — extension gallery",
+    protocols: ["skills", "mcp"],
+    confirmed: "2026-09-18",
+    what_it_proves: "That Google's Gemini CLI gallery lists the public scvd-general-store extension at version 0.2.4 with MCP and Skills labels and an installation command pointing to this repository. Search and the detail panel were opened. Google states these third-party extensions are not vetted or endorsed. Not an endorsement and not an audit. Gallery presence does not establish model execution, purchase success or security review.",
+  },
+  {
     url: "https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent",
     registry: "Global A2A Registry — community agent directory",
     protocols: ["a2a"],
-    confirmed: "2026-09-17",
-    what_it_proves: "That this community registry lists SCVD Evidence Agent as unclaimed, with its canonical Agent Card, endpoint and three free evidence skills. We submitted the public URL and opened the resulting record. Ownership verification remains outstanding. Its summary renders Text defaults despite retaining application/json in the card, so listing presence does not establish parser accuracy. Not an endorsement and not an audit.",
+    confirmed: "2026-09-18",
+    what_it_proves: "That this community registry lists SCVD Evidence Agent with its canonical Agent Card, endpoint and three free evidence skills. We submitted the public URL and opened the resulting record. The keeper completed the ownership claim September 18 and the public Verified label was confirmed; that label is directory ownership verification, not a service audit. On September 18, after the operator repaired issue #7, a fresh read showed application/json for both input and output modes, matching the retained card. This checks those fields for this record, not every parser field. Not an endorsement and not an audit.",
   },
   {
     url: "https://github.com/sing1ee/a2a-directory#readme",
@@ -974,30 +988,9 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     url: "https://cursor.directory/plugins/scvd-general-store-repo",
     registry: "Cursor Directory",
     protocols: ["skills", "mcp"],
-    confirmed: "2026-09-10",
-    /**
-     * THE FIRST LISTING BUILT FROM THE REPO'S OWN PACKAGE rather than
-     * a crawler's paraphrase: its scanner rejected this repository in
-     * the morning of 2026-08-11 ("No plugin components found in: repo
-     * root"), the Agent Plugins package (plugin.json, mcp.json,
-     * skills/) shipped in answer, and the rescan produced a page that
-     * reads correctly on arrival — both MCP servers with their real
-     * connection configs, the skill, and the trust-layer description
-     * leading. Nothing to correct at the source, for once, because
-     * the source is this repository.
-     *
-     * RE-READ BY THE KEEPER 2026-09-10: the page now leads with the
-     * evidence-observatory sentence and the storefront's title, the
-     * two MCP servers still carry the exact connection configs
-     * mcp.json declares (streamable-http at /mcp; npx scvd-tab), one
-     * skill. Its tag cloud is a cached snapshot: it carries topics the
-     * repository no longer declares (clawdhub, openclaw,
-     * personal-agents, marketplace) beside the current ones. That
-     * lags until their rescan and is not corrected from here, because
-     * the source it derives from is already right.
-     */
+    confirmed: "2026-09-18",
     what_it_proves:
-      "That the Cursor Directory carries a plugin page for this store, generated from this repository's own Agent Plugins package (plugin.json, mcp.json, skills/) — so its connection configs are the repo's own words rather than a crawler's guess, and read correctly on 2026-09-10. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service; its tag cloud is a cached snapshot that lags the repository's topics until its next rescan.",
+      "That Cursor Directory carries a plugin page for this store. On September 18 the owner updated its name, description and keywords, replaced the stale skill with the current general-store skill, added the verification skill and pinned the Tab server to the published package version. The public page displayed both skills and both MCP servers. Not an endorsement and not an audit: this community listing does not establish official Cursor marketplace acceptance, a security-scan verdict or native Cursor skill activation.",
   },
   {
     url: "https://smithery.ai/servers/seancrecord/scvd-general-store",

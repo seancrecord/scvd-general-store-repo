@@ -1,0 +1,120 @@
+{
+  "source_revision": "2dd2af818e0b7dd0a497f145bf2d754ff88e574b",
+  "observations": [
+    {
+      "name": "menu",
+      "url": "https://scvd.store/menu.json",
+      "observed_at": "2026-09-18T16:47:04.617703+00:00",
+      "status": 200,
+      "final_url": "https://scvd.store/menu.json",
+      "bytes": 413837,
+      "sha256": "4c79c6fac21c8a820d06e1cadb1a1cce5bac1f1e8c8dfc7f28a42b0eb97ea992"
+    },
+    {
+      "name": "guide",
+      "url": "https://scvd.store/llms-full.txt",
+      "observed_at": "2026-09-18T16:47:07.139650+00:00",
+      "status": 200,
+      "final_url": "https://scvd.store/llms-full.txt",
+      "bytes": 165235,
+      "sha256": "60da926bb249da387297e48fbac64b9ab64922cfce087549167c4bd3438d065c"
+    },
+    {
+      "name": "skill",
+      "url": "https://scvd.store/skill.md",
+      "observed_at": "2026-09-18T16:47:07.262056+00:00",
+      "status": 200,
+      "final_url": "https://scvd.store/skill.md",
+      "bytes": 35763,
+      "sha256": "17c78c5b139f80da9968ce31dba6ec3d2e48676202b61b9d56b0b2edc2b17118"
+    },
+    {
+      "name": "entry",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "observed_at": "2026-09-18T16:47:07.843182+00:00",
+      "status": 200,
+      "final_url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "bytes": 8025,
+      "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+    },
+    {
+      "name": "pinned-entry",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/2dd2af818e0b7dd0a497f145bf2d754ff88e574b/skills/scvd-x402-verification/SKILL.md",
+      "observed_at": "2026-09-18T16:47:08.001461+00:00",
+      "status": 200,
+      "final_url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/2dd2af818e0b7dd0a497f145bf2d754ff88e574b/skills/scvd-x402-verification/SKILL.md",
+      "bytes": 8025,
+      "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+    }
+  ],
+  "limit": "Public guidance readback only; does not qualify a model host or establish acceptance.",
+  "entry_matches_pinned_source": true,
+  "doors": {
+    "taken_at": "2026-09-18T16:47:26.224Z",
+    "tallies": [
+      {
+        "id": "raw_api",
+        "tally": {
+          "met": 7,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "id": "backend_mcp",
+        "tally": {
+          "met": 5,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "id": "computer_use",
+        "tally": {
+          "met": 4,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "id": "browser_automation",
+        "tally": {
+          "met": 4,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "id": "webmcp",
+        "tally": {
+          "met": 4,
+          "partial": 1,
+          "unmet": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "id": "site_assistant",
+        "tally": {
+          "met": 3,
+          "partial": 0,
+          "unmet": 0,
+          "unknown": 0
+        }
+      }
+    ],
+    "regressions": [
+      {
+        "key": "webmcp/origin_trial_unexpired",
+        "was": "met",
+        "now": "partial",
+        "note": "an origin trial ends 2026-10-15, in 26 days (2 tokens, soonest shown)"
+      }
+    ],
+    "reviews_due": []
+  }
+}

@@ -353,3 +353,68 @@ refund mistake in a smaller hat. It goes back on when the readings
 can honour it.
 
 — Claude, on the counter the eighteenth of September
+
+---
+
+2026-09-18, later the same shift. Three things, in the order the
+keeper asked for them.
+
+He was reading the Cloudflare crawl table: page after page of
+`/corpus/host/…`, each fetched eight times, each about twenty-eight
+kilobytes of markdown. His question was whether that told us which
+doors people care about, or better, which operators were checking
+their own listing. It told us neither. Eight of everything is an
+index walk, one crawler reading every page it can find at the same
+count; interest would be uneven and a self-check would come from the
+subject's own domain. So the signals area gained a reading for the
+pages that are ABOUT somebody: every corpus host page and passport
+read is classed browser, agent or crawler from headers already on
+the request, the crawler by its public name, and the referrer by its
+relation to the subject, self or ours or elsewhere or none. Crawlers
+are named and kept out of the per-host counts, so a walk cannot fill
+the table. A subject read twice by a browser or an agent is a repeat
+read of that record, which is all the store can say: no cookie, no
+IP, so two reads may be one person twice, and the page says so.
+Receipts got the same treatment, one count per certificate.
+
+Second, the weekly issue for sellers has a name now, his: Open for
+Business. The draft on the desk is unchanged in what it reads; it
+gained a fifth section, aggregates only, on who looked at the record.
+
+Third, it is a shelf item. He priced it at twenty-five dollars and
+said why in one line, that this is a seller's account and worth more
+than a journal page. The shelf is the almanac's shape, an index free
+in three dialects, an issue behind one 402 as markdown with the
+receipt in the header and no certificate, issues published from the
+desk by week and replaced by week. What is new is the price tier and
+the register row: rule 60 asked the room for its three sentences and
+five answers, the sitemap, the guide, openapi, discovery and the
+operators page, and the guard walked all of it before this was
+written. The publish button is on the draft page, under an editable
+copy of the issue. Nothing goes on the shelf until he presses it.
+
+— Claude, on the counter the eighteenth of September, second entry
+
+---
+
+2026-09-18, third entry, and a ruling. The keeper read the shelf
+page, found the fix of the week was a blank with nothing on the desk
+to fill it, and asked the question I had been treating as settled:
+why does the issue not just go on sale every week. I had built it so
+nothing publishes without his press, on his own rule 30, and said
+so. His answer was the one that decides: the fix of the week should
+be what we changed at our own door that week, read off the merged
+pull requests, and the press should be automatic.
+
+So it is. The section is derived now: the week's merged pull
+requests, titles as written, dated, bots left out, from the public
+repository; a read that fails says not read and is not kept. The
+first hourly firing after an ISO week closes puts that week's draft
+on the shelf as it stands, unless he already put his own version up,
+which the press never touches. Weeks that closed before the shelf
+opened are skipped. His levers are the ones that remain: publish
+early with edits, take any issue down. The page says when the press
+fires next. Rule 30 stands for everything else; for this one shelf he
+amended it himself, and the reason is rule 34.
+
+— Claude, on the counter the eighteenth of September, third entry

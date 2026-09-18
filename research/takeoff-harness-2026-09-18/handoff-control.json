@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-09-18T14:14:23.499Z",
+  "source_acquisition": "takeoff-directed-release-2026-09-17",
+  "source_cell": "codex-directed-r1",
+  "purpose": "Offline preparation control; no fresh recipient or buyer execution and no rescoring.",
+  "source_run_sha256": "df54dafb4dd8fd5866b120d399e3ad30a289ec4fc32433b842d5a29fb534a147",
+  "source_trace_sha256": "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4",
+  "scope": "buyer_report",
+  "retained_files": 27,
+  "supplied_files": 27,
+  "bytes": 11547036,
+  "all_supplied_hashes_match": true,
+  "selection_policy": "Supply the entire retained capture; cited=true conservatively for every file, not a claim that every file was actually cited.",
+  "manifest_sha256": "96caad22b7a21ba1b0e08e46713164d1470dad2055eb151bec3ba7745a00e61e",
+  "private_backup": "/Users/seanrecord/scvd-takeoff-handoff-2026-09-17/recipient-scope-2026-09-18/offline-control-final"
+}

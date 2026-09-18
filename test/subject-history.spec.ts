@@ -153,6 +153,19 @@ describe("replaying one host out of the chain", () => {
       { week: "2026-W04", sequence: 4, digest: expect.stringMatching(/^[0-9a-f]{64}$/), from: [dA], to: [dB] },
     ]);
     expect(moved.how_to_match).toContain("sha256");
+    // Address hashes and snapshot references share a JSON block, not a formula.
+    for (const field of ["digests", "changes[].from", "changes[].to"]) {
+      expect(moved.how_to_match).toContain(field);
+    }
+    for (const field of ["observed.digest", "unchanged_since.digest", "changes[].digest"]) {
+      expect(moved.how_to_match).toContain(field);
+    }
+    expect(moved.how_to_match).toContain("snapshot");
+    const timeline = (await subjectHistory(testEnv, "moved.example", BASE)).timeline;
+    expect(moved.observed.digest).toBe(timeline.find((r) => r.sequence === 4)!.digest);
+    expect(moved.unchanged_since.digest).toBe(moved.observed.digest);
+    expect(moved.changes[0]!.digest).toBe(moved.observed.digest);
+    expect(moved.digests).not.toContain(moved.observed.digest);
 
     const steady = (await subjectHistory(testEnv, "steady.example", BASE)).pay_to!;
     expect(steady.digests).toEqual([dB]);

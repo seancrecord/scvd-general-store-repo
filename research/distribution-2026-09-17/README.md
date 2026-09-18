@@ -1,5 +1,9 @@
 # Distribution follow-through — September 17, 2026
 
+Later status: [September 18 follow-through](../distribution-2026-09-18/FOLLOW_THROUGH.md) closes the A2A claim, records Kiro and Cline submissions, the Cursor Directory update and AIFI recovery. Earlier observations below retain their dates; use [DISTRIBUTION](../../DISTRIBUTION.md) for current channel status.
+
+[Earlier September 18 readback](../distribution-2026-09-18/README.md) records Gemini gallery 0.2.4 and the A2A display repair; Anro admission remains unverified.
+
 **Release follow-through:** the keeper completed the OpenAI skill update and authorized PR/merge. [Current release and host-check record](RELEASE.md) supersedes the earlier local-only status notes below.
 
 The foundation already exists. Reuse the published identity and plugin assets;

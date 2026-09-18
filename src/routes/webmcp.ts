@@ -78,7 +78,7 @@ export function webmcpPurchaseTools() {
   return [
     {
       name: "quote_store_purchase",
-      description: "A free x402 v2 quote for a catalog buy_url or paid publication URL, including query inputs. Returns offered networks, atomic USDC amounts, a quote_id and retry key. No wallet is opened and no payment is sent. The compact catalog is /menu.json?view=compact.",
+      description: "A free quote for a catalog buy_url or paid publication URL, including query inputs: the x402 v2 terms (offered networks, atomic USDC amounts) and, where the door offers one, the native MPP challenge keyed to the quote's retry key. Returns a quote_id and that key. No wallet is opened and no payment is sent. The compact catalog is /menu.json?view=compact.",
       inputSchema: { type: "object", properties: { buy_url: { type: "string", description: "A buy_url on this store with the required query inputs filled in." } }, required: ["buy_url"], additionalProperties: false },
       outputSchema: { type: "object", properties: {
         ...resultProperties,
@@ -97,6 +97,12 @@ export function webmcpPurchaseTools() {
             extra: { type: "object" },
           } } },
         } },
+        payment_challenge: { type: ["object", "null"], description: "The native MPP challenge (WWW-Authenticate: Payment) when this door offers one, bound to idempotency_key: the raw header to sign and its decoded fields. A compatible MPP client signs header; pass the resulting Payment credential as signed_credential.", properties: {
+          header: { type: "string" }, id: { type: "string" }, realm: { type: "string" },
+          method: { type: "string", const: "evm" }, intent: { type: "string", const: "charge" },
+          request: { type: "object", description: "amount is atomic USDC; currency and recipient are checksummed addresses." },
+          expires: { type: ["string", "null"], format: "date-time" }, meta: { type: "object" },
+        } },
         payment_sent: { type: "boolean", const: false },
         next: { type: "string" },
       } },
@@ -105,11 +111,16 @@ export function webmcpPurchaseTools() {
     },
     {
       name: "complete_store_purchase",
-      description: "Submits a buyer-authorized, already-signed x402 v2 payment for a quote from this page. May transfer USDC. Returns the goods or order, HTTP status and payment receipt. Requires a compatible external wallet/client; never accepts private keys or wallet secrets. Retries reuse the quote's original URL and key. Cancellation does not prove settlement stopped.",
-      inputSchema: { type: "object", properties: { quote_id: { type: "string" }, signed_payment: { type: "object", description: "The signed x402 v2 JSON payload from the buyer's wallet/client, containing x402Version, accepted and payload." } }, required: ["quote_id", "signed_payment"], additionalProperties: false },
+      description: "Submits a buyer-authorized, already-signed payment for a quote from this page: an x402 v2 payload as signed_payment, or a native MPP credential for the quote's payment_challenge as signed_credential, never both. May transfer USDC. Returns the goods or order, HTTP status and the receipt. Requires a compatible external wallet/client; never accepts private keys or wallet secrets. Retries reuse the quote's original URL and key. Cancellation does not prove settlement stopped.",
+      inputSchema: { type: "object", properties: {
+        quote_id: { type: "string" },
+        signed_payment: { type: "object", description: "The signed x402 v2 JSON payload from the buyer's wallet/client, containing x402Version, accepted and payload." },
+        signed_credential: { type: ["string", "object"], description: "The native MPP credential for this quote's payment_challenge: the Payment <base64url> Authorization value, or its {challenge, payload} object." },
+      }, required: ["quote_id"], additionalProperties: false },
       outputSchema: { type: "object", properties: {
         ...resultProperties,
-        payment_response: { type: ["string", "null"], description: "The PAYMENT-RESPONSE header, when supplied by the store." },
+        payment_response: { type: ["string", "null"], description: "The PAYMENT-RESPONSE header, when supplied by the store (x402)." },
+        payment_receipt: { type: ["string", "null"], description: "The Payment-Receipt header, when supplied by the store (native MPP)." },
         purchase_recovery: { type: ["string", "null"], description: "Private Purchase-Recovery header, unchanged base64 JSON. Save privately; decode purchase_id and status_token for the free check_purchase tool. Null when absent; JSON goods may carry recovery in body.recovery." },
       } },
       annotations: { readOnlyHint: false, consequentialHint: true },

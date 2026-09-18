@@ -1,3 +1,4 @@
+import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 /**
  * EVERY DATASET THIS STORE PUBLISHES, IN ONE PLACE AN AGENT CAN READ.
  *
@@ -67,7 +68,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     description:
       "One snapshot per weekly ward round of the public x402 discovery list — a round re-run inside its week appends a later entry, and the week's derived views read the newest — recording which hosts were listed, which answered, and what a single conformance probe saw. Answered rows record protocols_spoken and an mpp challenge reading under its named battery; older rows may lack them. Hash-chained, ed25519-signed, Bitcoin-anchored.",
     caution:
-      "Dated observations of moments, never a ranking. A verdict is what one probe saw from one vantage at one time; anything derived from the rows carries its rule and its denominator. MPP is read only; this store's till does not speak MPP. Missing protocol readings mean unmeasured.",
+      "Dated observations of moments, never a ranking. A verdict is what one probe saw from one vantage at one time; anything derived from the rows carries its rule and its denominator. The MPP readings are unpaid. " + UNPAID_READ_NOTE + " Missing protocol readings mean unmeasured.",
     cadence: "weekly, appended",
     representativeQueries: [
       "find signed weekly observations of x402 endpoints",
