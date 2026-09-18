@@ -240,6 +240,33 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
         ],
       }),
       /**
+       * THE UCP PROFILE IS AN API SURFACE TOO (2026-09-16), by the
+       * same argument the MCP row above makes, one protocol over: a
+       * commerce platform that speaks UCP and reads this catalog
+       * should find the profile here rather than have to guess at
+       * /.well-known/ucp. What it will find there is a catalog it can
+       * read and a checkout that does not exist yet, said plainly.
+       */
+      apiEntry({
+        anchor: `${base}/.well-known/ucp`,
+        title: `${STORE_SERVICE_NAME} — UCP business profile (catalog only)`,
+        desc: [
+          {
+            href: `${base}/.well-known/ucp`,
+            type: "application/json",
+            title:
+              "UCP profile: version, shopping service endpoint, catalog capabilities, and the checkout this store does not implement",
+          },
+        ],
+        doc: [
+          {
+            href: `${base}/ucp`,
+            type: "application/json",
+            title: "What works over UCP here, what does not, and how to pay instead",
+          },
+        ],
+      }),
+      /**
        * THE A2A CARD IS AN API SURFACE TOO, and this catalog omitted
        * it until 2026-08-27 — found by the ARD manifest's cross-check,
        * which requires every resource it publishes to be a resource

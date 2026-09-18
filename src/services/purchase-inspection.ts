@@ -19,7 +19,7 @@ export interface PurchaseInspection {
   recipient: string;
   created_at: string;
   path: string;
-  door: "http" | "mcp";
+  door: "http" | "mcp" | "ucp";
   payment_state: PurchaseIntent["state"];
   transaction: string | null;
   delivery_state: "delivered" | "order_created" | "not_established_by_this_record";
@@ -50,7 +50,7 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
     if (!isRecord(parsed) || parsed.id !== id) throw new Error("Invalid purchase record");
     record = parsed as unknown as PurchaseIntent; // Persisted versioned record, checked below and by purchaseProtocol.
     const protocol = purchaseProtocol(record);
-    if (!["unknown", "settled", "not_settled"].includes(record.state) || !["http", "mcp"].includes(record.door) ||
+    if (!["unknown", "settled", "not_settled"].includes(record.state) || !["http", "mcp", "ucp"].includes(record.door) ||
       !/^\d{4}-(0[1-9]|1[0-2])-\d{2}T/.test(record.created_at) || !Number.isFinite(Date.parse(record.created_at)) ||
       ![record.path, record.payer, record.terms.network, record.terms.asset, record.terms.payTo].every(value => typeof value === "string" && value.length > 0 && value.length <= 512) ||
       !/^\d+$/.test(record.terms.amount) || (record.payment && typeof record.payment.transaction !== "string") ||
