@@ -36,6 +36,7 @@ import {
   STORE_TAGS,
 } from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { OPEN_FOR_BUSINESS_NAME, OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import { SPEC_RETURNS } from "@/store/spec";
 import { isRecord } from "@/types";
@@ -739,6 +740,66 @@ function pennyPageRouteConfig(
   exampleTitle: string,
   resource?: string,
 ): RouteConfig {
+  return markdownPageRouteConfig(env, {
+    priceUsdc: PENNY_PAGE_USDC,
+    tiers: pennyPageTiersUsdc(),
+    description,
+    note402,
+    exampleTitle,
+    paywallHtml: pennyPagePaywallHtml(exampleTitle, env),
+    resource,
+  });
+}
+
+/** The tiers on an Open for Business issue: the price, then two tips above it. */
+export function openForBusinessTiersUsdc(): number[] {
+  return PWID_TIER_MULTIPLIERS.map((multiplier) => Math.round(OPEN_FOR_BUSINESS_USDC * multiplier * 100) / 100);
+}
+
+/**
+ * OPEN FOR BUSINESS (2026-09-18): the weekly issue for sellers, at the
+ * price the keeper set. Same shape as a penny page — one GET, one
+ * 402, markdown back, no certificate — and a different first tier,
+ * because a seller buying a week of buying behaviour is not a reader
+ * buying a journal page. The issue is a prefixed pattern, like the
+ * Gazette, because issues are published from the office after deploy.
+ */
+function openForBusinessRouteConfig(env: Env): RouteConfig {
+  return markdownPageRouteConfig(env, {
+    priceUsdc: OPEN_FOR_BUSINESS_USDC,
+    tiers: openForBusinessTiersUsdc(),
+    description: `${OPEN_FOR_BUSINESS_NAME}, the weekly issue for sellers: what agents did at a live x402 till and at the doors the store probes, and how not to turn them away silently. One issue, as markdown, $${OPEN_FOR_BUSINESS_USDC}.`,
+    note402: `That issue of ${OPEN_FOR_BUSINESS_NAME} is $${OPEN_FOR_BUSINESS_USDC}, friend. The index at ${env.STORE_BASE_URL}/open-for-business is free, and so is the number of the week.`,
+    exampleTitle: `${OPEN_FOR_BUSINESS_NAME} — 2026-W38`,
+    paywallHtml: humanPaywallPage(
+      `${OPEN_FOR_BUSINESS_NAME}: one issue`,
+      `<h1>That issue is $${OPEN_FOR_BUSINESS_USDC}, friend.</h1>
+<p><strong>${OPEN_FOR_BUSINESS_NAME}</strong> is the weekly issue for sellers: what agents
+actually did at this store's till and at the doors it probes, where they got hung up
+before paying, and one change to make on Monday. One issue, paid once over x402 v2,
+no subscription.</p>
+${paymentHelpHtml(env)}
+<p>If you're reading this yourself: the <a href="${env.STORE_BASE_URL}/open-for-business">index</a>
+is free, and so is the number of the week on every issue.</p>
+<p><a href="${env.STORE_BASE_URL}/">The front of the store</a> is open to anyone.</p>`,
+    ),
+  });
+}
+
+/** One markdown page behind one 402: the shape the penny pages and the seller's issue share. */
+function markdownPageRouteConfig(
+  env: Env,
+  page: {
+    priceUsdc: number;
+    tiers: number[];
+    description: string;
+    note402: string;
+    exampleTitle: string;
+    paywallHtml: string;
+    resource?: string;
+  },
+): RouteConfig {
+  const { description, note402, exampleTitle, resource } = page;
   /**
    * THE PRICE STAYS A PENNY; THERE IS NOW SOMEWHERE TO PAY MORE.
    *
@@ -758,24 +819,21 @@ function pennyPageRouteConfig(
    * distinction matters enough to be a test.
    */
   const config: RouteConfig = {
-    accepts: railAccepts(
-      env,
-      pennyPageTiersUsdc(),
-    ),
+    accepts: railAccepts(env, page.tiers),
     description,
     mimeType: "text/markdown",
     ...storeServiceMetadata(env),
     extensions: pennyPageDiscoveryExtensions(exampleTitle),
-    customPaywallHtml: pennyPagePaywallHtml(exampleTitle, env),
+    customPaywallHtml: page.paywallHtml,
     unpaidResponseBody: async () => ({
       contentType: "application/json",
       body: {
         error: note402,
         checkout: publicationCheckout(env.STORE_BASE_URL),
         note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign the accepted amount and retry with the PAYMENT-SIGNATURE header.",
-        price_usdc: PENNY_PAGE_USDC,
+        price_usdc: page.priceUsdc,
         pricing: "fixed",
-        pay_more_if_you_like: `The price is $${PENNY_PAGE_USDC} and that is what the index quotes. The PAYMENT-REQUIRED header offers higher amounts too; anything above the first is recorded as a tip to the keeper, and buys you exactly the same page. No tier is better than any other.`,
+        pay_more_if_you_like: `The price is $${page.priceUsdc} and that is what the index quotes. The PAYMENT-REQUIRED header offers higher amounts too; anything above the first is recorded as a tip to the keeper, and buys you exactly the same page. No tier is better than any other.`,
         want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request, the keeper reads every one on Sundays.`,
       },
     }),
@@ -783,7 +841,7 @@ function pennyPageRouteConfig(
       contentType: "application/json",
       body: {
         error:
-          "The penny didn't clear, so the page stays shut. No charge. Try again whenever you're ready.",
+          "The payment didn't clear, so the page stays shut. No charge. Try again whenever you're ready.",
       },
     }),
   };
@@ -860,6 +918,9 @@ export function minimumUsdcForPath(path: string): number {
     path.startsWith("/zodiac/archive/")
   ) {
     return PENNY_PAGE_USDC;
+  }
+  if (path.startsWith("/open-for-business/")) {
+    return OPEN_FOR_BUSINESS_USDC;
   }
   return 0;
 }
@@ -1414,6 +1475,9 @@ export function buildRoutesConfig(env: Env): RoutesConfig {
     "That page of the Almanac has turned, friend. A penny opens the archive.",
     "The Systems Almanac. The Checksum, Season One, Week 1",
   );
+  // Open for Business issues are published from the office by week,
+  // so the paid route is a prefixed pattern like the Gazette's.
+  routes["GET /open-for-business/:week"] = openForBusinessRouteConfig(env);
   // The Commission Desk's ladder: one static route per published
   // rung, prices computed at boot, never read from storage or a
   // query — see commissionRungRouteConfig on why that is the law.

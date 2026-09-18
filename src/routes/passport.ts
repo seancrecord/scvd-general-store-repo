@@ -3,6 +3,7 @@ import { renderCardPng } from "@/lib/pixel-card";
 import { CATALOG_PATHS } from "@/discovery/self-module";
 import { loopbackCatalogFetcher } from "@/lib/self-fetch";
 import { escapeHtml } from "@/lib/sanitize";
+import { notePageRead } from "@/services/buyer-signals";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -392,7 +393,9 @@ passportRoutes.get("/passport/:host", async (c) => {
     );
   }
 
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+  const asHtml = wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"));
+  if (rawHost !== ownHost) notePageRead(c, "passport", asHtml ? "html" : "json", passportOrRefusal.passport.payload.host);
+  if (!asHtml) {
     /* Additive, outside the signed payload, like verify_hint: the
      * words a merchant may paste, derived from the summary they sit
      * beside. */

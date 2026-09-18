@@ -1041,8 +1041,15 @@ const BASE = "https://scvd.store";
 // or MCP, four sub-cent items missing and named at /ucp. Verified
 // across the merge: with only that paragraph removed from the merged
 // tree, main's eb0b92aa reproduced, and this copy reproduces the new one.
+// 2026-09-18: Open for Business, the weekly issue for sellers, on the
+// shelf at the keeper's price. The reading room gained its paragraph
+// (the rule 60 sentences, the issue URL shape) and the index's
+// evidence line gained the shelf's link, folded in rather than added
+// as a line because the index sits 30 characters under its budget.
+// Nothing else in the guide moved; the addition test below carries
+// the same retake.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7667179f4b93089cd5e6af2eb30521f52b29385e33385d456501423c94ffbe9c";
+  "e2671affc94c23f959afa6462c35963528c46ca3b9e387f365d26bbe148acd6e";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1081,8 +1088,10 @@ describe("nothing was rewritten", () => {
     // is main's pre-addition text plus the UCP business-profile
     // paragraph. With that paragraph removed as well, main's d9fc6754
     // reproduced; this copy is the merged guide minus the addition.
+    // 2026-09-18: re-taken with the Open for Business paragraph and
+    // the sellers line in the guide (see GUIDE_DIGEST_BEFORE_THE_SPLIT).
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "b2d9ec8aaee4bf396c96c3b06ce30647c4ce40209b78012eb805156d272f5903",
+      "7e098c556f76a75be6a86acab5a1018e68c4e2680e216ff8db28a621e041dae2",
     );
   });
 

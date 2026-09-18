@@ -48,6 +48,7 @@ export const PUBLICATION_COLLECTIONS_SCHEMA = {
 export function publicationCollections(base: string) {
   return [
     { index_url: `${base}/almanac?view=compact`, status: "active" },
+    { index_url: `${base}/open-for-business?view=compact`, status: "active" },
     { index_url: `${base}/gazette?view=compact`, status: "archived" },
     { index_url: `${base}/zodiac/archive?view=compact`, status: ZODIAC_STATUS },
   ];

@@ -39,7 +39,7 @@ describe("publications explain the whole HTTP purchase without a menu-item assum
   }
   it("links the separate paid collections from the compact shelf", async () => {
     const catalog = await (await SELF.fetch(BASE + "/menu.json?view=compact")).json() as { publications: { index_url: string }[] };
-    expect(catalog.publications.map(row => row.index_url)).toEqual(["/almanac", "/gazette", "/zodiac/archive"].map(path => BASE + path + "?view=compact"));
+    expect(catalog.publications.map(row => row.index_url)).toEqual(["/almanac", "/open-for-business", "/gazette", "/zodiac/archive"].map(path => BASE + path + "?view=compact"));
   });
   it("keeps discovery's publication tiers equal to the real quote", async () => {
     const manifest = await (await SELF.fetch(BASE + "/.well-known/x402.json")).json() as { resources: { resource: string; accepts: unknown[] }[] };
@@ -66,7 +66,7 @@ describe("compact publication pagination", () => {
     for (const page of ["-1", "1.5", "3", "9999999", "wat"]) expect(publicationPage(entries, BASE + "/almanac", page)).toBeNull();
   });
   it("refuses invalid compact pages at each public index", async () => {
-    for (const path of ["/almanac", "/gazette", "/zodiac/archive"]) {
+    for (const path of ["/almanac", "/open-for-business", "/gazette", "/zodiac/archive"]) {
       expect((await SELF.fetch(BASE + path + "?view=compact&page=-1")).status).toBe(400);
     }
   });

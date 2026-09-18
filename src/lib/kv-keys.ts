@@ -274,6 +274,9 @@ export const KV_KEYS = {
   /** Keeper-written almanac pages, added from the office. ORDERS. */
   almanacEntry: (slug: string): string => `almanac_entry:${slug}`,
   almanacEntryPrefix: "almanac_entry:",
+  /** Open for Business issues, published from the office by week. ORDERS. */
+  openForBusinessIssue: (week: string): string => `ofb_issue:${week}`,
+  openForBusinessIssuePrefix: "ofb_issue:",
   keeperLastSeen: "keeper_last_seen",
   /**
    * Last successfully rendered alarm-trail visit, for first-look

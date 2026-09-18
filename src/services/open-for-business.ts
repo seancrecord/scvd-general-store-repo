@@ -11,10 +11,11 @@ import { currentWeekKey } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 
 /**
- * DOORS OPEN — the weekly issue, drafted by the instruments.
+ * OPEN FOR BUSINESS — the weekly issue, drafted by the instruments.
  *
- * ⚑ The name is a working title under rule 7; the keeper's pen
- * decides what it is called on the shelf.
+ * The name is the keeper's (2026-09-18, rule 7): "Open for Business",
+ * because the issue is about a seller's door being open to agents
+ * and not merely unlocked.
  *
  * WHAT THIS IS. A seller's weekly: what agents did at this store's
  * till and at the doors the store probes, where they got hung up,
@@ -25,7 +26,7 @@ import type { Env } from "@/types";
  * pointed at sellers: how not to turn agents away silently.
  *
  * WHAT THIS IS NOT. Not a publication surface. The draft is read on
- * /admin/doors-open by the keeper, who writes the fix of the week in
+ * /admin/open-for-business by the keeper, who writes the fix of the week in
  * his own words, cuts what the week does not support, and presses
  * publish himself (rule 30). Rule 34 is the reason the draft exists:
  * the Sunday read is half an hour when the tables are already laid.
@@ -58,7 +59,7 @@ export interface DraftSection {
   unread: boolean;
 }
 
-export interface DoorsOpenDraft {
+export interface OpenForBusinessDraft {
   week: string;
   month: string;
   drafted_at: string;
@@ -234,7 +235,51 @@ function latency(pulse: Awaited<ReturnType<typeof computePulse>> | null, corpus:
   };
 }
 
-function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnType<typeof latestCorpusEntry>> | null): DoorsOpenDraft["number_of_the_week"] {
+/**
+ * WHO LOOKED AT THE RECORD (2026-09-18). Aggregates only: how many
+ * reads the pages about a host drew from browsers and agents, how
+ * many came referred from the subject itself, how many subjects were
+ * read more than once, and which crawlers walked. Never a host name:
+ * that table is the keeper's and stays on the signals page.
+ */
+function whoLooked(signals: BuyerSignals | null): DraftSection {
+  const numbers: SectionNumber[] = [];
+  const rows: Array<[string, number]> = [];
+  let reads = 0;
+  let self = 0;
+  const byReader: Record<string, number> = {};
+  if (signals) {
+    for (const [k, n] of Object.entries(signals.pages)) {
+      const [page, , reader, relation] = k.split(":");
+      if (reader === "crawler") continue;
+      reads += n;
+      byReader[`${page ?? "page"} by ${reader ?? "unnamed"}`] = (byReader[`${page ?? "page"} by ${reader ?? "unnamed"}`] ?? 0) + n;
+      if (relation === "self") self += n;
+    }
+    const repeats = Object.entries(signals.subjects).filter(([k, n]) => k !== "other" && n >= 2).length;
+    numbers.push({ label: "reads of a host page or a passport by a browser or an agent", value: reads });
+    numbers.push({ label: "…referred from the subject host itself", value: self, of: reads });
+    numbers.push({ label: "hosts whose record was read more than once", value: repeats, of: Object.keys(signals.subjects).filter((k) => k !== "other").length });
+    for (const [k, n] of top(byReader, 4)) rows.push([k, n]);
+    for (const [k, n] of top(signals.crawlers, 4)) rows.push([`crawler ${k}`, n]);
+  }
+  return {
+    heading: "Who looked at the record",
+    lead: reads > 0
+      ? `${reads} reads of a page about a door came from a browser or an agent this month, ${self} of them from the door itself: operators checking their own listing, which is the reader a seller should assume.`
+      : "No page about a door has been read by anyone but a crawler this month.",
+    numbers,
+    rows,
+    not_seen: [
+      "A read is not a reader: with no cookie and no IP kept, two reads of one record may be one person twice or two people once, and the store does not try to tell.",
+      "A crawler that reads every page once at the same count is an index walk, not interest; those are named by crawler and kept out of every number above.",
+      "Hosts are never named here. The seller reading this is welcome to ask for its own record at /corpus/host/{host}, which is free.",
+    ],
+    unread: !signals,
+  };
+}
+
+function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnType<typeof latestCorpusEntry>> | null): OpenForBusinessDraft["number_of_the_week"] {
   if (signals) {
     const over = signals.verify_age["over_1w"] ?? 0;
     const all = sum(signals.verify_age);
@@ -255,7 +300,7 @@ function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnTyp
   return null;
 }
 
-export async function draftDoorsOpen(env: Env, now: Date = new Date()): Promise<DoorsOpenDraft> {
+export async function draftOpenForBusiness(env: Env, now: Date = new Date()): Promise<OpenForBusinessDraft> {
   const month = metricsMonth(now);
   const unread: string[] = [];
   const [signals, paid, declines, ledger, observatory, pulse, clients, corpus] = await Promise.all([
@@ -278,6 +323,7 @@ export async function draftDoorsOpen(env: Env, now: Date = new Date()): Promise<
       wentWell(signals, ledger, paid),
       entryPoints(observatory, clients, ledger, month),
       latency(pulse, corpus),
+      whoLooked(signals),
     ],
     fix_of_the_week: "",
     unread,
@@ -285,9 +331,9 @@ export async function draftDoorsOpen(env: Env, now: Date = new Date()): Promise<
 }
 
 /** The draft as Markdown the keeper can paste, edit and sign. */
-export function renderDoorsOpenMarkdown(draft: DoorsOpenDraft): string {
+export function renderOpenForBusinessMarkdown(draft: OpenForBusinessDraft): string {
   const lines: string[] = [];
-  lines.push(`# Doors Open — ${draft.week}`);
+  lines.push(`# Open for Business — ${draft.week}`);
   lines.push("");
   lines.push(`_The week in agent buying, from the till at scvd.store and the doors it probes. Drafted ${draft.drafted_at.slice(0, 10)}; every number carries the denominator it came from, and every section names what it could not see._`);
   lines.push("");

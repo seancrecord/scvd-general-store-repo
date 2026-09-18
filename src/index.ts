@@ -7,6 +7,7 @@ import { publishSeedRecord, utcDate } from "@/services/paywall-seed";
 import {
   adminRoutes,
   almanacRoutes,
+  openForBusinessRoutes,
   anchorRoutes,
   badgeRoutes,
   bellRoutes,
@@ -301,6 +302,7 @@ app.route("/", patronageRoutes);
 app.route("/", phantomRoutes);
 app.route("/", letterRoutes);
 app.route("/", almanacRoutes);
+app.route("/", openForBusinessRoutes);
 app.route("/", zodiacRoutes);
 app.route("/", directoryRoutes);
 app.route("/", trainRoutes);
