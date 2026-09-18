@@ -38,6 +38,8 @@ adminPurchaseRoutes.post("/:id/house-correction", async c => {
   try {
     await c.env.COUNTER_LEDGER!.get(c.env.COUNTER_LEDGER!.idFromName(`${sale.month}/mpp-sales`)).correctMppHouseSale({
       id, month: sale.month, payer: sale.payer, transaction: sale.transaction, amount: sale.amount_atomic, house: sale.house,
+      // The item the row names, when it names one; a pilot row names none and stays equal to itself.
+      ...(sale.item !== undefined ? { item: sale.item } : {}),
     }, body.reason);
   } catch {
     return c.json({ code: "house_correction_unavailable", note: "Read this purchase again before retrying. A committed correction is applied at most once." }, 503);

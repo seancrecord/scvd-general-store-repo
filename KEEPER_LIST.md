@@ -26,6 +26,18 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **PRESS — put the challenge key on the doors, 2026-09-18.** The
+  whole-shelf native release (`docs/MPP_WHOLE_STORE_2026-09-18.md`)
+  makes every HTTP door a native door, and the doors Worker mints the
+  challenge itself once it holds the same `MPP_CHALLENGE_KEY` the
+  store holds. Until it does, every unsigned knock on every door is
+  handed to the store — correct, and the cold start the doors exist
+  to remove. One press, the same value as the store's, at least 32
+  bytes: `npx wrangler secret put MPP_CHALLENGE_KEY -c doors/wrangler.jsonc`.
+  Then one unsigned knock on any door should answer without
+  `x-scvd-doors: passed` and with `WWW-Authenticate: Payment`. A short
+  key is refused by both Workers; the store answers 500 on every native
+  door with one, so set the same long key in both places.
 - **The note audits stopped paging you, 2026-09-15 — no press needed.**
   You said of a `worker_health` page about a note this desk sent to
   delvorn.site: "I don't want to get this particular alarm anymore" —
@@ -1110,16 +1122,22 @@ what you ruled and what is still yours to look at.
   a model tool call and gallery listing remain unverified.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
-  A2A Directory already lists SCVD; two new community API submissions failed
-  (503 and 404), with no new listing confirmed. MPP is now live for Context
+  A2A Directory already lists SCVD. The earlier community API attempts returned
+  503 and 404; the Global A2A Registry web form subsequently registered
+  [SCVD Evidence Agent](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent).
+  The public listing is confirmed and unclaimed. Claiming and domain/account
+  verification remain a keeper press; do not resubmit. MPP is now live for Context
   Anchor: the 21:13 UTC
   read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
-  and OpenAPI capabilities. Other products are upcoming. Official MPP
+  and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
+  deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
   [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
   MPPScan still needs discovery qualification; the checker’s Base-network
   mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
-  The directory-facing
-  `x-payment-info.protocols` currently lists only x402.
+  The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
+  MPP descriptor alongside x402; the compiled local directory-reader check passes.
+  Deployment readback is tracked with that repair; external parser qualification
+  and admission remain separate.
   [Live receipt](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
   UCP merchant intake remains separate from PS9's
   inspection experiment. OASF clarification: endpoint only, no Cisco/Anro submission.
