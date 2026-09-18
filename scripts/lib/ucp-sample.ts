@@ -27,7 +27,7 @@ import type { Env } from "@/types";
 const SAMPLE_EVM = "0x1111111111111111111111111111111111111111";
 const SAMPLE_SOLANA = "11111111111111111111111111111111";
 
-function sampleEnv(base: string): Env {
+function sampleEnv(base: string, launch: "open" | "closed" = "open"): Env {
   return {
     STORE_BASE_URL: base,
     PAY_TO_ADDRESS: SAMPLE_EVM,
@@ -35,11 +35,28 @@ function sampleEnv(base: string): Env {
     ARBITRUM_PAY_TO: SAMPLE_EVM,
     WORLD_PAY_TO: SAMPLE_EVM,
     SOLANA_PAY_TO: SAMPLE_SOLANA,
+    /**
+     * The launch switch, both ways: the gate validates the profile a
+     * launched deployment serves (checkout and order advertised) and
+     * the one the shipped default serves (neither), because both are
+     * documents this code emits and both must conform. The durable
+     * binding is a truthy stand-in; the profile only asks whether it
+     * is bound.
+     */
+    ...(launch === "open"
+      ? { UCP_CHECKOUT_ENABLED: "true", PAID_RECOVERIES: {} }
+      : { UCP_CHECKOUT_ENABLED: "false" }),
   } as unknown as Env;
 }
 
+/** The profile with checkout and order advertised: what a launched deployment serves. */
 export function profileSample(base: string): unknown {
-  return ucpProfile(sampleEnv(base));
+  return ucpProfile(sampleEnv(base, "open"));
+}
+
+/** The profile with the switch off: what ships until the launch is qualified. */
+export function closedProfileSample(base: string): unknown {
+  return ucpProfile(sampleEnv(base, "closed"));
 }
 
 /** The whole shelf, so every product and variant is validated. */

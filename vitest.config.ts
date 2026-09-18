@@ -74,6 +74,17 @@ export default defineConfig({
         bindings: {
           // A plain (nonexistent) wallet address, not a token contract.
           PAY_TO_ADDRESS: "0x1111111111111111111111111111111111111111",
+          /*
+           * THE SUITE RUNS WITH UCP CHECKOUT OPEN (2026-09-18), on every
+           * rail and every catalog item, because that is the state the
+           * launched store runs in and the state every guard should be
+           * holding: the profile advertises checkout, Complete settles,
+           * the discovery surfaces name the doors. Production reads the
+           * switch from secrets and absent is closed, so a deploy
+           * launches nothing; the tests that prove the closed state pass
+           * their own bindings.
+           */
+          UCP_CHECKOUT_ENABLED: "true",
           // The ledger follows KV when a test wipes or seeds a key under it (services/counter-ledger.ts).
           COUNTER_LEDGER_FOLLOW_KV: "1",
           // A test-only IndexNow key; the route serves it back, nothing pings.

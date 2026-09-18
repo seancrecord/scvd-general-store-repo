@@ -27,7 +27,8 @@ it("advertises the enabled HTTP offer on its item and OpenAPI while preserving x
   const doc = await request("/openapi.json");
   const operation = doc.paths['/api/buy/context_anchor'].get;
   expect(operation['x-payment-info'].protocol).toBe("x402");
-  expect(operation['x-scvd-payment-capabilities']).toEqual(contract.payment_capabilities);
+  // The UCP row is the shelf's, carried once at the document root (x-scvd-ucp), never per operation.
+  expect(operation['x-scvd-payment-capabilities']).toEqual(contract.payment_capabilities.filter((row: { protocol: string }) => row.protocol !== "ucp"));
   expect(storeGuideText(bindings.STORE_BASE_URL, bindings)).toContain("Native MPP checkout: HTTP GET");
 });
 it("omits native claims when disabled or incomplete, and every shelf item carries one at its own minimum when enabled", () => {

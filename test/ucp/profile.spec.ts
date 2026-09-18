@@ -52,28 +52,39 @@ describe("/.well-known/ucp", () => {
     }
   });
 
-  it("does NOT advertise a capability this store has not built", async () => {
+  it("advertises exactly what it serves: catalog, checkout, order and the inputs extension, and no more", async () => {
+    /*
+     * The suite runs with UCP checkout OPEN (vitest.config.ts), so
+     * checkout and order are declared — and the same switch that
+     * declares them is what makes Complete settle
+     * (test/ucp/launch.spec.ts holds the closed half). Nothing else
+     * is declared: no cart, no fulfillment, no identity linking, none
+     * of the capabilities the shelf does not have.
+     */
     const profile = (await (
       await SELF.fetch(`${BASE}/.well-known/ucp`)
     ).json()) as Record<string, any>;
-    const capabilities = Object.keys(profile.ucp.capabilities);
-    expect(capabilities).not.toContain("dev.ucp.shopping.checkout");
-    expect(capabilities).not.toContain("dev.ucp.shopping.order");
-    expect(profile["store.scvd"].status.checkout).toBe("not implemented");
+    expect(Object.keys(profile.ucp.capabilities).sort()).toEqual([
+      "dev.ucp.shopping.catalog.lookup",
+      "dev.ucp.shopping.catalog.search",
+      "dev.ucp.shopping.checkout",
+      "dev.ucp.shopping.order",
+      "store.scvd.shopping.inputs",
+    ]);
+    expect(profile["store.scvd"].status.checkout).toBe("live");
     /*
      * payment_handlers IS declared, and that was a correction rather
      * than a reversal of intent. The business schema requires it, so
      * omitting it produced an invalid profile rather than a cautious
-     * one. The declaration is true — the store takes USDC on these
-     * rails today — and the thing that tells a negotiator it cannot
-     * drive them through UCP is the absent checkout capability above,
-     * which is the field negotiation actually reads.
+     * one. Open, the instances are the rails a checkout is quoted on
+     * and the note says they are drivable; closed, every rail the till
+     * settles on is still declared, truthfully, as not drivable.
      */
     expect(Object.keys(profile.ucp.payment_handlers)).toEqual([
       "store.scvd.payment.usdc",
     ]);
     expect(profile["store.scvd"].payment_handler_note.drivable_through_ucp).toBe(
-      false,
+      true,
     );
   });
 

@@ -1,4 +1,6 @@
-import { SELF } from "cloudflare:test";
+import { SELF, createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
+import { app } from "@/index";
+import type { Env } from "@/types";
 import { describe, expect, it } from "vitest";
 import { variantGid } from "@/lib/ucp/ids";
 
@@ -207,30 +209,42 @@ describe("reading and cancelling a checkout", () => {
 });
 
 /**
- * The refusal is the feature. A Complete that looked like it settled
- * and did not would be worse than one that says so in writing.
+ * THE CLOSED DOOR, which is what ships (wrangler.jsonc carries the
+ * switch off). The suite runs open; these rows pass the closed
+ * bindings through the Worker and hold that a closed Complete refuses
+ * in writing, charges nothing, and is matched by a profile that
+ * advertises no checkout. The open door is test/ucp/launch.spec.ts.
  */
-describe("completing a checkout, which this store cannot do yet", () => {
+describe("completing a checkout while the door is closed", () => {
+  const closed = { ...(env as unknown as Env), UCP_CHECKOUT_ENABLED: "false" } as Env;
+  async function through(path: string, init?: RequestInit) {
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request(`${BASE}${path}`, init), closed, ctx);
+    await waitOnExecutionContext(ctx);
+    return res;
+  }
+
   it("refuses in writing, and names the door that does take the money", async () => {
     const { body: created } = await createCheckout(ONE_AUDIT);
-    const res = await post(`/ucp/v1/checkout-sessions/${created.id}/complete`, {
-      payment: { instruments: [] },
+    const res = await through(`/ucp/v1/checkout-sessions/${created.id}/complete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payment: { instruments: [] } }),
     });
-    expect(res.status).toBe(501);
+    expect(res.status).toBe(503);
     const body = (await res.json()) as Record<string, any>;
-    expect(body.messages[0].content).toContain("will not pretend");
+    expect(body.messages[0].content).toContain("switched off");
+    expect(body.messages[0].content).toContain("will not settle");
     expect(body.messages[0].content).toContain("/api/buy/service_audit");
     // And the checkout is untouched: nothing was admitted.
     expect(body.status).toBe("ready_for_complete");
   });
 
   it("is matched by a profile that advertises no checkout capability", async () => {
-    const profile = (await (
-      await SELF.fetch(`${BASE}/.well-known/ucp`)
-    ).json()) as Record<string, any>;
+    const profile = (await (await through("/.well-known/ucp")).json()) as Record<string, any>;
     expect(Object.keys(profile.ucp.capabilities)).not.toContain(
       "dev.ucp.shopping.checkout",
     );
-    expect(profile["store.scvd"].status.checkout).toBe("not implemented");
+    expect(profile["store.scvd"].status.checkout).toBe("not enabled");
   });
 });

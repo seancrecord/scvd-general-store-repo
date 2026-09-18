@@ -271,16 +271,18 @@ describe("a confirmed settlement becomes a completed checkout with a durable ord
     }
   });
 
-  it("does not open Complete or advertise checkout: the chapter stops before the door", async () => {
+  it("Complete is open and advertised (2026-09-18): an empty Complete is a 400 for the missing instrument, never a 501", async () => {
     const checkout = await openCheckout();
     const res = await SELF.fetch(`${BASE}/ucp/v1/checkout-sessions/${checkout.id}/complete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "{}",
     });
-    expect(res.status).toBe(501);
+    expect(res.status).toBe(400);
     const profile = (await (await SELF.fetch(`${BASE}/.well-known/ucp`)).json()) as { ucp: { capabilities: Record<string, unknown> } };
-    expect(Object.keys(profile.ucp.capabilities).some((name) => /checkout|order/.test(name))).toBe(false);
+    expect(Object.keys(profile.ucp.capabilities)).toEqual(
+      expect.arrayContaining(["dev.ucp.shopping.checkout", "dev.ucp.shopping.order"]),
+    );
   });
 });
 

@@ -1,4 +1,5 @@
 import { getAddress } from "viem";
+import { ucpLaunchStatus } from "@/lib/ucp/launch";
 import { purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
@@ -5352,6 +5353,29 @@ function provenanceExtension(env: Env): Record<string, unknown> {
     : {};
 }
 
+/**
+ * THE UCP POINTER, ONCE (2026-09-18). UCP is one door for the whole
+ * shelf — a business profile, a catalog, a checkout — not a property
+ * of each paid operation, and this document has a byte ceiling
+ * (test/agent-catalog-readability.spec.ts) that thirty-five copies of
+ * the same four fields would spend on saying less reliably what the
+ * profile says once. So the per-item `ucp` capability row stays on
+ * menu.json, where a shelf reader looks, and OpenAPI carries a single
+ * root pointer: the profile, and whether this deployment advertises
+ * checkout in it. Same switch, same answer.
+ */
+function ucpExtension(env: Env): Record<string, unknown> {
+  const base = env.STORE_BASE_URL;
+  const launch = ucpLaunchStatus(env);
+  return {
+    // Two fields: the ceiling is measured in bytes and main sits at it.
+    "x-scvd-ucp": {
+      profile: `${base}/.well-known/ucp`,
+      checkout: launch.open ? "advertised" : "not advertised",
+    },
+  };
+}
+
 function paidOp(
   env: Env,
   summary: string,
@@ -5589,7 +5613,8 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     );
   }
   const capabilities = purchaseCapabilities(item, env);
-  operation["x-scvd-payment-capabilities"] = capabilities;
+  // The UCP row is the shelf's, not the operation's: see ucpExtension.
+  operation["x-scvd-payment-capabilities"] = capabilities.filter((row) => row.protocol !== "ucp");
   const paymentInfo = operation["x-payment-info"] as OpenApiObject;
   // Directory readers use AgentCash's protocol objects, not our capability
   // extension. Derive the additive MPP entry from the same enabled offer.
@@ -5822,6 +5847,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
      * operator, one key. What is guaranteed is NOTICE, not permanence.
      */
     ...provenanceExtension(c.env),
+    ...ucpExtension(c.env),
     "x-rate-limiting": {
       /*
        * TRUE SINCE 2026-08-03 AND SAID FALSE HERE UNTIL 2026-08-26,

@@ -149,17 +149,20 @@ describe("/ucp schemas and specs", () => {
     expect(res.status).toBe(404);
   });
 
-  it("says plainly, at every door, that UCP cannot be paid here yet", async () => {
+  it("says plainly, at every door, what is open and how Complete is paid", async () => {
     const landing = (await (await SELF.fetch(`${BASE}/ucp`)).json()) as Record<
       string,
       any
     >;
-    expect(landing.what_does_not).toContain("Checkout");
-    expect(landing.what_does_not).toContain("/api/buy/");
+    expect(landing.what_works).toContain("checkout and order");
+    expect(landing.what_does_not).toBeUndefined();
+    expect(landing.checkout.complete.url).toBe(`${BASE}/ucp/v1/checkout-sessions/{id}/complete`);
     const spec = (await (
       await SELF.fetch(`${BASE}/ucp/specs/payment/usdc-x402`)
     ).json()) as Record<string, any>;
-    expect(spec.not_yet_negotiable).toContain("no UCP checkout");
+    expect(spec.negotiable).toBe(true);
+    expect(spec.not_yet_negotiable).toBeUndefined();
+    expect(spec.complete_request.payment.instruments[0].credential.type).toBe("x402");
   });
 
   it("every schema and spec the profile points at answers 200", async () => {
@@ -237,8 +240,9 @@ describe("UCP agrees with the surfaces already published", () => {
     for (const path of ["/llms-full.txt", "/menu/llms.txt"]) {
       const llms = await (await SELF.fetch(`${BASE}${path}`)).text();
       expect(llms, path).toContain(`${BASE}/.well-known/ucp`);
-      // And it says what is missing there, not only what is present.
-      expect(llms, path).toContain("no UCP checkout");
+      // And it says what the profile says: checkout and order are
+      // served, and where a platform opens one.
+      expect(llms, path).toContain(`${BASE}/ucp/v1/checkout-sessions`);
     }
   });
 

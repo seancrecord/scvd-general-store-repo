@@ -1052,8 +1052,16 @@ const BASE = "https://scvd.store";
 // longer says the issue is published by hand. A closed week goes on
 // the shelf on its own and the fix of the week is the week's merged
 // pull requests; the guide says so (rule 45).
+// 2026-09-18, THE MERGE, once more: main's Open for Business and
+// sellers-line edits meet the UCP launch paragraph, which now says what
+// the profile says (the suite runs with UCP checkout OPEN, so the served
+// guide names the checkout door, the order door and the identical-
+// Complete guarantee; closed, it says checkout is switched off here —
+// lib/ucp/launch.ts writes both texts). Verified across the merge: with
+// only that paragraph restored to its catalog-only wording, main's
+// 529e622f reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "529e622f862e720ff3454e296b040ee2727d80e2768a5355f5cf27160a93dd63";
+  "81998b4df81639a226350ccd420656d9722ddb3b513764a459e61f31ff2b99b4";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1094,8 +1102,10 @@ describe("nothing was rewritten", () => {
     // reproduced; this copy is the merged guide minus the addition.
     // 2026-09-18: re-taken with the Open for Business paragraph and
     // the sellers line in the guide (see GUIDE_DIGEST_BEFORE_THE_SPLIT).
+    // Then across the UCP launch merge: with the catalog-only wording
+    // restored, f6be9ead reproduced, and this copy reproduces the new one.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "f6be9ead5a6bd87869fccc2ba7157d3a54224801b95fddf2639dca973d8cec17",
+      "a03d8e210ba749334447914c454ae47b87338af9a58b06d14d62e0e527a91ee4",
     );
   });
 

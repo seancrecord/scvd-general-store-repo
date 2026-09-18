@@ -20,10 +20,15 @@ import { usdcPaymentHandlers } from "@/lib/ucp/payments/usdc-x402";
 import { SCVD_NAMESPACE, UCP_VERSION } from "@/lib/ucp/version";
 import { acceptedNetworks } from "@/lib/payment-networks";
 import { ucpCheckoutStore, type StoredCheckout } from "@/services/ucp-checkout-store";
+import { admitUcpCompletion } from "@/services/ucp-admission";
+import { walkToSettlementBoundary } from "@/services/ucp-settlement-boundary";
+import { realSettlementProducer } from "@/services/ucp-settlement-producer";
+import { ucpCheckoutRails, ucpItemSellable, ucpLaunchStatus, ucpRailSellable } from "@/lib/ucp/launch";
+import { facilitatorVerifier } from "@/lib/payments";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { capacityVerdict } from "@/services/queue-capacity";
 import { getMenuItem } from "@/store/menu";
-import type { HonoEnv } from "@/types";
+import { isRecord, type HonoEnv } from "@/types";
 
 /**
  * THE CHECKOUT DOORS, at the paths the pinned transport names:
@@ -31,20 +36,24 @@ import type { HonoEnv } from "@/types";
  * /cancel. Everything here hangs under the shopping service endpoint
  * the profile advertises.
  *
- * COMPLETE IS NOT WIRED TO SETTLEMENT YET, AND SAYS SO RATHER THAN
- * PRETENDING. Everything up to the money is built: a checkout resolves
- * a variant to a frozen tier, snapshots its price and licence version,
+ * COMPLETE IS WIRED TO SETTLEMENT, BEHIND ONE SWITCH (2026-09-18).
+ * Everything up to the money was built first: a checkout resolves a
+ * variant to a frozen tier, snapshots its price and licence version,
  * validates the product inputs, issues exact payment terms with a
- * digest over them, and admits exactly one completion. What is not
- * built is the seam that hands a verified authorization to the
- * store's existing settlement admission, and that seam is the most
- * security-sensitive line in the shop. A Complete that looked like it
- * settled and did not would be worse than one that refuses in writing.
+ * digest over them, and admits exactly one completion. Complete now
+ * hands the presented credential to that admission, walks the store's
+ * produce-before-settle pipeline through the one settling module, and
+ * answers with the checkout carrying its order. None of that is
+ * decided here: admission (services/ucp-admission), the walk
+ * (services/ucp-settlement-boundary) and the order
+ * (services/ucp-order) are the tested seams, and this file only maps
+ * their outcomes onto HTTP.
  *
- * So the checkout CAPABILITY stays out of the profile. A negotiator
- * reading /.well-known/ucp finds no checkout and correctly declines to
- * transact; these doors exist to be reviewed and tested against the
- * specification while the settlement seam is built under review.
+ * THE SWITCH (lib/ucp/launch.ts) IS THE SAME ONE THE PROFILE READS.
+ * Open: /.well-known/ucp advertises the checkout capability and this
+ * door settles. Closed: no capability is advertised and this door
+ * refuses in writing, naming the x402 door that does take the money.
+ * There is no state in which one is true and the other is not.
  */
 export const ucpCheckoutRoutes = new Hono<HonoEnv>();
 
@@ -61,8 +70,12 @@ function handlersFor(c: { env: HonoEnv["Bindings"] }, checkout: StoredCheckout) 
   const base = c.env.STORE_BASE_URL;
   const quote = checkout.quote;
   if (!quote) {
-    // No rail chosen yet: every rail this store settles on is on offer.
-    const handlers = usdcPaymentHandlers(c.env, base);
+    // No rail chosen yet: every rail a UCP checkout may be quoted on
+    // is on offer — the same set the profile declares while open.
+    const launch = ucpLaunchStatus(c.env);
+    const handlers = usdcPaymentHandlers(c.env, base).filter(
+      (instance) => !launch.open || launch.rails.includes(instance.config.network),
+    );
     return handlers.length > 0
       ? { "store.scvd.payment.usdc": handlers as unknown[] }
       : {};
@@ -74,6 +87,7 @@ function handlersFor(c: { env: HonoEnv["Bindings"] }, checkout: StoredCheckout) 
     checkout_version: quote.terms.checkout_version,
     expires_at: quote.terms.expires_at,
     terms_digest: quote.digest,
+    ...(quote.requirements ? { x402_requirements: quote.requirements as unknown as Record<string, unknown> } : {}),
   }) as unknown as Record<string, unknown[]>;
 }
 
@@ -189,6 +203,29 @@ ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions", async (c) => {
     return c.json(errorBody("item_unavailable", message), 400);
   }
 
+  /**
+   * WHILE THE LAUNCH IS QUALIFIED ITEM BY ITEM, an item the deployment
+   * has not opened for UCP is refused at Create — before a quote, in
+   * writing, naming where it is still for sale — rather than quoted
+   * and then refused at Complete with a signature in hand. With the
+   * door closed altogether, Create still answers: the checkout is a
+   * reviewable document and reserves nothing, and Complete carries
+   * the refusal.
+   */
+  const launch = ucpLaunchStatus(c.env);
+  if (launch.open) {
+    const closedItem = lines.find((line) => !ucpItemSellable(c.env, line.item_id));
+    if (closedItem) {
+      return c.json(
+        errorBody(
+          "item_unavailable",
+          `${closedItem.item_id} is not open for UCP checkout on this deployment yet; the items that are: ${launch.items.join(", ")}. It is still for sale over x402 at ${base}/api/buy/${closedItem.item_id}, or through the MCP door at ${base}/mcp.`,
+        ),
+        400,
+      );
+    }
+  }
+
   const inputs = readInputs(body);
   const missing = missingInputs(lines, inputs);
   const id = newCheckoutId();
@@ -270,14 +307,17 @@ ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions", async (c) => {
    * on, the first enabled rail otherwise. Naming a rail this store
    * does not take is refused rather than silently answered on another.
    */
+  const rails = launch.open ? ucpCheckoutRails(c.env) : acceptedNetworks(c.env);
   const asked = typeof (body[SCVD_NAMESPACE] as Record<string, unknown>)?.network === "string"
     ? String((body[SCVD_NAMESPACE] as Record<string, unknown>).network)
-    : acceptedNetworks(c.env)[0];
-  if (!asked || !acceptedNetworks(c.env).includes(asked)) {
+    : rails[0];
+  if (!asked || !rails.includes(asked)) {
     return c.json(
       errorBody(
         "payment_failed",
-        `This store settles on ${acceptedNetworks(c.env).join(", ")}. "${asked}" is not one of them.`,
+        launch.open
+          ? `UCP checkout settles on ${rails.join(", ")} here. "${asked}" is not one of them${acceptedNetworks(c.env).includes(asked ?? "") ? ` yet; that rail is still open over x402 at ${base}/api/buy/{item_id}` : ""}.`
+          : `This store settles on ${rails.join(", ")}. "${asked}" is not one of them.`,
       ),
       400,
     );
@@ -355,36 +395,209 @@ ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions/:id/cancel", async (c) => {
 });
 
 /**
- * NOT WIRED TO SETTLEMENT, AND THE REFUSAL IS THE HONEST ANSWER.
+ * THE CREDENTIAL, WHERE THE PROTOCOL PUTS IT. A Complete request
+ * carries `payment.instruments[]`; the instrument for this store's
+ * handler carries the x402 payment payload as its `credential`
+ * (type "x402", documented at /ucp/specs/payment/usdc-x402). The
+ * selected instrument wins; otherwise the first one holding a
+ * credential. The discriminator is dropped and the rest is handed to
+ * the adapter untouched, which re-accepts it against the checkout's
+ * frozen terms rather than its own.
+ */
+function credentialFrom(body: Record<string, unknown>): Record<string, unknown> | undefined {
+  const payment = isRecord(body.payment) ? body.payment : undefined;
+  const instruments = Array.isArray(payment?.instruments) ? payment.instruments : [];
+  const holding = instruments.filter(
+    (row): row is Record<string, unknown> => isRecord(row) && isRecord(row.credential),
+  );
+  const chosen = holding.find((row) => row.selected === true) ?? holding[0];
+  if (!chosen) return undefined;
+  const { type: _type, ...credential } = chosen.credential as Record<string, unknown>;
+  return credential;
+}
+
+/**
+ * COMPLETE: THE PRESENTED PAYMENT, ADMITTED ONCE, SETTLED ONCE, AND
+ * THE ORDER IN THE ANSWER.
  *
- * The checkout is real: the tier is frozen, the price re-derived, the
- * terms digested, and exactly one completion would be admitted. What
- * is missing is the seam that hands a verified authorization to
- * beginVerifiedPurchaseIntent and the store's produce-before-settle
- * pipeline. That seam is the most security-sensitive code in the shop
- * and is being built under review rather than in a hurry.
+ * The sequence is the store's, not this file's: admission verifies
+ * the credential against the frozen terms and binds the checkout to
+ * one payment identity (or recognises the byte-identical retry
+ * without asking the facilitator again); the boundary walk produces
+ * the goods, claims the one submission, settles through the single
+ * settling module, and writes the order beside the checkout in one
+ * transaction. Every outcome those seams can return is mapped here
+ * onto a checkout document a platform can read, and nothing is
+ * decided here that they did not decide first.
  *
- * Refused with the status quo named: this store does take money, on
- * these rails, for this exact amount — through x402 at the buy door.
+ * WHAT A PLATFORM CAN RELY ON. The identical Complete sent again —
+ * after a lost response, a timeout, a retry policy — returns the same
+ * completed checkout and the same order, and charges nothing again.
+ * A different payment against a completed checkout is refused: one
+ * checkout is one sale. A Complete while the door is closed refuses
+ * in writing and charges nothing.
  */
 ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions/:id/complete", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const stored = await ucpCheckoutStore(c.env, c.req.param("id")).readUcpCheckout();
+  const id = c.req.param("id");
+  const stored = await ucpCheckoutStore(c.env, id).readUcpCheckout();
   if (!stored) return c.json(errorBody("not_found", "No such checkout."), 404);
   const checkout = plain(stored);
   const item = checkout.lines[0]?.item_id;
-  return c.json(
-    checkoutDocument(checkout, base, {
-      paymentHandlers: handlersFor(c, checkout),
-      messages: [
-        {
-          type: "error",
-          code: "payment_failed",
-          severity: "unrecoverable",
-          content: `This store cannot yet settle a payment through UCP, and will not pretend to: no checkout capability is advertised in its profile for that reason. The terms above are real — pay them over x402 at ${base}/api/buy/${item ?? "{item_id}"}, or through the MCP door at ${base}/mcp.`,
-        },
-      ],
-    }),
-    501,
-  );
+  const buyElsewhere = `It is still for sale over x402 at ${base}/api/buy/${item ?? "{item_id}"}, or through the MCP door at ${base}/mcp.`;
+  const answer = (
+    state: StoredCheckout,
+    status: 200 | 400 | 402 | 409 | 410 | 422 | 503,
+    message?: { type: "error" | "warning" | "info"; code: string; severity?: string; content: string },
+  ) =>
+    c.json(
+      checkoutDocument(state, base, {
+        paymentHandlers: handlersFor(c, state),
+        ...(message
+          ? {
+              messages: [
+                {
+                  type: message.type,
+                  code: message.code,
+                  ...(message.severity ? { severity: message.severity } : {}),
+                  content: message.content,
+                },
+              ],
+            }
+          : {}),
+      }),
+      status,
+    );
+
+  /**
+   * THE SWITCH, READ BEFORE ANYTHING IS PARSED. A completed checkout
+   * is handed back regardless — it is what Get Checkout shows anyone,
+   * and a door that closed after a sale does not unsell it.
+   */
+  const launch = ucpLaunchStatus(c.env);
+  if (!launch.open) {
+    if (checkout.status === "completed") return answer(checkout, 200);
+    return answer(checkout, 503, {
+      type: "error",
+      code: "payment_failed",
+      severity: "unrecoverable",
+      content: `UCP checkout is switched off on this deployment (${launch.closed_because ?? "closed"}), so this store will not settle a payment through it and advertises no checkout capability for that reason. Nothing was charged. The terms above are real — ${buyElsewhere}`,
+    });
+  }
+  if (checkout.status !== "completed") {
+    if (item && !ucpItemSellable(c.env, item)) {
+      return answer(checkout, 409, {
+        type: "error",
+        code: "item_unavailable",
+        severity: "unrecoverable",
+        content: `${item} is not open for UCP checkout on this deployment yet; the items that are: ${launch.items.join(", ")}. Nothing was charged. ${buyElsewhere}`,
+      });
+    }
+    const rail = checkout.quote?.terms.network;
+    if (rail && !ucpRailSellable(c.env, rail)) {
+      return answer(checkout, 409, {
+        type: "error",
+        code: "payment_failed",
+        severity: "unrecoverable",
+        content: `This checkout was quoted on ${rail}, which is not open for UCP checkout on this deployment; the rails that are: ${launch.rails.join(", ")}. Nothing was charged. ${buyElsewhere}`,
+      });
+    }
+  }
+
+  let body: Record<string, unknown> = {};
+  try {
+    body = (await c.req.json()) as Record<string, unknown>;
+  } catch {
+    return answer(checkout, 400, {
+      type: "error",
+      code: "payment_failed",
+      severity: "requires_buyer_input",
+      content: "Send a JSON body carrying payment.instruments[]; the shape is at " + `${base}/ucp/specs/payment/usdc-x402.`,
+    });
+  }
+  const credential = credentialFrom(body);
+  if (!credential) {
+    return answer(checkout, 400, {
+      type: "error",
+      code: "payment_failed",
+      severity: "requires_buyer_input",
+      content: `No payment instrument with a credential was sent. Put the x402 payment payload at payment.instruments[0].credential with type "x402"; the shape is at ${base}/ucp/specs/payment/usdc-x402.`,
+    });
+  }
+
+  const admitted = await admitUcpCompletion(c.env, {
+    checkoutId: id,
+    credential,
+    verify: facilitatorVerifier(c.env),
+  });
+  if (!admitted.ok) {
+    const state = admitted.checkout ? plain(admitted.checkout) : checkout;
+    switch (admitted.code) {
+      case "not_found":
+        return c.json(errorBody("not_found", "No such checkout."), 404);
+      case "payment_refused":
+        return answer(state, 402, { type: "error", code: "payment_failed", severity: "recoverable", content: `${admitted.detail} Nothing was charged.` });
+      case "expired":
+        return answer(state, 410, { type: "error", code: "checkout_expired", severity: "recoverable", content: admitted.detail });
+      case "wrong_state":
+      case "stale_version":
+        return answer(state, 409, { type: "error", code: "checkout_not_payable", severity: "unrecoverable", content: admitted.detail });
+      case "preparation_failed":
+        return answer(state, 422, { type: "error", code: "item_unavailable", severity: "recoverable", content: admitted.detail });
+      default:
+        return answer(state, 503, { type: "error", code: "service_unavailable", severity: "recoverable", content: admitted.detail });
+    }
+  }
+
+  const outcome = await walkToSettlementBoundary(c.env, {
+    checkoutId: id,
+    door: "ucp",
+    produce: realSettlementProducer(c.env, { credential }),
+  });
+  if (outcome.ok) {
+    if (outcome.order || outcome.checkout.status === "completed") return answer(plain(outcome.checkout), 200);
+    if (outcome.resolution?.money === "not_settled") {
+      return answer(plain(outcome.checkout), 402, {
+        type: "error",
+        code: "payment_failed",
+        severity: "recoverable",
+        content: "The facilitator declined to settle this payment; nothing was charged and the checkout is payable again. Sign a fresh payment against the quoted terms and Complete again.",
+      });
+    }
+    return answer(plain(outcome.checkout), 200, {
+      type: "info",
+      code: "settlement_in_progress",
+      content: "The payment was submitted and its outcome is not yet known. Do not sign another payment: read this checkout, which becomes completed with its order once the settlement is confirmed, or payable again if it is declined.",
+    });
+  }
+
+  const state = outcome.checkout ? plain(outcome.checkout) : checkout;
+  switch (outcome.code) {
+    case "not_found":
+      return c.json(errorBody("not_found", "No such checkout."), 404);
+    case "already_resolved": {
+      const latest = plain((await ucpCheckoutStore(c.env, id).readUcpCheckout()) ?? state);
+      if (latest.status === "completed") return answer(latest, 200);
+      return answer(latest, 409, { type: "error", code: "checkout_not_payable", severity: "unrecoverable", content: outcome.detail });
+    }
+    case "already_started":
+    case "not_admitted":
+    case "preconditions_failed":
+      return answer(state, 409, { type: "error", code: "checkout_not_payable", severity: "recoverable", content: outcome.detail });
+    case "production_failed":
+      return answer(state, 422, { type: "error", code: "item_unavailable", severity: "recoverable", content: `${outcome.detail} Nothing was charged.` });
+    default:
+      /**
+       * resolution_failed, delivery_failed, order_failed: the money
+       * moved or the claim is held, and the bookkeeping did not finish
+       * in this request. The purchase desk's alarm finishes it through
+       * the same recovery an identical retry uses; the checkout says
+       * complete_in_progress until then, and nothing is charged again.
+       */
+      return answer(state, 200, {
+        type: "warning",
+        code: "order_pending",
+        content: `${outcome.detail} Read this checkout: it becomes completed with its order once recovery finishes. Do not sign another payment.`,
+      });
+  }
 });
