@@ -39,7 +39,8 @@ rerun; no timeout was increased. The claims register and scalability audit also
 pass. [Validation receipt](../research/distribution-2026-09-17/observations/mpp-openapi-validation.json).
 
 All CI shards remain required before merge. Deployment readback is recorded in
-the release PR; the local result does not establish production behavior or indexing.
+[release PR #791](https://github.com/seancrecord/scvd-general-store-repo/pull/791);
+the local result does not establish production behavior or indexing.
 
 ## External boundaries
 
