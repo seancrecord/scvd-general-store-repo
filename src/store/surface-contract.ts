@@ -375,8 +375,8 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
     code: "ambiguous_payment_credentials",
     jsonrpc: -32602,
     charged: false,
-    means: "the call carried both an x402 payment and an MPP credential in _meta; refused before either was read",
-    what_to_do: "Send one credential per call. Nothing charged; neither reached settlement.",
+    means: "both an x402 payment and an MPP credential were sent; refused before either was read",
+    what_to_do: "Send one credential per call. Nothing charged.",
   },
   {
     code: "window_refused",
