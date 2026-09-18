@@ -12,8 +12,12 @@ that is a bound. The live shelf was read with the pinned
 `@agentcash/discovery@1.7.5`: three doors read `paid ... [x402, mpp]` at their
 menu prices, the document carries the `mpp` descriptor on 35 of 38 paid
 operations (the almanac and open-for-business pages sell over x402 only), and
-a bare knock on a query-required door still answers 402 with both offers.
+a bare knock on a query-required door still answers 402 with both offers,
+and a whole-origin `discover` completed with 196 routes, 38 paid, and three
+warnings, none on a paid door (route count; the purchase-status bearer
+scheme read as no auth mode, left as written per `PAYMENT_RAILS.md`).
 [Receipt](../research/distribution-2026-09-18/mppscan-live-check.json);
+[crawl output](../research/distribution-2026-09-18/mppscan-discover.txt);
 [draft for the keeper's press](../registry/mppscan-submission.md).
 [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209), the
 checker relabelling Base as `tempo:8453`, is still open and is a display

@@ -36,6 +36,7 @@ with `@agentcash/discovery@1.7.5`, the package `apps/scan` in
 | `check https://scvd.store/api/buy/spot_check?host=example.com` | `GET paid 0.001 USD [x402, mpp]` |
 | `check https://scvd.store` and `check .../openapi.json` | `L3_NOT_FOUND`: the checker audits one paid path, and neither URL is one; expected, not a defect |
 | bare `GET /api/buy/context_anchor` (a crawler's unpaid probe of a query-required door) | 402 with both `WWW-Authenticate: Payment` and `payment-required` |
+| `discover https://scvd.store` (the whole-origin crawl the register flow runs) | Source `openapi`, 196 routes: 38 paid, 35 of them `[x402, mpp]`, 157 unprotected; three warnings, none on a paid door: `L2_ROUTE_COUNT_HIGH` (196 routes), and the purchase-status bearer scheme read as no auth mode (`L2_AUTH_MODE_MISSING`, `L3_AUTH_MODE_MISSING`), which `PAYMENT_RAILS.md` records as left as written because respelling it would break the door. [Full output](../research/distribution-2026-09-18/mppscan-discover.txt) |
 
 ## What could reject it, and what was done about each
 
@@ -49,10 +50,15 @@ with `@agentcash/discovery@1.7.5`, the package `apps/scan` in
   mislabel to cite, not a reason to change the challenge. "Spraay x402
   Gateway" is already listed there as "x402 and MPP on Base", so a Base
   server is not refused by the index.
-- **The document is large.** 715 KB; the checker gives a fetch 5 s and the
-  read from here took 0.69 s. MPPScan's server-side reader may have its own
-  budget. If the flow reports a fetch failure, that is the first thing to
-  measure, not the descriptor.
+- **The document is large and the crawl is wide.** 715 KB; the checker
+  gives a fetch 5 s and a single read from here took 0.69 s. The crawl
+  then probes every paid route with eight methods (its TRACE attempts fail
+  inside Node, not at the door) and re-reads the whole document once per
+  route, about 3.2 s each from here, so a whole-origin discover is minutes
+  of serial work; the first run here completed inside its 590 s window
+  with every door answered. MPPScan's server-side reader may have its own
+  budget. If the flow reports a fetch failure or a timeout, the document's
+  size is the first thing to measure, not the descriptor.
 - **Ownership proof.** `x-discovery.ownershipProofs` is optional. The store
   omits the key rather than sending an empty array, because
   [Merit #1046](https://github.com/Merit-Systems/x402scan/issues/1046) shows
