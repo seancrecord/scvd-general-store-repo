@@ -30,7 +30,7 @@ export interface PurchaseIntent {
   id: string;
   token: string;
   path: string;
-  door: "http" | "mcp";
+  door: "http" | "mcp" | "ucp";
   payer: string;
   terms: PaymentRequirements;
   /** One-way fingerprint of the verified wire payment, never executable bytes. */
@@ -163,7 +163,7 @@ type RecordedPurchaseLookup =
 
 /** Authenticated completed goods outlive the replay cache; never run fulfillment again. */
 export async function lookupRecordedPurchase(env: Env, network: string, payer: string | undefined, payload: unknown,
-  request: { path: string; door: "http" | "mcp"; digest: string | undefined },
+  request: { path: string; door: "http" | "mcp" | "ucp"; digest: string | undefined },
   idempotency?: { surface: string; key: string },
 ): Promise<RecordedPurchaseLookup> {
   if (!payer) return null;
@@ -175,7 +175,7 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
 
 /** Identity must come from an authenticated protocol adapter, never request labels. */
 export async function lookupVerifiedPurchase(env: Env, identity: { id: string; payer: string; network: string },
-  request: { path: string; door: "http" | "mcp"; digest: string | undefined },
+  request: { path: string; door: "http" | "mcp" | "ucp"; digest: string | undefined },
   idempotency?: { surface: string; key: string },
 ): Promise<RecordedPurchaseLookup> {
   const network = identity.network;
@@ -210,9 +210,7 @@ export async function lookupVerifiedPurchase(env: Env, identity: { id: string; p
       return { kind: "pending", body: { ...new RecordedPurchase(env, record).body(), charged_again: false } };
     }
     if (record.state !== "settled" || !(record.delivery ?? publicationDelivery(record)) || !record.payment) return null;
-    const digest = record.door === "mcp"
-      ? await sha256Hex(jcsCanonicalize(JSON.parse(record.request)))
-      : await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
+    const digest = await purchaseRequestDigest(env, record.door, record.path, record.request);
     if (record.version === 2 && digest !== record.request_digest) throw new Error("Stored purchase input mismatch");
     if (record.path !== request.path || record.door !== request.door || digest !== request.digest) {
       return { kind: "refused", body: inputMismatchRefusal(purchaseRecovery(env, record)) };
@@ -228,8 +226,46 @@ export async function lookupVerifiedPurchase(env: Env, identity: { id: string; p
   }
 }
 
+/**
+ * THE REQUEST DIGEST, DECIDED PER DOOR RATHER THAN DEFAULTED.
+ *
+ * Widening `door` to admit "ucp" (2026-09-16) produced zero
+ * compiler errors, which was the finding rather than the relief: the
+ * two ternaries that read this field said "mcp or else HTTP", so a
+ * third door would have silently been treated as an HTTP query string
+ * it does not have. That is the silent-default shape this store keeps
+ * a document about, arriving in the one place where a wrong digest
+ * means a recovered purchase is matched against the wrong request.
+ *
+ * So the decision is a function with a case per door and no `else`:
+ *
+ *   http  the resource URL with its query, the buyer's own request
+ *   mcp   the JCS-canonical tool arguments
+ *   ucp   the JCS-canonical completion identity — which checkout, at
+ *         which version, against which quoted terms. A UCP completion
+ *         has no query string and no tool arguments; what identifies
+ *         it is the checkout it completes, and the digest has to be
+ *         reproducible from the stored checkout alone so a recovery
+ *         can recompute it without the original request body.
+ */
+export async function purchaseRequestDigest(
+  env: Env,
+  door: "http" | "mcp" | "ucp",
+  path: string,
+  request: string,
+): Promise<string> {
+  switch (door) {
+    case "mcp":
+      return sha256Hex(jcsCanonicalize(JSON.parse(request)));
+    case "ucp":
+      return sha256Hex(jcsCanonicalize(JSON.parse(request)));
+    case "http":
+      return httpArtifactDigest(`${env.STORE_BASE_URL}${path}?${request}`);
+  }
+}
+
 type PurchaseInput = {
-  path: string; door: "http" | "mcp";
+  path: string; door: "http" | "mcp" | "ucp";
   idempotency?: { surface: string; key: string };
   terms: PaymentRequirements; request: string; item?: MenuItem; commission?: CommissionPurchase; publication?: PublicationSnapshot;
   mpp?: PurchaseIntent["mpp"];
@@ -276,8 +312,7 @@ export async function beginVerifiedPurchaseIntent(env: Env, input: PurchaseInput
         throw new RecordedPurchase(env, original);
       }
     }
-    const requestDigest = input.door === "mcp" ? await sha256Hex(jcsCanonicalize(JSON.parse(input.request)))
-      : await httpArtifactDigest(`${env.STORE_BASE_URL}${input.path}?${input.request}`);
+    const requestDigest = await purchaseRequestDigest(env, input.door, input.path, input.request);
     const observationDigest = supportsObservationRecovery(input.item) ? requestDigest : undefined;
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 2, id,
       payment_context: input.payment, request_digest: requestDigest,

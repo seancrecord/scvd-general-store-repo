@@ -1,4 +1,5 @@
-import { mppPaymentHeader, MPP_CHECKOUT_PATH } from "@/lib/mpp-checkout-capability";
+import { mppPaymentHeader, nativeChallengeMintable, nativeOfferAdvertised } from "@/lib/mpp-checkout-capability";
+import { attachNativeChallengeHeaders, mintNativeChallenge } from "@/lib/mpp-challenge-mint";
 /**
  * THE DOORS — a Worker that answers one question: what does this door
  * cost? (2026-09-05, the x402-list night read.)
@@ -55,8 +56,8 @@ import { mppPaymentHeader, MPP_CHECKOUT_PATH } from "@/lib/mpp-checkout-capabili
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { edgeMiddleware, edgeOnError } from "@/lib/edge";
-import { paymentHeaderOf } from "@/lib/payment-gate";
-import { doorChecks } from "@/routes/door-checks";
+import { createPaymentGate, paymentHeaderOf, type NativeCheckout } from "@/lib/payment-gate";
+import { createDoorChecks } from "@/routes/door-checks";
 import type { Env, HonoEnv } from "@/types";
 
 /** Everything the 402 needs that only a secret or a binding can give. */
@@ -141,7 +142,14 @@ export const handOverFirst: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // when the target is present, which is exactly when the store-only
   // capability is consulted. It errs toward handing over, since a blank
   // url is a probe the store will answer anyway.
-  if (c.env.MPP_CHECKOUT_ENABLED === "true" && c.req.path === MPP_CHECKOUT_PATH) return handToStore(c, "passed");
+  // THE NATIVE DOORS (whole store, 2026-09-18). With the challenge key
+  // here, this Worker mints the native challenge itself
+  // (lib/mpp-challenge-mint.ts) and answers as it always has. Without
+  // it there is no challenge to give, and an unsigned knock that would
+  // get an x402-only answer here would be a door telling a native
+  // buyer nothing, so the store, which holds the key, answers instead.
+  if (nativeOfferAdvertised(c.env, c.req.path, c.req.method) &&
+    !nativeChallengeMintable(c.env, c.req.path, c.req.method)) return handToStore(c, "passed");
   const itemPath = c.req.path.replace(/\/+$/, "");
   if (["/api/buy/launch_check", "/api/buy/opening_day", "/api/buy/a2a_repair_kit"].includes(itemPath) &&
     new URL(c.req.url).searchParams.has("url")) return handToStore(c, "passed");
@@ -196,7 +204,20 @@ doors.use("*", handOverFirst);
 for (const middleware of edgeMiddleware) {
   doors.use("*", middleware);
 }
-for (const check of doorChecks) {
+/**
+ * The doors' native half: the challenge only. A credential never
+ * reaches this gate (handOverFirst hands every paid knock over first),
+ * so the checkout branch is the same hand-over, never a settle.
+ */
+const doorsNative: NativeCheckout = {
+  runMppCheckout: async (c) => handToStore(c, "paid"),
+  attachMppChallenge: async (c, response) => {
+    const header = await mintNativeChallenge(c.env, c.req.url, c.req.header("Idempotency-Key"));
+    if (header) attachNativeChallengeHeaders(response, header);
+  },
+};
+export const doorsDoorChecks = createDoorChecks(createPaymentGate(async () => doorsNative));
+for (const check of doorsDoorChecks) {
   doors.use("/api/buy/*", check);
 }
 doors.all("/api/buy/*", handOverPassed);

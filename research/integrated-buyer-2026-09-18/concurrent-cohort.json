@@ -1,0 +1,25 @@
+{
+  "reviewed_at": "2026-09-18T02:15:43.055474+00:00",
+  "other_record": "../takeoff-directed-release-2026-09-17/REPORT.md",
+  "other_pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/789",
+  "other_freeze": "2026-09-18T00:18:54.555717+00:00",
+  "this_freeze": "2026-09-18T00:19:54.783440+00:00",
+  "same_base_and_plan": true,
+  "other_review_sha256": "a47c77b28967c6dd63f209d7a39b71c3b5f46219dd1a071e376e9052e84bfff5",
+  "buyer_trace_sets_disjoint": true,
+  "this_buyer_trace_sha256": [
+    "42221569155d588c757b4cdf338e1b42534bcac37555d6e54018de37a583d759",
+    "9c809520cebec1f88cd81a8fc7fbc7724f39b555a88f6bd64c6287293708aef0",
+    "c71966edec8b2f062726ac047b17beabbc0159ab4859c5934106516cb1939fa8",
+    "d4e592977930ea369818745da266ffab7a72ea8535ecd2b923a606a9f9652017"
+  ],
+  "other_buyer_trace_sha256": [
+    "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4",
+    "8cd741abecb64edd3f1c40d3a4de41c8572c9c3afc0837a38f7f45869b5226aa",
+    "bd532794d894b950a863296eb7782b7e7e979659fc6ae73e6ff1bb04b2e22cad",
+    "c9c0b91a91f813adbed98402204b198c4c92b333f248e147559148638708f4f5"
+  ],
+  "limit": "Separate overlapping acquisitions with distinct native traces. Identical cell names are scoped by record directory. Keep each frozen denominator and result; do not treat differences as causal evidence or pool them retrospectively to claim readiness. Other sessions and repository tests shared the host.",
+  "recipient_protocols_equal": false,
+  "recipient_comparison": "Buyer plans match; recipient budgets differ. See recipient-protocol.json. No controlled full-journey rate comparison."
+}

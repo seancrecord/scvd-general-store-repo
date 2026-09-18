@@ -1,4 +1,4 @@
-import { certificateProtocol, inspectNativeCertificate } from "@/services/certificate-accounting";
+import { accountingContextFor, certificateProtocol, inspectNativeCertificate } from "@/services/certificate-accounting";
 import { sendAlert } from "@/lib/alerts";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -111,12 +111,14 @@ export async function certificatesWithoutSettleRecord(
   const certs = await bulkGetJson<CertificateRecord>(env.PATRONS, certKeys.names);
   const missing: UnbookedCertificate[] = [];
   const native: Array<{ cert_id: string; state: string }> = [];
+  const context = await accountingContextFor(env, [...certs.values()].map((record) => record?.certificate),
+    (payer, transaction) => recorded.has(KV_KEYS.payerSettle(payer, transaction)));
   for (const record of certs.values()) {
     const cert = record?.certificate;
     if (!cert?.payer || !cert.settlement_tx) continue;
-    const protocol = await certificateProtocol(env, cert);
+    const protocol = await certificateProtocol(env, cert, context);
     if (protocol !== "x402") {
-      let state: string = protocol === "mpp" ? await inspectNativeCertificate(env, cert) : "unavailable";
+      let state: string = protocol === "mpp" ? await inspectNativeCertificate(env, cert, context) : "unavailable";
       if (state === "matched" && recorded.has(KV_KEYS.payerSettle(cert.payer, cert.settlement_tx))) state = "legacy_overlap";
       if (state !== "matched") native.push({ cert_id: cert.cert_id, state });
       continue;

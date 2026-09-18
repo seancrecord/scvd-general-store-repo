@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-18T00:19:54.783440+00:00",
+  "base_commit": "82a419ffc236aff401444243b175699e3271e537",
+  "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+  "instrument_files": {
+    "scripts/buyer-cold-isolated.mjs": "aa431cb2d63d2aecf88aa3423641d3bdb0b4e4c36bd3e688f93761c1fb9449b5",
+    "scripts/lib/buyer-cold.mjs": "08e7ac21684c033380adbb89fdff1972c3168f5db2a77466931fdc2532bd6a84",
+    "scripts/lib/buyer-host-context.mjs": "29ef1f922cec66ccf5acc674433491bc2ba120a122a078c433f52f61274addd3",
+    "scripts/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+    "scripts/lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+    "verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+  },
+  "integrated_changes": [
+    "#783 scratch/cache workspace and buyer prompt",
+    "#786 explicit corpus instructions link",
+    "#788 exact-invocation refusal wording and command-event diagnostics"
+  ],
+  "prior_timeout": "Preserved under #787. Two newly fixed completion diagnostics pass, but the original cause remains unknown; no timeout fix is claimed.",
+  "reason": "One integrated qualification of the already-merged runner and current public guide with published x402-verify 1.5.0. Two bounded host completion diagnostics completed; this is not a replacement or rerun of the earlier single-repair comparison. Keep every new outcome and stop if either generic probe is incomplete.",
+  "attempts": {
+    "capability_per_host": 1,
+    "buyer_cells_if_both_hosts_pass": 4,
+    "buyer_repetitions_per_host": 2,
+    "retry_until_green": false
+  },
+  "unchanged": [
+    "models",
+    "capability prompt",
+    "budgets",
+    "tool permissions",
+    "freshness window"
+  ],
+  "public_guide": {
+    "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+    "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc",
+    "bytes": 8025
+  },
+  "publication_record_sha256": "60973e9c50c9b5802f20fde0138f9b513f43e05c4619b9563b69fe1776b9a5ee",
+  "operator_precheck": {
+    "at": "2026-09-18T00:19:54.783408+00:00",
+    "url": "https://lionx402.com/api/x402/wallet-screen-json",
+    "status": 402,
+    "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "bytes": 2,
+    "limit": "Unpaid operator reachability precheck, not buyer evidence."
+  },
+  "recipients": "One fresh offline recipient for each eligible retained original and separately acquired key pair; no missing acquisition file is repaired."
+}

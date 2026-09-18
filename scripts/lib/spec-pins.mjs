@@ -95,6 +95,35 @@ export const PINS = [
     on_drift: "A new or changed extension. Re-generate the coverage matrix; five of seven already have no reader here.",
   },
   {
+    /**
+     * The catalog this store serves is generated from MENU_ITEMS and
+     * validated against these schemas in CI, so a backport that
+     * changes product, variant, price, availability or the response
+     * envelope changes what /ucp/v1 is allowed to emit.
+     */
+    id: "ucp-shopping-schemas",
+    claim: "The UCP catalog projection emits products, variants, prices and response envelopes shaped by the 2026-08-25 shopping schemas",
+    cited_in: "src/lib/ucp/catalog.ts, test/ucp/conformance.spec.ts",
+    source: "ucp",
+    paths: ["source/schemas/shopping/", "source/schemas/common/", "source/schemas/ucp.json"],
+    read_date: "2026-09-16",
+    on_drift: "A backport landed on the snapshot this store advertises. Re-read the changed schemas and re-run test/ucp/conformance.spec.ts before touching the profile — the catalog is validated against the vendored copies, so a drift here means the vendored copies are stale.",
+  },
+  {
+    /**
+     * The REST transport contract: which operations exist, at which
+     * paths, with which methods. Reading it is what established that
+     * catalog search and lookup are POST rather than GET.
+     */
+    id: "ucp-shopping-rest",
+    claim: "The store serves UCP Shopping over REST at the operations and paths the 2026-08-25 transport contract defines",
+    cited_in: "src/routes/ucp.ts",
+    source: "ucp",
+    paths: ["source/services/shopping/rest.openapi.json"],
+    read_date: "2026-09-16",
+    on_drift: "The transport moved. Check method, path and body shape for every operation this store implements, and for checkout-sessions and orders before implementing them.",
+  },
+  {
     id: "mpp-core-draft",
     claim: "Eleven MPP defect classes are sourced to the core draft's MUSTs",
     cited_in: "src/store/defect-vocabulary.ts",
@@ -144,10 +173,28 @@ function git(args, cwd) {
  * A depth-1, blobless, checkout-less clone: we want the tree as it
  * stands, not history. Cheaper than the screen's dated window.
  */
-export function cloneAtHead(url, dir) {
+/**
+ * `ref` added 2026-09-16 for UCP, the one source not read at main.
+ *
+ * Its release branches are frozen snapshots and the store implements
+ * one of them; `--branch` makes HEAD in the clone that snapshot, so
+ * treeLines below reads the tree we actually serve against without
+ * knowing anything about refs. Omitted for every other source, which
+ * keeps reading its default branch exactly as before.
+ */
+export function cloneAtHead(url, dir, ref) {
   if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
-  git(["clone", "--filter=blob:none", "--no-checkout", "--depth", "1", url, dir], "/");
+  git([
+    "clone",
+    "--filter=blob:none",
+    "--no-checkout",
+    "--depth",
+    "1",
+    ...(ref ? ["--branch", ref] : []),
+    url,
+    dir,
+  ], "/");
   return dir;
 }
 
@@ -216,6 +263,52 @@ export function checkPin(pin, lines, locked) {
 
 export function lockEntry(pin, lines) {
   return { digest: digestOf(lines), read_date: pin.read_date, files: lines.length, lines };
+}
+
+/**
+ * WHICH LOCK ENTRIES A RE-PIN IS ALLOWED TO TOUCH (2026-09-16).
+ *
+ * `--update` used to rewrite every pin in the file. That is a quiet
+ * incentive problem, and it bit the first time somebody had genuinely
+ * re-read one source: two freshly reviewed UCP pins could only be
+ * locked by also stamping an unread x402 drift as read. The header of
+ * scripts/spec-pins.mjs says running this to clear a red check without
+ * reading anything is the one use that makes the instrument worse than
+ * not having it — and the tool was making that the only available use.
+ *
+ * So a re-pin now names what it attests to. `selected` is the set of
+ * pin ids a human said they re-read; everything else is copied out of
+ * the old lock BYTE FOR BYTE, and a pin that was never locked stays
+ * unlocked rather than being written unread.
+ *
+ * `selected === null` is the blunt form (`--update` with no ids) and
+ * still means all of them. It is kept because it is the honest thing
+ * to run after actually reading everything, and the runner prints the
+ * full list it is attesting to before it writes.
+ *
+ * @param {object} args
+ * @param {Array<{id: string}>} args.pins        every pin, in file order
+ * @param {Record<string, object>} args.locked    the lock's current pins
+ * @param {Map<string, object>} args.fresh        pin id -> newly computed entry
+ * @param {Set<string>|null} args.selected        ids being re-pinned, or null for all
+ * @param {string} args.today                     read date stamped on re-pinned entries
+ */
+export function nextLock({ pins, locked, fresh, selected, today }) {
+  const next = {};
+  for (const pin of pins) {
+    const entry = fresh.get(pin.id);
+    const prior = locked[pin.id];
+    const chosen = selected === null || selected.has(pin.id);
+    if (chosen && entry) {
+      next[pin.id] = { ...entry, read_date: today };
+      continue;
+    }
+    // Unselected: whatever the lock already said, unchanged. A pin with
+    // nothing in the lock stays out of it, so it goes on reporting
+    // UNPINNED until somebody reads it and says so.
+    if (prior) next[pin.id] = prior;
+  }
+  return next;
 }
 
 /** Exit code: 0 all clear, 1 anything drifted, missing or unpinned. */

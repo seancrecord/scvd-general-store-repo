@@ -196,6 +196,34 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "POST /api/tab/delta",
   "GET /api/tab/pool",
   /**
+   * THE UCP SUPPORTING DOCUMENTS (2026-09-16). The profile and the two
+   * catalog operations ARE counted — they are where a platform
+   * arrives. These four are the documents the profile points AT: two
+   * JSON Schemas and their two prose specs, fetched by a negotiator
+   * that has already been counted at the profile and by nobody else.
+   * Counting them would record the same visit up to five times and
+   * call it footfall, which is the failure the trade-counter note
+   * below describes one aisle over.
+   */
+  /**
+   * The id-scoped checkout doors (2026-09-16). Opening a checkout IS
+   * counted; reading, cancelling or completing the one you already
+   * hold is the same visit continuing, and counting each poll would
+   * record one buyer five times and call it footfall — the argument
+   * the trade-counter door card makes below.
+   */
+  "GET /ucp/v1/checkout-sessions/:id",
+  "POST /ucp/v1/checkout-sessions/:id/cancel",
+  "POST /ucp/v1/checkout-sessions/:id/complete",
+  // The order a completed checkout points at: the same buyer, reading
+  // what their completion already told them. Same visit, same rule.
+  "GET /ucp/v1/orders/:id",
+  "GET /ucp/schemas/items/:file",
+  "GET /ucp/schemas/payment/usdc-x402.json",
+  "GET /ucp/schemas/shopping-inputs.json",
+  "GET /ucp/specs/payment/usdc-x402",
+  "GET /ucp/specs/shopping-inputs",
+  /**
    * THE TRADE COUNTER, which books its own ledger rows for what it
    * settles but no porch row for who reads or knocks.
    */

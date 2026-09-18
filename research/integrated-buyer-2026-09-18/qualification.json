@@ -1,0 +1,123 @@
+{
+  "recorded_at": "2026-09-18T00:52:28.935437+00:00",
+  "summary": {
+    "schema_version": 2,
+    "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+    "instrument_sha256": "8e04396e502cc75c40e9fa678f3dee8231ce43117491caf80eb6f02727c8aee8",
+    "host_context_sha256": "e81893c4e27fa6150ce950adfe4923d483950103a5e17b23b0280c2617f4907f",
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "probed_at": "2026-09-18T00:19:58.238Z",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh"
+        ]
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "curl",
+          "node",
+          "node"
+        ]
+      }
+    },
+    "limits": [
+      "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+    ]
+  },
+  "hosts": {
+    "codex": {
+      "model": "gpt-5.6-luna",
+      "started_at": "2026-09-18T00:19:58.389Z",
+      "ended_at": "2026-09-18T00:21:10.301Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "trace_sha256": "7c3583e40504a5e4453c8d1b4adeb9bd8867161d9df1a68edb718a1908a5dac8",
+      "tool_calls": 2,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 2352,
+        "files": [
+          {
+            "file": "evidence/public.bin",
+            "bytes": 2189,
+            "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+          },
+          {
+            "file": "evidence/capability.json",
+            "bytes": 163,
+            "sha256": "475767954e2215dd1c6aa24c87eabadcef7aca6b5f68b12b950ef32c9caefb58"
+          }
+        ],
+        "issues": []
+      },
+      "qualification": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh"
+        ]
+      }
+    },
+    "claude": {
+      "model": "sonnet",
+      "started_at": "2026-09-18T00:21:10.372Z",
+      "ended_at": "2026-09-18T00:21:56.466Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "trace_sha256": "6b044eb6a984767936a3a96d4273790bd9c541da42fae179aff499e1fad30ed8",
+      "tool_calls": 3,
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 2348,
+        "files": [
+          {
+            "file": "evidence/public.bin",
+            "bytes": 2189,
+            "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+          },
+          {
+            "file": "evidence/capability.json",
+            "bytes": 159,
+            "sha256": "3e634b7ab4e6d51416770d02f8c1164ae3e0b55280b5b750cc30714157ab337b"
+          }
+        ],
+        "issues": []
+      },
+      "qualification": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "curl",
+          "node",
+          "node"
+        ]
+      }
+    }
+  },
+  "review": "Both one-shot generic probes completed and retained the required local signature report. No denial observed. Qualification permits the buyer cohort; it does not predict interpretation or paid completion. Complete commands and host context remain private."
+}

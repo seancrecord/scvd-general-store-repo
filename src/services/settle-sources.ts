@@ -1,4 +1,4 @@
-import { certificateProtocol } from "@/services/certificate-accounting";
+import { accountingContextFor, certificateProtocol } from "@/services/certificate-accounting";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -68,12 +68,13 @@ export async function certificatesAgainstSettles(
   let withPayer = 0;
   let native = 0;
   let unavailable = 0;
+  const context = await accountingContextFor(env, [...certs.values()].map((record) => record?.certificate));
   for (const record of certs.values()) {
     const cert = record?.certificate;
     if (!cert) continue;
     total += 1;
     if (!cert.payer) continue;
-    const protocol = await certificateProtocol(env, cert);
+    const protocol = await certificateProtocol(env, cert, context);
     if (protocol === "mpp") { native += 1; continue; }
     if (protocol === "unavailable") { unavailable += 1; continue; }
     withPayer += 1;

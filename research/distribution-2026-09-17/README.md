@@ -308,12 +308,37 @@ maintainer review pending. Generation, typecheck, production build and 34
 focused upstream tests passed. MPPScan’s pinned parser maps EVM/Base to
 `tempo:8453`; [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209)
 contains an isolated reproduction. Its registration remains unsubmitted, and
-SCVD’s additive OpenAPI MPP descriptor remains a separate implementation gap.
+SCVD’s additive OpenAPI MPP descriptor is implemented in the
+[compatibility repair](../../docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md), with the
+compiled local directory reader recognizing both protocols without endpoint
+warnings. Deployment readback is tracked with that repair.
 [Catalog receipt](observations/mpp-directory-submission.json) and
 [MPPScan audit](observations/mppscan-qualification.json).
 
 The full local SCVD suite ran in four shards: 742 of 761 files passed initially;
 all 19 initially failing files passed the lower-concurrency rerun (2,664 tests).
-The reconciled main branch typecheck and 37 listing checks passed. PR #785
-requires its own final CI before merge; runtime and plugin assets are unchanged
-by this tracking follow-up.
+The reconciled main branch typecheck and 37 listing checks passed.
+[PR #785](https://github.com/seancrecord/scvd-general-store-repo/pull/785) merged
+after quality checks, all four full-suite shards, CodeQL and Worker builds passed;
+runtime and plugin assets were unchanged by that tracking follow-up.
+
+
+## Global A2A Registry web submission
+
+The earlier API 404 did not establish that the browser route was unavailable.
+A fresh search found no SCVD entry; scanning the public origin discovered the
+canonical card and all three skills. After an uncertain mouse click, a second
+public search still returned no entry; activating the focused confirmation
+button produced **Agent Registered!**. The resulting
+[public listing](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent)
+was opened and confirmed. [Receipt](observations/a2a-registry-submission.json).
+
+It is **unclaimed**, not ownership-verified or an endorsement. No account,
+private contact detail, payment or DNS change was used. The registry's summary
+shows Text input/output defaults while its retained card says application/json;
+record that parser/display limit separately from listing presence. The confirmed
+record is now included in the shared public-record data and README's A2A row.
+
+The input/output summary mismatch is reported in [registry issue #7](https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7).
+The public-record update passes typecheck, 16 existing trust-record tests and
+37 listing checks. The release PR retains the full CI gate for the combined change.

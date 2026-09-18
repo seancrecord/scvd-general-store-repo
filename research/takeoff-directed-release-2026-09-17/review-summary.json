@@ -1,0 +1,154 @@
+{
+  "reviewed_at": "2026-09-18T00:49:01.537281+00:00",
+  "runs": [
+    {
+      "cell": "claude-directed-r1",
+      "buyer_runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "buyer_seconds": 66.062,
+      "buyer_tool_calls": 12,
+      "retained_files": 12,
+      "retained_bytes": 11529664,
+      "buyer_trace_sha256": "8cd741abecb64edd3f1c40d3a4de41c8572c9c3afc0837a38f7f45869b5226aa",
+      "review_sha256": "46f564756a3306b166c15cc779bb019a49ec30fa6b868096649d03deaa35f826",
+      "decision": "fail",
+      "decision_basis": "Final recommends standing_watch/conformance_watch for L4-L6 paid delivery, repeating an incorrect preflight recommendation. Also describes multiple weeks as independently signature-verified history after checking only snapshot 6.",
+      "recipient_runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "recipient_seconds": 165.185,
+      "recipient_tool_calls": 10,
+      "recipient_trace_sha256": "43712b56952d1f969241e767f04937aa795bac61bee66c8e87d02decfe2e8ed7",
+      "recipient_reason": "Recipient independently checks signature/digest/key, the single exact subject and its September 7 date, absence of declared expiry, and historical/payment limits. Its missing-current-evidence comments concern the supplied subset; the buyer retained those current responses separately.",
+      "original": {
+        "file": "evidence/corpus6.json",
+        "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+      },
+      "issuer": {
+        "file": "evidence/scvd-signing-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    },
+    {
+      "cell": "claude-directed-r2",
+      "buyer_runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "buyer_seconds": 150.376,
+      "buyer_tool_calls": 13,
+      "retained_files": 9,
+      "retained_bytes": 11526157,
+      "buyer_trace_sha256": "c9c0b91a91f813adbed98402204b198c4c92b333f248e147559148638708f4f5",
+      "review_sha256": "48c33cf48f5e88bb17fde22bb645caa30512dbd3b44052d7516792a4b0ecff06",
+      "decision": "fail",
+      "decision_basis": "Final says Ed25519 verified against the digest although both digest-message checks returned false and only snapshot-message verification passed; extends independently verifiable configuration continuity to multiple weeks after authenticating one snapshot.",
+      "recipient_runtime": {
+        "state": "failed",
+        "exit_code": null,
+        "signal": "SIGTERM",
+        "spawn_error": null,
+        "budget_stop": "wall_ms"
+      },
+      "recipient_seconds": 629.762,
+      "recipient_tool_calls": 0,
+      "recipient_trace_sha256": "bf7960b338f28d086b71430dabbbf822de2b2df8f09007386d070f860040ff16",
+      "recipient_reason": "Recipient stopped without a final report; partial tool output or parent verification cannot replace recipient understanding. Recorded elapsed time exceeded the nominal cap. Retrospective host power logs show a 397-second sleep overlapping both incomplete sessions; no stop-request timestamp was retained.",
+      "original": {
+        "file": "evidence/corpus-6.json",
+        "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+      },
+      "issuer": {
+        "file": "evidence/scvd-signing-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    },
+    {
+      "cell": "codex-directed-r1",
+      "buyer_runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "buyer_seconds": 162.142,
+      "buyer_tool_calls": 11,
+      "retained_files": 27,
+      "retained_bytes": 11547036,
+      "buyer_trace_sha256": "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4",
+      "review_sha256": "e2f93bd1d8f7b88f2d7cd41384cc7621da9e4c1a9d237e2cab8ba6eb090761d5",
+      "decision": "pass",
+      "decision_basis": "Distinguishes current unsigned probes, unsigned host history and the latest signed historical observation; no payment or delivery claim.",
+      "recipient_runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "recipient_seconds": 104.3,
+      "recipient_tool_calls": 11,
+      "recipient_trace_sha256": "00fd583ea83781ce3f981b3945000b8de91dfcd7015d72b63e05147364a7c98b",
+      "recipient_reason": "Recipient independently checks signature/digest/key, the single exact subject and its September 7 date, absence of declared expiry, and historical/payment limits. Its missing-current-evidence comments concern the supplied subset; the buyer retained those current responses separately.",
+      "original": {
+        "file": "evidence/06-snapshot.json",
+        "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+      },
+      "issuer": {
+        "file": "evidence/07-key",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    },
+    {
+      "cell": "codex-directed-r2",
+      "buyer_runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "buyer_seconds": 148.211,
+      "buyer_tool_calls": 10,
+      "retained_files": 22,
+      "retained_bytes": 11535547,
+      "buyer_trace_sha256": "bd532794d894b950a863296eb7782b7e7e979659fc6ae73e6ff1bb04b2e22cad",
+      "review_sha256": "4cc2124f150a315a28d06a6c863af5c157714e3fdb158dfe0bc2cf69e410aa84",
+      "decision": "pass",
+      "decision_basis": "Distinguishes structural readiness, historical observations and a locally checked latest snapshot; does not claim paid delivery.",
+      "recipient_runtime": {
+        "state": "failed",
+        "exit_code": null,
+        "signal": "SIGTERM",
+        "spawn_error": null,
+        "budget_stop": "wall_ms"
+      },
+      "recipient_seconds": 630.65,
+      "recipient_tool_calls": 12,
+      "recipient_trace_sha256": "6d56d7d8d598561acfd214661bd27326d9366ad23ff43b6eac0674962b2513ec",
+      "recipient_reason": "Recipient stopped without a final report; partial tool output or parent verification cannot replace recipient understanding. Recorded elapsed time exceeded the nominal cap. Retrospective host power logs show a 397-second sleep overlapping both incomplete sessions; no stop-request timestamp was retained.",
+      "original": {
+        "file": "evidence/corpus-6.json",
+        "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+      },
+      "issuer": {
+        "file": "evidence/signing-key",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    }
+  ],
+  "limit": "Small directed cohort only. Two recipient stops exceeded the nominal 240-second cap, overlapping a documented 397-second host sleep. No retries or causal model/package performance claim."
+}
