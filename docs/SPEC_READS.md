@@ -2092,3 +2092,34 @@ establish present completion only. No model, global settings, permissions,
 credentials or timeout changed. The subsequent integrated qualification
 uses separately merged runner changes and preserves the earlier failed
 comparison. [Record](../research/integrated-buyer-2026-09-18/completion-diagnostics.json).
+
+
+### 2026-09-18 — Kiro submission and Cline catalog follow-through
+
+Read Kiro's [Power installation](https://kiro.dev/docs/powers/installation/) CLI
+tab, [creation guide](https://kiro.dev/docs/powers/create/), submission form and
+publisher terms. CLI v3 consumes installed Powers; Agent Plugins manifests are
+accepted. Checked the installed KAS 0.66.0 loader for the manual installed.json
+configuration, then qualified the unchanged public package with native skill
+reads and one free call. IDE installation and paid operations were not tested.
+The application confirmed receipt after keeper approval.
+
+Cline's official [catalog contribution guide](https://github.com/cline/marketplace/blob/main/CONTRIBUTING.md)
+provided a separate skill/MCP PR route. Native CLI installation was checked,
+then a separate SDK checked the saved MCP configuration; this is not Cline
+model execution. Existing PR states were re-read September 18.
+[Completion evidence and limits](../research/distribution-2026-09-18/FOLLOW_THROUGH.md).
+
+
+### 2026-09-18 — Zed and Windsurf route boundaries
+
+- **Zed:** its [publishing prerequisites](https://zed.dev/docs/extensions/publishing/prerequisites) say MCP extensions are headed for replacement by the MCP registry, restrict each extension to one MCP server, and require a native test. Agent-server extension submissions are already deprecated in favor of ACP. Recommendation: qualify SCVD through its existing MCP identity before considering a separate wrapper. No Zed listing or host compatibility is claimed.
+- **Windsurf:** the [extension marketplace](https://marketplace.windsurf.com/) is Open VSX, which distributes editor extensions. The [plugins documentation](https://docs.windsurf.com/plugins) describes installing Windsurf itself in other editors. Neither page establishes a submission route for our existing portable skill-plus-MCP package. A bounded docs search did not find an MCP Marketplace submission instruction; this is an unresolved route, not proof none exists.
+
+Also read OpenCode's [skill discovery](https://opencode.ai/docs/skills) and
+[ecosystem PR route](https://dev.opencode.ai/docs/ecosystem/), plus VoltAgent's
+[contribution requirements](https://github.com/VoltAgent/awesome-agent-skills/blob/main/CONTRIBUTING.md).
+No native OpenCode run or independent community-adoption evidence was established.
+These remain candidates, not submitted listings; see the same completion record.
+
+OpenCode follow-through, September 18: the documented npm CLI route installed version 1.18.31 in temporary storage. Native `debug skill` discovered both unchanged SCVD skills and `mcp list` connected both configured servers. [Receipt](../research/distribution-2026-09-18/opencode-qualification.json). This qualifies discovery/connection only. The listed free model returned a provider 403 FreeTierError before skill/tool execution; no successful execution is claimed. [CLI reference](https://opencode.ai/docs/cli/).

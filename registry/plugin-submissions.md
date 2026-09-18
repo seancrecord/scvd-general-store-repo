@@ -3,7 +3,7 @@
 Prepared September 17, 2026. This is submission material; current human actions
 are in [KEEPER_LIST](../KEEPER_LIST.md), builds/qualification in
 [ROADMAP TR-D](../ROADMAP.md), and channel status in [DISTRIBUTION](../DISTRIBUTION.md).
-Cursor and Claude were submitted in the September 17 follow-up; both reviews are pending. Kiro remains unsubmitted.
+Cursor and Claude were submitted in the September 17 follow-up; both reviews are pending. Kiro was submitted September 18 after native CLI qualification; review is pending.
 
 Plugin packaging has its own version in `plugin.json`; host wrappers are held to
 it by tests. A packaging-only release does not require republishing the unchanged
@@ -103,23 +103,37 @@ paid tools were not qualified by this test.
 No additional POWER.md wrapper is required by that route. Its
 [creation guide](https://kiro.dev/docs/powers/create/) covers preparation/testing.
 The form requires a working tested package, stable MCP services, and README
-privacy/support links. Those links are added in this branch; publish them before
-submission. Kiro host testing and the stability qualification remain outstanding.
+privacy/support links. The published package was installed as a local Power in
+Kiro CLI 2.22.0 with its v3 engine (KAS 0.66.0): both skills loaded, both MCP
+servers were exposed and the free preflight completed. IDE installation, paid
+operations and Tab operations were not tested. The application was submitted
+September 18 with the keeper-approved company contact and publisher terms.
+Kiro confirmed receipt; review is pending. [Completion record](../research/distribution-2026-09-18/FOLLOW_THROUGH.md).
 
-Prepared form values:
+Submitted field reference (contact retained privately in the submission receipt):
 
 | Field | Value |
 | --- | --- |
 | First / last name | Sean / Record |
 | Organization | Read `author.name` in the root manifest |
-| Email | Publisher contact to be confirmed; do not invent one |
-| Use case | Verify agent commerce evidence |
+| Email | Keeper-approved company contact; do not substitute the earlier personal address |
+| Use case | x402 Preflight and Verification |
 | Public repository | https://github.com/seancrecord/scvd-general-store-repo |
 | Domain/problem | Agents need to understand a payment challenge and the limits of signed evidence before deciding to spend. SCVD supplies preflight, receipt and observation tools with explicit gaps. |
 
 The form links its publisher terms and privacy notice. Submission is not listing
 approval. Record the returned receipt, then verify the public power page before
 adding it to SCVD's trust records.
+
+## Cline catalog
+
+The official [cline/marketplace](https://github.com/cline/marketplace) accepts
+separate skill and MCP entries. [Skill PR #122](https://github.com/cline/marketplace/pull/122)
+and [MCP PR #123](https://github.com/cline/marketplace/pull/123) are submitted and
+awaiting review. Cline CLI 3.0.62 installed the skill and MCP configuration in
+isolated storage; a separate MCP SDK call using the saved configuration returned
+the expected free preflight result. No Cline model run was performed. This
+route supersedes the older mcp-marketplace issue/icon preparation for this pass.
 
 ## Existing channels to finish
 

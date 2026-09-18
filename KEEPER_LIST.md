@@ -1133,10 +1133,9 @@ what you ruled and what is still yours to look at.
   A2A Directory already lists SCVD. The earlier community API attempts returned
   503 and 404; the Global A2A Registry web form subsequently registered
   [SCVD Evidence Agent](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent).
-  The public listing is confirmed and unclaimed. The operator fixed its JSON-mode
+  The keeper completed the ownership claim September 18; the public Verified label was confirmed. The operator fixed its JSON-mode
   display; live readback and confirmation on [issue #7](https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7#issuecomment-5731122295) completed September 18.
-  Claim Ownership returned Unauthorized (No Token); sign in at
-  https://www.a2a-registry.org/auth/login before continuing the claim.
+  The earlier Unauthorized (No Token) attempt is superseded; no claim press remains.
   Do not resubmit. The separate a2aregistry.org submission completed September 18;
   [public API record](https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a)
   confirms the listing. Card/health checks pass, but its fixed text greeting fails
@@ -1167,8 +1166,13 @@ what you ruled and what is still yours to look at.
   [PR #41](https://github.com/webmachinelearning/awesome-webmcp/pull/41); continue
   it with the current browser-tool scope, not another submission. Merit [PR #715](https://github.com/Merit-Systems/awesome-agentic-commerce/pull/715)
   submitted; existing x402 [PR #1024](https://github.com/xpaysh/awesome-x402/pull/1024)
-  updated. Both await review. Cline needs its own installation
-  test and icon; do not attest that another host's test qualifies it.
+  updated. Both await review. Cline official catalog [skill #122](https://github.com/cline/marketplace/pull/122)
+  and [MCP #123](https://github.com/cline/marketplace/pull/123) submitted September 18.
+  Its CLI installed the skill and MCP configuration; a separate SDK free-call
+  check passed. Cline model execution is untested. This catalog route does not
+  require the older intake's icon. AIFI [PR #13](https://github.com/0xBebis/aifi-directory/pull/13)
+  repairs issue #12's automation-permission failure; build passed, review pending.
+  [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md).
 
 - **Submitted / external review — GitHub MCP and AGNTCY admission (2026-09-17).**
   The keeper-authorized [GitHub MCP onboarding request](https://github.com/github/github-mcp-server/discussions/1257#discussioncomment-18487205) and
@@ -1466,7 +1470,12 @@ what you ruled and what is still yours to look at.
   pending**. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
   Cowork was not selected because it remains untested. Watch the existing
   [submission](https://platform.claude.com/plugins/submissions); do not duplicate it.
-  Kiro still needs host qualification and publisher contact and remains unsubmitted.
+  Cursor Directory text, both skills and pinned Tab config were updated and publicly
+  verified September 18; this does not resolve native Cursor skill discovery.
+  Kiro submitted September 18 with keeper-approved company contact and publisher terms;
+  the form confirmed receipt. Its CLI v3 engine loaded both skills, exposed both
+  MCP servers and completed the free preflight. Review pending; do not resubmit.
+  [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md).
   OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
 - **skills.sh and MCPFind.** DONE 2026-09-08: the keeper supplied
   both listing URLs; live reads confirmed the named skill and server.
