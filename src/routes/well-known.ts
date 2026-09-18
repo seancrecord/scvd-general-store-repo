@@ -1,5 +1,5 @@
 import { publicationCheckout, publicationCollections, publicationLinks } from "@/lib/publication-checkout";
-import { pennyPageTiersUsdc } from "@/lib/payments";
+import { openForBusinessTiersUsdc, pennyPageTiersUsdc } from "@/lib/payments";
 import { buyerLinks, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
 import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
@@ -55,6 +55,7 @@ import {
   STORE_TAGS,
 } from "@/store";
 import { listAlmanacEntries } from "@/services/almanac-store";
+import { listOpenForBusinessIssues } from "@/services/open-for-business-store";
 import { SCHEDULING_SIGNALS } from "@/store/spec";
 import { REFUND_POLICY } from "@/store/refund-policy";
 import { STANDARDS_POSTURE } from "@/store/standards";
@@ -403,6 +404,23 @@ async function structuredPaidResources(env: Env) {
     pricing: "fixed",
     fulfillment: "instant",
   }));
+  const sellerIssues = await listOpenForBusinessIssues(env).catch(() => []);
+  const openForBusinessResources = sellerIssues.map((issue) => ({
+    accepts: manifestAccepts(env, openForBusinessTiersUsdc()),
+    resource: `${base}/open-for-business/${issue.week}`,
+    type: "http",
+    lastUpdated,
+    resourceUrl: `${base}/open-for-business/${issue.week}`,
+    ...publicationLinks(`${base}/open-for-business/${issue.week}`),
+    method: "GET",
+    x402Version: 2,
+    description: `Open for Business, ${issue.week}: ${issue.title}. The weekly issue for sellers.`,
+    mimeType: "text/markdown",
+    price_usdc_options: openForBusinessTiersUsdc(),
+    checkout: publicationCheckout(base),
+    pricing: "fixed",
+    fulfillment: "instant",
+  }));
   const issues = await listIssues(env).catch(() => []);
   const gazetteResources = issues.map((issue) => ({
     accepts: manifestAccepts(env, pennyPageTiersUsdc()),
@@ -420,7 +438,7 @@ async function structuredPaidResources(env: Env) {
     pricing: "fixed",
     fulfillment: "instant",
   }));
-  return [...menuResources, ...almanacResources, ...gazetteResources];
+  return [...menuResources, ...almanacResources, ...openForBusinessResources, ...gazetteResources];
 }
 
 wellKnownRoutes.get("/.well-known/x402.json", async (c) => {

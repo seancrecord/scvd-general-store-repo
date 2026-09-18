@@ -274,6 +274,9 @@ export const KV_KEYS = {
   /** Keeper-written almanac pages, added from the office. ORDERS. */
   almanacEntry: (slug: string): string => `almanac_entry:${slug}`,
   almanacEntryPrefix: "almanac_entry:",
+  /** Open for Business issues, published from the office by week. ORDERS. */
+  openForBusinessIssue: (week: string): string => `ofb_issue:${week}`,
+  openForBusinessIssuePrefix: "ofb_issue:",
   keeperLastSeen: "keeper_last_seen",
   /**
    * Last successfully rendered alarm-trail visit, for first-look
@@ -575,6 +578,8 @@ export const KV_KEYS = {
    * category this store is listed in, taken once and never rewritten.
    */
   peerShelf: (week: string): string => `peer_shelf:${week}`,
+  /** The week's merged pull requests, read from GitHub for Open for Business. COUNTERS. */
+  weekChanges: (week: string): string => `week_changes:${week}`,
   peerShelfPrefix: "peer_shelf:",
   metric: (month: string, kind: string, rest: string): string =>
     `metric:${month}:${kind}:${rest}`,

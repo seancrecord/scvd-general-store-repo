@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
 import {hash} from './lib/buyer-cold.mjs';
 import {prepareHandoff} from './buyer-recipient-handoff.mjs';
 function fixture(){
@@ -68,5 +69,71 @@ for(const reason of ['stopped buyer','no terminal event'])test(`handoff cannot r
   else {const trace=JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Still working'}})+'\n';fs.writeFileSync(path.join(f.root,'events.jsonl'),trace);f.run.trace_sha256=hash(trace);}
   fs.writeFileSync(path.join(f.root,'run.json'),JSON.stringify(f.run));
   assert.throws(()=>prepareHandoff(f.root,f.selection,f.out),/complete|terminal/i);assert.equal(fs.existsSync(f.out),false);
+ }finally{f.clean();}
+});
+test('automatic whole-capture handoffs leave citation status unknown and cannot omit a file',()=>{
+ const f=fixture();try{
+  f.selection.scope='buyer_report';f.selection.citation_policy='unclassified';
+  for(const row of f.selection.files){row.supply=true;row.cited=null;row.role='other';}
+  f.selection.files[0].supply=false;
+  assert.throws(()=>prepareHandoff(f.root,f.selection,f.out));assert.equal(fs.existsSync(f.out),false);
+  f.selection.files[0].supply=true;
+  const manifest=prepareHandoff(f.root,f.selection,f.out);
+  assert.equal(manifest.citation_policy,'unclassified');assert.ok(manifest.files.every(row=>row.cited_in_report===null&&row.supplied));
+  assert.match(fs.readFileSync(path.join(f.out,'recipient-prompt.txt'),'utf8'),/citation status are unclassified/);
+ }finally{f.clean();}
+});
+
+const fullPlan={schema_version:5,subject:'https://merchant.example/paid',spend_usdc:0,
+ budgets:{wall_ms:240000,tool_calls:20,output_bytes:4000000,output_tokens:2500,artifact_bytes:33554432,artifact_files:32},
+ freshness:{max_age_ms:1209600000},capability:{public_url:'https://example.org/capability'},
+ cells:[{id:'buyer',host:'codex',model:'gpt-5.6-luna',lane:'directed',verification:'prompted',entry:'https://scvd.store/skill.md'}],
+ recipient:{host:'codex',model:'gpt-5.6-luna',network:'disabled',attempts_per_eligible_cell:1,input_scope:'all-retained-and-buyer-report',budgets:{wall_ms:180000,tool_calls:12,output_bytes:4194304,output_tokens:1800}}};
+async function frozenFixture(){
+ const {recipientLaunch}=await import('./lib/buyer-cold.mjs');
+ const launch=recipientLaunch(fullPlan,'<recipient>','<output>',{codex:{disabled_skills:[]}});
+ return {plan:fullPlan,protocol:{...fullPlan.recipient,protocol_sha256:launch.protocol_sha256,inputs:launch.inputs,prompt_sha256:hash(launch.prompt)},prompt:launch.prompt};
+}
+test('full capture handoff uses the exact frozen inventory prompt and unchanged offline budgets',async()=>{
+ const f=fixture();try{
+  const frozen=await frozenFixture();f.selection.scope='buyer_report';for(const row of f.selection.files)row.supply=true;
+  const m=prepareHandoff(f.root,f.selection,f.out,frozen);
+  assert.equal(fs.readFileSync(path.join(f.out,'recipient-prompt.txt'),'utf8'),frozen.prompt);
+  assert.equal(m.protocol_sha256,frozen.protocol.protocol_sha256);
+  assert.equal(m.plan_content_sha256,hash(JSON.stringify(fullPlan)));
+  assert.equal(m.files.filter(x=>x.supplied).length,f.run.retained_artifacts.files.length);
+  assert.match(frozen.prompt,/Read input-manifest.json first/);assert.match(frozen.prompt,/12 tool calls/);assert.match(frozen.prompt,/180 seconds/);
+  assert.doesNotMatch(frozen.prompt,/supplied subset is original-response/);
+ }finally{f.clean();}
+});
+for(const mutation of ['prompt','protocol hash','budget','inputs','subject','subset scope','uncited omission'])test(`frozen handoff rejects ${mutation} before creating files`,async()=>{
+ const f=fixture();try{
+  const frozen=await frozenFixture();f.selection.scope='buyer_report';for(const row of f.selection.files)row.supply=true;
+  if(mutation==='prompt')frozen.prompt+='Changed after acquisition';
+  if(mutation==='protocol hash')frozen.protocol.protocol_sha256='00'.repeat(32);
+  if(mutation==='budget')frozen.protocol.budgets={...fullPlan.recipient.budgets,wall_ms:999999};
+  if(mutation==='inputs')frozen.protocol.inputs=['original-response.json'];
+  if(mutation==='subject'){f.run.subject='https://different.example/paid';fs.writeFileSync(path.join(f.root,'run.json'),JSON.stringify(f.run));}
+  if(mutation==='subset scope')f.selection.scope='signature_subset';
+  if(mutation==='uncited omission'){f.selection.files[2].supply=false;f.selection.files[2].cited=false;}
+  assert.throws(()=>prepareHandoff(f.root,f.selection,f.out,frozen),/frozen|protocol|scope|subject|suppl/i);
+  assert.equal(fs.existsSync(f.out),false);
+ }finally{f.clean();}
+});
+
+for(const mutation of [null,'plan after qualification','different cell'])test(`frozen-cohort CLI ${mutation??'copies the complete inventory'}`,async()=>{
+ const f=fixture();try{
+  const frozen=await frozenFixture(),cohort=path.join(f.root,'cohort');fs.mkdirSync(cohort);
+  const source=path.join(cohort,'buyer');fs.mkdirSync(source);fs.cpSync(path.join(f.root,'evidence'),path.join(source,'evidence'),{recursive:true});
+  fs.copyFileSync(path.join(f.root,'events.jsonl'),path.join(source,'events.jsonl'));
+  f.run.cell=fullPlan.cells[0];if(mutation==='different cell')f.run.cell={...f.run.cell,model:'different'};
+  fs.writeFileSync(path.join(source,'run.json'),JSON.stringify(f.run));
+  const planBytes=JSON.stringify(fullPlan,null,2)+'\n';
+  for(const [name,bytes] of Object.entries({'plan.json':planBytes,'capability.json':JSON.stringify({plan_sha256:mutation==='plan after qualification'?'00'.repeat(32):hash(planBytes)}),'recipient-protocol.json':JSON.stringify(frozen.protocol),'recipient-prompt.txt':frozen.prompt}))fs.writeFileSync(path.join(cohort,name),bytes);
+  f.selection.scope='buyer_report';for(const row of f.selection.files)row.supply=true;
+  const selection=path.join(f.root,'selection.json');fs.writeFileSync(selection,JSON.stringify(f.selection));
+  const result=spawnSync(process.execPath,['scripts/buyer-recipient-handoff.mjs',source,selection,f.out,'--frozen-cohort',cohort],{encoding:'utf8'});
+  if(mutation){assert.notEqual(result.status,0);assert.equal(fs.existsSync(f.out),false);}
+  else {assert.equal(result.status,0,result.stderr);assert.equal(fs.readFileSync(path.join(f.out,'recipient-prompt.txt'),'utf8'),frozen.prompt);assert.equal(JSON.parse(result.stdout).supplied,f.run.retained_artifacts.files.length);}
  }finally{f.clean();}
 });

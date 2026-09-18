@@ -5,13 +5,18 @@ import {
   PURPOSES_CAP,
   SIGNAL_MAP_CAP,
   readBuyerSignals,
+  readerClass,
   recordInputRefusal,
+  referrerRelation,
   refusalReason,
   recordPostPurchaseRead,
   recordSettleSignal,
 } from "@/services/buyer-signals";
 import { getMenuItem } from "@/store";
 import type { Env } from "@/types";
+import { KV_KEYS } from "@/lib/kv-keys";
+import { takeCorpusSnapshot } from "@/services/corpus";
+import type { WardRound } from "@/services/ward-round";
 import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
 
@@ -20,6 +25,27 @@ const BASE = "https://scvd.store";
 /** Deferred writes run beside the answer; in tests there is no waitUntil, so give the loop a turn. */
 const settled = () => new Promise((resolve) => setTimeout(resolve, 50));
 const AUTH = { Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`, Accept: "text/html" };
+
+/** One signed week with one ready host, so a page about somebody exists to be read. */
+async function seedCorpus(host: string): Promise<void> {
+  const listed = await testEnv.COUNTERS.list({ prefix: KV_KEYS.corpusPrefix });
+  await Promise.all(listed.keys.map((key) => testEnv.COUNTERS.delete(key.name)));
+  const round: WardRound = {
+    week: "2026-W31",
+    at: new Date().toISOString(),
+    listed_resources: 1,
+    coverage_suspect: false,
+    capped: false,
+    our_search_presence: true,
+    hosts: [{ host, resources: 1, verdict: "ready" }] as unknown as WardRound["hosts"],
+  };
+  await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
+  const pass = await takeCorpusSnapshot(testEnv, {
+    calendars: ["https://calendar.test"],
+    fetch: (async () => new Response(new Uint8Array([1, 2, 3]))) as unknown as typeof fetch,
+  });
+  expect(pass.taken).toBe(true);
+}
 
 /**
  * BUYER SIGNALS, the trial area, held together: four observed
@@ -128,6 +154,8 @@ describe("at the doors", () => {
     expect(after.readers["agent:under_1h"]).toBe(1);
     expect(after.referrers["github.com"]).toBe(1);
     expect(after.referrers["none"]).toBe(1);
+    // The receipt was read twice by somebody other than the house or a crawler.
+    expect(after.artifacts[certId]).toBe(2);
   });
 
   it("notices the worked example bought as-is", async () => {
@@ -140,6 +168,48 @@ describe("at the doors", () => {
     await settled();
     const s = await readBuyerSignals(testEnv);
     expect(s.examples["spot_check:host"]).toBe(1);
+  });
+
+  it("counts who reads a page about a host, names crawlers, and keeps them out of the subject counts", async () => {
+    const host = "ready-door.example";
+    await seedCorpus(host);
+    const page = `${BASE}/corpus/host/${host}`;
+    // An operator looking at their own listing, twice; an agent reading the twin; a crawler walking.
+    await SELF.fetch(page, { headers: { Accept: "text/html", "User-Agent": "Mozilla/5.0", Referer: `https://${host}/dashboard` } });
+    await SELF.fetch(page, { headers: { Accept: "text/html", "User-Agent": "Mozilla/5.0", Referer: `https://docs.${host}/` } });
+    await SELF.fetch(`${page}.json`, { headers: { Accept: "application/json", "User-Agent": "python-httpx/0.27" } });
+    await SELF.fetch(page, { headers: { Accept: "*/*", "User-Agent": "Mozilla/5.0 (compatible; GPTBot/1.0)" } });
+    await SELF.fetch(page, { headers: { Accept: "text/html", "User-Agent": "Mozilla/5.0", "X-House": "1" } });
+    // A host the chain never met is a 404 and never a key.
+    const missing = await SELF.fetch(`${BASE}/corpus/host/never-met-${Date.now()}.example`, { headers: { Accept: "text/html" } });
+    expect(missing.status).toBe(404);
+    await settled();
+    const s = await readBuyerSignals(testEnv);
+    expect(s.pages["corpus_host:html:browser:self"]).toBe(2);
+    expect(s.pages["corpus_host:json:agent:none"]).toBe(1);
+    // A named crawler on a bare wildcard is negotiated to the markdown twin; the format says so.
+    expect(s.pages["corpus_host:markdown:crawler:none"]).toBe(1);
+    expect(s.crawlers["corpus_host:gptbot"]).toBe(1);
+    expect(s.subjects[host]).toBe(3);
+    expect(s.selfreads[host]).toBe(2);
+    expect(Object.keys(s.subjects).some((k) => k.startsWith("never-met-"))).toBe(false);
+    const html = await (await SELF.fetch(`${BASE}/admin/signals`, { headers: AUTH })).text();
+    expect(html).toContain("Who reads the pages about somebody");
+    expect(html).toContain("Subjects read more than once");
+    expect(html).toContain(`<code>${host}</code></td><td>3</td><td>2</td>`);
+  });
+
+  it("classes a reader once for every page, and a referrer by its relation to the subject", () => {
+    expect(readerClass("Mozilla/5.0 (compatible; ClaudeBot/1.0)", "*/*")).toBe("crawler");
+    expect(readerClass("uptimerobot/2.0", "text/html")).toBe("crawler");
+    expect(readerClass("Mozilla/5.0", "text/html")).toBe("browser");
+    expect(readerClass("curl/8.0", "application/json")).toBe("agent");
+    expect(referrerRelation("https://a.example/x", "a.example", "scvd.store")).toBe("self");
+    expect(referrerRelation("https://www.a.example/x", "a.example:8080", "scvd.store")).toBe("self");
+    expect(referrerRelation("https://scvd.store/doors", "a.example", "scvd.store")).toBe("own");
+    expect(referrerRelation("https://github.com/x", "a.example", "scvd.store")).toBe("other");
+    expect(referrerRelation(undefined, "a.example", "scvd.store")).toBe("none");
+    expect(referrerRelation("not a url", "a.example", "scvd.store")).toBe("other");
   });
 
   it("the keeper's page scans in one glance and expands on request", async () => {

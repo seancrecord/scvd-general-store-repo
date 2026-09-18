@@ -42,6 +42,11 @@ import {
   CLI_SOURCE_URL,
 } from "@/store/cli";
 import { TRUST_LIST_VERSION, trustListCounts } from "@/routes/trust-list";
+import {
+  OPEN_FOR_BUSINESS_FOR_MONEY,
+  OPEN_FOR_BUSINESS_FREE_FIRST,
+  OPEN_FOR_BUSINESS_PROPOSITION,
+} from "@/store/copy/open-for-business";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -170,7 +175,7 @@ Free instruments (the first two are also MCP tools, preflight_endpoint and check
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
-Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
+Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train) · [Open for Business, for sellers](${base}/open-for-business)
 
 The instrument, reporting on itself: [where our numbers come from](${base}/sources) · [sources.json](${base}/sources.json) · [the MCP ward](${base}/mcp-ward) · [mcp-ward.json](${base}/mcp-ward.json). The first names every directory our figures rest on beside the last time each answered, and carries the heartbeat saying whether the weekly round still runs. The second is a separate ward over the MCP registry, sharing no total with the x402 side.
 
@@ -568,6 +573,15 @@ ${MENU_ITEMS.filter((item) => item.price_usdc > 0)
   .join("\n")}
 
 ## The reading room
+
+Open for Business, the weekly issue for sellers, at ${base}/open-for-business
+(JSON and markdown by Accept). ${OPEN_FOR_BUSINESS_PROPOSITION}
+${OPEN_FOR_BUSINESS_FOR_MONEY} ${OPEN_FOR_BUSINESS_FREE_FIRST} Each
+issue is \`GET ${base}/open-for-business/{week}\`, one 402, markdown
+back, no certificate; the PAYMENT-RESPONSE header is the receipt.
+Drafted by the instruments; a closed week goes on the shelf on its
+own, and the fix of the week is the list of what changed at our own
+door that week, from the merged pull requests.
 
 The Keeper's Almanac, his journal, serialized. Free index at
 ${base}/almanac; each dated page is $0.01 over x402, newest first.

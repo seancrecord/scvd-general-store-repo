@@ -7,6 +7,7 @@ import { publishSeedRecord, utcDate } from "@/services/paywall-seed";
 import {
   adminRoutes,
   almanacRoutes,
+  openForBusinessRoutes,
   anchorRoutes,
   badgeRoutes,
   bellRoutes,
@@ -301,6 +302,7 @@ app.route("/", patronageRoutes);
 app.route("/", phantomRoutes);
 app.route("/", letterRoutes);
 app.route("/", almanacRoutes);
+app.route("/", openForBusinessRoutes);
 app.route("/", zodiacRoutes);
 app.route("/", directoryRoutes);
 app.route("/", trainRoutes);
@@ -736,6 +738,33 @@ const worker: ExportedHandler<Env> = {
             sendAlert(env, {
               condition: "worker_health",
               detail: `Peer shelf pass failed: ${String(error)}. The week is re-tried on the next hourly firing; a repeat means the directory read or the shelf write is broken.`,
+            }),
+        ),
+      ),
+    );
+    /**
+     * OPEN FOR BUSINESS rides the hourly press (2026-09-18, the
+     * keeper's ruling): the first firing after an ISO week closes
+     * puts that week's issue on the shelf as the instruments drafted
+     * it, unless the keeper already published the week himself. A
+     * failure alerts, because a week that never went up would read
+     * exactly like a shelf nobody restocks.
+     */
+    ctx.waitUntil(
+      import("@/services/open-for-business").then(({ publishClosedWeek }) =>
+        publishClosedWeek(env).then(
+          (press) =>
+            press.outcome === "refused"
+              ? sendAlert(env, {
+                  condition: "worker_health",
+                  key: `open-for-business-refused-${press.week}`,
+                  detail: `Open for Business ${press.week} was not published: ${press.refused ?? "the draft was refused"}. The week is re-tried on the next hourly firing; the draft is on /admin/open-for-business.`,
+                })
+              : undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Open for Business press failed: ${String(error)}. The closed week is re-tried on the next hourly firing; a repeat means a reader or the shelf write is broken.`,
             }),
         ),
       ),

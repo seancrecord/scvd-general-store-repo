@@ -26,6 +26,13 @@ import {
   SOURCES_PROPOSITION,
 } from "@/store/copy/instruments";
 import {
+  OPEN_FOR_BUSINESS_FOR_MONEY,
+  OPEN_FOR_BUSINESS_FREE_FIRST,
+  OPEN_FOR_BUSINESS_NAME,
+  OPEN_FOR_BUSINESS_OPENED,
+  OPEN_FOR_BUSINESS_PROPOSITION,
+} from "@/store/copy/open-for-business";
+import {
   TRADE_COUNTER_NAME,
   TRADE_COUNTER_OPENED,
   TRADE_FOR_MONEY,
@@ -228,6 +235,24 @@ export const FEATURES: readonly Feature[] = [
     doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}"],
     named_on: ["/scorers"],
     opened: OPERATORS_OPENED,
+  },
+  {
+    /**
+     * OPEN FOR BUSINESS (2026-09-18). The weekly issue for sellers,
+     * drafted by the instruments, published by the keeper, sold at the
+     * price he set. A publication with a room of its own: the index is
+     * the room, the issues are the doors.
+     */
+    id: "open_for_business",
+    name: OPEN_FOR_BUSINESS_NAME,
+    room: "/open-for-business",
+    proposition: OPEN_FOR_BUSINESS_PROPOSITION,
+    for_money: OPEN_FOR_BUSINESS_FOR_MONEY,
+    free_first: OPEN_FOR_BUSINESS_FREE_FIRST,
+    doors: ["/open-for-business", "/open-for-business/{week}"],
+    /* Named where a seller already stands. */
+    named_on: ["/operators"],
+    opened: OPEN_FOR_BUSINESS_OPENED,
   },
 ];
 

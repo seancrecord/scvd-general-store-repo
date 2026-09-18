@@ -125,3 +125,20 @@ test('a gap observed at close records a stop without signalling an already close
   assert.equal(r.runtime.budget_stop,'timing_interrupted');assert.equal(r.runtime.stop_requested.close_observed,true);assert.equal(r.runtime.stop_requested.signal_requested,false);assert.equal(signals,0);
  }finally{process.kill=savedKill;b.cleanup();}
 });
+
+test('schema 6 full acceptance requires the integrated recipient, even with a passing legacy-envelope review',async()=>{
+ const b=baseline();try{
+  b.run.schema_version=6;b.run.retained_artifacts={state:'complete',files:[]};
+  assert.equal((await scoreColdRun(b.run,b.review,b.root)).usable,'incomplete');
+  mkdirSync(join(b.root,'recipient'));
+  const recipientTrace=JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Independent fixture interpretation'}})+'\n'+JSON.stringify({type:'turn.completed'})+'\n';
+  writeFileSync(join(b.root,'recipient/events.jsonl'),recipientTrace);
+  const source=b.save('run.json',b.run);mkdirSync(join(b.root,'recipient/inputs'));
+  const manifest=b.save('recipient/inputs/input-manifest.json',{run_sha256:source.sha256});
+  const recipient={cell:b.run.cell.id,source_run_sha256:source.sha256,input_manifest_sha256:manifest.sha256,runtime:{state:'completed',exit_code:0,budget_stop:null},trace_sha256:hash(recipientTrace)};
+  b.review.recipient.run=b.save('recipient/run.json',recipient);b.review.recipient.evidence=[{file:'recipient/events.jsonl',sha256:hash(recipientTrace)}];
+  assert.equal((await scoreColdRun(b.run,b.review,b.root)).usable,'pass');
+  recipient.runtime.budget_stop='wall_ms';b.review.recipient.run=b.save('recipient/run.json',recipient);
+  assert.equal((await scoreColdRun(b.run,b.review,b.root)).usable,'incomplete');
+ }finally{b.cleanup();}
+});
