@@ -2,6 +2,7 @@ import { carriesVerdict } from "@/services/ward-round";
 import { AGING_DAYS } from "@/services/passport";
 import { buildFreshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
 import { listCorpus } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import { PREFLIGHT_BATTERY_NEXT } from "@/services/preflight";
 import type { Env } from "@/types";
 
@@ -383,7 +384,7 @@ export async function buildOkfBundle(env: Env): Promise<OkfBundle> {
   const files = new Map<string, string>();
   files.set("/index.md", indexMd(set, hosts));
 
-  const corpus = await listCorpus(env).catch(() => []);
+  const corpus = weeklyCorpus(await listCorpus(env).catch(() => []));
   const weeks: LogWeek[] = corpus
     .map((record) => {
       const probed = record.snapshot.round.hosts.filter(

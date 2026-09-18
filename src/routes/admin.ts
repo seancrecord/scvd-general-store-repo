@@ -1617,12 +1617,36 @@ adminRoutes.post("/admin/ward/run", async (c) => {
    * The hand-run round MINTS too (2026-08-18; before this, a manual
    * run wrote KV and the corpus stayed silent until Sunday — walking
    * by hand produced no signed observation, which defeats the walk).
-   * takeCorpusSnapshot is idempotent per week, so a hand-run in a week
-   * the cron already minted is a quiet no-op, never a double entry.
+   * takeCorpusSnapshot is idempotent per ROUND (2026-09-18; per week
+   * before that, which let a Tuesday hand-run take the week's only
+   * slot and refuse the Sunday cron in silence). A hand-run appends;
+   * the Sunday round appends after it and becomes the week's record.
    */
   const { takeCorpusSnapshot } = await import("@/services/corpus");
   await takeCorpusSnapshot(c.env).catch(() => undefined);
   return c.redirect("/admin/ward");
+});
+
+/**
+ * FREEZE WITHOUT WALKING (2026-09-18). The Sunday rounds of W34–W37
+ * ran and were refused by the per-week rule; the newest of them is
+ * still the latest round in KV until the next Sunday overwrites it.
+ * This presses takeCorpusSnapshot alone, so a stored round the chain
+ * does not yet hold can be signed in without walking a new one — and
+ * says, on the page, whether anything was taken and why not.
+ */
+adminRoutes.post("/admin/corpus/freeze", async (c) => {
+  const { takeCorpusSnapshot } = await import("@/services/corpus");
+  const pass = await takeCorpusSnapshot(c.env);
+  const body = pass.taken
+    ? `<p><strong>Frozen.</strong> Sequence ${pass.record.snapshot.sequence}, week ${escapeHtml(pass.record.snapshot.week)}, round of ${escapeHtml(pass.record.snapshot.round.at)}. Timestamp: ${escapeHtml(pass.record.ots?.status ?? "not submitted")}.</p>`
+    : `<p><strong>Nothing taken.</strong> ${escapeHtml(pass.reason)}.</p>`;
+  return c.html(
+    renderAdminShell(
+      "ward",
+      `<h2>The corpus, pressed by hand</h2>${body}<p><a href="/admin/ward">Back to the ward</a> · <a href="/corpus.json">/corpus.json</a></p>`,
+    ),
+  );
 });
 
 /**

@@ -2,6 +2,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { CorpusRecord } from "@/services/corpus";
 import { listCorpus } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import type { RefreshObservation } from "@/services/passport-refresh";
 import type { SubjectHistory } from "@/services/subject-history";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
@@ -368,11 +369,12 @@ async function refreshesFor(
 }
 
 export function foldTierIndex(
-  records: readonly CorpusRecord[],
+  chain: readonly CorpusRecord[],
   refreshes: ReadonlyMap<string, RefreshObservation>,
   base: string,
   now: Date = new Date(),
 ): TierIndex {
+  const records = weeklyCorpus(chain);
   const firstSeen = new Map<string, number>();
   for (const record of records) {
     for (const row of (record.snapshot.round.hosts ?? []) as ChainRow[]) {

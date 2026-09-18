@@ -4,6 +4,7 @@ import { deriveChanges, type WeekChanges } from "@/services/corpus-changes";
 import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { missingWeeks } from "@/services/ward-heartbeat";
 import type { CorpusRecord } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import type { SourceRegister } from "@/services/source-liveness";
 
 /**
@@ -331,11 +332,12 @@ export function deriveFindings(
  * never a guessed baseline, and the caller names the weeks it does.
  */
 export async function deriveLedger(
-  records: CorpusRecord[],
+  chain: CorpusRecord[],
   base: string,
   register: SourceRegister | null,
   week?: string,
 ): Promise<{ ledger: WeekLedger | null; known_weeks: string[] }> {
+  const records = weeklyCorpus(chain);
   const { brief, known_weeks } = deriveWeeklyBrief(records, base, week);
   if (!brief) return { ledger: null, known_weeks };
 

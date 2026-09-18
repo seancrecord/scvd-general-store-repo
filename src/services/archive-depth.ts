@@ -1,7 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { payToDigest } from "@/lib/pay-to-digest";
-import { listCorpus } from "@/services/corpus-list";
+import { listCorpus, weeklyCorpus } from "@/services/corpus-list";
 import { deriveDoorIndex } from "@/services/door-index";
 import { deriveProvenance } from "@/services/provenance-check";
 import { subjectHistory } from "@/services/subject-history";
@@ -208,7 +208,7 @@ export async function archiveWideDepth(env: Env): Promise<ArchiveDepth> {
     const index = deriveDoorIndex(records);
     return {
       kind: "archive",
-      weeks_in_chain: records.length,
+      weeks_in_chain: weeklyCorpus(records).length,
       hosts_seen: index.total_hosts,
       first_week: records[0]?.snapshot.week ?? null,
       latest_week: index.latest_week,
