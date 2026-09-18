@@ -154,6 +154,21 @@ test('a host that retained exact bytes and ran a correct local check passes, wit
   assert.deepEqual(s.commands.denied,['python3']);assert.ok(s.commands.executed.includes('node'));
  }finally{f.cleanup();}
 });
+test('capability diagnostics retain each invocation instead of treating its first word as a tool-wide refusal',()=>{
+ const f=probeFixture();try{
+  const compound='curl -o ./evidence/public.bin https://example.org/ && shasum -a 256 ./evidence/public.bin';
+  const standalone='curl -o ./evidence/public.bin https://example.org/';
+  const trace=claudeTrace([[compound,'denied'],[standalone,'completed'],['node -e "verify"','completed']]);
+  fs.writeFileSync(path.join(f.d,'events.jsonl'),trace);f.run.trace_sha256=hash(trace);
+  const s=scoreCapability('claude',f.run,f.d,f.vectors,f.reference);
+  assert.equal(s.state,'pass');
+  assert.deepEqual(s.command_events,[
+   {line:1,command:compound,outcome:'denied',program:'curl'},
+   {line:3,command:standalone,outcome:'completed',program:'curl'},
+   {line:5,command:'node -e "verify"',outcome:'completed',program:'node'},
+  ]);
+ }finally{f.cleanup();}
+});
 for(const [name,mutate,field,state] of [
  ['changed retained bytes',f=>{fs.writeFileSync(path.join(f.d,'evidence','public.bin'),'other');f.run.retained_artifacts.files[0].sha256=hash('other');},'retention','fail'],
  ['no retained public bytes',f=>{f.run.retained_artifacts.files.splice(0,1);},'retention','incomplete'],

@@ -1,0 +1,47 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "pkg:npm/x402-verify@1.5.0",
+      "digest": {
+        "sha512": "5b4b0a17aac69ff7d6b2e1e07f5bd2afd45b0f043431fa9f59f2cbde09ad4fde5d7d408e0bc90163a9bc419f9b900d21dc3b8ebb96027b2bb82a7597596a5b82"
+      }
+    }
+  ],
+  "predicateType": "https://slsa.dev/provenance/v1",
+  "predicate": {
+    "buildDefinition": {
+      "buildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+      "externalParameters": {
+        "workflow": {
+          "ref": "refs/heads/main",
+          "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+          "path": ".github/workflows/publish-npm.yml"
+        }
+      },
+      "internalParameters": {
+        "github": {
+          "event_name": "workflow_dispatch",
+          "repository_id": "1308179937",
+          "repository_owner_id": "196247948"
+        }
+      },
+      "resolvedDependencies": [
+        {
+          "uri": "git+https://github.com/seancrecord/scvd-general-store-repo@refs/heads/main",
+          "digest": {
+            "gitCommit": "b8c19fbb13ee46c9832f7a88875e6cb2871b6d42"
+          }
+        }
+      ]
+    },
+    "runDetails": {
+      "builder": {
+        "id": "https://github.com/actions/runner/github-hosted"
+      },
+      "metadata": {
+        "invocationId": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35276254796/attempts/1"
+      }
+    }
+  }
+}

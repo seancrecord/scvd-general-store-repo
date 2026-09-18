@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "kind": "native_cache_control",
+  "budgets": {
+    "wall_ms": 90000,
+    "tool_calls": 6,
+    "output_bytes": 4000000,
+    "output_tokens": 1000,
+    "artifact_bytes": 33554432,
+    "artifact_files": 32
+  },
+  "hosts": {
+    "codex": {
+      "state": "incomplete",
+      "checks": {
+        "runtime": true,
+        "retention": true,
+        "uppercase": true,
+        "lowercase": true,
+        "expected": false,
+        "reported_write": false,
+        "independent_write": false,
+        "executed": true
+      },
+      "started_at": "2026-09-17T20:40:27.817Z",
+      "ended_at": "2026-09-17T20:40:54.502Z",
+      "trace_sha256": "e528126a7cdd047f2f33ad8763e8f93508f94be10658d4dd9bb72b655d074625",
+      "tool_calls": 1,
+      "budget_stop": null
+    },
+    "claude": {
+      "state": "incomplete",
+      "checks": {
+        "runtime": true,
+        "retention": true,
+        "uppercase": true,
+        "lowercase": true,
+        "expected": false,
+        "reported_write": false,
+        "independent_write": false,
+        "executed": true
+      },
+      "started_at": "2026-09-17T20:40:54.632Z",
+      "ended_at": "2026-09-17T20:41:43.242Z",
+      "trace_sha256": "cc6f06fa35fadca1f3db7bfaa27d5545238ddd0006e07acdde4a6c7935aeea1e",
+      "tool_calls": 4,
+      "budget_stop": null
+    }
+  },
+  "limits": [
+    "Not a buyer, package-install or discovery test. No npm command or network request is requested. The standalone launcher tests exercise actual npm cache resolution; this control checks native-tool environment inheritance and filesystem access."
+  ]
+}
