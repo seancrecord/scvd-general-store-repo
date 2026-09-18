@@ -1,0 +1,24 @@
+{
+  "source": "pmset -g log, retrospectively read on this macOS host; selected Sleep/DarkWake/Wake events only",
+  "timezone": "America/New_York (UTC-04:00)",
+  "raw_sha256": "519e126672a0f250f7ffa945d0682e0be02d55703432f6627bcf5c408de3d956",
+  "events": [
+    {
+      "local_time": "2026-09-17 20:30:03",
+      "event": "Sleep"
+    },
+    {
+      "local_time": "2026-09-17 20:30:33",
+      "event": "DarkWake"
+    },
+    {
+      "local_time": "2026-09-17 20:30:44",
+      "event": "Sleep"
+    },
+    {
+      "local_time": "2026-09-17 20:37:21",
+      "event": "Wake"
+    }
+  ],
+  "inference": "The 20:30:44\u201320:37:21 local sleep interval overlaps both incomplete recipients. Host sleep is a confirmed confounder for wall-clock elapsed time. The record does not measure timer firing or signal-request time and cannot explain every millisecond or prove either recipient would have completed uninterrupted."
+}

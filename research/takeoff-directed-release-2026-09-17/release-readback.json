@@ -1,0 +1,131 @@
+{
+  "observed_at": "2026-09-18T00:18:54.550479+00:00",
+  "package": "x402-verify",
+  "version": "1.5.0",
+  "fresh_registry_install": true,
+  "registry_signature": "verified",
+  "attestation": "verified",
+  "shipped_files_match_source": [
+    {
+      "file": "CHANGELOG.md",
+      "sha256": "78992a7ad4525176152339b489f030213083e6e6c61ad119166451910fca90e0",
+      "bytes": 5118
+    },
+    {
+      "file": "LICENSE",
+      "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
+      "bytes": 1068
+    },
+    {
+      "file": "README.md",
+      "sha256": "ae469c705699f728ef92baa303ad1713a38a42e6b9b04acf4f7e913482580e34",
+      "bytes": 30464
+    },
+    {
+      "file": "evidence-bundle.d.ts",
+      "sha256": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a",
+      "bytes": 1831
+    },
+    {
+      "file": "evidence-bundle.js",
+      "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "bytes": 9551
+    },
+    {
+      "file": "evidence-cli.mjs",
+      "sha256": "af92a8fc0f080c98992be587c530cca5b2d8964e101c5f351f29032e0cfe70f9",
+      "bytes": 8158
+    },
+    {
+      "file": "examples/verify-receipt.mjs",
+      "sha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+      "bytes": 1334
+    },
+    {
+      "file": "fixtures/independent/README.md",
+      "sha256": "f94705fc218c5d91b648317cc33a0619175e27cc0913b6ccc02daac4bc5c64e4",
+      "bytes": 5590
+    },
+    {
+      "file": "fixtures/independent/matrix.json",
+      "sha256": "d97a7433f9323c9398770769a299377764b266a907c1caba743152802fb35b95",
+      "bytes": 164861
+    },
+    {
+      "file": "fixtures/issuer-key-document.json",
+      "sha256": "09fa3404fca2f70fbdc3ea761421c651d914ab22056aed3d7b0fb3bd17d70756",
+      "bytes": 344
+    },
+    {
+      "file": "fixtures/offer-expired-but-wellformed.json",
+      "sha256": "8bd00bc6e0669f729de267744fd590f6dd25b1e77d37374e0e9f240e7279ee9b",
+      "bytes": 935
+    },
+    {
+      "file": "fixtures/offer-tampered-payload.json",
+      "sha256": "30a0c7955220d7fa2e38e376ae432e593516ccca821c2c5829bba3d43d3d16f2",
+      "bytes": 843
+    },
+    {
+      "file": "fixtures/offer-valid.json",
+      "sha256": "509906bef539a7df8eb9d555281966d1766a6e6a38c7a0457073c4cefeeabda9",
+      "bytes": 1110
+    },
+    {
+      "file": "fixtures/receipt-missing-payer.json",
+      "sha256": "a071e8bd9a7b18966e31aa9170b57f766032674c210ba6634f77c931f34f6977",
+      "bytes": 762
+    },
+    {
+      "file": "fixtures/receipt-valid.json",
+      "sha256": "666bb748b58daa4b7473db2f1b68a0b6b5e97566bc12f902fe0534eaddd4c518",
+      "bytes": 1090
+    },
+    {
+      "file": "fixtures/receipt-wrong-key.json",
+      "sha256": "8b161596280b9943f1b00a6814cdce0c698b4dafeb9b95c07fd9e5c0aae26586",
+      "bytes": 961
+    },
+    {
+      "file": "fixtures/start-here/README.md",
+      "sha256": "6c027dc167ff9523928c37fa74ef151b764a633a44be7a71d49ec39529563bc3",
+      "bytes": 1330
+    },
+    {
+      "file": "fixtures/start-here/issuer-key.json",
+      "sha256": "019399acc8a3b59e69f7f29204e86461314ba68549bd38580f5672c5dd7882a6",
+      "bytes": 560
+    },
+    {
+      "file": "fixtures/start-here/receipt-es256.json",
+      "sha256": "45bdfcae94d63dcc18c05fe6f81388f5819890a196a1e8c44e0e3297352f1092",
+      "bytes": 597
+    },
+    {
+      "file": "fixtures/start-here/receipt-tampered.json",
+      "sha256": "07409ebf6846fa09fed38b607b8b227b02c1df71579ec0a6506ea03f1617d1b2",
+      "bytes": 603
+    },
+    {
+      "file": "fixtures/start-here/receipt.json",
+      "sha256": "34a6a41737b0e8b86a76c6f923da232be26cf60768a9fc11156c6080df36e3cf",
+      "bytes": 597
+    },
+    {
+      "file": "package.json",
+      "sha256": "95d3a84c30645e9ff436d927cdbd8be36cc2506995d9ae428b5d10db07842a2c",
+      "bytes": 1511
+    },
+    {
+      "file": "x402-verify.d.ts",
+      "sha256": "1b85b8dd7b182b2cdf133f8807cec151e2d7e07b3500713223d0be956a540bec",
+      "bytes": 9081
+    },
+    {
+      "file": "x402-verify.js",
+      "sha256": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6",
+      "bytes": 41419
+    }
+  ],
+  "prior_release_record": "../verify-source-qualification-2026-09-17/publication.json"
+}
