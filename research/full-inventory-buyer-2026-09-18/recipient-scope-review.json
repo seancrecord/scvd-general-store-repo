@@ -1,0 +1,106 @@
+{
+  "reviewed_at": "2026-09-18T17:46:30.890883+00:00",
+  "signed_snapshot_lionx402_strings": [
+    {
+      "pointer": "/round/hosts/50/host",
+      "value": "lionx402.com"
+    },
+    {
+      "pointer": "/round/hosts/50/url",
+      "value": "https://lionx402.com/api/x402/wallet-screen-json"
+    }
+  ],
+  "unsigned_history_observations": [
+    {
+      "sequence": 4,
+      "week": "2026-W35",
+      "taken_at": "2026-08-24T14:11:21.865Z",
+      "digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+      "entry_url": "https://scvd.store/corpus/4.json",
+      "listed": true,
+      "listing_source": "round",
+      "probed": true,
+      "coverage_suspect": false,
+      "url": "https://lionx402.com/api/x402/wallet-screen-json",
+      "verdict": "ready",
+      "failed": [],
+      "advisories": [
+        "inputs-declared",
+        "no-signed-offers"
+      ],
+      "offer": {
+        "networks": [
+          "eip155:8453"
+        ],
+        "min_usdc": 0.001,
+        "max_usdc": 0.001
+      },
+      "source": "discovery",
+      "note": "One GET at this moment passed every check in the published battery. It says nothing about the minute before or after."
+    },
+    {
+      "sequence": 5,
+      "week": "2026-W36",
+      "taken_at": "2026-09-01T13:27:08.998Z",
+      "digest": "a69a2144fb5b0feee0da1003d6356dca331ccf58917e6f136ff369706d9f3722",
+      "entry_url": "https://scvd.store/corpus/5.json",
+      "listed": true,
+      "listing_source": "round",
+      "probed": true,
+      "coverage_suspect": false,
+      "url": "https://lionx402.com/api/x402/wallet-screen-json",
+      "verdict": "ready",
+      "failed": [],
+      "battery": "preflight-v2",
+      "advisories": [
+        "inputs-declared",
+        "retry-key-not-in-challenge",
+        "signed-offers-not-in-challenge"
+      ],
+      "offer": {
+        "networks": [
+          "eip155:8453"
+        ],
+        "min_usdc": 0.001,
+        "max_usdc": 0.001
+      },
+      "source": "discovery",
+      "note": "One GET at this moment passed every check in the published battery. It says nothing about the minute before or after."
+    },
+    {
+      "sequence": 7,
+      "week": "2026-W37",
+      "taken_at": "2026-09-18T14:22:58.378Z",
+      "digest": "da260da1faab87a748e2f9e7685f3be15b0f06f9426ff75cc270632a5f730263",
+      "entry_url": "https://scvd.store/corpus/7.json",
+      "listed": true,
+      "listing_source": "round",
+      "probed": true,
+      "coverage_suspect": false,
+      "url": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "verdict": "ready",
+      "failed": [],
+      "battery": "preflight-v2",
+      "advisories": [
+        "inputs-declared",
+        "retry-key-not-in-challenge",
+        "signed-offers-not-in-challenge"
+      ],
+      "offer": {
+        "networks": [
+          "eip155:8453"
+        ],
+        "min_usdc": 0.001,
+        "max_usdc": 0.001
+      },
+      "catalog": {
+        "state": "agrees",
+        "last_updated": "2026-09-06T06:11:52.251Z"
+      },
+      "source": "discovery",
+      "note": "One GET at this moment passed every check in the published battery. It says nothing about the minute before or after."
+    }
+  ],
+  "finding": "Recipient says the signed corpus contains three historical ready observations for the target and authenticates those summaries. Only one target row occurs in signed snapshot 7; three rows occur in unsigned corpus-host.json. One verified snapshot does not authenticate the unsigned history."
+}

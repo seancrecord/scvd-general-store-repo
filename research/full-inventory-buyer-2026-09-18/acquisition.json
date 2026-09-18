@@ -1,0 +1,515 @@
+{
+  "codex-directed-r1": {
+    "cell": {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-18T17:30:01.702Z",
+    "ended_at": "2026-09-18T17:32:15.375Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-18T17:30:01.702Z",
+      "ended_at": "2026-09-18T17:32:15.375Z",
+      "wall_elapsed_ms": 133673,
+      "monotonic_elapsed_ms": 133672.80166700002,
+      "max_callback_gap_ms": 1003.9837090000001,
+      "interruption": null
+    },
+    "trace_sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 3108299,
+      "files": [
+        {
+          "file": "evidence/corpus-host.headers.txt",
+          "bytes": 1146,
+          "sha256": "4e92ddb31924eebba8d725b34a91ba83898177c943b53f60493dccd4a48009ba"
+        },
+        {
+          "file": "evidence/verifier-readme.source.txt",
+          "bytes": 94,
+          "sha256": "2ccd385bba208330f4b79af506170674963e85673cfb7b5c1f5133aeaf979776"
+        },
+        {
+          "file": "evidence/corpus7.headers.txt",
+          "bytes": 1189,
+          "sha256": "9eb337c17935af5d10daf943a29cf5d7d6fe68b614bf769284cefdb8dd12af40"
+        },
+        {
+          "file": "evidence/corpus7.json",
+          "bytes": 3026210,
+          "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+        },
+        {
+          "file": "evidence/preflight.source.txt",
+          "bytes": 36,
+          "sha256": "5dd92496927dfa3945b376c57e4edf149e6dbb32374ddc8db1c638be7fad8675"
+        },
+        {
+          "file": "evidence/skill.source.txt",
+          "bytes": 114,
+          "sha256": "d58ce3946d6ae3558e70b69fefee21c06b4e310c4dda7819d60c4372f0a401ca"
+        },
+        {
+          "file": "evidence/corpus-host.source.txt",
+          "bytes": 49,
+          "sha256": "bfd1414fe2fdbe5561117e2ffb766aacdf735deaf01593d4843f02609d28a36c"
+        },
+        {
+          "file": "evidence/scvd-key.txt",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/payment-required.json",
+          "bytes": 1766,
+          "sha256": "e541f4ecf0699c796d6486546f4c89434ec57093756c01c06f07b567d4f10c5e"
+        },
+        {
+          "file": "evidence/payment-required.source.txt",
+          "bytes": 91,
+          "sha256": "8e1e7f7f3f7f1063cf52ddc7a3a841d167a723cba99efa6edc12eff4375bd4f0"
+        },
+        {
+          "file": "evidence/corpus-host.json",
+          "bytes": 9707,
+          "sha256": "6f45ab04ed2c666223e0ff4f003216bebea93edac4691ed58fcdd47558806bcc"
+        },
+        {
+          "file": "evidence/merchant.body",
+          "bytes": 2,
+          "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        },
+        {
+          "file": "evidence/run-log.md",
+          "bytes": 3497,
+          "sha256": "817a3d4b43ad343b7885d8ae52ece13cfcb02e43e5dc58fb27186e23c54425ee"
+        },
+        {
+          "file": "evidence/skill.md",
+          "bytes": 8025,
+          "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+        },
+        {
+          "file": "evidence/corpus7.verification.source.txt",
+          "bytes": 52,
+          "sha256": "fada45fe294e6a337140fd8e2b4498df5289d0dd0a718ca2a22a71ad696e8b8c"
+        },
+        {
+          "file": "evidence/preflight.headers.txt",
+          "bytes": 1077,
+          "sha256": "201a023d1a12835ba61a6181ffbdbcd0c7b1d39b94b6308214eae37c88e62bf7"
+        },
+        {
+          "file": "evidence/corpus7.source.txt",
+          "bytes": 33,
+          "sha256": "d9df77335252a68b0f222b061610b6de85e9bfa37f4b4019d60f4f767b35e181"
+        },
+        {
+          "file": "evidence/verifier-readme.md",
+          "bytes": 30464,
+          "sha256": "ae469c705699f728ef92baa303ad1713a38a42e6b9b04acf4f7e913482580e34"
+        },
+        {
+          "file": "evidence/skill.headers.txt",
+          "bytes": 895,
+          "sha256": "698991460f5537ec73bbb47841538f8a0b65de44c5f189157c40bd5b5af332ce"
+        },
+        {
+          "file": "evidence/merchant.headers.txt",
+          "bytes": 3201,
+          "sha256": "024c6531db778fdf1006204c06087844e004711dfb6f7b0703b1fd163f164a66"
+        },
+        {
+          "file": "evidence/scvd-key.source.txt",
+          "bytes": 48,
+          "sha256": "9c1dab151aecc99365d1e61c37b0cb095f7b15b0439418284043570c296e765a"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 15670,
+          "sha256": "40a99d8492829dabc922654f191e5a352161935457891b87360c881751c55324"
+        },
+        {
+          "file": "evidence/scvd-key.headers.txt",
+          "bytes": 976,
+          "sha256": "22c2854ee4a710ef896ace25cab26d0a19334b14c48113fc86c6c368cbcea166"
+        },
+        {
+          "file": "evidence/merchant.source.txt",
+          "bytes": 49,
+          "sha256": "ed9f3775c48ae14c92ffd3f4d1a75441156bf2c03e2fdced469de54eafeef2d9"
+        },
+        {
+          "file": "evidence/corpus7.verification.json",
+          "bytes": 769,
+          "sha256": "c54587dfcb6b864bf240e50c8f712f30b21844c4fdd984b13fea969e95bff142"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 11,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 402977,
+        "cached_input_tokens": 349952,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5634,
+        "reasoning_output_tokens": 1663
+      },
+      "resolved_models": []
+    }
+  },
+  "claude-directed-r1": {
+    "cell": {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-18T17:32:15.392Z",
+    "ended_at": "2026-09-18T17:36:06.856Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-18T17:32:15.392Z",
+      "ended_at": "2026-09-18T17:36:06.856Z",
+      "wall_elapsed_ms": 231464,
+      "monotonic_elapsed_ms": 231463.907667,
+      "max_callback_gap_ms": 1041.5136660000135,
+      "interruption": null
+    },
+    "trace_sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 2407,
+      "files": [
+        {
+          "file": "evidence/lionx402_402_challenge.json",
+          "bytes": 1238,
+          "sha256": "f06a3b41b19daf578c4e563644fea7d860ca7638f0454a9a1763382afa157366"
+        },
+        {
+          "file": "evidence/scvd_signature_verification.json",
+          "bytes": 1169,
+          "sha256": "a415e421c1c69ae1a519acb6226a96c66d44955f9c80e52a23fbe34366344269"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 13,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 24,
+        "cache_creation_input_tokens": 26903,
+        "cache_read_input_tokens": 274790,
+        "output_tokens": 13961,
+        "output_tokens_details": {
+          "thinking_tokens": 5414
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 26903,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1266,
+            "cache_read_input_tokens": 35488,
+            "cache_creation_input_tokens": 1645,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 1645
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ]
+    }
+  },
+  "codex-directed-r2": {
+    "cell": {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-18T17:36:06.862Z",
+    "ended_at": "2026-09-18T17:38:38.730Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-18T17:36:06.862Z",
+      "ended_at": "2026-09-18T17:38:38.730Z",
+      "wall_elapsed_ms": 151868,
+      "monotonic_elapsed_ms": 151868.33158300002,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "trace_sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 3106153,
+      "files": [
+        {
+          "file": "evidence/corpus-host.headers",
+          "bytes": 1138,
+          "sha256": "95f7325331b2c7a1ca252049c46878a5be03782e219d1dcb976e454e6493497e"
+        },
+        {
+          "file": "evidence/scvd-signing-key.headers",
+          "bytes": 972,
+          "sha256": "8b3c6a3a1f6e59702be06c05cb701d12743043f14d245624a9302bca539c82af"
+        },
+        {
+          "file": "evidence/scvd-signing-key",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/verifier-readme.headers",
+          "bytes": 896,
+          "sha256": "bd5916ed4e4a346721154270b907a14060023ad89536640c2af6abd615bfa3f7"
+        },
+        {
+          "file": "evidence/SOURCES.md",
+          "bytes": 1231,
+          "sha256": "0ff0af975c9c2886e1e192058071e9a5ebd2cc05b8badfa40635762b1677a357"
+        },
+        {
+          "file": "evidence/guide.SKILL.md",
+          "bytes": 8025,
+          "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+        },
+        {
+          "file": "evidence/corpus-host.json",
+          "bytes": 9707,
+          "sha256": "17eca8d0e4c8b3882e43d1a0da4ff83b87170f9853edbd6dbfd0543f7fade86f"
+        },
+        {
+          "file": "evidence/endpoint.response",
+          "bytes": 2,
+          "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        },
+        {
+          "file": "evidence/corpus-7.headers",
+          "bytes": 1179,
+          "sha256": "1a90be3540ae59ac846e6569a3d8e7480e73066f85b5c1585861e8086c441c5e"
+        },
+        {
+          "file": "evidence/corpus-7.json",
+          "bytes": 3026210,
+          "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+        },
+        {
+          "file": "evidence/preflight.headers",
+          "bytes": 1083,
+          "sha256": "94522ab14d96143881a2226f574dad082534f7ed4d4da9983702a2a60b3e8168"
+        },
+        {
+          "file": "evidence/verifier-readme.md",
+          "bytes": 30464,
+          "sha256": "ae469c705699f728ef92baa303ad1713a38a42e6b9b04acf4f7e913482580e34"
+        },
+        {
+          "file": "evidence/guide.headers",
+          "bytes": 894,
+          "sha256": "0ede31b7f1ef9c4bfd39d1ff17caf9afe7a2eb3dada19f15c2986c63a8064ff1"
+        },
+        {
+          "file": "evidence/verification-result.json",
+          "bytes": 397,
+          "sha256": "2aeb7c7ff656ef1704c632b94df4e8cafacfa6079419f1f4f8c4b0b6a26dfbf2"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 15670,
+          "sha256": "ebad0e3d90a8eca6b1da66c4397748bfcb2c1535765a67249fe0ba725c4d68b1"
+        },
+        {
+          "file": "evidence/endpoint.headers",
+          "bytes": 3201,
+          "sha256": "c0ba17e42e22ced806ce1fcd388f6d87684fea2125ad1acfd42853b83881fef9"
+        },
+        {
+          "file": "evidence/audit-log.md",
+          "bytes": 1945,
+          "sha256": "8ccbd44decf02acb6f635e4405ad7e4ac5b9f3224b1b71d318b41b0458d42e06"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 19,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 566191,
+        "cached_input_tokens": 514816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6311,
+        "reasoning_output_tokens": 2047
+      },
+      "resolved_models": []
+    }
+  },
+  "claude-directed-r2": {
+    "cell": {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-18T17:38:38.745Z",
+    "ended_at": "2026-09-18T17:39:57.630Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-18T17:38:38.745Z",
+      "ended_at": "2026-09-18T17:39:57.630Z",
+      "wall_elapsed_ms": 78885,
+      "monotonic_elapsed_ms": 78885.28966699995,
+      "max_callback_gap_ms": 1003,
+      "interruption": null
+    },
+    "trace_sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 3062751,
+      "files": [
+        {
+          "file": "evidence/corpus-host.json",
+          "bytes": 9707,
+          "sha256": "dabf5d32740ec0be0cb56f94786a4fc56752c94c8ac93dad7a9bab08a2189cdd"
+        },
+        {
+          "file": "evidence/scvd-signing-key.json",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/SKILL.md",
+          "bytes": 8025,
+          "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+        },
+        {
+          "file": "evidence/corpus-7.json",
+          "bytes": 3026210,
+          "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 15670,
+          "sha256": "cd517ee0cd8377fcc4294bdba0757806bc872e8d2810fe1cf9d0c5b1a1be1dc3"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 12,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 24,
+        "cache_creation_input_tokens": 21917,
+        "cache_read_input_tokens": 254202,
+        "output_tokens": 5940,
+        "output_tokens_details": {
+          "thinking_tokens": 1517
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 21917,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1773,
+            "cache_read_input_tokens": 31058,
+            "cache_creation_input_tokens": 1089,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 1089
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ]
+    }
+  }
+}

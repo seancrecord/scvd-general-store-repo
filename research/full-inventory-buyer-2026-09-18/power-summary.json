@@ -1,0 +1,26 @@
+{
+  "sleep_wake_events_in_native_window": [],
+  "interruption_flags": [
+    {
+      "cell": "codex-directed-r1",
+      "buyer": null,
+      "recipient": null
+    },
+    {
+      "cell": "claude-directed-r1",
+      "buyer": null,
+      "recipient": null
+    },
+    {
+      "cell": "codex-directed-r2",
+      "buyer": null,
+      "recipient": null
+    },
+    {
+      "cell": "claude-directed-r2",
+      "buyer": null,
+      "recipient": null
+    }
+  ],
+  "limit": "No actual Sleep/Wake/DarkWake event in retained macOS log during this window. Timer records alone do not diagnose sleep. Other machine activity was not excluded."
+}

@@ -1,0 +1,9 @@
+{
+  "new_buyer_trace_count": 4,
+  "earlier_trace_count_checked": 4,
+  "overlap": [],
+  "source_records": [
+    "research/integrated-buyer-2026-09-18/reviews.json"
+  ],
+  "limit": "Different trace hashes rule out byte-identical captures; isolation also depends on reviewed native launch configuration and actual tool requests."
+}
