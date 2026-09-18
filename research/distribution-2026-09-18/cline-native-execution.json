@@ -1,0 +1,59 @@
+{
+  "observed_on": "2026-09-18",
+  "host": "Cline CLI 3.0.62",
+  "authentication": "CLI confirmed Cline login, then model execution succeeded; browser invalid-code message did not reflect CLI session status",
+  "method": "native CLI TTY; global auto-approval disabled; approved only the two calls below",
+  "calls": [
+    {
+      "name": "skills",
+      "input": {
+        "skill": "scvd-x402-verification"
+      }
+    },
+    {
+      "name": "scvd-general-store__preflight_endpoint",
+      "input": {
+        "url": "https://example.com",
+        "came_from": "installed scvd-x402-verification skill"
+      }
+    }
+  ],
+  "skill_loaded": true,
+  "result": {
+    "version": "v1",
+    "verdict": "not_ready",
+    "reached_level": "L1",
+    "checks_vector": [
+      {
+        "name": "status-402",
+        "state": "fail",
+        "detail": "answered 200 instead of 402 to GET. A 200 here is the 'listed but functionally absent' shape: directories will list this URL as an x402 endpoint and every buyer probing it finds no payment challenge at all."
+      },
+      {
+        "name": "payment-required-header",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "x402-version",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "accepts",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      }
+    ]
+  },
+  "mcp_response_sha256": "d0e63103da75c64b7835acdeaf4749c8a8e8202370bfbbe12b38c0a37e80eb91",
+  "limitations": [
+    "One free example.com preflight only; no payment, delivery or Tab operation tested.",
+    "First authenticated non-TTY run could not approve tools; native TTY rerun completed both calls.",
+    "Raw session and authentication material excluded.",
+    "System Node launcher warned about OS trust-store support; this observed native run nevertheless completed."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "observed_on": "2026-09-18",
+  "host": "Gemini CLI 0.60.0",
+  "npm_latest_checked": "0.60.0",
+  "flow": "Google account manual OAuth through official CLI",
+  "result": "CLI rejected consumer-tier access after authorization-code submission",
+  "error": "This client is no longer supported for Gemini Code Assist for individuals. To continue using Gemini, please migrate to the Antigravity suite of products: https://antigravity.google",
+  "official_source": "https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals",
+  "effective_date": "2026-06-18",
+  "scope": "Consumer Google-account access retired; Standard and Enterprise subscriptions remain supported per official notice. Do not infer all CLI authentication methods are retired.",
+  "skill_execution": "not reached",
+  "mcp_tool_execution": "not reached",
+  "credentials": "Excluded from this receipt."
+}

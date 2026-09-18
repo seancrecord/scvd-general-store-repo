@@ -6,6 +6,8 @@ runs on its own, and nothing below signs anything.
 
 **September 17 admission:** [Participation and representation request](https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204) sent on keeper authorization after checking the complete discussion for earlier SCVD requests. Await the access route and feedback; no shared publication or signature/scan badge is claimed.
 
+**September 18 retry:** the current public record passed schema and taxonomy validation. Refreshed OIDC authentication succeeded, but shared-node push still returned `PermissionDenied`. [Follow-up sent](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505236); [dated findings](../../research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md). No new CID or publication is claimed.
+
 ## What this is
 
 `record.json` is this store's OASF record: the AGNTCY Agent Directory's
