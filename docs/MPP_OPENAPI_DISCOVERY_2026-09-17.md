@@ -65,8 +65,15 @@ the local result does not establish production behavior or indexing.
 ## Remaining wording audit
 
 This repair also removes the obsolete till-unavailable sentence from the
-OpenAPI core-reading description. Older wording remains in `src/routes/corpus.ts`, `src/store/datasets.ts`,
+OpenAPI core-reading description. Older wording remained in `src/routes/corpus.ts`, `src/store/datasets.ts`,
 `src/services/passport-protocol.ts`, `src/store/defect-vocabulary.ts` and the
-MPP core, battery, census and surface-reading services. Reconcile those current surfaces separately while retaining previously
-signed observations and respecting versioned reading rules; do not rewrite
-historical artifacts as if MPP checkout had always been available.
+MPP core, battery, census and surface-reading services.
+
+**Reconciled 2026-09-18.** Each of those current surfaces now carries the
+one sentence exported as `UNPAID_READ_NOTE` from `src/lib/mpp-challenge.ts`:
+no reading rests on a payment, and the till speaking MPP says nothing
+about the door read. The defect vocabulary moved to version 20 for the
+`mpp-core-observable-invalid` hint, with the change in its changelog;
+assertions, falsifiers and reading rules did not change. Previously signed
+observations and the dated 2026-09 records that said the till did not
+speak MPP are left as written.

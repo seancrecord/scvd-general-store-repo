@@ -1,0 +1,34 @@
+{
+  "frozen_source": "cba5f04e1d9e8571f305d8c2dae436454d32cbc4",
+  "plan_schema": 5,
+  "release_observations": [
+    {
+      "pr": 807,
+      "merged_at": "2026-09-18T17:29:56Z",
+      "merge_sha": "877bc68921706bc7bfb690e9f751e9867a487bb7",
+      "relation": "during native window",
+      "change": "Homepage title and description"
+    },
+    {
+      "pr": 808,
+      "merged_at": "2026-09-18T17:30:09Z",
+      "merge_sha": "a9b9a78d63fa9c81acd188ce8f9ceccf7e03c777",
+      "relation": "during native window",
+      "change": "Seller weekly product, guide and page-read signals"
+    },
+    {
+      "pr": 809,
+      "merged_at": "2026-09-18T17:53:38Z",
+      "merge_sha": "83b275c06fcf9bebf25a688068d01adcd6d00b1d",
+      "relation": "after native window, before report closeout",
+      "change": "Schema 6 recipient controller, separate offline qualification, unclassified inventory and completed-recipient gate"
+    }
+  ],
+  "focused_skill_diff_between_frozen_and_83b275c0": "empty",
+  "limits": [
+    "Merge times are GitHub merge metadata, not commit author dates.",
+    "Deploy activation times were not captured; a single live Worker revision across acquisition is not established.",
+    "Frozen schema-5 source, prompts, budgets and captured response bytes remain unchanged.",
+    "This cohort is not native qualification or acceptance of schema 6."
+  ]
+}

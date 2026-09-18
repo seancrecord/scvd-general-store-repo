@@ -1,6 +1,6 @@
 # PAYMENT_RAILS.md — the second-rail work order, and the audit that gates it
 
-## Current status — 2026-09-06
+## Current status — 2026-09-18
 
 Checkout is live on Base, Polygon, Arbitrum, World, and Solana, in native
 USDC over x402 v2. `acceptedNetworks()` in `src/lib/payment-networks.ts`
@@ -27,6 +27,21 @@ with the locked x402 2.25.0 client; World required an explicit token policy
 with a spending cap. This establishes unpaid offer selection, not new paid
 acceptance on every rail. MCP, browser, package and release boundaries are
 recorded in [the dated reach reading](docs/PAYMENT_REACH_QUALIFICATION_2026-09-16.md).
+
+Since 2026-09-18 the till also speaks native MPP (`evm/charge`, USDC on
+Base only) beside x402 on every HTTP door, on MCP tools/call and on the
+WebMCP quote-then-pay bridge; the x402 offer, its networks and its prices
+are unchanged. Part B's WAIT-AND-SEE ruling below is therefore dated
+history: the scheme was accepted through a scoped pilot
+([MPP_NATIVE_CHECKOUT_2026-09](docs/MPP_NATIVE_CHECKOUT_2026-09.md)), the
+[whole shelf](docs/MPP_WHOLE_STORE_2026-09-18.md), the
+[MCP door](docs/MPP_MCP_CHECKOUT_2026-09-18.md) and the
+[browser bridge](docs/MPP_WEBMCP_CHECKOUT_2026-09-18.md), and two house
+purchases from an outside wallet with the stock client are recorded in
+[the dated result](docs/MPP_LIVE_RESULT_2026-09-18.md). The store's MPP
+readings of other services never rest on this till: the reading surfaces
+say so in one spelled-once sentence (`UNPAID_READ_NOTE`,
+`src/lib/mpp-challenge.ts`).
 
 ## Historical work orders and decisions
 
@@ -112,6 +127,14 @@ OVERSOLD alert fires, keeper refunds one — the documented outcome,
 not a silent one).
 
 ## Part B — MPP (evm.charge, crypto-only). GATES RUN 2026-08-04. GATE 1 FAILED — RE-SCOPED TO WAIT-AND-SEE.
+
+**Superseded 2026-09-17/18.** The ruling below stood until the scoped
+pilot opened native MPP on one door and the whole shelf, MCP and WebMCP
+followed the next day; see the current status at the top of this file.
+Gate 1's finding (that `evm.charge` is a second challenge/credential
+protocol, not an `accepts[]` entry) was correct and is how it was built:
+one 402, the x402 entry untouched, a `WWW-Authenticate: Payment`
+challenge beside it, one purchase key across both rails.
 
 The gates as originally posed, and what CV's primary-source read
 (paymentauth.org/draft-evm-charge-00 and mpp.dev/quickstart/server +
@@ -356,11 +379,13 @@ here so nobody spends a day on them twice:
   — the MPP rulebook — and it fires on any 402 carrying a
   `WWW-Authenticate` header that has no `Payment` challenge in it.
   Ours carries `X402 resource_metadata="…"`, which is the RFC 9110
-  form pointing at the OAuth protected-resource document. The store
-  does not speak MPP (Part B, still WAIT-AND-SEE), so there is no
-  Payment challenge to add. Dropping the header to silence the check
-  would cost a correct discovery pointer to satisfy a rulebook we
-  have not opted into. Left as written.
+  form pointing at the OAuth protected-resource document. When this
+  was read the store did not speak MPP (Part B, then WAIT-AND-SEE), so
+  there was no Payment challenge to add, and dropping the header to
+  silence the check would have cost a correct discovery pointer. Left
+  as written then. Since 2026-09-18 every paid door carries a native
+  `Payment` challenge in the same header beside the `X402` pointer, so
+  the check reads what it asked for; the pointer stays.
 - **`/api/purchase-status/{purchase_id}` has no auth mode.** Its
   `purchaseStatusToken` scheme is `type: http, scheme: bearer`, which
   is the correct OpenAPI spelling for `Authorization: Bearer

@@ -2,7 +2,7 @@
 
 ## 2026-09-18 — Maintainer resolves OASF admission route
 
-[AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned or cost estimate claimed. Individual OIDC writer access is no longer a pending route.
+[AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned; the later planning comparison prices an unqualified single-VM candidate separately from the AWS control-plane floor. Individual OIDC writer access is no longer a pending route.
 
 ## 2026-09-18 — OpenCode directory contribution routes
 
@@ -21,6 +21,32 @@ Google's [official deprecation notice](https://developers.google.com/gemini-code
 The [Directory OIDC guide](https://blogs.agntcy.org/technical/directory/2026/08/10/dirctl-context-oidc-gateway.html) documents the public `dirctl` client. Authentication refreshed successfully, but record push remained unauthorized. [Federation setup](https://dir.agntcy.org/latest/dir/dir-federation-setup/) requires an operating node and reciprocal trust; the [staging onboarding route](https://github.com/agntcy/dir-staging/blob/main/onboarding/README.md) is not evidence of individual publisher writer access. [Dated retry and follow-up](../research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
 
 OpenCode's [skills](https://opencode.ai/docs/skills/) and [MCP configuration](https://opencode.ai/docs/mcp-servers/) support the existing assets. The [setup guide](../registry/opencode/README.md) derives MCP settings and copies skills unchanged; native skill/tool execution subsequently passed, while ecosystem admission remains pending.
+
+## 2026-09-18 — The till speaks MPP; the readings still do not
+
+Native MPP checkout, piloted on one door on 2026-09-17, now stands beside
+x402 on every HTTP door ([#790](https://github.com/seancrecord/scvd-general-store-repo/pull/790)),
+on MCP tools/call in the SDK's own transport convention
+([#804](https://github.com/seancrecord/scvd-general-store-repo/pull/804))
+and on the WebMCP quote-then-pay bridge. Two house purchases from an outside
+wallet with the stock `mppx@0.10.1` clients (HTTP and MCP) settled and were
+read back through the keeper's inspection; the [dated result](MPP_LIVE_RESULT_2026-09-18.md)
+names them. The SDK's http client compares the x402 envelope's
+`resource.url` to the response URL with strict equality before any native
+challenge is signed, so the buy routes stopped declaring a static resource
+([MCP release record](MPP_MCP_CHECKOUT_2026-09-18.md)). The challenge
+carries no EIP-712 domain; the stock client takes it from its asset
+registry or an explicit `authorization`, and the payment guide says so.
+
+The earlier position, "the store observes MPP; its till does not speak
+it" (2026-09 entries below), was true when written and is left as
+written. Every current reading surface that repeated it (battery, census,
+core, surface reads, passport rule, corpus dataset, defect vocabulary
+hint) now carries one spelled-once sentence instead: no reading rests on
+a payment, and the till speaking MPP says nothing about the door read.
+Defect vocabulary version 20 records the wording change; no assertion,
+falsifier or reading rule changed, and signed observations are not
+rewritten.
 
 ## 2026-09-18 — Gallery readback and registry intake boundaries
 

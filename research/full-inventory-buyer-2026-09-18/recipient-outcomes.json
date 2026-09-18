@@ -1,0 +1,177 @@
+{
+  "codex-directed-r1": {
+    "runtime": {
+      "state": "failed",
+      "exit_code": null,
+      "signal": "SIGTERM",
+      "spawn_error": null,
+      "budget_stop": "tool_calls",
+      "stop_requested": {
+        "at": "2026-09-18T17:42:30.089Z",
+        "close_observed": false,
+        "signal_requested": true,
+        "wall_elapsed_ms": 111374,
+        "monotonic_elapsed_ms": 111373.035208
+      }
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-18T17:40:38.715Z",
+      "ended_at": "2026-09-18T17:42:30.094Z",
+      "wall_elapsed_ms": 111379,
+      "monotonic_elapsed_ms": 111378.03295800001,
+      "max_callback_gap_ms": 1002.5684590000019,
+      "interruption": null
+    },
+    "tool_calls": 13,
+    "resolved_models": [],
+    "input_manifest_sha256": "f4cd0002f514ad1dd7985a67da0bc5cfed0aee461c4c3578c935363e3e6555bf",
+    "supplied_files": 25,
+    "retained_files": 25,
+    "interpretation": {
+      "state": "incomplete",
+      "understands": false,
+      "reason": "Stopped at the tool-call cap after the thirteenth call event; no final report. Partial signature and inventory checks do not establish recipient completion.",
+      "evidence": [
+        {
+          "file": "recipient/run.json",
+          "sha256": "6ba930d26fed8342a047e58c198e62f275feaeeb98af9f4a78395268f192a550"
+        },
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "0d734447240cd5ae7591d6bd1368495fdd1172f018bf110227695562a99edd48"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "f4cd0002f514ad1dd7985a67da0bc5cfed0aee461c4c3578c935363e3e6555bf"
+        },
+        {
+          "file": "parent-verification.json",
+          "sha256": "a22b4303b2fd52766f2bcdde11badec48f05ac063668a8ed78538bd6f556a51f"
+        }
+      ]
+    }
+  },
+  "claude-directed-r1": {
+    "state": "ineligible",
+    "reason": "Signed original and independently retained issuer key absent."
+  },
+  "codex-directed-r2": {
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-18T17:43:42.832Z",
+      "ended_at": "2026-09-18T17:44:56.938Z",
+      "wall_elapsed_ms": 74106,
+      "monotonic_elapsed_ms": 74105.197542,
+      "max_callback_gap_ms": 1003.7323329999999,
+      "interruption": null
+    },
+    "tool_calls": 8,
+    "resolved_models": [],
+    "input_manifest_sha256": "9aafa265a563aa3a004497ae9484741d16a995db11ece4e54e50175389f66cd8",
+    "supplied_files": 17,
+    "retained_files": 17,
+    "interpretation": {
+      "state": "reviewed",
+      "understands": false,
+      "reason": "Cryptography and inventory checks complete, but final report falsely authenticates all three historical observations as contents of snapshot 7. Exhaustive signed-payload traversal finds only one target row; the three-week history is in the separate unsigned host summary.",
+      "evidence": [
+        {
+          "file": "recipient/run.json",
+          "sha256": "6a051a1dc1b8aa748918a03d2329796247d824c4f3c90c19889f24ccb945fd90"
+        },
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "f646979934724931c52712d37288702f5a9819bb43672830570eda0cc4f4cf37"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "9aafa265a563aa3a004497ae9484741d16a995db11ece4e54e50175389f66cd8"
+        },
+        {
+          "file": "parent-verification.json",
+          "sha256": "a59f1ad9ce09f126d4209d461872db666cedeb1eeecfc68a03479fb80570a632"
+        },
+        {
+          "file": "recipient/result.txt",
+          "sha256": "dd3f60e4b9ffe13e5a821fde87a443f39fc49a490c394ab47bf876cc7dc4f54f"
+        },
+        {
+          "file": "recipient-scope-review.json",
+          "sha256": "4e65084f475df20f325360dc06ec9ace6c969b8989019beb314b917bc35c9aad"
+        }
+      ]
+    }
+  },
+  "claude-directed-r2": {
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-18T17:46:20.890Z",
+      "ended_at": "2026-09-18T17:47:48.801Z",
+      "wall_elapsed_ms": 87911,
+      "monotonic_elapsed_ms": 87911.09579200001,
+      "max_callback_gap_ms": 1006.1545419999966,
+      "interruption": null
+    },
+    "tool_calls": 10,
+    "resolved_models": [],
+    "input_manifest_sha256": "a1079673fc4e2375020c6b983333fcc48ae99de0ca93e60e73bdf9009dee6a9f",
+    "supplied_files": 5,
+    "retained_files": 5,
+    "interpretation": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Completed local verification, correctly identified the exact endpoint observation date, separate snapshot publication date, no declared expiry, unsigned current preflight and unsigned earlier history. It explicitly corrected the three-week authentication overclaim.",
+      "evidence": [
+        {
+          "file": "recipient/run.json",
+          "sha256": "219c928740c8cacba921bc92f5ab1af4597a63ae0e1f3c150239a5fe73165f80"
+        },
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "1ff90d34c089078036bda3f46d751256cb49cd33d0fd802549a7b9bd743ce1ed"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "a1079673fc4e2375020c6b983333fcc48ae99de0ca93e60e73bdf9009dee6a9f"
+        },
+        {
+          "file": "parent-verification.json",
+          "sha256": "beb9be34243ab60ca7a310e83ad6ac56bd85487545f684551013db44edad4073"
+        },
+        {
+          "file": "recipient/result.txt",
+          "sha256": "97ccbdac9e805dad3da028708fc60b3d27e4814c659fb1b14fa3c2ac20c5ca97"
+        }
+      ]
+    }
+  }
+}

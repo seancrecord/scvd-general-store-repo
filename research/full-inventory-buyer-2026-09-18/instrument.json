@@ -1,0 +1,13 @@
+{
+  "schema_version": 2,
+  "files": {
+    "buyer-cold-isolated.mjs": "5fd4ad9473753ae6b5ce89da883c9eab06d25bf05e62618ec09402a9e3532a77",
+    "buyer-recipient-handoff.mjs": "7d4b8261eb10e534df92e4f02699f6e72952daa3e61f0995d85bf4031d97f8de",
+    "lib/buyer-cold.mjs": "542c6b997d9fb6b7d8d6f5611774c952d3a00f23d7a458d9ded99ca2878adc1a",
+    "lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+    "lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+    "lib/buyer-host-context.mjs": "29ef1f922cec66ccf5acc674433491bc2ba120a122a078c433f52f61274addd3",
+    "../verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "../verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+  }
+}

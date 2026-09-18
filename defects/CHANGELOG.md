@@ -3,6 +3,24 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.20.0 — 2026-09-18
+
+Vocabulary v20: `mpp-core-observable-invalid`'s buyer hint no longer
+says the publisher's till does not speak MPP.
+
+No definition changed. The class's assertion, falsifier, costs,
+boundary, signal and source are byte-identical to v18, when it was
+registered. What moved is one sentence of the buyer hint: it said
+"this store's till does not speak MPP", which stopped being true on
+2026-09-17 when scvd.store opened native MPP checkout on one door and
+then, on 2026-09-18, on every HTTP door, the MCP door and the WebMCP
+bridge. The hint now says the finding comes from an unpaid read, never
+a payment, which is what it always meant.
+
+The same sentence was reconciled on every MPP reading surface the
+publisher serves. Nothing already signed is re-scored, and no reading
+rule changed.
+
 ## 0.19.0 — 2026-09-16
 
 Vocabulary v19: `no-402`'s assertion and falsifier narrow.

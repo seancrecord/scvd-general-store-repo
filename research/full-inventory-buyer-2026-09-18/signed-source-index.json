@@ -1,0 +1,77 @@
+{
+  "captures": [
+    {
+      "cell": "codex-directed-r1",
+      "artifact": {
+        "file": "evidence/corpus7.json",
+        "bytes": 3026210,
+        "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00",
+        "source_url": "https://scvd.store/corpus/7.json",
+        "canonical_digest": "da260da1faab87a748e2f9e7685f3be15b0f06f9426ff75cc270632a5f730263"
+      },
+      "issuer": {
+        "file": "evidence/scvd-key.txt",
+        "bytes": 3139,
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+        "source_url": "https://scvd.store/.well-known/scvd-signing-key"
+      },
+      "authenticated_target_locations": [
+        {
+          "subject_pointer": "/round/hosts/50/url",
+          "observed_at_pointer": "/round/hosts/50/observed_at",
+          "observed_at": "2026-09-07T02:30:20.531Z"
+        }
+      ],
+      "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+    },
+    {
+      "cell": "codex-directed-r2",
+      "artifact": {
+        "file": "evidence/corpus-7.json",
+        "bytes": 3026210,
+        "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00",
+        "source_url": "https://scvd.store/corpus/7.json",
+        "canonical_digest": "da260da1faab87a748e2f9e7685f3be15b0f06f9426ff75cc270632a5f730263"
+      },
+      "issuer": {
+        "file": "evidence/scvd-signing-key",
+        "bytes": 3139,
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+        "source_url": "https://scvd.store/.well-known/scvd-signing-key"
+      },
+      "authenticated_target_locations": [
+        {
+          "subject_pointer": "/round/hosts/50/url",
+          "observed_at_pointer": "/round/hosts/50/observed_at",
+          "observed_at": "2026-09-07T02:30:20.531Z"
+        }
+      ],
+      "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+    },
+    {
+      "cell": "claude-directed-r2",
+      "artifact": {
+        "file": "evidence/corpus-7.json",
+        "bytes": 3026210,
+        "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00",
+        "source_url": "https://scvd.store/corpus/7.json",
+        "canonical_digest": "da260da1faab87a748e2f9e7685f3be15b0f06f9426ff75cc270632a5f730263"
+      },
+      "issuer": {
+        "file": "evidence/scvd-signing-key.json",
+        "bytes": 3139,
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+        "source_url": "https://scvd.store/.well-known/scvd-signing-key"
+      },
+      "authenticated_target_locations": [
+        {
+          "subject_pointer": "/round/hosts/50/url",
+          "observed_at_pointer": "/round/hosts/50/observed_at",
+          "observed_at": "2026-09-07T02:30:20.531Z"
+        }
+      ],
+      "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+    }
+  ],
+  "limit": "Public source URLs are retrieval locations, not promises that future responses will match a captured hash. The private archive retains exact acquired bodies. These references do not verify Bitcoin anchoring or issuer identity."
+}

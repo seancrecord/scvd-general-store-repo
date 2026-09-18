@@ -14,7 +14,7 @@ The [production guide](https://dir.agntcy.org/latest/dir/dir-prod-deployment/) u
 
 The [federation guide](https://dir.agntcy.org/latest/dir/dir-federation-setup/) requires public API, registry, identity-bundle and identity-discovery endpoints plus certificates. Use the `https_web` federation profile with the public peer. Its example embeds older release numbers and demonstration credentials; neither is a deployment-ready SCVD configuration. Pin and validate the current chart and image versions when a host is selected, and provision fresh credentials outside this repository.
 
-The production guide is an AWS EKS reference, not evidence that AWS is the only possible host or that a quoted per-component resource range is the total node requirement. No monthly cost estimate is claimed. Obtain a provider-specific estimate including compute, storage, networking and backups before provisioning.
+The production guide is an AWS EKS reference, not evidence that AWS is the only possible host or that a quoted per-component resource range is the total node requirement. The planning comparison below prices a candidate host, not a qualified deployment. Confirm total capacity and all selected services before provisioning.
 
 The local shell currently exposes `dirctl`, but did not find `docker`, `kubectl` or `helm` on PATH. This observation does not establish whether a remote cluster exists. The historical local signing receipt does not establish an operating public node.
 
@@ -33,3 +33,17 @@ Maintainer onboarding is documented in [the public staging instructions](https:/
 ## Anro remains a separate route
 
 [Anro's discovery documentation](https://anroagents.com/docs/agent-discovery/) describes domain manifests and paid publication of agents hosted by Anro. That does not establish a free external OASF submission API. Our publisher lookup still returned zero entries after the maintainer answer. The prepared support request asks whether SCVD's existing manifest can be crawled without moving hosting; it remains unsent pending explicit email authorization.
+
+
+## Planning cost comparison — September 18 readback
+
+| Candidate | Published price and arithmetic | Limit of this estimate |
+| --- | --- | --- |
+| Single DigitalOcean Basic VM, 4 vCPU / 8 GiB RAM / 160 GiB disk | $48/month plus weekly backups at 20%: **$57.60/month**; daily at 30%: **$62.40/month**. | Candidate for a single-node qualification experiment. Capacity, Kubernetes/SPIRE compatibility and recovery have not been tested. One machine is not a highly available deployment. |
+| AWS EKS reference architecture | Standard-support control plane is $0.10/hour, or **$73 for 730 hours**, before workers, storage, load balancing, public IPs and traffic. | $73 is a floor for the control plane alone, not a complete quote. |
+
+Sources: [DigitalOcean Basic pricing](https://www.digitalocean.com/pricing/droplets), [backup pricing](https://www.digitalocean.com/pricing/backups), [AWS EKS pricing](https://aws.amazon.com/eks/pricing/). Prices exclude applicable tax, extra storage/traffic, separate off-host exports and maintenance labor. Existing SCVD domain/DNS is assumed; no paid managed database or load balancer is included in the single-VM example. Automatic disk backups do not establish database-consistent recovery; restore testing remains necessary. No provider is selected and nothing has been purchased.
+
+[Anro's separate directory page](https://directory.anroagents.com/) explicitly advertises free publication, with payment only for its agent-building/hosting platform. Its Connect section documents public query/federation endpoints and domain manifests, but no external record-upload or crawl-trigger form was established. Treat the free-listing claim separately from the platform's paid hosting documentation. Our prepared email asks for the missing ingestion step; no need to purchase an Anro hosting plan to ask that question.
+
+A second documented discovery check, `POST /ard/search` with query `SCVD scvd.store evidence observatory x402` and `federation: "none"`, also returned an empty `results` array. This is a dated negative result for that query, alongside the exact publisher filter; it is not evidence that the registry's crawler attempted or rejected our manifest.

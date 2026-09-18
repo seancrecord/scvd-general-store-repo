@@ -1,0 +1,13 @@
+{
+  "source_revision": "cba5f04e1d9e8571f305d8c2dae436454d32cbc4",
+  "frozen_at": "2026-09-18T17:26:49.154152+00:00",
+  "plan_sha256": "43852b3b97bf7b5b9b0620fc54592937e88818515dc5fe8836619e6654cadc7c",
+  "question": "Can fresh directed buyers retain and correctly interpret relevant signed evidence, and can a fresh offline recipient verify and interpret the complete retained inventory within the unchanged limits?",
+  "public_skill_matches_source": true,
+  "historical_observation": "2026-09-07T02:30:20.531Z",
+  "historical_policy_cutoff": "2026-09-21T02:30:20.531Z",
+  "prior_cohorts": "Separate denominators; no retries or replacement evidence.",
+  "claim_limit": "Controlled directed usability only. No payment, outreach or organic adoption claim.",
+  "model_resolution": "Requested model names fixed in plan; actual runtime identifiers retained from native traces before interpretation.",
+  "power_policy": "Temporary caffeinate idle-sleep assertion during native runs; record pmset events. Forced sleep/lid closure still possible and no elapsed time is subtracted."
+}

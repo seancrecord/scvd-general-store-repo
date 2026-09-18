@@ -1,0 +1,605 @@
+{
+  "codex-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex controller trace and retained-byte review",
+    "reviewed_at": "2026-09-18T17:49:07.506946+00:00",
+    "transcript_sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh launch with disabled local context; exposed requests concern public responses and local files produced during this run. No wallet, payment, credential read, registration, message or external mutation observed. Native hidden work is not established by these traces.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "5a25e6b62d9418ad772b6cfaadb3989a8470479bb244547d481b9c171f39cb4e"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The public entry URL was supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Actual tools reached the referred public guide and SCVD evidence surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Actual trace reached the exact target through current unsigned challenge/preflight evidence and dated historical SCVD history; current challenge shape is distinct from signed history.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Final buyer report distinguishes unpaid challenge shape, historical signed bytes, supplied-key trust limits and untested settlement/delivery.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "The acquisition retained the exact signed snapshot and separately fetched public key document, within its file/byte cap.",
+        "evidence": [
+          {
+            "file": "evidence/corpus7.json",
+            "bytes": 3026210,
+            "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+          },
+          {
+            "file": "evidence/scvd-key.txt",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "events.jsonl",
+            "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Buyer executed a successful local signature check; controller recomputation and fresh recipient interpretation are assessed separately.",
+        "evidence": [
+          {
+            "file": "evidence/corpus7.json",
+            "bytes": 3026210,
+            "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+          },
+          {
+            "file": "evidence/scvd-key.txt",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "events.jsonl",
+            "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+          },
+          {
+            "file": "parent-verification.json",
+            "sha256": "a22b4303b2fd52766f2bcdde11badec48f05ac063668a8ed78538bd6f556a51f"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Unpaid free reads/quotes only; no paid acceptance claim."
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "stale_after": "2026-09-21T02:30:20.531Z",
+      "basis": "Frozen fourteen-day observation-age policy; not issuer expiry or snapshot publication date."
+    },
+    "notes": [],
+    "fulfillment": "delivered",
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus7.json",
+        "bytes": 3026210,
+        "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+      },
+      "issuer": {
+        "file": "evidence/scvd-key.txt",
+        "bytes": 3139,
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "98c1e233674226667c730f37c6ed07e58fbaf84979051765b60132d4bb871692"
+        }
+      ],
+      "subject_pointer": "/round/hosts/50/url",
+      "observed_at_pointer": "/round/hosts/50/observed_at"
+    },
+    "recipient": {
+      "state": "incomplete",
+      "understands": false,
+      "reason": "Stopped at the tool-call cap after the thirteenth call event; no final report. Partial signature and inventory checks do not establish recipient completion.",
+      "evidence": [
+        {
+          "file": "recipient/run.json",
+          "sha256": "6ba930d26fed8342a047e58c198e62f275feaeeb98af9f4a78395268f192a550"
+        },
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "0d734447240cd5ae7591d6bd1368495fdd1172f018bf110227695562a99edd48"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "f4cd0002f514ad1dd7985a67da0bc5cfed0aee461c4c3578c935363e3e6555bf"
+        },
+        {
+          "file": "parent-verification.json",
+          "sha256": "a22b4303b2fd52766f2bcdde11badec48f05ac063668a8ed78538bd6f556a51f"
+        }
+      ]
+    }
+  },
+  "claude-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex controller trace and retained-byte review",
+    "reviewed_at": "2026-09-18T17:49:07.506946+00:00",
+    "transcript_sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh launch with disabled local context; exposed requests concern public responses and local files produced during this run. No wallet, payment, credential read, registration, message or external mutation observed. Native hidden work is not established by these traces.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "c11005b1d2124db95935ffbd45f0cd0ec4095bd9df347d52bc31b3bffb98953c"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The public entry URL was supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Actual tools reached the referred public guide and SCVD evidence surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Actual trace reached the exact target through current unsigned challenge/preflight evidence and dated historical SCVD history; current challenge shape is distinct from signed history.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c"
+          }
+        ]
+      },
+      "decide": {
+        "state": "incomplete",
+        "reason": "Report does not establish a precise observation-date/scope handoff and its phrase about signer integrity is broader than cryptographic byte authenticity; no complete decision acceptance credited.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "Buyer deliberately retained only two summaries, omitting the signed original and full issuer-key response despite a 32 MiB allowance. Complete capture of chosen files is not complete verification evidence.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "Trace shows successful signature verification of a current native tool-output file, but its signed bytes and independent key observation were not retained in the acquisition. A summary and signature string cannot reproduce it; no recipient is eligible.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "de07545bce30ac2d1175092d3f30c6049ff415a9af5a3cebaabe3c6d2b9d062c"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Unpaid free reads/quotes only; no paid acceptance claim."
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "stale_after": "2026-09-21T02:30:20.531Z",
+      "basis": "Frozen fourteen-day observation-age policy; not issuer expiry or snapshot publication date."
+    },
+    "notes": [
+      "Initial compound-command refusal was wrongly generalized, then corrected after standalone curl succeeded.",
+      "The native large-output file read belonged to the current public response, not a prior conversation. It is outside the frozen evidence capture and was not copied later to repair the outcome.",
+      "The retained challenge summary substitutes a shortened base64 placeholder and shortened description; it is not the verbatim original challenge.",
+      "No retrospective replacement acquisition or recipient launch."
+    ]
+  },
+  "codex-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex controller trace and retained-byte review",
+    "reviewed_at": "2026-09-18T17:49:07.506946+00:00",
+    "transcript_sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh launch with disabled local context; exposed requests concern public responses and local files produced during this run. No wallet, payment, credential read, registration, message or external mutation observed. Native hidden work is not established by these traces.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "43bd9d41a756de5a7895bf8903604c1ca32032a1d1bad699b54bb2da20855a0a"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The public entry URL was supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Actual tools reached the referred public guide and SCVD evidence surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Actual trace reached the exact target through current unsigned challenge/preflight evidence and dated historical SCVD history; current challenge shape is distinct from signed history.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Final buyer report distinguishes unpaid challenge shape, historical signed bytes, supplied-key trust limits and untested settlement/delivery.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "The acquisition retained the exact signed snapshot and separately fetched public key document, within its file/byte cap.",
+        "evidence": [
+          {
+            "file": "evidence/corpus-7.json",
+            "bytes": 3026210,
+            "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+          },
+          {
+            "file": "evidence/scvd-signing-key",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "events.jsonl",
+            "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Buyer executed a successful local signature check; controller recomputation and fresh recipient interpretation are assessed separately.",
+        "evidence": [
+          {
+            "file": "evidence/corpus-7.json",
+            "bytes": 3026210,
+            "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+          },
+          {
+            "file": "evidence/scvd-signing-key",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "events.jsonl",
+            "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+          },
+          {
+            "file": "parent-verification.json",
+            "sha256": "a59f1ad9ce09f126d4209d461872db666cedeb1eeecfc68a03479fb80570a632"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Unpaid free reads/quotes only; no paid acceptance claim."
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "stale_after": "2026-09-21T02:30:20.531Z",
+      "basis": "Frozen fourteen-day observation-age policy; not issuer expiry or snapshot publication date."
+    },
+    "notes": [
+      "Recipient did not explicitly report declared artifact expiry; no expiry field was found by the parent verifier. The scope overclaim alone fails the recipient stage."
+    ],
+    "fulfillment": "delivered",
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus-7.json",
+        "bytes": 3026210,
+        "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+      },
+      "issuer": {
+        "file": "evidence/scvd-signing-key",
+        "bytes": 3139,
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "8e064ecf68b0cdd7f72603ad57307fc5895a4f5826a7412b72799c0beaf24c03"
+        }
+      ],
+      "subject_pointer": "/round/hosts/50/url",
+      "observed_at_pointer": "/round/hosts/50/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": false,
+      "reason": "Cryptography and inventory checks complete, but final report falsely authenticates all three historical observations as contents of snapshot 7. Exhaustive signed-payload traversal finds only one target row; the three-week history is in the separate unsigned host summary.",
+      "evidence": [
+        {
+          "file": "recipient/run.json",
+          "sha256": "6a051a1dc1b8aa748918a03d2329796247d824c4f3c90c19889f24ccb945fd90"
+        },
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "f646979934724931c52712d37288702f5a9819bb43672830570eda0cc4f4cf37"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "9aafa265a563aa3a004497ae9484741d16a995db11ece4e54e50175389f66cd8"
+        },
+        {
+          "file": "parent-verification.json",
+          "sha256": "a59f1ad9ce09f126d4209d461872db666cedeb1eeecfc68a03479fb80570a632"
+        },
+        {
+          "file": "recipient/result.txt",
+          "sha256": "dd3f60e4b9ffe13e5a821fde87a443f39fc49a490c394ab47bf876cc7dc4f54f"
+        },
+        {
+          "file": "recipient-scope-review.json",
+          "sha256": "4e65084f475df20f325360dc06ec9ace6c969b8989019beb314b917bc35c9aad"
+        }
+      ]
+    }
+  },
+  "claude-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex controller trace and retained-byte review",
+    "reviewed_at": "2026-09-18T17:49:07.506946+00:00",
+    "transcript_sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh launch with disabled local context; exposed requests concern public responses and local files produced during this run. No wallet, payment, credential read, registration, message or external mutation observed. Native hidden work is not established by these traces.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "55d52db71bf99f4d582a63a074cf794e8e669f17de6755482600ba9b06b3101e"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The public entry URL was supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Actual tools reached the referred public guide and SCVD evidence surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Actual trace reached the exact target through current unsigned challenge/preflight evidence and dated historical SCVD history; current challenge shape is distinct from signed history.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "Buyer report says signature validity confirms that SCVD actually saw what the snapshot says, and describes historical snapshots as up to date while naming the publication time rather than the underlying September 7 observation. A signature proves signed bytes, not the truth of the observation. The recipient correctly narrows these claims, but that does not rewrite the buyer report.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "The acquisition retained the exact signed snapshot and separately fetched public key document, within its file/byte cap.",
+        "evidence": [
+          {
+            "file": "evidence/corpus-7.json",
+            "bytes": 3026210,
+            "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+          },
+          {
+            "file": "evidence/scvd-signing-key.json",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "events.jsonl",
+            "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Buyer executed a successful local signature check; controller recomputation and fresh recipient interpretation are assessed separately.",
+        "evidence": [
+          {
+            "file": "evidence/corpus-7.json",
+            "bytes": 3026210,
+            "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+          },
+          {
+            "file": "evidence/scvd-signing-key.json",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "events.jsonl",
+            "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+          },
+          {
+            "file": "parent-verification.json",
+            "sha256": "beb9be34243ab60ca7a310e83ad6ac56bd85487545f684551013db44edad4073"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Unpaid free reads/quotes only; no paid acceptance claim."
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "stale_after": "2026-09-21T02:30:20.531Z",
+      "basis": "Frozen fourteen-day observation-age policy; not issuer expiry or snapshot publication date."
+    },
+    "notes": [
+      "Buyer used the embedded public key for local crypto; the separately retained public key document matches it. This supports source consistency, not an independently trusted identity root or verified key-history continuity."
+    ],
+    "fulfillment": "delivered",
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus-7.json",
+        "bytes": 3026210,
+        "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+      },
+      "issuer": {
+        "file": "evidence/scvd-signing-key.json",
+        "bytes": 3139,
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "71ca2f07e08f82faa49f96a7163bc6368a28b08d7e88399bee7228b8f19ff068"
+        }
+      ],
+      "subject_pointer": "/round/hosts/50/url",
+      "observed_at_pointer": "/round/hosts/50/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Completed local verification, correctly identified the exact endpoint observation date, separate snapshot publication date, no declared expiry, unsigned current preflight and unsigned earlier history. It explicitly corrected the three-week authentication overclaim.",
+      "evidence": [
+        {
+          "file": "recipient/run.json",
+          "sha256": "219c928740c8cacba921bc92f5ab1af4597a63ae0e1f3c150239a5fe73165f80"
+        },
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "1ff90d34c089078036bda3f46d751256cb49cd33d0fd802549a7b9bd743ce1ed"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "a1079673fc4e2375020c6b983333fcc48ae99de0ca93e60e73bdf9009dee6a9f"
+        },
+        {
+          "file": "parent-verification.json",
+          "sha256": "beb9be34243ab60ca7a310e83ad6ac56bd85487545f684551013db44edad4073"
+        },
+        {
+          "file": "recipient/result.txt",
+          "sha256": "97ccbdac9e805dad3da028708fc60b3d27e4814c659fb1b14fa3c2ac20c5ca97"
+        }
+      ]
+    }
+  }
+}
