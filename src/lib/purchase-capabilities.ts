@@ -3,7 +3,7 @@ import type { PaymentRequirements } from "@x402/core/types";
 import { manifestAccepts, priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
 import { BASE_NETWORK, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
-import { ucpCheckoutRails, ucpItemSellable } from "@/lib/ucp/launch";
+import { ucpItemSellable } from "@/lib/ucp/launch";
 import { MENU_ITEMS } from "@/store";
 
 export type PurchaseCapabilityConfig = PaymentNetworkConfig & Partial<Pick<Env,
@@ -16,11 +16,18 @@ export type PurchaseCapabilityConfig = PaymentNetworkConfig & Partial<Pick<Env,
  * the profile reads. A directory reader that finds it knows to read
  * /.well-known/ucp and Create a checkout; one that does not still finds
  * x402 and, when enabled, MPP, untouched.
+ *
+ * FOUR FIELDS, ON PURPOSE. The row rides every shelf item into
+ * menu.json, the compact contracts and OpenAPI, and OpenAPI has a
+ * byte ceiling (test/agent-catalog-readability.spec.ts) that the
+ * disclosure block of the same day already spent most of. The rails,
+ * the currency and the handler are the profile's to state, once; a
+ * pointer that repeated them thirty-five times would be paying bytes
+ * to say less reliably what one document says exactly.
  */
 export function ucpCapability(item: MenuItem, config?: PurchaseCapabilityConfig) {
   if (!config || !ucpItemSellable(config, item.id)) return undefined;
-  return { protocol: "ucp", transport: "rest", method: "POST", path: "/ucp/v1/checkout-sessions",
-    profile: "/.well-known/ucp", currency: "USDC", networks: ucpCheckoutRails(config) };
+  return { protocol: "ucp", transport: "rest", path: "/ucp/v1/checkout-sessions", profile: "/.well-known/ucp" };
 }
 
 /** Discovery and the actual challenge share the item's minimum entitlement on Base. */

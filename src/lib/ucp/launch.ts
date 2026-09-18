@@ -12,12 +12,16 @@ import type { Env, MenuItem } from "@/types";
  * payment no profile offered is a sale nobody could have discovered
  * honestly. So both read this file, and nothing else decides either.
  *
- * DARK BY DEFAULT, LIKE THE MPP SEAM. The switch is a deploy-owned
- * var (wrangler.jsonc, never the dashboard — a var git does not own is
- * a var the next deploy wipes, which the MPP notes there record). It
- * ships off, so merging the code launches nothing; the keeper turns it
- * on for one rail and one product first, proves the whole loop
- * against production, and widens from there.
+ * DARK BY DEFAULT, LIKE THE MPP SEAM. The three values are Worker
+ * SECRETS (`wrangler secret put`, or the dashboard's secret type),
+ * not vars in wrangler.jsonc: a secret survives every deploy and can
+ * be changed without one, and a plaintext var git does not own is a
+ * var the next deploy wipes, which the MPP notes there record. Absent
+ * is closed, so merging the code launches nothing; the keeper turns
+ * it on for one rail and one product first, proves the whole loop
+ * against production, and widens from there. The profile says which
+ * state the deployment is in, so the switch is public even though its
+ * storage is not.
  *
  *   UCP_CHECKOUT_ENABLED  "true" opens the door. Anything else: closed.
  *   UCP_CHECKOUT_RAILS    Comma-separated CAIP-2 ids. Unset = every rail

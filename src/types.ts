@@ -34,7 +34,11 @@ export interface Env {
    * UCP checkout: dark unless "true", and then only on the rails and
    * items the two allow-lists name (unset = all). The profile
    * advertises the checkout capability exactly when this opens the
-   * door; lib/ucp/launch.ts is the one reader of all three.
+   * door; lib/ucp/launch.ts is the one reader of all three. Secrets,
+   * not vars, so the keeper can open one rail and one item without a
+   * deploy and no deploy can wipe the choice.
+   *
+   * Set with: wrangler secret put UCP_CHECKOUT_ENABLED (and _RAILS, _ITEMS)
    */
   UCP_CHECKOUT_ENABLED?: string;
   UCP_CHECKOUT_RAILS?: string;

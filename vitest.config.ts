@@ -79,9 +79,10 @@ export default defineConfig({
            * rail and every catalog item, because that is the state the
            * launched store runs in and the state every guard should be
            * holding: the profile advertises checkout, Complete settles,
-           * the discovery surfaces name the doors. wrangler.jsonc ships
-           * the switch OFF so a deploy launches nothing; the tests that
-           * prove the closed state pass their own bindings.
+           * the discovery surfaces name the doors. Production reads the
+           * switch from secrets and absent is closed, so a deploy
+           * launches nothing; the tests that prove the closed state pass
+           * their own bindings.
            */
           UCP_CHECKOUT_ENABLED: "true",
           // The ledger follows KV when a test wipes or seeds a key under it (services/counter-ledger.ts).

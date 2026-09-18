@@ -24,11 +24,11 @@
 >
 > **The merchant half, 2026-09-18.** Checkout and order are now built
 > over the store's own x402 settlement (one settling module, the same
-> facilitator, the same replay guard) and sit behind one deploy-owned
-> switch, `UCP_CHECKOUT_ENABLED`, that the profile and the Complete door
+> facilitator, the same replay guard) and sit behind one switch, the
+> `UCP_CHECKOUT_ENABLED` secret, that the profile and the Complete door
 > both read: the checkout capability is advertised exactly when Complete
-> settles. It ships off; the launch is qualified against production one
-> rail and one item at a time (`scripts/ucp-live.mjs`). Carts remain
+> settles. Absent is closed; the launch is qualified against production
+> one rail and one item at a time (`scripts/ucp-live.mjs`). Carts remain
 > refused — one line per checkout — and there is still no merchant
 > application and no Stripe account.
 

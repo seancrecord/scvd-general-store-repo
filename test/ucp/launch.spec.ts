@@ -405,6 +405,27 @@ describe("the doors are on the surfaces agents read, exactly while open", () => 
     expect((await getJson("/ucp/specs/payment/usdc-x402", closed())).body.negotiable).toBe(false);
   });
 
+  it("every open item carries a ucp payment_capabilities row pointing at the profile, and none when closed", async () => {
+    const open = await getJson("/menu.json");
+    const hello = open.body.items.find((row: { id: string }) => row.id === "hello");
+    expect(hello.payment_capabilities).toContainEqual({
+      protocol: "ucp",
+      transport: "rest",
+      path: "/ucp/v1/checkout-sessions",
+      profile: "/.well-known/ucp",
+    });
+    // The x402 row is untouched, and first.
+    expect(hello.payment_capabilities[0].protocol).toBe("x402");
+    const shut = await getJson("/menu.json", closed());
+    const helloShut = shut.body.items.find((row: { id: string }) => row.id === "hello");
+    expect(helloShut.payment_capabilities.some((row: { protocol: string }) => row.protocol === "ucp")).toBe(false);
+    // Narrowed: only the open item carries it.
+    const narrowed = await getJson("/menu.json", { ...testEnv, UCP_CHECKOUT_ITEMS: "hello" });
+    const audit = narrowed.body.items.find((row: { id: string }) => row.id === "service_audit");
+    expect(audit.payment_capabilities.some((row: { protocol: string }) => row.protocol === "ucp")).toBe(false);
+    expect(narrowed.body.items.find((row: { id: string }) => row.id === "hello").payment_capabilities.some((row: { protocol: string }) => row.protocol === "ucp")).toBe(true);
+  });
+
   it("agents.md stops saying 'not UCP' the moment it is UCP", async () => {
     const open = await (await SELF.fetch(`${BASE}/agents.md`)).text();
     expect(open).not.toContain("not UCP");
