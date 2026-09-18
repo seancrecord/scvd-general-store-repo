@@ -64,6 +64,13 @@
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",
+    // UCP checkout: OFF until the launch is qualified against
+    // production one rail and one item at a time (lib/ucp/launch.ts).
+    // "true" opens the door AND advertises the checkout capability in
+    // /.well-known/ucp; UCP_CHECKOUT_RAILS / UCP_CHECKOUT_ITEMS narrow
+    // it (comma-separated; unset = all). A var here survives deploys;
+    // one added in the dashboard does not.
+    "UCP_CHECKOUT_ENABLED": "false",
     "STORE_BASE_URL": "https://scvd.store",
     "BASE_RPC_URL": "https://mainnet.base.org",
     "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"

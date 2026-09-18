@@ -281,6 +281,15 @@ export function quotedUsdcHandler(
     checkout_version: number;
     expires_at: string;
     terms_digest: string;
+    /**
+     * THE EXACT x402 REQUIREMENTS TO SIGN AGAINST (2026-09-18), as the
+     * checkout froze them at Create: scheme, network, asset, amount,
+     * payTo, maxTimeoutSeconds and the EIP-712 domain in `extra`. A
+     * buyer holding any x402 client signs this object as it would a
+     * 402's accepts[] entry, and Complete verifies against the same
+     * frozen copy — never against what the shelf says later.
+     */
+    x402_requirements?: Record<string, unknown>;
   },
 ): Record<string, UsdcHandlerInstance[]> {
   const rail = usdcPaymentHandlers(env, base).find(
@@ -298,6 +307,7 @@ export function quotedUsdcHandler(
           checkout_version: quote.checkout_version,
           expires_at: quote.expires_at,
           terms_digest: quote.terms_digest,
+          ...(quote.x402_requirements ? { x402_requirements: quote.x402_requirements } : {}),
         },
       },
     ],

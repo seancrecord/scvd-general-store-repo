@@ -21,6 +21,16 @@
 > merchant application, Stripe account"; a read-only catalog over the
 > shelf that already exists turned out to cost none of those. Carts,
 > the merchant application and the Stripe account remain refused.
+>
+> **The merchant half, 2026-09-18.** Checkout and order are now built
+> over the store's own x402 settlement (one settling module, the same
+> facilitator, the same replay guard) and sit behind one deploy-owned
+> switch, `UCP_CHECKOUT_ENABLED`, that the profile and the Complete door
+> both read: the checkout capability is advertised exactly when Complete
+> settles. It ships off; the launch is qualified against production one
+> rail and one item at a time (`scripts/ucp-live.mjs`). Carts remain
+> refused — one line per checkout — and there is still no merchant
+> application and no Stripe account.
 
 **A read of the whole agentic-payment surface on 2026-08-30, sized against
 this store's own intake rule, product by product.**

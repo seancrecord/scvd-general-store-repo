@@ -73,7 +73,7 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
-[Find SCVD by protocol: x402, MPP, MCP, WebMCP, ERC-8004, A2A, OASF, skills and planned UCP](#on-other-peoples-records).
+[Find SCVD by protocol: x402, MPP, MCP, WebMCP, ERC-8004, A2A, OASF, skills and UCP](#on-other-peoples-records).
 
 ## The doors, by task
 
@@ -779,7 +779,7 @@ behavior remain separate observations.
 | **ERC-8004** | [Canonical registration and domain acknowledgment](https://scvd.store/.well-known/agent-registration.json) | [Identity records](https://scvd.store/trust#protocol-erc8004): 8004scan, Agentscan, 8004agents and trust8004; QuickNode and BaseScan identity viewers are identified separately. |
 | **A2A** | [Agent card](https://scvd.store/.well-known/agent-card.json) | [A2A records](https://scvd.store/trust#protocol-a2a), including agent-tools.cloud, Agenstry and the [Global A2A Registry listing](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent) (unclaimed). The card declares current capabilities and version. |
 | **OASF** | [Canonical record](https://scvd.store/agents/general-store) · [domain key](https://scvd.store/.well-known/jwks.json) | [OASF scope](https://scvd.store/trust#protocol-oasf). Public record available; Cisco/Anro publication and remote signature/scan status remain unverified. |
-| **UCP — planned** | [Development roadmap](ROADMAP.md) | [UCP scope](https://scvd.store/trust#protocol-ucp): a bounded inspection experiment is planned. No current checkout or conformance claim. |
+| **UCP** | [Business profile](https://scvd.store/.well-known/ucp) · [catalog, checkout and order](https://scvd.store/ucp) | [UCP scope](https://scvd.store/trust#protocol-ucp): profile and catalog at the pinned 2026-08-25 release, validated against the vendored schemas (`npm run ucp:conformance`). Checkout and order are built and advertised exactly when the deployment's switch is on; the profile's status block says which items and rails. No third-party conformance claim. |
 | **Skills and plugins** | [Skills index](https://scvd.store/.well-known/agent-skills/index.json) · [Agent Plugins package](plugin.json) | [Skill/plugin records](https://scvd.store/trust#protocol-skills). The same skills and MCP assets underpin host-specific packages. Gallery admission is tracked separately. |
 
 

@@ -1534,6 +1534,32 @@ export function getPaymentStack(env: Env): PaymentStack {
 }
 
 /**
+ * THE FACILITATOR'S VERIFY LANE, AS A CALLBACK (2026-09-18).
+ *
+ * A verified-payment adapter — the MPP seam, the UCP checkout — takes
+ * its verifier as an injected function so that validation can be
+ * tested without a chain and so that nothing outside lib/payments
+ * ever holds the facilitator client itself. This is where the
+ * production callback comes from: the same warm client, the same
+ * short verify deadline, the same stack the HTTP gate uses, and
+ * nothing more. It cannot settle. A caller that needs to move money
+ * goes through processSettlementWithRetry, once, from the one module
+ * allowed to (test/ucp/checkout-product-classes.spec.ts holds that).
+ */
+export function facilitatorVerifier(
+  env: Env,
+): (
+  payload: Parameters<HTTPFacilitatorClient["verify"]>[0],
+  requirements: Parameters<HTTPFacilitatorClient["verify"]>[1],
+) => Promise<Awaited<ReturnType<HTTPFacilitatorClient["verify"]>>> {
+  return async (payload, requirements) => {
+    const stack = getPaymentStack(env);
+    await stack.initialized;
+    return stack.facilitator.verify(payload, requirements);
+  };
+}
+
+/**
  * ONE SETTLE RETRY ON A FACILITATOR 5xx — because on 2026-08-07 a real
  * buyer's first three purchases all died on the settle endpoint's own
  * 502s inside one minute, with the signature already verified. That is

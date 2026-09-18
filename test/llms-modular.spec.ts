@@ -1041,8 +1041,15 @@ const BASE = "https://scvd.store";
 // or MCP, four sub-cent items missing and named at /ucp. Verified
 // across the merge: with only that paragraph removed from the merged
 // tree, main's eb0b92aa reproduced, and this copy reproduces the new one.
+// 2026-09-18: the UCP paragraph now says what the profile says. The
+// suite runs with UCP checkout OPEN (vitest.config.ts), so the served
+// guide names the checkout door, the order door and the identical-
+// Complete guarantee; closed, it says checkout is switched off on this
+// deployment (lib/ucp/launch.ts writes both texts). Verified the same
+// way: with only that paragraph restored to its catalog-only wording,
+// the prior 7667179f reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7667179f4b93089cd5e6af2eb30521f52b29385e33385d456501423c94ffbe9c";
+  "131a99320f201e3548bff8ebcbbe52a0c7492a7022b22322cb77f239819e3331";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1081,8 +1088,11 @@ describe("nothing was rewritten", () => {
     // is main's pre-addition text plus the UCP business-profile
     // paragraph. With that paragraph removed as well, main's d9fc6754
     // reproduced; this copy is the merged guide minus the addition.
+    // Later the same day the paragraph changed with the launch (see
+    // GUIDE_DIGEST_BEFORE_THE_SPLIT): with the catalog-only wording
+    // restored, b2d9ec8a reproduced, and this copy reproduces the new one.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "b2d9ec8aaee4bf396c96c3b06ce30647c4ce40209b78012eb805156d272f5903",
+      "5cf8a83f109222be3a3dd9c96c921adf0aebb20a13262b4662b3e92485eb11d5",
     );
   });
 
