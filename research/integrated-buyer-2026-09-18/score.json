@@ -1,0 +1,382 @@
+{
+  "schema_version": 2,
+  "discovery": {
+    "attempts": 0,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 0
+  },
+  "directed": {
+    "attempts": 4,
+    "pass": 1,
+    "fail": 1,
+    "incomplete": 2
+  },
+  "distinct_hosts_completed": 1,
+  "limitation": "Controlled cold usability evidence only; no organic adoption, paid completion or universal readiness claim.",
+  "capability": {
+    "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+    "source_sha256": "f5e9debea1f337559e367c3d89d673590573d43e519e111e776587b09f7876ba",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      }
+    }
+  },
+  "scorer_sha256": "08e7ac21684c033380adbb89fdff1972c3168f5db2a77466931fdc2532bd6a84",
+  "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+  "runs": [
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached SCVD public evidence surfaces in the actual trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d4e592977930ea369818745da266ffab7a72ea8535ecd2b923a606a9f9652017"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Located the requested subject in dated historical SCVD data within the frozen review window; current unpaid challenge is distinct from that history.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d4e592977930ea369818745da266ffab7a72ea8535ecd2b923a606a9f9652017"
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "Final report separates current unpaid shape, historical signed observation and issuer-controlled key provenance from merchant truth, settlement or paid delivery.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d4e592977930ea369818745da266ffab7a72ea8535ecd2b923a606a9f9652017"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Original signed snapshot and separately fetched issuer key retained completely within the frozen capture budget.",
+          "evidence": [
+            {
+              "file": "evidence/05-corpus-6.json",
+              "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+            },
+            {
+              "file": "evidence/06-signing-key.txt",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "d4e592977930ea369818745da266ffab7a72ea8535ecd2b923a606a9f9652017"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "Recipient understanding has not been reviewed.",
+          "evidence": [
+            {
+              "file": "evidence/05-corpus-6.json",
+              "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+            },
+            {
+              "file": "evidence/06-signing-key.txt",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "d4e592977930ea369818745da266ffab7a72ea8535ecd2b923a606a9f9652017"
+            }
+          ],
+          "signature": true
+        }
+      },
+      "usable": "incomplete",
+      "verification": {
+        "state": "incomplete",
+        "signature": true,
+        "reason": "Recipient understanding has not been reviewed."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached SCVD public evidence surfaces in the actual trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c71966edec8b2f062726ac047b17beabbc0159ab4859c5934106516cb1939fa8"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Located the requested subject in dated historical SCVD data within the frozen review window; current unpaid challenge is distinct from that history.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c71966edec8b2f062726ac047b17beabbc0159ab4859c5934106516cb1939fa8"
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "Final report alleges an internal contradiction by comparing address-derived pay_to.digests with snapshot-reference observed.digest and unchanged_since.digest. Recalculation matches the address set and the timeline snapshot references; these are different digest roles. Existing Each digest guidance is ambiguous, which is a concrete product wording gap.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c71966edec8b2f062726ac047b17beabbc0159ab4859c5934106516cb1939fa8"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "Retained unsigned history and merchant challenge; did not follow the cited snapshot URL or obtain a signed original and issuer key.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c71966edec8b2f062726ac047b17beabbc0159ab4859c5934106516cb1939fa8"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "Computed an address hash, but did not verify an SCVD signature. No recipient is eligible.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c71966edec8b2f062726ac047b17beabbc0159ab4859c5934106516cb1939fa8"
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached SCVD public evidence surfaces in the actual trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "42221569155d588c757b4cdf338e1b42534bcac37555d6e54018de37a583d759"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Located the requested subject in dated historical SCVD data within the frozen review window; current unpaid challenge is distinct from that history.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "42221569155d588c757b4cdf338e1b42534bcac37555d6e54018de37a583d759"
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "Final report separates current unpaid shape, historical signed observation and issuer-controlled key provenance from merchant truth, settlement or paid delivery.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "42221569155d588c757b4cdf338e1b42534bcac37555d6e54018de37a583d759"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Original signed snapshot and separately fetched issuer key retained completely within the frozen capture budget.",
+          "evidence": [
+            {
+              "file": "evidence/corpus-6.json",
+              "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "42221569155d588c757b4cdf338e1b42534bcac37555d6e54018de37a583d759"
+            }
+          ]
+        },
+        "verify": {
+          "state": "pass",
+          "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim.",
+          "evidence": [
+            {
+              "file": "evidence/corpus-6.json",
+              "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "42221569155d588c757b4cdf338e1b42534bcac37555d6e54018de37a583d759"
+            }
+          ],
+          "signature": true,
+          "issuer_binding": true,
+          "subject_matches": true,
+          "expiry": "not_declared",
+          "observation_age_ms": 943143095,
+          "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+        }
+      },
+      "usable": "pass",
+      "verification": {
+        "state": "pass",
+        "signature": true,
+        "issuer_binding": true,
+        "subject_matches": true,
+        "expiry": "not_declared",
+        "observation_age_ms": 943143095,
+        "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+        "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached SCVD public evidence surfaces in the actual trace.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "9c809520cebec1f88cd81a8fc7fbc7724f39b555a88f6bd64c6287293708aef0"
+            }
+          ]
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "Live SCVD preflight returned ready/L3a and merchant returned an unsigned challenge, but the run ended without a completed interpretation or a retained dated historical observation.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "9c809520cebec1f88cd81a8fc7fbc7724f39b555a88f6bd64c6287293708aef0"
+            }
+          ]
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No final decision/report before the wall-time stop. The early overgeneralization of a denied compound invocation was explicitly corrected after standalone curl succeeded.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "9c809520cebec1f88cd81a8fc7fbc7724f39b555a88f6bd64c6287293708aef0"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "Only unsigned preflight/challenge files retained; no signed snapshot/key pair.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "9c809520cebec1f88cd81a8fc7fbc7724f39b555a88f6bd64c6287293708aef0"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No signed evidence obtained or verified; no recipient is eligible.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "9c809520cebec1f88cd81a8fc7fbc7724f39b555a88f6bd64c6287293708aef0"
+            }
+          ]
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Runtime did not complete; retained stage findings are partial.",
+        "Run reached wall_ms cap; full completion unproven."
+      ],
+      "catalogue_absence": "unverified"
+    }
+  ]
+}

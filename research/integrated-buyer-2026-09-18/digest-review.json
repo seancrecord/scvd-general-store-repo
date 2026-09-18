@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-09-18T00:45:17.526718+00:00",
+  "corpus_response_sha256": "41a527a348868da60c26ac161b2058d07fbfc4b63caa460a4d7fe519ad6f6750",
+  "challenge_sha256": "e541f4ecf0699c796d6486546f4c89434ec57093756c01c06f07b567d4f10c5e",
+  "computed_payment_address_digest": "78fcd0520cf601a78100dd1307c9016c621246c62f9f0bfb1fa069566038d85e",
+  "matches_payment_address_set": true,
+  "snapshot_references": {
+    "observed": {
+      "sequence": 6,
+      "digest": "779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c",
+      "matches_timeline_snapshot": true
+    },
+    "unchanged_since": {
+      "sequence": 4,
+      "digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+      "matches_timeline_snapshot": true
+    }
+  },
+  "source_reference": "src/services/subject-history.ts: payToHistory(), ref() uses record.digest; digests contains the address-derived set.",
+  "source_sha256": "ca2255b30169288d451ed71d1e1747fbd491eb75d8a600f985b6a5e8609a898a",
+  "finding": "The claimed contradiction compares different digest roles. The current help starts with Each digest and does not explicitly scope the address formula to digests and change sets. This wording is ambiguous. No captured or signed record was changed.",
+  "next": "Clarify payment-address digest fields versus snapshot-reference digest fields in the existing response guidance; preserve field values and historical artifacts."
+}
