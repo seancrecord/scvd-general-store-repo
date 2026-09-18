@@ -7,11 +7,12 @@
   "skill_install": "passed; source byte comparison passed",
   "mcp_install": "passed; isolated config; no warnings",
   "mcp_free_call": "MCP SDK 1.30.0 using saved Cline configuration; example.com returned not_ready / L1",
-  "model_execution": "not tested",
+  "model_execution": "passed September 18 after Cline sign-in; native TTY loaded verification skill and completed one free preflight (not_ready / L1)",
   "submissions": {
     "skill": "https://github.com/cline/marketplace/pull/122",
     "mcp": "https://github.com/cline/marketplace/pull/123"
   },
   "listing_status": "submitted, maintainer review pending",
-  "initial_limitation": "System Node 22.13.1 produced a skills@1.7.0 engine warning; supported Node rerun passed."
+  "initial_limitation": "System Node 22.13.1 produced a skills@1.7.0 engine warning; supported Node rerun passed.",
+  "native_execution_receipt": "cline-native-execution.json"
 }

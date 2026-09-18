@@ -1,0 +1,65 @@
+{
+  "observed_on": "2026-09-18",
+  "host": "OpenCode CLI 1.18.31",
+  "provider": "OpenAI through user-authorized ChatGPT OAuth",
+  "model": "openai/gpt-5.5",
+  "method": "isolated project and XDG paths; --pure; permissions allow only named skills and preflight",
+  "calls": [
+    {
+      "tool": "skill",
+      "input": {
+        "name": "scvd-x402-verification"
+      },
+      "status": "completed"
+    },
+    {
+      "tool": "scvd-general-store_preflight_endpoint",
+      "input": {
+        "url": "https://example.com",
+        "model": "openai/gpt-5.5",
+        "client": "opencode"
+      },
+      "status": "completed"
+    }
+  ],
+  "result": {
+    "version": "v1",
+    "verdict": "not_ready",
+    "reached_level": "L1",
+    "checks_vector": [
+      {
+        "name": "status-402",
+        "state": "fail",
+        "detail": "answered 200 instead of 402 to GET. A 200 here is the 'listed but functionally absent' shape: directories will list this URL as an x402 endpoint and every buyer probing it finds no payment challenge at all."
+      },
+      {
+        "name": "payment-required-header",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "x402-version",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "accepts",
+        "state": "not_reached",
+        "blocked_by": "status-402",
+        "detail": "never ran: the status-402 check stopped the battery before this one. No observation about the door exists for this row."
+      }
+    ]
+  },
+  "earlier_attempts": [
+    "OpenCode free model: provider 403 before execution.",
+    "OpenCode-listed gpt-5.4-mini: provider 400, unsupported for this ChatGPT route.",
+    "Device-code login did not complete; direct browser OAuth succeeded."
+  ],
+  "limitations": [
+    "One free preflight; no payment, delivery or Tab operation tested.",
+    "Native compatibility is separate from marketplace admission."
+  ],
+  "credentials": "Excluded; raw provider error headers and authentication material not published."
+}
