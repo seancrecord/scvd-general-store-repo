@@ -4,8 +4,7 @@ import { metricsMonth, verifyAgeBucket } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { buyInputExample, buyInputSchema } from "@/lib/bazaar-discovery";
 import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, isInfrastructureUserAgent } from "@/lib/channel";
-import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS } from "@/lib/crawlers";
-import { wantsHtml } from "@/pages/simple-page";
+import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, isKnownCrawler, isSocialUnfurler } from "@/lib/crawlers";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { Context } from "hono";
 import type { Env, HonoEnv, MenuItem } from "@/types";
@@ -284,14 +283,23 @@ export async function recordReceiptRead(env: Env, read: ReceiptRead): Promise<vo
 }
 
 /**
- * Browser is whoever negotiated HTML (or an unfurler, which gets HTML
- * regardless); crawler is the two shared tables; everything else is
- * an agent. One classifier, so the receipt page and the subject
- * pages cannot come to disagree about who a reader was.
+ * Crawler is the shared tables (named AI and search crawlers, the
+ * infrastructure hints, and the link unfurlers, which are bots even
+ * though the page negotiation hands them HTML); browser is whoever
+ * asked for HTML; everything else is an agent. One classifier, so
+ * the receipt page and the subject pages cannot come to disagree
+ * about who a reader was.
+ *
+ * Deliberately built from lib/ alone and not from the page
+ * negotiator: this service is imported by the corpus and passport
+ * routes, which the doors worker also bundles, and a page import
+ * here dragged the storefront and the WebMCP bridge into that bundle
+ * (2026-09-18, caught by build:check).
  */
 export function readerClass(userAgent: string | undefined, accept: string | undefined): ReaderClass {
   if (isInfrastructureUserAgent(userAgent) || crawlerName(userAgent) !== undefined) return "crawler";
-  return wantsHtml(accept, userAgent) ? "browser" : "agent";
+  if (isKnownCrawler(userAgent) || isSocialUnfurler(userAgent)) return "crawler";
+  return (accept ?? "").includes("text/html") ? "browser" : "agent";
 }
 
 /** The crawler's own name, from the tables robots.txt and the classifier already share. */
