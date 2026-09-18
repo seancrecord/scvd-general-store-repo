@@ -1156,6 +1156,8 @@ what you ruled and what is still yours to look at.
   for a fee, sign-in or wallet. The checker’s Base-network
   mislabel is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209)
   and is theirs to fix; cite it beside any `tempo:8453` in the listing.
+  PRESS (optional, goodwill): file the [mppx upstream note](registry/upstream-mppx-x402-resource-url.md)
+  on `wevm/mppx` after checking their tracker for a duplicate; nothing here depends on it.
   The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
   MPP descriptor alongside x402; the compiled local directory-reader check passes.
   Deployment readback is tracked with that repair; external parser qualification
