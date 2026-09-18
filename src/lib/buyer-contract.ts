@@ -8,6 +8,7 @@ import { CAPABILITY_QUERY } from "@/store/spec";
 import { artifactClassForItem } from "@/store/attestation-spec";
 import { MENU_ITEMS } from "@/store";
 import type { MenuItem } from "@/types";
+import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
 
 /** Fixed views of the existing shelf; no session, cursor storage, or second catalog. */
 export const COMPACT_CATALOG_PAGE_SIZE = 8;
@@ -83,6 +84,26 @@ export function compactItemRow(item: MenuItem, base: string, config?: PurchaseCa
   };
 }
 
+/**
+ * The item's inputs WITHOUT the six disclosure fields (lib/disclosure).
+ * The compact contract lives under a 16,000-byte budget and the
+ * biggest item, under the all-rails config, had 60 bytes to spare —
+ * not enough for even the field names. So the typed block, with what
+ * each field changes and never touches, rides the 402 body, the MCP
+ * shelf and openapi.json's DisclosureBlock, which is where a buyer
+ * fills it; a reader of this view learns of it at the quote.
+ */
+function compactInputSchema(item: MenuItem): Record<string, unknown> {
+  const schema = buyInputSchema(item);
+  return {
+    type: "object",
+    ...schema,
+    properties: Object.fromEntries(
+      Object.entries(schema.properties).filter(([name]) => !(DISCLOSURE_FIELDS as readonly string[]).includes(name)),
+    ),
+  };
+}
+
 export function compactItemContract(item: MenuItem, base: string, config?: PurchaseCapabilityConfig) {
   const artifact = artifactClassForItem(item.id);
   return {
@@ -93,7 +114,7 @@ export function compactItemContract(item: MenuItem, base: string, config?: Purch
     reads: item.reads,
     ...(item.constraints ? { constraints: item.constraints } : {}),
     ...(item.sample_url ? { sample_url: item.sample_url, sample_kind: item.sample_kind ?? "unsigned_specimen" } : {}),
-    input_schema: { type: "object", ...buyInputSchema(item) },
+    input_schema: compactInputSchema(item),
     availability: "Checkout checks stock, keeper availability and subject prerequisites before charging.",
     ...(artifact ? { signs: artifact.signs, does_not_prove: artifact.does_not_prove } : {}),
     checkout: checkoutContract(base),

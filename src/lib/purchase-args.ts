@@ -21,6 +21,7 @@ import { decodeSettlementResponseClaim } from "@/services/attestation-claims";
 import { ANCHOR_CHECKLIST } from "@/store/copy/anchor-writing";
 import type { fulfillPurchase } from "@/services/fulfillment";
 import type { Env, MenuItem } from "@/types";
+import { disclosedAnything, readDisclosure } from "@/lib/disclosure";
 
 /** The counter takes a win of up to this many characters. */
 export const COFFEE_WIN_CAP = 200;
@@ -869,6 +870,15 @@ export function purchaseInputFrom(
 ): FulfillmentInput {
   const read = (name: string) => args.get(name);
   const input: FulfillmentInput = {};
+
+  /**
+   * THE DISCLOSURE BLOCK, read the same way on both doors and never
+   * able to refuse: a malformed value narrows to "declared nothing".
+   * Carried on the input so fulfillment can count it and, for a
+   * prior certificate, check the payer once the payment has settled.
+   */
+  const disclosure = readDisclosure(read);
+  if (disclosedAnything(disclosure)) input.disclosure = disclosure;
 
   const agentName = read("agent_name") ?? "";
   if (agentName && item.id !== "the_confession") {

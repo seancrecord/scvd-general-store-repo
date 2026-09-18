@@ -36,6 +36,8 @@ import {
 } from "@/store/copy/position";
 import { mcpToolCatalog, purchaseTool, specShapedTool, type McpTool } from "@/lib/mcp-tools";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { readDisclosure } from "@/lib/disclosure";
+import { recordDisclosure } from "@/services/disclosure-census";
 import type { EventSignals } from "@/lib/metrics";
 import {
   recordChallengeIssued,
@@ -101,6 +103,9 @@ import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { storeGuideText } from "@/routes/llms";
 import { isRecord, type HonoEnv, type MenuItem } from "@/types";
+
+/** The free tools that carry the disclosure block in their schema (lib/mcp-tools). */
+const FREE_DISCLOSURE_TOOLS: ReadonlySet<string> = new Set(["preflight_endpoint", "look_at_door", "check_before_you_pay"]);
 
 /**
  * The MCP door: the store as a Model Context Protocol server.
@@ -541,6 +546,20 @@ export async function callFreeTool(
   name: string,
   args: Record<string, unknown>,
 ): Promise<Record<string, unknown> | string> {
+  /*
+   * THE DISCLOSURE CENSUS ON THE FREE DOORS (lib/disclosure). The
+   * three instruments a buyer calls before paying carry the same
+   * optional block every paid shelf does; every call is counted as
+   * offered, filled or not, beside the answer and never in front of
+   * it. Six of six cold walkers called a free tool and none bought,
+   * so this is where most of the census will come from.
+   */
+  if (FREE_DISCLOSURE_TOOLS.has(name)) {
+    deferBookkeeping(
+      c,
+      recordDisclosure(c.env, "free", readDisclosure((field) => args[field])),
+    );
+  }
   if (name === "read_store_guide") {
     return { guide: storeGuideText(c.env.STORE_BASE_URL, c.env) };
   }

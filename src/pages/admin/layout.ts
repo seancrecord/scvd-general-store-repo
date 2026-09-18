@@ -61,6 +61,13 @@ export type AdminTab =
    * that never needed a pitch.
    */
   | "buyers"
+  /**
+   * THE DISCLOSURE CENSUS (2026-09-18): who tells us what at the
+   * door, and who tells us nothing, with the offered count beside
+   * every rate. The customer-base reading the books said was
+   * unanswerable, answered only for the buyers who chose to answer.
+   */
+  | "disclosure"
   | "instruments"
   /**
    * GROWTH (2026-09-11): every month since opening side by side — the
@@ -149,6 +156,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   // books check, which is not reachable, it is remembered.
   { tab: "census", href: "/admin/census", label: "The census" },
   { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
+  { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
   { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
   { tab: "growth", href: "/admin/growth", label: "Growth" },
   { tab: "peers", href: "/admin/peers", label: "The peers" },

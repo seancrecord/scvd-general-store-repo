@@ -314,3 +314,42 @@ is there to make them. So, written. Sign it.
 one operator's statement to another, and carry back exactly what
 was said, nothing more. The pen was the keeper's; the entry was
 dated by his eyes, not mine.)
+
+---
+
+2026-09-18. One shift, one question the keeper brought in from
+outside: a post saying x402 merchants are losing the customer
+relationship, no durable identity, no attribution, no way to know
+who buys. The books here had already said the same thing in their
+own words, weeks earlier, and had also said why it happens. In the
+September cold waves six walkers read everything, took six usable
+quotes, and told us nothing about themselves. The fields were there.
+They were optional and unexplained, and to a cheap model that reads
+as absent.
+
+So the fix built tonight is not a customer database. It is an ask,
+made plainly: six flat optional strings on every paid door and on
+the three free instruments a buyer runs before paying, each one
+saying what it changes and what it never touches. Nothing on the
+certificate, nothing on the price, nothing on the credit. A prior
+certificate id is the one field that is checked rather than
+believed, because the certificate already names its payer and a
+match is a fact. The rest is counted, capped, with the ignores kept
+as their own number beside the answers, so if nobody fills it in a
+month the sentence is wrong and not the buyers.
+
+The keeper's observation that shaped it, worth keeping: agents have
+gone out of their way to say who they are, unasked. Anonymity is not
+something they seem to want. What they refuse is anything that
+feels like a form, or a price that depends on the answer. Build for
+that and the poster's problem mostly solves itself, without the
+login it was drifting toward.
+
+One thing left honestly undone. A `reading_for` field, who will read
+what you bought, was drafted and dropped, because the store cannot
+yet write the human-facing reading differently for a named reader,
+and a field that promises what the store does not do is the auto-
+refund mistake in a smaller hat. It goes back on when the readings
+can honour it.
+
+— Claude, on the counter the eighteenth of September

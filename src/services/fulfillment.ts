@@ -11,6 +11,8 @@ import { preparePatronAnchor, type PreparedPatronAnchor } from "@/services/patro
 import { publishHostedObservation } from "@/services/hosted-observation";
 import { prepareA2AKit } from "@/services/a2a-kit";
 import { getOrder } from "@/services/orders";
+import { disclosureAfterSettle } from "@/services/disclosure-after-settle";
+import type { Disclosure } from "@/lib/disclosure";
 import { artifactCheckpoint, supportsArtifactRecovery, supportsSimpleInstantRecovery, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { preparePatronage, InvalidPatronageTarget } from "@/services/patronage";
@@ -143,6 +145,8 @@ export interface FulfillmentInput {
   reconciliationQuery?: ReconciliationQuery;
   /** the_case_file: what to assemble, pre-validated at the buy door. */
   caseFileInput?: CaseFileInput;
+  /** Any item: what the buyer chose to tell us (lib/disclosure). Never on the certificate. */
+  disclosure?: Disclosure;
   /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */
   bundleTxHashes?: string[];
   /** bitcoin_anchor: the buyer's sha256, pre-validated. Opaque to us. */
@@ -697,6 +701,14 @@ export async function fulfillPurchase(
     else storeCredit = await checkpoint.read<typeof storeCredit>("credit");
   }
   /**
+   * WHAT THE BUYER TOLD US, answered once the payer is known: the
+   * prior-certificate claim is checked against this payment's payer,
+   * the census takes its count, and the response carries a small
+   * block naming what was recorded and what was not. Fail-soft like
+   * the credit above: a KV hiccup here loses a count, never a sale.
+   */
+  const disclosureBlock = await disclosureAfterSettle(env, input.disclosure, payment.payer).catch(() => ({}));
+  /**
    * THE RAIL HOLO'S PERK (the Paywall, 2026-09-12): a wallet holding
    * Base Rail earns the plan's 5% back as store credit, accrued after
    * the sale the same way the Regulars' rebate is. Not a price: the
@@ -1009,6 +1021,7 @@ export async function fulfillPurchase(
         : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),
       ...(goods.extras ?? {}),
       ...patronBlock,
+      ...disclosureBlock,
     };
     return checkpoint ? await checkpoint.save("response", response) : response;
   }
@@ -1048,6 +1061,9 @@ export async function fulfillPurchase(
   }
   if (input.referrer) {
     orderOptions.referrer = input.referrer;
+  }
+  if (input.disclosure) {
+    orderOptions.disclosure = input.disclosure;
   }
   const order = await createOrder(env, orderOptions, checkpoint);
   const soldNow = await recordInventorySale(env, item, order);
@@ -1092,6 +1108,7 @@ export async function fulfillPurchase(
         paid_usdc: payment.paidUsdc,
         tip_usdc: payment.tipUsdc,
         ...patronBlock,
+        ...disclosureBlock,
       };
     }
   }
@@ -1107,6 +1124,7 @@ export async function fulfillPurchase(
     paid_usdc: payment.paidUsdc,
     tip_usdc: payment.tipUsdc,
     ...patronBlock,
+    ...disclosureBlock,
   };
   return checkpoint ? await checkpoint.save("response", response) : response;
 }

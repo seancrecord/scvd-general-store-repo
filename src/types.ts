@@ -1,4 +1,5 @@
 import type { CommissionPurchase } from "@/services/commission-purchase";
+import type { Disclosure } from "@/lib/disclosure";
 /**
  * Shared types for Sean-Claude Van Damme's General Store.
  * Every KV record shape and the Worker environment live here.
@@ -536,6 +537,14 @@ export interface OrderRecord {
   /** Request metadata captured at purchase, for the monthly ledger review. */
   user_agent?: string;
   referrer?: string;
+  /**
+   * What the buyer chose to tell us at the door (lib/disclosure):
+   * model, client, operator, operator kind, where they found us, a
+   * prior certificate. Untrusted, for the keeper's counter only,
+   * never on the certificate and never served by the public order
+   * status.
+   */
+  disclosure?: Disclosure;
 }
 
 export interface Certificate {
