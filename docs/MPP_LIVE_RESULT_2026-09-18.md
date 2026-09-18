@@ -1,8 +1,8 @@
 # Native MPP live results — 2026-09-18
 
-Status: the first native purchase from an outside wallet with the stock
-client passed on the HTTP door, after the resource-URL fix the same client
-had surfaced. The MCP door's live result is recorded below when it lands.
+Status: both native lanes an outside wallet can reach are qualified with
+real purchases from the stock clients: the HTTP door after the resource-URL
+fix the same client had surfaced, and the MCP door the same evening.
 
 ## HTTP: Context Anchor, stock client, outside wallet
 
@@ -28,9 +28,23 @@ had surfaced. The MCP door's live result is recorded below when it lands.
 This house-funded purchase is not organic demand. The raw credential and
 status bearer stay with the buyer and are excluded here.
 
-## MCP: pending
+## MCP: Small Blessing, stock MCP client, outside wallet
 
-CV's live buy through the MCP door with the stock MCP client wrapped by the
-MPP client is in progress; its purchase id, transaction and the keeper's
-inspection reading go here when reported. Until then the MCP lane is
-qualified by fixtures and the shared lifecycle only.
+- Buyer: CV, stock `@modelcontextprotocol/sdk` Client wrapped in place by
+  `McpClient.wrap()` from `mppx@0.10.1`, the same house wallet as above.
+- Door: `https://scvd.store/mcp?payment=tool-result`, tool
+  `buy_small_pleasure`, `item_id: "small_blessing"`, the cheapest door on
+  the shelf at $0.005.
+- Purchase: 19012a2887763eb887336a528ab7fbaed6a1a4783c91efd0e8b2fbab4859644a
+- Transaction: 0x7802dfa677efdca9bcd2cb936052e78abc9044bfc5be839cb0767ebc6b69ccb0
+- Certificate: cert_tzuqqvwep6, patron 421; the card pull returned a
+  common "Blessing from the Jar", 20 of 63, print 19.
+- The receipt's own record names `original_door: "mcp"`: the store settled
+  this through the MCP lane, not the HTTP door.
+- No client workaround was needed; the #804 resource fix held on this lane.
+- Keeper's authenticated inspection: not yet pasted here. Expected reading
+  on `/admin/purchases/{purchase id}`: protocol mpp, door mcp, house yes,
+  accounting confirmed, individual ledger matched, item small_blessing.
+
+Both purchases are house-funded and are not organic demand. Raw credentials
+and status bearers stay with the buyer and are excluded here.
