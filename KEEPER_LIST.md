@@ -1097,6 +1097,10 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **WAIT — OpenCode ecosystem submissions (September 18).** Native skill load and free preflight passed via keeper-authorized ChatGPT OAuth. [Official PR #49834](https://github.com/anomalyco/opencode/pull/49834), linked to the required [issue #49833](https://github.com/anomalyco/opencode/issues/49833), and [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) are submitted. Community schema validation passed; neither listing is accepted yet. [Native receipt](research/distribution-2026-09-18/opencode-native-execution.json).
+
+- **RULE / WAIT — September 18 continuation.** Current OASF validation passes. [Maintainer confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) the shared testbed is read-only: publishing requires our own federated node. [Prepared scope and planning costs](registry/agntcy/FEDERATION.md); hosting/budget and ongoing operation need a keeper decision. Anro publisher lookup remains empty; indexing email awaits send authorization. Gemini Google authorization reached a retired consumer-tier gate; keeper requested skipping Gemini September 18. Cline sign-in and native execution completed: verification skill loaded and a free preflight returned not_ready / L1. [Evidence and next steps](research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
+
 - **LOOK / PRESS — distribution follow-through (2026-09-17).**
   [Live findings and prepared submissions](research/distribution-2026-09-17/README.md):
   five ERC-8004 directories show SCVD; 8004scan transport health and trust8004
@@ -1148,6 +1152,13 @@ what you ruled and what is still yours to look at.
   and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
   deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
   [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  Keeper-requested follow-ups posted September 18:
+  [directory expansion update](https://github.com/tempoxyz/mpp/pull/991#issuecomment-5734203544)
+  and [fresh parser reproduction / exact-query URL](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5734203762).
+  The update labels the outside-wallet purchase as house-funded. The same
+  directory comment was refreshed at 19:58 UTC after #813 merged and the live
+  WebMCP bridge matched its source. No duplicate submission or expanded
+  listing was made; external review remains pending.
   MPPScan discovery qualification DONE September 18 against the live shelf
   ([receipt](research/distribution-2026-09-18/mppscan-live-check.json)).
   PRESS: register at [www.mppscan.com/register](https://www.mppscan.com/register),
@@ -1177,7 +1188,7 @@ what you ruled and what is still yours to look at.
   updated. Both await review. Cline official catalog [skill #122](https://github.com/cline/marketplace/pull/122)
   and [MCP #123](https://github.com/cline/marketplace/pull/123) submitted September 18.
   Its CLI installed the skill and MCP configuration; a separate SDK free-call
-  check passed. Cline model execution is untested. This catalog route does not
+  check passed. Cline native model execution passed after sign-in: verification skill loaded and one free preflight completed; both catalog PR descriptions now carry the result. This catalog route does not
   require the older intake's icon. AIFI [PR #13](https://github.com/0xBebis/aifi-directory/pull/13)
   repairs issue #12's automation-permission failure; build passed, review pending.
   [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md).

@@ -132,7 +132,9 @@ separate skill and MCP entries. [Skill PR #122](https://github.com/cline/marketp
 and [MCP PR #123](https://github.com/cline/marketplace/pull/123) are submitted and
 awaiting review. Cline CLI 3.0.62 installed the skill and MCP configuration in
 isolated storage; a separate MCP SDK call using the saved configuration returned
-the expected free preflight result. No Cline model run was performed. This
+the expected free preflight result. A subsequent native Cline model run loaded
+the verification skill and completed that free preflight after sign-in and
+individual tool approvals; [receipt](../research/distribution-2026-09-18/cline-native-execution.json). Both catalog PR descriptions were updated and read back. This
 route supersedes the older mcp-marketplace issue/icon preparation for this pass.
 
 ## Existing channels to finish

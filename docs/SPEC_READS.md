@@ -22,6 +22,27 @@ scheme read as no auth mode, left as written per `PAYMENT_RAILS.md`).
 [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209), the
 checker relabelling Base as `tempo:8453`, is still open and is a display
 defect on their side, not a reason to change the challenge.
+## 2026-09-18 — Maintainer resolves OASF admission route
+
+[AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned; the later planning comparison prices an unqualified single-VM candidate separately from the AWS control-plane floor. Individual OIDC writer access is no longer a pending route.
+
+## 2026-09-18 — OpenCode directory contribution routes
+
+The official [ecosystem page](https://opencode.ai/docs/ecosystem/) invites related-project PRs, while [CONTRIBUTING](https://github.com/anomalyco/opencode/blob/dev/CONTRIBUTING.md) requires an issue first and a complete issue template. A documentation-only Projects row is submitted in [#49834](https://github.com/anomalyco/opencode/pull/49834), linked to [#49833](https://github.com/anomalyco/opencode/issues/49833). The linked [awesome-opencode contribution guide](https://github.com/awesome-opencode/awesome-opencode/blob/main/contributing.md) uses YAML project entries with public, maintained, unique repositories. All 230 entries validated after adding SCVD; [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) carries setup instructions. The initial template warning was resolved and the bot confirmed compliance; review/admission remain unverified.
+
+## 2026-09-18 — OpenCode provider route
+
+OpenCode's [provider guide](https://opencode.ai/docs/providers/) documents native ChatGPT Plus/Pro OAuth. The isolated qualification profile now allows that provider alongside its earlier free-provider attempt; direct browser sign-in succeeded after a failed device flow. Native skill load and free preflight passed with gpt-5.5; the host-listed mini model was rejected. No credential reuse from another host or separate API billing. The guide distinguishes this from Zen's API-key/billing setup.
+
+## 2026-09-18 — Gemini consumer login retirement
+
+Google's [official deprecation notice](https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals) says consumer Google-account access to Gemini CLI ended June 18, 2026; Standard and Enterprise subscriptions remain supported. A fresh manual OAuth attempt with the current npm CLI reached that rejection after the keeper authorized it. Earlier authentication documentation still recommends Google login, so it did not resolve this account-tier boundary. [Sanitized native receipt](../research/distribution-2026-09-18/gemini-auth-retirement.json). Further Gemini qualification is skipped at the keeper's request; Antigravity remains a separate, unqualified preview. Do not erase the separately observed Gemini gallery listing or claim all authentication methods are retired.
+
+## 2026-09-18 — OASF writer access and host qualification
+
+The [Directory OIDC guide](https://blogs.agntcy.org/technical/directory/2026/08/10/dirctl-context-oidc-gateway.html) documents the public `dirctl` client. Authentication refreshed successfully, but record push remained unauthorized. [Federation setup](https://dir.agntcy.org/latest/dir/dir-federation-setup/) requires an operating node and reciprocal trust; the [staging onboarding route](https://github.com/agntcy/dir-staging/blob/main/onboarding/README.md) is not evidence of individual publisher writer access. [Dated retry and follow-up](../research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
+
+OpenCode's [skills](https://opencode.ai/docs/skills/) and [MCP configuration](https://opencode.ai/docs/mcp-servers/) support the existing assets. The [setup guide](../registry/opencode/README.md) derives MCP settings and copies skills unchanged; native skill/tool execution subsequently passed, while ecosystem admission remains pending.
 
 ## 2026-09-18 — The till speaks MPP; the readings still do not
 
@@ -48,6 +69,28 @@ a payment, and the till speaking MPP says nothing about the door read.
 Defect vocabulary version 20 records the wording change; no assertion,
 falsifier or reading rule changed, and signed observations are not
 rewritten.
+
+## 2026-09-18 — Requested MPP directory and parser follow-ups
+
+Read [MPP directory PR #991](https://github.com/tempoxyz/mpp/pull/991),
+[x402scan #1209](https://github.com/Merit-Systems/x402scan/issues/1209), and
+[SCVD WebMCP PR #813](https://github.com/seancrecord/scvd-general-store-repo/pull/813).
+The first two are awaiting external review; WebMCP was still awaiting merge
+when the follow-up was posted. The branch's
+[dated purchase record](https://github.com/seancrecord/scvd-general-store-repo/blob/40d04f15/docs/MPP_LIVE_RESULT_2026-09-18.md)
+classifies the stock-client outside-wallet purchase as house-funded; it is not
+organic demand. That record was read, not independently re-purchased here.
+
+At 18:08 UTC the installed `@agentcash/discovery@1.7.5` reader again mapped a
+live unsigned `evm/charge` Base challenge to `tempo:8453` without decimals.
+Its captured x402 `resource.url` preserved the exact requested query string.
+An unpaid live MCP tools/call also returned `org.paymentauth/*` metadata with
+EVM charge terms. These are bounded readbacks, not full-shelf paid acceptance.
+[Recorded findings and posted comments](../research/takeoff-subject-evidence-2026-09-18/directory-followups.json).
+No newer parser release or external admission is claimed. At 19:57 UTC, after
+#813 merged, the deployed `/webmcp-purchase.js` returned 200, carried the native
+credential/challenge fields, and matched merged source byte for byte. The same
+directory comment was updated in place at 19:58 UTC. [Readback](../research/takeoff-subject-evidence-2026-09-18/webmcp-readback.json); no browser payment was exercised.
 
 ## 2026-09-18 — Gallery readback and registry intake boundaries
 
