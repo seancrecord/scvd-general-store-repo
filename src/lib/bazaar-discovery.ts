@@ -9,6 +9,7 @@ import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
 import { catalogRecovery } from "@/lib/catalog-recovery";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
+import { DISCLOSURE_PROPERTIES } from "@/lib/disclosure";
 
 /**
  * Bazaar discovery declarations (x402 v2 extensions.bazaar) for every
@@ -75,6 +76,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       description:
         "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions.",
     },
+    /**
+     * THE DISCLOSURE BLOCK (2026-09-18, lib/disclosure). Six flat
+     * optional strings a buyer may fill — model, client, operator,
+     * operator kind, where they found the door, a prior certificate —
+     * declared here so the 402 body, every MCP shelf, the Bazaar
+     * entry and openapi.json carry the same ask. None of it reaches
+     * the certificate or the price; the module says why.
+     */
+    ...DISCLOSURE_PROPERTIES,
   };
   const required: string[] = [];
   if (item.fulfillment === "human_queue") {

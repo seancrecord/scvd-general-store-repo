@@ -6,6 +6,7 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { normalizePayTo, payToDigest } from "@/lib/pay-to-digest";
 import { signMessage } from "@/lib/signing";
 import { listCorpus, type CorpusRecord } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import { SHARED_WALLET_CAVEAT } from "@/services/operator-facts";
 import { noteFor, type StandingNote } from "@/services/standing-note";
 import type { WardHostResult } from "@/services/ward-round";
@@ -153,9 +154,10 @@ function termsOf(door: ProvenanceDoor): string {
  * the answer back without the store in the way.
  */
 export async function deriveProvenance(
-  records: CorpusRecord[],
+  chain: CorpusRecord[],
   digest: string,
 ): Promise<{ weeks: ProvenanceWeek[]; drift: ProvenanceDrift[] }> {
+  const records = weeklyCorpus(chain);
   const weeks: ProvenanceWeek[] = [];
   for (const record of records) {
     const doors: ProvenanceDoor[] = [];

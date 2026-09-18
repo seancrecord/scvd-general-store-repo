@@ -3,6 +3,8 @@ import { isUrlTemplatePlaceholder } from "@/lib/url-template";
 import { getCertificate } from "@/services/certificates";
 import { buildReplayKit } from "@/services/replay-kit";
 import type { HonoEnv } from "@/types";
+import { recordPostPurchaseRead } from "@/services/buyer-signals";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 
 /**
  * /api/replay/{cert_id} — one paid call as an integration test. JSON
@@ -30,5 +32,7 @@ replayRoutes.get("/api/replay/:cert_id", async (c) => {
     // No verdict on an absent record: not found is not "invalid".
     return c.json({ error: "No certificate by that id. Not a verdict: an id this store never issued is simply not here.", cert_id: id }, 404);
   }
+  // Buyer signals (trial): a replay is somebody reading what was bought.
+  deferBookkeeping(c, recordPostPurchaseRead(c.env, "replay", record.certificate.date));
   return c.json(await buildReplayKit(c.env, record));
 });

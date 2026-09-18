@@ -154,8 +154,11 @@ trigger: snapshots stop being weekly-and-small. Numbers on it:
 
 - **Hand-run rounds mint now.** `POST /admin/ward/run` used to walk
   and not snapshot — labor with no signed observation. It now calls
-  `takeCorpusSnapshot` too (idempotent per week, so it can never
-  double-mint a week the cron already took).
+  `takeCorpusSnapshot` too. Idempotent per week at first, which turned
+  out to mean a Tuesday hand-run took the week's only slot and the
+  Sunday round was refused in silence (W34–W37, found 2026-09-18);
+  idempotent per round since, so a re-run inside a week appends and
+  the week's derived views read the newest entry.
 - **Probe pooling.** Sequential probing at an 8s timeout put a full
   200-door round past the cron budget's edge; ten in flight puts the
   worst case under three minutes.

@@ -1,6 +1,7 @@
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { MENU_ITEMS } from "@/store";
 import type { MenuItem } from "@/types";
+import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
 
 /**
  * THE FRONT COUNTER — the shelf by the register, for a caller that
@@ -52,6 +53,10 @@ export const UNIVERSAL_INPUTS: ReadonlySet<string> = new Set([
   "agent_name",
   "callback_url",
   "purpose",
+  // The disclosure block (lib/disclosure, 2026-09-18): six more
+  // stateless optional strings every item carries. Same test as the
+  // three above: a caller that sends none of them gets the same goods.
+  ...DISCLOSURE_FIELDS,
 ]);
 
 export interface FrontCounterVerdict {

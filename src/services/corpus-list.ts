@@ -68,6 +68,33 @@ export async function resolveRecord(
   return JSON.parse(await object.text()) as CorpusRecord;
 }
 
+/**
+ * ONE RECORD PER WEEK, THE NEWEST (2026-09-18). The chain freezes every
+ * round it is handed, and a round re-run inside its week — a hand-run
+ * on Tuesday, then the Sunday cron — appends a second entry under the
+ * same week key rather than losing either. The week-keyed readers
+ * (the round pages, the ledger, the trajectory, the per-host history,
+ * the provenance record) want the week's RECORD, which is its newest
+ * entry: a later round supersedes an earlier one in every derived view
+ * and nowhere in the chain, where both stand signed. Chain order is
+ * kept, so a caller's `records[records.length - 1]` still means the
+ * latest.
+ */
+export function weeklyCorpus<
+  T extends { snapshot: { week: string; sequence: number } },
+>(records: readonly T[]): T[] {
+  const byWeek = new Map<string, T>();
+  for (const record of records) {
+    const held = byWeek.get(record.snapshot.week);
+    if (!held || record.snapshot.sequence > held.snapshot.sequence) {
+      byWeek.set(record.snapshot.week, record);
+    }
+  }
+  return [...byWeek.values()].sort(
+    (a, b) => a.snapshot.sequence - b.snapshot.sequence,
+  );
+}
+
 export const CORPUS_SCAN_CAP = 1000;
 
 /**

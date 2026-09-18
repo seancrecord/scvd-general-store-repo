@@ -1,5 +1,12 @@
 import { boundedResponseText } from "@/lib/bounded-response";
 import { mppSurfacesSectionOf, type MppChallengeRead, type MppSurfacesSection } from "@/services/mpp-surface-reads";
+import {
+  PROBE_POST_BODY,
+  isMethodRefusal,
+  probeWithMethod,
+  type ProbeMethod,
+  type ProbeMethodReading,
+} from "@/lib/probe-method";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { EVM_CHAINS } from "@/lib/base-rpc";
@@ -226,6 +233,16 @@ function openapiHasPath(doc: unknown, pathname: string): boolean {
 
 /** What one read came back as, before any comparison. */
 export interface SurfaceRead {
+  /**
+   * WHICH QUESTION THIS READ ASKED (2026-09-18). Set on the two reads
+   * that knock on a payment door (the resource URL and the bookend);
+   * absent on document reads, which are GET by definition. A door
+   * that refused the method is `method_refused: true`, and no row may
+   * read that as "answered with no challenge".
+   */
+  method_used?: ProbeMethod;
+  methods_attempted?: ProbeMethod[];
+  method_refused?: boolean;
   /** Captured on the existing challenge reads; undefined means not captured, null means absent. */
   www_authenticate?: string | null;
   url: string;
@@ -245,12 +262,23 @@ async function readSurface(
     const target = new URL(url);
     const verdict = checkProbeTarget(target, "");
     if (!verdict.ok) return { url, status: null, text: null, failure: `not read: ${verdict.reason}` };
-    const response = await fetchImpl(url, {
-      method: "GET",
-      redirect: "manual",
-      signal: AbortSignal.timeout(SURFACE_TIMEOUT_MS),
-      headers: await webBotAuthHeaders(env, url, { Accept: accept }),
-    });
+    /*
+     * A DOCUMENT READ, through the shared method law with the fallback
+     * OFF — the same shape discovery/host-probe.ts uses for a
+     * well-known path. llms.txt and an OpenAPI document are GET by
+     * definition; a 405 here is an answer about the document, and
+     * POSTing at a stranger's llms.txt would be a method sweep.
+     */
+    const { response } = await probeWithMethod(
+      async (method) =>
+        fetchImpl(url, {
+          method,
+          redirect: "manual",
+          signal: AbortSignal.timeout(SURFACE_TIMEOUT_MS),
+          headers: await webBotAuthHeaders(env, url, { Accept: accept }),
+        }),
+      { fallback: false },
+    );
     try {
       const text = await boundedResponseText(response, SURFACE_BODY_CAP);
       return { url, status: response.status, text };
@@ -275,18 +303,69 @@ function decodeChallenge(response: SurfaceRead): Record<string, unknown>[] | nul
   }
 }
 
-/** Keep decoded x402 accepts and the MPP header from the same challenge read. */
-async function readChallengeAccepts(env: WbaEnv, url: string, fetchImpl: typeof fetch): Promise<SurfaceRead> {
+/**
+ * Keep decoded x402 accepts and the MPP header from the same challenge read.
+ *
+ * THE FIFTH DOOR PROBE (2026-09-18). The 2026-09-16 correction moved
+ * the verb out of four probes and into lib/probe-method.ts, and its
+ * structural guard walked those four. This function knocks on a
+ * stranger's payment door twice per paid audit — the resource URL the
+ * challenge names, and the bookend re-read of the probed door — and it
+ * still sent GET and only GET. On a POST-only door the battery had
+ * just resolved POST and found a flawless challenge, and two lines
+ * later this read GOT the same door, took the 405, and filed the
+ * bookend as "answered 405 with no parseable challenge": the same
+ * false finding, on the signed paid artifact, one section down from
+ * the battery that had already got it right.
+ *
+ * The bookend asks the SAME question the battery asked — same URL,
+ * same method, no fallback — because a bookend that asks a different
+ * question cannot say whether the price moved. The resource URL is a
+ * different door, so it starts from the battery's method and keeps
+ * the one bounded second look. A method refusal on either is a fact
+ * about the read and is marked as such; it is never "silent".
+ */
+async function readChallengeAccepts(
+  env: WbaEnv,
+  url: string,
+  fetchImpl: typeof fetch,
+  method: ProbeMethod,
+  fallback: boolean,
+): Promise<SurfaceRead> {
   try {
     const target = new URL(url);
     const verdict = checkProbeTarget(target, "");
     if (!verdict.ok) return { url, status: null, text: null, failure: `not read: ${verdict.reason}` };
-    const response = await fetchImpl(url, {
-      method: "GET",
-      redirect: "manual",
-      signal: AbortSignal.timeout(SURFACE_TIMEOUT_MS),
-      headers: await webBotAuthHeaders(env, url, { Accept: "application/json" }),
-    });
+    const { response, reading } = await probeWithMethod(
+      async (probeMethod) =>
+        fetchImpl(url, {
+          method: probeMethod,
+          redirect: "manual",
+          signal: AbortSignal.timeout(SURFACE_TIMEOUT_MS),
+          headers: {
+            ...(await webBotAuthHeaders(env, url, { Accept: "application/json" })),
+            ...(probeMethod === "POST" ? { "Content-Type": "application/json" } : {}),
+          },
+          ...(probeMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+        }),
+      { method, fallback },
+    );
+    const methodFields = {
+      method_used: reading.used,
+      methods_attempted: reading.attempted,
+      ...(reading.unresolved || (!fallback && isMethodRefusal(response.status)) ? { method_refused: true } : {}),
+    };
+    if (methodFields.method_refused) {
+      await response.body?.cancel().catch(() => undefined);
+      return {
+        url,
+        status: response.status,
+        text: null,
+        www_authenticate: response.headers.get("WWW-Authenticate"),
+        ...methodFields,
+        failure: `the door refused ${reading.attempted.join(" and ")} as a method (${response.status}); nothing was observed about its challenge. A method refusal is the door naming which verb it wants, not a defect — this is a gap in our read, not a finding about the door.`,
+      };
+    }
     const header = response.headers.get("PAYMENT-REQUIRED");
     let accepts: unknown = null;
     if (header) {
@@ -307,7 +386,7 @@ async function readChallengeAccepts(env: WbaEnv, url: string, fetchImpl: typeof 
       }
     }
     return { url, status: response.status, text: Array.isArray(accepts) ? JSON.stringify(accepts) : null,
-      www_authenticate: response.headers.get("WWW-Authenticate") };
+      www_authenticate: response.headers.get("WWW-Authenticate"), ...methodFields };
   } catch (error) {
     return { url, status: null, text: null, failure: String(error) };
   }
@@ -324,13 +403,22 @@ export interface SurfaceReads {
   bookend: SurfaceRead;
 }
 
-/** The network half: two to four GETs on the same origin, each guarded, each bounded. */
+/**
+ * The network half: two document GETs on the same origin, then the
+ * challenge reads with the verb THE BATTERY RESOLVED — each guarded,
+ * each bounded. `method` is the battery's own reading of the probed
+ * door (ProbeOutcome.method); a caller with none passes nothing and
+ * gets GET with the bounded fallback, which is the 2026-09-16 law and
+ * never a bare GET.
+ */
 export async function readSurfaces(
   env: WbaEnv,
   probedUrl: string,
   resourceUrl: string | null,
   fetchImpl: typeof fetch,
+  method?: ProbeMethodReading | ProbeMethod,
 ): Promise<SurfaceReads> {
+  const resolved: ProbeMethod | undefined = typeof method === "string" ? method : method?.used;
   const origin = new URL(probedUrl).origin;
   const llms = await readSurface(env, `${origin}/llms.txt`, fetchImpl, "text/plain");
   let openapi = await readSurface(env, `${origin}/openapi.json`, fetchImpl, "application/json");
@@ -340,8 +428,12 @@ export async function readSurfaces(
   }
   const differentResource =
     resourceUrl !== null && resourceUrl !== "" && resourceUrl !== probedUrl ? resourceUrl : null;
-  const resource = differentResource ? await readChallengeAccepts(env, differentResource, fetchImpl) : null;
-  const bookend = await readChallengeAccepts(env, probedUrl, fetchImpl);
+  // A different door: start where the battery landed, keep the one bounded second look.
+  const resource = differentResource
+    ? await readChallengeAccepts(env, differentResource, fetchImpl, resolved ?? "GET", true)
+    : null;
+  // The same door, the same question: the battery's verb, and no fallback when it is known.
+  const bookend = await readChallengeAccepts(env, probedUrl, fetchImpl, resolved ?? "GET", resolved === undefined);
   return { probed_url: probedUrl, llms, openapi, resource, resource_url: differentResource, bookend };
 }
 

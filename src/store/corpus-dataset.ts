@@ -16,7 +16,7 @@ export const CORPUS_DATASET_NAME =
   "The scvd corpus — weekly observations of the public x402 ecosystem";
 
 export const CORPUS_DATASET_DESCRIPTION =
-  "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw at that moment. Hash-chained, ed25519-signed, each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, never scores on operators.";
+  "One snapshot per weekly ward round of the public x402 discovery list — a round re-run inside its week appends a later entry, and the week's derived views read the newest — recording which hosts were listed, which answered, and what a single conformance probe saw at that moment. Hash-chained, ed25519-signed, each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, never scores on operators.";
 
 /**
  * CC BY 4.0, AND WHY THAT IS NOT THE REFLEX THE NO-LAWYERS RULING

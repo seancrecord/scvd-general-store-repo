@@ -2,6 +2,7 @@ import type { CatalogReading } from "@/services/catalog-agreement";
 import type { MppCensusReading } from "@/services/mpp-census";
 import { roundCoverageSuspect } from "@/services/passport-tier";
 import { listCorpus, type CorpusRecord } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import { PAY_TO_DIGEST_SALT } from "@/lib/pay-to-digest";
 import {
   digestsOf,
@@ -299,10 +300,13 @@ export async function subjectHistory(
   now: Date = new Date(),
 ): Promise<SubjectHistory> {
   const host = rawHost.trim().toLowerCase();
-  const [records, listing] = await Promise.all([
+  const [chain, listing] = await Promise.all([
     listCorpus(env),
     populationHistory(env, host),
   ]);
+  // The week's newest entry when a round was re-run inside it: a host
+  // walked twice in one week was met once, not twice.
+  const records = weeklyCorpus(chain);
 
   /*
    * First sighting from BOTH records, earliest wins. The chain reaches

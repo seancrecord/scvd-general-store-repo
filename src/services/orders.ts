@@ -11,6 +11,7 @@ import type { Env, MenuItem, OrderRecord } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
 import { checkCompletionCallback } from "@/lib/completion-callback";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import type { Disclosure } from "@/lib/disclosure";
 
 /** Ceiling on inventory scans. An unnamed cap is a silent one. */
 const INVENTORY_CAP = 2000;
@@ -48,6 +49,8 @@ export interface CreateOrderOptions {
   source?: string;
   userAgent?: string;
   referrer?: string;
+  /** What the buyer chose to tell us (lib/disclosure). Untrusted, never published. */
+  disclosure?: Disclosure;
 }
 
 export async function createOrder(
@@ -91,6 +94,9 @@ export async function createOrder(
   }
   if (options.referrer) {
     order.referrer = options.referrer;
+  }
+  if (options.disclosure) {
+    order.disclosure = options.disclosure;
   }
   if (options.item.fulfillment === "human_queue") order.commission = await signHumanCommission(env, order);
   if (checkpoint) {

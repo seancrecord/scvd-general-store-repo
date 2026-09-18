@@ -1,4 +1,5 @@
 import type { CorpusRecord } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 
 /**
  * EVERY DOOR WE HAVE EVER LOOKED AT, ENUMERATED (#26, 2026-08-29).
@@ -98,7 +99,8 @@ interface Row {
  * one, which is the failure mode most worth naming out loud in a
  * file whose entire product is dates.
  */
-export function deriveDoorIndex(records: readonly CorpusRecord[]): DoorIndex {
+export function deriveDoorIndex(chain: readonly CorpusRecord[]): DoorIndex {
+  const records = weeklyCorpus(chain);
   const byHost = new Map<string, DoorIndexEntry>();
   let latestWeek: string | null = null;
 

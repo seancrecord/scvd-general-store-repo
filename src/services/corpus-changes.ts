@@ -1,5 +1,6 @@
 import { citeBlock } from "@/lib/cite";
 import type { CorpusRecord } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import { digestsOf } from "@/services/operator-facts";
 import { diffRecords } from "@/services/trajectory";
 import type { WardHostResult } from "@/services/ward-round";
@@ -112,7 +113,8 @@ function plural(n: number, noun: string): string {
   return `${n} ${noun}${n === 1 ? "" : "s"}`;
 }
 
-export async function deriveChanges(records: CorpusRecord[], week: string, base: string): Promise<WeekChanges | null> {
+export async function deriveChanges(chain: CorpusRecord[], week: string, base: string): Promise<WeekChanges | null> {
+  const records = weeklyCorpus(chain);
   const index = records.findIndex((record) => record.snapshot.week === week);
   if (index === -1) return null;
   const to = records[index]!;

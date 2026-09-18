@@ -1,4 +1,7 @@
 import { Hono, type Context } from "hono";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { readDisclosure } from "@/lib/disclosure";
+import { recordDisclosure } from "@/services/disclosure-census";
 import {
   MARKDOWN_MEDIA_TYPE,
   prefersMarkdown,
@@ -488,10 +491,11 @@ async function handle(
       400,
     );
   }
-  const url =
-    typeof body === "object" && body !== null
-      ? (body as Record<string, unknown>)["url"]
-      : undefined;
+  const fields: Record<string, unknown> =
+    typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
+  const url = fields["url"];
+  // The disclosure block (lib/disclosure): counted beside the answer, never in front of it.
+  deferBookkeeping(c, recordDisclosure(c.env, "free", readDisclosure((field) => fields[field])));
   const result = await preflightUrl(url, c.env, battery);
   return c.json(result.body, result.status as 200, {
     "Cache-Control": "no-store",

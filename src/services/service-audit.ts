@@ -252,7 +252,9 @@ export async function performServiceAudit(
      * EVM blacklist read here. Outside the verdict, always.
      */
     surfaces = surfacesSectionOf(
-      await readSurfaces(env, url, resourceUrlOf(outcome.response), options.fetch ?? fetch),
+      // The verb the battery resolved rides into the surface reads (2026-09-18):
+      // the bookend re-asks the SAME question, never a bare GET at a POST door.
+      await readSurfaces(env, url, resourceUrlOf(outcome.response), options.fetch ?? fetch, outcome.method),
       ran.accepts ?? null,
       now.toISOString(),
       { status: outcome.response.status, www_authenticate: outcome.response.headers.get("WWW-Authenticate") },

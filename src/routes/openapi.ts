@@ -37,6 +37,7 @@ import {
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
 import { buyInputSchema, buyInputExample, itemsRequiring } from "@/lib/bazaar-discovery";
+import { DISCLOSURE_FIELDS, DISCLOSURE_LINE, DISCLOSURE_PROPERTIES, type DisclosureField } from "@/lib/disclosure";
 import {
   pennyPageTiersUsdc,
   SIGNING_WINDOW_SECONDS,
@@ -1177,16 +1178,21 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     checks_vector: {
       type: "array",
       description:
-        "The tri-state view: a check that never ran is not a check that passed, and blocked_by names what stopped it.",
+        "The per-check view: a check that never ran is not a check that passed. not_reached means an earlier check failed and blocked_by names it; not_exercised means the door refused every method the probe sends as a method (405/501), so nothing was asked — a wrong verb, never a defect — and refused_methods names them.",
       items: {
         type: "object",
         required: ["name", "state", "detail"],
         properties: {
           name: { type: "string" },
-          state: { type: "string", enum: ["pass", "fail", "not_reached"] },
+          state: { type: "string", enum: ["pass", "fail", "not_reached", "not_exercised"] },
           blocked_by: {
             type: "string",
             description: "Set only on not_reached.",
+          },
+          refused_methods: {
+            type: "array",
+            items: { type: "string" },
+            description: "Set only on not_exercised: every method the door refused, in the order sent.",
           },
           detail: { type: "string" },
         },
@@ -4316,6 +4322,31 @@ const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
  * would send keys the door discards, and discarded keys fail silently
  * by design — the purchase still completes, and still charges.
  */
+/**
+ * THE DISCLOSURE BLOCK, WRITTEN ONCE (lib/disclosure, 2026-09-18).
+ *
+ * Six optional fields on every paid door. Inlined per door — as
+ * parameters and again in the request schema — they cost the read
+ * budget ~50 KB against ~10 KB of headroom under the 620,000-byte
+ * ceiling test/agent-catalog-readability holds. So the block is ONE
+ * component schema, and each door's request schema composes it with
+ * `allOf` and closes the object with `unevaluatedProperties: false`
+ * (2020-12's word for "and nothing else" across an allOf). The
+ * per-door cost is one $ref. The parameters array does not repeat
+ * them: the request schema is the discovery spec's own slot and the
+ * one copy readers are pointed at.
+ */
+function isDisclosureField(name: string): name is DisclosureField {
+  return (DISCLOSURE_FIELDS as readonly string[]).includes(name);
+}
+const DISCLOSURE_BLOCK_SCHEMA: OpenApiObject = {
+  type: "object",
+  title: "Disclosure block",
+  description: `${DISCLOSURE_LINE} Accepted as query parameters on every /api/buy/* door and in the body of the free pre-payment instruments.`,
+  properties: { ...DISCLOSURE_PROPERTIES },
+};
+const DISCLOSURE_BLOCK_REF: OpenApiObject = { $ref: "#/components/schemas/DisclosureBlock" };
+
 const IDEMPOTENCY_PARAMETER: OpenApiObject = {
   name: "Idempotency-Key",
   in: "header",
@@ -5442,6 +5473,10 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
   const required = new Set(schema.required ?? []);
   const parameters = Object.entries(schema.properties).map(
     ([name, definition]) => {
+      // The disclosure block is composed into the request schema
+      // below, once, and not repeated as parameters (see
+      // DISCLOSURE_BLOCK_SCHEMA for the byte arithmetic).
+      if (isDisclosureField(name)) return null;
       const property =
         typeof definition === "object" && definition !== null
           ? (definition as Record<string, unknown>)
@@ -5456,7 +5491,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
         ...(description ? { description } : {}),
       };
     },
-  );
+  ).filter((parameter): parameter is NonNullable<typeof parameter> => parameter !== null);
   /**
    * THE REQUEST, AS ONE SCHEMA WITH DESCRIBED FIELDS.
    *
@@ -5480,11 +5515,15 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     type: "object",
     title: `${item.name} request`,
     description: `Query parameters for GET /api/buy/${item.id}. Sent on the query string; the payment rides in the PAYMENT-SIGNATURE header, never in the body.`,
-    properties: schema.properties,
+    properties: Object.fromEntries(
+      Object.entries(schema.properties).filter(([name]) => !isDisclosureField(name)),
+    ),
     ...(schema.required && schema.required.length > 0
       ? { required: [...schema.required] }
       : {}),
-    additionalProperties: false,
+    // The disclosure block, composed once; see DISCLOSURE_BLOCK_SCHEMA.
+    allOf: [DISCLOSURE_BLOCK_REF],
+    unevaluatedProperties: false,
   };
   const operation: OpenApiObject = {
     ...returns(
@@ -5737,6 +5776,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
          */
         PreflightVerdict: PREFLIGHT_VERDICT_SCHEMA,
         AskAnswer: ASK_SCHEMA,
+        // The disclosure block, written once (lib/disclosure).
+        DisclosureBlock: DISCLOSURE_BLOCK_SCHEMA,
       },
       responses: SHARED_RESPONSES,
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },

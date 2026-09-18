@@ -181,18 +181,32 @@ function resourceUrlOf(row) {
 }
 
 /**
- * The preflight only GETs (one bounded request, no body to invent).
- * A resource DECLARED as POST that answers a bare GET with 404/405 is
- * not broken — it is disagreeing with a question we asked wrong. Rows
- * declaring a non-GET method are counted separately, never probed,
- * and never filed as not_ready: a census that grades POST endpoints
- * by GETting them manufactures exactly the false verdict the consent
- * ruling forbids publishing.
+ * THE VERB IS THE PREFLIGHT'S TO RESOLVE, NOT THIS SCRIPT'S TO ASSUME
+ * (2026-09-18). Until today this script said "the preflight only
+ * GETs", excluded every row declaring a non-GET method, and printed a
+ * methodology line of "one GET per host". Both halves were stale: the
+ * public preflight has resolved the verb since 2026-09-16 (a declared
+ * method, else GET, with exactly one POST fallback on a 405/501), and
+ * reports what it sent in `probe_method` on every response. Excluding
+ * declared-POST rows was the right call when the instrument could not
+ * ask them — but a row that declares NO method and answers GET with
+ * 405 was never excluded, and it was two such doors that this store
+ * listed publicly as serving no challenge on 2026-09-18. The
+ * exclusion protected the declared ones and left the undeclared ones
+ * to be graded on the wrong verb.
+ *
+ * So: every https row is probed, the report's own probe_method is
+ * tallied, and a door that refused every method (`method_unresolved`)
+ * is counted as NOT GRADED — outside the ready/not_ready denominator,
+ * because nothing was observed about it and the gap is ours.
  */
 function methodOf(row) {
   const method = row.method ?? row.httpMethod ?? row.http_method;
-  return typeof method === "string" ? method.toUpperCase() : "GET";
+  return typeof method === "string" ? method.toUpperCase() : null;
 }
+
+/** Verdicts that carry an observation about the door; everything else is about us. */
+const GRADED = new Set(["ready", "not_ready"]);
 
 /** Newest activity first when the list carries a signal for it. */
 function activityOf(row) {
@@ -220,6 +234,11 @@ async function probe(url) {
       .filter((check) => !check.ok)
       .map((check) => check.name),
     advisories: (body.advisories ?? []).map((advisory) => advisory.name),
+    // Which question the door answered — carried on every row so a
+    // per-row reader never has to assume the verb.
+    probe_method: body.probe_method?.used ?? null,
+    methods_attempted: body.probe_method?.attempted ?? null,
+    protocols_spoken: body.protocols_spoken ?? [],
   };
 }
 
@@ -232,7 +251,7 @@ console.log(
 );
 
 const seen = new Set();
-const nonGet = { count: 0, hosts: new Set() };
+const declared = { GET: 0, POST: 0, other: 0, none: 0 };
 let candidates = rows
   .map((row) => ({
     url: resourceUrlOf(row),
@@ -240,12 +259,10 @@ let candidates = rows
     method: methodOf(row),
   }))
   .filter((entry) => {
-    if (entry.url && entry.method !== "GET") {
-      nonGet.count += 1;
-      try { nonGet.hosts.add(new URL(entry.url).host.toLowerCase()); } catch { /* skip */ }
-      return false;
-    }
     if (!entry.url || !entry.url.startsWith("https://")) return false;
+    if (entry.method === null) declared.none += 1;
+    else if (entry.method in declared) declared[entry.method] += 1;
+    else declared.other += 1;
     let host;
     try {
       host = new URL(entry.url).host.toLowerCase();
@@ -264,13 +281,11 @@ const top = Number(process.env.TOP ?? candidates.length);
 const dropped = Math.max(0, candidates.length - top);
 candidates = candidates.slice(0, top);
 console.log(
-  `${candidates.length} distinct GET hosts to probe${dropped > 0 ? ` (TOP=${top}; ${dropped} dropped — the summary must say sampled, not surveyed)` : ""}.`,
+  `${candidates.length} distinct hosts to probe${dropped > 0 ? ` (TOP=${top}; ${dropped} dropped — the summary must say sampled, not surveyed)` : ""}.`,
 );
-if (nonGet.count > 0) {
-  console.log(
-    `${nonGet.count} declared non-GET resources across ${nonGet.hosts.size} hosts EXCLUDED — the preflight only GETs, and grading a POST endpoint by GETting it manufactures a false not_ready.`,
-  );
-}
+console.log(
+  `Declared methods on the listed rows: GET ${declared.GET}, POST ${declared.POST}, other ${declared.other}, none ${declared.none}. Every row is probed; the preflight resolves the verb (declared, else GET, one POST fallback on a 405/501) and says which it used.`,
+);
 
 if (process.env.DRY_RUN) {
   console.log("DRY_RUN set: probed nothing.");
@@ -310,7 +325,7 @@ try {
 } catch {
   // A missing seeds file is reported below rather than silently skipped.
 }
-const listedHosts = new Set([...seen, ...nonGet.hosts]);
+const listedHosts = new Set(seen);
 const missingFromDiscovery = seeds.filter(
   (seed) => !listedHosts.has(String(seed.host).toLowerCase()),
 );
@@ -326,18 +341,27 @@ for (const row of results) {
   for (const name of row.advisories ?? []) advisoryTally[name] = (advisoryTally[name] ?? 0) + 1;
 }
 const probed = results.length;
+const graded = results.filter((row) => GRADED.has(row.verdict)).length;
 const pct = (n) => `${Math.round((n / probed) * 100)}%`;
+const pctGraded = (n) => (graded > 0 ? `${Math.round((n / graded) * 100)}% of graded` : "no graded rows");
+const methodTally = {};
+const fallbacks = results.filter((row) => (row.methods_attempted?.length ?? 0) > 1).length;
+for (const row of results) {
+  const key = row.probe_method ?? "unknown";
+  methodTally[key] = (methodTally[key] ?? 0) + 1;
+}
 
 console.log("\n──── AGGREGATE (the only part that publishes) ────");
-console.log(`Probed: ${probed} distinct GET-method hosts, one GET each, ${new Date().toISOString().slice(0, 10)}.`);
-if (nonGet.count > 0) {
-  console.log(`Out of scope: ${nonGet.count} declared non-GET resources (${nonGet.hosts.size} hosts) — not probed, not graded.`);
-}
+console.log(`Probed: ${probed} distinct hosts, one probe each (verb resolved per door), ${new Date().toISOString().slice(0, 10)}.`);
+console.log(
+  `Verb used, per the preflight's own probe_method: ${Object.entries(methodTally).map(([m, n]) => `${m} ${n}`).join(", ")}; ${fallbacks} door(s) refused the first verb and were read on the second.`,
+);
+console.log(`Graded (ready or not_ready): ${graded} of ${probed}. The rest carry no observation about the door — a method refused every way we ask, a network path that did not complete, or our budget — and are NOT in any ready fraction.`);
 if (!complete) {
   console.log("COVERAGE CAVEAT: the list read may be one page, not the whole list — publish as 'the first N listed', never 'the directory'.");
 }
 for (const [verdict, count] of Object.entries(tally).sort((a, b) => b[1] - a[1])) {
-  console.log(`  ${verdict}: ${count} (${pct(count)})`);
+  console.log(`  ${verdict}: ${count} (${pct(count)} of probed${GRADED.has(verdict) ? `, ${pctGraded(count)}` : ", not graded"})`);
 }
 console.log("Failure modes (per failed check):");
 for (const [name, count] of Object.entries(failures).sort((a, b) => b[1] - a[1])) {
@@ -349,8 +373,9 @@ for (const [name, count] of Object.entries(advisoryTally).sort((a, b) => b[1] - 
 }
 console.log("\n──── METHODOLOGY (publish beside any number) ────");
 console.log(`Population: hosts declaring x402 resources on the CDP discovery list (${rows.length} rows fetched${complete ? ", pagination complete" : ", COVERAGE CAVEAT above"}), one row per host, ranked by the list's own lastCalledAt where present.`);
-console.log(`Stated exclusions: our own host (self-grading is not a census); ${nonGet.count} declared non-GET resources across ${nonGet.hosts.size} hosts (this probe only GETs); non-https rows.`);
-console.log(`Probe: one GET per host via the public POST ${STORE_URL}/api/preflight/v1 — reproducible by anyone against the same free endpoint.`);
+console.log(`Stated exclusions: our own host (self-grading is not a census); non-https rows. Nothing is excluded for its method: the verb is resolved per door, not assumed.`);
+console.log(`Probe: one probe per host via the public POST ${STORE_URL}/api/preflight/v1 — the declared method where the door declares one, else GET, with exactly one POST fallback on a 405/501; the report's probe_method block says which was sent. Reproducible by anyone against the same free endpoint.`);
+console.log(`Not graded: ${probed - graded} of ${probed} rows carry no verdict about the door (method_unresolved, unreachable, budget, refused, census_error) and sit outside every fraction above.`);
 if (seeds.length === 0) {
   console.log("Coverage check: EMPTY — scripts/census-seeds.json has no sourced seeds yet. Until it carries x402scan's top-by-settlements list, this census can only claim the Bazaar's population, not the ecosystem's.");
 } else if (missingFromDiscovery.length === 0) {
@@ -365,7 +390,11 @@ console.log(`
 Per-host rows: ${RESULTS_FILE} (gitignored — keeper's eyes; outreach
 is help, publishing names is a verdict nobody asked for).
 
-Method line for anything published: "One GET per declared resource on
+Method line for anything published: "One probe per declared resource on
 ${new Date().toISOString().slice(0, 10)}, via the free public checker at
-${STORE_URL}/api/preflight/v1 — reproduce it yourself with the same
-endpoint, no account needed." Aggregate numbers only.`);
+${STORE_URL}/api/preflight/v1 — the declared method where one is
+declared, else GET with one POST fallback on a 405; ${fallbacks} door(s)
+were read on the second verb and ${probed - graded} were not graded at
+all. Reproduce it yourself with the same endpoint, no account needed."
+Aggregate numbers only. A door that refused our verb is NEVER a door
+that serves no challenge — it is a door we did not ask correctly.`);

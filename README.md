@@ -405,7 +405,13 @@ and Cloudflare handles the rest.
 
 ## How paying works here (the x402 flow, protocol v2)
 
-No accounts, no API keys, no cart. We speak x402 **v2** (the current
+No accounts, no API keys, no cart, and nothing a buyer must say about
+itself. Every paid door and the three pre-payment instruments take an
+optional disclosure block (`model`, `client`, `operator`,
+`operator_kind`, `came_from`, `prior_cert_id`) that counts the buyer
+in a private census and, when a prior certificate's payer matches the
+payment, marks a returning buyer; it never changes a price or reaches
+a certificate (`src/lib/disclosure.ts`). We speak x402 **v2** (the current
 standard — `@x402/core` ecosystem) with USDC and the Coinbase Developer Platform as facilitator. The live
 `/rails` and `/menu.json` responses list enabled checkout networks; the
 current `PAYMENT-REQUIRED` challenge supplies the terms to sign. A

@@ -215,8 +215,8 @@ export async function publishRegistryWeekFromCorpus(
   env: Env,
   week: string,
 ): Promise<PublishResult> {
-  const { listCorpus } = await import("@/services/corpus-list");
-  const records = await listCorpus(env);
+  const { listCorpus, weeklyCorpus } = await import("@/services/corpus-list");
+  const records = weeklyCorpus(await listCorpus(env));
   const found = records.find((record) => record.snapshot?.week === week);
   if (!found?.snapshot?.round) {
     const held = records

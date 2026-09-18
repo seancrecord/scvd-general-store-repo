@@ -10,6 +10,7 @@ import {
   listCorpus,
   takeCorpusSnapshot,
   verifyCorpusChain,
+  weeklyCorpus,
 } from "@/services/corpus";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -22,14 +23,16 @@ const BASE = "https://scvd.store";
  * ruling on the Gretzky brief, 2026-08-07). What is testable is the
  * record's PROPERTIES, because they are the whole product: the chain
  * links and recomputes, the signature verifies against the published
- * key, a week never enters twice, a calendar outage cannot cost an
- * entry, and the published document explains its own verification.
+ * key, a round never enters twice, a round re-run inside its week
+ * appends rather than being refused (2026-09-18), a calendar outage
+ * cannot cost an entry, and the published document explains its own
+ * verification.
  */
 
-function round(week: string, hosts = 2): WardRound {
+function round(week: string, hosts = 2, at = new Date().toISOString()): WardRound {
   return {
     week,
-    at: new Date().toISOString(),
+    at,
     listed_resources: hosts,
     coverage_suspect: false,
     capped: false,
@@ -42,10 +45,10 @@ function round(week: string, hosts = 2): WardRound {
   };
 }
 
-async function seedRound(week: string): Promise<void> {
+async function seedRound(week: string, at?: string, hosts = 2): Promise<void> {
   await testEnv.COUNTERS.put(
     KV_KEYS.wardRoundLatest,
-    JSON.stringify(round(week)),
+    JSON.stringify(round(week, hosts, at)),
   );
 }
 
@@ -93,14 +96,16 @@ describe("the corpus chain", () => {
     ).toBe(true);
   });
 
-  it("links entry to entry and never takes a week twice", async () => {
+  it("links entry to entry and never takes a round twice", async () => {
     await seedRound("2026-W31");
     const first = await takeCorpusSnapshot(testEnv, okCalendar);
     expect(first.taken).toBe(true);
 
-    // Same week again: the cron re-fired, nothing grows.
+    // Same round again: the cron re-fired, nothing grows.
     const again = await takeCorpusSnapshot(testEnv, okCalendar);
     expect(again.taken).toBe(false);
+    if (again.taken) return;
+    expect(again.reason).toContain("already in the corpus");
 
     await seedRound("2026-W32");
     const second = await takeCorpusSnapshot(testEnv, okCalendar);
@@ -111,6 +116,54 @@ describe("the corpus chain", () => {
 
     const chain = await verifyCorpusChain(testEnv);
     expect(chain).toEqual({ intact: true, entries: 2 });
+  });
+
+  /**
+   * THE TUESDAY HAND-RUN AND THE SUNDAY CRON (2026-09-18). Under the
+   * per-week rule the keeper's midweek look took the week's one slot
+   * and every Sunday round from W34 to W37 was refused in silence. A
+   * later round in the same week now appends; the chain keeps both,
+   * and the week-keyed readers take the newest.
+   */
+  it("appends a round re-run inside its week and reads the newest per week", async () => {
+    await seedRound("2026-W37", "2026-09-08T14:54:46.432Z", 2);
+    const tuesday = await takeCorpusSnapshot(testEnv, okCalendar);
+    expect(tuesday.taken).toBe(true);
+
+    await seedRound("2026-W37", "2026-09-13T11:01:56.016Z", 5);
+    const sunday = await takeCorpusSnapshot(testEnv, okCalendar);
+    expect(sunday.taken).toBe(true);
+    if (!tuesday.taken || !sunday.taken) return;
+    expect(sunday.record.snapshot.sequence).toBe(2);
+    expect(sunday.record.snapshot.week).toBe("2026-W37");
+    expect(sunday.record.snapshot.previous_digest).toBe(tuesday.record.digest);
+
+    // Pressed again with the Sunday round still latest: nothing grows.
+    const again = await takeCorpusSnapshot(testEnv, okCalendar);
+    expect(again.taken).toBe(false);
+
+    // The chain holds both, signed and linked.
+    const chain = await listCorpus(testEnv);
+    expect(chain.map((record) => record.snapshot.week)).toEqual(["2026-W37", "2026-W37"]);
+    expect(await verifyCorpusChain(testEnv, chain)).toEqual({ intact: true, entries: 2 });
+
+    // The week's record is its newest entry.
+    const weekly = weeklyCorpus(chain);
+    expect(weekly).toHaveLength(1);
+    expect(weekly[0]!.snapshot.sequence).toBe(2);
+    expect(weekly[0]!.snapshot.round.hosts).toHaveLength(5);
+  });
+
+  it("keeps chain order in the per-week view", () => {
+    const entry = (sequence: number, week: string) =>
+      ({ snapshot: { sequence, week } }) as const;
+    const weekly = weeklyCorpus([
+      entry(1, "2026-W35"),
+      entry(2, "2026-W36"),
+      entry(3, "2026-W36"),
+      entry(4, "2026-W37"),
+    ]);
+    expect(weekly.map((record) => record.snapshot.sequence)).toEqual([1, 3, 4]);
   });
 
   it("keeps the entry when every calendar is down", async () => {
