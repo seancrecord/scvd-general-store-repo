@@ -94,9 +94,9 @@ export const COLLECTIONS: Record<string, CollectionSemantics> = {
   "/corpus.json": {
     bound: "bounded",
     reason:
-      "One signed snapshot per week, appended forever — so it grows, but at fifty-two entries a year against a read cap of 1,000 it is served whole and will be for years. Paginating it would also fracture the thing it exists for: the hash-chain verdict published beside the entries is computed over the WHOLE record, and a verdict over one page proves nothing about the chain.",
+      "One signed snapshot per round, appended forever — one a week, a few more in a week whose round was re-run — so it grows, but at about fifty-two entries a year against a read cap of 1,000 it is served whole and will be for years. Paginating it would also fracture the thing it exists for: the hash-chain verdict published beside the entries is computed over the WHOLE record, and a verdict over one page proves nothing about the chain.",
     bounded_by:
-      "one entry per week under a 1,000-record read cap; per-host slices are at /corpus/host/{host}.json when the whole is more than a reader wants",
+      "one entry per round, about one a week, under a 1,000-record read cap; per-host slices are at /corpus/host/{host}.json when the whole is more than a reader wants",
   },
   "/.well-known/api-catalog": {
     bound: "bounded",

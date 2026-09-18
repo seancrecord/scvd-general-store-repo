@@ -608,13 +608,22 @@ const worker: ExportedHandler<Env> = {
                * the week's observations frozen into the signed,
                * hash-chained, OTS-stamped record the moment they
                * exist, so the corpus can never lag the instrument it
-               * keeps. Idempotent per week — a re-fired cron re-takes
-               * nothing.
+               * keeps. Idempotent per round — a re-fired cron re-takes
+               * nothing. A pass that takes nothing after a round that
+               * just ran is news, not a no-op (2026-09-18: four Sunday
+               * rounds were refused in silence under the old per-week
+               * rule), so a declined pass alerts with its reason.
                */
               () =>
                 import("@/services/corpus").then(({ takeCorpusSnapshot }) =>
                   takeCorpusSnapshot(env).then(
-                    () => undefined,
+                    (pass) =>
+                      pass.taken
+                        ? undefined
+                        : sendAlert(env, {
+                            condition: "worker_health",
+                            detail: `Corpus snapshot not taken after the Sunday round: ${pass.reason}. The round ran; the chain did not grow. Check /admin/ward and press "Freeze the latest round into the corpus" once the cause is understood.`,
+                          }),
                     (error) =>
                       sendAlert(env, {
                         condition: "worker_health",

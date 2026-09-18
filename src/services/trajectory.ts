@@ -1,5 +1,6 @@
 import { catalogAgreementOf, catalogMeasured, type CatalogAgreement } from "@/services/catalog-agreement";
 import type { CorpusRecord } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import type { WardHostResult } from "@/services/ward-round";
 import { MPP_CENSUS_NOTE, mppCensusOf, type MppCensus } from "@/services/mpp-census";
 
@@ -142,7 +143,8 @@ function isDegraded(host: WardHostResult): boolean {
   );
 }
 
-export function deriveTrajectory(records: CorpusRecord[]): Trajectory {
+export function deriveTrajectory(chain: CorpusRecord[]): Trajectory {
+  const records = weeklyCorpus(chain);
   const weeks = records.map((record): WeekPoint => {
     const hosts = hostsOf(record);
     const point: WeekPoint = {
@@ -209,7 +211,7 @@ export function deriveTrajectory(records: CorpusRecord[]): Trajectory {
     what_this_is:
       "The corpus chain read as time: one point per signed weekly snapshot, every count derived at read from the snapshot's own rows. Each point names its snapshot's digest; fetch /corpus/{sequence}.json, recount with your own tools, and this surface owes you nothing on trust." + (weeks.some(week => week.mpp) ? ` ${MPP_CENSUS_NOTE}` : ""),
     nothing_claimed_between_snapshots:
-      "One snapshot per week, and NOTHING is claimed between snapshots: a door can appear, break and vanish inside a week without a trace here. Counts come with their denominators (hosts_listed, hosts_probed); no ratio is served anywhere, because a percentage with a hidden denominator is how a market lies.",
+      "One point per week — the week's newest signed snapshot when a round was re-run inside it — and NOTHING is claimed between snapshots: a door can appear, break and vanish inside a week without a trace here. Counts come with their denominators (hosts_listed, hosts_probed); no ratio is served anywhere, because a percentage with a hidden denominator is how a market lies.",
   };
 }
 
@@ -223,9 +225,10 @@ export function deriveTrajectory(records: CorpusRecord[]): Trajectory {
  * (rule 52).
  */
 export function deriveDiff(
-  records: CorpusRecord[],
+  chain: CorpusRecord[],
   sinceWeek: string,
 ): WeekDiff | null {
+  const records = weeklyCorpus(chain);
   if (records.length === 0) return null;
   const from = records.find((record) => record.snapshot.week === sinceWeek);
   if (!from) return null;

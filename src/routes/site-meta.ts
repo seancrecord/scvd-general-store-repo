@@ -1,5 +1,6 @@
 import { OG_IMAGE_PNG_BASE64 } from "@/store/og-image";
 import { listCorpus } from "@/services/corpus";
+import { weeklyCorpus } from "@/services/corpus-list";
 import { deriveDoorIndex } from "@/services/door-index";
 import { delisting } from "@/store/delisted";
 import { DEFECT_CLASSES } from "@/store/defect-vocabulary";
@@ -261,11 +262,12 @@ async function sitemapPaths(env: HonoEnv["Bindings"]): Promise<string[]> {
   for (const entry of deriveDoorIndex(records).hosts) {
     if (!delisting(entry.host)) paths.push(`/corpus/host/${entry.host}`);
   }
-  for (const record of records) paths.push(`/corpus/round/${record.snapshot.week}`);
+  const weeks = weeklyCorpus(records);
+  for (const record of weeks) paths.push(`/corpus/round/${record.snapshot.week}`);
   /* The week's reading rides beside the week's round (2026-09-04): the
    * per-week ledger page is the citable one, and a room whose index is
    * in the sitemap while its pages are not is half-published. */
-  for (const record of records) paths.push(`/ledger/${record.snapshot.week}`);
+  for (const record of weeks) paths.push(`/ledger/${record.snapshot.week}`);
   for (const klass of DEFECT_CLASSES) paths.push(`/defects/${klass.id}`);
   return paths;
 }

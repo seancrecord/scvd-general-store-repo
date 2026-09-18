@@ -93,7 +93,11 @@ export function renderWardPage(
 ): string {
   const runButton = `<form method="post" action="/admin/ward/run" style="margin:0.5em 0">
     <button type="submit">Walk the ward now</button>
-    <span style="opacity:0.7"> — one GET per listed host (~a minute); the page reloads with the fresh round, and a hand-run round mints its corpus entry too.</span>
+    <span style="opacity:0.7"> — one GET per listed host (~a minute); the page reloads with the fresh round, and a hand-run round mints its corpus entry too. Since 2026-09-18 that entry does not take the week's slot: the Sunday round appends its own entry after it and becomes the week's record. Before that, a weekday hand-run kept the Sunday round out of the chain.</span>
+  </form>
+  <form method="post" action="/admin/corpus/freeze" style="margin:0.5em 0">
+    <button type="submit">Freeze the latest round into the corpus</button>
+    <span style="opacity:0.7"> — signs the round already in KV without walking a new one; a no-op when the chain already holds that round. For a Sunday round the old per-week rule refused: press before the next Sunday overwrites it.</span>
   </form>
   <form method="post" action="/admin/ward/walk-directories" style="margin:0.5em 0">
     <button type="submit">Advance the directory walks one batch</button>

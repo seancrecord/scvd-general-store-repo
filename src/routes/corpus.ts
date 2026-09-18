@@ -16,6 +16,7 @@ import {
   getCorpusEntry,
   listCorpus,
   verifyCorpusChain,
+  weeklyCorpus,
 } from "@/services/corpus";
 import { batteryDeltaSeries } from "@/services/battery-delta";
 import { PREFLIGHT_VERSION } from "@/services/preflight";
@@ -1014,7 +1015,7 @@ corpusRoutes.get("/corpus/brief", (c) =>
  */
 corpusRoutes.get("/corpus/diff.json", async (c) => {
   const records = await listCorpus(c.env);
-  const knownWeeks = records.map((record) => record.snapshot.week);
+  const knownWeeks = weeklyCorpus(records).map((record) => record.snapshot.week);
   const since = c.req.query("since");
   if (!since) {
     return c.json(
@@ -1104,7 +1105,7 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
  */
 corpusRoutes.get("/corpus/battery-delta.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const records = await listCorpus(c.env);
+  const records = weeklyCorpus(await listCorpus(c.env));
   const series = batteryDeltaSeries(
     records.map((record) => ({
       week: record.snapshot.week,
@@ -1252,7 +1253,7 @@ corpusRoutes.get("/corpus/changes/:file{[0-9]{4}-W[0-9]{2}\\.json}", async (c) =
   const changes = await deriveChanges(records, week, base);
   if (!changes) {
     return c.json(
-      { error: `The chain holds no signed week named ${week}.`, known_weeks: records.map((record) => record.snapshot.week), latest: `${base}/corpus/latest.json` },
+      { error: `The chain holds no signed week named ${week}.`, known_weeks: weeklyCorpus(records).map((record) => record.snapshot.week), latest: `${base}/corpus/latest.json` },
       404,
     );
   }

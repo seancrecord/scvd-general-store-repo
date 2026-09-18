@@ -7,7 +7,7 @@ import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 import { chainFingerprintOf, latestCorpusEntry, listCorpus, resolveRecord } from "@/services/corpus-list";
 import type { CorpusPointer, CorpusRecord } from "@/services/corpus-list";
-export { listCorpus } from "@/services/corpus-list";
+export { listCorpus, weeklyCorpus } from "@/services/corpus-list";
 export type { CorpusRecord } from "@/services/corpus-list";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { detachEvidence } from "@/services/corpus-evidence";
@@ -164,12 +164,21 @@ export type CorpusPass =
 
 /**
  * One pass: freeze the latest ward round into the chain, if it is not
- * already there. IDEMPOTENT PER WEEK — the cron can call this every
+ * already there. IDEMPOTENT PER ROUND — the cron can call this every
  * Sunday (or every hour) and the chain grows by at most one entry per
- * round, because the ward's week key is the identity. The OTS
+ * round, because the round's own stamp (`at`) is the identity. The OTS
  * submission fails soft onto the record, same discipline as the key
  * chain: the chain is ours and already stored by the time any
  * calendar can disappoint us.
+ *
+ * WHY THE ROUND AND NOT THE WEEK (2026-09-18). Until today the week
+ * key was the identity, and the keeper's hand-run on a Tuesday took
+ * the week's one slot: every Sunday round from W34 to W37 ran, wrote
+ * KV, and was refused here without a word, so the chain held the
+ * midweek look and never the Sunday walk. A round re-run inside its
+ * week now APPENDS — both entries stand signed, and the week-keyed
+ * readers take the newest through weeklyCorpus. A re-fired cron still
+ * re-takes nothing: the same round has the same stamp.
  */
 /**
  * CHAIN HYGIENE (the G2 ruling, 2026-08-27): the signed snapshot must
@@ -222,10 +231,14 @@ export async function takeCorpusSnapshot(
     return { taken: false, reason: "no ward round has run yet" };
   }
   const previous = await latestCorpusEntry(env);
-  if (previous && previous.snapshot.week === round.week) {
+  if (
+    previous &&
+    previous.snapshot.week === round.week &&
+    previous.snapshot.round.at === round.at
+  ) {
     return {
       taken: false,
-      reason: `week ${round.week} is already in the corpus (sequence ${previous.snapshot.sequence})`,
+      reason: `round ${round.at} (week ${round.week}) is already in the corpus (sequence ${previous.snapshot.sequence})`,
     };
   }
   // The sequence is decided before the seal, because the evidence
