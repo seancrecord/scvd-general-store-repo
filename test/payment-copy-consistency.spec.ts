@@ -27,10 +27,20 @@ describe('payment claims follow the enabled checkout configuration', () => {
       for (const path of ['/try', '/menu/settlement_attestation', '/']) {
         const html = await (await get(path, true)).text();
         if (path === '/') {
+          // 2026-09-18: the meta description no longer carries the rail
+          // list (it has a ~160-character budget; test/use-when.spec.ts
+          // holds it), so it can only fail this check by naming a rail
+          // that is off. The positive claim moved to the WebSite JSON-LD
+          // description on the same page, which has no budget.
           const meta = html.match(/<meta name="description" content="([^"]+)"/)?.[1];
-          for (const label of configuration.labels) expect(meta).toContain(label);
+          expect(meta).toBeTruthy();
           if (!configuration.keys.includes('polygon')) expect(meta).not.toContain('Polygon');
           if (!configuration.keys.includes('solana')) expect(meta).not.toContain('Solana');
+          const webSite = html.match(/"@type":"WebSite"[^<]*?"description":"([^"]+)"/)?.[1];
+          expect(webSite, 'no WebSite JSON-LD description on the storefront').toBeTruthy();
+          for (const label of configuration.labels) expect(webSite).toContain(label);
+          if (!configuration.keys.includes('polygon')) expect(webSite).not.toContain('Polygon');
+          if (!configuration.keys.includes('solana')) expect(webSite).not.toContain('Solana');
         }
         const paymentLines = [...html.matchAll(/"(?:acceptedPaymentMethod|name)":"(USDC over x402 v2 on [^"]+|A wallet holding USDC on [^"]+)"/g)].map(match => match[1]!);
         expect(paymentLines.length, path).toBeGreaterThan(0);

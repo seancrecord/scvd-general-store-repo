@@ -269,7 +269,20 @@ describe("the sideways surfaces carry the position too", () => {
     expect(meta, "no meta description on the storefront").toBeTruthy();
     expect(meta).toContain("conformance");
     expect(meta).toContain("Bitcoin-anchored");
-    expect(meta).toContain("Solana");
+    /*
+     * 2026-09-18: the rail list left the meta tag. With the payment
+     * sentence appended the tag ran past 230 characters, and a search
+     * engine cut it or wrote its own; test/use-when.spec.ts now holds
+     * it at 160. The rails still ride the WebSite JSON-LD on the same
+     * page, which has no budget, so the "not just Base" check moves
+     * there rather than disappearing.
+     */
+    expect(meta).not.toContain("Solana");
+    const webSite = page.match(
+      /<script type="application\/ld\+json">(\{[^<]*"@type":"WebSite"[^<]*)<\/script>/,
+    )?.[1];
+    expect(webSite, "no WebSite JSON-LD on the storefront").toBeTruthy();
+    expect(webSite).toContain("Solana");
     const og =
       page.match(/<meta property="og:description" content="([^"]*)"/)?.[1] ??
       "";
