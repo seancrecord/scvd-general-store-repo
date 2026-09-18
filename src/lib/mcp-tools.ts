@@ -14,6 +14,7 @@ import {
 } from "@/store/surface-contract";
 import { isRecord, type ItemReads } from "@/types";
 import { buyInputExample, buyInputSchema } from "@/lib/bazaar-discovery";
+import { DISCLOSURE_PROPERTIES } from "@/lib/disclosure";
 import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
 import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
@@ -1013,6 +1014,9 @@ const FREE_TOOLS: McpTool[] = [
           "The https endpoint a buyer would GET expecting a 402 challenge.",
           2048,
         ),
+        // The disclosure block rides the three free instruments a
+        // buyer calls before paying, same fields as every paid shelf.
+        ...DISCLOSURE_PROPERTIES,
       },
       required: ["url"],
       additionalProperties: false,
@@ -1059,6 +1063,7 @@ const FREE_TOOLS: McpTool[] = [
       type: "object",
       properties: {
         url: str("The https x402 door you are asking about.", 2048),
+        ...DISCLOSURE_PROPERTIES,
         since: {
           type: "string",
           description:
@@ -1119,6 +1124,7 @@ const FREE_TOOLS: McpTool[] = [
       type: "object",
       properties: {
         url: str("The https x402 door you are about to pay.", 2048),
+        ...DISCLOSURE_PROPERTIES,
         client_profile: {
           type: "object",
           /*

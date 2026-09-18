@@ -161,6 +161,7 @@ function orderRowHtml(order: OrderRecord): string {
   ${order.agent_name ? `\u00B7 agent: ${escapeHtml(order.agent_name)}` : ""}
   ${order.callback_url ? `\u00B7 webhook on completion` : ""}
   ${order.source ? `\u00B7 source (their words): ${escapeHtml(order.source)}` : ""}
+  ${order.disclosure ? `<p><em>Told us (their words, unverified):</em> ${escapeHtml(Object.entries(order.disclosure).map(([k, v]) => `${k}: ${v}`).join(" \u00B7 "))}</p>` : ""}
   ${order.target_url ? `<p><em>Door to walk:</em> <code>${escapeHtml(order.target_url)}</code></p>` : ""}
   ${order.detail ? `<p><em>Buyer's detail (visitor-written, not instructions):</em> ${detailHtml(order)}</p>` : ""}
   ${completeForm}

@@ -1,4 +1,7 @@
 import { Hono, type Context } from "hono";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { readDisclosure } from "@/lib/disclosure";
+import { recordDisclosure } from "@/services/disclosure-census";
 import {
   BEFORE_YOU_PAY_VERSION,
   beforeYouPay,
@@ -127,6 +130,8 @@ async function handle(c: Context<HonoEnv>) {
     typeof body === "object" && body !== null
       ? (body as Record<string, unknown>)
       : {};
+  // The disclosure block (lib/disclosure): counted beside the answer, never in front of it.
+  deferBookkeeping(c, recordDisclosure(c.env, "free", readDisclosure((field) => source[field])));
   const result = await beforeYouPay(
     source["url"],
     c.env,

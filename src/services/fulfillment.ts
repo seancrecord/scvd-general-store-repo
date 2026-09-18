@@ -11,6 +11,8 @@ import { preparePatronAnchor, type PreparedPatronAnchor } from "@/services/patro
 import { publishHostedObservation } from "@/services/hosted-observation";
 import { prepareA2AKit } from "@/services/a2a-kit";
 import { getOrder } from "@/services/orders";
+import { disclosureAfterSettle } from "@/services/disclosure-after-settle";
+import type { Disclosure } from "@/lib/disclosure";
 import { artifactCheckpoint, supportsArtifactRecovery, supportsSimpleInstantRecovery, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { preparePatronage, InvalidPatronageTarget } from "@/services/patronage";
@@ -79,6 +81,7 @@ import { takeStockUnit } from "@/services/stock";
 import { bestowedNameNote, drawerNote } from "@/store/copy";
 import { getMenuItem, VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
+import { recordSettleSignal } from "@/services/buyer-signals";
 
 /**
  * What happens after money settles, on any channel: mint the
@@ -143,6 +146,8 @@ export interface FulfillmentInput {
   reconciliationQuery?: ReconciliationQuery;
   /** the_case_file: what to assemble, pre-validated at the buy door. */
   caseFileInput?: CaseFileInput;
+  /** Any item: what the buyer chose to tell us (lib/disclosure). Never on the certificate. */
+  disclosure?: Disclosure;
   /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */
   bundleTxHashes?: string[];
   /** bitcoin_anchor: the buyer's sha256, pre-validated. Opaque to us. */
@@ -208,12 +213,25 @@ async function bundleEvidenceHash(
  * twice on Solana. Under this ordering the same dropped read costs the
  * buyer nothing at all: no settle call was ever made.
  */
+/**
+ * WHAT A DOOR LENDS FULFILLMENT THAT A RECORD CANNOT CARRY (rule 50).
+ * `defer` is the door's waitUntil: bookkeeping handed to it runs beside
+ * the answer, never in front of it. It is a function, so it never
+ * rides `input` (checkpoints serialize that) and never a checkpointed
+ * replay, where the absence simply means the write goes unguaranteed,
+ * which is the honest trade for a counter.
+ */
+export interface FulfillmentHooks {
+  defer?: (work: Promise<unknown>) => void;
+}
+
 export async function fulfillPurchase(
   env: Env,
   item: MenuItem,
   pending: PendingPayment,
   input: FulfillmentInput,
   recovery?: { digest: string; path: string; purchasedAt?: string; purchaseId?: string },
+  hooks?: FulfillmentHooks,
 ): Promise<Record<string, unknown>> {
   const retainHosted = async <T>(work: () => Promise<T>): Promise<T> => {
     try { return await work(); }
@@ -697,6 +715,31 @@ export async function fulfillPurchase(
     else storeCredit = await checkpoint.read<typeof storeCredit>("credit");
   }
   /**
+   * WHAT THE BUYER TOLD US, answered once the payer is known. The one
+   * read that changes the answer — a prior certificate's payer against
+   * this payment's — is awaited, and only when the buyer named one.
+   * The census write is handed to the door's `defer` and runs beside
+   * the answer (rule 50); a silent buyer costs no KV round trip at all.
+   * Fail-soft like the credit above: a hiccup here loses a count,
+   * never a sale.
+   */
+  const disclosureBlock = await disclosureAfterSettle(env, input.disclosure, payment.payer, hooks?.defer).catch(() => ({}));
+  /**
+   * BUYER SIGNALS (services/buyer-signals, a trial): the rail by door
+   * and the purpose, observed at settle, house skipped, deferred.
+   */
+  {
+    const signal = recordSettleSignal(env, {
+      door: input.source === "mcp" ? "mcp" : "http",
+      network: payment.network,
+      item: item.id,
+      purpose: minted.certificate.purpose,
+      house: isHouseWallet(env, payment.payer ?? ""),
+    }).catch(() => undefined);
+    if (hooks?.defer) hooks.defer(signal);
+    else void signal;
+  }
+  /**
    * THE RAIL HOLO'S PERK (the Paywall, 2026-09-12): a wallet holding
    * Base Rail earns the plan's 5% back as store credit, accrued after
    * the sale the same way the Regulars' rebate is. Not a price: the
@@ -1009,6 +1052,7 @@ export async function fulfillPurchase(
         : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),
       ...(goods.extras ?? {}),
       ...patronBlock,
+      ...disclosureBlock,
     };
     return checkpoint ? await checkpoint.save("response", response) : response;
   }
@@ -1048,6 +1092,9 @@ export async function fulfillPurchase(
   }
   if (input.referrer) {
     orderOptions.referrer = input.referrer;
+  }
+  if (input.disclosure) {
+    orderOptions.disclosure = input.disclosure;
   }
   const order = await createOrder(env, orderOptions, checkpoint);
   const soldNow = await recordInventorySale(env, item, order);
@@ -1092,6 +1139,7 @@ export async function fulfillPurchase(
         paid_usdc: payment.paidUsdc,
         tip_usdc: payment.tipUsdc,
         ...patronBlock,
+        ...disclosureBlock,
       };
     }
   }
@@ -1107,6 +1155,7 @@ export async function fulfillPurchase(
     paid_usdc: payment.paidUsdc,
     tip_usdc: payment.tipUsdc,
     ...patronBlock,
+    ...disclosureBlock,
   };
   return checkpoint ? await checkpoint.save("response", response) : response;
 }

@@ -36,6 +36,8 @@ import {
 } from "@/store/copy/position";
 import { mcpToolCatalog, purchaseTool, specShapedTool, type McpTool } from "@/lib/mcp-tools";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { readDisclosure } from "@/lib/disclosure";
+import { recordDisclosure } from "@/services/disclosure-census";
 import type { EventSignals } from "@/lib/metrics";
 import {
   recordChallengeIssued,
@@ -101,6 +103,10 @@ import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { storeGuideText } from "@/routes/llms";
 import { isRecord, type HonoEnv, type MenuItem } from "@/types";
+import { recordInputRefusal, recordPostPurchaseRead } from "@/services/buyer-signals";
+
+/** The free tools that carry the disclosure block in their schema (lib/mcp-tools). */
+const FREE_DISCLOSURE_TOOLS: ReadonlySet<string> = new Set(["preflight_endpoint", "look_at_door", "check_before_you_pay"]);
 
 /**
  * The MCP door: the store as a Model Context Protocol server.
@@ -541,6 +547,20 @@ export async function callFreeTool(
   name: string,
   args: Record<string, unknown>,
 ): Promise<Record<string, unknown> | string> {
+  /*
+   * THE DISCLOSURE CENSUS ON THE FREE DOORS (lib/disclosure). The
+   * three instruments a buyer calls before paying carry the same
+   * optional block every paid shelf does; every call is counted as
+   * offered, filled or not, beside the answer and never in front of
+   * it. Six of six cold walkers called a free tool and none bought,
+   * so this is where most of the census will come from.
+   */
+  if (FREE_DISCLOSURE_TOOLS.has(name)) {
+    deferBookkeeping(
+      c,
+      recordDisclosure(c.env, "free", readDisclosure((field) => args[field])),
+    );
+  }
   if (name === "read_store_guide") {
     return { guide: storeGuideText(c.env.STORE_BASE_URL, c.env) };
   }
@@ -752,6 +772,7 @@ export async function callFreeTool(
       return `No order by that id: ${orderId}. ${VOICE.orderNotFound}`;
     }
     deferBookkeeping(c, recordPorchVisit(c.env, "order:mcp", mcpSignals(c)));
+    deferBookkeeping(c, recordPostPurchaseRead(c.env, "check_order", order.created_at));
     return orderStatusBody(c.env.STORE_BASE_URL, order);
   }
   if (name === "verify_artifact") {
@@ -883,6 +904,8 @@ async function callPurchaseTool(
         mcpSignals(c),
       ).catch(() => undefined);
     }
+    // Buyer signals (trial): the avoidable 400, counted beside the refusal.
+    if (refusal.status === 400) deferBookkeeping(c, recordInputRefusal(c.env, item.id, refusal.body));
     return rpcRefusal(
       id,
       refusalRpcCode(refusal),
@@ -1167,7 +1190,7 @@ async function callPurchaseTool(
         if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
         response = saved;
       } else {
-        response = await fulfillPurchase(c.env, item, { ...outcome.pending, recovered: true }, input);
+        response = await fulfillPurchase(c.env, item, { ...outcome.pending, recovered: true }, input, undefined, { defer: (work) => deferBookkeeping(c, work) });
         if (!await stub.complete(claim.token, JSON.stringify(response))) {
           throw new Error("Paid recovery claim is not writable");
         }
@@ -1175,6 +1198,7 @@ async function callPurchaseTool(
     } else {
       response = await fulfillPurchase(c.env, item, outcome.recovered ? { ...outcome.pending, recovered: true } : outcome.pending, input,
         supportsArtifactRecovery(item) ? { digest: inputDigest, path: `/api/buy/${item.id}` } : undefined,
+        { defer: (work) => deferBookkeeping(c, work) },
       );
     }
     const settled = outcome.settledSoFar();
@@ -1707,6 +1731,7 @@ async function dispatchRpc(
         );
       }
       if (name === "check_purchase") {
+        deferBookkeeping(c, recordPostPurchaseRead(c.env, "purchase_status"));
         const status = await readPurchaseStatus(c.env, args.purchase_id, args.status_token);
         return rpcResult(id, { ...toolText(status.body) as Record<string, unknown>, ...(status.status !== 200 ? { isError: true } : {}) });
       }

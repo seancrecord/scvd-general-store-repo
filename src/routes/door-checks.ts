@@ -51,6 +51,8 @@ import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
 import { getRetiredItem } from "@/store/retired";
 import type { HonoEnv, MenuItem } from "@/types";
+import { recordInputRefusal } from "@/services/buyer-signals";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 
 export function buyRequestPath(c: { req: { path: string } }): string {
   const path = c.req.path;
@@ -407,6 +409,8 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
         { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
       if (recovered) return signedRecoveryResponse(c, recovered);
     }
+    // Buyer signals (trial): the avoidable 400, counted beside the refusal.
+    if (refusal.status === 400) deferBookkeeping(c, recordInputRefusal(c.env, item.id, refusal.body));
     c.set("inputRefusal", refusal.body);
     return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body) : {}) }, refusal.status);
   }

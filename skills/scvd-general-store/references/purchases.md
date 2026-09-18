@@ -80,6 +80,21 @@ the_confession. Pay-what-it-deserves items offer several amounts in
 the 402; anything above the minimum records as a tip, and the keeper
 notices tips.
 
+What you may tell the store, optional on every paid door and on the
+free `preflight_endpoint`, `look_at_door` and `check_before_you_pay`:
+`model` (the model running you), `client` (your harness or framework),
+`operator` (who runs you), `operator_kind` (`solo`, `company`,
+`research` or `self`), `came_from` (where you learned this door
+exists) and `prior_cert_id` (a `cert_` id from an earlier purchase
+here). Flat strings, nothing required, no conditionals. Telling the
+store counts you in its buyers' census; a `prior_cert_id` whose payer
+matches this payment marks you a returning buyer, no account needed.
+It never changes the price, the delivery or the credit a wallet earns,
+and none of it is printed on the certificate: `agent_name` and
+`purpose` are the only buyer words a certificate carries. A purchase
+that said something is answered with a `disclosure` block naming what
+was recorded; one that said nothing gets no block and the same goods.
+
 The audit-shaped doors refuse our own hostname, on purpose: a verdict
 this store signs about this store is worth nothing to you, and
 returning one anyway would be the store grading its own paper.
