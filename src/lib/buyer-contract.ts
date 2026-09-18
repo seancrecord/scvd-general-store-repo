@@ -1,4 +1,4 @@
-import { purchaseCapabilities, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
+import { purchaseCapabilities, type PurchaseCapabilityConfig, nativeMcpCheckoutShape } from "@/lib/purchase-capabilities";
 import { purchaseChecklist } from "@/lib/purchase-checklist";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { publicationCollections } from "@/lib/publication-checkout";
@@ -65,8 +65,10 @@ export function compactItemRow(item: MenuItem, base: string, config?: PurchaseCa
   const capabilities = purchaseCapabilities(item, config);
   return {
     // The compact document already carries the full x402 checkout contract.
-    // Spend its reading budget on an additional protocol only when enabled.
-    ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities } : {}),
+    // Spend its reading budget on an additional protocol only when enabled,
+    // and on the item-independent MCP row once per page (compactCatalog),
+    // not once per item; the item contract carries every row.
+    ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities.filter(row => row.transport !== "mcp") } : {}),
     id: item.id,
     name: item.name,
     task: CAPABILITY_QUERY[item.id] ?? item.name,
@@ -106,8 +108,10 @@ function compactInputSchema(item: MenuItem): Record<string, unknown> {
 
 export function compactItemContract(item: MenuItem, base: string, config?: PurchaseCapabilityConfig) {
   const artifact = artifactClassForItem(item.id);
+  const capabilities = purchaseCapabilities(item, config);
   return {
     ...compactItemRow(item, base, config),
+    ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities } : {}),
     buyer_guidance: buyerGuidance(item, base),
     purchase_checklist: purchaseChecklist(item, config),
     description: item.description,
@@ -129,7 +133,9 @@ export function compactCatalog(base: string, rawPage = "0", config?: PurchaseCap
   const offset = page * COMPACT_CATALOG_PAGE_SIZE;
   const items = MENU_ITEMS.slice(offset, offset + COMPACT_CATALOG_PAGE_SIZE)
     .map(item => compactItemRow(item, base, config));
+  const mcpNative = nativeMcpCheckoutShape(config);
   return {
+    ...(mcpNative ? { native_mcp_checkout: mcpNative } : {}),
     publications: publicationCollections(base),
     total: MENU_ITEMS.length,
     page,
