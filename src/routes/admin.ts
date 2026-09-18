@@ -2266,6 +2266,18 @@ adminRoutes.get("/admin/signals", async (c) => {
   return c.html(renderSignalsPage({ signals: await readBuyerSignals(c.env, month) }));
 });
 
+adminRoutes.get("/admin/doors-open", async (c) => {
+  const { draftDoorsOpen, renderDoorsOpenMarkdown } = await import("@/services/doors-open");
+  const { renderDoorsOpenPage } = await import("@/pages/admin/doors-open-page");
+  const draft = await draftDoorsOpen(c.env);
+  return c.html(renderDoorsOpenPage({ draft, markdown: renderDoorsOpenMarkdown(draft) }));
+});
+
+adminRoutes.get("/admin/doors-open.md", async (c) => {
+  const { draftDoorsOpen, renderDoorsOpenMarkdown } = await import("@/services/doors-open");
+  return c.text(renderDoorsOpenMarkdown(await draftDoorsOpen(c.env)), 200, { "Content-Type": "text/markdown; charset=utf-8" });
+});
+
 adminRoutes.get("/admin/instruments", async (c) => {
   const { computeObservatory } = await import("@/services/observatory");
   const { computePulse } = await import("@/services/pulse");

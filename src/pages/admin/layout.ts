@@ -75,6 +75,12 @@ export type AdminTab =
    * prefix, one page, built to be judged and stopped.
    */
   | "signals"
+  /**
+   * DOORS OPEN (2026-09-18), the weekly issue for sellers, drafted by
+   * the instruments and read here before the keeper publishes it by
+   * hand. A draft on the desk, never a publication surface.
+   */
+  | "doors-open"
   | "instruments"
   /**
    * GROWTH (2026-09-11): every month since opening side by side — the
@@ -165,6 +171,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
   { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
   { tab: "signals", href: "/admin/signals", label: "Buyer signals (trial)" },
+  { tab: "doors-open", href: "/admin/doors-open", label: "Doors Open (draft)" },
   { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
   { tab: "growth", href: "/admin/growth", label: "Growth" },
   { tab: "peers", href: "/admin/peers", label: "The peers" },
@@ -274,6 +281,7 @@ export const EVERY_ROOM: readonly { href: string; label: string }[] = [
   { href: "/admin/market/authenticity", label: "The market: authenticity" },
   { href: "/admin/market/inflows", label: "The market: inflows" },
   { href: "/admin/digest", label: "Latest weekly digest (JSON)" },
+  { href: "/admin/doors-open.md", label: "Doors Open, this week's draft (Markdown)" },
   {
     href: "/admin/bounties/plan",
     label: "The standing bounty order — weeks left, and this week's headroom (JSON)",
