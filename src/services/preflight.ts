@@ -720,7 +720,7 @@ function report(
   } = {},
 ): PreflightReport {
   const battery = options.battery ?? PREFLIGHT_VERSION;
-  const vector = triStateVector(checks);
+  const vector = triStateVector(checks, verdict === "method_unresolved" ? options.method : undefined);
   const level = reachedLevel(vector, verdict === "unreachable");
   return {
     version: battery,
@@ -1994,9 +1994,21 @@ export const BATTERY_CHECK_NAMES = [
 
 export interface TriStateRow {
   name: string;
-  state: "pass" | "fail" | "not_reached";
+  /**
+   * `not_exercised` (2026-09-18): the door refused every method the
+   * probe sends AS a method (405/501), so this check was never asked
+   * — distinct from `not_reached`, where an earlier check ran, failed
+   * and stopped the battery. Proposed on the x402 spec thread by
+   * minia2auk after two POST-only doors were listed publicly as
+   * serving no challenge: a 405 is the door naming which verb it
+   * wants, not a defect, and a vector that filed it under any other
+   * state was lumping "wrong question" in with "broken".
+   */
+  state: "pass" | "fail" | "not_reached" | "not_exercised";
   /** Set only on not_reached: the name of the check that stopped the battery. */
   blocked_by?: string;
+  /** Set only on not_exercised: every method the door refused, in the order sent. */
+  refused_methods?: string[];
   detail: string;
 }
 
@@ -2007,7 +2019,32 @@ export interface TriStateRow {
  * never reached says so structurally — which check blocked it —
  * and carries no observation about the door, because none was made.
  */
-export function triStateVector(checks: PreflightCheck[]): TriStateRow[] {
+export function triStateVector(
+  checks: PreflightCheck[],
+  /** The probe's method reading when the verdict is method_unresolved; every row is then not_exercised. */
+  notExercised?: ProbeMethodReading,
+): TriStateRow[] {
+  /*
+   * NOT EXERCISED IS NOT NOT REACHED (2026-09-18). Before this branch,
+   * a method_unresolved report handed an EMPTY check list to this
+   * function, the blocker defaulted to "status-402", and every row
+   * read "never ran: the status-402 check stopped the battery before
+   * this one" — a sentence naming a check that never ran either, on
+   * the one report whose whole point is that nothing was asked. A
+   * reader dumping vectors into a bucket list had every reason to
+   * file that beside a real status-402 failure.
+   */
+  if (notExercised?.unresolved) {
+    const refused = notExercised.attempted.join(", ");
+    return BATTERY_CHECK_NAMES.map((name) => ({
+      name,
+      state: "not_exercised" as const,
+      refused_methods: [...notExercised.attempted],
+      detail: `not exercised: the door refused ${refused} as a method${
+        notExercised.allow ? ` (Allow: ${notExercised.allow})` : ""
+      }, so this check was never asked. A method refusal is the door naming which verb it wants, not a defect; no observation about its payment challenge exists for this row, and the gap is ours.`,
+    }));
+  }
   const ran = new Map(checks.map((check) => [check.name, check]));
   /*
    * The blocker is the LAST failing check that ran, whatever its

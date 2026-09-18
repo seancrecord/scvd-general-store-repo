@@ -1176,16 +1176,21 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     checks_vector: {
       type: "array",
       description:
-        "The tri-state view: a check that never ran is not a check that passed, and blocked_by names what stopped it.",
+        "The per-check view: a check that never ran is not a check that passed. not_reached means an earlier check failed and blocked_by names it; not_exercised means the door refused every method the probe sends as a method (405/501), so nothing was asked — a wrong verb, never a defect — and refused_methods names them.",
       items: {
         type: "object",
         required: ["name", "state", "detail"],
         properties: {
           name: { type: "string" },
-          state: { type: "string", enum: ["pass", "fail", "not_reached"] },
+          state: { type: "string", enum: ["pass", "fail", "not_reached", "not_exercised"] },
           blocked_by: {
             type: "string",
             description: "Set only on not_reached.",
+          },
+          refused_methods: {
+            type: "array",
+            items: { type: "string" },
+            description: "Set only on not_exercised: every method the door refused, in the order sent.",
           },
           detail: { type: "string" },
         },
