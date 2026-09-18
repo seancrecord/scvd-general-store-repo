@@ -5,12 +5,12 @@ import type { OpenForBusinessIssue } from "@/services/open-for-business-store";
 import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 
 /**
- * THE DRAFT, ON THE DESK. The instruments lay the tables; the keeper
- * reads, cuts, writes the fix of the week and presses publish
- * himself. The Markdown block at the bottom is the whole issue,
- * editable in place, and the button under it is the only thing on
- * this page that publishes: it puts the issue on the shelf at
- * /open-for-business/{week} at the price the keeper set (rule 30).
+ * THE DRAFT, ON THE DESK. The instruments lay the tables and derive
+ * the fix of the week from the week's merged pull requests. The
+ * Markdown block at the bottom is the whole issue, editable in
+ * place; the button under it puts it on the shelf early. Left alone,
+ * the hourly press publishes the closed week on its own (the keeper's
+ * ruling, 2026-09-18), and this page says when.
  */
 
 export interface OpenForBusinessPageData {
@@ -19,6 +19,8 @@ export interface OpenForBusinessPageData {
   /** Issues already on the shelf, newest first; null when the shelf could not be read. */
   published: OpenForBusinessIssue[] | null;
   notice?: string;
+  /** The week the hourly press puts up next, and when. */
+  nextAutomatic: { week: string; at: string };
 }
 
 export function renderOpenForBusinessPage(data: OpenForBusinessPageData): string {
@@ -41,14 +43,19 @@ export function renderOpenForBusinessPage(data: OpenForBusinessPageData): string
   const body = `<section>
     <h2>Open for Business, ${escapeHtml(d.week)} <small>(draft)</small></h2>
     ${data.notice ? `<p><strong>${escapeHtml(data.notice)}</strong></p>` : ""}
-    <p><small>The weekly issue for sellers, drafted by the instruments from the same readers the desk uses; nothing here is typed by a machine and nothing publishes until you press the button at the bottom. Read it, cut what the week does not support, write the fix of the week, and press publish yourself.
+    <p><small>The weekly issue for sellers, drafted by the instruments from the same readers the desk uses. <strong>It goes on the shelf on its own</strong> on the first hourly firing after the week closes (${escapeHtml(data.nextAutomatic.week)}, about ${escapeHtml(data.nextAutomatic.at.slice(0, 16).replace("T", " "))} UTC), as it stands then. Publish it early from the box below and the press leaves your version alone; take any issue down from the shelf list.
     ${d.unread.length > 0 ? `<strong>Readers that did not answer:</strong> ${d.unread.map(escapeHtml).join(", ")}.` : "Every reader answered."}</small></p>
     <p><strong>The number of the week:</strong> ${d.number_of_the_week ? `${escapeHtml(d.number_of_the_week.sentence)} <small>(${escapeHtml(d.number_of_the_week.source)})</small>` : "<em>the instruments did not produce one; yours to pick</em>"}</p>
   </section>
   ${sections}
   <section>
     <h2>The fix of the week</h2>
-    <p><em>Keeper's pen. One change a seller can make on Monday, with our own before and after. The signals page's refusal table is the usual place to find it.</em></p>
+    <p><small>Derived, by your ruling of 2026-09-18: the week's merged pull requests, titles as written, dated. What we changed at our own door is the list a seller can copy on Monday. Edit it in the box below if the week deserves other words.</small></p>
+    ${d.changes.read
+      ? d.changes.rows.length === 0
+        ? "<p><small>Nothing merged this week yet.</small></p>"
+        : `<ul>${d.changes.rows.map((row) => `<li>${escapeHtml(row.merged_on)} — ${escapeHtml(row.title)} <a href="${escapeHtml(row.url)}">#${row.number}</a></li>`).join("")}</ul>${d.changes.truncated ? "<p><small>The newest twenty are listed; more merged.</small></p>" : ""}`
+      : "<p><strong>Not read:</strong> <small>GitHub did not answer when this draft was laid. Reload to try again; the Monday press tries again on its own.</small></p>"}
   </section>
   <section>
     <h2>The issue, ready to publish</h2>

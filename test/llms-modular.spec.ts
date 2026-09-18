@@ -1048,8 +1048,12 @@ const BASE = "https://scvd.store";
 // as a line because the index sits 30 characters under its budget.
 // Nothing else in the guide moved; the addition test below carries
 // the same retake.
+// Re-taken later 2026-09-18 on the keeper's ruling: the paragraph no
+// longer says the issue is published by hand. A closed week goes on
+// the shelf on its own and the fix of the week is the week's merged
+// pull requests; the guide says so (rule 45).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e2671affc94c23f959afa6462c35963528c46ca3b9e387f365d26bbe148acd6e";
+  "529e622f862e720ff3454e296b040ee2727d80e2768a5355f5cf27160a93dd63";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1091,7 +1095,7 @@ describe("nothing was rewritten", () => {
     // 2026-09-18: re-taken with the Open for Business paragraph and
     // the sellers line in the guide (see GUIDE_DIGEST_BEFORE_THE_SPLIT).
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "7e098c556f76a75be6a86acab5a1018e68c4e2680e216ff8db28a621e041dae2",
+      "f6be9ead5a6bd87869fccc2ba7157d3a54224801b95fddf2639dca973d8cec17",
     );
   });
 

@@ -4,7 +4,8 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
-import { draftOpenForBusiness, renderOpenForBusinessMarkdown } from "@/services/open-for-business";
+import { draftOpenForBusiness, publishClosedWeek, renderOpenForBusinessMarkdown } from "@/services/open-for-business";
+import { readWeekChanges, renderWeekChangesMarkdown, weekChanges, type PullsFetcher } from "@/services/week-changes";
 import { recordInputRefusal, recordSettleSignal } from "@/services/buyer-signals";
 import { getMenuItem } from "@/store";
 import type { Env } from "@/types";
@@ -38,6 +39,23 @@ Nine agents were refused before paying; six for a field they left out.
 
 Name the required field in the 400 body, not only in the schema.
 `;
+
+/** A GitHub pulls answer with the given merged rows; the fetcher never touches the network. */
+function pullsOf(rows: Array<{ number: number; title: string; merged_at: string | null; login?: string; type?: string }>): PullsFetcher {
+  return async () =>
+    rows.map((row) => ({
+      number: row.number,
+      title: row.title,
+      merged_at: row.merged_at,
+      html_url: `https://github.com/seancrecord/scvd-general-store-repo/pull/${row.number}`,
+      user: { login: row.login ?? "seancrecord", type: row.type ?? "User" },
+    }));
+}
+
+async function clearWeekChanges(): Promise<void> {
+  const listed = await testEnv.COUNTERS.list({ prefix: "week_changes:" });
+  for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
+}
 
 async function publish(week = "2026-W38", markdown = ISSUE, teaser = ""): Promise<Response> {
   const form = new URLSearchParams({ week, markdown, teaser });
@@ -84,11 +102,14 @@ describe("the draft", () => {
     expect(hungUp.unread).toBe(false);
     expect(hungUp.numbers.find((n) => n.label === "pre-payment 400s this month")?.value).toBe(1);
     expect(hungUp.rows.some(([k]) => k === "spot_check:host:malformed")).toBe(true);
-    expect(draft.fix_of_the_week).toBe("");
+    // No fetcher and the facilitator mock refuses outbound fetches: the week's changes are NOT READ, never empty.
+    expect(draft.changes.read).toBe(false);
+    expect(draft.fix_of_the_week).toContain("were not read");
+    expect(draft.unread).toContain("the week's changes");
   });
 
   it("renders Markdown a keeper can paste, with the number of the week first", async () => {
-    const draft = await draftOpenForBusiness(testEnv);
+    const draft = await draftOpenForBusiness(testEnv, new Date(), pullsOf([]));
     const md = renderOpenForBusinessMarkdown(draft);
     expect(md.startsWith(`# Open for Business — ${draft.week}`)).toBe(true);
     expect(md.indexOf("## The number of the week")).toBeLessThan(md.indexOf("## Where they got hung up"));
@@ -195,5 +216,91 @@ describe("the shelf", () => {
     expect(removed.status).toBe(302);
     expect((await SELF.fetch(`${BASE}/open-for-business/2026-W39`)).status).toBe(404);
     expect((await SELF.fetch(`${BASE}/admin/open-for-business/publish`, { method: "POST", body: "week=2026-W40&markdown=%23+x%0A%0Ay" })).status).toBe(401);
+  });
+});
+
+describe("the fix of the week, derived from the week's merged pull requests", () => {
+  beforeEach(clearWeekChanges);
+
+  it("keeps the week's merges, dated and titled, and leaves out bots and other weeks", async () => {
+    const pulls = pullsOf([
+      { number: 808, title: "Open for Business: the seller's weekly on the shelf at $25", merged_at: "2026-09-18T17:30:00Z" },
+      { number: 806, title: "Doors Open: the weekly issue for sellers", merged_at: "2026-09-18T16:11:00Z" },
+      { number: 799, title: "chore(deps): bump vitest", merged_at: "2026-09-16T09:00:00Z", login: "dependabot[bot]", type: "Bot" },
+      { number: 790, title: "Last week's change", merged_at: "2026-09-13T12:00:00Z" },
+      { number: 812, title: "Closed without merging", merged_at: null },
+    ]);
+    const read = await readWeekChanges(testEnv, "2026-W38", pulls);
+    expect(read?.read).toBe(true);
+    expect(read?.rows.map((row) => row.number)).toEqual([808, 806]);
+    expect(read?.rows[0]?.merged_on).toBe("2026-09-18");
+    const md = renderWeekChangesMarkdown(read!);
+    expect(md).toContain("- 2026-09-18 — Open for Business: the seller's weekly on the shelf at $25 ([#808](https://github.com/seancrecord/scvd-general-store-repo/pull/808))");
+    expect(md).toContain("a seller can copy on Monday");
+    expect(renderWeekChangesMarkdown({ week: "2026-W38", read: true, read_at: "", rows: [], truncated: false })).toContain("Nothing changed at our own door this week");
+  });
+
+  it("says not read when GitHub does not answer, and never keeps that as the week's answer", async () => {
+    const silent: PullsFetcher = async () => null;
+    const first = await weekChanges(testEnv, "2026-W38", new Date("2026-09-18T18:00:00Z"), silent);
+    expect(first.read).toBe(false);
+    expect(renderWeekChangesMarkdown(first)).toContain("were not read");
+    const later = await weekChanges(testEnv, "2026-W38", new Date("2026-09-18T18:01:00Z"), pullsOf([{ number: 1, title: "A change", merged_at: "2026-09-17T10:00:00Z" }]));
+    expect(later.read).toBe(true);
+    expect(later.rows.length).toBe(1);
+    // A closed week's successful read is kept: the next asker gets it without a fetch.
+    let asked = 0;
+    const counting: PullsFetcher = async () => { asked += 1; return []; };
+    const held = await weekChanges(testEnv, "2026-W38", new Date("2026-09-22T00:30:00Z"), counting);
+    expect(held.rows.length).toBe(1);
+    expect(asked).toBe(0);
+  });
+
+  it("the draft carries the list under the fix of the week", async () => {
+    const draft = await draftOpenForBusiness(testEnv, new Date("2026-09-18T18:00:00Z"), pullsOf([{ number: 808, title: "A change at our door", merged_at: "2026-09-18T17:30:00Z" }]));
+    expect(draft.changes.read).toBe(true);
+    const md = renderOpenForBusinessMarkdown(draft);
+    expect(md.indexOf("## The fix of the week")).toBeGreaterThan(0);
+    expect(md).toContain("- 2026-09-18 — A change at our door ([#808]");
+    expect(draft.unread).not.toContain("the week's changes");
+  });
+});
+
+describe("the Monday press", () => {
+  beforeEach(async () => {
+    await clearShelf();
+    await clearWeekChanges();
+  });
+
+  it("puts the closed week on the shelf once, never over the keeper's own, and skips weeks before the shelf opened", async () => {
+    const pulls = pullsOf([{ number: 808, title: "A change at our door", merged_at: "2026-09-18T17:30:00Z" }]);
+    // Monday 2026-09-21 00:30Z: W38 has just closed.
+    const monday = new Date("2026-09-21T00:30:00Z");
+    const first = await publishClosedWeek(testEnv, monday, pulls);
+    expect(first.outcome).toBe("published");
+    expect(first.issue?.week).toBe("2026-W38");
+    expect(first.issue?.date).toBe("2026-09-21");
+    expect(first.issue?.markdown).toContain("- 2026-09-18 — A change at our door");
+    const index = (await (await SELF.fetch(`${BASE}/open-for-business`, { headers: { Accept: "application/json" } })).json()) as { issues: Array<{ week: string }> };
+    expect(index.issues.map((issue) => issue.week)).toEqual(["2026-W38"]);
+    // The next hourly firing finds it there and leaves it alone.
+    const again = await publishClosedWeek(testEnv, new Date("2026-09-21T01:30:00Z"), pulls);
+    expect(again.outcome).toBe("already_on_shelf");
+    // The keeper's own version of a week stands: the press never overwrites it.
+    expect((await publish("2026-W39", "# The keeper's own W39\n\nHis words.")).status).toBe(302);
+    const keeperWins = await publishClosedWeek(testEnv, new Date("2026-09-28T00:30:00Z"), pulls);
+    expect(keeperWins.outcome).toBe("already_on_shelf");
+    expect(keeperWins.issue?.title).toBe("The keeper's own W39");
+    // A week that closed before the shelf opened is never sold.
+    const early = await publishClosedWeek(testEnv, new Date("2026-09-14T00:30:00Z"), pulls);
+    expect(early.outcome).toBe("before_opening");
+    expect((await SELF.fetch(`${BASE}/open-for-business/2026-W37`)).status).toBe(404);
+  });
+
+  it("the desk says when the press fires next and shows the week's changes", async () => {
+    const page = await (await SELF.fetch(`${BASE}/admin/open-for-business`, { headers: AUTH })).text();
+    expect(page).toContain("It goes on the shelf on its own");
+    expect(page).toContain("The fix of the week");
+    expect(page).toContain("Not read:");
   });
 });

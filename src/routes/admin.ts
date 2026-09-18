@@ -2267,7 +2267,7 @@ adminRoutes.get("/admin/signals", async (c) => {
 });
 
 adminRoutes.get("/admin/open-for-business", async (c) => {
-  const { draftOpenForBusiness, renderOpenForBusinessMarkdown } = await import("@/services/open-for-business");
+  const { draftOpenForBusiness, nextAutomaticIssue, renderOpenForBusinessMarkdown } = await import("@/services/open-for-business");
   const { renderOpenForBusinessPage } = await import("@/pages/admin/open-for-business-page");
   const { listOpenForBusinessIssues } = await import("@/services/open-for-business-store");
   const [draft, published] = await Promise.all([
@@ -2279,6 +2279,7 @@ adminRoutes.get("/admin/open-for-business", async (c) => {
       draft,
       markdown: renderOpenForBusinessMarkdown(draft),
       published,
+      nextAutomatic: nextAutomaticIssue(),
       notice: c.req.query("published") ? `Issue ${c.req.query("published")} is on the shelf.` : c.req.query("removed") ? `Issue ${c.req.query("removed")} is off the shelf.` : undefined,
     }),
   );
@@ -2286,12 +2287,14 @@ adminRoutes.get("/admin/open-for-business", async (c) => {
 
 /**
  * THE PUBLISH LEVER (2026-09-18). The keeper reads the draft, edits
- * it in the box — cuts, corrections, the fix of the week in his own
- * words — and presses this. The issue goes on the shelf at
+ * it in the box and presses this: the issue goes on the shelf at
  * /open-for-business/{week} on the next request; no deploy, no
- * commit. The same week again replaces the issue. Nothing here
- * publishes without the press (rule 30), and the form refuses rather
- * than guesses when the body has no heading or no prose.
+ * commit. The same week again replaces the issue. Since the ruling
+ * later that day the hourly press publishes a closed week on its own
+ * (services/open-for-business.ts, publishClosedWeek); this lever is
+ * how the keeper gets his own words up first, which the press never
+ * overwrites. The form refuses rather than guesses when the body has
+ * no heading or no prose.
  */
 adminRoutes.post("/admin/open-for-business/publish", async (c) => {
   const { saveOpenForBusinessIssue } = await import("@/services/open-for-business-store");
