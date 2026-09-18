@@ -1,0 +1,53 @@
+{
+  "recorded_at": "2026-09-17T21:38:10.136370+00:00",
+  "gate": "Both hosts must pass their one frozen capability attempt before the four-cell cohort launches.",
+  "state": "not_launched",
+  "reason": "Claude capability incomplete at wall-time cap; no retry permitted within this freeze.",
+  "planned_cells": [
+    {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    }
+  ],
+  "counts": {
+    "planned_buyers": 4,
+    "launched_buyers": 0,
+    "completed_buyers": 0,
+    "eligible_recipient_pairs": 0,
+    "launched_recipients": 0
+  },
+  "limits": [
+    "Unlaunched planned cells are not removed from the plan. This is not a 0/4 observed buyer failure result.",
+    "No new evidence about product retention, buyer interpretation or takeoff readiness was collected.",
+    "The previous 1/4 referred result remains historical evidence, unchanged."
+  ],
+  "next": "Diagnose native host completion separately, freeze a new qualification if justified, and keep this capped attempt. Do not infer an npm/verifier failure or extend the existing cap."
+}

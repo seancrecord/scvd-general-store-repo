@@ -1,0 +1,17 @@
+HTTP/2 200 
+access-control-allow-headers: Content-Type, Authorization, X-Requested-With
+access-control-allow-methods: GET, POST, PUT, DELETE, OPTIONS
+access-control-allow-origin: *
+access-control-max-age: 86400
+cache-control: public, max-age=300
+content-type: application/json
+x-ratelimit-limit: 10
+x-ratelimit-remaining: 1
+x-ratelimit-reset: 1789590519
+date: Wed, 16 Sep 2026 20:28:38 GMT
+content-length: 78
+x-github-backend: Kubernetes
+x-github-request-id: D2DD:9F97B:1132624:12B6464:6AAAFBF6
+x-github-edge-region: iad
+server: github.com
+

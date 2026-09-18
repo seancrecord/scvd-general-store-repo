@@ -210,7 +210,8 @@ import { RETIRED_KEYS } from "@/store/key-registry";
 /** 3.16.4: completion callback policy, visible outcomes and capacity refusals. */
 /** 3.16.5: exact buyer text and separate purchased-text/human-work proofs. */
 /** 3.16.7: the probe rule is back — a bare GET answers 402 naming required_params; supplied inputs are validated before terms. */
-export const SKILL_VERSION = "3.16.7";
+/** 3.17.0: installed task router and guarded reference tree. */
+export const SKILL_VERSION = "3.17.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

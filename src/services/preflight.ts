@@ -1,4 +1,6 @@
 import { getMenuItem } from "@/store/menu";
+import { buyerLinks } from "@/lib/buyer-contract";
+import { VERIFICATION_SKILL } from "@/store/verification-skill";
 import { readMppCore, type MppCoreBlock } from "@/services/mpp-core";
 import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
@@ -1883,7 +1885,8 @@ export const REACHED_LEVEL_MEANING = reachedLevelMeaning();
  *
  * So each unclimbed rung now names what climbs it: the item, the
  * price, the tool, and the URL. Prices are read from the menu rather
- * than typed here (rule 1), so a repriced shelf follows this block.
+ * than typed here (rule 55: the claim ships with the path that
+ * produced it), so a repriced shelf follows this block.
  *
  * NO BUTTON, ANYWHERE. The evidence card still carries none of this —
  * `mcp-apps.ts` refuses ui metadata to anything that moves money and a
@@ -1915,12 +1918,19 @@ function climbedBy(itemId: string, base: string): Record<string, unknown> | null
     tool_door: `${base}/mcp`,
     url: `${base}/api/buy/${item.id}`,
     what_you_get: item.name,
+    ...buyerLinks(item, base),
   };
 }
 
 export function theRestOfTheLadder(battery: string, base: string): Record<string, unknown> {
   const climbed = ["L1", "L2", "L3a", ...(battery === PREFLIGHT_BATTERY_NEXT ? ["L3b"] : [])];
+  const signedObservation = climbedBy("service_audit", base);
   return {
+    current_reading: {
+      signed: false,
+      proves_payment_or_delivery: false,
+      scope: "An unsigned, unpaid preflight reading. Read the actual verdict, reached_level, checks and gaps; ready does not prove settlement, delivery, reliability or permission to spend.",
+    },
     climbed,
     unclimbed: [
       {
@@ -1943,7 +1953,17 @@ export function theRestOfTheLadder(battery: string, base: string): Record<string
       },
     ],
     already_free: `POST ${base}/api/conformance/v1 — full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free, and it needs no account.`,
-    signed_copy_of_this_reading: climbedBy("service_audit", base),
+    // Keep the existing field for callers, but correct its implication:
+    // an audit observes again; it cannot sign what an earlier probe saw.
+    signed_copy_of_this_reading: signedObservation && {
+      ...signedObservation,
+      observation: "fresh_probe",
+      signs_previous_preflight: false,
+      requires_spend_authorization: true,
+      guide_url: `${base}${VERIFICATION_SKILL.path}`,
+      scope: "Optional fresh signed observation, not proof of payment or delivery. With no spend authorization, stop with the unsigned result and report the signed-evidence stage incomplete. Missing evidence in hand does not establish that no evidence exists.",
+      verification: "Retain the signed certificate and the report bytes it binds. Verify locally with an independently established issuer key; verify_artifact is a hosted lookup, not an offline check. Check subject, date, any expiry and missing evidence separately from signature validity.",
+    },
   };
 }
 

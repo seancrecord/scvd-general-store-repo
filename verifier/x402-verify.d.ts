@@ -5,6 +5,17 @@
  * the library taking on a compiler.
  */
 
+/** A verdict within the reported scope, never permission to pay. */
+export type VerificationStatus = "valid" | "invalid" | "unsupported" | "inconclusive";
+export type VerificationReasonCode =
+  | "malformed_input" | "unsupported_format" | "malformed_header"
+  | "unsupported_algorithm" | "unsupported_schema_version" | "schema_invalid"
+  | "malformed_kid" | "unsupported_did_method" | "key_unavailable"
+  | "key_document_invalid" | "unsupported_key_type" | "invalid_public_key"
+  | "signature_invalid" | "signature_malformed" | "unsupported_runtime"
+  | "verification_error" | "signature_not_checked" | "offer_expired"
+  | "expiry_not_checked";
+
 export interface VerifyCheck {
   name:
     | "parse"
@@ -15,6 +26,8 @@ export interface VerifyCheck {
     | "signature"
     | "expiry";
   ok: boolean;
+  status: VerificationStatus | "unobserved";
+  reasonCode?: VerificationReasonCode;
   detail: string;
   /** Advisory checks are reported but never fold into `ok`. */
   advisory?: boolean;
@@ -22,10 +35,20 @@ export interface VerifyCheck {
 
 export interface VerifyResult {
   ok: boolean;
+  status: VerificationStatus;
+  /** Non-advisory failure/uncertainty reasons; empty when valid. */
+  reasonCodes: VerificationReasonCode[];
+  scope: string;
   checks: VerifyCheck[];
   header?: Record<string, unknown>;
   payload?: Record<string, unknown>;
   kind?: "offer" | "receipt";
+}
+
+/** The narrow WebCrypto operations this verifier calls, shared by Node and browsers. */
+export interface VerificationCrypto {
+  importKey(format: "raw", keyData: Uint8Array, algorithm: { name: "Ed25519" }, extractable: boolean, keyUsages: ["verify"]): Promise<CryptoKey>;
+  verify(algorithm: { name: "Ed25519" }, key: CryptoKey, signature: Uint8Array, data: Uint8Array): Promise<boolean>;
 }
 
 export interface VerifyOptions {
@@ -41,7 +64,8 @@ export interface VerifyOptions {
   ) => boolean | Promise<boolean>;
   /** Inject a fetch for DID resolution: a cache, a fixture, nothing. */
   fetch?: typeof fetch;
-  subtle?: SubtleCrypto;
+  /** Only the methods used here; Node and browser key-generation overloads differ. */
+  subtle?: VerificationCrypto;
   /** Seconds of clock-skew tolerance on offer expiry. Default 5. */
   leewaySeconds?: number;
   nowSeconds?: number;
@@ -110,6 +134,8 @@ export interface ParsedJws {
 
 export interface ResolvedDid {
   ok: boolean;
+  status?: VerificationStatus;
+  reasonCode?: VerificationReasonCode;
   problem?: string;
   url?: string;
   document?: Record<string, unknown>;
@@ -123,6 +149,7 @@ export declare const RECEIPT_REQUIRED_FIELDS: string[];
 export declare function decodeBase64Url(value: string): Uint8Array | null;
 export declare function hexToBytes(hex: string): Uint8Array | null;
 export declare function parseJws(jws: string): ParsedJws;
+/** Legacy boolean helper; throws when no WebCrypto or custom verifier exists. */
 export declare function verifyEd25519(
   signingInput: string,
   signature: Uint8Array,
@@ -140,7 +167,7 @@ export declare function isOfferLive(
   options?: VerifyOptions,
 ): { live: boolean; reason: string };
 export declare function verifyArtifact(
-  jws: string,
+  jws: unknown,
   options?: VerifyOptions,
 ): Promise<VerifyResult>;
 export declare function formatResult(result: VerifyResult): string;
@@ -148,6 +175,8 @@ export declare function formatResult(result: VerifyResult): string;
 export interface BoundedVerification {
   kind: "offer" | "receipt";
   valid: boolean;
+  status: VerificationStatus;
+  reasonCodes: VerificationReasonCode[];
   /** What "valid" means here, in one sentence, naming the key it was checked against. */
   scope: string;
   /** What this result does NOT establish, always stated. */
@@ -161,7 +190,7 @@ export interface BoundedVerification {
 
 export interface VerifyReceiptInput {
   /** The compact JWS from the receipt. */
-  receipt: string;
+  receipt: unknown;
   /** Where the issuer publishes its key: a DID document URL or a bare JWK / { publicKeyHex } document. Never taken from the artifact. */
   issuerKeyUrl?: string;
   /** A key you already hold, hex or bytes; skips resolution. */
@@ -169,7 +198,7 @@ export interface VerifyReceiptInput {
 }
 
 export interface VerifyOfferInput {
-  offer: string;
+  offer: unknown;
   issuerKeyUrl?: string;
   publicKey?: string | Uint8Array;
 }

@@ -1,0 +1,14 @@
+{
+  "id": "bc2dce02-de69-46c9-bf93-2a5b21b46d1f",
+  "cwd": ".",
+  "script": "consumer/unsupported-consumer.mjs",
+  "args": [
+    "unsupported"
+  ],
+  "scriptSha256": "7d3769eefeeb24c276b4fe264125ade1e38d87dfca50cc03f9ef18459912da6b",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/bc2dce02-de69-46c9-bf93-2a5b21b46d1f.stdout.txt",
+  "stderrFile": ".verification-runs/bc2dce02-de69-46c9-bf93-2a5b21b46d1f.stderr.txt"
+}

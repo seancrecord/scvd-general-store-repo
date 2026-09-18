@@ -1,0 +1,20 @@
+Execution completed successfully. The consumer script matched the README's quickstart exactly, ran through the logging wrapper (exit code 0, no stderr), and reproduced the documented `unsupported` outcome for the ES256-signed fixture receipt.
+
+```json
+{
+  "status": "unsupported",
+  "reasonCodes": ["unsupported_algorithm", "signature_not_checked"],
+  "scope": "Not verified: alg: expected EdDSA, got ES256; signature: not checked: unsupported algorithm.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-claude-reader-unsupported-2-USgf1A/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```
+
+Per the README's guidance: `unsupported` means a required capability (here, the ES256 algorithm) is outside this implementation's support — the receipt is genuinely ES256-signed, and this is not evidence of bad cryptography, just a verifier limitation. `signature_not_checked` follows directly from that: the signature check never ran, which is not evidence the signature is bad — inspect the preceding `alg` check instead. As with every outcome, this result never authorizes payment or establishes signing-key/resource authorization; that's a separate decision governed by your own policy, not this library.

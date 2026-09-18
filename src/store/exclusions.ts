@@ -118,6 +118,15 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 11,
     crawler_names: 73,
   },
+  {
+    date: "2026-09-17",
+    what_changed:
+      "The keeper's AgentCash Base qualification wallet was listed as house before its first purchase, for the bounded live checkout qualification authorized by the keeper.",
+    effect:
+      "No prior settle was reclassified and no published number moved: listed before its first purchase. Future qualification purchases from this wallet are house activity, excluded from organic demand.",
+    house_wallets: 12,
+    crawler_names: 73,
+  },
 ];
 
 export interface NamedExclusions {

@@ -90,10 +90,12 @@ Add it as a custom connector, or point any MCP client at the URL.
 
 ### The other two doors on this origin
 
-- **The verifier, \`POST ${base}/mcp/verifier\`** — ${VERIFIER_TOOLS.length} read-only
+- **The verifier, \`POST ${base}/mcp/verifier\`** — ${VERIFIER_TOOLS.length} free verification
   tools under task-shaped names (${VERIFIER_TOOLS.map((t) => `\`${t.name}\``).join(", ")}),
   the same handlers as the main door, and no shelf: for a client that
-  should never see a paid tool.
+  should never see a paid tool. Calls record traffic statistics; readiness
+  lookups for eligible unprobed hosts add their names to the public
+  asked-for queue for a later sweep.
 - **The documentation door, \`POST ${base}/mcp/docs\`** — and \`POST\` on
   this very address, \`${base}/mcp.md\`: a JSON-RPC server whose whole
   catalog is the reference material. The same ${shelves} resources the
@@ -157,7 +159,8 @@ on \`document.modelContext\` with no connection to configure.
 Discovery is arrival.
 
 **Registered:** ${browser.map((n) => `\`${n}\``).join(", ")} — derived
-from the catalog above, filtered to free AND read-only. Two purchase tools
+from the catalog above, filtered to free instruments, including verification
+calls that update usage counters. Two purchase tools
 are also registered: \`quote_store_purchase\` gets a free x402 quote;
 \`complete_store_purchase\` submits a payment already signed by the buyer's
 wallet or payment client. It may transfer USDC and is marked consequential.

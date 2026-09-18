@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T20:05:44.919472+00:00",
+  "integrated_main": "65e7e069504a920e876d00c87ec304bf78f38ec8",
+  "upstream_prs": [
+    778,
+    780
+  ],
+  "resolution": "Keep the completed TR3 result, current TR-D distribution status, and both appended spec-read entries. All upstream source and configuration changes retained.",
+  "acquisition_changed": false,
+  "checks": [
+    {
+      "check": "buyer",
+      "exit_code": 0,
+      "passed_tests": 137,
+      "log_file": "scvd-native-merged-buyer.txt",
+      "sha256": "4f4d47f5903cf8b44c8889cf529d9a052ca08afe9ddf600c602b07108d221394"
+    },
+    {
+      "check": "typecheck",
+      "exit_code": 0,
+      "passed_tests": null,
+      "log_file": "scvd-native-merged-typecheck.txt",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "check": "build",
+      "exit_code": 0,
+      "passed_tests": null,
+      "log_file": "scvd-native-merged-build.txt",
+      "sha256": "e022414f1609978484f76635fb55b3842d5e2cc65728c9b3d308ec95943268d4"
+    },
+    {
+      "check": "listings-tests",
+      "exit_code": 0,
+      "passed_tests": 37,
+      "log_file": "scvd-native-merged-listings-tests.txt",
+      "sha256": "60a380192a75f9a7937c32a8983ccaa7c40427c4b6c3764a35155e0a472b12a7"
+    },
+    {
+      "check": "listings",
+      "exit_code": 0,
+      "passed_tests": null,
+      "log_file": "scvd-native-merged-listings.txt",
+      "sha256": "937981d861689b9f288ec8181e7ff553abc23c112523c03fd96f2230af5fd553"
+    },
+    {
+      "check": "focused",
+      "exit_code": 0,
+      "passed_tests": 49,
+      "log_file": "scvd-native-merged-focused.txt",
+      "sha256": "569b4a53774e1f1649ccecf004a33a7de877d6088afe4e2e543139270f978fbc"
+    }
+  ],
+  "full_suite": "Historical full local suite remains recorded in validation.json; it predates these upstream Worker/configuration changes. The combined head requires all four CI shards and the aggregate check before merge."
+}

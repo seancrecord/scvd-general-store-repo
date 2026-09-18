@@ -1,0 +1,17 @@
+[
+  {
+    "control": "absolute-cache",
+    "exitCode": 1,
+    "expected": "nonzero"
+  },
+  {
+    "control": "nested-artifacts",
+    "exitCode": 1,
+    "expected": "nonzero"
+  },
+  {
+    "control": "exit-status",
+    "exitCode": 1,
+    "expected": "nonzero"
+  }
+]

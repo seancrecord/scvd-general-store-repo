@@ -1,0 +1,14 @@
+{
+  "id": "a03ef9a8-1792-4b9c-9c6a-3e1b9d970863",
+  "cwd": ".",
+  "script": "verify.mjs",
+  "args": [
+    "unavailable-key"
+  ],
+  "scriptSha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/a03ef9a8-1792-4b9c-9c6a-3e1b9d970863.stdout.txt",
+  "stderrFile": ".verification-runs/a03ef9a8-1792-4b9c-9c6a-3e1b9d970863.stderr.txt"
+}

@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "name": "https://scvd.store/agents/general-store",
   "version": "0.2.3",
-  "description": "SCVD General Store is an x402 payment-verification and signed-evidence service for autonomous agents. It preflights payment-protected endpoints before spend, checks any issuer's signed x402 offers and receipts against published criteria, observes settlement on-chain, and returns dated ed25519-signed evidence that a third party can verify offline. Every artifact expires and names what was not observed. It is not an escrow, a guarantee, or a ranking. Free instruments — preflight and the conformance desk — answer before any money moves; the paid instruments produce durable third-party evidence. Reachable over MCP at a remote Streamable HTTP endpoint and through an installable stdio bridge.",
+  "description": "SCVD General Store is an x402 payment-verification and signed-evidence service for autonomous agents. It preflights payment-protected endpoints before spend, checks any issuer's signed x402 offers and receipts against published criteria, observes settlement on-chain, and returns dated ed25519-signed evidence that a third party can verify offline. Signature validity is separate from the signed observation date, stated gaps and any declared expiry. It is not an escrow, a guarantee, or a ranking. Free instruments — preflight and the conformance desk — answer before any money moves; the paid instruments produce durable third-party evidence. Reachable over MCP at a remote Streamable HTTP endpoint and through an installable stdio bridge.",
   "authors": [
     "Record Creative Co. LLC <sean@recordcreativeco.com>"
   ],
@@ -10,7 +10,7 @@
   "annotations": {
     "scvd.payment.protocol": "x402",
     "scvd.service.role": "observer,verifier,merchant",
-    "scvd.evidence.model": "signed,dated,expiring,offline-verifiable",
+    "scvd.evidence.model": "signed,dated,offline-verifiable",
     "scvd.evidence.not": "escrow,guarantee,ranking",
     "scvd.free.instruments": "check_before_you_pay,check_conformance,look_at_door,preflight_endpoint,read_store_guide,verify_artifact",
     "scvd.oasf.taxonomy_source": "https://github.com/agntcy/oasf/tree/v1.1.0",
@@ -134,8 +134,6 @@
             "title": "Preflight an x402 Endpoint",
             "description": "Is this door's x402 challenge well-formed right now? One unpaid probe returns the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. Shape at one moment: not uptime, not delivery, and not this store's record of the host, which look_at_door holds. Free and rate limited; the ceiling travels with the result.",
             "scopes": [
-              "read_only",
-              "idempotent",
               "external"
             ]
           },
@@ -164,19 +162,13 @@
             "title": "Conformance Desk",
             "description": "Verifies any issuer's signed x402 offer or receipt (a compact JWS): structure, the signature against the issuer's did:web key, and liveness. Returns a verdict with every check named. With public_key_hex supplied the check runs fully offline. Free; the method is MIT-licensed and identical to the published verifier.",
             "scopes": [
-              "read_only",
-              "idempotent",
               "external"
             ]
           },
           {
             "name": "verify_artifact",
             "title": "Verify an Artifact",
-            "description": "Verifies a certificate, visit stamp or context anchor by its id against the store's own ed25519 key. Returns valid (true or false), the artifact kind, and a one-line note. Free and unlimited, for artifacts anyone bought or none.",
-            "scopes": [
-              "read_only",
-              "idempotent"
-            ]
+            "description": "Verifies a certificate, visit stamp or context anchor by its id against the store's own ed25519 key. Returns valid (true or false), the artifact kind, and a one-line note. Free and unlimited, for artifacts anyone bought or none."
           },
           {
             "name": "check_order",

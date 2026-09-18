@@ -1,0 +1,14 @@
+{
+  "status": "inconclusive",
+  "reasonCodes": ["key_unavailable", "signature_not_checked"],
+  "scope": "Not verified: key-resolution: key document HTTP 503; signature: not checked: no key to check against.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-reader-v2-unavailable-key-1-LvaADc/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": ["key_unavailable", "signature_not_checked"]
+}

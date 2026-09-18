@@ -730,7 +730,7 @@ export async function callFreeTool(
           ? args["max_price_usdc"]
           : undefined,
       itemId: typeof args["item_id"] === "string" ? args["item_id"] : undefined,
-    });
+    }, c.env);
     if (found.status !== 200) {
       return found.body;
     }

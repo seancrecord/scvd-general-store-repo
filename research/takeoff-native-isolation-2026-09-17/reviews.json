@@ -1,0 +1,922 @@
+{
+  "codex-catalogue-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:10:40.445314+00:00",
+    "transcript_sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed every exposed tool call, the initial no-context disclosure, and the launch. The isolated native adapter was qualified and its local request capture contained no skill entries. Actual reads were public HTTPS or files created in the fresh trial. No private or prior-session read, payment, account creation or outbound message was observed. Hidden host behavior remains outside the trace.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "63e3aee215760adb11cf5e4ca60bdbb8b5b7389fd8a0ea13d6ec7c824dfe5c85"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "fail",
+        "reason": "Selected agency.ottobot/business-contact-finder from the first registry page; SCVD was not selected.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+          }
+        ]
+      },
+      "connect": {
+        "state": "incomplete",
+        "reason": "Connected to the selected alternative MCP; no SCVD surface was attempted.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+          }
+        ]
+      },
+      "check": {
+        "state": "incomplete",
+        "reason": "Retained direct merchant 402 challenges and an inconclusive alternative-service check; no SCVD observation was obtained.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Correctly distinguished reachable machine-readable payment requirements and an inconclusive contact check from paid delivery, trust or an observed signature.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "Retained unsigned public responses but no SCVD signed evidence.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "Decoded the unsigned challenge header; correctly did not call that signature verification. No signed artifact or independent issuer key was obtained.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+          }
+        ]
+      }
+    },
+    "discovery": {
+      "query": "GET /v0.1/servers default page, then local description filters for web/HTTP/payment and fetch/browser/URL",
+      "result_url": "https://registry.modelcontextprotocol.io/v0.1/servers",
+      "selected_origin": "https://business-contact-finder-mcp.ottobot2025.workers.dev",
+      "catalogue": {
+        "entry": "https://registry.modelcontextprotocol.io/v0.1/servers",
+        "query": "default page; local description filters",
+        "returned": 30,
+        "candidates": {
+          "file": "evidence/01_catalogue.response.json",
+          "sha256": "4622cc3a194799f0fe912838202f6e0ffa4ef0217cea343d702d9d9200ae8765"
+        },
+        "selected": "agency.ottobot/business-contact-finder",
+        "scvd_returned": false
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free checks and unsigned quotes were requested; no wallet or payment was used."
+    },
+    "notes": [
+      "The retained default page contains 30 rows and a nextCursor; this is a bounded non-return, not a complete registry reading or evidence of SCVD absence.",
+      "The third-party contact checker called a 402 site_not_live; the buyer explicitly rejected treating that as proof that the merchant was offline.",
+      "The final report mentions one local quoting error, but all ten recorded command executions exited zero; that self-report is not corroborated by an exposed failed-command event."
+    ]
+  },
+  "claude-catalogue-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:11:56.279611+00:00",
+    "transcript_sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed initial disclosure, native init (no skills, plugins or configured MCP servers), launch and every exposed tool request. Reads were public network information or current-session files. No prior repository/session, credentials, account, outbound message or payment action was observed. The initial compound command was denied; subsequent shell compounds and a directory listing ran despite the nominal curl/node allowlist, an observed host limitation rather than a permission change by the operator.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "01d3544128c912d62fd5c7fe17b86b616a55a4885ea95670a5f279e24637da25"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "fail",
+        "reason": "Searched registry terms x402, wallet, lion and wallet-screen, selected the merchant itself (com.lionx402/lion-x402), and did not discover SCVD.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+          }
+        ]
+      },
+      "connect": {
+        "state": "incomplete",
+        "reason": "Fetched the merchant directly; no SCVD surface was attempted.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+          }
+        ]
+      },
+      "check": {
+        "state": "incomplete",
+        "reason": "Decoded the merchant quote and inspected TLS but obtained no SCVD observation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "The final calls the endpoint standards-conformant and the quote schema-conformant, although only an unpaid challenge was inspected and no conformance or schema validation was executed. Paid and attestation limits were otherwise stated.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "Retained registry responses and unsigned merchant evidence; no signed SCVD artifact.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "No artifact signature was verified; header decoding and TLS inspection are separate observations.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+          }
+        ]
+      }
+    },
+    "discovery": {
+      "query": "Registry search=lion after default page, x402 and wallet queries; also queried wallet-screen",
+      "result_url": "https://registry.modelcontextprotocol.io/v0.1/servers?search=lion",
+      "selected_origin": "https://lionx402.com",
+      "catalogue": {
+        "entry": "https://registry.modelcontextprotocol.io/v0.1/servers?search=lion",
+        "query": "lion",
+        "returned": 30,
+        "candidates": {
+          "file": "evidence/registry_search_lion.json",
+          "sha256": "1ca53d981c056119234e50897b22a6828f57deeee33bf2c85c9e4a905ab57e10"
+        },
+        "selected": "com.lionx402/lion-x402",
+        "scvd_returned": false
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free checks and unsigned quotes were requested; no wallet or payment was used."
+    },
+    "notes": [
+      "This is a discovery miss and an agent scope overstatement; SCVD was never encountered, so neither establishes a SCVD product defect.",
+      "The selected registry record is merchant-authored metadata, not independent signed evaluation.",
+      "The original challenge headers were printed in the trace; the saved decoded JSON was reconstructed from copied base64. That is not a separately retained signed artifact.",
+      "One compound mkdir/curl call was denied. Other compounds and ls/du/find executed; the trace, not the claimed curl/node-only boundary, records actual host behavior.",
+      "registry_servers_page1.json: 30 returned rows; SCVD named: False; bounded result, not catalogue absence.",
+      "registry_search_lion.json: 30 returned rows; SCVD named: False; bounded result, not catalogue absence.",
+      "registry_search_x402.json: 30 returned rows; SCVD named: False; bounded result, not catalogue absence.",
+      "registry_search_wallet.json: 30 returned rows; SCVD named: False; bounded result, not catalogue absence.",
+      "registry_search_wallet-screen.json: 0 returned rows; SCVD named: False; bounded result, not catalogue absence."
+    ]
+  },
+  "codex-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:18:37.913525+00:00",
+    "transcript_sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed the complete exposed command sequence, initial disclosure and launch. Actual task reads were public responses and files created during this trial; no prior research/session or private service context was observed. Native CLI runtime and package cache access is an environment dependency, not evidence of hidden isolation. No payment, wallet authorization, account creation or outbound message was observed. Hidden host behavior remains outside the trace.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "4d8e1d0c61b359bd13d9d741d728c4a376b78279b348ae486d5c4f2bb6540932"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The source URL was supplied.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Fetched the focused skill and called the free SCVD HTTP preflight successfully.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "SCVD returned a ready L3a preflight for the exact subject; the buyer also retained and verified the historical corpus observation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Distinguished live unsigned structural checks, sparse historical observations and signature validity from identity, truth, reliability and paid delivery.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Retained complete corpus snapshot 6 and a separately fetched SCVD issuer key; no payment required.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Buyer ran x402-verify@1.4.0 locally and obtained valid:true/evidence_complete:true. A fresh offline recipient independently reconstructed the canonical snapshot and verified its Ed25519 signature and digest with the retained key.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free inspection and unsigned quote requests; no payment or wallet used."
+    },
+    "notes": [
+      "The default npm cache returned EPERM. The buyer recovered using an isolated /tmp cache without changing ownership or permissions. Its root-owned-cache explanation is not independently established.",
+      "A first export was refused because the buyer precreated the output directory; it recovered unaided with a fresh directory. The successful CLI bundle remained outside ./evidence, while the original corpus, canonical payload and separate key were retained within the complete capture.",
+      "The fresh recipient received the original corpus, key and buyer final report, plus disclosed public verifier machinery. It did not receive the unsigned corpus-host summary or the CLI bundle. Its complaint that three rounds were unsupported applies to that handoff subset: the buyer separately retained the unsigned host summary reporting three rounds. Only the single September 7 row is authenticated by the supplied snapshot.",
+      "Recipient cryptography and scope interpretation pass; its statement that evidence completeness could not be reproduced without the CLI bundle is too strong, because the supplied bundle API and parent reproduction establish it from the original response. No bundle-export completion is claimed for the retained buyer handoff.",
+      "Historical age ceiling is the frozen review policy, not an issuer-declared expiry. The recipient made 12 tool calls and completed without a cap stop."
+    ],
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "stale_after": "2026-09-21T02:30:20.531000+00:00",
+      "basis": "Signed historical row; stale_after is the frozen review ceiling, not a declared artifact expiry."
+    },
+    "fulfillment": "delivered",
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus-6.json",
+        "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+      },
+      "issuer": {
+        "file": "evidence/issuer-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603"
+        }
+      ],
+      "subject_pointer": "/round/hosts/50/url",
+      "observed_at_pointer": "/round/hosts/50/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Independently verified Ed25519 and digest; identified the exact subject, September 7 observation and absent expiry; did not confuse history or signature validity with delivery. Handoff subset and evidence-completeness caveats are recorded in notes.",
+      "evidence": [
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "9252f63381f1cb1bfa1fc4b87da20dbbece9eab82a9f9711356aa92511c7375a"
+        },
+        {
+          "file": "recipient/result.txt",
+          "sha256": "2f814715c400ce37885e4801eeb94f8d1d1dd0a0278db37189db3fab4519625e"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "734873945508f95868f00871d7343be10f74554d4eb367ee5d06b673249b3a37"
+        },
+        {
+          "file": "recipient/parent-verification.json",
+          "sha256": "48cf79f7ebfa441c3fbdd780b272794a3a8cbe30e76694a099d78024b4c2da21"
+        }
+      ]
+    }
+  },
+  "claude-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:18:37.924815+00:00",
+    "transcript_sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed the complete exposed command sequence, initial disclosure and launch. Actual task reads were public responses and files created during this trial; no prior research/session or private service context was observed. Native CLI runtime and package cache access is an environment dependency, not evidence of hidden isolation. No payment, wallet authorization, account creation or outbound message was observed. Hidden host behavior remains outside the trace.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "83db54174b9f7ac0c2208789aed2f4bf0bd0fa8bc55174277ff64ff0fa7bfffc"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The source URL was supplied.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Fetched the focused skill and called the free SCVD HTTP preflight successfully.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Retained a successful ready/L3a preflight for the exact target endpoint and unsigned host history.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "Correctly limited payment and delivery claims, but asserted that no unpaid instrument can climb signed-offer authenticity and that unresolved authenticity requires payment. The skill explicitly offers free historical signed snapshots and free checking of signed offers; the buyer did not follow those snapshot links. Its 3-of-6/60-percent phrasing also conflates total rounds with five rounds since first sighting.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "Retained only unsigned preflight, host summary and merchant responses; did not fetch a cited signed snapshot.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "No signed artifact or independent issuer key was obtained or cryptographically verified.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free inspection and unsigned quote requests; no payment or wallet used."
+    },
+    "notes": [
+      "One mkdir-plus-curl command was denied; ordinary curl then worked. Later compound wc/echo/cat/head ran despite the nominal curl/node allowlist; this is recorded host behavior, not a widened adapter.",
+      "The merchant OpenAPI payment fields and challenge agree for this path; those are merchant declarations, not an independent signed attestation.",
+      "No fresh recipient was launched because no usable signed artifact/key pair was retained. The omission remains in the denominator."
+    ],
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-17T19:14:40.156Z",
+      "stale_after": "2026-10-01T19:14:40.156000+00:00",
+      "basis": "Retained live preflight: mpp_core.observed_at dates the shared probe; exact requested URL is in the retained request. Review age ceiling is not an issuer expiry."
+    }
+  },
+  "codex-catalogue-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:18:37.955729+00:00",
+    "transcript_sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed the complete exposed command sequence, initial disclosure and launch. Actual task reads were public responses and files created during this trial; no prior research/session or private service context was observed. Native CLI runtime and package cache access is an environment dependency, not evidence of hidden isolation. No payment, wallet authorization, account creation or outbound message was observed. Hidden host behavior remains outside the trace.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "50224801904256459e994c168ca93d2de0b690604672321bce19b4718934e442"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "fail",
+        "reason": "Selected agency.ottobot/business-contact-finder from the first 30 returned rows; did not select SCVD.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+          }
+        ]
+      },
+      "connect": {
+        "state": "incomplete",
+        "reason": "Connected to the selected alternative MCP; no SCVD request was made.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+          }
+        ]
+      },
+      "check": {
+        "state": "incomplete",
+        "reason": "Retained an inconclusive contact-path check and merchant challenges; no SCVD observation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Correctly distinguished contact reachability and unsigned payment requirements from paid usability, output correctness or authenticated evidence.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "Retained unsigned public responses only.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "Decoded the challenge but no signed artifact or issuer key was obtained.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free inspection and unsigned quote requests; no payment or wallet used."
+    },
+    "notes": [
+      "Eight exposed commands all exited zero. The additional local selection-note file write is also present in the trace and stayed inside the fresh trial. No tool denial or budget stop.",
+      "No fresh recipient: no signed evidence. Default page is a bounded query, not proof of catalogue absence."
+    ],
+    "discovery": {
+      "query": "GET /v0.1/servers default page",
+      "result_url": "https://registry.modelcontextprotocol.io/v0.1/servers",
+      "selected_origin": "https://business-contact-finder-mcp.ottobot2025.workers.dev",
+      "catalogue": {
+        "entry": "https://registry.modelcontextprotocol.io/v0.1/servers",
+        "query": "default page",
+        "returned": 30,
+        "candidates": {
+          "file": "evidence/catalogue-response.json",
+          "sha256": "4622cc3a194799f0fe912838202f6e0ffa4ef0217cea343d702d9d9200ae8765"
+        },
+        "selected": "agency.ottobot/business-contact-finder",
+        "scvd_returned": false
+      }
+    }
+  },
+  "claude-catalogue-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:19:06.492272+00:00",
+    "transcript_sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed the complete exposed command sequence, initial disclosure and launch. Actual task reads were public responses and files created during this trial; no prior research/session or private service context was observed. Native CLI runtime and package cache access is an environment dependency, not evidence of hidden isolation. No payment, wallet authorization, account creation or outbound message was observed. Hidden host behavior remains outside the trace.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "cbac9ebab6904c2f227dcd87c056690523f487ef2a625c01b52ca05ab5a81bc3"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "fail",
+        "reason": "Selected merchant com.lionx402/lion-x402 from search=x402, not SCVD.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+          }
+        ]
+      },
+      "connect": {
+        "state": "incomplete",
+        "reason": "Fetched merchant challenges and merchant MCP tools/list; no SCVD request.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+          }
+        ]
+      },
+      "check": {
+        "state": "incomplete",
+        "reason": "Only unsigned merchant declarations; no SCVD observation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "Overstated the exercised checks as correct protocol implementation and asserted x402 quotes are unsigned by design and only paid payloads can carry attestation. No signed offer in this response is a bounded observation, not that protocol-wide claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "No SCVD signed artifact retained.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "Decoded unsigned challenge only; no independent issuer key or cryptographic verification.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free inspection and unsigned quote requests; no payment or wallet used."
+    },
+    "notes": [
+      "All exposed reads stayed within fresh trial files or public HTTP. Initial reminder exposed personal/commit metadata but no subject or SCVD service facts. Raw context stays private.",
+      "One shell for-loop was denied; a plain node invocation worked. The final statement that no compound commands were used is contradicted by earlier ls/echo/curl, wc/node and multiline curl/echo calls; actual trace governs.",
+      "The two merchant surfaces agree on declared price/route, but share the merchant origin; they are not independent third-party evidence.",
+      "No recipient: no signed artifact/key pair. Default page and all three search responses are retained; their scope remains bounded.",
+      "registry_root: 30 returned rows; SCVD not returned.",
+      "registry_search_x402: 30 returned rows; SCVD not returned.",
+      "registry_search_wallet: 30 returned rows; SCVD not returned.",
+      "registry_search_lionx: 12 returned rows; SCVD not returned."
+    ],
+    "discovery": {
+      "query": "GET /v0.1/servers?search=x402",
+      "result_url": "https://registry.modelcontextprotocol.io/v0.1/servers?search=x402",
+      "selected_origin": "https://lionx402.com",
+      "catalogue": {
+        "entry": "https://registry.modelcontextprotocol.io/v0.1/servers",
+        "query": "search=x402",
+        "returned": 30,
+        "candidates": {
+          "file": "evidence/registry_search_x402.json",
+          "sha256": "d735b70ab5abc1eed6a55daecab66533477017309e8e627282ff0865797ea6bd"
+        },
+        "selected": "com.lionx402/lion-x402",
+        "scvd_returned": false
+      }
+    }
+  },
+  "codex-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:23:16.086149+00:00",
+    "transcript_sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed the complete exposed command sequence, initial disclosure and launch. Actual task reads were public responses and files created during this trial; no prior research/session or private service context was observed. Native CLI runtime and package cache access is an environment dependency, not evidence of hidden isolation. No payment, wallet authorization, account creation or outbound message was observed. Hidden host behavior remains outside the trace.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "a71d2a1c3a49435256ca407f2eea9b30e8ec8091a0083daa8a3945f25651d45a"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The source URL was supplied.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Fetched the focused skill, free preflight, host history, corpus index, snapshot and separate issuer key during the run.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Executed successful ready/L3a preflight for the exact endpoint; merchant GET answered 402. The trace records dated historical SCVD evidence for the exact endpoint.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Before the cap, explicitly limited signature success to signed bytes/hash bindings and rejected merchant truth, settlement and delivery conclusions. No completed final report was produced.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "The buyer downloaded original corpus, key and portable bundle, but the bounded final capture missed the key and bundle. Retention is incomplete.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "Actual CLI verification returned valid:true/evidence_complete:true in the trace. Its independent issuer-key file is absent from the final capture, so portable verification/recipient acceptance cannot be completed from the eligible retained pair.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free inspection and unsigned quote requests; no payment or wallet used."
+    },
+    "notes": [
+      "Run reached the 240-second wall cap with 20 exposed tool calls. It remains incomplete; no replacement fetch, moved cap, resumed session or recipient can upgrade it.",
+      "Default npm cache access returned EPERM. The buyer recovered with a /tmp cache, then installed package files inside ./evidence. Dependency files, duplicated corpus/bundle/payload and directory-depth/symlink restrictions exhausted retention. Host/cache findings and buyer evidence organization are distinct from a signature defect.",
+      "The buyer gzip-compressed its original corpus losslessly before the cap. Review inspected those retained compressed bytes without adding a replacement to the acquisition. Original size and digest are recorded below; missing issuer and other files remain missing.",
+      "No fresh recipient was launched: no eligible complete artifact/independently retained issuer-key pair. The successful in-trace signature computation remains a partial stage finding, not full completion.",
+      "Retained compressed original expands to 11485079 bytes; SHA-256 060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0. No cryptographic acceptance is inferred from decompression."
+    ],
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "stale_after": "2026-09-21T02:30:20.531000+00:00",
+      "basis": "Historical exact-subject row in retained losslessly compressed original; current probe additionally visible in trace, not fully captured as a standalone response."
+    }
+  },
+  "claude-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex independent native trace review",
+    "reviewed_at": "2026-09-17T19:26:09.677237+00:00",
+    "transcript_sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c",
+    "isolation": {
+      "state": "clean",
+      "reason": "Reviewed the complete exposed command sequence, initial disclosure and launch. Actual task reads were public responses and files created during this trial; no prior research/session or private service context was observed. Native CLI runtime and package cache access is an environment dependency, not evidence of hidden isolation. No payment, wallet authorization, account creation or outbound message was observed. Hidden host behavior remains outside the trace.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "e60253e5175ee1bb73d13ff078e17f690f648cfae229bf8672b8375534dd1aba"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "The source URL was supplied.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Fetched the focused skill, free preflight, public corpus and independent SCVD key.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Retained a ready/L3a preflight for the exact subject and the exact historical endpoint row in snapshot 6.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "Correctly disclaimed actual paid delivery but grouped service_audit with Night Watch as a way to climb L4-L6. The retained response explicitly says service_audit is a fresh signed observation, not proof of payment or delivery. It also described three historical observations as independently verified although this run verified only snapshot 6; other rounds came from an unsigned host summary.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Retained complete original signed snapshot 6 and independently fetched issuer-key response within the cap.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Buyer used Node crypto to verify the snapshot signature and digest, and explicitly compared its key to the separately fetched issuer document. Reproduction uses the existing portable verifier over the same retained bytes.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Only free inspection and unsigned quote requests; no payment or wallet used."
+    },
+    "notes": [
+      "Actual exposed tool count is 13, not the final report's self-reported nine. One mkdir compound command was denied; plain curl recovered. Other curl/echo/cat and wc/node compounds ran under the same unchanged host configuration.",
+      "The original JSON field order happens to be the canonical corpus order, so the buyer's JSON.stringify(snapshot) computation verified these exact bytes. This is evidence of this check, not a general-purpose canonicalization implementation.",
+      "The host timeline has gaps in W33 and W34 since first sighting, and W34 is the gap in the four-round tier window. The buyer's W34/W36 phrasing is inaccurate. A 402 response to a missing address also does not establish the cause of the empty body.",
+      "Night Watch is a paid delivery observation; service_audit is not. The failure here is the buyer conflating their scopes, not a claim that no SCVD instrument ever pays the merchant.",
+      "Fresh recipient receives the same constrained signed-core handoff as the first recipient: exact original snapshot/key and buyer final text, with disclosed public verifier modules. The unsigned host summary and live preflight are not supplied, so its findings about unsupported current/multi-round claims must be interpreted within that input subset."
+    ],
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-07T02:30:20.531Z",
+      "stale_after": "2026-09-21T02:30:20.531000+00:00",
+      "basis": "Signed historical row; stale_after is the frozen review ceiling, not an issuer expiry."
+    },
+    "fulfillment": "delivered",
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus_6.json",
+        "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+      },
+      "issuer": {
+        "file": "evidence/scvd_signing_key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c"
+        }
+      ],
+      "subject_pointer": "/round/hosts/50/url",
+      "observed_at_pointer": "/round/hosts/50/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Independently verified the retained signature and digest, identified exact subject and historical observation, distinguished declared expiry from challenge timeout and rejected paid-delivery implications; input subset limits are noted.",
+      "evidence": [
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "1790abfbd1993a17880fd960abada70f56ce03c835db12e3002349ec1b3268ed"
+        },
+        {
+          "file": "recipient/result.txt",
+          "sha256": "945ad2d9d3e84d357c88d54bc0e44d36154b4b6f5ef969e406114e6677467976"
+        },
+        {
+          "file": "recipient/input-manifest.json",
+          "sha256": "3de720fcb399188706ad10e4599f5c0920d449991a3fb0a275e2fcfc67af2c87"
+        },
+        {
+          "file": "recipient/parent-verification.json",
+          "sha256": "16dbc4de57a6494dc4cb2f5024360985b3ff65880c801a4999a4e26cacf7adce"
+        }
+      ]
+    }
+  }
+}

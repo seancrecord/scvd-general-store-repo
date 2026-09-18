@@ -1027,15 +1027,15 @@ const BASE = "https://scvd.store";
 // 2026-09-16: the guide names the shared payment breakdown and its MCP
 // resource. Counts are grouped by protocol, network and currency; the
 // existing checkout remains x402/USDC. No purchase instructions changed.
-// 2026-09-16, THE MERGE. Both sides re-pinned correctly for their own
-// edit — main for the shared payment breakdown, this branch for the UCP
-// profile paragraph and its backticks — so the merged guide is a third
-// text neither digest described. Both notes above stand. Verified
-// across the merge: reversing only this branch's paragraph from the
-// merged tree reproduces main's cbd2ff08, and this copy reproduces the
-// new one.
+// The merged verifier paragraph discloses traffic records and the public queue.
+// 2026-09-16: re-taken for A2A v1/legacy instructions and the focused buyer skill index paragraph.
+// Reversing just these reviewed edits reproduces the main fingerprint.
+// September 17: retains the upstream per-host feed links and adds the
+// keeper-requested canonical identity/discovery links.
+// 2026-09-17: canonical ERC-8004 and protocol-record links, requested by the keeper.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "76fbdd39c9db14283e2db58f23dbf9db81b1160c3827deee02d91f87bb00bf63";
+  "eb0b92aa2c1c7067011265e0b71c29f12d7be19d94aa36c3f4c3316e7b792b9f";
+
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1065,6 +1065,15 @@ async function body(path: string): Promise<string> {
 }
 
 describe("nothing was rewritten", () => {
+  it("adds the identity and protocol-record pointers without changing the preceding guide", async () => {
+    const full = await body("/llms-full.txt");
+    const addition = `Canonical ERC-8004 identity and endpoint-domain acknowledgment:\n${BASE}/.well-known/agent-registration.json\nPublic discovery records by protocol, with observation dates and limits:\n${BASE}/trust (also JSON with Accept: application/json).\n`;
+    expect(full).toContain(addition);
+    expect(await digest(normalize(full.replace(addition, "")))).toBe(
+      "d9fc6754df22b7c0847d49dd06d6a1c6e6497ffc7c90d812f2c83f8ebfd3ae99",
+    );
+  });
+
   it("serves the complete guide at /llms-full.txt, byte for byte", async () => {
     const full = await body("/llms-full.txt");
     expect(await digest(normalize(full))).toBe(GUIDE_DIGEST_BEFORE_THE_SPLIT);

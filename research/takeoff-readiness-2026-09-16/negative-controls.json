@@ -1,0 +1,45 @@
+[
+  {
+    "disabled_guard": "signature",
+    "exit_code": 1,
+    "failed_controls": [
+      "not ok 15 - tampering fails even with an unreviewed recipient"
+    ]
+  },
+  {
+    "disabled_guard": "subject",
+    "exit_code": 1,
+    "failed_controls": [
+      "not ok 14 - validly signed wrong subject fails semantic verification"
+    ]
+  },
+  {
+    "disabled_guard": "issuer",
+    "exit_code": 1,
+    "failed_controls": [
+      "not ok 17 - issuer mismatch fails while valid artifact signature stays true"
+    ]
+  },
+  {
+    "disabled_guard": "isolation",
+    "exit_code": 1,
+    "failed_controls": [
+      "not ok 9 - inherited store context invalidates every stage",
+      "not ok 10 - unreviewed isolation is not inferred from CLI flags"
+    ]
+  },
+  {
+    "disabled_guard": "queued",
+    "exit_code": 1,
+    "failed_controls": [
+      "not ok 18 - queued delivery never becomes evidence obtained"
+    ]
+  },
+  {
+    "disabled_guard": "freshness",
+    "exit_code": 1,
+    "failed_controls": [
+      "not ok 13 - stale observation fails the freshness stage"
+    ]
+  }
+]

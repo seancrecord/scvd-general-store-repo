@@ -51,6 +51,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Check installed skill tree
+        run: npm run skill:check
+
       - name: Typecheck
         run: npm run typecheck
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -73,7 +76,9 @@ jobs:
         run: npm run self-row
       # Exercise the actual partitioner and merge gate before trusting them.
       - name: CI partition and gate regression tests
-        run: node --test scripts/ci-workflow.test.mjs
+        run: node --test scripts/ci-workflow.test.mjs scripts/release-provenance.test.mjs
+      - name: Catalog and verifier smoke detectors, offline
+        run: node --test scripts/catalog-review-smoke.test.mjs scripts/verifier-review-smoke.test.mjs
       # THE TAB'S OWN TESTS — a filesystem product cannot run in the
       # Workers pool (no fs in an isolate), so scvd-tab tests ride
       # Node's own runner. Zero framework, same as zero dependencies.
@@ -81,6 +86,10 @@ jobs:
         run: npm run tab:test
       - name: Offline evidence tools
         run: npm run evidence:test
+      - name: Independent verifier vectors
+        run: npm run verifier:vectors:check
+      - name: Verifier installed quickstart
+        run: npm run verifier:activation:test
       - name: Field research accounting and spending limits
         run: npm run walkabout:test
       - name: Buyer benchmark evidence and public contracts

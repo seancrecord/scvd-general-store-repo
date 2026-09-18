@@ -1,0 +1,14 @@
+{
+  "id": "7e74ca9d-cf0c-4817-8d7d-33861dbf3de8",
+  "cwd": ".",
+  "script": "verify.mjs",
+  "args": [
+    "tampered"
+  ],
+  "scriptSha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/7e74ca9d-cf0c-4817-8d7d-33861dbf3de8.stdout.txt",
+  "stderrFile": ".verification-runs/7e74ca9d-cf0c-4817-8d7d-33861dbf3de8.stderr.txt"
+}

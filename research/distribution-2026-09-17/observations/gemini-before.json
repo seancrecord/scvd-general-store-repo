@@ -1,0 +1,11 @@
+{
+  "name": "scvd-general-store",
+  "version": "0.2.3",
+  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
+  "mcpServers": {
+    "scvd-store": {
+      "httpUrl": "https://scvd.store/mcp"
+    }
+  },
+  "contextFileName": "AGENTS.md"
+}

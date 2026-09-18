@@ -31,6 +31,8 @@
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "scvd-doors",
   "main": "../src/doors.ts",
+  // Shared preflight guidance imports the canonical installable skill.
+  "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
   "limits": { "cpu_ms": 100 },
@@ -61,6 +63,7 @@
     { "binding": "CORPUS_R2", "bucket_name": "scvd-corpus" }
   ],
   "vars": {
+    "MPP_CHECKOUT_ENABLED": "true",
     "STORE_BASE_URL": "https://scvd.store",
     "BASE_RPC_URL": "https://mainnet.base.org",
     "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"

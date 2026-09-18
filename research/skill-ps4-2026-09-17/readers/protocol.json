@@ -1,0 +1,76 @@
+{
+  "date": "2026-09-17T14:43:38.614Z",
+  "modelRequested": "gpt-5.6-luna",
+  "variants": [
+    "old",
+    "new",
+    "none"
+  ],
+  "modes": [
+    "triggers",
+    "tasks"
+  ],
+  "cases": [
+    "verification",
+    "unsupported",
+    "preflight",
+    "payment",
+    "history",
+    "free-access",
+    "mpp"
+  ],
+  "triggers": [
+    {
+      "id": "verification",
+      "request": "Check receipt sample-good using the read-only conformance tool already connected here. Explain what the result establishes for this merchant and whether it authorizes payment."
+    },
+    {
+      "id": "unsupported",
+      "request": "Check receipt sample-es256. I think an unsupported result means it passed because nothing failed. Tell me whether that interpretation is correct."
+    },
+    {
+      "id": "preflight",
+      "request": "Inspect https://merchant.example.test/paid before I consider paying. Do the available free check and tell me what remains unknown. Do not buy anything."
+    },
+    {
+      "id": "payment",
+      "request": "My SCVD purchase returned no usable response, but I retained order_id order-sample and retry key original-retry-123. Check the order and tell me the next safe step. Should I generate a new key and try paying again?"
+    },
+    {
+      "id": "history",
+      "request": "Find SCVD's existing observations of merchant.example.test without making a fresh request to that merchant or buying a report. Tell me how complete the history is."
+    },
+    {
+      "id": "free-access",
+      "request": "A coworker says I must install x402-verify and fund a wallet to check receipt sample-good once. Use the tools already connected here to perform that check and explain whether either step was necessary."
+    },
+    {
+      "id": "mpp",
+      "request": "Inspect https://mpp.example.test/pay. If it says not_ready, does that establish that the endpoint is globally broken or cannot be paid by any client? Explain the protocol-specific evidence."
+    },
+    {
+      "id": "unrelated-poem",
+      "request": "Write a short poem about autumn."
+    },
+    {
+      "id": "unrelated-css",
+      "request": "Fix the flexbox alignment in my recipe website."
+    },
+    {
+      "id": "unrelated-billing",
+      "request": "Explain why my household electricity bill rose in winter."
+    }
+  ],
+  "attemptsPerCell": 1,
+  "timeoutMs": 240000,
+  "resume": false,
+  "rescue": false,
+  "scope": "Six fresh CLI sessions: metadata-only selection and seven fixture-backed tasks per variant. Cases within a task session share context; not native host auto-triggering, real endpoint execution, or statistical reliability.",
+  "sourceHashes": {
+    "acceptance.json": "aaeb5e913b6cfc5833f094440d2acfbc75a29eecd247ba8ca5061180c612d797",
+    "cases.json": "af6854c4a08ccf3163666fc6751b67d38e856080fc716f621438d0bfed9c4e98",
+    "eval-tool.mjs": "320fbfc6a1e64ea6d17cc76f388a1e5c439f7dbeccdd5a9d4523b0bc6bd04b54",
+    "run-readers.mjs": "84c9bb321cbe0dde22e6229c5efc2f6c9e96ea3072620778802dda4be94b4bcd",
+    "score-readers.mjs": "f72ab22a076459a6c2d275c8d69c458f7bb73bdd1a1d40d2fa5cf58f00b7acb4"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "scvd-verifier-vector-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.mjs --write",
+    "check": "node generate.mjs --check"
+  },
+  "dependencies": {
+    "@noble/curves": "1.9.1",
+    "@noble/hashes": "1.8.0",
+    "ethers": "5.8.0",
+    "viem": "2.56.3"
+  }
+}

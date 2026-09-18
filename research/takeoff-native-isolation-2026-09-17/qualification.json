@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-09-17T19:21:43.455183+00:00",
+  "context_captures": [
+    {
+      "result": {
+        "variant": "frozen",
+        "exit": {
+          "code": 1,
+          "signal": null
+        },
+        "requests": [
+          {
+            "method": "GET",
+            "url": "/v1/models?client_version=0.153.4",
+            "bytes": 0,
+            "encoding": null
+          },
+          {
+            "method": "POST",
+            "url": "/v1/responses",
+            "bytes": 54878,
+            "encoding": null
+          }
+        ],
+        "skill_entries": 142,
+        "skill_entries_naming_store": 0,
+        "plugin_skill_entries": 0,
+        "skill_warning": true
+      },
+      "summary": {
+        "file": "context-a/frozen/summary.json",
+        "sha256": "1a4b660be87ab3bb4256fb9362c2396d39c05753b8c1591d3aa161c551261441",
+        "bytes": 449
+      },
+      "launch": {
+        "file": "context-a/frozen/launch.json",
+        "sha256": "71228570d929206a980391a8860762e36d0eaaa295568469dd4112c55782e386",
+        "bytes": 1125
+      },
+      "request": {
+        "file": "context-a/frozen/request-1.json",
+        "sha256": "b01b6fb5d64af94743589d8a8985d5981053faae53e3bdf1e4f0e5f5cb46f8d7",
+        "bytes": 54878
+      }
+    },
+    {
+      "result": {
+        "variant": "plugins_off",
+        "exit": {
+          "code": 1,
+          "signal": null
+        },
+        "requests": [
+          {
+            "method": "GET",
+            "url": "/v1/models?client_version=0.153.4",
+            "bytes": 0,
+            "encoding": null
+          },
+          {
+            "method": "POST",
+            "url": "/v1/responses",
+            "bytes": 54878,
+            "encoding": null
+          }
+        ],
+        "skill_entries": 142,
+        "skill_entries_naming_store": 0,
+        "plugin_skill_entries": 0,
+        "skill_warning": true
+      },
+      "summary": {
+        "file": "context-a/plugins_off/summary.json",
+        "sha256": "494041953cf26fd7c5470ede089092270d8c1ef789e0d5c14a3f112011d8f9b6",
+        "bytes": 454
+      },
+      "launch": {
+        "file": "context-a/plugins_off/launch.json",
+        "sha256": "b14fdf2f02e0d4fba7d66f70a32505fde5d4281ce964f4dc3b1bdced61c2bc6c",
+        "bytes": 1162
+      },
+      "request": {
+        "file": "context-a/plugins_off/request-1.json",
+        "sha256": "cca4f3ceca28e8460746958c46196a28f9cd461746fcb1ccdf765558f1f83508",
+        "bytes": 54878
+      }
+    },
+    {
+      "result": {
+        "variant": "explicit_skills_off",
+        "exit": {
+          "code": 1,
+          "signal": null
+        },
+        "requests": [
+          {
+            "method": "GET",
+            "url": "/v1/models?client_version=0.153.4",
+            "bytes": 0,
+            "encoding": null
+          },
+          {
+            "method": "POST",
+            "url": "/v1/responses",
+            "bytes": 32454,
+            "encoding": null
+          }
+        ],
+        "skill_entries": 0,
+        "skill_entries_naming_store": 0,
+        "plugin_skill_entries": 0,
+        "skill_warning": false
+      },
+      "summary": {
+        "file": "context-b/explicit_skills_off/summary.json",
+        "sha256": "e3c021b862d3cfe9a0549f1ab4fc51b5312a177a98fdd29275be5cd42150c779",
+        "bytes": 461
+      },
+      "launch": {
+        "file": "context-b/explicit_skills_off/launch.json",
+        "sha256": "e6f0756cecec3c71a98415536d679787aaea92c43f7985a6bfa0ab6131d2f145",
+        "bytes": 19573
+      },
+      "request": {
+        "file": "context-b/explicit_skills_off/request-1.json",
+        "sha256": "9ab514ad4fd237ffed0c5db56b66f0cbc9be2b3175dc98091faa272d85e680b8",
+        "bytes": 32454
+      }
+    },
+    {
+      "result": {
+        "variant": "repaired_adapter",
+        "exit": {
+          "code": 1,
+          "signal": null
+        },
+        "requests": [
+          {
+            "method": "GET",
+            "url": "/v1/models?client_version=0.153.4",
+            "bytes": 0,
+            "encoding": null
+          },
+          {
+            "method": "POST",
+            "url": "/v1/responses",
+            "bytes": 32454,
+            "encoding": null
+          }
+        ],
+        "skill_entries": 0,
+        "skill_entries_naming_store": 0,
+        "plugin_skill_entries": 0,
+        "skill_warning": false
+      },
+      "summary": {
+        "file": "context-c/repaired_adapter/summary.json",
+        "sha256": "6bc4a8ce40b36325f74f6a133282d89705b1f4080f87e35fe449fad5ed7d6265",
+        "bytes": 458
+      },
+      "launch": {
+        "file": "context-c/repaired_adapter/launch.json",
+        "sha256": "00bb5900f1e809adb658caec9d929871d721d6c8f964d3b3fa76be93cdb4c690",
+        "bytes": 19657
+      },
+      "request": {
+        "file": "context-c/repaired_adapter/request-1.json",
+        "sha256": "58065cd330edda44f9cb31e12a4558c59f95fdcafe370b2fa6aa1aae1aba8ecc",
+        "bytes": 32454
+      }
+    }
+  ],
+  "capability": {
+    "schema_version": 2,
+    "plan_sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393",
+    "instrument_sha256": "a7e4fdc8b9f43593f8057f90395eeac9abd229104be2c50b3c36936cc6325bac",
+    "host_context_sha256": "e81893c4e27fa6150ce950adfe4923d483950103a5e17b23b0280c2617f4907f",
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "probed_at": "2026-09-17T19:04:07.381Z",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh"
+        ]
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "curl",
+          "node",
+          "node",
+          "node",
+          "node",
+          "node",
+          "node"
+        ]
+      }
+    },
+    "limits": [
+      "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+    ]
+  },
+  "review": {
+    "codex": "Reviewed both command executions and file writes: exact public bytes, correctly decoded binary OpenSSL signature input, actual a=false/b=true/c=false/d=true outputs match frozen expectations. No skill-budget warning, denial or cap. Generic under-development feature warning persists.",
+    "claude": "Reviewed all seven commands: curl captured exact bytes; Node Ed25519 verification over imported JWK computed a=false/b=false/c=true/d=true, matching expectations. Init showed no skills/plugins/MCP. No denial or cap."
+  },
+  "limits": [
+    "Custom localhost provider captured native request construction only, returned intentional errors and performed no model inference.",
+    "No explicit SCVD-named skill entry in the baseline list; metadata exposure was demonstrated, SCVD-specific contamination was not.",
+    "One fresh attempt per host under changed isolation, with new random vectors; no causal claim that isolation fixed earlier signature reasoning.",
+    "The former failed Codex probe and former Claude pass remain untouched."
+  ]
+}

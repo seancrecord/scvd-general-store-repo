@@ -5,7 +5,8 @@ import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { DOCS_SERVER_NAME, DOCS_TOOL_NAME, docsToolCatalog } from "@/routes/mcp-docs";
 import { VERIFIER_SERVER_NAME, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
-import { evidenceAgentCard } from "@/services/a2a-evidence";
+import { a2aVersion, a2aVersionError, A2A_CURRENT_VERSION } from "@/lib/a2a-version";
+import { evidenceAgentCard, evidenceAgentCardV1 } from "@/services/a2a-evidence";
 import {
   AGENT_REGISTRATION_PATH,
   agentRegistrationFile,
@@ -62,6 +63,7 @@ import conformanceVectors from "../../conformance/offer-receipt-vectors.json";
 import {
   DATA_HANDLING,
   EXTERNAL_RECORDS,
+  discoveryProtocolIndex,
   NOT_CLAIMED,
   OPERATOR,
   RECORDS_NOT_LISTED,
@@ -188,6 +190,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * claiming legitimacy would be the strongest argument against it.
      */
     external_records: EXTERNAL_RECORDS,
+    discovery_by_protocol: discoveryProtocolIndex(base),
     external_records_omitted: RECORDS_NOT_LISTED,
     data_handling: DATA_HANDLING,
     not_claimed: NOT_CLAIMED,
@@ -675,9 +678,15 @@ for (const path of [
    * proof-of-control field belongs where a truncating reader finds it
    * whatever the document's size today.
    */
-  wellKnownRoutes.get(path, (c) =>
-    c.json({ ...agentToolsVerifyField(), ...evidenceAgentCard(c.env.STORE_BASE_URL) }),
-  );
+  wellKnownRoutes.get(path, (c) => {
+    c.header("Vary", "A2A-Version", { append: true });
+    const version = a2aVersion(c.req.header("A2A-Version"));
+    if (!version) return c.json(a2aVersionError(), 400);
+    c.header("A2A-Version", version);
+    return c.json(version === A2A_CURRENT_VERSION
+      ? evidenceAgentCardV1(c.env.STORE_BASE_URL)
+      : { ...agentToolsVerifyField(), ...evidenceAgentCard(c.env.STORE_BASE_URL) });
+  });
 }
 
 /**

@@ -1,0 +1,22 @@
+{
+  "observed_at": "2026-09-17T21:10:29.985198+00:00",
+  "submission_url": "https://platform.claude.com/plugins/submit",
+  "status_url": "https://platform.claude.com/plugins/submissions",
+  "plugin_name": "SCVD General Store",
+  "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+  "repository_path": "",
+  "homepage": "https://scvd.store",
+  "license": "MIT",
+  "privacy_url": "https://scvd.store/privacy",
+  "platforms": [
+    "Claude Code"
+  ],
+  "cowork_selected": false,
+  "description": "Independent evidence tools for agentic commerce. Inspect x402 payment challenges before paying, check signed receipts, and use SCVD\u2019s general store through two skills and its MCP service. Free checks need no wallet. Optional paid signed observations require an explicit purchase decision; each result states what was observed and what remains unverified.",
+  "outcome": "submitted_for_review",
+  "confirmation_heading": "Plugin submitted for review",
+  "confirmation_text": "Your plugin submission has been received. The review team will evaluate it and may reach out for additional information.",
+  "acceptance_verified": false,
+  "authorization": "Keeper explicitly approved use of the contact email, Software Directory Terms, and submission. Private contact address omitted from this public receipt.",
+  "status_page_text": "SCVD General Store \u2014 Submitted and pending review"
+}

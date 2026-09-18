@@ -1,0 +1,20 @@
+[
+  {
+    "cohort": "original",
+    "source": "/private/tmp/scvd-ps3-frozen",
+    "archivedUnder": "original",
+    "sha256": {
+      "README.md": "c3ff6b2e25c3e4829391ce7f41a9e0f5757cf57eabaede9486018e8e4bd1c31e",
+      "x402-verify-1.4.0.tgz": "a6d108b1d8bdc8b1ca57ae72e36b8bc27380287d2e25cee31c42006cf8fe658e"
+    }
+  },
+  {
+    "cohort": "revised",
+    "source": "/private/tmp/scvd-ps3-revision-2026-09-17-0nirhn_j",
+    "archivedUnder": "revised",
+    "sha256": {
+      "README.md": "b5916ffd3daff21c0d6bbeccc42d732da07413e77c617e39409a7884d4faa11f",
+      "x402-verify-1.4.0.tgz": "3b93ad331fea263e2b538b33198c230c7d8c6859cc938b324bb9c509f1e81c79"
+    }
+  }
+]

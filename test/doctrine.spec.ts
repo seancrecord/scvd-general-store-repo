@@ -7,7 +7,7 @@ import {
   RETIRED_DOCTRINE_FORMS,
 } from "@/store/copy/doctrine";
 import { isRecord } from "@/types";
-import clawhubBundle from "../registry/clawhub/SKILL.md?raw";
+import { installedSkill as clawhubBundle } from "./helpers/installed-skill";
 import readme from "../README.md?raw";
 
 /**

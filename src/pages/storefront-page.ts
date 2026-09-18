@@ -1011,6 +1011,8 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
 
 export function renderStorefront(data: StorefrontData): string {
   const title = escapeHtml(COPY.pageTitle);
+  const cheapest = [...MENU_ITEMS].filter(item => item.price_usdc > 0)
+    .sort((a, b) => a.price_usdc - b.price_usdc)[0];
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,6 +1114,13 @@ ${webmcpOriginTrialTags()}
       ${data.ledgerLine ? `<p class="track-record">${escapeHtml(data.ledgerLine)}</p>` : ""}
       <p class="pay-rails">${escapeHtml(paymentMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>. <a href="/rails">Payment breakdown</a>.</p>
     </header>
+
+    <nav class="first-actions" data-first-actions aria-label="Start here">
+      <a class="door-cta" href="/menu">Browse the catalog</a>
+      <a class="door-cta" href="/try">Run a free preflight</a>
+      ${cheapest ? `<a class="door-cta" href="/menu/${escapeHtml(cheapest.id)}">Try ${escapeHtml(cheapest.name)} · ${escapeHtml(priceLabel(cheapest))}</a>` : ''}
+      <a class="door-cta" href="/mcp.md">Connect through MCP</a>
+    </nav>
 
     <div class="gauges">
       ${patronsGaugeHtml(data.patronCount)}

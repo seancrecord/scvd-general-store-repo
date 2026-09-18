@@ -3,9 +3,9 @@
  * Receipts, did:web identity, and key history.
  *
  * WHAT THIS IS FOR. The x402 Signed Offers & Receipts extension lets a
- * seller commit to its terms before money moves and prove delivery
- * after. Both artifacts are JWS (RFC 7515 compact, alg EdDSA over
- * Ed25519) whose `kid` is a DID URL. Checking one properly means doing
+ * seller commit to its terms before money moves and sign its claim of
+ * delivery after. This package checks the compact JWS EdDSA/Ed25519
+ * profile; other extension formats remain unsupported. Checking one means doing
  * FOUR separate things, and the whole point of this file is that they
  * are separate:
  *
@@ -14,7 +14,7 @@
  *      artifact — otherwise you are asking the artifact to vouch for
  *      itself.
  *   3. Check the signature against that key.
- *   4. Check the payload against the spec's schema.
+ *   4. Check the payload against this package's local revision-1 schema.
  *
  * STEPS 3 AND 4 ARE NOT THE SAME CHECK AND A VERIFIER THAT RUNS ONLY
  * ONE IS BROKEN. A payload can carry a perfectly valid signature over
@@ -34,15 +34,15 @@
  * this file is tested against; there is no call home in here and
  * nothing about scvd.store is privileged.
  *
- * RUNTIME. Zero dependencies. Ed25519 verification uses WebCrypto
- * (Node 18.4+, Deno, Bun, Cloudflare Workers, recent browsers). If
+ * RUNTIME. Zero dependencies. Ed25519 verification uses WebCrypto;
+ * the README records exercised runtimes rather than assumed parity. If
  * your runtime lacks Ed25519 in WebCrypto, pass your own `verify`
  * function — the crypto is a seam on purpose, not a lock-in.
  *
  * Licence: MIT, same as the repository it ships in.
  */
 
-/** Spec §4.2 — every field an offer must carry. */
+/** Local revision-1 profile; validUntil remains required for compatibility. */
 export const OFFER_REQUIRED_FIELDS = [
   "version",
   "resourceUrl",
@@ -122,8 +122,8 @@ export function parseJws(jws) {
   const header = decodeJsonSegment(headerSegment);
   const payload = decodeJsonSegment(payloadSegment);
   const signature = decodeBase64Url(signatureSegment);
-  if (!header) return { ok: false, problem: "header is not base64url JSON" };
-  if (!payload) return { ok: false, problem: "payload is not base64url JSON" };
+  if (!isRecord(header)) return { ok: false, problem: "header is not a base64url JSON object" };
+  if (!isRecord(payload)) return { ok: false, problem: "payload is not a base64url JSON object" };
   if (!signature) return { ok: false, problem: "signature is not base64url" };
   return {
     ok: true,
@@ -134,98 +134,155 @@ export function parseJws(jws) {
   };
 }
 
-/** Ed25519 verification via WebCrypto, or whatever you inject. */
+function isRecord(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function finding(name, status, detail, reasonCode, advisory = false) {
+  return { name, ok: status === "valid", status, detail,
+    ...(reasonCode ? { reasonCode } : {}), ...(advisory ? { advisory: true } : {}) };
+}
+
+function reportFrom(checks, fields = {}) {
+  const required = checks.filter((check) => !check.advisory);
+  // A demonstrated failure survives an unrelated unsupported or incomplete check.
+  const status = ["invalid", "unsupported", "inconclusive", "unobserved"]
+    .find((state) => required.some((check) => check.status === state)) ?? "valid";
+  return { ok: status === "valid", status: status === "unobserved" ? "inconclusive" : status,
+    scope: "Signature and local revision-1 schema checks only; service authorization, key history, settlement and delivery are not checked.",
+    reasonCodes: [...new Set(required.filter((check) => !check.ok).map((check) => check.reasonCode).filter(Boolean))],
+    checks, ...fields };
+}
+
+/** Keep the legacy helper contract; artifact APIs retain structured findings. */
 export async function verifyEd25519(signingInput, signature, publicKey, options = {}) {
-  if (typeof options.verify === "function") {
-    /**
-     * THE INJECTED SEAM GETS THE SAME GUARD THE WEBCRYPTO PATH HAS,
-     * and it did not until 2026-08-02.
-     *
-     * The WebCrypto branch below already turns a throw into `false`,
-     * because a malformed signature from a stranger is a VERDICT and
-     * never an exception — a verifier that throws pushes the failure
-     * into its caller's error path, where a forgery reads as an
-     * outage. The injected branch, which exists precisely for runtimes
-     * whose WebCrypto lacks Ed25519, had no such guard: it handed the
-     * bytes straight to somebody else's library and let whatever came
-     * back propagate. @noble/ed25519 throws "Uint8Array expected" on a
-     * wrong-length signature, so the truncated-signature conformance
-     * vector crashed the check instead of failing it.
-     *
-     * Two paths to the same answer, one hardened and one not. Found by
-     * a vector written to assert exactly this property, which is the
-     * argument for the vectors existing.
-     */
-    try {
-      return Boolean(await options.verify(signingInput, signature, publicKey));
-    } catch {
-      return false;
-    }
+  // Existing raw-byte consumers distinguish a missing runtime by this exception.
+  // Artifact APIs call signatureFinding directly and report unsupported instead.
+  if (typeof options.verify !== "function" && !(options.subtle ?? globalThis.crypto?.subtle)) {
+    throw new Error("No WebCrypto available. Pass options.verify to supply your own Ed25519 check.");
+  }
+  return (await signatureFinding(signingInput, signature, publicKey, options)).ok;
+}
+
+async function signatureFinding(signingInput, signature, publicKey, options) {
+  const fail = (status, code, detail) => finding("signature", status, detail, code);
+  if (!(signature instanceof Uint8Array) || signature.length !== 64) {
+    return fail("invalid", "signature_malformed", "Ed25519 signature must be 64 bytes");
   }
   const subtle = options.subtle ?? globalThis.crypto?.subtle;
-  if (!subtle) {
-    throw new Error(
-      "No WebCrypto available. Pass options.verify to supply your own Ed25519 check.",
-    );
+  if (typeof options.verify !== "function" && (!subtle || typeof subtle.importKey !== "function" || typeof subtle.verify !== "function")) {
+    return fail("unsupported", "unsupported_runtime", "Ed25519 verification is unavailable; supply options.verify");
   }
   try {
-    const key = await subtle.importKey("raw", publicKey, { name: "Ed25519" }, false, [
-      "verify",
-    ]);
-    return await subtle.verify(
-      { name: "Ed25519" },
-      key,
-      signature,
-      new TextEncoder().encode(signingInput),
-    );
-  } catch {
-    return false;
+    let valid;
+    if (typeof options.verify === "function") {
+      valid = await options.verify(signingInput, signature, publicKey);
+    } else {
+      const key = await subtle.importKey("raw", publicKey, { name: "Ed25519" }, false, ["verify"]);
+      valid = await subtle.verify({ name: "Ed25519" }, key, signature, new TextEncoder().encode(signingInput));
+    }
+    if (typeof valid !== "boolean") return fail("inconclusive", "verification_error", "verifier did not return a boolean");
+    return valid
+      ? finding("signature", "valid", "signature verifies over ASCII(header.payload)")
+      : fail("invalid", "signature_invalid", "signature does NOT verify against the resolved key");
+  } catch (error) {
+    // A provider's exception is not a cryptographic verdict, and may contain secrets.
+    return error?.name === "NotSupportedError"
+      ? fail("unsupported", "unsupported_runtime", "runtime does not support Ed25519 verification")
+      : fail("inconclusive", "verification_error", "verification could not complete");
   }
 }
 
-/**
- * did:web -> the document and its Ed25519 keys.
- *
- * Follows the did:web method: the domain (and optional path) becomes
- * an https URL for did.json. Keys come back keyed by their FULL kid so
- * a caller can match the artifact's kid exactly rather than guessing
- * which key was meant.
- */
-export async function resolveDidWeb(did, options = {}) {
-  if (typeof did !== "string" || !did.startsWith("did:web:")) {
-    return { ok: false, problem: "not a did:web identifier" };
+function keyProblem(status, reasonCode, problem, url) {
+  return { ok: false, status, reasonCode, problem, ...(url ? { url } : {}) };
+}
+
+function readPublicKey(value, documentKey = false) {
+  const bytes = typeof value === "string" ? hexToBytes(value) : value;
+  return bytes instanceof Uint8Array && bytes.length === 32
+    ? { ok: true, key: bytes }
+    : keyProblem("inconclusive", documentKey ? "key_document_invalid" : "invalid_public_key", "Ed25519 public key must be 32 bytes");
+}
+
+function readJwk(jwk) {
+  if (jwk?.kty !== "OKP" || jwk?.crv !== "Ed25519") {
+    return keyProblem("unsupported", "unsupported_key_type", "key representation is outside this verifier's Ed25519 support");
   }
-  const withoutMethod = did.slice("did:web:".length).split("#")[0];
-  const segments = withoutMethod.split(":").map(decodeURIComponent);
-  const host = segments[0].replace(/%3A/gi, ":");
-  const path = segments.slice(1);
-  const url =
-    path.length > 0
-      ? `https://${host}/${path.join("/")}/did.json`
-      : `https://${host}/.well-known/did.json`;
+  return readPublicKey(decodeBase64Url(jwk.x), true);
+}
+
+async function readKeyDocument(url, options) {
   const fetchImpl = options.fetch ?? globalThis.fetch;
-  if (!fetchImpl) {
-    return { ok: false, problem: "no fetch available; pass options.fetch" };
-  }
+  if (typeof fetchImpl !== "function") return keyProblem("inconclusive", "key_unavailable", "no fetch available; pass options.fetch", url);
   let document;
   try {
     const response = await fetchImpl(url);
-    if (!response.ok) {
-      return { ok: false, problem: `did document HTTP ${response.status}`, url };
-    }
-    document = await response.json();
-  } catch (error) {
-    return { ok: false, problem: `did document unreachable: ${String(error)}`, url };
+    if (!response.ok) return keyProblem("inconclusive", "key_unavailable", `key document HTTP ${response.status}`, url);
+    try { document = await response.json(); }
+    catch { return keyProblem("inconclusive", "key_document_invalid", "key document is not readable JSON", url); }
+  } catch {
+    return keyProblem("inconclusive", "key_unavailable", "key document unreachable", url);
+  }
+  if (!isRecord(document) || (document.verificationMethod !== undefined && !Array.isArray(document.verificationMethod))) {
+    return keyProblem("inconclusive", "key_document_invalid", "key document has an invalid verificationMethod shape", url);
   }
   const keys = new Map();
-  for (const method of document?.verificationMethod ?? []) {
-    const jwk = method?.publicKeyJwk;
-    if (jwk?.kty === "OKP" && jwk?.crv === "Ed25519" && typeof jwk.x === "string") {
-      const bytes = decodeBase64Url(jwk.x);
-      if (bytes) keys.set(String(method.id), bytes);
+  const keyProblems = new Map();
+  for (const method of document.verificationMethod ?? []) {
+    if (typeof method?.id !== "string") continue;
+    if (keys.has(method.id) || keyProblems.has(method.id)) {
+      keys.delete(method.id);
+      keyProblems.set(method.id, keyProblem("inconclusive", "key_document_invalid", "key document repeats the selected kid", url));
+      continue;
     }
+    const result = readJwk(method.publicKeyJwk);
+    if (result.ok) keys.set(method.id, result.key);
+    else keyProblems.set(method.id, result);
   }
-  return { ok: true, document, keys, url };
+  let bare = null;
+  let bareProblem;
+  if (document.kty !== undefined || document.publicKeyHex !== undefined) {
+    const result = document.kty !== undefined ? readJwk(document) : readPublicKey(document.publicKeyHex, true);
+    if (result.ok) bare = result.key;
+    else bareProblem = result;
+  }
+  return { ok: true, document, keys, keyProblems, bare, bareProblem, url };
+}
+
+/** did:web resolution retains unsupported keys separately from absent keys. */
+export async function resolveDidWeb(did, options = {}) {
+  if (typeof did !== "string" || !did.startsWith("did:web:")) {
+    return keyProblem("unsupported", "unsupported_did_method", "not a did:web identifier");
+  }
+  let url;
+  try {
+    const segments = did.slice("did:web:".length).split("#")[0].split(":").map(decodeURIComponent);
+    const host = segments[0].replace(/%3A/gi, ":");
+    const path = segments.slice(1);
+    if (!host) throw new Error("empty DID host");
+    url = path.length > 0 ? `https://${host}/${path.join("/")}/did.json` : `https://${host}/.well-known/did.json`;
+    new URL(url);
+  } catch {
+    return keyProblem("invalid", "malformed_kid", "did:web identifier cannot be resolved as a URL");
+  }
+  return readKeyDocument(url, options);
+}
+
+async function resolveArtifactKey(kid, options, issuerKeyUrl) {
+  if (options.publicKey !== undefined && options.publicKey !== null) {
+    const result = readPublicKey(options.publicKey);
+    return result.ok ? { ...result, detail: "public key supplied by the caller" } : result;
+  }
+  const resolved = issuerKeyUrl
+    ? await readKeyDocument(issuerKeyUrl, options)
+    : await resolveDidWeb(kid, options);
+  if (!resolved.ok) return resolved;
+  const key = resolved.keys.get(kid) ?? (issuerKeyUrl ? resolved.bare : null);
+  if (resolved.keyProblems.has(kid)) return { ...resolved.keyProblems.get(kid), url: resolved.url };
+  if (key) return { ok: true, key, url: resolved.url, detail: `kid found in ${resolved.url}` };
+  if (issuerKeyUrl && resolved.bareProblem) return { ...resolved.bareProblem, url: resolved.url };
+  // A current directory omitting a key cannot disprove historical authorization.
+  return keyProblem("inconclusive", "key_unavailable", `kid not found in ${resolved.url}`, resolved.url);
 }
 
 function schemaProblems(payload, requiredFields, kind) {
@@ -239,7 +296,7 @@ function schemaProblems(payload, requiredFields, kind) {
     }
   }
   if ("version" in payload && payload.version !== 1) {
-    problems.push(`version must be 1 for this revision, got ${payload.version}`);
+    problems.push("version must be 1 for this revision");
   }
   if (kind === "offer" && "validUntil" in payload) {
     if (typeof payload.validUntil !== "number") {
@@ -294,106 +351,60 @@ export function isOfferLive(payload, options = {}) {
  * verifier and a wall.
  */
 export async function verifyArtifact(jws, options = {}) {
-  const checks = [];
-  const add = (name, ok, detail) => checks.push({ name, ok, detail });
+  return (await verifyArtifactReport(jws, options)).report;
+}
 
+async function verifyArtifactReport(jws, options, issuerKeyUrl) {
+  const checks = [];
+  if (isRecord(jws) && typeof jws.format === "string" && jws.format.length > 0) {
+    checks.push(finding("parse", "unsupported", "this entry point accepts compact JWS strings only", "unsupported_format"));
+    return { report: reportFrom(checks) };
+  }
   const parsed = parseJws(jws);
   if (!parsed.ok) {
-    add("parse", false, parsed.problem);
-    return { ok: false, checks };
+    checks.push(finding("parse", "invalid", parsed.problem, "malformed_input"));
+    return { report: reportFrom(checks) };
   }
-  add("parse", true, "three base64url segments, header and payload are JSON");
-
-  const alg = parsed.header?.alg;
+  checks.push(finding("parse", "valid", "three base64url segments, header and payload are JSON"));
+  const { alg, kid } = parsed.header;
   const algOk = alg === "EdDSA";
-  add("alg", algOk, algOk ? "EdDSA" : `expected EdDSA, got ${String(alg)}`);
+  checks.push(algOk ? finding("alg", "valid", "EdDSA")
+    : typeof alg === "string" && alg.length > 0
+      ? finding("alg", "unsupported", `expected EdDSA, got ${String(alg)}`, "unsupported_algorithm")
+      : finding("alg", "invalid", "no algorithm in header", "malformed_header"));
+  checks.push(typeof kid === "string" && kid.length > 0
+    ? finding("kid", "valid", kid)
+    : finding("kid", "invalid", "no kid in header", "malformed_kid"));
+  const kind = options.kind ?? ("payer" in parsed.payload ? "receipt" : "offer");
+  const futureSchema = Number.isInteger(parsed.payload.version) && parsed.payload.version > 1;
+  const problems = kind === "receipt" ? validateReceiptPayload(parsed.payload) : validateOfferPayload(parsed.payload);
+  checks.push(futureSchema
+    ? finding("schema", "unsupported", "payload schema version is not supported", "unsupported_schema_version")
+    : problems.length === 0 ? finding("schema", "valid", `conforms to the local revision-1 ${kind} schema checks`)
+      : finding("schema", "invalid", problems.join("; "), "schema_invalid"));
 
-  const kid = parsed.header?.kid;
-  add(
-    "kid",
-    typeof kid === "string" && kid.length > 0,
-    typeof kid === "string" ? kid : "no kid in header",
-  );
-
-  const kind =
-    options.kind ??
-    ("payer" in (parsed.payload ?? {}) ? "receipt" : "offer");
-  const problems =
-    kind === "receipt"
-      ? validateReceiptPayload(parsed.payload)
-      : validateOfferPayload(parsed.payload);
-  add(
-    "schema",
-    problems.length === 0,
-    problems.length === 0
-      ? `conforms to the ${kind} schema`
-      : problems.join("; "),
-  );
-
-  let publicKey = options.publicKey ?? null;
-  if (typeof publicKey === "string") publicKey = hexToBytes(publicKey);
-
-  if (!publicKey && typeof kid === "string" && kid.startsWith("did:web:")) {
-    const resolved = await resolveDidWeb(kid, options);
-    if (!resolved.ok) {
-      add("key-resolution", false, resolved.problem);
-    } else {
-      const matched = resolved.keys.get(kid);
-      if (matched) {
-        publicKey = matched;
-        add("key-resolution", true, `kid found in ${resolved.url}`);
-      } else {
-        add(
-          "key-resolution",
-          false,
-          `kid is not in the DID document's verificationMethod (${resolved.url}). ` +
-            "A retired key resolves here too if the issuer publishes key history; " +
-            "an unknown kid means the artifact is not attributable to this DID.",
-        );
-      }
-    }
-  } else if (!publicKey) {
-    add(
-      "key-resolution",
-      false,
-      "no publicKey given and the kid is not a did:web URL",
-    );
-  } else {
-    add("key-resolution", true, "public key supplied by the caller");
+  let resolution;
+  if (algOk) {
+    resolution = await resolveArtifactKey(kid, options, issuerKeyUrl);
+    checks.push(resolution.ok ? finding("key-resolution", "valid", resolution.detail)
+      : finding("key-resolution", resolution.status, resolution.problem, resolution.reasonCode));
   }
-
-  if (publicKey) {
-    const valid = await verifyEd25519(
-      parsed.signingInput,
-      parsed.signature,
-      publicKey,
-      options,
-    );
-    add(
-      "signature",
-      valid,
-      valid
-        ? "signature verifies over ASCII(header.payload)"
-        : "signature does NOT verify against the resolved key",
-    );
+  if (algOk && parsed.signature.length !== 64) {
+    checks.push(finding("signature", "invalid", "Ed25519 signature must be 64 bytes", "signature_malformed"));
+  } else if (algOk && resolution?.ok) {
+    checks.push(await signatureFinding(parsed.signingInput, parsed.signature, resolution.key, options));
   } else {
-    add("signature", false, "not checked: no key to check against");
+    checks.push(finding("signature", "unobserved", algOk ? "not checked: no key to check against" : "not checked: unsupported algorithm", "signature_not_checked"));
   }
-
   if (kind === "offer" && options.checkExpiry !== false) {
-    const live = isOfferLive(parsed.payload, options);
-    // Reported, never folded into ok: an expired offer is a valid
-    // artifact and a caller may be auditing history rather than buying.
-    checks.push({
-      name: "expiry",
-      ok: live.live,
-      detail: live.reason,
-      advisory: true,
-    });
+    if (futureSchema || typeof parsed.payload.validUntil !== "number") {
+      checks.push(finding("expiry", "unobserved", "expiry not checked: unsupported schema or no numeric validUntil", "expiry_not_checked", true));
+    } else {
+      const live = isOfferLive(parsed.payload, options);
+      checks.push(finding("expiry", live.live ? "valid" : "invalid", live.reason, live.live ? undefined : "offer_expired", true));
+    }
   }
-
-  const ok = checks.every((check) => check.advisory || check.ok);
-  return { ok, checks, header: parsed.header, payload: parsed.payload, kind };
+  return { report: reportFrom(checks, { header: parsed.header, payload: parsed.payload, kind }), resolution };
 }
 
 /**
@@ -441,113 +452,46 @@ export const DOES_NOT_ESTABLISH = Object.freeze({
     "merchant identity beyond the key the receipt was checked against",
     "payment settlement on any chain",
     "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance",
   ]),
   offer: Object.freeze([
     "merchant identity beyond the key the offer was checked against",
     "that the door still serves these terms now",
     "that paying these terms delivers anything",
+    "authorization of the signing key for resourceUrl, now or at issuance",
   ]),
 });
 
 export const VERIFICATION_URL = "https://scvd.store/api/conformance/v1";
 
-async function resolveKeysFromUrl(url, options = {}) {
-  const fetchImpl = options.fetch ?? globalThis.fetch;
-  if (!fetchImpl) return { ok: false, problem: "no fetch available; pass options.fetch" };
-  let document;
-  try {
-    const response = await fetchImpl(url);
-    if (!response.ok) return { ok: false, problem: `issuer key document HTTP ${response.status}`, url };
-    document = await response.json();
-  } catch (error) {
-    return { ok: false, problem: `issuer key document unreachable: ${String(error)}`, url };
-  }
-  const keys = new Map();
-  for (const method of document?.verificationMethod ?? []) {
-    const jwk = method?.publicKeyJwk;
-    if (jwk?.kty === "OKP" && jwk?.crv === "Ed25519" && typeof jwk.x === "string") {
-      const bytes = decodeBase64Url(jwk.x);
-      if (bytes) keys.set(String(method.id), bytes);
-    }
-  }
-  let bare = null;
-  if (document?.kty === "OKP" && document?.crv === "Ed25519" && typeof document.x === "string") {
-    bare = decodeBase64Url(document.x);
-  } else if (typeof document?.publicKeyHex === "string") {
-    bare = hexToBytes(document.publicKeyHex);
-  }
-  return { ok: true, keys, bare, url };
-}
-
 async function verifyBounded(kind, jws, input, options) {
-  const scopeOf = (checked) =>
-    kind === "receipt"
-      ? `Signature valid over the receipt's bytes against ${checked}; the receipt's fields conform to the offer-receipt schema (rev 1).`
-      : `Signature valid over the offer's bytes against ${checked}; the offer's fields conform to the offer-receipt schema (rev 1). Expiry is reported, not folded in.`;
-  const base = {
-    kind,
-    doesNotEstablish: [...DOES_NOT_ESTABLISH[kind]],
-    verificationUrl: VERIFICATION_URL,
-  };
-  let publicKey = input.publicKey ?? options.publicKey ?? null;
-  let checkedAgainst = publicKey ? "the key supplied by the caller" : null;
-  let keyUrl = input.issuerKeyUrl ?? null;
-  const parsed = parseJws(jws);
-  const kid = parsed.ok ? parsed.header?.kid : undefined;
-  if (!publicKey && keyUrl) {
-    const resolved = await resolveKeysFromUrl(keyUrl, options);
-    if (!resolved.ok) {
-      return {
-        ...base,
-        valid: false,
-        scope: `Not verified: ${resolved.problem}.`,
-        checks: [{ name: "key-resolution", ok: false, detail: resolved.problem }],
-        issuer: { kid: typeof kid === "string" ? kid : null, keyUrl },
-      };
-    }
-    publicKey = (typeof kid === "string" ? resolved.keys.get(kid) : undefined) ?? resolved.bare ?? null;
-    if (!publicKey) {
-      return {
-        ...base,
-        valid: false,
-        scope: `Not verified: the issuer key document at ${keyUrl} carries no Ed25519 key for kid ${String(kid)}.`,
-        checks: [{ name: "key-resolution", ok: false, detail: `kid not found in ${keyUrl}` }],
-        issuer: { kid: typeof kid === "string" ? kid : null, keyUrl },
-      };
-    }
-    checkedAgainst = `the issuer key at ${keyUrl}`;
-  }
-  const report = await verifyArtifact(jws, { ...options, kind, ...(publicKey ? { publicKey } : {}) });
-  if (!checkedAgainst) {
-    const resolution = report.checks.find((check) => check.name === "key-resolution");
-    checkedAgainst = resolution?.ok ? `the key resolved from the artifact's did:web kid (${resolution.detail})` : "no key";
-    keyUrl = keyUrl ?? (resolution?.ok ? resolution.detail.replace(/^kid found in /, "") : null);
-  }
+  const publicKey = input?.publicKey ?? options.publicKey;
+  const keyUrl = input?.issuerKeyUrl ?? null;
+  const { report, resolution } = await verifyArtifactReport(jws, { ...options, kind, publicKey }, keyUrl);
+  const checkedAgainst = publicKey != null ? "the key supplied by the caller"
+    : keyUrl ? `the issuer key at ${keyUrl}` : `the key resolved from the artifact's did:web kid (${resolution?.url})`;
   const failed = report.checks.filter((check) => !check.advisory && !check.ok).map((check) => `${check.name}: ${check.detail}`);
   return {
-    ...base,
-    valid: report.ok,
-    scope: report.ok ? scopeOf(checkedAgainst) : `Not verified: ${failed.join("; ")}.`,
+    kind, valid: report.ok, status: report.status, reasonCodes: report.reasonCodes,
+    scope: report.ok
+      ? `Signature valid over the ${kind}'s bytes against ${checkedAgainst}; the ${kind}'s fields pass this package's local offer-receipt schema checks (rev 1).${kind === "offer" ? " Expiry is reported, not folded in." : ""}`
+      : `Not verified: ${jws === undefined ? `input.${kind} must be the compact JWS string. ` : ""}${failed.join("; ")}.`,
+    doesNotEstablish: [...DOES_NOT_ESTABLISH[kind]],
+    verificationUrl: VERIFICATION_URL,
     checks: report.checks,
-    issuer: { kid: typeof kid === "string" ? kid : null, keyUrl },
+    issuer: { kid: typeof report.header?.kid === "string" ? report.header.kid : null, keyUrl: keyUrl ?? resolution?.url ?? null },
     ...(report.payload ? { payload: report.payload } : {}),
   };
 }
 
 /** Verify one signed receipt and get bounded evidence back. */
 export async function verifyReceipt(input, options = {}) {
-  if (!input || typeof input.receipt !== "string") {
-    return { kind: "receipt", valid: false, scope: "Not verified: input.receipt must be the compact JWS string.", doesNotEstablish: [...DOES_NOT_ESTABLISH.receipt], checks: [], issuer: { kid: null, keyUrl: input?.issuerKeyUrl ?? null }, verificationUrl: VERIFICATION_URL };
-  }
-  return verifyBounded("receipt", input.receipt, input, options);
+  return verifyBounded("receipt", input?.receipt, input, options);
 }
 
 /** Verify one signed offer and get bounded evidence back. */
 export async function verifyOffer(input, options = {}) {
-  if (!input || typeof input.offer !== "string") {
-    return { kind: "offer", valid: false, scope: "Not verified: input.offer must be the compact JWS string.", doesNotEstablish: [...DOES_NOT_ESTABLISH.offer], checks: [], issuer: { kid: null, keyUrl: input?.issuerKeyUrl ?? null }, verificationUrl: VERIFICATION_URL };
-  }
-  return verifyBounded("offer", input.offer, input, options);
+  return verifyBounded("offer", input?.offer, input, options);
 }
 
 export async function checkAnchoredKeyHistory(did, publicKeyHex, options = {}) {
@@ -1012,7 +956,7 @@ export function checkKeyServiceWindow(keyHistory, publicKeyHex, artifactIso) {
 export function formatResult(result) {
   const lines = result.checks.map(
     (check) =>
-      `${check.ok ? "PASS" : check.advisory ? "NOTE" : "FAIL"}  ${check.name}: ${check.detail}`,
+      `${check.ok ? "PASS" : check.advisory ? "NOTE" : check.status && check.status !== "invalid" ? check.status.toUpperCase() : "FAIL"}  ${check.name}: ${check.detail}`,
   );
-  return `${result.ok ? "VERIFIED" : "REJECTED"}\n${lines.join("\n")}`;
+  return `${result.ok ? "VERIFIED" : result.status === "unsupported" || result.status === "inconclusive" ? result.status.toUpperCase() : "REJECTED"}\n${lines.join("\n")}`;
 }

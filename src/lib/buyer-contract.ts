@@ -1,3 +1,5 @@
+import { purchaseCapabilities, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
+import { purchaseChecklist } from "@/lib/purchase-checklist";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { publicationCollections } from "@/lib/publication-checkout";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
@@ -40,26 +42,30 @@ export function checkoutContract(base: string) {
     challenge_header: "PAYMENT-REQUIRED",
     response_header: "PAYMENT-RESPONSE",
     payment_network_source: "PAYMENT-REQUIRED.accepts[].network",
-    input_network_note: "A network input on a statement or audit selects the chain to inspect; it does not select the payment network. Pay only on a network offered in the current challenge.",
+    input_network_note: "A network input selects the chain to inspect; it does not select the payment network. Pay only on a network offered in the current quote.",
     mcp_payment_key: "x402/payment",
     mcp_idempotency_key: "x402/idempotency-key",
     steps: [
-      "Choose an item and supply its required inputs. The input contract and its MCP URL describe that item alone.",
-      "HTTP: GET buy_url with those query parameters. The 402 PAYMENT-REQUIRED header is base64 JSON. Asking the price costs nothing: a bare GET answers 402 too, naming required_params in the body. Supplied inputs are validated before terms, so an invalid one gets a field refusal, not a quote.",
-      "A payment-capable client selects an offered network and exact amount within your budget. Copy the atomic amount unchanged; do not multiply by a million. Without a supported wallet/payment client, stop before signing.",
-      "Retry the same request and inputs with the signed v2 payload in PAYMENT-SIGNATURE. Set the Idempotency-Key header to the quote body’s idempotency.suggested_key to protect retries. X-PAYMENT is an alias for the same v2 payload, not v1 support.",
-      "MCP: at the item's mcp_url, tools/list gives one buy tool. Its unpaid result has isError:true and the challenge in structuredContent. Retry with payment in params._meta['x402/payment'] and the quote result._meta['x402/idempotency-key'] in params._meta['x402/idempotency-key'].",
-      "Invalid inputs are refused before payment. A successful instant purchase returns the goods; a human task returns an order to poll. Goods are produced before settlement; a response lost in transit still needs the same retry key.",
+      "Use the item's input contract and mcp_url for required inputs and its single buy tool.",
+      "GET buy_url with query inputs. The free 402 quote names required_params; PAYMENT-REQUIRED is base64 JSON. A bare GET also quotes; invalid supplied inputs are refused.",
+      "Select an offered network and amount within budget; copy atomic amounts unchanged. Without a supported wallet/client, stop before signing.",
+      "Retry identical inputs with the signed v2 payload in PAYMENT-SIGNATURE and Idempotency-Key from quote.idempotency.suggested_key. X-PAYMENT also accepts v2, never v1.",
+      "MCP: tools/list at mcp_url. Unpaid: isError:true and structuredContent quote. Retry with params._meta['x402/payment']; copy result._meta['x402/idempotency-key'] to the same key in params._meta.",
+      "Invalid inputs never pay. Instant goods precede settlement; human work returns an order to poll. After a lost response, reuse payment, inputs and retry key.",
     ],
-    wallet_safety: "Never send private keys, seed phrases, or wallet secrets. Signing happens in the buyer's wallet or payment client.",
+    wallet_safety: "Never send keys, seed phrases or wallet secrets. Sign in your wallet or payment client.",
     documentation_url: `${base}/agents.md`,
     full_catalog_url: `${base}/menu.json`,
   };
 }
 
-export function compactItemRow(item: MenuItem, base: string) {
+export function compactItemRow(item: MenuItem, base: string, config?: PurchaseCapabilityConfig) {
   const links = buyerLinks(item, base);
+  const capabilities = purchaseCapabilities(item, config);
   return {
+    // The compact document already carries the full x402 checkout contract.
+    // Spend its reading budget on an additional protocol only when enabled.
+    ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities } : {}),
     id: item.id,
     name: item.name,
     task: CAPABILITY_QUERY[item.id] ?? item.name,
@@ -77,30 +83,31 @@ export function compactItemRow(item: MenuItem, base: string) {
   };
 }
 
-export function compactItemContract(item: MenuItem, base: string) {
+export function compactItemContract(item: MenuItem, base: string, config?: PurchaseCapabilityConfig) {
   const artifact = artifactClassForItem(item.id);
   return {
-    ...compactItemRow(item, base),
+    ...compactItemRow(item, base, config),
     buyer_guidance: buyerGuidance(item, base),
+    purchase_checklist: purchaseChecklist(item, config),
     description: item.description,
     reads: item.reads,
     ...(item.constraints ? { constraints: item.constraints } : {}),
     ...(item.sample_url ? { sample_url: item.sample_url, sample_kind: item.sample_kind ?? "unsigned_specimen" } : {}),
     input_schema: { type: "object", ...buyInputSchema(item) },
-    availability: "The purchase request checks live stock, keeper availability, and any subject-specific prerequisites before charging.",
+    availability: "Checkout checks stock, keeper availability and subject prerequisites before charging.",
     ...(artifact ? { signs: artifact.signs, does_not_prove: artifact.does_not_prove } : {}),
     checkout: checkoutContract(base),
   };
 }
 
 /** Page numbers are limited by the actual shelf and reject malformed or out-of-range values. */
-export function compactCatalog(base: string, rawPage = "0") {
+export function compactCatalog(base: string, rawPage = "0", config?: PurchaseCapabilityConfig) {
   const pages = Math.max(1, Math.ceil(MENU_ITEMS.length / COMPACT_CATALOG_PAGE_SIZE));
   if (!/^\d{1,6}$/.test(rawPage) || Number(rawPage) >= pages) return null;
   const page = Number(rawPage);
   const offset = page * COMPACT_CATALOG_PAGE_SIZE;
   const items = MENU_ITEMS.slice(offset, offset + COMPACT_CATALOG_PAGE_SIZE)
-    .map(item => compactItemRow(item, base));
+    .map(item => compactItemRow(item, base, config));
   return {
     publications: publicationCollections(base),
     total: MENU_ITEMS.length,

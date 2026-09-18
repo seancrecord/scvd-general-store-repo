@@ -1,0 +1,36 @@
+
+│
+●   codex  Agent detected — installing non-interactively
+[?25l│
+◇  Source: /private/tmp/scvd-skill-progressive-disclosure/skills/scvd-general-store
+[?25h[?25l│
+◇  Local path validated
+[?25h[?25l│
+◇  Found 1 skill
+[?25h│
+●  Skill: scvd-general-store
+│
+│  A live x402 practice counter from $0.001. Verify any issuer's signed receipts, including competitors; inspect endpoints, diagnose payments, retrieve host history, interpret MPP, test buyers/sellers, or use SCVD's general store. Free checks need no wallet; live purchases settle real USDC.
+
+│
+◇  Installation Summary ────────────────╮
+│                                       │
+│  ./.agents/skills/scvd-general-store  │
+│    copy → Codex, Claude Code          │
+│                                       │
+├───────────────────────────────────────╯
+[?25l│
+◇  Installation complete
+[?25h
+│
+◇  Installed 1 skill ───────────────────────╮
+│                                           │
+│  ✓ scvd-general-store (copied)            │
+│    → ./.agents/skills/scvd-general-store  │
+│    → ./.claude/skills/scvd-general-store  │
+│                                           │
+├───────────────────────────────────────────╯
+
+│
+└  Done!  Review skills before use; they run with full agent permissions.
+

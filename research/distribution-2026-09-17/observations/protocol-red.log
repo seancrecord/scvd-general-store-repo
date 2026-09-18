@@ -1,0 +1,34 @@
+(node:40581) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-distribution-followthrough
+
+stdout | test/trust-panel.spec.ts > the independent records on the panel > organizes discovery by protocol without turning pending work into an indexed record
+{"knock":1,"cold":false,"age":0,"req":1,"method":"GET","path":"/trust","status":200,"ua":""}
+
+stdout | test/trust-panel.spec.ts > the independent records on the panel > organizes discovery by protocol without turning pending work into an indexed record
+{"knock":1,"cold":false,"age":0,"req":0,"method":"GET","path":"/.well-known/trust.json","status":200,"ua":""}
+
+ ❯ test/trust-panel.spec.ts (7 tests | 1 failed) 46ms
+     × organizes discovery by protocol without turning pending work into an indexed record 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/trust-panel.spec.ts > the independent records on the panel > organizes discovery by protocol without turning pending work into an indexed record
+AssertionError: expected undefined to be defined
+ ❯ test/trust-panel.spec.ts:116:41
+    114|     const panel = await read("/trust");
+    115|     const machine = await read("/.well-known/trust.json");
+    116|     expect(panel.discovery_by_protocol).toBeDefined();
+       |                                         ^
+    117|     expect(panel.discovery_by_protocol).toEqual(machine.discovery_by_p…
+    118|     const groups = panel.discovery_by_protocol;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  14:18:01
+   Duration  9.62s (transform 3.62s, setup 16ms, import 7.38s, tests 46ms, environment 0ms)
+

@@ -1,0 +1,37 @@
+{
+  "checked_at": "2026-09-18T00:51:16.574Z",
+  "instrument": "Same frozen runChild as acquisition; no source change; dummy Node processes, no native agents or network.",
+  "rows": [
+    {
+      "name": "ordinary-stop",
+      "code": "console.log(JSON.stringify({type:\"turn.started\"}));setInterval(()=>{},1000);",
+      "nominal_wall_ms": 1000,
+      "elapsed_monotonic_ms": 1013.9029580000001,
+      "elapsed_utc_ms": 1012,
+      "runtime": {
+        "state": "failed",
+        "exit_code": null,
+        "signal": "SIGTERM",
+        "spawn_error": null,
+        "budget_stop": "wall_ms"
+      },
+      "trace_sha256": "cf515a4acc6e41e0f111f01c78b13ba4253f611de9374474864f01e69a90c08f"
+    },
+    {
+      "name": "ignore-sigterm",
+      "code": "process.on(\"SIGTERM\",()=>{});console.log(JSON.stringify({type:\"turn.started\"}));setInterval(()=>{},1000);",
+      "nominal_wall_ms": 1000,
+      "elapsed_monotonic_ms": 2007.4984999999997,
+      "elapsed_utc_ms": 2007,
+      "runtime": {
+        "state": "failed",
+        "exit_code": null,
+        "signal": "SIGKILL",
+        "spawn_error": null,
+        "budget_stop": "wall_ms"
+      },
+      "trace_sha256": "cf515a4acc6e41e0f111f01c78b13ba4253f611de9374474864f01e69a90c08f"
+    }
+  ],
+  "limit": "These controls exercise the normal timer and SIGTERM escalation only. They cannot explain or retroactively bound the two native sessions, and contain no machine-suspend or event-loop-blocking control."
+}

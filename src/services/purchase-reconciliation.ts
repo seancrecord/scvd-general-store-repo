@@ -58,10 +58,18 @@ export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promi
         nonce: record.authorization.nonce, recipient: record.terms.payTo, amount_atomic: record.terms.amount }, chain);
       if (paired.status !== "matched") throw new Error("Settlement does not match purchase");
       const paidUsdc = atomicToUsdc(record.terms.amount);
+      const settleHeaders: Record<string, string> = {};
+      if (purchaseProtocol(record) === "mpp") {
+        const { Receipt } = await import("mppx");
+        settleHeaders["Payment-Receipt"] = Receipt.serialize({ method: "evm", status: "success",
+          reference: transaction, timestamp: new Date().toISOString() });
+      }
       return { payment: { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, record.publication?.minimum_usdc ?? record.item?.price_usdc ?? paidUsdc),
         payer: record.payer, network: record.terms.network, transaction,
-        // This is chain evidence. Do not invent a lost facilitator receipt.
-        settleHeaders: {} }, reconciliation: { start_block: start, next_block: from, checked_at: new Date().toISOString() } };
+        // The MPP server can acknowledge independently confirmed chain evidence.
+        // This never invents an x402 facilitator receipt or a second payment.
+        settleHeaders },
+        reconciliation: { start_block: start, next_block: from, checked_at: new Date().toISOString() } };
     }
     from = to + 1;
   }

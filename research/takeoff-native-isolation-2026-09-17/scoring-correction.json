@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T19:27:34.661462+00:00",
+  "applied_after_all_buyer_cells_ended": true,
+  "original_scorer_sha256": "df587ba8101be1b56d9b72ee28c0f8dcd8ec3d82274cdb87170c6e7daf677ecf",
+  "corrected_scorer_sha256": "92d967af615072edb708301aa0dbe2ac02f59d38a264bd9cc081e7457a260765",
+  "original_acquisition_score_sha256": "3437e957ca19ec565aac6bde70b723ad5a1c96fec422b1f40074ed0aa1bc38f5",
+  "original_full_review_score_sha256": "701cb8c5bd284f1ad8da811de5c4bb118fdf711a7fb5544c6dde7ed318dd2af6",
+  "corrected_full_review_score_sha256": "a8bc354ce3e6b4cdada95016fc8189a93fb0d6988cec9d507817daf3a870e9f0",
+  "changes": [
+    "Accept schema 4 under the existing portable retention/freshness contract.",
+    "Require complete capture for schema 4 standalone-envelope acceptance too."
+  ],
+  "regressions_red_before_fix": 2,
+  "buyer_controls_passed": 134
+}

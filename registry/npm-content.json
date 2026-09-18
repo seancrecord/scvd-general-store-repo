@@ -71,14 +71,14 @@
     },
     "scvd-mcp-starter": {
       "directory": "mcp-starter",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "files": {
-        "CHANGELOG.md": "acdc18ecfa412c3443958e824f22392d795ef985a9b2c0a6246392c294cac985",
+        "CHANGELOG.md": "293c5644215e43b14903078de7f9abac17989a37e7196aaab41a31f5c2bd3be1",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
-        "README.md": "32d651067e20e96391c0daa1a1821b46fc0df960592436e11eaac816a47394c0",
+        "README.md": "6f1e56197d661eee9436c37922890f3395f71486defb49507ab12409e7b19e52",
         "example.mjs": "a5df1f770c3abff570eeb18b196410eed112b4b76473f4d94acdcabc1a99cf41",
-        "package.json": "d83dc21b8da45bb1b925e93fb431c84ae19f0416f9b58db2c985e4efb3935c8c",
-        "server.mjs": "dad53e0c48f6bffe89c8cfec2b67f306be333c2d2769905facc0900de86cd018"
+        "package.json": "6b0b2d122652723e5e8296802976a5637481f5ee7060180ea71045fee4603def",
+        "server.mjs": "07917f85890e5057ba18d35fe5f170e829385a24ad8d7f6ffc0b8aabb4367d5d"
       }
     }
   }

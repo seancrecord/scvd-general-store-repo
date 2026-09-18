@@ -1,0 +1,1276 @@
+{
+  "what_this_is": "For every service in a public x402 directory: the rails the door advertises, set against the rails that directory says it measured. Never a ranking; rows are in the order the directory served them.",
+  "what_this_is_not": "Not a finding that any door is unpaid, and not an error in the directory. A traction row that names its measured_networks is telling the truth about what it counted. This measures the DISTANCE between what a door offers and what one observer watched, which is a fact about coverage and belongs to everybody.",
+  "first_run_by": "StillOS Notary (stillosdigitalholdings.com), issue #622, 2026-09-16. This is an independent reproduction by a second operator using its own code; the shape of the question is theirs.",
+  "read_at": "2026-09-16T19:00:42.734Z",
+  "source": {
+    "url": "https://x402-list.com/api/v1/services",
+    "attribution": "Data: x402-list.com (CC BY 4.0)",
+    "license": "CC-BY-4.0",
+    "pages_walked": 30,
+    "services_seen": 737,
+    "meta_total": 737
+  },
+  "the_caip2_trap": "Comparing chain ids as strings gives 266 doors with a gap. Normalising first gives 57. The difference is one producer truncating a chain reference and another not, and reporting the first number would have been a scare rather than a finding. Both are printed here so the correction is visible rather than assumed.",
+  "counts": {
+    "services_seen": 737,
+    "gap_doors_naive": 266,
+    "gap_doors_normalised": 57,
+    "gap_doors_quiet": 15,
+    "gap_doors_quiet_mainnet": 8,
+    "by_rail": {
+      "eip155:42161": 43,
+      "eip155:84532": 9,
+      "eip155:43114": 10,
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": 2,
+      "eip155:8453": 1,
+      "eip155:80002": 1,
+      "eip155:5042002": 1,
+      "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1": 1,
+      "eip155:1952": 1
+    },
+    "denominator_note": "Every figure is out of services_seen, the whole population at the named moment, not a page of it."
+  },
+  "quiet_on_an_unmeasured_mainnet_rail": [
+    "yiduochan-api-credits",
+    "brian-booms-agent-merch-kit",
+    "warppay402-mcp-gateway",
+    "saylor-innovations-watchdog-token-intelligence",
+    "uhadev-pdf-data-inspection-api",
+    "utilia-solana-preflight",
+    "utilia-agent-utilities",
+    "insurance-doi-bulletin-feed-x402"
+  ],
+  "doors": [
+    {
+      "slug": "yiduochan-api-credits",
+      "base_url": "https://yiduochan.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453"
+      ],
+      "measured": [
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "phion-agent-trust",
+      "base_url": "https://phion.systems",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 109,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "badhttp",
+      "base_url": "https://badhttp.dev",
+      "advertised": [
+        "eip155:8453",
+        "eip155:84532"
+      ],
+      "measured": [
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "agentbit",
+      "base_url": "https://agentbit.app",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 198,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "brian-booms-agent-merch-kit",
+      "base_url": "https://pay.brianbooms.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "openzoo",
+      "base_url": "https://api.openzoo.fun",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 3426,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "cloudmaxi0x",
+      "base_url": "https://cloudmaxi0x.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 16,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "hostdefi-token-risk-api",
+      "base_url": "https://hostdefi.com/api",
+      "advertised": [
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 1,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "warppay402-mcp-gateway",
+      "base_url": "https://api.warppay402.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "saylor-innovations-watchdog-token-intelligence",
+      "base_url": "https://saylorinnovations.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "whaletape",
+      "base_url": "https://whaletape.xyz",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 319,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "eve-s-wire",
+      "base_url": "https://www.watchevelive.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 6,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "edge-agents-ai",
+      "base_url": "https://pay.edge-agents.ai",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 1018,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "x402tap",
+      "base_url": "https://x402tap.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 253,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "entropy-index",
+      "base_url": "https://www.entropyindex.com",
+      "advertised": [
+        "eip155:43114",
+        "eip155:8453"
+      ],
+      "measured": [
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 34,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "uhadev-pdf-data-inspection-api",
+      "base_url": "https://x402.uhadev.com",
+      "advertised": [
+        "eip155:42161"
+      ],
+      "measured": [],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": null,
+      "traction_status": "unmeasured-network"
+    },
+    {
+      "slug": "lucid-text-stats",
+      "base_url": "https://x402.gammapilot.com",
+      "advertised": [
+        "eip155:84532"
+      ],
+      "measured": [],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": null,
+      "traction_status": "no-payto"
+    },
+    {
+      "slug": "sleepfix",
+      "base_url": "https://x402-lane-144561044326.us-central1.run.app",
+      "advertised": [
+        "eip155:84532"
+      ],
+      "measured": [],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": null,
+      "traction_status": "no-payto"
+    },
+    {
+      "slug": "twelve-permissions",
+      "base_url": "https://twelvepermissions.com",
+      "advertised": [
+        "eip155:8453",
+        "eip155:84532"
+      ],
+      "measured": [
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "resonant-glyph-research-synthesis",
+      "base_url": "https://lemonade.coppersieve.com",
+      "advertised": [
+        "eip155:84532"
+      ],
+      "measured": [],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": null,
+      "traction_status": "no-payto"
+    },
+    {
+      "slug": "x402-extract-api",
+      "base_url": "https://api.jomofagan.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 1,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "verdoc",
+      "base_url": "https://verdoc.dev",
+      "advertised": [
+        "eip155:84532"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "gentech-labs-x402-gateway",
+      "base_url": "https://api.gentechlabs.net",
+      "advertised": [
+        "eip155:43114",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 138,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "sean-claude-van-damme-s-general-store",
+      "base_url": "https://scvd.store",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 416,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "utilia-solana-preflight",
+      "base_url": "https://api.utilia.ink",
+      "advertised": [
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [],
+      "unmeasured": [
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "unmeasured_mainnet": [
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "tx_count_all_time": null,
+      "traction_status": "unresponsive"
+    },
+    {
+      "slug": "utilia-agent-utilities",
+      "base_url": "https://api.utilia.ink",
+      "advertised": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [],
+      "unmeasured": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "tx_count_all_time": null,
+      "traction_status": "unresponsive"
+    },
+    {
+      "slug": "email-auth-check-spf-dmarc-dkim",
+      "base_url": "https://email-auth.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 269,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "url-unwrap-redirect-tracer",
+      "base_url": "https://unwrap.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 121,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "gdelt-news-search-and-timeline",
+      "base_url": "https://gdelt.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 135,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "hyperliquid-prediction-markets-data-x402-atlas",
+      "base_url": "https://hyperliquid-predict.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 160,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "wikipedia-article-summary-mrtoqzsc-0",
+      "base_url": "https://wiki.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 123,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "places-local-business-search",
+      "base_url": "https://places.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 264,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "image-optimizer-webp-converter",
+      "base_url": "https://imgopt.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 105,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "crypto-perp-signals",
+      "base_url": "https://perpsignals.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 181,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "http-security-headers-check",
+      "base_url": "https://headers.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 129,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "x-twitter-media-downloader",
+      "base_url": "https://xmedia.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 125,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "hyperliquid-market-data",
+      "base_url": "https://hyperliquid.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 703,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "atlas-market-data",
+      "base_url": "https://marketdata.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 357,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "apple-app-store-search-reviews-app-data",
+      "base_url": "https://appstore.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 264,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "hyperliquid-account-intelligence",
+      "base_url": "https://hyperliquid-accounts.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 220,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "defillama-data-api-x402-atlas",
+      "base_url": "https://defillama.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 559,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "coingecko-crypto-price-data-x402-atlas",
+      "base_url": "https://coingecko.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 357,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "dns-whois-domain-lookup",
+      "base_url": "https://dns.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 444,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "onchainpulse",
+      "base_url": "https://onchainpulse-nine.vercel.app",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 11136,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "bitrefill",
+      "base_url": "https://api.bitrefill.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 1447,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "google-trends-seo-keyword-data",
+      "base_url": "https://google-trends.use.x402atlas.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 4053,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "agent402-tools",
+      "base_url": "https://agent402.tools",
+      "advertised": [
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 31079,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "concierge-agent",
+      "base_url": "https://conc-exe.xyz",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 181,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "eva-mcp",
+      "base_url": "https://api.ai.everything.inc",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453"
+      ],
+      "measured": [
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 3,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "aeo-audit-api",
+      "base_url": "https://aeo.agentlair.dev",
+      "advertised": [
+        "eip155:8453",
+        "eip155:84532"
+      ],
+      "measured": [
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": 242,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "weather",
+      "base_url": "https://weather.x402.press",
+      "advertised": [
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 1721,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "aviation-x402",
+      "base_url": "https://aviation.x402.press",
+      "advertised": [
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161",
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 1721,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "asterpay",
+      "base_url": "https://x402.asterpay.io",
+      "advertised": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 184,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "insurance-doi-bulletin-feed-x402",
+      "base_url": "https://api.dynsuplabs.com",
+      "advertised": [
+        "eip155:42161",
+        "eip155:137"
+      ],
+      "measured": [
+        "eip155:137"
+      ],
+      "unmeasured": [
+        "eip155:42161"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:42161"
+      ],
+      "tx_count_all_time": 0,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "agentmail",
+      "base_url": "https://x402.api.agentmail.to",
+      "advertised": [
+        "eip155:43114",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:43114"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:43114"
+      ],
+      "tx_count_all_time": 2981,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "quicknode",
+      "base_url": "https://x402.quicknode.com",
+      "advertised": [
+        "eip155:80002",
+        "eip155:5042002",
+        "eip155:8453",
+        "eip155:84532",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "eip155:1952"
+      ],
+      "measured": [
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      ],
+      "unmeasured": [
+        "eip155:80002",
+        "eip155:5042002",
+        "eip155:84532",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "eip155:1952"
+      ],
+      "unmeasured_mainnet": [
+        "eip155:5042002",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "eip155:1952"
+      ],
+      "tx_count_all_time": 7232,
+      "traction_status": "measured"
+    },
+    {
+      "slug": "goldrush",
+      "base_url": "https://x402.goldrush.dev/v1",
+      "advertised": [
+        "eip155:84532"
+      ],
+      "measured": [],
+      "unmeasured": [
+        "eip155:84532"
+      ],
+      "unmeasured_mainnet": [],
+      "tx_count_all_time": null,
+      "traction_status": "no-payto"
+    }
+  ]
+}

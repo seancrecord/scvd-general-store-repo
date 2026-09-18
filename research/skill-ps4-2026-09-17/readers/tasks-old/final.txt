@@ -1,0 +1,72 @@
+[
+  {
+    "id": "verification",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md"],
+    "answer": "The artifact is valid and its signature verified against the supplied public test key. This does not establish merchant identity, settlement, delivery, or payment authorization.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "unsupported",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md"],
+    "answer": "No. Unsupported means the ES256 algorithm was not supported and the signature was not checked; it is not a pass.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "preflight",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md"],
+    "answer": "The endpoint was observed as x402-ready and passed the x402-header check. Settlement, delivery, and permission to spend remain unknown.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "payment",
+    "completed": true,
+    "toolsUsed": ["check_order"],
+    "referencesLoaded": ["skill/SKILL.md"],
+    "answer": "The order is pending; settlement and delivery are unobserved. Do not generate a new retry key or pay again yet. Preserve original-retry-123 and recover or confirm the original order using that identity first.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "history",
+    "completed": true,
+    "toolsUsed": ["http_get"],
+    "referencesLoaded": ["skill/SKILL.md"],
+    "answer": "The history contains one ready observation from 2026-09-10. Week 2026-W38 has a listed_not_walked gap, so the history is incomplete.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "free-access",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": ["skill/SKILL.md"],
+    "answer": "The free conformance tool successfully checked sample-good. Installing x402-verify and funding a wallet were unnecessary.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "mpp",
+    "completed": true,
+    "toolsUsed": ["http_get", "preflight_endpoint"],
+    "referencesLoaded": ["skill/SKILL.md"],
+    "answer": "No. The protocol-specific preflight reported not_ready because the x402-header check failed, while an MPP challenge was present. This does not establish that the endpoint is globally broken or unpayable by every client.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  }
+]

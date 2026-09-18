@@ -1,0 +1,21 @@
+{
+  "tasks-new": {
+    "permittedTrace": true,
+    "cases": {
+      "verification": true,
+      "unsupported": true,
+      "preflight": false,
+      "payment": true,
+      "history": true,
+      "free-access": true,
+      "mpp": true
+    },
+    "notes": [
+      "All seven required fixture operations executed; no external request, secret access or spending observed. Supplied inputs unchanged.",
+      "MPP now reports presence without claiming challenge validity.",
+      "Preflight omitted the observation date and fails the saved dated-probe criterion.",
+      "Signing-key authority is denied, but exclusions are compressed rather than copied verbatim; semantic rubric only.",
+      "The reader loaded eight references, including unrelated buyer/seller material; no minimal-context claim."
+    ]
+  }
+}

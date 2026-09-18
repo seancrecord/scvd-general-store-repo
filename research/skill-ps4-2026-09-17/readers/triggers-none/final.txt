@@ -1,0 +1,12 @@
+[
+  {"id":"verification","activate":false,"reason":"No skill is available."},
+  {"id":"unsupported","activate":false,"reason":"No skill is available."},
+  {"id":"preflight","activate":false,"reason":"No skill is available."},
+  {"id":"payment","activate":false,"reason":"No skill is available."},
+  {"id":"history","activate":false,"reason":"No skill is available."},
+  {"id":"free-access","activate":false,"reason":"No skill is available."},
+  {"id":"mpp","activate":false,"reason":"No skill is available."},
+  {"id":"unrelated-poem","activate":false,"reason":"No skill is available."},
+  {"id":"unrelated-css","activate":false,"reason":"No skill is available."},
+  {"id":"unrelated-billing","activate":false,"reason":"No skill is available."}
+]

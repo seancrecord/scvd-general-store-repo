@@ -1,0 +1,11 @@
+{
+  "date": "2026-09-17",
+  "requested": "Six fresh Codex sessions comparing old/new/no skill metadata selection and synthetic read-only task handling.",
+  "payload": "Old and unpublished new SCVD skill text, task prompts and synthetic tool observations.",
+  "destination": "OpenAI through the existing signed-in Codex CLI.",
+  "automaticApprovalReview": "Rejected: PS4 authorization was not considered explicit approval for this unpublished payload and destination.",
+  "userApproval": "Explicit approval received: yes approved, also commit/pr once you get the chance so we have that progress",
+  "trialsStarted": 6,
+  "commitAndPullRequestAuthorized": true,
+  "trialsCompleted": 6
+}

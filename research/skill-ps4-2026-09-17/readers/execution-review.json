@@ -1,0 +1,20 @@
+{
+  "tasks-new": {
+    "calls": 7,
+    "successfulResults": 7,
+    "semanticToolErrors": 0,
+    "capturedCommandOutputMatchesCallLog": true
+  },
+  "tasks-none": {
+    "calls": 6,
+    "successfulResults": 6,
+    "semanticToolErrors": 0,
+    "capturedCommandOutputMatchesCallLog": true
+  },
+  "tasks-old": {
+    "calls": 8,
+    "successfulResults": 7,
+    "semanticToolErrors": 1,
+    "capturedCommandOutputMatchesCallLog": true
+  }
+}

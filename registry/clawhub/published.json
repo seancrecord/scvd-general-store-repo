@@ -1,7 +1,8 @@
 {
-  "version": "3.16.2",
-  "bundle_sha256": "12f8cee129494b6beaf9d3dcf2fd20ed7b223e5a7db896e5470c9358d84dab0c",
-  "published_at": "2026-09-10T20:51:08.319Z",
-  "commit": "87a4ffebdf3bb4d04c2edf67dc71a8a78d5b478d",
-  "changelog": "clawHub audit: anchor summary via the MCP body, tab install pinned"
+  "version": "3.17.0",
+  "bundle_sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
+  "tree_sha256": "50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606",
+  "published_at": "2026-09-17T16:44:32.097Z",
+  "commit": "3194d4d75bd6d7ec07671a1c260b67e106125521",
+  "changelog": "3.17.0: 78-line task-router entry with ten guarded references and a whole-tree publish fingerprint. MPP challenge presence is reported separately from validity and observation dates are reported exactly. Retains the privacy, recovery, replay, archive, pinned-install and quote/settlement guidance from 3.16.x."
 }

@@ -1,0 +1,49 @@
+{
+  "id": "valid-1",
+  "scenario": "valid",
+  "attempt": 1,
+  "cwd": "/private/tmp/scvd-reader-v2-valid-1-sPlJaL",
+  "exitCode": 0,
+  "timedOut": false,
+  "spawnError": null,
+  "elapsedMs": 84263,
+  "unchanged": {
+    "README.md": true,
+    "x402-verify-1.4.0.tgz": true,
+    "capture-verification.mjs": true
+  },
+  "artifacts": [
+    {
+      "path": ".verification-runs/309f4b85-734b-4976-8088-5bf03727b547.json",
+      "sha256": "142040c4e4e8a105a8eca64d770aa074147c80a0732be036cd42af7f779ca18b"
+    },
+    {
+      "path": ".verification-runs/309f4b85-734b-4976-8088-5bf03727b547.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".verification-runs/309f4b85-734b-4976-8088-5bf03727b547.stdout.txt",
+      "sha256": "4637c01694fdcc38ba8fe31eb297fcb6e33c0dc287cd8bd052d73ae48ddee1b1"
+    },
+    {
+      "path": "capture-verification.mjs",
+      "sha256": "759fb950ca146565454ea94a7ecd137e33f29829aca14fcce7536a23922698ea"
+    },
+    {
+      "path": "consumer-script.mjs",
+      "sha256": "eb664974813f5e96ce850821a3b230a6880afd5a550d4fa9f3b4418c98ced5e6"
+    },
+    {
+      "path": "observed.json",
+      "sha256": "4637c01694fdcc38ba8fe31eb297fcb6e33c0dc287cd8bd052d73ae48ddee1b1"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "02fdb10039a20bc8d25ee8d098f343a4d345afc0a3c071097c02a7875f4ce9ff"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4ad526f2f5e3e83b7ad6a13d65372750f01a8352eb5a5fda40ead63bc4f5281d"
+    }
+  ]
+}

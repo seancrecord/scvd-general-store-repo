@@ -1,5 +1,190 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-17 — Distribution formats exist; admission and parsing are separate
+
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) includes OASF in its
+registration example and permits a full registration at the domain acknowledgment
+path. SCVD already serves both directions of that link. An example IPFS URI is
+not proof that the historical Directory CID resolves through IPFS or covers the
+current record. Keep the working HTTPS service until exact immutable bytes are
+published and retrieved independently.
+
+[Awesome Copilot's contribution rules](https://github.com/github/awesome-copilot/blob/main/CONTRIBUTING.md)
+route external plugins through an issue form with an immutable public source,
+validation and maintainer approval. That is separate from existing Agent Finder
+PR #34. Reuse the root skill/MCP package; no manual external.json PR.
+
+[Gemini's release rules](https://geminicli.com/docs/extensions/releasing/) require
+the `gemini-cli-extension` repository topic for its daily gallery crawl.
+The [extension reference](https://geminicli.com/docs/extensions/reference/)
+documents optional context and automatic skill discovery. The current
+`contextFileName: AGENTS.md` loads internal contributor rules into a customer
+session; the local correction removes that setting and retains the skills.
+Neither static validation nor a gallery crawl proves a working host installation.
+
+[Dated external readings and drafts](../research/distribution-2026-09-17/README.md)
+retain the observed indexer discrepancies and the remaining unknowns.
+The keeper then requested protocol organization: the README and trust surfaces
+now group the existing records and four newly observed ERC-8004 index pages,
+with identity viewers separate and UCP explicitly planned. The JSON protocol
+index links into the canonical record list without repeating each description.
+
+## 2026-09-17 — The verifier door is listed. What it cost to get there.
+
+`https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212`
+is live. The submission that succeeded was the SECOND one, and the
+difference between them is worth writing down while it is still
+cheap to remember.
+
+**What failed (2026-09-09, rejected 2026-09-13).** `/mcp` was offered:
+139,703 bytes of `tools/list`, eighteen tools including the shelf, and
+a largest single tool result of 161,888 bytes. Stated grounds were
+test cases failing on web and mobile, plus unconfirmed ownership.
+Ownership closed with business verification on 2026-09-15.
+
+**What succeeded.** `/mcp/verifier` — 11,394 bytes, five read-only
+tools, nothing reachable that can spend money — after a transport red
+team found the door had inherited none of September's hardening (no
+SSE listening channel, no trailing-slash 308, missing from the CORS
+allowlist) and one annotation that contradicted what `/mcp` declared
+for the same tool. A second surface built from the same handlers does
+not inherit the first surface's transport fixes.
+
+**Three things this store did NOT learn until it had been rejected
+once**, recorded so the next venue does not re-teach them:
+
+  1. Size is a review criterion even when nobody says so. A reviewer's
+     client reads the whole tool list before it can call anything.
+  2. The portal's scanner opens a GET expecting `text/event-stream`
+     BEFORE it POSTs. The spec permits refusing that; the scanner
+     reads the refusal as no server.
+  3. A merge is not a deploy. Production served the old code for
+     several minutes after the fix merged, and submitting in that
+     window would have failed on a fix that was already written.
+
+**Corrected here, from the same round.** OpenAI's guidelines state
+`readOnlyHint` is false if a tool "can create, update, delete, send,
+enqueue, run jobs, write logs, start workflows, or otherwise mutate
+state", and that a justification cannot rescue an annotation the
+server contradicts. This store's first reading — that bookkeeping
+counters are not state changes — was wrong by that rule. The verifier
+door was corrected before submission; `/mcp` still declares
+`readOnlyHint: true` for twelve tools whose handlers write the same
+counters. The two doors therefore disagree, the cross-door guard in
+`test/mcp-verifier.spec.ts` compares only `openWorldHint` and does not
+catch it, and the keeper has deliberately left it that way for now
+rather than take the auto-approval friction that flipping `/mcp` would
+add to twelve free instruments. Named, dated, unresolved — not
+forgotten.
+
+The procedure that produced the successful submission is
+`.claude/skills/directory-submission/SKILL.md`. It exists because this
+took two attempts.
+
+## 2026-09-16 — external admission package reconciliation
+
+[GitHub's maintainer discussion](https://github.com/github/github-mcp-server/discussions/1257)
+still distinguishes initial curation from later upstream version sync. The public
+registry API returned no result for the exact SCVD name while the official entry
+was active/latest. The existing Agent Finder PR #34 is open and carries all four
+prepared descriptors; no duplicate was submitted.
+
+The [AGNTCY participation discussion](https://github.com/agntcy/dir/discussions/455)
+contains a July 24 maintainer reply opening participation beyond steering-group
+members. The earlier initial-phase restriction is historical; shared-node write
+authorization still needs a concrete decision. The official quickstart separates
+local records from network discovery. [Packages and dated observations](../research/distribution-admission-2026-09-16/README.md)
+preserve those boundaries. The canonical OASF expiry copy was corrected and its
+draft record regenerated; publication and a new record signature remain pending. No message, signing, publication or federation deployment occurred.
+
+## 2026-09-16 — retained cold-buyer evidence and main reconciliation
+
+Re-read [Codex noninteractive mode](https://learn.chatgpt.com/docs/non-interactive-mode):
+JSONL events and `--output-last-message` do not promise preservation of full
+HTTP artifacts inside tool output. Local workspace writes use the existing
+bounded native session; no API keys or payment capabilities were introduced.
+The observed truncation was in a dated run, not inferred from documentation.
+Reused the repository's portable verifier contract and corpus canonicalization.
+No Claude permission flags were broadened; decode-command denials remain a
+separate environment confound in the baseline.
+
+PR #753 (AGENT_UX baseline catalogue), #751 (catalog/verifier consistency),
+and #755 (archive signing) were confirmed merged through GitHub on this date.
+TR1, TR2 and TR3 rebased onto `85f2f5e4`; shared `AGENT_UX.md` was not overwritten.
+The retained-file and freshness rules are in [the instrument guide](../research/BUYER_COLD.md).
+
+## 2026-09-16 — takeoff readiness plan
+
+Read the [current A2A specification](https://a2a-protocol.org/latest/specification/),
+including interface declarations and migration guidance: v1 changes the
+message/part representation as well as the Agent Card, so replacing a
+validator is insufficient. Read [Coinbase buyer discovery](https://docs.cdp.coinbase.com/x402/buyer/discover-services):
+public discovery requires no CDP API key, search is bounded at twenty results
+and reports partial results, and list/merchant reads have pagination.
+These facts support independent observations with explicit incomplete reads,
+not a fresh claim about SCVD's current catalogue coverage.
+
+Opened [GitHub's MCP catalogue](https://github.com/mcp); this did not
+establish the current submission channel, SCVD admission or downstream
+version synchronization. The attempted GitHub how-to and A2A what's-new
+URL were unavailable in this reader; the main A2A specification was readable.
+No GitHub or AGNTCY application was submitted or status account inspected.
+
+Source comparison: `origin/main` at `834fd186` for the September 16
+repository state, alongside the older dirty shared checkout. The newer
+verification skill exists on main; it must not be reported absent because
+the working branch lacks it. A2A 0.3 validation and the hybrid card were
+confirmed in source. Existing `ourSearchReading()` already distinguishes
+found, missing and unchecked external entries. Existing buyer tooling
+supplies SCVD URLs and stops before payment; it is not unbranded discovery
+or evidence of completed paid use. AGNTCY's shared-node permission result
+is a repository-recorded September 15 observation, not a new live probe.
+
+Limits: no fresh client-install, cold-agent, payment, cryptographic artifact,
+catalogue completeness or federation test was run for this planning turn.
+The [takeoff plan](TAKEOFF_READINESS_2026-09.md) records the keeper's objective
+and build order, proposed cohort gate, the then-pending A2A choice and acceptance
+work; it claims no implementation or readiness pass.
+
+
+## 2026-09-16 — cold buyer instrument implementation (TR1)
+
+Implemented in an isolated branch from `origin/main` at `6d29feb5`, keeping
+the earlier shared checkout's unrelated work intact. The keeper approved
+canonical A2A v1 with bounded explicit 0.3 compatibility; this slice does
+not migrate A2A behavior.
+
+Read [Codex noninteractive documentation](https://learn.chatgpt.com/docs/non-interactive-mode)
+and [Claude CLI reference](https://code.claude.com/docs/en/cli-reference),
+and inspected the installed native CLI help. Used fresh native sessions,
+configuration isolation and JSON event streams, without SCVD-specific MCP
+configuration. Host runtime versions and any resolved model identifiers
+are retained per run; a requested model alias is not a resolved identity.
+
+The [instrument guide](../research/BUYER_COLD.md) states its scope and
+limitations. The [dated baseline](../research/takeoff-readiness-2026-09-16/REPORT.md)
+separates startup failures, bounded discovery misses, directed HTTP use,
+unsigned preflight and unexercised signed/paid completion. It does not
+establish organic adoption, catalogue absence, native MCP installation,
+A2A interoperability or general readiness.
+
+## 2026-09-16 — A2A v1 binding, bounded 0.3 compatibility
+
+Read the [pinned v1.0.0 specification](https://a2a-protocol.org/v1.0.0/specification/)
+and [official proto](https://raw.githubusercontent.com/a2aproject/A2A/v1.0.0/specification/a2a.proto),
+and inspected the official `@a2a-js/sdk@1.1.0` client. The missing-header rule
+selects 0.3; v1 uses A2A-Version, PascalCase methods, wrapped SendMessage
+results, named enums and parts without kind. The card must describe real
+A2A bindings. Structured error details are typed Any arrays.
+
+Implemented the three existing evidence tasks through a bounded v1 adapter,
+with legacy task storage and the paid 0.3 audit unchanged. Definition, failing
+baseline and independent local client exchanges are retained under
+`research/a2a-v1-2026-09-16/`. [Build and limits](A2A_V1_COMPAT_2026-09.md).
+This is local interoperability evidence, not production observation or a
+cold-stranger pass. No streaming, push, task listing or broader product work.
+
+
 ## 2026-09-16 — Red team of /mcp/verifier before resubmitting to OpenAI
 
 The 2026-09-09 plugin submission offered `/mcp` and was rejected on
@@ -1381,3 +1566,480 @@ an already-returned recovery header in the page-local result/cache. No
 new background work, binding, request, key operation or settlement path.
 The original regressions fail on the pre-integration source; this task
 keeps local doubles distinct from a real wallet or paid browser test.
+
+### September 16 — approved verifier submission corrections
+
+The keeper approved the source corrections. An isolated worktree on
+`codex/verifier-submission`, based on `f31aaa17`, now sets all verifier
+readOnly hints false, discloses traffic and the public asked-for queue,
+keeps readiness open-world and artifact verification closed-world, and
+corrects the artifact result description. The generated import covers
+all five tools, five positive cases and three non-trigger cases. The
+metadata regression tests failed on the old source before passing with
+the correction. The relevant 99 tests pass after rerunning the package
+content check; all three starter tests pass. Typecheck and both Worker
+bundle checks pass. The starter copy update requires version 0.1.1 and
+a fresh local content record; nothing was published.
+
+Read current Cloudflare Workers best practices while checking the source.
+The public privacy policy still needs to explain traffic statistics and
+the public asked-for queue before submission; the guide records that
+finding. Readiness lookup and defect definition still omit outputSchema.
+The import describes corrected source, not the older live deployment.
+Deploy and reread live tools/list, then exercise the portal test cases on
+ChatGPT web/mobile. No deployment, commit, push or portal submission was
+performed. The prior generation gate is now satisfied.
+
+### September 16 — verifier PR integration authorized
+
+The keeper authorized updating and merging the existing verifier PR #735.
+Integrated main's newer MPP core reading and payment reporting without
+reverting either, and resolved the full-guide digest for the combined copy.
+The public privacy policy now states the traffic-statistics and public
+asked-for-queue effects already disclosed by the verifier descriptors.
+The generated JSON is unchanged. This source integration is not a portal
+submission or a ChatGPT web/mobile routing observation. Those remain
+separate from local tests, CI, and deployment.
+
+Local full-suite integration run: 14,422 passed, one skipped and five
+failures across four recovery files. All original failures passed in the
+retry; different recovery cases timed out. Per AGENTS.md this moving
+failure pattern is load-related, not a clean full-suite pass. Required
+GitHub CI remains the merge gate. Concurrent branch updates were retained,
+including the newer probe-method resolution and native MPP qualification;
+the focused integration tests and typecheck were rerun on that combined
+source. No timeout was increased and no assertion was removed.
+
+PR #735 merged concurrently at 14:43 UTC. The remaining JSON and metadata/
+privacy corrections therefore ship in a follow-up PR, preserving the
+merged transport fixes and subsequent main changes. The full CI gate is
+retained for automatic merge; the Downloads copy remains byte-identical
+to the submission import in this branch.
+
+### September 16 — verifier output-schema recommendations
+
+Read the MCP tools specification at
+https://modelcontextprotocol.io/specification/draft/server/tools#tool.
+Output schemas describe structuredContent, not the surrounding JSON-RPC
+response. Added the two missing verifier contracts from the actual
+readiness artifact and defect vocabulary implementations. Refused host
+input carries empty evidence; defect lookup has index and detail shapes,
+while an unknown id remains a JSON-RPC error. Vocabulary versions are
+strings, as served. No annotation or tool behavior changes, and the
+submission import is unchanged.
+
+All four regression cases failed before the schemas were added. Tests
+validate real tools/call responses for unseen, stored and missing hosts,
+the vocabulary index, and every registered defect definition, and reject
+missing fields and wrong types. No live unknown-host lookup was needed;
+the corpus record in the test is a local fixture, not a signed observation.
+
+### September 16 — live catalog review and shared MCP effects
+
+Read the current MCP ToolAnnotations definition at
+https://modelcontextprotocol.io/specification/draft/schema#toolannotations
+and the 2025-11-25 schema reference. readOnlyHint covers environment
+modification; idempotentHint covers additional effects on repetition.
+The shared preflight, conformance and artifact-verification handlers now
+use the verifier door's conservative policy: persistent traffic records
+count as additive changes. The general catalog owns their annotations;
+aliases inherit every behavioral field and change only the display title.
+Browser eligibility remains separate from these effects so the correction
+does not remove free verification from WebMCP or function-calling discovery.
+Other tools' annotation policies are outside this repair.
+
+Read Cloudflare's current Workers best-practices page at
+https://developers.cloudflare.com/workers/best-practices/workers-best-practices/.
+The change adds no binding, secret, payment authorization or settlement
+behavior. New disclosure derives from MENU_ITEMS, buyInputSchema,
+acceptedNetworks and the installed @x402/core 2.25.0 exported spending cap.
+The SDK's setSpendControls implementation and dollar-valued top-level limit
+were checked locally; no claim is made about every client version.
+
+Production observation and explicit gaps: docs/REVIEW_CONSISTENCY_2026-09-16.md.
+The repair was prepared against 834fd186, then applied cleanly to 6d29feb5
+in an isolated release worktree after keeper authorization. The active
+checkout has older source and unfinished work and is preserved. The dated
+release record, not this source reading, carries deployment evidence.
+
+### September 16 — release archive signing with Cosign v3
+
+Read Sigstore's [blob signing](https://docs.sigstore.dev/cosign/signing/signing_with_blobs/)
+and [verification](https://docs.sigstore.dev/cosign/verifying/verify/) documentation.
+Cosign v3 stores signature, certificate and transparency-log material in
+`--bundle`; the old separate-output flags no longer supply an output path.
+The dated catalog release exposed this existing workflow incompatibility.
+The repair pins the observed installer version, verifies the bundle against
+the exact tagged workflow identity before upload, and preserves the original
+tag. Offline tests execute the workflow shell against a v3-shaped boundary,
+including a verification failure that must prevent upload. Both tests failed
+before the repair. A successful hosted release run remains the OIDC proof.
+
+### September 16 — verifier smoke refusal and response correlation
+
+Re-read the MCP [base protocol](https://modelcontextprotocol.io/specification/2025-11-25/basic)
+and [tool error handling](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
+JSON-RPC responses preserve the request ID and carry either result or error.
+Protocol errors and tool execution failures are different outcomes; any error
+is not interchangeable with a particular expected refusal. The smoke checker
+now asserts this store's existing invalid-parameter error code for missing or
+private input, and validates both schema and exact result for refused readiness
+input. It rejects mismatched response IDs and malformed envelopes before
+scoring the matrix. This pins current store behavior, not a universal rule
+requiring every MCP input refusal to use a protocol-level error.
+
+The real CLI is tested against a local fake MCP server. Its happy path passed
+before the repair; eight mutated-response regressions failed before and pass
+afterward. The mutations include internal server errors, tool failures,
+malformed/wrong readiness refusals and uncorrelated protocol responses. No
+new paid flow or unknown-host demand-queue input is added to the live matrix.
+
+### September 17 — PS4 installed skill references and distribution
+
+Read [Agent Skills specification](https://agentskills.io/specification):
+metadata, an entry body and relative supporting references; progressive loading
+is a format convention, not proof of host behavior. Read the official
+[Skills CLI documentation](https://github.com/vercel-labs/skills): local sources,
+project agent selection and copy mode. Executed cached skills@1.5.26 locally:
+Codex and Claude-style project trees retain all eleven files. Read the official
+[ClawHub documentation](https://docs.openclaw.ai/clawhub); the older /tools/clawhub
+URL returned only a redirect page. Inspected cached ClawHub 0.23.3 source and
+executed its actual prepareSkillFilesForPublish/extractZipToDir functions with
+local bytes. No registry upload, remote install or native host auto-triggering
+was observed. Current local preflight implementation supplies the MPP wording;
+no new protocol support or fresh external MPP-spec claim is made.
+
+The skill-creator format validator passes using isolated PyYAML 6.0.2; system
+Python initially lacked that module. The package's existing Wrangler dry-run
+command was retained; no new CLI flags or Worker behavior were introduced.
+PS4 sources/results: docs/SKILL_PROGRESSIVE_DISCLOSURE_2026-09.md and
+research/skill-ps4-2026-09-17/. External fresh-reader transfer remains pending
+explicit payload/destination approval after automatic approval review rejection.
+
+September 17 follow-through: the user explicitly approved the payload and
+OpenAI destination, then authorized a commit and PR. All six prepared readers
+completed. Results and raw traces are retained in the evidence directory;
+behavioral acceptance is held because the new MPP answer overstated challenge
+presence as validity. A subsequent fetch identified newer main skill guidance
+that must be integrated before merge. No extra reader, publication or deploy
+was performed.
+
+
+## 2026-09-16 — PS1 verifier result semantics
+
+Read the primary [x402 Signed Offers and Receipts extension](https://github.com/x402-foundation/x402/blob/main/specs/extensions/extension-offer-and-receipt.md)
+while reconciling the local verifier with current source and npm. Its
+formats include JWS and EIP-712; algorithm/key identification and resource
+authorization are separate concerns. A valid signature against a fetched
+key alone does not prove the resource owner authorized that key. The
+current offer schema makes `validUntil` optional; the package's existing
+revision-1 checks require it. PS1 preserves that behavior and explicitly
+documents the narrower local profile rather than claiming full conformance.
+
+The source baseline is `6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079`.
+The 1.3.0 local tarball matched the npm-published integrity on this date.
+PS1 prepares an unpublished 1.4.0 result-contract addition: valid,
+invalid, unsupported and inconclusive, with named findings and reasons.
+No algorithm expansion, signed-record migration or hosted-verdict redesign.
+See [implementation and compatibility boundaries](VERIFIER_RESULT_SEMANTICS_2026-09.md)
+and the retained baseline under `research/verifier-ps1-2026-09-16/`.
+
+### September 16 — PS2 independent verification matrix
+
+Read the pinned x402 offer/receipt extension at
+https://github.com/x402-foundation/x402/blob/69652a69798f0b08f95bef33318896e36e210f7e/specs/extensions/extension-offer-and-receipt.md
+and EIP-712 at
+https://github.com/ethereum/EIPs/blob/0b06de5e1203b35f1338d9e61d1ccc6965face91/EIPS/eip-712.md.
+Read RFC 8037 (Ed25519 JOSE), RFC 7518 (ES256), RFC 8812 (ES256K),
+https://github.com/paulmillr/noble-curves/tree/1.9.1 and
+https://docs.ethers.org/v5/api/utils/hashing/. Sources were reachable;
+exact source hashes are retained in research/verifier-ps2-2026-09-16/sources.json.
+
+The extension keeps format-labelled JWS/EIP-712 envelopes distinct, uses
+a fixed artifact-specific EIP-712 domain with chainId 1, and requires
+authority for the resource independently of signature recovery. Optional
+offer expiry and EIP-712 zero/empty defaults are reflected in the fixtures.
+The package's local schema and unsupported families remain unchanged.
+Ethers 5's exact version is pinned; its installed signing implementation
+uses elliptic, separate from viem's noble backend. Generator dependencies
+are test-only and excluded from the package. These are synthetic offline
+qualification results, not live authority, settlement, complete extension
+conformance, or deployed-runtime observations. No secondhand source was
+needed; untested runtimes and the bounded schema oracle remain named gaps.
+See docs/VERIFIER_INDEPENDENT_VECTORS_2026-09.md and the retained qualification
+record for local tests, reproducibility and release boundaries.
+
+### September 16 — PS3 installed developer activation
+
+Read https://nodejs.org/download/release/v18.17.0/docs/api/webcrypto.html
+for explicit Node WebCrypto and Ed25519 calls, and checked the actual
+installed Node/browser type declarations. A clean TypeScript 5.9.3 consumer
+with Node types 22.13.1 exposed incompatible unrelated SubtleCrypto overloads;
+the narrow declaration was verified red before the fix and green afterward.
+The README example runs from the frozen tarball on Node 18.17.0 and 22.13.1.
+
+Read https://developers.openai.com/codex/noninteractive and
+https://code.claude.com/docs/en/cli-usage, then checked installed CLI flags
+and sign-in status for the planned fresh-reader trials. Sources were reachable.
+Automatic approval review rejected starting a Codex trial pending explicit
+approval to transmit the unreleased package/README/trial data to OpenAI.
+Claude Code is installed but not signed in. No fresh-reader trial ran and
+no model usability or time-to-result claim was made. Local tarball, runtime
+and type checks do not establish the missing host or registry observations.
+See docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md and
+research/verifier-ps3-2026-09-16/verification.json.
+
+### September 16 — PS3 approved fresh-reader results
+
+After the user's explicit approval, all eight planned Codex CLI attempts ran
+against the frozen unpublished package and README, requesting gpt-5.6-luna.
+All saved API outputs are correct; six meet execution/protocol checks and
+four also retain the full key-authority caveat in the final explanation.
+One attempt lacks a successful execution witness in the retained trace;
+one inspected home npm-cache directory metadata outside its workspace; two
+compressed key/resource authorization into spending authorization. Failures
+were retained without rescue or replacement. Claude remains signed out.
+The initial blocked status above is historical and is superseded by this
+approved cohort. The two-host gate remains incomplete; PS4 has not started.
+See docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md and
+research/verifier-ps3-2026-09-16/readers/scores.json for the bounded result.
+
+### September 17 — PS3 scope and trial logging follow-up
+
+Revised the local package README to keep signing-key/resource authority and
+payment permission distinct, retaining scope and exclusions verbatim. Added
+separate consumer execution records, an absolute local npm cache that survives
+nested installs, and nested artifact collection. Local packed JavaScript and
+strict TypeScript checks pass; regression controls expose lost cache scope,
+lost nested artifacts and falsified zero exit status. No new specification
+claim, external reader trial or publication was made. The September 16 cohort
+is unchanged. See research/verifier-ps3-2026-09-17/verification.json and
+docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md.
+
+### September 17 — revised PS3 reader cohort
+
+Ran the next authorized eight Codex CLI sessions against the frozen revised
+package and README. Eight actual API outputs and eight final scope/exclusion
+explanations are correct; seven meet the strict protocol. One reader attempted
+to open a nonexistent tarball outside its workspace, recovered without help,
+and retained correct verification evidence. No outside file contents were read;
+the boundary failure remains counted. Source review and package hashes qualify
+the other seven. The original four-of-eight cohort is unchanged. Both copy and
+harness changed, so the comparison is descriptive. Claude remains signed out;
+no second-host trial or publication occurred. See
+research/verifier-ps3-2026-09-17/RESULTS.md.
+
+### September 17 — PS3 absolute install path
+
+Protocol 3 supplies the frozen tarball through a quoted absolute path, derived
+from its manifest. The same command is tested at the trial root and in a nested
+consumer, including shell punctuation in the path. Both regressions fail before
+and pass after the fix. No new host run occurred; prior cohorts and package
+bytes are unchanged. Claude Code is installed but signed out; local CLI help
+confirms `claude auth login` for the user's sign-in. See
+research/verifier-ps3-2026-09-17-path-fix/verification.json.
+
+### September 17 — Claude second-host setup
+
+Read https://code.claude.com/docs/en/headless and
+https://code.claude.com/docs/en/cli-reference and checked installed CLI help.
+Safe mode keeps subscription authentication while suppressing customizations;
+bare mode would not use that login. Prepared fresh nonpersistent sessions with
+explicit file/shell tools and no MCP/browser connection. The CLI confirms sign-in
+with normal macOS access. Automatic approval review rejected payload disclosure
+to Anthropic without explicit approval; no trial launched and no workaround was
+attempted. See research/verifier-ps3-claude-2026-09-17/verification.json.
+
+### September 17 — approved Claude fresh-reader results
+
+The user explicitly approved transmitting the unpublished package/README and
+synthetic trial results to Anthropic. All eight prepared Claude trials ran and
+passed with correct API output, verbatim scope/exclusions, execution records,
+unchanged installed files and reviewed permitted-input traces. Host init
+reported claude-sonnet-5, four file/shell tools and no plugins/MCP servers.
+Three in-workspace log-location mistakes were recovered unaided and retained.
+The host-event adapter preserves raw traces and rejects false success; its
+regression control failed with the guard removed. The second-host observation
+is now complete; the prior Codex boundary failure awaits a separately recorded
+check of the corrected instruction. No new specification claim or publication.
+See research/verifier-ps3-claude-2026-09-17/README.md.
+
+### September 17 — PS3 Codex path correction qualified
+
+Two authorized fresh Codex trials used the unchanged frozen package and
+corrected absolute installation command, at the trial root and in a nested
+consumer directory. Both passed the existing output/scope/execution rubric
+and additional layout review. The nested reader reported and recovered from
+a missing-directory tool refusal; commentary is retained although that refusal
+has no command-execution event. Installed files, frozen inputs and historical
+cohort hashes match. Earlier Codex 7/8 and Claude 8/8 results remain unchanged;
+the separate 2/2 corrective result closes local PS3 qualification, not registry
+or release qualification. No external specification claims were changed.
+Evidence: research/verifier-ps3-codex-path-recheck-2026-09-17/README.md.
+
+## 2026-09-17 — Verifier resubmission qualification
+
+Re-read OpenAI's live [submission guide](https://developers.openai.com/plugins/deploy/submission),
+[MCP review requirements](https://developers.openai.com/plugins/deploy/app-review),
+and [plugin guidelines](https://developers.openai.com/plugins/app-guidelines).
+The portal requires five positive and three negative cases, accurate hints,
+a verified developer identity, Apps Management write access, and domain
+control. A public submission starts review; publication follows approval.
+The commerce rule excludes digital services and indirect freemium upsells.
+
+The verifier's free preflight still carried the shared report's paid watch
+and audit offers. This is a response-shaping defect on the directory door,
+not a reason to weaken the observation. The correction retains the shared
+probe, checks, evidence gaps and conflict disclosure while omitting sales
+framing on `/mcp/verifier`. Two response regressions failed before the fix.
+The general store retains its normal catalog guidance.
+
+The strict deployed matrix passed 49 cases. The unknown-host production
+branch also returned schema-valid `never_met` and queued one test-generated
+ask for `developers.openai.com`; no organic demand is inferred from it.
+The first candidate, `agentcash.dev`, was already in the signed record.
+See `docs/verifier-qualification-2026-09-17/` and the updated submission
+packet for dated evidence and the remaining client/account steps.
+The signed-in scvd.store organization showed version 1.0.0 Approved, the
+correct verifier URL, matching hints, and Domain verified. The keeper
+pressed Publish; the portal then showed **Published** with the public URL
+https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212.
+No duplicate submission was made. The portal did not expose detailed
+approval grounds. Paid checkout qualification is recorded separately.
+MPP activation is excluded from this work at the keeper's request.
+
+The earlier publication entry records the annotation mismatch as unresolved.
+PR #751 subsequently closed that mismatch for the shared verifier handlers:
+both doors derive those hints from one definition, and the parity test checks
+every annotation field. This is not a new audit of every general-only tool.
+
+## 2026-09-17 — Native buyer npm cache placement
+
+Read npm's [v10 configuration documentation](https://docs.npmjs.com/cli/v10/using-npm/config/):
+environment configuration is case-insensitive, lowercase settings take
+precedence inside npm scripts, and the POSIX default cache is `~/.npm`.
+The runner supplies both cache spellings with one fresh workspace path.
+Real offline child-process checks with local npm 10.9.2 confirm that npm
+resolves that path and it is writable, with no user configuration changes.
+No source was unreachable. Native-model tool inheritance under the changed
+runner remains a separate qualification step; a successful Node child test
+does not prove a buyer completed. Evidence and scope:
+[`research/takeoff-session-workspace-2026-09-17/README.md`](../research/takeoff-session-workspace-2026-09-17/README.md).
+
+## 2026-09-17 — Native cold-host qualification
+
+Read the native Codex 0.153.4 `exec`, `features list` and `debug prompt-input`
+help, plus OpenAI's current [non-interactive mode documentation](https://learn.chatgpt.com/docs/non-interactive-mode)
+and [skills documentation](https://learn.chatgpt.com/docs/build-skills).
+The former distinguishes ephemeral session storage from ignoring user
+configuration. The latter explains initial skill metadata and the shortened
+description warning. Native Claude Code 2.1.274 authenticated and completed
+its frozen probe; this is an observed launch, not a general platform claim.
+
+The native Codex trace emitted the shortened-skills warning despite the
+frozen isolation flags. No skill reads were visible, but the model-visible
+skill inventory is unestablished. Plugin discovery is a hypothesis, not a
+confirmed cause. The offline prompt debugger rejects exec's
+`--ignore-user-config` option, so it is not an equivalent launch proof.
+No source was unreachable during these reads; the unresolved gap is actual
+prompt context for that native exec session. No global configuration or
+adapter was changed. Both probes and the failed signature command's local
+reproduction are recorded in
+[`research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md`](../research/takeoff-catalogue-2026-09-17/NATIVE_HANDOFF.md).
+
+### September 17 — native isolation repair
+
+Read OpenAI's [skill discovery and disabling documentation](https://learn.chatgpt.com/docs/build-skills)
+and [sample configuration](https://learn.chatgpt.com/docs/config-file/config-sample),
+plus local CLI 0.153.4 help. The documented per-skill `enabled=false`
+setting can be supplied as a launch override. User/admin skill roots and
+symlink behavior are documented; the legacy `.codex/skills` and bundled
+system entries were also directly observed in this machine's request.
+
+Native request construction was captured on localhost with an unauthenticated
+custom provider returning an error, without inference. The frozen adapter
+exposed 142 skill entries; disabling plugins alone still exposed 142.
+Explicit per-skill overrides exposed zero, both with the observed inventory
+and with the repaired runner's filesystem inventory. No global settings were
+changed. This isolates the metadata-loading issue, not the prior model's
+signature-handling error. Production-provider request contents were not
+captured, and no universal isolation claim follows from a local provider
+capture. A separately frozen native capability attempt uses unchanged prompts,
+models and permissions; record:
+[`research/takeoff-native-isolation-2026-09-17/freeze.json`](../research/takeoff-native-isolation-2026-09-17/freeze.json).
+
+### 2026-09-17 — additional plugin channels and tracking reconciliation
+
+- [Cursor plugins](https://cursor.com/docs/plugins): Agent Plugins 1.0 supported;
+  official marketplace separate from cursor.directory. Publisher form requires login.
+- [Claude submissions](https://code.claude.com/docs/en/plugins#submit-your-plugin-to-the-community-marketplace):
+  third-party review targets claude-community; curated official collection has no
+  application. Console form requires login. Strict local manifest validation passed;
+  content/runtime qualification is not implied. The installed CLI schema confirms
+  root `.mcp.json` supplements inline MCP; contributor browser tooling was separated.
+- [Kiro submission](https://kiro.dev/powers/submit/): Agent Plugins package accepted;
+  working package, stable MCP, README privacy/support and publisher contact required.
+- Fresh official MCP registry response confirms both source-manifest versions latest;
+  ClawHub receipt and September 12 listing baselines close stale keeper presses.
+- [Distribution map](../DISTRIBUTION.md) now identifies the sources of truth;
+  [plugin packet](../registry/plugin-submissions.md) contains fields and unrun gates.
+  [Receipts](../research/distribution-2026-09-17/README.md) retain actual outcomes.
+
+
+### 2026-09-17 — Cursor application and Claude next submission
+
+Re-read [Cursor plugin reference](https://cursor.com/docs/reference/plugins) and
+[Claude community submission instructions](https://code.claude.com/docs/en/plugins#submit-your-plugin-to-the-community-marketplace).
+Cursor accepts the existing root Agent Plugins format; its publisher application
+confirmed receipt, with review pending. The bounded CLI Ask-mode check loaded MCP
+but did not expose skills; normal Agent-mode discovery is being checked separately.
+Claude's documented third-party route remains the community marketplace. The
+Console form rendered a sign-in page, so no new Claude application is claimed.
+A successful earlier plugin-scoped Claude CLI check is now retained in the
+[follow-up receipt](../research/distribution-2026-09-17/observations/claude-host-qualified-followup.json),
+without replacing the first failed attempt. Native Cursor desktop, marketplace
+installation and Cowork compatibility remain unmeasured.
+
+
+Claude's authenticated submission form was completed later the same day. It
+separates the plugin directory from the MCP Connectors Directory and asks for
+host testing before selecting supported platforms. Only tested Claude Code was
+selected; the keeper explicitly authorized the contact address and linked
+[Software Directory Terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms).
+The form confirmed receipt; acceptance remains unverified.
+
+
+### 2026-09-17 — Context Anchor MPP activation read
+
+Unsigned live reads at 21:13 UTC of [Context Anchor checkout](https://scvd.store/api/buy/context_anchor),
+[compact menu](https://scvd.store/menu/context_anchor?view=compact) and
+[OpenAPI](https://scvd.store/openapi.json) confirm an advertised MPP EVM charge
+on Base for 1 USDC alongside x402. Native capability declarations agree;
+`x-payment-info.protocols` still contains only x402. Other products are upcoming.
+No purchase or directory acceptance was exercised.
+[Sanitized observation](../research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+
+
+### 2026-09-17 — saved-response verification and npm cache boundary
+
+Read the [npm CLI configuration reference](https://docs.npmjs.com/cli/v11/using-npm/config/#cache):
+`cache` is a path setting, with `~/.npm` as the Posix default; command-line
+settings can select a writable local directory. The two retained Codex
+referred traces independently hit EPERM at that default and recovered with
+a temporary cache. No ownership change or global configuration edit is needed.
+The current local CLI, bundle constructor and verification code are the
+primary sources for export duplication and result expansion; the new command
+reuses those semantics. No new protocol or cryptographic algorithm is assumed.
+Registry availability and later native-host completion remain separate gates.
+
+
+### 2026-09-17 — MPP directory qualification
+
+Read the official [service submission guide](https://mpp.dev/services#list-your-service)
+and `tempoxyz/mpp` service PR template/schema at its current checkout. The
+curated entry can represent `evm/charge` with the actual Base USDC contract;
+Tempo examples must not replace live terms. MPPScan’s [discovery spec](https://mppscan.com/discovery/spec)
+requires structured protocol descriptors. Its pinned discovery 1.7.5 package
+recognizes SCVD’s query inputs but mislabels the live EVM network in probe mode.
+[Reproduction and report](https://github.com/Merit-Systems/x402scan/issues/1209).
+No listing has been registered on MPPScan.

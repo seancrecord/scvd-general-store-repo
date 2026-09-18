@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "cohort": [
+    {
+      "id": "codex-catalogue-r1",
+      "started_at": "2026-09-17T19:06:39.108Z",
+      "ended_at": "2026-09-17T19:09:06.255Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 10,
+      "retained": {
+        "state": "complete",
+        "files": 24,
+        "bytes": 37895,
+        "issues": []
+      },
+      "trace_sha256": "4f98a362fc5215bc829046a59a3a8d36335424db11e74e6c7bbd5e9d54a1e46f"
+    },
+    {
+      "id": "claude-catalogue-r1",
+      "started_at": "2026-09-17T19:09:06.264Z",
+      "ended_at": "2026-09-17T19:10:46.548Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 11,
+      "retained": {
+        "state": "complete",
+        "files": 8,
+        "bytes": 106494,
+        "issues": []
+      },
+      "trace_sha256": "c839b294e435fa78a444be22bfb56087435bd7c0b12a4fb352dd3d5061557b47"
+    },
+    {
+      "id": "codex-directed-r1",
+      "started_at": "2026-09-17T19:10:46.552Z",
+      "ended_at": "2026-09-17T19:14:03.414Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 13,
+      "retained": {
+        "state": "complete",
+        "files": 21,
+        "bytes": 23051967,
+        "issues": []
+      },
+      "trace_sha256": "9a4a866635c898f45e6735c95408d00271a247b429efbed5d710feb628825603",
+      "recipient": {
+        "runtime": {
+          "state": "completed",
+          "exit_code": 0,
+          "signal": null,
+          "spawn_error": null,
+          "budget_stop": null
+        },
+        "tool_calls": 12,
+        "trace_sha256": "9252f63381f1cb1bfa1fc4b87da20dbbece9eab82a9f9711356aa92511c7375a"
+      }
+    },
+    {
+      "id": "claude-directed-r1",
+      "started_at": "2026-09-17T19:14:03.453Z",
+      "ended_at": "2026-09-17T19:15:29.759Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 13,
+      "retained": {
+        "state": "complete",
+        "files": 11,
+        "bytes": 88389,
+        "issues": []
+      },
+      "trace_sha256": "b4ab62b25ed2ecd3269cae4dee80a352966fd260d8d36b327c4140d465f4013d"
+    },
+    {
+      "id": "codex-catalogue-r2",
+      "started_at": "2026-09-17T19:15:29.763Z",
+      "ended_at": "2026-09-17T19:17:24.902Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 8,
+      "retained": {
+        "state": "complete",
+        "files": 22,
+        "bytes": 38598,
+        "issues": []
+      },
+      "trace_sha256": "2a0207aa4963c3455b82473a9fcf5379bc93cad5ca882509b334f6bc40d36b36"
+    },
+    {
+      "id": "claude-catalogue-r2",
+      "started_at": "2026-09-17T19:17:24.972Z",
+      "ended_at": "2026-09-17T19:18:33.191Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 14,
+      "retained": {
+        "state": "complete",
+        "files": 9,
+        "bytes": 97144,
+        "issues": []
+      },
+      "trace_sha256": "ba1f0af6db5c7581a7fa115d9228cc084bfce4f6b33380a7615fa7586c619a0b"
+    },
+    {
+      "id": "codex-directed-r2",
+      "started_at": "2026-09-17T19:18:33.197Z",
+      "ended_at": "2026-09-17T19:22:33.213Z",
+      "runtime": {
+        "state": "failed",
+        "exit_code": null,
+        "signal": "SIGTERM",
+        "spawn_error": null,
+        "budget_stop": "wall_ms"
+      },
+      "tool_calls": 20,
+      "retained": {
+        "state": "incomplete",
+        "files": 32,
+        "bytes": 1943386,
+        "issues": [
+          {
+            "file": "tooling/node_modules/.bin/scvd-evidence",
+            "reason": "symlink_refused"
+          },
+          {
+            "file": "tooling/node_modules/x402-verify/fixtures/start-here",
+            "reason": "directory_depth"
+          },
+          {
+            "file": "tooling/node_modules/x402-verify/fixtures/independent",
+            "reason": "directory_depth"
+          },
+          {
+            "file": "09-target-payment-required.decoded.json",
+            "reason": "file_limit"
+          }
+        ]
+      },
+      "trace_sha256": "42c538f28ab086bf54440c48cc9ed9a8d6402efcbed821edf4ec86b250be573f"
+    },
+    {
+      "id": "claude-directed-r2",
+      "started_at": "2026-09-17T19:22:33.228Z",
+      "ended_at": "2026-09-17T19:23:44.276Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 13,
+      "retained": {
+        "state": "complete",
+        "files": 9,
+        "bytes": 11526383,
+        "issues": []
+      },
+      "trace_sha256": "d6e99170884fe8b8be1c574d8af5567d7ed38e399adc116a457b03a63141d47c",
+      "recipient": {
+        "runtime": {
+          "state": "completed",
+          "exit_code": 0,
+          "signal": null,
+          "spawn_error": null,
+          "budget_stop": null
+        },
+        "tool_calls": 12,
+        "trace_sha256": "1790abfbd1993a17880fd960abada70f56ce03c835db12e3002349ec1b3268ed"
+      }
+    }
+  ],
+  "limits": [
+    "Tool count is exposed native events, not internal model operations.",
+    "Output token targets are advisory.",
+    "Recipient sessions contain explicitly supplied review machinery, not unprompted product discovery."
+  ]
+}

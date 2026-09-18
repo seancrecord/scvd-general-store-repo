@@ -65,6 +65,17 @@ export const ERC8004_REGISTRATION_TYPE =
 export const AGENT_REGISTRATION_PATH = "/.well-known/agent-registration.json";
 
 /**
+ * THE TRUST MODELS THIS AGENT ACTUALLY PARTICIPATES IN.
+ *
+ * A whitelist, exported so a test can hold it to one entry rather
+ * than to "not empty". The ERC's other two values are named in the
+ * docblock on agentRegistrationFile with what each would require;
+ * neither is one line of copy away, and both would be legible to a
+ * machine and false.
+ */
+export const SUPPORTED_TRUST = ["reputation"] as const;
+
+/**
  * The store's agent, as minted. The values live in
  * store/agent-identity — they are data about who this store is, and
  * this module cannot be imported outside the Worker (see the note
@@ -87,18 +98,40 @@ interface RegistrationService {
 /**
  * The registration file for this origin.
  *
- * ON `supportedTrust`, AND WHY IT IS ABSENT. The field is OPTIONAL,
- * and the ERC is explicit about what leaving it out means: "If absent
- * or empty, this ERC is used only for discovery, not for trust."
- * That is the honest reading of where this store stands today. The
- * three values on offer — reputation, crypto-economic,
- * tee-attestation — each assert that this agent participates in a
- * trust mechanism the store has not wired to anything. Declaring one
- * because it sounds good is an unaudited claim published at machine
- * scale, which is the failure this store sells a desk for catching in
- * other people's metadata. Discovery is what we want from the
- * registry today; the field is one line to add on the day a trust
- * model is actually connected, and it is the keeper's call to add it.
+ * ON `supportedTrust`, AND WHY IT SAYS EXACTLY ONE THING (2026-09-16,
+ * the keeper's call).
+ *
+ * The field is OPTIONAL and the ERC is explicit that absent or empty
+ * means "used only for discovery, not for trust". It was absent from
+ * 2026-09-14 until today, and that was the honest reading: all three
+ * values assert participation in a mechanism nothing here was wired
+ * to, and declaring one because it sounds good is an unaudited claim
+ * published at machine scale — the failure this store sells a desk
+ * for catching in other people's metadata.
+ *
+ * `reputation` became true on 2026-09-16, and the test beside this
+ * file is what says so rather than an opinion: the store now invites
+ * client feedback into the ERC-8004 Reputation Registry from every
+ * purchase response, carries the verified eight-argument call and a
+ * pre-filled proofOfPayment, and publishes the reads on trust.json,
+ * x402.json, the atlas and /scorers. A reader who follows the
+ * declaration reaches a channel that exists.
+ *
+ * THE OTHER TWO STAY OUT, and the list is a whitelist rather than a
+ * default for that reason. `crypto-economic` means stake at risk —
+ * there is no bond, no slashing condition, and nothing an aggrieved
+ * client could seize; this store is explicitly not an escrow or a
+ * guarantor, and those absorb risk and need a balance sheet.
+ * `tee-attestation` means the work runs in attested hardware, and it
+ * runs in a Cloudflare Worker and on a keeper's own hands. Both
+ * would be legible to a machine and false, which is the worst kind
+ * of false: nobody would catch it by reading.
+ *
+ * WHAT DECLARING `reputation` DOES NOT MEAN. Not that the feedback is
+ * good, not that any exists — getClients read empty on 2026-09-16 —
+ * and not that this store computes anything from it. It means the
+ * mechanism is connected and pointed at, which is the only thing the
+ * field can honestly assert.
  *
  * ON `x402Support`. True, and checkable rather than asserted: every
  * door under /api/buy/* answers a real 402 with live accepts, and the
@@ -256,5 +289,11 @@ export function agentRegistrationFile(
     registrations: [
       { agentId: SCVD_AGENT_ID, agentRegistry: SCVD_AGENT_REGISTRY },
     ],
+    /**
+     * One value, and it is a whitelist. See the docblock above for
+     * why crypto-economic and tee-attestation are not here and what
+     * it would take for either to be.
+     */
+    supportedTrust: SUPPORTED_TRUST,
   };
 }

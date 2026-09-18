@@ -26,7 +26,27 @@
  * and only the nonce-zero path widens that window to all of history.
  */
 
-export const USDC_BASE = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
+import { EVM_RAILS, railFor } from "./evm-chains.mjs";
+
+/**
+ * KEPT, and no longer the only rail. This constant was the whole of
+ * this reader's chain knowledge until 2026-09-16, beside a seven-chain
+ * registry the store had been using for months. Exported still because
+ * callers and tests name it; new code should ask railFor(caip2).
+ */
+export const USDC_BASE = EVM_RAILS["eip155:8453"].usdc;
+
+/** Every rail this instrument can read, by CAIP-2. */
+export const READABLE_RAILS = Object.freeze(Object.keys(EVM_RAILS));
+
+/**
+ * The USDC contract for a rail, or null when the rail is out of reach.
+ * A rail we cannot read is named UNKNOWN rather than skipped: that is
+ * the rail rule, and skipping is how a gap becomes a confident answer.
+ */
+export function usdcFor(caip2) {
+  return railFor(caip2)?.usdc ?? null;
+}
 export const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
@@ -216,6 +236,14 @@ export function readDoorRail({
       total_received_atomic: "0",
     };
   }
+  // THE REASON ON THE ROW MUST BE THE ACTUAL REASON (2026-09-17). A
+  // zero balance at nonce zero on a door whose scheme is out of reach
+  // used to be handed back with the nonce sentence, which names a
+  // transaction count that is zero. Found reading 43 Arbitrum doors:
+  // one row said "non-zero transaction count" beside nonce: 0. A
+  // caveat that misnames its cause is worse than none, because it gets
+  // believed.
+  const schemeBlocksZero = balance !== null && BigInt(balance) === 0n && nonce === 0 && !railInReach(scheme);
   return {
     ...base,
     verdict: "UNKNOWN",
@@ -223,7 +251,9 @@ export function readDoorRail({
       ? `the transfer window to this address was truncated ${inWindow}, and a zero off a truncated page is refused`
       : balance === null
         ? "neither a transfer window nor a balance was read for this rail"
-        : `a zero balance at block ${atBlock} with a non-zero transaction count: funds may have arrived and left, and this instrument did not read the window that would say`,
+        : schemeBlocksZero
+          ? `a zero balance at block ${atBlock} at a transaction count of zero — which would be an all-time zero — but this door advertises the ${scheme} scheme, under which a payment need not be a direct transfer to the advertised payTo at all. The nonce argument settles what arrived at this address; it cannot settle whether the door was paid, so this is UNKNOWN rather than a zero.`
+          : `a zero balance at block ${atBlock} with a non-zero transaction count: funds may have arrived and left, and this instrument did not read the window that would say`,
   };
 }
 

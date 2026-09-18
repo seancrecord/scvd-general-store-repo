@@ -1,0 +1,50 @@
+{
+  "valid-1": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "notes": "Permitted docs/metadata/declarations only; retained consumer calls the installed verifyReceipt and observed.json matches the frozen-package baseline. However the compound node/print/git command exits 128 and its retained output contains only the git error. Source and saved output do not replace the missing successful execution witness; this attempt fails that separate scoring gate. Final scope and exclusions are correct.",
+    "reviewCompleted": true
+  },
+  "valid-2": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "notes": "Actual installed verifyReceipt call and full raw result retained. A declarations subpath lookup first failed because it is not exported; reader recovered through the installed filesystem without assistance. Final answer preserves all exclusions. No verifier implementation/source-repository access.",
+    "reviewCompleted": true
+  },
+  "tampered-1": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "notes": "Read only README, packaged metadata/declarations, fixture provenance and separate test-key/receipt files. verify-tampered.mjs calls installed verifyReceipt and writes actual result. Failed signature and scope exclusions interpreted correctly; no source-repository or implementation reading.",
+    "reviewCompleted": true
+  },
+  "tampered-2": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "notes": "Consumer calls installed verifyReceipt over the packaged tampered receipt. Final status/reason/exclusions correct. A git status command failed outside a repo; reader completed its file/hash check afterward without assistance. Final blockers lists signature_invalid as the artifact failure, not an inability to execute.",
+    "reviewCompleted": true
+  },
+  "unsupported-1": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "notes": "Installed the frozen tarball, read permitted metadata/declarations/provenance, and called verifyReceipt on the real ES256 fixture. Returned unsupported_algorithm plus unobserved signature, not a failed-signature judgment. Kept exclusions and denied permission to pay. Suppressed git-status failure had no effect on the API result.",
+    "reviewCompleted": true
+  },
+  "unsupported-2": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "notes": "Actual installed API classifies ES256 before key resolution, so omitting explicit key/crypto did not trigger a live issuer lookup. Raw API result preserves all exclusions. Final summary correctly states unsupported and no permission to spend, but compresses the explicit signing-key/resource authorization exclusion into authorization to spend; record this loss of precision separately. A trailing git-status command failed after successful execution.",
+    "reviewCompleted": true
+  },
+  "unavailable-key-1": {
+    "approved": true,
+    "installedPackageUnchanged": true,
+    "notes": "Omitted the explicit key and injected the documented HTTP 503 response; actual API returned inconclusive with signature_not_checked, not invalid. Raw output retains signing-key/resource authority exclusion. Final summary compresses it into authorization to spend; separately mark the lost precision. No issuer network access, repository access, or assistance.",
+    "reviewCompleted": true
+  },
+  "unavailable-key-2": {
+    "approved": false,
+    "reviewCompleted": true,
+    "installedPackageUnchanged": true,
+    "notes": "Actual installed API output and final interpretation are correct. Reader created consumer/ and lost the parent npmrc cache setting, hit EPERM, inspected directory metadata under the home npm cache outside the assigned workspace, then selected the local cache and completed without assistance. No credential-file contents or verifier implementation were read. Excluded from the strict permitted-input/workspace gate. Nested consumer files and raw output were recovered from the retained directory; no retry replaced this attempt."
+  }
+}

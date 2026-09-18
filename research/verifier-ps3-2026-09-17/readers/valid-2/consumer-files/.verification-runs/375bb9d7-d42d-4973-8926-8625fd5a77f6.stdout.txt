@@ -1,0 +1,17 @@
+{
+  "status": "valid",
+  "reasonCodes": [],
+  "scope": "Signature valid over the receipt's bytes against the key supplied by the caller; the receipt's fields pass this package's local offer-receipt schema checks (rev 1).",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "observed.json",
+  "canAuthorizePayment": false,
+  "blockers": [
+    "Payment authorization remains a separate decision under the caller's payment policy.",
+    "Signing-key authorization for resourceUrl is not established by this result."
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-09-17T21:28:29.967554+00:00",
+  "workflow_publish": "success",
+  "index_latest": "1.5.0",
+  "normal_tarball": {
+    "status": 404,
+    "age_seconds": 116,
+    "max_age_seconds": 300,
+    "read_at": "2026-09-17T21:28:07Z"
+  },
+  "cache_busted_operator_read": {
+    "status": 200,
+    "bytes": 55082,
+    "query": "publication-check=35276254796"
+  },
+  "decision": "Wait for normal registry install; no buyer launched and no cache-busted package used by a buyer."
+}

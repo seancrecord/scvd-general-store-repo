@@ -1,0 +1,14 @@
+{
+  "id": "3569765a-65f0-4e08-a527-9cd70e412864",
+  "cwd": "consumer",
+  "script": "consumer/consumer-script.mjs",
+  "args": [
+    "unsupported"
+  ],
+  "scriptSha256": "aa3448e162a1a0b355bf8a1ad854e902c32ce31ec2c3f1598334cb601c8eafb4",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/3569765a-65f0-4e08-a527-9cd70e412864.stdout.txt",
+  "stderrFile": ".verification-runs/3569765a-65f0-4e08-a527-9cd70e412864.stderr.txt"
+}

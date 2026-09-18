@@ -1,0 +1,20 @@
+[
+  {
+    "id": "x402",
+    "repository": "x402-foundation/x402",
+    "revision": "69652a69798f0b08f95bef33318896e36e210f7e",
+    "path": "specs/extensions/extension-offer-and-receipt.md",
+    "url": "https://raw.githubusercontent.com/x402-foundation/x402/69652a69798f0b08f95bef33318896e36e210f7e/specs/extensions/extension-offer-and-receipt.md",
+    "sha256": "51151bd2b7dd174bc4a44b712234c074e45ca6c752c44ce077a94a4d97596ae9",
+    "readDate": "2026-09-16"
+  },
+  {
+    "id": "eip712",
+    "repository": "ethereum/EIPs",
+    "revision": "0b06de5e1203b35f1338d9e61d1ccc6965face91",
+    "path": "EIPS/eip-712.md",
+    "url": "https://raw.githubusercontent.com/ethereum/EIPs/0b06de5e1203b35f1338d9e61d1ccc6965face91/EIPS/eip-712.md",
+    "sha256": "459086f5a0b2d6a0ac4e404faebf3660a49aa4b1712711521093380689f02304",
+    "readDate": "2026-09-16"
+  }
+]

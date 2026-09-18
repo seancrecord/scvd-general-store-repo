@@ -1,6 +1,8 @@
+import { nativeCheckoutGuide, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
+import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
-import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { paymentNetworkNames } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
@@ -88,8 +90,9 @@ function pricedDoorCount(): number {
 export const llmsRoutes = new Hono<HonoEnv>();
 
 /** The whole front door as text. The MCP read_store_guide tool serves this too. */
-export function storeGuideText(base: string, paymentConfig?: PaymentNetworkConfig): string {
+export function storeGuideText(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
+  const nativeGuide = nativeCheckoutGuide(paymentConfig);
   return `# ${STORE_METADATA.name}
 
 ${paymentConfig ? `Current checkout networks: ${paymentNetworkNames(paymentConfig)}.` : ""}
@@ -343,24 +346,29 @@ by name, the month before beside it, and a stable address per month at
 \`${base}/corpus/month/{YYYY-MM}\`. Two kinds of number, never a share.
 
 If your client should never see a shelf: ${base}/mcp/verifier is a
-second MCP door serving read-only tools and nothing paid —
+second MCP door serving free verification tools and nothing paid —
 preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness,
 get_defect_definition, verify_scvd_artifact — the same handlers as
-${base}/mcp under task-shaped names.
+${base}/mcp under task-shaped names. Calls record traffic statistics;
+readiness lookups for eligible unprobed hosts add their names to the
+public asked-for queue at ${base}/corpus/asked.json for a later sweep.
 
 The documentation door, ${base}/mcp/docs (also POST on ${base}/mcp.md):
 the resources /mcp lists plus one tool, read_docs, returning any by
 name. Nothing on it acts.
 
 If you delegate rather than call: the evidence agent at ${base}/a2a
-speaks A2A — POST JSON-RPC message/send with one data part holding
+speaks A2A v1 — send A2A-Version: ${A2A_CURRENT_VERSION} on card and RPC requests, then
+POST JSON-RPC SendMessage with one data part holding
 { task, ...input } — and answers three read-only tasks with one
 bounded artifact each: preflight_endpoint, verify_receipt,
 get_endpoint_readiness. Its card is ${base}/.well-known/agent-card.json.
-Each message needs kind "message", role "user", messageId and parts.
+Each v1 message needs role "ROLE_USER", messageId and parts (no kind).
+Absent/empty A2A-Version keeps the bounded legacy ${A2A_LEGACY_VERSION} binding: message/send,
+kind "message", role "user" and kind "data" on its data part.
 GET ${base}/a2a carries the full request example, task retrieval and
-retention policy; tasks/get reads a returned task, tasks/cancel refuses
-one already finished.
+retention policy; v1 GetTask reads a returned task, CancelTask refuses
+one already finished (legacy: tasks/get and tasks/cancel).
 It never says whether to pay or whom to trust; it hands back evidence
 with what it does not establish stated.
 
@@ -443,10 +451,15 @@ Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
-Skills discovery index (Agent Skills Discovery RFC v0.2.0: both skills,
+Skills discovery index (Agent Skills Discovery RFC v0.2.0: including the
+focused x402 buyer verification skill,
 each with the SHA-256 digest of the file it points at):
 ${base}/.well-known/agent-skills/index.json — the digested copies at
 \`${base}/.well-known/agent-skills/{name}/SKILL.md\`
+Canonical ERC-8004 identity and endpoint-domain acknowledgment:
+${base}/.well-known/agent-registration.json
+Public discovery records by protocol, with observation dates and limits:
+${base}/trust (also JSON with Accept: application/json).
 OASF record (AGNTCY Agent Directory, schema 1.1.0): ${base}/agents/general-store
 — the store's skills, domains and both MCP connections in the taxonomy a
 federated directory matches on, derived from the same catalogue /mcp
@@ -603,7 +616,7 @@ them ${base}/what.
 
 ## How paying works here
 
-We take ${STORE_METADATA.currency} on a network offered in the current
+${nativeGuide ? `${nativeGuide}\n\n` : ""}We take ${STORE_METADATA.currency} on a network offered in the current
 payment quote over the ${STORE_METADATA.protocol} protocol, version 2.
 The quote is the source of current payment terms. It goes like this:
 
@@ -1201,6 +1214,9 @@ carries a reason: no feed named it, a feed named it but we did not
 knock, the round hit its cap and it may have been in the tail, or the
 round recorded coverage trouble of its own. The gaps are the point —
 a timeline with the misses left out reads as continuous coverage.
+To be woken only when one host's record moves, subscribe to
+\`${base}/feeds/host/{host}.xml\`: Atom, one entry per verdict change or
+receiving-address change, derived from the same rows, no account.
 
 What that read will not give you is a ranking, or a figure without
 its working. The house sentence since 2026-09-02 is ${NEVER_A_RANKING}: a
@@ -2072,7 +2088,7 @@ ${others}
  * local 30,000-character reading budget with room to spare, and every
  * sentence in it is the same sentence it was yesterday.
  */
-export function llmsIndex(base: string, paymentConfig?: PaymentNetworkConfig): string {
+export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   const { preamble, sections } = splitGuide(storeGuideText(base, paymentConfig));
   const kept = INDEX_SECTIONS.map((heading) =>
     sections.find((section) => section.heading === heading),
@@ -2103,7 +2119,7 @@ Every one of those areas is also a room a person can read: drop the
 }
 
 /** GET /{area}/llms.txt — one area's sections, whole. */
-export function llmsForArea(base: string, slug: string, paymentConfig?: PaymentNetworkConfig): string | null {
+export function llmsForArea(base: string, slug: string, paymentConfig?: PurchaseCapabilityConfig): string | null {
   const area = LLMS_AREAS.find((entry) => entry.slug === slug);
   if (!area) {
     return null;

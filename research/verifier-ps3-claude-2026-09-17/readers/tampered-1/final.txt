@@ -1,0 +1,20 @@
+Installed the tarball offline, ran the README's quickstart consumer against the `tampered` fixture through the provided logger (exit code 0, verification record confirms it), and saved the actual output to `observed.json`.
+
+```json
+{
+  "status": "invalid",
+  "reasonCodes": ["signature_invalid"],
+  "scope": "Not verified: signature: signature does NOT verify against the resolved key.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-claude-reader-tampered-1-HEJMSG/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```
+
+Per the README's guidance: a required check failed here (`signature_invalid`), so the caller should recheck the exact signed bytes, signature encoding, and the independently established key — not treat this as evidence of bad cryptography elsewhere, and not attempt to repair signed bytes and assume the signature survives. `canAuthorizePayment` is `false` for an independent reason beyond just this failed status: per the README, "does not authorize payment" is never a substitute for the signing-key/resource-authorization exclusion listed in `doesNotEstablish` — one concerns the caller's own spending policy, the other concerns the signer's authority, and both must be retained verbatim alongside `status` and `reasonCodes` rather than collapsed into a single boolean.

@@ -343,12 +343,14 @@ describe("the door's own documents describe both ways in", () => {
     expect(result(body)["supportedVersions"]).toEqual([...PROTOCOL_VERSIONS]);
   });
 
-  it("the A2A card names the modern revision as MCP's own version", async () => {
-    const card = (await (await SELF.fetch(`${BASE}/.well-known/a2a.json`)).json()) as {
-      supportedInterfaces: { protocolBinding: string; protocolVersion: string }[];
+  it("keeps MCP discovery on its own door rather than advertising it as an A2A binding", async () => {
+    const card = (await (await SELF.fetch(`${BASE}/.well-known/a2a.json`, { headers: { "A2A-Version": "1.0" } })).json()) as {
+      supportedInterfaces: { url: string; protocolBinding: string }[];
     };
-    const mcp = card.supportedInterfaces.find((i) => i.protocolBinding.includes("modelcontextprotocol"));
-    expect(mcp?.protocolVersion).toBe(LATEST_PROTOCOL);
+    expect(card.supportedInterfaces.length).toBeGreaterThan(0);
+    expect(card.supportedInterfaces.every(i => i.protocolBinding === "JSONRPC" && i.url === `${BASE}/a2a`)).toBe(true);
+    const manifest = await (await SELF.fetch(`${BASE}/.well-known/mcp`)).json() as { protocol_versions: string[] };
+    expect(manifest.protocol_versions[0]).toBe(LATEST_PROTOCOL);
   });
 });
 

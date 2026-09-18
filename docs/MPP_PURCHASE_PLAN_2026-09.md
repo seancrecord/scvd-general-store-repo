@@ -173,6 +173,26 @@ payment or flag activation remains a separately recorded, bounded release
 step under the existing rail-intake process; this plan is not proof of a
 live MPP purchase.
 
+## Native pilot implementation (2026-09-16)
+
+`docs/MPP_NATIVE_CHECKOUT_2026-09.md` records the implemented HTTP pilot,
+its exact boundaries, tests and activation checklist. Both Worker flags went
+true in the scoped activation release (#780, 2026-09-17). The existing `context_anchor` minimum Base/USDC entitlement now has a
+native challenge/credential path behind that flag, with shared durable
+admission, artifact recovery, retained receipts, a disjoint idempotent sales
+ledger, and shared public/admin reporting. The September 17 bounded house run
+qualified this exact lane, including expired/disabled recovery and retained
+accounting, with the before-expiry replay gap recorded in
+[the dated result](MPP_LIVE_RESULT_2026-09-17.md). Checkout was disabled afterward.
+
+The readiness follow-up adds per-purchase native house corrections without
+rewriting original evidence, HTTP request outcomes by protocol in admin, and
+enabled capabilities derived across catalog/contracts/OpenAPI/guide. Existing
+x402 discovery stays intact; native canonical discovery/indexer interoperability
+is still unqualified because both draft schemas claim `x-payment-info` with
+incompatible shapes. Ongoing activation and the expansion below remain separate
+release work. Full CI remains one shared gate, not one suite per protocol.
+
 ## Whole-store expansion and release
 
 Expand only after the first flow is qualified. EVM chains can share adapter

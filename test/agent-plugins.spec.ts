@@ -55,9 +55,10 @@ describe("plugin.json is the registry entry wearing the manifest schema", () => 
 
   it("quotes the MCP registry entry rather than describing itself twice", () => {
     // server.json is the store's registry manifest; a second
-    // hand-typed description or version is a copy free to drift.
+    // hand-typed description is a copy free to drift. Plugin packaging
+    // releases independently when its host wrappers change; MCP stays put.
     expect(pluginManifest.description).toBe(registryManifest.description);
-    expect(pluginManifest.version).toBe(registryManifest.version);
+    expect(pluginManifest.version).toMatch(/^\d+\.\d+\.\d+$/);
     expect(pluginManifest.repository).toBe(registryManifest.repository.url);
     expect(pluginManifest.homepage).toBe(registryManifest.websiteUrl);
   });
@@ -106,8 +107,8 @@ describe("the plugin skill is a second door, not a third document", () => {
      * load-bearing claim by skill-parity.spec.ts. A third
      * independently edited skill would be a third first impression;
      * identical bytes make it one document at two fixed locations,
-     * and this assertion is the weld. Edit registry/clawhub/SKILL.md
-     * and copy it here — never edit this copy directly.
+     * and this assertion is the weld. Edit skills/scvd-general-store/ and run skill:build; the ClawHub
+     * payload is generated from that canonical tree.
      */
     expect(pluginSkill).toBe(clawhubBundle);
   });

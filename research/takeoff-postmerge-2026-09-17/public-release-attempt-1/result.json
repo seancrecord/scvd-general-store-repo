@@ -1,0 +1,14 @@
+{
+  "state": "fail",
+  "reason": "Focused skill missing from the public index",
+  "reads": [
+    {
+      "url": "https://scvd.store/.well-known/agent-skills/index.json",
+      "file": "index.json",
+      "status": 200,
+      "sha256": "21aea04a1d49e58f3fd1c54b70b4e466571da20aef92716876bdd304a291a442",
+      "bytes": 1221,
+      "observed_at": "2026-09-17T15:42:00.482Z"
+    }
+  ]
+}

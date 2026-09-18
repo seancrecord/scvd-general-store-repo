@@ -1,0 +1,82 @@
+{
+  "schema_version": 3,
+  "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+  "spend_usdc": 0,
+  "budgets": {
+    "wall_ms": 240000,
+    "tool_calls": 20,
+    "output_bytes": 4000000,
+    "output_tokens": 2500,
+    "artifact_bytes": 33554432,
+    "artifact_files": 32
+  },
+  "freshness": {
+    "max_age_ms": 1209600000
+  },
+  "cells": [
+    {
+      "id": "codex-intent-search-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "intent_search",
+      "verification": "prompted",
+      "entry": null
+    },
+    {
+      "id": "claude-intent-search-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "intent_search",
+      "verification": "prompted",
+      "entry": null
+    },
+    {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "codex-intent-search-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "intent_search",
+      "verification": "prompted",
+      "entry": null
+    },
+    {
+      "id": "claude-intent-search-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "intent_search",
+      "verification": "prompted",
+      "entry": null
+    },
+    {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    }
+  ]
+}

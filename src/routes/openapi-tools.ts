@@ -43,10 +43,10 @@ export const openapiToolsRoutes = new Hono<HonoEnv>();
  * the two cannot drift apart in different files.
  */
 export const OPENAPI_TOOLS_NOTE =
-  "The store's FREE read-only instruments as function-calling tool definitions, one worked call each — small enough to hand a model whole. It is NOT a smaller copy of the contract: no paid door appears in it. For the whole contract, paid doors included, read openapi. To choose something to buy, read the compact catalog.";
+  "The store's FREE instruments (calls may update usage counters) as function-calling tool definitions, one worked call each — small enough to hand a model whole. It is NOT a smaller copy of the contract: no paid door appears in it. For the whole contract, paid doors included, read openapi. To choose something to buy, read the compact catalog.";
 
 
-/** The free instruments: read-only by derivation, and an HTTP door under /api. */
+/** The free instruments retain their MCP effects and an HTTP door under /api. */
 export function instrumentTools(): McpTool[] {
   return webmcpTools().filter((tool) => TOOL_ENDPOINTS[tool.name]?.path.startsWith("/api/"));
 }
@@ -95,7 +95,7 @@ export function openapiToolsDocument(base: string): Record<string, unknown> {
   });
   return {
     title: "The free instruments, as function-calling tools",
-    what_this_is: `${POSITION_LINE} This document lists the store's free, read-only instruments in the common function-calling shape, one worked call each, for a developer wrapping them in their own agent. Derived from the same catalog the MCP door serves: the names, descriptions and parameter schemas are the catalog's own objects, the HTTP door per tool is the one the browser surface calls, and the operation id is the contract's rule.`,
+    what_this_is: `${POSITION_LINE} This document lists the store's free instruments, whose calls may update usage counters, in the common function-calling shape, one worked call each, for a developer wrapping them in their own agent. Derived from the same catalog the MCP door serves: the names, descriptions and parameter schemas are the catalog's own objects, the HTTP door per tool is the one the browser surface calls, and the operation id is the contract's rule.`,
     what_this_is_not: `${POSITION_NOT} Not the whole contract: every endpoint, paid doors included, is at ${base}/openapi.json. Nothing here can act or spend; a paid door is never a function in this list. ${NEVER_A_RANKING_SENTENCE}`,
     tools,
     openapi: `${base}/openapi.json`,

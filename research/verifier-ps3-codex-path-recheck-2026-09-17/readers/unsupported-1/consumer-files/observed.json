@@ -1,0 +1,63 @@
+{
+  "kind": "receipt",
+  "valid": false,
+  "status": "unsupported",
+  "reasonCodes": [
+    "unsupported_algorithm",
+    "signature_not_checked"
+  ],
+  "scope": "Not verified: alg: expected EdDSA, got ES256; signature: not checked: unsupported algorithm.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "verificationUrl": "https://scvd.store/api/conformance/v1",
+  "checks": [
+    {
+      "name": "parse",
+      "ok": true,
+      "status": "valid",
+      "detail": "three base64url segments, header and payload are JSON"
+    },
+    {
+      "name": "alg",
+      "ok": false,
+      "status": "unsupported",
+      "detail": "expected EdDSA, got ES256",
+      "reasonCode": "unsupported_algorithm"
+    },
+    {
+      "name": "kid",
+      "ok": true,
+      "status": "valid",
+      "detail": "did:web:independent.example.test#signing-key"
+    },
+    {
+      "name": "schema",
+      "ok": true,
+      "status": "valid",
+      "detail": "conforms to the local revision-1 receipt schema checks"
+    },
+    {
+      "name": "signature",
+      "ok": false,
+      "status": "unobserved",
+      "detail": "not checked: unsupported algorithm",
+      "reasonCode": "signature_not_checked"
+    }
+  ],
+  "issuer": {
+    "kid": "did:web:independent.example.test#signing-key",
+    "keyUrl": null
+  },
+  "payload": {
+    "version": 1,
+    "resourceUrl": "https://independent.example.test/resource",
+    "network": "eip155:8453",
+    "payer": "0x0000000000000000000000000000000000000002",
+    "issuedAt": 1767225540,
+    "transaction": "0xabababababababababababababababababababababababababababababababab"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "recordedAt": "2026-09-17T17:29:30.066484+00:00",
+  "implementationPR": "https://github.com/seancrecord/scvd-general-store-repo/pull/769",
+  "mergeCommit": "3194d4d75bd6d7ec07671a1c260b67e106125521",
+  "fullCI": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35245884302",
+  "mainCI": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248262089",
+  "npm": {
+    "name": "x402-verify",
+    "version": "1.4.0",
+    "workflow": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248303297",
+    "installationEvidence": "registry-installation.json"
+  },
+  "skill": {
+    "slug": "scvd-general-store",
+    "version": "3.17.0",
+    "workflow": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35248307937",
+    "installationEvidence": "skill-registry-installation.json",
+    "submissionWasInitiallyPending": true,
+    "normalPublicInstallSucceeded": true
+  },
+  "servedSkill": {
+    "url": "https://scvd.store/skill.md",
+    "version": "3.17.0",
+    "sha256": "9fae0d2058ca4a23742e34057a886f4656a17a2b76b05dd343821c1d08cdd955",
+    "scope": "Served full guide version observed; it is intentionally not the installed progressive skill payload."
+  },
+  "closeoutPR": "https://github.com/seancrecord/scvd-general-store-repo/pull/772",
+  "limits": [
+    "No replacement clean seven-case skill cohort",
+    "No new cryptographic algorithm support",
+    "No outside adoption or offline retention measurement",
+    "No new payments or third-party endpoint probes"
+  ]
+}

@@ -149,6 +149,7 @@
     { "tag": "v6-counter-ledger", "new_sqlite_classes": ["CounterLedger"] }
   ],
   "vars": {
+    "MPP_CHECKOUT_ENABLED": "true",
     "STORE_BASE_URL": "https://scvd.store",
     // Settlement attestation reads Base once per purchase. The public
     // endpoint is fine at this volume; swap it the day it isn't. Not a

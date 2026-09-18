@@ -1,0 +1,17 @@
+HTTP/2 200 
+date: Thu, 17 Sep 2026 18:08:37 GMT
+content-type: text/event-stream; charset=utf-8
+access-control-allow-origin: *
+cache-control: no-cache, no-store
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Accept, Accept-Encoding, User-Agent
+access-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version
+server-timing: isolate;desc=cold, age;dur=0, req;dur=0
+x-house-rule: Argue properly. --7
+x-store: SCVD General Store (https://scvd.store)
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=xr3UJ2su%2FqYzJT262c7pH%2FILrrGqcNn8EW6XB%2BKUpsYqwB8Xksj7lRgpARQ8hacNeqkSWIH3%2F3byw6c55JGNHaFQWJ%2F6ltoiORQa9TqV0HDnLi71vLK2ggSa0LT017eZVuLGlEUAqvEd"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a3ca0eaccb4a5e70-EWR
+alt-svc: h3=":443"; ma=86400
+

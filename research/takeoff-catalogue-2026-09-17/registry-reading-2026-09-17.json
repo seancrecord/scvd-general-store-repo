@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "observed_by": "operator read-only fetch from the implementation session, not a buyer run",
+  "observed_at": "2026-09-17T16:28:36.181Z",
+  "catalogue": "https://registry.modelcontextprotocol.io",
+  "limit": "Four bounded queries and first pages only; the registry orders results by name and paginates, so a page that omits SCVD is not absence from the catalogue. Not a ward reading.",
+  "reads": [
+    {
+      "url": "https://registry.modelcontextprotocol.io/v0.1/servers?search=scvd&limit=5",
+      "file": "scvd-limit5.json",
+      "status": 200,
+      "bytes": 3683,
+      "sha256": "41ec2c558b20185850b8ba1fe3e1969608c0da5bc6c378545f17308900abe6f8",
+      "count": 5,
+      "next_cursor": "store.scvd/general-store:0.2.3",
+      "distinct_names": 1,
+      "scvd_returned": true,
+      "fetched_at": "2026-09-17T16:28:37.012Z"
+    },
+    {
+      "url": "https://registry.modelcontextprotocol.io/v0.1/servers?search=x402&limit=50",
+      "file": "x402-limit50.json",
+      "status": 200,
+      "bytes": 43763,
+      "sha256": "94966c747819e3309ada2909ef38ae9aeb63ba05fc37a31cfcf34f7d576e7d45",
+      "count": 50,
+      "next_cursor": "com.ogenalabs/signals-edge-x402:0.1.0",
+      "distinct_names": 18,
+      "scvd_returned": false,
+      "fetched_at": "2026-09-17T16:28:37.264Z"
+    },
+    {
+      "url": "https://registry.modelcontextprotocol.io/v0.1/servers",
+      "file": "default-page.json",
+      "status": 200,
+      "bytes": 22158,
+      "sha256": "4622cc3a194799f0fe912838202f6e0ffa4ef0217cea343d702d9d9200ae8765",
+      "count": 30,
+      "next_cursor": "ai.adako/ads:0.2.1",
+      "distinct_names": 19,
+      "scvd_returned": false,
+      "fetched_at": "2026-09-17T16:28:37.329Z"
+    },
+    {
+      "url": "https://registry.modelcontextprotocol.io/v0.1/servers?search=verification&limit=50",
+      "file": "verification-limit50.json",
+      "status": 200,
+      "bytes": 36632,
+      "sha256": "1a97e0268e2ee2fd7b0be5d2b930d4e2688e8133e07f39a34a209215a79bb791",
+      "count": 43,
+      "next_cursor": null,
+      "distinct_names": 17,
+      "scvd_returned": false,
+      "fetched_at": "2026-09-17T16:28:38.235Z"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "started_at": "2026-09-17T13:41:03.889328+00:00",
+  "base": "c3b3befc",
+  "full_suite_sessions": {
+    "TR1": 46383,
+    "TR2": 22219,
+    "TR3": 55790
+  },
+  "redundant_combined_full_suite": {
+    "exit": 130,
+    "result": "interrupted deliberately; no pass claimed; standalone full suites remain running"
+  },
+  "other_checks": {
+    "standalone_typechecks": "all passed before suites",
+    "TR1_buyer": "91 passed",
+    "TR2_build": "pass",
+    "TR3_build": "pass",
+    "combined_build": "pass",
+    "TR3_portable_and_config": "pass",
+    "combined_listing_checks": "pass",
+    "combined_focused_application": {
+      "files": 11,
+      "tests_passed": 145,
+      "log_sha256": "84bc63fe57722d1999f8ca0cba0d583f4bc54780a6186687e4083e20e3c62463"
+    },
+    "baseline_matches_original_sha256": "3dceee9a57304f411d2070441bec134bfb6fd0cef06b9a17ba2810e6cf973f2f",
+    "audit_claims_a2a_runner": "pass",
+    "whitespace": "Code and authored prose clean; verbatim source baseline, HTTP headers, and captured validation logs retain original whitespace.",
+    "TR3_upstream_join": {
+      "typecheck": "pass",
+      "files": 5,
+      "tests_passed": 47
+    }
+  },
+  "pending": [
+    "verify public release bytes after deployment",
+    "run frozen eight-cell buyer cohort",
+    "review retained files and fresh recipient interpretation where possible",
+    "record public qualification result"
+  ],
+  "standalone_full_results": {
+    "TR1": {
+      "exit": 0,
+      "files": 750,
+      "passed": 14543,
+      "skipped": 1
+    },
+    "TR2": {
+      "exit": 0,
+      "files": 751,
+      "passed": 14557,
+      "skipped": 1
+    },
+    "TR3": {
+      "exit": 1,
+      "files_passed": 750,
+      "files_failed": 1,
+      "tests_passed": 14545,
+      "tests_failed": 2,
+      "skipped": 1,
+      "only_failure": "OASF record changed during run, producing cached source/generated-record disagreement; final fresh targeted checks passed."
+    }
+  },
+  "pull_requests": {
+    "TR1": {
+      "number": 763,
+      "commit": "c04de8442fc845709627ab81dc9544bf3bff8a4f",
+      "state": "merged",
+      "merge_commit": "e2627657ffad04c9ec618999e41f816358150b6b"
+    },
+    "TR2": {
+      "number": 764,
+      "commit": "4896b4d262d052a9945800fdeb07f86a8f23a7a0",
+      "state": "merged",
+      "merge_commit": "30e9e00be2789a454d471ae0eeefb26d5572ad36"
+    },
+    "TR3": {
+      "number": 767,
+      "commit": "9a8c451e825567ee2ac3cc9f377fa4c08e70cc44",
+      "state": "merged",
+      "ci_run": 35238482461,
+      "merge_commit": "f1a75e2263efa481a6a9903bd106f8a9c64ce4af",
+      "tested_merge_tree": "6a08e939454d0d7dd14e916aeb14953a9d7e9b8e"
+    }
+  },
+  "frozen_stacked_full_rerun": {
+    "session": 45687,
+    "log": "/private/tmp/scvd-tr3-20260917-frozen-full.log",
+    "worktree": "/private/tmp/scvd-buyer-evidence-handoff",
+    "source_edits_allowed": true,
+    "exit_code": 0,
+    "files": 752,
+    "tests_passed": 14561,
+    "skipped": 1
+  },
+  "public_a2a": {
+    "state": "pass",
+    "file": "/private/tmp/scvd-a2a-postmerge-20260917-live.json",
+    "sha256": "3db401b9b38e38fb275698c39d9168940d5da2c4c77feaa975487afc7fe1989d",
+    "scope": "Three free directed task/lifecycle cases; no cold discovery, purchase or signed artifact acquisition.",
+    "legacy": "/private/tmp/scvd-a2a-postmerge-20260917-legacy.json"
+  },
+  "final_main_join": {
+    "base": "86588f1bfbd11797e0c6a0df656609807cf3c6be",
+    "typecheck": "pass",
+    "targeted_tests_passed": 45,
+    "test_files": 6,
+    "evidence_tests_passed": 57,
+    "build": "pass",
+    "merged_tree_matches_tested_tree": true
+  }
+}

@@ -1,0 +1,22 @@
+## Result
+
+Ran the `unavailable-key` scenario for `verifyReceipt` from the installed `x402-verify@1.4.0` tarball, via the required logger (exit code 0, clean stdout, verification record `.verification-runs/2404f285-8613-4330-afa7-5a5f5ad9390b.json`). The consumer script (`consumer/verify.mjs`) mirrors the README's quickstart: it loads the packaged `receipt.json` fixture, omits a supplied public key, and injects a `fetch` that always returns 503 — so the issuer key lookup can't complete.
+
+Per the README's guidance, `status` and `reasonCodes` are for branching; `scope` and every `doesNotEstablish` entry must be retained verbatim wherever this result is shown. A short explanation: key resolution failed (simulated 503), so the signature check never ran (`signature_not_checked` is not evidence of a bad signature — it's evidence nothing was checked). This is a supported-but-incomplete check, not a cryptographic failure, and — like all four outcomes — it does not establish payment authorization on its own.
+
+```json
+{
+  "status": "inconclusive",
+  "reasonCodes": ["key_unavailable", "signature_not_checked"],
+  "scope": "Not verified: key-resolution: key document HTTP 503; signature: not checked: no key to check against.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-claude-reader-unavailable-key-2-teZZb4/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```

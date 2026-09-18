@@ -1,53 +1,134 @@
 # x402-verify
 
-A zero-dependency verifier for **x402 Signed Offers & Receipts**,
-`did:web` identity, and key history. Works on any store's artifacts,
-including ours, with nothing privileged about ours.
+Verify an x402 compact JWS receipt or offer against a public key you supply.
+Get a structured result that separates a failed check from unsupported
+capabilities and missing evidence. Zero runtime dependencies. MIT.
 
-**x402 v2** — this is tooling for the current protocol (the
-`@x402/core` v2 ecosystem). Unscoped name, current spec: not related
-to the deprecated v1 `x402-fetch`/`x402-axios` family.
+## Install and verify
 
-**Where this sits in the stack:** x402 has a payment layer (the
-facilitator verifies and settles — Coinbase CDP is the usual choice)
-and a settlement layer (the chain; any explorer shows the transfer).
-This package is tooling for the **trust layer** — the evidence: who
-committed to what terms before money moved, who paid against them,
-and how a stranger checks both without asking either party. Most
-write-ups of x402 stop at the first two layers; this one exists
-because disputes, audits, and agents choosing whom to trust all live
-in the third.
-
-MIT. Install it, copy the file, vendor it, fork it — that is what it
-is for.
-
-```
+```sh
 npm install x402-verify
 ```
 
-The JWS verifier is one file with no dependencies, so vendoring it is exactly
-as legitimate as installing the package; the package exists so your
-`package.json` can say what your code relies on.
+Maintainers validating source before publication can run `npm pack ./verifier`
+from the repository root, put the tarball in a new directory, and install it:
 
-## Why it exists
+```sh
+npm install ./x402-verify-1.5.0.tgz
+```
 
-Checking a signed offer or receipt properly means doing four separate
-things, and most of the value here is that they stay separate:
+Structured status fields require 1.4.0 or newer; older versions may not expose
+them. Source-tarball qualification and registry installation are separate checks.
 
-1. Parse the JWS without trusting any of it.
-2. Resolve the `kid` to a key you got from **somewhere other than the
-   artifact** — otherwise you asked the artifact to vouch for itself.
-3. Check the signature against that key.
-4. Check the payload against the spec's schema.
+Save this as `verify.mjs` and run `node verify.mjs`. It uses a packaged
+synthetic receipt and a separate public test-key fixture, with no issuer
+network requests. The [fixture provenance](fixtures/start-here/README.md)
+traces both to the independently generated and checked matrix.
 
-**Steps 3 and 4 are not the same check.** A payload can carry a
-perfectly valid signature over a schema-invalid body: the signer really
-did sign it, and it is still not a conformant offer. That case is in
-the published conformance vectors as a teaching artifact because it is
-the mistake real implementations make. This library's test suite runs
-against those vectors and asserts it fails for the right reason.
+<!-- quickstart-code -->
+```js
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import { webcrypto } from 'node:crypto';
+import { verifyReceipt } from 'x402-verify';
 
-## Use
+const entry = pathToFileURL(createRequire(import.meta.url).resolve('x402-verify'));
+const load = (file) => JSON.parse(readFileSync(new URL(`./fixtures/start-here/${file}`, entry), 'utf8'));
+const scenario = process.argv[2] ?? 'valid';
+const file = new Map([
+  ['valid', 'receipt.json'], ['tampered', 'receipt-tampered.json'],
+  ['unsupported', 'receipt-es256.json'], ['unavailable-key', 'receipt.json'],
+]).get(scenario);
+if (!file) throw new Error(`Unknown scenario: ${scenario}`);
+
+const { receipt } = load(file);
+// Separate fixture key; these synthetic test bytes prove no real service identity.
+const { publicKeyHex } = load('issuer-key.json');
+const input = scenario === 'unavailable-key' ? { receipt } : { receipt, publicKey: publicKeyHex };
+const result = await verifyReceipt(input, {
+  subtle: webcrypto.subtle,
+  // Make unavailable evidence reproducible. This example never contacts an issuer.
+  fetch: async () => new Response(null, { status: 503 }),
+});
+const { status, reasonCodes, scope, doesNotEstablish } = result;
+console.log(JSON.stringify({ status, reasonCodes, scope, doesNotEstablish }, null, 2));
+```
+
+Expected output:
+
+<!-- quickstart-output -->
+```json
+{
+  "status": "valid",
+  "reasonCodes": [],
+  "scope": "Signature valid over the receipt's bytes against the key supplied by the caller; the receipt's fields pass this package's local offer-receipt schema checks (rev 1).",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ]
+}
+```
+
+`valid` means the signature and this package's local schema checks passed
+against the supplied key. It does not establish delivery, settlement,
+merchant trust, or either of these separate authorizations:
+
+- **Signing-key authorization:** did the resource owner authorize this key
+  to sign for `resourceUrl`, now or when the receipt was issued? A valid
+  signature proves that the key signed the bytes; this check does not
+  establish the owner's authorization.
+- **Payment authorization:** may your agent spend your money? That decision
+  comes from your own payment policy and permission, never this result.
+
+For your own artifacts, establish the signing key and its resource
+authorization independently. A key included beside an untrusted artifact
+is not evidence of authority.
+
+When displaying, storing or forwarding a result, retain `scope` and every
+entry of `doesNotEstablish` verbatim alongside `status` and `reasonCodes`.
+Put any shorter explanation in a separate field. In particular, “does not
+authorize payment” does not replace the signing-key/resource exclusion:
+one concerns your spending decision, the other the signer's authority.
+This applies to all four outcomes, including unsupported or incomplete checks.
+
+The same example exercises the other outcomes without editing code:
+
+| Run | Status | Reason to inspect |
+| --- | --- | --- |
+| `node verify.mjs` | `valid` | No required failures |
+| `node verify.mjs tampered` | `invalid` | `signature_invalid` |
+| `node verify.mjs unsupported` | `unsupported` | `unsupported_algorithm` |
+| `node verify.mjs unavailable-key` | `inconclusive` | `key_unavailable` |
+
+The unsupported receipt is genuinely signed with ES256, which this package
+does not implement. The unavailable-key case deliberately simulates a 503
+key lookup. Neither result is evidence of bad cryptography. Keep `scope`
+and `doesNotEstablish` with the status; a boolean alone loses those distinctions.
+The script also ships at `examples/verify-receipt.mjs` inside the package.
+
+## Supported checks
+
+| Input or check | Current capability |
+| --- | --- |
+| Compact JWS, EdDSA / Ed25519 | Signature plus local revision-1 payload profile |
+| ES256 / P-256 or ES256K / secp256k1 compact JWS | `unsupported_algorithm` |
+| Labelled JWS object or EIP-712 envelope | `unsupported_format` |
+| Key supplied by caller | 32-byte Ed25519 key as hex or bytes |
+| `did:web` lookup | Selected Ed25519 JWK in a DID document |
+| Caller-selected `issuerKeyUrl` | DID document, bare Ed25519 JWK, or `{ publicKeyHex }` |
+| Resource authorization, delivery, settlement | Not established by the artifact APIs |
+| Key history | Separate optional helpers; never implied by a receipt result |
+
+Payload revision 1 is separate from the x402 payment protocol version.
+The local schema still requires offer `validUntil` and does not check every
+field type in the current extension. See the [independent fixture matrix](fixtures/independent/README.md)
+for signed counterexamples, provenance and unsupported-family controls.
+No SCVD key or issuer receives special treatment; there is no call home.
+
+## Integrate your own artifact
 
 One call, bounded evidence back. The key comes from the URL you pass
 or the key you hold — never from the artifact, which would be the
@@ -60,9 +141,11 @@ const result = await verifyReceipt({
   receipt,                                        // the compact JWS
   issuerKeyUrl: "https://scvd.store/.well-known/did.json",
 });
-console.log(result.valid);             // true
+console.log(result.valid);             // true only when the required checks pass
+console.log(result.status);            // "valid", "invalid", "unsupported", or "inconclusive"
+console.log(result.reasonCodes);       // stable codes, empty when valid
 console.log(result.scope);             // "Signature valid over the receipt's bytes against the issuer key at …"
-console.log(result.doesNotEstablish);  // ["merchant identity …", "payment settlement …", "delivery …"]
+console.log(result.doesNotEstablish);  // Preserve every exclusion, including signing-key/resource authorization.
 console.log(result.verificationUrl);   // the free hosted desk that reproduces this check
 ```
 
@@ -84,7 +167,10 @@ console.log(formatResult(result));
 const offline = await verifyArtifact(jws, { publicKey: "a1b2…" });
 ```
 
-`result.ok` is the yes/no. `result.checks` is the report: `parse`,
+`result.ok` is the legacy yes/no. Only `status: "valid"` sets it to true;
+`verifyReceipt` and `verifyOffer` expose the same boolean as `valid`.
+A false boolean alone cannot tell a bad signature from missing evidence.
+`result.checks` is the report: `parse`,
 `alg`, `kid`, `schema`, `key-resolution`, `signature`, and an advisory
 `expiry`. Debugging your own implementation? Read the checks — knowing
 *which* of the four failed is the difference between a verifier and a
@@ -95,6 +181,94 @@ still a valid artifact, and you may be auditing history rather than
 buying. Leeway defaults to 5 seconds and is yours to set — issuance
 should be strict, consumption tolerant, because your clock and the
 issuer's will differ.
+
+## Result statuses (prepared for 1.4.0; not yet published)
+
+Branch on `status` and `reasonCodes`, rather than parsing the explanatory
+prose. The status describes only the checks within `scope`:
+
+| Status | Meaning |
+| --- | --- |
+| `valid` | Required checks in the stated scope passed. |
+| `invalid` | Evidence establishes a required failure: malformed input, local schema failure, or failed signature verification. The reason identifies which. |
+| `unsupported` | A required format, algorithm, key representation, resolver or runtime primitive is outside this implementation's support. |
+| `inconclusive` | A supported check could not finish: required evidence is missing, ambiguous, malformed, or a provider failed. |
+
+```js
+const result = await verifyReceipt({ receipt, publicKey: independentlyTrustedKey });
+switch (result.status) {
+  case "valid":
+    console.log("Signature and local schema checks passed", result.scope);
+    break; // Your policy still decides what to do next.
+  case "invalid":
+    console.log("A required check failed", result.reasonCodes);
+    break;
+  case "unsupported":
+    console.log("Needs another verification capability", result.reasonCodes);
+    break;
+  case "inconclusive":
+    console.log("Verification is incomplete", result.reasonCodes);
+    break;
+}
+```
+
+Validity within scope does **not** establish delivery, settlement, merchant
+trust, authorization of the signing key for `resourceUrl`, or permission to
+spend. Resolving a key and verifying its signature do not establish that
+the resource owner authorized it. Optional key-history helpers are separate
+calls; the artifact result does not claim they ran.
+
+Each check retains `ok` and `detail`, and adds `status` and an optional
+`reasonCode`. A skipped signature has `status: "unobserved"`, `ok: false`,
+and `signature_not_checked`; it is never a successful or failed cryptographic
+observation. Advisory expiry never determines the overall status or its
+`reasonCodes`.
+
+When outcomes differ, **invalid > unsupported > inconclusive > valid**.
+All non-advisory reason codes remain in the result. For example, a known
+schema failure remains `invalid` even if the algorithm is unsupported;
+the signature stays unobserved. An expired, otherwise valid offer remains
+`valid`, with an advisory `offer_expired` check.
+
+| Reason codes | What to do next |
+| --- | --- |
+| `malformed_input`, `malformed_header`, `malformed_kid` | Check the original compact JWS and required header fields. Do not repair signed bytes and assume the signature survives. |
+| `schema_invalid` | Inspect the `schema` check and compare the payload with the local profile described below. A real signature can cover invalid fields. |
+| `signature_invalid`, `signature_malformed` | Recheck exact signed bytes, signature encoding and the independently established key. Do not turn a failed verification into a retry success by trusting an embedded key. |
+| `unsupported_format`, `unsupported_algorithm`, `unsupported_schema_version` | Keep the artifact unchanged and select a verifier that supports its declared format/version. A labelled object is not accepted as a compact string by this API. |
+| `unsupported_did_method`, `unsupported_key_type`, `unsupported_runtime` | Supply a supported independently established Ed25519 key, resolver or crypto implementation. A custom crypto callback cannot enable other algorithms. |
+| `key_unavailable` | Supply independently established key bytes or retry the key source. Absence today does not disprove historical validity. |
+| `key_document_invalid`, `invalid_public_key` | Fix ambiguous/malformed key evidence. Supplied hex must decode to 32 bytes; malformed supplied keys never trigger a network fallback. |
+| `verification_error` | Inspect the injected crypto provider; it must complete with a boolean. Preserve the incomplete result until verification actually runs. |
+| `signature_not_checked` | Inspect the preceding algorithm and key-resolution checks; this is not evidence that the signature is bad. |
+| `offer_expired`, `expiry_not_checked` | Apply your own freshness policy using the advisory check. Neither reason changes the overall artifact result. |
+
+The accepted input remains a **compact JWS string**. An explicitly labelled
+object envelope (including `{ format: "jws", ... }`) reports
+`unsupported_format`; this release does not unwrap or verify those objects.
+ES256, ES256K and EIP-712 are unsupported. Keys may be supplied as 32-byte
+Ed25519 bytes/hex, resolved from `did:web` Ed25519 JWKs, or obtained from the
+caller-selected `issuerKeyUrl` (DID document, bare Ed25519 JWK, or
+`{ publicKeyHex }`). An invalid supplied key never falls back to the network.
+
+The local revision-1 schema checks are deliberately unchanged: required
+field presence, version, and timestamp types. In particular, they still
+require offer `validUntil`, which the current extension specification makes
+optional. They do not enforce every field type or rule in that specification.
+`valid` therefore does not claim complete current-spec conformance. A future
+integer payload revision reports `unsupported_schema_version` instead of
+being judged by revision 1's fields.
+
+### Migrate from the earlier boolean API
+
+Callers can keep their existing boolean decisions. Consumers
+that construct result objects themselves must add the new required fields
+when using the updated TypeScript declarations. Provider exceptions now
+produce structured incomplete/unsupported reports, rather than being
+described as bad signatures or escaping for missing WebCrypto. The low-level
+`verifyEd25519` helper retains its legacy contract: boolean, with an exception
+when neither WebCrypto nor a custom verifier exists. Use the artifact APIs
+for structured outcomes.
 
 ## Anchored key history (optional)
 
@@ -160,7 +334,7 @@ honest state of the ecosystem today.
 ## The service window: was the key authorized *at the artifact's date?*
 
 Signature validity asks *"did this key sign this?"*. Key resolution
-asks *"is this key genuinely the issuer's?"*. Neither asks the third
+asks *"which key does this selected document publish?"*. Neither asks the third
 question: **was the key authorized at the time the artifact claims?**
 A stolen *retired* key signing an artifact dated after its own
 retirement passes both — the signature is real, the key genuinely was
@@ -201,14 +375,25 @@ The two checks are halves of the same question.
 
 ## Runtime
 
-Zero dependencies. Ed25519 verification uses WebCrypto (Node 18.4+,
-Deno, Bun, Cloudflare Workers, recent browsers). If your runtime lacks
-Ed25519 in WebCrypto, pass your own:
+The JavaScript library uses WebCrypto or a caller-supplied verifier. The
+quickstart is a Node example and explicitly supplies Node's built-in
+`webcrypto.subtle`; it does not require a global WebCrypto object.
+
+| Environment | Qualification for this version |
+| --- | --- |
+| Node 22.13.1 | Packaged README example and four outcomes; independent matrix |
+| Node 18.17.0 (manifest minimum) | Packaged quickstart: all four outcomes with explicit `webcrypto.subtle`; no claim about default-global crypto |
+| Local Cloudflare workerd 1.20260815.1 | Independent matrix through the artifact APIs; Node example does not run in an isolate |
+| Deployed Workers, browser, Bun, Deno | Not exercised for this version |
+| TypeScript | TypeScript 5.9.3, NodeNext/strict, `@types/node` 22.13.1; compiled consumer runs all four outcomes |
+
+Missing Ed25519 capability produces `unsupported_runtime`, not a failed
+signature. If your runtime lacks it, supply a verified Ed25519 implementation:
 
 ```js
 await verifyArtifact(jws, {
   publicKey,
-  verify: (signingInput, signature, key) => yourEd25519Verify(...),
+  verify: (signingInput, signature, key) => yourEd25519Verify(signingInput, signature, key),
 });
 ```
 
@@ -280,7 +465,7 @@ This library is developed and battle-tested at
 artifact it sells and runs this same code behind its free conformance
 desk — `POST https://scvd.store/api/conformance/v1` accepts any
 issuer's signed offer or receipt (including its competitors') and
-returns the same structured verdict this library produces, with the
+returns its own versioned conformance report using this library, with the
 store's conflict of interest declared in the response. Useful as a
 second opinion on your implementation, or as a live counterpart whose
 402 responses carry real signed offers to test against
@@ -290,13 +475,51 @@ not a dependency of it.
 
 ## Portable evidence
 
-Portable evidence was added in 1.2.0; corpus snapshots and explicit reader
-limits are included in 1.3.0. Install this version:
+### Check an original you already saved
+
+The 1.5.0 CLI adds `verify-source`; check your installed
+`scvd-evidence --help` before using it. Source and registry versions can
+differ. From this checkout:
 
 ```sh
-npm install --global x402-verify@1.3.0
-scvd-evidence export https://scvd.store/api/verify/CERT_ID --out saved-evidence
-scvd-evidence verify saved-evidence/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX
+node verifier/evidence-cli.mjs verify-source evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432
+```
+
+This reads a saved certificate response or corpus snapshot and optional
+`--evidence observation.json` attachments. It makes no network requests and
+writes no files. The existing bundle verifier checks the same signed bytes
+and bindings in memory. The JSON result includes the exact original file's
+`source_sha256`, signature/binding findings and scope limits, without printing
+all signed claims. Read the subject, observation date and gaps from the
+original and check them separately. A valid signature is not a freshness test.
+
+Keep the original response, its source URL, separately established issuer key
+and any attached evidence for the recipient. A result summary alone cannot
+be independently verified. This path avoids retaining duplicate export files;
+the in-memory bundle still has the same explicit `--max-bytes` ceiling.
+Missing linked evidence remains exit 3. Malformed or oversized sources refuse
+with exit 2; invalid signatures or absent trusted keys give exit 1.
+
+Install packages and keep their cache outside the evidence directory. In a
+sandbox where the default npm cache is unwritable, a local writable cache can
+be selected per command:
+
+```sh
+npm install --cache ./tooling-cache --prefix ./tooling \
+  --ignore-scripts --no-audit --no-fund x402-verify
+```
+
+Keep `tooling/` and `tooling-cache/` separate from retained response files.
+
+### Export a portable bundle
+
+The installed package also includes a portable-evidence CLI. For a saved
+SCVD certificate or corpus snapshot, use it after the local install above:
+
+```sh
+npx --no-install scvd-evidence export https://scvd.store/api/verify/CERT_ID --out saved-evidence
+npx --no-install scvd-evidence verify saved-evidence/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX
 ```
 
 From a checkout of this repository:

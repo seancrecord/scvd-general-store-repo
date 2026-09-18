@@ -16,6 +16,9 @@ export interface PaymentSource {
   currency: string;
   organic: number;
   house: number;
+  house_correction?: { purchases: number; amount_atomic: string };
+  /** Present only for sources with an exact, independently retained amount ledger. */
+  amounts?: { network: string; asset: string; decimals: number; organic_atomic: string; house_atomic: string };
 }
 
 export interface PaymentRollup {

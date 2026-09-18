@@ -1,0 +1,116 @@
+{
+  "date": "2026-09-17T17:28:04.348Z",
+  "package": "x402-verify",
+  "version": "1.4.0",
+  "directory": "/var/folders/5x/qyv_rwr53n58jgbw2ypd92940000gn/T/scvd-registry-verifier-EIIDgm",
+  "dist": {
+    "integrity": "sha512-OCPhvLadl+B8pZHYow0c7tA/QfkUnPHfSPiuNzHhFmPuMS0yBF273XwnUE6cFcwv+Laakyvk/gqRhAq/gzkOqw==",
+    "shasum": "f752f473eda07a3925b30224d0737f8c147300a6",
+    "tarball": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.4.0.tgz",
+    "fileCount": 24,
+    "unpackedSize": 285789,
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.4.0",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEYCIQC9BwU2Hi1bw33hwBWzsK4qH0Ab11OHOG3zz4g98EX2NwIhANGPddTS705/1Rnz6DPJy9kq/nFMs5N4WDRI8QmdHKu0"
+      }
+    ]
+  },
+  "localPackIntegrity": "sha512-OCPhvLadl+B8pZHYow0c7tA/QfkUnPHfSPiuNzHhFmPuMS0yBF273XwnUE6cFcwv+Laakyvk/gqRhAq/gzkOqw==",
+  "installedFiles": {
+    "CHANGELOG.md": "40ea4eaf86e7ea12d30be250c7ab347cba26e0c398f96aef5b365eb8edff5c67",
+    "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
+    "README.md": "95feccf2d9f07456b121aba94d80d592712a179de74ba0ff4efb0e0c07d0d012",
+    "evidence-bundle.d.ts": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a",
+    "evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "evidence-cli.mjs": "9e87839106c858ecaba6ff69dbfc58760561d24177cc1d4ff0f1ea09084563c3",
+    "examples/verify-receipt.mjs": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+    "fixtures/independent/matrix.json": "d97a7433f9323c9398770769a299377764b266a907c1caba743152802fb35b95",
+    "fixtures/independent/README.md": "f94705fc218c5d91b648317cc33a0619175e27cc0913b6ccc02daac4bc5c64e4",
+    "fixtures/issuer-key-document.json": "09fa3404fca2f70fbdc3ea761421c651d914ab22056aed3d7b0fb3bd17d70756",
+    "fixtures/offer-expired-but-wellformed.json": "8bd00bc6e0669f729de267744fd590f6dd25b1e77d37374e0e9f240e7279ee9b",
+    "fixtures/offer-tampered-payload.json": "30a0c7955220d7fa2e38e376ae432e593516ccca821c2c5829bba3d43d3d16f2",
+    "fixtures/offer-valid.json": "509906bef539a7df8eb9d555281966d1766a6e6a38c7a0457073c4cefeeabda9",
+    "fixtures/receipt-missing-payer.json": "a071e8bd9a7b18966e31aa9170b57f766032674c210ba6634f77c931f34f6977",
+    "fixtures/receipt-valid.json": "666bb748b58daa4b7473db2f1b68a0b6b5e97566bc12f902fe0534eaddd4c518",
+    "fixtures/receipt-wrong-key.json": "8b161596280b9943f1b00a6814cdce0c698b4dafeb9b95c07fd9e5c0aae26586",
+    "fixtures/start-here/issuer-key.json": "019399acc8a3b59e69f7f29204e86461314ba68549bd38580f5672c5dd7882a6",
+    "fixtures/start-here/README.md": "6c027dc167ff9523928c37fa74ef151b764a633a44be7a71d49ec39529563bc3",
+    "fixtures/start-here/receipt-es256.json": "45bdfcae94d63dcc18c05fe6f81388f5819890a196a1e8c44e0e3297352f1092",
+    "fixtures/start-here/receipt-tampered.json": "07409ebf6846fa09fed38b607b8b227b02c1df71579ec0a6506ea03f1617d1b2",
+    "fixtures/start-here/receipt.json": "34a6a41737b0e8b86a76c6f923da232be26cf60768a9fc11156c6080df36e3cf",
+    "package.json": "86c9fb1f11f4b88737796f705237a8cfa24b85cc85653039b5bf504a89e53d39",
+    "x402-verify.d.ts": "1b85b8dd7b182b2cdf133f8807cec151e2d7e07b3500713223d0be956a540bec",
+    "x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+  },
+  "outcomes": {
+    "valid": {
+      "status": "valid",
+      "reasonCodes": [],
+      "scope": "Signature valid over the receipt's bytes against the key supplied by the caller; the receipt's fields pass this package's local offer-receipt schema checks (rev 1).",
+      "doesNotEstablish": [
+        "merchant identity beyond the key the receipt was checked against",
+        "payment settlement on any chain",
+        "delivery of the purchased service",
+        "authorization of the signing key for resourceUrl, now or at issuance"
+      ]
+    },
+    "tampered": {
+      "status": "invalid",
+      "reasonCodes": [
+        "signature_invalid"
+      ],
+      "scope": "Not verified: signature: signature does NOT verify against the resolved key.",
+      "doesNotEstablish": [
+        "merchant identity beyond the key the receipt was checked against",
+        "payment settlement on any chain",
+        "delivery of the purchased service",
+        "authorization of the signing key for resourceUrl, now or at issuance"
+      ]
+    },
+    "unsupported": {
+      "status": "unsupported",
+      "reasonCodes": [
+        "unsupported_algorithm",
+        "signature_not_checked"
+      ],
+      "scope": "Not verified: alg: expected EdDSA, got ES256; signature: not checked: unsupported algorithm.",
+      "doesNotEstablish": [
+        "merchant identity beyond the key the receipt was checked against",
+        "payment settlement on any chain",
+        "delivery of the purchased service",
+        "authorization of the signing key for resourceUrl, now or at issuance"
+      ]
+    },
+    "unavailable-key": {
+      "status": "inconclusive",
+      "reasonCodes": [
+        "key_unavailable",
+        "signature_not_checked"
+      ],
+      "scope": "Not verified: key-resolution: key document HTTP 503; signature: not checked: no key to check against.",
+      "doesNotEstablish": [
+        "merchant identity beyond the key the receipt was checked against",
+        "payment settlement on any chain",
+        "delivery of the purchased service",
+        "authorization of the signing key for resourceUrl, now or at issuance"
+      ]
+    }
+  },
+  "typescript": {
+    "compiled": true,
+    "statuses": [
+      "valid",
+      "invalid",
+      "unsupported",
+      "inconclusive"
+    ]
+  },
+  "scope": "Fresh public-registry install; all packed file bytes match the release source; four JS and four strict TypeScript outcomes. No real issuer, payment or settlement test."
+}

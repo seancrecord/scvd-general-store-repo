@@ -1,0 +1,22 @@
+{
+  "observed_at": "2026-09-17T15:42:42.471Z",
+  "installer": "skills@1.5.26",
+  "node": "24.19.0",
+  "scope": "New temporary project; copy mode; Codex and Claude Code; telemetry disabled; no global install.",
+  "source": "https://github.com/seancrecord/scvd-general-store-repo",
+  "expected_sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb",
+  "files": [
+    {
+      "file": ".agents/skills/scvd-x402-verification/SKILL.md",
+      "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb"
+    },
+    {
+      "file": ".claude/skills/scvd-x402-verification/SKILL.md",
+      "sha256": "2adcbacfaf93c15b0eb9a64d63a02b593a55fb1f0098d04a2d98d6bcd98ffdeb"
+    }
+  ],
+  "pass": true,
+  "gaps": [
+    "Directed installation check, not discovery or task completion."
+  ]
+}

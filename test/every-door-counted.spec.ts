@@ -173,6 +173,9 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /feeds/corpus.xml",
   "GET /feeds/corrections.xml",
   "GET /feeds/disagreements.xml",
+  // The per-host feed (2026-09-17) joins the four above under the same
+  // open question: whether anyone polls a feed is unknown until counted.
+  "GET /feeds/host/:file{.+\\.xml}",
   "GET /ledger",
   "GET /sources",
   "GET /mcp-ward",

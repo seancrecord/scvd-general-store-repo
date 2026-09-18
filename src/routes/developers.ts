@@ -79,7 +79,7 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
         {
           href: `${base}/openapi-tools.json`,
           label: "/openapi-tools.json",
-          what: "The free, read-only instruments as function-calling tool definitions, one worked call each, derived from the same catalog the MCP door serves. For wrapping them in your own agent without reading the whole contract.",
+          what: "The free instruments as function-calling tool definitions; calls may update usage counters, one worked call each, derived from the same catalog the MCP door serves. For wrapping them in your own agent without reading the whole contract.",
         },
       ],
     },
@@ -194,7 +194,7 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
         {
           href: `${base}/webmcp.js`,
           label: "GET /webmcp.js",
-          what: "The browser door. Loaded by the storefront, it registers the free read-only instruments on document.modelContext for an agent living in the visitor's browser — no connection to configure, no key, no directory: discovery is arrival. The registered set derives from the MCP catalog (free and read-only only), so nothing that writes and nothing that can take money can reach it. A browser without the API loads a no-op.",
+          what: "The browser door. Loaded by the storefront, it registers the free instruments on document.modelContext for an agent living in the visitor's browser — no connection to configure, no key, no directory: discovery is arrival. The instrument set derives from the MCP catalog, including metered verification calls. Visitor-entry and paid MCP tools are excluded; payment uses the separate buyer-authorized bridge. A browser without the API loads a no-op.",
         },
       ],
     },

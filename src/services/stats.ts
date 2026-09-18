@@ -1,3 +1,8 @@
+import { MPP_CHECKOUT_ITEM } from "@/lib/mpp-checkout-capability";
+import { BASE_NETWORK } from "@/lib/payment-networks";
+import { BASE_USDC } from "@/lib/base-rpc";
+import { USDC_DECIMALS } from "@/lib/payments";
+import { readMppSales, MPP_PAYER_PREFIX } from "@/services/mpp-sales";
 import { settlementNetworkLabels } from "@/lib/payment-networks";
 import { SETTLEMENT_ACCOUNTING, paymentRollup, purchaseHeadline, type PaymentRollup, type PaymentSource } from "@/lib/settlement-accounting";
 import { listKeys } from "@/lib/kv-list";
@@ -269,12 +274,16 @@ export interface BooksDiagnostics {
 export async function countDistinctOrganicBuyers(
   env: Env,
 ): Promise<number | null> {
-  const listed = await listKeys(env.COUNTERS, {
-    prefix: KV_KEYS.payerPrefix,
-    cap: PAYER_SCAN_CAP,
-  }).catch(() => null);
-  if (!listed || listed.truncated) return null;
+  const [listed, mpp] = await Promise.all([
+    listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_SCAN_CAP }).catch(() => null),
+    listKeys(env.COUNTERS, { prefix: MPP_PAYER_PREFIX, cap: PAYER_SCAN_CAP }).catch(() => null),
+  ]);
+  if (!listed || listed.truncated || !mpp || mpp.truncated) return null;
   const wallets = new Set<string>();
+  for (const name of mpp.names) {
+    const address = name.slice(MPP_PAYER_PREFIX.length);
+    if (address && !isHouseWallet(env, address)) wallets.add(address.toLowerCase());
+  }
   for (const name of listed.names) {
     const address = name.slice(KV_KEYS.payerPrefix.length);
     if (!address || isHouseWallet(env, address)) continue;
@@ -312,9 +321,10 @@ export async function computeStatsDiagnosed(
    * tally and the key-list that is the customer list. Neither reads
    * the other's result, and /stats is a free door.
    */
-  const [artifactsRaw, distinctOrganicBuyers] = await Promise.all([
+  const [artifactsRaw, distinctOrganicBuyers, mpp] = await Promise.all([
     kvGet(env.COUNTERS, KV_KEYS.patronNumber),
     countDistinctOrganicBuyers(env),
+    readMppSales(env),
   ]);
   const artifactsIssued = parseInt(artifactsRaw ?? "0", 10);
   let organic = 0;
@@ -470,7 +480,7 @@ export async function computeStatsDiagnosed(
       organic + house + FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     organic_settlements: organicSettlements,
     house_settlements: house + reclassified,
-    reclassified_house: reclassified,
+    reclassified_house: reclassified + (mpp.reclassified_house ?? 0),
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     artifacts_issued: artifactsIssued,
     distinct_organic_buyers: distinctOrganicBuyers,
@@ -494,6 +504,21 @@ export async function computeStatsDiagnosed(
     organic: stats.organic_settlements,
     house: stats.house_settlements,
   }];
+  if (mpp.organic + mpp.house > 0) {
+    stats.payment_sources.push({ protocol: "mpp", currency: "USDC", organic: mpp.organic, house: mpp.house,
+      house_correction: { purchases: mpp.reclassified_house ?? 0, amount_atomic: mpp.reclassified_amount_atomic ?? "0" },
+      amounts: { network: BASE_NETWORK, asset: BASE_USDC, decimals: USDC_DECIMALS,
+        organic_atomic: mpp.organic_amount_atomic, house_atomic: mpp.house_amount_atomic } });
+    stats.organic_settlements += mpp.organic;
+    stats.house_settlements += mpp.house;
+    stats.settled_purchases_total += mpp.organic + mpp.house;
+    if (stats.organic_by_rail) stats.organic_by_rail.base += mpp.organic;
+    else stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0,
+      rail_not_recorded: organicSettlements, computed_at: new Date().toISOString() };
+    const nativeTill = tillByItem[MPP_CHECKOUT_ITEM] ??= { organic: 0, house: 0 };
+    nativeTill.organic += mpp.organic;
+    nativeTill.house += mpp.house;
+  }
   const rail = stats.organic_by_rail;
   stats.payments = paymentRollup(stats.payment_sources, rail ? [
     ...settlementNetworkLabels().map(row => ({ name: row.label, purchases: rail[row.key] ?? 0 })),

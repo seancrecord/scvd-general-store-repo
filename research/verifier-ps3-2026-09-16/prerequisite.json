@@ -1,0 +1,26 @@
+{
+  "source": "/private/tmp/scvd-verifier-independent-vectors",
+  "base": "6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079",
+  "trackedPatchSha256": "385fe12a89ce7dd39c3eb40d4b5feb5bdbfcb5d00365c7d58aec0341313d4d7a",
+  "copiedUntrackedFiles": [
+    "docs/VERIFIER_INDEPENDENT_VECTORS_2026-09.md",
+    "docs/VERIFIER_RESULT_SEMANTICS_2026-09.md",
+    "research/verifier-ps1-2026-09-16/baseline.json",
+    "research/verifier-ps1-2026-09-16/consumer.mts",
+    "research/verifier-ps1-2026-09-16/verification.json",
+    "research/verifier-ps2-2026-09-16/packed-consumer.mjs",
+    "research/verifier-ps2-2026-09-16/ps1-prerequisite.json",
+    "research/verifier-ps2-2026-09-16/sources.json",
+    "research/verifier-ps2-2026-09-16/verification.json",
+    "test/verifier-independent-vectors.spec.ts",
+    "verifier/fixtures/independent/README.md",
+    "verifier/fixtures/independent/matrix.json",
+    "verifier/independent-vectors.test.mjs",
+    "verifier/result-semantics.test.mjs",
+    "verifier/test-support/independent-matrix.mjs",
+    "verifier/vector-tools/generate.mjs",
+    "verifier/vector-tools/package-lock.json",
+    "verifier/vector-tools/package.json",
+    "verifier/vector-tools/workflow.test.mjs"
+  ]
+}

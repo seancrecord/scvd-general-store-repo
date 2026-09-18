@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-18T00:18:54.555717+00:00",
+  "base_commit": "82a419ffc236aff401444243b175699e3271e537",
+  "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+  "instrument_files": {
+    "scripts/buyer-cold-isolated.mjs": "aa431cb2d63d2aecf88aa3423641d3bdb0b4e4c36bd3e688f93761c1fb9449b5",
+    "scripts/lib/buyer-cold.mjs": "08e7ac21684c033380adbb89fdff1972c3168f5db2a77466931fdc2532bd6a84",
+    "scripts/lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+    "scripts/lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+    "scripts/lib/buyer-host-context.mjs": "29ef1f922cec66ccf5acc674433491bc2ba120a122a078c433f52f61274addd3",
+    "verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+  },
+  "public_guide_sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc",
+  "release_readback_sha256": "11fef368be9392223c53ef568c795e2376963beafbb3d978bae107b0c8a7e5f2",
+  "reason": "Integrate published 1.5.0 with merged per-session cache/evidence workspace, public corpus link and scoped refusal statement. The older adapter timeout in #787 and prior #788 probes are separate retained boundaries. This new four-cell plan requires its own qualification.",
+  "attempts": {
+    "capability_per_host": 1,
+    "buyer_cells_if_both_hosts_pass": 4,
+    "retries": 0,
+    "recipients_per_eligible_retained_pair": 1
+  },
+  "unchanged": [
+    "models",
+    "spend zero",
+    "budgets",
+    "tool permissions",
+    "freshness window",
+    "acceptance semantics"
+  ],
+  "gate": "If either host is incomplete or fails its one capability attempt, launch no buyers and preserve the result. No timeout increase or retry within this acquisition.",
+  "recipients": "Fresh offline Codex session per retained original/separately acquired key pair, supplied only those buyer originals, buyer final report and disclosed public verifier modules. Same wall/tool/output budgets. No missing original or key is fetched after acquisition; parent independently verifies bytes and scope. This is a recipient diagnostic, not cold discovery."
+}

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { SERVER_INFO, handle } from "./server.mjs";
@@ -32,6 +33,7 @@ test("the handshake is answered here, the tools are the upstream door's, and a c
   await withUpstream(async (upstream, seen) => {
     const init = await handle({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25" } }, { upstream });
     assert.equal(init.result.serverInfo.name, SERVER_INFO.name);
+    assert.equal(SERVER_INFO.version, JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version);
     assert.match(init.result.instructions, /Never a ranking/);
     assert.equal(await handle({ jsonrpc: "2.0", method: "notifications/initialized" }, { upstream }), null);
     const list = await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" }, { upstream });

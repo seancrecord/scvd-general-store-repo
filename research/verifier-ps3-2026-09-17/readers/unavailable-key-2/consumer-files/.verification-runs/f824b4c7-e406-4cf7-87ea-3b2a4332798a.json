@@ -1,0 +1,14 @@
+{
+  "id": "f824b4c7-e406-4cf7-87ea-3b2a4332798a",
+  "cwd": ".",
+  "script": "unavailable-key-consumer.mjs",
+  "args": [
+    "unavailable-key"
+  ],
+  "scriptSha256": "feaded7ff2ddd19d52d55fef62da4c03379b3d124630f4ea889c431b7ba21612",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/f824b4c7-e406-4cf7-87ea-3b2a4332798a.stdout.txt",
+  "stderrFile": ".verification-runs/f824b4c7-e406-4cf7-87ea-3b2a4332798a.stderr.txt"
+}

@@ -1,3 +1,4 @@
+import { certificateProtocol } from "@/services/certificate-accounting";
 import { canonicalAddress } from "@/lib/addresses";
 import { houseWallets } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -107,6 +108,7 @@ export interface PayerSettleBackfill {
   scan_truncated: boolean;
   /** Settle records written this pass; a second pass writes none. */
   records_written: number;
+  skipped_certificates: Array<{ cert_id: string; reason: "mpp" | "unavailable" }>;
   /** Payer rows raised to the record count where the row was short. */
   rows_corrected: string[];
   /**
@@ -193,6 +195,7 @@ export async function backfillPayerSettlesFromCertificates(
     // was never written.
     scan_truncated: certKeys.truncated || existingListed.truncated,
     records_written: 0,
+    skipped_certificates: [],
     rows_corrected: [],
     rows_created: [],
     counters_rebooked: [],
@@ -205,6 +208,14 @@ export async function backfillPayerSettlesFromCertificates(
     const payer = cert?.payer;
     const transaction = cert?.settlement_tx;
     if (!cert || !payer || !transaction) continue;
+    const protocol = await certificateProtocol(env, cert);
+    if (protocol !== "x402") {
+      result.skipped_certificates.push({ cert_id: cert.cert_id, reason: protocol });
+      // A previous legacy repair may already have written this key. Do not
+      // use it to raise a payer row; leave removal to an evidenced correction.
+      existing.delete(KV_KEYS.payerSettle(payer, transaction));
+      continue;
+    }
     const wallet = canonicalAddress(payer);
     const key = KV_KEYS.payerSettle(payer, transaction);
     const wasRecorded = existing.has(key);

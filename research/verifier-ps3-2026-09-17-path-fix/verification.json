@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-17",
+  "status": "absolute install-path instruction fixed and locally qualified; no new reader cohort run",
+  "protocolVersion": 3,
+  "packageChanged": false,
+  "priorCohortUnchanged": true,
+  "priorCohort": "../verifier-ps3-2026-09-17/readers/scores.json",
+  "frozenPackage": "../verifier-ps3-2026-09-17/frozen.json",
+  "beforeFix": {
+    "passed": 0,
+    "failed": 2,
+    "log": "before-fix.txt"
+  },
+  "afterFix": {
+    "passed": 2,
+    "failed": 0,
+    "log": "after-fix.txt"
+  },
+  "readerTrialsExecuted": 0,
+  "claudeAuth": "Rechecked September 17: loggedIn:false. Installed CLI confirms claude auth login as local sign-in command. No login started.",
+  "sourceHashes": {
+    "reader-harness.mjs": "46eeaf5d8998b518fcd79b4bc09b121fd8606b69f13a0e7c33522b49799cd148",
+    "reader-harness.test.mjs": "7e48d74af5b6315f58b67d9138b08cf4e5210977d7825db1ac7b4e0d784a76be"
+  }
+}

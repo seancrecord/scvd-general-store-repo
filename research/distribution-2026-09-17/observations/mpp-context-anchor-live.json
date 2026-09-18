@@ -1,0 +1,109 @@
+{
+  "observed_at": "2026-09-17T21:13:12.247676+00:00",
+  "scope": "Unsigned public GETs only; no payment, settlement or delivery exercised.",
+  "keeper_report": "MPP is live for Context Anchor; other products are upcoming.",
+  "checkout": {
+    "url": "https://scvd.store/api/buy/context_anchor",
+    "status": 402,
+    "scheme": "Payment",
+    "method": "evm",
+    "intent": "charge",
+    "request": {
+      "amount": "1000000",
+      "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "methodDetails": {
+        "chainId": 8453,
+        "credentialTypes": [
+          "authorization"
+        ],
+        "decimals": 6
+      },
+      "recipient": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+    },
+    "x402_challenge_also_present": true
+  },
+  "menu": {
+    "url": "https://scvd.store/menu/context_anchor?view=compact",
+    "payment_capabilities": [
+      {
+        "protocol": "x402",
+        "transport": "http",
+        "method": "GET",
+        "path": "/api/buy/context_anchor",
+        "request_header": "PAYMENT-SIGNATURE",
+        "challenge_header": "PAYMENT-REQUIRED",
+        "currency": "USDC"
+      },
+      {
+        "protocol": "mpp",
+        "transport": "http",
+        "method": "GET",
+        "path": "/api/buy/context_anchor",
+        "payment_method": "evm",
+        "intent": "charge",
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "currency": "USDC",
+        "decimals": 6,
+        "amount_atomic": "1000000",
+        "request_header": "Authorization",
+        "authorization_scheme": "Payment",
+        "challenge_header": "WWW-Authenticate",
+        "response_header": "Payment-Receipt",
+        "idempotency_header": "Idempotency-Key"
+      }
+    ]
+  },
+  "openapi": {
+    "url": "https://scvd.store/openapi.json",
+    "operation": "GET /api/buy/context_anchor",
+    "x-scvd-payment-capabilities": [
+      {
+        "protocol": "x402",
+        "transport": "http",
+        "method": "GET",
+        "path": "/api/buy/context_anchor",
+        "request_header": "PAYMENT-SIGNATURE",
+        "challenge_header": "PAYMENT-REQUIRED",
+        "currency": "USDC"
+      },
+      {
+        "protocol": "mpp",
+        "transport": "http",
+        "method": "GET",
+        "path": "/api/buy/context_anchor",
+        "payment_method": "evm",
+        "intent": "charge",
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "currency": "USDC",
+        "decimals": 6,
+        "amount_atomic": "1000000",
+        "request_header": "Authorization",
+        "authorization_scheme": "Payment",
+        "challenge_header": "WWW-Authenticate",
+        "response_header": "Payment-Receipt",
+        "idempotency_header": "Idempotency-Key"
+      }
+    ],
+    "x-payment-info": {
+      "protocol": "x402",
+      "protocols": [
+        {
+          "x402": {}
+        }
+      ],
+      "price": {
+        "mode": "fixed",
+        "amount": "1",
+        "currency": "USD"
+      }
+    }
+  },
+  "remaining_gap": "x-payment-info.protocols lists only x402. Native MPP capability is declared in the SCVD extension; directory compatibility remains unqualified.",
+  "body_sha256": {
+    "0": "a4f11cf7ca2a60b4d9c306a11930d2c210e877792b31406c84e0bb11d8929ee7",
+    "1": "89630067ba5ee854d0f193df7f17ad9672b917ef8529fc3ffe55b990bb3dcf8e",
+    "2": "07b26b20cb5b1853f517c1ec3d8723d542912689cc5ee0d218cd1ddc08b748db"
+  }
+}

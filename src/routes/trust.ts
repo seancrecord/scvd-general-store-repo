@@ -7,6 +7,8 @@ import { buildTrustPanel } from "@/services/trust-panel";
 import { ASSURANCE_LADDER } from "@/store/assurance";
 import {
   EXTERNAL_RECORDS,
+  discoveryByProtocol,
+  discoveryProtocolIndex,
   RECORDS_NOT_LISTED,
 } from "@/store/trust-signals";
 import type { HonoEnv } from "@/types";
@@ -35,12 +37,14 @@ trustRoutes.get("/trust", async (c) => {
    * Hoisted so the markdown twin below renders the same
    * object the JSON serves rather than a second copy.
    */
+  const protocols = discoveryByProtocol(base);
   const pagePayload = {
+      discovery_by_protocol: discoveryProtocolIndex(base),
       ...panel,
       assurance_ladder: ASSURANCE_LADDER,
       independent_records: {
         count: EXTERNAL_RECORDS.length,
-        note: "Third-party records of this store, each confirmed by hand on the date given. No grade or score another instrument gave us is restated; the live reading is behind the link.",
+        note: "Third-party records of this store, each opened and read on the date given. No grade or score another instrument gave us is restated; the live reading is behind the link.",
         records: EXTERNAL_RECORDS,
         not_listed: RECORDS_NOT_LISTED,
       },
@@ -95,7 +99,11 @@ trustRoutes.get("/trust", async (c) => {
    * the reading exists. That is the same rule the store applies to
    * everybody else's endpoints, applied to itself.
    */
-  const recordRows = EXTERNAL_RECORDS.map(
+  const recordRows = protocols.map((protocol) => `<section id="protocol-${escapeHtml(protocol.id)}">
+    <h3>${escapeHtml(protocol.label)}</h3>
+    <p class="menu-desc">${escapeHtml(protocol.scope)}</p>
+    <p class="menu-meta">${escapeHtml(protocol.status)} · <a href="${escapeHtml(protocol.scvd_url)}">SCVD ${escapeHtml(protocol.label)} surface</a> · ${protocol.records.length} indexed records</p>
+    ${protocol.records.map(
     (record) => `<div class="menu-item">
       <div class="menu-line">
         <span class="menu-name"><a href="${escapeHtml(record.url)}" rel="nofollow noopener">${escapeHtml(record.registry)}</a></span>
@@ -105,7 +113,9 @@ trustRoutes.get("/trust", async (c) => {
       <p class="menu-desc">${escapeHtml(record.what_it_proves)}</p>
       <p class="menu-meta"><code>${escapeHtml(record.url)}</code></p>
     </div>`,
-  ).join("\n");
+  ).join("\n")}
+    ${protocol.identity_viewers.map((viewer) => `<p class="menu-desc"><a href="${escapeHtml(viewer.url)}" rel="nofollow noopener">${escapeHtml(viewer.viewer)}</a> — ${escapeHtml(viewer.what_it_shows)} <small>Read ${escapeHtml(viewer.confirmed)}.</small></p>`).join("\n")}
+  </section>`).join("\n");
 
   const galleryRows = panel.gallery.items.length
     ? panel.gallery.items

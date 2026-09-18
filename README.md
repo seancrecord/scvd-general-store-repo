@@ -73,6 +73,8 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
+[Find SCVD by protocol: x402, MPP, MCP, WebMCP, ERC-8004, A2A, OASF, skills and planned UCP](#on-other-peoples-records).
+
 ## The doors, by task
 
 What people arrive here to do, and where each door is:
@@ -93,6 +95,14 @@ What people arrive here to do, and where each door is:
   fails the job and `unreachable` does not:
   [`action/preflight`](action/preflight/README.md). The terminal form
   is `scvd preflight` from [`scvd-cli`](https://www.npmjs.com/package/scvd-cli).
+  As a library, the same check and the same exit law in three languages,
+  each zero-dependency and each tested against the *same* recorded
+  reports rather than a copy of them:
+  [`scvd-preflight`](https://www.npmjs.com/package/scvd-preflight) on
+  npm, [`scvd-preflight`](https://pypi.org/project/scvd-preflight/) on
+  PyPI, and
+  [`x402-preflight-go`](https://pkg.go.dev/github.com/seancrecord/scvd-general-store-repo/x402-preflight-go)
+  for Go.
 - **Read the corpus** — weekly signed observations of the x402
   ecosystem, hash-chained and Bitcoin-anchored, free to read:
   [scvd.store/corpus](https://scvd.store/corpus). For bounded metadata
@@ -253,7 +263,7 @@ without the extension get exactly the JSON they always got.
 
 **Three doors on one origin.** `/mcp` is the store (the free
 instruments and the paid shelves); `/mcp/verifier` serves five
-read-only tools under task-shaped names and no shelf; `/mcp/docs`
+free verification tools under task-shaped names and no shelf; `/mcp/docs`
 (also `POST /mcp.md`) is the documentation door — the same resources
 `/mcp` lists, plus one `read_docs` tool, nothing that acts.
 
@@ -534,12 +544,18 @@ signer/           # x402-sign: the issuing half — mints spec-conformant
                   # signed offers & receipts that x402-verify passes
 x402-preflight/   # scvd-preflight: the free door check as a library and
                   # a command, with the deploy gate's exit law
+x402-preflight-py/ # scvd-preflight on PyPI: the same law in Python,
+                  # stdlib only, reading x402-preflight/fixtures rather
+                  # than a copy of them
+x402-preflight-go/ # the same law in Go, stdlib only, same fixtures;
+                  # published by tag as
+                  # github.com/seancrecord/scvd-general-store-repo/x402-preflight-go
 corpus-client/    # scvd-corpus-client: the signed corpus, read as served
 defects/          # scvd-defects: the vocabulary as data, both halves of
                   # the remediation, recorded 402 doors and settlement
                   # responses as fixtures, and the settlement-response reader
 mcp-starter/      # scvd-mcp-starter: a stdio MCP server, one file, that
-                  # serves the read-only verifier door to any client
+                  # serves the free verifier door to any client
 tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # builder's running account of every tool they sign
                   # up for — trial warnings, burn, price drift, signup
@@ -744,147 +760,41 @@ runs. The example is at
 
 ## On other people's records
 
-The store's own books are the store grading its own homework. These
-are not:
+Browse [SCVD's public records, organized by protocol](https://scvd.store/trust).
+For maintainers, the [distribution map](DISTRIBUTION.md) points to submission
+status, tracking files and receipts. Plugin users: [privacy policy](https://scvd.store/privacy),
+[support](https://github.com/seancrecord/scvd-general-store-repo/issues),
+and [SCVD documentation](https://scvd.store/developers).
+Each listing carries its observed date and what it establishes. The canonical
+list feeds that page, the [machine-readable trust document](https://scvd.store/.well-known/trust.json)
+and the homepage's discovery links. Directory presence, identity and verified
+behavior remain separate observations.
 
-- **x402scan** — the store's own page is
-  [x402scan.com/server/9b04e1cc…](https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597), which indexes what
-  `/.well-known/x402` and `/openapi.json` declare and probes the paid
-  routes itself. Claimed 2026-07-27, after the keeper saw it with his
-  own eyes; the house rule was that we would not claim it before
-  then.
-- **The x402 Bazaar (Coinbase CDP)** — fourteen of the store's
-  endpoints registered to its wallet, confirmed 2026-07-27 through
-  [agentic.market](https://agentic.market), which reads the Bazaar
-  and shows what it finds: resource URLs, payment methods, and a
-  payer count (which read 1 — the house — when first claimed on
-  2026-07-27; the store's own books have counted organic sales
-  since, and the live number belongs to the ledger, not this file).
-- **x402scout** — [x402scout.com](https://x402scout.com), listed and
-  awaiting its trust check.
-- **x402-list** — the store's
-  [per-service page](https://x402-list.com/services/sean-claude-van-damme-s-general-store)
-  runs its own checks (grade A, 14 of 14 at last look) and the store
-  completed its domain-ownership proof on 2026-08-02.
-- **Glama** — an
-  [auto-crawled server index entry](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
-  and a [connectors page](https://glama.ai/mcp/connectors/store.scvd/general-store).
-- **mcpindex.ai** — [a listing with its own live verdict](https://mcpindex.ai/server/store-scvd-general-store).
-- **agent-tools.cloud** — three entries, because it indexes x402
-  services, MCP servers and A2A agents as separate populations: the
-  [x402 service](https://agent-tools.cloud/services/scvd-store-bazaar),
-  the [MCP server](https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store)
-  and the [SCVD Evidence Agent](https://agent-tools.cloud/a2a/agents/scvd-evidence-agent).
-  The store proved domain control on 2026-09-14, so the descriptions
-  there are its own words; the quality grade beside them is their
-  measurement, on their probe schedule, and is not reproduced here.
-- **x402.fuchss.app** — [a provider index entry](https://x402.fuchss.app/provider/scvd.store)
-  keyed on the origin rather than on anything we submitted.
-- **Circle (Sell to Agents)** — a
-  [readiness score](https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello)
-  for the paid interface: the scanner fetches the OpenAPI contract and
-  the live 402 and rates how legible the door is to a buying agent. An
-  instrument, not a listing — it never buys, so it says nothing about
-  the goods. Scored per endpoint, with no summary page; one door
-  stands for the set, because every one of them is described by the
-  same contract and answers the same challenge. The badge at the top
-  of this file renders the live value; no number is written down here,
-  because a number written down is a number that rots.
-- **Circle partner directory** — a
-  [per-partner page](https://partners.circle.com/partner/scvdstore),
-  submitted 2026-09-01 and listed 2026-09-04. A directory entry, not
-  the score above and not an endorsement: the issuer of the stablecoin
-  this store is paid in has the store on its map, which says nothing
-  about the goods.
-- **Drio** — [an MCP index listing](https://www.getdrio.com/mcp/store-scvd-general-store)
-  under the store's canonical name.
-- **VerifyMCP** — a [scored page for the store](https://verifymcp.io/servers/store-scvd-general-store/scvd)
-  and [one for the tab](https://verifymcp.io/servers/store-scvd-tab/scvd-tab),
-  both ingested from the official registry and probed live. Their
-  rows are their instrument; the store publishes an
-  [owners.json](https://scvd.store/.well-known/owners.json) at the
-  host root, which is how a publisher claims a server there.
-- **agentage MCP Catalog** — [the store](https://catalog.agentage.io/mcp/store-scvd-general-store)
-  and [the tab](https://catalog.agentage.io/mcp/store-scvd-tab),
-  synced from the official registry and saying so: the page holds
-  what the registry entry holds and nothing more.
-- **mcpbeat** — [the store](https://mcpbeat.com/mcp-servers/scvd/general-store/)
-  and [the tab](https://mcpbeat.com/mcp-servers/scvd/tab/), a directory
-  that pings every server it lists every fifteen minutes and shows the
-  live tool list it read. Its handshake name is `mcpbeat`, the second
-  most frequent visitor at the MCP door in September 2026.
-- **402.ad** — [a per-service page](https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api)
-  in an index that calls itself the search engine for the agentic
-  economy; the keeper opened it 2026-09-03 and again 2026-09-10. A
-  listing and nothing else: which generation of the store's text it
-  carries is read by `npm run listings:check`, not asserted here.
-- **robinsaige.com** — [a server page](https://robinsaige.com/s/store.scvd/general-store)
-  keyed on the official registry name, opened by the keeper
-  2026-09-10. The host refuses the build sandbox's egress, so what
-  the page measures is its own reading, on its page, not copied here.
-- **Crosspeel** — [a per-provider endpoint page](https://crosspeel.com/endpoints/scvd-store/)
-  for the store's x402 doors, opened by the keeper 2026-09-10. Same
-  edge as the row above: an endpoint index proves the doors were
-  found, nothing about the goods behind them.
-- **PublishYourSaaS** — [a launch-directory listing](https://publishyoursaas.com/listing/scvd-store)
-  that opens with the sixty words' first sentence, verbatim; opened
-  by the keeper 2026-09-10. A listing and nothing else.
-- **AI Tools Capital** — [a review-shaped page](https://aitoolscapital.com/tools/scvd-general-store/)
-  ("Worth It?") in an AI-tools directory, opened by the keeper
-  2026-09-10. Its verdict is its own; the row records that the page
-  exists and what it leads with.
-- **Seen, no page to link** — the
-  [MCP Census](https://mcpcensus.com/lookup?q=scvd) returns both
-  servers to a lookup; [Spanly](https://spanly.com/scan/?url=https%3A%2F%2Fscvd.store%2Fmcp)
-  scans the door on demand and lists its tools. A search result and
-  a scan are both true and neither is an address, so neither is a
-  `sameAs`.
-- **ZBS Index** — [a listing](https://index.zbs.gg/en/mcp/store-scvd-general-store/)
-  resolving to the same canonical name every other registry landed on.
-- **mcpservers.org** — the
-  [claimed server listing](https://mcpservers.org/servers/seancrecord/scvd-general-store-repo)
-  and a second, [llms.txt-derived entry](https://mcpservers.org/servers/scvd-store-llms-txt).
-- **mcp.so** — [a per-server page](https://mcp.so/servers/scvd-store)
-  whose summary leads with the current positioning; its auto-extracted
-  install config and mirrored skill text lag the repo until its next
-  crawl, which is noted in the canonical record rather than argued
-  with.
-- **m8ven.ai** — [a dependency scanner](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v)
-  that audits this repository's declared packages against OSV. Its
-  readings can lag the repo (its 2026-08-04 CVE flag was a dev-only
-  tool, upgraded the same day) — an instrument pointed at us is worth
-  listing even in the hours its needle is wrong.
-- **Smithery** — [a per-server page](https://smithery.ai/servers/seancrecord/scvd-general-store)
-  with its own quality scan: descriptions, parameter descriptions and
-  output schemas at full marks. Its annotations reading (0 of 27)
-  describes the 27-tool catalog this store retired on 2026-08-02 —
-  the live catalog lists every tool with all four MCP
-  behavior hints through `tools/list` — and refreshes on its next
-  scan rather than being argued with.
-- **DeepWiki** — [a generated wiki of this repository](https://deepwiki.com/seancrecord/scvd-general-store-repo)
-  from Cognition (Devin's index), requested 2026-08-11. A machine's
-  reading of the source, consulted like documentation; where it
-  misreads, the repository beside it is the correction.
+| Protocol / channel | SCVD surface | Public discovery and scope |
+| --- | --- | --- |
+| **x402** | [Conformance desk](https://scvd.store/conformance) · [discovery](https://scvd.store/.well-known/x402) | [x402 records](https://scvd.store/trust#protocol-x402), including x402scan, x402-list and the Bazaar. Current quotes declare accepted checkout rails. |
+| **MPP** | [Context Anchor](https://scvd.store/menu/context_anchor) · [developer documentation](https://scvd.store/developers) | Read-only inspection plus live Context Anchor checkout over HTTP using EVM/USDC on Base; [September 17 observation](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json). Other products are upcoming. Directory submissions and remaining discovery gaps are tracked in [coverage](research/distribution-2026-09-17/PROTOCOL_COVERAGE.md). |
+| **MCP** | [Store MCP](https://scvd.store/mcp) · [verifier MCP](https://scvd.store/mcp/verifier) | [MCP records](https://scvd.store/trust#protocol-mcp), including the published [ChatGPT verifier](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212), [Smithery](https://smithery.ai/servers/seancrecord/scvd-general-store), Glama and other indexes. |
+| **WebMCP** | [Browser registration](https://scvd.store/webmcp.js) | [WebMCP records](https://scvd.store/trust#protocol-webmcp), including WebMCP Directory and Ora. Browser support and origin-trial availability apply. |
+| **ERC-8004** | [Canonical registration and domain acknowledgment](https://scvd.store/.well-known/agent-registration.json) | [Identity records](https://scvd.store/trust#protocol-erc8004): 8004scan, Agentscan, 8004agents and trust8004; QuickNode and BaseScan identity viewers are identified separately. |
+| **A2A** | [Agent card](https://scvd.store/.well-known/agent-card.json) | [A2A records](https://scvd.store/trust#protocol-a2a), including agent-tools.cloud and Agenstry. The card declares current capabilities and version. |
+| **OASF** | [Canonical record](https://scvd.store/agents/general-store) · [domain key](https://scvd.store/.well-known/jwks.json) | [OASF scope](https://scvd.store/trust#protocol-oasf). Public record available; Cisco/Anro publication and remote signature/scan status remain unverified. |
+| **UCP — planned** | [Development roadmap](ROADMAP.md) | [UCP scope](https://scvd.store/trust#protocol-ucp): a bounded inspection experiment is planned. No current checkout or conformance claim. |
+| **Skills and plugins** | [Skills index](https://scvd.store/.well-known/agent-skills/index.json) · [Agent Plugins package](plugin.json) | [Skill/plugin records](https://scvd.store/trust#protocol-skills). The same skills and MCP assets underpin host-specific packages. Gallery admission is tracked separately. |
 
-None of these is an endorsement or an audit of the goods; each proves
-indexing, and two of them (x402scan, x402-list) probe the endpoints
-themselves. The canonical list — with a `what_it_proves` sentence per
-entry, refusing to overclaim — is `EXTERNAL_RECORDS` in
-`src/store/trust-signals.ts`, served live at
-`/.well-known/trust.json` and mirrored into the storefront's JSON-LD
-`sameAs`. When this section and that file disagree, that file is
-right.
 
-Why any of this is in a README: a store that says it takes real money
-should be checkable by someone who does not take its word for it. Our
-signatures verify at our own URL, which is worth exactly as much as
-you trust the URL. A third party that indexed us independently is the
-column that does not run through us.
+The September 17 [directory reading and submission package](research/distribution-2026-09-17/README.md)
+retains source observations, parser discrepancies and pending requests. A failed
+lookup or an unsigned local OASF record does not become a confirmed listing.
+[KEEPER_LIST](KEEPER_LIST.md) holds the external presses; [ROADMAP](ROADMAP.md)
+holds implementation work. The existing [Agent Finder PR](https://github.com/github/agentfinder-catalog/pull/34)
+is distinct from the prepared [Awesome Copilot submission](research/distribution-2026-09-17/COPILOT_SUBMISSION.md).
 
-- Goods are produced before settlement and certificate signing. Delivery
-  intents, unknown-settlement records, and the delivery audit account for
-  failures around that boundary. An interrupted response is not proof that
-  no money moved; retain the original payment and retry key for recovery.
+The source of public records is `EXTERNAL_RECORDS` in
+`src/store/trust-signals.ts`; protocol scope lives in
+`src/store/discovery-protocols.ts`. Identity viewers derive their links from the
+canonical identity in `src/store/chain-identity.ts`. No score is inferred from
+how many directories carry the store.
 
 ### A2A repair kits
 

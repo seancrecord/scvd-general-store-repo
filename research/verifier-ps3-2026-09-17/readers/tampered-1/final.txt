@@ -1,0 +1,14 @@
+{
+  "status": "invalid",
+  "reasonCodes": ["signature_invalid"],
+  "scope": "Not verified: signature: signature does NOT verify against the resolved key.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "observed.json",
+  "canAuthorizePayment": false,
+  "blockers": ["signature_invalid"]
+}

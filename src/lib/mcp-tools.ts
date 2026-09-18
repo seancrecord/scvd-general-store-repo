@@ -1,3 +1,4 @@
+import { isVerificationTool, METERED_TOOL_EFFECTS, VERIFICATION_TOOL_WORLD } from "@/lib/mcp-tool-effects";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { PURCHASE_RECOVERY_TOOL_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
@@ -1612,6 +1613,13 @@ function underContract(tool: McpTool, base: string): McpTool {
   });
   return {
     ...tool,
+    // Both MCP doors call these same metered handlers. A free call can
+    // still change our counters; hints must include that persistent effect.
+    ...(isVerificationTool(tool.name) ? { annotations: {
+      ...tool.annotations,
+      ...METERED_TOOL_EFFECTS,
+      openWorldHint: VERIFICATION_TOOL_WORLD[tool.name],
+    } } : {}),
     /**
      * The spec's top-level display name, lifted from the annotation
      * that already carries it. Every tool defines annotations.title;

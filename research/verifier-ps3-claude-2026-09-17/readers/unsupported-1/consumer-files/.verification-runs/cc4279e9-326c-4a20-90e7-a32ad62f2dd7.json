@@ -1,0 +1,14 @@
+{
+  "id": "cc4279e9-326c-4a20-90e7-a32ad62f2dd7",
+  "cwd": ".",
+  "script": "consumer.mjs",
+  "args": [
+    "unsupported"
+  ],
+  "scriptSha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+  "exitCode": 0,
+  "signal": null,
+  "errorCode": null,
+  "stdoutFile": ".verification-runs/cc4279e9-326c-4a20-90e7-a32ad62f2dd7.stdout.txt",
+  "stderrFile": ".verification-runs/cc4279e9-326c-4a20-90e7-a32ad62f2dd7.stderr.txt"
+}

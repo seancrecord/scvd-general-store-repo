@@ -1,0 +1,144 @@
+{
+  "host": "Codex CLI",
+  "modelRequested": "gpt-5.6-luna",
+  "expectedAttempts": 8,
+  "completedAttempts": 8,
+  "passed": 4,
+  "missing": [],
+  "executionQualified": 6,
+  "correctApiOutputs": 8,
+  "finalKeyAuthorityExplicit": 6,
+  "codexGatePassed": false,
+  "fullTwoHostGatePassed": false,
+  "secondHost": "Claude Code not signed in; untested",
+  "results": [
+    {
+      "id": "tampered-1",
+      "scenario": "tampered",
+      "attempt": 1,
+      "passed": true,
+      "apiOutputCorrect": true,
+      "executionQualified": true,
+      "failures": [],
+      "elapsedMs": 55538,
+      "timeToCompletedCorrectResponseMs": 55538,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": true,
+      "commands": 6,
+      "commandFailures": 0
+    },
+    {
+      "id": "tampered-2",
+      "scenario": "tampered",
+      "attempt": 2,
+      "passed": true,
+      "apiOutputCorrect": true,
+      "executionQualified": true,
+      "failures": [],
+      "elapsedMs": 51240,
+      "timeToCompletedCorrectResponseMs": 51240,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": true,
+      "commands": 6,
+      "commandFailures": 1
+    },
+    {
+      "id": "unavailable-key-1",
+      "scenario": "unavailable-key",
+      "attempt": 1,
+      "passed": false,
+      "apiOutputCorrect": true,
+      "executionQualified": true,
+      "failures": [
+        "final summary omits signing-key/resource authorization exclusion"
+      ],
+      "elapsedMs": 47089,
+      "timeToCompletedCorrectResponseMs": null,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": false,
+      "commands": 5,
+      "commandFailures": 0
+    },
+    {
+      "id": "unavailable-key-2",
+      "scenario": "unavailable-key",
+      "attempt": 2,
+      "passed": false,
+      "apiOutputCorrect": true,
+      "executionQualified": false,
+      "failures": [
+        "trace review has not qualified permitted inputs and actual API use"
+      ],
+      "elapsedMs": 80155,
+      "timeToCompletedCorrectResponseMs": null,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": true,
+      "commands": 11,
+      "commandFailures": 2
+    },
+    {
+      "id": "unsupported-1",
+      "scenario": "unsupported",
+      "attempt": 1,
+      "passed": true,
+      "apiOutputCorrect": true,
+      "executionQualified": true,
+      "failures": [],
+      "elapsedMs": 59153,
+      "timeToCompletedCorrectResponseMs": 59153,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": true,
+      "commands": 6,
+      "commandFailures": 0
+    },
+    {
+      "id": "unsupported-2",
+      "scenario": "unsupported",
+      "attempt": 2,
+      "passed": false,
+      "apiOutputCorrect": true,
+      "executionQualified": true,
+      "failures": [
+        "final summary omits signing-key/resource authorization exclusion"
+      ],
+      "elapsedMs": 47927,
+      "timeToCompletedCorrectResponseMs": null,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": false,
+      "commands": 5,
+      "commandFailures": 1
+    },
+    {
+      "id": "valid-1",
+      "scenario": "valid",
+      "attempt": 1,
+      "passed": false,
+      "apiOutputCorrect": true,
+      "executionQualified": false,
+      "failures": [
+        "no successful consumer execution in the trace"
+      ],
+      "elapsedMs": 49007,
+      "timeToCompletedCorrectResponseMs": null,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": true,
+      "commands": 5,
+      "commandFailures": 1
+    },
+    {
+      "id": "valid-2",
+      "scenario": "valid",
+      "attempt": 2,
+      "passed": true,
+      "apiOutputCorrect": true,
+      "executionQualified": true,
+      "failures": [],
+      "elapsedMs": 54693,
+      "timeToCompletedCorrectResponseMs": 54693,
+      "timingScope": "Host startup through completed response; includes model/tool latency, not API verification latency.",
+      "finalKeyAuthorityExplicit": true,
+      "commands": 6,
+      "commandFailures": 1
+    }
+  ]
+}

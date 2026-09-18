@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-09-17",
+  "npm": {
+    "name": "x402-verify",
+    "version": "1.3.0",
+    "integrity": "sha512-2aEbVEYCyIeIVxGHtkjR9zkglXjtVDSarZrQePHkZ2207TMdNRHncRmD9sL5lHfWurQjYW8uqphGrtefnNsUgA=="
+  },
+  "clawhub": {
+    "slug": "scvd-general-store",
+    "latest": "3.16.2"
+  },
+  "targets": {
+    "npm": "1.4.0",
+    "clawhub": "3.17.0"
+  }
+}

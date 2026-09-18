@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-09-17T13:35:51.309596+00:00",
+  "agentfinder": "open, no comments, existing PR retained",
+  "github_public_discussion_1257": "All returned comments/replies inspected; no SCVD/account match; no pagination remaining",
+  "account_authored_discussion_searches": {
+    "github/github-mcp-server": 0,
+    "agntcy organization": 0
+  },
+  "limits": [
+    "Private/off-platform applications and differently authored requests unobserved.",
+    "No outward submission, comment or directory write performed."
+  ],
+  "files": [
+    {
+      "file": "observations/github-prior-requests-20260917.json",
+      "sha256": "f7bd4f21761b83840646c70ef6bccace523ccfbd1d66968cf3eff5a0f00d0c5f",
+      "bytes": 85
+    },
+    {
+      "file": "observations/agntcy-prior-requests-20260917.json",
+      "sha256": "f7bd4f21761b83840646c70ef6bccace523ccfbd1d66968cf3eff5a0f00d0c5f",
+      "bytes": 85
+    },
+    {
+      "file": "observations/agentfinder-pr-20260917.json",
+      "sha256": "2fa16b55687c8e8b26d0f01b5492b2d0cc4a5a3be1a12c30ae2b783484a40dd4",
+      "bytes": 206
+    }
+  ],
+  "revised_candidate_record": {
+    "sha256": "54f8cb05652c3336496bb5fa860b06b72ba59bc3b245ac553e3864c604301829",
+    "change": "Declarative scope wording; no unconditional expiry claim.",
+    "signature": "Not signed or published to a directory; the historical CID does not cover these bytes."
+  }
+}

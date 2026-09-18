@@ -1,0 +1,300 @@
+{
+  "date": "2026-09-16",
+  "branch": "codex/verifier-developer-activation",
+  "base": "6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079",
+  "status": "implementation and automated local qualification complete; eight approved Codex readers completed; fresh-reader acceptance not passed",
+  "release": "1.4.0 unpublished",
+  "prerequisite": "prerequisite.json",
+  "executableVerifierUnchangedFromPS2": true,
+  "declarationChange": "Narrow VerificationCrypto importKey/verify methods admit Node WebCrypto without unrelated browser overloads.",
+  "activationBeforeExample": {
+    "tests": [
+      1
+    ],
+    "pass": [
+      0
+    ],
+    "fail": [
+      1
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "typeRegressionWithPS2Declaration": {
+    "tests": [
+      1
+    ],
+    "pass": [
+      0
+    ],
+    "fail": [
+      1
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "activationFinal": {
+    "tests": [
+      1
+    ],
+    "pass": [
+      1
+    ],
+    "fail": [
+      0
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "rootTypecheck": {
+    "exitCode": 0
+  },
+  "workerTests": {
+    "files": 3,
+    "passed": 109,
+    "exitCode": 0
+  },
+  "evidenceSuites": {
+    "tests": [
+      170,
+      16,
+      5
+    ],
+    "pass": [
+      170,
+      16,
+      5
+    ],
+    "fail": [
+      0,
+      0,
+      0
+    ],
+    "skipped": [
+      0,
+      0,
+      0
+    ]
+  },
+  "workflowTests": {
+    "tests": [
+      4
+    ],
+    "pass": [
+      4
+    ],
+    "fail": [
+      0
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "bundleDryRuns": {
+    "exitCode": 0,
+    "deployed": false
+  },
+  "pack": {
+    "id": "x402-verify@1.4.0",
+    "name": "x402-verify",
+    "version": "1.4.0",
+    "size": 53519,
+    "unpackedSize": 284935,
+    "shasum": "945f2a766712fd77c53d09c5062a1f2dc71a2c84",
+    "integrity": "sha512-IqOKgaa+ej82NZO44JVjQprvBdbXaIVfK/JAfpDr66qP0+q2k4VjynB/a/JmYv1OtuH071AbjBleSTM+hqIgdA==",
+    "filename": "x402-verify-1.4.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 4328,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 27889,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.d.ts",
+        "size": 1831,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.js",
+        "size": 9551,
+        "mode": 420
+      },
+      {
+        "path": "evidence-cli.mjs",
+        "size": 6740,
+        "mode": 493
+      },
+      {
+        "path": "examples/verify-receipt.mjs",
+        "size": 1334,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/independent/matrix.json",
+        "size": 164861,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/independent/README.md",
+        "size": 5590,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/issuer-key-document.json",
+        "size": 344,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-expired-but-wellformed.json",
+        "size": 935,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-tampered-payload.json",
+        "size": 843,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-valid.json",
+        "size": 1110,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-missing-payer.json",
+        "size": 762,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-valid.json",
+        "size": 1090,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-wrong-key.json",
+        "size": 961,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/start-here/issuer-key.json",
+        "size": 560,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/start-here/README.md",
+        "size": 1330,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/start-here/receipt-es256.json",
+        "size": 597,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/start-here/receipt-tampered.json",
+        "size": 603,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/start-here/receipt.json",
+        "size": 597,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1511,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.d.ts",
+        "size": 9081,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.js",
+        "size": 41419,
+        "mode": 420
+      }
+    ],
+    "entryCount": 24,
+    "bundled": []
+  },
+  "consumer": "consumer-results.json",
+  "freshReaders": {
+    "executed": 8,
+    "status": "completed_codex_acceptance_not_passed",
+    "codex": "Eight approved attempts completed without replacement or rescue; all saved API results correct, six execution/protocol-qualified, four full passes including final scope interpretation.",
+    "claude": "Installed but still not signed in on recheck; no trial attempted.",
+    "planned": {
+      "hosts": 2,
+      "attemptsPerScenarioPerHost": 2,
+      "scenarios": [
+        "valid",
+        "tampered",
+        "unsupported",
+        "unavailable-key"
+      ],
+      "codexModelRequested": "gpt-5.6-luna",
+      "timeoutSeconds": 180
+    },
+    "frozenReadmeSha256": "c3ff6b2e25c3e4829391ce7f41a9e0f5757cf57eabaede9486018e8e4bd1c31e",
+    "frozenTarballSha256": "a6d108b1d8bdc8b1ca57ae72e36b8bc27380287d2e25cee31c42006cf8fe658e",
+    "timeToCorrectResult": {
+      "unit": "milliseconds",
+      "scope": "Host startup through completed response, including model/tool latency; not API latency or a population speed estimate.",
+      "qualifiedAttempts": {
+        "tampered-1": 55538,
+        "tampered-2": 51240,
+        "unsupported-1": 59153,
+        "valid-2": 54693
+      }
+    },
+    "authorization": "readers/authorization.json",
+    "scores": "readers/scores.json",
+    "traceReview": "readers/trace-review.json",
+    "installedIntegrity": "readers/installed-integrity.json",
+    "correctApiOutputs": 8,
+    "executionQualified": 6,
+    "passed": 4,
+    "finalKeyAuthorityExplicit": 6
+  },
+  "fullWorkerSuite": {
+    "rerun": false,
+    "requiredBeforeCommit": true
+  },
+  "registryTest": {
+    "performed": false,
+    "reason": "Release not authorized; local tarball only."
+  },
+  "sourceHashes": {
+    "verifier/README.md": "c3ff6b2e25c3e4829391ce7f41a9e0f5757cf57eabaede9486018e8e4bd1c31e",
+    "verifier/package.json": "86c9fb1f11f4b88737796f705237a8cfa24b85cc85653039b5bf504a89e53d39",
+    "verifier/x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6",
+    "verifier/x402-verify.d.ts": "1b85b8dd7b182b2cdf133f8807cec151e2d7e07b3500713223d0be956a540bec",
+    "verifier/examples/verify-receipt.mjs": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+    "scripts/verifier-start-here.mjs": "9981b08c706a00e80dccff5d0791d093d544d0880c25fa4f63c0537adb678c1b",
+    "scripts/verifier-activation.test.mjs": "8b86966a8be6cfe13b378a381435fee8f67bc458c70e0a25ae92267fb4b05ee7",
+    "verifier/activation-tools/package-lock.json": "e31ce9f8efc405a9077694bb612a39005ab172fa5ae92eb495c212b828b7a9a2",
+    "research/verifier-ps3-2026-09-16/consumer.mts": "c5fa31d5b064e0bc30ccaa39926b315cf3785a89e1366c0d90303478408f51bc",
+    "research/verifier-ps3-2026-09-16/run-readers.mjs": "59bab5e51034a415bd14ec1973cf3247ed686c7c953293d02a40fef23b6555e4",
+    "research/verifier-ps3-2026-09-16/score-readers.mjs": "4cb10fcd4617579f974e5ab98c0529c302d7e50f27c9961e5c71692b1b3c2e9d",
+    "research/verifier-ps3-2026-09-16/score-readers.test.mjs": "fc51ff22e58f794d511ff7ca7f6243dd09db4633900273b5f0735ff895f91e79"
+  },
+  "readerScorerTests": {
+    "passed": 2,
+    "failed": 0,
+    "lostKeyAuthorityControlObservedRedBeforeFix": true
+  }
+}

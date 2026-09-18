@@ -1,0 +1,72 @@
+[
+  {
+    "id": "verification",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": [],
+    "answer": "The receipt is valid: its signature was verified against the supplied public test key. This does not establish merchant identity, settlement, delivery, or payment authorization.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "unsupported",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": [],
+    "answer": "No. Unsupported means the ES256 signature was not checked; it is not a pass.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "preflight",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": [],
+    "answer": "The endpoint is observed as x402-ready and speaks x402. Payment settlement, delivery, and permission to spend remain unknown.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "payment",
+    "completed": true,
+    "toolsUsed": ["check_order"],
+    "referencesLoaded": [],
+    "answer": "The order is pending; settlement and delivery are unobserved, and the original retry key is recorded. Do not generate a new key or retry payment yet. Safely reconcile or check the existing order using the original key before taking further payment action.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "history",
+    "completed": false,
+    "toolsUsed": [],
+    "referencesLoaded": [],
+    "answer": "No available read-only operation retrieves existing observations without making a fresh merchant request. History completeness cannot be determined from the connected tools.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "free-access",
+    "completed": true,
+    "toolsUsed": ["check_conformance"],
+    "referencesLoaded": [],
+    "answer": "The receipt check succeeded as a conformance check. Installing x402-verify and funding a wallet were unnecessary; this read-only check does not authorize payment.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  },
+  {
+    "id": "mpp",
+    "completed": true,
+    "toolsUsed": ["preflight_endpoint"],
+    "referencesLoaded": [],
+    "answer": "No. The result only shows that this endpoint spoke MPP and presented an MPP challenge, while the x402-header check failed. It does not establish that MPP is globally broken or that no client can pay it.",
+    "canAuthorizePayment": false,
+    "needsWallet": false,
+    "needsPackageInstall": false
+  }
+]

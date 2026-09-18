@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-17",
+  "status": "revised Codex cohort complete: seven strict passes, eight correct API outputs and eight complete scope explanations; two-host acceptance not passed",
+  "branch": "codex/verifier-developer-activation",
+  "baseline": "../verifier-ps3-2026-09-16/readers/scores.json",
+  "baselineFilesUnchanged": true,
+  "frozen": "frozen.json",
+  "runtimeDeclarationAndExampleUnchanged": true,
+  "harnessTests": {
+    "passed": 4,
+    "failed": 0,
+    "log": "harness-tests.txt"
+  },
+  "packedActivationTest": {
+    "passed": 1,
+    "failed": 0,
+    "log": "activation-tests.txt",
+    "coverage": "Clean JavaScript and strict TypeScript NodeNext consumers, all four scenarios"
+  },
+  "regressionControls": "regression-controls.json",
+  "readerTrialsExecuted": 8,
+  "publicationPerformed": false,
+  "fullWorkerSuiteRerun": false,
+  "sourceHashes": {
+    "verifier/README.md": "b5916ffd3daff21c0d6bbeccc42d732da07413e77c617e39409a7884d4faa11f",
+    "research/verifier-ps3-2026-09-17/capture-verification.mjs": "759fb950ca146565454ea94a7ecd137e33f29829aca14fcce7536a23922698ea",
+    "research/verifier-ps3-2026-09-17/reader-harness.mjs": "2ca7d2d483a0ccbb105267ef2f000f27d8b8319398f42f41d996bc2cc96f5255",
+    "research/verifier-ps3-2026-09-17/reader-harness.test.mjs": "af8cec487cc753cb49ef22f15d4d56affb64796647a7a7342da37e5bc13fc4f0",
+    "research/verifier-ps3-2026-09-17/score-readers.mjs": "30c89c496488bc2518a60fd27e4cdb418ddb02b5c2047ed51071a25ad0472b4d",
+    "research/verifier-ps3-2026-09-17/score-readers.test.mjs": "46229bb554515259f623b682aeea719902ea3c0c9661c45f1a6deb75c00a6e46"
+  },
+  "baselineScorerTests": {
+    "passed": 2,
+    "failed": 0,
+    "log": "baseline-scorer-tests.txt"
+  },
+  "changedTarballFilesComparedWithFirstCohort": [
+    "package/README.md"
+  ],
+  "freshReaders": {
+    "scores": "readers/scores.json",
+    "authorization": "readers/authorization.json",
+    "traceReview": "readers/trace-review.json",
+    "installedIntegrity": "readers/installed-integrity.json",
+    "comparison": "comparison.json",
+    "codexGatePassed": false,
+    "fullTwoHostGatePassed": false,
+    "claude": "Rechecked September 17: loggedIn:false; no trial/sign-in attempted."
+  },
+  "readerScorerTests": {
+    "passed": 1,
+    "failed": 0,
+    "log": "scorer-tests.txt",
+    "missingWitnessControlObservedFailing": true
+  }
+}

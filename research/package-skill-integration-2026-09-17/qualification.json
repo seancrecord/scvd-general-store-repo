@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-17",
+  "base": "30e9e00b",
+  "fullSuite": {
+    "command": "npm test -- --maxWorkers=4",
+    "exitCode": 0,
+    "filesPassed": 753,
+    "passed": 14649,
+    "skipped": 1,
+    "failed": 0,
+    "durationSeconds": 1742.99,
+    "log": "full-suite.txt"
+  },
+  "focusedInheritedGuards": {
+    "passed": 28,
+    "files": 5,
+    "log": "reference-guards-after.txt"
+  },
+  "typecheck": "passed",
+  "independentVectors": "passed",
+  "cleanPackageActivation": "passed",
+  "evidenceTests": "passed",
+  "workerBuild": "passed",
+  "skillGraphAndPackaging": "passed",
+  "skillFormat": "passed",
+  "audit": "passed with four existing warnings within budget",
+  "claims": "passed",
+  "skillTreeSha256": "50c63823dacda48bc82b93bb9537df5c1bd589ad84f24d9e836f522b9efdb606",
+  "readerEvidence": "Integrated 6/7 retained; separate final date/MPP correction 2/2. Not a replacement seven-case cohort.",
+  "release": "Prepared x402-verify 1.4.0 and skill 3.17.0; merge and publication still pending at this record."
+}

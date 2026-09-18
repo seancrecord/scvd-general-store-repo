@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T19:54:06.332Z",
+  "integrated_main": "06501d2d",
+  "scoring_repair_pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/779",
+  "archived_corrected_score": "score.json",
+  "archived_corrected_scorer_sha256": "92d967af615072edb708301aa0dbe2ac02f59d38a264bd9cc081e7457a260765",
+  "integrated_scorer_sha256": "24d97f94f9cbb55d4fa0ac9d89ddea0f56176d5e04c7869e5dd712d871208f49",
+  "all_scored_results_identical": true,
+  "comparison": "Compared complete score objects excluding only scorer_sha256; no network or new acquisition.",
+  "original_acquisition_preserved": true,
+  "notes": [
+    "Adopt the already-merged scoring implementation and its schema-3/schema-4 regression coverage, preserving this branch's native isolation adapter.",
+    "The pre-integration scorer and tests remain in the private scoring-correction snapshot; their 134-control record is historical.",
+    "No Workers source, configuration or TypeScript test changed in the integration. The running full suite exercises the unchanged Worker suite; integrated buyer controls are run separately."
+  ]
+}

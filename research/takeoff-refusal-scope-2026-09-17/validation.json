@@ -1,0 +1,38 @@
+{
+  "recorded_at": "2026-09-17T21:39:29.450922+00:00",
+  "regression": {
+    "name": "compound command denial retains full invocation",
+    "without_fix": "failed: command_events was undefined",
+    "with_fix": "pass"
+  },
+  "buyer_instrument": {
+    "tests": 141,
+    "passed": 141,
+    "failed": 0
+  },
+  "typecheck": "pass",
+  "bundle_check": "pass",
+  "docs_check": "pass",
+  "full_suite": {
+    "state": "pass",
+    "files": 761,
+    "passed": 14700,
+    "skipped": 1,
+    "failed": 0,
+    "coverage": "Every discovered spec file appears exactly once across the four passing partitions.",
+    "partition_report_sha256": {
+      "1": "0712d374ad2a25e95313c336ddd56c3caf35a5e2d8d82c69dd3b9cf73e3d7ca6",
+      "2": "15d2b136299a87d5c7955ae62084679dc1cbaef718fb6f7cd57b97e74d8dd4e3",
+      "3": "27261e078aa1fd0bfdf4010a6f1ae43e8a731bcae5d339b34896357bc09e6370",
+      "4": "122dce4a53856d86025bdc38e8f81d517dbd078f73a8901ea0a46922d7d97db4"
+    }
+  },
+  "log_sha256": {
+    "buyer-tests": "6f0d85f93562c3399811fb4a8ae54af7849873365fae49c8c3c6bff794ff5121",
+    "typecheck": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "build": "c989c3b9e3ed221531025b9d2c61b94adb13c65940c77c50d86ff4cf429a9fa8",
+    "docs": "b6ed2956d110452e7062b6d524637b1e0af88511c9b0db6295d3cfddf77c9e19"
+  },
+  "retained_score_reproduction": "Both hosts: native trace hashes, retained hashes, signature truth and saved scores independently reproduced.",
+  "next_directed_plan": "Four-cell dry run validates; no process launched."
+}

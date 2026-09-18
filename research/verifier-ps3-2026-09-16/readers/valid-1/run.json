@@ -1,0 +1,11 @@
+{
+  "id": "valid-1",
+  "scenario": "valid",
+  "attempt": 1,
+  "cwd": "/private/tmp/scvd-reader-valid-1-arr374",
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMs": 49007,
+  "readmeUnchanged": true,
+  "tarballUnchanged": true
+}

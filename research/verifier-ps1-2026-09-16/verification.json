@@ -1,0 +1,268 @@
+{
+  "date": "2026-09-16",
+  "sourceBase": "6d29feb54a1d9a30dcf4f94b8aaa44fd9bf06079",
+  "branch": "codex/verifier-result-semantics",
+  "release": "1.4.0 (unpublished)",
+  "runtime": "Node v22.13.1; local Cloudflare Worker test runtime",
+  "qualificationStatus": "locally qualified; uncommitted, not integrated or published",
+  "regressionOriginal": {
+    "tests": [
+      39
+    ],
+    "pass": [
+      0
+    ],
+    "fail": [
+      39
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "regressionImplementation": {
+    "tests": [
+      39
+    ],
+    "pass": [
+      39
+    ],
+    "fail": [
+      0
+    ],
+    "skipped": [
+      0
+    ]
+  },
+  "targetedWorkerSuite": {
+    "exitCode": 0,
+    "files": 7,
+    "tests": 106
+  },
+  "evidenceSuites": {
+    "tests": [
+      75,
+      16,
+      5
+    ],
+    "pass": [
+      75,
+      16,
+      5
+    ],
+    "fail": [
+      0,
+      0,
+      0
+    ],
+    "skipped": [
+      0,
+      0,
+      0
+    ]
+  },
+  "typecheck": {
+    "exitCode": 0
+  },
+  "bundleDryRuns": {
+    "exitCode": 0,
+    "deployed": false
+  },
+  "docsCheck": {
+    "exitCode": 0,
+    "note": "Advisory document-age inventory only; not a factual review of every document."
+  },
+  "pack": {
+    "id": "x402-verify@1.4.0",
+    "name": "x402-verify",
+    "version": "1.4.0",
+    "size": 34588,
+    "unpackedSize": 103418,
+    "shasum": "b7f66fd3a5293a16e230d2e06324045afcbfeeea",
+    "integrity": "sha512-VsCReCbdOPPmCScq/ABf+BB8bieCUiWGmrewjpuYasKDYxvNA2hDgojcnrSDGj78jl1C3QICVLNSmHzsR72/iA==",
+    "filename": "x402-verify-1.4.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 3216,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 23464,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.d.ts",
+        "size": 1831,
+        "mode": 420
+      },
+      {
+        "path": "evidence-bundle.js",
+        "size": 9551,
+        "mode": 420
+      },
+      {
+        "path": "evidence-cli.mjs",
+        "size": 6740,
+        "mode": 493
+      },
+      {
+        "path": "fixtures/issuer-key-document.json",
+        "size": 344,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-expired-but-wellformed.json",
+        "size": 935,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-tampered-payload.json",
+        "size": 843,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/offer-valid.json",
+        "size": 1110,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-missing-payer.json",
+        "size": 762,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-valid.json",
+        "size": 1090,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/receipt-wrong-key.json",
+        "size": 961,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1494,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.d.ts",
+        "size": 8595,
+        "mode": 420
+      },
+      {
+        "path": "x402-verify.js",
+        "size": 41414,
+        "mode": 420
+      }
+    ],
+    "entryCount": 16,
+    "bundled": []
+  },
+  "standaloneTypeScriptConsumer": {
+    "exitCode": 0,
+    "strict": true,
+    "outcomes": [
+      {
+        "status": "valid",
+        "valid": true,
+        "reasons": [],
+        "decision": "checked"
+      },
+      {
+        "status": "invalid",
+        "valid": false,
+        "reasons": [
+          "signature_invalid"
+        ],
+        "decision": "failed"
+      },
+      {
+        "status": "unsupported",
+        "valid": false,
+        "reasons": [
+          "unsupported_algorithm",
+          "signature_not_checked"
+        ],
+        "decision": "outside support"
+      },
+      {
+        "status": "inconclusive",
+        "valid": false,
+        "reasons": [
+          "key_unavailable",
+          "signature_not_checked"
+        ],
+        "decision": "incomplete"
+      }
+    ]
+  },
+  "sourceSha256": {
+    "verifier/x402-verify.js": "cda02030c75f8f676a15184d7bebc15a5692b562242e08da75efa0a43381fdda",
+    "verifier/x402-verify.d.ts": "0b426b853b3b5f42b7b81aad5a7f29b269d2c58d88d63e7cf2dc3ff44d771130",
+    "verifier/README.md": "9376fe4745393ec40e8d7f5c45080a46d6106b52fffdf6924e81004921599908",
+    "verifier/package.json": "3669fbd4114e45b449e9084b066899525ece39a2bdc94abd42f27e4b7c078441",
+    "verifier/result-semantics.test.mjs": "74879759ddf7a08646bd2dcc03fea4a360c5d35fb0dfe5b92778761b1723cd63"
+  },
+  "limits": [
+    "Controlled local cases, not a human/agent activation study.",
+    "No new algorithms or additional runtime support qualified.",
+    "No historical records rewritten, commit, push, deploy, npm publication or external message."
+  ],
+  "fullSuiteScopeNote": "The full run began before the final legacy missing-WebCrypto guard. Final direct-caller and evidence suites, packed consumer, typecheck and dry-run builds were rerun after that guard.",
+  "finalDirectCallerSuite": {
+    "exitCode": 0,
+    "files": 8,
+    "tests": 119
+  },
+  "preGuardSnapshotSha256": {
+    "verifier/x402-verify.js": "71617f586dc42eb7262b81305566bd69aa3f4fd76f8dfc922fd9a6c3b7a0284b",
+    "verifier/x402-verify.d.ts": "521fd6ce4a1a67f2fe7c67f5b110253e38f6fcabda75d23a266b957eb328d01d",
+    "verifier/README.md": "1bb21afa3aab3546e32afb13cca9d59f09d48552f28b6621e58dc17a6daf9a55",
+    "verifier/package.json": "3669fbd4114e45b449e9084b066899525ece39a2bdc94abd42f27e4b7c078441",
+    "verifier/result-semantics.test.mjs": "bf8d1f202c147fdedcfa6ccdd2840acf6d3bebf410a1a9ca12b021731dfbbe08"
+  },
+  "fullRepositorySuite": {
+    "exitCode": 0,
+    "filesPassed": 748,
+    "testsPassed": 14522,
+    "testsSkipped": 1,
+    "durationSeconds": 1595.46
+  },
+  "logs": {
+    "fullRepository": {
+      "path": "/private/tmp/scvd-ps1-full.log",
+      "sha256": "4a1056d90b6baf0a093a838b23a7cb86a263cab290d472aee3f05d5beec489fe"
+    },
+    "finalDirectCallers": {
+      "path": "/private/tmp/scvd-ps1-final-targeted.log",
+      "sha256": "a635ab3d5ca52982d6a60e018721cfd9e9f2aec6cd5d8e4150b905082c5b02e2"
+    },
+    "regressionOriginal": {
+      "path": "/private/tmp/scvd-ps1-final-red.log",
+      "sha256": "4fca7788c23ffde2db39118246dfa24f6464a941f0d1afb8bffd7b5ad105763a"
+    },
+    "regressionImplementation": {
+      "path": "/private/tmp/scvd-ps1-green.log",
+      "sha256": "68a30d30a842c391f78f663c0a2a0cd0b5f3f4f31d5674212262c5b6ee791f2d"
+    },
+    "evidence": {
+      "path": "/private/tmp/scvd-ps1-evidence.log",
+      "sha256": "3c5deeb89895e4db8fb02c3205a2127c993a58bac54822791caf6fb4859c6e4d"
+    },
+    "typecheck": {
+      "path": "/private/tmp/scvd-ps1-types.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "build": {
+      "path": "/private/tmp/scvd-ps1-build.log",
+      "sha256": "44ce07bd2a0d911c100272488c36d275c292b68952074261604a21a0a85a3bae"
+    }
+  }
+}

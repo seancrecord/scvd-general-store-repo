@@ -1,0 +1,39 @@
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'skills@1.5.26',
+npm warn EBADENGINE   required: { node: '>=22.20.0' },
+npm warn EBADENGINE   current: { node: 'v22.13.1', npm: '10.9.2' }
+npm warn EBADENGINE }
+
+│
+●   codex  Agent detected — installing non-interactively
+[?25l│
+◇  Source: https://github.com/seancrecord/scvd-general-store-repo.git
+[?25h[?25l│
+◒  Cloning repository…[1G[J◐  Cloning repository…[1G[J◓  Cloning repository…[1G[J◑  Cloning repository…[1G[J◒  Cloning repository…[1G[J◐  Cloning repository…[1G[J◓  Cloning repository…[1G[J◑  Cloning repository…[1G[J◒  Cloning repository….[1G[J◐  Cloning repository….[1G[J◓  Cloning repository….[1G[J◑  Cloning repository….[1G[J◒  Cloning repository….[1G[J◐  Cloning repository….[1G[J◓  Cloning repository….[1G[J◑  Cloning repository….[1G[J◒  Cloning repository…..[1G[J◐  Cloning repository…..[1G[J◓  Cloning repository…..[1G[J◑  Cloning repository…..[1G[J◒  Cloning repository…..[1G[J◐  Cloning repository…..[1G[J◓  Cloning repository…..[1G[J◑  Cloning repository…..[1G[J◒  Cloning repository…...[1G[J◐  Cloning repository…...[1G[J◓  Cloning repository…...[1G[J◑  Cloning repository…...[1G[J◒  Cloning repository…...[1G[J◐  Cloning repository…...[1G[J◓  Cloning repository…...[1G[J◇  Repository cloned
+[?25h[?25l│
+[1G[J◇  Found 3 skills
+[?25h│
+●  Selected 1 skill: scvd-x402-verification
+
+│
+◇  Installation Summary ────────────────────╮
+│                                           │
+│  ./.agents/skills/scvd-x402-verification  │
+│    copy → Codex, Claude Code              │
+│                                           │
+├───────────────────────────────────────────╯
+[?25l│
+[1G[J◇  Installation complete
+[?25h
+│
+◇  Installed 1 skill ───────────────────────────╮
+│                                               │
+│  ✓ scvd-x402-verification (copied)            │
+│    → ./.agents/skills/scvd-x402-verification  │
+│    → ./.claude/skills/scvd-x402-verification  │
+│                                               │
+├───────────────────────────────────────────────╯
+
+│
+└  Done!  Review skills before use; they run with full agent permissions.
+

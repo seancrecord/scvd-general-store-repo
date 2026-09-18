@@ -1,0 +1,14 @@
+{
+  "status": "inconclusive",
+  "reasonCodes": ["key_unavailable", "signature_not_checked"],
+  "scope": "Key resolution returned HTTP 503, so the receipt signature was not verified. This output proves only that verification could not complete.",
+  "doesNotEstablish": [
+    "merchant identity",
+    "payment settlement",
+    "service delivery",
+    "authorization to spend"
+  ],
+  "outputFile": "/private/tmp/scvd-reader-unavailable-key-1-ctYVp3/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": ["Issuer key unavailable; signature not checked."]
+}

@@ -245,7 +245,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     return this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<PurchaseIntent>("purchase");
       if (prior) {
-        if (!prior.delivery && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+        if ((!prior.delivery || (prior.mpp && !prior.mpp.accounted)) && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
         return { started: false, record: JSON.stringify(prior) };
       }
       if (proposal.observation_digest) {
@@ -382,10 +382,32 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     }
   }
 
+  async accountMppPurchase(): Promise<void> {
+    const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
+    if (!record?.mpp || record.mpp.accounted || record.state !== "settled") return;
+    const { recordMppSale } = await import("@/services/mpp-sales");
+    await recordMppSale(this.env, record);
+    await this.ctx.storage.transaction(async txn => {
+      const latest = await txn.get<PurchaseIntent>("purchase");
+      if (latest?.mpp) await txn.put("purchase", { ...latest, mpp: { ...latest.mpp, accounted: true } });
+    });
+  }
+
+  /** Same paid journal as recovery, so a lost response never mints a second good. */
+  async completeMppPurchase(delivery: Record<string, unknown>): Promise<void> {
+    await this.ctx.storage.transaction(async txn => {
+      const record = await txn.get<PurchaseIntent>("purchase");
+      if (!record?.mpp || record.state !== "settled") throw new Error("MPP purchase not confirmed");
+      if (!record.delivery) await txn.put("purchase", { ...record, delivery });
+      if (!await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+    });
+    await this.accountMppPurchase();
+  }
+
   async schedulePurchaseRecovery(): Promise<void> {
     await this.ctx.storage.transaction(async (txn) => {
       const record = await txn.get<PurchaseIntent>("purchase");
-      if (record && !record.delivery && record.state !== "not_settled" && !await txn.getAlarm()) {
+      if (record && (!record.delivery || (record.mpp && !record.mpp.accounted)) && record.state !== "not_settled" && !await txn.getAlarm()) {
         await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
       }
     });
@@ -395,7 +417,15 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     if (await this.watches.repair()) return;
     if (await this.patronage.repair()) return;
     const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
-    if (!record || record.delivery || record.state === "not_settled") return;
+    if (!record || record.state === "not_settled") return;
+    if (record.delivery) {
+      if (record.mpp && !record.mpp.accounted) {
+        await this.ctx.storage.setAlarm(purchaseRecoveryAlarmAt(300_000));
+        await this.accountMppPurchase();
+      }
+      await this.ctx.storage.deleteAlarm();
+      return;
+    }
     // Unsupported goods/unknown rails retain their record for the delivery
     // desk. Do not schedule an endless no-op for every successful sale.
     if (record.state === "settled" && !record.publication && !supportsArtifactRecovery(record.item)) return;
@@ -420,6 +450,8 @@ export class PaidRecoveryStore extends DurableObject<Env> {
         await this.ctx.storage.deleteAlarm();
         return;
       }
+      // Complete the durable accounting obligation even when the goods already exist.
+      if (latest.mpp) await this.accountMppPurchase();
       const delivery = await deliverRecordedPurchase(this.env, latest);
       if (!delivery) return;
       await this.ctx.storage.transaction(async (txn) => {
@@ -452,6 +484,22 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       await txn.put("attempt", { digest, token, purchase } satisfies RecoveryAttempt);
       return { kind: "claimed", token };
     });
+  }
+
+  /** Reconciliation needs the protocol, never the retained receipt or goods. */
+  async readSettlementProtocol(identity: RecoveryIdentity): Promise<"mpp" | "x402" | null> {
+    const artifact = await this.ctx.storage.get<ArtifactPurchase>("artifact");
+    const attempt = artifact ? undefined : await this.ctx.storage.get<RecoveryAttempt>("attempt");
+    const purchase = artifact?.purchase ?? attempt?.purchase;
+    if (!purchase || !owns(purchase, identity)) return null;
+    const headers = purchase.payment.settleHeaders;
+    if (!headers || typeof headers !== "object") throw new Error("Settlement evidence unavailable");
+    const names = Object.entries(headers).filter(([, value]) => typeof value === "string" && value.length > 0)
+      .map(([name]) => name.toLowerCase());
+    const mpp = names.includes("payment-receipt");
+    const x402 = names.includes("payment-response") || names.includes("x-payment-response");
+    if (mpp === x402) return null;
+    return mpp ? "mpp" : "x402";
   }
 
   /** Read-only: a missing result must never acquire permission to mint. */

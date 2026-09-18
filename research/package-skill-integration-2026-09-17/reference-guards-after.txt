@@ -1,0 +1,11 @@
+(node:16441) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /private/tmp/scvd-package-skill-milestone
+
+
+ Test Files  5 passed (5)
+      Tests  28 passed (28)
+   Start at  11:23:53
+   Duration  17.35s (transform 27.93s, setup 87ms, import 49.04s, tests 176ms, environment 0ms)
+

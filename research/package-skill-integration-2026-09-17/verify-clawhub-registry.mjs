@@ -1,0 +1,26 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { pathToFileURL } from 'node:url';
+import { execFileSync } from 'node:child_process';
+const repo=process.cwd();
+const {readSkillTree}=await import(pathToFileURL(path.join(repo,'scripts/skill-bundle.mjs')));
+const {skillFingerprint}=await import(pathToFileURL(path.join(repo,'scripts/lib/skill-tree.mjs')));
+const version=fs.readFileSync('src/store/spec.ts','utf8').match(/export const SKILL_VERSION = "(\d+\.\d+\.\d+)";/)?.[1];
+assert.ok(version);
+const slug='scvd-general-store';
+const cli='/Users/seanrecord/.npm/_npx/3180710f30256dd9/node_modules/clawhub/bin/clawdhub.js';
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'scvd-public-skill-'));
+const run=args=>execFileSync(process.execPath,[cli,...args],{cwd:dir,encoding:'utf8',stdio:['ignore','pipe','pipe']});
+const inspection=JSON.parse(run(['inspect',slug,'--version',version,'--files','--json']));
+const installedOutput=run(['--workdir',dir,'--dir','skills','--no-input','install',slug,'--version',version]);
+const expected=readSkillTree(path.join(repo,'skills',slug));
+const installed=path.join(dir,'skills',slug);const actual={};
+for(const [name,text] of Object.entries(expected)){actual[name]=fs.readFileSync(path.join(installed,name),'utf8');assert.equal(actual[name],text,name);}
+const extras=[];function walk(root){for(const entry of fs.readdirSync(root,{withFileTypes:true})){const full=path.join(root,entry.name);assert.equal(entry.isSymbolicLink(),false);if(entry.isDirectory())walk(full);else{const rel=path.relative(installed,full);if(!Object.hasOwn(expected,rel))extras.push(rel);}}}walk(installed);
+for(const extra of extras)assert.ok(extra.startsWith('.clawhub/')||extra==='_meta.json',`Unexpected extra file: ${extra}`);
+assert.equal(skillFingerprint(actual),skillFingerprint(expected));
+const record={date:new Date().toISOString(),slug,version,cliVersion:'0.23.3',directory:dir,inspection,installedOutput,files:Object.keys(actual),treeSha256:skillFingerprint(actual),clientMetadata:extras,scope:'Normal exact-version public ClawHub install; no force or scan bypass. All canonical payload bytes and complete reference graph match; metadata extras are listed separately. No host reading/reliability claim.'};
+fs.writeFileSync(path.join(repo,'research/package-skill-integration-2026-09-17/skill-registry-installation.json'),JSON.stringify(record,null,2)+'\n');
+console.log(JSON.stringify({version,files:Object.keys(actual).length,treeSha256:record.treeSha256,clientMetadata:extras,directory:dir}));

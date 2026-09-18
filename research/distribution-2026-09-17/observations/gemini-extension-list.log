@@ -1,0 +1,13 @@
+✓ scvd-general-store (0.2.4)
+ ID: f4062d29bc36ab0f390674c0d20229dd1aeaf46fc7590e8141c40db8f8efb354
+ name: 3050387aa5df2d482a690c412f1d77fb93b129facf8658923878797504616071
+ Path: /private/tmp/scvd-gemini-qualification/.gemini/extensions/scvd-general-store
+ Source: https://github.com/seancrecord/scvd-general-store-repo (Type: git)
+ Ref: 2aba2639c0dc5e6954f6ce0180f6288f43af2702
+ Enabled (User): true
+ Enabled (Workspace): true
+ MCP servers:
+  scvd-store
+ Agent skills:
+  scvd-x402-verification: Check an x402 endpoint before paying it, and check the receipt after. Free instruments first; a paid signed observation only when durable third-party evidence is actually needed.
+  scvd-general-store: A live x402 practice counter from $0.001. Verify any issuer's signed receipts, including competitors; inspect endpoints, diagnose payments, retrieve host history, interpret MPP, test buyers/sellers, or use SCVD's general store. Free checks need no wallet; live purchases settle real USDC.

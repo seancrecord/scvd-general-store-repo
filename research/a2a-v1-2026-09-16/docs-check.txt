@@ -1,0 +1,49 @@
+
+> scvd-general-store@0.1.0 docs:check
+> node scripts/docs-check.mjs
+
+  QUIET FOR 14+ DAYS - read each and decide. Silence is not
+  automatically rot, but it is where rot goes unnoticed.
+
+   *  43d  SECURITY.md  (31 lines, 42d behind src/)
+   *  42d  .github/ISSUE_TEMPLATE/false-claim.md  (14 lines, 42d behind src/)
+   *  42d  .github/ISSUE_TEMPLATE/payment-misbehaved.md  (21 lines, 42d behind src/)
+   *  42d  .github/pull_request_template.md  (12 lines, 42d behind src/)
+   *  42d  CODE_OF_CONDUCT.md  (21 lines, 42d behind src/)
+   *  42d  NOTICE.md  (30 lines, 42d behind src/)
+   *  36d  tab/TEST_PLAN.md  (273 lines, 36d behind src/)
+   *  28d  docs/CV_TEST_SEGMENTS.md  (259 lines, 28d behind src/)
+   *  28d  docs/ERC8183_EVALUATOR.md  (122 lines, 28d behind src/)
+   *  27d  CONTRIBUTING.md  (42 lines, 27d behind src/)
+   *  27d  THE_PAPER_KEY.md  (252 lines, 27d behind src/)
+   *  27d  docs/COMMISSION_DESK.md  (245 lines, 27d behind src/)
+   *  27d  registry/field-vocab.md  (39 lines, 27d behind src/)
+   *  23d  docs/EVIDENCE_ARCHITECTURE_V1.md  (282 lines, 23d behind src/)
+   *  21d  docs/CATALOGUE_CONSTRAINTS_2026-08.md  (359 lines, 21d behind src/)
+   *  21d  docs/CLIENT_ABORTS_AND_PUBLISHED_COUNTS_2026-08.md  (578 lines, 21d behind src/)
+   *  21d  docs/DISCOVERY_SURFACES_2026-08.md  (542 lines, 21d behind src/)
+   *  21d  docs/GAP_FINDING_SERIES_2026-08.md  (46 lines, 21d behind src/)
+   *  21d  docs/LIBRARY_VS_STORE_2026-08.md  (406 lines, 21d behind src/)
+   *  21d  docs/RESTORE_DRILL.md  (114 lines, 21d behind src/)
+   *  21d  docs/SILENT_DEFAULTS_2026-08.md  (307 lines, 21d behind src/)
+   *  20d  docs/G2_OPERATOR_LINKING_RULING_2026-08.md  (122 lines, 20d behind src/)
+   *  20d  scripts/render-test/README.md  (132 lines, 20d behind src/)
+   *  19d  docs/SPEND_CAP_RULINGS_2026-08.md  (86 lines, 19d behind src/)
+   *  19d  docs/UNINSTRUMENTED_FAILURES_2026-08.md  (271 lines, 19d behind src/)
+   *  18d  docs/SETTLEMENT_LANE_SCOPE_2026-08.md  (113 lines, 18d behind src/)
+   *  17d  docs/DERIVED_ROSTERS_2026-08.md  (120 lines, 16d behind src/)
+   *  16d  docs/WEBMCP_AND_MCP_APPS_2026-08.md  (1663 lines, 16d behind src/)
+   *  15d  docs/EVIDENCE_LAYER_REVIEW_2026-08.md  (1773 lines, 15d behind src/)
+   *  15d  docs/OBSERVATORY.md  (1757 lines, 15d behind src/)
+   *  15d  docs/PROVENANCE_CHECK_SPEC_2026-08.md  (167 lines, 15d behind src/)
+   *  14d  docs/CV_BATCHES_2026-09.md  (292 lines, 14d behind src/)
+   *  14d  docs/DEMO_SCRIPT_2026-09.md  (59 lines, 14d behind src/)
+   *  14d  docs/PROMPTS_2026-09-02.md  (126 lines, 14d behind src/)
+
+  Facts that CAN be recomputed are guarded by the suite, not here:
+    test/doc-drift.spec.ts          outbound copy vs the code
+    test/derived-not-typed.spec.ts  served surfaces vs the code
+    test/skill-parity.spec.ts       the two skill documents
+    test/published-record.spec.ts   the published bundle
+  Those fail the build. This only reports what no test can judge.
+

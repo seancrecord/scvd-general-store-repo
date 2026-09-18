@@ -1,0 +1,27 @@
+The install and execution completed successfully. Here's the result:
+
+```json
+{
+  "status": "inconclusive",
+  "reasonCodes": ["key_unavailable", "signature_not_checked"],
+  "scope": "Not verified: key-resolution: key document HTTP 503; signature: not checked: no key to check against.",
+  "doesNotEstablish": [
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+    "authorization of the signing key for resourceUrl, now or at issuance"
+  ],
+  "outputFile": "/private/tmp/scvd-claude-reader-unavailable-key-1-09M8ha/observed.json",
+  "canAuthorizePayment": false,
+  "blockers": []
+}
+```
+
+**How to explain this**, per the README's guidance for the two active reason codes:
+
+- `key_unavailable`: the injected `fetch` returned a simulated 503 for the key lookup, so no key document was available to check against. Supply independently established key bytes or retry the key source — absence today doesn't disprove historical validity.
+- `signature_not_checked`: the `signature` check has `status: "unobserved"` because there was no key to verify against. This is not evidence the signature is bad — it's simply unobserved.
+
+Per the README, `scope` and every `doesNotEstablish` entry must be retained verbatim alongside `status`/`reasonCodes` whenever this result is shown or forwarded (done above). `canAuthorizePayment` is `false` here for two independent reasons: the result isn't `valid` to begin with, and even a `valid` result would never itself authorize payment — that's always a separate caller policy decision the README explicitly excludes from this check.
+
+**Notes on the run**: install succeeded (`added 1 package`, offline/ignore-scripts/no-audit/no-fund as specified), the consumer script (`verify.mjs`, a direct copy of the README's quickstart) ran through `capture-verification.mjs` with `exitCode: 0`, and stdout was captured to `.verification-runs/a03ef9a8-...stdout.txt` and copied verbatim to `observed.json`. No blockers encountered.

@@ -24,6 +24,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { USDC_BASE, readDoorRail } from "./lib/paid-doors.mjs";
 import { BALANCE_RESIDUAL, compareToFloor, tally } from "./lib/floor-check.mjs";
+import { useEnvProxy } from "./lib/proxy-fetch.mjs";
+
+// Node's fetch ignores HTTPS_PROXY; in a proxied sandbox that reads as
+// "host unreachable" when the host is merely unrouted. See the module.
+await useEnvProxy();
 
 const RPC = process.env.BASE_RPC_URL ?? "https://mainnet.base.org";
 const UA = "scvd-floor-check/1.0 (+https://scvd.store/what) read-only";

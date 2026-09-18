@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { adminPurchaseRoutes } from "@/routes/admin-purchases";
 import { basicAuth } from "hono/basic-auth";
 import { isHouseWallet } from "@/lib/channel";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
@@ -313,8 +314,18 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
 };
 
+// Applied before authentication so refusals also cannot be cached.
+for (const path of ["/admin/purchases", "/admin/purchases/*"]) adminRoutes.use(path, async (c, next) => {
+  c.header("Cache-Control", "no-store");
+  c.header("Vary", "Authorization, Accept");
+  await next();
+  // HTTPException responses from the auth gate replace pre-set headers.
+  c.res.headers.set("Cache-Control", "no-store");
+  c.res.headers.set("Vary", [...new Set([...(c.res.headers.get("Vary") ?? "").split(",").map(value => value.trim()).filter(Boolean), "Authorization", "Accept"])].join(", "));
+});
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
+adminRoutes.route("/admin/purchases", adminPurchaseRoutes);
 
 /**
  * THE SIGNING DESK — POST /admin/wba/sign (2026-09-04).
@@ -604,7 +615,7 @@ function stockNotice(
  */
 adminRoutes.get("/admin/take", async (c) => {
   const notes: string[] = [];
-  const [take, allTimeStats] = await Promise.allSettled([
+  const [take, allTimeStats, operations] = await Promise.allSettled([
     import("@/services/books-summary").then(({ takeSummary }) =>
       takeSummary(c.env),
     ),
@@ -613,6 +624,7 @@ adminRoutes.get("/admin/take", async (c) => {
     import("@/services/stats").then(({ computeStatsDiagnosed }) =>
       computeStatsDiagnosed(c.env),
     ),
+    import("@/lib/payment-operations").then(({ readPaymentOperations }) => readPaymentOperations(c.env)),
     /**
      * The rail split rides the certificate walk again, which is where
      * it always belonged: this page is the one paying for that walk
@@ -623,6 +635,7 @@ adminRoutes.get("/admin/take", async (c) => {
   ]);
   const books = shelf(allTimeStats, null, "all-time stats", notes);
   const body = renderTakePage({
+    operations: shelf(operations, null, "HTTP payment operations", notes),
     stats: books?.stats,
     take: shelf(take, null, "the take", notes),
     allTime: books

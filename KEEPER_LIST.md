@@ -64,6 +64,15 @@ build, it is on the roadmap.
   compact reader has shipped; remaining population coverage is ROADMAP VQ4.
   The directory note was sent September 9; no methodology reply is recorded here.
 
+- **x402-verify 1.4.0 and skill 3.17.0 published (2026-09-17) — no press
+  needed.** Both went out from the Actions buttons on the #769 merge commit:
+  npm with provenance, ClawHub through the guarded workflow. A fresh registry
+  install ran the packaged example's four outcomes and the strict TypeScript
+  consumer; ClawHub's scan came back clean and a normal exact-version install
+  from your machine matched all eleven files and the tree hash. Evidence:
+  `research/package-skill-integration-2026-09-17/release.json`; ledger entry
+  in DISTRIBUTION.md; closeout in `docs/PACKAGE_SKILL_HANDOFF_2026-09-17.md`.
+
 - **x402-verify 1.3.0 published (2026-09-09).** The evidence CLI is on
   npm with verified provenance. A registry installation verified the
   saved receipt and reported its missing evidence; the subsequent 1.3.0
@@ -978,24 +987,10 @@ what you ruled and what is still yours to look at.
   CONFIRMED (Spamhaus DBL, read 09-12) — the LOOK is under Walks,
   and the reply should say so plainly.
 
-- **RECORD THE LISTINGS AND ROSTER BASELINES — after PR 525 merges.**
-  The Saturday job gained a third battery that re-reads all forty-nine
-  venue rows served at `/.well-known/trust.json`, and it has nothing to
-  compare against until a baseline exists. From a clone on a machine
-  with ordinary internet — NOT the agent's sandbox, which reads 43 of
-  49 as unreachable and would bake that in as truth:
-
-      git checkout main && git pull
-      npm run listings:check -- --record
-      git add docs/listings/ && git commit -m "Record the listings and roster baselines" && git push
-
-  No `npm install` needed; the battery is Node builtins and fetch.
-  Writes `docs/listings/observation.json` (mirrors) and
-  `docs/listings/roster.json` (the roster). Expect some rows to read
-  `silent` on the first pass and do NOT read those as delistings — a
-  venue that renders in JavaScript serves HTML naming nobody. The
-  first recording freezes what is true; the alarm only fires when a
-  row later moves DOWN from what it recorded.
+- **Listings/roster baselines already recorded (reconciled 2026-09-17).**
+  `docs/listings/observation.json` and `docs/listings/roster.json` both carry
+  September 12 readings. The Saturday workflow has a comparison baseline;
+  the old first-recording press is closed. Routine checks remain read-only.
 
 - **Package presses closed September 10.** CLI 0.3.0, Sign 1.0.3
   and corpus client 0.1.0 published through the provenance workflow.
@@ -1015,6 +1010,12 @@ what you ruled and what is still yours to look at.
   is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.
 
 ### Decisions that unblock the roadmap
+
+- **RULED 2026-09-16 — takeoff readiness and A2A compatibility.** Buyer
+  before spending is first; canonical A2A v1 retains an explicitly separated,
+  bounded existing 0.3 contract, with no new legacy features. The keeper's
+  answer: "latter agreed lets do it". TR1 is the first implementation slice;
+  [design](docs/TAKEOFF_READINESS_2026-09.md). No new payment ceiling inferred.
 
 
 
@@ -1087,6 +1088,66 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **LOOK / PRESS — distribution follow-through (2026-09-17).**
+  [Live findings and prepared submissions](research/distribution-2026-09-17/README.md):
+  five ERC-8004 directories show SCVD; 8004scan transport health and trust8004
+  metadata need operator follow-ups. Agentscan also has an AI taxonomy conflict
+  despite correctly parsing the canonical record. AgentERC did not return the identity;
+  HOL/AgentRanking reads failed. Cisco search returned no SCVD result; Anro's
+  publisher query returned zero. Continue the existing AGNTCY access request,
+  then sign/publish the corrected record and verify remote discovery. The
+  historical CID does not cover the corrected bytes.
+  On the keeper's authorization, Awesome Copilot
+  [#3255](https://github.com/github/awesome-copilot/issues/3255) was submitted;
+  automated validation, both skills and install checks passed again for 0.2.4
+  at immutable pin `e7f6c068`; maintainer review pending.
+  8004scan [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51)
+  was filed after fresh reproduction. [trust8004 #1](https://github.com/trust8004/requests-issues/issues/1)
+  now records its freshly reproduced source/cached-field mismatch. No duplicate requests needed. Other operator
+  messages and the AGNTCY discussion follow-up are in the same package. Gemini gallery
+  readback remains outstanding; the repository topic is the crawler opt-in. A fresh isolated Gemini CLI 0.60.0 install from
+  the immutable release PR commit discovered both skills and connected SCVD MCP;
+  a model tool call and gallery listing remain unverified.
+  OpenAI skill update DONE by the keeper September 17; upload/update task
+  closed. Review/publication status of that update is not independently verified.
+  A2A Directory already lists SCVD; two new community API submissions failed
+  (503 and 404), with no new listing confirmed. MPP is now live for Context
+  Anchor: the 21:13 UTC
+  read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
+  and OpenAPI capabilities. Other products are upcoming. Official MPP
+  [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  MPPScan still needs discovery qualification; the checker’s Base-network
+  mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
+  The directory-facing
+  `x-payment-info.protocols` currently lists only x402.
+  [Live receipt](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+  UCP merchant intake remains separate from PS9's
+  inspection experiment. OASF clarification: endpoint only, no Cisco/Anro submission.
+
+- **GitHub catalogs, September 17 follow-through.** Awesome ERC-8004
+  [#111](https://github.com/sudeepb02/awesome-erc8004/issues/111) submitted for
+  SCVD's public discovery implementation; review pending, not listed. Continue
+  that issue. [Other catalog findings and prepared entries](research/distribution-2026-09-17/GITHUB_CATALOGS.md)
+  cover WebMCP, agentic commerce, x402 and Cline. WebMCP already has open
+  [PR #41](https://github.com/webmachinelearning/awesome-webmcp/pull/41); continue
+  it with the current browser-tool scope, not another submission. Merit [PR #715](https://github.com/Merit-Systems/awesome-agentic-commerce/pull/715)
+  submitted; existing x402 [PR #1024](https://github.com/xpaysh/awesome-x402/pull/1024)
+  updated. Both await review. Cline needs its own installation
+  test and icon; do not attest that another host's test qualifies it.
+
+- **Submitted / external review — GitHub MCP and AGNTCY admission (2026-09-17).**
+  The keeper-authorized [GitHub MCP onboarding request](https://github.com/github/github-mcp-server/discussions/1257#discussioncomment-18487205) and
+  [AGNTCY participation/representation request](https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204) were sent after reading
+  both complete discussions and finding no prior SCVD request. Continue those
+  threads; no duplicate submission. GitHub's registry search still returned zero
+  while the official MCP registry returned active/latest. AGNTCY publication,
+  current-byte signing and second-peer discovery remain unverified. The older
+  local signature and PermissionDenied are historical observations.
+  [Sent bodies and receipts](research/distribution-2026-09-17/RELEASE.md) preserve
+  the requested access route and taxonomy/MCP/x402 feedback. Neither request is
+  an acceptance, directory listing or verification badge.
+
+
 - **RULE: the crawler 404s are a secrets scan, not crawlers
   (2026-09-11).** The 4xx tab you pasted names the top paths:
   `/stripe.json`, `/ssl/localhost.key`, `/@fs/app/.env.local`,
@@ -1153,13 +1214,12 @@ what you ruled and what is still yours to look at.
   `spaces/scvd-x402-verifier/`, read the MCP schema, file the
   hf-discover search). PRO now is the alternative if a month matters.
 
-- **The ChatGPT plugin: your press, confirmed (2026-09-11).** You
-  submitted "SCVD General Store" on 2026-09-03 (DISTRIBUTION §5b);
-  it points at the full `/mcp` door and sits in review. The open
-  risk there is unchanged: the scan lists six `buy_*` tools and
-  OpenAI's guideline bars digital commerce. If the review objects,
-  the resubmission is the five-tool verifier already served at
-  `/mcp/verifier` — the same door the Hugging Face Space wraps.
+- **The ChatGPT verifier plugin is published (2026-09-17).** The
+  [publication record](registry/openai-plugin-verifier-submission.md) supersedes
+  the old full-store review row: SCVD x402 Verifier 1.0.0 is Published with
+  `/mcp/verifier`. The keeper completed the skill update September 17;
+  cross off the upload/update press. Do not infer review approval or publication
+  of the updated version from that report alone.
 
 - **RULE, small: re-paste the WAF rule (2026-09-11, evening).** The
   user-agent rule you pressed worked and, within the hour, an
@@ -1176,16 +1236,14 @@ what you ruled and what is still yours to look at.
   Then the one-week look around 2026-09-18 as before: the 4xx bill
   moves to 403s, the 200s do not move.
 
-- **GitHub Agent Finder: CV's PR is open; two entries and one number
-  to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
-  2026-09-06 with the store skill alone; no review as of 09-11. Its
-  description says "from $0.004" where the SKILL.md and the store
-  say $0.001 — edit the PR body. The before-you-pay skill and the
-  MCP server entry drafted in `registry/agentfinder/catalog/seancrecord/`
-  are not in it: push them onto CV's branch before merge, or a second
-  PR after. Hugging Face: CV reports a submission; paste the link so
+- **GitHub Agent Finder: existing PR #34 remains open (2026-09-17).**
+  The [reconciliation](research/distribution-admission-2026-09-16/README.md)
+  confirms both skills and MCP/plugin descriptors are already in the request,
+  superseding the September 11 missing-entry instructions. Continue that PR;
+  do not submit duplicate entries. Awesome Copilot is a separate issue-form
+  channel, submitted as #3255 above. Hugging Face: CV reports a submission; paste the link so
   it gets a row (nothing on file says where). The tab still has no
-  entry until its registry version is republished.
+  entry in that PR; its registry-version blocker is now cleared.
 
 - **Desvela Registry Watch activation (2026-09-06).** After the receiver
   is deployed at `https://scvd.store/webhooks/desvela-registry`, register
@@ -1207,41 +1265,17 @@ what you ruled and what is still yours to look at.
   Weekly discovery checking is scheduled in the active task.
 
 
-- **The ChatGPT plugin in review is the wrong shape by your own
-  memo (2026-09-03 evening).** "SCVD General Store" was submitted
-  that morning; the memo says submit "SCVD x402 Verifier" with five
-  read-only tools. RULE: withdraw and resubmit, submit the verifier
-  as a second plugin, or keep the one in review. The tool subset
-  is roadmap A3 and builds the day you choose. Two more rulings
-  from the same memo sit in
-  `docs/DELEGATED_AGENT_PLAN_2026-09.md`: the package name for the
-  verification front door (`x402-verify` 1.1, recommended, or a
-  scoped `@scvd/...`), and the A2A task endpoint's shape (the
-  spec's `message/send`, recommended).
+- **September 3 plugin-shape ruling superseded.** The focused verifier
+  is published; use its current item above. Its implemented tool subset,
+  the released verification package and the live A2A card supersede the
+  old request to choose their shapes.
 
-- **Publish the two MCP servers at their new versions.** Both
-  now speak MCP 2026-07-28 beside the handshake revisions
-  (`server/discover`, per-request `_meta`, cache hints), every
-  tool shows a worked call, the tab's parameters are all
-  described. READ BY MACHINE 2026-09-03 (`npm run
-  listings:check`, roadmap V4): the registry lists
-  `general-store` 0.2.2 with the old description against
-  0.2.3 in `server.json`, and `tab` 0.5.0 against 0.11.1 —
-  npm already carries 0.11.1 (you pressed it 15:04 UTC), so
-  step 1 below is done and step 2 is the one left. The same
-  read found x402-list's copy without the doctrine sentence
-  and counting 31 doors of 32 (their resubmit, below).
-  ClawHub and agentic.market refuse the agent's egress; the
-  Saturday job reads them from CI. Nothing outside reads it
-  until you press:
-  1. Actions → "Publish npm package" → `scvd-tab`, version
-     `0.11.0`, dry run then real. The `--provenance` flag is
-     in the workflow; a hand publish from the laptop is why
-     VerifyMCP's provenance row reads Fail today.
-  2. Actions → "Publish MCP registry listing" → `0.2.3`
-     (store), then the tab's `server.json` at `0.11.0`.
-  3. `wrangler deploy` (or the usual press) so
-     `/.well-known/owners.json` goes live.
+- **Both MCP registry publications are current (2026-09-17).** The
+  [fresh registry response](research/distribution-2026-09-17/observations/mcp-registry-refresh.json)
+  marks the store and tab entries latest at their respective source-manifest
+  versions. The old republish press, including the stale tab version, is closed.
+  Tab is now eligible for a separate Agent Finder descriptor; this observation
+  does not add it to the existing PR or establish a VerifyMCP ownership claim.
 - **VerifyMCP claim.** LOOK, after the deploy:
   https://verifymcp.io/servers/store-scvd-general-store/scvd
   should read "claimed" from the owners.json within their
@@ -1328,15 +1362,13 @@ what you ruled and what is still yours to look at.
   under 2026-09-03, and in §5 of
   `docs/archive/DIRECTORY_BLITZ_2026-09-06.md`.
 
-- **ClawHub republish.** 3.15.0 went out 2026-09-02 by
-  your hand (done), carrying everything since 3.8.0: the
-  fortune, the doctrine sentence, the passport tier, the
-  case file, the aura walk, the operator's statement. The
-  3.16.0 publication was observed on 2026-09-06 and recorded in
-  `registry/clawhub/published.json`. The tree now holds 3.16.1:
-  secondary checkout/reader copy and browser-till limits corrected.
-  Publish that bundle after its merge/deploy; the published record
-  remains 3.16.0 until the next successful press is observed.
+- **ClawHub republish closed (2026-09-17).** The
+  [publication receipt](registry/clawhub/published.json) records the new bundle,
+  source commit and fingerprints. The earlier request to publish the September 6
+  patch is superseded. Future releases derive their version from source.
+  The keeper’s fresh installation matched all payload files after a clean scan;
+  [release record](research/package-skill-release-2026-09-17/README.md).
+
 - **x402-list owner update, round five (09-02).** Submitted
   by your hand: the five doors listed W35-W36 and the
   description. Their token is served at
@@ -1389,9 +1421,18 @@ what you ruled and what is still yours to look at.
   rotation re-captures the envelope on its own; the EIP-712
   row should read pass again on that capture, and if it does
   not, the cause is new and not this one.
-- **OpenAI / Claude MCP hosts.** LOOK: what they require
-  to list vs what we already declare. Do not start a
-  second WebMCP note.
+- **Additional plugin publishers (updated 2026-09-17).**
+  [Prepared packet](registry/plugin-submissions.md): Cursor's official publisher
+  application is **submitted; review pending**, using the existing repository,
+  with a [confirmed receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json).
+  The cursor.directory community listing remains separate. Watch for Cursor's
+  review response; do not resubmit. Remaining Cursor skill discovery and desktop
+  qualification belong to TR-D. Claude's community plugin application is also **submitted for Claude Code; review
+  pending**. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
+  Cowork was not selected because it remains untested. Watch the existing
+  [submission](https://platform.claude.com/plugins/submissions); do not duplicate it.
+  Kiro still needs host qualification and publisher contact and remains unsubmitted.
+  OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
 - **skills.sh and MCPFind.** DONE 2026-09-08: the keeper supplied
   both listing URLs; live reads confirmed the named skill and server.
   Skills: https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store
@@ -1421,6 +1462,25 @@ what you ruled and what is still yours to look at.
   each of the two new pages actually measures, so the row can say
   it in their words; and whether either offers a claim or refresh
   route. Indexing only, not an endorsement or proof of purchases.
+  robinsaige half DONE 2026-09-17 on your ask: the host answered
+  the sandbox, the page, dossier, feed and method were read in
+  full, the trust row now says what it measures in their words,
+  and three things it does that we did not — a per-host change
+  feed, a question node on the passport, the operator's line on
+  the record page — shipped the same day. The read, the side by
+  side and what was refused (percentiles, legibility bands):
+  `research/robinsaige-read-2026-09-17.md`. Their operator route
+  is `/operators#submit` (kind: invite), the way into their
+  truth-check lane; whether we want that is a RULE, drafted
+  there, nothing sent. Second press the same day, on your "go for
+  it": the passport's face re-cut over the signed payload — the
+  because-line, the probe strip, the glance cells, the basis marks,
+  the host page no longer pasting the rule. Still yours to rule
+  from that read: a disputes ledger with a stated turnaround and a
+  reply window before a named finding; movers on the front page
+  against the names line; whether the MCP ward should cite their
+  handshake dossier instead of growing a battery of its own.
+  Crosspeel half still open.
 - **PublishYourSaaS, AI Tools Capital, Cursor re-read.** DONE
   2026-09-10 (second press of the day): two more keeper-supplied
   pages are trust rows —

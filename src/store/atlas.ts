@@ -1,3 +1,4 @@
+import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
 import { buyerLinks } from "@/lib/buyer-contract";
 import { chainIdentity, identitySurfaces } from "@/store/chain-identity";
 import { MENU_ITEMS } from "@/store/menu";
@@ -273,10 +274,10 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
   },
   {
     path: "/mcp/verifier",
-    name: "The verifier (MCP, read-only tools only)",
+    name: "The verifier (MCP, free verification tools)",
     access: "free",
     method: "POST",
-    purpose: "A second MCP door serving read-only tools and nothing paid, each named here: preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness, get_defect_definition, verify_scvd_artifact. The same handlers as /mcp under task-shaped names, for a client that should never see a shelf.",
+    purpose: "A second MCP door serving free verification tools and nothing paid, each named here: preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness, get_defect_definition, verify_scvd_artifact. The same handlers as /mcp under task-shaped names, for a client that should never see a shelf.",
     caution: "Evidence, never a judgment. Nothing here sells; the paid instruments are on /mcp and the x402 doors.",
   },
   {
@@ -292,7 +293,7 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     name: "The evidence agent (A2A)",
     access: "free",
     method: "POST",
-    purpose: "Hand this store a task the A2A way: message/send with { task, …input } for preflight_endpoint, verify_receipt or get_endpoint_readiness; one bounded artifact back. Retrieve the returned task with tasks/get. GET /a2a states the request shape and retention; the card is at /.well-known/agent-card.json.",
+    purpose: `Hand this store a task the A2A v1 way: A2A-Version: ${A2A_CURRENT_VERSION} and SendMessage with { task, …input } for preflight_endpoint, verify_receipt or get_endpoint_readiness; one bounded artifact back. Retrieve the returned task with GetTask. Absent/empty version header selects legacy ${A2A_LEGACY_VERSION} message/send and tasks/get. GET /a2a states the request shape and retention; the card is at /.well-known/agent-card.json.`,
     caution: "Evidence, never a judgment: it does not say whether to pay, which door to use, or whether a merchant can be trusted. Read-only and free; the paid instruments stay x402 doors.",
   },
   {

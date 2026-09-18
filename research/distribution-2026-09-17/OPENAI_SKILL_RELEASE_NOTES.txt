@@ -1,0 +1,1 @@
+Update to SCVD x402 Verifier adding a reusable skill for x402 payment-challenge inspection, signed-offer and receipt verification, and interpreting evidence and its limits. The skill guides use of the plugin’s existing verifier MCP tools. No wallet, login or payment is required to use the verifier.

@@ -42,13 +42,13 @@ describe("the tools are derived, and each carries its door and a worked call", (
       const tool = catalog.find((candidate) => candidate.name === entry.function.name)!;
       expect(tool, entry.function.name).toBeTruthy();
       expect(tool.itemId).toBeUndefined();
-      expect(tool.annotations?.readOnlyHint).toBe(true);
+      expect(typeof tool.annotations?.readOnlyHint).toBe("boolean");
       expect(entry.function.description).toBe(tool.description);
       const { examples: _examples, ...schema } = tool.inputSchema as Record<string, unknown>;
       expect(entry.function.parameters).toEqual(schema);
       expect(entry.function.parameters).not.toHaveProperty("examples");
       const extras = entry["x-scvd"];
-      expect(extras.read_only).toBe(true);
+      expect(extras.read_only).toBe(tool.annotations?.readOnlyHint);
       expect(extras.http.url.startsWith(`${BASE}/api/`)).toBe(true);
       expect(operationIds.has(extras.operation_id), `${entry.function.name}: ${extras.operation_id} not in the contract`).toBe(true);
       const required = (schema["required"] ?? []) as string[];

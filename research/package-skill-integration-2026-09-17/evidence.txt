@@ -1,0 +1,989 @@
+
+> scvd-general-store@0.1.0 evidence:test
+> node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs scripts/evidence-coverage.test.mjs && node --test scripts/retained-evidence.test.mjs scripts/retained-journal-reader.test.mjs scripts/catalog-evidence.test.mjs && node --test research/pq-measurement-2026-09-14/verify-summary.test.mjs
+
+TAP version 13
+# Subtest: all required signatures verify over the same protected header and exact payload
+ok 1 - all required signatures verify over the same protected header and exact payload
+  ---
+  duration_ms: 2.860959
+  ...
+# Subtest: refuses payload
+ok 2 - refuses payload
+  ---
+  duration_ms: 0.351875
+  ...
+# Subtest: refuses purpose
+ok 3 - refuses purpose
+  ---
+  duration_ms: 0.173083
+  ...
+# Subtest: refuses algorithm
+ok 4 - refuses algorithm
+  ---
+  duration_ms: 0.111625
+  ...
+# Subtest: refuses key identity
+ok 5 - refuses key identity
+  ---
+  duration_ms: 0.2615
+  ...
+# Subtest: refuses policy
+ok 6 - refuses policy
+  ---
+  duration_ms: 0.612416
+  ...
+# Subtest: refuses missing PQ signature
+ok 7 - refuses missing PQ signature
+  ---
+  duration_ms: 0.153917
+  ...
+# Subtest: refuses stripped PQ declaration and signature
+ok 8 - refuses stripped PQ declaration and signature
+  ---
+  duration_ms: 0.157417
+  ...
+# Subtest: refuses duplicate signature
+ok 9 - refuses duplicate signature
+  ---
+  duration_ms: 0.351083
+  ...
+# Subtest: refuses unsupported canonicalization
+ok 10 - refuses unsupported canonicalization
+  ---
+  duration_ms: 0.49325
+  ...
+# Subtest: refuses extra unsigned header
+ok 11 - refuses extra unsigned header
+  ---
+  duration_ms: 0.144084
+  ...
+# Subtest: does not accept a self-appointed key, missing backend, thrown backend, or absent expected policy
+ok 12 - does not accept a self-appointed key, missing backend, thrown backend, or absent expected policy
+  ---
+  duration_ms: 0.154292
+  ...
+# Subtest: verifies report bytes and recomputes the certificate binding; tampering does not pass
+ok 13 - verifies report bytes and recomputes the certificate binding; tampering does not pass
+  ---
+  duration_ms: 2.362625
+  ...
+# Subtest: missing and unreadable certificates stay in the denominator; unresolved links and partial lists stay explicit
+ok 14 - missing and unreadable certificates stay in the denominator; unresolved links and partial lists stay explicit
+  ---
+  duration_ms: 0.194583
+  ...
+# Subtest: certificate canonicalization follows production and excludes unsigned legacy bindings
+ok 15 - certificate canonicalization follows production and excludes unsigned legacy bindings
+  ---
+  duration_ms: 488.526083
+  ...
+# Subtest: offline command preserves the listed denominator when a captured record is deleted
+ok 16 - offline command preserves the listed denominator when a captured record is deleted
+  ---
+  duration_ms: 197.617541
+  ...
+# Subtest: exact signed bytes and attached evidence verify offline against a separately held key
+ok 17 - exact signed bytes and attached evidence verify offline against a separately held key
+  ---
+  duration_ms: 8.816625
+  ...
+# Subtest: the embedded key never appoints itself trusted
+ok 18 - the embedded key never appoints itself trusted
+  ---
+  duration_ms: 0.762167
+  ...
+# Subtest: rejects changed signed payload
+ok 19 - rejects changed signed payload
+  ---
+  duration_ms: 0.822333
+  ...
+# Subtest: rejects changed signature
+ok 20 - rejects changed signature
+  ---
+  duration_ms: 1.114416
+  ...
+# Subtest: rejects changed embedded key
+ok 21 - rejects changed embedded key
+  ---
+  duration_ms: 0.687959
+  ...
+# Subtest: rejects changed algorithm
+ok 22 - rejects changed algorithm
+  ---
+  duration_ms: 0.363208
+  ...
+# Subtest: rejects changed format version
+ok 23 - rejects changed format version
+  ---
+  duration_ms: 0.464
+  ...
+# Subtest: rejects changed attachment, including a forged new checksum
+ok 24 - rejects changed attachment, including a forged new checksum
+  ---
+  duration_ms: 0.661166
+  ...
+# Subtest: rejects changed attachment relabelled as unrelated
+ok 25 - rejects changed attachment relabelled as unrelated
+  ---
+  duration_ms: 0.672375
+  ...
+# Subtest: rejects changed duplicate attachment
+ok 26 - rejects changed duplicate attachment
+  ---
+  duration_ms: 0.838208
+  ...
+# Subtest: deleting evidence preserves the signature result but cannot preserve completeness
+ok 27 - deleting evidence preserves the signature result but cannot preserve completeness
+  ---
+  duration_ms: 0.881666
+  ...
+# Subtest: source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+ok 28 - source metadata cannot overwrite signed claims, even if rehashed or labelled valid
+  ---
+  duration_ms: 0.52875
+  ...
+# Subtest: an issuer's bounded label and altered proof never become an independently verified timestamp
+ok 29 - an issuer's bounded label and altered proof never become an independently verified timestamp
+  ---
+  duration_ms: 0.773792
+  ...
+# Subtest: OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+ok 30 - OTS export wraps the raw calendar operations with detached-file header and the exact payload digest
+  ---
+  duration_ms: 0.227834
+  ...
+# Subtest: rejects malformed or oversized inputs and attachments without a signed binding
+ok 31 - rejects malformed or oversized inputs and attachments without a signed binding
+  ---
+  duration_ms: 43.306041
+  ...
+# Subtest: corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+ok 32 - corpus canonical field order is fixed, and a changed digest or unsupported schema is refused
+  ---
+  duration_ms: 0.800542
+  ...
+# Subtest: export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+ok 33 - export is bounded, preserves bytes and verifies after the origin disappears; refuses overwrite
+  ---
+  duration_ms: 324.6865
+  ...
+# Subtest: corpus export above the default cap requires an explicit bounded allowance and detects tampering
+ok 34 - corpus export above the default cap requires an explicit bounded allowance and detects tampering
+  ---
+  duration_ms: 978.657333
+  ...
+# Subtest: matrix inventory and hashes cannot quietly lose a control or invent support
+ok 35 - matrix inventory and hashes cannot quietly lose a control or invent support
+  ---
+  duration_ms: 3.269125
+  ...
+# Subtest: SCVD remains a hashed supplemental issuer case within Ed25519
+ok 36 - SCVD remains a hashed supplemental issuer case within Ed25519
+  ---
+  duration_ms: 7.443875
+  ...
+# Subtest: EdDSA/offer/positive: independent bytes and scoped package result
+ok 37 - EdDSA/offer/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 1.376292
+  ...
+# Subtest: EdDSA/offer/payload-tamper: independent bytes and scoped package result
+ok 38 - EdDSA/offer/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.688167
+  ...
+# Subtest: EdDSA/offer/signature-tamper: independent bytes and scoped package result
+ok 39 - EdDSA/offer/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.756958
+  ...
+# Subtest: EdDSA/offer/wrong-key: independent bytes and scoped package result
+ok 40 - EdDSA/offer/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.850834
+  ...
+# Subtest: EdDSA/offer/wrong-authority: independent bytes and scoped package result
+ok 41 - EdDSA/offer/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.571375
+  ...
+# Subtest: EdDSA/offer/authority-unavailable: independent bytes and scoped package result
+ok 42 - EdDSA/offer/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.772584
+  ...
+# Subtest: EdDSA/offer/header-tamper: independent bytes and scoped package result
+ok 43 - EdDSA/offer/header-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 1.155666
+  ...
+# Subtest: EdDSA/offer/wrong-field-type: independent bytes and scoped package result
+ok 44 - EdDSA/offer/wrong-field-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.925042
+  ...
+# Subtest: EdDSA/offer/missing-expiry: independent bytes and scoped package result
+ok 45 - EdDSA/offer/missing-expiry: independent bytes and scoped package result
+  ---
+  duration_ms: 0.831
+  ...
+# Subtest: EdDSA/offer/expired: independent bytes and scoped package result
+ok 46 - EdDSA/offer/expired: independent bytes and scoped package result
+  ---
+  duration_ms: 0.872334
+  ...
+# Subtest: EdDSA/offer/labelled-envelope: independent bytes and scoped package result
+ok 47 - EdDSA/offer/labelled-envelope: independent bytes and scoped package result
+  ---
+  duration_ms: 0.075708
+  ...
+# Subtest: EdDSA/offer/malformed: independent bytes and scoped package result
+ok 48 - EdDSA/offer/malformed: independent bytes and scoped package result
+  ---
+  duration_ms: 0.034958
+  ...
+# Subtest: EdDSA/receipt/positive: independent bytes and scoped package result
+ok 49 - EdDSA/receipt/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 0.569125
+  ...
+# Subtest: EdDSA/receipt/payload-tamper: independent bytes and scoped package result
+ok 50 - EdDSA/receipt/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.323583
+  ...
+# Subtest: EdDSA/receipt/signature-tamper: independent bytes and scoped package result
+ok 51 - EdDSA/receipt/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.320208
+  ...
+# Subtest: EdDSA/receipt/wrong-key: independent bytes and scoped package result
+ok 52 - EdDSA/receipt/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.333209
+  ...
+# Subtest: EdDSA/receipt/wrong-authority: independent bytes and scoped package result
+ok 53 - EdDSA/receipt/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.408334
+  ...
+# Subtest: EdDSA/receipt/authority-unavailable: independent bytes and scoped package result
+ok 54 - EdDSA/receipt/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.404791
+  ...
+# Subtest: EdDSA/receipt/header-tamper: independent bytes and scoped package result
+ok 55 - EdDSA/receipt/header-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.529417
+  ...
+# Subtest: EdDSA/receipt/wrong-field-type: independent bytes and scoped package result
+ok 56 - EdDSA/receipt/wrong-field-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.862708
+  ...
+# Subtest: EdDSA/receipt/labelled-envelope: independent bytes and scoped package result
+ok 57 - EdDSA/receipt/labelled-envelope: independent bytes and scoped package result
+  ---
+  duration_ms: 0.152334
+  ...
+# Subtest: EdDSA/receipt/malformed: independent bytes and scoped package result
+ok 58 - EdDSA/receipt/malformed: independent bytes and scoped package result
+  ---
+  duration_ms: 0.049125
+  ...
+# Subtest: ES256/offer/positive: independent bytes and scoped package result
+ok 59 - ES256/offer/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 0.35125
+  ...
+# Subtest: ES256/offer/payload-tamper: independent bytes and scoped package result
+ok 60 - ES256/offer/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.197375
+  ...
+# Subtest: ES256/offer/signature-tamper: independent bytes and scoped package result
+ok 61 - ES256/offer/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.16175
+  ...
+# Subtest: ES256/offer/wrong-key: independent bytes and scoped package result
+ok 62 - ES256/offer/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.420417
+  ...
+# Subtest: ES256/offer/wrong-authority: independent bytes and scoped package result
+ok 63 - ES256/offer/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.421333
+  ...
+# Subtest: ES256/offer/authority-unavailable: independent bytes and scoped package result
+ok 64 - ES256/offer/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.215417
+  ...
+# Subtest: ES256/offer/header-tamper: independent bytes and scoped package result
+ok 65 - ES256/offer/header-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.186625
+  ...
+# Subtest: ES256/offer/wrong-field-type: independent bytes and scoped package result
+ok 66 - ES256/offer/wrong-field-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.174125
+  ...
+# Subtest: ES256/offer/missing-expiry: independent bytes and scoped package result
+ok 67 - ES256/offer/missing-expiry: independent bytes and scoped package result
+  ---
+  duration_ms: 0.156042
+  ...
+# Subtest: ES256/offer/expired: independent bytes and scoped package result
+ok 68 - ES256/offer/expired: independent bytes and scoped package result
+  ---
+  duration_ms: 0.3805
+  ...
+# Subtest: ES256/offer/labelled-envelope: independent bytes and scoped package result
+ok 69 - ES256/offer/labelled-envelope: independent bytes and scoped package result
+  ---
+  duration_ms: 0.033625
+  ...
+# Subtest: ES256/offer/malformed: independent bytes and scoped package result
+ok 70 - ES256/offer/malformed: independent bytes and scoped package result
+  ---
+  duration_ms: 0.075041
+  ...
+# Subtest: ES256/receipt/positive: independent bytes and scoped package result
+ok 71 - ES256/receipt/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 0.250041
+  ...
+# Subtest: ES256/receipt/payload-tamper: independent bytes and scoped package result
+ok 72 - ES256/receipt/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.161041
+  ...
+# Subtest: ES256/receipt/signature-tamper: independent bytes and scoped package result
+ok 73 - ES256/receipt/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.141709
+  ...
+# Subtest: ES256/receipt/wrong-key: independent bytes and scoped package result
+ok 74 - ES256/receipt/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.135417
+  ...
+# Subtest: ES256/receipt/wrong-authority: independent bytes and scoped package result
+ok 75 - ES256/receipt/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.135708
+  ...
+# Subtest: ES256/receipt/authority-unavailable: independent bytes and scoped package result
+ok 76 - ES256/receipt/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.148833
+  ...
+# Subtest: ES256/receipt/header-tamper: independent bytes and scoped package result
+ok 77 - ES256/receipt/header-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.1375
+  ...
+# Subtest: ES256/receipt/wrong-field-type: independent bytes and scoped package result
+ok 78 - ES256/receipt/wrong-field-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.149708
+  ...
+# Subtest: ES256/receipt/labelled-envelope: independent bytes and scoped package result
+ok 79 - ES256/receipt/labelled-envelope: independent bytes and scoped package result
+  ---
+  duration_ms: 0.023209
+  ...
+# Subtest: ES256/receipt/malformed: independent bytes and scoped package result
+ok 80 - ES256/receipt/malformed: independent bytes and scoped package result
+  ---
+  duration_ms: 0.022
+  ...
+# Subtest: ES256K/offer/positive: independent bytes and scoped package result
+ok 81 - ES256K/offer/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 0.360708
+  ...
+# Subtest: ES256K/offer/payload-tamper: independent bytes and scoped package result
+ok 82 - ES256K/offer/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.358166
+  ...
+# Subtest: ES256K/offer/signature-tamper: independent bytes and scoped package result
+ok 83 - ES256K/offer/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.338875
+  ...
+# Subtest: ES256K/offer/wrong-key: independent bytes and scoped package result
+ok 84 - ES256K/offer/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.348459
+  ...
+# Subtest: ES256K/offer/wrong-authority: independent bytes and scoped package result
+ok 85 - ES256K/offer/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.391958
+  ...
+# Subtest: ES256K/offer/authority-unavailable: independent bytes and scoped package result
+ok 86 - ES256K/offer/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.331333
+  ...
+# Subtest: ES256K/offer/header-tamper: independent bytes and scoped package result
+ok 87 - ES256K/offer/header-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.321417
+  ...
+# Subtest: ES256K/offer/wrong-field-type: independent bytes and scoped package result
+ok 88 - ES256K/offer/wrong-field-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.432542
+  ...
+# Subtest: ES256K/offer/missing-expiry: independent bytes and scoped package result
+ok 89 - ES256K/offer/missing-expiry: independent bytes and scoped package result
+  ---
+  duration_ms: 0.470917
+  ...
+# Subtest: ES256K/offer/expired: independent bytes and scoped package result
+ok 90 - ES256K/offer/expired: independent bytes and scoped package result
+  ---
+  duration_ms: 0.398208
+  ...
+# Subtest: ES256K/offer/labelled-envelope: independent bytes and scoped package result
+ok 91 - ES256K/offer/labelled-envelope: independent bytes and scoped package result
+  ---
+  duration_ms: 0.026375
+  ...
+# Subtest: ES256K/offer/malformed: independent bytes and scoped package result
+ok 92 - ES256K/offer/malformed: independent bytes and scoped package result
+  ---
+  duration_ms: 0.020042
+  ...
+# Subtest: ES256K/receipt/positive: independent bytes and scoped package result
+ok 93 - ES256K/receipt/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 0.339417
+  ...
+# Subtest: ES256K/receipt/payload-tamper: independent bytes and scoped package result
+ok 94 - ES256K/receipt/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.332875
+  ...
+# Subtest: ES256K/receipt/signature-tamper: independent bytes and scoped package result
+ok 95 - ES256K/receipt/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.335667
+  ...
+# Subtest: ES256K/receipt/wrong-key: independent bytes and scoped package result
+ok 96 - ES256K/receipt/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.325875
+  ...
+# Subtest: ES256K/receipt/wrong-authority: independent bytes and scoped package result
+ok 97 - ES256K/receipt/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.319083
+  ...
+# Subtest: ES256K/receipt/authority-unavailable: independent bytes and scoped package result
+ok 98 - ES256K/receipt/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.318667
+  ...
+# Subtest: ES256K/receipt/header-tamper: independent bytes and scoped package result
+ok 99 - ES256K/receipt/header-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.30575
+  ...
+# Subtest: ES256K/receipt/wrong-field-type: independent bytes and scoped package result
+ok 100 - ES256K/receipt/wrong-field-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.31975
+  ...
+# Subtest: ES256K/receipt/labelled-envelope: independent bytes and scoped package result
+ok 101 - ES256K/receipt/labelled-envelope: independent bytes and scoped package result
+  ---
+  duration_ms: 0.022375
+  ...
+# Subtest: ES256K/receipt/malformed: independent bytes and scoped package result
+ok 102 - ES256K/receipt/malformed: independent bytes and scoped package result
+  ---
+  duration_ms: 0.018625
+  ...
+# Subtest: eip712/offer/positive: independent bytes and scoped package result
+ok 103 - eip712/offer/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 0.027916
+  ...
+# Subtest: eip712/offer/payload-tamper: independent bytes and scoped package result
+ok 104 - eip712/offer/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.018666
+  ...
+# Subtest: eip712/offer/signature-tamper: independent bytes and scoped package result
+ok 105 - eip712/offer/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.0185
+  ...
+# Subtest: eip712/offer/wrong-key: independent bytes and scoped package result
+ok 106 - eip712/offer/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.020959
+  ...
+# Subtest: eip712/offer/wrong-authority: independent bytes and scoped package result
+ok 107 - eip712/offer/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.020875
+  ...
+# Subtest: eip712/offer/authority-unavailable: independent bytes and scoped package result
+ok 108 - eip712/offer/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.018375
+  ...
+# Subtest: eip712/offer/domain-name: independent bytes and scoped package result
+ok 109 - eip712/offer/domain-name: independent bytes and scoped package result
+  ---
+  duration_ms: 0.018042
+  ...
+# Subtest: eip712/offer/domain-version: independent bytes and scoped package result
+ok 110 - eip712/offer/domain-version: independent bytes and scoped package result
+  ---
+  duration_ms: 0.021333
+  ...
+# Subtest: eip712/offer/domain-chainId: independent bytes and scoped package result
+ok 111 - eip712/offer/domain-chainId: independent bytes and scoped package result
+  ---
+  duration_ms: 0.021583
+  ...
+# Subtest: eip712/offer/primary-type: independent bytes and scoped package result
+ok 112 - eip712/offer/primary-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.019375
+  ...
+# Subtest: eip712/offer/cross-format: independent bytes and scoped package result
+ok 113 - eip712/offer/cross-format: independent bytes and scoped package result
+  ---
+  duration_ms: 0.465459
+  ...
+# Subtest: eip712/offer/optional-default: independent bytes and scoped package result
+ok 114 - eip712/offer/optional-default: independent bytes and scoped package result
+  ---
+  duration_ms: 0.042375
+  ...
+# Subtest: eip712/receipt/positive: independent bytes and scoped package result
+ok 115 - eip712/receipt/positive: independent bytes and scoped package result
+  ---
+  duration_ms: 0.0245
+  ...
+# Subtest: eip712/receipt/payload-tamper: independent bytes and scoped package result
+ok 116 - eip712/receipt/payload-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.020417
+  ...
+# Subtest: eip712/receipt/signature-tamper: independent bytes and scoped package result
+ok 117 - eip712/receipt/signature-tamper: independent bytes and scoped package result
+  ---
+  duration_ms: 0.019125
+  ...
+# Subtest: eip712/receipt/wrong-key: independent bytes and scoped package result
+ok 118 - eip712/receipt/wrong-key: independent bytes and scoped package result
+  ---
+  duration_ms: 0.018333
+  ...
+# Subtest: eip712/receipt/wrong-authority: independent bytes and scoped package result
+ok 119 - eip712/receipt/wrong-authority: independent bytes and scoped package result
+  ---
+  duration_ms: 0.018875
+  ...
+# Subtest: eip712/receipt/authority-unavailable: independent bytes and scoped package result
+ok 120 - eip712/receipt/authority-unavailable: independent bytes and scoped package result
+  ---
+  duration_ms: 0.019333
+  ...
+# Subtest: eip712/receipt/domain-name: independent bytes and scoped package result
+ok 121 - eip712/receipt/domain-name: independent bytes and scoped package result
+  ---
+  duration_ms: 0.017375
+  ...
+# Subtest: eip712/receipt/domain-version: independent bytes and scoped package result
+ok 122 - eip712/receipt/domain-version: independent bytes and scoped package result
+  ---
+  duration_ms: 0.016834
+  ...
+# Subtest: eip712/receipt/domain-chainId: independent bytes and scoped package result
+ok 123 - eip712/receipt/domain-chainId: independent bytes and scoped package result
+  ---
+  duration_ms: 0.016375
+  ...
+# Subtest: eip712/receipt/primary-type: independent bytes and scoped package result
+ok 124 - eip712/receipt/primary-type: independent bytes and scoped package result
+  ---
+  duration_ms: 0.017
+  ...
+# Subtest: eip712/receipt/cross-format: independent bytes and scoped package result
+ok 125 - eip712/receipt/cross-format: independent bytes and scoped package result
+  ---
+  duration_ms: 0.01675
+  ...
+# Subtest: eip712/receipt/optional-default: independent bytes and scoped package result
+ok 126 - eip712/receipt/optional-default: independent bytes and scoped package result
+  ---
+  duration_ms: 0.016416
+  ...
+# Subtest: independent Ed25519 controls agree via pinned hex, DID JWK and caller-selected key documents
+ok 127 - independent Ed25519 controls agree via pinned hex, DID JWK and caller-selected key documents
+  ---
+  duration_ms: 29.539209
+  ...
+# Subtest: the harness rejects missing families and missing negative controls
+ok 128 - the harness rejects missing families and missing negative controls
+  ---
+  duration_ms: 1.837542
+  ...
+# Subtest: rehashed signature, authority and schema mutants cannot manufacture a valid claim
+ok 129 - rehashed signature, authority and schema mutants cannot manufacture a valid claim
+  ---
+  duration_ms: 2.408917
+  ...
+# Subtest: loss, rotation and stolen-key backdating have different evidence boundaries
+ok 130 - loss, rotation and stolen-key backdating have different evidence boundaries
+  ---
+  duration_ms: 7.96925
+  ...
+# Subtest: the publication workflow actually runs the verifier package tests
+ok 131 - the publication workflow actually runs the verifier package tests
+  ---
+  duration_ms: 16.1665
+  ...
+# Subtest: actual signatures, wrong keys, schema failures and expiry keep their distinct meanings
+ok 132 - actual signatures, wrong keys, schema failures and expiry keep their distinct meanings
+  ---
+  duration_ms: 11.09525
+  ...
+# Subtest: unsupported ES256 never runs Ed25519 or invents a bad-signature finding
+ok 133 - unsupported ES256 never runs Ed25519 or invents a bad-signature finding
+  ---
+  duration_ms: 0.189375
+  ...
+# Subtest: unsupported ES256K never runs Ed25519 or invents a bad-signature finding
+ok 134 - unsupported ES256K never runs Ed25519 or invents a bad-signature finding
+  ---
+  duration_ms: 0.1585
+  ...
+# Subtest: unsupported HS256 never runs Ed25519 or invents a bad-signature finding
+ok 135 - unsupported HS256 never runs Ed25519 or invents a bad-signature finding
+  ---
+  duration_ms: 0.069542
+  ...
+# Subtest: unsupported not-a-known-algorithm never runs Ed25519 or invents a bad-signature finding
+ok 136 - unsupported not-a-known-algorithm never runs Ed25519 or invents a bad-signature finding
+  ---
+  duration_ms: 0.282375
+  ...
+# Subtest: malformed input returns a report: null
+ok 137 - malformed input returns a report: null
+  ---
+  duration_ms: 0.094917
+  ...
+# Subtest: malformed input returns a report: 17
+ok 138 - malformed input returns a report: 17
+  ---
+  duration_ms: 0.104667
+  ...
+# Subtest: malformed input returns a report: {}
+ok 139 - malformed input returns a report: {}
+  ---
+  duration_ms: 0.046334
+  ...
+# Subtest: malformed input returns a report: "not-a-jws"
+ok 140 - malformed input returns a report: "not-a-jws"
+  ---
+  duration_ms: 0.224708
+  ...
+# Subtest: malformed input returns a report: "NDI.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLC
+ok 141 - malformed input returns a report: "NDI.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLC
+  ---
+  duration_ms: 0.303542
+  ...
+# Subtest: malformed input returns a report: "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZS
+ok 142 - malformed input returns a report: "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZS
+  ---
+  duration_ms: 0.122083
+  ...
+# Subtest: malformed input returns a report: "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZS
+ok 143 - malformed input returns a report: "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZS
+  ---
+  duration_ms: 0.05325
+  ...
+# Subtest: missing wrapper input is a malformed-input report
+ok 144 - missing wrapper input is a malformed-input report
+  ---
+  duration_ms: 0.054584
+  ...
+# Subtest: an explicitly identified external signature family is unsupported, without expanding accepted inputs
+ok 145 - an explicitly identified external signature family is unsupported, without expanding accepted inputs
+  ---
+  duration_ms: 0.083917
+  ...
+# Subtest: a missing algorithm is malformed, and a demonstrated schema failure outranks unsupported algorithm
+ok 146 - a missing algorithm is malformed, and a demonstrated schema failure outranks unsupported algorithm
+  ---
+  duration_ms: 0.115417
+  ...
+# Subtest: a future schema is unsupported; its fields are not judged using revision one's schema
+ok 147 - a future schema is unsupported; its fields are not judged using revision one's schema
+  ---
+  duration_ms: 2.300458
+  ...
+# Subtest: unsupported DID resolution is scoped: an explicit key can still verify bytes
+ok 148 - unsupported DID resolution is scoped: an explicit key can still verify bytes
+  ---
+  duration_ms: 0.248334
+  ...
+# Subtest: a malformed DID escape is a report, not a URIError
+ok 149 - a malformed DID escape is a report, not a URIError
+  ---
+  duration_ms: 0.087583
+  ...
+# Subtest: missing remote evidence is inconclusive through both resolution paths
+ok 150 - missing remote evidence is inconclusive through both resolution paths
+  ---
+  duration_ms: 0.247667
+  ...
+# Subtest: missing remote evidence is inconclusive through both resolution paths
+ok 151 - missing remote evidence is inconclusive through both resolution paths
+  ---
+  duration_ms: 8.100375
+  ...
+# Subtest: missing remote evidence is inconclusive through both resolution paths
+ok 152 - missing remote evidence is inconclusive through both resolution paths
+  ---
+  duration_ms: 0.689417
+  ...
+# Subtest: unsupported key representations are not mistaken for a missing key or a bad signature
+ok 153 - unsupported key representations are not mistaken for a missing key or a bad signature
+  ---
+  duration_ms: 1.009042
+  ...
+# Subtest: malformed remote key documents remain inconclusive
+ok 154 - malformed remote key documents remain inconclusive
+  ---
+  duration_ms: 0.443292
+  ...
+# Subtest: malformed remote key documents remain inconclusive
+ok 155 - malformed remote key documents remain inconclusive
+  ---
+  duration_ms: 0.181042
+  ...
+# Subtest: malformed remote key documents remain inconclusive
+ok 156 - malformed remote key documents remain inconclusive
+  ---
+  duration_ms: 0.194792
+  ...
+# Subtest: malformed remote key documents remain inconclusive
+ok 157 - malformed remote key documents remain inconclusive
+  ---
+  duration_ms: 0.111958
+  ...
+# Subtest: malformed remote key documents remain inconclusive
+ok 158 - malformed remote key documents remain inconclusive
+  ---
+  duration_ms: 0.81075
+  ...
+# Subtest: bad explicit keys never fall back to a network key
+ok 159 - bad explicit keys never fall back to a network key
+  ---
+  duration_ms: 0.237208
+  ...
+# Subtest: malformed or unsupported input cannot be hidden behind issuer fetch failure
+ok 160 - malformed or unsupported input cannot be hidden behind issuer fetch failure
+  ---
+  duration_ms: 0.089584
+  ...
+# Subtest: malformed signature is a definite failure even when the key cannot be obtained
+ok 161 - malformed signature is a definite failure even when the key cannot be obtained
+  ---
+  duration_ms: 0.289167
+  ...
+# Subtest: unsupported crypto is different from a false signature and an unexpected verifier error
+ok 162 - unsupported crypto is different from a false signature and an unexpected verifier error
+  ---
+  duration_ms: 0.37075
+  ...
+# Subtest: caller-selected issuer resolution is single-fetch, with no fallback to artifact-controlled origin
+ok 163 - caller-selected issuer resolution is single-fetch, with no fallback to artifact-controlled origin
+  ---
+  duration_ms: 1.8805
+  ...
+# Subtest: existing fixture booleans are preserved and human summaries name uncertainty
+ok 164 - existing fixture booleans are preserved and human summaries name uncertainty
+  ---
+  duration_ms: 3.794083
+  ...
+# Subtest: missing kid and an object-valued schema version report malformed fields without throwing
+ok 165 - missing kid and an object-valued schema version report malformed fields without throwing
+  ---
+  duration_ms: 0.499
+  ...
+# Subtest: unreadable JSON and duplicate selected key IDs cannot establish a key
+ok 166 - unreadable JSON and duplicate selected key IDs cannot establish a key
+  ---
+  duration_ms: 0.374834
+  ...
+# Subtest: a nonboolean verifier response cannot establish signature validity
+ok 167 - a nonboolean verifier response cannot establish signature validity
+  ---
+  duration_ms: 0.057875
+  ...
+# Subtest: missing or unsupported expiry is unobserved rather than called expired
+ok 168 - missing or unsupported expiry is unobserved rather than called expired
+  ---
+  duration_ms: 0.093916
+  ...
+# Subtest: schema failure and unsupported revision each retain missing-key evidence with the stated precedence
+ok 169 - schema failure and unsupported revision each retain missing-key evidence with the stated precedence
+  ---
+  duration_ms: 0.094
+  ...
+# Subtest: missing WebCrypto is structured at the artifact boundary and preserves the legacy raw helper exception
+ok 170 - missing WebCrypto is structured at the artifact boundary and preserves the legacy raw helper exception
+  ---
+  duration_ms: 0.197917
+  ...
+1..170
+# tests 170
+# suites 0
+# pass 170
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1381.673209
+TAP version 13
+# Subtest: catalog candidates derive from production and match only exact bytes and item
+ok 1 - catalog candidates derive from production and match only exact bytes and item
+  ---
+  duration_ms: 1.410334
+  ...
+# Subtest: changed candidate bytes, duplicate hashes and noncanonical encodings refuse
+ok 2 - changed candidate bytes, duplicate hashes and noncanonical encodings refuse
+  ---
+  duration_ms: 1.4935
+  ...
+# Subtest: changed catalog fields cannot recover an old commitment, and input order is preserved
+ok 3 - changed catalog fields cannot recover an old commitment, and input order is preserved
+  ---
+  duration_ms: 0.174792
+  ...
+# Subtest: offline command preserves the cohort and checks stored bytes, results and certificate signatures
+ok 4 - offline command preserves the cohort and checks stored bytes, results and certificate signatures
+  ---
+  duration_ms: 1401.396417
+  ...
+# Subtest: retained single observations verify exact signed payloads and require the certificate digest
+ok 5 - retained single observations verify exact signed payloads and require the certificate digest
+  ---
+  duration_ms: 2.773625
+  ...
+# Subtest: bundle verification checks every member and its original order
+ok 6 - bundle verification checks every member and its original order
+  ---
+  duration_ms: 1.776917
+  ...
+# Subtest: an empty sheaf binding is recognized but never counted as a verified report or bundle
+ok 7 - an empty sheaf binding is recognized but never counted as a verified report or bundle
+  ---
+  duration_ms: 0.196959
+  ...
+# Subtest: unsigned latest projections and opaque anchors remain different from signed reports
+ok 8 - unsigned latest projections and opaque anchors remain different from signed reports
+  ---
+  duration_ms: 0.20525
+  ...
+# Subtest: unknown goods and malformed bundles abstain instead of searching arbitrary nested signatures
+ok 9 - unknown goods and malformed bundles abstain instead of searching arbitrary nested signatures
+  ---
+  duration_ms: 0.2265
+  ...
+# Subtest: offline supplement keeps missing and tampered journal evidence in the original denominator
+ok 10 - offline supplement keeps missing and tampered journal evidence in the original denominator
+  ---
+  duration_ms: 557.232417
+  ...
+# Subtest: private capture refuses a Git checkout and bounds response bytes while streaming
+ok 11 - private capture refuses a Git checkout and bounds response bytes while streaming
+  ---
+  duration_ms: 24.315042
+  ...
+# Subtest: capture output guard fails closed when Git cannot establish repository membership
+ok 12 - capture output guard fails closed when Git cannot establish repository membership
+  ---
+  duration_ms: 0.88475
+  ...
+# Subtest: capture uses only existing read methods and never passes a proposed write
+ok 13 - capture uses only existing read methods and never passes a proposed write
+  ---
+  duration_ms: 0.702542
+  ...
+# Subtest: legacy completed journals are readable; absence, malformed data and provider failure differ
+ok 14 - legacy completed journals are readable; absence, malformed data and provider failure differ
+  ---
+  duration_ms: 0.155084
+  ...
+# Subtest: wrong or missing session authorization cannot reach a production binding
+ok 15 - wrong or missing session authorization cannot reach a production binding
+  ---
+  duration_ms: 15.44425
+  ...
+# Subtest: unknown items and oversized requests cannot reach a production binding
+ok 16 - unknown items and oversized requests cannot reach a production binding
+  ---
+  duration_ms: 0.717708
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1594.504083
+TAP version 13
+# Subtest: the published summary agrees with retained source hashes and samples
+ok 1 - the published summary agrees with retained source hashes and samples
+  ---
+  duration_ms: 54.539583
+  ...
+# Subtest: altering the summary fails the same checker
+ok 2 - altering the summary fails the same checker
+  ---
+  duration_ms: 46.631791
+  ...
+# Subtest: altering the raw record fails the same checker
+ok 3 - altering the raw record fails the same checker
+  ---
+  duration_ms: 41.943083
+  ...
+# Subtest: altering the measuring script fails the same checker
+ok 4 - altering the measuring script fails the same checker
+  ---
+  duration_ms: 41.900042
+  ...
+# Subtest: altering the published figure fails the same checker
+ok 5 - altering the published figure fails the same checker
+  ---
+  duration_ms: 53.090083
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 288.232459

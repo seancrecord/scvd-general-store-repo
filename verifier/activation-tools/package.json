@@ -1,0 +1,9 @@
+{
+  "name": "scvd-verifier-activation-tools",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "22.13.1",
+    "typescript": "5.9.3"
+  }
+}

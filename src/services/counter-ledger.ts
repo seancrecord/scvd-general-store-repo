@@ -1,6 +1,9 @@
+import { isHouseWallet } from "@/lib/channel";
+import type { MppHouseCorrection, MppSalesSummary } from "@/services/mpp-sales";
 import { DurableObject } from "cloudflare:workers";
 import { kvPut, withKvRetry } from "@/lib/kv-retry";
 import type { Env, PayerRecord } from "@/types";
+import { MPP_SALES_PREFIX, MPP_PAYER_PREFIX, validateMppSalesSummary } from "@/services/mpp-sales";
 
 /**
  * THE COUNTER LEDGER (2026-09-11) — one writer per counter, because a
@@ -70,7 +73,110 @@ export class CounterLedger extends DurableObject<Env> {
     sql.exec("CREATE TABLE IF NOT EXISTS counters (key TEXT PRIMARY KEY, value INTEGER NOT NULL)");
     sql.exec("CREATE TABLE IF NOT EXISTS rows (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
     sql.exec("CREATE TABLE IF NOT EXISTS dirty (key TEXT PRIMARY KEY)");
+    sql.exec("CREATE TABLE IF NOT EXISTS mpp_sales (id TEXT PRIMARY KEY, evidence TEXT NOT NULL)");
+    sql.exec("CREATE TABLE IF NOT EXISTS mpp_house_corrections (id TEXT PRIMARY KEY, evidence TEXT NOT NULL)");
     return sql;
+  }
+
+  /** Inspect one retained sale without modifying an empty or existing ledger. */
+  async readMppSale(id: string): Promise<string | null> {
+    if (!/^[a-f0-9]{64}$/.test(id)) throw new Error("Invalid purchase ID");
+    // An inspection must not initialize schema, arm an alarm or flush a mirror.
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return null;
+    return sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales WHERE id = ?", id).toArray()[0]?.evidence ?? null;
+  }
+
+  /** Bounded reverse lookup for certificates minted before protocol linkage existed.
+   * Invalid JSON throws; corruption must not look like an absent booking. */
+  async readMppSaleIdsForTransaction(transaction: string): Promise<string[]> {
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return [];
+    return sql.exec<{ id: string }>(
+      "SELECT id FROM mpp_sales WHERE lower(json_extract(evidence, '$.transaction')) = lower(?) LIMIT 2", transaction,
+    ).toArray().map(row => row.id);
+  }
+
+  /** One monthly source, disjoint from every legacy x402 counter. */
+  async recordMppSale(sale: { id: string; month: string; payer: string; transaction: string; amount: string; house: boolean }): Promise<void> {
+    if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||
+      !/^0x[a-f0-9]{40}$/.test(sale.payer) || !/^0x[a-f0-9]{64}$/i.test(sale.transaction) ||
+      !/^\d+$/.test(sale.amount) || BigInt(sale.amount) <= 0n || typeof sale.house !== "boolean") throw new Error("Invalid MPP sale");
+    // Alarm first: a crash after the SQL commit cannot abandon the KV mirror.
+    await this.ctx.storage.setAlarm(Date.now() + FLUSH_MS);
+    const key = `${MPP_SALES_PREFIX}${sale.month}`;
+    const payerKey = `${MPP_PAYER_PREFIX}${sale.payer}`;
+    const accepted = this.ctx.storage.transactionSync(() => {
+      const sql = this.schema();
+      const evidence = JSON.stringify(sale);
+      const existing = sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales WHERE id = ?", sale.id).toArray()[0];
+      if (existing) {
+        return existing.evidence === evidence;
+      }
+      const saved = sql.exec<{ value: string }>("SELECT value FROM rows WHERE key = ?", key).toArray()[0];
+      const summary = saved ? JSON.parse(saved.value) as MppSalesSummary :
+        { organic: 0, house: 0, organic_amount_atomic: "0", house_amount_atomic: "0" };
+      validateMppSalesSummary(summary);
+      const kind = sale.house ? "house" : "organic";
+      summary[kind]++;
+      summary[`${kind}_amount_atomic`] = String(BigInt(summary[`${kind}_amount_atomic`]) + BigInt(sale.amount));
+      sql.exec("INSERT INTO mpp_sales (id, evidence) VALUES (?, ?)", sale.id, evidence);
+      sql.exec("INSERT INTO rows (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", key, JSON.stringify(summary));
+      sql.exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);
+      if (!sale.house) {
+        sql.exec("INSERT OR IGNORE INTO rows (key, value) VALUES (?, ?)", payerKey, JSON.stringify({ address: sale.payer }));
+        sql.exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", payerKey);
+      }
+      return true;
+    });
+    if (!accepted) throw new Error("MPP sale evidence changed");
+    // The existing mirror writer serializes writes, including alarm retries.
+    const summary = this.rowValue<MppSalesSummary>(key);
+    if (summary) await this.mirror(key, JSON.stringify(summary));
+    if (!sale.house) await this.mirror(payerKey, JSON.stringify({ address: sale.payer }));
+  }
+
+  /** Point read only; an inspection never initializes or repairs storage. */
+  async readMppHouseCorrection(id: string): Promise<string | null> {
+    if (!/^[a-f0-9]{64}$/.test(id)) throw new Error("Invalid purchase ID");
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_house_corrections'").toArray().length) return null;
+    const raw = sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_house_corrections WHERE id = ?", id).toArray()[0]?.evidence;
+    return raw ?? null;
+  }
+
+  /** One explicit correction per retained organic sale; never overwrite the sale. */
+  async correctMppHouseSale(sale: Parameters<CounterLedger["recordMppSale"]>[0], reason: string): Promise<MppHouseCorrection> {
+    if (!/^[a-f0-9]{64}$/.test(sale.id) || !isHouseWallet(this.env, sale.payer) || sale.house !== false ||
+      typeof reason !== "string" || !reason.trim() || reason.length > 500) throw new Error("MPP house correction refused");
+    // As with a sale, persist a retry obligation before committing the adjustment.
+    await this.ctx.storage.setAlarm(Date.now() + FLUSH_MS);
+    const key = `${MPP_SALES_PREFIX}${sale.month}`;
+    const correction = this.ctx.storage.transactionSync(() => {
+      const sql = this.schema();
+      const raw = sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales WHERE id = ?", sale.id).toArray()[0]?.evidence;
+      if (!raw || raw !== JSON.stringify(sale)) throw new Error("MPP sale evidence differs");
+      const prior = sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_house_corrections WHERE id = ?", sale.id).toArray()[0];
+      if (prior) return JSON.parse(prior.evidence) as MppHouseCorrection;
+      const saved = sql.exec<{ value: string }>("SELECT value FROM rows WHERE key = ?", key).toArray()[0];
+      if (!saved) throw new Error("MPP summary unavailable");
+      const summary = JSON.parse(saved.value) as MppSalesSummary;
+      validateMppSalesSummary(summary);
+      const count = (summary.reclassified_house ?? 0) + 1;
+      const amount = BigInt(summary.reclassified_amount_atomic ?? "0") + BigInt(sale.amount);
+      if (count > summary.organic || amount > BigInt(summary.organic_amount_atomic)) throw new Error("MPP correction exceeds sales");
+      summary.reclassified_house = count;
+      summary.reclassified_amount_atomic = String(amount);
+      const row: MppHouseCorrection = { id: sale.id, month: sale.month, payer: sale.payer, amount: sale.amount,
+        at: new Date().toISOString(), reason: reason.trim() };
+      sql.exec("INSERT INTO mpp_house_corrections (id, evidence) VALUES (?, ?)", sale.id, JSON.stringify(row));
+      sql.exec("UPDATE rows SET value = ? WHERE key = ?", JSON.stringify(summary), key);
+      sql.exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);
+      return row;
+    });
+    const summary = this.rowValue<MppSalesSummary>(key);
+    if (summary) await this.mirror(key, JSON.stringify(summary));
+    return correction;
   }
 
   /** Add to a counter and return the new value. One statement; cannot interleave. */
@@ -194,6 +300,8 @@ export class CounterLedger extends DurableObject<Env> {
     sql.exec("DELETE FROM counters");
     sql.exec("DELETE FROM rows");
     sql.exec("DELETE FROM dirty");
+    sql.exec("DELETE FROM mpp_sales");
+    sql.exec("DELETE FROM mpp_house_corrections");
     this.lastMirror.clear();
     await this.ctx.storage.deleteAlarm();
   }
@@ -236,11 +344,11 @@ export class CounterLedger extends DurableObject<Env> {
     return rows.length > 0 ? Number(rows[0]!.value) : null;
   }
 
-  private rowValue(key: string): PayerRecord | null {
+  private rowValue<T = PayerRecord>(key: string): T | null {
     const rows = this.schema().exec<{ value: string }>("SELECT value FROM rows WHERE key = ?", key).toArray();
     if (rows.length === 0) return null;
     try {
-      return JSON.parse(rows[0]!.value) as PayerRecord;
+      return JSON.parse(rows[0]!.value) as T;
     } catch {
       return null;
     }
@@ -354,7 +462,9 @@ export class CounterLedger extends DurableObject<Env> {
       while (next !== null) {
         await kvPut(this.env.COUNTERS, key, next);
         this.lastMirror.set(key, Date.now());
-        next = this.takeDirty(key);
+        const latest = this.takeDirty(key);
+        // An obligation written before this very value need not write it twice.
+        next = latest === next ? null : latest;
       }
     } catch {
       this.schema().exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);

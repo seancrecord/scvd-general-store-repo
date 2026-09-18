@@ -1,0 +1,741 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-17T17:07:26.818Z",
+  "launch_context": "Claude Code on the web (remote sandbox), signed-in claude CLI, organisation egress policy through an agent proxy; not the keeper's native machine. Codex CLI is not installed here.",
+  "what_this_is": "Two live host capability probes for the Claude host under the frozen schema-4 plan and the unchanged September 17 allowlist (curl, node). A probe qualifies a host and adapter; it is not a buyer journey and names no service.",
+  "result": "Both probes pass: the host retained the public bytes exactly and verified the runner-minted ed25519 vectors with node crypto (SPKI-wrapped raw key) — the permitted path neither September 17 Claude buyer attempted.",
+  "first_probe_defect": "The first probe used one shared message, so with deterministic ed25519 the two valid signatures were identical bytes and the two tampered ones were identical; the host noticed. The instrument now mints one message per vector; the second probe ran on the corrected instrument (see instrument_sha256). The first probe is retained, not rescored.",
+  "observations": [
+    "Refusals in this launch context were compound commands (semicolon- or newline-separated) and a heredoc redirect; a curl chained with && to echo, and plain ls/echo/cat-free commands, ran. The host's own attribution of the first refusal to curl flag order is contradicted by the trace, which shows the refused commands were the compound ones.",
+    "Commands not on the allowlist (ls, echo) executed in dontAsk mode; the allowlist is not the only allow path in this Claude Code version. Recorded, not relied on.",
+    "The second probe's host self-report listed no refused commands while the trace shows one refused cat heredoc; self-reports are statements, the trace is the record.",
+    "The merchant subject https://lionx402.com is refused by this sandbox's egress policy (CONNECT 403), so the buyer cohort was not run here; scvd.store, raw.githubusercontent.com and the MCP registry are reachable."
+  ],
+  "cohort_run": false,
+  "private_originals": "Raw traces, retained files, launch metadata and reference bytes stay under the ignored private/ directory and were handed to the keeper as an archive; this record lists every file with its hash.",
+  "probes": [
+    {
+      "directory": "private/probe-web-2026-09-17",
+      "probed_at": "2026-09-17T17:03:47.531Z",
+      "plan_sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393",
+      "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+      "instrument_sha256": {
+        "buyer-cold-isolated.mjs": "79e3b7c5e2ed17b2abfbf262372d1ccb9c19fda6873c9b3d29c5039e8611954b",
+        "lib/buyer-cold.mjs": "59d6a9562247c7b44340a23256c2e9aa0cc0ff2c1a45452eaf220991c53e4c41",
+        "lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+        "lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+        "../verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+        "../verifier/x402-verify.js": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
+      },
+      "hosts": {
+        "codex": {
+          "state": "unavailable",
+          "reason": "CLI version check failed"
+        },
+        "claude": {
+          "state": "pass",
+          "retention": "pass",
+          "local_check": "pass",
+          "denied": [
+            "curl",
+            "curl"
+          ],
+          "executed": [
+            "ls",
+            "echo",
+            "node",
+            "curl",
+            "node",
+            "node",
+            "node",
+            "node",
+            "node"
+          ]
+        }
+      },
+      "claude": {
+        "cli": "2.1.274 (Claude Code)",
+        "model_requested": "sonnet",
+        "models_resolved": [
+          "claude-sonnet-5"
+        ],
+        "runtime": {
+          "state": "completed",
+          "exit_code": 0,
+          "signal": null,
+          "spawn_error": null,
+          "budget_stop": null
+        },
+        "started_at": "2026-09-17T17:03:47.722Z",
+        "ended_at": "2026-09-17T17:04:33.888Z",
+        "tool_calls": 11,
+        "output_tokens": 4899,
+        "launch": {
+          "command": "claude",
+          "args": [
+            "--print",
+            "--safe-mode",
+            "--restricted",
+            "--strict-mcp-config",
+            "--mcp-config",
+            "{\"mcpServers\":{}}",
+            "--no-session-persistence",
+            "--disable-slash-commands",
+            "--no-chrome",
+            "--permission-mode",
+            "dontAsk",
+            "--tools",
+            "WebSearch,WebFetch,Bash",
+            "--allowedTools",
+            "WebSearch,WebFetch,Bash(curl *),Bash(node *)",
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "--model",
+            "sonnet"
+          ],
+          "environment_keys": [
+            "PATH",
+            "HOME",
+            "SHELL",
+            "HTTPS_PROXY",
+            "NO_PROXY",
+            "https_proxy",
+            "no_proxy",
+            "NODE_EXTRA_CA_CERTS",
+            "SSL_CERT_FILE",
+            "CURL_CA_BUNDLE",
+            "ANTHROPIC_BASE_URL"
+          ],
+          "prompt_sha256": "22fc16551d76ebe6fde89ad0e0701db9c182b86b43a52ddb1fdf329134e7e093"
+        },
+        "reference": {
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "bytes": 2189,
+          "fetched_at": "2026-09-17T17:03:47.721Z"
+        },
+        "retained_artifacts": {
+          "state": "complete",
+          "bytes": 2354,
+          "files": [
+            {
+              "file": "evidence/public.bin",
+              "bytes": 2189,
+              "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+            },
+            {
+              "file": "evidence/capability.json",
+              "bytes": 165,
+              "sha256": "34ba145c17a574c4b85a8c79a74af9c43b24cb86637c5c4382604ff954d357bf"
+            }
+          ],
+          "issues": []
+        },
+        "vectors_truth": {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        "host_report": {
+          "fetched_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "signatures": {
+            "a": true,
+            "b": true,
+            "c": false,
+            "d": false
+          },
+          "commands_denied": [
+            "curl"
+          ]
+        },
+        "commands": [
+          {
+            "line": 11,
+            "program": "ls",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": false,
+              "redirect": true
+            }
+          },
+          {
+            "line": 14,
+            "program": "curl",
+            "outcome": "denied",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": false,
+              "redirect": false
+            }
+          },
+          {
+            "line": 20,
+            "program": "echo",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": false,
+              "and": false,
+              "newline": false,
+              "redirect": false
+            }
+          },
+          {
+            "line": 23,
+            "program": "curl",
+            "outcome": "denied",
+            "separators": {
+              "semicolon": false,
+              "and": false,
+              "newline": true,
+              "redirect": false
+            }
+          },
+          {
+            "line": 27,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": false,
+              "and": false,
+              "newline": false,
+              "redirect": false
+            }
+          },
+          {
+            "line": 32,
+            "program": "curl",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": false,
+              "and": true,
+              "newline": false,
+              "redirect": false
+            }
+          },
+          {
+            "line": 35,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": true,
+              "redirect": false
+            }
+          },
+          {
+            "line": 40,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": true,
+              "redirect": false
+            }
+          },
+          {
+            "line": 47,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": true,
+              "redirect": true
+            }
+          },
+          {
+            "line": 51,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": true,
+              "redirect": false
+            }
+          },
+          {
+            "line": 54,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": true,
+              "redirect": false
+            }
+          }
+        ],
+        "score": {
+          "state": "pass",
+          "retention": {
+            "state": "pass",
+            "reason": "Retained bytes match the runner's independent fetch.",
+            "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+            "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+          },
+          "local_check": {
+            "state": "pass",
+            "reason": "Reported signature results match the runner's vectors and a local command completed.",
+            "expected": {
+              "a": true,
+              "b": true,
+              "c": false,
+              "d": false
+            },
+            "reported": {
+              "a": true,
+              "b": true,
+              "c": false,
+              "d": false
+            },
+            "report_matches_retained": true
+          },
+          "denied": [
+            "curl",
+            "curl"
+          ],
+          "executed": [
+            "ls",
+            "echo",
+            "node",
+            "curl",
+            "node",
+            "node",
+            "node",
+            "node",
+            "node"
+          ]
+        }
+      },
+      "files": {
+        "capability.json": {
+          "bytes": 874,
+          "sha256": "0a47c7f430ce2290884286fb2de0e18ceecb5afef8a86c6c942c38e70bcadc48"
+        },
+        "claude/capability.json": {
+          "bytes": 1249,
+          "sha256": "fc1c68feb28a1ce7e56456b5d936856eb66dfb41ae4b35dc6ba5667221d3fd0a"
+        },
+        "claude/events.jsonl": {
+          "bytes": 57516,
+          "sha256": "a63b4ef5f39d3aabaa22bc37ea69cfcaaf077abc04c0f95a8d4011f5c2fcebe4"
+        },
+        "claude/evidence/capability.json": {
+          "bytes": 165,
+          "sha256": "34ba145c17a574c4b85a8c79a74af9c43b24cb86637c5c4382604ff954d357bf"
+        },
+        "claude/evidence/public.bin": {
+          "bytes": 2189,
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "claude/launch.json": {
+          "bytes": 958,
+          "sha256": "2ca00b94bcab623039b9183fdb36a28cad0b614711b222e06d98c564c612b3a4"
+        },
+        "claude/prompt.txt": {
+          "bytes": 2174,
+          "sha256": "22fc16551d76ebe6fde89ad0e0701db9c182b86b43a52ddb1fdf329134e7e093"
+        },
+        "claude/reference.bin": {
+          "bytes": 2189,
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "claude/run.json": {
+          "bytes": 6846,
+          "sha256": "5c1672e114e6fd2748894e0a56e14c5817f5ebd44ef27e86041ded9f41732884"
+        },
+        "claude/runtime.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "claude/vectors.json": {
+          "bytes": 1000,
+          "sha256": "4485c956fab2dfe376502e9dd585c4f3145ea398b03adf833ef7570d6857339f"
+        },
+        "codex/prompt.txt": {
+          "bytes": 1919,
+          "sha256": "6628f4287222abe05075e752a0b18bdf7b292bba677efab9624f0de515e439fc"
+        },
+        "codex/run.json": {
+          "bytes": 236,
+          "sha256": "293d0362c1828b17c5aaabcde851406c56aa461dc3cba57c315d6154fcad2ef9"
+        },
+        "codex/vectors.json": {
+          "bytes": 1001,
+          "sha256": "89dda6632f9d182e6b9bc5f154875b05da171ed431a6eb37a911ecf011eb1148"
+        },
+        "hosts.json": {
+          "bytes": 208,
+          "sha256": "68a748eb7ea173a5e96d1954ca6ccef81882b08767de8e3d731d6a7b18f7f93b"
+        },
+        "instrument/buyer-cold-isolated.mjs": {
+          "bytes": 16873,
+          "sha256": "79e3b7c5e2ed17b2abfbf262372d1ccb9c19fda6873c9b3d29c5039e8611954b"
+        },
+        "instrument/lib/buyer-cold.mjs": {
+          "bytes": 32967,
+          "sha256": "59d6a9562247c7b44340a23256c2e9aa0cc0ff2c1a45452eaf220991c53e4c41"
+        },
+        "instrument/lib/buyer-retention.mjs": {
+          "bytes": 2843,
+          "sha256": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1"
+        },
+        "instrument/lib/buyer-run-evidence.mjs": {
+          "bytes": 7590,
+          "sha256": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f"
+        },
+        "instrument.json": {
+          "bytes": 645,
+          "sha256": "0327f5b3d174cba8d500c8bc2890ac1130cc7d016ec7070cefb7e3111e789f5e"
+        },
+        "plan.json": {
+          "bytes": 2586,
+          "sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393"
+        },
+        "verifier/evidence-bundle.js": {
+          "bytes": 9551,
+          "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+        },
+        "verifier/x402-verify.js": {
+          "bytes": 39503,
+          "sha256": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
+        }
+      }
+    },
+    {
+      "directory": "private/probe-web-2026-09-17-b",
+      "probed_at": "2026-09-17T17:06:19.293Z",
+      "plan_sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393",
+      "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+      "instrument_sha256": {
+        "buyer-cold-isolated.mjs": "79e3b7c5e2ed17b2abfbf262372d1ccb9c19fda6873c9b3d29c5039e8611954b",
+        "lib/buyer-cold.mjs": "1a6b72775329ecb1e2322f00c3916dd8c1b4d2c2535afcbe36b9d45afbc99484",
+        "lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+        "lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+        "../verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+        "../verifier/x402-verify.js": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
+      },
+      "hosts": {
+        "codex": {
+          "state": "unavailable",
+          "reason": "CLI version check failed"
+        },
+        "claude": {
+          "state": "pass",
+          "retention": "pass",
+          "local_check": "pass",
+          "denied": [
+            "cat"
+          ],
+          "executed": [
+            "curl",
+            "node",
+            "ls",
+            "node",
+            "node"
+          ]
+        }
+      },
+      "claude": {
+        "cli": "2.1.274 (Claude Code)",
+        "model_requested": "sonnet",
+        "models_resolved": [
+          "claude-sonnet-5"
+        ],
+        "runtime": {
+          "state": "completed",
+          "exit_code": 0,
+          "signal": null,
+          "spawn_error": null,
+          "budget_stop": null
+        },
+        "started_at": "2026-09-17T17:06:19.406Z",
+        "ended_at": "2026-09-17T17:06:46.794Z",
+        "tool_calls": 6,
+        "output_tokens": 2855,
+        "launch": {
+          "command": "claude",
+          "args": [
+            "--print",
+            "--safe-mode",
+            "--restricted",
+            "--strict-mcp-config",
+            "--mcp-config",
+            "{\"mcpServers\":{}}",
+            "--no-session-persistence",
+            "--disable-slash-commands",
+            "--no-chrome",
+            "--permission-mode",
+            "dontAsk",
+            "--tools",
+            "WebSearch,WebFetch,Bash",
+            "--allowedTools",
+            "WebSearch,WebFetch,Bash(curl *),Bash(node *)",
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "--model",
+            "sonnet"
+          ],
+          "environment_keys": [
+            "PATH",
+            "HOME",
+            "SHELL",
+            "HTTPS_PROXY",
+            "NO_PROXY",
+            "https_proxy",
+            "no_proxy",
+            "NODE_EXTRA_CA_CERTS",
+            "SSL_CERT_FILE",
+            "CURL_CA_BUNDLE",
+            "ANTHROPIC_BASE_URL"
+          ],
+          "prompt_sha256": "02f3a04ad72b27a0fafabfbde11ec83fde5fba90a647342d7443f943d9048e0f"
+        },
+        "reference": {
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "bytes": 2189,
+          "fetched_at": "2026-09-17T17:06:19.406Z"
+        },
+        "retained_artifacts": {
+          "state": "complete",
+          "bytes": 2347,
+          "files": [
+            {
+              "file": "evidence/public.bin",
+              "bytes": 2189,
+              "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+            },
+            {
+              "file": "evidence/capability.json",
+              "bytes": 158,
+              "sha256": "7654710c207c9e17dbf03460c8741b7f2b05224db5954cd271d45bdd613b4436"
+            }
+          ],
+          "issues": []
+        },
+        "vectors_truth": {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        "host_report": {
+          "fetched_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+          "signatures": {
+            "a": true,
+            "b": true,
+            "c": true,
+            "d": false
+          },
+          "commands_denied": []
+        },
+        "commands": [
+          {
+            "line": 7,
+            "program": "curl",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": false,
+              "and": true,
+              "newline": false,
+              "redirect": false
+            }
+          },
+          {
+            "line": 13,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": true,
+              "and": false,
+              "newline": true,
+              "redirect": false
+            }
+          },
+          {
+            "line": 18,
+            "program": "cat",
+            "outcome": "denied",
+            "separators": {
+              "semicolon": false,
+              "and": false,
+              "newline": true,
+              "redirect": true
+            }
+          },
+          {
+            "line": 22,
+            "program": "ls",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": false,
+              "and": false,
+              "newline": false,
+              "redirect": false
+            }
+          },
+          {
+            "line": 25,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": false,
+              "and": false,
+              "newline": false,
+              "redirect": false
+            }
+          },
+          {
+            "line": 27,
+            "program": "node",
+            "outcome": "completed",
+            "separators": {
+              "semicolon": false,
+              "and": false,
+              "newline": false,
+              "redirect": false
+            }
+          }
+        ],
+        "score": {
+          "state": "pass",
+          "retention": {
+            "state": "pass",
+            "reason": "Retained bytes match the runner's independent fetch.",
+            "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+            "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+          },
+          "local_check": {
+            "state": "pass",
+            "reason": "Reported signature results match the runner's vectors and a local command completed.",
+            "expected": {
+              "a": true,
+              "b": true,
+              "c": true,
+              "d": false
+            },
+            "reported": {
+              "a": true,
+              "b": true,
+              "c": true,
+              "d": false
+            },
+            "report_matches_retained": true
+          },
+          "denied": [
+            "cat"
+          ],
+          "executed": [
+            "curl",
+            "node",
+            "ls",
+            "node",
+            "node"
+          ]
+        }
+      },
+      "files": {
+        "capability.json": {
+          "bytes": 793,
+          "sha256": "3f79d8711b4273f8addfb5413242601a9783f7a3c6a4f36ee39c994b6b41b5c8"
+        },
+        "claude/capability.json": {
+          "bytes": 1176,
+          "sha256": "ba4a5eeab8d055ba15b860d305b6bc922f9f58e4de1596752627dff71c1460db"
+        },
+        "claude/events.jsonl": {
+          "bytes": 33327,
+          "sha256": "49b2b75f839d11094ec6e920122e9728cbbc658744b3c8b3c2a9186461f3386c"
+        },
+        "claude/evidence/capability.json": {
+          "bytes": 158,
+          "sha256": "7654710c207c9e17dbf03460c8741b7f2b05224db5954cd271d45bdd613b4436"
+        },
+        "claude/evidence/public.bin": {
+          "bytes": 2189,
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "claude/launch.json": {
+          "bytes": 958,
+          "sha256": "1e47a70bb99b9a3f3b96cb10ae586a5007be0544caefa34d2f494ba7dcc3ca53"
+        },
+        "claude/prompt.txt": {
+          "bytes": 2456,
+          "sha256": "02f3a04ad72b27a0fafabfbde11ec83fde5fba90a647342d7443f943d9048e0f"
+        },
+        "claude/reference.bin": {
+          "bytes": 2189,
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        "claude/run.json": {
+          "bytes": 4832,
+          "sha256": "fa66b91d67cbe95e5db92badaf4b0aac573c21fd1013993e256b112c80de051c"
+        },
+        "claude/runtime.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "claude/vectors.json": {
+          "bytes": 1221,
+          "sha256": "055b7ca75f07d68cd8a38f56c71f0f854559030feaf0debb1d4307ffe9ca4433"
+        },
+        "codex/prompt.txt": {
+          "bytes": 2201,
+          "sha256": "85867348a407e17ace6fc2f60c41e6d91ca066992f20b5b11661def2e95da710"
+        },
+        "codex/run.json": {
+          "bytes": 236,
+          "sha256": "293d0362c1828b17c5aaabcde851406c56aa461dc3cba57c315d6154fcad2ef9"
+        },
+        "codex/vectors.json": {
+          "bytes": 1223,
+          "sha256": "610051200fe1e5383cc90606fd8761eef98e1626a57bf4a49b07ed4d1d674376"
+        },
+        "hosts.json": {
+          "bytes": 208,
+          "sha256": "68a748eb7ea173a5e96d1954ca6ccef81882b08767de8e3d731d6a7b18f7f93b"
+        },
+        "instrument/buyer-cold-isolated.mjs": {
+          "bytes": 16873,
+          "sha256": "79e3b7c5e2ed17b2abfbf262372d1ccb9c19fda6873c9b3d29c5039e8611954b"
+        },
+        "instrument/lib/buyer-cold.mjs": {
+          "bytes": 33213,
+          "sha256": "1a6b72775329ecb1e2322f00c3916dd8c1b4d2c2535afcbe36b9d45afbc99484"
+        },
+        "instrument/lib/buyer-retention.mjs": {
+          "bytes": 2843,
+          "sha256": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1"
+        },
+        "instrument/lib/buyer-run-evidence.mjs": {
+          "bytes": 7590,
+          "sha256": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f"
+        },
+        "instrument.json": {
+          "bytes": 645,
+          "sha256": "7062d907bebb5168541c52dd7c1dd57a06f07a9eed79facf64b852b785eacfec"
+        },
+        "plan.json": {
+          "bytes": 2586,
+          "sha256": "a8c7185df633979508c17b582b6e93ff67fb1115c781d9825b6150a4f9913393"
+        },
+        "verifier/evidence-bundle.js": {
+          "bytes": 9551,
+          "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+        },
+        "verifier/x402-verify.js": {
+          "bytes": 39503,
+          "sha256": "b817316e89e610c6b08910ecf0431d4e5a122031614d148396e6f288f70a07bb"
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,13 @@
 # Four-wave buyer acceptance benchmark
 
+**September 16 sequencing decision:** ROADMAP TR1 first extends the cold
+instrument for buyer-first takeoff readiness; TR3 uses its evidence to close
+the bounded stranger journey. [Design and acceptance](../docs/TAKEOFF_READINESS_2026-09.md).
+The old directed, quote-only cohort remains attributed to its actual scope.
+The new unbranded discovery cohort has separate denominators. This does not
+close or replace the broader four-wave product/rail benchmark below, grant
+its spending ceiling, or promote house testing to organic adoption.
+
 Run in this order. A payment endpoint returning its documented status is not acceptance. A pass requires the right promised good, about the submitted subject, delivered and independently verifiable, with the money accounted for. Missing evidence is **incomplete**; an observed contradiction is **fail**. Keep failures visible even when other checks remain incomplete.
 
 Current evidence includes the [September 12 baseline](buyer-waves-2026-09-12/REPORT.md), its [machine score](buyer-waves-2026-09-12/score.json) and [quoted shelf grid](buyer-waves-2026-09-12/shelf-quote-grid.json), the [September 14 paid receipt run](buyer-receipt-acceptance-2026-09-14/REPORT.md), the [September 15 remaining live acceptance](buyer-remaining-acceptance-2026-09-15/REPORT.md), and the [September 15 unsigned public refresh](buyer-public-recheck-2026-09-15/REPORT.md). The September 12 baseline spent **0 USDC**; that is not the later paid runs' spend. Waves 1 and 2 are partially measured; neither the full architecture matrix nor full shelf is complete. Attribute each result to its actual product, rail, release and purchase. The latest refresh exposed B-BCOLLECT in the primary comparator/crawler; do not treat its raw differences and placeholder requests as store defects.
@@ -18,10 +26,10 @@ Repeat unsigned collection in a **fresh directory**:
 ```sh
 node scripts/buyer-wave-snapshot.mjs research/buyer-waves-NEW
 node scripts/buyer-wave-one.mjs research/buyer-waves-NEW
-node scripts/buyer-cold-isolated.mjs /private/tmp/buyer-cold-NEW
+node scripts/buyer-cold-isolated.mjs --plan research/takeoff-readiness-2026-09-16/plan.json --out /private/tmp/buyer-cold-NEW --run
 ```
 
-Review and preserve each cold transcript before writing `cold/reviewed-metrics.json`; populate a dated `readiness.json`. The scorer requires these human/agent-reviewed observations and must not inherit the prior cohort's scores. Run `node scripts/buyer-wave-score.mjs research/buyer-waves-NEW`. The structural comparison, direct crawl and prepayment battery are partial instruments, not implementations of every check above. The current snapshot collector adds response provenance that the original eight snapshots lacked.
+For schema-2 cold runs, follow [the cold instrument guide](BUYER_COLD.md): preserve each transcript and write evidence-bound per-cell reviews, then rescore. Put the complete cohort under `cold/` to include it in a buyer-wave score. Legacy schema-1 cohorts retain their `cold/reviewed-metrics.json`; populate a dated `readiness.json`. The scorer requires these human/agent-reviewed observations and must not inherit the prior cohort's scores. Run `node scripts/buyer-wave-score.mjs research/buyer-waves-NEW`. The structural comparison, direct crawl and prepayment battery are partial instruments, not implementations of every check above. The current snapshot collector adds response provenance that the original eight snapshots lacked.
 
 ## Wave 2 — cheapest suitable instant good, real money
 
