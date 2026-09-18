@@ -85,5 +85,55 @@
   "publication_receipt_check": {
     "passed": 3,
     "failed": 0
+  },
+  "combined_integration": {
+    "parent_preparer_commit": "947122fa4df0b149f55f7c5f0c98ed45b42e3a36",
+    "focused_passed": 215,
+    "failing_before_controller_binding": 1,
+    "full_worker_suite": {
+      "state": "passed",
+      "total": 15048,
+      "passed": 15047,
+      "failed": 0,
+      "skipped": 1
+    },
+    "failing_before_unclassified_prompt": 1,
+    "typecheck": "passed",
+    "worker_bundles": "passed",
+    "docs": "passed with advisory stale-doc notices",
+    "logs": {
+      "focused": {
+        "sha256": "6dda4899d51f23b0f04240534da2274d50b0e308af92f91951e27a357ee731ea",
+        "bytes": 42855
+      },
+      "typecheck": {
+        "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+        "bytes": 54
+      },
+      "build": {
+        "sha256": "7ab5896fb92f6ab850fc5ebcf63433b8e731a8f34ced697330f0b9d9f2d7d248",
+        "bytes": 3924
+      },
+      "docs": {
+        "sha256": "c805ce04714affaaf7c7f19966bec0c0bc23f8b6286e9f512bf65ea209ab9cfe",
+        "bytes": 3904
+      },
+      "frozen_binding_red": {
+        "sha256": "fa97f84427e05d6289dffca207c900d91c1c39c261a34a6342dd3a8edbd75567",
+        "bytes": 1351
+      },
+      "citation_prompt_red": {
+        "sha256": "46a204c578f39bc99b57ae46bfd24208e83cf45364f90c1300958edd411e957f",
+        "bytes": 4400
+      },
+      "full.json": {
+        "sha256": "058dbb44599c61e508c55fbe2c24cdb85add21a359f656ed6488bead4b596df7",
+        "bytes": 4742515
+      },
+      "full.log": {
+        "sha256": "dfe2cd1d6881750801b6400e3a6eac78ccd38aaa27078340587c647bf3c6ff99",
+        "bytes": 367799
+      }
+    }
   }
 }

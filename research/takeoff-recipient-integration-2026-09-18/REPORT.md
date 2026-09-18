@@ -73,3 +73,32 @@ Network settings disable sandbox network access and web search through the
 existing adapter. These controls and the local-crypto probe are not a proof
 against every possible sandbox escape. Timing gaps invalidate a run; they do
 not diagnose sleep or grant extra time. No operational limits were increased.
+
+## Reconciliation with the published preparer
+
+PR #810 (`947122fa`) supplies the frozen-cohort preparer checks and shared
+inventory prompt. The combined controller calls that exact preparer contract,
+including its protocol and parsed-plan bindings; it keeps schema 6's unclassified
+all-file inventory, separate offline qualification and single-attempt runtime.
+Schema 5 can still describe either preparer scope. New live controller runs
+require schema 6, so those compatibility paths do not bypass its acceptance gate.
+
+The combined focused suite passes 215 checks. Removing the controller's frozen
+handoff argument makes the integration assertion fail; restoring it passes.
+The standalone unclassified prompt also failed its regression assertion before
+the shared helper received that classification. The combined full Worker suite
+passed 15,047 tests with one skipped and no failures. Typecheck, both
+bundle checks and documentation checks passed (the latter with stale-document
+advisories). Evidence is recorded separately in `validation.json`.
+
+Before any new native acquisition, a readback at 2026-09-18 16:47 UTC captured
+HTTP 200 responses from the live menu, guide, store skill, buyer entry skill and
+its source-pinned counterpart. The buyer entry matched source revision
+`2dd2af818e0b7dd0a497f145bf2d754ff88e574b` byte for byte. The menu included the
+bare-host example, and the buyer entry retained independent issuer-key guidance.
+The existing six-door probe successfully read MCP tools/list (20 tools) and the
+current public registry description. Its only regression was the WebMCP origin
+trial approaching its October 15 expiry, reported as partial rather than expired.
+These are public-surface observations, not evidence of buyer understanding or a
+claim that the full origin-trial browser path was exercised. Raw readback bytes
+remain in the local acquisition directory; `public-readback.json` records hashes.

@@ -300,7 +300,7 @@ export function prepareRecipient(root,cellId) {
   if(run.runtime?.state!=='completed'||run.runtime.exit_code!==0||run.runtime.budget_stop||run.timing?.interruption)throw Error('Buyer is not eligible: it did not complete without interruption.');
   if(!Array.isArray(run.retained_artifacts?.files))throw Error('Buyer capture is missing.');
   const selection={schema_version:1,scope:'buyer_report',citation_policy:'unclassified',files:run.retained_artifacts.files.map(f=>({file:f.file,supply:true,cited:null,role:'other'}))};
-  return {plan,cell,source,context,selection,launch,run_sha256:hash(runBytes),protocol_sha256:hash(read('recipient-protocol.json')),output:path.join(source,'recipient')};
+  return {plan,cell,source,context,selection,launch,frozen:{plan,protocol,prompt:launch.prompt},run_sha256:hash(runBytes),protocol_sha256:hash(read('recipient-protocol.json')),output:path.join(source,'recipient')};
 }
 export async function runRecipient(root,cellId) {
   const prepared=prepareRecipient(root,cellId),{plan,source,context,selection,output}=prepared;
@@ -312,7 +312,7 @@ export async function runRecipient(root,cellId) {
   writeJson(path.join(output,'attempt.json'),{state:'reserved',cell:cellId,source_run_sha256:prepared.run_sha256,protocol_sha256:prepared.protocol_sha256,reserved_at:new Date().toISOString()});
   try {
     const inputs=path.join(output,'inputs');
-    const manifest=prepareHandoff(source,selection,inputs,{prompt:prepared.launch.prompt});
+    const manifest=prepareHandoff(source,selection,inputs,prepared.frozen);
     if(manifest.run_sha256!==prepared.run_sha256)throw Error('Buyer source changed during handoff preparation.');
     // Keep the pre-launch inputs outside the writable agent workspace.
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-recipient-'));
