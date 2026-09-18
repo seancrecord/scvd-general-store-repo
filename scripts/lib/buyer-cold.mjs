@@ -6,6 +6,7 @@ import {createHash, generateKeyPairSync, randomBytes, sign} from 'node:crypto';
 import {validEnvelope} from './buyer-run-evidence.mjs';
 import {createEvidenceBundle, verifyEvidenceBundle} from '../../verifier/evidence-bundle.js';
 
+export const CAPTURE_MAX_BYTES = 32 * 1024 * 1024;
 export const STAGES = ['discover', 'connect', 'check', 'decide', 'obtain', 'verify'];
 export const SESSION_WORKSPACE = Object.freeze({scratch:'work',evidence:'evidence',npm_cache:'work/npm-cache'});
 export const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -43,7 +44,7 @@ export function validatePlan(plan) {
   }
   if (plan.schema_version >= 3) {
     if (!Number.isSafeInteger(plan.freshness?.max_age_ms) || plan.freshness.max_age_ms <= 0) throw new Error('Declare a positive observation age limit before the run.');
-    if (!Number.isSafeInteger(plan.budgets.artifact_bytes) || plan.budgets.artifact_bytes <= 0 || plan.budgets.artifact_bytes > 32*1024*1024 || !Number.isSafeInteger(plan.budgets.artifact_files) || plan.budgets.artifact_files <= 0 || plan.budgets.artifact_files > 32) throw new Error('Artifact retention requires bounded bytes and files.');
+    if (!Number.isSafeInteger(plan.budgets.artifact_bytes) || plan.budgets.artifact_bytes <= 0 || plan.budgets.artifact_bytes > CAPTURE_MAX_BYTES || !Number.isSafeInteger(plan.budgets.artifact_files) || plan.budgets.artifact_files <= 0 || plan.budgets.artifact_files > 32) throw new Error('Artifact retention requires bounded bytes and files.');
   }
   // Schema 4: a generic public URL for the host capability probe. It must not
   // name the store, so retaining its bytes proves the host, not the product.
@@ -218,13 +219,17 @@ export function normalizeTrace(host, bytes) {
     limit: 'Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory.'};
 }
 
-export function readEvidence(root, ref) {
+export function readEvidenceBytes(root, ref) {
   if (!ref || !nonempty(ref.file) || !/^[a-f0-9]{64}$/.test(ref.sha256)) throw new Error('Missing evidence identity.');
   const base = fs.realpathSync(root), filename = fs.realpathSync(path.resolve(base, ref.file));
   const relative = path.relative(base, filename);
-  if (relative.startsWith('..') || path.isAbsolute(relative) || fs.statSync(filename).size > 32 * 1024 * 1024) throw new Error('Evidence escapes cohort or exceeds bound.');
+  if (relative.startsWith('..') || path.isAbsolute(relative) || fs.statSync(filename).size > CAPTURE_MAX_BYTES) throw new Error('Evidence escapes cohort or exceeds bound.');
   const bytes = fs.readFileSync(filename);
   if (hash(bytes) !== ref.sha256) throw new Error('Evidence hash mismatch.');
+  return bytes;
+}
+export function readEvidence(root, ref) {
+  const bytes=readEvidenceBytes(root,ref);
   if (ref.start_line !== undefined || ref.end_line !== undefined) {
     const lines = bytes.toString().trimEnd().split('\n');
     if (!Number.isInteger(ref.start_line) || !Number.isInteger(ref.end_line) || ref.start_line < 1 || ref.end_line < ref.start_line || ref.end_line > lines.length) throw new Error('Invalid evidence line range.');
@@ -279,14 +284,14 @@ async function verifyPortable(run, review, root, original) {
   try {
     bundle=v.bundle?JSON.parse(readEvidence(root,v.bundle)):null;
     issuer=JSON.parse(readEvidence(root,v.issuer));
-    rebuilt=await createEvidenceBundle(original,{maxBytes:32*1024*1024});
+    rebuilt=await createEvidenceBundle(original,{maxBytes:CAPTURE_MAX_BYTES});
     bundle ??= rebuilt;
   }catch{return {state:'incomplete',reason:'Original artifact, bundle or issuer bytes unavailable or unsupported.'};}
   if(!publicUrl(v.issuer_url)||new URL(v.issuer_url).origin!=='https://scvd.store'||!references(root,v.issuer_evidence))
     return {state:'incomplete',reason:'Independent SCVD issuer-key provenance missing.'};
   if(JSON.stringify(rebuilt.artifact)!==JSON.stringify(bundle.artifact))
     return {state:'fail',reason:'Portable signed bytes differ from the retained original.'};
-  const checked=await verifyEvidenceBundle(bundle,{publicKey:issuer.public_key,maxBytes:32*1024*1024});
+  const checked=await verifyEvidenceBundle(bundle,{publicKey:issuer.public_key,maxBytes:CAPTURE_MAX_BYTES});
   if(!checked.valid)return {state:'fail',signature:false,reason:'Portable signature or evidence binding failed.',problems:checked.problems};
   if(!checked.evidence_complete)return {state:'incomplete',signature:true,reason:'Linked evidence missing.',missing_evidence:checked.missing_evidence};
   const payload=checked.signed_claims;
