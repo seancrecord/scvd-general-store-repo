@@ -1110,8 +1110,11 @@ what you ruled and what is still yours to look at.
   a model tool call and gallery listing remain unverified.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
-  A2A Directory already lists SCVD; two new community API submissions failed
-  (503 and 404), with no new listing confirmed. MPP is now live for Context
+  A2A Directory already lists SCVD. The earlier community API attempts returned
+  503 and 404; the Global A2A Registry web form subsequently registered
+  [SCVD Evidence Agent](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent).
+  The public listing is confirmed and unclaimed. Claiming and domain/account
+  verification remain a keeper press; do not resubmit. MPP is now live for Context
   Anchor: the 21:13 UTC
   read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
   and OpenAPI capabilities. Other products are upcoming. Official MPP

@@ -1,0 +1,36 @@
+{
+  "observed_at": "2026-09-18T02:07:35.217616+00:00",
+  "registry": "Global A2A Registry (community-operated)",
+  "submission_url": "https://www.a2a-registry.org/submit",
+  "submitted_origin": "https://scvd.store",
+  "duplicate_check": "Fresh public browse search q=scvd returned No agents found before registration and after the initial uncertain mouse click",
+  "confirmation": "Agent Registered! store.scvd.scvd_evidence_agent is now in the directory as Unclaimed",
+  "listing_url": "https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent",
+  "listing_opened": true,
+  "display_name": "SCVD Evidence Agent",
+  "claim_status": "unclaimed",
+  "manifest_url": "https://scvd.store/.well-known/agent-card.json",
+  "endpoint_url": "https://scvd.store/a2a",
+  "skills": [
+    "preflight_endpoint",
+    "verify_receipt",
+    "get_endpoint_readiness"
+  ],
+  "limitations": [
+    "Ownership/domain verification not performed",
+    "Summary shows Text (default) while retained default_input_modes/default_output_modes are application/json",
+    "Registry classification is its own AI-generated taxonomy"
+  ],
+  "transmitted_data": "Public SCVD origin and metadata only; no private contact information, account, payment or DNS change",
+  "parser_issue": "https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7",
+  "local_validation": {
+    "typecheck": "passed",
+    "public_record_tests": 16,
+    "listing_tests": 37,
+    "sha256": {
+      "tests": "c4e470158de6b344e8fd8603b7d82b573188045a454b122da05b81ac3d2e8f09",
+      "types": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "listings": "4be15cf1f83092bd54a7cad52e7e215ddc0181d688064d4a25770fff93dcb40c"
+    }
+  }
+}
