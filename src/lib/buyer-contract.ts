@@ -1,4 +1,4 @@
-import { purchaseCapabilities, type PurchaseCapabilityConfig, nativeMcpCheckoutShape } from "@/lib/purchase-capabilities";
+import { purchaseCapabilities, type PurchaseCapabilityConfig, nativeMcpCheckoutShape, nativeWebmcpCheckoutShape } from "@/lib/purchase-capabilities";
 import { purchaseChecklist } from "@/lib/purchase-checklist";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { publicationCollections } from "@/lib/publication-checkout";
@@ -68,7 +68,7 @@ export function compactItemRow(item: MenuItem, base: string, config?: PurchaseCa
     // Spend its reading budget on an additional protocol only when enabled,
     // and on the item-independent MCP row once per page (compactCatalog),
     // not once per item; the item contract carries every row.
-    ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities.filter(row => row.transport !== "mcp") } : {}),
+    ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities.filter(row => row.transport === "http") } : {}),
     id: item.id,
     name: item.name,
     task: CAPABILITY_QUERY[item.id] ?? item.name,
@@ -134,8 +134,10 @@ export function compactCatalog(base: string, rawPage = "0", config?: PurchaseCap
   const items = MENU_ITEMS.slice(offset, offset + COMPACT_CATALOG_PAGE_SIZE)
     .map(item => compactItemRow(item, base, config));
   const mcpNative = nativeMcpCheckoutShape(config);
+  const webmcpNative = nativeWebmcpCheckoutShape(config);
   return {
     ...(mcpNative ? { native_mcp_checkout: mcpNative } : {}),
+    ...(webmcpNative ? { native_webmcp_checkout: webmcpNative } : {}),
     publications: publicationCollections(base),
     total: MENU_ITEMS.length,
     page,

@@ -6,7 +6,7 @@ same lane on the MCP door: an unpaid `buy_*` tools/call for any shelf item
 answers with the x402 terms and a native challenge for that item's own
 minimum, a credential signed against it settles, delivers and is booked the
 way the HTTP door's does, and the receipt returns in the result. Nothing
-moves to another network, asset or price; WebMCP and the packages keep x402.
+moves to another network, asset or price; the packages keep x402.
 
 ## The wire shape
 
@@ -103,7 +103,8 @@ door with a `?summary=`; why it passed is not established here.
 
 ## Not in this release
 
-WebMCP native checkout, the packages, other networks and assets, native tips,
-Stripe, subscriptions, and a services-directory claim. The live house
+The packages, other networks and assets, native tips, Stripe, subscriptions,
+and a services-directory claim; the WebMCP bridge followed in
+[its own release](MPP_WEBMCP_CHECKOUT_2026-09-18.md). The live house
 qualification covered the HTTP pilot's door; the MCP lane is qualified by the
 fixtures above and by the shared lifecycle, not by a live purchase.
