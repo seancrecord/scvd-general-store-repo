@@ -1,0 +1,97 @@
+{
+  "observed_at": "2026-09-18T16:59:39.629235+00:00",
+  "source": "GitHub pull-request API through gh",
+  "submissions": [
+    {
+      "url": "https://github.com/cline/marketplace/pull/122",
+      "state": "OPEN",
+      "merged_at": null,
+      "checks": []
+    },
+    {
+      "url": "https://github.com/cline/marketplace/pull/123",
+      "state": "OPEN",
+      "merged_at": null,
+      "checks": []
+    },
+    {
+      "url": "https://github.com/0xBebis/aifi-directory/pull/13",
+      "state": "OPEN",
+      "merged_at": null,
+      "checks": [
+        {
+          "name": "Workers Builds: aifi-directory",
+          "status": "SUCCESS"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/tempoxyz/mpp/pull/991",
+      "state": "OPEN",
+      "merged_at": null,
+      "checks": [
+        {
+          "name": "merge",
+          "status": "SKIPPED"
+        },
+        {
+          "name": "Report changed services",
+          "status": "SUCCESS"
+        },
+        {
+          "name": "label",
+          "status": "SUCCESS"
+        },
+        {
+          "name": "Post contributor guidance",
+          "status": "SUCCESS"
+        },
+        {
+          "name": "Vercel",
+          "status": "FAILURE"
+        },
+        {
+          "name": "Socket Security: Project Report",
+          "status": "SUCCESS"
+        },
+        {
+          "name": "Socket Security: Pull Request Alerts",
+          "status": "SUCCESS"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/github/agentfinder-catalog/pull/34",
+      "state": "OPEN",
+      "merged_at": null,
+      "checks": []
+    },
+    {
+      "url": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349",
+      "state": "OPEN",
+      "merged_at": null,
+      "checks": [
+        {
+          "name": "Validate open contribution requirements",
+          "status": "SUCCESS"
+        },
+        {
+          "name": "Scan PR (349, seancrecord, scvd-general-store-repo)",
+          "status": "FAILURE"
+        },
+        {
+          "name": "Open contribution gate",
+          "status": "SUCCESS"
+        },
+        {
+          "name": "Publish per-PR contribution checks",
+          "status": "SUCCESS"
+        },
+        {
+          "name": "Open Plugin Contribution Gate",
+          "status": "SUCCESS"
+        }
+      ]
+    }
+  ]
+}

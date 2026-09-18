@@ -1,0 +1,31 @@
+{
+  "observed_on": "2026-09-18",
+  "host": "OpenCode CLI 1.18.31",
+  "source_commit": "2dd2af818e0b7dd0a497f145bf2d754ff88e574b",
+  "method": "isolated project and XDG paths; --pure; native debug skill and mcp list",
+  "skills": [
+    {
+      "name": "scvd-x402-verification",
+      "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+    },
+    {
+      "name": "scvd-general-store",
+      "sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8"
+    }
+  ],
+  "mcp": {
+    "scvd-general-store": "connected",
+    "scvd-tab": "connected"
+  },
+  "configuration_source": "root mcp.json, translated to OpenCode remote/local configuration",
+  "model_execution": "attempted with opencode/nemotron-3.5-lightning-free; provider rejected request before skill or tool execution",
+  "tool_execution": "not reached; no successful native tool execution claimed",
+  "paid_operations": "not tested",
+  "submission": "not submitted; resolve provider qualification and prepare a reusable install document",
+  "model_error": {
+    "status": 403,
+    "type": "FreeTierError",
+    "message": "OpenCode's free tier can only be used from within OpenCode"
+  },
+  "existing_upstream_report": "https://github.com/anomalyco/opencode/issues/49678"
+}

@@ -1,0 +1,17 @@
+{
+  "observed_on": "2026-09-18",
+  "host": "Cline CLI 3.0.62",
+  "runtime": "Node 24.19.0",
+  "skill_source_commit": "82dea27814b0376b12e689ec234f94a59177b09a",
+  "skill_sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc",
+  "skill_install": "passed; source byte comparison passed",
+  "mcp_install": "passed; isolated config; no warnings",
+  "mcp_free_call": "MCP SDK 1.30.0 using saved Cline configuration; example.com returned not_ready / L1",
+  "model_execution": "not tested",
+  "submissions": {
+    "skill": "https://github.com/cline/marketplace/pull/122",
+    "mcp": "https://github.com/cline/marketplace/pull/123"
+  },
+  "listing_status": "submitted, maintainer review pending",
+  "initial_limitation": "System Node 22.13.1 produced a skills@1.7.0 engine warning; supported Node rerun passed."
+}
