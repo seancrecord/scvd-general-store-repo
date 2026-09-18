@@ -13,7 +13,8 @@ import { purchaseIntentStore } from "@/services/purchase-intent";
 import { readMppSales } from "@/services/mpp-sales";
 import { computeStats } from "@/services/stats";
 import { doors } from "@/lib/doors-app";
-import { MPP_CHECKOUT_PATH } from "@/lib/mpp-checkout-capability";
+/** The pilot's door; the whole-store spec walks the others. */
+const MPP_CHECKOUT_PATH = "/api/buy/context_anchor";
 import * as fulfillment from "@/services/fulfillment";
 import * as mppSales from "@/services/mpp-sales";
 import { beginPurchaseIntent, type PurchaseIntent } from "@/services/purchase-intent";
@@ -161,11 +162,13 @@ it("forwards Payment credentials and native unsigned offers through the doors Wo
   const bindings = { ...testEnv, STORE: binding };
   const offered = await doors.request(`https://scvd.store${f.path}`, { headers: { "Idempotency-Key": f.key } }, bindings);
   expect(offered.status).toBe(402);
+  // With the key, the doors mint the offer themselves; only the credential goes to the store.
+  expect(offered.headers.get("X-Scvd-Doors")).toBeNull();
   expect(Challenge.deserialize(offered.headers.get("WWW-Authenticate")!)).toMatchObject({ method: "evm" });
   const paid = await doors.request(`https://scvd.store${f.path}`, { headers: { Authorization: f.header, "Idempotency-Key": f.key } }, bindings);
   expect(paid.status).toBe(200);
-  expect(forwarded).toHaveLength(2);
-  expect(forwarded[1]!.headers.get("Authorization")).toBe(f.header);
+  expect(forwarded).toHaveLength(1);
+  expect(forwarded[0]!.headers.get("Authorization")).toBe(f.header);
   expect(facilitator.settleCalls).toBe(1);
 });
 

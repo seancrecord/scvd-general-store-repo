@@ -8,7 +8,9 @@ The repair adds `{ mpp: { method, intent, currency } }` alongside the existing
 x402 entry, derived from `purchaseCapabilities`. The currency uses the same EVM
 address normalization as the challenge SDK. No payment handler, price, input,
 legacy x402 field or existing offer changes. Disabled/incomplete checkout and
-all other products/transports omit the native descriptor.
+non-shelf operations and other transports omit the native descriptor. The final
+repair follows the enabled shelf from [whole-store rollout #790](https://github.com/seancrecord/scvd-general-store-repo/pull/790),
+which merged during this work; it is no longer limited to the original pilot.
 
 This is the AgentCash directory profile documented by
 [MPPScan](https://mppscan.com/discovery/spec), read against the installed
@@ -18,9 +20,11 @@ separate MPP draft extension that uses the same field name.
 ## Validation
 
 The regression first failed on the missing MPP protocol object, then tests the
-actual unsigned HTTP challenge against the descriptor. It also compares every
+actual unsigned HTTP challenges for Context Anchor and Trust Profile against
+their descriptors. It also compares every
 pre-existing x402 field between enabled and disabled configurations, checks
-all other operations, and removes each checkout prerequisite in turn.
+the entire enabled HTTP shelf and excluded operations, and removes each
+checkout prerequisite in turn across every shelf item.
 The disposable challenge-key fixture was lengthened to satisfy the SDK's key
 requirement; no production key was read or changed.
 
@@ -31,12 +35,17 @@ local static-discovery check, not a paid invocation or production readback.
 [Reader receipt](../research/distribution-2026-09-17/observations/mpp-openapi-reader.json).
 
 Typecheck, both Worker/MPP SDK bundles and 24 focused checkout/discovery tests
-pass; a final focused rerun also passes all six discovery tests. The full local
-suite covers 761 files: 14,702 tests passed and one was skipped after bounded
+pass; a final focused rerun also passes all six discovery tests. Before integration with the later whole-store rollout, the full local
+suite covered 761 files: 14,702 tests passed and one was skipped after bounded
 reruns. Four cases initially timed out, and one file could not start its Worker
 runner. The affected cases and all seven tests in that missing file passed on
 rerun; no timeout was increased. The claims register and scalability audit also
 pass. [Validation receipt](../research/distribution-2026-09-17/observations/mpp-openapi-validation.json).
+
+After integrating #790, the revised regression again fails without the descriptor;
+68 focused tests across discovery, whole-store checkout, challenge parity, x402
+compatibility and public records pass. Typecheck and both builds pass. The earlier
+full local result is retained as its own pre-integration reading.
 
 All CI shards remain required before merge. Deployment readback is recorded in
 [release PR #791](https://github.com/seancrecord/scvd-general-store-repo/pull/791);
@@ -50,7 +59,8 @@ the local result does not establish production behavior or indexing.
   reports the runtime parser mapping EVM/Base to `tempo:8453` and dropping
   `methodDetails.decimals`. Adding the metadata does not fix that parser.
 - MPPScan registration remains unsubmitted until its EVM/Base path is qualified.
-- Other MPP products/transports remain upcoming.
+- The HTTP shelf expansion is covered by #790 and the final metadata tests.
+  MCP/WebMCP, other networks/assets and broader live paid qualification remain separate.
 
 ## Remaining wording audit
 

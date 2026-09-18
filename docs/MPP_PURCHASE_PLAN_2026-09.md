@@ -193,7 +193,8 @@ enabled MPP method/intent/currency to the AgentCash protocol array without
 replacing the price or legacy x402 fields. This does not claim conformance to
 the separate MPP draft extension. The directory reader’s EVM/Base parsing
 mismatch and actual admission remain separate qualification work. Expansion
-below remains separate release work. Full CI remains one shared gate, not one suite per protocol.
+across the HTTP shelf merged in #790; the broader transports, networks and
+assets below remain separate. Full CI remains one shared gate, not one suite per protocol.
 
 ## Whole-store expansion and release
 

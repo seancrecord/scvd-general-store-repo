@@ -68,7 +68,11 @@
     "missing-rerun": "953b9bdfb5418f44e130cd036156af2a19d58b8b358b01ab68dc436c7d75f3c1",
     "url-rerun": "491e0d541c8011a6bd027a02164c2ea40036b94b0dbdace4dde2a007d8ee6764",
     "integrated-types": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
-    "integrated-listings": "fae49da4ea4ec5330259c0a721b25fe2d8e46b2710ec2f514b4c4352b2a1f808"
+    "integrated-listings": "fae49da4ea4ec5330259c0a721b25fe2d8e46b2710ec2f514b4c4352b2a1f808",
+    "generalized-red": "7e7d19e3fa8cf27065d0bc893fe62c685aa783830bd2c9786908e3d8e2688196",
+    "whole-types": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "whole-green": "6055891299cb528914b1e818df7ff1a779dff6c140a0b775bf7887d67ded800d",
+    "whole-build": "60e2bf3e8e147ff2ffbce42a446f7bf689caf44b2788123322fc14307c105625"
   },
   "claims": "passed; 48 of 48 resolved, zero unbound",
   "scalability_audit": "passed; four existing warnings within budget",
@@ -77,5 +81,16 @@
     "upstream_changes": "Documentation and retained observations only; no runtime/test/config changes from the full-suite base",
     "typecheck": "passed",
     "listings_tests": 37
+  },
+  "whole_store_integration": {
+    "upstream_commit": "e37aa7aa",
+    "upstream_pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/790",
+    "scope": "Descriptor follows every configured HTTP shelf item; MCP/WebMCP and non-buy operations excluded",
+    "regression_without_descriptor": "1 failed / 3 passed; missing protocol descriptor assertion",
+    "focused_files": 7,
+    "focused_tests": 68,
+    "typecheck": "passed",
+    "build": "passed (Workers and MPP SDK)",
+    "full_suite": "Combined revision requires full CI; earlier local full-suite result above predates this upstream rollout"
   }
 }

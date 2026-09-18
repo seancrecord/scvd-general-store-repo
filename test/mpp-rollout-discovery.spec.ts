@@ -7,7 +7,7 @@ import type { Env } from "@/types";
 import { storeGuideText } from "@/routes/llms";
 import { COMPACT_CATALOG_BUDGET_BYTES } from "@/store/reader-limits";
 import { compactItemContract } from "@/lib/buyer-contract";
-import { getMenuItem } from "@/store";
+import { getMenuItem, MENU_ITEMS } from "@/store";
 // Discovery documents have heterogeneous JSON schema fields; test-only any lets assertions inspect their wire shape.
 const bindings = { ...env, MPP_CHECKOUT_ENABLED: "true", MPP_CHALLENGE_KEY: "fixture-native-checkout-hmac-key-32bytes" } as unknown as Env;
 async function request(path: string, config = bindings) {
@@ -30,43 +30,51 @@ it("advertises the enabled HTTP offer on its item and OpenAPI while preserving x
   expect(operation['x-scvd-payment-capabilities']).toEqual(contract.payment_capabilities);
   expect(storeGuideText(bindings.STORE_BASE_URL, bindings)).toContain("Native MPP checkout: HTTP GET");
 });
-it("omits native claims when disabled, incomplete or on another product", () => {
+it("omits native claims when disabled or incomplete, and every shelf item carries one at its own minimum when enabled", () => {
   for (const config of [{ ...bindings, MPP_CHECKOUT_ENABLED: "false" }, { ...bindings, MPP_CHALLENGE_KEY: undefined }, { ...bindings, COUNTER_LEDGER: undefined }]) {
     const item = compactItemContract(getMenuItem("context_anchor")!, bindings.STORE_BASE_URL, config) as unknown as Record<string, any>;
     expect(item.payment_capabilities?.some((row: { protocol: string }) => row.protocol === "mpp") ?? false).toBe(false);
     expect(storeGuideText(bindings.STORE_BASE_URL, config)).not.toContain("Native MPP checkout: HTTP GET");
   }
+  // THE WHOLE STORE (2026-09-18): another product, another minimum, the same lane.
   const other = compactItemContract(getMenuItem("trust_profile")!, bindings.STORE_BASE_URL, bindings) as unknown as Record<string, any>;
-  expect(other.payment_capabilities?.some((row: { protocol: string }) => row.protocol === "mpp") ?? false).toBe(false);
+  const native = other.payment_capabilities?.find((row: { protocol: string }) => row.protocol === "mpp");
+  expect(native).toMatchObject({ transport: "http", method: "GET", path: "/api/buy/trust_profile", network: "eip155:8453",
+    amount_atomic: String(Math.round(getMenuItem("trust_profile")!.price_usdc * 1_000_000)) });
+  expect(storeGuideText(bindings.STORE_BASE_URL, bindings)).toContain("every one of the");
 });
 
 
 afterEach(() => vi.restoreAllMocks());
-it("directory metadata matches the native HTTP challenge without changing the x402 contract", async () => {
+it("directory metadata matches native HTTP challenges and every enabled shelf door without changing x402", async () => {
   installFacilitatorMock();
-  const ctx = createExecutionContext();
-  const quote = await app.fetch(new Request("https://scvd.store/api/buy/context_anchor"), bindings, ctx);
-  await waitOnExecutionContext(ctx);
-  expect(quote.status).toBe(402);
-  const challenge = Challenge.deserialize(quote.headers.get("WWW-Authenticate")!);
   const enabled = await request("/openapi.json");
   const disabled = await request("/openapi.json", { ...bindings, MPP_CHECKOUT_ENABLED: "false" });
-  const info = enabled.paths['/api/buy/context_anchor'].get['x-payment-info'];
-  const legacy = disabled.paths['/api/buy/context_anchor'].get['x-payment-info'];
-  expect(info.protocols).toEqual([
-    ...legacy.protocols,
-    { mpp: { method: challenge.method, intent: challenge.intent, currency: challenge.request.currency } },
-  ]);
-  // Every pre-existing price, input and x402 offer field remains byte-for-byte equivalent.
-  expect({ ...info, protocols: legacy.protocols }).toEqual(legacy);
-  const native = enabled.paths['/api/buy/context_anchor'].get['x-scvd-payment-capabilities'].find((row: { protocol: string }) => row.protocol === "mpp");
-  expect(native.asset.toLowerCase()).toBe(String(challenge.request.currency).toLowerCase());
-  expect(native.amount_atomic).toBe(challenge.request.amount);
+  for (const id of ["context_anchor", "trust_profile"]) {
+    const path = `/api/buy/${id}`;
+    const ctx = createExecutionContext();
+    const quote = await app.fetch(new Request(`https://scvd.store${path}`), bindings, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(quote.status).toBe(402);
+    const challenge = Challenge.deserialize(quote.headers.get("WWW-Authenticate")!);
+    const info = enabled.paths[path].get['x-payment-info'];
+    expect(info.protocols).toEqual([
+      ...disabled.paths[path].get['x-payment-info'].protocols,
+      { mpp: { method: challenge.method, intent: challenge.intent, currency: challenge.request.currency } },
+    ]);
+    const native = enabled.paths[path].get['x-scvd-payment-capabilities'].find((row: { protocol: string }) => row.protocol === "mpp");
+    expect(native.asset.toLowerCase()).toBe(String(challenge.request.currency).toLowerCase());
+    expect(native.amount_atomic).toBe(challenge.request.amount);
+  }
   expect(storeGuideText(bindings.STORE_BASE_URL, bindings)).not.toContain("not a native MPP discovery declaration");
+  const shelfPaths = new Set(MENU_ITEMS.map(item => `/api/buy/${item.id}`));
   for (const [path, methods] of Object.entries(enabled.paths) as Array<[string, Record<string, Record<string, any>>]>) {
     for (const [method, operation] of Object.entries(methods)) {
-      if (path === '/api/buy/context_anchor' && method === 'get') continue;
-      expect(operation['x-payment-info']?.protocols?.some((row: Record<string, unknown>) => 'mpp' in row) ?? false, `${method} ${path}`).toBe(false);
+      const info = operation['x-payment-info'];
+      const legacy = disabled.paths[path][method]['x-payment-info'];
+      expect(info?.protocols?.some((row: Record<string, unknown>) => 'mpp' in row) ?? false, `${method} ${path}`).toBe(method === 'get' && shelfPaths.has(path));
+      // Every pre-existing price, input and x402 offer field remains equivalent.
+      if (info) expect({ ...info, protocols: legacy.protocols }, `${method} ${path}`).toEqual(legacy);
     }
   }
 });
@@ -78,6 +86,8 @@ it("directory metadata omits MPP when any checkout prerequisite is absent", asyn
     { ...bindings, COUNTER_LEDGER: undefined },
   ]) {
     const doc = await request("/openapi.json", config);
-    expect(doc.paths['/api/buy/context_anchor'].get['x-payment-info'].protocols).toEqual([{ x402: {} }]);
+    for (const item of MENU_ITEMS) {
+      expect(doc.paths[`/api/buy/${item.id}`].get['x-payment-info'].protocols).toEqual([{ x402: {} }]);
+    }
   }
 });
