@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-09-17T21:30:49.711846+00:00",
+  "destination": "Official mpp.dev/services curated directory",
+  "submission_url": "https://github.com/tempoxyz/mpp/pull/991",
+  "status": "Pull request open; maintainer review pending, not an accepted listing.",
+  "source_commit": "300211806a901f55aa2d84107567a3b679563541",
+  "service": {
+    "name": "SCVD Context Anchor",
+    "url": "https://scvd.store/menu/context_anchor",
+    "operation": "GET https://scvd.store/api/buy/context_anchor",
+    "method": "evm",
+    "intent": "charge",
+    "network": "eip155:8453",
+    "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "decimals": 6,
+    "amount_atomic": "1000000",
+    "required_query": [
+      "summary"
+    ]
+  },
+  "validation": {
+    "runtime": "Node 24 / pnpm 10.22.0",
+    "frozen_install": true,
+    "generation": "passed",
+    "typecheck": "passed after generated JSON boundary correction",
+    "production_build": "passed; 405 static files",
+    "changed_file_biome": "passed",
+    "focused_tests": {
+      "files": 3,
+      "passed": 34
+    },
+    "paid_request": false
+  },
+  "implementation_note": "The listing adds evm to the heterogeneous generated catalog. A documented unknown boundary cast replaces two direct generated-JSON casts after TS2352 exposed optional undefined method keys. No runtime catalog values change.",
+  "mppscan": {
+    "status": "not registered",
+    "blocker_report": "https://github.com/Merit-Systems/x402scan/issues/1209"
+  },
+  "log_sha256": {
+    "types": "460827519a3b90239c6389b76817ff51b10111f4ff7d61ab56ea4f2642c42093",
+    "build": "70c1f352af12fa1cb137d6bf2a91d6bb689ad8d62eeda11b71c3f7d0b12dbaae",
+    "tests": "c37292c4578d938ff03519f8409073aa909349075953fba479e50acb0f11036d"
+  }
+}

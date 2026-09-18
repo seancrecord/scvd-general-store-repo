@@ -88,6 +88,22 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
     (payment.network.startsWith("eip155:") ? !isSameAddress(payment.payer, record.payer) : payment.payer !== record.payer)) {
     throw new Error("Recorded payment identity mismatch");
   }
+  /**
+   * A UCP PURCHASE IS RECOVERED THROUGH ITS CHECKOUT, never through the
+   * HTTP branch below. Its request is the JCS completion identity, not
+   * a query string; its inputs were frozen on the checkout; its retained
+   * observation lives under the UCP digest the purchase record already
+   * carries; and its goods are finished by the canonical UCP order,
+   * written beside the checkout. services/ucp-order does exactly that,
+   * reusing the journals and the artifact checkpoint so nothing is
+   * produced twice and no payment is ever re-presented. Named by door,
+   * so the third door cannot be the first one by default (the same
+   * rule as purchaseRequestDigest).
+   */
+  if (record.door === "ucp") {
+    const { recoverUcpOrder } = await import("@/services/ucp-order");
+    return recoverUcpOrder(env, record);
+  }
   const { recordedHumanResolution, resolvedHumanDelivery } = await import("@/services/resolved-human-purchase");
   const resolution = await recordedHumanResolution(env, record);
   if (resolution) return resolvedHumanDelivery(resolution);

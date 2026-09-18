@@ -1,0 +1,54 @@
+{
+  "recorded_at": "2026-09-18T02:16:26.694932+00:00",
+  "scope": "Records and documentation only; no product or instrument behavior changed.",
+  "checks": {
+    "source_instrument_unchanged": true,
+    "plan_bound_to_freeze": true,
+    "publication_bound_to_freeze": true,
+    "captured_bytes_and_review_references": {
+      "buyer_capture_files_verified": 53,
+      "reviews_hash_bound": true,
+      "acquisition_end_score_unchanged": true,
+      "recipient_inputs_preserved": 2
+    },
+    "focused_controls": {
+      "passed": 62,
+      "log_sha256": "ccdb32b04cc9144de61c103123e260b980ebbc688f4afbf19f8aa110453fb5f4"
+    },
+    "typecheck": {
+      "state": "pass",
+      "log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "documents": {
+      "state": "pass",
+      "log_sha256": "0e01815efa18bbd707785e1cd09433e1958ee51adb9fd9841c9215fb783a58ff"
+    },
+    "full_local_suite": {
+      "state": "partial_with_sleep_overlap_and_two_runner_start_timeouts",
+      "affected_file_rerun": {
+        "state": "pass",
+        "file": "test/first-screen.spec.ts",
+        "tests": 9,
+        "log_sha256": "7b868ee179813231a97a26e13df0943bb502095b0d5a7e1f7d21dd3723f9aae5",
+        "power_events_sha256": "c02f64f76d57503843850c15447728a7e4ff643d96d5c689f3c8c27a253fac76",
+        "limit": "Power events overlap the full-run failure; the unchanged file passes independently. No timeout or source change. The original full run is not relabeled green."
+      },
+      "unhandled_runner_start_timeouts": 2,
+      "tested_code_commit": "82a419ffc236aff401444243b175699e3271e537",
+      "expected_spec_files": 761,
+      "unreported_file_attribution": "Unavailable: shared result cache retains older entries and cannot prove which two files did not report. Full four-shard CI coverage remains required before merge.",
+      "summary": "Test Files  1 failed | 758 passed (759)\n      Tests  1 failed | 14691 passed | 1 skipped (14693)\n     Errors  2 errors\n   Start at  20:51:17\n   Duration  4844.21s (transform 586.86s, setup 49.70s, import 39038.07s, tests 21201.95s, environment 54ms)",
+      "log_sha256": "9ae1c8543e825328bcf587871dd3605c88f1686779c2d22d16519310f3ca7768",
+      "initial_attempt": "Sandbox denied the test runtime local loopback socket before execution; rerun with loopback access, blocked log retained."
+    }
+  },
+  "integration": {
+    "base_commit": "e37aa7aa438b4f07c2bbe1ac5d63be2fba14fabc",
+    "typecheck": "pass",
+    "typecheck_log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "documents": "pass",
+    "documents_log_sha256": "948f24c3d51bea14f39b5808cd28ce96f5205aafb26a4f6c2cfbd3d02c8b40a3",
+    "limit": "Post-acquisition rebase preserves main releases and the separate #789 cohort. Local full-suite results refer to the frozen code commit; complete rebased coverage waits for CI."
+  },
+  "full_ci": "All four shards plus aggregate check required before merge; final outcome in durable MERGE.json."
+}

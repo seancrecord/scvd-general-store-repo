@@ -104,6 +104,7 @@ repair annotations; do not tally those paragraphs as current status.
 | Native isolation cohort, September 17 | [Reviewed report](research/takeoff-native-isolation-2026-09-17/REPORT.md): 0/4 catalogue and 1/4 referred journeys complete. Two retained signed pairs pass fresh recipient checks, with scope caveats. The corrected scorer and original results are retained separately. |
 | Session workspace qualification, September 17 | [Record](research/takeoff-workspace-qualification-2026-09-17/README.md): both native cache controls pass; generic capability passes for Codex and remains incomplete for Claude after a refused compound command. No buyer ran. |
 | Refusal-scope qualification, September 17 | [Record](research/takeoff-refusal-scope-2026-09-17/README.md): one fresh generic attempt per host passes after a narrow host-statement and diagnostic change. Claude encountered no refusal, so recovery and causality remain unproven. No buyer ran; verifier 1.5.0 publication and installation remain the next product acceptance gate. |
+| Published verifier directed cohort, September 17 | [Reviewed report](research/takeoff-directed-release-2026-09-17/REPORT.md): 1/4 full referred journeys pass, 2 interpretation failures, 1 incomplete handoff. All four buyers locally verify and retain originals; two of four recipients complete. Preflight misroutes paid-delivery evidence to an unpaid watch. Two recipient stops exceed the nominal wall cap; timing and handoff scope remain open. |
 
 ### Repair status and remaining acceptance gaps
 

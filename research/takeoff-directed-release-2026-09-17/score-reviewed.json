@@ -1,0 +1,447 @@
+{
+  "schema_version": 2,
+  "discovery": {
+    "attempts": 0,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 0
+  },
+  "directed": {
+    "attempts": 4,
+    "pass": 1,
+    "fail": 2,
+    "incomplete": 1
+  },
+  "distinct_hosts_completed": 1,
+  "limitation": "Controlled cold usability evidence only; no organic adoption, paid completion or universal readiness claim.",
+  "capability": {
+    "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+    "source_sha256": "813fb0e2724385502bf8bac30bdd03b7f2a4692a52bdffd508cb9626acba3db4",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      }
+    }
+  },
+  "scorer_sha256": "08e7ac21684c033380adbb89fdff1972c3168f5db2a77466931fdc2532bd6a84",
+  "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+  "runs": [
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Fetched the supplied public focused skill and used its HTTP preflight/corpus routes.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "7645b9494e9101555f0c45d7c1f631e29eb77c862843fee0629659a2df0380de"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Completed a live unpaid preflight for the exact requested subject, and retained the response.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "7645b9494e9101555f0c45d7c1f631e29eb77c862843fee0629659a2df0380de"
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "Distinguishes current unsigned probes, unsigned host history and the latest signed historical observation; no payment or delivery claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "7645b9494e9101555f0c45d7c1f631e29eb77c862843fee0629659a2df0380de"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Captured the complete signed corpus snapshot and separately fetched public issuer key before the buyer ended.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "7645b9494e9101555f0c45d7c1f631e29eb77c862843fee0629659a2df0380de"
+            }
+          ]
+        },
+        "verify": {
+          "state": "pass",
+          "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "75ad576b15b3702ca606df646ad5b49193c2ffa36a49e745fa703c2c3f32c4f4"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "7645b9494e9101555f0c45d7c1f631e29eb77c862843fee0629659a2df0380de"
+            }
+          ],
+          "signature": true,
+          "issuer_binding": true,
+          "subject_matches": true,
+          "expiry": "not_declared",
+          "observation_age_ms": 942835688,
+          "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+        }
+      },
+      "usable": "pass",
+      "verification": {
+        "state": "pass",
+        "signature": true,
+        "issuer_binding": true,
+        "subject_matches": true,
+        "expiry": "not_declared",
+        "observation_age_ms": 942835688,
+        "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+        "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Fetched the supplied public focused skill and used its HTTP preflight/corpus routes.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8cd741abecb64edd3f1c40d3a4de41c8572c9c3afc0837a38f7f45869b5226aa"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "4f31964780c21587c6ea7e5b72e8d2dc28e879b5eebaa004abd37159d80de9a3"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Completed a live unpaid preflight for the exact requested subject, and retained the response.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8cd741abecb64edd3f1c40d3a4de41c8572c9c3afc0837a38f7f45869b5226aa"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "4f31964780c21587c6ea7e5b72e8d2dc28e879b5eebaa004abd37159d80de9a3"
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "Final recommends standing_watch/conformance_watch for L4-L6 paid delivery, repeating an incorrect preflight recommendation. Also describes multiple weeks as independently signature-verified history after checking only snapshot 6.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8cd741abecb64edd3f1c40d3a4de41c8572c9c3afc0837a38f7f45869b5226aa"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "4f31964780c21587c6ea7e5b72e8d2dc28e879b5eebaa004abd37159d80de9a3"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Captured the complete signed corpus snapshot and separately fetched public issuer key before the buyer ended.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8cd741abecb64edd3f1c40d3a4de41c8572c9c3afc0837a38f7f45869b5226aa"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "4f31964780c21587c6ea7e5b72e8d2dc28e879b5eebaa004abd37159d80de9a3"
+            }
+          ]
+        },
+        "verify": {
+          "state": "pass",
+          "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "8cd741abecb64edd3f1c40d3a4de41c8572c9c3afc0837a38f7f45869b5226aa"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "4f31964780c21587c6ea7e5b72e8d2dc28e879b5eebaa004abd37159d80de9a3"
+            }
+          ],
+          "signature": true,
+          "issuer_binding": true,
+          "subject_matches": true,
+          "expiry": "not_declared",
+          "observation_age_ms": 942901980,
+          "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+        }
+      },
+      "usable": "fail",
+      "verification": {
+        "state": "pass",
+        "signature": true,
+        "issuer_binding": true,
+        "subject_matches": true,
+        "expiry": "not_declared",
+        "observation_age_ms": 942901980,
+        "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+        "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Fetched the supplied public focused skill and used its HTTP preflight/corpus routes.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "bd532794d894b950a863296eb7782b7e7e979659fc6ae73e6ff1bb04b2e22cad"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "bd93ffdd3ef839b0834b909c1538f18ac6de9ca81952bfcf519718e7fe012b25"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Completed a live unpaid preflight for the exact requested subject, and retained the response.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "bd532794d894b950a863296eb7782b7e7e979659fc6ae73e6ff1bb04b2e22cad"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "bd93ffdd3ef839b0834b909c1538f18ac6de9ca81952bfcf519718e7fe012b25"
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "Distinguishes structural readiness, historical observations and a locally checked latest snapshot; does not claim paid delivery.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "bd532794d894b950a863296eb7782b7e7e979659fc6ae73e6ff1bb04b2e22cad"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "bd93ffdd3ef839b0834b909c1538f18ac6de9ca81952bfcf519718e7fe012b25"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Captured the complete signed corpus snapshot and separately fetched public issuer key before the buyer ended.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "bd532794d894b950a863296eb7782b7e7e979659fc6ae73e6ff1bb04b2e22cad"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "bd93ffdd3ef839b0834b909c1538f18ac6de9ca81952bfcf519718e7fe012b25"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "Recipient understanding has not been reviewed.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "bd532794d894b950a863296eb7782b7e7e979659fc6ae73e6ff1bb04b2e22cad"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "bd93ffdd3ef839b0834b909c1538f18ac6de9ca81952bfcf519718e7fe012b25"
+            }
+          ],
+          "signature": true
+        }
+      },
+      "usable": "incomplete",
+      "verification": {
+        "state": "incomplete",
+        "signature": true,
+        "reason": "Recipient understanding has not been reviewed."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Fetched the supplied public focused skill and used its HTTP preflight/corpus routes.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c9c0b91a91f813adbed98402204b198c4c92b333f248e147559148638708f4f5"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "efc5cb331db5d9c12d519f5bcdb74631913457dd5a708a9a79e4ed5bc1411255"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Completed a live unpaid preflight for the exact requested subject, and retained the response.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c9c0b91a91f813adbed98402204b198c4c92b333f248e147559148638708f4f5"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "efc5cb331db5d9c12d519f5bcdb74631913457dd5a708a9a79e4ed5bc1411255"
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "Final says Ed25519 verified against the digest although both digest-message checks returned false and only snapshot-message verification passed; extends independently verifiable configuration continuity to multiple weeks after authenticating one snapshot.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c9c0b91a91f813adbed98402204b198c4c92b333f248e147559148638708f4f5"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "efc5cb331db5d9c12d519f5bcdb74631913457dd5a708a9a79e4ed5bc1411255"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Captured the complete signed corpus snapshot and separately fetched public issuer key before the buyer ended.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c9c0b91a91f813adbed98402204b198c4c92b333f248e147559148638708f4f5"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "efc5cb331db5d9c12d519f5bcdb74631913457dd5a708a9a79e4ed5bc1411255"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "Recipient understanding has not been reviewed.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "c9c0b91a91f813adbed98402204b198c4c92b333f248e147559148638708f4f5"
+            },
+            {
+              "file": "buyer-final.txt",
+              "sha256": "efc5cb331db5d9c12d519f5bcdb74631913457dd5a708a9a79e4ed5bc1411255"
+            }
+          ],
+          "signature": true
+        }
+      },
+      "usable": "fail",
+      "verification": {
+        "state": "incomplete",
+        "signature": true,
+        "reason": "Recipient understanding has not been reviewed."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    }
+  ]
+}

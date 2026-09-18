@@ -1,6 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { PREFLIGHT_BATTERY, theRestOfTheLadder } from "@/services/preflight";
+import { PREFLIGHT_BATTERY, PREFLIGHT_BATTERY_NEXT, theRestOfTheLadder } from "@/services/preflight";
 import { getMenuItem } from "@/store/menu";
 import { buyerLinks } from "@/lib/buyer-contract";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -15,6 +15,22 @@ const BASE = "https://scvd.store";
 
 describe("the unsigned preflight's evidence handoff", () => {
   beforeAll(() => installFacilitatorMock());
+
+  it.each([PREFLIGHT_BATTERY, PREFLIGHT_BATTERY_NEXT])("%s routes delivery evidence to an instrument that actually purchases", async (battery) => {
+    const ladder = theRestOfTheLadder(battery, BASE);
+    const rungs = ladder.unclimbed as { rung: string; climbs_it: Record<string, unknown> | null }[];
+    const delivery = rungs.find((row) => row.rung === "L4-L6")!.climbs_it!;
+    const item = getMenuItem(String(delivery.item_id))!;
+    // An unpaid watch cannot observe what happens after payment. Check
+    // the recommended instrument's actual read class, not just its label.
+    expect(item.reads).toBe("subject_purchase");
+    expect(item.id).toBe("launch_check");
+    expect(delivery).toMatchObject({ ...buyerLinks(item, BASE), price_usdc: item.price_usdc, what_you_get: item.name });
+    expect((await SELF.fetch(String(delivery.input_contract_url))).status).toBe(200);
+    expect((await SELF.fetch(String(delivery.url))).status).toBe(402);
+    const repeated = rungs.find((row) => row.rung === "L3d")!.climbs_it!;
+    expect(getMenuItem(String(repeated.item_id))!.reads).toBe("subject_fetch");
+  });
 
   it("distinguishes the unsigned reading from a fresh paid observation", () => {
     const ladder = theRestOfTheLadder(PREFLIGHT_BATTERY, BASE);

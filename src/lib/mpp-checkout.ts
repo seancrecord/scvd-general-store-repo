@@ -4,7 +4,8 @@ import type { Context, Next } from "hono";
 import { Credential, PaymentRequest } from "mppx";
 import { AuthorizationPayloadSchema } from "mppx/evm";
 import { createMppEvmAdapter } from "@/lib/mpp-evm-adapter";
-import { mppCheckoutEnabled, MPP_CHECKOUT_ITEM } from "@/lib/mpp-checkout-capability";
+import { mppCheckoutEnabled, nativeCheckoutItem } from "@/lib/mpp-checkout-capability";
+import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { getPaymentStack, atomicToUsdc, tipFromPaid,
   SettlementUnknown, SettlementDeclined, type SettledPayment } from "@/lib/payments";
 import { BASE_NETWORK } from "@/lib/payment-networks";
@@ -19,13 +20,16 @@ import { isHouseTraffic } from "@/lib/channel";
 import { recordDeliveredSettlement } from "@/services/settlement-records";
 import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import { openDeliveryIntent, closeDeliveryIntent } from "@/services/delivery-audit";
-import { getMenuItem } from "@/store";
 import type { HonoEnv } from "@/types";
 
 async function adapterFor(c: Context<HonoEnv>, purchaseKey: string) {
-  const terms = nativeCheckoutTerms(c.env);
+  // The door names the item; the item names the terms. The gate already
+  // refused any path that is not a native door before this is reached.
+  const item = nativeCheckoutItem(c.req.path, "GET");
+  if (!item) throw new Error("Not a native door");
+  const terms = nativeCheckoutTerms(c.env, item);
   const facilitator = getPaymentStack(c.env).facilitator;
-  return { terms, adapter: createMppEvmAdapter({ secretKey: c.env.MPP_CHALLENGE_KEY!,
+  return { item, terms, adapter: createMppEvmAdapter({ secretKey: c.env.MPP_CHALLENGE_KEY!,
     realm: new URL(c.env.STORE_BASE_URL).host, scope: c.req.path,
     requestDigest: await httpArtifactDigest(c.req.url), purchaseKey, terms,
     verify: (payload, accepted) => facilitator.verify(payload, accepted),
@@ -33,9 +37,14 @@ async function adapterFor(c: Context<HonoEnv>, purchaseKey: string) {
 }
 
 export async function attachMppChallenge(c: Context<HonoEnv>, response: Response): Promise<void> {
+  // The gate asks on "advertised"; the store answers only when it can
+  // also admit and account, so discovery never outruns the bindings.
+  if (!mppCheckoutEnabled(c.env, c.req.path, "GET")) return;
   const supplied = c.req.header("Idempotency-Key");
   if (supplied && !usableIdempotencyKey(supplied)) return;
-  const key = supplied ?? suggestedIdempotencyKey(MPP_CHECKOUT_ITEM);
+  const item = nativeCheckoutItem(c.req.path, "GET");
+  if (!item) return;
+  const key = supplied ?? suggestedIdempotencyKey(item.id);
   const { adapter } = await adapterFor(c, key);
   const challenge = await adapter.challenge();
   // A real Payment challenge replaces the informational hint. x402's own
@@ -97,7 +106,7 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
   const supplied = c.req.header("Idempotency-Key");
   if (typeof purchaseKey !== "string" || !usableIdempotencyKey(purchaseKey) ||
     (supplied !== undefined && supplied !== purchaseKey)) return refusal("mpp_purchase_key_mismatch", 400);
-  const { terms, adapter } = await adapterFor(c, purchaseKey);
+  const { item, terms, adapter } = await adapterFor(c, purchaseKey);
   let verified: Awaited<ReturnType<typeof adapter.validate>>;
   try { verified = await adapter.validate(header); }
   catch { return refusal("mpp_verification_refused", 402); }
@@ -108,7 +117,6 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
   const unavailable = await c.get("purchaseAdmission")?.();
   if (unavailable) return unavailable;
 
-  const item = getMenuItem(MPP_CHECKOUT_ITEM)!;
   const paidUsdc = atomicToUsdc(terms.amount), tipUsdc = tipFromPaid(paidUsdc, item.price_usdc);
   let purchase: PurchaseIntent | undefined;
   let settled: SettledPayment | undefined;
@@ -154,6 +162,10 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
   };
   const quote = quotedTerms(terms);
   c.set("pending", { ...(quote ? { quote: await hashQuotedTerms(quote) } : {}), paidUsdc, tipUsdc, payer: verified.payment.payer, network: terms.network,
+    // The observation families prepare their signed reading before the
+    // settle and retain it under the purchase identity; the x402 gate
+    // builds the same checkpoint from the same verified payload shape.
+    observation: await verifiedObservationCheckpoint(c.env, item, terms.network, verified.payment.payer, verified.payload, c.req.path, request.digest),
     settle: () => attempt ??= settle(), purchaseRecovery: () => purchase && purchaseRecovery(c.env, purchase),
     purchaseCreatedAt: () => purchase?.created_at });
   await next();

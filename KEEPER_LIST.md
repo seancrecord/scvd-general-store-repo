@@ -26,6 +26,18 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **PRESS — put the challenge key on the doors, 2026-09-18.** The
+  whole-shelf native release (`docs/MPP_WHOLE_STORE_2026-09-18.md`)
+  makes every HTTP door a native door, and the doors Worker mints the
+  challenge itself once it holds the same `MPP_CHALLENGE_KEY` the
+  store holds. Until it does, every unsigned knock on every door is
+  handed to the store — correct, and the cold start the doors exist
+  to remove. One press, the same value as the store's, at least 32
+  bytes: `npx wrangler secret put MPP_CHALLENGE_KEY -c doors/wrangler.jsonc`.
+  Then one unsigned knock on any door should answer without
+  `x-scvd-doors: passed` and with `WWW-Authenticate: Payment`. A short
+  key is refused by both Workers; the store answers 500 on every native
+  door with one, so set the same long key in both places.
 - **The note audits stopped paging you, 2026-09-15 — no press needed.**
   You said of a `worker_health` page about a note this desk sent to
   delvorn.site: "I don't want to get this particular alarm anymore" —
@@ -1110,10 +1122,24 @@ what you ruled and what is still yours to look at.
   a model tool call and gallery listing remain unverified.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
-  A2A Directory already lists SCVD; two new community API submissions failed
-  (503 and 404), with no new listing confirmed. MPP native checkout was not
-  advertised in the fresh quote; curated MPP/MPPScan submissions follow activation
-  and discovery qualification. UCP merchant intake remains separate from PS9's
+  A2A Directory already lists SCVD. The earlier community API attempts returned
+  503 and 404; the Global A2A Registry web form subsequently registered
+  [SCVD Evidence Agent](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent).
+  The public listing is confirmed and unclaimed. Claiming and domain/account
+  verification remain a keeper press; do not resubmit. MPP is now live for Context
+  Anchor: the 21:13 UTC
+  read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
+  and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
+  deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
+  [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  MPPScan still needs discovery qualification; the checker’s Base-network
+  mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
+  The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
+  MPP descriptor alongside x402; the compiled local directory-reader check passes.
+  Deployment readback is tracked with that repair; external parser qualification
+  and admission remain separate.
+  [Live receipt](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+  UCP merchant intake remains separate from PS9's
   inspection experiment. OASF clarification: endpoint only, no Cisco/Anro submission.
 
 - **GitHub catalogs, September 17 follow-through.** Awesome ERC-8004
@@ -1413,16 +1439,18 @@ what you ruled and what is still yours to look at.
   rotation re-captures the envelope on its own; the EIP-712
   row should read pass again on that capture, and if it does
   not, the cause is new and not this one.
-- **Additional plugin publishers (researched 2026-09-17).**
-  [Prepared packet](registry/plugin-submissions.md): the keeper reports Cursor
-  already listed; the repo's recorded URL is cursor.directory. Reconcile any
-  additional official marketplace URL before another application. No duplicate
-  listing or second MCP server. Claude's portal requires sign-in in the inspected
-  browser. Claude's application is for its community marketplace,
-  not its separately curated official collection; finish TR-D's installed-scope
-  check before submitting. Kiro accepts the same portable package, with publisher
-  contact, published privacy/support links and host qualification still required.
-  No new application to these three was sent. OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
+- **Additional plugin publishers (updated 2026-09-17).**
+  [Prepared packet](registry/plugin-submissions.md): Cursor's official publisher
+  application is **submitted; review pending**, using the existing repository,
+  with a [confirmed receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json).
+  The cursor.directory community listing remains separate. Watch for Cursor's
+  review response; do not resubmit. Remaining Cursor skill discovery and desktop
+  qualification belong to TR-D. Claude's community plugin application is also **submitted for Claude Code; review
+  pending**. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
+  Cowork was not selected because it remains untested. Watch the existing
+  [submission](https://platform.claude.com/plugins/submissions); do not duplicate it.
+  Kiro still needs host qualification and publisher contact and remains unsubmitted.
+  OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
 - **skills.sh and MCPFind.** DONE 2026-09-08: the keeper supplied
   both listing URLs; live reads confirmed the named skill and server.
   Skills: https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store

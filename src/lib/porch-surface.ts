@@ -142,6 +142,27 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/llms-full.txt", "llms-full.txt"],
   ["/index.md", "index.md"],
   ["/mcp.md", "mcp.md"],
+  /**
+   * THE UCP DOORS (2026-09-16). Counted from the day they opened,
+   * because the whole question about this protocol is whether anybody
+   * arrives through it — and an uncounted door cannot answer that.
+   * The two catalog operations share one bucket: what is worth knowing
+   * is whether platforms shop the catalog, not which verb they used.
+   */
+  ["/ucp", "ucp"],
+  ["/ucp/v1", "ucp"],
+  ["/ucp/v1/catalog/search", "ucp:catalog"],
+  ["/ucp/v1/catalog/lookup", "ucp:catalog"],
+  /**
+   * Opening a checkout is a visit worth counting: it is the moment a
+   * platform stops browsing and tries to buy, and whether that ever
+   * happens is the whole open question about this protocol. The
+   * id-scoped doors beside it are inventoried as uncounted instead —
+   * reading or cancelling a checkout you already hold is the same
+   * visit continuing, and counting it would fill the porch with one
+   * buyer's polling and call it footfall.
+   */
+  ["/ucp/v1/checkout-sessions", "ucp:checkout"],
   ["/trade", "trade"],
   ["/trade.json", "trade.json"],
   ["/trade.md", "trade.md"],
@@ -279,6 +300,9 @@ const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
   "openapi.json": "storefront",
   rails: "storefront",
   "well-known": "storefront",
+  ucp: "storefront",
+  "ucp:catalog": "storefront",
+  "ucp:checkout": "storefront",
   "oasf-record": "storefront",
   zodiac: "storefront",
   onpage: "instrument",

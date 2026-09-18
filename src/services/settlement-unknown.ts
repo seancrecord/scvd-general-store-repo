@@ -87,7 +87,7 @@ export interface SettlementUnknownRow {
   purchase_id?: string;
   state: SettlementUnknownState;
   path: string;
-  door: "http" | "mcp";
+  door: "http" | "mcp" | "ucp";
   /** What the till saw, verbatim — never an attribution. */
   reason: string;
   at: string;
@@ -129,7 +129,7 @@ function deepFind(value: unknown, key: string): unknown {
 export interface SettlementUnknownInput {
   purchaseId?: string;
   path: string;
-  door: "http" | "mcp";
+  door: "http" | "mcp" | "ucp";
   reason: string;
   network?: string;
   paymentHeader?: string;

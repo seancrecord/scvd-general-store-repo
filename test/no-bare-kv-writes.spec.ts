@@ -50,6 +50,22 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put(purchaseKey, purchase);',
     'await txn.put("case:latest", latest);',
   ],
+  /*
+   * The UCP checkout's own state, one Durable Object instance per
+   * checkout. Every write here is inside a storage transaction — which
+   * is the point of them: a version bump, a quote and a completion
+   * binding each have to be all-or-nothing, and the serialization is
+   * what stops two completions racing for one checkout. Not KV, so no
+   * retry to ride; listed rather than exempted by filename so a KV
+   * alias appearing in this service still fails the guard.
+   */
+  "/src/services/ucp-checkout-store.ts": [
+    "await txn.put(ROW, checkout);",
+    "await txn.put(ROW, next);",
+    // The order row, written in the same transaction that completes
+    // the checkout: the two must never come apart.
+    "await txn.put(ORDER_ROW, order);",
+  ],
   "/src/services/patron-anchors.ts": [
     'await txn.put("patron-anchor", record);',
   ],
@@ -95,6 +111,15 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("artifact", record);',
     'await txn.put(key, proposal);',
     'await txn.put("artifact:credit_started", true);',
+    /*
+     * The settlement-submission claim and its resolution. Both are
+     * DurableObjectTransaction writes against the same record that
+     * proves ownership, and both have to be all-or-nothing with the
+     * reads above them: a claim that could be separated from its
+     * check is a mechanism for submitting one payment twice.
+     */
+    'await txn.put(SUBMISSION_ROW, submission);',
+    'await txn.put(SUBMISSION_ROW, next);',
   ],
 };
 

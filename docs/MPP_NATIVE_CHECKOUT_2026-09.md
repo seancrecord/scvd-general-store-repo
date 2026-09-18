@@ -11,11 +11,14 @@ none of those live facts. MPP observation, census and passports remain independe
 
 ## Implemented boundary
 
-Only HTTP GET `/api/buy/context_anchor`, using the existing minimum price,
-Base and native USDC. The offer derives its amount, asset, recipient,
-authorization domain and expiry window from the existing catalog/payment
-configuration. There is no second product or price table. Native tips,
-other products, MCP, other networks and other assets are not enabled here.
+As piloted: only HTTP GET `/api/buy/context_anchor`, using the existing
+minimum price, Base and native USDC. Since the
+[whole-store release](MPP_WHOLE_STORE_2026-09-18.md) every HTTP door on the
+shelf carries the same offer at its own minimum; the boundaries below on
+transport, network, asset and tip are unchanged. The offer derives its
+amount, asset, recipient, authorization domain and expiry window from the
+existing catalog/payment configuration. There is no second price table.
+Native tips, MCP, other networks and other assets are not enabled here.
 
 When explicitly enabled, an unsigned request gets the existing x402 offer
 and a genuine MPP `WWW-Authenticate` challenge. The dedicated
@@ -121,13 +124,17 @@ Missing observations are labeled; storage failure never changes checkout.
 
 Menu and compact contracts publish `payment_capabilities`; OpenAPI uses the
 store-specific `x-scvd-payment-capabilities`. Native declarations appear only
-for the configured HTTP lane and use the challenge's own offer terms. The
-payment guide names the exact scope. Existing x402 `x-payment-info` remains
-unchanged: its schema conflicts with the MPP draft's extension of the same name.
-A mixed object is not presented as draft-compliant native discovery.
+for configured HTTP doors and use each challenge's own offer terms. The
+payment guide names the exact scope. The directory compatibility follow-up adds
+an MPP protocol object to the existing AgentCash `x-payment-info.protocols`
+array, derived from the enabled capability. Existing x402 fields, price and
+inputs remain unchanged. This is the directory profile, not a claim of
+conformance to the separate draft extension with the same name. Runtime
+challenges remain authoritative; directory admission is a separate check.
 
-Before broader rollout: native discovery/indexer interoperability; MCP transport qualification;
-remaining fulfillment families; and separate network/asset qualification.
+After the whole-shelf HTTP rollout: native discovery/indexer interoperability,
+MCP transport qualification, broader live paid qualification and separate
+network/asset qualification remain open.
 No Stripe, subscription, Solana or client-broadcast hash method follows from
 this Base/USDC pilot.
 

@@ -1,0 +1,96 @@
+{
+  "red_before_fix": {
+    "file": "test/mpp-rollout-discovery.spec.ts",
+    "result": "1 failed / 3 passed",
+    "failure": "Missing MPP protocol object despite an actual unpaid MPP challenge"
+  },
+  "focused": {
+    "files": 3,
+    "passed": 24
+  },
+  "final_focused": {
+    "files": 2,
+    "passed": 6
+  },
+  "typecheck": "passed",
+  "build": "passed (both Workers and MPP SDK)",
+  "full_suite": {
+    "result": "complete after bounded timeout/startup reruns",
+    "source_base": "82a419ff",
+    "configuration": "all four CI partitions; one worker per partition",
+    "files": 761,
+    "passed_tests": 14702,
+    "skipped_tests": 1,
+    "initial_failed_cases": [
+      {
+        "file": "solana-purchase-replay.spec.ts",
+        "test": "context_anchor mcp-standard same-payment: returns the original Solana good without another settlement",
+        "initial_result": "timeout",
+        "rerun": "passed"
+      },
+      {
+        "file": "paid-retry-admission.spec.ts",
+        "test": "aura_walk mcp-standard shutter solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp cached: paid retrieval survives admission closing",
+        "initial_result": "timeout",
+        "rerun": "passed"
+      },
+      {
+        "file": "buyer-expired-recovery.spec.ts",
+        "test": "mcp eip155:8453 operator_statement: expired spent payment recovers with missing key",
+        "initial_result": "timeout",
+        "rerun": "passed"
+      },
+      {
+        "file": "url-observation-paid-recovery.spec.ts",
+        "test": "onpage_audit mcp rail 4: response-before recovers original signed evidence with upstream down",
+        "initial_result": "timeout",
+        "rerun": "passed"
+      }
+    ],
+    "initial_missing_file": "test/cheap-door-first.spec.ts (Worker runner startup timeout)",
+    "missing_file_rerun": "7 passed",
+    "rerun_scope": "The paid-retry-admission file (70 tests), the other three exact timed-out cases, and the missing file (7 tests). Name-filtered cases skipped by the targeted rerun had already completed in the full run. No timeout settings changed."
+  },
+  "sha256": {
+    "red": "7e223216f9ed4dc30e4de76347000f25a7edc29ece41bb8dc59d562d50fab40e",
+    "focused": "934e98534e6c5b631f5aade4753ae7ff2e059c4289f956ed33b65ad794138e62",
+    "final_focused": "30201f9f80f8bf6a0274cf0c788249d7837afcfd1cc7e4a105374072bd57b1d0",
+    "typecheck": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "build": "ad48d5af0ee722d61e8c554205de88cb3f233f21e229940d373dacd46d98e4e6",
+    "claims": "fce800e33e292f53040d8ec270d79e86c4eddf7e21f464903c8b3eac56ef4d99",
+    "audit": "f5a4897198b9f545f53fac5db8cb15e845e8e3c219ee34dc60bd5ea0f34327f8",
+    "full-1": "acc6f5ab941f015b37d6b5d0d91a073ea8935f7f502dc29286e3e802f8c3e989",
+    "full-2": "f76d4d94385a45af4a3bf36f84d99da4f1c8b48475db8a12e4d53b7cbe2a9f7b",
+    "full-3": "9663de1a208e7201fc037d789139c057ea2231a1f82583e069e6cc041a04b183",
+    "full-4": "f0a210dab8a0ab47f0c52727c81708e7643e6cc1ba7a5bf46e9e9f75bbdf9223",
+    "rerun": "48f51c97d21f49f31267b046d901f09656fe201fcfa149c7cd026678db6613d8",
+    "timeout-rerun": "bbfbf07c9e2546311a5d922dd3cc1ab941c9613d3a360e9c8183881f7d80ce14",
+    "missing-rerun": "953b9bdfb5418f44e130cd036156af2a19d58b8b358b01ab68dc436c7d75f3c1",
+    "url-rerun": "491e0d541c8011a6bd027a02164c2ea40036b94b0dbdace4dde2a007d8ee6764",
+    "integrated-types": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "integrated-listings": "fae49da4ea4ec5330259c0a721b25fe2d8e46b2710ec2f514b4c4352b2a1f808",
+    "generalized-red": "7e7d19e3fa8cf27065d0bc893fe62c685aa783830bd2c9786908e3d8e2688196",
+    "whole-types": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+    "whole-green": "6055891299cb528914b1e818df7ff1a779dff6c140a0b775bf7887d67ded800d",
+    "whole-build": "60e2bf3e8e147ff2ffbce42a446f7bf689caf44b2788123322fc14307c105625"
+  },
+  "claims": "passed; 48 of 48 resolved, zero unbound",
+  "scalability_audit": "passed; four existing warnings within budget",
+  "integrated_main": {
+    "revision": "bde4288b6372d86d9645d45f79a46b55b72eb3de",
+    "upstream_changes": "Documentation and retained observations only; no runtime/test/config changes from the full-suite base",
+    "typecheck": "passed",
+    "listings_tests": 37
+  },
+  "whole_store_integration": {
+    "upstream_commit": "e37aa7aa",
+    "upstream_pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/790",
+    "scope": "Descriptor follows every configured HTTP shelf item; MCP/WebMCP and non-buy operations excluded",
+    "regression_without_descriptor": "1 failed / 3 passed; missing protocol descriptor assertion",
+    "focused_files": 7,
+    "focused_tests": 68,
+    "typecheck": "passed",
+    "build": "passed (Workers and MPP SDK)",
+    "full_suite": "Combined revision requires full CI; earlier local full-suite result above predates this upstream rollout"
+  }
+}

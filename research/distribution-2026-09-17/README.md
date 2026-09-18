@@ -17,6 +17,15 @@ for the OpenAI skill update steps and expanded A2A/MPP/UCP admission map. Work i
 commit `b4c0bbdbde412a435129b00f07f2b1eb401e98ab`, because the original checkout has
 unrelated edits and predates the published assets.
 
+## MPP activation follow-up
+
+At 21:13 UTC, after the keeper reported activation, Context Anchor advertised
+MPP EVM charge / Base / 1 USDC alongside x402. Menu and OpenAPI capability
+declarations agree. Other products are upcoming. This unsigned read did not
+exercise payment; directory discovery compatibility remains open.
+[Receipt](observations/mpp-context-anchor-live.json) and
+[coverage](PROTOCOL_COVERAGE.md#mpp-activation-and-remaining-discovery-gate).
+
 ## Canonical identity is already connected
 
 The public Base RPC `tokenURI(86957)` resolves to
@@ -230,12 +239,106 @@ commit, push, deployment or new publisher application was performed in this pass
 
 ### Follow-up: existing plugin updates and GitHub catalogs
 
-Keeper clarification: SCVD is already in Cursor marketplace. The repository's
-recorded public page is cursor.directory; any separate cursor.com URL remains
-unreconciled. No duplicate application or second server is proposed. OpenAI is an
-update to the existing verifier plugin, with new release notes for the skill.
+Keeper clarification, corrected September 17: SCVD has the plugin package and
+the cursor.directory community listing; official Cursor marketplace admission
+remains outstanding. The latest clarification supersedes the earlier claim of
+marketplace inclusion. Qualify and submit the existing skill-plus-MCP package
+through Cursor's publisher application. OpenAI is an update to the existing
+verifier plugin, with new release notes for the skill.
 
 [Additional GitHub catalog findings](GITHUB_CATALOGS.md) include the submitted
 [Awesome ERC-8004 issue #111](https://github.com/sudeepb02/awesome-erc8004/issues/111),
 awaiting review. This is a third GitHub issue in the overall distribution pass;
 it is not yet an external listing. Other candidate catalogs remain unsubmitted.
+
+
+### Cursor publisher application — September 17 follow-up
+
+The official [Cursor publisher application](https://cursor.com/marketplace/publish)
+was submitted for the existing repository, with the SCVD logo, website, privacy
+and support links. The page confirmed **Thanks for applying** and receipt.
+[Application record](observations/cursor-publisher-submission.json).
+This supersedes the earlier unsubmitted status above; marketplace admission is
+still pending and the cursor.directory community listing remains separate.
+
+[Cursor CLI qualification](observations/cursor-host-qualification.json) is partial:
+both MCP servers loaded, and one free preflight of `https://example.com` returned
+the expected `not_ready` / L1 / HTTP 200 negative control. The two bundled skills
+were not visible to the model. Native desktop automation timed out. The application
+disclosed these limitations and optional paid services. Skill discovery and desktop
+qualification remain on ROADMAP TR-D; review follow-up is on KEEPER_LIST. No
+marketplace acceptance was added to the public trust signals.
+
+
+### Claude qualification reconciliation
+
+The later Claude Code 2.1.274 test supersedes the first attempt's incomplete
+plugin MCP qualification. Both skills loaded and the plugin-scoped free preflight
+completed against `https://example.com/`; the expected negative control returned
+`not_ready`, L1, HTTP 200. [Sanitized follow-up](observations/claude-host-qualified-followup.json).
+The account connector was separated by a session-only setting. The original
+failure remains retained. No marketplace installation, Cowork runtime or paid
+operation is claimed. Console submission still requires sign-in.
+
+
+### Cursor normal Agent-mode follow-up
+
+[Three bounded discovery checks](observations/cursor-agent-mode-recheck.json)
+found neither skill in the model-visible catalog: the unchanged package loaded
+with `--plugin-dir`, the documented local-plugin directory, and a portable-only
+copy without other host wrappers. The earlier Ask-mode result therefore is not
+explained by mode alone. The cause remains unisolated; native desktop discovery
+is still outstanding. No package change or duplicate application was made.
+
+
+### Claude community application submitted
+
+After the keeper signed in and explicitly authorized contact sharing and the
+Software Directory Terms, the existing package was submitted for **Claude Code**.
+Cowork was left unselected because it remains untested. Anthropic confirmed
+**Plugin submitted for review** and receipt of the submission.
+[Sanitized application record](observations/claude-publisher-submission.json).
+Review is pending; no accepted listing is added to public trust signals.
+
+
+## MPP directory follow-through
+
+Official catalog [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted for Context Anchor only;
+maintainer review pending. Generation, typecheck, production build and 34
+focused upstream tests passed. MPPScan’s pinned parser maps EVM/Base to
+`tempo:8453`; [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209)
+contains an isolated reproduction. Its registration remains unsubmitted, and
+SCVD’s additive OpenAPI MPP descriptor is implemented in the
+[compatibility repair](../../docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md), with the
+compiled local directory reader recognizing both protocols without endpoint
+warnings. Deployment readback is tracked with that repair.
+[Catalog receipt](observations/mpp-directory-submission.json) and
+[MPPScan audit](observations/mppscan-qualification.json).
+
+The full local SCVD suite ran in four shards: 742 of 761 files passed initially;
+all 19 initially failing files passed the lower-concurrency rerun (2,664 tests).
+The reconciled main branch typecheck and 37 listing checks passed.
+[PR #785](https://github.com/seancrecord/scvd-general-store-repo/pull/785) merged
+after quality checks, all four full-suite shards, CodeQL and Worker builds passed;
+runtime and plugin assets were unchanged by that tracking follow-up.
+
+
+## Global A2A Registry web submission
+
+The earlier API 404 did not establish that the browser route was unavailable.
+A fresh search found no SCVD entry; scanning the public origin discovered the
+canonical card and all three skills. After an uncertain mouse click, a second
+public search still returned no entry; activating the focused confirmation
+button produced **Agent Registered!**. The resulting
+[public listing](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent)
+was opened and confirmed. [Receipt](observations/a2a-registry-submission.json).
+
+It is **unclaimed**, not ownership-verified or an endorsement. No account,
+private contact detail, payment or DNS change was used. The registry's summary
+shows Text input/output defaults while its retained card says application/json;
+record that parser/display limit separately from listing presence. The confirmed
+record is now included in the shared public-record data and README's A2A row.
+
+The input/output summary mismatch is reported in [registry issue #7](https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7).
+The public-record update passes typecheck, 16 existing trust-record tests and
+37 listing checks. The release PR retains the full CI gate for the combined change.

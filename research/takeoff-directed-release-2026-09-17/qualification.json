@@ -1,0 +1,35 @@
+{
+  "schema_version": 2,
+  "plan_sha256": "ffc9aafa73020165b5f32199edb7cdfa5943ccf70dbb259de1106ceb63cb9d18",
+  "instrument_sha256": "8e04396e502cc75c40e9fa678f3dee8231ce43117491caf80eb6f02727c8aee8",
+  "host_context_sha256": "e81893c4e27fa6150ce950adfe4923d483950103a5e17b23b0280c2617f4907f",
+  "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+  "probed_at": "2026-09-18T00:18:59.140Z",
+  "hosts": {
+    "codex": {
+      "state": "pass",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [],
+      "executed": [
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh"
+      ]
+    },
+    "claude": {
+      "state": "pass",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [],
+      "executed": [
+        "curl",
+        "node",
+        "node"
+      ]
+    }
+  },
+  "limits": [
+    "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+  ]
+}
