@@ -1,5 +1,9 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-18 — Maintainer resolves OASF admission route
+
+[AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned or cost estimate claimed. Individual OIDC writer access is no longer a pending route.
+
 ## 2026-09-18 — OpenCode directory contribution routes
 
 The official [ecosystem page](https://opencode.ai/docs/ecosystem/) invites related-project PRs, while [CONTRIBUTING](https://github.com/anomalyco/opencode/blob/dev/CONTRIBUTING.md) requires an issue first and a complete issue template. A documentation-only Projects row is submitted in [#49834](https://github.com/anomalyco/opencode/pull/49834), linked to [#49833](https://github.com/anomalyco/opencode/issues/49833). The linked [awesome-opencode contribution guide](https://github.com/awesome-opencode/awesome-opencode/blob/main/contributing.md) uses YAML project entries with public, maintained, unique repositories. All 230 entries validated after adding SCVD; [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) carries setup instructions. The initial template warning was resolved and the bot confirmed compliance; review/admission remain unverified.

@@ -36,6 +36,20 @@ upload form or crawl trigger was established. An indexing-request email to
 `support@anroagents.com` is prepared locally, awaiting explicit send permission.
 No paid hosting account was purchased.
 
+## Maintainer answer at 18:47 UTC
+
+[AGNTCY maintainer Luca Muscariello confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) that the shared
+testbed is read-only and publishing requires joining with our own federated
+node. The earlier request for individual OIDC writer access is resolved as an
+unsupported route, not an unanswered access request. No additional OIDC push
+retry is warranted without a change in that policy.
+
+The [federation preparation note](../../registry/agntcy/FEDERATION.md) records
+the actual infrastructure and admission requirements. No node, hosting account,
+DNS record or federation request has been created. Anro's publisher lookup
+was rechecked after the reply and still returned `items: []`, `total: 0`.
+Its external-ingestion email remains unsent pending explicit authorization.
+
 ## Native host execution attempts
 
 - **Gemini CLI:** after the keeper completed Google authorization, the current
