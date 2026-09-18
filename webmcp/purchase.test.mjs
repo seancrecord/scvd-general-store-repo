@@ -175,3 +175,111 @@ test("publication completion preserves the private recovery header across cached
   assert.equal(again.structuredContent.purchase_recovery, recovery);
   assert.equal(f.requests.length, 2);
 });
+
+
+/*
+ * THE NATIVE LANE (2026-09-18): the same quote carries the door's MPP
+ * challenge, keyed to the quote's retry key, and a credential a payment
+ * client signed against it completes the purchase in the Authorization
+ * header. Signing still happens elsewhere; the page only carries.
+ */
+import { parsePaymentChallenge, MAX_CREDENTIAL_BYTES } from "./purchase.js";
+const b64url = value => Buffer.from(JSON.stringify(value)).toString("base64url");
+function challengeHeader(purchaseKey, overrides = {}) {
+  const request = b64url({ amount: "4000", currency: "0x1111111111111111111111111111111111111111", methodDetails: { chainId: 8453, credentialTypes: ["authorization"], decimals: 6 }, recipient: "0x2222222222222222222222222222222222222222" });
+  const opaque = b64url({ request_digest: "ab".repeat(32), purchase_key: purchaseKey, _mppx_scope: "/api/buy/hello" });
+  const params = { id: "challenge-id-fixture", realm: "scvd.store", method: "evm", intent: "charge", request, expires: "2026-09-18T18:00:00.000Z", opaque, ...overrides };
+  return "Payment " + Object.entries(params).filter(([, value]) => value !== undefined).map(([name, value]) => `${name}="${value}"`).join(", ");
+}
+function nativeResponse(init, status = 402) {
+  const key = init?.headers?.["Idempotency-Key"];
+  const res = response(status, status === 402 ? { error: "Payment required" } : { delivered: true });
+  if (status === 402) res.headers.set("WWW-Authenticate", challengeHeader(key));
+  if (status === 200) { res.headers.set("Payment-Receipt", "receipt-native-fixture"); res.headers.delete("PAYMENT-RESPONSE"); }
+  return res;
+}
+const credentialFor = (id, payload = { type: "authorization", from: "0x3333333333333333333333333333333333333333", nonce: "fixture", signature: "fixture" }) =>
+  "Payment " + Buffer.from(JSON.stringify({ challenge: { id, realm: "scvd.store", method: "evm", intent: "charge", request: "e30", opaque: "e30" }, payload })).toString("base64url");
+
+test("a quote sends its retry key and carries the door's native challenge, bound to that key", async () => {
+  const f = fixture(async (_url, init) => nativeResponse(init));
+  const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  assert.equal(f.requests[0].init.headers["Idempotency-Key"], quote.idempotency_key);
+  assert.equal(quote.payment_challenge.id, "challenge-id-fixture");
+  assert.equal(quote.payment_challenge.request.amount, "4000");
+  assert.equal(quote.payment_challenge.meta.purchase_key, quote.idempotency_key);
+  assert.equal(quote.payment_challenge.header, challengeHeader(quote.idempotency_key));
+  assert.match(quote.next, /signed_credential/);
+  assert.deepEqual(quote.payment_required, required, "x402 terms ride beside it unchanged");
+});
+
+test("a challenge keyed to someone else's retry, or no challenge at all, is not offered and cannot be paid natively", async () => {
+  const keyedElsewhere = fixture(async () => { const res = response(); res.headers.set("WWW-Authenticate", challengeHeader("another-key-0000000000")); return res; });
+  const quote = (await keyedElsewhere.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  assert.equal(quote.payment_challenge, null);
+  assert.doesNotMatch(quote.next, /signed_credential/);
+  const refused = await keyedElsewhere.complete({ quote_id: quote.quote_id, signed_credential: credentialFor("challenge-id-fixture") });
+  assert.equal(refused.isError, true);
+  assert.equal(keyedElsewhere.requests.length, 1);
+  assert.equal(parsePaymentChallenge('Bearer realm="x"'), null);
+  assert.equal(parsePaymentChallenge(challengeHeader("k", { method: "solana" })), null);
+});
+
+test("a signed credential for this quote's challenge reaches the door in Authorization with the quote's key, and the receipt comes back", async () => {
+  const f = fixture(async (_url, init, n) => nativeResponse(init, n === 1 ? 402 : 200));
+  const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  const result = await f.complete({ quote_id: quote.quote_id, signed_credential: credentialFor(quote.payment_challenge.id) });
+  assert.equal(result.isError, false, JSON.stringify(result.structuredContent));
+  assert.equal(result.structuredContent.payment_receipt, "receipt-native-fixture");
+  assert.equal(result.structuredContent.payment_response, null);
+  const paid = f.requests[1];
+  assert.equal(paid.url, f.requests[0].url);
+  assert.equal(paid.init.headers.Authorization, credentialFor(quote.payment_challenge.id));
+  assert.equal(paid.init.headers["Idempotency-Key"], quote.idempotency_key);
+  assert.equal(paid.init.headers["PAYMENT-SIGNATURE"], undefined);
+  assert.equal(await f.complete({ quote_id: quote.quote_id, signed_credential: credentialFor(quote.payment_challenge.id) }), result, "a completed quote returns its original result");
+  assert.equal(f.requests.length, 2);
+});
+
+test("the credential object form is carried as the same Payment header a client emits", async () => {
+  const f = fixture(async (_url, init, n) => nativeResponse(init, n === 1 ? 402 : 200));
+  const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  const payload = { type: "authorization", from: "0x3333333333333333333333333333333333333333", nonce: "fixture", signature: "fixture" };
+  const object = { challenge: { id: quote.payment_challenge.id, realm: "scvd.store", method: "evm", intent: "charge", request: quote.payment_challenge.request, meta: quote.payment_challenge.meta }, payload };
+  const result = await f.complete({ quote_id: quote.quote_id, signed_credential: object });
+  assert.equal(result.isError, false);
+  const header = f.requests[1].init.headers.Authorization;
+  assert.match(header, /^Payment [A-Za-z0-9_-]+$/);
+  const wire = JSON.parse(Buffer.from(header.slice("Payment ".length), "base64url").toString());
+  assert.equal(wire.challenge.id, quote.payment_challenge.id);
+  assert.equal(wire.challenge.request, Buffer.from(JSON.stringify(quote.payment_challenge.request)).toString("base64url"), "the request is the SDK's canonical, sorted form");
+  assert.deepEqual(wire.payload, payload);
+  assert.equal(wire.challenge.meta, undefined);
+});
+
+test("both credentials at once, a credential for another challenge, and an oversized one never leave the page", async () => {
+  const f = fixture(async (_url, init) => nativeResponse(init));
+  const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  for (const args of [
+    { signed_payment: signed, signed_credential: credentialFor(quote.payment_challenge.id) },
+    { signed_credential: credentialFor("some-other-challenge") },
+    { signed_credential: "not a credential" },
+    { signed_credential: { challenge: {}, payload: {} } },
+    { signed_credential: "Payment " + "A".repeat(MAX_CREDENTIAL_BYTES) },
+  ]) {
+    assert.equal((await f.complete({ quote_id: quote.quote_id, ...args })).isError, true, JSON.stringify(args).slice(0, 60));
+  }
+  assert.equal(f.requests.length, 1);
+});
+
+test("a lost native response preserves the credential's retry identity and never re-signs", async () => {
+  const f = fixture(async (_url, init, n) => { if (n === 2) throw new Error("connection lost"); return nativeResponse(init, n === 1 ? 402 : 200); });
+  const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  const credential = credentialFor(quote.payment_challenge.id);
+  const failed = await f.complete({ quote_id: quote.quote_id, signed_credential: credential });
+  assert.equal(failed.isError, true);
+  assert.match(failed.structuredContent.error, /unknown/);
+  assert.equal((await f.complete({ quote_id: quote.quote_id, signed_credential: credential })).isError, false);
+  assert.equal(f.requests[2].init.headers.Authorization, credential);
+  assert.equal(f.requests[2].init.headers["Idempotency-Key"], quote.idempotency_key);
+});

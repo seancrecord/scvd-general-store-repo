@@ -12,6 +12,11 @@ describe("WebMCP exposes an explicit quote and signed-payment retry", () => {
     expect(source).toContain('"consequentialHint": true');
     expect(source).toContain('"signed_payment"');
     expect(source).toContain('"quote_id"');
+    // The native lane (2026-09-18): the quote carries the challenge, the
+    // completion takes the credential, and the receipt comes back.
+    expect(source).toContain('"payment_challenge"');
+    expect(source).toContain('"signed_credential"');
+    expect(source).toContain('"payment_receipt"');
   });
   it("serves the same payment module tested in Node", async () => {
     const response = await SELF.fetch("https://scvd.store/webmcp-purchase.js");
@@ -27,8 +32,9 @@ describe("WebMCP exposes an explicit quote and signed-payment retry", () => {
       quote_id: { type: "string" }, payment_required: { type: "object" },
       idempotency_key: { type: "string" }, payment_sent: { const: false },
     } });
+    expect(quote?.properties.payment_challenge).toMatchObject({ type: ["object", "null"], properties: { header: { type: "string" }, id: { type: "string" }, request: { type: "object" } } });
     expect(complete).toMatchObject({ type: "object", properties: {
-      status: { type: "integer" }, body: {}, payment_response: {},
+      status: { type: "integer" }, body: {}, payment_response: {}, payment_receipt: { type: ["string", "null"] },
       purchase_recovery: { type: ["string", "null"] },
       idempotency_key: { type: "string" }, error: { type: "string" },
     } });

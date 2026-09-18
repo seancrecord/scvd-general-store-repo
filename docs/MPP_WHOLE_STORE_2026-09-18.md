@@ -90,7 +90,7 @@ native door: set the same long key in both places.
 
 ## Not in this release
 
-Other networks and assets, native tips, WebMCP native checkout (MCP followed
+Other networks and assets, native tips (MCP and the WebMCP bridge followed
 the same day),
 Stripe, subscriptions, native refund automation, a public browser checkout
 beyond the reviewed CORS surface, and a services-directory claim. Canonical
