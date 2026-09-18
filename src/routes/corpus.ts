@@ -1,3 +1,4 @@
+import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse, markdownCell } from "@/lib/json-markdown";
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
@@ -197,7 +198,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "conformance verdict: ready, not_ready, unreachable or not_probed",
       "named failing checks and advisories",
       "protocols_spoken: x402, mpp, both or neither observed; absent means not measured",
-      "mpp: read-only challenge checks and advisories under the row's named battery; credentials, binding, delivery and receipts unobserved; this store's till does not speak MPP",
+      "mpp: read-only challenge checks and advisories under the row's named battery; credentials, binding, delivery and receipts unobserved. " + UNPAID_READ_NOTE,
       "mpp_read_error: reader_failed marks our inability to measure, not a defect of the door",
       "week-over-week delta: newly failing, newly fixed, flappers",
       "population known versus walked, and the coverage percentage between them",
@@ -505,9 +506,8 @@ Latest observation: \`${tier.latest.verdict ?? "none"}\`${
 | --- | --- | --- | --- | --- | --- | --- |
 ${timeline}
 
-Protocols are read from one unpaid response under the named battery;
-this store's till does not speak MPP. A missing reading means not
-measured.
+Protocols are read from one unpaid response under the named battery.
+${UNPAID_READ_NOTE} A missing reading means not measured.
 
 A missed week is a fact about us, not about the door. Gaps by reason:
 ${gaps}.
@@ -670,7 +670,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
           <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Entry</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
-        <p class="menu-meta">Protocols are read from one unpaid response under the named battery; this store's till does not speak MPP. A missing reading means not measured.</p>
+        <p class="menu-meta">Protocols are read from one unpaid response under the named battery. ${escapeHtml(UNPAID_READ_NOTE)} A missing reading means not measured.</p>
         <p class="menu-meta">A missed week is a fact about us, not about the door. Gaps by reason: ${escapeHtml(
           Object.entries(history.gaps_by_reason)
             .filter(([, count]) => count > 0)

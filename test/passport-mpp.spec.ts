@@ -135,7 +135,7 @@ describe("a passport can rest on either observed payment protocol", () => {
     expect(index.hosts[0]).toMatchObject({ tier: "observed", fraction: { ready: 2, rounds: 4 } });
     expect(index.hosts[0]!.line).toBe(result.payload.tier?.line);
     const html = await (await SELF.fetch(`${BASE}/passport/${HOST}`, { headers: { Accept: "text/html" } })).text();
-    expect(html).toContain("till does not speak MPP");
+    expect(html).toContain("No reading here rests on a payment");
     expect(html).not.toContain("found a working x402 door");
     const chip = await SELF.fetch(`${BASE}/badges/passport/${HOST}.svg`);
     expect(chip.status).toBe(200);
@@ -147,7 +147,7 @@ describe("a passport can rest on either observed payment protocol", () => {
     expect(profiles.profiles).toContainEqual(expect.objectContaining({ host: HOST, decision: "READY", protocol: "mpp" }));
     const profileHtml = await (await SELF.fetch(`${BASE}/profiles/${HOST}`, { headers: { Accept: "text/html" } })).text();
     expect(profileHtml).toContain('data-decision="READY"');
-    expect(profileHtml).toContain("till does not speak MPP");
+    expect(profileHtml).toContain("No reading here rests on a payment");
   });
 
   it("a newer unmeasured refresh cannot revive an old clean MPP challenge", async () => {

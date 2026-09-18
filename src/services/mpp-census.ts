@@ -1,3 +1,4 @@
+import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import type { MppBlock } from "@/services/mpp-battery";
 import type { WardHostResult } from "@/services/ward-round";
 
@@ -22,7 +23,7 @@ export interface MppCensus {
   batteries: string[];
 }
 
-export const MPP_CENSUS_NOTE = "MPP challenges read from the same unpaid response. measured counts answered rows carrying both the saved MPP battery and protocols_spoken; unmeasured counts answered rows without them. Unreachable and not-probed rows supply no protocol observation. The x402 verdict keeps its meaning; credentials, delivery and receipts were not observed, and this store's till does not speak MPP.";
+export const MPP_CENSUS_NOTE = "MPP challenges read from the same unpaid response. measured counts answered rows carrying both the saved MPP battery and protocols_spoken; unmeasured counts answered rows without them. Unreachable and not-probed rows supply no protocol observation. The x402 verdict keeps its meaning; credentials, delivery and receipts were not observed. " + UNPAID_READ_NOTE;
 
 /** Count stored readings only. A missing legacy field is never a negative. */
 export function mppCensusOf(rows: readonly WardHostResult[]): MppCensus {

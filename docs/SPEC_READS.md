@@ -1,5 +1,31 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-18 — The till speaks MPP; the readings still do not
+
+Native MPP checkout, piloted on one door on 2026-09-17, now stands beside
+x402 on every HTTP door ([#790](https://github.com/seancrecord/scvd-general-store-repo/pull/790)),
+on MCP tools/call in the SDK's own transport convention
+([#804](https://github.com/seancrecord/scvd-general-store-repo/pull/804))
+and on the WebMCP quote-then-pay bridge. Two house purchases from an outside
+wallet with the stock `mppx@0.10.1` clients (HTTP and MCP) settled and were
+read back through the keeper's inspection; the [dated result](MPP_LIVE_RESULT_2026-09-18.md)
+names them. The SDK's http client compares the x402 envelope's
+`resource.url` to the response URL with strict equality before any native
+challenge is signed, so the buy routes stopped declaring a static resource
+([MCP release record](MPP_MCP_CHECKOUT_2026-09-18.md)). The challenge
+carries no EIP-712 domain; the stock client takes it from its asset
+registry or an explicit `authorization`, and the payment guide says so.
+
+The earlier position, "the store observes MPP; its till does not speak
+it" (2026-09 entries below), was true when written and is left as
+written. Every current reading surface that repeated it (battery, census,
+core, surface reads, passport rule, corpus dataset, defect vocabulary
+hint) now carries one spelled-once sentence instead: no reading rests on
+a payment, and the till speaking MPP says nothing about the door read.
+Defect vocabulary version 20 records the wording change; no assertion,
+falsifier or reading rule changed, and signed observations are not
+rewritten.
+
 ## 2026-09-18 — Gallery readback and registry intake boundaries
 
 [Antigravity plugins](https://antigravity.google/docs/plugins) reuse skills but

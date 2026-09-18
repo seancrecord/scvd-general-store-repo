@@ -1,4 +1,4 @@
-import { MPP_BATTERY, MPP_SPEC_DRAFT } from "@/lib/mpp-challenge";
+import { MPP_BATTERY, MPP_SPEC_DRAFT, UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { MPP_CHECK_NAMES } from "@/services/mpp-battery";
 import type { MppCensusReading } from "@/services/mpp-census";
 
@@ -12,7 +12,7 @@ export interface ProtocolEvidence {
   mpp_read_error?: string;
 }
 
-export const PASSPORT_PROTOCOL_RULE = "A passport can rest on either x402 or MPP when that protocol's latest observed checks pass. If both pass, x402 remains the primary reading and MPP is shown separately. Every tier counts one named protocol's rounds; successes from different protocols are never added together. Missing readings are unmeasured. Other advertised protocols neither qualify nor disqualify a door. Credentials, challenge binding, delivery and receipts were not observed for MPP; this store's till does not speak MPP.";
+export const PASSPORT_PROTOCOL_RULE = "A passport can rest on either x402 or MPP when that protocol's latest observed checks pass. If both pass, x402 remains the primary reading and MPP is shown separately. Every tier counts one named protocol's rounds; successes from different protocols are never added together. Missing readings are unmeasured. Other advertised protocols neither qualify nor disqualify a door. Credentials, challenge binding, delivery and receipts were not observed for MPP. " + UNPAID_READ_NOTE;
 
 /** Read saved evidence, never reinterpret historical challenge bytes. */
 export function protocolVerdict(evidence: ProtocolEvidence | null | undefined, protocol: PassportProtocol): string | null {
