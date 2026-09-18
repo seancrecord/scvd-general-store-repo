@@ -1,0 +1,180 @@
+{
+  "recorded_at": "2026-09-18T00:52:29.005484+00:00",
+  "counts": {
+    "planned_buyers": 4,
+    "launched_buyers": 4,
+    "runtime_completed": 3,
+    "complete_captures": 4,
+    "buyer_signature_verified": 2,
+    "launched_recipients": 2,
+    "completed_recipients": 1
+  },
+  "directed": {
+    "attempts": 4,
+    "pass": 1,
+    "fail": 1,
+    "incomplete": 2
+  },
+  "cells": [
+    {
+      "cell": {
+        "id": "codex-directed-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "started_at": "2026-09-18T00:22:12.450Z",
+      "ended_at": "2026-09-18T00:24:46.463Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 11,
+      "transcript_sha256": "d4e592977930ea369818745da266ffab7a72ea8535ecd2b923a606a9f9652017",
+      "retention": {
+        "state": "complete",
+        "files": 29,
+        "bytes": 23037195,
+        "issues": []
+      },
+      "strict_journey": "incomplete",
+      "buyer_signature_verified": true,
+      "recipient": {
+        "started_at": "2026-09-18T00:43:57.401Z",
+        "ended_at": "2026-09-18T00:45:27.364Z",
+        "runtime": {
+          "state": "failed",
+          "exit_code": null,
+          "signal": "SIGTERM",
+          "spawn_error": null,
+          "budget_stop": "tool_calls"
+        },
+        "trace_sha256": "19635523a225b46ed6dff47685f6576677d8bed277fddf6e0d9cf5773a6f770b",
+        "tool_calls": 13,
+        "input_manifest_sha256": "03cef3c969c4c4fdbcdc14cddab8d059f4337cdfb78b9114cd948eca9e61047b",
+        "review_state": "incomplete"
+      }
+    },
+    {
+      "cell": {
+        "id": "claude-directed-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "started_at": "2026-09-18T00:24:47.492Z",
+      "ended_at": "2026-09-18T00:26:29.462Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 10,
+      "transcript_sha256": "c71966edec8b2f062726ac047b17beabbc0159ab4859c5934106516cb1939fa8",
+      "retention": {
+        "state": "complete",
+        "files": 5,
+        "bytes": 15481,
+        "issues": []
+      },
+      "strict_journey": "fail",
+      "buyer_signature_verified": false,
+      "recipient": {
+        "state": "not_eligible",
+        "reason": "No captured signed original and issuer-key pair."
+      }
+    },
+    {
+      "cell": {
+        "id": "codex-directed-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "started_at": "2026-09-18T00:26:29.544Z",
+      "ended_at": "2026-09-18T00:29:23.626Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 12,
+      "transcript_sha256": "42221569155d588c757b4cdf338e1b42534bcac37555d6e54018de37a583d759",
+      "retention": {
+        "state": "complete",
+        "files": 14,
+        "bytes": 11531987,
+        "issues": []
+      },
+      "strict_journey": "pass",
+      "buyer_signature_verified": true,
+      "recipient": {
+        "started_at": "2026-09-18T00:45:28.470Z",
+        "ended_at": "2026-09-18T00:46:59.700Z",
+        "runtime": {
+          "state": "completed",
+          "exit_code": 0,
+          "signal": null,
+          "spawn_error": null,
+          "budget_stop": null
+        },
+        "trace_sha256": "e9b277c97c5454e7831097bedff9db20cbdd4c34279a01bc9910d4a88f52f1a8",
+        "tool_calls": 8,
+        "input_manifest_sha256": "d6ae3d7da8b2ed12c087e0ad859d005945851ee9452e970fa329150cea41a269",
+        "review_state": "reviewed"
+      }
+    },
+    {
+      "cell": {
+        "id": "claude-directed-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "started_at": "2026-09-18T00:29:23.891Z",
+      "ended_at": "2026-09-18T00:37:22.326Z",
+      "runtime": {
+        "state": "failed",
+        "exit_code": 143,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": "wall_ms"
+      },
+      "tool_calls": 8,
+      "transcript_sha256": "9c809520cebec1f88cd81a8fc7fbc7724f39b555a88f6bd64c6287293708aef0",
+      "retention": {
+        "state": "complete",
+        "files": 5,
+        "bytes": 23034,
+        "issues": []
+      },
+      "strict_journey": "incomplete",
+      "buyer_signature_verified": false,
+      "recipient": {
+        "state": "not_eligible",
+        "reason": "No captured signed original and issuer-key pair."
+      }
+    }
+  ],
+  "limits": [
+    "One new integrated acquisition, with all four cells retained; not a controlled comparison attributing change to one repair.",
+    "Two successful buyer signature checks do not mean two complete journeys. One fresh recipient stopped at the tool-call cap.",
+    "The sleep-interrupted Claude cell stays incomplete. No replacement attempt or retrospective budget/freshness change.",
+    "No catalogue/discovery, organic adoption or paid delivery claim."
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "recorded_at": "2026-09-18T02:27:14.910840+00:00",
+  "basis": "Recorded retrospectively from the unchanged pre-launch records and helper; no new recipient or modified cap.",
+  "host": "codex",
+  "model": "gpt-5.6-luna",
+  "budgets": {
+    "wall_ms": 180000,
+    "tool_calls": 12,
+    "output_bytes": 4194304,
+    "output_tokens": 1800
+  },
+  "budget_limits": "Output-token target is advisory; stop enforcement during suspension is not established.",
+  "launches": [
+    {
+      "file": "cohort/codex-directed-r1/recipient/launch.json",
+      "sha256": "a544c76ba50dc63588dc4e6afab81905ea9cc2bdedd0fe1d5a557cc084a56798",
+      "prompt_sha256": "ef6405fadbeddb6909df6db86a98cbb794c2730a19ffb71df54ff96a6a049c39"
+    },
+    {
+      "file": "cohort/codex-directed-r2/recipient/launch.json",
+      "sha256": "3c6066a00884a062cd8df910a7b11e915b09bcd5e6030b165624dde799a8f515",
+      "prompt_sha256": "ef6405fadbeddb6909df6db86a98cbb794c2730a19ffb71df54ff96a6a049c39"
+    }
+  ],
+  "helper_sha256": "cd18f9e3514f9b015426953af903c0f97ab739fad762e2ad76f872122e520b1b",
+  "network": "Disabled in the native adapter; review found local reads and cryptography only.",
+  "inputs": "Captured original and separately acquired key, verbatim buyer final report, two disclosed public verifier modules, and local module-type package.json. The rest of the buyer capture was not supplied.",
+  "attempts": "One per eligible original/key pair; two total, no retries or later acquisition repairs.",
+  "freeze_disclosure_limit": "The four-buyer plan froze buyer budgets. The acquisition freeze did not numerically specify recipient budgets. The recipient launches specify these different review limits. Do not claim every acceptance-protocol budget remained identical to prior or parallel cohorts.",
+  "parallel_cohort_recipient_budgets": {
+    "wall_ms": 240000,
+    "tool_calls": 20,
+    "output_bytes": 4000000,
+    "output_tokens": 2500
+  },
+  "comparison": "Separate recipient diagnostics with unequal limits; no pooled readiness or controlled pass-rate comparison."
+}

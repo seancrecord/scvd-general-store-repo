@@ -2043,3 +2043,19 @@ requires structured protocol descriptors. Its pinned discovery 1.7.5 package
 recognizes SCVD’s query inputs but mislabels the live EVM network in probe mode.
 [Reproduction and report](https://github.com/Merit-Systems/x402scan/issues/1209).
 No listing has been registered on MPPScan.
+
+### 2026-09-18 — Claude completion diagnostics
+
+Read the official [CLI reference](https://code.claude.com/docs/en/cli-reference)
+and [troubleshooting guide](https://code.claude.com/docs/en/troubleshooting),
+then cross-checked the installed CLI's `--help`. `--debug-file` supplies a
+private diagnostic log for an explicitly named run. The documented hanging
+process guidance does not diagnose the earlier capped session, and its
+resume advice is not appropriate for a fresh-context qualification.
+
+Two fixed diagnostic sessions completed with the original adapter and added
+debug logging: a plain response and a two-command local report handoff. These
+establish present completion only. No model, global settings, permissions,
+credentials or timeout changed. The subsequent integrated qualification
+uses separately merged runner changes and preserves the earlier failed
+comparison. [Record](../research/integrated-buyer-2026-09-18/completion-diagnostics.json).

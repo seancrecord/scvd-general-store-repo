@@ -1,0 +1,92 @@
+{
+  "recorded_at": "2026-09-18T00:20:16.340651+00:00",
+  "freeze": {
+    "frozen_at": "2026-09-18T00:18:07.384Z",
+    "purpose": "Diagnose native response completion; not a buyer or capability qualification and cannot replace the capped attempt.",
+    "cases": [
+      {
+        "id": "plain-response",
+        "prompt": "This is a diagnostic of response completion. Do not use any tools or read any local or remote data. Reply with exactly DIAGNOSTIC_COMPLETE and finish."
+      },
+      {
+        "id": "tool-continuation",
+        "prompt": "This is a diagnostic of local tool completion. Use only node commands and only the fresh current working directory. Do not use the network, read other local files, credentials, settings or prior sessions. First execute node -e 'console.log(\"LOCAL_COMMAND_COMPLETE\")'. After receiving that tool result, execute a separate node command that writes the exact text REPORT_COMPLETE to ./report.txt using Node fs. Then reply with exactly DIAGNOSTIC_COMPLETE and finish. Do not combine the two commands. No other work is requested."
+      }
+    ],
+    "budgets": {
+      "wall_ms": 240000,
+      "tool_calls": 4,
+      "output_bytes": 4000000,
+      "output_tokens": 500
+    },
+    "attempts_per_case": 1,
+    "changes_from_prior_adapter": [
+      "--debug-file per case; diagnostic prompt only"
+    ],
+    "stop_rule": "Run these two cases once. Preserve failures. Do not infer the prior timeout cause from a later success or launch a buyer from diagnostic results.",
+    "cli": "2.1.274 (Claude Code)",
+    "sources": {
+      "scripts/buyer-cold-isolated.mjs": "a9cf77b92a57aec8e8c15ff01ef0f8651f1b9fa951cd10d2dadb7e5b93edbfcc",
+      "scripts/lib/buyer-cold.mjs": "24d97f94f9cbb55d4fa0ac9d89ddea0f56176d5e04c7869e5dd712d871208f49"
+    }
+  },
+  "cases": [
+    {
+      "case": "plain-response",
+      "started_at": "2026-09-18T00:18:07.509Z",
+      "ended_at": "2026-09-18T00:18:09.906Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 0,
+      "models": [
+        "claude-sonnet-5"
+      ],
+      "result": "DIAGNOSTIC_COMPLETE",
+      "transcript_sha256": "217b632ef012335998f14e736bb968528dce8ff7c50a5b757dee4b0de75c9686",
+      "debug_log_sha256": "98850429b6ba4d91c8a16cd30004fa83d74cd79b4a9b2e81314580278cb7d78a",
+      "report_sha256": null
+    },
+    {
+      "case": "tool-continuation",
+      "started_at": "2026-09-18T00:18:09.907Z",
+      "ended_at": "2026-09-18T00:18:14.447Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null
+      },
+      "tool_calls": 2,
+      "models": [
+        "claude-sonnet-5"
+      ],
+      "result": "DIAGNOSTIC_COMPLETE",
+      "transcript_sha256": "0b06164772a181a8e527d8ccf8651184ddc0080455290e2c7db824e2d85aed69",
+      "debug_log_sha256": "99b29048f362b53ae49f72a7983e6623a2b1f0af6b750bf1ef0c3aff581e4508",
+      "report_sha256": "a24abbee58cb8ccc4da7e8640c6940d3484579cfa7e1718ca83b5813e1bccdcf"
+    }
+  ],
+  "findings": [
+    "Both fixed diagnostic cases completed under the same native adapter and model alias, with debug logging added.",
+    "The tool case independently issued both allowed node commands, retained REPORT_COMPLETE and emitted DIAGNOSTIC_COMPLETE.",
+    "The old probe reached a successful tool result before going silent; its rate-limit event said allowed, and no denied command or sign-in failure was visible. No old debug log was found at the standard per-session path.",
+    "Later success does not establish the old timeout cause or repair the capped qualification. No global configuration, credentials, model, permissions or timeout changed."
+  ],
+  "primary_sources": [
+    {
+      "url": "https://code.claude.com/docs/en/cli-reference",
+      "read_at": "2026-09-18T00:20:16.340743+00:00",
+      "used_for": "Documented --debug-file capture and noninteractive CLI behavior; cross-checked local --help."
+    },
+    {
+      "url": "https://code.claude.com/docs/en/troubleshooting",
+      "used_for": "Documented unresponsive-process handling; not evidence of this incident cause."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "source": "Local macOS pmset -g log, filtered to primary Sleep/DarkWake/Wake events in the acquisition window. Initial broader extraction retained privately.",
+  "buyer_cell": "claude-directed-r2",
+  "started_at": "2026-09-18T00:29:23.891Z",
+  "ended_at": "2026-09-18T00:37:22.326Z",
+  "runtime": {
+    "state": "failed",
+    "exit_code": 143,
+    "signal": null,
+    "spawn_error": null,
+    "budget_stop": "wall_ms"
+  },
+  "elapsed_ms": 478435,
+  "sleep_events": [
+    {
+      "utc": "2026-09-18T00:30:03Z",
+      "event": "Idle Sleep",
+      "duration_seconds": 30
+    },
+    {
+      "utc": "2026-09-18T00:30:33Z",
+      "event": "DarkWake",
+      "duration_seconds": 11
+    },
+    {
+      "utc": "2026-09-18T00:30:44Z",
+      "event": "Idle Sleep",
+      "duration_seconds": 397
+    },
+    {
+      "utc": "2026-09-18T00:37:21Z",
+      "event": "Wake"
+    }
+  ],
+  "source_sha256": "519e126672a0f250f7ffa945d0682e0be02d55703432f6627bcf5c408de3d956",
+  "finding": "System sleep directly overlaps the unfinished buyer. The parent records wall_ms termination after waking; real elapsed time exceeds the timer budget while the machine is suspended. The terminal trace also includes one api_retry with unknown error. This does not prove every inference delay was caused by sleep.",
+  "boundary": "Does not diagnose the earlier #787 probe, whose cause remains unestablished. This buyer remains incomplete and is not retried.",
+  "remaining_work_control": "Temporary caffeinate -i -t 3600 assertion, observed active after this cohort, for offline recipient/verification work only. No saved power setting changed; this does not prevent forced sleep or lid closure."
+}

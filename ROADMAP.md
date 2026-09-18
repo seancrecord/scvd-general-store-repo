@@ -56,6 +56,20 @@ this section is always the queue and nothing else.
 | B-WAVES | **Four-wave buyer acceptance — Wave 1 partially measured September 12.** Public collection and isolated cold-to-quote cohort complete at their bounded scope; buyer-grade shopping evidence collector built and fixture-tested. | Real buyers need correct goods, recoverable money and consistent terms, not just successful endpoint status. | Complete semantic discovery across all surfaces, recursive concrete-link and all-error coverage; rerun BUY-040/042/044 after repair. Then real cheap-rail scenarios, architecture representatives and offered full shelf in that order under the keeper's ceiling. Require chain reconciliation, correct subject, completed fulfillment and fresh-recipient understanding. No mocked or queued result promoted to paid delivery. EW-01–04; evidence and limits in `research/BUYER_RUN_ORDER.md`. |
 
 
+**TR3 separate integrated qualification, September 18 UTC:** this overlaps the
+separately frozen #789 cohort below; its four distinct buyer traces and result
+remain separate. The published 1.5.0 verifier
+and the already-merged workspace, corpus-link and refusal-scope repairs were
+frozen together. Both new host probes passed; four referred buyers ran once.
+Two buyers verified and retained signed originals, but only one fresh recipient
+completed: **1/4 complete, one failed interpretation, two incomplete**. The
+failure compares address digests with snapshot-reference digests; existing
+`how_to_match` wording is ambiguous and is the next narrow clarification.
+One recipient hit its call cap; one Claude buyer was interrupted by laptop
+sleep. Neither was retried. Earlier timeout cause remains unknown. Preserve
+old results and current caps; record awake conditions before any new freeze.
+[Integrated result and next work](research/integrated-buyer-2026-09-18/REPORT.md).
+
 **TR3 workspace follow-through, September 17:** the native buyer's repeated
 npm-cache refusal has a per-session cache repair and a separate tooling
 scratch directory. Evidence limits are unchanged; local launcher controls
