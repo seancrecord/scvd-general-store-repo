@@ -1,0 +1,111 @@
+{
+  "observed_at": "2026-09-18T14:05:22.943146+00:00",
+  "method": "Browser search/detail readback and documented anonymous HTTP reads; no purchases",
+  "gemini": {
+    "url": "https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo",
+    "query": "scvd",
+    "name": "scvd-general-store",
+    "publisher": "seancrecord/scvd-general-store-repo",
+    "version": "0.2.4",
+    "labels": [
+      "MCP",
+      "Skills"
+    ],
+    "install_command": "gemini extensions install https://github.com/seancrecord/scvd-general-store-repo",
+    "limits": [
+      "Not Google endorsement or security review",
+      "No model tool execution in this pass"
+    ]
+  },
+  "a2a": {
+    "url": "https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent",
+    "input_modes": [
+      "application/json"
+    ],
+    "output_modes": [
+      "application/json"
+    ],
+    "claim_status": "unclaimed",
+    "claim_attempt": "Unauthorized (No Token)",
+    "fix_confirmation": "https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7#issuecomment-5731122295",
+    "limits": [
+      "Only SCVD mode display checked",
+      "Ownership verification not performed"
+    ]
+  },
+  "anro": {
+    "source": "https://directory.anroagents.com/",
+    "docs": "https://anroagents.com/docs/agent-discovery/",
+    "search_url": "https://api.anroagents.com/ard/agents?filter=publisherId%20%3D%20%27scvd.store%27&pageSize=20",
+    "http_status": 200,
+    "items": 0,
+    "total": 0,
+    "external_route": "Publish domain manifest for crawling; already present on SCVD",
+    "limits": [
+      "No direct third-party OASF upload/intake identified",
+      "Free listing marketing and paid hosted-agent publication docs cover different flows; external import eligibility unresolved",
+      "No crawler schedule, publication, signature verification or federation proof"
+    ]
+  },
+  "agntcy": {
+    "request": "https://github.com/agntcy/dir/discussions/455#discussioncomment-18487204",
+    "reply_count": 0,
+    "state": "Existing request pending; no duplicate"
+  },
+  "second_a2a_registry": {
+    "url": "https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a",
+    "created_at": "2026-09-18T14:07:08.509551Z",
+    "receipt": "a2aregistry-agent.json",
+    "card_conformance": true,
+    "is_healthy": true,
+    "task_conformance": {
+      "category": "OTHER",
+      "passed": false
+    },
+    "paired_direct_checks": {
+      "plain_text_greeting": "JSON-RPC -32602",
+      "documented_json_task": "completed"
+    },
+    "issue": "https://github.com/prassanna-ravishankar/a2a-registry/issues/184",
+    "limits": [
+      "Direct protocol probes did not reproduce through the exact deployed SDK",
+      "Registry task verification remains failed",
+      "HTML detail route showed the register; public API confirms persistence"
+    ]
+  },
+  "hol_plugin": {
+    "submission": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349",
+    "state": "submitted; review pending",
+    "local_checks": [
+      "alphabetical order passed",
+      "one contribution entry passed catalog validation"
+    ],
+    "listing_confirmed": false,
+    "distinct_from": "HOL ERC-8004 agent registry",
+    "remote_contribution_gate": "passed",
+    "advisory_scan": "failed; 32 high and two medium findings",
+    "triage": "hol-scan-triage.json",
+    "triage_comment": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349#issuecomment-5731442078"
+  },
+  "erc8004_retry": {
+    "hol_openapi": "503 via web reader",
+    "agentranking": "timeout via web reader",
+    "limits": "No absence inference"
+  },
+  "agenterc": {
+    "url": "https://agenterc.com/explore/base/86957",
+    "observed_at": "2026-09-18T14:33:00Z",
+    "method": "Browser page and visible homepage indexer status",
+    "result": "Agent Not Found",
+    "base_index": {
+      "block": 51242575,
+      "last_update_display": "Sep 13, 2026, 12:41:37 AM",
+      "age_display": "5d ago"
+    },
+    "ethereum_index": "updated seconds earlier",
+    "inference": "Check ingestion lag; cause of missing SCVD identity not established",
+    "contact_source": "https://www.oddunits.dev/",
+    "contact": "hello@oddunits.dev",
+    "message_sent": false
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "verified_at": "2026-09-18T15:08:29.587184+00:00",
+  "expected_spec_files": 782,
+  "completed_spec_files": 782,
+  "first_run": {
+    "completed_files": 99,
+    "tests": 8176,
+    "initial_failures": 4,
+    "interrupted_intentionally": "Preserved completed files and resumed every unfinished file with eight workers"
+  },
+  "remaining_run": {
+    "files": 683,
+    "passed_tests": 6869,
+    "failed_tests": 0,
+    "skipped_tests": 1
+  },
+  "isolated_rechecks": {
+    "passed": 4,
+    "failed": 0,
+    "changed_source_or_timeouts": false
+  },
+  "coverage": "Exact expected file set equals the disjoint union of completed initial files and resumed JSON report files",
+  "existing_skip": "test/key-continuity.spec.ts: pending-wording case guarded by it.skipIf(KEY_BACKUP_EXISTS)",
+  "other_checks": [
+    "typecheck passed",
+    "build:check passed",
+    "trust-signals.spec.ts: 9 passed",
+    "listings:test passed",
+    "documented Antigravity staging recipe passed",
+    "git diff --check passed"
+  ],
+  "limits": [
+    "This is combined local coverage, not a single uninterrupted clean suite run",
+    "Required full CI must pass before merge"
+  ]
+}

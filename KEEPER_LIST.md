@@ -1104,9 +1104,13 @@ what you ruled and what is still yours to look at.
   [Live findings and prepared submissions](research/distribution-2026-09-17/README.md):
   five ERC-8004 directories show SCVD; 8004scan transport health and trust8004
   metadata need operator follow-ups. Agentscan also has an AI taxonomy conflict
-  despite correctly parsing the canonical record. AgentERC did not return the identity;
+  despite correctly parsing the canonical record. AgentERC again did not return the identity September 18; its Base index status
+  was five days old while Ethereum was current. Investigate ingestion lag before
+  changing canonical metadata; [current readback/contact](research/distribution-2026-09-18/README.md).
   HOL/AgentRanking reads failed. Cisco search returned no SCVD result; Anro's
-  publisher query returned zero. Continue the existing AGNTCY access request,
+  publisher query returned zero again September 18. Its published external-agent
+  route is manifest crawling; SCVD already serves the manifest. Direct OASF
+  upload/admission remains unconfirmed. Continue the existing AGNTCY access request,
   then sign/publish the corrected record and verify remote discovery. The
   historical CID does not cover the corrected bytes.
   On the keeper's authorization, Awesome Copilot
@@ -1117,16 +1121,32 @@ what you ruled and what is still yours to look at.
   was filed after fresh reproduction. [trust8004 #1](https://github.com/trust8004/requests-issues/issues/1)
   now records its freshly reproduced source/cached-field mismatch. No duplicate requests needed. Other operator
   messages and the AGNTCY discussion follow-up are in the same package. Gemini gallery
-  readback remains outstanding; the repository topic is the crawler opt-in. A fresh isolated Gemini CLI 0.60.0 install from
+  readback DONE September 18: version 0.2.4 shows MCP and Skills in the
+  [official gallery](https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo); the repository topic is the crawler opt-in. A fresh isolated Gemini CLI 0.60.0 install from
   the immutable release PR commit discovered both skills and connected SCVD MCP;
-  a model tool call and gallery listing remain unverified.
+  a model tool call remains unverified.
+  HOL's GitHub-backed plugin catalog submission is now
+  [PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349),
+  submitted September 18 after local catalog validation and existing host-test
+  receipt checks. Review/indexing pending; do not submit the web form again.
+  HOL's ERC-8004 index remains separately unverified; its OpenAPI read returned
+  503 today, while AgentRanking again timed out. Neither failed read proves absence.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
   A2A Directory already lists SCVD. The earlier community API attempts returned
   503 and 404; the Global A2A Registry web form subsequently registered
   [SCVD Evidence Agent](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent).
-  The public listing is confirmed and unclaimed. Claiming and domain/account
-  verification remain a keeper press; do not resubmit. MPP is now live for Context
+  The public listing is confirmed and unclaimed. The operator fixed its JSON-mode
+  display; live readback and confirmation on [issue #7](https://github.com/A2ARegistry/GlobalA2ARegistry/issues/7#issuecomment-5731122295) completed September 18.
+  Claim Ownership returned Unauthorized (No Token); sign in at
+  https://www.a2a-registry.org/auth/login before continuing the claim.
+  Do not resubmit. The separate a2aregistry.org submission completed September 18;
+  [public API record](https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a)
+  confirms the listing. Card/health checks pass, but its fixed text greeting fails
+  against JSON task inputs. Paired live checks reproduced that rejection and a
+  completed documented JSON task; [operator issue #184](https://github.com/prassanna-ravishankar/a2a-registry/issues/184)
+  is pending. Do not promote our direct task check into their task-verification result.
+  [Current receipt](research/distribution-2026-09-18/README.md). MPP is now live for Context
   Anchor: the 21:13 UTC
   read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
   and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;

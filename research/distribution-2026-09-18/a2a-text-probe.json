@@ -1,0 +1,38 @@
+{
+  "observed_at": "2026-09-18T14:11:43.083648+00:00",
+  "http_status": 200,
+  "version_header": "0.3",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": "distribution-readback-text",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "role": "user",
+        "messageId": "distribution-readback-text",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "Hello, what can you do?"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "distribution-readback-text",
+    "error": {
+      "code": -32602,
+      "message": "Invalid params: message.parts must carry one data part { \"task\": \"\u2026\", \u2026input } (or a text part holding that JSON).",
+      "data": {
+        "tasks": [
+          "preflight_endpoint",
+          "verify_receipt",
+          "get_endpoint_readiness"
+        ]
+      }
+    }
+  }
+}
