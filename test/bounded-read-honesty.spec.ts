@@ -569,6 +569,21 @@ describe("a probe that asked the wrong question must not answer no", () => {
        * instrument that never asked it to sell anything.
        */
       "../src/services/launch-check.ts",
+      /*
+       * THE FIFTH (2026-09-18), and the reason the count above was
+       * wrong twice. The paid audit's surface reads knock on the
+       * probed door again (the 402 bookend) and on the resource URL
+       * the challenge names, and both sent GET and only GET — so on a
+       * POST-only door the battery resolved POST, found the challenge,
+       * and the section below it filed the bookend as "answered 405
+       * with no parseable challenge" on the signed artifact. Two days
+       * after the four-probe fix, two more POST-only doors were listed
+       * publicly as serving no challenge and a reader on the spec
+       * thread caught it in seven minutes. A guard that enumerates
+       * probes by hand is only as good as the enumeration; the
+       * structural sweep below is the one that does not depend on it.
+       */
+      "../src/services/surface-reads.ts",
     ];
     for (const path of DOOR_PROBES) {
       const raw = SOURCES[path];
@@ -583,5 +598,118 @@ describe("a probe that asked the wrong question must not answer no", () => {
         `${path} probes a payment door without the shared method law`,
       ).toBe(true);
     }
+  });
+
+  it("no source under src/ reads a stranger's PAYMENT-REQUIRED off a hard-coded GET", () => {
+    /*
+     * THE SWEEP THAT DOES NOT TRUST THE LIST ABOVE (2026-09-18). The
+     * enumeration missed surface-reads.ts because nobody remembered
+     * that the paid audit reads the challenge twice more. So: any file
+     * that reads a PAYMENT-REQUIRED header off a response it fetched
+     * is a door probe, and it must go through probeWithMethod. The
+     * store's own routes SERVE that header; they do not fetch it, so
+     * the pairing (fetches AND reads it) is what marks a probe.
+     */
+    const code = (source: string): string =>
+      source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    const offenders: string[] = [];
+    for (const [path, raw] of Object.entries(SOURCES)) {
+      if (!raw) continue;
+      const source = code(raw);
+      const readsChallenge = /headers\.get\(\s*["']PAYMENT-REQUIRED["']\s*\)/.test(source);
+      const hardCodedGet = source.includes('method: "GET"');
+      if (readsChallenge && hardCodedGet && !source.includes("probeWithMethod")) offenders.push(path);
+    }
+    expect(
+      offenders,
+      "these files read a door's challenge off a fetch whose verb is hard-coded GET; the verb is resolved in lib/probe-method.ts",
+    ).toEqual([]);
+  });
+
+  it("the paid audit's bookend asks the same question the battery resolved", async () => {
+    const { readSurfaces } = await import("@/services/surface-reads");
+    const sent: string[] = [];
+    const door = "https://agents.example/api/gateway/topup";
+    const impl = (async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? "GET";
+      if (String(url) !== door) return new Response("not found", { status: 404 });
+      sent.push(method);
+      return method === "POST"
+        ? new Response(CHALLENGE, {
+            status: 402,
+            headers: { "PAYMENT-REQUIRED": btoa(CHALLENGE), "content-type": "application/json" },
+          })
+        : new Response(null, { status: 405 });
+    }) as unknown as typeof fetch;
+    const reads = await readSurfaces(
+      { STORE_BASE_URL: "https://scvd.store" },
+      door,
+      null,
+      impl,
+      { used: "POST", attempted: ["GET", "POST"], source: "fallback", unresolved: false },
+    );
+    expect(sent, "the bookend re-read GOT a door the battery had just found with POST").toEqual(["POST"]);
+    expect(reads.bookend.status).toBe(402);
+    expect(reads.bookend.method_used).toBe("POST");
+    expect(reads.bookend.text, "the bookend read the challenge it was there to compare").not.toBeNull();
+  });
+
+  it("a challenge read that is refused as a method is unreadable, never silent", async () => {
+    const { readSurfaces, surfacesSectionOf } = await import("@/services/surface-reads");
+    const door = "https://agents.example/api/gateway/topup";
+    const refusesEverything = (async (url: string) =>
+      String(url) === door ? new Response(null, { status: 405 }) : new Response("nope", { status: 404 })) as unknown as typeof fetch;
+    const reads = await readSurfaces({ STORE_BASE_URL: "https://scvd.store" }, door, null, refusesEverything);
+    expect(reads.bookend.method_refused).toBe(true);
+    const section = surfacesSectionOf(reads, JSON.parse(CHALLENGE).accepts, "2026-09-18T00:00:00.000Z");
+    const bookend = section.rows.find((row) => row.surface === "402_bookend");
+    expect(
+      bookend?.state,
+      "a 405 was filed as the door answering with no challenge — a finding about our verb wearing a finding about their door",
+    ).toBe("unreadable");
+  });
+
+  it("a method_unresolved report's vector says not_exercised and never blames status-402", async () => {
+    const { triStateVector } = await import("@/services/preflight");
+    const rows = triStateVector([], {
+      used: "POST",
+      attempted: ["GET", "POST"],
+      source: "fallback",
+      unresolved: true,
+    });
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row.state, `${row.name} filed a wrong verb under ${row.state}`).toBe("not_exercised");
+      expect(row.refused_methods).toEqual(["GET", "POST"]);
+      expect(row.blocked_by, `${row.name} blames a check that never ran`).toBeUndefined();
+    }
+    // And the ordinary case is untouched: an empty battery from a probe that DID reach the door still says not_reached.
+    const plain = triStateVector([]);
+    expect(plain.every((row) => row.state === "not_reached")).toBe(true);
+  });
+
+  it("a POST-only door speaking both wires is read on both, off the one response", async () => {
+    /*
+     * minia2auk's second finding, one layer up: both doors also carry
+     * a WWW-Authenticate: Payment challenge on the same 402. A census
+     * that reads only the x402 channel would call them "no payment
+     * metadata" — the same false-accusation shape. The MPP reader
+     * runs on the SAME response the method law resolved, so a door
+     * found on the second verb is read on both wires, not one.
+     */
+    const { probeOnce } = await import("@/services/preflight");
+    const { runMppChecks } = await import("@/services/mpp-battery");
+    const both = (await import("./fixtures/mpp/x402-and-mpp.json")).default as {
+      headers: Record<string, string>;
+      body: string;
+    };
+    const postOnlyBothWires = (async (_url: string, init?: RequestInit) =>
+      (init?.method ?? "GET") === "POST"
+        ? new Response(both.body, { status: 402, headers: both.headers })
+        : new Response(null, { status: 405 })) as unknown as typeof fetch;
+    const outcome = await probeOnce("https://door.example/api/paid", postOnlyBothWires);
+    expect(outcome.method.used).toBe("POST");
+    const mpp = runMppChecks({ headers: outcome.response.headers, url: "https://door.example/api/paid", bodyText: outcome.body });
+    expect(mpp.protocols_spoken).toEqual(["x402", "mpp"]);
   });
 });
