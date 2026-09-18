@@ -60,6 +60,7 @@ export { caseFileRoutes } from "@/routes/case-file";
 export { namespaceSpecRoutes } from "@/routes/namespace-spec";
 export { patronageRoutes } from "@/routes/patronage";
 export { almanacRoutes } from "@/routes/almanac";
+export { openForBusinessRoutes } from "@/routes/open-for-business";
 export { directoryRoutes } from "@/routes/directory";
 export { trainRoutes } from "@/routes/train";
 export { refundRoutes } from "@/routes/refunds";

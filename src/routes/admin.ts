@@ -2266,16 +2266,59 @@ adminRoutes.get("/admin/signals", async (c) => {
   return c.html(renderSignalsPage({ signals: await readBuyerSignals(c.env, month) }));
 });
 
-adminRoutes.get("/admin/doors-open", async (c) => {
-  const { draftDoorsOpen, renderDoorsOpenMarkdown } = await import("@/services/doors-open");
-  const { renderDoorsOpenPage } = await import("@/pages/admin/doors-open-page");
-  const draft = await draftDoorsOpen(c.env);
-  return c.html(renderDoorsOpenPage({ draft, markdown: renderDoorsOpenMarkdown(draft) }));
+adminRoutes.get("/admin/open-for-business", async (c) => {
+  const { draftOpenForBusiness, renderOpenForBusinessMarkdown } = await import("@/services/open-for-business");
+  const { renderOpenForBusinessPage } = await import("@/pages/admin/open-for-business-page");
+  const { listOpenForBusinessIssues } = await import("@/services/open-for-business-store");
+  const [draft, published] = await Promise.all([
+    draftOpenForBusiness(c.env),
+    listOpenForBusinessIssues(c.env).catch(() => null),
+  ]);
+  return c.html(
+    renderOpenForBusinessPage({
+      draft,
+      markdown: renderOpenForBusinessMarkdown(draft),
+      published,
+      notice: c.req.query("published") ? `Issue ${c.req.query("published")} is on the shelf.` : c.req.query("removed") ? `Issue ${c.req.query("removed")} is off the shelf.` : undefined,
+    }),
+  );
 });
 
-adminRoutes.get("/admin/doors-open.md", async (c) => {
-  const { draftDoorsOpen, renderDoorsOpenMarkdown } = await import("@/services/doors-open");
-  return c.text(renderDoorsOpenMarkdown(await draftDoorsOpen(c.env)), 200, { "Content-Type": "text/markdown; charset=utf-8" });
+/**
+ * THE PUBLISH LEVER (2026-09-18). The keeper reads the draft, edits
+ * it in the box — cuts, corrections, the fix of the week in his own
+ * words — and presses this. The issue goes on the shelf at
+ * /open-for-business/{week} on the next request; no deploy, no
+ * commit. The same week again replaces the issue. Nothing here
+ * publishes without the press (rule 30), and the form refuses rather
+ * than guesses when the body has no heading or no prose.
+ */
+adminRoutes.post("/admin/open-for-business/publish", async (c) => {
+  const { saveOpenForBusinessIssue } = await import("@/services/open-for-business-store");
+  const form = await c.req.parseBody();
+  const result = await saveOpenForBusinessIssue(c.env, {
+    week: String(form["week"] ?? ""),
+    markdown: String(form["markdown"] ?? ""),
+    teaser: String(form["teaser"] ?? ""),
+    title: String(form["title"] ?? ""),
+  });
+  if (result.refused) {
+    return c.text(`${result.refused}\n\nNothing was published. Go back; the issue is still in the form.`, 400);
+  }
+  return c.redirect(`/admin/open-for-business?published=${encodeURIComponent(result.saved!.week)}`);
+});
+
+adminRoutes.post("/admin/open-for-business/remove", async (c) => {
+  const { removeOpenForBusinessIssue } = await import("@/services/open-for-business-store");
+  const form = await c.req.parseBody();
+  const week = String(form["week"] ?? "").trim().toUpperCase();
+  await removeOpenForBusinessIssue(c.env, week);
+  return c.redirect(`/admin/open-for-business?removed=${encodeURIComponent(week)}`);
+});
+
+adminRoutes.get("/admin/open-for-business.md", async (c) => {
+  const { draftOpenForBusiness, renderOpenForBusinessMarkdown } = await import("@/services/open-for-business");
+  return c.text(renderOpenForBusinessMarkdown(await draftOpenForBusiness(c.env)), 200, { "Content-Type": "text/markdown; charset=utf-8" });
 });
 
 adminRoutes.get("/admin/instruments", async (c) => {

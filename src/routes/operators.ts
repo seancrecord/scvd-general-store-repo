@@ -197,7 +197,8 @@ operatorsRoutes.get("/operators", (c) => {
       description:
         "The shelf from the seller's side, in the order a launch happens: what is free first at each moment, and what is for sale when you need it signed and servable. Never a score.",
       path: "/operators",
-      bodyHtml: `<section><p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests, suggested fixes and signed rechecks.</p></section>
+      bodyHtml: `<section><p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests, suggested fixes and signed rechecks.</p>
+    <p><a href="/open-for-business">Open for Business</a>: the weekly issue on what agents did at a live till and how not to turn them away silently; the index and the number of the week are free.</p></section>
     <section>
         <p class="menu-desc">${escapeHtml(OPERATORS_PROPOSITION)}</p>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>

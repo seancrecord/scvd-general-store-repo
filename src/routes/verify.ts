@@ -83,8 +83,8 @@ import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { Certificate, HonoEnv } from "@/types";
-import { recordReceiptRead } from "@/services/buyer-signals";
-import { isHouseAgent, isInfrastructureUserAgent } from "@/lib/channel";
+import { readerClass, recordReceiptRead } from "@/services/buyer-signals";
+import { isHouseAgent } from "@/lib/channel";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 
 /**
@@ -281,6 +281,8 @@ const HOW_TO_VERIFY =
 async function noteVerify(
   c: Context<HonoEnv>,
   item: string,
+  /** The certificate id when the artifact is a purchase receipt: repeat reads per receipt. */
+  artifact?: string,
   /**
    * When the artifact was minted, where the record carries it. Feeds
    * the age bucket in metrics.ts — the one honest proxy available for
@@ -317,10 +319,11 @@ async function noteVerify(
   deferBookkeeping(
     c,
     recordReceiptRead(c.env, {
-      reader: isInfrastructureUserAgent(userAgent) ? "crawler" : wantsHtml(accept, userAgent) ? "browser" : "agent",
+      reader: readerClass(userAgent, accept),
       referrer,
       ownHost: new URL(c.env.STORE_BASE_URL).hostname,
       ...(mintedIso ? { mintedIso } : {}),
+      ...(artifact ? { artifact } : {}),
       house: Boolean(houseHeader) || isHouseAgent(userAgent),
     }),
   );
@@ -593,7 +596,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
 
   const record = await getCertificate(c.env, id);
   if (record) {
-    await noteVerify(c, record.certificate.item, record.certificate.date);
+    await noteVerify(c, record.certificate.item, record.certificate.cert_id, record.certificate.date);
     const form = await certificateSignatureForm(
       record.certificate,
       record.signature,

@@ -143,6 +143,10 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /ledger/:week{[0-9]{4}-W[0-9]{2}}",
   "GET /case/:case_id",
   "GET /almanac/:slug",
+  // Open for Business issues (2026-09-18): a paid page like the
+  // almanac's, on the same terms — the free index is counted at the
+  // porch, the paid read is the till's record.
+  "GET /open-for-business/:week",
   /*
    * The pattern is part of the route's name here, as it is for the
    * samples and ledger entries above. It gained one on 2026-09-16 so

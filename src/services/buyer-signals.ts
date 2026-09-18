@@ -3,7 +3,11 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
 import { metricsMonth, verifyAgeBucket } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { buyInputExample, buyInputSchema } from "@/lib/bazaar-discovery";
-import type { Env, MenuItem } from "@/types";
+import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, isInfrastructureUserAgent } from "@/lib/channel";
+import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, isKnownCrawler, isSocialUnfurler } from "@/lib/crawlers";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import type { Context } from "hono";
+import type { Env, HonoEnv, MenuItem } from "@/types";
 
 /**
  * BUYER SIGNALS — a trial area, built to be stopped.
@@ -39,6 +43,23 @@ import type { Env, MenuItem } from "@/types";
  *               copied, or other. The cold walker that pasted
  *               example.com last week did the same thing; this
  *               counts it live, as a shape and never a value.
+ *   pages       who reads the pages that are ABOUT somebody (the
+ *               2026-09-18 reading, off the Cloudflare crawl table):
+ *               a corpus host page or a passport, by format, reader
+ *               class and the referrer's relation to the subject.
+ *               A read referred FROM the subject host is the one
+ *               honest sign of an operator looking at their own
+ *               listing; a browser with no referrer is a person and
+ *               nothing more can be said. Crawlers by name, so an
+ *               index walk (every page once, the same count on each)
+ *               is told apart from interest.
+ *   subjects    reads per subject host, and self-referred reads per
+ *               subject. Two or more is a repeat viewer of THAT
+ *               record; with no cookie the store cannot know whether
+ *               it was the same viewer, and the page says so.
+ *   artifacts   reads per receipt, house excluded, so a certificate
+ *               that keeps being verified stands out from the ones
+ *               read once by the buyer and never again.
  *
  * WHAT IS NOT HERE, and why. Quote-to-pay latency needs the 402 and
  * the paid retry linked, and without a session the only link is a
@@ -50,19 +71,36 @@ import type { Env, MenuItem } from "@/types";
  * write stops; the keys sit under `metric:<month>:signals:` and expire
  * with the month's ledger; the page is /admin/signals and nothing
  * else reads these. Deleting the area is deleting this file, the page
- * and the six call sites that name it.
+ * and the call sites that name it.
  */
 
 /** ⚑ keeper dial. Off, nothing below writes and the page says so. */
 export const BUYER_SIGNALS_ENABLED = true;
 
 export const SIGNAL_MAP_CAP = 100;
+/** Subject and receipt maps are wider: one key per host or receipt, crawlers kept out of them. */
+export const SUBJECT_MAP_CAP = 400;
 export const PURPOSES_CAP = 200;
 
-export type SignalKind = "rail" | "refusal" | "reads" | "readers" | "referrers" | "examples";
+export type SignalKind =
+  | "rail"
+  | "refusal"
+  | "reads"
+  | "readers"
+  | "referrers"
+  | "examples"
+  | "pages"
+  | "crawlers"
+  | "subjects"
+  | "selfreads"
+  | "artifacts";
 export type ReadKind = "replay" | "order_poll" | "purchase_status" | "check_order";
 export type ReaderClass = "browser" | "agent" | "crawler";
 export type RefusalReason = "missing" | "malformed" | "example" | "other";
+export type PageKind = "corpus_host" | "passport";
+export type PageFormat = "html" | "markdown" | "json";
+/** The referrer's relation to the page's subject. */
+export type ReferrerRelation = "self" | "own" | "other" | "none";
 
 export interface PurposeRow {
   item: string;
@@ -82,6 +120,16 @@ export interface BuyerSignals {
   referrers: Record<string, number>;
   /** `${item}:${field}` bought with the worked example as the value. */
   examples: Record<string, number>;
+  /** `${page}:${format}:${reader}:${relation}` for every read of a page about a host. */
+  pages: Record<string, number>;
+  /** `${page}:${crawler}` — the named crawlers walking the subject pages. */
+  crawlers: Record<string, number>;
+  /** Reads per subject host by browsers and agents, all pages about it, house excluded. */
+  subjects: Record<string, number>;
+  /** Reads per subject host that were referred from the subject itself. */
+  selfreads: Record<string, number>;
+  /** Reads per receipt at /api/verify by browsers and agents, house excluded. */
+  artifacts: Record<string, number>;
   purposes: PurposeRow[];
   purposes_truncated: boolean;
   /** Read from the existing verify counters, not written here. */
@@ -104,11 +152,11 @@ async function readMap(env: Env, kind: SignalKind, month: string): Promise<Recor
 }
 
 /** Read-modify-write on one key: a floor under contention, stated on the page. */
-async function bumpMap(env: Env, kind: SignalKind, entry: string): Promise<void> {
+async function bumpMap(env: Env, kind: SignalKind, entry: string, cap = SIGNAL_MAP_CAP): Promise<void> {
   if (!BUYER_SIGNALS_ENABLED) return;
   const month = metricsMonth();
   const map = await readMap(env, kind, month);
-  if (map[entry] === undefined && Object.keys(map).length >= SIGNAL_MAP_CAP) {
+  if (map[entry] === undefined && Object.keys(map).length >= cap) {
     map["other"] = (map["other"] ?? 0) + 1;
   } else {
     map[entry] = (map[entry] ?? 0) + 1;
@@ -206,6 +254,8 @@ export interface ReceiptRead {
   ownHost: string;
   mintedIso?: string;
   house: boolean;
+  /** The certificate id, when the artifact is a purchase receipt: repeat reads per receipt. */
+  artifact?: string;
 }
 
 /**
@@ -229,6 +279,108 @@ export async function recordReceiptRead(env: Env, read: ReceiptRead): Promise<vo
     }
   }
   await bumpMap(env, "referrers", slug(host, "unparsable"));
+  if (read.artifact && read.reader !== "crawler") await bumpMap(env, "artifacts", slug(read.artifact, "unnamed"), SUBJECT_MAP_CAP);
+}
+
+/**
+ * Crawler is the shared tables (named AI and search crawlers, the
+ * infrastructure hints, and the link unfurlers, which are bots even
+ * though the page negotiation hands them HTML); browser is whoever
+ * asked for HTML; everything else is an agent. One classifier, so
+ * the receipt page and the subject pages cannot come to disagree
+ * about who a reader was.
+ *
+ * Deliberately built from lib/ alone and not from the page
+ * negotiator: this service is imported by the corpus and passport
+ * routes, which the doors worker also bundles, and a page import
+ * here dragged the storefront and the WebMCP bridge into that bundle
+ * (2026-09-18, caught by build:check).
+ */
+export function readerClass(userAgent: string | undefined, accept: string | undefined): ReaderClass {
+  if (isInfrastructureUserAgent(userAgent) || crawlerName(userAgent) !== undefined) return "crawler";
+  if (isKnownCrawler(userAgent) || isSocialUnfurler(userAgent)) return "crawler";
+  return (accept ?? "").includes("text/html") ? "browser" : "agent";
+}
+
+/** The crawler's own name, from the tables robots.txt and the classifier already share. */
+export function crawlerName(userAgent: string | undefined): string | undefined {
+  const ua = (userAgent ?? "").toLowerCase();
+  if (!ua) return undefined;
+  for (const token of [...NAMED_AI_CRAWLERS, ...SEARCH_CRAWLERS, ...INFRASTRUCTURE_UA_HINTS]) {
+    if (ua.includes(token.toLowerCase())) return token.toLowerCase();
+  }
+  return undefined;
+}
+
+function referrerHost(referrer: string | undefined): string | undefined {
+  if (!referrer) return undefined;
+  try {
+    return new URL(referrer).hostname.toLowerCase();
+  } catch {
+    return "unparsable";
+  }
+}
+
+/** Self: the referrer is the subject or lives under it. Own: one of our pages. */
+export function referrerRelation(referrer: string | undefined, subject: string, ownHost: string): ReferrerRelation {
+  const host = referrerHost(referrer);
+  if (host === undefined) return "none";
+  const bare = subject.toLowerCase().replace(/:\d+$/, "");
+  if (host === bare || host.endsWith(`.${bare}`)) return "self";
+  if (host === ownHost.toLowerCase()) return "own";
+  return "other";
+}
+
+export interface PageRead {
+  page: PageKind;
+  format: PageFormat;
+  /** The host the page is about. Only a host the chain has met reaches here. */
+  subject: string;
+  userAgent: string | undefined;
+  accept: string | undefined;
+  referrer: string | undefined;
+  ownHost: string;
+  house: boolean;
+}
+
+/**
+ * One read of a page about a host. The subject is a hostname the
+ * store already publishes a page for, never a string somebody typed:
+ * the routes 404 before calling this. Nothing about the reader is
+ * kept beyond the class, the crawler's public name and the referrer
+ * host's relation to the subject.
+ */
+export async function recordPageRead(env: Env, read: PageRead): Promise<void> {
+  if (!BUYER_SIGNALS_ENABLED || read.house) return;
+  const reader = readerClass(read.userAgent, read.accept);
+  const relation = referrerRelation(read.referrer, read.subject, read.ownHost);
+  await bumpMap(env, "pages", `${read.page}:${read.format}:${reader}:${relation}`);
+  if (reader === "crawler") {
+    // A crawler walks every subject once; it says nothing about any one of them.
+    await bumpMap(env, "crawlers", `${read.page}:${slug(crawlerName(read.userAgent), "unnamed")}`);
+    return;
+  }
+  const subject = slug(read.subject, "unnamed");
+  await bumpMap(env, "subjects", subject, SUBJECT_MAP_CAP);
+  if (relation === "self") await bumpMap(env, "selfreads", subject, SUBJECT_MAP_CAP);
+}
+
+/** The route's one line: the read, from headers already on the request, handed to waitUntil. */
+export function notePageRead(c: Context<HonoEnv>, page: PageKind, format: PageFormat, subject: string): void {
+  const userAgent = c.req.header("User-Agent");
+  deferBookkeeping(
+    c,
+    recordPageRead(c.env, {
+      page,
+      format,
+      subject,
+      userAgent,
+      accept: c.req.header("Accept"),
+      referrer: c.req.header("Referer"),
+      ownHost: new URL(c.env.STORE_BASE_URL).hostname,
+      house: Boolean(c.req.header("X-House")) || isHouseAgent(userAgent),
+    }),
+  );
 }
 
 /** A read of something already bought, bucketed by how old it was. */
@@ -238,13 +390,18 @@ export async function recordPostPurchaseRead(env: Env, kind: ReadKind, mintedIso
 }
 
 export async function readBuyerSignals(env: Env, month = metricsMonth()): Promise<BuyerSignals> {
-  const [rail, refusal, reads, readers, referrers, examples, purposesRaw, ...verify] = await Promise.all([
+  const [rail, refusal, reads, readers, referrers, examples, pages, crawlers, subjects, selfreads, artifacts, purposesRaw, ...verify] = await Promise.all([
     readMap(env, "rail", month),
     readMap(env, "refusal", month),
     readMap(env, "reads", month),
     readMap(env, "readers", month),
     readMap(env, "referrers", month),
     readMap(env, "examples", month),
+    readMap(env, "pages", month),
+    readMap(env, "crawlers", month),
+    readMap(env, "subjects", month),
+    readMap(env, "selfreads", month),
+    readMap(env, "artifacts", month),
     kvGet(env.COUNTERS, key("purposes", month)),
     ...["under_1h", "under_1d", "under_1w", "over_1w", "unknown_age"].map((bucket) =>
       kvGet(env.COUNTERS, KV_KEYS.metric(month, "verifyage", bucket)),
@@ -271,6 +428,11 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     readers,
     referrers,
     examples,
+    pages,
+    crawlers,
+    subjects,
+    selfreads,
+    artifacts,
     purposes,
     purposes_truncated: purposes.length >= PURPOSES_CAP,
     verify_age: verifyAge,
