@@ -182,12 +182,14 @@ export const STOREFRONT_COPY = {
    * 2026-09-18: BROUGHT UNDER THE BUDGET IT CITES. The line above was
    * 173 characters on its own, and the storefront appended the
    * payment sentence behind it, so the tag a search engine read was
-   * past 230 and got cut mid-clause or replaced. Trimmed to 156; the
-   * suffix now lives only in the WebSite JSON-LD, which has no budget.
-   * test/use-when.spec.ts holds the line at 160.
+   * past 230 and got cut mid-clause or replaced. Trimmed to 160 with
+   * both differentiators kept (the conformance desk, the corpus); the
+   * network list now lives only in the WebSite JSON-LD and the footer,
+   * which have no budget. test/use-when.spec.ts holds the line at 160
+   * and test/first-pass-positioning.spec.ts holds the keywords.
    */
   metaDescription:
-    "An evidence observatory for agentic commerce: preflight an x402 endpoint before paying, check the signed receipt after, a Bitcoin-anchored corpus over time.",
+    "An evidence observatory for agentic commerce: preflight an x402 endpoint before paying, free conformance checks on the receipt after, a Bitcoin-anchored corpus.",
   /*
    * 2026-09-01 (roadmap N2): the social card carries the keeper's
    * sixty words verbatim, derived, so the sentence a share unfurls is
