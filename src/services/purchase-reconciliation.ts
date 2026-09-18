@@ -81,16 +81,21 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
     throw new Error("Recorded payment identity mismatch");
   }
   /**
-   * A UCP PURCHASE IS NOT THIS DESK'S TO DELIVER. Its request is the
-   * JCS completion identity, not a query string, and its goods are
-   * finished by the checkout's Order, not by re-running fulfillment
-   * from here. Falling through to the HTTP branch below would rebuild
-   * inputs from a JSON document read as a query, look for a retained
-   * observation under the wrong digest, and produce it a second time.
-   * Refused by name, so the third door cannot be the first one by
-   * default (the same rule as purchaseRequestDigest).
+   * A UCP PURCHASE IS RECOVERED THROUGH ITS CHECKOUT, never through the
+   * HTTP branch below. Its request is the JCS completion identity, not
+   * a query string; its inputs were frozen on the checkout; its retained
+   * observation lives under the UCP digest the purchase record already
+   * carries; and its goods are finished by the canonical UCP order,
+   * written beside the checkout. services/ucp-order does exactly that,
+   * reusing the journals and the artifact checkpoint so nothing is
+   * produced twice and no payment is ever re-presented. Named by door,
+   * so the third door cannot be the first one by default (the same
+   * rule as purchaseRequestDigest).
    */
-  if (record.door === "ucp") return null;
+  if (record.door === "ucp") {
+    const { recoverUcpOrder } = await import("@/services/ucp-order");
+    return recoverUcpOrder(env, record);
+  }
   const { recordedHumanResolution, resolvedHumanDelivery } = await import("@/services/resolved-human-purchase");
   const resolution = await recordedHumanResolution(env, record);
   if (resolution) return resolvedHumanDelivery(resolution);

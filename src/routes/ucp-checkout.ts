@@ -12,6 +12,10 @@ import {
 } from "@/lib/ucp/checkout/terms";
 import { asFrozen, frozenRequirements } from "@/lib/ucp/checkout/requirements";
 import { quotedUsdcHandler } from "@/lib/ucp/payments/usdc-x402";
+import { orderDocument } from "@/lib/ucp/order/document";
+import { checkoutIdOfOrder } from "@/lib/ucp/ids";
+import { readStoredOrder } from "@/services/ucp-order";
+import { getOrder } from "@/services/orders";
 import { usdcPaymentHandlers } from "@/lib/ucp/payments/usdc-x402";
 import { SCVD_NAMESPACE, UCP_VERSION } from "@/lib/ucp/version";
 import { acceptedNetworks } from "@/lib/payment-networks";
@@ -294,6 +298,26 @@ ucpCheckoutRoutes.get("/ucp/v1/checkout-sessions/:id", async (c) => {
   return c.json(
     checkoutDocument(checkout, c.env.STORE_BASE_URL, { paymentHandlers: handlersFor(c, checkout) }),
   );
+});
+
+/**
+ * THE ORDER, READ BY THE ID ITS CHECKOUT DETERMINES. No index: the id
+ * names the checkout, the checkout's Durable Object holds the order
+ * beside it, and a platform that lost the completion response reads
+ * the same canonical record here that the completion returned.
+ */
+ucpCheckoutRoutes.get("/ucp/v1/orders/:id", async (c) => {
+  const checkoutId = checkoutIdOfOrder(c.req.param("id"));
+  if (!checkoutId) return c.json(errorBody("not_found", "No such order."), 404);
+  const order = await readStoredOrder(c.env, checkoutId);
+  if (!order || order.id !== c.req.param("id")) {
+    return c.json(errorBody("not_found", "No such order."), 404);
+  }
+  const operational =
+    order.fulfillment.kind === "human_queue"
+      ? await getOrder(c.env, order.fulfillment.operational_order_id).catch(() => null)
+      : null;
+  return c.json(orderDocument(order, c.env.STORE_BASE_URL, { operational: operational ?? undefined }));
 });
 
 ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions/:id/cancel", async (c) => {

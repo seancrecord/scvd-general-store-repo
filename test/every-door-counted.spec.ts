@@ -212,6 +212,9 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /ucp/v1/checkout-sessions/:id",
   "POST /ucp/v1/checkout-sessions/:id/cancel",
   "POST /ucp/v1/checkout-sessions/:id/complete",
+  // The order a completed checkout points at: the same buyer, reading
+  // what their completion already told them. Same visit, same rule.
+  "GET /ucp/v1/orders/:id",
   "GET /ucp/schemas/items/:file",
   "GET /ucp/schemas/payment/usdc-x402.json",
   "GET /ucp/schemas/shopping-inputs.json",

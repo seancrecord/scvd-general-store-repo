@@ -62,6 +62,9 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
   "/src/services/ucp-checkout-store.ts": [
     "await txn.put(ROW, checkout);",
     "await txn.put(ROW, next);",
+    // The order row, written in the same transaction that completes
+    // the checkout: the two must never come apart.
+    "await txn.put(ORDER_ROW, order);",
   ],
   "/src/services/patron-anchors.ts": [
     'await txn.put("patron-anchor", record);',

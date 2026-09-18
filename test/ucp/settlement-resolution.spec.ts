@@ -91,8 +91,11 @@ function wonClaim(submission: SettlementSubmission): WonClaim {
 const declines = () => vi.fn(async (): Promise<SettlementResult> => ({ kind: "declined", reason: "insufficient_funds" }));
 const unknowns = () => vi.fn(async (): Promise<SettlementResult> => ({ kind: "unknown", reason: "timeout" }));
 const hangs = () => vi.fn(async (): Promise<SettlementResult> => { throw new Error("facilitator settle failed (timeout)"); });
-const confirms = (transaction = TX, network = NETWORK) =>
-  vi.fn(async (): Promise<SettlementResult> => ({ kind: "success", transaction, network }));
+let txSeed = 0;
+/** A fresh chain identity per confirmation: two sales never share one. */
+const freshTx = () => `0x${(++txSeed).toString(16).padStart(64, "0")}`;
+const confirms = (transaction?: string, network = NETWORK) =>
+  vi.fn(async (): Promise<SettlementResult> => ({ kind: "success", transaction: transaction ?? freshTx(), network }));
 
 /**
  * THREE RECORDS, ONE ANSWER EACH.
@@ -262,29 +265,34 @@ describe("a confirmed settlement", () => {
     expect(purchase.payment?.tipUsdc).toBe(0);
     expect((await submissionOf(identity))?.outcome).toBe("confirmed");
 
-    // Money proven; the checkout is NOT completed. That is the Order's
-    // to write, in one transaction with the order itself.
+    // Money proven, and — since the order chapter — the checkout completes
+    // with its order in the same transaction.
     const stored = await read(checkout.id);
-    expect(stored?.status).toBe("complete_in_progress");
-    expect(stored?.order).toBeUndefined();
+    expect(stored?.status).toBe("completed");
+    expect(stored?.order?.id).toBe(`ord_${checkout.id.slice("chk_".length)}`);
     expect(stored?.completion?.payment_identity).toBe(identity);
   });
 
-  it("is not delivered by the recovery desk, which serves the other two doors", async () => {
+  it("is delivered by the recovery desk through its order, never through the HTTP branch", async () => {
     /**
      * A settled purchase is what the purchase DO's alarm hands to
      * deliverRecordedPurchase. For HTTP and MCP that re-runs
-     * fulfillment from the retained request; a UCP request is a JCS
-     * document, and reading it as a query string would produce the
-     * goods again against noise. The desk refuses the door by name.
+     * fulfillment from the retained request; a UCP purchase is
+     * finished through its checkout's canonical order (the order
+     * chapter), and the completion JSON is never read as a query.
      */
     const { checkout, identity } = await admitted();
-    await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id, produce: confirms() });
+    const walked = await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id });
+    expect(walked.ok).toBe(true);
+    if (!walked.ok) return;
+    await settleClaimedSubmission(testEnv, { checkoutId: checkout.id, claim: wonClaim(walked.submission), produce: confirms() });
     const purchase = await purchaseOf(identity);
     expect(purchase.state).toBe("settled");
     expect(purchase.door).toBe("ucp");
-    expect(await deliverRecordedPurchase(testEnv, purchase)).toBeNull();
-    expect((await purchaseOf(identity)).delivery).toBeUndefined();
+    const delivered = await deliverRecordedPurchase(testEnv, purchase);
+    expect(delivered).not.toBeNull();
+    expect((await read(checkout.id))?.status).toBe("completed");
+    expect((await read(checkout.id))?.order?.id).toBe(`ord_${checkout.id.slice("chk_".length)}`);
   });
 
   it("cannot be regressed by a later writer on either record", async () => {
@@ -299,9 +307,10 @@ describe("a confirmed settlement", () => {
     expect(converged.repaired).toEqual([]);
   });
 
-  it("cannot be submitted again by an identical Complete", async () => {
+  it("cannot be submitted again by an identical Complete, which gets the same order", async () => {
     const { checkout, nonce } = await admitted();
-    await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id, produce: confirms() });
+    const first = await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id, produce: confirms() });
+    expect(first.ok).toBe(true);
     const retry = await admitUcpCompletion(testEnv, {
       checkoutId: checkout.id,
       credential: credential(nonce, "500000"),
@@ -310,8 +319,8 @@ describe("a confirmed settlement", () => {
     expect(retry.ok).toBe(true);
     const produce = confirms();
     const again = await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id, produce });
-    expect(again.ok).toBe(false);
-    if (!again.ok) expect(again.code).toBe("already_resolved");
+    expect(again.ok).toBe(true);
+    if (again.ok && first.ok) expect(again.order?.id).toBe(first.order?.id);
     expect(produce).not.toHaveBeenCalled();
   });
 });

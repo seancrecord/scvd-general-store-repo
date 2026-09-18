@@ -4,8 +4,10 @@
  *
  *   npm run ucp:conformance
  *
- * Validates what this store actually emits — the business profile, a
- * catalog search response, a catalog lookup response — against the
+ * Validates what this store actually emits — the business profile, the
+ * catalog search and lookup responses, a checkout in both its quoted
+ * and completed states, and the order in both its fulfillment shapes
+ * — against the
  * Universal Commerce Protocol's own JSON Schemas, vendored verbatim at
  * the release this store implements (schemas/ucp/vendor/2026-08-25,
  * provenance beside them).
@@ -112,8 +114,15 @@ execFileSync(join(ROOT, "node_modules", ".bin", "esbuild"), [
   join(ROOT, "scripts", "lib", "ucp-sample.ts"),
 ], { cwd: ROOT, stdio: ["ignore", "inherit", "inherit"] });
 
-const { profileSample, searchSample, lookupSample, checkoutSample, completedCheckoutSample } =
-  await import(pathToFileURL(bundle).href);
+const {
+  profileSample,
+  searchSample,
+  lookupSample,
+  checkoutSample,
+  completedCheckoutSample,
+  instantOrderSample,
+  queuedOrderSample,
+} = await import(pathToFileURL(bundle).href);
 
 const samples = [
   {
@@ -139,6 +148,18 @@ const samples = [
     id: "https://ucp.dev/schemas/shopping/checkout.json",
     value: completedCheckoutSample(BASE),
     served_at: "POST /ucp/v1/checkout-sessions/{id}/complete",
+  },
+  {
+    name: "order, instant goods delivered at settlement",
+    id: "https://ucp.dev/schemas/shopping/order.json",
+    value: instantOrderSample(BASE),
+    served_at: "GET /ucp/v1/orders/{id}",
+  },
+  {
+    name: "order, a human work-order still in its queue",
+    id: "https://ucp.dev/schemas/shopping/order.json",
+    value: queuedOrderSample(BASE),
+    served_at: "GET /ucp/v1/orders/{id}",
   },
   {
     name: "catalog lookup response",

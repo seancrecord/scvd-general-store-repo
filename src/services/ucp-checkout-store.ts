@@ -7,6 +7,8 @@ import {
 } from "@/lib/ucp/checkout/state";
 import type { FrozenRequirements } from "@/lib/ucp/checkout/requirements";
 import type { CheckoutLineTerms, PaymentTerms } from "@/lib/ucp/checkout/terms";
+import type { StoredUcpOrder } from "@/lib/ucp/order/document";
+import { orderIdOf } from "@/lib/ucp/ids";
 import type { Env } from "@/types";
 
 /**
@@ -85,7 +87,21 @@ export type CheckoutAdmission =
   | { ok: true; checkout: StoredCheckout }
   | { ok: false; reason: "not_found" | "expired" | "wrong_state" | "stale_version"; checkout?: StoredCheckout };
 
+export type OrderCompletion =
+  | { ok: true; checkout: StoredCheckout; order: StoredUcpOrder; created: boolean }
+  | { ok: false; reason: "not_found" | "wrong_state" | "inconsistent"; checkout?: StoredCheckout };
+
 const ROW = "ucp:checkout";
+/**
+ * THE ORDER LIVES BESIDE ITS CHECKOUT, in the same Durable Object
+ * instance, for one reason: the two writes that must never come apart
+ * — the order existing and the checkout pointing at it — are then one
+ * storage transaction. The operational work-order ledger
+ * (services/orders.ts) keeps its own store for the human queue; this
+ * row is the protocol-facing commercial order, which may reference an
+ * operational order but is never a copy of one.
+ */
+const ORDER_ROW = "ucp:order";
 
 export function ucpCheckoutStore(env: Env, checkoutId: string) {
   const namespace = env.PAID_RECOVERIES;
@@ -101,6 +117,10 @@ export class UcpCheckoutStore {
 
   async read(): Promise<StoredCheckout | null> {
     return (await this.storage.get<StoredCheckout>(ROW)) ?? null;
+  }
+
+  async readOrder(): Promise<StoredUcpOrder | null> {
+    return (await this.storage.get<StoredUcpOrder>(ORDER_ROW)) ?? null;
   }
 
   /**
@@ -234,7 +254,18 @@ export class UcpCheckoutStore {
      * anywhere near the shared purchase admission, so a different
      * credential cannot take ownership it will not be allowed to use.
      */
-    if (checkout.status === "complete_in_progress" && checkout.completion) {
+    if (
+      (checkout.status === "complete_in_progress" || checkout.status === "completed") &&
+      checkout.completion
+    ) {
+      /**
+       * `completed` is let through for the same reason: the platform
+       * whose completion response was lost sends the identical
+       * Complete again, and the answer it is owed is the order it
+       * already has. Admission recognises the identical credential
+       * without the facilitator and hands it back; a DIFFERENT
+       * credential against a completed checkout is refused there.
+       */
       return checkout.quote
         ? { ok: true, checkout }
         : { ok: false, reason: "wrong_state", checkout };
@@ -365,40 +396,78 @@ export class UcpCheckoutStore {
   }
 
   /**
-   * Settlement confirmed: the order exists, so the checkout is done.
-   * Written in one transaction with the order reference, because a
-   * completed checkout with no order is a state the specification does
-   * not have and a buyer cannot act on.
+   * SETTLEMENT CONFIRMED: THE ORDER AND THE COMPLETED CHECKOUT, IN ONE
+   * TRANSACTION.
+   *
+   *     assert checkout is complete_in_progress
+   *     assert the bound payment identity is the one that settled
+   *     assert the order names this checkout, this identity, and the
+   *            id this checkout determines
+   *     write the full order, if absent
+   *     set status = completed, order = the slim confirmation
+   *
+   * All-or-nothing, which is what makes both halves of the rule true:
+   * no completed checkout without a durable order behind it, and no
+   * order that can be lost before its checkout points at it.
+   *
+   * WHAT "DURABLY SETTLED" MEANS HERE. The purchase record lives in
+   * another Durable Object and cannot be read inside this transaction.
+   * The caller reads it, refuses anything but a settled purchase whose
+   * terms match the checkout's frozen quote, and hands the settled
+   * facts in as the order's settlement block. This transaction then
+   * holds the caller to the one thing it can check: that the identity
+   * it claims settled is the identity this checkout bound.
+   *
+   * IDEMPOTENT. A completed checkout with its order returns that
+   * order, unchanged, created:false — a retry, a lost response and a
+   * repair all get the same canonical record. A completed checkout
+   * WITHOUT an order is a state this method never writes and refuses
+   * to invent one for.
    */
   async complete(input: {
-    order: { id: string; permalink_url: string };
+    order: StoredUcpOrder;
     identity: string;
     nowMs: number;
-  }): Promise<CheckoutAdmission> {
+  }): Promise<OrderCompletion> {
     return this.storage.transaction(async (txn) => {
       const checkout = await txn.get<StoredCheckout>(ROW);
       if (!checkout) return { ok: false, reason: "not_found" } as const;
+      const existing = await txn.get<StoredUcpOrder>(ORDER_ROW);
       if (checkout.status === "completed") {
-        // Idempotent: the same completion twice is one completion.
-        return { ok: true, checkout } as const;
+        if (existing) return { ok: true, checkout, order: existing, created: false } as const;
+        return { ok: false, reason: "wrong_state", checkout } as const;
       }
       if (checkout.status !== "complete_in_progress") {
         return { ok: false, reason: "wrong_state", checkout } as const;
       }
-      const at = new Date(input.nowMs).toISOString();
-      if (checkout.completion && checkout.completion.payment_identity !== input.identity) {
+      if (!checkout.completion || checkout.completion.payment_identity !== input.identity) {
         // A different payment cannot finish a completion this checkout
-        // already bound to another one.
+        // bound to another one, and nothing finishes an unbound one.
         return { ok: false, reason: "wrong_state", checkout } as const;
+      }
+      if (
+        input.order.checkout_id !== checkout.id ||
+        input.order.id !== orderIdOf(checkout.id) ||
+        input.order.settlement.purchase_id !== input.identity
+      ) {
+        return { ok: false, reason: "inconsistent", checkout } as const;
+      }
+      const order = existing ?? input.order;
+      if (!existing) {
+        await txn.put(ORDER_ROW, order);
       }
       const next: StoredCheckout = {
         ...checkout,
         status: "completed",
-        order: { ...input.order, created_at: at },
+        order: {
+          id: order.id,
+          permalink_url: order.permalink_url,
+          created_at: order.created_at,
+        },
       };
       assertTransition(checkout.status, next.status);
       await txn.put(ROW, next);
-      return { ok: true, checkout: next } as const;
+      return { ok: true, checkout: next, order, created: !existing } as const;
     });
   }
 

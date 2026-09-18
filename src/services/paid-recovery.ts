@@ -145,12 +145,23 @@ export class PaidRecoveryStore extends DurableObject<Env> {
    */
   private readonly ucpCheckout = new UcpCheckoutStore(this.ctx.storage, this.env);
   readUcpCheckout() { return this.ucpCheckout.read(); }
+  /**
+   * The order carries the goods as an open record, which the RPC
+   * serializer cannot type; it crosses as JSON, the way the purchase
+   * record and the submission claim already do.
+   */
+  async readUcpOrder(): Promise<string | null> {
+    const order = await this.ucpCheckout.readOrder();
+    return order ? JSON.stringify(order) : null;
+  }
   createUcpCheckout(input: Parameters<UcpCheckoutStore["create"]>[0]) { return this.ucpCheckout.create(input); }
   reviseUcpCheckout(input: Parameters<UcpCheckoutStore["revise"]>[0]) { return this.ucpCheckout.revise(input); }
   quoteUcpCheckout(input: Parameters<UcpCheckoutStore["quote"]>[0]) { return this.ucpCheckout.quote(input); }
   precheckUcpCompletion(input: Parameters<UcpCheckoutStore["precheckCompletion"]>[0]) { return this.ucpCheckout.precheckCompletion(input); }
   bindUcpCompletion(input: Parameters<UcpCheckoutStore["bindCompletion"]>[0]) { return this.ucpCheckout.bindCompletion(input); }
-  completeUcpCheckout(input: Parameters<UcpCheckoutStore["complete"]>[0]) { return this.ucpCheckout.complete(input); }
+  async completeUcpCheckout(inputJson: string): Promise<string> {
+    return JSON.stringify(await this.ucpCheckout.complete(JSON.parse(inputJson) as Parameters<UcpCheckoutStore["complete"]>[0]));
+  }
   declineUcpCheckout() { return this.ucpCheckout.declined(); }
   enterUcpSettlement(input: Parameters<UcpCheckoutStore["enterSettlement"]>[0]) { return this.ucpCheckout.enterSettlement(input); }
   cancelUcpCheckout() { return this.ucpCheckout.cancel(); }

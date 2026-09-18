@@ -1,4 +1,6 @@
 import { checkoutDocument } from "@/lib/ucp/checkout/document";
+import { orderDocument, type StoredUcpOrder } from "@/lib/ucp/order/document";
+import { orderIdOf } from "@/lib/ucp/ids";
 import { checkoutTerms, lineTerms, type PaymentTerms } from "@/lib/ucp/checkout/terms";
 import { variantGid } from "@/lib/ucp/ids";
 import { quotedUsdcHandler } from "@/lib/ucp/payments/usdc-x402";
@@ -121,10 +123,63 @@ export function completedCheckoutSample(base: string): unknown {
   const checkout = storedCheckout({
     status: "completed",
     order: {
-      id: "ord_sample",
-      permalink_url: `${base}/api/order/ord_sample`,
+      id: orderIdOf("chk_sample"),
+      permalink_url: `${base}/ucp/v1/orders/${orderIdOf("chk_sample")}`,
       created_at: "2026-09-16T12:05:00.000Z",
     },
   });
   return checkoutDocument(checkout, base, { paymentHandlers: handlersFor(base, checkout) });
+}
+
+/**
+ * The order behind that completion, in both fulfillment shapes the
+ * store produces: instant goods delivered at settlement, and a human
+ * work-order still in its queue. Built from the same frozen lines the
+ * checkout sample carries, as a real order is.
+ */
+function storedOrder(base: string, fulfillment: StoredUcpOrder["fulfillment"]): StoredUcpOrder {
+  const checkout = storedCheckout();
+  return {
+    id: orderIdOf(checkout.id),
+    checkout_id: checkout.id,
+    permalink_url: `${base}/ucp/v1/orders/${orderIdOf(checkout.id)}`,
+    created_at: "2026-09-16T12:05:00.000Z",
+    currency: "USD",
+    lines: checkout.lines,
+    line_titles: ["The Collab"],
+    settlement: {
+      purchase_id: "a".repeat(64),
+      network: "eip155:8453",
+      transaction: `0x${"b".repeat(64)}`,
+      payer: SAMPLE_EVM,
+      paid_usdc: 300,
+      tip_usdc: 0,
+    },
+    fulfillment,
+  };
+}
+
+export function instantOrderSample(base: string): unknown {
+  return orderDocument(
+    storedOrder(base, {
+      kind: "instant",
+      status: "fulfilled",
+      delivered_at: "2026-09-16T12:05:00.000Z",
+      goods: { certificate: { cert_id: "cert_sample" } },
+    }),
+    base,
+  );
+}
+
+export function queuedOrderSample(base: string): unknown {
+  return orderDocument(
+    storedOrder(base, {
+      kind: "human_queue",
+      status: "processing",
+      operational_order_id: "ord_operational",
+      sla_hours: 168,
+      goods: { order_id: "ord_operational", status: "queued" },
+    }),
+    base,
+  );
 }

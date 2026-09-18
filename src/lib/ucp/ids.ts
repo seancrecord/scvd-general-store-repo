@@ -29,6 +29,34 @@ export function variantGid(itemId: string, tierIndex?: number): string {
 }
 
 /** The catalog handle: the item id, in the spelling a URL would use. */
+/**
+ * THE ORDER'S ID IS THE CHECKOUT'S, WEARING THE ORDER PREFIX.
+ *
+ * Derived, never generated: an order id minted after settlement is a
+ * value that can be lost between minting and persisting, and every
+ * retry then has to ask whether another one already exists. Deriving
+ * it from the immutable checkout identity makes that question
+ * meaningless — same checkout, same order id, forever; different
+ * checkout, different id — and makes the reverse lookup a string
+ * operation rather than an index. The `ord_` prefix is the one the
+ * store's operational work-orders already use; the two never share a
+ * store, and a UCP order is found through its checkout, never by
+ * scanning the ledger.
+ */
+const CHECKOUT_PREFIX = "chk_";
+const ORDER_PREFIX = "ord_";
+
+export function orderIdOf(checkoutId: string): string {
+  if (!checkoutId.startsWith(CHECKOUT_PREFIX)) throw new Error("Not a checkout id");
+  return ORDER_PREFIX + checkoutId.slice(CHECKOUT_PREFIX.length);
+}
+
+/** The checkout an order id names, or null when the id is not one of ours. */
+export function checkoutIdOfOrder(orderId: string): string | null {
+  if (!/^ord_[A-Za-z0-9_-]{6,64}$/.test(orderId)) return null;
+  return CHECKOUT_PREFIX + orderId.slice(ORDER_PREFIX.length);
+}
+
 export function productHandle(itemId: string): string {
   return itemId.replace(/_/g, "-");
 }

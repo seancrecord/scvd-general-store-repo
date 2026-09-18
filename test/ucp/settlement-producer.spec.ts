@@ -22,7 +22,7 @@ import { asFrozen, frozenRequirements } from "@/lib/ucp/checkout/requirements";
 import { usdcPaymentHandlers } from "@/lib/ucp/payments/usdc-x402";
 import { settlementPurchaseIdentity } from "@/lib/purchase-payment";
 import {
-  installFacilitatorMock,
+  installMultiPurchaseFacilitatorMock,
   TEST_PAYER,
   TEST_TRANSACTION,
   type FacilitatorMockState,
@@ -110,8 +110,11 @@ const producer = (cred: unknown) => realSettlementProducer(testEnv, { credential
 
 let facilitator: FacilitatorMockState;
 beforeAll(() => {
-  facilitator = installFacilitatorMock();
+  // Distinct sales land distinct transactions: fulfillment now continues
+  // past settle, and the artifact journal is keyed by the settlement.
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
+const lastSettled = () => facilitator.settledTransactions.at(-1)!;
 afterEach(() => {
   facilitator.settleShouldFail = false;
   facilitator.settleTransient502s = 0;
@@ -146,12 +149,13 @@ describe("one durable claim is one settlement orchestration", () => {
 
     const purchase = await purchaseOf(identity);
     expect(purchase.state).toBe("settled");
-    expect(purchase.payment?.transaction).toBe(TEST_TRANSACTION);
+    expect(purchase.payment?.transaction).toBe(lastSettled());
     expect(purchase.payment?.network).toBe(NETWORK);
     expect((await submissionOf(identity))?.outcome).toBe("confirmed");
+    // Confirmed money completes the checkout with its order (the order chapter).
     const stored = await read(checkout.id);
-    expect(stored?.status).toBe("complete_in_progress");
-    expect(stored?.order).toBeUndefined();
+    expect(stored?.status).toBe("completed");
+    expect(stored?.order?.id).toBe(`ord_${checkout.id.slice("chk_".length)}`);
   });
 
   it("a transient first failure and the built-in retry are still one orchestration", async () => {
@@ -172,15 +176,16 @@ describe("one durable claim is one settlement orchestration", () => {
     expect(first.ok).toBe(true);
     expect(facilitator.settleCalls).toBe(1);
 
-    // The platform never saw the answer and sends the identical Complete.
+    // The platform never saw the answer and sends the identical Complete:
+    // it gets the same order back, and the facilitator is not asked again.
     const retry = await admitUcpCompletion(testEnv, { checkoutId: checkout.id, credential: credential(nonce), verify: accepts() });
     expect(retry.ok).toBe(true);
     const again = await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id, produce: producer(cred) });
-    expect(again.ok).toBe(false);
-    if (!again.ok) expect(again.code).toBe("already_resolved");
+    expect(again.ok, again.ok ? "" : again.detail).toBe(true);
+    if (again.ok && first.ok) expect(again.order).toEqual(first.order);
     expect(facilitator.settleCalls).toBe(1);
-    expect((await purchaseOf(identity)).payment?.transaction).toBe(TEST_TRANSACTION);
-    expect((await read(checkout.id))?.status).toBe("complete_in_progress");
+    expect((await purchaseOf(identity)).payment?.transaction).toBe(lastSettled());
+    expect((await read(checkout.id))?.status).toBe("completed");
   });
 });
 
@@ -447,7 +452,7 @@ for (const rail of RAILS) {
       expect(purchase.payment?.transaction).toBe(rail.good);
       expect(purchase.payment?.network).toBe(rail.network);
       expect((await submissionOf(identity))?.outcome).toBe("confirmed");
-      expect((await read(checkoutId))?.status).toBe("complete_in_progress");
+      expect((await read(checkoutId))?.status).toBe("completed");
 
       // PAYMENT_RAILS.md's bound: Solana and Polygon settles are counted
       // toward their unreconciled caps at the seam money moved; the

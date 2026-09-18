@@ -56,7 +56,7 @@ function links(base: string) {
   ];
 }
 
-function money(type: string, display: string, amount: number) {
+export function money(type: string, display: string, amount: number) {
   return { type, display_text: display, amount };
 }
 
@@ -64,10 +64,16 @@ function money(type: string, display: string, amount: number) {
  * Exactly one subtotal and exactly one total, which the schema
  * enforces with minContains/maxContains. There is no tax line and no
  * fulfillment line, and inventing a zeroed one would be describing a
- * charge this store does not make.
+ * charge this store does not make. Shared with the order document,
+ * which totals the same frozen lines.
  */
-function totalsFor(amount: number) {
+export function totalsFor(amount: number) {
   return [money("subtotal", "Subtotal", amount), money("total", "Total", amount)];
+}
+
+/** The grand total of frozen lines, in USD minor units. */
+export function grandTotalOf(lines: StoredCheckout["lines"]): number {
+  return lines.reduce((sum, line) => sum + line.unit_price.amount * line.quantity, 0);
 }
 
 export function checkoutDocument(
@@ -95,10 +101,7 @@ export function checkoutDocument(
       totals: [money("total", "Line total", total)],
     };
   });
-  const grand = checkout.lines.reduce(
-    (sum, line) => sum + line.unit_price.amount * line.quantity,
-    0,
-  );
+  const grand = grandTotalOf(checkout.lines);
   const policies: UcpPolicy[] = [];
   checkout.lines.forEach((line, index) => {
     const item = getMenuItem(line.item_id);

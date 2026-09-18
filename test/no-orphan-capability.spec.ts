@@ -60,6 +60,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
     "withdraws a checkout the caller already holds; reached from that checkout, not from a discovery surface, and quiet for the same reason the checkout is",
   "/ucp/v1/checkout-sessions/complete":
     "cannot settle yet and refuses in writing, naming the x402 door that does take the money; it goes on the surfaces the day it works",
+  "/ucp/v1/orders":
+    "the order a completed checkout points at, reached from that checkout's confirmation and from nowhere else; quiet until Complete opens, and listed the same day it does",
   "/.well-known/ucp.json":
     "alias of /.well-known/ucp, the path the protocol names and the guide lists; served so a reader who guessed .json gets the profile instead of a 404 that reads as 'no UCP here'",
   "/ucp/schemas/items":

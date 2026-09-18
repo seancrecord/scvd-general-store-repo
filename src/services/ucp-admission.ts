@@ -14,6 +14,8 @@ import {
   type PurchaseIntent,
 } from "@/services/purchase-intent";
 import { SettlementUnknown } from "@/lib/payments";
+import { sha256Hex } from "@/lib/idempotency";
+import { jcsCanonicalize } from "@/lib/jcs";
 import { ucpCheckoutStore, type StoredCheckout } from "@/services/ucp-checkout-store";
 import { getMenuItem } from "@/store/menu";
 import type { Env } from "@/types";
@@ -165,6 +167,65 @@ export async function admitUcpCompletion(
     requirements: asRequirements(quote.requirements),
     verify: input.verify,
   });
+
+  /**
+   * THE BYTE-IDENTICAL RETRY, RECOGNISED WITHOUT THE FACILITATOR.
+   *
+   * A platform whose completion response was lost sends the same
+   * Complete again. Asking the facilitator to verify it again would be
+   * wrong twice over: pointless, because ownership already exists,
+   * and — once the payment has settled — FALSE, because the nonce is
+   * burned on-chain and a verifier will now say no to a payment that
+   * paid. So a bound checkout is compared first against what it is
+   * bound to: the purchase record keeps the one-way fingerprint of the
+   * exact wire credential it was admitted on (payment_proof), and the
+   * same credential rebound to the same frozen terms produces the same
+   * fingerprint. Equal means this is that completion, on every rail,
+   * and it is handed back as recovered — the checkout's state, the
+   * order if there is one — with nothing verified, owned or prepared.
+   *
+   * WHAT THIS CANNOT DO. A forged credential that reproduces the
+   * fingerprint would have to reproduce the signature bytes, and a
+   * caller holding those already holds the credential. Even then the
+   * answer is what Get Checkout shows anyone. No money moves here.
+   *
+   * A DIFFERENT credential against a completed checkout is refused
+   * here, before the facilitator: that checkout has an order, and a
+   * second payment for it would be a second sale for one thing.
+   */
+  if (checkout.completion) {
+    let proof: string | undefined;
+    try {
+      proof = await sha256Hex(jcsCanonicalize(adapter.bind(input.credential)));
+    } catch (error) {
+      if (error instanceof UcpPaymentRefused) {
+        return { ok: false, code: "payment_refused", detail: error.reason, checkout };
+      }
+      throw error;
+    }
+    const boundTo = await purchaseIntentStore(env, checkout.completion.payment_identity)
+      .existingPurchase()
+      .catch(() => null);
+    const owner = boundTo ? (JSON.parse(boundTo) as PurchaseIntent) : undefined;
+    if (owner && owner.payment_proof === proof) {
+      return {
+        ok: true,
+        checkout,
+        payment_identity: owner.id,
+        recovered: true,
+        prepared: "reused",
+      };
+    }
+    if (checkout.status === "completed") {
+      return {
+        ok: false,
+        code: "wrong_state",
+        detail:
+          "This checkout is completed under a different payment and already has an order. Read it rather than presenting another payment; one checkout is one sale.",
+        checkout,
+      };
+    }
+  }
 
   let verified;
   try {
