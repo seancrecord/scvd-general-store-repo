@@ -1,0 +1,134 @@
+{
+  "base_revision": "8917068a267aa11a35d490a6307c928a07e308ff",
+  "classification": "Local repair validation; no new native qualification, buyer run or historical rescore.",
+  "regressions": {
+    "unchanged_guidance": {
+      "passed": 0,
+      "failed": 8
+    },
+    "repaired_guidance": {
+      "passed": 8,
+      "failed": 0
+    },
+    "complete_evidence_guard_removed": {
+      "passed": 0,
+      "failed": 1
+    },
+    "buyer_suite": {
+      "passed": 223,
+      "failed": 0
+    }
+  },
+  "typecheck": "passed",
+  "build_check": "passed",
+  "docs_check": "passed; existing age advisories remain informational",
+  "full_suite": {
+    "command": "npm test",
+    "exit_code": 1,
+    "files_passed": 768,
+    "files_failed": 14,
+    "tests_passed": 15018,
+    "tests_failed": 27,
+    "tests_skipped": 1,
+    "runner_start_timeouts": 2,
+    "duration_seconds": 1754.12,
+    "interpretation": "Timeouts and assertions after timeouts; original run remains failed."
+  },
+  "reduced_concurrency_rerun": {
+    "command": "npm test -- --maxWorkers=2 --reporter=default --reporter=json --outputFile=<private archive>/rerun-results.json <all failed and unstarted files>",
+    "exit_code": 0,
+    "files_passed": 16,
+    "tests_passed": 2571,
+    "tests_failed": 0,
+    "failed_files_from_initial_run": [
+      "test/a2a-paid-recovery.spec.ts",
+      "test/archive-observation-paid-recovery.spec.ts",
+      "test/buyer-idempotency-faults.spec.ts",
+      "test/case-file-paid-recovery.spec.ts",
+      "test/chain-report-paid-recovery.spec.ts",
+      "test/hosted-observation-paid-recovery.spec.ts",
+      "test/human-order-paid-recovery.spec.ts",
+      "test/launch-paid-recovery.spec.ts",
+      "test/legacy-paid-retry.spec.ts",
+      "test/mandate-anchor-paid-recovery.spec.ts",
+      "test/operator-statement.spec.ts",
+      "test/publication-paid-recovery.spec.ts",
+      "test/solana-purchase-replay.spec.ts",
+      "test/url-observation-paid-recovery.spec.ts"
+    ],
+    "unstarted_files_from_initial_run": [
+      "test/settlement-unknown.spec.ts",
+      "test/source-liveness.spec.ts"
+    ],
+    "interpretation": "All 16 affected files pass without source changes, assertion changes or increased timeouts; consistent with resource contention. The full run itself is not labeled green."
+  },
+  "release_gate": "All required PR CI checks must pass before normal merge.",
+  "native_acceptance": "Still open; newly freeze and qualify the changed instrument before another cohort.",
+  "private_validation_files": [
+    {
+      "file": "red.log",
+      "bytes": 7301,
+      "sha256": "5f9d4beee0367036a4bf95a32ea56fd71af4b26b937b02e60981427c68537405"
+    },
+    {
+      "file": "green.log",
+      "bytes": 1819,
+      "sha256": "8496d63e1f2b11a184cdd204a0d6dad5d7541b651828cb073efd9d9afde3d081"
+    },
+    {
+      "file": "guard-red.log",
+      "bytes": 920,
+      "sha256": "0b7c4ca5e5372f884769954bd02ff1aa51f0b20f63b1a3621e4bf27cef385390"
+    },
+    {
+      "file": "buyer-tests.log",
+      "bytes": 44493,
+      "sha256": "2b66c325515356f76ef55188750cddf505d2110925c8798420ee1c0b0eab0ce0"
+    },
+    {
+      "file": "typecheck.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "build.log",
+      "bytes": 3924,
+      "sha256": "be74d3a6564b37758e58c1f1242c1ce73a9269c797c50b8f1e7c9e12086d319f"
+    },
+    {
+      "file": "docs.log",
+      "bytes": 3969,
+      "sha256": "34da73c935b882111d2a087d4ede6c9a23dccebe3accf3c4116234c0ab63dc1e"
+    },
+    {
+      "file": "full-test.log",
+      "bytes": 456638,
+      "sha256": "e735cbfa055dc42091d5be558c0d0b0becb2ad247ce9e5649ae50c2397f92431"
+    },
+    {
+      "file": "full-test-cache.json",
+      "bytes": 53110,
+      "sha256": "43aa924d8214f038ebe101aac6e391a39a56e8be03ee6d69a0347afa8f0abb4c"
+    },
+    {
+      "file": "rerun.log",
+      "bytes": 5733807,
+      "sha256": "2cdadcc811cd0d2b7384b1d8d759dc6b902cc427dbf181146f2581d7d77427eb"
+    },
+    {
+      "file": "rerun-results.json",
+      "bytes": 764763,
+      "sha256": "c27b6a2a170661a8f5292341dd083e97571d4c25eea973e1115ff2bf33b535e6"
+    },
+    {
+      "file": "rerun-files.json",
+      "bytes": 1709,
+      "sha256": "b45e4ca4579a1aeac352f628098117e4908fd99db75debf434857f712071f1f3"
+    },
+    {
+      "file": "real-result.json",
+      "bytes": 1461,
+      "sha256": "753a247d00fd1dc405dfff921d9331e094e1262783030fea4cffe360485b949b"
+    }
+  ]
+}
