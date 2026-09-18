@@ -1878,7 +1878,7 @@ export const REACHED_LEVEL_MEANING = reachedLevelMeaning();
  * The reading has always said which rungs it did not climb, and
  * separately offered four URLs, and never joined the two. A buyer
  * holding "L4-L6 not climbed" had to work out for themselves that
- * `standing_watch` is the thing that climbs it, what it costs, and how
+ * a paid purchase attempt is needed, what it costs, and how
  * to call it in the protocol they were already speaking. That is not a
  * payment problem — over MCP the payment is call, take the 402, sign,
  * call again — it is a DISCOVERY problem, and it was ours.
@@ -1948,8 +1948,8 @@ export function theRestOfTheLadder(battery: string, base: string): Record<string
       {
         rung: "L4-L6",
         what_it_is: "Purchasability through delivery: does paying this door actually produce the goods?",
-        climbs_it: climbedBy("standing_watch", base),
-        why_not: "No unpaid probe can climb this, ours or anyone's. Finding out whether a door delivers means paying it, and that is a cost per attempt rather than a feature we are withholding.",
+        climbs_it: climbedBy("launch_check", base),
+        why_not: "No unpaid probe can climb this, ours or anyone's. The Launch Check attempts one authorized, capped purchase under its published terms and records what happened. Screening or the attempt can stop short; buying the check does not guarantee delivery or that every rung is reached.",
       },
     ],
     already_free: `POST ${base}/api/conformance/v1 — full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free, and it needs no account.`,

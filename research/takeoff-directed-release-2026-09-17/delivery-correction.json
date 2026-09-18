@@ -1,0 +1,150 @@
+{
+  "scope": "L4-L6 recommendation corrected from unpaid standing_watch to the existing capped launch_check; no payment engine or experiment evidence changed.",
+  "state": "Implemented and locally validated; required PR checks and production readback remain pending.",
+  "rebase_base": "bde4288b6372d86d9645d45f79a46b55b72eb3de",
+  "rebase_note": "Changes since the tested base affect documents only; no src/, test/ or package.json difference.",
+  "source_files": [
+    {
+      "file": "src/services/preflight.ts",
+      "sha256": "92f6eeda9953f7f302302b4a240a4b8c1425eb8faa421eda52a82c1183ed8748"
+    },
+    {
+      "file": "src/store/corrections-ledger/index.ts",
+      "sha256": "fc088d3355b0a8e35213e32497e7c4caff822e8ed86422baf6d5f1d3c5bb62c9"
+    },
+    {
+      "file": "src/store/corrections-ledger/2026-09-17-an-unpaid-watch-cannot-prove-delivery.ts",
+      "sha256": "1d5588c1359f66f475cecaad3926f746a3ae7a97159154ad9ef9f719b60b4921"
+    },
+    {
+      "file": "test/preflight-evidence-handoff.spec.ts",
+      "sha256": "98374918224aa7185ba4debe069346ce632709d65d6fd615434962301fbc5283"
+    }
+  ],
+  "validation": {
+    "checked_at": "2026-09-18T02:02:12.233521+00:00",
+    "tested_base": "82a419ff",
+    "red_before_fix": {
+      "failed": 2,
+      "passed": 3,
+      "basis": "Both battery recommendations resolved to an unpaid subject_fetch instrument."
+    },
+    "focused": {
+      "files": 4,
+      "passed": 15
+    },
+    "correction_index_tests": {
+      "passed": 2
+    },
+    "typecheck": "pass",
+    "build_check": "pass",
+    "full_suite": {
+      "discovered_files": 761,
+      "initial_covered_files": 751,
+      "initial_pass": 14656,
+      "initial_fail": 2,
+      "missing_after_worker_startup_timeouts": [
+        "test/agent-ux-findings.spec.ts",
+        "test/bazaar-service-metadata.spec.ts",
+        "test/conventional-urls.spec.ts",
+        "test/corpus-landing-weave.spec.ts",
+        "test/directory-jwks.spec.ts",
+        "test/mcp-md.spec.ts",
+        "test/registry-claim.spec.ts",
+        "test/visibility.spec.ts",
+        "test/wba-inbound-claim.spec.ts",
+        "test/wrong-method.spec.ts"
+      ],
+      "failed_files": [
+        "test/corrections.spec.ts",
+        "test/hand-rolling.spec.ts"
+      ],
+      "rerun_files": 14,
+      "rerun_pass": 70,
+      "rerun_fail": 0,
+      "reconciled_assertions": {
+        "passed": 14702,
+        "skipped": 1
+      },
+      "limit": "Initial suite had Worker startup timeouts that omitted ten files, a hand-rolling test timeout, and a correction-entry test failure. The correction now explicitly names its regression test. Every omitted/failed file plus changed preflight/ledger checks passes the single-worker rerun without increasing timeouts. Original reports remain retained."
+    }
+  },
+  "validation_files": [
+    {
+      "file": "scvd-ladder-build.log",
+      "bytes": 4032,
+      "sha256": "80f9ca43f693e41eb931b652820122d45cb0a8fcc995c9335f18e6e9e0195d22"
+    },
+    {
+      "file": "scvd-ladder-green.log",
+      "bytes": 664,
+      "sha256": "66c3265ba2425ef96e63d6a93a8e7ab56d9ab881f94d8aa320fe180fd982355c"
+    },
+    {
+      "file": "scvd-ladder-index.log",
+      "bytes": 516,
+      "sha256": "d44c20081cdc2e26f0e43eead7e12afc156dd5f54bd4fd78f05eca5c2a4853d5"
+    },
+    {
+      "file": "scvd-ladder-red.log",
+      "bytes": 1900,
+      "sha256": "712c2a15ff840030b3427708cb51b0c5396097dd37c256f6bc3f6445b34221cc"
+    },
+    {
+      "file": "scvd-ladder-rerun.json",
+      "bytes": 24263,
+      "sha256": "34b5d5fa764a72ce015e2329d4ae098a2651b0ad46f354fb90ec57bec2f4a2dc"
+    },
+    {
+      "file": "scvd-ladder-rerun.log",
+      "bytes": 20587,
+      "sha256": "233d45384da1a40c31f2f553731c8c88df41dc6050b17ee7781cfb811f56c49f"
+    },
+    {
+      "file": "scvd-ladder-shard-1.json",
+      "bytes": 1004326,
+      "sha256": "3c3c02d1c3d6f5c32a192180fcce789fe112b03d219b63846ba453dd6199c64c"
+    },
+    {
+      "file": "scvd-ladder-shard-1.log",
+      "bytes": 3261558,
+      "sha256": "f82d0a8360b78fdafc29d2ca47db81b810f021ad6e4380000a36db2afb7878c6"
+    },
+    {
+      "file": "scvd-ladder-shard-2.json",
+      "bytes": 1186749,
+      "sha256": "4311baca9155e623c17e9df86e456a8b575ea33c2879bae1d3aa6d997ac72608"
+    },
+    {
+      "file": "scvd-ladder-shard-2.log",
+      "bytes": 4857910,
+      "sha256": "a3f59701910704687ed3e5bd7446278e843acac6204014ab3a5053c17ab7dcf9"
+    },
+    {
+      "file": "scvd-ladder-shard-3.json",
+      "bytes": 1229858,
+      "sha256": "8137dbeac9b4df3870e53aa3fa852194a709b4ee9a2145ca2d996cb04ac69bde"
+    },
+    {
+      "file": "scvd-ladder-shard-3.log",
+      "bytes": 4903616,
+      "sha256": "02bdd7aef434aa6b8bb2a2b04d71d05557263126330fe0d06c17555c758cc777"
+    },
+    {
+      "file": "scvd-ladder-shard-4.json",
+      "bytes": 1188788,
+      "sha256": "6ba5bf08f6fe0c0a2beb9e550cfac4a082d713f9748a9ab7e3269a61bcfbdaa4"
+    },
+    {
+      "file": "scvd-ladder-shard-4.log",
+      "bytes": 4888160,
+      "sha256": "d3cc21c591f37021c1117a7f2d00316c1881654e2198374b61bb465f9f45af33"
+    },
+    {
+      "file": "scvd-ladder-typecheck-final.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    }
+  ],
+  "backup_root": "/Users/seanrecord/scvd-takeoff-handoff-2026-09-17/delivery-recommendation-2026-09-17"
+}
