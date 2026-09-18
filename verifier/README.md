@@ -14,7 +14,7 @@ Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.5.0.tgz
+npm install ./x402-verify-1.6.0.tgz
 ```
 
 Structured status fields require 1.4.0 or newer; older versions may not expose
@@ -494,8 +494,20 @@ and bindings in memory. The JSON result includes the exact original file's
 all signed claims. Read the subject, observation date and gaps from the
 original and check them separately. A valid signature is not a freshness test.
 
-The source checkout also supports an exact endpoint reading (check installed
-`--help` for `--subject` before using a registry package):
+Version 1.6.0 adds an exact endpoint reading. Install that version into a
+separate tooling directory, then check its `--help` for `--subject`. If the
+registry has not published it yet, use the source checkout or a locally
+qualified tarball; an older package cannot run this command.
+
+```sh
+npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.6.0
+node tooling/node_modules/x402-verify/evidence-cli.mjs --help
+node tooling/node_modules/x402-verify/evidence-cli.mjs verify-source evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \
+  --subject 'https://merchant.example/paid?kind=one'
+```
+
+From the repository checkout, the equivalent command is:
 
 ```sh
 node verifier/evidence-cli.mjs verify-source evidence/original.json \

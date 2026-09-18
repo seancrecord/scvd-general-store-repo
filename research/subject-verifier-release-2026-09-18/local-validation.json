@@ -1,0 +1,116 @@
+{
+  "status": "local-release-qualification-not-registry-publication",
+  "version": "1.6.0",
+  "package_tests": {
+    "passed": 157,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "build_check": "passed",
+  "docs_check": "passed",
+  "installed_tarball_integrity": "sha512-lpX2taV+yEXUsNR3NiG9apKxcJkbxAHG6VqaSk00mspwxoLJICT8SbfszD7eDXJ1v07EE/qnuUTMxCwwpHi+nQ==",
+  "all_packed_files_match_source": true,
+  "files_sha256": {
+    "CHANGELOG.md": "548511e56d4bf1ca9ac369f0e184c0361f3a705b8d9c2249e2b767551f7fdcb8",
+    "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
+    "README.md": "577b5ec2378a252a8cfd49ad5f4326fc5da89434a33f85b1059a891c77a244a7",
+    "evidence-bundle.d.ts": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a",
+    "evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "evidence-cli.mjs": "534332ca39b019fc0e041dab6b730c1db62cadeeb984bfd6bc3667dac8fdf5f0",
+    "examples/verify-receipt.mjs": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+    "fixtures/independent/matrix.json": "d97a7433f9323c9398770769a299377764b266a907c1caba743152802fb35b95",
+    "fixtures/independent/README.md": "f94705fc218c5d91b648317cc33a0619175e27cc0913b6ccc02daac4bc5c64e4",
+    "fixtures/issuer-key-document.json": "09fa3404fca2f70fbdc3ea761421c651d914ab22056aed3d7b0fb3bd17d70756",
+    "fixtures/offer-expired-but-wellformed.json": "8bd00bc6e0669f729de267744fd590f6dd25b1e77d37374e0e9f240e7279ee9b",
+    "fixtures/offer-tampered-payload.json": "30a0c7955220d7fa2e38e376ae432e593516ccca821c2c5829bba3d43d3d16f2",
+    "fixtures/offer-valid.json": "509906bef539a7df8eb9d555281966d1766a6e6a38c7a0457073c4cefeeabda9",
+    "fixtures/receipt-missing-payer.json": "a071e8bd9a7b18966e31aa9170b57f766032674c210ba6634f77c931f34f6977",
+    "fixtures/receipt-valid.json": "666bb748b58daa4b7473db2f1b68a0b6b5e97566bc12f902fe0534eaddd4c518",
+    "fixtures/receipt-wrong-key.json": "8b161596280b9943f1b00a6814cdce0c698b4dafeb9b95c07fd9e5c0aae26586",
+    "fixtures/start-here/issuer-key.json": "019399acc8a3b59e69f7f29204e86461314ba68549bd38580f5672c5dd7882a6",
+    "fixtures/start-here/README.md": "6c027dc167ff9523928c37fa74ef151b764a633a44be7a71d49ec39529563bc3",
+    "fixtures/start-here/receipt-es256.json": "45bdfcae94d63dcc18c05fe6f81388f5819890a196a1e8c44e0e3297352f1092",
+    "fixtures/start-here/receipt-tampered.json": "07409ebf6846fa09fed38b607b8b227b02c1df71579ec0a6506ea03f1617d1b2",
+    "fixtures/start-here/receipt.json": "34a6a41737b0e8b86a76c6f923da232be26cf60768a9fc11156c6080df36e3cf",
+    "package.json": "5f18b113631c66fd3327115622e9d2d8aa96ed801c948700abd37208a6a4ad0f",
+    "x402-verify.d.ts": "1b85b8dd7b182b2cdf133f8807cec151e2d7e07b3500713223d0be956a540bec",
+    "x402-verify.js": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6"
+  },
+  "retained_reading": {
+    "valid": true,
+    "evidence_complete": true,
+    "missing_evidence": [],
+    "problems": [],
+    "context_authenticated": false,
+    "timestamp": {
+      "status": "unverified",
+      "verified": false
+    },
+    "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+    "does_not_establish": [
+      "issuer identity without an independently trusted key",
+      "issue time or key authorization at issue time",
+      "Bitcoin anchoring without independent OTS verification",
+      "truth, settlement, delivery, completeness of the observed world",
+      "authenticity of context, filenames or captured key history"
+    ],
+    "source_sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00",
+    "subject_evidence": {
+      "url": "https://lionx402.com/api/x402/wallet-screen-json",
+      "status": "present",
+      "matched_observations": 1,
+      "snapshot_taken_at": "2026-09-18T14:22:58.378Z",
+      "observations": [
+        {
+          "signed_claims_pointer": "/round/hosts/50",
+          "value": {
+            "host": "lionx402.com",
+            "url": "https://lionx402.com/api/x402/wallet-screen-json",
+            "source": "discovery",
+            "verdict": "ready",
+            "failed": [],
+            "advisories": [
+              "inputs-declared",
+              "retry-key-not-in-challenge",
+              "signed-offers-not-in-challenge"
+            ],
+            "observed_at": "2026-09-07T02:30:20.531Z",
+            "offer": {
+              "networks": [
+                "eip155:8453"
+              ],
+              "schemes": [
+                "exact"
+              ],
+              "min_usdc": 0.001,
+              "max_usdc": 0.001,
+              "pay_to_digest": [
+                "78fcd0520cf601a78100dd1307c9016c621246c62f9f0bfb1fa069566038d85e"
+              ]
+            },
+            "catalog": {
+              "state": "agrees",
+              "last_updated": "2026-09-06T06:11:52.251Z"
+            },
+            "evidence_digest": {
+              "sha256": "f38a5f84898cb6fa05c8d62bfb7f6b58c03ec6161e3f9affbc0bbd961a0aeafd",
+              "bytes": 5002
+            },
+            "signer_kids": [],
+            "latency_ms": 1587,
+            "battery": "preflight-v2"
+          }
+        }
+      ],
+      "omitted_observations": 0,
+      "observations_max_bytes": 32768,
+      "scope": "Exact URL matches in this verified corpus snapshot only. Each value is an issuer claim, not proof of truth, current readiness, settlement or delivery. Unsigned context and other snapshots are excluded. Keep the original response and independently established key; this excerpt cannot be verified alone."
+    }
+  },
+  "limits": [
+    "Local package qualification only; no new native buyer or recipient run.",
+    "Earlier sandbox test attempt failed two localhost server tests with EPERM; permitted rerun passed all 157.",
+    "Initial type and build checks used stale shared dependencies; clean locked installation passed.",
+    "Full hosted CI remains required before merge."
+  ]
+}
