@@ -15,6 +15,7 @@ import { LEGACY_NATIVE_ITEM } from "@/lib/mpp-checkout-capability";
 import { manifestAccepts, priceTiersUsdc } from "@/lib/payments";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { MENU_ITEMS, getMenuItem } from "@/store";
+import { decodeBase64Json } from "@/lib/base64-json";
 import type { Certificate } from "@/types";
 
 /**
@@ -33,9 +34,19 @@ const buyer = privateKeyToAccount(`0x${"09".repeat(32)}`);
 const client = charge({ account: buyer, authorization: { name: "USD Coin", version: "2" }, networks: [8453] });
 const month = NOW.toISOString().slice(0, 7);
 const ledger = () => testEnv.COUNTER_LEDGER!.get(testEnv.COUNTER_LEDGER!.idFromName(`${month}/mpp-sales`));
+/**
+ * THE RESPONSE URL IS PART OF THE CONTRACT (CV, 2026-09-18). The SDK's
+ * http transport reads every protocol's offer on a 402, and its x402
+ * reader throws when the declared resource.url differs from
+ * response.url, before the native challenge is ever signed. A Response
+ * built by app.fetch carries no url, so the harness used to sidestep
+ * the check a real fetch always makes; this wrapper restores it.
+ */
 const native = Fetch.from({ methods: [client], fetch: async (input, init) => {
   const req = new Request(input, init);
-  return request(req.url, { method: req.method, headers: req.headers });
+  const response = await request(req.url, { method: req.method, headers: req.headers });
+  Object.defineProperty(response, "url", { value: req.url });
+  return response;
 } });
 
 beforeEach(async () => {
@@ -111,6 +122,19 @@ for (const door of DOORS) {
     }
   });
 }
+
+it("the x402 terms name the URL that was asked, query and all, so a strict client can pay a door that needs one", async () => {
+  // A door that requires a query (spot_check needs ?host=) declared the
+  // bare door as its resource; the stock client compared it to the URL
+  // it had asked and refused to sign anything. The bare knock is unchanged.
+  const path = "/api/buy/spot_check?host=strict-client.example";
+  const decode = (response: Response) => decodeBase64Json(response.headers.get("PAYMENT-REQUIRED")!) as { resource: { url: string } };
+  expect(decode(await request(path)).resource.url).toBe(`https://scvd.store${path}`);
+  expect(decode(await request("/api/buy/spot_check")).resource.url).toBe("https://scvd.store/api/buy/spot_check");
+  const response = await native(`https://scvd.store${path}`);
+  expect(response.status).toBe(200);
+  expect(facilitator.settleCalls).toBe(1);
+});
 
 it("a row booked during the pilot reads as the pilot's product, beside the split", async () => {
   // The pilot's ledger rows carry no item. Their month's totals do not

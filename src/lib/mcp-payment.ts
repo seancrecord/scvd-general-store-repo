@@ -156,6 +156,13 @@ export type McpPaymentOutcome =
        */
       deliveryKeySoFar: () => string | null;
       verifiedPayer?: string;
+      /**
+       * The native lane's two extras (lib/mcp-mpp-payment.ts): the
+       * delivered goods join the durable purchase record after
+       * fulfillment, and the receipt names the challenge it answered.
+       */
+      completeDelivery?: (delivery: Record<string, unknown>) => Promise<void>;
+      challengeId?: string;
     }
   /**
    * A cached purchase, returned instead of settling. Reached only from

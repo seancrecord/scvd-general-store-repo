@@ -23,6 +23,8 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { archiveDepthDisclosure } from "@/services/archive-depth";
 import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
+import { MCP_CREDENTIAL_META_KEY, MCP_PAYMENT_REQUIRED_META_KEY, MCP_RECEIPT_META_KEY, mcpPaymentRequired, readMcpMppChallenge, runMcpMppPayment } from "@/lib/mcp-mpp-payment";
+import { Receipt, type Challenge } from "mppx";
 import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
@@ -849,10 +851,21 @@ async function callPurchaseTool(
   item: MenuItem,
   args: Record<string, unknown>,
   paymentMeta: unknown,
+  nativeMeta: unknown,
   id: number | string | null,
   rawIdempotencyKey: string | undefined,
   renderResponse: (response: Response) => Promise<Response>,
 ): Promise<Response> {
+  /**
+   * ONE CREDENTIAL PER CALL (native MCP lane, 2026-09-18). A call that
+   * carries both an x402 payment and an MPP credential is refused
+   * before either is read, exactly as the HTTP door refuses a request
+   * with both headers: an ambiguous payment never reaches settlement.
+   */
+  if (paymentMeta !== undefined && paymentMeta !== null && nativeMeta !== undefined) {
+    return rpcRefusal(id, -32602, "ambiguous_payment_credentials",
+      `Send one payment credential: x402 in _meta['x402/payment'] or MPP in _meta['${MCP_CREDENTIAL_META_KEY}'], never both. Nothing was charged.`);
+  }
   /**
    * THE SAME PRE-PAYMENT LAW THE HTTP DOOR RUNS, out of the same
    * file (lib/purchase-args), because this door's own shorter copy
@@ -873,7 +886,7 @@ async function callPurchaseTool(
       { path: `/api/buy/${item.id}`, door: "mcp", digest: await jsonBodyDigest(args) })
     : null;
   if (refusal && !retained) {
-    const paying = paymentMeta !== undefined && paymentMeta !== null;
+    const paying = (paymentMeta !== undefined && paymentMeta !== null) || nativeMeta !== undefined;
     /**
      * THE LOCKED DOOR, on this door's terms. The HTTP door quotes a
      * 402 to a bare ask and stamps the ask row with the inputs it
@@ -967,23 +980,32 @@ async function callPurchaseTool(
     inputDigest,
   );
   let replayedTransaction: string | undefined;
+  const replayFor = async (verifiedPayer: string, key: string) => {
+    const replay = await lookupIdempotentWithBucketGrace(
+      c.env,
+      idempotencySurface,
+      verifiedPayer,
+      key,
+      item.id,
+      Date.now(),
+      inputDigest,
+    );
+    if (replay) replayedTransaction = replay.transaction;
+    return replay
+      ? { ...replay.body, ...replayNote(replay.first_served_at) }
+      : null;
+  };
   const replayCheck = idempotencyKey
-    ? async (verifiedPayer: string) => {
-        const replay = await lookupIdempotentWithBucketGrace(
-          c.env,
-          idempotencySurface,
-          verifiedPayer,
-          idempotencyKey,
-          item.id,
-          Date.now(),
-          inputDigest,
-        );
-        if (replay) replayedTransaction = replay.transaction;
-        return replay
-          ? { ...replay.body, ...replayNote(replay.first_served_at) }
-          : null;
-      }
+    ? (verifiedPayer: string) => replayFor(verifiedPayer, idempotencyKey)
     : undefined;
+  /**
+   * The key the door quotes with these arguments, spelled once: the
+   * legacy envelope's idempotency.suggested_key, the tool-result
+   * profile's _meta key, and the purchase key bound into the native
+   * challenge are the same string, so a credential's key and the
+   * retry's key cannot disagree by construction.
+   */
+  const quotedKey = idempotencyKey ?? suggestedIdempotencyKey(item.id, Date.now(), inputDigest);
   const admitPurchase = async () => {
     const setup = await checkPurchaseAvailability(c.env, item, toolArgs(args));
     if (setup) return { code: String(setup.body.code), message: String(setup.body.error), details: setup.body };
@@ -1016,11 +1038,13 @@ async function callPurchaseTool(
   };
   // Quotes must be fulfillable. Signed requests authenticate and look for a
   // prior purchase first; only a fresh sale runs the same admission callback.
-  if (paymentMeta === undefined || paymentMeta === null) {
+  if ((paymentMeta === undefined || paymentMeta === null) && nativeMeta === undefined) {
     const unavailable = await admitPurchase();
     if (unavailable) return rpcRefusal(id, -32000, unavailable.code, unavailable.message, unavailable.details);
   }
-  const outcome = retained ? signedRecoveryOutcome(retained) : await runMcpPayment(
+  const outcome = nativeMeta !== undefined ? await runMcpMppPayment(c.env, item, nativeMeta, mcpSignals(c), replayFor,
+    JSON.stringify(args), inputDigest, admitPurchase, idempotencySurface, idempotencyKey ?? undefined,
+  ) : retained ? signedRecoveryOutcome(retained) : await runMcpPayment(
     c.env,
     item.id,
     paymentMeta,
@@ -1093,11 +1117,14 @@ async function callPurchaseTool(
     for (const [key, value] of Object.entries(args)) if (typeof value === "string") depthQuery[key] = value;
     const guidance = { buyer_guidance: buyerGuidance(item, base, depthQuery) };
     const depth = await archiveDepthDisclosure(c.env, base, item.id, depthQuery);
+    // The native challenge rides beside the x402 terms in both dialects,
+    // bound to these exact arguments and to the quoted key.
+    const native = await readMcpMppChallenge(c.env, item, inputDigest, quotedKey);
     if (standardPayment(c)) {
       const challenge = isRecord(outcome.challenge)
         ? outcome.challenge
-        : { ...await readMcpPaymentChallenge(c.env, item.id), error: "Invalid payment" };
-      return rpcResult(id, standardPaymentResult(c, item, { ...challenge, ...depth, ...guidance }, idempotencyKey, inputDigest));
+        : { ...await readMcpPaymentChallenge(c.env, item.id), ...(nativeMeta !== undefined && isRecord(outcome.body) ? outcome.body : { error: "Invalid payment" }) };
+      return rpcResult(id, standardPaymentResult(c, item, { ...challenge, ...depth, ...guidance }, quotedKey, inputDigest, native));
     }
     return rpcError(
       id,
@@ -1109,6 +1136,10 @@ async function callPurchaseTool(
         ...(outcome.challenge !== undefined
           ? { "x402/payment-required": outcome.challenge }
           : {}),
+        ...(native ? { [MCP_PAYMENT_REQUIRED_META_KEY]: mcpPaymentRequired(native) } : {}),
+        // A native refusal names itself in a field, as every refusal on
+        // this door does (rule 57.4); the x402 quote carries no code here.
+        ...(isRecord(body) && typeof body["code"] === "string" ? { code: body["code"], charged: body["charged"] ?? false } : {}),
         // The reading of the decline, relayed rather than dropped. It
         // was being built and thrown away here, which made the MCP
         // door's new instrument invisible to the agent holding it.
@@ -1129,7 +1160,7 @@ async function callPurchaseTool(
         idempotency: {
           // The tool arguments are this door's body; the suggestion
           // carries their digest, as the HTTP door's carries a POST's.
-          suggested_key: idempotencyKey ?? suggestedIdempotencyKey(item.id, Date.now(), inputDigest),
+          suggested_key: quotedKey,
           how: "Send it back as _meta['x402/idempotency-key'] with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
           optional:
             "Entirely. Your own key is used as-is; no key means a normal charge, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
@@ -1146,7 +1177,9 @@ async function callPurchaseTool(
           sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
           identity_policy: IDENTITY_POLICY,
         },
-        note: "For a new purchase, sign one of the accepts and send it in _meta['x402/payment']. For recovery, keep the original signed payment and key; do not sign another payment while the earlier attempt is unresolved.",
+        note: native
+          ? `For a new purchase, sign one of the accepts and send it in _meta['x402/payment'], or sign the MPP challenge in ${MCP_PAYMENT_REQUIRED_META_KEY} and send the credential in _meta['${MCP_CREDENTIAL_META_KEY}'] with identical arguments. For recovery, keep the original signed payment and key; do not sign another payment while the earlier attempt is unresolved.`
+          : "For a new purchase, sign one of the accepts and send it in _meta['x402/payment']. For recovery, keep the original signed payment and key; do not sign another payment while the earlier attempt is unresolved.",
       },
     );
   }
@@ -1205,6 +1238,9 @@ async function callPurchaseTool(
       );
     }
     const settled = outcome.settledSoFar();
+    // The native lane's paid journal, at the same seam as the HTTP
+    // door's 2xx: the goods join the durable record before any reply.
+    if (settled && outcome.completeDelivery) await outcome.completeDelivery(response);
     const flat = flattenPurchase(response);
     if (outcome.recovered) Object.assign(flat, { paid_retry: true, charged: true, charged_again: false });
     // Preserve the actual protocol receipt across an idempotent retry. Never
@@ -1218,6 +1254,18 @@ async function callPurchaseTool(
       } catch {
         // The goods have already settled: missing receipt metadata must not
         // turn a delivered purchase into another payment attempt.
+      }
+    }
+    // The MPP receipt, in the SDK's MCP shape, from the same settle
+    // header the HTTP door returns; cached with the goods so a keyed
+    // retry carries the original receipt, never a reconstructed one.
+    const nativeReceipt = settled && Object.entries(settled.settleHeaders)
+      .find(([name]) => name.toLowerCase() === "payment-receipt")?.[1];
+    if (nativeReceipt) {
+      try {
+        flat[CACHED_MPP_RECEIPT] = { ...Receipt.deserialize(nativeReceipt), ...(outcome.challengeId ? { challengeId: outcome.challengeId } : {}) };
+      } catch {
+        // Same rule as above: a delivered purchase is never re-charged over metadata.
       }
     }
     /**
@@ -1357,12 +1405,14 @@ function standardPaymentResult(
   challenge: Record<string, unknown>,
   retryKey?: string | null,
   inputDigest: string | null = null,
+  native?: Challenge.Challenge,
 ): Record<string, unknown> {
   return {
     isError: true,
     structuredContent: challenge,
     content: [{ type: "text", text: JSON.stringify(challenge) }],
     _meta: {
+      ...(native ? { [MCP_PAYMENT_REQUIRED_META_KEY]: mcpPaymentRequired(native) } : {}),
       "x402/idempotency-key": retryKey ?? suggestedIdempotencyKey(item.id, Date.now(), inputDigest),
       // The horizon, in the envelope this profile reads (x402#3325).
       "scvd/idempotency-replay-ttl-seconds": IDEMPOTENCY_TTL_SECONDS,
@@ -1373,11 +1423,14 @@ function standardPaymentResult(
 }
 
 const CACHED_PAYMENT_RESPONSE = "scvd_cached_payment_response";
+const CACHED_MPP_RECEIPT = "scvd_cached_mpp_receipt";
 function purchaseResult(body: Record<string, unknown>): Record<string, unknown> {
-  const { [CACHED_PAYMENT_RESPONSE]: receipt, ...goods } = body;
+  const { [CACHED_PAYMENT_RESPONSE]: receipt, [CACHED_MPP_RECEIPT]: native, ...goods } = body;
+  const meta = { ...(isRecord(receipt) ? { "x402/payment-response": receipt } : {}),
+    ...(isRecord(native) ? { [MCP_RECEIPT_META_KEY]: native } : {}) };
   return {
     ...toolText(goods) as Record<string, unknown>,
-    ...(isRecord(receipt) ? { _meta: { "x402/payment-response": receipt } } : {}),
+    ...(Object.keys(meta).length ? { _meta: meta } : {}),
   };
 }
 
@@ -1720,6 +1773,9 @@ async function dispatchRpc(
         const meta = isRecord(params["_meta"])
           ? params["_meta"]["x402/payment"]
           : undefined;
+        const nativeMeta = isRecord(params["_meta"])
+          ? params["_meta"][MCP_CREDENTIAL_META_KEY]
+          : undefined;
         const idempotencyKey = isRecord(params["_meta"])
           ? params["_meta"]["x402/idempotency-key"]
           : undefined;
@@ -1728,6 +1784,7 @@ async function dispatchRpc(
           item,
           { ...args, item_id: item.id },
           meta,
+          nativeMeta,
           id,
           typeof idempotencyKey === "string" ? idempotencyKey : undefined,
           renderResponse,

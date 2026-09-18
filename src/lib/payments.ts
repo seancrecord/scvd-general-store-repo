@@ -670,7 +670,15 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
     accepts,
     description: buyRouteDescription(item, env),
     mimeType: "application/json",
-    resource: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
+    /*
+     * NO STATIC RESOURCE (CV, 2026-09-18). With none declared, the SDK
+     * names the URL that was actually asked, query and all. This route
+     * declared the bare door, and the MPP SDK's x402 reader compares
+     * resource.url to response.url with strict equality before it signs
+     * anything, so a door that REQUIRES a query (?summary=, ?host=) could
+     * not be bought by the stock client at all. A bare knock still names
+     * the bare door, so indexers read what they always read.
+     */
     // The three fields a facilitator keeps off every resource it
     // catalogs. Declaring none of them is why our entries in someone
     // else's index have been anonymous URLs with prices on them.
@@ -809,7 +817,8 @@ function commissionRungRouteConfig(rung: number, env: Env): RouteConfig {
     customPaywallHtml: commissionRungPaywallHtml(rung, env),
     description: `Commission Desk, the $${rung} rung. Pays a LIVE KEEPER QUOTE at this exact price — requires ?commission=<id> naming a request quoted at $${rung}. Without a quote this route sells nothing: write in free at POST /api/request and the keeper answers by hand.`,
     mimeType: "application/json",
-    resource: `${env.STORE_BASE_URL}/api/commission/pay/${rung}`,
+    // Same rule as the buy doors: the paid request carries ?commission=,
+    // so the resource is the URL asked, never the bare rung.
     ...storeServiceMetadata(env),
     unpaidResponseBody: async () => ({
       contentType: "application/json",
