@@ -1317,7 +1317,6 @@ function isSettleTimeout(error: unknown): error is Error {
 }
 
 export interface PaymentStack {
-  facilitator: KvWarmFacilitatorClient;
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
   /**
