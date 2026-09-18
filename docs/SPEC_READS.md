@@ -1,5 +1,24 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-18 — MPPScan registration path, qualified live
+
+The register flow is a one-click "Add Server" at `www.mppscan.com/register`
+that reads the origin's `/openapi.json` in the AgentCash discovery profile;
+`mpp.dev/advanced/discovery` lists it as "Manually register in one click" and
+the `tempoxyz/mpp` README as "discoverable by agents immediately, no PR
+required". No fee, account or wallet step appears in any source read; the
+page itself could not be read from the working container (egress refused), so
+that is a bound. The live shelf was read with the pinned
+`@agentcash/discovery@1.7.5`: three doors read `paid ... [x402, mpp]` at their
+menu prices, the document carries the `mpp` descriptor on 35 of 38 paid
+operations (the almanac and open-for-business pages sell over x402 only), and
+a bare knock on a query-required door still answers 402 with both offers.
+[Receipt](../research/distribution-2026-09-18/mppscan-live-check.json);
+[draft for the keeper's press](../registry/mppscan-submission.md).
+[Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209), the
+checker relabelling Base as `tempo:8453`, is still open and is a display
+defect on their side, not a reason to change the challenge.
+
 ## 2026-09-18 — The till speaks MPP; the readings still do not
 
 Native MPP checkout, piloted on one door on 2026-09-17, now stands beside

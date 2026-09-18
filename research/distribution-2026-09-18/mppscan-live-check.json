@@ -1,0 +1,85 @@
+{
+  "observed_at": "2026-09-18T20:21:59.250Z",
+  "what_this_is": "Live reads of scvd.store with the discovery package MPPScan's register flow uses (@agentcash/discovery, pinned by apps/scan in merit-systems/x402scan), taken from this session's container. No registration was submitted: mppscan.com, www.mppscan.com, mpp.dev and dev.to are refused by this container's egress policy, so the register page itself was not read here; its mechanics below come from search-index snippets of those pages and are bounded as such.",
+  "package": "@agentcash/discovery@1.7.5 (npm 'latest' at this read; published 2026-06-09T17:36:28.814Z)",
+  "openapi_document": {
+    "url": "https://scvd.store/openapi.json",
+    "status": 200,
+    "content_type": "application/json",
+    "content_length": 715037,
+    "sha256": "47a3b7c28497f0926aad27b223493f1332a2ad1dcd12b919df8691ce2e574e7f",
+    "access_control_allow_origin": "*",
+    "info": {
+      "title": "SCVD General Store",
+      "version": "0.3.0",
+      "x-guidance": true,
+      "contact": {
+        "url": "https://scvd.store",
+        "email": "sean@recordcreativeco.com"
+      }
+    },
+    "x-discovery": null,
+    "paid_operations": 38,
+    "paid_with_mpp_descriptor": 35,
+    "paid_without_mpp_descriptor": [
+      "GET /almanac/notes-from-a-tuesday-in-oak-city",
+      "GET /almanac/{slug}",
+      "GET /open-for-business/{week}"
+    ],
+    "mpp_descriptor_sample": {
+      "method": "evm",
+      "intent": "charge",
+      "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    },
+    "legacy_price_shape": 0,
+    "paid_operations_missing_402_response": 0
+  },
+  "checker_reads": [
+    {
+      "command": "npx -y @agentcash/discovery@1.7.5 check https://scvd.store",
+      "result": "Not found — no spec data for this endpoint. [info] L3_NOT_FOUND",
+      "reading": "the checker audits one endpoint path; the origin root is not a paid path, so this is expected, not a defect"
+    },
+    {
+      "command": "npx -y @agentcash/discovery@1.7.5 check https://scvd.store/openapi.json",
+      "result": "L3_NOT_FOUND",
+      "reading": "same: the document URL is not a paid path"
+    },
+    {
+      "command": "npx -y @agentcash/discovery@1.7.5 check 'https://scvd.store/api/buy/context_anchor?summary=probe'",
+      "result": "Origin: https://scvd.store  Path: /api/buy/context_anchor  GET paid 1 USD [x402, mpp]"
+    },
+    {
+      "command": "npx -y @agentcash/discovery@1.7.5 check https://scvd.store/api/buy/small_blessing",
+      "result": "GET paid 0.005 USD [x402, mpp]"
+    },
+    {
+      "command": "npx -y @agentcash/discovery@1.7.5 check 'https://scvd.store/api/buy/spot_check?host=example.com'",
+      "result": "GET paid 0.001 USD [x402, mpp]"
+    }
+  ],
+  "bare_knock": {
+    "url": "https://scvd.store/api/buy/context_anchor",
+    "status": 402,
+    "headers_present": [
+      "www-authenticate: Payment id=... realm=\"scvd.store\" method=\"evm\" intent=\"charge\"",
+      "payment-required: <base64 x402 v2>",
+      "access-control-allow-origin: *"
+    ],
+    "reading": "a crawler's unpaid probe of a query-required door still gets the 402 with both offers"
+  },
+  "checker_limits_read_from_source": {
+    "FETCH_TIMEOUT_MS": 5000,
+    "network_label_for_mpp_evm": "tempo:${chainId} (unconditional; Merit-Systems/x402scan#1209, still open at this read)",
+    "note": "the fetch of the 715,037-byte document took 0.69 s from this container; the 5 s budget is the checker's, and MPPScan's server-side reader may differ"
+  },
+  "register_flow_as_read_from_search_snippets": {
+    "url": "https://www.mppscan.com/register",
+    "page_title": "Add Server | MPPscan",
+    "reads": "the OpenAPI document at /openapi.json of the origin given ('X402Scan/MPPScan uses the OpenAPI document at /openapi.json to discover your API', agentcash.dev/discovery)",
+    "cost_or_account": "none found in any source read (mpp.dev: 'Manually register in one click'; tempoxyz/mpp README: 'makes your service discoverable by agents immediately, no PR required'; Router-Labs/tempRouter README: 'instant, ~2 min'); the page itself was not read from here, so 'free' is a bound, not a confirmation",
+    "ownership_proofs": "optional (x-discovery.ownershipProofs); Merit-Systems/x402scan#1046 shows an EMPTY array breaking their server page, so the store omits the key rather than sending []",
+    "precedent_for_base": "'Spraay x402 Gateway' is listed on mppscan.com as 'x402 and MPP on Base', so a Base evm/charge server is not refused by the index"
+  },
+  "background_discover": "see mppscan-discover.txt beside this file when present"
+}

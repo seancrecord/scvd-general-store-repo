@@ -1148,8 +1148,14 @@ what you ruled and what is still yours to look at.
   and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
   deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
   [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
-  MPPScan still needs discovery qualification; the checker’s Base-network
-  mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
+  MPPScan discovery qualification DONE September 18 against the live shelf
+  ([receipt](research/distribution-2026-09-18/mppscan-live-check.json)).
+  PRESS: register at [www.mppscan.com/register](https://www.mppscan.com/register),
+  Add Server, `https://scvd.store`; the [draft](registry/mppscan-submission.md)
+  says what to expect and what to bring back, and to stop if the page asks
+  for a fee, sign-in or wallet. The checker’s Base-network
+  mislabel is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209)
+  and is theirs to fix; cite it beside any `tempo:8453` in the listing.
   The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
   MPP descriptor alongside x402; the compiled local directory-reader check passes.
   Deployment readback is tracked with that repair; external parser qualification
