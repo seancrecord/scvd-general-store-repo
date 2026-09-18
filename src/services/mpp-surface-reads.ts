@@ -1,3 +1,4 @@
+import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { paymentChallenges } from "@/lib/mpp-challenge";
 import { isRecord } from "@/types";
 import type { SurfaceReads, SurfaceState } from "@/services/surface-reads";
@@ -156,6 +157,6 @@ export function mppSurfacesSectionOf(reads: SurfaceReads, first: MppChallengeRea
       ...(challenge.state !== "read" ? [challenge.detail] : []),
       ...(!stable ? [moving ? "Payment terms moved during the reads; no differences count against the door." : "Stable Payment terms were not observed at both bookends; no differences count against the door."] : []),
     ],
-    rule: "Discovery draft-01 is advisory; the live 402 challenge is authoritative. Each observed challenge is compared against every advertised alternative. A difference is counted only if all alternatives differ on at least one named field and the compared terms match at both bookends. Counts are observed challenges, not surfaces or offers; candidate fields retain the evidence. This is a versioned reading rule, not a general MPP conformance verdict. The store's till does not speak MPP.",
+    rule: "Discovery draft-01 is advisory; the live 402 challenge is authoritative. Each observed challenge is compared against every advertised alternative. A difference is counted only if all alternatives differ on at least one named field and the compared terms match at both bookends. Counts are observed challenges, not surfaces or offers; candidate fields retain the evidence. This is a versioned reading rule, not a general MPP conformance verdict. " + UNPAID_READ_NOTE,
   };
 }

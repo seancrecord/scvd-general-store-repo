@@ -146,11 +146,11 @@ describe("MPP observations survive the census", () => {
     const canonical = canonicalizeCorpusSnapshot(records[0]!.snapshot);
     const expected = { probed: 6, measured: 4, unmeasured: 1, unreachable: 1, not_probed: 1, speaking_mpp: 3, mpp_only: 2, both: 1, x402_only: 1, neither: 0 };
     expect(deriveTrajectory(records).weeks[0]!.mpp).toMatchObject(expected);
-    expect(deriveTrajectory(records).what_this_is).toContain("till does not speak MPP");
+    expect(deriveTrajectory(records).what_this_is).toContain("No reading here rests on a payment");
     const history = await (await SELF.fetch(`${BASE}/corpus/host/only.example.json`)).json() as { timeline: { mpp?: unknown; protocols_spoken?: string[] }[] };
     expect(history.timeline[0]).toMatchObject({ mpp: hosts[0]!.mpp, protocols_spoken: ["mpp"] });
     const hostHtml = await (await SELF.fetch(`${BASE}/corpus/host/only.example`)).text();
-    expect(hostHtml).toContain("till does not speak MPP");
+    expect(hostHtml).toContain("No reading here rests on a payment");
     const brief = await (await SELF.fetch(`${BASE}/corpus/brief`)).json() as { mpp: unknown };
     expect(brief.mpp).toMatchObject(expected);
     const html = await (await SELF.fetch(`${BASE}/corpus/brief`, { headers: { Accept: "text/html" } })).text();

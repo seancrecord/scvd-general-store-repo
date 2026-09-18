@@ -1,3 +1,4 @@
+import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { MPP_CORE_DEFECT } from "@/store/defect-vocabulary";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { coreChallenges, headerParts, type CoreChallenge } from "@/lib/mpp-core-challenge";
@@ -30,7 +31,7 @@ export interface MppCoreBlock {
 const GAPS = [
   "This is the observable core subset under the cited draft, not general MPP conformance or payment readiness. The frozen mpp-v1/draft-00 reading, x402 verdict, census history and passport qualification retain their meaning.",
   "Method and intent registration, their request schemas, amounts, currencies and recipients are not verified by this core reader. The core draft's proposed registry is initially empty; a repository directory is not an IANA registration.",
-  "Challenge binding, request-body digest binding, credential routing, replay protection, concurrency, settlement, delivery and payment preferences are unmeasured. No credential was submitted. This store's till does not speak MPP.",
+  `Challenge binding, request-body digest binding, credential routing, replay protection, concurrency, settlement, delivery and payment preferences are unmeasured. No credential was submitted. ${UNPAID_READ_NOTE}`,
   "HTTPS is observable; the negotiated TLS version is not measured here. Expiry evaluation does not resolve leap seconds or the RFC 3339 unknown local offset. Deep JSON beyond this reader's validation limit remains unmeasured.",
   "No Payment version is carried on the wire. The cited draft identifies this reader's rules, not a version claimed by the endpoint. Problem Details are a SHOULD recommendation, reported separately from failed checks.",
 ];

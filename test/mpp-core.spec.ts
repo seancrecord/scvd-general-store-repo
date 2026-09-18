@@ -122,7 +122,7 @@ describe("draft-01 observable core reading", () => {
     const { core } = await audit(challenge(', digest="not-verified"'));
     expect(check(core, "challenge-binding")).toBe("unmeasured");
     expect(check(core, "digest-binding")).toBe("unmeasured");
-    expect(core.gaps.join(" ")).toContain("till does not speak MPP");
+    expect(core.gaps.join(" ")).toContain("No reading here rests on a payment");
   });
   it("keeps all alternatives, bounds the reader and never claims a prefix passed", async () => {
     const { core } = await audit(`${challenge()}, ${challenge().replace('method="example"', 'method="x402"')}`);
