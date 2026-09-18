@@ -206,3 +206,68 @@ test('the supplied CLI verifies the retained original and excludes unsigned hist
   assert.equal(fs.readFileSync(path.join(f.root,ref.file),'utf8'),original);
  }finally{f.clean();}
 });
+
+// Execute the example the recipient actually sees, using the same two modules
+// the preparer supplies. A prose promise of scope separation is not this test.
+async function scopeExampleFixture() {
+ const {generateKeyPairSync,sign}=await import('node:crypto');
+ const {inventoryRecipientPrompt}=await import('./lib/buyer-cold.mjs');
+ const prompt=inventoryRecipientPrompt('https://merchant.example/paid','buyer_report',{unclassified:true});
+ const code=/```js\n([\s\S]*?)\n```/.exec(prompt)?.[1];
+ assert.ok(code,'the recipient prompt must supply a runnable scope example');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'recipient-scope-'));
+ for(const file of ['evidence-bundle.js','x402-verify.js'])fs.copyFileSync(new URL('../verifier/'+file,import.meta.url),path.join(dir,file));
+ fs.writeFileSync(path.join(dir,'package.json'),'{"type":"module"}');
+ const {privateKey,publicKey}=generateKeyPairSync('ed25519');
+ const key=publicKey.export({format:'der',type:'spki'}).subarray(-32).toString('hex');
+ const subject='https://merchant.example/paid';
+ const snapshot={version:1,sequence:1,taken_at:'2026-09-18T12:00:00Z',previous_digest:null,source:'ward_round',week:'2026-W37',round:{hosts:[{url:'https://other.example/paid',observed_at:'2026-09-18T10:00:00Z'},{url:subject,observed_at:'2026-09-07T02:30:20.531Z',verdict:'ready',gaps:['unpaid probe']}]}};
+ const envelope=claims=>{const signed_payload=JSON.stringify(claims);return {algorithm:'ed25519',public_key:key,signed_payload,signature:sign(null,Buffer.from(signed_payload),privateKey).toString('hex')};};
+ const original={snapshot,digest:hash(JSON.stringify(snapshot)),public_key:key,signature:envelope(snapshot).signature};
+ const run=(value=original,issuer=key,target=subject)=>{
+  fs.writeFileSync(path.join(dir,'original.json'),JSON.stringify(value));fs.writeFileSync(path.join(dir,'key.json'),JSON.stringify({public_key:issuer}));
+  return spawnSync(process.execPath,['--input-type=module','-e',code,'original.json','key.json',target],{cwd:dir,encoding:'utf8',timeout:10000});
+ };
+ return {dir,subject,original,envelope,run,clean:()=>fs.rmSync(dir,{recursive:true,force:true})};
+}
+test('recipient example reports only the exact signed observation and keeps publication separate',async()=>{
+ const f=await scopeExampleFixture();try{
+  const result=f.run();assert.equal(result.status,0,result.stderr);const out=JSON.parse(result.stdout);
+  assert.equal(out.snapshot_publication,'2026-09-18T12:00:00Z');assert.equal(out.snapshot_declared_expiry,null);
+  assert.deepEqual(out.authenticated_observations,[{pointer:'/round/hosts/1',subject:f.subject,observed_at:'2026-09-07T02:30:20.531Z',declared_expiry:null}]);
+  assert.match(out.scope,/supplied by the caller/);assert.ok(out.limits.some(x=>x.includes('truth')));
+  const decorated=structuredClone(f.original);decorated.timeline=[{url:f.subject,observed_at:'2026-09-18T12:00:00Z'},{url:f.subject,observed_at:'2026-09-01T12:00:00Z'}];decorated.expires_at='2099-01-01T00:00:00Z';
+  assert.deepEqual(JSON.parse(f.run(decorated).stdout),out);
+ }finally{f.clean();}
+});
+for(const mutation of ['signed tamper','rehash tamper','wrong key','wrong subject','other artifact','missing bound evidence'])test(`recipient example reports no authenticated observations for ${mutation}`,async()=>{
+ const f=await scopeExampleFixture();try{
+  let value=structuredClone(f.original),key=value.public_key,subject=f.subject;
+  if(mutation==='signed tamper'||mutation==='rehash tamper')value.snapshot.round.hosts[1].observed_at='2026-09-18T12:00:00Z';
+  if(mutation==='rehash tamper')value.digest=hash(JSON.stringify(value.snapshot));
+  if(mutation==='wrong key')key='00'.repeat(32);
+  if(mutation==='wrong subject')subject+='?different=true';
+  if(mutation==='other artifact')value=f.envelope({subject:f.subject,observed_at:'2026-09-07T02:30:20.531Z'});
+  if(mutation==='missing bound evidence')value=f.envelope({...value.snapshot,attests:'12'.repeat(32)});
+  const result=f.run(value,key,subject);assert.notEqual(result.status,0);assert.equal(result.stdout,'');
+ }finally{f.clean();}
+});
+test('skill capture commands preserve a large original and separately fetched key byte for byte',async()=>{
+ const {createServer}=await import('node:http');const {promisify}=await import('node:util');const {execFile}=await import('node:child_process');
+ const skill=fs.readFileSync(new URL('../skills/scvd-x402-verification/SKILL.md',import.meta.url),'utf8');
+ const commands=[...skill.matchAll(/^curl --fail --output (\.\/evidence\/\S+) "([^"]+)"$/gm)];
+ assert.equal(commands.length,2,'whole original and issuer key each need a standalone capture command');
+ assert.deepEqual(commands.map(x=>x[2]),['ACTUAL_CITED_SNAPSHOT_URL','https://scvd.store/.well-known/scvd-signing-key']);
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-capture-'));fs.mkdirSync(path.join(dir,'evidence'));
+ const bodies=[Buffer.from(JSON.stringify({padding:'é'.repeat(1600000),signature:'original bytes'})),Buffer.from('{"public_key":"separately obtained"}\n')];
+ const server=createServer((req,res)=>{res.setHeader('Content-Type','application/json');res.end(bodies[req.url==='/0'?0:1]);});
+ try{
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  for(const [i,command] of commands.entries()){
+   // Substitute only the external URL with a local fixture server. Exercise
+   // the documented executable and flags, without an Internet dependency.
+   await promisify(execFile)('curl',['--fail','--output',command[1],`http://127.0.0.1:${server.address().port}/${i}`],{cwd:dir});
+   assert.deepEqual(fs.readFileSync(path.join(dir,command[1])),bodies[i]);
+  }
+ }finally{await new Promise(resolve=>server.close(resolve));fs.rmSync(dir,{recursive:true,force:true});}
+});
