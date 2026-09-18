@@ -255,7 +255,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       pattern: trimmedInputPattern(SPOT_CHECK_HOST_PATTERN),
       description:
-        "A bare hostname, e.g. example.com. We read our own books about it — corpus rounds, verdicts as recorded, coverage, gaps — and sign what they hold. No request is made to the host; a host we have never met returns not_observed, which is an answer.",
+        "A bare hostname with no scheme, path or port — your-door.example, never https://your-door.example/api. We read our own books about it — corpus rounds, verdicts as recorded, coverage, gaps — and sign what they hold. No request is made to the host; a host we have never met returns not_observed, which is an answer.",
     };
     required.push("host");
   }
@@ -282,7 +282,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       pattern: SUBJECT_ADDRESS_PATTERN,
       description:
-        "The wallet to state: a 0x address on the selected EVM network, a base58 pubkey on Solana. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
+        "The wallet to state: a 0x address (0x plus 40 hex characters) on the selected EVM network, or a base58 pubkey on Solana. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
     };
     properties["network"] = {
       type: "string",
@@ -301,7 +301,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       pattern: SUBJECT_ADDRESS_PATTERN,
       description:
-        "Your receiving address: a 0x address on the selected EVM network, a base58 pubkey on Solana. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
+        "Your receiving address: a 0x address (0x plus 40 hex characters) on the selected EVM network, or a base58 pubkey on Solana. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
     };
     properties["network"] = {
       type: "string",
@@ -362,7 +362,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       pattern: "^[0-9a-fA-F]{64}$",
       description:
-        "sha256 of bytes you keep, 64 hex characters, no 0x prefix. The store never sees the bytes.",
+        "sha256 of bytes you keep: exactly 64 hex characters, no 0x prefix, not base64, not the bytes themselves. The store never sees the bytes.",
     };
     properties["label"] = {
       type: "string",
@@ -527,7 +527,9 @@ export function buyInputExample(item: MenuItem): Record<string, unknown> {
     example["digest"] = "9f".repeat(32);
   }
   if (item.id === "spot_check") {
-    example["host"] = "example.com";
+    // A reserved placeholder, not a real host: the cold walker of
+    // 2026-09-12 pasted example.com from this line into a purchase.
+    example["host"] = "your-door.example";
   }
   if (item.id === "settlement_attestation") {
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
