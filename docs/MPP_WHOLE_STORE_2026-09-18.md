@@ -92,8 +92,10 @@ native door: set the same long key in both places.
 Other networks and assets, native tips, MCP and WebMCP native checkout,
 Stripe, subscriptions, native refund automation, a public browser checkout
 beyond the reviewed CORS surface, and a services-directory claim. Canonical
-MPP discovery interoperability is still open: `x-payment-info` keeps the x402
-shape and `x-scvd-payment-capabilities` is store-specific. The live house
+MPP discovery interoperability is tracked in the
+[OpenAPI repair](MPP_OPENAPI_DISCOVERY_2026-09-17.md): its additive descriptor
+follows the enabled shelf while retaining x402 fields. External network parsing
+and directory admission remain open. The live house
 qualification covered the pilot's door; the other families are qualified by
 the fixtures above and by the shared lifecycle, not by a live purchase of
 each.
