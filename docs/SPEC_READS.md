@@ -2043,3 +2043,14 @@ requires structured protocol descriptors. Its pinned discovery 1.7.5 package
 recognizes SCVD’s query inputs but mislabels the live EVM network in probe mode.
 [Reproduction and report](https://github.com/Merit-Systems/x402scan/issues/1209).
 No listing has been registered on MPPScan.
+
+
+### 2026-09-17 — additive MPP directory descriptor
+
+Re-read the published `@agentcash/discovery@1.7.5` MPP protocol schema and
+[MPPScan discovery profile](https://mppscan.com/discovery/spec). The profile
+expects structured price and a protocol object with method, intent and currency;
+query input is supported by the actual reader. The corrected compiled local
+Worker is read as x402 + MPP, 1 USD and required `summary`, without endpoint
+warnings. The separate runtime network parser report remains unresolved.
+[Repair and bounded verification](MPP_OPENAPI_DISCOVERY_2026-09-17.md).

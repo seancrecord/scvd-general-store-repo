@@ -122,9 +122,12 @@ Missing observations are labeled; storage failure never changes checkout.
 Menu and compact contracts publish `payment_capabilities`; OpenAPI uses the
 store-specific `x-scvd-payment-capabilities`. Native declarations appear only
 for the configured HTTP lane and use the challenge's own offer terms. The
-payment guide names the exact scope. Existing x402 `x-payment-info` remains
-unchanged: its schema conflicts with the MPP draft's extension of the same name.
-A mixed object is not presented as draft-compliant native discovery.
+payment guide names the exact scope. The directory compatibility follow-up adds
+an MPP protocol object to the existing AgentCash `x-payment-info.protocols`
+array, derived from the enabled capability. Existing x402 fields, price and
+inputs remain unchanged. This is the directory profile, not a claim of
+conformance to the separate draft extension with the same name. Runtime
+challenges remain authoritative; directory admission is a separate check.
 
 Before broader rollout: native discovery/indexer interoperability; MCP transport qualification;
 remaining fulfillment families; and separate network/asset qualification.

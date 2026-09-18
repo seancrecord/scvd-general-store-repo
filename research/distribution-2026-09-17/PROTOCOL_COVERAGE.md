@@ -76,7 +76,7 @@ Sources: [submission and published-version rules](https://developers.openai.com/
 | A2A — a2aregistry.org | Community registry, operator prassanna-ravishankar | Initial documented search returned zero. Registration POST returned 503 `unconditional drop overload`; subsequent search also failed. Persistence cannot be confirmed; search again before retrying. |
 | A2A — a2a-registry.org | Different community registry, operator A2ARegistry | Public search returned zero. Documented `/public/ingest` POST returned 404. Public `/submit` UI offers URL scan; its scan/submit flow was not completed. Ownership verification is separate. |
 | MPP — mpp.dev/services | Official project's curated service directory | PR to `tempoxyz/mpp`, editing `schemas/services.ts`; generate discovery and run type/build checks per its contribution instructions. Requires a live production MPP service. Context Anchor now advertises native MPP EVM charge / Base / 1 USDC, with matching menu and OpenAPI capability declarations. Official [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; generation, types, build and 34 focused tests passed. Review pending. Other products are upcoming. |
-| MPP — MPPScan | Merit Systems discovery directory, linked by MPP project | URL registration at `mppscan.com/register`. Needs live MPP challenge and compatible OpenAPI metadata; native Context Anchor challenge is now live; discovery compatibility remains unqualified (`x-payment-info.protocols` still lists only x402). Pinned discovery 1.7.5 parses the live EVM/Base MPP option as `tempo:8453` and omits decimals; reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209). Registration remains unsubmitted. |
+| MPP — MPPScan | Merit Systems discovery directory, linked by MPP project | URL registration at `mppscan.com/register`. Needs live MPP challenge and compatible OpenAPI metadata; native Context Anchor challenge is now live; the [additive OpenAPI repair](../../docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) now describes both protocols and passes the compiled local directory-reader check. Deployment readback is tracked with the repair. Pinned discovery 1.7.5 parses the live EVM/Base MPP option as `tempo:8453` and omits decimals; reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209). Registration remains unsubmitted. |
 | MCP / WebMCP / x402 | Existing discovery surfaces | Existing records preserved and grouped in README/trust. No new universal WebMCP registry was established by this pass; browser tool registration and MCP indexing are distinct. |
 | Skills + MCP — Awesome Copilot | Official GitHub-hosted community catalog | Submitted #3255; all automated gates passed; maintainer review pending. Agent Finder PR #34 remains a separate existing request. |
 | Skills + MCP — OpenAI | OpenAI plugin directory | Existing verifier published. Keeper completed the skill update September 17; updated-version review/publication remains unverified. |
@@ -177,3 +177,13 @@ and 34 generator/catalog tests passed. Adding EVM exposed a generated-JSON
 type assertion error; the PR includes a documented boundary cast correction.
 [Submission receipt](observations/mpp-directory-submission.json).
 Admission is pending; no accepted listing or broader MPP checkout is claimed.
+
+
+### Additive OpenAPI repair
+
+The x402-only observations above describe the retained pre-repair reads. The
+[metadata repair](../../docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
+MPP method, intent and currency while preserving x402 fields. The pinned reader
+recognizes both protocols, 1 USD and the required summary from the compiled
+local Worker, with no endpoint warnings. Deployment readback is tracked with
+the repair; the runtime parser issue and directory admission remain separate.

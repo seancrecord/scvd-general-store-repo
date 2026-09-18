@@ -1118,8 +1118,10 @@ what you ruled and what is still yours to look at.
   [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
   MPPScan still needs discovery qualification; the checker’s Base-network
   mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
-  The directory-facing
-  `x-payment-info.protocols` currently lists only x402.
+  The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
+  MPP descriptor alongside x402; the compiled local directory-reader check passes.
+  Deployment readback is tracked with that repair; external parser qualification
+  and admission remain separate.
   [Live receipt](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
   UCP merchant intake remains separate from PS9's
   inspection experiment. OASF clarification: endpoint only, no Cisco/Anro submission.

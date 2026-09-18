@@ -308,12 +308,16 @@ maintainer review pending. Generation, typecheck, production build and 34
 focused upstream tests passed. MPPScan’s pinned parser maps EVM/Base to
 `tempo:8453`; [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209)
 contains an isolated reproduction. Its registration remains unsubmitted, and
-SCVD’s additive OpenAPI MPP descriptor remains a separate implementation gap.
+SCVD’s additive OpenAPI MPP descriptor is implemented in the
+[compatibility repair](../../docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md), with the
+compiled local directory reader recognizing both protocols without endpoint
+warnings. Deployment readback is tracked with that repair.
 [Catalog receipt](observations/mpp-directory-submission.json) and
 [MPPScan audit](observations/mppscan-qualification.json).
 
 The full local SCVD suite ran in four shards: 742 of 761 files passed initially;
 all 19 initially failing files passed the lower-concurrency rerun (2,664 tests).
-The reconciled main branch typecheck and 37 listing checks passed. PR #785
-requires its own final CI before merge; runtime and plugin assets are unchanged
-by this tracking follow-up.
+The reconciled main branch typecheck and 37 listing checks passed.
+[PR #785](https://github.com/seancrecord/scvd-general-store-repo/pull/785) merged
+after quality checks, all four full-suite shards, CodeQL and Worker builds passed;
+runtime and plugin assets were unchanged by that tracking follow-up.
