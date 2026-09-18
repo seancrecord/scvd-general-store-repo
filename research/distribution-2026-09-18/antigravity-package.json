@@ -1,0 +1,20 @@
+{
+  "source_version": "0.2.4",
+  "source_manifest": "plugin.json",
+  "source_mcp": ".mcp.json",
+  "package_name": "scvd-general-store",
+  "skills": [
+    "scvd-x402-verification",
+    "scvd-general-store"
+  ],
+  "mcp_servers": {
+    "scvd-store": {
+      "serverUrl": "https://scvd.store/mcp"
+    }
+  },
+  "archive_sha256": "6e6c53591861489c420818b813e5d81a3ab1b72f6d34303b4af303550624aded",
+  "validation": "Manifest required fields and remote serverUrl mapping checked; every skill asset copied byte-for-byte. No native host installation or execution.",
+  "marketplace_status": "No public plugin submission route established by current primary documentation.",
+  "source_commit": "7f1c13c71da12c8edd05d123f81a929cd332b086",
+  "source_files_unmodified": true
+}

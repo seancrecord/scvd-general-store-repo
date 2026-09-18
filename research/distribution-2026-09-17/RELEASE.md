@@ -1,5 +1,7 @@
 # Distribution release follow-through — September 17, 2026
 
+**September 18 readback:** [current follow-through](../distribution-2026-09-18/README.md) confirms Gemini gallery 0.2.4, the deployed A2A display repair, and the remaining account/Anro admission gates. Earlier observations below retain their dates.
+
 The keeper completed the OpenAI skill update and authorized commit, PR, merge and further submissions. The update task is closed; review approval and publication of the updated OpenAI version are not inferred.
 
 Integrated origin/main at `afe03926`, preserving the incoming host-feed/passport work, RobinSaige observation and native-host qualification record. Plugin wrappers move to 0.2.4 for consumer-scope corrections; the unchanged MCP registry service remains at its own version.

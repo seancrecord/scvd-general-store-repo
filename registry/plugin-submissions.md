@@ -136,10 +136,25 @@ adding it to SCVD's trust records.
 - **Gemini:** CLI 0.60.0 installed public commit `2aba2639c0dc5e6954f6ce0180f6288f43af2702`
   in isolated temporary storage, discovered both skills and connected SCVD MCP.
   [Receipt](../research/distribution-2026-09-17/observations/gemini-host-qualification.json).
-  No model tool call or gallery admission was tested. Release the correction
-  on main, add the gallery topic, and verify the crawl.
+  The September 18 [gallery readback](https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo) confirms version 0.2.4 with MCP and Skills labels. The correction is released and crawler opt-in is set. Model tool execution remains unverified.
 
 ## What to record after each host test
+
+**HOL community catalog:** [PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349)
+was submitted September 18 for the existing public package under Tools &
+Integrations. Local alphabetical and contribution-discovery checks passed;
+maintainer review and indexing remain pending. The catalog's optional scanner
+workflow is not installed. This GitHub route avoids a duplicate web submission.
+The required remote contribution gate passed; the advisory scanner reported
+findings. [Reviewed context](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349#issuecomment-5731442078)
+and [local triage](../research/distribution-2026-09-18/hol-scan-triage.json) preserve
+fixture/public-value matches and the SLSA tag requirement without suppressing
+the scanner or claiming a clean review.
+
+**Antigravity:** [A local preview and reproducible preparation](antigravity/README.md)
+now cover Google's current plugin layout. This is a host adapter, not another
+MCP service. Native installation, skill/tool discovery and a free call are still
+required; a public third-party marketplace intake was not established.
 
 Record the exact public commit, host/version, discovered skills, loaded servers,
 one free evidence call and its actual result, and whether anything unexpected
