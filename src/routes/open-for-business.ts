@@ -8,7 +8,7 @@ import { PAYMENT_VARY, openForBusinessTiersUsdc } from "@/lib/payments";
 import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
-import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { securityBlock } from "@/store/surface-contract";
 import {
@@ -166,8 +166,9 @@ openForBusinessRoutes.get(PATH, async (c) => {
           offers: {
             "@type": "Offer",
             price: String(OPEN_FOR_BUSINESS_USDC),
-            priceCurrency: "USD",
-            description: "One issue, paid once over x402 in USDC; no subscription.",
+            /* An ISO code for the validator and the asset in words for the buyer (lib/jsonld.ts). */
+            ...offerCurrencyFields(c.env),
+            description: "One issue, paid once; no subscription.",
             url: `${base}${PATH}`,
           },
           hasPart: issues.map((issue) => ({
