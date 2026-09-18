@@ -125,6 +125,18 @@ fresh round is still needed for live evidence. A specimen is unsigned
 and cannot stand in for a real signed discovery audit. No paid encounter
 or new census intake was performed in this core change.
 
+## Verified after deployment — 2026-09-18
+
+The three checks above were read live from the working container on
+September 18: `GET /api/practice/mpp-shape` answers 402 with
+`cache-control: no-store` and its `WWW-Authenticate: Payment` challenge;
+the served `/openapi.json` names `mpp_core` in the free preflight schema;
+and the unsigned audit specimen at `/samples/once-over.json` exposes both
+`surfaces.mpp` and `mpp_core`, the latter with `state: "absent"` for its
+x402-only response, which is core absence recorded rather than a failed
+read. A fresh published census round for live protocol coverage is still
+the separate gate named above; the specimen remains unsigned.
+
 ## Main-branch follow-up — 2026-09-16
 
 PR #715 merged into the discovery feature branch after #712 had merged

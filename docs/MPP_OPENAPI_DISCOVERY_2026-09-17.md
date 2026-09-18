@@ -58,7 +58,7 @@ the local result does not establish production behavior or indexing.
 - [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209) separately
   reports the runtime parser mapping EVM/Base to `tempo:8453` and dropping
   `methodDetails.decimals`. Adding the metadata does not fix that parser.
-- MPPScan registration remains unsubmitted until its EVM/Base path is qualified.
+- MPPScan registration was qualified against the live shelf on 2026-09-18 ([receipt](../research/distribution-2026-09-18/mppscan-live-check.json)); the press is the keeper's, [drafted here](../registry/mppscan-submission.md).
 - The HTTP shelf expansion is covered by #790 and the final metadata tests.
   MCP/WebMCP, other networks/assets and broader live paid qualification remain separate.
 

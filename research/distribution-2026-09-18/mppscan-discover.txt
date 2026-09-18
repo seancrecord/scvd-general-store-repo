@@ -1,0 +1,215 @@
+
+Discovering https://scvd.store...
+
+Source:   openapi
+Spec:     https://scvd.store/openapi.json
+API:      SCVD General Store
+Routes:   196
+
+  GET     /menu.json  unprotected
+  GET     /menu/{item_id}  unprotected
+  GET     /what  unprotected
+  GET     /porch  unprotected
+  GET     /attestation  unprotected
+  GET     /rights  unprotected
+  GET     /wind-down  unprotected
+  GET     /pulse.json  unprotected
+  GET     /api/good-buyer/{reading_id}  unprotected
+  GET     /api/service-audit/{audit_id}  unprotected
+  GET     /api/watch/{watch_id}  unprotected
+  GET     /api/conformance-watch/{watch_id}  unprotected
+  GET     /api/bitcoin-anchor/{anchor_id}  unprotected
+  GET     /api/purchase-status/{purchase_id}
+  GET     /api/reconciliation/{reconciliation_id}  unprotected
+  GET     /case/{case_id}  unprotected
+  GET     /api/card/{card_id}  unprotected
+  GET     /api/pack/{pack_id}  unprotected
+  GET     /api/paywall/binder/{wallet}  unprotected
+  GET     /api/paywall/seed/{date}  unprotected
+  GET     /api/paywall/set  unprotected
+  GET     /api/paywall/window  unprotected
+  GET     /bell  unprotected
+  POST    /bell  unprotected
+  GET     /api/paywall/releases  unprotected
+  POST    /api/paywall/challenge  unprotected
+  POST    /api/paywall/burn  unprotected
+  POST    /api/paywall/redeem  unprotected
+  GET     /api/lucky/{lucky_id}  unprotected
+  POST    /api/tab/delta  unprotected
+  GET     /api/tab/pool  unprotected
+  GET     /health  unprotected
+  GET     /trade.md  unprotected
+  GET     /api/trade/contract  unprotected
+  GET     /api/trade/ledger  unprotected
+  GET     /api/trade/catalog  unprotected
+  POST    /api/trade/sandbox/check  unprotected
+  POST    /api/trade/sandbox/{item_id}  unprotected
+  POST    /api/trade/{partner}/check  unprotected
+  GET     /api/trade/{partner}/claim  unprotected
+  GET     /api/trade/{partner}/statement  unprotected
+  POST    /api/trade/{partner}/{item_id}  unprotected
+  POST    /api/claims/challenge  unprotected
+  GET     /api/claims  unprotected
+  POST    /api/claims  unprotected
+  GET     /registry  unprotected
+  GET     /api/practice  unprotected
+  GET     /api/practice/{scenario}  unprotected
+  GET     /api/verify-receipt  unprotected
+  POST    /api/verify-receipt  unprotected
+  GET     /passport  unprotected
+  GET     /passport/{host}  unprotected
+  GET     /profiles  unprotected
+  GET     /profiles/{host}  unprotected
+  GET     /trust  unprotected
+  GET     /fresh-set  unprotected
+  GET     /corrections  unprotected
+  GET     /api/conformance/v1/fixtures  unprotected
+  GET     /api/conformance/v1  unprotected
+  POST    /api/conformance/v1  unprotected
+  POST    /api/preflight/batch  unprotected
+  GET     /ask  unprotected
+  POST    /ask  unprotected
+  GET     /ask/feed.json  unprotected
+  GET     /sites  unprotected
+  GET     /auth.md  unprotected
+  GET     /.well-known/oauth-protected-resource  unprotected
+  GET     /pricing.md  unprotected
+  GET     /api/preflight/checks  unprotected
+  GET     /api/preflight/v1  unprotected
+  POST    /api/preflight/v1  unprotected
+  GET     /api/preflight/v2  unprotected
+  POST    /api/preflight/v2  unprotected
+  GET     /api/before-you-pay/v1  unprotected
+  POST    /api/before-you-pay/v1  unprotected
+  GET     /api/look/v1  unprotected
+  POST    /api/look/v1  unprotected
+  GET     /a2a-desk.json  unprotected
+  GET     /api/a2a/check  unprotected
+  POST    /api/a2a/check  unprotected
+  GET     /api/a2a/runner.mjs  unprotected
+  GET     /api/a2a/kits/{kit_id}  unprotected
+  POST    /api/a2a/kits/{kit_id}/recheck  unprotected
+  GET     /api/onpage/v1  unprotected
+  POST    /api/onpage/v1  unprotected
+  GET     /api/onpage-audit/{audit_id}  unprotected
+  GET     /pricing  unprotected
+  GET     /bounties  unprotected
+  GET     /credit  unprotected
+  GET     /api/credit/{wallet}  unprotected
+  GET     /api/bounties  unprotected
+  POST    /api/bounties  unprotected
+  GET     /api/mandate/{mandate_id}  unprotected
+  POST    /api/mandate/{mandate_id}  unprotected
+  GET     /api/statement/{statement_id}  unprotected
+  GET     /api/operator-statement/{statement_id}  unprotected
+  GET     /api/launch-check/{check_id}  unprotected
+  POST    /api/bot-auth/check  unprotected
+  GET     /api/bot-auth-card/{card_id}  unprotected
+  GET     /.well-known/api-catalog  unprotected
+  GET     /.well-known/ard.json  unprotected
+  GET     /.well-known/ai-catalog.json  unprotected
+  GET     /.well-known/mcp.json  unprotected
+  GET     /deprecation  unprotected
+  GET     /.well-known/http-message-signatures-directory  unprotected
+  GET     /defects.json  unprotected
+  GET     /corpus/index.json  unprotected
+  GET     /corpus.json  unprotected
+  GET     /corpus/host/{host}.json  unprotected
+  GET     /corpus/{sequence}/evidence/{host}.json  unprotected
+  GET     /corpus/asked.json  unprotected
+  GET     /corpus/tiers.json  unprotected
+  GET     /corpus/trajectory.json  unprotected
+  GET     /api/declare-door  unprotected
+  POST    /api/declare-door  unprotected
+  GET     /api/standing-note  unprotected
+  POST    /api/standing-note  unprotected
+  GET     /samples  unprotected
+  GET     /samples/once-over.json  unprotected
+  GET     /sources.json  unprotected
+  GET     /ledger  unprotected
+  GET     /ledger/{week}.json  unprotected
+  GET     /mcp-ward.json  unprotected
+  GET     /doors  unprotected
+  GET     /doors.json  unprotected
+  GET     /corpus/battery-delta.json  unprotected
+  GET     /corpus/wallet-facts.json  unprotected
+  GET     /corpus/diff.json  unprotected
+  POST    /mcp  unprotected
+  GET     /zodiac  unprotected
+  GET     /zodiac/{address}  unprotected
+  GET     /zodiac/archive  unprotected
+  GET     /api/buy/spot_check  paid  0.001 USD  [x402, mpp]
+  GET     /api/buy/settlement_attestation  paid  0.004 USD  [x402, mpp]
+  GET     /api/buy/small_blessing  paid  0.005 USD  [x402, mpp]
+  GET     /api/buy/settlement_reconciliation  paid  0.006 USD  [x402, mpp]
+  GET     /api/buy/daily_fortune  paid  0.01 USD  [x402, mpp]
+  GET     /api/buy/the_confession  paid  0.01 USD  [x402, mpp]
+  GET     /api/buy/attestation_bundle  paid  0.05 USD  [x402, mpp]
+  GET     /api/buy/the_mandate  paid  0.1 USD  [x402, mpp]
+  GET     /api/buy/the_case_file  paid  0.25 USD  [x402, mpp]
+  GET     /api/buy/window_pick  paid  0.49 USD  [x402, mpp]
+  GET     /api/buy/hello  paid  0.5 USD  [x402, mpp]
+  GET     /api/buy/good_buyer  paid  0.99 USD  [x402, mpp]
+  GET     /api/buy/signature_agent_card  paid  0.99 USD  [x402, mpp]
+  GET     /api/buy/the_statement  paid  0.99 USD  [x402, mpp]
+  GET     /api/buy/luckies  paid  0.99-4.95 USD  [x402, mpp]
+  GET     /api/buy/pack  paid  0.99 USD  [x402, mpp]
+  GET     /api/buy/coffees_for_closers  paid  0.99 USD  [x402, mpp]
+  GET     /api/buy/bitcoin_anchor  paid  1 USD  [x402, mpp]
+  GET     /api/buy/context_anchor  paid  1 USD  [x402, mpp]
+  GET     /api/buy/passport_refresh  paid  1 USD  [x402, mpp]
+  GET     /api/buy/graffiti_on_a_train  paid  1-5 USD  [x402, mpp]
+  GET     /api/buy/a2a_repair_kit  paid  49 USD  [x402, mpp]
+  GET     /api/buy/standing_watch  paid  5 USD  [x402, mpp]
+  GET     /api/buy/service_audit  paid  5 USD  [x402, mpp]
+  GET     /api/buy/conformance_watch  paid  5 USD  [x402, mpp]
+  GET     /api/buy/onpage_audit  paid  3 USD  [x402, mpp]
+  GET     /api/buy/launch_check  paid  5 USD  [x402, mpp]
+  GET     /api/buy/opening_day  paid  9 USD  [x402, mpp]
+  GET     /api/buy/provenance_check  paid  5 USD  [x402, mpp]
+  GET     /api/buy/recurring_patronage  paid  3 USD  [x402, mpp]
+  GET     /api/buy/trust_profile  paid  21 USD  [x402, mpp]
+  GET     /api/buy/operator_statement  paid  21 USD  [x402, mpp]
+  GET     /api/buy/certificate_of_patronage  paid  20-100 USD  [x402, mpp]
+  GET     /api/buy/aura_walk  paid  150 USD  [x402, mpp]
+  GET     /api/buy/the_collab  paid  300-1500 USD  [x402, mpp]
+  GET     /api/catalog/v1  unprotected
+  GET     /api/order/{order_id}  unprotected
+  GET     /almanac  unprotected
+  GET     /almanac/notes-from-a-tuesday-in-oak-city  paid  0.01-0.05 USD  [x402]
+  GET     /almanac/{slug}  paid  0.01-0.05 USD  [x402]
+  GET     /open-for-business  unprotected
+  GET     /open-for-business/{week}  paid  25-125 USD  [x402]
+  GET     /gazette  unprotected
+  GET     /api/guestbook  unprotected
+  POST    /api/guestbook  unprotected
+  POST    /api/bell  unprotected
+  POST    /api/stamp  unprotected
+  POST    /api/tip  unprotected
+  POST    /api/request  unprotected
+  POST    /api/letter  unprotected
+  GET     /api/letter/{letter_id}  unprotected
+  GET     /api/phantom/{check_id}  unprotected
+  GET     /api/verify/{id}  unprotected
+  GET     /api/replay/{cert_id}  unprotected
+  GET     /api/anchor/{anchor_id}  unprotected
+  GET     /api/patronage/{pass_id}  unprotected
+  GET     /directory  unprotected
+  GET     /api/refund/{refund_id}  unprotected
+  GET     /.well-known/x402  unprotected
+  GET     /.well-known/x402.json  unprotected
+  GET     /developers  unprotected
+  GET     /.well-known/mcp  unprotected
+  GET     /.well-known/agent-instructions  unprotected
+  GET     /.well-known/scvd-signing-key  unprotected
+
+Guidance: 496 tokens
+
+Warnings (3):
+  [warn] L2_ROUTE_COUNT_HIGH
+           High route count (196) may exceed agent token budgets for zero-hop injection.
+  [warn] L2_AUTH_MODE_MISSING (/api/purchase-status/{purchase_id})
+           Route GET /api/purchase-status/{purchase_id} is missing an auth mode declaration.
+  [warn] L3_AUTH_MODE_MISSING
+           Endpoint has no auth mode in the spec.
+exit 0

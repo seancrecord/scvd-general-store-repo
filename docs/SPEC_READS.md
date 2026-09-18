@@ -1,5 +1,27 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-18 — MPPScan registration path, qualified live
+
+The register flow is a one-click "Add Server" at `www.mppscan.com/register`
+that reads the origin's `/openapi.json` in the AgentCash discovery profile;
+`mpp.dev/advanced/discovery` lists it as "Manually register in one click" and
+the `tempoxyz/mpp` README as "discoverable by agents immediately, no PR
+required". No fee, account or wallet step appears in any source read; the
+page itself could not be read from the working container (egress refused), so
+that is a bound. The live shelf was read with the pinned
+`@agentcash/discovery@1.7.5`: three doors read `paid ... [x402, mpp]` at their
+menu prices, the document carries the `mpp` descriptor on 35 of 38 paid
+operations (the almanac and open-for-business pages sell over x402 only), and
+a bare knock on a query-required door still answers 402 with both offers,
+and a whole-origin `discover` completed with 196 routes, 38 paid, and three
+warnings, none on a paid door (route count; the purchase-status bearer
+scheme read as no auth mode, left as written per `PAYMENT_RAILS.md`).
+[Receipt](../research/distribution-2026-09-18/mppscan-live-check.json);
+[crawl output](../research/distribution-2026-09-18/mppscan-discover.txt);
+[draft for the keeper's press](../registry/mppscan-submission.md).
+[Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209), the
+checker relabelling Base as `tempo:8453`, is still open and is a display
+defect on their side, not a reason to change the challenge.
 ## 2026-09-18 — Maintainer resolves OASF admission route
 
 [AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned; the later planning comparison prices an unqualified single-VM candidate separately from the AWS control-plane floor. Individual OIDC writer access is no longer a pending route.
