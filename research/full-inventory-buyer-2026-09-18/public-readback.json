@@ -1,0 +1,42 @@
+[
+  {
+    "file": "focused-skill.md",
+    "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+    "read_at": "2026-09-18T17:26:33.339279+00:00",
+    "status": 200,
+    "bytes": 8025,
+    "sha256": "7b9f85020ac6411d7ab488c81833908ce881ccf129d4fe66e5056197f7fa85fc"
+  },
+  {
+    "file": "guide.md",
+    "url": "https://scvd.store/llms-full.txt",
+    "read_at": "2026-09-18T17:26:33.505499+00:00",
+    "status": 200,
+    "bytes": 165235,
+    "sha256": "60da926bb249da387297e48fbac64b9ab64922cfce087549167c4bd3438d065c"
+  },
+  {
+    "file": "store-skill.md",
+    "url": "https://scvd.store/skill.md",
+    "read_at": "2026-09-18T17:26:34.133764+00:00",
+    "status": 200,
+    "bytes": 35763,
+    "sha256": "17c78c5b139f80da9968ce31dba6ec3d2e48676202b61b9d56b0b2edc2b17118"
+  },
+  {
+    "file": "menu.json",
+    "url": "https://scvd.store/menu.json",
+    "read_at": "2026-09-18T17:26:35.724295+00:00",
+    "status": 200,
+    "bytes": 413837,
+    "sha256": "17a4f7d255d6d674f1c54a0e3151a718303ba04e022a2f4a6638b7fdbc3cb5b8"
+  },
+  {
+    "file": "subject-history.json",
+    "url": "https://scvd.store/corpus/host/lionx402.com.json",
+    "read_at": "2026-09-18T17:26:36.726539+00:00",
+    "status": 200,
+    "bytes": 9707,
+    "sha256": "ee8b9a29e34e93fb3317cced8120a1926320945b5bb3c13355d352b793cd7487"
+  }
+]

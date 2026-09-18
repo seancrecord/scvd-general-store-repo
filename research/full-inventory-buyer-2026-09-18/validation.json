@@ -1,0 +1,46 @@
+{
+  "source_revision": "cba5f04e1d9e8571f305d8c2dae436454d32cbc4",
+  "change_scope": "Research records and roadmap only; no production source or package version changes.",
+  "typecheck": {
+    "command": "npm run typecheck",
+    "exit_code": 0
+  },
+  "full_suite": {
+    "command": "npm test",
+    "exit_code": 0,
+    "files_passed": 784,
+    "tests_passed": 15058,
+    "tests_skipped": 1,
+    "duration_seconds": 2526.86
+  },
+  "docs_check": {
+    "command": "npm run docs:check",
+    "exit_code": 0,
+    "notes": "Existing document-age advisories are informational."
+  },
+  "record_checks": {
+    "json_parse": "pass",
+    "relative_markdown_links": "pass",
+    "git_diff_check": "pass"
+  },
+  "scope_example": "Baseline, unsigned extra-history control, signed tampering and rehashed tampering behave as recorded. Offline prototype only.",
+  "logs": [
+    {
+      "file": "full-test.log",
+      "sha256": "eafd82e2daf4582bbf6192bfa0718330e7a0030acd438addb81140e1680531f3"
+    },
+    {
+      "file": "typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "docs-check.log",
+      "sha256": "f8d1358de19fed3237fb7552f49a313c12abbb3731af7dbf85b2b0c67f11bc16"
+    }
+  ],
+  "archive": "/Users/seanrecord/scvd-takeoff-handoff-2026-09-17/full-inventory-buyer-2026-09-18/closeout",
+  "limits": [
+    "Local full-suite validation covers the frozen source revision. Required PR CI must cover integration with current main.",
+    "Test success does not change the 0/4 native buyer outcome."
+  ]
+}
