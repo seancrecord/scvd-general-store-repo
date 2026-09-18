@@ -1985,6 +1985,41 @@ models and permissions; record:
   [plugin packet](../registry/plugin-submissions.md) contains fields and unrun gates.
   [Receipts](../research/distribution-2026-09-17/README.md) retain actual outcomes.
 
+
+### 2026-09-17 — Cursor application and Claude next submission
+
+Re-read [Cursor plugin reference](https://cursor.com/docs/reference/plugins) and
+[Claude community submission instructions](https://code.claude.com/docs/en/plugins#submit-your-plugin-to-the-community-marketplace).
+Cursor accepts the existing root Agent Plugins format; its publisher application
+confirmed receipt, with review pending. The bounded CLI Ask-mode check loaded MCP
+but did not expose skills; normal Agent-mode discovery is being checked separately.
+Claude's documented third-party route remains the community marketplace. The
+Console form rendered a sign-in page, so no new Claude application is claimed.
+A successful earlier plugin-scoped Claude CLI check is now retained in the
+[follow-up receipt](../research/distribution-2026-09-17/observations/claude-host-qualified-followup.json),
+without replacing the first failed attempt. Native Cursor desktop, marketplace
+installation and Cowork compatibility remain unmeasured.
+
+
+Claude's authenticated submission form was completed later the same day. It
+separates the plugin directory from the MCP Connectors Directory and asks for
+host testing before selecting supported platforms. Only tested Claude Code was
+selected; the keeper explicitly authorized the contact address and linked
+[Software Directory Terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms).
+The form confirmed receipt; acceptance remains unverified.
+
+
+### 2026-09-17 — Context Anchor MPP activation read
+
+Unsigned live reads at 21:13 UTC of [Context Anchor checkout](https://scvd.store/api/buy/context_anchor),
+[compact menu](https://scvd.store/menu/context_anchor?view=compact) and
+[OpenAPI](https://scvd.store/openapi.json) confirm an advertised MPP EVM charge
+on Base for 1 USDC alongside x402. Native capability declarations agree;
+`x-payment-info.protocols` still contains only x402. Other products are upcoming.
+No purchase or directory acceptance was exercised.
+[Sanitized observation](../research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+
+
 ### 2026-09-17 — saved-response verification and npm cache boundary
 
 Read the [npm CLI configuration reference](https://docs.npmjs.com/cli/v11/using-npm/config/#cache):
@@ -1996,3 +2031,15 @@ The current local CLI, bundle constructor and verification code are the
 primary sources for export duplication and result expansion; the new command
 reuses those semantics. No new protocol or cryptographic algorithm is assumed.
 Registry availability and later native-host completion remain separate gates.
+
+
+### 2026-09-17 — MPP directory qualification
+
+Read the official [service submission guide](https://mpp.dev/services#list-your-service)
+and `tempoxyz/mpp` service PR template/schema at its current checkout. The
+curated entry can represent `evm/charge` with the actual Base USDC contract;
+Tempo examples must not replace live terms. MPPScan’s [discovery spec](https://mppscan.com/discovery/spec)
+requires structured protocol descriptors. Its pinned discovery 1.7.5 package
+recognizes SCVD’s query inputs but mislabels the live EVM network in probe mode.
+[Reproduction and report](https://github.com/Merit-Systems/x402scan/issues/1209).
+No listing has been registered on MPPScan.

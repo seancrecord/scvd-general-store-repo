@@ -1111,9 +1111,17 @@ what you ruled and what is still yours to look at.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
   A2A Directory already lists SCVD; two new community API submissions failed
-  (503 and 404), with no new listing confirmed. MPP native checkout was not
-  advertised in the fresh quote; curated MPP/MPPScan submissions follow activation
-  and discovery qualification. UCP merchant intake remains separate from PS9's
+  (503 and 404), with no new listing confirmed. MPP is now live for Context
+  Anchor: the 21:13 UTC
+  read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
+  and OpenAPI capabilities. Other products are upcoming. Official MPP
+  [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  MPPScan still needs discovery qualification; the checker’s Base-network
+  mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
+  The directory-facing
+  `x-payment-info.protocols` currently lists only x402.
+  [Live receipt](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json).
+  UCP merchant intake remains separate from PS9's
   inspection experiment. OASF clarification: endpoint only, no Cisco/Anro submission.
 
 - **GitHub catalogs, September 17 follow-through.** Awesome ERC-8004
@@ -1413,16 +1421,18 @@ what you ruled and what is still yours to look at.
   rotation re-captures the envelope on its own; the EIP-712
   row should read pass again on that capture, and if it does
   not, the cause is new and not this one.
-- **Additional plugin publishers (researched 2026-09-17).**
-  [Prepared packet](registry/plugin-submissions.md): the keeper reports Cursor
-  already listed; the repo's recorded URL is cursor.directory. Reconcile any
-  additional official marketplace URL before another application. No duplicate
-  listing or second MCP server. Claude's portal requires sign-in in the inspected
-  browser. Claude's application is for its community marketplace,
-  not its separately curated official collection; finish TR-D's installed-scope
-  check before submitting. Kiro accepts the same portable package, with publisher
-  contact, published privacy/support links and host qualification still required.
-  No new application to these three was sent. OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
+- **Additional plugin publishers (updated 2026-09-17).**
+  [Prepared packet](registry/plugin-submissions.md): Cursor's official publisher
+  application is **submitted; review pending**, using the existing repository,
+  with a [confirmed receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json).
+  The cursor.directory community listing remains separate. Watch for Cursor's
+  review response; do not resubmit. Remaining Cursor skill discovery and desktop
+  qualification belong to TR-D. Claude's community plugin application is also **submitted for Claude Code; review
+  pending**. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
+  Cowork was not selected because it remains untested. Watch the existing
+  [submission](https://platform.claude.com/plugins/submissions); do not duplicate it.
+  Kiro still needs host qualification and publisher contact and remains unsubmitted.
+  OpenAI's skill update is completed by the keeper, recorded above. No second WebMCP note.
 - **skills.sh and MCPFind.** DONE 2026-09-08: the keeper supplied
   both listing URLs; live reads confirmed the named skill and server.
   Skills: https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store
