@@ -309,3 +309,19 @@ test('schema 5 dry run exposes the recipient prompt and limits without creating 
   assert.equal(fs.existsSync(out),false);
  }finally{fs.rmSync(d,{recursive:true,force:true});}
 });
+
+test('the full-inventory recipient prompt is frozen before acquisition and remains offline',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const full={...plan5,recipient:{...recipientProtocol,input_scope:'all-retained-and-buyer-report'}};
+  const probe=path.join(d,'probe'),cohort=path.join(d,'cohort');
+  await runCapabilityProbe(full,probe);await runCohort(full,cohort,{capability:probe});
+  const frozen=JSON.parse(fs.readFileSync(path.join(cohort,'recipient-protocol.json')));
+  const {recipientLaunch}=await import('./lib/buyer-cold.mjs');
+  const launch=recipientLaunch(full,'/tmp/recipient','/tmp/output',{codex:{disabled_skills:[]}});
+  assert.equal(frozen.prompt_sha256,hash(launch.prompt));assert.equal(fs.readFileSync(path.join(cohort,'recipient-prompt.txt'),'utf8'),launch.prompt);
+  assert.ok(launch.inputs.includes('input-manifest.json'));assert.ok(launch.inputs.includes('artifacts/'));
+  assert.ok(launch.args.includes('sandbox_workspace_write.network_access=false'));assert.ok(launch.args.includes('web_search="disabled"'));assert.ok(!launch.args.includes('--search'));
+  assert.deepEqual(launch.budgets,recipientProtocol.budgets);
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});

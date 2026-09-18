@@ -102,3 +102,53 @@ rewrite old scores or pool the two earlier cohorts.
 The historical September 7 observation leaves its original 14-day window on
 September 21 at 02:30:20.531 UTC. A later experiment needs appropriate newer
 evidence or an honest incomplete result; this repair does not widen that window.
+
+## Full-inventory protocol integration
+
+The schema-5 recipient can now choose
+`input_scope: "all-retained-and-buyer-report"` before qualification. This is
+an alternative to the original signed-pair subset, not a reinterpretation of
+that subset or the historical cohorts. The runner freezes the inventory-aware
+prompt and the same explicitly supplied recipient budgets before acquisition.
+The prompt reads `input-manifest.json` and `artifacts/`, and identifies the
+buyer report and public verifier machinery separately. Its wording comes from
+the same function as the standalone preparer.
+
+Use the preparer with the frozen cohort when this scope is chosen:
+
+```sh
+node COHORT/instrument/buyer-recipient-handoff.mjs \
+  COHORT/CELL SELECTION_JSON NEW_RECIPIENT_DIRECTORY \
+  --frozen-cohort COHORT
+```
+
+The selection must use `buyer_report` and supply **every** retained file,
+including files not marked cited. Preserve capture failures in the inventory;
+a complete transfer cannot recover material that was never captured. The CLI
+checks the exact plan bytes against qualification and the buyer cell against
+that plan. Preparation then checks the subject, full-supply scope, frozen
+protocol fields, input names, prompt and prompt hash before creating files.
+The manifest binds the recipient protocol and canonical parsed plan content
+(`plan_content_sha256`; distinct from the qualification's raw plan-file hash).
+
+Generate the offline launch with `recipientLaunch` using that same frozen
+plan and host context. The prepared prompt must match its prompt byte for byte;
+pass its returned budgets unchanged to `runChild`. Read the frozen instrument
+and verify its manifest hashes before preparation and launch. The controller
+still owns input-manifest verification immediately before launch, a fresh
+output directory, one attempt per eligible cell, timing/power observations and
+retention of all outcomes. The preparer launches nothing and is not a retry
+lock or a new host qualification.
+
+Offline controls cover the actual frozen-prompt path, CLI preparation, byte
+preservation, wrong subject, changed prompt/protocol/budgets/input names,
+subset scope and even uncited omissions. Native qualification and buyer
+acceptance remain pending under issue #803.
+
+Integration validation on base `745e2d4a126dc77a252db9d22dfd5b59066d7f73`:
+194 offline buyer tests pass. Removing the frozen-handoff guard makes all
+seven mismatch controls fail; restoring it makes them pass. Typecheck and
+both bundle checks pass. The full Worker suite passes all 782 files:
+15,047 tests passed, one intentional skip, zero failures. The normal PR CI
+gate still covers integration with subsequent main changes. No native host
+probe, buyer or recipient was launched by this validation.
