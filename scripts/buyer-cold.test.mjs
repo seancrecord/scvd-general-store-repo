@@ -11,6 +11,7 @@ const trace=Array.from({length:8},(_,i)=>JSON.stringify({type:'item.completed',i
 const ref={file:'events.jsonl',sha256:hash(trace),start_line:1,end_line:2};
 const stages=['discover','connect','check','decide','obtain','verify'];
 function baseline(){
+ const ref={file:'events.jsonl',sha256:hash(trace),start_line:1,end_line:2};
  const root=mkdtempSync(join(tmpdir(),'cold-test-'));
  writeFileSync(join(root,'events.jsonl'),trace);
  const review={schema_version:2,reviewer:'fixture reviewer',reviewed_at:'2026-09-16T12:00:00Z',transcript_sha256:hash(trace),isolation:{state:'clean',reason:'fresh process and public-only trace',evidence:[ref]},stages:Object.fromEntries(stages.map(k=>[k,{state:'pass',reason:'Evidence reviewed',evidence:[ref]}])),discovery:{selected_origin:'https://scvd.store',query:'verify a merchant endpoint',result_url:'https://scvd.store/',catalogue_complete:true},observation:{subject:plan.subject,observed_at:'2026-09-16T11:00:00Z',stale_after:'2026-09-17T11:00:00Z'},fulfillment:'delivered',recipient:{state:'reviewed',understands:true,evidence:[ref]},payment:{state:'not_needed',reason:'Public signed evidence available'}};
@@ -65,3 +66,62 @@ test('a separately fetched key from the wrong origin is not SCVD identity',()=>c
 test('truncated JSONL does not allow a full journey pass',async()=>{const b=baseline();try{const broken=trace+'{';writeFileSync(join(b.root,'events.jsonl'),broken);b.run.trace_sha256=hash(broken);b.review.transcript_sha256=hash(broken);const rebind=x=>{if(x&&typeof x==='object'){if(x.file==='events.jsonl')x.sha256=hash(broken);Object.values(x).forEach(rebind);}};rebind(b.review);assert.notEqual((await scoreColdRun(b.run,b.review,b.root)).usable,'pass');}finally{b.cleanup();}});
 test('JSON primitives and malformed message content cannot crash transcript inspection',()=>{for(const host of ['codex','claude']){const n=normalizeTrace(host,'null\n42\n[]\n{"type":"assistant","message":{"content":{}}}\n');assert.equal(n.malformed_lines,4);}});
 test('collector retains the exact instrument source bytes as well as their hashes',async()=>{const root=mkdtempSync(join(tmpdir(),'cold-freeze-test-'));const savedPath=process.env.PATH;try{process.env.PATH='';const out=join(root,'cohort');await runCohort(plan,out);const manifest=JSON.parse(readFileSync(join(out,'instrument.json'),'utf8'));for(const [file,digest] of Object.entries(manifest.files))assert.equal(hash(readFileSync(join(out,'instrument',file))),digest);}finally{if(savedPath===undefined)delete process.env.PATH;else process.env.PATH=savedPath;rmSync(root,{recursive:true,force:true});}});
+
+// Both clocks are injected: suspension and clock changes must not depend on
+// putting the test machine to sleep or waiting for its clock to move.
+for (const [name,wall,monotonic,reason] of [
+ ['suspended monotonic clock',10000,20,'timing_interrupted'],
+ ['delayed callbacks with both clocks advancing',10000,10000,'timing_interrupted'],
+ ['backward wall clock',-10000,20,'timing_interrupted'],
+ ['deadline reached before the timer callback',500,500,'wall_ms'],
+]) test(`runner refuses completion after ${name}`,async()=>{
+ const b=baseline();rmSync(join(b.root,'events.jsonl'));let reads=0;
+ const start=Date.parse('2026-09-18T00:00:00Z');
+ const clock=()=>reads++?{wall_ms:start+wall,monotonic_ms:monotonic}:{wall_ms:start,monotonic_ms:0};
+ try{
+  const r=await runChild(process.execPath,['-e','console.log(JSON.stringify({type:"turn.completed"}))'],{cwd:b.root,output:b.root,prompt:'test',host:'codex',budgets:{...plan.budgets,wall_ms:reason==='wall_ms'?250:30000},clock});
+  assert.equal(r.runtime.budget_stop,reason);
+  assert.equal(r.runtime.state,'failed');
+  assert.equal(r.timing.wall_elapsed_ms,wall);
+  assert.equal(r.timing.monotonic_elapsed_ms,monotonic);
+  assert.equal(r.runtime.stop_requested.at,new Date(start+wall).toISOString());
+  assert.equal(r.runtime.stop_requested.monotonic_elapsed_ms,monotonic);
+  assert.ok(r.counts.events.length,'partial output is retained');
+  assert.equal(r.timing.interruption!==null,reason==='timing_interrupted');
+ }finally{b.cleanup();}
+});
+test('timing interruption keeps stage evidence but cannot become a full product verdict',async()=>{
+ const b=baseline();try{
+  b.run.runtime.budget_stop='timing_interrupted';b.run.runtime.state='failed';
+  b.review.stages.check.state='fail';
+  const result=await scoreColdRun(b.run,b.review,b.root);
+  assert.equal(result.stages.check.state,'fail');assert.equal(result.usable,'incomplete');
+  assert.ok(result.exclusions.some(x=>/timing|interruption/i.test(x)));
+ }finally{b.cleanup();}
+});
+
+test('regular samples do not turn a long healthy run into an interruption',async()=>{
+ const {runTiming}=await import('./buyer-cold-isolated.mjs');let elapsed=0;
+ const timer=runTiming(20000,()=>({wall_ms:1800000000000+elapsed,monotonic_ms:elapsed}));
+ for(elapsed=1000;elapsed<=16000;elapsed+=1000){const reading=timer.sample();assert.equal(reading.stop,null);assert.equal(reading.record.interruption,null);}
+});
+test('cumulative clock divergence is retained even when every callback gap is small',async()=>{
+ const {runTiming}=await import('./buyer-cold-isolated.mjs');let n=0;
+ const timer=runTiming(30000,()=>({wall_ms:1800000000000+n*4000,monotonic_ms:n*1000}));
+ n=1;assert.equal(timer.sample().stop,null);n=2;
+ const reading=timer.sample();assert.equal(reading.stop,'timing_interrupted');assert.equal(reading.record.interruption.reason,'clock_divergence');
+});
+test('clock readings are snapshots even when an injected clock reuses its object',async()=>{
+ const {runTiming}=await import('./buyer-cold-isolated.mjs');const now={wall_ms:1800000000000,monotonic_ms:0};
+ const timer=runTiming(30000,()=>now);now.wall_ms+=10000;now.monotonic_ms+=10000;
+ assert.equal(timer.sample().stop,'timing_interrupted');
+});
+test('a gap observed at close records a stop without signalling an already closed process',async()=>{
+ const b=baseline();rmSync(join(b.root,'events.jsonl'));let reads=0,signals=0;
+ const savedKill=process.kill;process.kill=()=>{signals++;return true;};
+ try{
+  const clock=()=>({wall_ms:1800000000000+(reads++?10000:0),monotonic_ms:0});
+  const r=await runChild(process.execPath,['-e',''],{cwd:b.root,output:b.root,prompt:'test',host:'codex',budgets:plan.budgets,clock});
+  assert.equal(r.runtime.budget_stop,'timing_interrupted');assert.equal(r.runtime.stop_requested.close_observed,true);assert.equal(r.runtime.stop_requested.signal_requested,false);assert.equal(signals,0);
+ }finally{process.kill=savedKill;b.cleanup();}
+});

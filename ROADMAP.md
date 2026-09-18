@@ -70,6 +70,13 @@ sleep. Neither was retried. Earlier timeout cause remains unknown. Preserve
 old results and current caps; record awake conditions before any new freeze.
 [Integrated result and next work](research/integrated-buyer-2026-09-18/REPORT.md).
 
+**TR3 repair follow-through, September 18:** address-digest guidance now names
+its fields separately from snapshot references. The runner records elapsed,
+stop-request and close times, rejects timing interruptions as incomplete, and
+new live CLI plans freeze explicit recipient budgets and subset wording before
+acquisition. Deterministic controls precede a new qualified native run; earlier
+cohort outcomes remain unchanged. [Repair and remaining acquisition duties](docs/BUYER_EVIDENCE_CLARITY_2026-09-18.md).
+
 **TR3 workspace follow-through, September 17:** the native buyer's repeated
 npm-cache refusal has a per-session cache repair and a separate tooling
 scratch directory. Evidence limits are unchanged; local launcher controls

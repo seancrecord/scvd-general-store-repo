@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawn, spawnSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
-import {adapter, buildPrompt, buildCapabilityPrompt, capabilityVectors, scoreCapability, validatePlan, normalizeTrace, hash, scoreColdRun, cohortSummary, SESSION_WORKSPACE} from './lib/buyer-cold.mjs';
+import {adapter, recipientLaunch, buildPrompt, buildCapabilityPrompt, capabilityVectors, scoreCapability, validatePlan, normalizeTrace, hash, scoreColdRun, cohortSummary, SESSION_WORKSPACE} from './lib/buyer-cold.mjs';
 
 import {retainArtifacts} from './lib/buyer-retention.mjs';
 import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
@@ -28,21 +28,47 @@ function sessionEnvironment(cwd, environment) {
   const cache=path.join(cwd,SESSION_WORKSPACE.npm_cache);
   return {...environment,NPM_CONFIG_CACHE:cache,npm_config_cache:cache};
 }
-export async function runChild(command, args, {cwd, output, prompt, host, budgets, env=childEnvironment()}) {
+// A delayed callback is evidence of an unobserved interval, not a diagnosis
+// of sleep. Stop on that gap; never subtract it to grant more run time.
+export const TIMING_POLICY = Object.freeze({sample_interval_ms:1000,max_callback_gap_ms:5000,max_clock_divergence_ms:5000});
+const systemClock=()=>({wall_ms:Date.now(),monotonic_ms:performance.now()});
+export function runTiming(wallBudget,clock=systemClock) {
+  const start={...clock()};let last=start,interruption=null,maxGap=0;
+  const sample=()=>{
+    const now={...clock()},wallGap=now.wall_ms-last.wall_ms,monoGap=now.monotonic_ms-last.monotonic_ms;
+    const wallElapsed=now.wall_ms-start.wall_ms,monoElapsed=now.monotonic_ms-start.monotonic_ms;
+    maxGap=Math.max(maxGap,wallGap,monoGap);
+    const reason=wallGap<0||monoGap<0?'clock_moved_backwards':
+      Math.max(wallGap,monoGap)>TIMING_POLICY.max_callback_gap_ms?'callback_gap':
+      Math.abs(wallElapsed-monoElapsed)>TIMING_POLICY.max_clock_divergence_ms?'clock_divergence':null;
+    if(reason&&!interruption)interruption={reason,previous:last,observed:now,wall_gap_ms:wallGap,monotonic_gap_ms:monoGap};
+    last=now;
+    return {stop:interruption?'timing_interrupted':Math.max(wallElapsed,monoElapsed)>=wallBudget?'wall_ms':null,
+      record:{policy:TIMING_POLICY,started_at:new Date(start.wall_ms).toISOString(),ended_at:new Date(now.wall_ms).toISOString(),wall_elapsed_ms:wallElapsed,monotonic_elapsed_ms:monoElapsed,max_callback_gap_ms:maxGap,interruption}};
+  };
+  return {started_at:new Date(start.wall_ms).toISOString(),sample};
+}
+export async function runChild(command, args, {cwd, output, prompt, host, budgets, env=childEnvironment(), clock=systemClock}) {
   fs.mkdirSync(path.join(cwd,SESSION_WORKSPACE.scratch),{recursive:true,mode:0o700});
-  const started_at = new Date().toISOString();
+  const monitor=runTiming(budgets.wall_ms,clock);
+  const started_at = monitor.started_at;
   const events = fs.openSync(path.join(output,'events.jsonl'),'wx',0o600);
   const logs = fs.openSync(path.join(output,'runtime.log'),'wx',0o600);
-  let stdout='', stderr='', bytes=0, budget_stop=null, spawn_error=null, escalation;
+  let stdout='', stderr='', bytes=0, budget_stop=null, spawn_error=null, escalation, stop_requested=null, closed=false;
   const child = spawn(command,args,{cwd,env:sessionEnvironment(cwd,env),detached:process.platform!=='win32',stdio:['pipe','pipe','pipe']});
   const terminate = () => {
     try { if(process.platform!=='win32')process.kill(-child.pid,'SIGTERM');else child.kill('SIGTERM'); } catch { /* Already exited. */ }
     escalation = setTimeout(()=>{try{if(process.platform!=='win32')process.kill(-child.pid,'SIGKILL');else child.kill('SIGKILL');}catch{}},1000);
     escalation.unref();
   };
-  const stop = reason => {if(!budget_stop){budget_stop=reason;terminate();}};
-  const timer = setTimeout(()=>stop('wall_ms'),budgets.wall_ms);
+  // The final timing sample can follow close; never signal a recycled PID.
+  const stop = reason => {if(!budget_stop){budget_stop=reason;const measured=monitor.sample().record;stop_requested={at:measured.ended_at,close_observed:closed,signal_requested:!closed,wall_elapsed_ms:measured.wall_elapsed_ms,monotonic_elapsed_ms:measured.monotonic_elapsed_ms};if(!closed)terminate();}};
+  let timing;
+  const checkTiming=()=>{const sample=monitor.sample();timing=sample.record;if(sample.stop)stop(sample.stop);};
+  const timer = setTimeout(()=>{checkTiming();if(!budget_stop)stop('wall_ms');},budgets.wall_ms);
+  const heartbeat = setInterval(checkTiming,TIMING_POLICY.sample_interval_ms);
   const collect = (chunk, fd, stream) => {
+    checkTiming();
     const remaining = Math.max(0,budgets.output_bytes-bytes);
     const kept = chunk.subarray(0,remaining);
     fs.writeSync(fd,kept); bytes += kept.length;
@@ -59,14 +85,15 @@ export async function runChild(command, args, {cwd, output, prompt, host, budget
   child.stdin.end(prompt);
   const result = await new Promise(resolve=>{
     child.on('error',e=>{spawn_error=e.code??e.message;});
-    child.on('close',(exit_code,signal)=>resolve({exit_code,signal}));
+    child.on('close',(exit_code,signal)=>{closed=true;resolve({exit_code,signal});});
   });
-  clearTimeout(timer); clearTimeout(escalation);
+  checkTiming();
+  clearTimeout(timer); clearInterval(heartbeat); clearTimeout(escalation);
   fs.closeSync(events);fs.closeSync(logs);
   const counts=normalizeTrace(host,stdout);
   const terminalFailure=stdout.split('\n').some(line=>{try{const r=JSON.parse(line);return r.type==='turn.failed'||(r.type==='result'&&r.is_error===true);}catch{return false;}});
-  return {started_at,ended_at:new Date().toISOString(),local_workspace:SESSION_WORKSPACE,runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure?'completed':'failed',...result,spawn_error,budget_stop},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
-    output_bytes:bytes,limits:['Token target is advisory; wall time and retained bytes are bounded. Tool budget stops after an over-budget event is observed; batched calls can exceed it.','Host tool events do not establish origin-request count or absence of hidden context.']};
+  return {started_at,ended_at:timing.ended_at,timing,local_workspace:SESSION_WORKSPACE,runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure&&!budget_stop?'completed':'failed',...result,spawn_error,budget_stop,stop_requested},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
+    output_bytes:bytes,limits:['Token target is advisory; retained bytes are bounded. Deadlines are checked when the runner executes; enforcement during host suspension is impossible. Callback/clock gaps stop the run as timing_interrupted, without diagnosing their cause. Tool budget stops after an over-budget event is observed; batched calls can exceed it.','Host tool events do not establish origin-request count or absence of hidden context.']};
 }
 export async function scoreCohort(root) {
   const plan=validatePlan(JSON.parse(fs.readFileSync(path.join(root,'plan.json'),'utf8')));
@@ -96,6 +123,7 @@ function freezeInstrument(root) {
   writeJson(path.join(root,'instrument.json'),{schema_version:2,files});
   return files;
 }
+const planHosts=plan=>[...new Set([...plan.cells.map(c=>c.host),...(plan.schema_version>=5?[plan.recipient.host]:[])])];
 function hostAvailability(names, environment) {
   const hosts=new Map();
   for(const name of names){
@@ -137,16 +165,18 @@ export async function runCapabilityProbe(plan, root) {
   fs.mkdirSync(root,{mode:0o700});
   writeJson(path.join(root,'plan.json'),plan);
   freezeInstrument(root);
-  const environment=childEnvironment(), hosts=hostAvailability(plan.cells.map(c=>c.host),environment);
+  const environment=childEnvironment(), hosts=hostAvailability(planHosts(plan),environment);
   writeJson(path.join(root,'hosts.json'),Object.fromEntries(hosts));
   const context=hostContext(hosts,environment);writeJson(path.join(root,'host-context.json'),context);
   const summary={schema_version:2,plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),instrument_sha256:hash(fs.readFileSync(path.join(root,'instrument.json'))),host_context_sha256:hash(fs.readFileSync(path.join(root,'host-context.json'))),public_url:plan.capability.public_url,probed_at:new Date().toISOString(),hosts:{},
     limits:['A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service.']};
   for(const [host,cli] of hosts){
+    const cell=plan.cells.find(c=>c.host===host);
+    if(!cell)continue; // Recipient-only hosts are recorded, not online buyer probes.
     const dir=path.join(root,host);fs.mkdirSync(dir,{mode:0o700});
     const vectors=capabilityVectors();writeJson(path.join(dir,'vectors.json'),vectors);
     fs.writeFileSync(path.join(dir,'prompt.txt'),buildCapabilityPrompt(plan,host,vectors),{flag:'wx',mode:0o600});
-    const skip=(state,reason)=>{writeJson(path.join(dir,'run.json'),{schema_version:4,host,runtime:{state,reason},cli});summary.hosts[host]={state,reason};process.stdout.write(JSON.stringify({host,state,reason})+'\n');};
+    const skip=(state,reason)=>{writeJson(path.join(dir,'run.json'),{schema_version:plan.schema_version,host,runtime:{state,reason},cli});summary.hosts[host]={state,reason};process.stdout.write(JSON.stringify({host,state,reason})+'\n');};
     if(!cli.available){skip('unavailable',cli.reason);continue;}
     let reference;
     try{
@@ -158,11 +188,11 @@ export async function runCapabilityProbe(plan, root) {
       reference={sha256:hash(bytes),bytes:bytes.length,fetched_at:new Date().toISOString()};
     }catch(error){skip('unavailable',`Runner could not capture reference bytes (${error.message}); host not launched.`);continue;}
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-capability-'));fs.mkdirSync(path.join(cwd,'evidence'),{mode:0o700});
-    const cell=plan.cells.find(c=>c.host===host), launch=adapter(cell,cwd,dir,plan.budgets,context);
+    const launch=adapter(cell,cwd,dir,plan.budgets,context);
     writeJson(path.join(dir,'launch.json'),{...launch,cwd,cli,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({host,state:'started'})+'\n');
     const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host,budgets:plan.budgets,env:environment});
-    const run={schema_version:4,host,model:cell.model,...result,cli,reference,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)};
+    const run={schema_version:plan.schema_version,host,model:cell.model,...result,cli,reference,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)};
     writeJson(path.join(dir,'run.json'),run);
     const score=scoreCapability(host,run,dir,vectors,reference);writeJson(path.join(dir,'capability.json'),score);
     summary.hosts[host]={state:score.state,retention:score.retention.state,local_check:score.local_check.state,denied:score.commands.denied,executed:score.commands.executed};
@@ -182,7 +212,7 @@ export async function runCohort(plan,root,options={}) {
     capability={...JSON.parse(bytes),source_sha256:hash(bytes)};
     if(capability.plan_sha256!==hash(JSON.stringify(plan,null,2)+'\n'))throw new Error('The capability probe was frozen for a different plan.');
   }
-  const environment=childEnvironment(), hosts=hostAvailability(plan.cells.map(c=>c.host),environment),context=hostContext(hosts,environment);
+  const environment=childEnvironment(), hosts=hostAvailability(planHosts(plan),environment),context=hostContext(hosts,environment);
   if(capability)checkQualification(options.capability,capability,context);
   fs.mkdirSync(root,{mode:0o700}); // Must be new: never clobber a prior cohort.
   writeJson(path.join(root,'plan.json'),plan);
@@ -190,6 +220,11 @@ export async function runCohort(plan,root,options={}) {
   freezeInstrument(root);
   writeJson(path.join(root,'hosts.json'),Object.fromEntries(hosts));
   writeJson(path.join(root,'host-context.json'),context);
+  if(plan.schema_version>=5){
+    const recipient=recipientLaunch(plan,'<fresh-recipient-directory>','<recipient-output>',context);
+    writeJson(path.join(root,'recipient-protocol.json'),{...plan.recipient,protocol_sha256:recipient.protocol_sha256,inputs:recipient.inputs,prompt_sha256:hash(recipient.prompt),timing_policy:TIMING_POLICY});
+    fs.writeFileSync(path.join(root,'recipient-prompt.txt'),recipient.prompt,{flag:'wx',mode:0o600});
+  }
   // Freeze all assignments/prompts before any model runs. The evidence root
   // is outside each neutral working directory and is not supplied as context.
   for(const cell of plan.cells){
@@ -232,11 +267,19 @@ async function main(args){
   const input=options.capability??options.plan,out=options.out;
   if(!input||!out||(options.capability&&(options.plan||options.qualified)))throw new Error(usage);
   const plan=validatePlan(JSON.parse(fs.readFileSync(input,'utf8')));
+  if(options.run&&plan.schema_version!==5)throw new Error('New live CLI runs require schema 5 with a frozen recipient protocol; old plans remain available for dry runs and rescoring.');
+  let recipient=null;
+  if(!options.run&&plan.schema_version>=5){
+    // Preview only the portable protocol/prompt, never a fictitious inventory
+    // of locally disabled skills or a claim that a recipient was launched.
+    const prepared=recipientLaunch(plan,'<recipient-directory>','<recipient-output>',{codex:{disabled_skills:[]}});
+    recipient={protocol:plan.recipient,inputs:prepared.inputs,prompt:prepared.prompt,protocol_sha256:prepared.protocol_sha256,timing_policy:TIMING_POLICY};
+  }
   if(options.capability){
-    if(!options.run){console.log(JSON.stringify({schema_version:4,execution:'dry_run',spend_usdc:0,public_url:plan.capability.public_url,hosts:[...new Set(plan.cells.map(c=>c.host))].map(host=>({host,prompt:buildCapabilityPrompt(plan,host,capabilityVectors())})),note:'Vectors are minted afresh at the live probe.'},null,2));return;}
+    if(!options.run){console.log(JSON.stringify({schema_version:plan.schema_version,execution:'dry_run',...(recipient?{recipient}:{}),spend_usdc:0,public_url:plan.capability.public_url,hosts:[...new Set(plan.cells.map(c=>c.host))].map(host=>({host,prompt:buildCapabilityPrompt(plan,host,capabilityVectors())})),note:'Vectors are minted afresh at the live probe.'},null,2));return;}
     await runCapabilityProbe(plan,path.resolve(out));return;
   }
-  if(!options.run){console.log(JSON.stringify({schema_version:plan.schema_version,cells:plan.cells,spend_usdc:0,execution:'dry_run',...(plan.schema_version>=4?{capability_gate:'A passed probe for this exact plan is required at --run (--qualified).'}:{}),prompts:plan.cells.map(cell=>({id:cell.id,prompt:buildPrompt(plan,cell)}))},null,2));return;}
+  if(!options.run){console.log(JSON.stringify({schema_version:plan.schema_version,cells:plan.cells,spend_usdc:0,execution:'dry_run',...(recipient?{recipient}:{}),...(plan.schema_version>=4?{capability_gate:'A passed probe for this exact plan is required at --run (--qualified).'}:{}),prompts:plan.cells.map(cell=>({id:cell.id,prompt:buildPrompt(plan,cell)}))},null,2));return;}
   await runCohort(plan,path.resolve(out),{capability:options.qualified?path.resolve(options.qualified):undefined});
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){main(process.argv.slice(2)).catch(e=>{console.error(e.message);process.exitCode=1;});}

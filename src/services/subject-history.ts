@@ -289,7 +289,7 @@ export async function payToHistoryOf(
     rounds_captured: captured.length,
     rounds_probed: roundsProbed,
     changes,
-    how_to_match: `Each digest is sha256 over "${PAY_TO_DIGEST_SALT}" + the address (0x addresses lowercased, base58 kept as written), hex. Recompute it from the payTo in the door's own 402 and match; the verbatim address is not published here. unchanged_since is the earliest round in the unbroken run of captured rounds carrying exactly this set — a round that captured no address neither breaks nor extends the run.`,
+    how_to_match: `Address digests in digests, changes[].from and changes[].to are sha256 over "${PAY_TO_DIGEST_SALT}" + the address (0x addresses lowercased, base58 kept as written), hex. Recompute the address digest from the payTo in the door's own 402 and compare it with those address fields. observed.digest, unchanged_since.digest and changes[].digest identify corpus snapshots; they are snapshot references, not address hashes, and do not use this formula. Match each snapshot reference to the corresponding timeline digest; the verbatim address is not published here. unchanged_since is the earliest round in the unbroken run of captured rounds carrying exactly this set — a round that captured no address neither breaks nor extends the run.`,
   };
 }
 
