@@ -9,6 +9,7 @@ import {
 import { getCertificate } from "@/services/certificates";
 import { recordDisclosure } from "@/services/disclosure-census";
 import type { Env } from "@/types";
+import { isHouseWallet } from "@/lib/channel";
 
 /**
  * WHAT THE STORE SAYS BACK ABOUT WHAT IT WAS TOLD.
@@ -40,10 +41,14 @@ export async function disclosureAfterSettle(
     const prior = await getCertificate(env, told.prior_cert_id).catch(() => null);
     returning = returningVerdict(prior ? (prior.certificate.payer ?? "") : null, payer, canonicalAddress);
   }
-  // The count goes beside the answer, never in front of it (rule 50).
-  const count = recordDisclosure(env, "paid", told, returning).catch(() => undefined);
-  if (defer) defer(count);
-  else void count;
+  // The count goes beside the answer, never in front of it (rule 50),
+  // and the house does not make the paper: the family's own wallets
+  // would otherwise be the loudest voice in the paid census.
+  if (!isHouseWallet(env, payer ?? "")) {
+    const count = recordDisclosure(env, "paid", told, returning).catch(() => undefined);
+    if (defer) defer(count);
+    else void count;
+  }
   if (!disclosedAnything(told)) return {};
   return {
     disclosure: {

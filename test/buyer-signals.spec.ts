@@ -6,9 +6,11 @@ import {
   SIGNAL_MAP_CAP,
   readBuyerSignals,
   recordInputRefusal,
+  refusalReason,
   recordPostPurchaseRead,
   recordSettleSignal,
 } from "@/services/buyer-signals";
+import { getMenuItem } from "@/store";
 import type { Env } from "@/types";
 import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
@@ -55,17 +57,29 @@ describe("the four readings", () => {
     expect(capped.purposes_truncated).toBe(true);
   });
 
-  it("keys a refusal by item and field, and overflows to other past the cap", async () => {
-    await recordInputRefusal(testEnv, "spot_check", { code: "bad_request", input_field: "host" });
-    await recordInputRefusal(testEnv, "spot_check", { code: "bad_request", input_field: "host" });
-    await recordInputRefusal(testEnv, "hello", { code: "callback_refused" });
+  it("keys a refusal by item, field and why, and overflows to other past the cap", async () => {
+    const spot = getMenuItem("spot_check");
+    await recordInputRefusal(testEnv, spot, "spot_check", { code: "bad_request", input_field: "host" }, "https://a.example/api");
+    await recordInputRefusal(testEnv, spot, "spot_check", { code: "bad_request", input_field: "host" }, undefined);
+    await recordInputRefusal(testEnv, spot, "spot_check", { code: "bad_request", input_field: "host" }, "your-door.example");
+    await recordInputRefusal(testEnv, getMenuItem("hello"), "hello", { code: "callback_refused" }, undefined);
     for (let i = 0; i < SIGNAL_MAP_CAP + 3; i += 1) {
-      await recordInputRefusal(testEnv, `item${i}`, { code: "bad_request", input_field: "url" });
+      await recordInputRefusal(testEnv, undefined, `item${i}`, { code: "bad_request", input_field: "url" }, "");
     }
     const s = await readBuyerSignals(testEnv);
-    expect(s.refusal["spot_check:host"]).toBe(2);
-    expect(s.refusal["hello:callback_refused"]).toBe(1);
-    expect(s.refusal["other"]).toBe(5);
+    expect(s.refusal["spot_check:host:malformed"]).toBe(1);
+    expect(s.refusal["spot_check:host:missing"]).toBe(1);
+    expect(s.refusal["spot_check:host:example"]).toBe(1);
+    expect(s.refusal["hello:callback_refused:other"]).toBe(1);
+    expect(s.refusal["other"]).toBe(7);
+  });
+
+  it("classes a refusal as a shape and never keeps the value", () => {
+    const anchor = getMenuItem("bitcoin_anchor");
+    expect(refusalReason(anchor, "digest", "9f".repeat(32))).toBe("example");
+    expect(refusalReason(anchor, "digest", "0x" + "9f".repeat(32))).toBe("malformed");
+    expect(refusalReason(anchor, "digest", "   ")).toBe("missing");
+    expect(refusalReason(getMenuItem("hello"), "agent_name", "\u0000bad")).toBe("other");
   });
 
   it("buckets a post-purchase read by the artifact's age", async () => {
@@ -83,7 +97,7 @@ describe("at the doors", () => {
     expect(res.status).toBe(400);
     await settled();
     const s = await readBuyerSignals(testEnv);
-    expect(s.refusal["hello:agent_name"]).toBe(1);
+    expect(s.refusal["hello:agent_name:other"]).toBe(1);
   });
 
   it("a settled purchase records its rail and purpose, and a replay counts as a read", async () => {
@@ -103,6 +117,29 @@ describe("at the doors", () => {
     expect(Object.keys(s.rail).some((k) => k.startsWith("http:"))).toBe(true);
     expect(s.purposes.map((p) => p.purpose)).toContain("checking the trial page");
     expect(s.reads["replay:under_1h"]).toBe(1);
+
+    // The fourth signal: a receipt read from a browser, shown from a named host.
+    await SELF.fetch(`${BASE}/api/verify/${certId}`, { headers: { Accept: "text/html", Referer: "https://github.com/someone/repo/issues/9", "User-Agent": "Mozilla/5.0" } });
+    await SELF.fetch(`${BASE}/api/verify/${certId}`, { headers: { Accept: "application/json", "User-Agent": "curl/8.0" } });
+    await SELF.fetch(`${BASE}/api/verify/${certId}`, { headers: { Accept: "application/json", "User-Agent": "curl/8.0", "X-House": "1" } });
+    await settled();
+    const after = await readBuyerSignals(testEnv);
+    expect(after.readers["browser:under_1h"]).toBe(1);
+    expect(after.readers["agent:under_1h"]).toBe(1);
+    expect(after.referrers["github.com"]).toBe(1);
+    expect(after.referrers["none"]).toBe(1);
+  });
+
+  it("notices the worked example bought as-is", async () => {
+    const url = `${BASE}/api/buy/spot_check?host=your-door.example`;
+    const quote = await SELF.fetch(url);
+    expect(quote.status).toBe(402);
+    const challenge = decodePaymentRequired(quote);
+    const paid = await SELF.fetch(url, { headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(challenge.accepts[0]!) } });
+    expect(paid.status, await paid.clone().text()).toBe(200);
+    await settled();
+    const s = await readBuyerSignals(testEnv);
+    expect(s.examples["spot_check:host"]).toBe(1);
   });
 
   it("the keeper's page scans in one glance and expands on request", async () => {
@@ -115,6 +152,8 @@ describe("at the doors", () => {
     expect(html).toContain("solana:mainnet ×1 over MCP");
     expect(html).toContain("reading the shelf");
     expect(html).toContain("BUYER_SIGNALS_ENABLED");
+    expect(html).toContain("Who reads receipts");
+    expect(html).toContain("The worked example, bought as-is");
     expect(html).toContain('href="/admin/disclosure"');
   });
 });

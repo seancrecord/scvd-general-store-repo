@@ -905,7 +905,10 @@ async function callPurchaseTool(
       ).catch(() => undefined);
     }
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.
-    if (refusal.status === 400) deferBookkeeping(c, recordInputRefusal(c.env, item.id, refusal.body));
+    if (refusal.status === 400) {
+      const field = typeof refusal.body["input_field"] === "string" ? refusal.body["input_field"] : "";
+      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? args[field] : undefined));
+    }
     return rpcRefusal(
       id,
       refusalRpcCode(refusal),

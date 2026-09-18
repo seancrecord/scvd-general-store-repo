@@ -148,6 +148,8 @@ export interface FulfillmentInput {
   caseFileInput?: CaseFileInput;
   /** Any item: what the buyer chose to tell us (lib/disclosure). Never on the certificate. */
   disclosure?: Disclosure;
+  /** Any item: input fields whose value was the worked example, verbatim (buyer signals). */
+  exampleCopied?: string[];
   /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */
   bundleTxHashes?: string[];
   /** bitcoin_anchor: the buyer's sha256, pre-validated. Opaque to us. */
@@ -735,6 +737,7 @@ export async function fulfillPurchase(
       item: item.id,
       purpose: minted.certificate.purpose,
       house: isHouseWallet(env, payment.payer ?? ""),
+      ...(input.exampleCopied ? { exampleCopied: input.exampleCopied } : {}),
     }).catch(() => undefined);
     if (hooks?.defer) hooks.defer(signal);
     else void signal;

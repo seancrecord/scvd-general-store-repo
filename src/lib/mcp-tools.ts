@@ -419,7 +419,7 @@ const EXAMPLE_STRINGS: Record<string, string> = {
   declared_cap_usdc: "1.00",
   digest: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   expires_at: "2026-12-31T00:00:00Z",
-  host: "example.com",
+  host: "your-door.example",
   label: "my-launch",
   launch_check_id: "lc_example",
   mandate_id: "mnd_example",

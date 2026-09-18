@@ -83,6 +83,9 @@ import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { Certificate, HonoEnv } from "@/types";
+import { recordReceiptRead } from "@/services/buyer-signals";
+import { isHouseAgent, isInfrastructureUserAgent } from "@/lib/channel";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 
 /**
  * GET /api/verify/:cert_id, public verification of anything the store
@@ -303,6 +306,24 @@ async function noteVerify(
   if (c.req.header("X-SCVD-Channel") === "mcp") {
     signals.viaMcp = true;
   }
+  /**
+   * WHO READS RECEIPTS (buyer signals, 2026-09-18). Classed from the
+   * same headers this function already holds — nothing new is asked
+   * of the reader and nothing is placed on the page — and handed to
+   * the door's waitUntil. Crawlers are named by the shared table;
+   * a browser is whoever negotiates HTML; everything else is an agent.
+   */
+  const accept = c.req.header("Accept");
+  deferBookkeeping(
+    c,
+    recordReceiptRead(c.env, {
+      reader: isInfrastructureUserAgent(userAgent) ? "crawler" : wantsHtml(accept, userAgent) ? "browser" : "agent",
+      referrer,
+      ownHost: new URL(c.env.STORE_BASE_URL).hostname,
+      ...(mintedIso ? { mintedIso } : {}),
+      house: Boolean(houseHeader) || isHouseAgent(userAgent),
+    }),
+  );
   await recordVerifyCall(c.env, item, signals, mintedIso).catch(() => {
     // The count is a courtesy; verification itself never waits on it.
   });
