@@ -1033,8 +1033,16 @@ const BASE = "https://scvd.store";
 // September 17: retains the upstream per-host feed links and adds the
 // keeper-requested canonical identity/discovery links.
 // 2026-09-17: canonical ERC-8004 and protocol-record links, requested by the keeper.
+// 2026-09-18, THE MERGE, once more. Main re-pinned for its own edits
+// (feed links, canonical identity and protocol-record links, ERC-8004)
+// and this branch carries the UCP business-profile paragraph, so the
+// merged guide is a third text neither side's digest describes. The
+// paragraph is unchanged: catalog only, no UCP checkout, pay over x402
+// or MCP, four sub-cent items missing and named at /ucp. Verified
+// across the merge: with only that paragraph removed from the merged
+// tree, main's eb0b92aa reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "eb0b92aa2c1c7067011265e0b71c29f12d7be19d94aa36c3f4c3316e7b792b9f";
+  "7667179f4b93089cd5e6af2eb30521f52b29385e33385d456501423c94ffbe9c";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1069,8 +1077,12 @@ describe("nothing was rewritten", () => {
     const full = await body("/llms-full.txt");
     const addition = `Canonical ERC-8004 identity and endpoint-domain acknowledgment:\n${BASE}/.well-known/agent-registration.json\nPublic discovery records by protocol, with observation dates and limits:\n${BASE}/trust (also JSON with Accept: application/json).\n`;
     expect(full).toContain(addition);
+    // 2026-09-18, across the merge: the guide with this addition removed
+    // is main's pre-addition text plus the UCP business-profile
+    // paragraph. With that paragraph removed as well, main's d9fc6754
+    // reproduced; this copy is the merged guide minus the addition.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "d9fc6754df22b7c0847d49dd06d6a1c6e6497ffc7c90d812f2c83f8ebfd3ae99",
+      "b2d9ec8aaee4bf396c96c3b06ce30647c4ce40209b78012eb805156d272f5903",
     );
   });
 
