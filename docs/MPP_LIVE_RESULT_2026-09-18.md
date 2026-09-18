@@ -42,9 +42,12 @@ status bearer stay with the buyer and are excluded here.
 - The receipt's own record names `original_door: "mcp"`: the store settled
   this through the MCP lane, not the HTTP door.
 - No client workaround was needed; the #804 resource fix held on this lane.
-- Keeper's authenticated inspection: not yet pasted here. Expected reading
-  on `/admin/purchases/{purchase id}`: protocol mpp, door mcp, house yes,
-  accounting confirmed, individual ledger matched, item small_blessing.
+- Keeper's authenticated inspection, read at 2026-09-18T18:07:35.921Z:
+  protocol mpp, method evm/charge, network eip155:8453, door mcp, amount
+  5000 atomic, payment state settled, delivery delivered, house yes,
+  accounting recorded and confirmed, individual ledger matched with no
+  mismatched fields, item small_blessing. The transaction, payer and amount
+  agree with the buyer's report.
 
 Both purchases are house-funded and are not organic demand. Raw credentials
 and status bearers stay with the buyer and are excluded here.
