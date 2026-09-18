@@ -70,3 +70,14 @@ for(const reason of ['stopped buyer','no terminal event'])test(`handoff cannot r
   assert.throws(()=>prepareHandoff(f.root,f.selection,f.out),/complete|terminal/i);assert.equal(fs.existsSync(f.out),false);
  }finally{f.clean();}
 });
+test('automatic whole-capture handoffs leave citation status unknown and cannot omit a file',()=>{
+ const f=fixture();try{
+  f.selection.scope='buyer_report';f.selection.citation_policy='unclassified';
+  for(const row of f.selection.files){row.supply=true;row.cited=null;row.role='other';}
+  f.selection.files[0].supply=false;
+  assert.throws(()=>prepareHandoff(f.root,f.selection,f.out));assert.equal(fs.existsSync(f.out),false);
+  f.selection.files[0].supply=true;
+  const manifest=prepareHandoff(f.root,f.selection,f.out);
+  assert.equal(manifest.citation_policy,'unclassified');assert.ok(manifest.files.every(row=>row.cited_in_report===null&&row.supplied));
+ }finally{f.clean();}
+});

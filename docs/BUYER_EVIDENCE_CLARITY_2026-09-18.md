@@ -1,5 +1,9 @@
 # Buyer evidence clarification and interruption handling
 
+The schema-5 section below records this repair. The subsequent
+[integrated runner guide](BUYER_HARNESS.md) documents schema 6, now required
+for new live CLI runs; earlier plans remain readable for previews and scoring.
+
 This follows the [integrated buyer record](../research/integrated-buyer-2026-09-18/REPORT.md)
 and the separate [directed-release cohort](../research/takeoff-directed-release-2026-09-17/REPORT.md).
 Their outcomes and captured bytes stay unchanged. This is an instrument and

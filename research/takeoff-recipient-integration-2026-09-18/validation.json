@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "native_agents_launched": false,
+  "payments_attempted": false,
+  "focused": {
+    "passed": 203,
+    "failed": 0
+  },
+  "integration": {
+    "passed": 19,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "worker_bundles": "passed",
+  "docs": "passed with advisory stale-doc notices",
+  "red_controls": {
+    "eligibility_failures": 2,
+    "offline_failures": 1,
+    "scorer_failures": 1,
+    "source_binding_failures": 1,
+    "citation_classification_failures": 1
+  },
+  "full_worker_suite": {
+    "state": "passed",
+    "total": 15048,
+    "passed": 15047,
+    "failed": 0,
+    "skipped": 1,
+    "note": "Worker suite passed on the integration tree. The parent publication receipt was subsequently retained from HEAD and checked separately; no Worker source changed."
+  },
+  "logs": {
+    "focused": {
+      "sha256": "0aa1fbfd234e1fe782241f90092e7cca6a81eb5a3030fc805693754d001e88e6",
+      "bytes": 40323
+    },
+    "integration": {
+      "sha256": "2cd9854ccc3f9a03d5909bcbf55bcee10d1d8ac8a8fee28f81212f4f4337b3cc",
+      "bytes": 3319
+    },
+    "typecheck": {
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "bytes": 54
+    },
+    "build": {
+      "sha256": "7ab5896fb92f6ab850fc5ebcf63433b8e731a8f34ced697330f0b9d9f2d7d248",
+      "bytes": 3924
+    },
+    "docs": {
+      "sha256": "5cc436ebddd26e9e3ea5559d322dbc041f9294a6621bfca8067641661d30003d",
+      "bytes": 3904
+    },
+    "red_eligibility": {
+      "sha256": "fefc8921ce43b40d50f4083031693b707adab3327580c1186c4e84608bf56387",
+      "bytes": 1760
+    },
+    "red_offline": {
+      "sha256": "1e98beaebf9f0209925bb7b6bd9d4692ee82126076a512ff31661b4e98dc1703",
+      "bytes": 1107
+    },
+    "red_scorer": {
+      "sha256": "98c3739918914bb0e70830a57c5a397b1d566732513a3b9ab9ae8d67d7fbf2c4",
+      "bytes": 1012
+    },
+    "red_source_binding": {
+      "sha256": "6da73f84da232edce539da464d0e644284c4ba8bc8f5f711bbb54e28c1d7eb20",
+      "bytes": 1077
+    },
+    "red_citations": {
+      "sha256": "1322952a73ca2386b523d8ce8dfdcddc514d3a2ff5f579aa29cd12887ab757d6",
+      "bytes": 1070
+    },
+    "full_worker_report": {
+      "sha256": "9917948ce379667c924aa7faeb3578ee18146b7c1db9b4b926ad2aec3c1618b4",
+      "bytes": 4736029
+    },
+    "full_worker_log": {
+      "sha256": "06d456c6df646de622ca3f86d3e0bbc340d103aba8d49095075db5258ade9d98",
+      "bytes": 368107
+    },
+    "publication_receipt": {
+      "sha256": "ec4cb986979069ce7c54ea2f9421f2a6059b14dec774b714685e16225c52b881",
+      "bytes": 426
+    }
+  },
+  "publication_receipt_check": {
+    "passed": 3,
+    "failed": 0
+  }
+}
