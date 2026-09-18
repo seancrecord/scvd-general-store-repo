@@ -121,10 +121,25 @@ export const STOREFRONT_COPY = {
 /**
    * THE SEARCH TITLE. The store's name is its identity and stays
    * first; what follows is what a stranger needs to know before they
-   * click. Kept under ~65 characters of visible weight.
+   * click.
    * ⚑ Keeper's pen — this is the one line most humans will ever read.
+   *
+   * 2026-09-18: MOVED TO THE TIER-2 DISPLAY NAME. Ahrefs showed the
+   * homepage result flagged TITLE CHANGED — Google was rewriting the
+   * old 64-character title in the listing, which is the signal that
+   * the title was too long for its width and out of step with the
+   * page. Two defects in one string. First, it was the last surface
+   * still filing us under the tier-3 full name, while the JSON-LD,
+   * the manifest, OpenAPI, MCP and every discovery document say
+   * "SCVD General Store" (see test/naming-law.spec.ts); an entity
+   * resolver saw two names for one site on one page. Second, the
+   * full name ate 37 characters of a ~60-character budget, so the
+   * part that says what the place IS was the part that got cut.
+   * Now the name is short, the tail names the search we exist to
+   * answer, and the whole line is 52 characters. The full name is
+   * still on the page as alternateName and in the neon.
    */
-  pageTitle: "Sean-Claude Van Damme's General Store — x402 goods for AI agents",
+  pageTitle: "SCVD General Store — x402 verification for AI agents",
 
   /**
    * USEFULNESS FIRST, NOVELTY AS SPRINKLES (keeper's direction,
@@ -163,9 +178,16 @@ export const STOREFRONT_COPY = {
    * two. When the canon moves again, this comment is the reminder
    * that a second edit is owed here — until claims.mjs can bind them,
    * which is the actual fix and is now counted in that register.
+   *
+   * 2026-09-18: BROUGHT UNDER THE BUDGET IT CITES. The line above was
+   * 173 characters on its own, and the storefront appended the
+   * payment sentence behind it, so the tag a search engine read was
+   * past 230 and got cut mid-clause or replaced. Trimmed to 156; the
+   * suffix now lives only in the WebSite JSON-LD, which has no budget.
+   * test/use-when.spec.ts holds the line at 160.
    */
   metaDescription:
-    "An evidence observatory for agentic commerce: preflight an x402 door before paying, free conformance checks on the signed receipt after, a Bitcoin-anchored corpus over time.",
+    "An evidence observatory for agentic commerce: preflight an x402 endpoint before paying, check the signed receipt after, a Bitcoin-anchored corpus over time.",
   /*
    * 2026-09-01 (roadmap N2): the social card carries the keeper's
    * sixty words verbatim, derived, so the sentence a share unfurls is
