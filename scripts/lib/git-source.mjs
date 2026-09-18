@@ -16,7 +16,7 @@
  *
  * WHAT GIT CANNOT TELL US, AND THIS IS THE IMPORTANT PART. Scout hands
  * us a `breaking` flag and a written impact line because a human wrote
- * them. Git hands us a subject line. None of the three repositories
+ * them. Git hands us a subject line. None of the four repositories
  * below uses conventional-commit breaking markers — over the last 90
  * days x402 carried zero `feat!:` subjects and zero `BREAKING CHANGE`
  * trailers — so **a git-sourced row's `breaking: false` means "not
@@ -37,7 +37,7 @@ import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 /**
- * The three repositories that carry our own layer, and the paths in
+ * The four repositories that carry our own layer, and the paths in
  * each that are the specification rather than an implementation of it.
  *
  * `onlyPaths` exists for exactly one repository. `tempoxyz/tempo` is an
@@ -76,6 +76,34 @@ export const LAYER3 = [
     layer: "3 second wire",
     launchDate: "2026-03-18",
     specPaths: ["specs/", "pages/"],
+  },
+  {
+    /**
+     * UCP, AND THE ONE SOURCE HERE THAT IS NOT READ AT `main`.
+     *
+     * UCP cuts long-lived `release/YYYY-MM-DD` branches and freezes
+     * them: after the cut, only backports land, and a snapshot stays
+     * available for reference and maintenance. The store implements
+     * against `2026-08-25` and says so in its profile, so the tree
+     * worth watching is that branch rather than the tip of main.
+     *
+     * A pin on main would be noise with no reader — main moves
+     * continuously and none of it is what this store serves. A pin on
+     * the release branch is quiet until the one event that matters:
+     * a backport landing on the snapshot we implement against, which
+     * is exactly the case where somebody here has to go and read.
+     */
+    key: "ucp",
+    name: "UCP",
+    fullName: "Universal Commerce Protocol",
+    maintainers: "UCP Governance / Tech Council",
+    url: "https://github.com/universal-commerce-protocol/ucp",
+    ref: "release/2026-08-25",
+    layer: "2 commerce",
+    launchDate: "2026-01-11",
+    specPaths: ["source/schemas/", "source/services/", "docs/specification/"],
+    scopeNote:
+      "read at release/2026-08-25, the frozen snapshot this store implements and advertises — not at main, which moves continuously and is not what anybody here serves",
   },
   {
     key: "tempo",

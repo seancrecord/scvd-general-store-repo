@@ -3,7 +3,7 @@ import type { MppHouseCorrection, MppSalesSummary } from "@/services/mpp-sales";
 import { DurableObject } from "cloudflare:workers";
 import { kvPut, withKvRetry } from "@/lib/kv-retry";
 import type { Env, PayerRecord } from "@/types";
-import { MPP_SALES_PREFIX, MPP_PAYER_PREFIX, validateMppSalesSummary } from "@/services/mpp-sales";
+import { MPP_SALES_PREFIX, MPP_PAYER_PREFIX, sameMppSaleEvidence, validateMppSalesSummary, validMppItemKey, type MppItemSummary, type MppSaleEvidence } from "@/services/mpp-sales";
 
 /**
  * THE COUNTER LEDGER (2026-09-11) — one writer per counter, because a
@@ -97,11 +97,34 @@ export class CounterLedger extends DurableObject<Env> {
     ).toArray().map(row => row.id);
   }
 
+  /**
+   * THE SAME LOOKUP FOR A WHOLE WALK (whole store, 2026-09-18). The books
+   * sweep, the legacy repairs and the third witness read every Base
+   * certificate on the shelf against this ledger; one round trip per
+   * month, not one per certificate. Same read-only discipline: no
+   * schema, no alarm, no mirror. Transactions are keyed as given, lowered.
+   */
+  async readMppSaleIdsForTransactions(transactions: string[]): Promise<Record<string, string[]>> {
+    const found: Record<string, string[]> = {};
+    const sql = this.ctx.storage.sql;
+    if (transactions.length === 0 ||
+      !sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return found;
+    const rows = sql.exec<{ id: string; transaction: string | null }>(
+      "SELECT id, lower(json_extract(evidence, '$.transaction')) AS \"transaction\" FROM mpp_sales",
+    ).toArray();
+    const wanted = new Set(transactions.map(tx => tx.toLowerCase()));
+    for (const row of rows) {
+      if (row.transaction && wanted.has(row.transaction)) (found[row.transaction] ??= []).push(row.id);
+    }
+    return found;
+  }
+
   /** One monthly source, disjoint from every legacy x402 counter. */
-  async recordMppSale(sale: { id: string; month: string; payer: string; transaction: string; amount: string; house: boolean }): Promise<void> {
+  async recordMppSale(sale: MppSaleEvidence): Promise<void> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||
       !/^0x[a-f0-9]{40}$/.test(sale.payer) || !/^0x[a-f0-9]{64}$/i.test(sale.transaction) ||
-      !/^\d+$/.test(sale.amount) || BigInt(sale.amount) <= 0n || typeof sale.house !== "boolean") throw new Error("Invalid MPP sale");
+      !/^\d+$/.test(sale.amount) || BigInt(sale.amount) <= 0n || typeof sale.house !== "boolean" ||
+      (sale.item !== undefined && !validMppItemKey(sale.item))) throw new Error("Invalid MPP sale");
     // Alarm first: a crash after the SQL commit cannot abandon the KV mirror.
     await this.ctx.storage.setAlarm(Date.now() + FLUSH_MS);
     const key = `${MPP_SALES_PREFIX}${sale.month}`;
@@ -111,7 +134,7 @@ export class CounterLedger extends DurableObject<Env> {
       const evidence = JSON.stringify(sale);
       const existing = sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales WHERE id = ?", sale.id).toArray()[0];
       if (existing) {
-        return existing.evidence === evidence;
+        return sameMppSaleEvidence(JSON.parse(existing.evidence), sale);
       }
       const saved = sql.exec<{ value: string }>("SELECT value FROM rows WHERE key = ?", key).toArray()[0];
       const summary = saved ? JSON.parse(saved.value) as MppSalesSummary :
@@ -120,6 +143,14 @@ export class CounterLedger extends DurableObject<Env> {
       const kind = sale.house ? "house" : "organic";
       summary[kind]++;
       summary[`${kind}_amount_atomic`] = String(BigInt(summary[`${kind}_amount_atomic`]) + BigInt(sale.amount));
+      if (sale.item !== undefined) {
+        // The item's own row moves with the month's; a sale without an
+        // item (the pilot's) leaves the split alone and reads as legacy.
+        const counts: MppItemSummary = (summary.by_item ??= {})[sale.item] ??=
+          { organic: 0, house: 0, organic_amount_atomic: "0", house_amount_atomic: "0" };
+        counts[kind]++;
+        counts[`${kind}_amount_atomic`] = String(BigInt(counts[`${kind}_amount_atomic`]) + BigInt(sale.amount));
+      }
       sql.exec("INSERT INTO mpp_sales (id, evidence) VALUES (?, ?)", sale.id, evidence);
       sql.exec("INSERT INTO rows (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", key, JSON.stringify(summary));
       sql.exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);
@@ -146,7 +177,7 @@ export class CounterLedger extends DurableObject<Env> {
   }
 
   /** One explicit correction per retained organic sale; never overwrite the sale. */
-  async correctMppHouseSale(sale: Parameters<CounterLedger["recordMppSale"]>[0], reason: string): Promise<MppHouseCorrection> {
+  async correctMppHouseSale(sale: MppSaleEvidence, reason: string): Promise<MppHouseCorrection> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !isHouseWallet(this.env, sale.payer) || sale.house !== false ||
       typeof reason !== "string" || !reason.trim() || reason.length > 500) throw new Error("MPP house correction refused");
     // As with a sale, persist a retry obligation before committing the adjustment.
@@ -155,7 +186,8 @@ export class CounterLedger extends DurableObject<Env> {
     const correction = this.ctx.storage.transactionSync(() => {
       const sql = this.schema();
       const raw = sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales WHERE id = ?", sale.id).toArray()[0]?.evidence;
-      if (!raw || raw !== JSON.stringify(sale)) throw new Error("MPP sale evidence differs");
+      if (!raw || !sameMppSaleEvidence(JSON.parse(raw), sale)) throw new Error("MPP sale evidence differs");
+      const stored = JSON.parse(raw) as MppSaleEvidence;
       const prior = sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_house_corrections WHERE id = ?", sale.id).toArray()[0];
       if (prior) return JSON.parse(prior.evidence) as MppHouseCorrection;
       const saved = sql.exec<{ value: string }>("SELECT value FROM rows WHERE key = ?", key).toArray()[0];
@@ -167,6 +199,13 @@ export class CounterLedger extends DurableObject<Env> {
       if (count > summary.organic || amount > BigInt(summary.organic_amount_atomic)) throw new Error("MPP correction exceeds sales");
       summary.reclassified_house = count;
       summary.reclassified_amount_atomic = String(amount);
+      // The item the STORED row names moves too; a pilot row names none
+      // and stays in the month's remainder, which reads as the pilot's.
+      const counts = stored.item !== undefined ? summary.by_item?.[stored.item] : undefined;
+      if (counts) {
+        counts.reclassified_house = (counts.reclassified_house ?? 0) + 1;
+        counts.reclassified_amount_atomic = String(BigInt(counts.reclassified_amount_atomic ?? "0") + BigInt(sale.amount));
+      }
       const row: MppHouseCorrection = { id: sale.id, month: sale.month, payer: sale.payer, amount: sale.amount,
         at: new Date().toISOString(), reason: reason.trim() };
       sql.exec("INSERT INTO mpp_house_corrections (id, evidence) VALUES (?, ?)", sale.id, JSON.stringify(row));

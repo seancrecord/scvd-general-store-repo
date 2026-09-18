@@ -103,6 +103,8 @@ export { lookRoutes } from "@/routes/look";
 export { goodBuyerRoutes } from "@/routes/good-buyer";
 export { preflightRoutes } from "@/routes/preflight";
 export { discoveryRoutes } from "@/routes/discovery";
+export { ucpRoutes } from "@/routes/ucp";
+export { ucpCheckoutRoutes } from "@/routes/ucp-checkout";
 export { launchCheckRoutes } from "@/routes/launch-check";
 export { openingDayRoutes } from "@/routes/opening-day";
 export { provenanceRoutes } from "@/routes/provenance";

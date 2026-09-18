@@ -1,0 +1,266 @@
+{
+  "checked_at": "2026-09-18T00:19:54.167467+00:00",
+  "name": "x402-verify",
+  "version": "1.5.0",
+  "workflow": {
+    "conclusion": "success",
+    "headSha": "b8c19fbb13ee46c9832f7a88875e6cb2871b6d42",
+    "jobs": [
+      {
+        "completedAt": "2026-09-17T21:22:34Z",
+        "conclusion": "success",
+        "databaseId": 105387515575,
+        "name": "publish",
+        "startedAt": "2026-09-17T21:22:07Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-09-17T21:22:08Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-09-17T21:22:08Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:11Z",
+            "conclusion": "success",
+            "name": "Checkout",
+            "number": 2,
+            "startedAt": "2026-09-17T21:22:08Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:11Z",
+            "conclusion": "success",
+            "name": "Set up Node",
+            "number": 3,
+            "startedAt": "2026-09-17T21:22:11Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:12Z",
+            "conclusion": "success",
+            "name": "Resolve the package directory",
+            "number": 4,
+            "startedAt": "2026-09-17T21:22:11Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:12Z",
+            "conclusion": "success",
+            "name": "Check the package against what you typed",
+            "number": 5,
+            "startedAt": "2026-09-17T21:22:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:17Z",
+            "conclusion": "success",
+            "name": "Run the package's own tests",
+            "number": 6,
+            "startedAt": "2026-09-17T21:22:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:24Z",
+            "conclusion": "success",
+            "name": "Reproduce independent verifier vectors",
+            "number": 7,
+            "startedAt": "2026-09-17T21:22:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:28Z",
+            "conclusion": "success",
+            "name": "Verify the installed quickstart",
+            "number": 8,
+            "startedAt": "2026-09-17T21:22:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:29Z",
+            "conclusion": "success",
+            "name": "Show exactly what would be published",
+            "number": 9,
+            "startedAt": "2026-09-17T21:22:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:32Z",
+            "conclusion": "success",
+            "name": "Publish",
+            "number": 10,
+            "startedAt": "2026-09-17T21:22:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:32Z",
+            "conclusion": "success",
+            "name": "Say what happened",
+            "number": 11,
+            "startedAt": "2026-09-17T21:22:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:32Z",
+            "conclusion": "success",
+            "name": "Post Set up Node",
+            "number": 21,
+            "startedAt": "2026-09-17T21:22:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:32Z",
+            "conclusion": "success",
+            "name": "Post Checkout",
+            "number": 22,
+            "startedAt": "2026-09-17T21:22:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-17T21:22:32Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 23,
+            "startedAt": "2026-09-17T21:22:32Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35276254796/job/105387515575"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35276254796"
+  },
+  "registry": {
+    "tarball": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.5.0.tgz",
+    "integrity": "sha512-W0sKF6rGn/fWsuHgf1vSr9RbDwQ0MfqfWfLL3gmtT95dfUCOC8kBY6m8QZ+bkA0h3DuOu5YCeyu4KnWXWWpbgg==",
+    "tarball_sha256": "11eeca1308614eb7063abf1a3c358f88677b924d43fa60084041cfb772d28a5b",
+    "attestations_url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.5.0",
+    "attestations_sha256": "f73f700998ba57c454d41b717c4fb9736e0dff4e83a5e6f2dce17bd9a7469dfe",
+    "npm_audit_signatures": "audited 1 package in 0s\n\n1 package has a verified registry signature\n\n1 package has a verified attestation\n\n"
+  },
+  "all_published_files_match_reviewed_source": true,
+  "files": {
+    "LICENSE": {
+      "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
+      "bytes": 1068
+    },
+    "evidence-bundle.js": {
+      "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "bytes": 9551
+    },
+    "x402-verify.js": {
+      "sha256": "5ea359a2dda8df0888058cf5d1321bb2dc2a6ba59a34e9adedcab3e76417b9f6",
+      "bytes": 41419
+    },
+    "fixtures/issuer-key-document.json": {
+      "sha256": "09fa3404fca2f70fbdc3ea761421c651d914ab22056aed3d7b0fb3bd17d70756",
+      "bytes": 344
+    },
+    "fixtures/start-here/issuer-key.json": {
+      "sha256": "019399acc8a3b59e69f7f29204e86461314ba68549bd38580f5672c5dd7882a6",
+      "bytes": 560
+    },
+    "fixtures/independent/matrix.json": {
+      "sha256": "d97a7433f9323c9398770769a299377764b266a907c1caba743152802fb35b95",
+      "bytes": 164861
+    },
+    "fixtures/offer-expired-but-wellformed.json": {
+      "sha256": "8bd00bc6e0669f729de267744fd590f6dd25b1e77d37374e0e9f240e7279ee9b",
+      "bytes": 935
+    },
+    "fixtures/offer-tampered-payload.json": {
+      "sha256": "30a0c7955220d7fa2e38e376ae432e593516ccca821c2c5829bba3d43d3d16f2",
+      "bytes": 843
+    },
+    "fixtures/offer-valid.json": {
+      "sha256": "509906bef539a7df8eb9d555281966d1766a6e6a38c7a0457073c4cefeeabda9",
+      "bytes": 1110
+    },
+    "package.json": {
+      "sha256": "95d3a84c30645e9ff436d927cdbd8be36cc2506995d9ae428b5d10db07842a2c",
+      "bytes": 1511
+    },
+    "fixtures/start-here/receipt-es256.json": {
+      "sha256": "45bdfcae94d63dcc18c05fe6f81388f5819890a196a1e8c44e0e3297352f1092",
+      "bytes": 597
+    },
+    "fixtures/receipt-missing-payer.json": {
+      "sha256": "a071e8bd9a7b18966e31aa9170b57f766032674c210ba6634f77c931f34f6977",
+      "bytes": 762
+    },
+    "fixtures/start-here/receipt-tampered.json": {
+      "sha256": "07409ebf6846fa09fed38b607b8b227b02c1df71579ec0a6506ea03f1617d1b2",
+      "bytes": 603
+    },
+    "fixtures/receipt-valid.json": {
+      "sha256": "666bb748b58daa4b7473db2f1b68a0b6b5e97566bc12f902fe0534eaddd4c518",
+      "bytes": 1090
+    },
+    "fixtures/receipt-wrong-key.json": {
+      "sha256": "8b161596280b9943f1b00a6814cdce0c698b4dafeb9b95c07fd9e5c0aae26586",
+      "bytes": 961
+    },
+    "fixtures/start-here/receipt.json": {
+      "sha256": "34a6a41737b0e8b86a76c6f923da232be26cf60768a9fc11156c6080df36e3cf",
+      "bytes": 597
+    },
+    "CHANGELOG.md": {
+      "sha256": "78992a7ad4525176152339b489f030213083e6e6c61ad119166451910fca90e0",
+      "bytes": 5118
+    },
+    "fixtures/independent/README.md": {
+      "sha256": "f94705fc218c5d91b648317cc33a0619175e27cc0913b6ccc02daac4bc5c64e4",
+      "bytes": 5590
+    },
+    "fixtures/start-here/README.md": {
+      "sha256": "6c027dc167ff9523928c37fa74ef151b764a633a44be7a71d49ec39529563bc3",
+      "bytes": 1330
+    },
+    "README.md": {
+      "sha256": "ae469c705699f728ef92baa303ad1713a38a42e6b9b04acf4f7e913482580e34",
+      "bytes": 30464
+    },
+    "evidence-cli.mjs": {
+      "sha256": "af92a8fc0f080c98992be587c530cca5b2d8964e101c5f351f29032e0cfe70f9",
+      "bytes": 8158
+    },
+    "examples/verify-receipt.mjs": {
+      "sha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8",
+      "bytes": 1334
+    },
+    "evidence-bundle.d.ts": {
+      "sha256": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a",
+      "bytes": 1831
+    },
+    "x402-verify.d.ts": {
+      "sha256": "1b85b8dd7b182b2cdf133f8807cec151e2d7e07b3500713223d0be956a540bec",
+      "bytes": 9081
+    }
+  },
+  "fresh_registry_install_verification": {
+    "valid": true,
+    "evidence_complete": true,
+    "missing_evidence": [],
+    "problems": [],
+    "context_authenticated": false,
+    "timestamp": {
+      "status": "unverified",
+      "verified": false
+    },
+    "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+    "does_not_establish": [
+      "issuer identity without an independently trusted key",
+      "issue time or key authorization at issue time",
+      "Bitcoin anchoring without independent OTS verification",
+      "truth, settlement, delivery, completeness of the observed world",
+      "authenticity of context, filenames or captured key history"
+    ],
+    "source_sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+  },
+  "limits": [
+    "Offline replay of a previous retained original is package qualification, not a new buyer completion."
+  ]
+}

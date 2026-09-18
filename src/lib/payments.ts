@@ -165,8 +165,24 @@ export async function recordPolygonSettle(
   }
 }
 
-/** Tier multipliers for pay-what-it-deserves items: minimum, generous, patron-of-the-arts. */
-const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
+/**
+ * Tier multipliers for pay-what-it-deserves items: minimum, generous,
+ * patron-of-the-arts.
+ *
+ * EXPORTED 2026-09-16, when the UCP adapter needed to name the tiers
+ * it was projecting as catalog variants. A second copy of [1, 2, 5]
+ * beside this one would be a pricing table that could drift from the
+ * till without anything failing, so the adapter imports these instead
+ * — and derives the tier prices themselves from priceTiersUsdc().
+ */
+export const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
+
+/** The same three tiers in the words the store already uses for them. */
+export const PWID_TIER_LABELS = [
+  "minimum",
+  "generous",
+  "patron-of-the-arts",
+] as const;
 
 export function pennyPageTiersUsdc(): number[] {
   return PWID_TIER_MULTIPLIERS.map(multiplier => Math.round(PENNY_PAGE_USDC * multiplier * 100) / 100);
@@ -1301,9 +1317,25 @@ function isSettleTimeout(error: unknown): error is Error {
 }
 
 export interface PaymentStack {
-  facilitator: KvWarmFacilitatorClient;
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
+  /**
+   * THE FACILITATOR ITSELF, exposed 2026-09-16 so a verified-payment
+   * adapter can reach the same verify/settle the HTTP gate uses.
+   *
+   * Nothing about the gate changes. What this makes possible is a
+   * caller that already holds its own frozen terms — a UCP checkout —
+   * asking the SAME facilitator the same question, instead of
+   * synthesizing an HTTP request to get at it, or worse, growing a
+   * second verification path. The MPP seam already takes its verifier
+   * as an injected callback for exactly this reason; this is where the
+   * production callback comes from.
+   *
+   * It is the client, not a new policy: no admission, no accounting,
+   * no decline bookkeeping and no settlement rules live on it. Those
+   * stay downstream where every protocol shares them.
+   */
+  facilitator: KvWarmFacilitatorClient;
 }
 
 /**

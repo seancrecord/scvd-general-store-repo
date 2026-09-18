@@ -188,10 +188,13 @@ accounting, with the before-expiry replay gap recorded in
 The readiness follow-up adds per-purchase native house corrections without
 rewriting original evidence, HTTP request outcomes by protocol in admin, and
 enabled capabilities derived across catalog/contracts/OpenAPI/guide. Existing
-x402 discovery stays intact; native canonical discovery/indexer interoperability
-is still unqualified because both draft schemas claim `x-payment-info` with
-incompatible shapes. Ongoing activation and the expansion below remain separate
-release work. Full CI remains one shared gate, not one suite per protocol.
+x402 discovery stays intact. The directory compatibility follow-up adds the
+enabled MPP method/intent/currency to the AgentCash protocol array without
+replacing the price or legacy x402 fields. This does not claim conformance to
+the separate MPP draft extension. The directory reader’s EVM/Base parsing
+mismatch and actual admission remain separate qualification work. Expansion
+across the HTTP shelf merged in #790; the broader transports, networks and
+assets below remain separate. Full CI remains one shared gate, not one suite per protocol.
 
 ## Whole-store expansion and release
 

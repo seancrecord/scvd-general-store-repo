@@ -900,8 +900,32 @@ export async function recordSettlement(
   path: string,
   signals: SettlementSignals,
 ): Promise<void> {
+  return recordSettlementKeyed(env, itemKeyFromPath(path), signals);
+}
+
+/**
+ * THE SAME TILL, KEYED BY THE ITEM ITSELF. The HTTP and MCP doors
+ * derive the item from the request path, which encodes it. A UCP
+ * purchase's path is a checkout id and encodes nothing; its item is
+ * the frozen line on the order, and the order chapter books from that
+ * line. Same counters, same event stream, same wallet memory — the
+ * sale is attributed to the thing sold, not to the door it came in by.
+ */
+export async function recordSettlementForItem(
+  env: Env,
+  itemId: string,
+  signals: SettlementSignals,
+): Promise<void> {
+  return recordSettlementKeyed(env, itemId, signals);
+}
+
+async function recordSettlementKeyed(
+  env: Env,
+  itemKey: string,
+  signals: SettlementSignals,
+): Promise<void> {
   const month = metricsMonth();
-  const event = buildEvent(env, "settle", itemKeyFromPath(path), signals);
+  const event = buildEvent(env, "settle", itemKey, signals);
   event.payment_protocol = SETTLEMENT_ACCOUNTING.protocol;
   event.payment_currency = SETTLEMENT_ACCOUNTING.currency;
   if (signals.network) event.payment_network = signals.network;

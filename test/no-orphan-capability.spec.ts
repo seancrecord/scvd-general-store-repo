@@ -33,6 +33,47 @@ import { app } from "@/index";
  * fails the staleness checks below.
  */
 const DELIBERATELY_QUIET: Record<string, string> = {
+  /*
+   * THE UCP SUPPORTING DOCUMENTS (2026-09-16). /ucp, /ucp/v1 and the
+   * two catalog operations are named in the guide and reachable from
+   * there; these are the documents those doors point AT. A UCP
+   * platform never guesses them — it reads /.well-known/ucp, which is
+   * listed, and follows the `schema` and `spec` URLs the profile
+   * hands it. Listing six schema files in a guide a human reads would
+   * advertise six doors that are one door, the same argument the
+   * redirect block below makes.
+   */
+  /*
+   * THE CHECKOUT DOORS (2026-09-16), quiet on purpose and quiet for a
+   * reason that is written down in the profile itself: this store
+   * cannot settle a payment through UCP yet, so it advertises no
+   * checkout capability. Listing these doors on the surfaces agents
+   * read would be advertising a way to buy that does not work — the
+   * exact overclaim the missing capability exists to prevent. They go
+   * on the surfaces the day Complete settles, and not before.
+   */
+  "/ucp/v1/checkout-sessions":
+    "the checkout is built but cannot settle yet, and the profile advertises no checkout capability for that reason; listing it where agents read would advertise a way to buy that does not work",
+  // The walk probes a static prefix, so the two sub-doors need their
+  // own rows. Same reason, and it will be the same removal.
+  "/ucp/v1/checkout-sessions/cancel":
+    "withdraws a checkout the caller already holds; reached from that checkout, not from a discovery surface, and quiet for the same reason the checkout is",
+  "/ucp/v1/checkout-sessions/complete":
+    "cannot settle yet and refuses in writing, naming the x402 door that does take the money; it goes on the surfaces the day it works",
+  "/ucp/v1/orders":
+    "the order a completed checkout points at, reached from that checkout's confirmation and from nowhere else; quiet until Complete opens, and listed the same day it does",
+  "/.well-known/ucp.json":
+    "alias of /.well-known/ucp, the path the protocol names and the guide lists; served so a reader who guessed .json gets the profile instead of a 404 that reads as 'no UCP here'",
+  "/ucp/schemas/items":
+    "per-item purchase-input schemas, generated from the same buyInputSchema() the 402 and the MCP shelf use; each variant's metadata links its own, so a reader arrives holding the URL",
+  "/ucp/schemas/payment/usdc-x402.json":
+    "the payment handler's JSON Schema; the profile's payment_handlers entry carries this URL, which is how a negotiator reaches it",
+  "/ucp/schemas/shopping-inputs.json":
+    "the purchase-inputs extension schema; the profile's capability entry carries this URL",
+  "/ucp/specs/payment/usdc-x402":
+    "the human-readable half of the payment handler, linked from the handler's own spec field",
+  "/ucp/specs/shopping-inputs":
+    "the human-readable half of the inputs extension, linked from the capability's own spec field",
   "/webhooks/desvela-registry":
     "private Desvela Registry Watch ingress authenticated by a per-watch HMAC secret; registered separately by the keeper, documented in docs/DESVELA_REGISTRY_WATCH.md, and reviewed at /admin/desvela-registry.json. It is not a shopping or discovery capability for visiting agents",
   // ---- keeper-ruled redirects, not rooms (they 301 to real pages;
