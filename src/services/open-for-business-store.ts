@@ -52,8 +52,23 @@ function isIssue(value: unknown): value is OpenForBusinessIssue {
   );
 }
 
-/** Every published issue, newest week first. */
-export async function listOpenForBusinessIssues(env: Env): Promise<OpenForBusinessIssue[]> {
+export interface OpenForBusinessShelf {
+  /** Newest week first. */
+  issues: OpenForBusinessIssue[];
+  /**
+   * WHAT TRUNCATION MEANS HERE (rule 52). The cap is 200 issues, four
+   * years of weeklies, so this is not expected to be true in the
+   * shelf's lifetime; if it ever is, the list is the newest issues
+   * the read reached and NOT the whole shelf, and every index says so
+   * rather than presenting a short list as complete. A buyer asking
+   * for a week by URL is unaffected: findOpenForBusinessIssue reads
+   * one key and never lists.
+   */
+  truncated: boolean;
+}
+
+/** Every published issue the read could see, newest week first, with the honest flag beside it. */
+export async function listOpenForBusinessShelf(env: Env): Promise<OpenForBusinessShelf> {
   const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.openForBusinessIssuePrefix, cap: ISSUE_CAP });
   const values = await bulkGetJson<OpenForBusinessIssue>(env.ORDERS, listed.names);
   const issues: OpenForBusinessIssue[] = [];
@@ -61,7 +76,12 @@ export async function listOpenForBusinessIssues(env: Env): Promise<OpenForBusine
     const value = values.get(name);
     if (isIssue(value)) issues.push(value);
   }
-  return issues.sort((a, b) => b.week.localeCompare(a.week));
+  return { issues: issues.sort((a, b) => b.week.localeCompare(a.week)), truncated: listed.truncated };
+}
+
+/** The issues alone, for readers that carry the shelf's `truncated` flag some other way or cannot. */
+export async function listOpenForBusinessIssues(env: Env): Promise<OpenForBusinessIssue[]> {
+  return (await listOpenForBusinessShelf(env)).issues;
 }
 
 export async function findOpenForBusinessIssue(env: Env, week: string): Promise<OpenForBusinessIssue | undefined> {

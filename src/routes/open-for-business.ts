@@ -22,7 +22,7 @@ import {
 } from "@/store/copy/open-for-business";
 import {
   findOpenForBusinessIssue,
-  listOpenForBusinessIssues,
+  listOpenForBusinessShelf,
   type OpenForBusinessIssue,
 } from "@/services/open-for-business-store";
 import type { HonoEnv } from "@/types";
@@ -78,7 +78,7 @@ function indexRow(issue: OpenForBusinessIssue, base: string): Record<string, unk
 }
 
 /** The twin: the five answers (60.4), the three sentences (60.2), and the shelf. */
-function indexTwin(base: string, rows: unknown[], pagination?: Record<string, unknown>) {
+function indexTwin(base: string, rows: unknown[], truncated: boolean, pagination?: Record<string, unknown>) {
   return {
     artifact: "open_for_business_index",
     name: OPEN_FOR_BUSINESS_NAME,
@@ -107,13 +107,16 @@ function indexTwin(base: string, rows: unknown[], pagination?: Record<string, un
     what_this_is_not: OPEN_FOR_BUSINESS_IS_NOT,
     checkout: publicationCheckout(base),
     ...(pagination ?? {}),
+    /* Rule 52: a list that could not see the whole shelf says so. */
+    shelf_complete: !truncated,
+    ...(truncated ? { shelf_truncated: "The read stopped at its cap: these are the newest issues it reached, not the whole shelf. Any issue is still readable at its own URL." } : {}),
     issues: rows,
   };
 }
 
 openForBusinessRoutes.get(PATH, async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const issues = await listOpenForBusinessIssues(c.env);
+  const { issues, truncated } = await listOpenForBusinessShelf(c.env);
   const rows = issues.map((issue) => indexRow(issue, base));
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const shelf = issues.length === 0
@@ -143,6 +146,7 @@ openForBusinessRoutes.get(PATH, async (c) => {
         </section>
         <section>
           <h2>Issues</h2>
+          ${truncated ? `<p class="menu-meta">The read stopped at its cap: these are the newest issues it reached, not the whole shelf. Any issue is still readable at its own URL.</p>` : ""}
           ${shelf}
         </section>
         <section>
@@ -180,7 +184,7 @@ openForBusinessRoutes.get(PATH, async (c) => {
   }
   const page = publicationPage(rows, `${base}${PATH}`, c.req.query("page"));
   if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
-  const twin = c.req.query("view") === "compact" ? indexTwin(base, page!.rows, page!.pagination) : indexTwin(base, rows);
+  const twin = c.req.query("view") === "compact" ? indexTwin(base, page!.rows, truncated, page!.pagination) : indexTwin(base, rows, truncated);
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
       base,
