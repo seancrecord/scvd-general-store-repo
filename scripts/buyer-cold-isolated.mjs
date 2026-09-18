@@ -111,7 +111,7 @@ export async function scoreCohort(root) {
   return {...cohortSummary(rows),...(capability?{capability}:{}),scorer_sha256:hash(fs.readFileSync(new URL('lib/buyer-cold.mjs',import.meta.url))),plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),runs:rows};
 }
 // The exact collector bytes, frozen beside every acquisition and probe.
-const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','lib/buyer-cold.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','../verifier/evidence-bundle.js','../verifier/x402-verify.js'];
+const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','buyer-recipient-handoff.mjs','lib/buyer-cold.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','../verifier/evidence-bundle.js','../verifier/x402-verify.js'];
 function freezeInstrument(root) {
   const files = {};
   for (const name of INSTRUMENT_FILES) {
