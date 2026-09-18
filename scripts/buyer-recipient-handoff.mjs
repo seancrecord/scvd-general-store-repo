@@ -20,11 +20,13 @@ export function prepareHandoff(root,selection,out,frozen=null) {
     if(run.subject!==frozen.plan.subject)throw Error('Buyer subject differs from the frozen plan.');
     if(!p||p.protocol_sha256!==expected.protocol_sha256||p.prompt_sha256!==hash(expected.prompt)||frozen.prompt!==expected.prompt||JSON.stringify(p.inputs)!==JSON.stringify(expected.inputs)||Object.keys(r).some(key=>JSON.stringify(p[key])!==JSON.stringify(r[key])))throw Error('Recipient protocol or prompt differs from the frozen plan.');
   }
+  const unclassified=selection.citation_policy==='unclassified';
+  if(selection.citation_policy!==undefined&&!unclassified)throw Error('Unknown citation policy.');
   const choices=new Map(selection.files.map(row=>[row.file,row]));
   if(choices.size!==selection.files.length||choices.size!==retained.length||new Set(retained.map(row=>row.file)).size!==retained.length||retained.some(row=>!choices.has(row.file)))throw Error('Selection must name each retained file exactly once.');
   const inputs=retained.map((ref,i)=>{
     const row=choices.get(ref.file);
-    if(typeof row.supply!=='boolean'||typeof row.cited!=='boolean'||!ROLES.includes(row.role))throw Error('Each file needs supply/cited booleans and a known declared role.');
+    if(typeof row.supply!=='boolean'||(unclassified?selection.scope!=='buyer_report'||!row.supply||row.cited!==null||row.role!=='other':typeof row.cited!=='boolean')||!ROLES.includes(row.role))throw Error('Each file needs supply/cited booleans and a known declared role.');
     if(selection.scope==='buyer_report'&&row.cited&&!row.supply)throw Error('A cited file is omitted from a whole-report handoff.');
     const bytes=readEvidenceBytes(root,ref);
     if(bytes.length!==ref.bytes)throw Error('Retained file size disagrees with capture.');
@@ -38,13 +40,13 @@ export function prepareHandoff(root,selection,out,frozen=null) {
   const final=run.cell.host==='codex'?events.filter(e=>e.type==='item.completed'&&e.item?.type==='agent_message').at(-1)?.item.text:events.filter(e=>e.type==='result').at(-1)?.result;
   if(typeof final!=='string'||!final.trim())throw Error('No buyer final report to hand off.');
   const machinery=['evidence-bundle.js','x402-verify.js'].map(file=>({file,bytes:fs.readFileSync(new URL('../verifier/'+file,import.meta.url))}));
-  const manifest={...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),schema_version:1,scope:selection.scope,subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
+  const manifest={...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),schema_version:1,scope:selection.scope,citation_policy:unclassified?'unclassified':'reviewer_declared',subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
     selection_sha256:hash(JSON.stringify(selection)),capture_state:run.retained_artifacts.state,capture_issues:run.retained_artifacts.issues??[],
     files:inputs.map(x=>x.row),buyer_report:{file:'buyer-handoff.md',sha256:hash(final),source:'Verbatim final buyer text from the hash-checked host trace.'},
     machinery:machinery.map(x=>({file:x.file,sha256:hash(x.bytes),source:'Public verifier supplied by the reviewer, not a buyer-exported artifact.'})),
     preparer_sha256:hash(fs.readFileSync(new URL(import.meta.url))),
     limit:'The inventory verifies capture bytes, not signatures. Declared roles and citation choices are reviewer labels; independently check them against the report and contents. One signed artifact does not authenticate other retained history. Retained but omitted files are unavailable to this recipient, not missing from the buyer capture.'};
-  const prompt=frozen?.prompt??inventoryRecipientPrompt(run.subject,selection.scope);
+  const prompt=frozen?.prompt??inventoryRecipientPrompt(run.subject,selection.scope,{unclassified});
   // Finish all validation before creating the workspace; existing acquisitions
   // are never rewritten, even on a repeated preparation command.
   fs.mkdirSync(out,{mode:0o700});fs.mkdirSync(path.join(out,'artifacts'),{mode:0o700});

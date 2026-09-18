@@ -1,5 +1,9 @@
 # Buyer evidence clarification and interruption handling
 
+The schema-5 section below records this repair. The subsequent
+[integrated runner guide](BUYER_HARNESS.md) documents schema 6, now required
+for new live CLI runs; earlier plans remain readable for previews and scoring.
+
 This follows the [integrated buyer record](../research/integrated-buyer-2026-09-18/REPORT.md)
 and the separate [directed-release cohort](../research/takeoff-directed-release-2026-09-17/REPORT.md).
 Their outcomes and captured bytes stay unchanged. This is an instrument and
@@ -105,7 +109,11 @@ evidence or an honest incomplete result; this repair does not widen that window.
 
 ## Full-inventory protocol integration
 
-The schema-5 recipient can now choose
+The current live controller uses schema 6 through the [operating guide](BUYER_HARNESS.md).
+The schema-5 paths below remain usable for preparation and historical inspection;
+they do not establish the controller's offline qualification or completed-recipient gate.
+
+The schema-5 preparer compatibility path can choose
 `input_scope: "all-retained-and-buyer-report"` before qualification. This is
 an alternative to the original signed-pair subset, not a reinterpretation of
 that subset or the historical cohorts. The runner freezes the inventory-aware
