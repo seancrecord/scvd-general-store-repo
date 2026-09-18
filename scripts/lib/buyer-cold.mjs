@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash, generateKeyPairSync, randomBytes, sign} from 'node:crypto';
 import {validEnvelope} from './buyer-run-evidence.mjs';
+import {validateRecipientVerifier,RECIPIENT_VERIFIER_FILES} from './recipient-verifier.mjs';
 import {createEvidenceBundle, verifyEvidenceBundle} from '../../verifier/evidence-bundle.js';
 
 export const CAPTURE_MAX_BYTES = 32 * 1024 * 1024;
@@ -38,6 +39,7 @@ function publicUrl(value) {
   } catch { return false; }
 }
 export function validatePlan(plan) {
+  validateRecipientVerifier(plan);
   if (![2,3,4,5,6].includes(plan?.schema_version) || plan.spend_usdc !== 0 || !publicUrl(plan.subject)) throw new Error('Cold plan requires version 2, 3, 4, 5 or 6, a public HTTPS subject and zero spend.');
   for (const k of ['wall_ms', 'tool_calls', 'output_bytes', 'output_tokens']) {
     if (!Number.isSafeInteger(plan.budgets?.[k]) || plan.budgets[k] <= 0) throw new Error(`Invalid budget: ${k}`);
@@ -120,8 +122,9 @@ export function recipientLaunch(plan,cwd,output,context) {
   launch.args.splice(launch.args.length-1,0,'-c','web_search="disabled"');
   launch.args[launch.args.indexOf('sandbox_workspace_write.network_access=true')]='sandbox_workspace_write.network_access=false';
   if(r.input_scope==='all-retained-and-buyer-report'){
-    const inputs=['input-manifest.json','artifacts/','buyer-handoff.md','x402-verify.js','evidence-bundle.js','package.json'];
-    const prompt=inventoryRecipientPrompt(plan.subject,'buyer_report',{unclassified:plan.schema_version===6,maxBytes:plan.budgets.artifact_bytes})+`All retained files are supplied under artifacts/; input-manifest.json records their exact names and hashes, including any capture gaps. package.json declares the public verifier modules. Stop within ${r.budgets.tool_calls} tool calls and ${Math.ceil(r.budgets.wall_ms/1000)} seconds; aim for ${r.budgets.output_tokens} output tokens. Output tokens are advisory; the byte cap is ${r.budgets.output_bytes}. No delegation.\n`;
+    const inputs=['input-manifest.json','artifacts/','buyer-handoff.md',...(r.verifier?RECIPIENT_VERIFIER_FILES:['x402-verify.js','evidence-bundle.js','package.json'])];
+    const cli=r.verifier?`The supplied evidence-cli.mjs and package.json are pinned verifier tooling, not buyer evidence or proof of registry publication. You can run node evidence-cli.mjs verify-source artifacts/ORIGINAL_FILE --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes ${plan.budgets.artifact_bytes} --subject EXACT_SUBJECT_URL. Choose the original file and evaluate the key basis from the supplied inventory; replace the placeholders and quote shell arguments as needed. This example does not select a file or establish its result. Read status, signed pointers, observation dates, omissions and scope limits; exit 0 alone does not establish a matching fresh observation. You may also use the library API or independent local cryptography.\n`:'';
+    const prompt=inventoryRecipientPrompt(plan.subject,'buyer_report',{unclassified:plan.schema_version===6,maxBytes:plan.budgets.artifact_bytes})+cli+`All retained files are supplied under artifacts/; input-manifest.json records their exact names and hashes, including any capture gaps. package.json declares the public verifier modules. Stop within ${r.budgets.tool_calls} tool calls and ${Math.ceil(r.budgets.wall_ms/1000)} seconds; aim for ${r.budgets.output_tokens} output tokens. Output tokens are advisory; the byte cap is ${r.budgets.output_bytes}. No delegation.\n`;
     return {...launch,budgets:{...r.budgets},protocol_sha256:hash(JSON.stringify(r)),inputs,prompt};
   }
   const inputs=['original-response.json','issuer-key.json','buyer-handoff.md','x402-verify.js','evidence-bundle.js','package.json'];

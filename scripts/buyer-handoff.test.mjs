@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {generateKeyPairSync,sign} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {hash} from './lib/buyer-cold.mjs';
 import {prepareHandoff} from './buyer-recipient-handoff.mjs';
@@ -135,5 +136,73 @@ for(const mutation of [null,'plan after qualification','different cell'])test(`f
   const result=spawnSync(process.execPath,['scripts/buyer-recipient-handoff.mjs',source,selection,f.out,'--frozen-cohort',cohort],{encoding:'utf8'});
   if(mutation){assert.notEqual(result.status,0);assert.equal(fs.existsSync(f.out),false);}
   else {assert.equal(result.status,0,result.stderr);assert.equal(fs.readFileSync(path.join(f.out,'recipient-prompt.txt'),'utf8'),frozen.prompt);assert.equal(JSON.parse(result.stdout).supplied,f.run.retained_artifacts.files.length);}
+ }finally{f.clean();}
+});
+
+// Opt in only for a new frozen plan: old cohorts keep their library-only prompt.
+function cliPlan(){
+ const plan=structuredClone(fullPlan);plan.schema_version=6;
+ const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
+ plan.recipient.verifier={name:pkg.name,version:pkg.version,files:Object.fromEntries(['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json'].map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]))};
+ return plan;
+}
+async function cliFrozen(plan=cliPlan()){
+ const {recipientLaunch}=await import('./lib/buyer-cold.mjs');
+ const launch=recipientLaunch(plan,'<recipient>','<output>',{codex:{disabled_skills:[]}});
+ return {plan,protocol:{...plan.recipient,protocol_sha256:launch.protocol_sha256,inputs:launch.inputs,prompt_sha256:hash(launch.prompt)},prompt:launch.prompt};
+}
+test('a new frozen CLI handoff supplies executable pinned package bytes without selecting buyer evidence',async()=>{
+ const f=fixture();try{
+  const frozen=await cliFrozen();f.selection.scope='buyer_report';f.selection.citation_policy='unclassified';
+  for(const row of f.selection.files){row.supply=true;row.cited=null;row.role='other';}
+  assert.ok(frozen.protocol.inputs.includes('evidence-cli.mjs'));
+  assert.match(frozen.prompt,/node evidence-cli\.mjs verify-source artifacts\/ORIGINAL_FILE/);
+  assert.match(frozen.prompt,/--subject EXACT_SUBJECT_URL/);
+  const m=prepareHandoff(f.root,f.selection,f.out,frozen);
+  assert.deepEqual(m.verifier,frozen.plan.recipient.verifier);
+  assert.equal(m.machinery.length,4);
+  for(const [file,digest] of Object.entries(frozen.plan.recipient.verifier.files))assert.equal(hash(fs.readFileSync(path.join(f.out,file))),digest);
+  assert.ok(m.files.every(row=>row.supplied&&row.cited_in_report===null));
+  const result=spawnSync(process.execPath,['evidence-cli.mjs','--help'],{cwd:f.out,encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);assert.match(result.stdout,/--subject/);
+  const old=await frozenFixture();assert.ok(!old.protocol.inputs.includes('evidence-cli.mjs'));assert.doesNotMatch(old.prompt,/node evidence-cli/);
+ }finally{f.clean();}
+});
+for(const change of ['missing hash','extra file','bad hash','wrong package','legacy schema','subset'])test(`CLI plan refuses ${change}`,async()=>{
+ const plan=cliPlan();
+ if(change==='missing hash')delete plan.recipient.verifier.files['evidence-cli.mjs'];
+ if(change==='extra file')plan.recipient.verifier.files['../extra.js']='0'.repeat(64);
+ if(change==='bad hash')plan.recipient.verifier.files['evidence-cli.mjs']='not-a-hash';
+ if(change==='wrong package')plan.recipient.verifier.name='another-package';
+ if(change==='legacy schema')plan.schema_version=5;
+ if(change==='subset')plan.recipient.input_scope='signed-pair-and-buyer-report';
+ await assert.rejects(cliFrozen(plan));
+});
+for(const change of ['changed CLI','changed package metadata','wrong version'])test(`CLI handoff refuses ${change} before writing files`,async()=>{
+ const f=fixture();try{
+  const plan=cliPlan();
+  if(change==='changed CLI')plan.recipient.verifier.files['evidence-cli.mjs']='0'.repeat(64);
+  if(change==='changed package metadata')plan.recipient.verifier.files['package.json']='0'.repeat(64);
+  if(change==='wrong version')plan.recipient.verifier.version='999.0.0';
+  const frozen=await cliFrozen(plan);f.selection.scope='buyer_report';for(const row of f.selection.files)row.supply=true;
+  assert.throws(()=>prepareHandoff(f.root,f.selection,f.out,frozen),/verifier|package/i);assert.equal(fs.existsSync(f.out),false);
+ }finally{f.clean();}
+});
+
+test('the supplied CLI verifies the retained original and excludes unsigned history in the actual recipient directory',async()=>{
+ const f=fixture();try{
+  const pair=generateKeyPairSync('ed25519'),key=pair.publicKey.export({type:'spki',format:'der'}).subarray(-32).toString('hex');
+  const snapshot={version:1,sequence:1,taken_at:'2026-09-18T00:00:00Z',previous_digest:null,source:'ward_round',week:'2026-W38',round:{hosts:[{url:fullPlan.subject,observed_at:'2026-09-07T00:00:00Z',gaps:['delivery unobserved']}]}};
+  const payload=JSON.stringify(snapshot),doc={snapshot,digest:hash(payload),signature:sign(null,Buffer.from(payload),pair.privateKey).toString('hex'),public_key:key,history:[{url:fullPlan.subject,observed_at:'2026-09-18T00:00:00Z'}]};
+  const original=JSON.stringify(doc),ref=f.run.retained_artifacts.files[0];
+  fs.writeFileSync(path.join(f.root,ref.file),original);ref.bytes=Buffer.byteLength(original);ref.sha256=hash(original);fs.writeFileSync(path.join(f.root,'run.json'),JSON.stringify(f.run));
+  f.selection.scope='buyer_report';for(const row of f.selection.files)row.supply=true;
+  const frozen=await cliFrozen(),m=prepareHandoff(f.root,f.selection,f.out,frozen);
+  const args=['evidence-cli.mjs','verify-source',m.files[0].destination,'--public-key',key,'--max-bytes',String(fullPlan.budgets.artifact_bytes),'--subject',fullPlan.subject];
+  const result=spawnSync(process.execPath,args,{cwd:f.out,encoding:'utf8'});assert.equal(result.status,0,result.stderr);
+  const report=JSON.parse(result.stdout);assert.equal(report.valid,true);assert.equal(report.source_sha256,hash(original));assert.equal(report.subject_evidence.matched_observations,1);assert.equal(report.subject_evidence.observations[0].value.observed_at,'2026-09-07T00:00:00Z');assert.deepEqual(report.subject_evidence.observations[0].value.gaps,['delivery unobserved']);
+  doc.snapshot.round.hosts[0].observed_at='2026-09-18T00:00:00Z';doc.digest=hash(JSON.stringify(doc.snapshot));fs.writeFileSync(path.join(f.out,m.files[0].destination),JSON.stringify(doc));
+  const tampered=spawnSync(process.execPath,args,{cwd:f.out,encoding:'utf8'});assert.equal(tampered.status,1);assert.equal(JSON.parse(tampered.stdout).subject_evidence.status,'not_verified');
+  assert.equal(fs.readFileSync(path.join(f.root,ref.file),'utf8'),original);
  }finally{f.clean();}
 });
