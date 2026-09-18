@@ -1,4 +1,3 @@
-import { MPP_CHECKOUT_ITEM } from "@/lib/mpp-checkout-capability";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { BASE_USDC } from "@/lib/base-rpc";
 import { USDC_DECIMALS } from "@/lib/payments";
@@ -515,9 +514,12 @@ export async function computeStatsDiagnosed(
     if (stats.organic_by_rail) stats.organic_by_rail.base += mpp.organic;
     else stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0,
       rail_not_recorded: organicSettlements, computed_at: new Date().toISOString() };
-    const nativeTill = tillByItem[MPP_CHECKOUT_ITEM] ??= { organic: 0, house: 0 };
-    nativeTill.organic += mpp.organic;
-    nativeTill.house += mpp.house;
+    // Per item, corrections applied; the pilot's unsplit rows arrive under LEGACY_NATIVE_ITEM.
+    for (const [item, counts] of Object.entries(mpp.by_item)) {
+      const nativeTill = tillByItem[item] ??= { organic: 0, house: 0 };
+      nativeTill.organic += counts.organic;
+      nativeTill.house += counts.house;
+    }
   }
   const rail = stats.organic_by_rail;
   stats.payments = paymentRollup(stats.payment_sources, rail ? [

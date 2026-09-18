@@ -1,5 +1,5 @@
 import { recordPaymentOperation } from "@/lib/payment-operations";
-import { mppPaymentHeader, mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
+import { mppPaymentHeader, nativeOfferAdvertised } from "@/lib/mpp-checkout-capability";
 import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { publicationResponse, type PublicationSnapshot } from "@/lib/publication-recovery";
@@ -813,7 +813,7 @@ export function createPaymentGate(loadNative?: () => Promise<NativeCheckout>): M
     if (status !== undefined) recordPaymentOperation(c, status);
     if (status === 402) {
       attachChallengeHint(c, response);
-      if (loadNative && !paymentHeaderOf(c) && !mppPaymentHeader(c.req.header("Authorization")) && mppCheckoutEnabled(c.env, c.req.path, c.req.method)) {
+      if (loadNative && !paymentHeaderOf(c) && !mppPaymentHeader(c.req.header("Authorization")) && nativeOfferAdvertised(c.env, c.req.path, c.req.method)) {
         // Optional negotiation cannot take the independently usable x402 door down.
         try { await (await loadNative()).attachMppChallenge(c, response ?? c.res); } catch { /* no native offer */ }
       }

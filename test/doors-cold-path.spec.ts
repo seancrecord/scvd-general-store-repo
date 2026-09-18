@@ -60,7 +60,10 @@ beforeAll(async () => {
   await markKeeperSeen(testEnv);
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(FROZEN);
-  const withoutWallet = { ...testEnv, STORE: binding } as Env;
+  // No field wallet, but the challenge key: the doors as deployed once the
+  // keeper's press lands it (KEEPER_LIST). Without it every native door is
+  // handed over, which is exactly the cold path this spec says never happens.
+  const withoutWallet = { ...testEnv, STORE: binding, MPP_CHALLENGE_KEY: "cold-path-challenge-key-0123456789ab" } as Env;
   delete (withoutWallet as { FIELD_WALLET_KEY?: string }).FIELD_WALLET_KEY;
   keylessDoorsEnv = withoutWallet;
 });

@@ -1,4 +1,4 @@
-import { certificateProtocol } from "@/services/certificate-accounting";
+import { accountingContextFor, certificateProtocol } from "@/services/certificate-accounting";
 import { isHouseWallet } from "@/lib/channel";
 import { canonicalAddress } from "@/lib/addresses";
 import { counterLedger } from "@/lib/counter-ledger";
@@ -108,6 +108,8 @@ export async function raiseCountersToRecords(env: Env): Promise<CounterRaiseResu
     const cert = record?.certificate;
     if (cert?.settlement_tx) certByTx.set(cert.settlement_tx.toLowerCase(), cert);
   }
+  const context = await accountingContextFor(env, certByTx.values(),
+    (payer, transaction) => records.has(KV_KEYS.payerSettle(payer, transaction)));
 
   const expected = new Map<string, number>();
   const raise = (key: string, by: number) => expected.set(key, (expected.get(key) ?? 0) + by);
@@ -120,7 +122,7 @@ export async function raiseCountersToRecords(env: Env): Promise<CounterRaiseResu
     const wallet = name.slice(prefixLength).split(":")[0] ?? "";
     if (!wallet || isHouseWallet(env, wallet) || skipWallets.has(canonicalAddress(wallet))) continue;
     const cert = record.transaction ? certByTx.get(record.transaction.toLowerCase()) : undefined;
-    if (cert && await certificateProtocol(env, cert) !== "x402") continue;
+    if (cert && await certificateProtocol(env, cert, context) !== "x402") continue;
     organicRecords += 1;
     const month = record.at.slice(0, 7);
     const day = record.at.slice(8, 10);

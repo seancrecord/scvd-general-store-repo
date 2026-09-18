@@ -26,6 +26,18 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **PRESS — put the challenge key on the doors, 2026-09-18.** The
+  whole-shelf native release (`docs/MPP_WHOLE_STORE_2026-09-18.md`)
+  makes every HTTP door a native door, and the doors Worker mints the
+  challenge itself once it holds the same `MPP_CHALLENGE_KEY` the
+  store holds. Until it does, every unsigned knock on every door is
+  handed to the store — correct, and the cold start the doors exist
+  to remove. One press, the same value as the store's, at least 32
+  bytes: `npx wrangler secret put MPP_CHALLENGE_KEY -c doors/wrangler.jsonc`.
+  Then one unsigned knock on any door should answer without
+  `x-scvd-doors: passed` and with `WWW-Authenticate: Payment`. A short
+  key is refused by both Workers; the store answers 500 on every native
+  door with one, so set the same long key in both places.
 - **The note audits stopped paging you, 2026-09-15 — no press needed.**
   You said of a `worker_health` page about a note this desk sent to
   delvorn.site: "I don't want to get this particular alarm anymore" —

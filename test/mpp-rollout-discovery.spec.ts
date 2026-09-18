@@ -28,12 +28,16 @@ it("advertises the enabled HTTP offer on its item and OpenAPI while preserving x
   expect(operation['x-scvd-payment-capabilities']).toEqual(contract.payment_capabilities);
   expect(storeGuideText(bindings.STORE_BASE_URL, bindings)).toContain("Native MPP checkout: HTTP GET");
 });
-it("omits native claims when disabled, incomplete or on another product", () => {
+it("omits native claims when disabled or incomplete, and every shelf item carries one at its own minimum when enabled", () => {
   for (const config of [{ ...bindings, MPP_CHECKOUT_ENABLED: "false" }, { ...bindings, MPP_CHALLENGE_KEY: undefined }, { ...bindings, COUNTER_LEDGER: undefined }]) {
     const item = compactItemContract(getMenuItem("context_anchor")!, bindings.STORE_BASE_URL, config) as unknown as Record<string, any>;
     expect(item.payment_capabilities?.some((row: { protocol: string }) => row.protocol === "mpp") ?? false).toBe(false);
     expect(storeGuideText(bindings.STORE_BASE_URL, config)).not.toContain("Native MPP checkout: HTTP GET");
   }
+  // THE WHOLE STORE (2026-09-18): another product, another minimum, the same lane.
   const other = compactItemContract(getMenuItem("trust_profile")!, bindings.STORE_BASE_URL, bindings) as unknown as Record<string, any>;
-  expect(other.payment_capabilities?.some((row: { protocol: string }) => row.protocol === "mpp") ?? false).toBe(false);
+  const native = other.payment_capabilities?.find((row: { protocol: string }) => row.protocol === "mpp");
+  expect(native).toMatchObject({ transport: "http", method: "GET", path: "/api/buy/trust_profile", network: "eip155:8453",
+    amount_atomic: String(Math.round(getMenuItem("trust_profile")!.price_usdc * 1_000_000)) });
+  expect(storeGuideText(bindings.STORE_BASE_URL, bindings)).toContain("every one of the");
 });
