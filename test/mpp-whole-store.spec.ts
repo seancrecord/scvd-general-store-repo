@@ -132,6 +132,22 @@ it("a row booked during the pilot reads as the pilot's product, beside the split
   await expect(readMppSales(testEnv)).rejects.toThrow();
 });
 
+it("the split is keyed by shelf items only: an object's own reserved names are refused, not written", async () => {
+  // A sale's item becomes a bracket key on the month's split. "__proto__"
+  // spells like an item; written, it would land on Object.prototype.
+  const base = { month, payer: `0x${"11".repeat(20)}`, transaction: `0x${"f".repeat(64)}`, amount: "1000", house: false };
+  for (const item of ["__proto__", "constructor", "prototype"]) {
+    await expect((async () => await ledger().recordMppSale({ ...base, id: "e".repeat(64), item }))()).rejects.toThrow("Invalid MPP sale");
+  }
+  expect(Object.hasOwn(Object.prototype, "organic")).toBe(false);
+  expect(({} as Record<string, unknown>).organic).toBeUndefined();
+  expect((await readMppSales(testEnv)).by_item).toEqual({});
+  // A mirrored split that already carries such a key is unreadable, not folded.
+  await testEnv.COUNTERS.put(`mpp:sales:${month}`, '{"organic":1,"house":0,"organic_amount_atomic":"1000","house_amount_atomic":"0",' +
+    '"by_item":{"__proto__":{"organic":1,"house":0,"organic_amount_atomic":"1000","house_amount_atomic":"0"}}}');
+  await expect(readMppSales(testEnv)).rejects.toThrow("MPP sales unreadable");
+});
+
 it("no challenge where there is no door: an unknown item, a trailing slash, MCP", async () => {
   for (const path of ["/api/buy/no_such_item", "/api/buy/hello/"]) {
     const response = await request(path);

@@ -3,7 +3,7 @@ import type { MppHouseCorrection, MppSalesSummary } from "@/services/mpp-sales";
 import { DurableObject } from "cloudflare:workers";
 import { kvPut, withKvRetry } from "@/lib/kv-retry";
 import type { Env, PayerRecord } from "@/types";
-import { MPP_SALES_PREFIX, MPP_PAYER_PREFIX, sameMppSaleEvidence, validateMppSalesSummary, type MppItemSummary, type MppSaleEvidence } from "@/services/mpp-sales";
+import { MPP_SALES_PREFIX, MPP_PAYER_PREFIX, sameMppSaleEvidence, validateMppSalesSummary, validMppItemKey, type MppItemSummary, type MppSaleEvidence } from "@/services/mpp-sales";
 
 /**
  * THE COUNTER LEDGER (2026-09-11) — one writer per counter, because a
@@ -124,7 +124,7 @@ export class CounterLedger extends DurableObject<Env> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||
       !/^0x[a-f0-9]{40}$/.test(sale.payer) || !/^0x[a-f0-9]{64}$/i.test(sale.transaction) ||
       !/^\d+$/.test(sale.amount) || BigInt(sale.amount) <= 0n || typeof sale.house !== "boolean" ||
-      (sale.item !== undefined && !/^[a-z0-9_-]{1,64}$/.test(sale.item))) throw new Error("Invalid MPP sale");
+      (sale.item !== undefined && !validMppItemKey(sale.item))) throw new Error("Invalid MPP sale");
     // Alarm first: a crash after the SQL commit cannot abandon the KV mirror.
     await this.ctx.storage.setAlarm(Date.now() + FLUSH_MS);
     const key = `${MPP_SALES_PREFIX}${sale.month}`;

@@ -72,8 +72,11 @@ native door: set the same long key in both places.
   ledger row names the item; the month's split, the public count, the admin
   till, the purchase inspection and the certificate classifier all read the
   same sale; a pilot row without an item folds under the pilot's product; an
-  over-claiming split is refused; no challenge on an unknown item, a trailing
-  slash, or MCP. Shown failing against the previous source.
+  over-claiming split is refused; a sale or a mirrored split naming an
+  object's own reserved name (`__proto__`, `constructor`, `prototype`) is
+  refused before it can reach `Object.prototype`; no challenge on an
+  unknown item, a trailing slash, or MCP. Shown failing against the
+  previous source.
 - `test/doors-parity.spec.ts`: every door's doors-minted challenge equals the
   store's, byte for byte; without the key, the knock is handed over.
 - `test/mpp-checkout.spec.ts`: the failure matrix on the pilot's door,

@@ -96,6 +96,17 @@ function validateCounts(row: MppItemSummary): void {
     (corrected === 0) !== (BigInt(amount) === 0n)) throw new Error("MPP correction unreadable");
 }
 
+/**
+ * A split key is a shelf item's spelling. The item is written as a bracket
+ * key on the month's split, so an object's own reserved names, which spell
+ * like an item, are refused before they can reach Object.prototype.
+ */
+export function validMppItemKey(item: unknown): item is string {
+  if (typeof item !== "string" || !/^[a-z0-9_-]{1,64}$/.test(item)) return false;
+  if (item === "__proto__" || item === "constructor" || item === "prototype") return false;
+  return true;
+}
+
 /** Validate raw totals and their separate corrections before reading or changing them. */
 export function validateMppSalesSummary(row: MppSalesSummary): void {
   validateCounts(row);
@@ -103,7 +114,7 @@ export function validateMppSalesSummary(row: MppSalesSummary): void {
   if (typeof row.by_item !== "object" || row.by_item === null || Array.isArray(row.by_item)) throw new Error("MPP sales unreadable");
   const sum = { organic: 0, house: 0, organic_amount_atomic: 0n, house_amount_atomic: 0n, reclassified_house: 0, reclassified_amount_atomic: 0n };
   for (const [item, counts] of Object.entries(row.by_item)) {
-    if (!/^[a-z0-9_-]{1,64}$/.test(item)) throw new Error("MPP sales unreadable");
+    if (!validMppItemKey(item)) throw new Error("MPP sales unreadable");
     validateCounts(counts);
     sum.organic += counts.organic; sum.house += counts.house;
     sum.organic_amount_atomic += BigInt(counts.organic_amount_atomic); sum.house_amount_atomic += BigInt(counts.house_amount_atomic);
