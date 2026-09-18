@@ -1148,6 +1148,13 @@ what you ruled and what is still yours to look at.
   and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
   deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
   [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  Keeper-requested follow-ups posted September 18:
+  [directory expansion update](https://github.com/tempoxyz/mpp/pull/991#issuecomment-5734203544)
+  and [fresh parser reproduction / exact-query URL](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5734203762).
+  The update labels the outside-wallet purchase as house-funded. The same
+  directory comment was refreshed at 19:58 UTC after #813 merged and the live
+  WebMCP bridge matched its source. No duplicate submission or expanded
+  listing was made; external review remains pending.
   MPPScan still needs discovery qualification; the checker’s Base-network
   mismatch is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209).
   The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled

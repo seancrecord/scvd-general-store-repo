@@ -6,12 +6,13 @@ import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidence
 
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
 globalThis.crypto ??= webcrypto;
+const SUBJECT_OBSERVATIONS_MAX_BYTES = 32768;
 
 const HELP = `scvd-evidence — free export and offline verification
   export <verify-response-or-corpus-snapshot-url> --out <new-directory> [--evidence <local-file> ...]
   verify <bundle.json> --public-key <independently-trusted-public-key-hex>
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
-    [--evidence <local-file> ...]
+    [--evidence <local-file> ...] [--subject <exact-endpoint-url>]
   All commands: [--max-bytes <integer>]
 
 Default input/output limit: ${EVIDENCE_BUNDLE_MAX_BYTES} bytes; explicit maximum:
@@ -26,6 +27,11 @@ inside the signed payload. Existing directories are never overwritten.
 Verify and verify-source make no network requests. verify-source checks a saved
 original response using the same bundle verifier in memory, writes no files,
 and prints findings plus the original file SHA-256 without repeating claims.
+With --subject, it also selects exact-URL observations from verified corpus-v1
+claims only. Unsigned history and preflight are never included. Whole rows fit
+within a ${SUBJECT_OBSERVATIONS_MAX_BYTES}-byte compact JSON allowance; omitted rows are counted explicitly.
+Pointers address signed_claims, not the unsigned response wrapper. Snapshot
+packaging time is separate from each row's observed_at; no freshness verdict.
 Keep that original, its source URL, any linked evidence and the independently
 established key. The embedded key cannot establish identity.
 Exit: 0 signature/bindings valid; 1 invalid or missing trusted key;
@@ -78,18 +84,52 @@ async function localAttachments(evidence, maxBytes) {
   }
   return attachments;
 }
+function subjectEvidence(result, url) {
+  const reading = {
+    url, status: "not_verified", matched_observations: null,
+    snapshot_taken_at: null, observations: [], omitted_observations: null,
+    observations_max_bytes: SUBJECT_OBSERVATIONS_MAX_BYTES,
+    scope: "Exact URL matches in this verified corpus snapshot only. Each value is an issuer claim, not proof of truth, current readiness, settlement or delivery. Unsigned context and other snapshots are excluded. Keep the original response and independently established key; this excerpt cannot be verified alone.",
+  };
+  if (!result.valid) return reading;
+  const claims = result.signed_claims;
+  if (claims?.version !== 1 || claims.source !== "ward_round" || typeof claims.taken_at !== "string" || claims.taken_at.length > 128 || !Array.isArray(claims.round?.hosts)) {
+    reading.status = "unsupported_artifact";
+    return reading;
+  }
+  reading.snapshot_taken_at = claims.taken_at ?? null;
+  reading.matched_observations = 0;
+  reading.omitted_observations = 0;
+  let bytes = 2; // Compact JSON array brackets. Never truncate a row's gaps.
+  for (const [index, row] of claims.round.hosts.entries()) {
+    if (row?.url !== url) continue;
+    reading.matched_observations++;
+    const observation = { signed_claims_pointer: `/round/hosts/${index}`, value: row };
+    const size = Buffer.byteLength(JSON.stringify(observation)) + (reading.observations.length ? 1 : 0);
+    if (bytes + size > SUBJECT_OBSERVATIONS_MAX_BYTES) { reading.omitted_observations++; continue; }
+    bytes += size;
+    reading.observations.push(observation);
+  }
+  reading.status = reading.matched_observations ? "present" : "absent_from_snapshot";
+  return reading;
+}
 async function main(args) {
   if (!args.length || args.includes("--help")) { console.log(HELP); return; }
   const [command, input, ...rest] = args;
   const flags = {}; const evidence = [];
   for (let i = 0; i < rest.length; i += 2) {
     const [key, value] = [rest[i], rest[i + 1]];
-    if (!["--out", "--public-key", "--evidence", "--max-bytes"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
+    if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
     if (key === "--evidence") evidence.push(value); else flags[key] = value;
   }
   if (flags["--max-bytes"] && !/^\d+$/.test(flags["--max-bytes"])) throw new Error("invalid_byte_limit");
   const maxBytes = evidenceByteLimit(flags["--max-bytes"] === undefined ? undefined : Number(flags["--max-bytes"]));
   if (!input) throw new Error("missing_input");
+  if (flags["--subject"]) {
+    const subject = new URL(flags["--subject"]);
+    if (command !== "verify-source" || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
+    // Validate syntax without normalizing the exact requested evidence subject.
+  }
   if (command === "verify-source") {
     if (flags["--out"]) throw new Error("invalid_arguments");
     const bytes = await localBytes(input, maxBytes);
@@ -99,7 +139,10 @@ async function main(args) {
     // The saved original is the transport. Reprinting a whole corpus defeated
     // the buyer's output budget even after its local signature check succeeded.
     const { signed_claims, ...findings } = result;
-    console.log(JSON.stringify({ ...findings, source_sha256: await evidenceDigest(bytes) }, null, 2));
+    const subject = flags["--subject"] ? { subject_evidence: subjectEvidence(result, flags["--subject"]) } : {};
+    // Compact subject output prevents indentation of a nested signed row from
+    // expanding past the allowance that was measured in its compact encoding.
+    console.log(JSON.stringify({ ...findings, source_sha256: await evidenceDigest(bytes), ...subject }, null, flags["--subject"] ? undefined : 2));
     process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
     return;
   }
