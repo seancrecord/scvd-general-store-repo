@@ -1,0 +1,180 @@
+{
+  "served_at": "POST /ucp/v1/checkout-sessions/{id}/complete",
+  "recorded_at": "2026-09-19T12:23:09.228Z",
+  "status": 200,
+  "schema": "https://ucp.dev/schemas/shopping/checkout.json",
+  "body": {
+    "ucp": {
+      "version": "2026-08-25",
+      "payment_handlers": {
+        "store.scvd.payment.usdc": [
+          {
+            "id": "scvd-usdc-base",
+            "version": "2026-09-16",
+            "spec": "https://scvd.store/ucp/specs/payment/usdc-x402",
+            "schema": "https://scvd.store/ucp/schemas/payment/usdc-x402.json",
+            "config": {
+              "protocol": "x402",
+              "protocol_version": 2,
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "decimals": 6,
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "explorer": "https://basescan.org",
+              "finality": {
+                "model": "OP-stack rollup with Ethereum-backed finality",
+                "accepted_at": "The transfer is read back on Base and reconciled against the chain's own `finalized` block tag; a settle observed but not yet finalized is reported as pending rather than as paid."
+              },
+              "amount_atomic": "500000",
+              "checkout_id": "chk_d3usb8vpsavj",
+              "checkout_version": 1,
+              "expires_at": "2026-09-19T12:52:58.527Z",
+              "terms_digest": "9b8872a8b80a042c3b88daf29e2604bece4ba4a86f33152452000024f18e3649",
+              "x402_requirements": {
+                "scheme": "exact",
+                "network": "eip155:8453",
+                "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                "amount": "500000",
+                "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+                "maxTimeoutSeconds": 300,
+                "extra": {
+                  "name": "USD Coin",
+                  "version": "2",
+                  "assetTransferMethod": "eip3009"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "id": "chk_d3usb8vpsavj",
+    "status": "completed",
+    "currency": "USD",
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {
+          "id": "gid://scvd.store/Variant/hello",
+          "title": "A Signed Hello",
+          "price": 50
+        },
+        "quantity": 1,
+        "totals": [
+          {
+            "type": "total",
+            "display_text": "Line total",
+            "amount": 50
+          }
+        ]
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 50
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 50
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_service",
+        "url": "https://scvd.store/rights",
+        "title": "What you get, and what you may do with it"
+      },
+      {
+        "type": "refund_policy",
+        "url": "https://scvd.store/rights",
+        "title": "The delivery promise and the refund behind it"
+      },
+      {
+        "type": "privacy_policy",
+        "url": "https://scvd.store/privacy",
+        "title": "What this store reads, stores and never stores"
+      }
+    ],
+    "policies": [
+      {
+        "type": "store.scvd.policy.license",
+        "class": "artifact",
+        "status": "draft",
+        "title": "Signed artifact",
+        "description": {
+          "plain": "What you bought is a signed record of what this store observed or made, and it is yours to store, quote, publish and hand to a third party. Its report URL is public and stays public: the point of a signed observation is that somebody other than you can check it. The store keeps the right to keep publishing its own corpus; it claims nothing over what you build on top of the artifact."
+        },
+        "url": "https://scvd.store/rights",
+        "applies_to": [
+          "$.line_items[0]"
+        ]
+      },
+      {
+        "type": "store.scvd.policy.fulfillment",
+        "title": "Delivered in the purchase response",
+        "description": {
+          "plain": "Instant items deliver in the purchase response itself, so there is no window to miss: if settlement succeeds and the goods do not arrive in that same response, that is a defect, not a delay — write the mailbox at /api/letter and it gets fixed or refunded."
+        },
+        "mode": "instant",
+        "url": "https://scvd.store/fulfillment-log",
+        "applies_to": [
+          "$.line_items[0]"
+        ]
+      },
+      {
+        "type": "store.scvd.policy.settlement_risk",
+        "title": "Not escrow",
+        "description": {
+          "plain": "Not escrow, and we will not pretend otherwise. Funds move at settlement, before fulfillment, and the gap between those two moments is real: your protection inside it is this written commitment plus the public record of whether it has been kept — not a protocol mechanism. On-chain conditional release DOES exist in this ecosystem: Boson Protocol's x402B runs non-custodial contract escrow with dispute resolution on Base, mainnet since 2026-06-08 (an earlier version of this sentence claimed nobody had shipped it — wrong when written, corrected on /corrections). This store does not run one because a contract to operate, monitor, and arbitrate is infrastructure a one-person shop must not become, and its weight does not fit tickets that start at half a cent. If we ever adopt conditional release, this section changes first."
+        },
+        "escrow": false,
+        "custodial": false,
+        "url": "https://scvd.store/rights",
+        "applies_to": [
+          "$.line_items[0]"
+        ]
+      }
+    ],
+    "expires_at": "2026-09-19T12:52:58.527Z",
+    "order": {
+      "id": "ord_d3usb8vpsavj",
+      "permalink_url": "https://scvd.store/ucp/v1/orders/ord_d3usb8vpsavj"
+    },
+    "store.scvd": {
+      "payment_terms": {
+        "checkout_id": "chk_d3usb8vpsavj",
+        "checkout_version": 1,
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "amount_atomic": "500000",
+        "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+        "expires_at": "2026-09-19T12:52:58.527Z",
+        "terms_digest": "9b8872a8b80a042c3b88daf29e2604bece4ba4a86f33152452000024f18e3649"
+      },
+      "version": 1,
+      "lines": [
+        {
+          "variant_id": "gid://scvd.store/Variant/hello",
+          "item_id": "hello",
+          "sku": "SCVD-HELLO",
+          "quantity": 1,
+          "unit_price": {
+            "amount": 50,
+            "currency": "USD"
+          },
+          "unit_amount_atomic": "500000",
+          "license": {
+            "class": "artifact",
+            "status": "draft",
+            "version": "2026-09-16-draft"
+          }
+        }
+      ],
+      "created_at": "2026-09-19T12:22:58.527Z"
+    }
+  }
+}

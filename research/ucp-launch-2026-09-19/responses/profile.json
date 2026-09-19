@@ -1,0 +1,122 @@
+{
+  "served_at": "GET /.well-known/ucp",
+  "recorded_at": "2026-09-19T12:22:58.429Z",
+  "status": 200,
+  "schema": "https://ucp.dev/schemas/profile.json#/$defs/business_schema",
+  "body": {
+    "ucp": {
+      "version": "2026-08-25",
+      "services": {
+        "dev.ucp.shopping": [
+          {
+            "version": "2026-08-25",
+            "transport": "rest",
+            "endpoint": "https://scvd.store/ucp/v1"
+          }
+        ]
+      },
+      "capabilities": {
+        "dev.ucp.shopping.catalog.search": [
+          {
+            "version": "2026-08-25",
+            "schema": "https://ucp.dev/schemas/shopping/catalog_search.json"
+          }
+        ],
+        "dev.ucp.shopping.catalog.lookup": [
+          {
+            "version": "2026-08-25",
+            "schema": "https://ucp.dev/schemas/shopping/catalog_lookup.json"
+          }
+        ],
+        "dev.ucp.shopping.checkout": [
+          {
+            "version": "2026-08-25",
+            "schema": "https://ucp.dev/schemas/shopping/checkout.json"
+          }
+        ],
+        "dev.ucp.shopping.order": [
+          {
+            "version": "2026-08-25",
+            "schema": "https://ucp.dev/schemas/shopping/order.json"
+          }
+        ],
+        "store.scvd.shopping.inputs": [
+          {
+            "version": "2026-09-16",
+            "spec": "https://scvd.store/ucp/specs/shopping-inputs",
+            "schema": "https://scvd.store/ucp/schemas/shopping-inputs.json"
+          }
+        ]
+      },
+      "payment_handlers": {
+        "store.scvd.payment.usdc": [
+          {
+            "id": "scvd-usdc-base",
+            "version": "2026-09-16",
+            "spec": "https://scvd.store/ucp/specs/payment/usdc-x402",
+            "schema": "https://scvd.store/ucp/schemas/payment/usdc-x402.json",
+            "config": {
+              "protocol": "x402",
+              "protocol_version": 2,
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "decimals": 6,
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "explorer": "https://basescan.org",
+              "finality": {
+                "model": "OP-stack rollup with Ethereum-backed finality",
+                "accepted_at": "The transfer is read back on Base and reconciled against the chain's own `finalized` block tag; a settle observed but not yet finalized is reported as pending rather than as paid."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "store.scvd": {
+      "status": {
+        "catalog": "live",
+        "checkout": "live",
+        "order": "live",
+        "rails": [
+          "eip155:8453"
+        ],
+        "items": [
+          "hello"
+        ],
+        "note": "Catalog, checkout and order are served, and checkout is open for 1 of the 31 catalog items (listed in `items`) on the rails listed in `rails`, while the launch is qualified item by item. Create refuses the rest in writing; every item is still for sale over x402 at https://scvd.store/api/buy/{item_id}."
+      },
+      "how_to_actually_buy": {
+        "ucp": "POST https://scvd.store/ucp/v1/checkout-sessions with line_items, then POST https://scvd.store/ucp/v1/checkout-sessions/{id}/complete with an x402 payment signed against the quoted handler. The shape is at https://scvd.store/ucp/specs/payment/usdc-x402.",
+        "http": "https://scvd.store/api/buy/{item_id} — USDC over x402 v2 on Base, Polygon, Arbitrum, World, Solana, or USDC over MPP (evm/charge) on Base for every shelf item, every publication page and the commission desk. Knock unpaid for the terms, sign one of them, knock again with the payment.",
+        "mcp": "https://scvd.store/mcp — the same catalog behind buy_* tools; tools/list is free.",
+        "payment_method": "USDC over x402 v2 on Base, Polygon, Arbitrum, World, Solana, or USDC over MPP (evm/charge) on Base for every shelf item, every publication page and the commission desk",
+        "guide": "https://scvd.store/agents.md"
+      },
+      "payment_handler_note": {
+        "type": "store.scvd.payment.usdc",
+        "settles_today": true,
+        "drivable_through_ucp": true,
+        "reason": "The instances declared above are the rails a UCP checkout is quoted on here; the checkout narrows to the one rail it was quoted for and its config then carries the exact transfer to sign. Complete verifies and settles that transfer through the same facilitator the x402 door uses.",
+        "spec": "https://scvd.store/ucp/specs/payment/usdc-x402",
+        "schema": "https://scvd.store/ucp/schemas/payment/usdc-x402.json"
+      },
+      "catalog": {
+        "products_total": 35,
+        "products_in_ucp_catalog": 31,
+        "excluded": {
+          "count": 4,
+          "reason": "Priced below one cent. UCP quotes a price as an integer number of an ISO-4217 currency's minor units, so the smallest USD price that can be written is one cent. These items cost $0.001, $0.004, $0.005, $0.006, and they are still for sale at those prices over x402 — what they are not is rounded into a catalog row quoting a price the till would not charge.",
+          "still_listed_at": "https://scvd.store/menu.json"
+        },
+        "search": "POST https://scvd.store/ucp/v1/catalog/search",
+        "lookup": "POST https://scvd.store/ucp/v1/catalog/lookup with {\"ids\": [...]}"
+      },
+      "operator": {
+        "name": "Sean-Claude Van Damme's General Store",
+        "location": "Oak City",
+        "origin": "https://scvd.store"
+      }
+    }
+  }
+}
