@@ -213,3 +213,47 @@ test("subject reading selects only authenticated exact-URL corpus rows and prese
     assert.equal((await run([...args.slice(0, -1), "https://user:secret@merchant.example/"])).code, 2);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+test("export refuses a redirect, reads only the named URL and its own origin's key document, and never fetches a URL the payload names", async () => {
+  // README: "Export reads the chosen URL and its same-origin key document
+  // only; redirects are refused and embedded URLs are never fetched." A
+  // transport claim on a published package's front page with no test
+  // behind it is a sentence, not a property; this is the check.
+  const dir = await mkdtemp(join(tmpdir(), "scvd-evidence-transport-"));
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const key = publicKey.export({ type: "spki", format: "der" }).subarray(-32).toString("hex");
+  const elsewhere = { hits: [] };
+  const other = createServer((req, res) => { elsewhere.hits.push(req.url); res.setHeader("Content-Type", "application/json"); res.end("{}"); });
+  await new Promise(resolve => other.listen(0, "127.0.0.1", resolve));
+  const otherBase = `http://127.0.0.1:${other.address().port}`;
+  // The payload names another origin; a naive exporter might follow it.
+  const payload = `{ "cert_id": "cert_transport", "item": "a receipt", "see_also": "${otherBase}/embedded", "issuer_key_url": "${otherBase}/.well-known/scvd-signing-key" }`;
+  const doc = { algorithm: "ed25519", signed_payload: payload, public_key: key, signature: sign(null, Buffer.from(payload), privateKey).toString("hex") };
+  const here = { hits: [] };
+  const origin = createServer((req, res) => {
+    here.hits.push(req.url);
+    if (req.url === "/redirected") { res.statusCode = 302; res.setHeader("Location", `${otherBase}/api/verify/cert_transport`); res.end(); return; }
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(req.url.startsWith("/api/") ? doc : { algorithm: "ed25519", public_key: key }));
+  });
+  await new Promise(resolve => origin.listen(0, "127.0.0.1", resolve));
+  const base = `http://127.0.0.1:${origin.address().port}`;
+  try {
+    const redirected = await run(["export", `${base}/redirected`, "--out", join(dir, "redirected")]);
+    assert.equal(redirected.code, 2, redirected.stdout);
+    assert.deepEqual(here.hits, ["/redirected"]);
+    assert.deepEqual(elsewhere.hits, [], "the redirect target was fetched");
+    await assert.rejects(readdir(join(dir, "redirected")), "nothing was written for a refused redirect");
+
+    here.hits.length = 0;
+    const exported = await run(["export", `${base}/api/verify/cert_transport`, "--out", join(dir, "saved")]);
+    assert.equal(exported.code, 0, exported.stderr);
+    // Exactly the named URL and this origin's key document, in that order; nothing the payload named.
+    assert.deepEqual(here.hits, ["/api/verify/cert_transport", "/.well-known/scvd-signing-key"]);
+    assert.deepEqual(elsewhere.hits, [], "a URL embedded in the payload was fetched");
+    assert.equal(await readFile(join(dir, "saved", "payload.json"), "utf8"), payload);
+  } finally {
+    origin.close(); other.close();
+    await rm(dir, { recursive: true, force: true });
+  }
+});
