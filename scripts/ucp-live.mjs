@@ -7,6 +7,10 @@
  *     --base https://scvd.store --item hello --rail eip155:8453 \
  *     --out research/ucp-launch-2026-09-18 [--input name=value …] [--keep-response]
  *
+ * On Solana the same command takes the wallet app's base58 secret in
+ * UCP_BUYER_KEY, or a solana-keygen JSON byte-array file in
+ * UCP_BUYER_KEY_FILE, and --rail solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.
+ *
  * What it proves, in the order the launch acceptance bar states it:
  *
  *   profile advertises dev.ucp.shopping.checkout
@@ -36,13 +40,22 @@
  * never written: only its sha256, so the record can be matched to a
  * payment without carrying a spent authorization around.
  *
- * ONE RAIL AT A TIME. EVM rails sign with viem + @x402/evm. Solana is
- * refused here until the Base loop has been proved end to end; adding
- * it is a signer, not a different loop.
+ * ONE RAIL AT A TIME, AND THE LOOP IS THE SAME ON EACH. A rail differs
+ * only in who signs: EVM over viem + @x402/evm, Solana over @solana/kit
+ * + @x402/svm, both registered on the same x402 client the store's own
+ * reference buyer uses (scripts/shopping-run.mjs, whose signer block
+ * this mirrors rather than reinvents). Everything after the signature —
+ * the lost response, the replay, the order comparison — is rail-blind,
+ * because the bar it holds the store to is rail-blind.
+ *
+ * SOLANA WAS ADDED 2026-09-19, after Base was proved end to end with
+ * real money and the launch opened every rail. A rail the profile
+ * advertises and no instrument has ever walked is exactly the gap this
+ * file exists to close.
  */
 
 import { createHash } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -79,6 +92,7 @@ export async function qualifyUcpCheckout({
   rail,
   inputs = {},
   sign,
+  payer = null,
   fetcher = fetch,
   loseResponse = true,
   now = () => new Date(),
@@ -160,7 +174,12 @@ export async function qualifyUcpCheckout({
     const payload = await sign(requirements, { url: completeUrl, description: `UCP checkout ${checkout.id}`, mimeType: "application/json" });
     const credential = { type: "x402", ...payload };
     report.credential_sha256 = sha256(credential);
-    report.payer = payload?.payload?.authorization?.from ?? null;
+    /**
+     * The payer comes from the signer, because only the EVM payload
+     * carries it in a place this file could read; a Solana payload is
+     * a signed transaction and says nothing here.
+     */
+    report.payer = payer ?? payload?.payload?.authorization?.from ?? null;
     const completion = {
       payment: { instruments: [{ id: "pi_1", handler_id: quoted.id, type: "x402", selected: true, credential }] },
     };
@@ -257,33 +276,71 @@ function parseArgs(argv) {
   return args;
 }
 
-/** An EVM signer over viem and @x402/evm: the same client a buyer would run. */
-async function evmSigner(privateKey, rail) {
-  const { privateKeyToAccount } = await import("viem/accounts");
+/**
+ * THE BUYER, FOR WHICHEVER RAIL THE PROFILE OFFERS.
+ *
+ * One x402 client per run, holding exactly one scheme: the rail asked
+ * for. That is what selects the rail rather than hoping — a client with
+ * no scheme for a network cannot satisfy that network's terms, so a
+ * mismatch fails loudly instead of quietly paying on another chain.
+ * The same argument scripts/shopping-run.mjs makes, one door over.
+ *
+ * Exported so a test can build both signers from throwaway keys and
+ * check the selection without a network, a wallet, or a cent.
+ */
+export async function signerFor(rail, { secret, secretFile, rpcUrl } = {}) {
   const { x402Client } = await import("@x402/core/client");
-  const { ExactEvmScheme } = await import("@x402/evm");
-  const account = privateKeyToAccount(privateKey);
-  const client = x402Client.fromConfig({ schemes: [], spendControls: false }).register(rail, new ExactEvmScheme(account));
-  return {
-    address: account.address,
-    sign: (requirements, resource) => client.createPaymentPayload({ x402Version: 2, resource, accepts: [requirements] }),
-  };
+  const paymentClient = (scheme) =>
+    x402Client.fromConfig({ schemes: [], spendControls: false }).register(rail, scheme);
+  const payWith = (client, address) => ({
+    address,
+    sign: (requirements, resource) =>
+      client.createPaymentPayload({ x402Version: 2, resource, accepts: [requirements] }),
+  });
+
+  if (rail.startsWith("eip155:")) {
+    if (!secret || !/^0x[0-9a-fA-F]{64}$/.test(secret)) {
+      throw new Error(`${rail} needs an EVM private key in UCP_BUYER_KEY: 0x followed by 64 hex characters, never a seed phrase.`);
+    }
+    const { privateKeyToAccount } = await import("viem/accounts");
+    const { ExactEvmScheme } = await import("@x402/evm");
+    const account = privateKeyToAccount(secret);
+    return payWith(paymentClient(new ExactEvmScheme(account)), account.address);
+  }
+
+  if (rail.startsWith("solana:")) {
+    if (!secret && !secretFile) {
+      throw new Error(`${rail} needs UCP_BUYER_KEY (the wallet app's base58 secret) or UCP_BUYER_KEY_FILE (a solana-keygen JSON byte array).`);
+    }
+    const { createKeyPairSignerFromBytes, getBase58Encoder } = await import("@solana/kit");
+    const { ExactSvmScheme } = await import("@x402/svm/exact/client");
+    const bytes = secret
+      ? new Uint8Array(getBase58Encoder().encode(secret))
+      : Uint8Array.from(JSON.parse(readFileSync(secretFile, "utf8")));
+    const signer = await createKeyPairSignerFromBytes(bytes);
+    return payWith(paymentClient(new ExactSvmScheme(signer, rpcUrl ? { rpcUrl } : undefined)), signer.address);
+  }
+
+  throw new Error(`No signer for ${rail}. This driver signs eip155:* and solana:* rails.`);
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!args.rail.startsWith("eip155:")) {
-    console.error(`This driver signs EVM rails only for now; ${args.rail} needs its own signer. Prove Base first.`);
+  let signer;
+  try {
+    signer = await signerFor(args.rail, {
+      secret: process.env.UCP_BUYER_KEY,
+      secretFile: process.env.UCP_BUYER_KEY_FILE,
+      rpcUrl: process.env.SOLANA_RPC_URL,
+    });
+  } catch (error) {
+    // The key never reaches a log line, here or anywhere: only what shape was wanted.
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error("The key is read from the environment and never written to disk. Use a funded buyer wallet, never the till.");
     process.exit(2);
   }
-  const key = process.env.UCP_BUYER_KEY;
-  if (!key || !/^0x[0-9a-fA-F]{64}$/.test(key)) {
-    console.error("Set UCP_BUYER_KEY to the buyer's EVM private key (0x + 64 hex). It is never written to disk.");
-    process.exit(2);
-  }
-  const signer = await evmSigner(key, args.rail);
   console.log(`Qualifying ${args.item} on ${args.rail} at ${args.base} as ${signer.address}; recording to ${args.out}`);
-  const run = await qualifyUcpCheckout({ ...args, sign: signer.sign });
+  const run = await qualifyUcpCheckout({ ...args, sign: signer.sign, payer: signer.address });
   writeRun(args.out, run);
   for (const check of run.checks) console.log(`  ${check.status === "pass" ? "ok  " : "FAIL"} ${check.id}${check.status === "fail" && check.detail !== undefined ? `  ${JSON.stringify(check.detail).slice(0, 300)}` : ""}`);
   if (run.report.stopped) console.error(`\nStopped: ${run.report.stopped}`);
