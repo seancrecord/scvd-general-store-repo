@@ -209,6 +209,10 @@ against any node that implements it — including one we run. And the
 same taxonomy already reaches readers through the ERC-8004 registration
 file, which needs nobody's permission.
 
+## Current distribution constraint — September 19
+
+The keeper declined recurring/monthly hosting or distribution fees September 18. No federation node has been provisioned. The free Anro external-ingestion request was sent that day and awaits reply; [receipt](../../research/erc8004-followthrough-2026-09-18/anro-contact-receipt.json). The [deployment research](FEDERATION.md) is historical preparation, not an active paid-hosting proposal. Cisco/Anro visibility, current-byte signature and remote scan status remain unverified.
+
 ## Federation testbed
 
 AGNTCY runs an open testbed for decentralised discovery, and invites

@@ -122,8 +122,9 @@ export function ucpRailSellable(env: UcpLaunchConfig, network: string): boolean 
  */
 export function ucpGuideParagraph(base: string, env?: UcpLaunchConfig): string {
   const head = `UCP business profile: ${base}/.well-known/ucp — the shelf as a UCP
-catalog, searchable at ${base}/ucp/v1/catalog/search and readable one
-product at a time at ${base}/ucp/v1/catalog/lookup.`;
+catalog, searchable at ${base}/ucp/v1/catalog/search, resolvable in
+batches at ${base}/ucp/v1/catalog/lookup, and readable one product at
+a time at ${base}/ucp/v1/catalog/product.`;
   const tail = `Four sub-cent items are missing from that catalog and nowhere else;
 ${base}/ucp says which and why.`;
   const status = env ? ucpLaunchStatus(env) : undefined;

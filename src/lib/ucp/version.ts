@@ -29,10 +29,12 @@ export const SCVD_NAMESPACE = "store.scvd";
 export const UCP_NAMESPACE = "dev.ucp";
 
 /**
- * Where UCP's own schemas live. A capability UCP defines resolves to
+ * Where the pinned release publishes UCP's schemas. The unversioned
+ * /schemas/ paths return 404; the release path is part of discovery,
+ * not just documentation. A capability UCP defines resolves to
  * UCP's schema, never to a copy on this origin: the store vendors those
  * files under schemas/ucp/vendor/ to validate ITSELF against them, and
  * pointing a negotiating platform at the copy would be claiming
  * authorship of somebody else's contract.
  */
-export const UCP_SCHEMA_BASE = "https://ucp.dev/schemas";
+export const UCP_SCHEMA_BASE = `https://ucp.dev/${UCP_VERSION}/schemas`;

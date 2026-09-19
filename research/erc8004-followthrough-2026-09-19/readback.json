@@ -1,0 +1,43 @@
+[
+  {
+    "name": "exact",
+    "url": "https://hol.org/registry/api/v1/search?registries=erc-8004&metadata.nativeId=8453%3A86957&includeAggregations=false",
+    "status": "200",
+    "error": "",
+    "at": "2026-09-19T12:28:07.990697+00:00",
+    "total": 0,
+    "hits": 0
+  },
+  {
+    "name": "keyword",
+    "url": "https://hol.org/registry/api/v1/search?q=scvd.store&includeAggregations=false",
+    "status": "200",
+    "error": "",
+    "at": "2026-09-19T12:28:08.203133+00:00",
+    "total": 0,
+    "hits": 0
+  },
+  {
+    "name": "control",
+    "url": "https://hol.org/registry/api/v1/search?registries=erc-8004&limit=1&includeAggregations=false",
+    "status": "200",
+    "error": "",
+    "at": "2026-09-19T12:28:08.163357+00:00",
+    "total": 69131,
+    "hits": 1
+  },
+  {
+    "name": "SCVD General Store",
+    "url": "https://scvd.store/.well-known/agent-registration.json",
+    "status": "200",
+    "error": "",
+    "at": "2026-09-19T12:28:08.330348+00:00",
+    "registrations": [
+      {
+        "agentId": 86957,
+        "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+      }
+    ],
+    "hits": null
+  }
+]

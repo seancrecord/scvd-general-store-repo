@@ -132,6 +132,8 @@ const {
   closedProfileSample,
   searchSample,
   lookupSample,
+  productSample,
+  missingProductSample,
   checkoutSample,
   completedCheckoutSample,
   instantOrderSample,
@@ -186,6 +188,18 @@ const samples = [
     id: "https://ucp.dev/schemas/shopping/catalog_lookup.json#/$defs/lookup_response",
     value: lookupSample(BASE),
     served_at: "POST /ucp/v1/catalog/lookup",
+  },
+  {
+    name: "get product response, on the one product with an option axis",
+    id: "https://ucp.dev/schemas/shopping/catalog_lookup.json#/$defs/get_product_response",
+    value: productSample(BASE),
+    served_at: "POST /ucp/v1/catalog/product",
+  },
+  {
+    name: "get product refusal, which is an error response rather than an empty product",
+    id: "https://ucp.dev/schemas/common/types/error_response.json",
+    value: missingProductSample(BASE),
+    served_at: "POST /ucp/v1/catalog/product → 404",
   },
 ];
 

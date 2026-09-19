@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { getMenuItem } from "@/store/menu";
 import { coreCommerceItems, requireCommerce } from "@/store/commerce";
+import { variantGid } from "@/lib/ucp/ids";
 
 const BASE = "https://scvd.store";
 
@@ -260,5 +261,109 @@ describe("UCP agrees with the surfaces already published", () => {
       });
       expect(listing.status, item.id).toBe(200);
     }
+  });
+});
+
+/**
+ * GET PRODUCT, the third operation of the lookup capability and the
+ * one this store advertised without serving until 2026-09-19. Lookup
+ * answers "which of my identifiers resolved to what"; this answers
+ * "tell me everything about this one, and which variant my selections
+ * land on".
+ */
+describe("/ucp/v1/catalog/product", () => {
+  const product = (body: unknown) => post("/ucp/v1/catalog/product", body);
+
+  it("answers with one product, singular, in full", async () => {
+    const res = await product({ id: "service_audit" });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, any>;
+    // `product`, not `products`: a single-resource operation.
+    expect(body.products).toBeUndefined();
+    expect(body.product.id).toBe("gid://scvd.store/Product/service_audit");
+    expect(body.product.variants[0].sku).toBe("SCVD-SERVICE-AUDIT");
+    expect(body.product.metadata["store.scvd"].inputs.required).toContain("url");
+    // Policies target the singular root; `$.products[0]` would resolve
+    // to nothing in a document with no products array.
+    expect(body.policies[0].applies_to).toEqual(["$.product"]);
+  });
+
+  it("publishes the tier axis with availability signals, and anchors the selection on it", async () => {
+    const body = (await (await product({ id: "the_collab" })).json()) as Record<string, any>;
+    const axis = body.product.options[0];
+    expect(axis.name).toBe("Tier");
+    expect(axis.values.length).toBe(body.product.variants.length);
+    for (const value of axis.values) {
+      expect(typeof value.label).toBe("string");
+      expect(value.exists).toBe(true);
+      expect(typeof value.available).toBe("boolean");
+    }
+    // With nothing selected, the featured variant is the first tier.
+    expect(body.product.selected[0].name).toBe("Tier");
+    expect(body.product.selected[0].id).toBe(body.product.variants[0].id);
+
+    // A selection by label moves it, and says so by id.
+    const second = axis.values[1];
+    const narrowed = (await (
+      await product({ id: "the_collab", selected: [{ name: "Tier", label: second.label }] })
+    ).json()) as Record<string, any>;
+    expect(narrowed.product.selected[0].label).toBe(second.label);
+    expect(narrowed.product.selected[0].id).toBe(second.id);
+    // Nothing is hidden: asking about a product answers about the product.
+    expect(narrowed.product.variants.length).toBe(body.product.variants.length);
+  });
+
+  it("treats a variant id or a tier SKU in the request as the selection it is", async () => {
+    const second = variantGid("the_collab", 1);
+    const body = (await (await product({ id: second })).json()) as Record<string, any>;
+    expect(body.product.selected[0].id).toBe(second);
+
+    // And the tier SKU the catalog hands out resolves the same way.
+    const sku = body.product.variants[1].sku;
+    const bySku = (await (await product({ id: sku })).json()) as Record<string, any>;
+    expect(bySku.product.selected[0].id).toBe(second);
+  });
+
+  it("omits the option fields for a product with no option axes, rather than inventing one", async () => {
+    const body = (await (await product({ id: "hello" })).json()) as Record<string, any>;
+    expect(body.product.variants.length).toBe(1);
+    expect(body.product.options).toBeUndefined();
+    expect(body.product.selected).toBeUndefined();
+  });
+
+  it("warns when a selection matched nothing, and still answers", async () => {
+    const body = (await (
+      await product({ id: "the_collab", selected: [{ name: "Size", label: "Large" }] })
+    ).json()) as Record<string, any>;
+    expect(body.messages[0].type).toBe("warning");
+    expect(body.messages[0].content).toContain("Tier");
+    expect(body.product.selected[0].name).toBe("Tier");
+  });
+
+  it("answers an error response for an id with no catalog row, because `product` is required", async () => {
+    const res = await product({ id: "no-such-product" });
+    expect(res.status).toBe(404);
+    const body = (await res.json()) as Record<string, any>;
+    expect(body.product).toBeUndefined();
+    expect(body.ucp.status).toBe("error");
+    expect(body.messages[0].type).toBe("error");
+    expect(body.messages[0].severity).toBe("unrecoverable");
+  });
+
+  it("keeps the sub-cent items' own explanation rather than calling them missing", async () => {
+    const res = await product({ id: "spot_check" });
+    expect(res.status).toBe(404);
+    const body = (await res.json()) as Record<string, any>;
+    expect(body.messages[0].content).toContain("less than one cent");
+    expect(body.messages[0]["store.scvd"].still_for_sale).toBe(true);
+    expect(body.messages[0]["store.scvd"].buy_url).toBe(`${BASE}/api/buy/spot_check`);
+  });
+
+  it("refuses a request with no id, and names the batch operation for callers who wanted it", async () => {
+    const res = await product({});
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as Record<string, any>;
+    expect(body.ucp.status).toBe("error");
+    expect(body.messages[0].content).toContain("/ucp/v1/catalog/lookup");
   });
 });

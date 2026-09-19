@@ -1075,8 +1075,24 @@ const BASE = "https://scvd.store";
 // document was touched, and that was verified rather than asserted:
 // with src/routes/llms.ts reverted to its pre-field-study state, the
 // prior 1c8eed2a reproduced exactly.
+// 2026-09-19, later still: the UCP paragraph now names all THREE catalog
+// operations. Get Product (POST /ucp/v1/catalog/product) was defined by
+// the pinned transport contract under a capability this store advertises
+// and was not served; it is served now, and the guide said "readable one
+// product at a time" of the BATCH door, which was the wrong door for that
+// sentence. With the two-door wording restored, 1c8eed2a reproduces.
+// 2026-09-19, THE MERGE of those two: the field study branch and main's
+// third catalog operation met, and both had re-pinned this digest for
+// their own reasons — so the pin below is neither half's. It is the
+// MERGED guide, reproduced from the merged tree, which is the only
+// reading that covers both edits at once; the two notes above both
+// stand and this one says why there is a third. Verified the way this
+// file asks rather than asserted: with src/routes/llms.ts reverted to
+// its pre-field-study state inside the merged tree, main's d37dd386
+// reproduced exactly, which is what proves the field study is the
+// whole of the difference between the two.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "65a0775f58bd9795f0218838e7e19005d3c16c15928860f8168b9c8f3134aa8f";
+  "76f98ccf0ef7f6ac5909313a54885d25f14e85af5bdc597024676bb9e6346c26";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1135,8 +1151,15 @@ describe("nothing was rewritten", () => {
     // than asserted: with src/routes/llms.ts reverted to its pre-field-
     // study state and nothing else changed, 423001c4 below and the
     // 1c8eed2a in GUIDE_DIGEST_BEFORE_THE_SPLIT both reproduced exactly.
+    // 2026-09-19, later still: re-taken with the UCP paragraph naming all
+    // three catalog operations (see GUIDE_DIGEST_BEFORE_THE_SPLIT); with
+    // the two-door wording restored, 423001c4 reproduced.
+    // 2026-09-19, THE MERGE of those two: both halves re-pinned this line
+    // for their own reasons, so this pin is the merged guide and neither
+    // half's. Verified inside the merged tree: with llms.ts reverted to
+    // its pre-field-study state, main's 1c798e47 reproduced exactly.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "28afd25f9e5bf59a93d646cf2b18b901d196f1e30c6285ca6a72c114d8cd524c",
+      "f8597f7aa8aa5a02f8cfc968b85d28debd0909687c5bda5dbd19d7a394b5979a",
     );
   });
 

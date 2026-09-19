@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  windowTrustworthy,
+  railCoveredByRun,
   PAID_RESIDUAL,
   readDoor,
   PAID_VERDICTS,
@@ -246,4 +248,54 @@ test("a state-only zero on an out-of-reach scheme is UNKNOWN for the scheme, and
   const clean = readDoorRail({ rail: "eip155:42161", payTo: "0x" + "ab".repeat(20), atBlock: 1, scheme: "exact", balance: 0n, nonce: 0 });
   assert.equal(clean.verdict, "ZERO_OBSERVED");
   assert.equal(clean.scope, "all_time");
+});
+
+test("an empty window is not a zero until a horizon canary says the range is served", () => {
+  // StillOS Notary, 2026-09-19: a provider pruning logs past a horizon
+  // answers an EMPTY ARRAY, not an error. Nothing throws, so no retry
+  // and no catch sees it, and it is byte-identical to an unpaid door.
+  const served = windowTrustworthy({ logs: [], canary: { served: true, probed: "100-199", saw: 9730 } });
+  assert.equal(served.trustworthy, true);
+  assert.equal(served.canary_needed, true);
+
+  const pruned = windowTrustworthy({ logs: [], canary: { served: false, probed: "100-199", saw: 0 } });
+  assert.equal(pruned.trustworthy, false);
+  assert.match(pruned.because, /never that quiet/);
+  assert.match(pruned.because, /not serving this range/);
+
+  // No canary at all is NOT a pass. An instrument that skipped the
+  // check must not report the same thing as one that ran it.
+  const unchecked = windowTrustworthy({ logs: [], canary: null });
+  assert.equal(unchecked.trustworthy, false);
+  assert.match(unchecked.because, /no horizon canary was run/);
+
+  // A window that found transfers needs no canary: it is self-evidently served.
+  const found = windowTrustworthy({ logs: [{ from: "0xa", value: 1n }], canary: null });
+  assert.equal(found.trustworthy, true);
+  assert.equal(found.canary_needed, false);
+});
+
+test("an untrustworthy window reaches the verdict as UNKNOWN, never as a zero", () => {
+  // The rule above only matters if it lands on the verdict. logsComplete
+  // false is how the CLI carries it, and a zero off it is refused.
+  const row = readDoorRail({
+    rail: "eip155:8453", payTo: "0x" + "cd".repeat(20), atBlock: 51316142, fromBlock: 51314142,
+    logs: [], logsComplete: false,
+  });
+  assert.equal(row.verdict, "UNKNOWN");
+  assert.doesNotMatch(String(row.established_by), /ZERO_OBSERVED/);
+});
+
+test("a pinned rail is read only by the run that covers it, because every EVM address is well-formed everywhere", () => {
+  // Found building the second blind key, on a door advertising nine
+  // rails from one address. Reading its Polygon payTo against Base's
+  // USDC contract SUCCEEDS and returns a balance — a well-formed wrong
+  // value, the same shape as an address re-typed from a truncated
+  // display, and it renders as a reading of Polygon.
+  assert.equal(railCoveredByRun("eip155:8453", "eip155:8453"), true);
+  assert.equal(railCoveredByRun("eip155:137", "eip155:8453"), false);
+  assert.equal(railCoveredByRun("eip155:42161", "eip155:8453"), false);
+  // An unpinned rail is the single-rail door case and stays readable.
+  assert.equal(railCoveredByRun(null, "eip155:8453"), true);
+  assert.equal(railCoveredByRun(undefined, "eip155:8453"), true);
 });

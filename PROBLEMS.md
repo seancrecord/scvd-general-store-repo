@@ -1967,6 +1967,89 @@ unchanged, grace across the boundary with a body, and two MCP buys
 with different arguments in one minute each charged with their own
 goods.
 
+### 27. The browser bridge made two keys for one purchase — FIXED 2026-09-19
+
+Entries 16, 19 and 26 built the store's answer to the double charge on
+the SELLER's side: a keyed slot, scoped by verified payer, request and
+body, with a suggested key in the challenge so a client that never read
+the docs still gets bucketing. All of it turns on one thing — THE KEY
+IS THE ONLY THING THAT CAN COLLIDE TWO ATTEMPTS. A gate cannot tell two
+keys apart from two intentions.
+
+webmcp/purchase.js was handing out a fresh random key per quote. So an
+agent that called `quote_store_purchase` twice in parallel for one
+buy_url — the ordinary shape of a model firing independent tool calls,
+not a bug in the agent — got two quotes, two keys, two slots, and two
+charges for one thing it wanted once. Neither side of the wire could
+see it: the store saw two properly-keyed purchases by the same payer
+and settled both, correctly, and the page that made them different was
+ours. Everything entries 16 through 26 built was in place and none of
+it applied.
+
+Found by reading CV's finding on quicknode-x402 (src/fetch.ts): a
+payment-in-flight mutex that queues concurrent 402s behind the first
+payment so the rest retry with the cached session JWT. CV scopes it off
+for sessionless/pay-per-request modes, which is every door on this
+shelf — there is no session credential here for a waiter to inherit, so
+the mechanism does not port. What ports is the SHAPE: in flight is the
+window in which two attempts are one intent.
+
+Why the bridge could not simply echo the store's own suggested key, the
+way till.js does (till/till.js, the `suggested_key` read after the free
+knock): the native MPP challenge is minted against the key the buyer
+sends BEFORE the 402 that carries the suggestion
+(lib/mpp-challenge-mint), and the page filters offered challenges on
+`meta.purchase_key`. Adopt the suggestion at completion time and the
+credential answers a challenge bound to a key no longer being sent. If
+the key has to be the page's, the coalescing has to be the page's too.
+
+The fix, in two places and neither of them a lock on money:
+
+FREE KNOCKS JOIN. One entry per purchase for the knocks currently out,
+named by the quoted URL with its query sorted through URLSearchParams —
+the same normalization the store's slot does (lib/idempotency
+idempotencyScope), and the same care about delimiters, so a value
+carrying `&` or `=` is re-encoded rather than becoming structure and
+`?url=a&name=b` stays a different purchase from `?url=a%26name%3Db`. A
+second `quote` while the first is out gets the first's quote_id, key
+and challenge; it consumes no quota, because it holds no quote. In
+flight ONLY: a quote asked for after the first came back is a buyer
+asking to buy again, and gets its own key. SIMULTANEITY IS THE EVIDENCE
+OF ONE INTENT, and where the reading is ambiguous this file fails the
+way lib/idempotency fails — toward a second charge, never toward
+handing somebody the first purchase's goods.
+
+DUPLICATE SUBMISSIONS JOIN. A second `complete` on one quote used to be
+refused outright, which was correct on the wire and wrong in the agent:
+the honest reading of "already in flight" is to go and get another
+quote, and another quote was another key, which was the second charge
+again by a longer road. The same credential now collects the original
+result. A DIFFERENT credential is still refused — two signed
+instruments against one quote are two payments for one purchase and the
+page will not choose between them with somebody else's money.
+
+Both joins settle to an answer or to null, never a rejection, so one
+caller's cancellation is never delivered to another as its own
+AbortError and a submission that SUCCEEDED is never discarded because
+the caller waiting on it had gone.
+
+Not covered, stated rather than implied: two SEQUENTIAL quote-and-pay
+rounds for one item are still two purchases, because from here they are
+indistinguishable from a buyer who wanted two. The store's suggested
+key covers that case for a client that echoes it (60-second bucket,
+boundary grace, #26) and till.js does; this bridge cannot, for the
+challenge-binding reason above. Also uncovered: two browser TABS, which
+share no page memory and never could — that is the seller-side slot's
+job and it is doing it, since both tabs pay as the same wallet.
+
+*Proven, not asserted:* webmcp/purchase.test.mjs — three concurrent
+quotes (including one with its query reordered) knock once and share a
+key, a query value carrying `&`/`=` knocks on its own, a sequential
+quote gets a new key, a duplicate submission collects the original
+answer with one payment sent, a different credential against an
+in-flight quote is refused with nothing sent, and the page's memory
+bound still holds against distinct purchases.
+
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
 Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare

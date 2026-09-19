@@ -210,13 +210,15 @@ const UNCOUNTED_TODAY: readonly string[] = [
    * below describes one aisle over.
    */
   /**
-   * The id-scoped checkout doors (2026-09-16). Opening a checkout IS
-   * counted; reading, cancelling or completing the one you already
-   * hold is the same visit continuing, and counting each poll would
-   * record one buyer five times and call it footfall — the argument
-   * the trade-counter door card makes below.
+   * The id-scoped checkout doors (2026-09-16; Update joined them
+   * 2026-09-19). Opening a checkout IS counted; reading, replacing,
+   * cancelling or completing the one you already hold is the same
+   * visit continuing, and counting each poll would record one buyer
+   * five times and call it footfall — the argument the trade-counter
+   * door card makes below.
    */
   "GET /ucp/v1/checkout-sessions/:id",
+  "PUT /ucp/v1/checkout-sessions/:id",
   "POST /ucp/v1/checkout-sessions/:id/cancel",
   "POST /ucp/v1/checkout-sessions/:id/complete",
   // The order a completed checkout points at: the same buyer, reading

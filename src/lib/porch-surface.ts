@@ -149,13 +149,15 @@ export const PORCH_EXACT = new Map<string, string>([
    * THE UCP DOORS (2026-09-16). Counted from the day they opened,
    * because the whole question about this protocol is whether anybody
    * arrives through it — and an uncounted door cannot answer that.
-   * The two catalog operations share one bucket: what is worth knowing
-   * is whether platforms shop the catalog, not which verb they used.
+   * The three catalog operations share one bucket: what is worth
+   * knowing is whether platforms shop the catalog, not which verb
+   * they used.
    */
   ["/ucp", "ucp"],
   ["/ucp/v1", "ucp"],
   ["/ucp/v1/catalog/search", "ucp:catalog"],
   ["/ucp/v1/catalog/lookup", "ucp:catalog"],
+  ["/ucp/v1/catalog/product", "ucp:catalog"],
   /**
    * Opening a checkout is a visit worth counting: it is the moment a
    * platform stops browsing and tries to buy, and whether that ever

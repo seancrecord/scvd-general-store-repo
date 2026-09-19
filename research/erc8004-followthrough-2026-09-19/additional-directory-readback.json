@@ -1,0 +1,32 @@
+[
+  {
+    "name": "agent-arena",
+    "url": "https://agentarena.site/api/agent/8453/86957",
+    "http": "404",
+    "error": "",
+    "observedAt": "2026-09-19T12:35:46.202399+00:00",
+    "responseFile": "agent-arena.json"
+  },
+  {
+    "name": "agent-arena-control",
+    "url": "https://agentarena.site/api/agent/8453/18500",
+    "http": "200",
+    "error": "",
+    "observedAt": "2026-09-19T12:35:46.641370+00:00",
+    "responseFile": "agent-arena-control.json"
+  },
+  {
+    "name": "agentranking",
+    "url": "https://app.agentranking.io/",
+    "http": "522",
+    "error": "",
+    "observedAt": "2026-09-19T12:36:05.017473+00:00",
+    "responseBytes": 16
+  },
+  {
+    "name": "8004.directory",
+    "url": "https://8004.directory",
+    "date": "2026-09-19",
+    "result": "Browser ERR_NAME_NOT_RESOLVED; no listing conclusion"
+  }
+]

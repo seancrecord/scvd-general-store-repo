@@ -1,0 +1,204 @@
+{
+  "ucp": {
+    "version": "2026-08-25"
+  },
+  "products": [
+    {
+      "id": "gid://scvd.store/Product/hello",
+      "handle": "hello",
+      "title": "A Signed Hello",
+      "description": {
+        "plain": "A warm, signed note from the store, delivered on the spot, with your patron badge. The bottom rung of the trust ladder, and the traditional first purchase."
+      },
+      "url": "https://scvd.store/menu/hello",
+      "price_range": {
+        "min": {
+          "amount": 50,
+          "currency": "USD"
+        },
+        "max": {
+          "amount": 50,
+          "currency": "USD"
+        }
+      },
+      "variants": [
+        {
+          "id": "gid://scvd.store/Variant/hello",
+          "sku": "SCVD-HELLO",
+          "title": "A Signed Hello",
+          "description": {
+            "plain": "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL."
+          },
+          "price": {
+            "amount": 50,
+            "currency": "USD"
+          },
+          "availability": {
+            "available": true,
+            "status": "in_stock",
+            "decided_at": "checkout"
+          },
+          "tags": [
+            "greeting",
+            "signed-artifact",
+            "first-purchase",
+            "patron-badge",
+            "reads:made_here",
+            "cadence:one_off",
+            "fulfillment:instant",
+            "pricing:fixed"
+          ],
+          "metadata": {
+            "store.scvd": {
+              "item_id": "hello",
+              "sku": "SCVD-HELLO",
+              "listed_week": "2026-W30",
+              "pricing_model": "fixed",
+              "cadence": "one_off",
+              "reads": "made_here",
+              "fulfillment": "instant",
+              "capability": "Prove my payment code works end to end against a real store",
+              "specimen": {
+                "url": "https://scvd.store/samples/hello.json",
+                "kind": "delivery_outline"
+              },
+              "inputs": {
+                "schema_url": "https://scvd.store/ucp/schemas/items/hello.input.json",
+                "required": [],
+                "properties": [
+                  "agent_name",
+                  "purpose",
+                  "model",
+                  "client",
+                  "operator",
+                  "operator_kind",
+                  "came_from",
+                  "prior_cert_id"
+                ],
+                "applied_at": "https://scvd.store/api/buy/hello",
+                "note": "Query parameters on the paid request. A signed request missing a required input is refused before the gate and no money moves."
+              },
+              "listing_url": "https://scvd.store/menu/hello",
+              "buy_url": "https://scvd.store/api/buy/hello",
+              "mcp_tool": "buy_hello",
+              "verify_url": "https://scvd.store/api/verify/{id}",
+              "protocol": {
+                "x402": 2,
+                "mcp": true
+              },
+              "settlement": {
+                "amount_usdc": 0.5,
+                "amount_atomic": "500000",
+                "decimals": 6,
+                "asset_symbol": "USDC",
+                "note": "The commercial price above is USD minor units, as the catalog requires. This is the amount that actually settles: exact atomic USDC, the same figure the x402 quote carries. Network, token contract and recipient come from the payment handler."
+              }
+            }
+          },
+          "inputs": [
+            {
+              "id": "hello",
+              "match": "featured"
+            }
+          ]
+        }
+      ],
+      "categories": [
+        {
+          "value": "signed-artifact",
+          "taxonomy": "merchant"
+        }
+      ],
+      "tags": [
+        "greeting",
+        "signed-artifact",
+        "first-purchase",
+        "patron-badge",
+        "reads:made_here",
+        "cadence:one_off",
+        "fulfillment:instant",
+        "pricing:fixed"
+      ],
+      "metadata": {
+        "store.scvd": {
+          "item_id": "hello",
+          "sku": "SCVD-HELLO",
+          "listed_week": "2026-W30",
+          "pricing_model": "fixed",
+          "cadence": "one_off",
+          "reads": "made_here",
+          "fulfillment": "instant",
+          "capability": "Prove my payment code works end to end against a real store",
+          "specimen": {
+            "url": "https://scvd.store/samples/hello.json",
+            "kind": "delivery_outline"
+          },
+          "inputs": {
+            "schema_url": "https://scvd.store/ucp/schemas/items/hello.input.json",
+            "required": [],
+            "properties": [
+              "agent_name",
+              "purpose",
+              "model",
+              "client",
+              "operator",
+              "operator_kind",
+              "came_from",
+              "prior_cert_id"
+            ],
+            "applied_at": "https://scvd.store/api/buy/hello",
+            "note": "Query parameters on the paid request. A signed request missing a required input is refused before the gate and no money moves."
+          },
+          "listing_url": "https://scvd.store/menu/hello",
+          "buy_url": "https://scvd.store/api/buy/hello",
+          "mcp_tool": "buy_hello",
+          "verify_url": "https://scvd.store/api/verify/{id}",
+          "protocol": {
+            "x402": 2,
+            "mcp": true
+          }
+        }
+      }
+    }
+  ],
+  "policies": [
+    {
+      "type": "store.scvd.policy.license",
+      "class": "artifact",
+      "status": "draft",
+      "title": "Signed artifact",
+      "description": {
+        "plain": "What you bought is a signed record of what this store observed or made, and it is yours to store, quote, publish and hand to a third party. Its report URL is public and stays public: the point of a signed observation is that somebody other than you can check it. The store keeps the right to keep publishing its own corpus; it claims nothing over what you build on top of the artifact."
+      },
+      "url": "https://scvd.store/rights",
+      "applies_to": [
+        "$.products[0]"
+      ]
+    },
+    {
+      "type": "store.scvd.policy.fulfillment",
+      "title": "Delivered in the purchase response",
+      "description": {
+        "plain": "Instant items deliver in the purchase response itself, so there is no window to miss: if settlement succeeds and the goods do not arrive in that same response, that is a defect, not a delay \u2014 write the mailbox at /api/letter and it gets fixed or refunded."
+      },
+      "mode": "instant",
+      "url": "https://scvd.store/fulfillment-log",
+      "applies_to": [
+        "$.products[0]"
+      ]
+    },
+    {
+      "type": "store.scvd.policy.settlement_risk",
+      "title": "Not escrow",
+      "description": {
+        "plain": "Not escrow, and we will not pretend otherwise. Funds move at settlement, before fulfillment, and the gap between those two moments is real: your protection inside it is this written commitment plus the public record of whether it has been kept \u2014 not a protocol mechanism. On-chain conditional release DOES exist in this ecosystem: Boson Protocol's x402B runs non-custodial contract escrow with dispute resolution on Base, mainnet since 2026-06-08 (an earlier version of this sentence claimed nobody had shipped it \u2014 wrong when written, corrected on /corrections). This store does not run one because a contract to operate, monitor, and arbitrate is infrastructure a one-person shop must not become, and its weight does not fit tickets that start at half a cent. If we ever adopt conditional release, this section changes first."
+      },
+      "escrow": false,
+      "custodial": false,
+      "url": "https://scvd.store/rights",
+      "applies_to": [
+        "$.products[0]"
+      ]
+    }
+  ]
+}

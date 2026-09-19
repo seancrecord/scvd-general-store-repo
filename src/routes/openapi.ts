@@ -1336,6 +1336,26 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
       description:
         "The rungs this probe did not climb, and what climbs each one. Replaced next_steps 2026-09-16: the reading named the missing rungs in one place and the paid instruments in another, and a buyer had to join them. Each unclimbed rung carries the item, its price in USDC, the tool that calls it and the URL; a rung nothing can buy today says so rather than being sold a near-miss.",
       properties: {
+        current_reading: {
+          type: "object",
+          description: "The unsigned preflight's evidence and spending limits.",
+          properties: {
+            signed: { type: "boolean" },
+            proves_payment_or_delivery: { type: "boolean" },
+            scope: { type: "string" },
+          },
+        },
+        free_signed_history: {
+          type: "object",
+          description: "Free historical evidence: the lookup is unsigned; verify its cited signed originals, exact subject and observation age separately.",
+          properties: {
+            history_url_template: { type: "string", description: "Replace {host} with the endpoint's hostname." },
+            issuer_key_url: { type: "string" },
+            guide_url: { type: "string" },
+            requires_spend_authorization: { type: "boolean" },
+            scope: { type: "string" },
+          },
+        },
         climbed: { type: "array", items: { type: "string" } },
         unclimbed: {
           type: "array",
