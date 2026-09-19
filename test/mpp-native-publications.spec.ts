@@ -12,7 +12,8 @@ import { purchaseIntentStore, type PurchaseIntent } from "@/services/purchase-in
 import { manifestAccepts, pennyPageTiersUsdc, publicationFamilyForPath, tipFromPaid, atomicToUsdc } from "@/lib/payments";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
-import { nativeCheckoutGuide, nativePublicationsEnabled } from "@/lib/purchase-capabilities";
+import { nativeCheckoutGuide, nativePublicationsEnabled, purchaseCapabilities } from "@/lib/purchase-capabilities";
+import { MENU_ITEMS } from "@/store";
 import { nativeOfferAdvertised } from "@/lib/mpp-checkout-capability";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { decodeBase64Json } from "@/lib/base64-json";
@@ -169,4 +170,39 @@ it("discovery names the publication lane: the guide's clause and the OpenAPI des
   delete testEnv.MPP_CHECKOUT_ENABLED;
   const disabled = await (await request("/openapi.json")).json<{ paths: Record<string, { get: { "x-payment-info": { protocols: unknown[] } } }> }>();
   expect(disabled.paths["/almanac/{slug}"]!.get["x-payment-info"].protocols).toEqual([{ x402: {} }]);
+});
+
+it("the indexes' checkout block names the lane exactly while the page's 402 carries the challenge list", async () => {
+  // The header names are the shelf row's own: one spelling, or the two contracts drift apart.
+  const shelfRow = purchaseCapabilities(MENU_ITEMS[0]!, testEnv).find(row => row.protocol === "mpp" && "transport" in row && row.transport === "http") as Record<string, unknown>;
+  const headerFields = ["request_header", "authorization_scheme", "challenge_header", "response_header", "idempotency_header"];
+  for (const path of ["/almanac", "/open-for-business", "/gazette", "/zodiac/archive"]) {
+    const index = await (await request(`${path}?view=compact`)).json<{ checkout: { mpp?: Record<string, unknown>; request_header: string; protocol: string } }>();
+    expect(index.checkout.mpp, path).toBeDefined();
+    expect(index.checkout.protocol, "the x402 shape is still the block's own").toBe("x402");
+    expect(index.checkout.request_header).toBe("PAYMENT-SIGNATURE");
+    for (const field of headerFields) expect(index.checkout.mpp![field], `${path} ${field}`).toBe(shelfRow[field]);
+    expect(index.checkout.mpp).toMatchObject({ protocol: "mpp", payment_method: "evm", intent: "charge", network: BASE_NETWORK, currency: "USDC", method: "GET", delivery_mime_type: "text/markdown", per_purchase_certificate: false });
+    expect((index.checkout.mpp!.steps as string[]).join(" ")).toMatch(/one Payment challenge per price tier/);
+  }
+  const almanac = await (await request("/almanac?view=compact")).json<{ checkout: Record<string, unknown> }>();
+  const quote = await request(PAGE);
+  expect(quote.status).toBe(402);
+  expect(quote.headers.get("WWW-Authenticate")).toMatch(/^Payment /);
+  expect((await quote.json<{ checkout: Record<string, unknown> }>()).checkout, "the 402 body describes what its own headers carry").toEqual(almanac.checkout);
+  const manifest = await (await request("/.well-known/x402.json")).json<{ resources: { resource: string; checkout: Record<string, unknown> }[] }>();
+  expect(manifest.resources.find(row => row.resource.endsWith(PAGE))!.checkout).toEqual(almanac.checkout);
+
+  // Withheld: the block is gone from every surface and the x402 shape is exactly what it was.
+  delete testEnv.MPP_CHECKOUT_ENABLED;
+  const { mpp: _offered, ...x402Only } = almanac.checkout as { mpp: unknown };
+  expect(_offered).toBeDefined();
+  for (const path of ["/almanac", "/open-for-business", "/gazette", "/zodiac/archive"]) {
+    const withheld = await (await request(`${path}?view=compact`)).json<{ checkout: Record<string, unknown> }>();
+    expect(withheld.checkout.mpp, path).toBeUndefined();
+  }
+  expect((await (await request("/almanac?view=compact")).json<{ checkout: Record<string, unknown> }>()).checkout).toEqual(x402Only);
+  expect((await (await request(PAGE)).json<{ checkout: Record<string, unknown> }>()).checkout).toEqual(x402Only);
+  const disabled = await (await request("/.well-known/x402.json")).json<{ resources: { resource: string; checkout: Record<string, unknown> }[] }>();
+  expect(disabled.resources.find(row => row.resource.endsWith(PAGE))!.checkout).toEqual(x402Only);
 });

@@ -84,7 +84,7 @@ zodiacRoutes.get("/zodiac/archive", (c) => {
   return c.json({
     status: ZODIAC_STATUS,
     archive: ZODIAC_ARCHIVE_NOTICE,
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, c.env),
     price_usdc: PENNY_PAGE_USDC,
     season_weeks_elapsed: weeks.length,
     ...(c.req.query("view") === "compact" ? page?.pagination : {}),

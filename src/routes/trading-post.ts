@@ -126,7 +126,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
   const page = publicationPage(issues.map(issue => issueIndexEntry(issue, base)), `${base}/gazette`, c.req.query("page"));
   if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
   return c.json({
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, c.env),
     ...(c.req.query("view") === "compact" ? page?.pagination : {}),
     gazette:
       "The shop's paper of record: weekly editions set from the store's own books, plus dispatches from reviewed Trading Post tips. A penny a copy.",

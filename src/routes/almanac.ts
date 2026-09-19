@@ -63,7 +63,7 @@ almanacRoutes.get("/almanac", async (c) => {
    * Both dialects render from this one document.
    */
   const indexPayload = () => ({
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, c.env),
     ...(c.req.query("view") === "compact" ? page?.pagination : {}),
     almanac:
       "The Keeper's Almanac, a serialized journal. Dated entries, newest first, each page individually purchasable.",

@@ -2,7 +2,7 @@ import type { Env, MenuItem } from "@/types";
 import type { MiddlewareHandler } from "hono";
 import type { HonoEnv } from "@/types";
 import { getMenuItem } from "@/store";
-import { commissionRungFromPath, publicationFamilyForPath, publicationTiersUsdcForPath, type PublicationFamily } from "@/lib/payments";
+import { commissionRungFromPath, publicationFamilyForPath, type PublicationFamily } from "@/lib/door-paths";
 import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
 
 /**
@@ -47,13 +47,33 @@ export function nativeCheckoutItem(path: string, method: string): MenuItem | und
  * an item id is for a shelf sale. The doors Worker never fronts these
  * paths, so this is the store's answer alone.
  */
-export interface NativePublicationDoor { family: PublicationFamily; tiersUsdc: number[] }
+export interface NativePublicationDoor { family: PublicationFamily }
 export function nativePublicationDoor(path: string, method: string): NativePublicationDoor | undefined {
   if (method !== "GET") return undefined;
   const family = publicationFamilyForPath(path);
-  const tiersUsdc = publicationTiersUsdcForPath(path);
-  return family && tiersUsdc ? { family, tiersUsdc } : undefined;
+  return family ? { family } : undefined;
 }
+
+/**
+ * The publication doors are enabled by the same flag, key and bindings
+ * as the shelf; one representative page path asks the shared check, so
+ * the guide, the discovery descriptor and the indexes' checkout block
+ * cannot say yes when the gate would say no.
+ */
+export const NATIVE_PUBLICATION_PROBE_PATH = "/almanac/probe";
+export function nativePublicationsEnabled(env?: Pick<Env, "MPP_CHECKOUT_ENABLED" | "MPP_CHALLENGE_KEY" | "PAID_RECOVERIES" | "COUNTER_LEDGER">): boolean {
+  return !!env && mppCheckoutEnabled(env, NATIVE_PUBLICATION_PROBE_PATH, "GET");
+}
+
+/**
+ * THE HTTP LANE'S HEADERS, SPELLED ONCE. The shelf's payment_capabilities
+ * row and the publication checkout block both tell a reader which header
+ * carries the challenge list, which carries the credential and which
+ * returns the receipt; two spellings would be a contract that could
+ * drift from itself with nothing failing.
+ */
+export const NATIVE_HTTP_HEADERS = { request_header: "Authorization", authorization_scheme: "Payment", challenge_header: "WWW-Authenticate",
+  response_header: "Payment-Receipt", idempotency_header: "Idempotency-Key" } as const;
 
 /**
  * THE COMMISSION DESK'S RUNGS ARE NATIVE DOORS (2026-09-19). A rung

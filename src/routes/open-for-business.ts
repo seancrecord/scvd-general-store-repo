@@ -25,7 +25,7 @@ import {
   listOpenForBusinessShelf,
   type OpenForBusinessIssue,
 } from "@/services/open-for-business-store";
-import type { HonoEnv } from "@/types";
+import type { Env, HonoEnv } from "@/types";
 
 /**
  * OPEN FOR BUSINESS — the weekly issue for sellers, on the shelf.
@@ -80,7 +80,8 @@ function indexRow(issue: OpenForBusinessIssue, base: string): Record<string, unk
 }
 
 /** The twin: the five answers (60.4), the three sentences (60.2), and the shelf. */
-function indexTwin(base: string, rows: unknown[], truncated: boolean, pagination?: Record<string, unknown>) {
+function indexTwin(env: Env, rows: unknown[], truncated: boolean, pagination?: Record<string, unknown>) {
+  const base = env.STORE_BASE_URL;
   return {
     artifact: "open_for_business_index",
     name: OPEN_FOR_BUSINESS_NAME,
@@ -107,7 +108,7 @@ function indexTwin(base: string, rows: unknown[], truncated: boolean, pagination
       stores: "The purchase record the x402 receipt implies: the exact markdown prepared for your payment, retained for recovery under your private Purchase-Recovery handle. No account, no cookie, no reader list.",
     }),
     what_this_is_not: OPEN_FOR_BUSINESS_IS_NOT,
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, env),
     ...(pagination ?? {}),
     /* Rule 52: a list that could not see the whole shelf says so. */
     shelf_complete: !truncated,
@@ -187,7 +188,7 @@ openForBusinessRoutes.get(PATH, async (c) => {
   }
   const page = publicationPage(rows, `${base}${PATH}`, c.req.query("page"));
   if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
-  const twin = c.req.query("view") === "compact" ? indexTwin(base, page!.rows, truncated, page!.pagination) : indexTwin(base, rows, truncated);
+  const twin = c.req.query("view") === "compact" ? indexTwin(c.env, page!.rows, truncated, page!.pagination) : indexTwin(c.env, rows, truncated);
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
       base,

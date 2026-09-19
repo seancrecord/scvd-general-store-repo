@@ -1,8 +1,46 @@
+import type { Env } from "@/types";
 import { ZODIAC_STATUS } from "@/store/zodiac";
 import { IDEMPOTENCY_TTL_SECONDS } from "@/lib/idempotency";
-/** Publications return the page itself; the receipt header is the purchase record. */
-export function publicationCheckout(base: string) {
+import { NATIVE_HTTP_HEADERS, nativePublicationsEnabled } from "@/lib/mpp-checkout-capability";
+import { BASE_NETWORK } from "@/lib/payment-networks";
+
+/**
+ * THE NATIVE LANE ON THE PAGE'S OWN CONTRACT (2026-09-19, the
+ * publications follow-through). The publication release put one
+ * Payment challenge per tier on every page's 402 and left the
+ * indexes' checkout block describing the x402 shape alone, with the
+ * guide carrying the native clause instead: the block could not ask
+ * whether the lane is offered without an import cycle. lib/door-paths.ts
+ * broke it. The block now names the lane from the same enabled answer
+ * the challenge is minted on, so a reader of /almanac learns here what
+ * the 402 will carry, and a store with the lane withheld says exactly
+ * what it said before. The header names are the shelf row's own.
+ */
+export function nativePublicationCheckout() {
   return {
+    protocol: "mpp",
+    payment_method: "evm",
+    intent: "charge",
+    network: BASE_NETWORK,
+    currency: "USDC",
+    amount_unit: "atomic",
+    method: "GET",
+    ...NATIVE_HTTP_HEADERS,
+    delivery_mime_type: "text/markdown",
+    per_purchase_certificate: false,
+    steps: [
+      `GET the page's buy_url without payment: the same free quote. ${NATIVE_HTTP_HEADERS.challenge_header} carries one Payment challenge per price tier (an RFC 9110 challenge list, minimum first); the first buys the whole page and a higher one is an optional tip. Keep the quote's ${NATIVE_HTTP_HEADERS.idempotency_header}.`,
+      "Authorize one listed challenge in a compatible MPP client, unchanged. Never combine it with an x402 payment header. Never send private keys, seed phrases or wallet secrets.",
+      `Retry the identical URL with ${NATIVE_HTTP_HEADERS.request_header}: ${NATIVE_HTTP_HEADERS.authorization_scheme} <credential> and the same ${NATIVE_HTTP_HEADERS.idempotency_header}. On success, save the markdown body, the ${NATIVE_HTTP_HEADERS.response_header} header and the private Purchase-Recovery header (base64 JSON). The same credential again returns the retained page without a second settle; an interrupted response does not prove payment failed.`,
+    ],
+  };
+}
+
+/** Publications return the page itself; the receipt header is the purchase record. */
+export function publicationCheckout(base: string, config?: Pick<Env, "MPP_CHECKOUT_ENABLED" | "MPP_CHALLENGE_KEY" | "PAID_RECOVERIES" | "COUNTER_LEDGER">) {
+  return {
+    // Present exactly while the page's 402 carries the challenge list.
+    ...(nativePublicationsEnabled(config) ? { mpp: nativePublicationCheckout() } : {}),
     buyer_guidance: {
       price_effect: { higher_payment: "optional_tip", higher_payment_changes_scope: false, scope: "The entire named page at the lowest offered tier." },
       production: { kind: "existing_publication", attribution: "See the page byline and publication date; purchase does not commission new writing." },

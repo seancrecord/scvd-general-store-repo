@@ -1,8 +1,9 @@
 import type { Env, MenuItem } from "@/types";
 import type { PaymentRequirements } from "@x402/core/types";
-import { manifestAccepts, priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
+import { manifestAccepts, priceTiersUsdc, publicationTiersUsdcForFamily, USDC_DECIMALS } from "@/lib/payments";
 import { BASE_NETWORK, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
-import { mppCheckoutEnabled, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
+import { mppCheckoutEnabled, NATIVE_HTTP_HEADERS, nativePublicationsEnabled, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
+export { NATIVE_PUBLICATION_PROBE_PATH, nativePublicationsEnabled } from "@/lib/mpp-checkout-capability";
 import { ucpItemSellable } from "@/lib/ucp/launch";
 import { MENU_ITEMS } from "@/store";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
@@ -55,7 +56,7 @@ export function nativeTiersFor(config: PaymentNetworkConfig, tiersUsdc: number[]
 }
 
 export function nativePublicationTiers(config: PaymentNetworkConfig, door: NativePublicationDoor): PaymentRequirements[] {
-  return nativeTiersFor(config, door.tiersUsdc);
+  return nativeTiersFor(config, publicationTiersUsdcForFamily(door.family));
 }
 
 /** The tier a credential's challenge names within a list, or nothing. */
@@ -89,9 +90,7 @@ export function purchaseCapabilities(item: MenuItem, config?: PurchaseCapability
     // Present only where the door takes tips: every offered amount, minimum first, the challenge list's order.
     ...(tiers.length > 1 ? { tip_tiers_atomic: tiers.map(row => row.amount) } : {}) };
   return [...rows,
-    { ...native, transport: "http", method: "GET", path,
-      request_header: "Authorization", authorization_scheme: "Payment", challenge_header: "WWW-Authenticate",
-      response_header: "Payment-Receipt", idempotency_header: "Idempotency-Key" },
+    { ...native, transport: "http", method: "GET", path, ...NATIVE_HTTP_HEADERS },
     { ...native, ...MCP_NATIVE_SHAPE },
     { ...native, ...WEBMCP_NATIVE_SHAPE }];
 }
@@ -133,17 +132,6 @@ export function nativeMcpCheckoutShape(config?: PurchaseCapabilityConfig) {
 /** The doors that carry a native row: derived from the shelf and the config, never typed. */
 export function nativeCheckoutDoors(config?: PurchaseCapabilityConfig): MenuItem[] {
   return MENU_ITEMS.filter(item => purchaseCapabilities(item, config).some(row => row.protocol === "mpp"));
-}
-
-/**
- * The publication doors are enabled by the same flag, key and bindings
- * as the shelf; one representative page path asks the shared check, so
- * the guide and the discovery descriptor cannot say yes when the gate
- * would say no.
- */
-export const NATIVE_PUBLICATION_PROBE_PATH = "/almanac/probe";
-export function nativePublicationsEnabled(config?: PurchaseCapabilityConfig): boolean {
-  return !!config && mppCheckoutEnabled(config, NATIVE_PUBLICATION_PROBE_PATH, "GET");
 }
 
 /**

@@ -7,7 +7,7 @@ import { AuthorizationPayloadSchema } from "mppx/evm";
 import { createMppEvmAdapter } from "@/lib/mpp-evm-adapter";
 import { mppCheckoutEnabled, nativeCheckoutItem, nativeCommissionDoor, nativePublicationDoor, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
-import { getPaymentStack, atomicToUsdc, tipFromPaid,
+import { getPaymentStack, atomicToUsdc, tipFromPaid, publicationTiersUsdcForFamily,
   SettlementUnknown, SettlementDeclined, type SettledPayment } from "@/lib/payments";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
@@ -44,7 +44,7 @@ function nativeDoorFor(c: Context<HonoEnv>): NativeDoor | undefined {
   const item = nativeCheckoutItem(c.req.path, c.req.method);
   if (item) return { kind: "item", item, key: item.id, tiers: nativeCheckoutTiers(c.env, item), minimumUsdc: item.price_usdc };
   const door = nativePublicationDoor(c.req.path, c.req.method);
-  if (door) return { kind: "publication", door, key: door.family, tiers: nativePublicationTiers(c.env, door), minimumUsdc: door.tiersUsdc[0]! };
+  if (door) return { kind: "publication", door, key: door.family, tiers: nativePublicationTiers(c.env, door), minimumUsdc: publicationTiersUsdcForFamily(door.family)[0]! };
   const desk = nativeCommissionDoor(c.req.path, c.req.method);
   if (desk) return { kind: "commission", item: desk.item, rung: desk.rung, key: desk.item.id, tiers: nativeTiersFor(c.env, [desk.rung]), minimumUsdc: desk.rung };
   return undefined;

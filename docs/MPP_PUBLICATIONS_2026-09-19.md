@@ -71,10 +71,40 @@ parity has nothing new to hold.
 - `test/openapi-discovery-shape.spec.ts`: the descriptor stays `x402` alone
   where the lane is not enabled.
 
+## Follow-through, the same night: the checkout block names the lane
+
+The release above left the indexes' `checkout` block describing the x402
+shape alone, because `lib/publication-checkout.ts` could not ask the
+native capability module whether the lane is offered: the capability
+module read the publication path patterns out of `lib/payments.ts`, and
+`payments.ts` builds the page's 402 body from the checkout block. The
+patterns (and the commission rung's) now live in `lib/door-paths.ts`, a
+leaf that prices nothing; `payments.ts` re-exports them so every reader
+keeps its import, and the capability module no longer imports the till.
+
+With the cycle gone, `publicationCheckout(base, env)` carries an `mpp`
+block exactly while `nativePublicationsEnabled(env)` says the page's 402
+will carry the challenge list: protocol, method and intent, the Base
+network, the header names (the shelf row's own, spelled once as
+`NATIVE_HTTP_HEADERS`), the markdown delivery, and three steps in the
+x402 block's register, quote, authorize one listed challenge, retry with
+the credential and the same key. It rides the four compact indexes, the
+page's 402 body and every publication resource in `/.well-known/x402.json`,
+from the one function, so the 402 body still equals the index's block.
+With the lane withheld, every surface is byte-for-byte what it was.
+
+- `test/mpp-native-publications.spec.ts`, the last case: the four indexes
+  carry the block with the shelf row's header names; the 402 body and the
+  manifest resource equal the index's block; withheld, the block is gone
+  from all three and the x402 shape is unchanged. Shown failing against
+  the previous source (the block absent on `/almanac`).
+- `test/publication-checkout.spec.ts`: the 402 body still equals the index.
+
 ## Not in this release
 
 Commission rungs (`/api/commission/pay/{rung}`, a quoted price per brief)
-followed the same night in [their own release](MPP_COMMISSION_2026-09-19.md); the catalog's `checkout` block on the publication indexes
-still describes the x402 shape, and the guide carries the native clause
-instead; the WebMCP bridge already quotes and completes any page it lists
+followed the same night in [their own release](MPP_COMMISSION_2026-09-19.md);
+the indexes' `how_to_buy` sentence and the page-level prose still say
+x402, with the `checkout.mpp` block and the guide carrying the native
+lane; the WebMCP bridge already quotes and completes any page it lists
 through the same headers; other networks and assets; a live purchase.

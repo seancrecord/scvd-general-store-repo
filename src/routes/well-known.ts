@@ -400,7 +400,7 @@ async function structuredPaidResources(env: Env) {
     description: `Keeper's Almanac, "${entry.title}" (${entry.date}).`,
     mimeType: "text/markdown",
     price_usdc_options: pennyPageTiersUsdc(),
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, env),
     pricing: "fixed",
     fulfillment: "instant",
   }));
@@ -417,7 +417,7 @@ async function structuredPaidResources(env: Env) {
     description: `Open for Business, ${issue.week}: ${issue.title}. The weekly issue for sellers.`,
     mimeType: "text/markdown",
     price_usdc_options: openForBusinessTiersUsdc(),
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, env),
     pricing: "fixed",
     fulfillment: "instant",
   }));
@@ -434,7 +434,7 @@ async function structuredPaidResources(env: Env) {
     description: `The Gazette. Issue no. ${issue.issue_number}: ${issue.title}`,
     mimeType: "text/markdown",
     price_usdc_options: pennyPageTiersUsdc(),
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, env),
     pricing: "fixed",
     fulfillment: "instant",
   }));
