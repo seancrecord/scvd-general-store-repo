@@ -129,6 +129,21 @@ describe("the report, the practice door, the family and the vocabulary", () => {
     expect(protocolsSpoken(response.headers)).toEqual(["mpp"]);
   });
 
+  it("the tiered practice door lists three challenges in one header, minimum first, and the battery reads every one clean", async () => {
+    // Native tips (2026-09-19): the store's own tipping doors answer with
+    // an RFC 9110 challenge list. The reader that scores other stores'
+    // doors must read a list as a list, or it would misread our own.
+    const response = await SELF.fetch(`${BASE}/api/practice/mpp-tiers`);
+    expect(response.status).toBe(402);
+    const listed = paymentChallenges(response.headers.get("www-authenticate"));
+    expect(listed.map((challenge) => challenge.id)).toEqual(["prac_mpp_tiers_0001", "prac_mpp_tiers_0002", "prac_mpp_tiers_0003"]);
+    expect(listed.map((challenge) => (challenge.request as { amount?: string } | null)?.amount)).toEqual(["1000", "2000", "5000"]);
+    const outcome = runMppChecks({ headers: response.headers, url: `${BASE}/api/practice/mpp-tiers`, bodyText: await response.text(), now: NOW });
+    expect(outcome.protocols_spoken).toEqual(["mpp"]);
+    expect(outcome.checks.filter((check) => !check.ok)).toEqual([]);
+    expect(outcome.advisories).toEqual([]);
+  });
+
   it("the family row exists, every failing check is a vocabulary class sourced to the draft, and the misread count carries its denominators", () => {
     expect(PROTOCOL_FAMILIES.find((family) => family.id === "mpp")?.versions).toContain("draft-00");
     for (const name of MPP_CHECK_NAMES) {

@@ -1178,7 +1178,7 @@ async function callPurchaseTool(
           identity_policy: IDENTITY_POLICY,
         },
         note: native
-          ? `For a new purchase, sign one of the accepts and send it in _meta['x402/payment'], or sign the MPP challenge in ${MCP_PAYMENT_REQUIRED_META_KEY} and send the credential in _meta['${MCP_CREDENTIAL_META_KEY}'] with identical arguments. For recovery, keep the original signed payment and key; do not sign another payment while the earlier attempt is unresolved.`
+          ? `For a new purchase, sign one of the accepts and send it in _meta['x402/payment'], or sign one of the MPP challenges in ${MCP_PAYMENT_REQUIRED_META_KEY} (one per price tier, minimum first) and send the credential in _meta['${MCP_CREDENTIAL_META_KEY}'] with identical arguments. For recovery, keep the original signed payment and key; do not sign another payment while the earlier attempt is unresolved.`
           : "For a new purchase, sign one of the accepts and send it in _meta['x402/payment']. For recovery, keep the original signed payment and key; do not sign another payment while the earlier attempt is unresolved.",
       },
     );
