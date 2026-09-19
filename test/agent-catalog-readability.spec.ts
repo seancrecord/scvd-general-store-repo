@@ -1,4 +1,4 @@
-import { LLMS_INDEX_CHARACTER_BUDGET, SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
+import { LLMS_INDEX_ALARM_CHARACTERS, SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import Ajv from "ajv/dist/2020";
@@ -106,7 +106,7 @@ describe("agent catalog contracts and reading budgets", () => {
      * AT_SCALE rule 1 names, and the one the scanner budget on the
      * line below was fixed for the same day).
      */
-    expect(index.length).toBeLessThan(LLMS_INDEX_CHARACTER_BUDGET);
+    expect(index.length).toBeLessThan(LLMS_INDEX_ALARM_CHARACTERS);
     expect(index).toMatch(/^- \[[^\]]+\]\(https:\/\/scvd.store\/developers\/llms.txt\)/m);
     expect(full).toContain("Well well. Come in then.");
     const spec = await (await SELF.fetch(`${BASE}/openapi.json`)).text();

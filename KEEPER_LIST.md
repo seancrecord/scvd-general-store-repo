@@ -808,6 +808,19 @@ listings of room.
   item contract back under 16,000: the checkout contract it repeats
   from the page (1,867 bytes) or the artifact prose the full listing
   also carries. Yours.
+- **NOTE, the index's alarm restored.** #839 read the index's stricter
+  25,000 as a stale copy of the register's 30,000 and removed it. It
+  was not a copy: 30,000 is the llmstxt.org wall and the fetch cap,
+  and `/llms.txt` was the one row in the ceiling table whose budget
+  equalled its cap, so alarm and wall fired on the same character.
+  `/llms.txt` now rings at 27,000, spelled once as
+  `LLMS_INDEX_ALARM_CHARACTERS`, and the ceiling table is held to its
+  own promise that a budget sits under its cap. The index is 25,303
+  today, so it has 1,697 to grow and still rings 3,000 short of the
+  wall. Restoring 25,000 instead would have meant trimming 330
+  characters to sit 27 under the line, and the trim would have taken
+  the free-first sentence out of the block a reader arrives at.
+  ⚑ Your pen on the 27,000.
 - **RULE:** may the `If-None-Match` parameter (eighty-three free
   doors, 25,232 bytes) and the negotiated `Accept` (twenty, 9,830)
   become `components.parameters` references? OpenAPI's own answer,
