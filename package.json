@@ -31,6 +31,7 @@
     "wba:check": "node scripts/wba-check.mjs",
     "audit": "node scripts/audit.mjs",
     "claims": "node scripts/claims.mjs",
+    "chains:check": "node scripts/chain-ids.mjs",
     "others:check": "node scripts/others-artifacts-guard.mjs",
     "blindness": "node scripts/blindness-audit.mjs",
     "rail-coverage": "node scripts/rail-coverage.mjs",

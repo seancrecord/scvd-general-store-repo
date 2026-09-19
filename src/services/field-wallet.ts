@@ -1,4 +1,5 @@
 import { sendAlert } from "@/lib/alerts";
+import { BASE_NETWORK } from "@/lib/payment-networks";
 import { usdcBalanceOf } from "@/lib/base-rpc";
 import { fieldSignerFromKey } from "@/services/launch-check";
 import type { Env } from "@/types";
@@ -24,7 +25,7 @@ export interface FieldWalletReading {
   address: string | null;
   /** USDC on Base, or null when the read did not happen. */
   usdc: number | null;
-  chain: "eip155:8453";
+  chain: typeof BASE_NETWORK;
   read_at: string;
   /** Why `usdc` is null, in words. Absent when it was read. */
   problem?: string;
@@ -32,7 +33,7 @@ export interface FieldWalletReading {
 
 export async function readFieldWallet(env: Env): Promise<FieldWalletReading> {
   const read_at = new Date().toISOString();
-  const chain = "eip155:8453" as const;
+  const chain = BASE_NETWORK;
   if (!env.FIELD_WALLET_KEY) {
     return {
       provisioned: false,

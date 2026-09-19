@@ -1,4 +1,5 @@
 import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
+import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK } from "@/lib/payment-networks";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { carriesVerdict } from "@/services/ward-round";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
@@ -76,9 +77,10 @@ export const SIGNED_OFFERS_LIMITS =
   "A door counted in not_found_in_challenge served no extensions['offer-receipt'] offers in the challenge this census read, on the one path it walked. That single observation does not separate a door that does not serve signed offers, a door that serves them at another placement or path this probe did not look at, or a door that serves them here under a signing convention this census does not recognize. Only the first would be a fact about the door; the other two are facts about our probe, and this census will not publish them as the door's.";
 
 
-const BASE_MAINNET = "eip155:8453";
-const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
-const POLYGON_MAINNET = "eip155:137";
+// The three the rail split was taken under, spelled once in the checkout register (rule 1).
+const BASE_MAINNET = BASE_NETWORK;
+const SOLANA_MAINNET = SOLANA_NETWORK;
+const POLYGON_MAINNET = POLYGON_NETWORK;
 
 /**
  * WHICH BUCKETS A WEEK'S RAIL SPLIT WAS TAKEN UNDER.

@@ -157,6 +157,13 @@ jobs:
       # or declined on the record. The budget only goes down.
       - name: Claims register
         run: npm run claims
+      # EVERY CHAIN ID RESOLVES TO A REGISTER (2026-09-19, AT_SCALE rule
+      # 1). The ids the store pays on, reads and warns about are each
+      # spelled once in the file that owns them; a literal anywhere else
+      # in src/ must spell one of those, so a mistyped id — which reads
+      # exactly like a real one to everyone but the chain — cannot ship.
+      - name: Chain ids resolve to a register
+        run: npm run chains:check
       # WHICH DOCUMENTS HAVE GONE QUIET — printed, never enforced.
       # The facts a machine can recompute are already guarded by tests
       # that fail this build (doc-drift for outbound copy,
