@@ -66,6 +66,16 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     // the checkout: the two must never come apart.
     "await txn.put(ORDER_ROW, order);",
   ],
+  /*
+   * The Create idempotency claim (2026-09-19). One DurableObjectTransaction
+   * write, in an instance named for a hashed (UCP-Agent, Idempotency-Key):
+   * it has to be all-or-nothing with the read above it, because that read
+   * is what decides whether this Create opens a checkout or hands back the
+   * one the key already named. Not KV, so no retry to ride.
+   */
+  "/src/services/ucp-checkout-claims.ts": [
+    "await txn.put(ROW, claim);",
+  ],
   "/src/services/patron-anchors.ts": [
     'await txn.put("patron-anchor", record);',
   ],
