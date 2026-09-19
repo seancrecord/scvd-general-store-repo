@@ -1,3 +1,4 @@
+import { SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import Ajv from "ajv/dist/2020";
@@ -102,6 +103,7 @@ describe("agent catalog contracts and reading budgets", () => {
     const spec = await (await SELF.fetch(`${BASE}/openapi.json`)).text();
     const bytes = new TextEncoder().encode(spec).length;
     console.log(JSON.stringify({ index_characters: index.length, index_bytes: new TextEncoder().encode(index).length, openapi_bytes: bytes }));
-    expect(bytes).toBeLessThan(620_000);
+    // The scanner budget, spelled once in store/reader-limits (a typed 620,000 sat here until 2026-09-19); the production-shape reading is test/openapi-headroom.spec.ts.
+    expect(bytes).toBeLessThan(SCANNER_BUDGET_BYTES);
   });
 });

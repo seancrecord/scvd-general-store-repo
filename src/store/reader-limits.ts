@@ -86,6 +86,23 @@ export interface MachineSurfaceCeiling {
 /** Local engineering targets for progressive discovery, not a claim about every host's context window. */
 export const COMPACT_CATALOG_BUDGET_BYTES = 16_000;
 export const SINGLE_ITEM_TOOL_BUDGET_BYTES = 10_000;
+/**
+ * THE ONE-ITEM CONTRACT'S OWN TARGET (2026-09-19), and the reason is on
+ * the record rather than in a diff. The compact item contract shared the
+ * catalog page's 16,000 from the day it was cut (2026-09-06), and the
+ * biggest item had 60 bytes to spare under every rail. Three approved
+ * releases since put the native lane's rows on it (the HTTP row, the
+ * MCP row, the WebMCP row: about 1,400 bytes on every item), and the
+ * largest item, Settlement Attestation, served 17,543 bytes live while
+ * the guard, built without the lane, measured 15,903 and stayed green.
+ * 18,000 admits the contract as the keeper approved it, with 457 bytes
+ * of room; the catalog page keeps 16,000, and whether the item contract
+ * is thinned back under it (the checkout contract it repeats from the
+ * page, the artifact prose the full listing also carries) is the
+ * keeper's ruling, named on KEEPER_LIST.md. Not a serving limit: a guard
+ * on growth, measured on the document production serves.
+ */
+export const COMPACT_ITEM_CONTRACT_BUDGET_BYTES = 18_000;
 
 export const MACHINE_SURFACE_CEILINGS: readonly MachineSurfaceCeiling[] = [
   { path: "/corpus/index.json", budget: COMPACT_CATALOG_BUDGET_BYTES, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },

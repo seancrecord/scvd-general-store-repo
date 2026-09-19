@@ -798,6 +798,16 @@ listings of room.
   line held, and a sixth rail would cross the line. And the MCP tool
   catalogue sits 204 bytes under its 152,000 ratchet (151,796): the
   next description edit is a cut or a ruling, not a number to move.
+- **RULE, the third of the night:** the largest one-item compact
+  contract (`/menu/settlement_attestation?view=compact`) serves 17,543
+  bytes against the 16,000 target it shared with the catalog page, and
+  its guard, built without the lane, read 15,903. The lane's three rows
+  are the growth, all three approved. It has its own target now, 18,000
+  with 457 bytes of room (`docs/BUDGETS_PRODUCTION_SHAPE_2026-09-19.md`),
+  and the guards read the production shape. Hold 18,000, or thin the
+  item contract back under 16,000: the checkout contract it repeats
+  from the page (1,867 bytes) or the artifact prose the full listing
+  also carries. Yours.
 - **RULE:** may the `If-None-Match` parameter (eighty-three free
   doors, 25,232 bytes) and the negotiated `Accept` (twenty, 9,830)
   become `components.parameters` references? OpenAPI's own answer,

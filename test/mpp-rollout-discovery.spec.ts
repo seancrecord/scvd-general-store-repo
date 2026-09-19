@@ -6,7 +6,7 @@ import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { app } from "@/index";
 import type { Env } from "@/types";
 import { storeGuideText } from "@/routes/llms";
-import { COMPACT_CATALOG_BUDGET_BYTES } from "@/store/reader-limits";
+import { COMPACT_CATALOG_BUDGET_BYTES, COMPACT_ITEM_CONTRACT_BUDGET_BYTES } from "@/store/reader-limits";
 import { compactItemContract } from "@/lib/buyer-contract";
 import { getMenuItem, MENU_ITEMS } from "@/store";
 // Discovery documents have heterogeneous JSON schema fields; test-only any lets assertions inspect their wire shape.
@@ -19,7 +19,7 @@ async function request(path: string, config = bindings) {
 it("advertises the enabled HTTP offer on its item and OpenAPI while preserving x402 discovery", async () => {
   const item = getMenuItem("context_anchor")!;
   const contract = compactItemContract(item, bindings.STORE_BASE_URL, bindings) as unknown as Record<string, any>;
-  expect(new TextEncoder().encode(JSON.stringify(contract)).length).toBeLessThan(COMPACT_CATALOG_BUDGET_BYTES);
+  expect(new TextEncoder().encode(JSON.stringify(contract)).length).toBeLessThan(COMPACT_ITEM_CONTRACT_BUDGET_BYTES);
   expect(contract.payment_capabilities).toEqual(expect.arrayContaining([expect.objectContaining({ protocol: "mpp", transport: "http", network: "eip155:8453", currency: "USDC", amount_atomic: "1000000" })]));
   const menu = await request("/menu.json");
   expect(menu.items.find((row: { id: string }) => row.id === item.id).payment_capabilities).toEqual(contract.payment_capabilities);
