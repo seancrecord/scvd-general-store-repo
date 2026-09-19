@@ -4,13 +4,15 @@ import {
   searchCatalog,
   ucpCatalog,
   ucpProduct,
+  type UcpProduct,
+  type UcpVariant,
 } from "@/lib/ucp/catalog";
 import { SCVD_NAMESPACE, UCP_VERSION } from "@/lib/ucp/version";
 import { commerceFor, coreCommerceItems, requireCommerce } from "@/store/commerce";
 import { getMenuItem } from "@/store/menu";
 
 /**
- * THE TWO CATALOG RESPONSES, SHAPED HERE RATHER THAN IN THE ROUTE.
+ * THE THREE CATALOG RESPONSES, SHAPED HERE RATHER THAN IN THE ROUTE.
  *
  * They live in a library because the conformance gate
  * (scripts/ucp-conformance.mjs) validates them against UCP's own
@@ -103,6 +105,186 @@ export function lookupResponse(base: string, ids: string[]) {
     products,
     ...(messages.length > 0 ? { messages } : {}),
     policies: catalogPolicies(products as never, base),
+  };
+}
+
+/**
+ * GET PRODUCT: ONE PRODUCT, IN FULL, WITH ITS OPTION AXIS SAID OUT
+ * LOUD.
+ *
+ * The third operation of `dev.ucp.shopping.catalog.lookup`, and the
+ * one this store shipped a launch without (2026-09-19). Lookup is a
+ * batch that answers "which of my identifiers resolved to what";
+ * get_product answers "tell me everything about this one, and which
+ * variant my selections land on". They are different questions and
+ * the contract gives them different doors.
+ *
+ * THE OPTION AXIS IS DERIVED FROM THE VARIANTS, NOT DECLARED.
+ * Most of this shelf is one variant with no axes at all, and the
+ * schema says `selected` and `options` may be omitted there rather
+ * than invented. The pay-what-it-deserves items are the exception:
+ * their three tier variants ARE an option axis, the till already
+ * offers exactly those three amounts, and a platform narrowing by
+ * `selected` deserves to be told which tier it landed on and whether
+ * the others exist. The labels come off the variants' own tier
+ * metadata, so a tier table that changes changes this in the same
+ * commit.
+ */
+
+/** The one option axis this shelf has, where it has one at all. */
+const TIER_AXIS = "Tier";
+
+interface TierFacts {
+  label: string;
+  available: boolean;
+  id: string;
+}
+
+function tierOf(variant: UcpVariant): TierFacts | undefined {
+  const scvd = variant.metadata[SCVD_NAMESPACE] as Record<string, unknown> | undefined;
+  const tier = scvd?.tier as Record<string, unknown> | undefined;
+  if (!tier || typeof tier.label !== "string") return undefined;
+  return { label: tier.label, available: variant.availability.available, id: variant.id };
+}
+
+/** Every tier, in shelf order, or nothing when the product has no axis. */
+function tierAxis(product: UcpProduct): TierFacts[] | null {
+  if (product.variants.length < 2) return null;
+  const tiers = product.variants.map(tierOf);
+  return tiers.every((tier): tier is TierFacts => tier !== undefined)
+    ? tiers
+    : null;
+}
+
+export interface GetProductRequest {
+  id: string;
+  selected?: { name?: unknown; id?: unknown; label?: unknown }[];
+  preferences?: unknown;
+}
+
+export function productResponse(
+  base: string,
+  request: GetProductRequest,
+): { status: 200 | 400 | 404; body: Record<string, unknown> } {
+  const identifier = typeof request.id === "string" ? request.id.trim() : "";
+  if (!identifier) {
+    return {
+      status: 400,
+      body: {
+        ucp: { version: UCP_VERSION, status: "error" },
+        messages: [
+          {
+            type: "error",
+            code: "not_found",
+            severity: "unrecoverable",
+            content:
+              'Send {"id": "..."} with a product id, variant id, handle, SKU or shelf item id. Get Product is a single-resource operation; the batch is POST /ucp/v1/catalog/lookup.',
+          },
+        ],
+      },
+    };
+  }
+
+  const item = lookupItem(identifier);
+  if (!item || requireCommerce(item).visibility !== "core") {
+    /**
+     * The same answer lookup gives for the same id, in the shape an
+     * error_response requires: `product` is REQUIRED on a product
+     * response, so there is no half-answer to give here. The
+     * sub-cent items keep their own explanation — they exist, they
+     * are for sale, and they have no catalog row.
+     */
+    const message = notFoundMessage(base, identifier, item?.id);
+    return {
+      status: 404,
+      body: {
+        ucp: { version: UCP_VERSION, status: "error" },
+        messages: [{ ...message, type: "error", severity: "unrecoverable" }],
+      },
+    };
+  }
+
+  const product = ucpProduct(item, base);
+  const tiers = tierAxis(product);
+  const messages: Record<string, unknown>[] = [];
+
+  /**
+   * WHICH VARIANT THE SELECTIONS ANCHOR. The request's own `id` may
+   * already name one — a variant gid or a tier SKU is a selection the
+   * caller made before they asked — and an explicit `selected` entry
+   * overrides it. Nothing is narrowed away: three tiers is a whole
+   * axis, and hiding two of them because the caller named one would
+   * answer a question about a product with an answer about a variant.
+   */
+  const indexOfVariant = (value: string): number =>
+    product.variants.findIndex(
+      (variant) => variant.id === value || variant.sku === value.toUpperCase(),
+    );
+
+  let featured = Math.max(indexOfVariant(identifier), 0);
+  const selections = Array.isArray(request.selected) ? request.selected : [];
+  for (const selection of selections) {
+    const name = typeof selection?.name === "string" ? selection.name : "";
+    const label = typeof selection?.label === "string" ? selection.label : "";
+    const id = typeof selection?.id === "string" ? selection.id : "";
+    const byId = id ? indexOfVariant(id) : -1;
+    const byLabel = tiers
+      ? tiers.findIndex((tier) => tier.label.toLowerCase() === label.toLowerCase())
+      : -1;
+    if (byId >= 0) {
+      featured = byId;
+      continue;
+    }
+    if (byLabel >= 0) {
+      featured = byLabel;
+      continue;
+    }
+    messages.push({
+      type: "warning",
+      code: "selection_unmatched",
+      content: tiers
+        ? `No option value matched ${JSON.stringify(name || TIER_AXIS)}: ${JSON.stringify(label || id)}. This product's one axis is ${TIER_AXIS}, with values ${tiers.map((tier) => tier.label).join(", ")}. The featured variant below is the one the selections that DID match land on.`
+        : `${product.title} has no configurable options, so ${JSON.stringify(name || label || id)} narrowed nothing. Its single variant is below.`,
+    });
+  }
+
+  const anchor = product.variants[featured]!;
+
+  return {
+    status: 200,
+    body: {
+      ucp: { version: UCP_VERSION },
+      product: {
+        ...product,
+        ...(tiers
+          ? {
+              selected: [{ name: TIER_AXIS, id: anchor.id, label: tiers[featured]!.label }],
+              options: [
+                {
+                  name: TIER_AXIS,
+                  values: tiers.map((tier) => ({
+                    id: tier.id,
+                    label: tier.label,
+                    /**
+                     * One axis, every value on the shelf: each tier
+                     * exists and is purchasable at the amount the 402
+                     * already offers. `available` still comes off the
+                     * variant rather than being written `true`, so an
+                     * item that goes out of stock says so here too.
+                     */
+                    exists: true,
+                    available: tier.available,
+                  })),
+                },
+              ],
+            }
+          : {}),
+      },
+      ...(messages.length > 0 ? { messages } : {}),
+      // A singular response: the policy target is `$.product`, not an
+      // index into a `products` array this document does not have.
+      policies: catalogPolicies([product], base, () => "$.product"),
+    },
   };
 }
 

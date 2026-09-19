@@ -185,7 +185,7 @@ export function ucpProfile(env: Env): UcpProfile {
             catalog: "live",
             checkout: "not enabled",
             order: "not enabled",
-            note: `Catalog search and lookup are served. UCP checkout and order are built and tested, and are switched off on this deployment (${launch.closed_because ?? "closed"}), so they are not advertised and Complete refuses in writing. Nothing on this shelf can be bought through UCP here today.`,
+            note: `Catalog search, lookup and product detail are served. UCP checkout and order are built and tested, and are switched off on this deployment (${launch.closed_because ?? "closed"}), so they are not advertised and Complete refuses in writing. Nothing on this shelf can be bought through UCP here today.`,
           },
       how_to_actually_buy: {
         ...(launch.open
@@ -222,6 +222,7 @@ export function ucpProfile(env: Env): UcpProfile {
         },
         search: `POST ${base}/ucp/v1/catalog/search`,
         lookup: `POST ${base}/ucp/v1/catalog/lookup with {"ids": [...]}`,
+        product: `POST ${base}/ucp/v1/catalog/product with {"id": "..."} — one product in full, with its option axis`,
       },
       operator: {
         name: STORE_METADATA.name,
