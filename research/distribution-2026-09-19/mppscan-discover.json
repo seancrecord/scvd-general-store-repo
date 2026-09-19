@@ -1,0 +1,39 @@
+{
+  "observed_at": "2026-09-19T02:51:00Z/2026-09-19T02:56:07Z",
+  "what_this_is": "A second whole-origin read of scvd.store with the discovery package MPPScan's register flow uses, taken from this session's container after the publication doors release (#826) deployed. No registration was submitted; the register page is still unreachable from here. The September 18 read (research/distribution-2026-09-18/) is retained beside this one, not replaced.",
+  "package": "@agentcash/discovery@1.7.5 (npx -y, the same pin as the September 18 read)",
+  "command": "npx -y @agentcash/discovery@1.7.5 discover https://scvd.store",
+  "transcript": "mppscan-discover.txt",
+  "transcript_sha256": "22522846894eeeab3c1cfc4bea4dbd73db55662efbb642c3f1260cd51d64a7ff",
+  "openapi_document": {
+    "url": "https://scvd.store/openapi.json",
+    "status": 200,
+    "content_length": 716135,
+    "sha256": "7c19ae2e0a3e7ba3543abbcdcda0d8a9c36a09fc3624b72adb12b4e200dd837a",
+    "access_control_allow_origin": "*",
+    "operations_with_402": 39,
+    "operations_with_mpp_descriptor": 38,
+    "operation_with_402_and_no_descriptor": "/api/practice/{scenario}: the rehearsal door, whose 402 is a scripted lesson with no price and no x-payment-info; the checker counts it as neither paid nor protected, as on September 18"
+  },
+  "whole_origin_discover": {
+    "source": "openapi",
+    "routes": 196,
+    "paid": 38,
+    "paid_with_x402_and_mpp": 38,
+    "paid_with_x402_only": 0,
+    "unprotected": 157,
+    "publication_rows_now_carrying_mpp": [
+      "/almanac/notes-from-a-tuesday-in-oak-city",
+      "/almanac/{slug}",
+      "/open-for-business/{week}"
+    ],
+    "warnings": [
+      "L2_ROUTE_COUNT_HIGH (196 routes)",
+      "L2_AUTH_MODE_MISSING (/api/purchase-status/{purchase_id})",
+      "L3_AUTH_MODE_MISSING"
+    ],
+    "warnings_changed_since_september_18": false,
+    "wall_clock_seconds": 307
+  },
+  "change_since_september_18": "The three paid publication operations that read [x402] alone on September 18 read [x402, mpp] after #826; nothing else in the paid set moved. The commission rungs have no OpenAPI operation of their own and are not in either count."
+}

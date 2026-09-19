@@ -1,8 +1,9 @@
 import type { Env, MenuItem } from "@/types";
 import type { PaymentRequirements } from "@x402/core/types";
-import { manifestAccepts, priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
+import { manifestAccepts, priceTiersUsdc, publicationTiersUsdcForFamily, USDC_DECIMALS } from "@/lib/payments";
 import { BASE_NETWORK, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
-import { mppCheckoutEnabled, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
+import { mppCheckoutEnabled, NATIVE_HTTP_HEADERS, nativePublicationsEnabled, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
+export { NATIVE_PUBLICATION_PROBE_PATH, nativePublicationsEnabled } from "@/lib/mpp-checkout-capability";
 import { ucpItemSellable } from "@/lib/ucp/launch";
 import { MENU_ITEMS } from "@/store";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
@@ -55,7 +56,7 @@ export function nativeTiersFor(config: PaymentNetworkConfig, tiersUsdc: number[]
 }
 
 export function nativePublicationTiers(config: PaymentNetworkConfig, door: NativePublicationDoor): PaymentRequirements[] {
-  return nativeTiersFor(config, door.tiersUsdc);
+  return nativeTiersFor(config, publicationTiersUsdcForFamily(door.family));
 }
 
 /** The tier a credential's challenge names within a list, or nothing. */
@@ -89,9 +90,7 @@ export function purchaseCapabilities(item: MenuItem, config?: PurchaseCapability
     // Present only where the door takes tips: every offered amount, minimum first, the challenge list's order.
     ...(tiers.length > 1 ? { tip_tiers_atomic: tiers.map(row => row.amount) } : {}) };
   return [...rows,
-    { ...native, transport: "http", method: "GET", path,
-      request_header: "Authorization", authorization_scheme: "Payment", challenge_header: "WWW-Authenticate",
-      response_header: "Payment-Receipt", idempotency_header: "Idempotency-Key" },
+    { ...native, transport: "http", method: "GET", path, ...NATIVE_HTTP_HEADERS },
     { ...native, ...MCP_NATIVE_SHAPE },
     { ...native, ...WEBMCP_NATIVE_SHAPE }];
 }
@@ -136,17 +135,6 @@ export function nativeCheckoutDoors(config?: PurchaseCapabilityConfig): MenuItem
 }
 
 /**
- * The publication doors are enabled by the same flag, key and bindings
- * as the shelf; one representative page path asks the shared check, so
- * the guide and the discovery descriptor cannot say yes when the gate
- * would say no.
- */
-export const NATIVE_PUBLICATION_PROBE_PATH = "/almanac/probe";
-export function nativePublicationsEnabled(config?: PurchaseCapabilityConfig): boolean {
-  return !!config && mppCheckoutEnabled(config, NATIVE_PUBLICATION_PROBE_PATH, "GET");
-}
-
-/**
  * THE NATIVE LANE IN ONE CLAUSE (2026-09-19, the MPP-P1 wording
  * follow-up). paymentMethod() names the x402 lane and nothing else,
  * and every surface that quoted it kept saying so after the native
@@ -163,7 +151,14 @@ export function nativeCheckoutLane(config?: PurchaseCapabilityConfig): string {
   if (!sample || !("network" in sample)) return "";
   const label = checkoutNetworks(config!).find(row => row.network === sample.network)?.label ?? sample.network;
   const count = doors.length === MENU_ITEMS.length ? "every shelf item" : `${doors.length} of ${MENU_ITEMS.length} shelf items`;
-  return `${sample.currency} over MPP (evm/charge) on ${label} for ${count}`;
+  // The doors beyond the shelf (2026-09-19), each from its own enabled
+  // answer, so the sentence never claims a door the gate would not open.
+  const beyond = [
+    ...(nativePublicationsEnabled(config) ? ["every publication page"] : []),
+    ...(nativeCommissionEnabled(config) ? ["the commission desk"] : []),
+  ];
+  const doorsNamed = beyond.length ? `${[count, ...beyond].slice(0, -1).join(", ")} and ${beyond[beyond.length - 1]}` : count;
+  return `${sample.currency} over MPP (evm/charge) on ${label} for ${doorsNamed}`;
 }
 
 /**

@@ -2,6 +2,7 @@ import { storePaymentGate } from "@/lib/store-payment-gate";
 import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
+import { nativePublicationsEnabled } from "@/lib/purchase-capabilities";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { PENNY_PAGE_USDC,
@@ -63,13 +64,13 @@ almanacRoutes.get("/almanac", async (c) => {
    * Both dialects render from this one document.
    */
   const indexPayload = () => ({
-    checkout: publicationCheckout(base),
+    checkout: publicationCheckout(base, c.env),
     ...(c.req.query("view") === "compact" ? page?.pagination : {}),
     almanac:
       "The Keeper's Almanac, a serialized journal. Dated entries, newest first, each page individually purchasable.",
     price_usdc: PENNY_PAGE_USDC,
     how_to_buy:
-      "GET any entry url; answer the 402 with a signed penny (x402 v2). The page arrives as markdown.",
+      `GET any entry url; answer the 402 with a signed penny (x402 v2)${nativePublicationsEnabled(c.env) ? ", or authorize one of its Payment challenges (MPP; the shape is checkout.mpp)" : ""}. The page arrives as markdown.`,
     entries: c.req.query("view") === "compact" ? page!.rows : entries.map((entry) => indexEntry(entry, base)),
   });
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {

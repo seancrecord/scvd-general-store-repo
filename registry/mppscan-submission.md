@@ -37,6 +37,7 @@ with `@agentcash/discovery@1.7.5`, the package `apps/scan` in
 | `check https://scvd.store` and `check .../openapi.json` | `L3_NOT_FOUND`: the checker audits one paid path, and neither URL is one; expected, not a defect |
 | bare `GET /api/buy/context_anchor` (a crawler's unpaid probe of a query-required door) | 402 with both `WWW-Authenticate: Payment` and `payment-required` |
 | `discover https://scvd.store` (the whole-origin crawl the register flow runs) | Source `openapi`, 196 routes: 38 paid, 35 of them `[x402, mpp]`, 157 unprotected; three warnings, none on a paid door: `L2_ROUTE_COUNT_HIGH` (196 routes), and the purchase-status bearer scheme read as no auth mode (`L2_AUTH_MODE_MISSING`, `L3_AUTH_MODE_MISSING`), which `PAYMENT_RAILS.md` records as left as written because respelling it would break the door. [Full output](../research/distribution-2026-09-18/mppscan-discover.txt) |
+| `discover https://scvd.store`, re-read September 19 after the publication doors deployed (#826) ([receipt](../research/distribution-2026-09-19/mppscan-discover.json)) | Source `openapi`, 196 routes: 38 paid, all 38 `[x402, mpp]` (the three publication operations now carry the descriptor), 157 unprotected; the same three warnings; the document read 716,135 bytes |
 
 ## What could reject it, and what was done about each
 
@@ -79,8 +80,8 @@ with `@agentcash/discovery@1.7.5`, the package `apps/scan` in
 3. Bring back the result page URL (their server pages look like
    `https://www.mppscan.com/server/<64 hex>`), the count of resources it
    reports accepted, and any error text verbatim. Expected on the numbers
-   above: 38 resources, or 35 if the index lists only operations carrying an
-   `mpp` descriptor.
+   above: 38 resources either way since the September 19 re-read, every paid
+   operation carrying an `mpp` descriptor.
 
 The outcome is recorded, dated, in `docs/SPEC_READS.md` and
 `DISTRIBUTION.md`; an accepted listing joins the trust records only after it

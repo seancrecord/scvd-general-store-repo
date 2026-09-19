@@ -147,5 +147,8 @@ describe('the checkout sentence names the native lane exactly while it is offere
     // The derivation is one function, so the words agree across the surfaces that quote it whole.
     expect(offered.ucp_payment_method).toBe(offered.menu_page_offer);
     expect(offered.ucp_payment_method).toContain('USDC over x402 v2 on Base, or USDC over MPP (evm/charge) on Base for every shelf item');
+    // The doors beyond the shelf (2026-09-19): the publication pages and the desk, named from their own enabled answers.
+    expect(offered.ucp_payment_method).toContain('for every shelf item, every publication page and the commission desk');
+    expect(withheld.ucp_payment_method).not.toMatch(/publication page|commission desk/);
   });
 });

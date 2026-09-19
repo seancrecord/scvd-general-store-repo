@@ -58,6 +58,24 @@ signed readings keep their bytes.
 - `test/agent-catalog-readability.spec.ts` and `test/openapi-fetchable.spec.ts`
   hold the OpenAPI byte ceiling the longer `info.description` sits under.
 
+## Follow-through, the same night: the doors beyond the shelf
+
+`nativeCheckoutLane` counted shelf items and nothing else, which was the
+whole truth for a few hours. Once the [publication doors](MPP_PUBLICATIONS_2026-09-19.md)
+and the [commission rungs](MPP_COMMISSION_2026-09-19.md) carried the lane,
+"for every shelf item" under-claimed on all twelve surfaces. The clause now
+ends "for every shelf item, every publication page and the commission
+desk", each door set named from its own enabled answer
+(`nativePublicationsEnabled`, `nativeCommissionEnabled`), so a store with
+either withheld drops that phrase and nothing else. The almanac index's
+`how_to_buy` sentence, the one publication index that says how to pay in
+prose, names the Payment challenges beside the signed penny on the same
+answer and points at `checkout.mpp`.
+`test/payment-copy-consistency.spec.ts` reads the longer clause on the
+profile's sentence and its absence with the lane withheld;
+`test/mpp-native-publications.spec.ts` reads the almanac's sentence both
+ways. Both shown failing against the previous source.
+
 ## Not in this release
 
 The static identity copy named above; the packages' own READMEs; any change

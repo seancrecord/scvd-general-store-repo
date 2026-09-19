@@ -38,6 +38,7 @@ import {
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { OPEN_FOR_BUSINESS_NAME, OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
+import { commissionRungFromPath, publicationFamilyForPath, type PublicationFamily } from "@/lib/door-paths";
 import { SPEC_RETURNS } from "@/store/spec";
 import { isRecord } from "@/types";
 import type { TradeSettlement, Env, MenuItem } from "@/types";
@@ -837,7 +838,7 @@ function markdownPageRouteConfig(
       contentType: "application/json",
       body: {
         error: note402,
-        checkout: publicationCheckout(env.STORE_BASE_URL),
+        checkout: publicationCheckout(env.STORE_BASE_URL, env),
         note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign the accepted amount and retry with the PAYMENT-SIGNATURE header.",
         price_usdc: page.priceUsdc,
         pricing: "fixed",
@@ -899,14 +900,6 @@ function commissionRungRouteConfig(rung: number, env: Env): RouteConfig {
   };
 }
 
-/** The desk's pay path, parsed: the rung it names, or null off-ladder. */
-export function commissionRungFromPath(path: string): number | null {
-  const match = /^\/api\/commission\/pay\/(\d+)$/.exec(path);
-  if (!match) return null;
-  const rung = Number(match[1]);
-  return COMMISSION_RUNGS.some((published) => published === rung) ? rung : null;
-}
-
 /**
  * The minimum owed for a gated path, so overpayment can be recorded as a
  * tip. Menu purchases look up the item; penny pages are a flat cent.
@@ -935,30 +928,18 @@ export function minimumUsdcForPath(path: string): number {
 }
 
 /**
- * THE PUBLICATION DOORS, BY FAMILY (native publications, 2026-09-19).
- * A page of the almanac, a gazette issue, an archived zodiac week and
- * an Open for Business issue are the paid doors that are not shelf
- * items: minimumUsdcForPath above prices them by prefix, and the
- * native lane needs the same answer as a family with its tiers, so the
- * ledger can split a native sale under one spelling per family the way
- * it splits shelf sales per item. The patterns are the doors' own route
- * shapes (routes/almanac.ts, trading-post.ts, zodiac.ts,
- * open-for-business.ts); an index page is not a door.
+ * The paid doors that are not shelf items are recognised in lib/door-paths.ts
+ * (a leaf, so the checkout block can ask the native capability module
+ * whether the lane is offered); their prices stay here beside the rest.
  */
-export type PublicationFamily = "almanac" | "gazette" | "zodiac_archive" | "open_for_business";
-export const PUBLICATION_FAMILIES: readonly PublicationFamily[] = ["almanac", "gazette", "zodiac_archive", "open_for_business"];
-export function publicationFamilyForPath(path: string): PublicationFamily | undefined {
-  if (/^\/almanac\/[a-z0-9_-]+$/.test(path)) return "almanac";
-  if (/^\/gazette\/issue-[0-9]+$/.test(path)) return "gazette";
-  if (/^\/zodiac\/archive\/[a-z_]+\/week-[0-9]+$/.test(path)) return "zodiac_archive";
-  if (/^\/open-for-business\/[A-Za-z0-9-]+$/.test(path)) return "open_for_business";
-  return undefined;
-}
+export { PUBLICATION_FAMILIES, publicationFamilyForPath, commissionRungFromPath, type PublicationFamily } from "@/lib/door-paths";
 
 /** The family's tiers, minimum first: what its x402 accepts offer, and what its native challenges mirror. */
 export function publicationTiersUsdcForPath(path: string): number[] | undefined {
   const family = publicationFamilyForPath(path);
-  if (!family) return undefined;
+  return family && publicationTiersUsdcForFamily(family);
+}
+export function publicationTiersUsdcForFamily(family: PublicationFamily): number[] {
   return family === "open_for_business" ? openForBusinessTiersUsdc() : pennyPageTiersUsdc();
 }
 

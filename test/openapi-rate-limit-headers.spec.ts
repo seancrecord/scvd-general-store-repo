@@ -33,12 +33,16 @@ describe("the RateLimit fields, declared where they are sent", () => {
   it("declares them on the metered statuses and nowhere else", async () => {
     const spec = (await (await SELF.fetch(`${BASE}/openapi.json`)).json()) as {
       paths: Record<string, Record<string, { responses?: Record<string, { headers?: Record<string, unknown> }> }>>;
+      components: { responses: Record<string, { headers?: Record<string, unknown> }> };
     };
 
     let declared = 0;
     for (const [path, operations] of Object.entries(spec.paths)) {
       for (const [method, operation] of Object.entries(operations)) {
-        for (const [status, response] of Object.entries(operation?.responses ?? {})) {
+        for (const [status, raw] of Object.entries(operation?.responses ?? {})) {
+          // A response may be a reference into components (the metered 429 is, since 2026-09-19); read what it names.
+          const ref = (raw as { $ref?: string })?.$ref;
+          const response = ref ? (spec.components.responses[ref.slice("#/components/responses/".length)] ?? raw) : raw;
           const headers = Object.keys(response?.headers ?? {});
           const carries = headers.some((name) => name.toLowerCase().startsWith("ratelimit"));
           if (!carries) continue;
