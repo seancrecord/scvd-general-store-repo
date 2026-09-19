@@ -21,7 +21,8 @@ const BASE = "https://scvd.store";
  * different reason entirely. Two rules, one regex, and the caching
  * leg inherited a boundary that was never about caching.
  */
-const SCRIPTS = ["/webmcp.js", "/till.js"] as const;
+// The purchase bridge joined 2026-09-19: the one script carrying buyer payment decisions was the one this guard did not name.
+const SCRIPTS = ["/webmcp.js", "/till.js", "/webmcp-purchase.js"] as const;
 
 describe("a browser holding a first-party script can ask whether it changed", () => {
   it.each(SCRIPTS)("%s carries an ETag that is its own bytes", async (path) => {
