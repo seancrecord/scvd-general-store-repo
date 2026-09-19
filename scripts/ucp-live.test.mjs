@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { qualifyUcpCheckout, RECORDED } from "./ucp-live.mjs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { qualifyUcpCheckout, RECORDED, signerFor } from "./ucp-live.mjs";
+
+/** The rail the profile advertises for Solana, spelled once. */
+const SOLANA = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
 
 /**
  * THE QUALIFICATION DRIVER AGAINST A FAKE STORE, so the instrument is
@@ -114,4 +120,62 @@ test("a profile that advertises no checkout stops the run before anything is sig
   assert.equal(signed, 0);
   assert.equal(store.settled(), 0);
   assert.match(run.report.stopped, /nothing was paid/);
+});
+
+/**
+ * THE SIGNER, PER RAIL, FROM THROWAWAY KEYS. No network, no wallet and
+ * no money: what is under test is that the driver builds the right
+ * buyer for the rail it was asked for, and refuses in words a reader
+ * can act on when it cannot. Solana joined the driver on 2026-09-19,
+ * once the launch advertised every rail.
+ */
+test("builds an EVM buyer for an eip155 rail, deterministically", async () => {
+  const key = `0x${"01".repeat(32)}`;
+  const a = await signerFor("eip155:8453", { secret: key });
+  const b = await signerFor("eip155:137", { secret: key });
+  assert.match(a.address, /^0x[0-9a-fA-F]{40}$/);
+  assert.equal(a.address, b.address, "one key is one payer, whichever EVM rail it pays on");
+  assert.equal(typeof a.sign, "function");
+});
+
+test("builds a Solana buyer from the wallet app's own export shape, and it is the keypair it was handed", async () => {
+  const { generateKeyPairSync } = await import("node:crypto");
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  // What Phantom, Solflare and solana-keygen all export: 32 seed bytes
+  // followed by the 32 public bytes.
+  const seed = privateKey.export({ format: "der", type: "pkcs8" }).subarray(-32);
+  const pub = publicKey.export({ format: "der", type: "spki" }).subarray(-32);
+  const sixtyFour = Buffer.concat([seed, pub]);
+
+  const dir = mkdtempSync(join(tmpdir(), "ucp-live-signer-"));
+  const file = join(dir, "buyer.json");
+  writeFileSync(file, JSON.stringify([...sixtyFour]));
+  try {
+    const fromFile = await signerFor(SOLANA, { secretFile: file });
+    const { getBase58Encoder, getBase58Decoder } = await import("@solana/kit");
+    assert.equal(fromFile.address, getBase58Decoder().decode(pub), "the address is the public half it was given");
+    assert.equal(typeof fromFile.sign, "function");
+
+    // And the same keypair as the base58 secret a wallet app puts on the clipboard.
+    const fromSecret = await signerFor(SOLANA, { secret: getBase58Decoder().decode(sixtyFour) });
+    assert.equal(fromSecret.address, fromFile.address);
+    assert.ok(getBase58Encoder(), "base58 round trip available");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("refuses a rail it cannot sign, and a key of the wrong shape, without echoing the key", async () => {
+  const seedPhrase = "test test test test test test test test test test test junk";
+  await assert.rejects(
+    () => signerFor("eip155:8453", { secret: seedPhrase }),
+    (error) => {
+      assert.match(error.message, /64 hex|seed phrase/i);
+      assert.ok(!error.message.includes(seedPhrase), "the refusal names the shape, never the secret");
+      return true;
+    },
+  );
+  await assert.rejects(() => signerFor("eip155:8453", {}), /UCP_BUYER_KEY/);
+  await assert.rejects(() => signerFor(SOLANA, {}), /base58|UCP_BUYER_KEY_FILE/);
+  await assert.rejects(() => signerFor("cosmos:cosmoshub-4", { secret: `0x${"01".repeat(32)}` }), /No signer for cosmos/);
 });
