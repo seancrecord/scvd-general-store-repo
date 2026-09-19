@@ -3,10 +3,11 @@ import { orderDocument, type StoredUcpOrder } from "@/lib/ucp/order/document";
 import { orderIdOf } from "@/lib/ucp/ids";
 import { checkoutTerms, lineTerms, type PaymentTerms } from "@/lib/ucp/checkout/terms";
 import { variantGid } from "@/lib/ucp/ids";
+import { PWID_TIER_LABELS } from "@/lib/payments";
 import { quotedUsdcHandler } from "@/lib/ucp/payments/usdc-x402";
 import { ucpProfile } from "@/lib/ucp/profile";
 import type { StoredCheckout } from "@/services/ucp-checkout-store";
-import { lookupResponse, searchResponse } from "@/lib/ucp/responses";
+import { lookupResponse, productResponse, searchResponse } from "@/lib/ucp/responses";
 import { coreCommerceItems, requireCommerce } from "@/store/commerce";
 import type { Env } from "@/types";
 
@@ -81,6 +82,26 @@ export function lookupSample(base: string): unknown {
     "spot_check",
     "no-such-product",
   ]);
+}
+
+/**
+ * GET PRODUCT, on the one product that actually has an option axis:
+ * the tier variants carry `options` and `selected`, which is the part
+ * of detail_product a single-variant row never exercises.
+ */
+export function productSample(base: string): unknown {
+  return productResponse(base, {
+    id: "the_collab",
+    // The label is read off the tier table rather than typed, so a
+    // renamed tier fails the gate instead of quietly validating the
+    // "your selection matched nothing" branch under the wrong name.
+    selected: [{ name: "Tier", label: PWID_TIER_LABELS[1] }],
+  }).body;
+}
+
+/** The same operation's refusal, which is an error_response, not an empty product. */
+export function missingProductSample(base: string): unknown {
+  return productResponse(base, { id: "spot_check" }).body;
 }
 
 const EXPIRES = "2026-09-16T12:30:00.000Z";

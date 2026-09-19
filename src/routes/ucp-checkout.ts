@@ -331,6 +331,208 @@ ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions", async (c) => {
   return c.json(checkoutDocument(checkout, base, { paymentHandlers: handlersFor(c, checkout) }), 201);
 });
 
+/**
+ * UPDATE CHECKOUT: A FULL REPLACEMENT, AND WHAT IT COSTS.
+ *
+ * The contract is explicit that this is a replacement rather than a
+ * patch — the body is a whole checkout, and what it says is what the
+ * checkout becomes. That makes it the operation that withdraws a
+ * quote: changing the lines, the inputs or the rail bumps the version
+ * and throws the payment terms away, which is exactly what makes a
+ * signature against the old terms refusable rather than dangerous
+ * (see UcpCheckoutStore.revise).
+ *
+ * THE ONE STATE IT IS FORBIDDEN IN, and the one this store adds.
+ * The contract forbids an update while the checkout is
+ * `complete_in_progress`: leave it unchanged and answer with the
+ * current checkout and a recoverable error. This store refuses on a
+ * bound completion too, which is the same fact one moment earlier —
+ * between admission and the settlement boundary a checkout still
+ * reads `ready_for_complete` while a payment it already owns is on
+ * its way to the facilitator. Re-quoting underneath that would
+ * withdraw the terms the money is moving against. Money fails closed.
+ *
+ * AN IDENTICAL UPDATE CHANGES NOTHING, deliberately. The contract
+ * says duplicate requests remain subject to replay protection, and
+ * this store has no idempotency key at this layer; what it has is the
+ * ability to notice that the replacement is the checkout it already
+ * holds. A retried update must not withdraw the quote the buyer is
+ * signing against merely because their first request's response was
+ * lost.
+ *
+ * EVERY ANSWER IS 200 ONCE THE CHECKOUT EXISTS. The contract defines
+ * one response — "the current Checkout state after the Update
+ * request, whether the update was applied or rejected" — so a refusal
+ * is a checkout carrying a message, not a status code a caller has to
+ * interpret. An id that names no checkout is the exception: there is
+ * no checkout state to return.
+ */
+ucpCheckoutRoutes.put("/ucp/v1/checkout-sessions/:id", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const id = c.req.param("id");
+  const store = ucpCheckoutStore(c.env, id);
+  const stored = await store.readUcpCheckout();
+  if (!stored) return c.json(errorBody("not_found", "No such checkout."), 404);
+  let checkout = plain(stored);
+
+  const say = (
+    state: StoredCheckout,
+    message?: { type: "error" | "warning" | "info"; code: string; severity?: string; content: string },
+  ) =>
+    c.json(
+      checkoutDocument(state, base, {
+        paymentHandlers: handlersFor(c, state),
+        ...(message ? { messages: [message] } : {}),
+      }),
+      200,
+    );
+
+  if (checkout.status === "complete_in_progress" || checkout.completion) {
+    return say(checkout, {
+      type: "error",
+      code: "checkout_not_payable",
+      severity: "recoverable",
+      content:
+        "A completion is being processed for this checkout, so it cannot be replaced: money may already be moving against the terms it holds. Nothing was changed. Read this checkout — it becomes completed with its order, or payable again if the payment is declined, and it is updatable again then.",
+    });
+  }
+  if (checkout.status === "completed" || checkout.status === "canceled") {
+    return say(checkout, {
+      type: "error",
+      code: "checkout_not_payable",
+      severity: "unrecoverable",
+      content:
+        checkout.status === "completed"
+          ? "This checkout is paid and has an order. A finished sale is not editable; start a new checkout."
+          : "This checkout was withdrawn. A canceled checkout is a finished fact; start a new one.",
+    });
+  }
+
+  let body: Record<string, unknown> = {};
+  try {
+    body = (await c.req.json()) as Record<string, unknown>;
+  } catch {
+    return say(checkout, {
+      type: "error",
+      code: "not_found",
+      severity: "requires_buyer_input",
+      content:
+        "Update Checkout is a full replacement: send the whole checkout as JSON, with line_items. Nothing was changed.",
+    });
+  }
+
+  let lines: CheckoutLineTerms[];
+  try {
+    lines = linesFrom(body);
+  } catch (error) {
+    return say(checkout, {
+      type: "error",
+      code: "item_unavailable",
+      severity: "requires_buyer_input",
+      content: `${error instanceof Error ? error.message : "Unusable line items."} Nothing was changed.`,
+    });
+  }
+
+  const launch = ucpLaunchStatus(c.env);
+  if (launch.open) {
+    const closedItem = lines.find((line) => !ucpItemSellable(c.env, line.item_id));
+    if (closedItem) {
+      return say(checkout, {
+        type: "error",
+        code: "item_unavailable",
+        severity: "unrecoverable",
+        content: `${closedItem.item_id} is not open for UCP checkout on this deployment yet; the items that are: ${launch.items.join(", ")}. Nothing was changed. It is still for sale over x402 at ${base}/api/buy/${closedItem.item_id}, or through the MCP door at ${base}/mcp.`,
+      });
+    }
+  }
+
+  const rails = launch.open ? ucpCheckoutRails(c.env) : acceptedNetworks(c.env);
+  const asked =
+    typeof (body[SCVD_NAMESPACE] as Record<string, unknown>)?.network === "string"
+      ? String((body[SCVD_NAMESPACE] as Record<string, unknown>).network)
+      : (checkout.quote?.terms.network ?? rails[0]);
+  if (!asked || !rails.includes(asked)) {
+    return say(checkout, {
+      type: "error",
+      code: "payment_failed",
+      severity: "requires_buyer_input",
+      content: `UCP checkout settles on ${rails.join(", ")} here. "${asked}" is not one of them. Nothing was changed.`,
+    });
+  }
+
+  const inputs = readInputs(body);
+  /**
+   * THE REPLACEMENT THAT REPLACES NOTHING. Same lines, same inputs,
+   * same rail as the checkout already holds: the buyer's second copy
+   * of the same request, and the right answer is the checkout they
+   * already have — same version, same quote, same signature still
+   * good.
+   */
+  const unchanged =
+    JSON.stringify(checkout.lines) === JSON.stringify(lines) &&
+    JSON.stringify(checkout.inputs ?? {}) === JSON.stringify(inputs) &&
+    checkout.quote?.terms.network === asked;
+  if (unchanged) return say(checkout, undefined);
+
+  const missing = missingInputs(lines, inputs);
+  const now = Date.now();
+  const revised = await store.reviseUcpCheckout({
+    lines,
+    inputs,
+    /**
+     * A replacement that drops a required input is no longer payable,
+     * and the status says so rather than leaving a `ready_for_complete`
+     * checkout with nothing behind it. quoteUcpCheckout puts it back
+     * when the terms are issuable again.
+     */
+    ...(missing.length > 0 ? { status: "incomplete" as const } : {}),
+    nowMs: now,
+  });
+  if (!revised.ok) {
+    const state = revised.checkout ? plain(revised.checkout) : checkout;
+    return say(state, {
+      type: "error",
+      code: revised.reason === "expired" ? "checkout_expired" : "checkout_not_payable",
+      severity: "unrecoverable",
+      content:
+        revised.reason === "expired"
+          ? "This checkout expired before the update arrived. Nothing was changed; start a new checkout."
+          : "This checkout cannot be replaced in its current state. Nothing was changed.",
+    });
+  }
+  checkout = plain(revised.checkout);
+
+  if (missing.length > 0) {
+    return say(checkout, {
+      type: "error",
+      code: "eligibility_invalid",
+      severity: "requires_buyer_input",
+      content: `This item needs ${missing.join(", ")} before it can be made. Send them under ${SCVD_NAMESPACE}.inputs; the schema for each is at ${base}/ucp/schemas/items/{item_id}.input.json.`,
+    });
+  }
+
+  for (const line of lines) {
+    const item = getMenuItem(line.item_id);
+    if (!item) continue;
+    const capacity = await capacityVerdict(c.env, item);
+    if (!capacity.ok) {
+      return say(checkout, {
+        type: "error",
+        code: "out_of_stock",
+        severity: "recoverable",
+        content: capacity.reason,
+      });
+    }
+  }
+
+  const quote = await quoteFor(c, checkout, asked);
+  if (quote) {
+    const quoted = await store.quoteUcpCheckout({ ...quote, nowMs: now });
+    if (quoted.ok) checkout = plain(quoted.checkout);
+  }
+  return say(checkout, undefined);
+});
+
 ucpCheckoutRoutes.get("/ucp/v1/checkout-sessions/:id", async (c) => {
   const stored = await ucpCheckoutStore(c.env, c.req.param("id")).readUcpCheckout();
   if (!stored) return c.json(errorBody("not_found", "No such checkout."), 404);

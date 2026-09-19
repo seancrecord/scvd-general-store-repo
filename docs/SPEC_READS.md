@@ -143,6 +143,10 @@ The keeper then requested protocol organization: the README and trust surfaces
 now group the existing records and four newly observed ERC-8004 index pages,
 with identity viewers separate and UCP explicitly planned. The JSON protocol
 index links into the canonical record list without repeating each description.
+*(Correction, 2026-09-19: "planned" was accurate on the 17th and is not any
+more. UCP shipped and the store's checkout settles; the protocol grouping now
+describes a live merchant implementation rather than an intention. The reading
+above is left as it was taken.)*
 
 ## 2026-09-17 — The verifier door is listed. What it cost to get there.
 

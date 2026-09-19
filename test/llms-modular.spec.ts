@@ -1066,8 +1066,14 @@ const BASE = "https://scvd.store";
 // sentence beside its money sentence (rule 60.2's third sentence, which
 // the guide carried for two rooms and now carries for all nine); with
 // those seven insertions removed, c7f04b55 reproduces.
+// 2026-09-19, later still: the UCP paragraph now names all THREE catalog
+// operations. Get Product (POST /ucp/v1/catalog/product) was defined by
+// the pinned transport contract under a capability this store advertises
+// and was not served; it is served now, and the guide said "readable one
+// product at a time" of the BATCH door, which was the wrong door for that
+// sentence. With the two-door wording restored, 1c8eed2a reproduces.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1c8eed2a53a5672b5875064767b8de234628eef04f204b35b8078746d665f470";
+  "d37dd386d0e9fb7a44b6c25252ce3b8072915ab1c22b487bece6cff4f32bfd78";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1116,8 +1122,11 @@ describe("nothing was rewritten", () => {
     // mpp-shape; with those two lines restored, a03d8e21 reproduced.
     // 2026-09-19, later: re-taken with the seven free-first sentences
     // beside their money sentences; with them removed, 6fb54921 reproduces.
+    // 2026-09-19, later still: re-taken with the UCP paragraph naming all
+    // three catalog operations (see GUIDE_DIGEST_BEFORE_THE_SPLIT); with
+    // the two-door wording restored, 423001c4 reproduced.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "423001c45ee6ecac0a46e16303ba72e8772bcb10f5a3a9981f8f118cb6321e40",
+      "1c798e475caec68d336e884062b6e1289983c6826a60fe5132ccb62cffbcc87e",
     );
   });
 
