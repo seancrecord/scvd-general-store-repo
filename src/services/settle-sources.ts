@@ -41,6 +41,8 @@ export interface CertificatesAgainstSettles {
   native_certificates: number;
   protocol_unavailable: number;
   certificates_truncated: boolean;
+  /** The payer-row walk hit its cap: wallets_without_row may name wallets whose row was never read (2026-09-19). */
+  payer_rows_truncated: boolean;
   payer_rows: number;
   payer_rows_purchases: number;
   /** Wallets where the row and the certificates do not agree. */
@@ -110,6 +112,7 @@ export async function certificatesAgainstSettles(
     native_certificates: native,
     protocol_unavailable: unavailable,
     certificates_truncated: certKeys.truncated,
+    payer_rows_truncated: payerKeys.truncated,
     payer_rows: rowsByWallet.size,
     payer_rows_purchases: rowPurchases,
     wallets_disagreeing: disagreeing,

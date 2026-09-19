@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { app } from "@/index";
 import { describe, expect, it } from "vitest";
 
 const BASE = "https://scvd.store";
@@ -53,9 +54,23 @@ const CEILINGS: Record<string, number> = {
   "/.well-known/agent.json": 32_000,
   "/.well-known/a2a.json": 32_000,
 
-  // Production: 86 KB, the two names serving one document.
+  // Production: 86 KB, the three names serving one document. The bare
+  // path joined the register 2026-09-19 when the router-derived
+  // coverage check below found it served with no ceiling.
+  "/.well-known/mcp": 160_000,
   "/.well-known/mcp.json": 160_000,
   "/.well-known/mcp/server-card.json": 160_000,
+
+  // The UCP profile, one document under two names: 4.6 KB in the test
+  // fixture, and it grows with the catalog (it lists the open items),
+  // which is the exact shape that made /.well-known/x402 345 KB.
+  "/.well-known/ucp": 32_000,
+  "/.well-known/ucp.json": 32_000,
+
+  // The OASF signing keys and the agent registration card: small,
+  // read by registries, and the register now refuses to lose them.
+  "/.well-known/jwks.json": 8_000,
+  "/.well-known/agent-registration.json": 16_000,
 
   // Production: 57 KB. Read by automated diligence, which is precisely
   // the kind of reader that truncates.
@@ -93,6 +108,14 @@ const ENV_GATED = new Set(["/.well-known/glama.json"]);
  * grabs on the way past.
  */
 const DISCOVERY_WALL_BYTES = 512_000;
+
+/**
+ * The one parameterised well-known route. It cannot sit in CEILINGS by
+ * path, so its documents are enumerated from the skills index and held
+ * to one ceiling each. The focused verification skill is ~10 KB.
+ */
+const PARAMETERISED = new Set(["/.well-known/agent-skills/:name/SKILL.md"]);
+const SKILL_DOCUMENT_CEILING = 64_000;
 
 describe("the discovery documents stay small enough to be read", () => {
   it.each(Object.entries(CEILINGS))(
@@ -158,6 +181,41 @@ describe("the discovery documents stay small enough to be read", () => {
     // The ones that matter for discovery all carry a ceiling above.
     for (const path of ["/.well-known/x402", "/.well-known/x402.json", "/.well-known/agent-card.json"]) {
       expect(Object.keys(CEILINGS)).toContain(path);
+    }
+    /*
+     * DERIVED FROM THE ROUTER, NOT FROM MEMORY (2026-09-19, rule 46).
+     * The sentence above promised coverage and the assertion behind it
+     * was three spot checks, so the UCP launch added two well-known
+     * documents, the bare /.well-known/mcp and the skills' per-document
+     * route went on the wire with no ceiling and nothing went red.
+     * Every GET the router registers under /.well-known is now either
+     * budgeted, env-gated, excluded by name with its reason, or the one
+     * parameterised route measured below through its index.
+     */
+    const served = [...new Set(app.routes
+      .filter((route) => route.path.startsWith("/.well-known") && (route.method === "GET" || route.method === "ALL"))
+      .map((route) => route.path))].sort();
+    expect(served.length).toBeGreaterThan(20);
+    const uncovered = served.filter((path) =>
+      !(path in CEILINGS) && !ENV_GATED.has(path) && !deliberatelyExcluded.includes(path) && !PARAMETERISED.has(path));
+    expect(uncovered, "well-known documents served with no ceiling and no named reason").toEqual([]);
+    // The excluded list may only name documents that are actually served.
+    for (const path of deliberatelyExcluded) {
+      if (path.startsWith("/.well-known")) expect(served, `${path} is excluded but no longer served`).toContain(path);
+    }
+  });
+
+  it("holds every published skill document under one ceiling, enumerated from the skills index", async () => {
+    const index = await (await SELF.fetch(`${BASE}/.well-known/agent-skills/index.json`)).json() as { skills?: { name?: string; url?: string }[] };
+    const skills = index.skills ?? [];
+    expect(skills.length).toBeGreaterThan(0);
+    for (const skill of skills) {
+      const path = `/.well-known/agent-skills/${skill.name}/SKILL.md`;
+      const response = await SELF.fetch(`${BASE}${path}`);
+      expect(response.status, path).toBe(200);
+      const bytes = new TextEncoder().encode(await response.text()).length;
+      expect(bytes, `${path} is ${bytes} bytes against a ceiling of ${SKILL_DOCUMENT_CEILING}`).toBeLessThanOrEqual(SKILL_DOCUMENT_CEILING);
+      expect(bytes, path).toBeLessThan(DISCOVERY_WALL_BYTES);
     }
   });
 });

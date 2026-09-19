@@ -105,7 +105,17 @@ function flag(severity, file, line, rule, detail) {
  * before this script is allowed to report a count.
  */
 const KV_READ = /await [\w.]+\.get[<(]/;
-const KV_WRITE = /await [\w.]+\.put[<(]/;
+/*
+ * A WRITE BEHIND THE RETRY WRAPPER IS STILL A WRITE (2026-09-19). The
+ * loop this budget was raised 7 -> 8 for (cold-restore.ts) had moved
+ * its put under `withKvRetry(() => ns.put(...))`, and the pattern
+ * demanding `await <dotted>.put(` stopped seeing it — the budget had a
+ * slack slot it could not account for, which is the quiet failure the
+ * canary below exists to catch. The wrapper is optional in the
+ * pattern; the primitive that defines it (kv-retry.ts) is exempt with
+ * the other primitives below.
+ */
+const KV_WRITE = /await (?:withKvRetry\(\(\) => )?[\w.]+\.put[<(]/;
 
 /**
  * THE CANARY. Both repairs above were silent failures — the rules
@@ -126,6 +136,7 @@ const CANARY = [
   [KV_READ, "const row = await options.kv.get(name);"],
   [KV_WRITE, "await env.ORDERS.put(name, JSON.stringify(record));"],
   [KV_WRITE, "await options.kv.put(name, JSON.stringify(record));"],
+  [KV_WRITE, "await withKvRetry(() => namespace.put(name, rows[name]!));"],
 ];
 for (const [pattern, sample] of CANARY) {
   if (!pattern.test(sample)) {
@@ -222,7 +233,11 @@ for (const path of sourceFiles(SRC)) {
    * this file's own comment says is worse than a missing rule.
    */
   const isHelper =
-    path.endsWith("kv-list.ts") || path.endsWith("kv-bulk.ts");
+    path.endsWith("kv-list.ts") || path.endsWith("kv-bulk.ts") ||
+    // kv-retry.ts defines withKvRetry; since 2026-09-19 the write rule
+    // reads through that wrapper, so its own put/get helpers are the
+    // primitive, not a call site.
+    path.endsWith("kv-retry.ts");
 
   lines.forEach((line, i) => {
     const n = i + 1;
@@ -353,8 +368,18 @@ for (const path of sourceFiles(SRC)) {
  * restore, never on a request or cron path. If a second restore-shaped
  * writer ever appears, that is the watch-sweep finding again — merge
  * them and take this back to 7.
+ *
+ * RATCHETED 8 -> 5 on 2026-09-19, by fixing the instrument rather than
+ * the code. The restore loop the 7 -> 8 raise was argued for had moved
+ * its put under withKvRetry, and the write rule could not see through
+ * the wrapper — so the budget carried slack it could not account for,
+ * which is the quiet failure the canary exists to catch. The rule now
+ * reads through the wrapper (canary sample added), the restore loop is
+ * back on the list, and the count is the five that are each a
+ * per-record decision by the rule's own exemption. The next one is
+ * argued for in a commit message, as before.
  */
-const WARN_BUDGET = 8;
+const WARN_BUDGET = 5;
 
 const errors = findings.filter((f) => f.severity === "error");
 const warns = findings.filter((f) => f.severity === "warn");

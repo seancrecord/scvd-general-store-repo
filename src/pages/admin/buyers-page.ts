@@ -31,7 +31,7 @@ export function renderBuyersPage(report: BuyersReport): string {
   const body = `<section>
     <h2>The buyers</h2>
     <p><small>Every certificate that carries a paying wallet, grouped by wallet, all-time and house excluded.
-    The census reads eight hours; this reads the shelf. Read ${report.certificates_scanned} certificates${report.certificates_truncated ? " (scan hit its cap — older ones exist)" : ""},
+    The census reads eight hours; this reads the shelf. Read ${report.certificates_scanned} certificates${report.certificates_truncated ? " (scan hit its cap — older ones exist)" : ""}${report.payer_rows_truncated ? " against a payer-row scan that hit its cap" : ""},
     ${report.certificates_without_payer} from before payer recording, ${report.house_purchases_excluded} of the house's own.</small></p>
     <table border="1" cellpadding="4">
       <tr><td>distinct buyers</td><td>${s.distinct_buyers}</td></tr>

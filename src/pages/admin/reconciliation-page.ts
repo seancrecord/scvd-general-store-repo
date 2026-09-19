@@ -118,7 +118,7 @@ function certsHtml(c: CertificatesAgainstSettles | null | undefined, settles: Se
     <table border="1" cellpadding="4">
       <tr><td>certificates on the shelf</td><td>${c.certificates_total}${c.certificates_truncated ? " (scan capped)" : ""}</td></tr>
       <tr><td>…carrying a paying wallet</td><td>${c.certificates_with_payer}</td></tr>
-      <tr><td>payer rows / purchases on them</td><td>${c.payer_rows} / ${c.payer_rows_purchases}</td></tr>
+      <tr><td>payer rows / purchases on them</td><td>${c.payer_rows} / ${c.payer_rows_purchases}${c.payer_rows_truncated ? " (scan capped)" : ""}</td></tr>
       <tr><td>wallets whose row and certificates disagree</td><td>${c.wallets_disagreeing.length}</td></tr>
     </table>
     ${rows ? `<table border="1" cellpadding="4"><tr><th>wallet</th><th>row says</th><th>certificates</th></tr>${rows}</table>` : ""}
@@ -148,7 +148,7 @@ function settlesHtml(r: SettleReconciliation | null): string {
       ? `<p>${PASS} — the counters and the derived payer purchases agree, allowing for the founding settle and any settle that arrived without a wallet address. Since 2026-09-11 that is the expected state, not a good sign: every counter has one writer, and the hourly raise lifts anything short of its records.</p>`
       : `<p>${PASS} — the ${r.unexplained > 0 ? "counters" : "derived payer purchases"} read ${Math.abs(r.unexplained)} settle${Math.abs(r.unexplained) === 1 ? "" : "s"} more than the ${r.unexplained > 0 ? "derived payer purchases" : "counters"}. Until 2026-09-11 that was a lost increment under a burst and read as a floor. It no longer is: the hourly raise lifts whichever side is short to the per-settle records, so this should read zero after the next raise (or now, with the button below). If it is still nonzero an hour from now, that is real, and a certificate without its record shows below.</p>
         <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0"><button type="submit">Raise every short counter and payer row to its records now</button></form>`;
-  return `${verdict}
+  return `${verdict}${r.truncated.length ? `<p><strong>${r.reading}</strong></p>` : ""}
     <details><summary>The arithmetic</summary>
     <table border="1" cellpadding="4">
       <tr><td>settles on the counters</td><td>${r.counter_settles}</td></tr>

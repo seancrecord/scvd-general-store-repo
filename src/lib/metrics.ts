@@ -1380,6 +1380,21 @@ export interface SettleReconciliation {
    */
   does_not_cover: string;
   delivery_audit: string;
+  /**
+   * WHICH OF THE THREE LISTS HIT ITS CAP (2026-09-19, rule 52). The
+   * docstring below has said since the instrument shipped that a
+   * reconciliation which silently compares against the first fifty
+   * wallets is worse than none — and then the function never read
+   * `truncated` off any of its three walks, so past any cap the
+   * counters would be compared against a shortened payer side and
+   * `unexplained` would read as a real discrepancy, or a shortened
+   * metric side would read as a clean zero. The caps sit far above
+   * today's volume; the flag exists for the day they do not. Additive:
+   * the arithmetic is untouched, and a reader that never looks here
+   * gets the number it always got.
+   */
+  truncated: string[];
+  reading: string;
 }
 
 const RECONCILIATION_BLIND_SPOT =
@@ -1446,6 +1461,11 @@ export async function reconcileSettles(
     if (!walletsWithRows.has(wallet)) payerPurchases += count;
   }
   const settleRecords = [...settlesByWallet.values()].reduce((sum, n) => sum + n, 0);
+  const truncated = [
+    ...(metrics.truncated ? ["metric counters"] : []),
+    ...(payerKeys.truncated ? ["payer rows"] : []),
+    ...(settleKeys.truncated ? ["per-settle records"] : []),
+  ];
 
   return {
     counter_settles: counterSettles,
@@ -1460,6 +1480,10 @@ export async function reconcileSettles(
       unattributed,
     does_not_cover: RECONCILIATION_BLIND_SPOT,
     delivery_audit: "/admin/deliveries",
+    truncated,
+    reading: truncated.length
+      ? `INCOMPLETE: the walk over ${truncated.join(" and ")} hit its cap, so the side it feeds is a floor and unexplained is not evidence either way until the cap is raised or the walk is paged.`
+      : "Every list was read to its end; the three figures cover the whole book.",
   };
 }
 

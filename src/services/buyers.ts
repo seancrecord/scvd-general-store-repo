@@ -70,6 +70,8 @@ export interface BuyersReport {
   certificates_scanned: number;
   certificates_without_payer: number;
   certificates_truncated: boolean;
+  /** The payer-row walk hit its cap: rows_disagreeing may be counting against a missing row (2026-09-19). */
+  payer_rows_truncated: boolean;
   house_purchases_excluded: number;
   turned_away: TurnedAway[];
   declines_scanned: number;
@@ -177,6 +179,7 @@ export async function readBuyers(env: Env): Promise<BuyersReport> {
     certificates_scanned: scanned,
     certificates_without_payer: withoutPayer,
     certificates_truncated: certKeys.truncated,
+    payer_rows_truncated: payerKeys.truncated,
     house_purchases_excluded: houseExcluded,
     turned_away: [...turned.values()].sort((a, b) => b.declines - a.declines),
     declines_scanned: declines.rows_scanned,
