@@ -1,6 +1,10 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { EXTERNAL_RECORDS, NOT_CLAIMED } from "@/store/trust-signals";
+import {
+  EXTERNAL_RECORDS,
+  NOT_CLAIMED,
+  PEER_VERIFICATIONS,
+} from "@/store/trust-signals";
 import { ROOMS } from "@/store/rooms";
 
 const BASE = "https://scvd.store";
@@ -194,5 +198,92 @@ describe("the trust surfaces keep their split", () => {
       await SELF.fetch(`${BASE}/.well-known/x402.json`)
     ).json()) as { trust?: string };
     expect(x402.trust).toMatch(/\/\.well-known\/trust\.json$/);
+  });
+});
+
+
+/**
+ * A LISTING IS NOT A CHECK, and seventy-odd listings can bury the
+ * three rows that are. These tests exist so the stronger class stays
+ * visible AND stays honest: the moment a peer-verification row stops
+ * naming what it found against us, it has become a testimonial and
+ * the build says so.
+ */
+describe("peer verifications are checks, not testimonials", () => {
+  it("makes every one of them name what it found against us", () => {
+    expect(PEER_VERIFICATIONS.length).toBeGreaterThan(0);
+    for (const record of PEER_VERIFICATIONS) {
+      expect(record.kind, `${record.registry} is in the derived list`).toBe(
+        "peer_verification",
+      );
+      const against = record.found_against_us ?? "";
+      expect(
+        against.length,
+        `${record.registry} claims a peer check with nothing against us in it`,
+      ).toBeGreaterThan(80);
+      expect(record.url, `${record.registry} has no URL`).toMatch(/^https:\/\//);
+      // A check that only ever agreed with us is the shape we refuse.
+      expect(
+        record.what_it_proves,
+        `${record.registry} never says what it does NOT establish`,
+      ).toMatch(/not an endorsement|not an audit/i);
+    }
+  });
+
+  it("derives the list rather than keeping a second one that can drift", () => {
+    const filtered = EXTERNAL_RECORDS.filter(
+      (record) => record.kind === "peer_verification",
+    );
+    expect(PEER_VERIFICATIONS).toEqual(filtered);
+  });
+
+  it("carries the receipt treaty, with both commitments and the defect it found in us", () => {
+    const treaty = PEER_VERIFICATIONS.find((record) =>
+      /StillOS/i.test(record.registry),
+    );
+    expect(treaty, "the receipt treaty is not in the trust document").toBeTruthy();
+    // The two facts that make it a check rather than a handshake.
+    expect(treaty?.what_it_proves).toMatch(/digest and byte length|commitments verify/i);
+    expect(treaty?.found_against_us).toMatch(/rail rule/i);
+    expect(treaty?.found_against_us).toMatch(/horizon/i);
+  });
+
+  it("publishes the derived count on both trust surfaces, typed on neither", async () => {
+    const body = (await (
+      await SELF.fetch(`${BASE}/.well-known/trust.json`)
+    ).json()) as {
+      peer_verifications?: { count?: number; records?: unknown[]; note?: string };
+    };
+    expect(body.peer_verifications?.count).toBe(PEER_VERIFICATIONS.length);
+    expect(body.peer_verifications?.records).toHaveLength(
+      PEER_VERIFICATIONS.length,
+    );
+    expect(body.peer_verifications?.note).toMatch(/their own code/i);
+
+    // /trust content-negotiates: the JSON twin and the rendered room
+    // must both carry it, and neither may type the count.
+    const room = (await (
+      await SELF.fetch(`${BASE}/trust`)
+    ).json()) as {
+      checked_by_another_operator?: { count?: number; records?: unknown[] };
+    };
+    expect(room.checked_by_another_operator?.count).toBe(
+      PEER_VERIFICATIONS.length,
+    );
+    expect(room.checked_by_another_operator?.records).toHaveLength(
+      PEER_VERIFICATIONS.length,
+    );
+
+    const page = await (
+      await SELF.fetch(`${BASE}/trust`, {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    expect(page).toContain("Who has checked us, not just listed us");
+    for (const record of PEER_VERIFICATIONS) {
+      expect(page, `${record.registry} is not on the trust page`).toContain(
+        record.url,
+      );
+    }
   });
 });

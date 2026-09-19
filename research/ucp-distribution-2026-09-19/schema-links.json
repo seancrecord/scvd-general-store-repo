@@ -1,0 +1,52 @@
+{
+  "observed_at": "2026-09-19T16:16:30.897487+00:00",
+  "profile_url": "https://scvd.store/.well-known/ucp",
+  "version": "2026-08-25",
+  "scope": "Read-only schema URL retrieval; no checkout or payment",
+  "results": [
+    {
+      "url": "https://ucp.dev/schemas/shopping/catalog_search.json",
+      "status": 404
+    },
+    {
+      "url": "https://ucp.dev/2026-08-25/schemas/shopping/catalog_search.json",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "schema_id": "https://ucp.dev/2026-08-25/schemas/shopping/catalog_search.json",
+      "name": "dev.ucp.shopping.catalog.search"
+    },
+    {
+      "url": "https://ucp.dev/schemas/shopping/catalog_lookup.json",
+      "status": 404
+    },
+    {
+      "url": "https://ucp.dev/2026-08-25/schemas/shopping/catalog_lookup.json",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "schema_id": "https://ucp.dev/2026-08-25/schemas/shopping/catalog_lookup.json",
+      "name": "dev.ucp.shopping.catalog.lookup"
+    },
+    {
+      "url": "https://ucp.dev/schemas/shopping/checkout.json",
+      "status": 404
+    },
+    {
+      "url": "https://ucp.dev/2026-08-25/schemas/shopping/checkout.json",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "schema_id": "https://ucp.dev/2026-08-25/schemas/shopping/checkout.json",
+      "name": "dev.ucp.shopping.checkout"
+    },
+    {
+      "url": "https://ucp.dev/schemas/shopping/order.json",
+      "status": 404
+    },
+    {
+      "url": "https://ucp.dev/2026-08-25/schemas/shopping/order.json",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "schema_id": "https://ucp.dev/2026-08-25/schemas/shopping/order.json",
+      "name": "dev.ucp.shopping.order"
+    }
+  ]
+}

@@ -7,6 +7,8 @@ import { buildTrustPanel } from "@/services/trust-panel";
 import { ASSURANCE_LADDER } from "@/store/assurance";
 import {
   EXTERNAL_RECORDS,
+  PEER_VERIFICATIONS,
+  PEER_VERIFICATION_NOTE,
   discoveryByProtocol,
   discoveryProtocolIndex,
   RECORDS_NOT_LISTED,
@@ -47,6 +49,23 @@ trustRoutes.get("/trust", async (c) => {
         note: "Third-party records of this store, each opened and read on the date given. No grade or score another instrument gave us is restated; the live reading is behind the link.",
         records: EXTERNAL_RECORDS,
         not_listed: RECORDS_NOT_LISTED,
+      },
+      /**
+       * Derived from the same array, so the two can never disagree.
+       * A listing proves we were indexed; these are the rows where
+       * somebody checked, and every one carries what it found against
+       * us.
+       */
+      checked_by_another_operator: {
+        count: PEER_VERIFICATIONS.length,
+        note: PEER_VERIFICATION_NOTE,
+        records: PEER_VERIFICATIONS.map((record) => ({
+          registry: record.registry,
+          url: record.url,
+          confirmed: record.confirmed,
+          what_it_proves: record.what_it_proves,
+          found_against_us: record.found_against_us,
+        })),
       },
       what_this_is_not:
         "Not an escrow, not a guarantor, not a dispute court, no chargebacks, no third-party audit. One operator, one live signing key (history Bitcoin-anchored). Treat artifacts as evidence to verify, never as institutional assurance.",
@@ -185,6 +204,14 @@ trustRoutes.get("/trust", async (c) => {
     ${recordRows}
     <h3>What is deliberately not on this list</h3>
     <p class="menu-desc">${escapeHtml(RECORDS_NOT_LISTED)}</p>
+  </section>
+  <section>
+    <h2>Who has checked us, not just listed us</h2>
+    <p class="menu-desc">${escapeHtml(PEER_VERIFICATION_NOTE)}</p>
+    <ul>
+${PEER_VERIFICATIONS.map((record) => `      <li><a href="${escapeHtml(record.url)}" rel="noopener">${escapeHtml(record.registry)}</a> — read ${escapeHtml(record.confirmed)}.
+        <strong>What it found against us:</strong> ${escapeHtml(record.found_against_us ?? "")}</li>`).join("\n")}
+    </ul>
   </section>
   <section>
     <h2>The record, kept where you can check it</h2>

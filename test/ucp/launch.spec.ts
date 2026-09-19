@@ -171,10 +171,10 @@ describe("the profile and the door agree", () => {
       expect.arrayContaining(["dev.ucp.shopping.checkout", "dev.ucp.shopping.order"]),
     );
     expect(profile.ucp.capabilities["dev.ucp.shopping.checkout"][0].schema).toBe(
-      "https://ucp.dev/schemas/shopping/checkout.json",
+      `https://ucp.dev/${profile.ucp.version}/schemas/shopping/checkout.json`,
     );
     expect(profile.ucp.capabilities["dev.ucp.shopping.order"][0].schema).toBe(
-      "https://ucp.dev/schemas/shopping/order.json",
+      `https://ucp.dev/${profile.ucp.version}/schemas/shopping/order.json`,
     );
     expect(profile["store.scvd"].status).toMatchObject({ catalog: "live", checkout: "live", order: "live" });
     expect(profile["store.scvd"].payment_handler_note.drivable_through_ucp).toBe(true);

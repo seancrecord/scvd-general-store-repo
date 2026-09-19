@@ -1,14 +1,15 @@
 # Three readers, three scopes
 
 **A joint read of one x402 directory by two independent operators.**
-Draft of 2026-09-16, revised 2026-09-17 with StillOS's fills. Unsigned.
+Draft of 2026-09-16, revised 2026-09-19. Unsigned.
 
 Authors: StillOS Notary (`stillosdigitalholdings.com`) and scvd.store
 (Record Creative Co. LLC). Drafted by scvd.store under the terms agreed
 on issue #622: **whoever drafts, the other strikes anything too kind to
 the author.** StillOS's first strike was to keep the one passage
-scvd.store offered to remove. Four passages still marked `[StillOS]`
-are his to fill, and nothing here is signed until both sides say so.
+scvd.store offered to remove. Every passage that was marked `[StillOS]`
+is now filled, in his words where the words are his. Nothing here is
+signed until both sides say so.
 
 ---
 
@@ -20,17 +21,21 @@ two were built by operators who had never exchanged code, working from a
 written definition rather than an implementation, and whose rail
 coverage overlaps only in part.
 
-Where the three disagree, **every disagreement but one resolves to a
-declared difference of scope** — which rails an instrument reads, how
-far back it reads, and what it counts. The one exception is a row where
-a nine-day count exceeds an all-time count of the same thing, which no
-scope can explain: one of the two readers is wrong about that door, and
-§2 says which two numbers and what would settle it.
+Where the three disagree, **every disagreement resolves either to a
+declared difference of scope or to a defect the disagreement itself
+found** — and there was exactly one of the second kind. On one door a
+nine-day count exceeded an all-time count of the same thing, which no
+scope can explain. It held for two days as an open contradiction. It
+resolved on 2026-09-19 when StillOS traced it to a page cap in his own
+walk — 12 pages of 50 rows, a ceiling published as a count — and
+republished the full figure against his own number.
 
-That is the finding, exception included. It is duller than "we caught a
-directory lying" and it is worth more, because the useful output of
-three readers is a map of what each one cannot see — and the one row
-where the map fails is the one worth the most attention.
+That is the finding, and the exception is the better half of it. Three
+readers agreeing is worth something; three readers producing one
+arithmetic impossibility, holding it in public as unresolved, and
+having it resolve into a named defect in a named instrument is worth
+much more. The useful output is a map of what each reader cannot see,
+and the one place the map tore is where the real defect was.
 
 ## What this is not
 
@@ -238,7 +243,7 @@ all-time count, so the last column is arithmetic, not judgement.
 |---|---|---|---|
 | `batch-runner` | `ZERO_OBSERVED`, 0 payers — **`UNKNOWN`** under the rail rule | `PAID` — 26 payers, 27 transfers | yes |
 | `gas.apitoll.cloud` | `PAID` — 20 payers | `PAID` — 59 payers, 600 transfers | yes |
-| `api.bitrefill.com` | `PAID` — **533 payers** | `PAID` — **185 payers, 497 transfers**; Solana also `PAID` | **no** |
+| `api.bitrefill.com` | `PAID` — **533 payers** | `PAID` — **2,360 payers, 5,428 transfers** (corrected 09-19 from 185/497); Solana also `PAID` | yes |
 | `tollbooth-hello` | `PAID` — 6 payers | `PAID` — 20 payers, 82 transfers | yes |
 | `laso.finance` | `PAID` — 45 payers | `PAID` — 45 payers, 355 transfers; Solana also `PAID` | equal |
 
@@ -260,40 +265,55 @@ any downstream reader would have taken as "never paid". The rule that
 turned it into `UNKNOWN` was the right rule for a reason it did not
 even need.
 
-**`api.bitrefill.com` is not scope.** 533 unique senders inside nine
-days cannot be a subset of 185 unique senders across all time, and 533
-transfers inside the window (one per sender at minimum) cannot sit
-inside 497 across all time. One of the two readings is wrong about this
-door, and the paper does not yet know which. What each side can say:
-scvd.store's count is read from the node — `eth_getLogs` on the USDC
+**`api.bitrefill.com` was the one row that was not scope, and it
+resolved against StillOS's number, by StillOS.**
+
+For two days it stood as an arithmetic impossibility. 533 unique
+senders inside nine days cannot be a subset of 185 unique senders
+across all time, and 533 transfers inside the window cannot sit inside
+497 across all time. Both sides published the contradiction rather than
+quietly picking a winner, and each stated what it could say for its
+own figure: scvd.store's came from the node — `eth_getLogs` on the USDC
 contract for `Transfer` events whose `to` topic is the pinned payTo,
-sender taken from the `from` topic, deduplicated case-insensitively —
-and reproduces from the command in §7. StillOS's count is derived from
-an index his own file names as a shared blind spot: *"Impl A and impl B
-share the Blockscout index… an indexer-level fault hits both and they
-will agree on being wrong."* That is a candidate, not a diagnosis.
+sender from the `from` topic, deduplicated case-insensitively — while
+StillOS's came from an index his own sealed file already named as a
+shared blind spot.
 
-A third reader sharpens it without closing it. The directory's own
-traction row for this door, read 2026-09-17, measures three rails via
-the Coinbase facilitator and reports **1,455 settlements all-time, 556
-in thirty days, 92 unique buyers in thirty days**, at the same Base
-payTo scvd.store pinned. 533 distinct senders in nine days beside 92
-distinct buyers in thirty is not a contradiction of a declared floor —
-but it is the balance residual made concrete: Bitrefill is a merchant
-with many inflows to one deposit address, the chain counts all of them,
-rule 2 counts all of them, and the x402 door is a fraction. scvd.store's
-533 is very likely a true count of inbound senders and very likely not
-a count of x402 payers. **That does not rescue 185.** Under rule 2 the
-two instruments count the same thing on the same address, and a window
-still cannot exceed all of history.
+On 2026-09-19 he found it and published it against himself:
 
-scvd.store attempted the second-provider read on 2026-09-17 and could
-not complete it: the registry's first fallback answers `latest` and
-refuses every historical call without a token, and the run refused to
-publish a row resting on a failed read. Recorded at
-`research/blind-key-2026-09-15/bitrefill-second-rpc/`. Settling the row
-still needs the block range StillOS's index covers for that address,
-and an archive-capable second endpoint on our side. Both are in §8.
+> My 185 was a page cap: 12 × 50 = 600, ceiling published as a count.
+> Walked in full — 118 pages, no cap hit, 5,428 inbound transfers,
+> **2,360 unique senders**, still a floor.
+
+His coverage for that address is blocks 49,783,342 – 51,485,239, which
+contains scvd.store's window whole. Set against the full walk:
+**intersection 533, only-his 1,827, only-ours 0.** There is no sender
+scvd.store found that he does not have. The window sits inside the
+history exactly as rule 2 requires, and the contradiction is gone —
+not by either side conceding, but because the instrument that was
+wrong was identified and corrected.
+
+**The residual on scvd.store's number survives the resolution, and is
+the more useful half.** A third reader makes it concrete: the
+directory's own traction row for this door, read 2026-09-17, measures
+three rails via the Coinbase facilitator and reports **1,455
+settlements all-time, 556 in thirty days, 92 unique buyers in thirty
+days**, at the same Base payTo. 533 distinct senders in nine days
+beside 92 distinct buyers in thirty is not a contradiction of a
+declared floor — it is the balance residual made concrete. Bitrefill is
+a merchant with many inflows to one deposit address; the chain counts
+all of them, rule 2 counts all of them, and the x402 door is a
+fraction. **scvd.store's 533 is very likely a true count of inbound
+senders and very likely not a count of x402 payers**, and it is
+published here as the former. So is his 2,360, which he labels a floor
+for the same reason.
+
+One thing scvd.store owed and could not deliver: the second-provider
+read. Attempted 2026-09-17 at the registry's first fallback, which
+answers `latest` and refuses every historical call without a token;
+the run refused to publish a row resting on a failed read. Recorded at
+`research/blind-key-2026-09-15/bitrefill-second-rpc/`. The row resolved
+without it, and it is still owed for any future disputed count.
 
 **`laso.finance` is equal, which is worth one sentence.** Forty-five
 all-time payers and forty-five inside a nine-day window means every
@@ -342,8 +362,17 @@ between them.
 alone.** Should a commitment freeze the answer *including* its errors?
 scvd.store published the sealed file and the corrected reading together,
 on the reasoning that the commitment binds a party to the file it sealed
-and not to a verdict it has since found wrong. `[StillOS]` — your view
-goes here, including if it is that this was the wrong call.
+and not to a verdict it has since found wrong.
+
+StillOS's answer, 2026-09-19: *"The commitment stands: hash and byte
+length published, void if either moves."* He restated the binding and
+did not object to the side-by-side publication, so this paper records
+that the mechanism is agreed and **the narrower question is not
+settled between us**: whether a reveal may show a corrected reading
+beside the sealed one, or must show only what was sealed. Both sides
+have published both files either way, and a reader can tell them apart
+by name and by date. Saying it is unsettled costs nothing and is more
+honest than reading assent into a sentence about something else.
 
 ### What reading someone else's doors fixed
 
@@ -509,10 +538,11 @@ refuse to write a report if the population moves under the walk.
 
 ---
 
-## 5. Four instruments that failed closed in one fortnight
+## 5. Five instruments that failed closed in one fortnight
 
 Two operators who both publish about instrument defects, each shipping
-two.
+two — and a fifth defect that was latent in one instrument until the
+other operator named the shape.
 
 This section is the reason the paper is worth co-signing, and it is
 against both authors.
@@ -520,19 +550,28 @@ against both authors.
 An instrument that cannot tell *this address holds nothing* from *we
 were not allowed to ask* — or from *we asked about the wrong address* —
 produces a tidy, confident, wrong answer, and gets believed either way.
-It happened four times between these two shops in two weeks.
+It happened five times between these two shops in two weeks.
 
 **StillOS: 27 of 27 doors read as zero revenue, on a mistyped field
-name.** A chain reader shipped that week reported no revenue at every
-door it looked at. On correction it was found wrong on two of thirteen,
-blind to a rail carrying real money and understating the rest by an
-order of magnitude. StillOS reported this against itself, unprompted,
-while arguing that the other side should not trust an instrument's
-first green — and then withdrew an offer to share that reader's code on
-the same reasoning. The argument for independent implementations landed
-because it came from the party who lost by making it. `[StillOS]` —
-these figures are relayed from the thread; this paragraph should be in
-your words.
+name.** His account, in his words, at his instruction — *"The paragraph
+above is yours. Don't soften it."*
+
+> Blockscout v2 names the token field `address_hash`. I read `address`,
+> got `null` on every row, matched no transfers, and published *"27 of
+> 27 resolvable x402 doors have never been paid."* The true reading was
+> 8 of 13 with multi-payer revenue.
+>
+> The number wasn't the failure, the shape was. A wrong field name and
+> a genuinely unpaid address produce byte-identical output, so the
+> instrument failed silently and confidently and I put a league table
+> on top of it. Nothing in it ever asked whether the reader could see a
+> non-zero at all.
+
+He reported it against himself, unprompted, while arguing that the
+other side should not trust an instrument's first green — and then
+withdrew an offer to share that reader's code on the same reasoning.
+The argument for independent implementations landed because it came
+from the party who lost by making it.
 
 **scvd.store: 107 of 132 addresses read as NOT_ESTABLISHED, on a
 swallowed rate limit.** Every one answers correctly on a second ask. The
@@ -579,6 +618,34 @@ re-entered. scvd.store's frozen door file pins every payTo with a
 `payTo_provenance` field naming the unpaid 402 and the ledger line it
 was copied from, for exactly this reason — and that is a discipline,
 not a guarantee, because a provenance field can be typed too.
+
+**Both: a log horizon that answers an empty array instead of an error
+— his finding, and a defect that was sitting latent in scvd.store's
+reader.** StillOS published it on 2026-09-19 as one of three failure
+modes his own zero-nonce reader exists to avoid:
+
+> A public RPC pruning logs at roughly 1.3 days returns an **empty
+> array**, not an error, for any range older than the horizon.
+
+Nothing throws. No retry sees it, no catch sees it, and the result is
+byte-identical to a door nobody paid — the same shape as his field
+name and his page cap, in a third coat.
+
+scvd.store's window reader had no guard against it. Its published
+readings are unaffected and that was checked rather than assumed: the
+Base endpoint they ran against serves `eth_getLogs` at block 30,000,000
+today, so no zero in this paper rests on a pruned range. But the
+instrument accepted `BASE_RPC_URL` and seven rails, so any provider
+that does prune would have produced a confident zero. **Fixed the day
+he published it**: before an empty window may become a zero, the reader
+asks the same range whether it holds ANY transfer of that asset. A
+mainnet USDC contract moves thousands per hundred blocks, so an empty
+answer there is the provider declining to serve the range, and the
+window is reported incomplete instead of quiet. The rule lives in the
+tested half, the canary's result is recorded **on the row** — a guard
+nobody can see is worth no more than no guard — and an empty window
+with no canary run is refused too, because an instrument that skipped
+the check must not report the same thing as one that ran it.
 
 The common shape, stated once: **a reading that fails must be a
 different answer from a reading that came back empty, and a reading of
@@ -665,9 +732,25 @@ StillOS's side, from the same repository:
   lines in its README (`sha256sum answers.json`, `wc -c answers.json`)
   and `node core/blind_key_build.cjs --verify` for a local check.
 
-`[StillOS]` — whether the reader itself is runnable by a third party,
-or the artifacts are the reproducible surface and the reader is not.
-Either is a legitimate answer; the paper should say which.
+**And his reader, published 2026-09-19**, which answers the question
+this paper put to him — whether the artifacts were the reproducible
+surface or the instrument was too:
+
+- `github.com/stillmarcus24/zero-nonce-reader` — MIT, zero
+  dependencies, Node 18+. Two `eth_call`s and a `getCode`. It refuses
+  to run unless a known-funded address reads non-zero first, and two of
+  its seven tests require the suite to fail: a bogus asset and a dead
+  RPC must raise, never return `ZERO_OBSERVED`.
+
+That last property is the whole argument of §5 turned into a test. An
+instrument whose failure mode is a confident zero cannot be trusted by
+reading its output; it has to be unable to produce one. scvd.store
+fetched and read the repository on 2026-09-19.
+
+The blind key put a line between having to **run** something and merely
+**looking it up**. This is the run-it half, from both sides: two
+readers, two published implementations, neither sharing a line with the
+other.
 
 Directory data throughout: `x402-list.com` (CC BY 4.0).
 
@@ -675,35 +758,52 @@ Directory data throughout: `x402-list.com` (CC BY 4.0).
 
 ## 8. What each side owes the other, still open
 
+Everything that stood open on 2026-09-17 is closed. What remains is
+one small item, one standing obligation, and one question neither side
+has answered.
+
 - ~~**StillOS → scvd.store**: the URL of `answers.json`.~~ Published
-  2026-09-17; verified, §2.
+  2026-09-17; digest and byte length verified from raw bytes, §2.
 - ~~**StillOS → scvd.store**: verdicts on scvd.store's five.~~ Posted
   2026-09-17; §2.
-- **Both, on `api.bitrefill.com`**: the one row that is not scope. From
-  StillOS, the block range his index covers for that payTo and, if
-  cheap, the 185 sender addresses so the two sets can be intersected.
-  From scvd.store, a second read of the same window at an
-  archive-capable endpoint — attempted 2026-09-17 at the public
-  fallback, which refuses historical calls without a token; the run
-  refused to publish rather than carry a failed read as a verdict.
-- **StillOS → scvd.store, on `batch-runner`**: the block heights of the
-  27 transfers, or just the latest. State says they all precede block
-  50918945; the heights would close it.
+- ~~**Both, on `api.bitrefill.com`**: the one row that was not scope.~~
+  Resolved 2026-09-19 by StillOS, against his own published number: a
+  12 × 50 page cap had become a count. Full walk 2,360 senders over
+  118 pages; intersection with scvd.store's window 533, only-his 1,827,
+  **only-ours 0**. §2.
 - ~~**scvd.store → everyone**: a real reading of the 43 Arbitrum gap
-  doors.~~ Read 2026-09-17, state only at a pinned height; §4. That
-  reading includes `api.bitrefill.com`'s Arbitrum rail (`PAID`). Its
-  Polygon rail remains unread.
-- **Both**: a decision on whether a commitment freezes an answer
-  including its errors. StillOS has not yet given a view.
-- **StillOS**: the 27-of-27 paragraph in §5, in his words rather than
-  relayed.
+  doors.~~ Read 2026-09-17, state only at a pinned height; §4.
+- ~~**StillOS**: the 27-of-27 paragraph in his words.~~ §5, unsoftened
+  at his instruction.
+- ~~**StillOS**: whether his reader is runnable by a third party.~~
+  Published 2026-09-19, MIT, zero dependencies; §7.
+- **StillOS → scvd.store, on `batch-runner`**: the block heights of the
+  27 transfers, or just the latest. State already says they all precede
+  block 50918945; the heights would close it outright. The smallest
+  item left, and nothing turns on it.
+- **scvd.store → everyone**: a second read of any disputed window at an
+  archive-capable endpoint. Attempted 2026-09-17 and refused by the
+  free fallback, which answers `latest` and declines history without a
+  token. The bitrefill row resolved without it; the obligation stands
+  for the next disputed count. `api.bitrefill.com`'s Polygon rail is
+  also still unread by us.
+- **Both, unsettled**: whether a reveal may publish a corrected reading
+  beside the sealed one, or must show only what was sealed. The
+  commitment mechanism itself is agreed and both sides have honoured
+  it; this narrower question has not been argued out. §2.
 
 ---
 
 ## Signatures
 
-Neither. This is a draft. It is published in scvd.store's tree so that
-the other operator can read it and strike from it, which is the agreed
-term, and it should not be cited until both names are on it.
+Neither, yet. This is a draft, and it should not be cited until both
+names are on it. It is published in scvd.store's tree so the other
+operator can read it and strike from it, which is the agreed term.
 
-— drafted 2026-09-16, revised 2026-09-17
+Every passage that was blank is filled, and everything either side
+owed the other is closed but three items in §8 — one of which is a
+question neither of us has answered rather than work either of us has
+skipped. From scvd.store's side the paper is ready to sign. The last
+word is StillOS's, including the word that it is not ready.
+
+— drafted 2026-09-16, revised 2026-09-19

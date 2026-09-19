@@ -1,0 +1,66 @@
+{
+  "observedAt": "2026-09-19T12:42:39.175162+00:00",
+  "origin": "https://scvd.store",
+  "registrationUrl": "https://www.mppscan.com/register",
+  "status": "registered",
+  "confirmation": "Successfully registered 193 of 195 resources; You\u2019re registered!",
+  "acceptedResources": 193,
+  "registrationDenominator": 195,
+  "excluded": [
+    {
+      "path": "/almanac/{slug}",
+      "error": "[404] Probe failed: not_found"
+    },
+    {
+      "path": "/open-for-business/{week}",
+      "error": "[404] Probe failed: not_found"
+    }
+  ],
+  "skippedEndpoints": 1,
+  "warningCount": 73,
+  "warningsOnPaidEndpoints": {
+    "count": 36,
+    "messages": [
+      "Paid endpoint is missing an input schema.",
+      "Paid endpoint did not return payment options in the 402 response."
+    ]
+  },
+  "listingUrl": "https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b",
+  "listingReadback": {
+    "heading": "SCVD General Store",
+    "outboundOrigin": "https://scvd.store/",
+    "displayedGroup": "No Tag (193)",
+    "observedPaths": [
+      "/api/buy/context_anchor",
+      "/api/buy/spot_check",
+      "/api/buy/small_blessing"
+    ]
+  },
+  "costAndAccess": "No fee, sign-in, wallet connection or terms acceptance requested",
+  "unpaidChallengeReadback": {
+    "url": "https://scvd.store/api/buy/context_anchor",
+    "status": 402,
+    "method": "evm",
+    "intent": "charge",
+    "request": {
+      "amount": "1000000",
+      "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "methodDetails": {
+        "chainId": 8453,
+        "credentialTypes": [
+          "authorization"
+        ],
+        "decimals": 6
+      },
+      "recipient": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+    }
+  },
+  "limits": "Resource registration is not a paid qualification. Counts include free resources; two path templates were excluded. Warning causes are not established. Earlier tempo:8453/decimals report remains open.",
+  "upstreamFollowup": "https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5741960729",
+  "skippedEndpointDetail": {
+    "method": "GET",
+    "path": "/api/purchase-status/{purchase_id}",
+    "scannerExplanation": "No MPP paywall; suggests security: [] for intentionally free routes",
+    "scope": "Purchase status requires its existing bearer authorization. Do not declare this protected route publicly unauthenticated to satisfy a directory."
+  }
+}

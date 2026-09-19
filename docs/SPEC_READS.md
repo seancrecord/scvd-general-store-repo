@@ -1,5 +1,58 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-19 — MPPScan registration completed and read back
+
+Read the rendered [register page](https://www.mppscan.com/register), entered
+SCVD's origin, inspected verification results and submitted the eligible
+resources under the keeper's free-registration authorization. The page
+confirmed 193 of 195 resources registered; both excluded routes were literal
+path templates returning 404. One endpoint was skipped; 73 nonblocking
+warnings remained, including input-schema and payment-option warnings across
+36 paid endpoints. No fee, account or wallet requested. The public server
+page displayed SCVD and its resource list. [Receipt and exact URL](../research/erc8004-followthrough-2026-09-19/mppscan-registration.json).
+
+A fresh unpaid Context Anchor request still returned HTTP 402 with MPP
+evm/charge, chainId 8453 and six decimals. This does not establish why the
+hosted scanner reported missing payment options. No purchase or canonical
+metadata rewrite. The older package-parser report #1209 remains open; [new hosted-scanner evidence](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5741960729) was added without asserting a shared cause.
+
+
+## 2026-09-18–19 — ERC-8004 follow-through, free OASF routes and Muse
+
+The September 19 continuation confirmed [HOL plugin PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349)
+merged, with SCVD present in the current README and plugins.json. This supports
+a community source-catalog listing, separately from HOL's ERC-8004 index.
+[Agent Arena's official page](https://agentarena.site/) documents free identity
+lookup; SCVD returned 404 and its own Base identity control returned 200.
+AgentRanking returned 522 and 8004.directory failed DNS in the browser.
+[Evidence](../research/erc8004-followthrough-2026-09-19/README.md).
+
+Read the [ERC-8004 specification](https://eips.ethereum.org/EIPS/eip-8004),
+[HOL search contract](https://hol.org/docs/registry-broker/search/) and
+[OpenAPI](https://hol.org/registry/api/v1/openapi.json). Registration,
+A2A and OASF agreed in the September 18 live reads; no new on-chain read
+was made. HOL exact nativeId and domain queries returned zero hits with a
+working ERC-8004 control September 18–19. That is bounded search evidence,
+not a complete census or a diagnosed ingestion fault. AgentERC and HOL
+operator requests are sent. [Readings and receipts](../research/erc8004-followthrough-2026-09-19/README.md).
+
+The [AGNTCY maintainer answer](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900)
+says the shared testbed is read-only. The keeper declined recurring fees;
+Anro's free external-ingestion request was sent September 18. No hosting
+provisioned or current-byte signature/publication claimed.
+
+Read [Agentscan docs](https://agentscan.info/docs), the linked AliasAI
+validator repository and operator site September 19. No appropriate
+GitHub support tracker or email route established. Its AI taxonomy panel
+remains a separate upstream finding; do not rewrite canonical OASF to match it.
+
+Read the rendered [Muse platform](https://muse.ai/platform) September 19.
+Its review path and Stripe Link mention do not establish MCP, x402, MPP
+or UCP compatibility. Work-email sign-in gates further requirements; fees
+and connector format remain unknown. Web-reader fetch failed; the browser
+rendered the official page. [Candidate/intake notes](../research/muse-connector-2026-09-19.md).
+Bundle this intake with the UCP-specific round after release, as requested.
+
 ## 2026-09-18 — MPPScan registration path, qualified live
 
 The register flow is a one-click "Add Server" at `www.mppscan.com/register`
@@ -22,6 +75,23 @@ scheme read as no auth mode, left as written per `PAYMENT_RAILS.md`).
 [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209), the
 checker relabelling Base as `tempo:8453`, is still open and is a display
 defect on their side, not a reason to change the challenge.
+
+## 2026-09-19 — UCP discovery schema URLs
+
+A live read of [SCVD's profile](https://scvd.store/.well-known/ucp)
+found four advertised official schema links returning HTTP 404: catalog
+search, catalog lookup, checkout and order under `https://ucp.dev/schemas/`.
+The matching paths under `https://ucp.dev/2026-08-25/schemas/` each returned
+HTTP 200 JSON. Read the official
+[checkout schema](https://ucp.dev/2026-08-25/schemas/shopping/checkout.json)
+and [discovery overview](https://ucp.dev/specification/overview/).
+The served checkout document's `$id` and references include that release.
+
+The advertised base now derives from `UCP_VERSION`; vendored validation
+schemas and payment behavior are unchanged. Profile and launch regressions
+failed against the unversioned source before the fix. This verifies retrieval
+URLs at this date, not external platform acceptance or paid checkout coverage.
+
 ## 2026-09-18 — Maintainer resolves OASF admission route
 
 [AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned; the later planning comparison prices an unqualified single-VM candidate separately from the AWS control-plane floor. Individual OIDC writer access is no longer a pending route.
@@ -2231,3 +2301,36 @@ No native OpenCode run or independent community-adoption evidence was establishe
 These remain candidates, not submitted listings; see the same completion record.
 
 OpenCode follow-through, September 18: the documented npm CLI route installed version 1.18.31 in temporary storage. Native `debug skill` discovered both unchanged SCVD skills and `mcp list` connected both configured servers. [Receipt](../research/distribution-2026-09-18/opencode-qualification.json). This qualifies discovery/connection only. The listed free model returned a provider 403 FreeTierError before skill/tool execution; no successful execution is claimed. [CLI reference](https://opencode.ai/docs/cli/).
+
+
+### 2026-09-19 — UCP launch distribution and Muse intake
+
+Read the live [SCVD UCP profile](https://scvd.store/.well-known/ucp) and hello catalog lookup; catalog, checkout and order advertised live. Read #842's scoped hello/Base paid evidence and #843's additional-rail driver work; no new payment or independent chain read in this pass. [Saved responses and receipts](../research/ucp-distribution-2026-09-19/README.md).
+
+Read [UCP core concepts](https://ucp.dev/documentation/core-concepts/) for permissionless profile discovery and [Google Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center) for the separate platform onboarding and product gates. Neither establishes Google's acceptance of SCVD's custom payment handler.
+
+Read [community node registration instructions](https://github.com/homototus/ucp-directory) and its registration issue template; submitted #3 after duplicate checks. Read [UCPList contribution evidence policy](https://github.com/Full-Vibe/ucp-ecosystem/blob/main/CONTRIBUTING.md), source listings, and rendered submission/pricing pages; free Merchants submission confirmed received. No public listing yet. Web-reader returned no usable pricing content; browser supplied it.
+
+Read rendered [Muse platform](https://muse.ai/platform) and sign-in flow. Business-email code requested; further requirements remain behind verification. No terms accepted, connector submitted or payment compatibility established.
+
+Read [Awesome UCP contribution rules](https://github.com/Upsonic/awesome-ucp/blob/master/CONTRIBUTING.md), current README and prior PR search. One factual merchant implementation entry submitted as #30 with affiliation and qualification limits.
+
+Read UCP Checker directory instructions, free check form and the resulting [SCVD public report](https://ucpchecker.com/check/scvd.store). The report labels the profile Verified and retains root signing-key warnings; no paid operation, monitoring subscription, account or fee. Its wider platform-support claims were not independently verified or adopted.
+
+Checked the current [UCP profile structure](https://ucp.dev/specification/overview/) after the scanner warning: public signing keys are optional at the profile level; when published they belong in top-level `keys[]`. That does not settle requirements of signing-dependent flows. No authentication or key change was made.
+
+
+### 2026-09-19 — Muse form and confirmed submission
+
+Read Muse's authenticated three-step form: it accepts **Existing MCP**, a hosted endpoint, public documentation, access requirements and optional authentication methods. Prepared the existing free verifier with no authentication or payments, and verified its five tools through a fresh tools/list. Policy/support links and the public skill were reachable. The required [Connector Terms](https://muse.ai/platform/terms) were unavailable to both browser and web-reader, so the agent did not accept them. Keeper submitted personally; the browser then confirmed receipt naming SCVD x402 Verifier. No public listing ID, approval or native execution result. [Receipt](../research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press).
+
+
+### 2026-09-19 — UCP Merchant Directory submission and schema retrieval
+
+Read [awesomeucp/merchants CONTRIBUTING](https://github.com/awesomeucp/merchants/blob/main/CONTRIBUTING.md), its types, generator and PR template. It accepts operator submissions through merchant JSON plus PR, with `verified` and `featured` false. Its older directory data model needs an explicit mapping from current capability/service arrays; that mapping does not add protocol compatibility. Build and browser validation are recorded in the [submission receipt](../research/ucp-distribution-2026-09-19/README.md). Existing lint failures were disclosed.
+
+The [UCPStore homepage](https://www.ucpstore.dev/) is a coming-soon integration service with a waitlist; no external listing submission was established. No account, waitlist or paid tier selected.
+
+Fresh reads of SCVD's advertised official schema URLs returned four 404s; their version-pinned counterparts all returned 200 JSON. [Saved HTTP reading](../research/ucp-distribution-2026-09-19/schema-links.json). Read UCP's [dated checkout schema](https://ucp.dev/2026-08-25/schemas/shopping/checkout.json) and [overview](https://ucp.dev/specification/overview/). This is URL retrieval evidence, not paid qualification or acceptance by an agent platform.
+
+Re-read Google's [Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center): approved free-listing products, per-product checkout eligibility and exclusions remain prerequisites. SCVD's admission and custom payment-handler support were not established; its existing intake stays separate.

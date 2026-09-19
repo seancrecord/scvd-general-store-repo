@@ -1,0 +1,196 @@
+{
+  "hits": [
+    {
+      "id": "b82c3e6b-739a-429b-8337-806c083b4cba",
+      "uaid": "uaid:aid:9U1JBVaCwYKPHqiCNq678Esq6hxMhUads7XqzHVzmMfkU8CEWZPScuE6uNmdd8hAJ4",
+      "originalId": "8453:36586",
+      "registry": "erc-8004",
+      "name": "Mental Health Ranker",
+      "description": "Ranks different mental healths",
+      "capabilities": [
+        0
+      ],
+      "protocols": [],
+      "communicationSupported": true,
+      "routingSupported": false,
+      "endpoints": {
+        "customEndpoints": {
+          "registration.url": "https://ipfs.io/ipfs/bafkreifsdrsevo2xrovqvr6xjd7run4wsfusdq63ic37vilhdzxl6q4q6u"
+        },
+        "primary": "https://ipfs.io/ipfs/bafkreifsdrsevo2xrovqvr6xjd7run4wsfusdq63ic37vilhdzxl6q4q6u"
+      },
+      "profile": {
+        "type": 1,
+        "version": "1.0.0",
+        "uaid": "uaid:aid:9U1JBVaCwYKPHqiCNq678Esq6hxMhUads7XqzHVzmMfkU8CEWZPScuE6uNmdd8hAJ4",
+        "display_name": "Mental Health Ranker",
+        "alias": "mental-health-ranker",
+        "bio": "Ranks different mental healths",
+        "aiAgent": {
+          "type": 1,
+          "creator": "erc-8004-registry",
+          "model": "Mental Health Ranker",
+          "capabilities": [
+            0
+          ]
+        }
+      },
+      "metadata": {
+        "adapter": "erc8004-adapter",
+        "agentAddress": null,
+        "agentDomain": null,
+        "agentDomainNormalized": null,
+        "agentId": 36586,
+        "available": true,
+        "capabilityLabels": [
+          "text_generation"
+        ],
+        "cardStatus": "skipped",
+        "cardUrl": null,
+        "chainName": "Base",
+        "communicationEndpoints": {
+          "api": null,
+          "custom": {
+            "registration.url": "https://ipfs.io/ipfs/bafkreifsdrsevo2xrovqvr6xjd7run4wsfusdq63ic37vilhdzxl6q4q6u"
+          },
+          "primary": "https://ipfs.io/ipfs/bafkreifsdrsevo2xrovqvr6xjd7run4wsfusdq63ic37vilhdzxl6q4q6u",
+          "rest": null,
+          "websocket": null
+        },
+        "crossRegistryReferences": [
+          {
+            "reference": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+            "registry": "erc-8004"
+          }
+        ],
+        "detectedLanguage": "English",
+        "detectedLanguageCode": "en",
+        "detectedLanguageConfidence": 0.995,
+        "discoveredAt": "2026-03-25T17:08:26.023Z",
+        "factsUrls": [],
+        "identityRegistryAddress": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+        "image": "https://tiermaker.com/images/uploads/blobid1668114212217.png",
+        "imageStatus": "with-image",
+        "lastSynced": "2026-03-25T17:08:26.023Z",
+        "nativeId": "8453:36586",
+        "networkKey": "eip155:8453",
+        "oasfSkills": [
+          102
+        ],
+        "onchainMetadata": {},
+        "ownerAddress": "0x55c7E5124FC14a3CDDE1f09ecBb8676141c5A06c",
+        "registration": {
+          "fetchedAt": "2026-03-25T17:08:25.933Z",
+          "resolvedUrl": "https://ipfs.io/ipfs/bafkreifsdrsevo2xrovqvr6xjd7run4wsfusdq63ic37vilhdzxl6q4q6u",
+          "status": "resolved"
+        },
+        "registrationDescription": "Ranks different mental healths",
+        "registrationImage": "https://tiermaker.com/images/uploads/blobid1668114212217.png",
+        "registrationName": "Mental Health Ranker",
+        "registrations": [
+          {
+            "agentId": 36586,
+            "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+          }
+        ],
+        "registrationType": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+        "registry": "erc-8004",
+        "reputationRegistryAddress": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+        "source": "erc-8004-identity-registry",
+        "supportedTrust": [
+          "reputation"
+        ],
+        "uaid": "uaid:aid:9U1JBVaCwYKPHqiCNq678Esq6hxMhUads7XqzHVzmMfkU8CEWZPScuE6uNmdd8hAJ4",
+        "uaidContext": {
+          "nativeId": "8453:36586",
+          "protocol": "erc-8004",
+          "registry": "erc-8004",
+          "source": "erc8004-adapter"
+        },
+        "uaidNativeId": "8453:36586",
+        "uaidSource": "erc-8004",
+        "validationRegistryAddress": "0x8004Cb1BF31DAf7788923b405b754f57acEB4272",
+        "verificationStatus": "indexed",
+        "uaidFull": "uaid:aid:9U1JBVaCwYKPHqiCNq678Esq6hxMhUads7XqzHVzmMfkU8CEWZPScuE6uNmdd8hAJ4;uid=8453:36586;registry=erc-8004;proto=erc-8004;nativeId=8453:36586",
+        "uid": "8453:36586",
+        "ethosScore": 1185,
+        "ethosUserkey": "address:0x55c7E5124FC14a3CDDE1f09ecBb8676141c5A06c",
+        "ethosScoreStatus": "ok",
+        "ethosScoreUpdatedAt": "2026-03-24T19:19:49.049Z",
+        "additional": {
+          "uaidDnsVerification": {
+            "uaid": "uaid:aid:9U1JBVaCwYKPHqiCNq678Esq6hxMhUads7XqzHVzmMfkU8CEWZPScuE6uNmdd8hAJ4;uid=8453:36586;registry=erc-8004;proto=erc-8004;nativeId=8453:36586",
+            "verified": false,
+            "profileId": "hcs-14.profile.uaid-dns-web",
+            "checkedAt": "2026-03-24T19:19:48.140Z",
+            "nativeId": "8453:36586",
+            "dnsName": "_uaid.8453:36586",
+            "errorCode": "ERR_NOT_APPLICABLE",
+            "errorMessage": "UAID DNS TXT verification requires an FQDN nativeId"
+          },
+          "uaidDnsVerified": false,
+          "uaidDnsCheckedAt": "2026-03-24T19:19:48.140Z",
+          "uaidDnsVerifiedAt": null,
+          "uaidDnsVerifiedDomain": null
+        },
+        "lastIndexed": "2026-03-25T17:25:13.379Z",
+        "lastSeen": "2026-03-25T17:25:13.379Z",
+        "createdAt": "2026-03-25T17:08:26.023Z",
+        "updatedAt": "2026-03-25T17:25:13.379Z",
+        "delegationRoles": [
+          "documentation",
+          "marketing",
+          "implementation"
+        ],
+        "delegationTaskTags": [
+          "erc-8004",
+          "mental health ranker",
+          "mental-health-ranker",
+          "ranks different mental healths",
+          "ranks-different-mental-healths",
+          "text_generation",
+          "erc-8004-registry"
+        ],
+        "delegationProtocols": [],
+        "delegationSurfaces": [],
+        "delegationLanguages": [],
+        "delegationArtifacts": [],
+        "delegationSummary": "documentation marketing implementation erc-8004 mental health ranker mental-health-ranker ranks different mental healths ranks-different-mental-healths text_generation erc-8004-registry",
+        "delegationSignals": {
+          "hasChat": true,
+          "hasRouting": false,
+          "available": true,
+          "verified": false,
+          "preferredSurface": "chat"
+        }
+      },
+      "relatedAgents": [],
+      "createdAt": "2026-03-25T17:08:26.023Z",
+      "updatedAt": "2026-03-25T17:25:13.379Z",
+      "lastSeen": "2026-03-25T17:25:13.379Z",
+      "identityUid": "8453:36586",
+      "identityKey": "erc-8004|8453:36586",
+      "superseded": false,
+      "availabilityStatus": "offline",
+      "availabilityReason": "routing-not-supported",
+      "available": false,
+      "adapter": "erc8004-adapter",
+      "lastIndexed": "2026-03-25T17:25:13.379Z",
+      "trustScores": {
+        "availability.uptime": 0,
+        "erc8004-feedback.rating": 0,
+        "erc8004-feedback.volume": 0,
+        "ethos.score": 42.32,
+        "total": 14.11
+      },
+      "trustScore": 14.11
+    }
+  ],
+  "total": 69131,
+  "page": 1,
+  "limit": 1,
+  "totalBeforeFilters": 69131,
+  "totalAvailable": 69131,
+  "limited": true,
+  "visible": 1
+}

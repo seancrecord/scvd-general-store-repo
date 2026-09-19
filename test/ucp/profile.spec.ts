@@ -47,7 +47,7 @@ describe("/.well-known/ucp", () => {
       "dev.ucp.shopping.catalog.lookup",
     ]) {
       expect(profile.ucp.capabilities[name][0].schema).toContain(
-        "https://ucp.dev/schemas/",
+        `https://ucp.dev/${profile.ucp.version}/schemas/`,
       );
     }
   });

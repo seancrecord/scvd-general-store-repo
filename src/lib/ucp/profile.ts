@@ -101,7 +101,7 @@ export function ucpProfile(env: Env): UcpProfile {
        * capability.json's business_schema requires one: a platform
        * composing capabilities during negotiation fetches it. For the
        * capabilities UCP defines, the canonical schema is UCP's own —
-       * the `$id` the specification publishes — not a copy of it on
+       * fetched from its dated release — not a copy of it on
        * this origin. The store vendors those schemas to validate
        * itself against; it does not claim authorship of them.
        */

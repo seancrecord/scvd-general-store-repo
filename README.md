@@ -736,6 +736,56 @@ endorsements.
   (2026-08-23): cross-checked their own scoreboard against this
   store's corpus.
 
+## Checked by another operator
+
+A directory listing proves somebody indexed this store. These are the
+rows where somebody **ran their own code against ours** and published
+what came back. Every one of them found something against us, and that
+is the reason they are worth citing — a peer check with nothing against
+us in it is a testimonial wearing a lab coat.
+
+The list is derived from the same array that feeds every other record,
+so it cannot drift: `peer_verifications` in
+[`/.well-known/trust.json`](https://scvd.store/.well-known/trust.json),
+and the *"Who has checked us, not just listed us"* section of
+[`/trust`](https://scvd.store/trust).
+
+- **StillOS Notary — the receipt treaty** (2026-09-11 → 09-19). Two
+  operators, ten doors, commit-reveal. Each side froze five doors and
+  published the SHA-256 and byte length of its answer file before
+  either read a chain; both commitments verify by digest and length in
+  both directions. This store built its chain reader from StillOS's
+  written **definition** after declining their code, so their bugs
+  could not become ours. Where the two disagreed, every difference but
+  one resolved to a declared difference of scope — and the exception
+  resolved to a page cap in *their* instrument, which they found and
+  published against their own number. What it found against us: their
+  rail rule overturned one of our five sealed answers; reading their
+  doors exposed a bug invisible against our own; their truncation
+  near-miss established that an identifier must reach a read by
+  reference and never be re-typed; and their log-horizon failure mode
+  named a latent defect in our reader, fixed the same day.
+  [The paper](docs/JOINT_COVERAGE_READ_2026-09-16.md) ·
+  [our half](research/blind-key-2026-09-15/) ·
+  [their trust statement](https://stillosdigitalholdings.com/notary/trust)
+- **Cairn — the cold walk** (2026-08-25). Approached unannounced under
+  terms agreed in advance, bought with their own money, verified
+  everything against things this store does not control. Found that we
+  refused the `X-PAYMENT` header most of the ecosystem speaks; fixed
+  the next day, and they re-ran it with fresh authorizations rather
+  than take the keeper's word.
+- **0200project — a field walk re-derived** (2026-09-06). Took our
+  published ledger to a public Base node using none of our tooling and
+  rebuilt the settlement set from the chain. Zero disagreements on 34
+  settlements — but the thread's first two rounds went against us, and
+  the sharpest line was about our own instrument: our reconciliation's
+  *"gap $0.00"* was this store's tooling agreeing with itself, where a
+  second instrument agreeing with the chain is the different and
+  stronger claim.
+
+None of these is an endorsement and none is an audit. Each says so in
+its own row, and each names what it does not establish.
+
 ## Examples for your framework
 
 `examples/` holds one operational workflow — an agent is about to pay
@@ -779,14 +829,14 @@ behavior remain separate observations.
 | Protocol / channel | SCVD surface | Public discovery and scope |
 | --- | --- | --- |
 | **x402** | [Conformance desk](https://scvd.store/conformance) · [discovery](https://scvd.store/.well-known/x402) | [x402 records](https://scvd.store/trust#protocol-x402), including x402scan, x402-list and the Bazaar. Current quotes declare accepted checkout rails. |
-| **MPP** | [Context Anchor](https://scvd.store/menu/context_anchor) · [developer documentation](https://scvd.store/developers) | Read-only inspection plus live Context Anchor checkout over HTTP using EVM/USDC on Base; [September 17 observation](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json). The [whole-shelf HTTP extension](docs/MPP_WHOLE_STORE_2026-09-18.md) is merged; each enabled door uses its own minimum, while MCP/WebMCP retain x402. Directory submissions and remaining discovery gaps are tracked in [coverage](research/distribution-2026-09-17/PROTOCOL_COVERAGE.md). |
+| **MPP** | [Context Anchor](https://scvd.store/menu/context_anchor) · [developer documentation](https://scvd.store/developers) | Read-only inspection plus live Context Anchor checkout over HTTP using EVM/USDC on Base; [September 17 observation](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json). The [whole-shelf HTTP extension](docs/MPP_WHOLE_STORE_2026-09-18.md) is merged; each enabled door uses its own minimum, while MCP/WebMCP retain x402. [MPPScan listing](https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b) confirmed September 19; registration retained exclusions and parser warnings. Directory submissions and remaining discovery gaps are tracked in [coverage](research/distribution-2026-09-17/PROTOCOL_COVERAGE.md). |
 | **MCP** | [Store MCP](https://scvd.store/mcp) · [verifier MCP](https://scvd.store/mcp/verifier) | [MCP records](https://scvd.store/trust#protocol-mcp), including the published [ChatGPT verifier](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212), [Smithery](https://smithery.ai/servers/seancrecord/scvd-general-store), Glama and other indexes. |
 | **WebMCP** | [Browser registration](https://scvd.store/webmcp.js) | [WebMCP records](https://scvd.store/trust#protocol-webmcp), including WebMCP Directory and Ora. Browser support and origin-trial availability apply. |
 | **ERC-8004** | [Canonical registration and domain acknowledgment](https://scvd.store/.well-known/agent-registration.json) | [Identity records](https://scvd.store/trust#protocol-erc8004): 8004scan, Agentscan, 8004agents and trust8004; QuickNode and BaseScan identity viewers are identified separately. |
 | **A2A** | [Agent card](https://scvd.store/.well-known/agent-card.json) | [A2A records](https://scvd.store/trust#protocol-a2a), including agent-tools.cloud, Agenstry and the [Global A2A Registry listing](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent) (unclaimed). The card declares current capabilities and version. |
 | **OASF** | [Canonical record](https://scvd.store/agents/general-store) · [domain key](https://scvd.store/.well-known/jwks.json) | [OASF scope](https://scvd.store/trust#protocol-oasf). Public record available; Cisco/Anro publication and remote signature/scan status remain unverified. |
-| **UCP** | [Business profile](https://scvd.store/.well-known/ucp) · [catalog, checkout and order](https://scvd.store/ucp) | [UCP scope](https://scvd.store/trust#protocol-ucp): profile and catalog at the pinned 2026-08-25 release, validated against the vendored schemas (`npm run ucp:conformance`). Checkout and order are built and advertised exactly when the deployment's switch is on; the profile's status block says which items and rails. No third-party conformance claim. |
-| **Skills and plugins** | [Skills index](https://scvd.store/.well-known/agent-skills/index.json) · [Agent Plugins package](plugin.json) | [Skill/plugin records](https://scvd.store/trust#protocol-skills). The same skills and MCP assets underpin host-specific packages. Gallery admission is tracked separately. |
+| **UCP** | [Business profile](https://scvd.store/.well-known/ucp) · [catalog, checkout and order](https://scvd.store/ucp) | [UCP scope](https://scvd.store/trust#protocol-ucp): profile and catalog at the pinned 2026-08-25 release, validated against the vendored schemas (`npm run ucp:conformance`). Checkout and order are built and advertised exactly when the deployment's switch is on; the profile's status block says which items and rails. [UCP Checker report](https://ucpchecker.com/check/scvd.store) published September 19 with a Verified discovery label and schema warnings; no paid checkout or Google approval inferred. [Distribution receipts](research/ucp-distribution-2026-09-19/README.md). |
+| **Skills and plugins** | [Skills index](https://scvd.store/.well-known/agent-skills/index.json) · [Agent Plugins package](plugin.json) | [Skill/plugin records](https://scvd.store/trust#protocol-skills). Listed in [HOL’s Awesome AI Plugins catalog](https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations), confirmed September 19. The same skills and MCP assets underpin host-specific packages. Gallery admission is tracked separately. |
 
 
 The September 17 [directory reading and submission package](research/distribution-2026-09-17/README.md)

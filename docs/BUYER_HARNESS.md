@@ -18,6 +18,10 @@ passing journey: a reviewer checks what actually happened against the evidence.
   zero complete journeys out of four; capture and interpretation gaps remain.
   This acquisition predates the schema-6 controller and does not qualify it.
 
+- [Retained receipt controls](../research/receipt-verifier-controls-2026-09-19/REPORT.md):
+  published-verifier checks of real historical and paid certificates, wrong keys,
+  tampering and missing evidence. Controller checks, separate from native journeys.
+
 Historical reports describe the software at their acquisition date. Their
 outcomes remain unchanged after a repair. Public records omit raw local traces;
 those stay in the private acquisition directories and keeper backups.

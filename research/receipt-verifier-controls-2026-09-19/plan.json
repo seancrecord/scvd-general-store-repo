@@ -1,0 +1,41 @@
+{
+  "frozen_at": "2026-09-19T12:50:09.789933+00:00",
+  "source_commit": "905e088798032d89cf291d90d54b750d88ceaad7",
+  "kind": "Retained real artifact controller controls; no native agent, network or new payment",
+  "verifier": {
+    "version": "1.7.0",
+    "publication": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35442741062",
+    "files": {
+      "package.json": "51bc4750f0a9523349a83d321fc7d6ca306c91acf87beac679e5d8dfe5f4745f",
+      "evidence-cli.mjs": "46b8081af27aa120469256e7caf09aeb5d61f346e1299e7040d1d32b1715b3ec",
+      "evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "x402-verify.js": "d516f8d5fed4b2cf330bde7562ef957b88b9884ea3602f069e279f8a59070b9f"
+    }
+  },
+  "sources": [
+    {
+      "name": "purchase",
+      "file": "research/buyer-receipt-acceptance-2026-09-14/evidence.json",
+      "sha256": "aaaa94aa0c5f76ee6ab752cf55552e8e01c19d83e710d5eb55d2b1fe37373135"
+    },
+    {
+      "name": "receipt",
+      "file": "research/verification-2026-09-08/receipt.json",
+      "sha256": "4f1053f002d61660edeb26fab25bfb35e958f0f68dce796704d43be642ec83b3"
+    }
+  ],
+  "case_ids": [
+    "retired-key-original",
+    "retired-key-with-current-key",
+    "retired-key-missing-caller-key",
+    "changed-signed-item-rehashed",
+    "changed-unsigned-display",
+    "paid-receipt-missing-bound-evidence",
+    "paid-receipt-with-retired-key"
+  ],
+  "limits": {
+    "cli_timeout_ms": 10000,
+    "cli_output_bytes": 65536
+  },
+  "native_acceptance": "Not attempted; the prior native retired-key interpretation gap remains open."
+}

@@ -100,6 +100,45 @@ export const SETTLEMENT_RESIDUAL =
  * printed beside it. A caveat beside a verdict gets quoted without the
  * caveat. This makes it structural.
  */
+/**
+ * THE HORIZON RULE (2026-09-19, from StillOS Notary's third failure mode).
+ *
+ * A provider that prunes logs past a horizon answers an EMPTY ARRAY,
+ * not an error, for any range older than it keeps. Nothing throws, so
+ * no retry and no catch can see it, and the result is byte-identical
+ * to a door nobody paid.
+ *
+ * The defence is a canary: ask the same range whether it holds ANY
+ * transfer of this asset. A mainnet USDC contract moves thousands per
+ * hundred blocks, so an empty answer THERE is the provider declining
+ * to serve the range. This function is the decision; the request that
+ * feeds it lives in the CLI.
+ *
+ * `canary` is `null` when no canary was needed — a window that found
+ * transfers is self-evidently being served.
+ */
+export function windowTrustworthy({ logs = [], canary = null } = {}) {
+  if ((logs ?? []).length > 0) {
+    return { trustworthy: true, canary_needed: false };
+  }
+  if (!canary) {
+    return {
+      trustworthy: false,
+      canary_needed: true,
+      because: "the window came back empty and no horizon canary was run, so this instrument cannot tell an unpaid door from a range the provider does not serve",
+    };
+  }
+  if (canary.served === true) {
+    return { trustworthy: true, canary_needed: true, canary };
+  }
+  return {
+    trustworthy: false,
+    canary_needed: true,
+    canary,
+    because: `the window returned no transfers, and a horizon canary over blocks ${canary.probed ?? "unnamed"} found no transfers of this asset of ANY kind${canary.error ? ` (${canary.error})` : ""}. A mainnet USDC contract is never that quiet, so this provider is not serving this range rather than the door being unpaid.`,
+  };
+}
+
 export function railInReach(scheme) {
   return scheme === null || scheme === undefined || scheme === "exact";
 }
