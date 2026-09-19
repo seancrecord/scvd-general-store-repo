@@ -1,0 +1,9 @@
+{
+  "date": "2026-09-18",
+  "from": "sean@recordcreativeco.com",
+  "to": "support@anroagents.com",
+  "subject": "Indexing externally hosted SCVD agent in Anro Directory",
+  "status": "sent",
+  "confirmation": "Gmail Message sent and Sent-message readback",
+  "scope": "Free external-ingestion route for https://scvd.store/.well-known/ai-catalog.json; keep SCVD self-hosted; no paid hosting or listing confirmed"
+}

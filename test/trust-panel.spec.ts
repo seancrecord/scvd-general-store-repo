@@ -120,7 +120,9 @@ describe("the independent records on the panel", () => {
       "x402", "mpp", "mcp", "webmcp", "erc8004", "a2a", "oasf", "ucp", "skills",
     ]));
     expect(groups.find((group) => group.id === "ucp")?.status).toBe("available");
-    expect(groups.find((group) => group.id === "ucp")?.records).toEqual([]);
+    expect(groups.find((group) => group.id === "ucp")?.records).toEqual([
+      { url: "https://ucpchecker.com/check/scvd.store" },
+    ]);
     const urls = groups.flatMap((group) => group.records.map((record) => record.url));
     for (const group of groups) {
       for (const record of group.records) expect(Object.keys(record)).toEqual(["url"]);

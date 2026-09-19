@@ -1,0 +1,6 @@
+{
+  "error": "Agent not found in index",
+  "hint": "This agent may not be indexed yet. The indexer runs every 10 minutes.",
+  "globalId": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432#86957",
+  "onChainUrl": "https://basescan.org/token/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432?a=86957"
+}

@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-19",
+  "destination": "https://hol.org/contact",
+  "replyContact": "sean@recordcreativeco.com",
+  "subject": "ERC-8004 indexing check: SCVD, Base 86957",
+  "topic": "General inquiry",
+  "status": "sent",
+  "confirmation": "Message sent; Thanks for reaching out. We\u2019ll get back to you as soon as we can.",
+  "scope": "Existing ERC-8004 identity ingestion/reindex request; free route only; separate from plugin PR 349"
+}

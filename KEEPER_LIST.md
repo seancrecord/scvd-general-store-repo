@@ -1150,9 +1150,11 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **UCP LIVE — distribution started September 19.** Keeper confirmed launch; live profile read back with catalog, checkout and order. [UCP Checker report](https://ucpchecker.com/check/scvd.store) now published with a Verified discovery label and a root signing-key warning to inspect against the actual spec. Paid evidence currently read covers hello/Base; broader advertised scope is not whole-shelf paid qualification. Submitted [community UCP directory #3](https://github.com/homototus/ucp-directory/issues/3), the free UCPList merchant form and [Awesome UCP #30](https://github.com/Upsonic/awesome-ucp/pull/30); all await review. [Receipts and next routes](research/ucp-distribution-2026-09-19/README.md). [Muse submission](research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press) completed by the keeper September 19; browser confirmed receipt for SCVD x402 Verifier. Review pending; the agent could not read the linked Connector Terms. Existing Google merchant-intake status remains separate. Recurring/monthly fees declined.
+
 - **WAIT — OpenCode ecosystem submissions (September 18).** Native skill load and free preflight passed via keeper-authorized ChatGPT OAuth. [Official PR #49834](https://github.com/anomalyco/opencode/pull/49834), linked to the required [issue #49833](https://github.com/anomalyco/opencode/issues/49833), and [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) are submitted. Community schema validation passed; neither listing is accepted yet. [Native receipt](research/distribution-2026-09-18/opencode-native-execution.json).
 
-- **RULE / WAIT — September 18 continuation.** Current OASF validation passes. [Maintainer confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) the shared testbed is read-only: publishing requires our own federated node. [Prepared scope and planning costs](registry/agntcy/FEDERATION.md); hosting/budget and ongoing operation need a keeper decision. Anro publisher lookup remains empty; indexing email awaits send authorization. Gemini Google authorization reached a retired consumer-tier gate; keeper requested skipping Gemini September 18. Cline sign-in and native execution completed: verification skill loaded and a free preflight returned not_ready / L1. [Evidence and next steps](research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
+- **WAIT — September 18 continuation, reconciled September 19.** Current OASF validation passes. [Maintainer confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) the shared testbed is read-only: publishing requires our own federated node. Recurring-fee hosting/distribution declined by the keeper September 18; [federation research](registry/agntcy/FEDERATION.md) is retained as history, not a purchase decision. Anro publisher lookup remains empty; free external-ingestion email sent September 18 and awaits reply. Gemini Google authorization reached a retired consumer-tier gate; keeper requested skipping Gemini September 18. Cline sign-in and native execution completed: verification skill loaded and a free preflight returned not_ready / L1. [Evidence and next steps](research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
 
 - **LOOK / PRESS — distribution follow-through (2026-09-17).**
   [Live findings and prepared submissions](research/distribution-2026-09-17/README.md):
@@ -1161,11 +1163,10 @@ what you ruled and what is still yours to look at.
   despite correctly parsing the canonical record. AgentERC again did not return the identity September 18; its Base index status
   was five days old while Ethereum was current. Investigate ingestion lag before
   changing canonical metadata; [current readback/contact](research/distribution-2026-09-18/README.md).
-  HOL/AgentRanking reads failed. Cisco search returned no SCVD result; Anro's
+  HOL exact-identity and domain searches returned HTTP 200/zero hits September 18–19 with a working ERC-8004 control; ingestion report sent September 19. AgentERC operator email sent September 18. [Evidence and receipts](research/erc8004-followthrough-2026-09-19/README.md). AgentRanking returned HTTP 522 September 18. Cisco search returned no SCVD result; Anro's
   publisher query returned zero again September 18. Its published external-agent
   route is manifest crawling; SCVD already serves the manifest. Direct OASF
-  upload/admission remains unconfirmed. Continue the existing AGNTCY access request,
-  then sign/publish the corrected record and verify remote discovery. The
+  upload/admission remains unconfirmed. Await Anro’s free-ingestion answer; the shared AGNTCY testbed is read-only and paid hosting is declined. Current-byte signing and remote discovery remain unverified. The
   historical CID does not cover the corrected bytes.
   On the keeper's authorization, Awesome Copilot
   [#3255](https://github.com/github/awesome-copilot/issues/3255) was submitted;
@@ -1182,9 +1183,8 @@ what you ruled and what is still yours to look at.
   HOL's GitHub-backed plugin catalog submission is now
   [PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349),
   submitted September 18 after local catalog validation and existing host-test
-  receipt checks. Review/indexing pending; do not submit the web form again.
-  HOL's ERC-8004 index remains separately unverified; its OpenAPI read returned
-  503 today, while AgentRanking again timed out. Neither failed read proves absence.
+  receipt checks. Merged September 19; source README and plugins.json both confirmed the entry. [Acceptance receipt](research/erc8004-followthrough-2026-09-19/hol-plugin-acceptance.json). Do not resubmit.
+  HOL's ERC-8004 index is separate: September 19 searches found no match and its operator report is sent. The earlier web-reader OpenAPI 503 was superseded by successful direct HTTPS reads. Neither an unavailable read nor these bounded queries prove complete index absence.
   OpenAI skill update DONE by the keeper September 17; upload/update task
   closed. Review/publication status of that update is not independently verified.
   A2A Directory already lists SCVD. The earlier community API attempts returned
@@ -1217,12 +1217,7 @@ what you ruled and what is still yours to look at.
   re-read September 19 after the publication doors deployed (#826): 38 of 38
   paid routes `[x402, mpp]`, same three warnings
   ([receipt](research/distribution-2026-09-19/mppscan-discover.json)).
-  PRESS: register at [www.mppscan.com/register](https://www.mppscan.com/register),
-  Add Server, `https://scvd.store`; the [draft](registry/mppscan-submission.md)
-  says what to expect and what to bring back, and to stop if the page asks
-  for a fee, sign-in or wallet. The checker’s Base-network
-  mislabel is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209)
-  and is theirs to fix; cite it beside any `tempo:8453` in the listing.
+  DONE September 19: [MPPScan registration](https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b) completed without fee, sign-in or wallet. The public listing was opened; 193 of 195 resources registered, two path templates excluded after 404 probes and nonblocking schema/payment warnings retained. [Receipt](research/erc8004-followthrough-2026-09-19/mppscan-registration.json). Investigate those warnings separately; registration is not a paid qualification. The existing [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209) parser report remains open.
   PRESS (optional, goodwill): file the [mppx upstream note](registry/upstream-mppx-x402-resource-url.md)
   on `wevm/mppx` after checking their tracker for a duplicate; nothing here depends on it.
   The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled

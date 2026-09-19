@@ -83,6 +83,27 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://ucpchecker.com/check/scvd.store",
+    registry: "UCP Checker — public profile report",
+    protocols: ["ucp"],
+    confirmed: "2026-09-19",
+    what_it_proves: "That UCP Checker fetched the store's public UCP profile and published a Verified report on September 19, 2026, detecting catalog search/lookup, checkout, order and the custom USDC payment handler. Its report retains schema warnings, including root signing-key placement. This is a dated discovery report, not an endorsement, a paid checkout qualification or Google admission.",
+  },
+  {
+    url: "https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b",
+    registry: "MPPScan — payment API directory",
+    protocols: ["mpp"],
+    confirmed: "2026-09-19",
+    what_it_proves: "That MPPScan accepted the store's public origin and displays SCVD General Store with a resource list linking back to scvd.store. Registration reported 193 of 195 resources accepted, including free resources; two path templates were excluded after 404 probes, and nonblocking schema/payment warnings remained. This is a dated listing record, not proof of complete coverage or correct payment parsing. Not an endorsement and not an audit of purchases or settlement.",
+  },
+  {
+    url: "https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations",
+    registry: "HOL — Awesome AI Plugins community catalog",
+    protocols: ["skills", "mcp"],
+    confirmed: "2026-09-19",
+    what_it_proves: "That HOL accepted SCVD General Store into its community plugin catalog through PR #349. The source README and machine-readable plugins.json both list the repository, its skills and hosted MCP. This establishes catalog admission, not inclusion in HOL's separate ERC-8004 agent index or acceptance by every supported client marketplace. Not an endorsement and not an audit of runtime behavior, purchases or security.",
+  },
+  {
     url: "https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a",
     registry: "A2A Registry — community API register",
     protocols: ["a2a"],
