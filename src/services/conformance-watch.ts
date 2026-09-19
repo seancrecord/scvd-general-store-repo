@@ -7,7 +7,7 @@ import type { ObserverStatus } from "@/lib/observer-control";
 import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
 import { ProbeTargetRefused } from "@/lib/probe-target";
 import { METHOD_UNRESOLVED_CHECK, REFUSED_CHECK } from "@/services/standing-watch";
-import { sweepWatches } from "@/services/watch-sweep";
+import { sweepWatches, type WatchSweepReport } from "@/services/watch-sweep";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
 import { kvGetJson } from "@/lib/kv-retry";
@@ -258,7 +258,7 @@ async function passOnce(
  * walk itself is the store's one shared watch sweep (2026-08-07):
  * this file supplies the shelf, the spacing and the observation.
  */
-export async function sweepConformanceWatches(env: Env): Promise<number> {
+export async function sweepConformanceWatches(env: Env): Promise<WatchSweepReport> {
   return sweepWatches<ConformanceWatchRecord, ConformancePass>({
     kv: env.ORDERS,
     prefix: KV_KEYS.conformanceWatchPrefix,

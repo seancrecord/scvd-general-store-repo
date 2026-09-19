@@ -139,7 +139,15 @@ const KNOWN_UNACKNOWLEDGED = [
   "../src/services/tips.ts",
   "../src/services/train.ts",
   "../src/services/trust-profile.ts",
-  "../src/services/watch-sweep.ts",
+  /*
+   * watch-sweep.ts CAME OFF THIS LIST ON 2026-09-19. The sweep walked
+   * every watch kind under one cap and returned a bare count, so a
+   * cron that listed the first page and swept it reported the same
+   * figure as one that swept the book. sweepWatches now returns a
+   * report — listed, truncated, unreadable, worked — and the cron
+   * files a worker_health alert whenever the walk was capped or a
+   * row could not be read, instead of counting the page as the book.
+   */
 ];
 
 function callSites(source: string): number {

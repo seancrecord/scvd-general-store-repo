@@ -56,36 +56,102 @@ export interface WatchSweepOptions<
 }
 
 /**
+ * WHAT ONE PASS SAW, NOT ONLY WHAT IT DID (2026-09-19, rule 52). The
+ * sweep returned one number, `worked`, and the cron threw it away —
+ * so a pass that observed nothing because nothing was due, one whose
+ * shelf listing hit its cap, one whose every record was unreadable
+ * and one that ran out of budget all read the same from outside, and
+ * only a throw ever alerted. Three paid term services ride this sweep;
+ * a skipped day on any of them becomes a days_unchecked row in a
+ * customer's history, our gap on their record. The count stays as
+ * `worked`; the rest is what the ward heartbeat already says about the
+ * free round and the paid watches never had.
+ */
+export interface WatchSweepReport {
+  /** Records observed and written this pass. */
+  worked: number;
+  /** Keys the shelf walk returned. */
+  listed: number;
+  /** The walk hit scanCap: `listed` is a page, not the shelf (our gap). */
+  truncated: boolean;
+  /** Keys whose record could not be read as one: skipped, not worked (our gap). */
+  unreadable: number;
+  /** Records past ends_at: finished watches, left as they finished. */
+  ended: number;
+  /** Records observed too recently under minSpacingMs: the normal case between ticks. */
+  spaced: number;
+  /** The budget was spent with due records still unread; they wait for the next tick. */
+  budget_stopped: boolean;
+}
+
+/**
  * One pass over the shelf: bulk-read the lot, skip what has ended,
  * skip what was observed too recently, observe the rest, and write
- * back only those. Returns how many records were actually worked.
+ * back only those. Returns what it worked and what it could not see.
  */
 export async function sweepWatches<
   T extends { ends_at: string },
   E extends { at: string },
->(options: WatchSweepOptions<T, E>): Promise<number> {
+>(options: WatchSweepOptions<T, E>): Promise<WatchSweepReport> {
   const listed = await listKeys(options.kv, {
     prefix: options.prefix,
     cap: options.scanCap,
   });
   const rows = await bulkGetJson<T>(options.kv, listed.names);
   const now = options.now ?? Date.now();
-  let worked = 0;
+  const report: WatchSweepReport = {
+    worked: 0, listed: listed.names.length, truncated: listed.truncated,
+    unreadable: 0, ended: 0, spaced: 0, budget_stopped: false,
+  };
   for (const name of listed.names) {
-    if (options.budget !== undefined && worked >= options.budget) break;
+    if (options.budget !== undefined && report.worked >= options.budget) {
+      report.budget_stopped = true;
+      break;
+    }
     const record = rows.get(name) ?? null;
-    if (!record || now > Date.parse(record.ends_at)) {
+    if (!record) {
+      // Not ended, not spaced: a key the shelf lists and the read could
+      // not turn into a record. Counted on its own line so it can never
+      // hide behind "nothing was due".
+      report.unreadable += 1;
+      continue;
+    }
+    if (now > Date.parse(record.ends_at)) {
+      report.ended += 1;
       continue;
     }
     const entries = options.entriesOf(record);
     const last = entries[entries.length - 1];
     if (last && now - Date.parse(last.at) < options.minSpacingMs) {
+      report.spaced += 1;
       continue;
     }
     entries.push(await options.observe(record));
     if (options.publish) await options.publish(record);
     else await options.kv.put(name, JSON.stringify(record));
-    worked += 1;
+    report.worked += 1;
   }
-  return worked;
+  return report;
+}
+
+/**
+ * The gaps a pass must not keep to itself, as the alert the cron
+ * sends — or null when the pass saw the whole shelf. A truncated walk
+ * and an unreadable record are the store's gaps and page; a spent
+ * budget and a spacing skip are the design working and do not. The
+ * key dedupes by kind and gap, the way the ward heartbeat's does, so
+ * a standing fault is one notice rather than one an hour.
+ */
+export function watchSweepGaps(
+  kind: string,
+  report: WatchSweepReport,
+): { key: string; detail: string } | null {
+  const gaps: string[] = [];
+  if (report.truncated) gaps.push(`the shelf walk hit its cap at ${report.listed} keys, so records past it were never read`);
+  if (report.unreadable > 0) gaps.push(`${report.unreadable} of ${report.listed} listed records could not be read and were skipped`);
+  if (gaps.length === 0) return null;
+  return {
+    key: `watch-sweep-${kind}-${report.truncated ? "truncated" : ""}${report.unreadable > 0 ? "unreadable" : ""}`,
+    detail: `The ${kind} sweep could not see its whole shelf: ${gaps.join("; ")}. ${report.worked} worked, ${report.ended} ended, ${report.spaced} not yet due. A watch this pass never read gets no entry today, and that becomes a days_unchecked row on a customer's history.`,
+  };
 }

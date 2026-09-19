@@ -7,7 +7,7 @@ import { signMessage } from "@/lib/signing";
 import { usdcFromUnits } from "@/lib/base-rpc";
 import { BASE_RAIL, EVM_BLOCKS_PER_HOUR, railOfCaip2, type RailUnit, type StatementRail } from "@/lib/statement-rails";
 import { ladderRung } from "@/services/menu-markdown";
-import { sweepWatches } from "@/services/watch-sweep";
+import { sweepWatches, type WatchSweepReport } from "@/services/watch-sweep";
 import { newEntryId } from "@/lib/ids";
 import type { Env } from "@/types";
 
@@ -312,7 +312,7 @@ export async function passOnce(
 }
 
 /** The hourly sweep: every open term whose last pass is old enough, within the tick's budget. */
-export async function sweepOperatorStatements(env: Env, now: number = Date.now()): Promise<number> {
+export async function sweepOperatorStatements(env: Env, now: number = Date.now()): Promise<WatchSweepReport> {
   return sweepWatches<OperatorStatementRecord, OperatorStatementPass>({
     kv: env.ORDERS,
     prefix: KV_KEYS.operatorStatementPrefix,

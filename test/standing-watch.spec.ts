@@ -107,7 +107,7 @@ describe("the sweep", () => {
     const { record } = await startWatch(testEnv, "https://watched.example/api/buy/x");
     vi.stubGlobal("fetch", async () => watch402(GOOD_CHALLENGE));
     const probed = await sweepStandingWatches(testEnv, { burstGapMs: 0 });
-    expect(probed).toBeGreaterThanOrEqual(1);
+    expect(probed.worked).toBeGreaterThanOrEqual(1);
 
     const stored = await testEnv.ORDERS.get<StandingWatchRecord>(
       KV_KEYS.standingWatch(record.watch_id),
