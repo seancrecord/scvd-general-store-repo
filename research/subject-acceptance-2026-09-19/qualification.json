@@ -1,0 +1,203 @@
+{
+  "capability": {
+    "schema_version": 2,
+    "plan_sha256": "89e4f9b9a3634a9c307c72780992eda43f947a35af68dc9b166027472e6dc378",
+    "instrument_sha256": "28594837b34d06536d8ddac2291192e926d7f7aebd22252e4ddbe4db59c05695",
+    "host_context_sha256": "a5dc065f3d41f5d9e1f1a383a057434ebe229a67ac6da4c3747f856c504c9134",
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "probed_at": "2026-09-19T12:26:07.949Z",
+    "hosts": {
+      "codex": {
+        "state": "fail",
+        "retention": "pass",
+        "local_check": "fail",
+        "denied": [],
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh"
+        ]
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [
+          "curl"
+        ],
+        "executed": [
+          "node",
+          "curl",
+          "node",
+          "node",
+          "node",
+          "node"
+        ]
+      }
+    },
+    "limits": [
+      "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+    ],
+    "recipient": {
+      "state": "pass",
+      "trace_sha256": "6cdb9264ebcba7dbcf5af2ecb72efdb5a1ebf96765f65e6e55258c6b7e5d30b9",
+      "limits": [
+        "Local retention and cryptography under offline adapter settings; not proof of all possible sandbox escapes or a buyer journey."
+      ]
+    }
+  },
+  "host_versions": {
+    "codex": "codex-cli 0.155.0-alpha.9",
+    "claude": "2.1.274 (Claude Code)"
+  },
+  "probes": {
+    "codex": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-19T12:26:08.108Z",
+        "ended_at": "2026-09-19T12:27:24.747Z",
+        "wall_elapsed_ms": 76639,
+        "monotonic_elapsed_ms": 76639.02816700001,
+        "max_callback_gap_ms": 1002.6680409999972,
+        "interruption": null
+      },
+      "state": "fail",
+      "retention": {
+        "state": "pass",
+        "reason": "Retained bytes match the runner's independent fetch.",
+        "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+        "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "local_check": {
+        "state": "fail",
+        "reason": "Reported signature results disagree with the runner's vectors.",
+        "expected": {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        "reported": {
+          "a": false,
+          "b": false,
+          "c": false,
+          "d": false
+        },
+        "report_matches_retained": true
+      },
+      "run_sha256": "cb0459199044ea0e4ec968c77cf8513a61c5960bcb2630a80f623b5f5422cd81",
+      "trace_sha256": "41e98c7503702d2d94c743c54b44b8cb046608f43e5ea5b1552f4958a71ba760"
+    },
+    "claude": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-19T12:27:24.812Z",
+        "ended_at": "2026-09-19T12:27:56.431Z",
+        "wall_elapsed_ms": 31619,
+        "monotonic_elapsed_ms": 31619.160166,
+        "max_callback_gap_ms": 1001.4119999999966,
+        "interruption": null
+      },
+      "state": "pass",
+      "retention": {
+        "state": "pass",
+        "reason": "Retained bytes match the runner's independent fetch.",
+        "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+        "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "local_check": {
+        "state": "pass",
+        "reason": "Reported signature results match the runner's vectors and a local command completed.",
+        "expected": {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        "reported": {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        "report_matches_retained": true
+      },
+      "run_sha256": "ce2370d01ea712fe7cc25d44e62ebe8b5ee86ab6d8106a5975bfad0b4caffe77",
+      "trace_sha256": "a9f598ae22e50dfa06879474d8c668b45fd16db512a36ef929d6958f7a9233c1"
+    },
+    "recipient": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-19T12:27:56.437Z",
+        "ended_at": "2026-09-19T12:29:40.160Z",
+        "wall_elapsed_ms": 103723,
+        "monotonic_elapsed_ms": 103722.8915,
+        "max_callback_gap_ms": 1003.2280409999948,
+        "interruption": null
+      },
+      "state": "pass",
+      "retention": {
+        "state": "pass",
+        "reason": "Retained bytes match the runner's independent fetch.",
+        "reference_sha256": "0cea2ea966cbb501ce92550431dab7a7f8284ced33f8f3760ca8b7955f3ba4d4",
+        "retained_sha256": "0cea2ea966cbb501ce92550431dab7a7f8284ced33f8f3760ca8b7955f3ba4d4"
+      },
+      "local_check": {
+        "state": "pass",
+        "reason": "Reported signature results match the runner's vectors and a local command completed.",
+        "expected": {
+          "a": false,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        "reported": {
+          "a": false,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        "report_matches_retained": true
+      },
+      "run_sha256": "5ce0541fe08bc02d46ce2c5a5c15243d040acd70d752be5c820c0d9711198c4c",
+      "trace_sha256": "6cdb9264ebcba7dbcf5af2ecb72efdb5a1ebf96765f65e6e55258c6b7e5d30b9"
+    }
+  }
+}

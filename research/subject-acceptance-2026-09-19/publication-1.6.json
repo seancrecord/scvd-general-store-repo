@@ -1,0 +1,29 @@
+{
+  "version": "1.6.0",
+  "workflow": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35442689679",
+  "all_packed_files_match_reviewed_source": true,
+  "matched_files": 24,
+  "dist": {
+    "shasum": "4237f2b6a43bfc278c9209a3920c591dd1465b4c",
+    "tarball": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.6.0.tgz",
+    "fileCount": 24,
+    "integrity": "sha512-lpX2taV+yEXUsNR3NiG9apKxcJkbxAHG6VqaSk00mspwxoLJICT8SbfszD7eDXJ1v07EE/qnuUTMxCwwpHi+nQ==",
+    "signatures": [
+      {
+        "sig": "MEYCIQDTrv0ty9VsmJZOri706KscjEc+L3swfSxUQ3RqSBoeugIhANYPtov+INkY+pOquUIz4BTktMOzL/GGHv1pBPGOeTSv",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEQCIE3Dzru2KZgODM2oOGlHcWS+MDyqWlT7euFJ85zSNwiGAiA6R04FLa8itNZgxAUlx1obQeOAYFnvAvsJnAbOk4iBiA=="
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.6.0",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 295439
+  }
+}

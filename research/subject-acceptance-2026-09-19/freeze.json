@@ -1,0 +1,17 @@
+{
+  "frozen_at": "2026-09-19T12:26:07.635199+00:00",
+  "source_commit": "905e088798032d89cf291d90d54b750d88ceaad7",
+  "plan_sha256": "89e4f9b9a3634a9c307c72780992eda43f947a35af68dc9b166027472e6dc378",
+  "publication_sha256": "b881f1a5e3c4cc8ba45189eb9472795e38f94f873c55290db3c41269fec11b25",
+  "controller_tests": {
+    "passed": 236,
+    "failed": 0
+  },
+  "verifier_tests": {
+    "passed": 164,
+    "failed": 0
+  },
+  "awake_policy": "caffeinate -i wraps each native run; existing interruption detector and caps unchanged",
+  "scope": "Combined merged retention guidance, signed-scope example and pinned CLI; directed zero-spend diagnostics; no claim isolating one repair or proving unbranded discovery.",
+  "native_attempt_policy": "Fresh qualification, four planned buyers, at most one recipient per eligible completed buyer. No retries or budget/freshness expansion."
+}

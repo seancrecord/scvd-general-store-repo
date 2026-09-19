@@ -1,0 +1,416 @@
+{
+  "claude-directed-r1": {
+    "schema_version": 6,
+    "cell": {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+    "started_at": "2026-09-19T12:30:12.808Z",
+    "ended_at": "2026-09-19T12:31:06.654Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-19T12:30:12.808Z",
+      "ended_at": "2026-09-19T12:31:06.654Z",
+      "wall_elapsed_ms": 53846,
+      "monotonic_elapsed_ms": 53845.96875,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "trace_sha256": "ddc167838f7aafbf2bf0d8cc6f5ec612f12c46a445fb6b8924523f6fb840d357",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 38619,
+      "files": [
+        {
+          "file": "evidence/corpus_host.json",
+          "bytes": 9707,
+          "sha256": "33e97b9e6514964059d554ea1df57199c3db79f51c7678f9db44c1484ca8b30e"
+        },
+        {
+          "file": "evidence/corpus_headers.txt",
+          "bytes": 1135,
+          "sha256": "467a83d9f306a43a79ed9837ceb6f44d9f2bf82fb4c74d289ad9f7068a910e94"
+        },
+        {
+          "file": "evidence/SKILL.md",
+          "bytes": 9908,
+          "sha256": "39ad249e22e1a043dab58d487feccab82b9d927f23a4777bd8031ffe5ac03e8f"
+        },
+        {
+          "file": "evidence/preflight_headers.txt",
+          "bytes": 1081,
+          "sha256": "b01c4faf79f77708948c67af3c6e2569adbf85dbada0512c45b9b8faf1033a22"
+        },
+        {
+          "file": "evidence/skill_headers.txt",
+          "bytes": 897,
+          "sha256": "f98cf6c83659544d8a514aca987fb0dbfd91a960278c5251d3df0109093c2808"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 15891,
+          "sha256": "619653e2b83d5f71fc16712f5f0c467f0cba1dac8154a4648dc44d18b402ffc2"
+        }
+      ],
+      "issues": []
+    },
+    "isolation": {
+      "fresh_directory": true,
+      "config_isolated": true,
+      "no_session_resume": true,
+      "review_required": true
+    },
+    "run_reference": {
+      "file": "run.json",
+      "sha256": "6630d587bd4deb56082fc972ea46227d24ea0e7d99e97ec61870f6abbd959b5b"
+    },
+    "counts": {
+      "tool_calls": 8,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 18,
+        "cache_creation_input_tokens": 15842,
+        "cache_read_input_tokens": 154557,
+        "output_tokens": 3708,
+        "output_tokens_details": {
+          "thinking_tokens": 702
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15842,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1374,
+            "cache_read_input_tokens": 25465,
+            "cache_creation_input_tokens": 607,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 607
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ]
+    },
+    "recipient": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-19T12:32:50.825Z",
+        "ended_at": "2026-09-19T12:33:47.912Z",
+        "wall_elapsed_ms": 57087,
+        "monotonic_elapsed_ms": 57086.716791,
+        "max_callback_gap_ms": 1002,
+        "interruption": null
+      },
+      "trace_sha256": "25d614f7b20f5d2d55f7ab88f447231161ba06e6811df7ebe0ec66d00db3e8fd",
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "thread.started"
+          },
+          {
+            "line": 2,
+            "type": "item.completed"
+          },
+          {
+            "line": 3,
+            "type": "turn.started"
+          },
+          {
+            "line": 4,
+            "type": "item.completed"
+          },
+          {
+            "line": 5,
+            "type": "item.started"
+          },
+          {
+            "line": 6,
+            "type": "item.completed"
+          },
+          {
+            "line": 7,
+            "type": "item.started"
+          },
+          {
+            "line": 8,
+            "type": "item.completed"
+          },
+          {
+            "line": 9,
+            "type": "item.completed"
+          },
+          {
+            "line": 10,
+            "type": "item.started"
+          },
+          {
+            "line": 11,
+            "type": "item.completed"
+          },
+          {
+            "line": 12,
+            "type": "item.started"
+          },
+          {
+            "line": 13,
+            "type": "item.completed"
+          },
+          {
+            "line": 14,
+            "type": "item.completed"
+          },
+          {
+            "line": 15,
+            "type": "item.started"
+          },
+          {
+            "line": 16,
+            "type": "item.completed"
+          },
+          {
+            "line": 17,
+            "type": "item.completed"
+          },
+          {
+            "line": 18,
+            "type": "turn.completed"
+          }
+        ],
+        "tools": [
+          {
+            "line": 6,
+            "type": "command_execution"
+          },
+          {
+            "line": 8,
+            "type": "command_execution"
+          },
+          {
+            "line": 11,
+            "type": "command_execution"
+          },
+          {
+            "line": 13,
+            "type": "command_execution"
+          },
+          {
+            "line": 16,
+            "type": "command_execution"
+          }
+        ],
+        "tool_calls": 5,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 134503,
+          "cached_input_tokens": 104960,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2749,
+          "reasoning_output_tokens": 920
+        },
+        "resolved_models": [],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "input_manifest_sha256": "1806b4e42ce40b80d2bb420544693acecbf060b4f1c58991e190197705c291aa",
+      "source_run_sha256": "6630d587bd4deb56082fc972ea46227d24ea0e7d99e97ec61870f6abbd959b5b",
+      "references": [
+        {
+          "file": "recipient/run.json",
+          "sha256": "a39214a7b0b36ef006d61f53c2338ace2596859fa77785ef468979195626b173"
+        },
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "25d614f7b20f5d2d55f7ab88f447231161ba06e6811df7ebe0ec66d00db3e8fd"
+        },
+        {
+          "file": "recipient/inputs/input-manifest.json",
+          "sha256": "1806b4e42ce40b80d2bb420544693acecbf060b4f1c58991e190197705c291aa"
+        }
+      ]
+    }
+  },
+  "claude-directed-r2": {
+    "schema_version": 6,
+    "cell": {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+    "started_at": "2026-09-19T12:31:06.663Z",
+    "ended_at": "2026-09-19T12:32:18.838Z",
+    "runtime": {
+      "state": "failed",
+      "exit_code": 143,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": "tool_calls",
+      "stop_requested": {
+        "at": "2026-09-19T12:32:18.665Z",
+        "close_observed": false,
+        "signal_requested": true,
+        "wall_elapsed_ms": 72002,
+        "monotonic_elapsed_ms": 72002.195458
+      }
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-19T12:31:06.663Z",
+      "ended_at": "2026-09-19T12:32:18.838Z",
+      "wall_elapsed_ms": 72175,
+      "monotonic_elapsed_ms": 72176.003791,
+      "max_callback_gap_ms": 1001.3030830000062,
+      "interruption": null
+    },
+    "trace_sha256": "e84c7b5157c60d2b8ec65efc31d758282492b555e21560c9a7004fda4608d74c",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 3066829,
+      "files": [
+        {
+          "file": "evidence/corpus_7.json",
+          "bytes": 3026210,
+          "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+        },
+        {
+          "file": "evidence/corpus_host.json",
+          "bytes": 9707,
+          "sha256": "932783d02f12e0261eea161e29f1e7c1f3642c4ebff8e25a0df0434a991a67cf"
+        },
+        {
+          "file": "evidence/SKILL.md",
+          "bytes": 9908,
+          "sha256": "39ad249e22e1a043dab58d487feccab82b9d927f23a4777bd8031ffe5ac03e8f"
+        },
+        {
+          "file": "evidence/preflight_headers.txt",
+          "bytes": 1077,
+          "sha256": "32e356ae812d43c300bc1ca10c3cfdfca408160ecc1fca5aecf09ea1f4a5785c"
+        },
+        {
+          "file": "evidence/skill_headers.txt",
+          "bytes": 897,
+          "sha256": "2f8eebcc6bde8ca9e56e14675f39e13a1776f732523914c418778a279feb745f"
+        },
+        {
+          "file": "evidence/issuer-key.json",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 15891,
+          "sha256": "b9ae6f2e51d79268a3b46a3a999dc0bd20aea6e315978b8e44867193b1b47936"
+        }
+      ],
+      "issues": []
+    },
+    "isolation": {
+      "fresh_directory": true,
+      "config_isolated": true,
+      "no_session_resume": true,
+      "review_required": true
+    },
+    "run_reference": {
+      "file": "run.json",
+      "sha256": "41bbfde8c8941528e64af64234fc9db26629187fab8c0b58cf322746f628b2f0"
+    },
+    "counts": {
+      "tool_calls": 21,
+      "malformed_lines": 0,
+      "usage": null,
+      "resolved_models": [
+        "claude-sonnet-5"
+      ]
+    }
+  },
+  "codex-directed-r1": {
+    "schema_version": 6,
+    "cell": {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+    "runtime": {
+      "state": "capability_unqualified",
+      "reason": "Host capability probe state: fail; no buyer cell launched."
+    },
+    "run_reference": {
+      "file": "run.json",
+      "sha256": "e8e0e0bbf732f30921e8850ac6e92159005af8ce945095da011dad9976090413"
+    }
+  },
+  "codex-directed-r2": {
+    "schema_version": 6,
+    "cell": {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+    "runtime": {
+      "state": "capability_unqualified",
+      "reason": "Host capability probe state: fail; no buyer cell launched."
+    },
+    "run_reference": {
+      "file": "run.json",
+      "sha256": "33d936568ea50dc69beb412caf4584f53b3df7ce2fa6da4e308d5a80cb043096"
+    }
+  }
+}

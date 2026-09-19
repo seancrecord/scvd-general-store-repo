@@ -83,3 +83,5 @@ September 10 package releases are also documented in
 
 
 September 17 package milestone: [verified release record](research/package-skill-release-2026-09-17/README.md).
+
+September 19 verifier releases: [1.6.0 and 1.7.0 publication, registry file checks and provenance](research/subject-acceptance-2026-09-19/REPORT.md#releases-verified). The separate directed cohort did not establish a complete buyer journey.

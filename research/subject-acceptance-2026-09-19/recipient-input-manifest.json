@@ -1,0 +1,115 @@
+{
+  "protocol_sha256": "c20593a21a986497d68a5cc2f6b8474424f7c67633648fb76d22dcca03ac9a6b",
+  "plan_content_sha256": "df3528035c04437a30f9a7bcb917aea3d33ecc8720b3bfda6ef2136d4da09b44",
+  "verifier": {
+    "name": "x402-verify",
+    "version": "1.7.0",
+    "files": {
+      "evidence-cli.mjs": "46b8081af27aa120469256e7caf09aeb5d61f346e1299e7040d1d32b1715b3ec",
+      "evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "x402-verify.js": "d516f8d5fed4b2cf330bde7562ef957b88b9884ea3602f069e279f8a59070b9f",
+      "package.json": "51bc4750f0a9523349a83d321fc7d6ca306c91acf87beac679e5d8dfe5f4745f"
+    }
+  },
+  "schema_version": 1,
+  "scope": "buyer_report",
+  "citation_policy": "unclassified",
+  "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+  "run_sha256": "6630d587bd4deb56082fc972ea46227d24ea0e7d99e97ec61870f6abbd959b5b",
+  "trace_sha256": "ddc167838f7aafbf2bf0d8cc6f5ec612f12c46a445fb6b8924523f6fb840d357",
+  "selection_sha256": "caa77b507cc43eab3cae40d2faba03c348afd2f8dd830cfb2e2e1a8016c5aed1",
+  "capture_state": "complete",
+  "capture_issues": [],
+  "files": [
+    {
+      "source": "evidence/corpus_host.json",
+      "sha256": "33e97b9e6514964059d554ea1df57199c3db79f51c7678f9db44c1484ca8b30e",
+      "bytes": 9707,
+      "retained": true,
+      "supplied": true,
+      "cited_in_report": null,
+      "declared_role": "other",
+      "destination": "artifacts/0-corpus_host.json"
+    },
+    {
+      "source": "evidence/corpus_headers.txt",
+      "sha256": "467a83d9f306a43a79ed9837ceb6f44d9f2bf82fb4c74d289ad9f7068a910e94",
+      "bytes": 1135,
+      "retained": true,
+      "supplied": true,
+      "cited_in_report": null,
+      "declared_role": "other",
+      "destination": "artifacts/1-corpus_headers.txt"
+    },
+    {
+      "source": "evidence/SKILL.md",
+      "sha256": "39ad249e22e1a043dab58d487feccab82b9d927f23a4777bd8031ffe5ac03e8f",
+      "bytes": 9908,
+      "retained": true,
+      "supplied": true,
+      "cited_in_report": null,
+      "declared_role": "other",
+      "destination": "artifacts/2-SKILL.md"
+    },
+    {
+      "source": "evidence/preflight_headers.txt",
+      "sha256": "b01c4faf79f77708948c67af3c6e2569adbf85dbada0512c45b9b8faf1033a22",
+      "bytes": 1081,
+      "retained": true,
+      "supplied": true,
+      "cited_in_report": null,
+      "declared_role": "other",
+      "destination": "artifacts/3-preflight_headers.txt"
+    },
+    {
+      "source": "evidence/skill_headers.txt",
+      "sha256": "f98cf6c83659544d8a514aca987fb0dbfd91a960278c5251d3df0109093c2808",
+      "bytes": 897,
+      "retained": true,
+      "supplied": true,
+      "cited_in_report": null,
+      "declared_role": "other",
+      "destination": "artifacts/4-skill_headers.txt"
+    },
+    {
+      "source": "evidence/preflight.json",
+      "sha256": "619653e2b83d5f71fc16712f5f0c467f0cba1dac8154a4648dc44d18b402ffc2",
+      "bytes": 15891,
+      "retained": true,
+      "supplied": true,
+      "cited_in_report": null,
+      "declared_role": "other",
+      "destination": "artifacts/5-preflight.json"
+    }
+  ],
+  "buyer_report": {
+    "file": "buyer-handoff.md",
+    "sha256": "5dae73bc34837245c89b6338d68d475c96c8179091ed5e91a19b1ca28e2aa910",
+    "source": "Verbatim final buyer text from the hash-checked host trace."
+  },
+  "machinery": [
+    {
+      "file": "evidence-cli.mjs",
+      "sha256": "46b8081af27aa120469256e7caf09aeb5d61f346e1299e7040d1d32b1715b3ec",
+      "source": "Public verifier supplied by the reviewer, not a buyer-exported artifact."
+    },
+    {
+      "file": "evidence-bundle.js",
+      "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+      "source": "Public verifier supplied by the reviewer, not a buyer-exported artifact."
+    },
+    {
+      "file": "x402-verify.js",
+      "sha256": "d516f8d5fed4b2cf330bde7562ef957b88b9884ea3602f069e279f8a59070b9f",
+      "source": "Public verifier supplied by the reviewer, not a buyer-exported artifact."
+    },
+    {
+      "file": "package.json",
+      "sha256": "51bc4750f0a9523349a83d321fc7d6ca306c91acf87beac679e5d8dfe5f4745f",
+      "source": "Public verifier supplied by the reviewer, not a buyer-exported artifact."
+    }
+  ],
+  "preparer_sha256": "c49e201051eb0b50f3f77671208b4527463a0b3aa3800fb85e42963eb565f693",
+  "limit": "The inventory verifies capture bytes, not signatures. Declared roles and citation choices are reviewer labels; independently check them against the report and contents. One signed artifact does not authenticate other retained history. Retained but omitted files are unavailable to this recipient, not missing from the buyer capture.",
+  "prompt_sha256": "bb8c64fabc33bbd858ff59ab47cd51d780a84212e133a0810c7076791cbe8369"
+}

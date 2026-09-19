@@ -94,6 +94,7 @@ repair annotations; do not tally those paragraphs as current status.
 
 | Run | Evidence and limits |
 |---|---|
+| Published verifier and directed cohort, September 19 | [Report and pickup](research/subject-acceptance-2026-09-19/REPORT.md). Verifier 1.6/1.7 registry installations verified. Schema-6 native qualification excluded the Codex buyer adapter; the Claude runs produced an interpretation failure and a capped partial success. The eligible recipient had no signed original. No complete journey passed; historical cohorts unchanged. |
 | Pinned recipient CLI repair, September 18 | [Report](research/recipient-cli-handoff-2026-09-18/REPORT.md). New schema-6 plans can supply hash-pinned CLI and package metadata with a neutral invocation template. Local executable and tamper controls pass; registry publication and a fresh qualified native cohort remain separate gates. |
 | Deployment boundary, September 11–12 | [Report](research/deployment-boundary-2026-09-11/REPORT.md) and [benchmark](research/BUYER_DEPLOYMENT_BOUNDARY.md). Recorded Base purchases and an isolated human-order control; identical deployed module bytes do not prove changed-code/schema compatibility. The report does not close earlier findings. |
 | Four-wave buyer run, September 12 | [Report](research/buyer-waves-2026-09-12/REPORT.md) and [run order](research/BUYER_RUN_ORDER.md). Wave 1 partial; waves 2–4 not executed in that run. Cold-to-quote success does not establish purchase or purchased-artifact verification. |
