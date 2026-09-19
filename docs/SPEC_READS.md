@@ -75,6 +75,23 @@ scheme read as no auth mode, left as written per `PAYMENT_RAILS.md`).
 [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209), the
 checker relabelling Base as `tempo:8453`, is still open and is a display
 defect on their side, not a reason to change the challenge.
+
+## 2026-09-19 — UCP discovery schema URLs
+
+A live read of [SCVD's profile](https://scvd.store/.well-known/ucp)
+found four advertised official schema links returning HTTP 404: catalog
+search, catalog lookup, checkout and order under `https://ucp.dev/schemas/`.
+The matching paths under `https://ucp.dev/2026-08-25/schemas/` each returned
+HTTP 200 JSON. Read the official
+[checkout schema](https://ucp.dev/2026-08-25/schemas/shopping/checkout.json)
+and [discovery overview](https://ucp.dev/specification/overview/).
+The served checkout document's `$id` and references include that release.
+
+The advertised base now derives from `UCP_VERSION`; vendored validation
+schemas and payment behavior are unchanged. Profile and launch regressions
+failed against the unversioned source before the fix. This verifies retrieval
+URLs at this date, not external platform acceptance or paid checkout coverage.
+
 ## 2026-09-18 — Maintainer resolves OASF admission route
 
 [AGNTCY maintainer reply](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) confirms the shared testbed is read-only and publication requires our own federated node. [Preparation and acceptance sequence](../registry/agntcy/FEDERATION.md) follows the production, federation and staging onboarding guides. No hosting is provisioned; the later planning comparison prices an unqualified single-VM candidate separately from the AWS control-plane floor. Individual OIDC writer access is no longer a pending route.
@@ -2302,3 +2319,14 @@ Checked the current [UCP profile structure](https://ucp.dev/specification/overvi
 ### 2026-09-19 — Muse form and confirmed submission
 
 Read Muse's authenticated three-step form: it accepts **Existing MCP**, a hosted endpoint, public documentation, access requirements and optional authentication methods. Prepared the existing free verifier with no authentication or payments, and verified its five tools through a fresh tools/list. Policy/support links and the public skill were reachable. The required [Connector Terms](https://muse.ai/platform/terms) were unavailable to both browser and web-reader, so the agent did not accept them. Keeper submitted personally; the browser then confirmed receipt naming SCVD x402 Verifier. No public listing ID, approval or native execution result. [Receipt](../research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press).
+
+
+### 2026-09-19 — UCP Merchant Directory submission and schema retrieval
+
+Read [awesomeucp/merchants CONTRIBUTING](https://github.com/awesomeucp/merchants/blob/main/CONTRIBUTING.md), its types, generator and PR template. It accepts operator submissions through merchant JSON plus PR, with `verified` and `featured` false. Its older directory data model needs an explicit mapping from current capability/service arrays; that mapping does not add protocol compatibility. Build and browser validation are recorded in the [submission receipt](../research/ucp-distribution-2026-09-19/README.md). Existing lint failures were disclosed.
+
+The [UCPStore homepage](https://www.ucpstore.dev/) is a coming-soon integration service with a waitlist; no external listing submission was established. No account, waitlist or paid tier selected.
+
+Fresh reads of SCVD's advertised official schema URLs returned four 404s; their version-pinned counterparts all returned 200 JSON. [Saved HTTP reading](../research/ucp-distribution-2026-09-19/schema-links.json). Read UCP's [dated checkout schema](https://ucp.dev/2026-08-25/schemas/shopping/checkout.json) and [overview](https://ucp.dev/specification/overview/). This is URL retrieval evidence, not paid qualification or acceptance by an agent platform.
+
+Re-read Google's [Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center): approved free-listing products, per-product checkout eligibility and exclusions remain prerequisites. SCVD's admission and custom payment-handler support were not established; its existing intake stays separate.
