@@ -181,6 +181,8 @@ async function callVerifierTool(c: Context<HonoEnv>, name: string, args: Record<
       },
       ...(isRecord(ladder) ? {
         the_rest_of_the_ladder: {
+          current_reading: ladder["current_reading"],
+          free_signed_history: ladder["free_signed_history"],
           climbed: ladder["climbed"],
           unclimbed: Array.isArray(ladder["unclimbed"])
             ? ladder["unclimbed"].filter(isRecord).map((rung) => ({ rung: rung["rung"], what_it_is: rung["what_it_is"] }))

@@ -28,7 +28,11 @@ it.each(["not_ready", "unreachable"])("keeps %s evidence and its limits without 
   for (const field of ["verdict", "reached_level", "reached_level_meaning", "checks", "checks_vector", "advisories", "what_this_cannot_tell_you", "our_conflict_of_interest", "single_probe_note", "rate_limit"]) {
     expect(reading[field], field).toEqual(original[field]);
   }
-  const ladder = reading["the_rest_of_the_ladder"] as { unclimbed: { rung: string; what_it_is: string }[]; already_free: string };
+  const ladder = reading["the_rest_of_the_ladder"] as { current_reading: unknown; free_signed_history: unknown; unclimbed: { rung: string; what_it_is: string }[]; already_free: string };
+  const originalLadder = original["the_rest_of_the_ladder"] as Record<string, unknown>;
+  expect.soft(ladder.current_reading).toEqual(originalLadder["current_reading"]);
+  expect.soft(ladder.free_signed_history).toEqual(originalLadder["free_signed_history"]);
+  expect.soft(ladder.free_signed_history).toMatchObject({ requires_spend_authorization: false });
   expect(ladder.unclimbed.map(row => row.rung)).toEqual(["L3c", "L3d", "L4-L6"]);
   expect(ladder.unclimbed.every(row => row.what_it_is.length > 0)).toBe(true);
   expect(ladder.already_free).toContain("/api/conformance/v1");
