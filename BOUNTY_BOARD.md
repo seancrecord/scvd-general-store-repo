@@ -374,3 +374,109 @@ cannot walk, from buyers who are not us — which is itself the
 stronger evidence class. Ten dollars a week buys what no competitor
 has at any price: the map of which doors take money, drawn by
 strangers' money, verified on chain, published with its method.
+
+## The board went quiet, and why (2026-09-19)
+
+The keeper, reading the desk: "the automated bounties dont seem to be
+updating and they also really arent very relevant to the work we do, we
+need more cycles and options. so i can post as i please."
+
+All three were true, and the public board proved them without anyone
+having to look at the code. On 2026-09-19 it carried 92 listings, 85 of
+them walked and paid, $13.90 paid out across 62 doors — and **zero
+open**, with nothing posted since the 15th. Four days of an empty board
+in front of walkers who polled it 235 times in a fortnight. Three
+faults, and they compound:
+
+**One: the clock was the ISO week.** The pass stamped the week and
+returned for every firing after the first, so the board was restocked at
+most once in seven days. Its listings were claimed within hours of each
+posting — that is the instrument working — and the board then stood
+empty for the remaining six and a half days. A weekly clock is not a
+cadence, it is a pulse.
+
+**Two: it spent its weeks on doors it could never post.** `openBounty`
+refuses a reward that does not EXCEED the door's ask, because a walker
+paid less than they spent has been sent to lose money. That check ran
+last, after a stranger's door had been knocked on, and its verdict never
+reached the desk. So the never-walked rows that STAY never-walked are
+exactly the unpostable ones — the doors asking $1.00 and $5.00 that no
+reward under the $0.25 ceiling can clear — and they sat at the top of
+the candidate list, offered to every press, forever. The standing order
+took the first N of them, collected N refusals, posted nothing, and
+decremented its weeks anyway. That is the whole of "not very relevant":
+a desk whose first four rows were doors the board is structurally
+incapable of posting.
+
+**Three: a quiet run cost a run.** No headroom, no census round, no
+field wallet, nothing affordable — every one of those burned a week of
+the plan while attempting nothing.
+
+### What changed
+
+- **The cadence is a dial**: `every_hours`, from hourly (the tick's own
+  floor) to monthly. 168 is the weekly plan this replaced, and a plan
+  written before the dial existed keeps its week until the keeper says
+  otherwise.
+- **The desk does the arithmetic before the press.** Every candidate row
+  carries `min_reward_usd` — the smallest reward that clears its ask —
+  and `above_ceiling` for the doors no reward this board may pay could
+  ever clear. Blocked rows are still SHOWN, with the reason, because
+  "why has this door sat never-walked for a month" is a question with an
+  answer. The standing order takes only doors its own reward can clear,
+  and the desk is re-readable against any reward (`/admin/market?reward=`)
+  so the keeper can see what a bigger press would open up.
+- **Cheapest never-walked door first.** The reward is flat and the
+  door's price comes out of the walker's own wallet first, so a $0.001
+  door leaves a stranger the whole finder's fee and a $0.20 door leaves
+  them cents.
+- **A press is spent when doors are knocked on.** A pass that attempted
+  nothing costs the plan nothing, says why on the desk (`last_note`), and
+  tries again on the next hourly tick instead of the next week.
+- **`max_open` holds the board**, counting listings the keeper posted by
+  hand, because the walkers cannot tell which hand opened a listing and
+  neither should the ceiling. It is the brake that stops a fast cadence
+  before the WEEKLY BUDGET does — the budget being the ceiling that
+  costs a stranger money, since it is checked after they have paid.
+- **`revisit_days`** re-posts a door this store already walked once its
+  last bounty is that old. Off by default. On, it is what keeps the
+  board stocked after every affordable never-walked door in the round
+  has been walked, and it buys the one piece of evidence here that
+  expires: "the door that took money on the 9th still took money on the
+  19th."
+- **Press it now.** `POST /admin/bounties/plan/run`, and a button beside
+  the dials. It runs the same pass the tick runs, skipping the CADENCE
+  and nothing else — the budget reservation, the open ceiling, the
+  reward that must clear each door's price, the field wallet and
+  one-bounty-per-domain-per-week all hold. It spends one of the plan's
+  presses, because it is one of them.
+- **Second walks are a plan option now.** The press had `distinctPayer`
+  from the day that tier shipped and the standing order had no field for
+  it, so every automated listing was open to the wallet that walked the
+  last one. On 2026-09-19 the board held 85 settlements from 6 wallets
+  across 62 doors; four doors had been walked more than once, three of
+  them three times by ONE wallet — which compares nothing — and the
+  fourth, agent402.tools, by two wallets whose reported digests DIFFER.
+  That single row is the only evidence here this store can hold without
+  trusting either stranger. Set beside `revisit_days`, the option is
+  what turns a re-walk into that comparison instead of a repeat.
+- **A round from anywhere**: `scripts/post-bounty-round.mjs` posts a
+  named list of doors through the same `/admin/bounties/batch` door the
+  desk presses, ten at a time, printing every refusal beside its URL. It
+  reaches around no rule and nominates no door — the list is one a human
+  typed.
+
+### What did not change, and must not
+
+The plan still chooses no doors of its own. Candidates come from the
+week's census round through the same `bountyCandidates` the market page
+shows the keeper, in the same order, and the only thing the new filter
+does is REMOVE doors — it can never add one. Nothing self-nominates, no
+seller reaches a walker by asking, and a faster cadence buys more
+evidence per week without buying it from anyone who asked to be bought
+from.
+
+The reward ceiling stays $0.25 and the weekly budget stays $10. Both are
+money decisions and both are the keeper's; raising the ceiling is what
+would make the $1.00 and $5.00 doors postable, and until he does, the
+desk says so on the row rather than offering them again.

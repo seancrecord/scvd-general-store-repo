@@ -104,9 +104,12 @@ describe("the standing bounty order", () => {
       JSON.stringify(round()),
     );
     await writeBountyPlan(testEnv, {
-      version: 1,
-      weeks_remaining: 4,
-      per_week: 3,
+      version: 2,
+      runs_remaining: 4,
+      per_run: 3,
+      every_hours: 168,
+      max_open: 12,
+      revisit_days: 0,
       reward_usd: 0.25,
       tier: "sprint",
       rails: [],
@@ -118,20 +121,23 @@ describe("the standing bounty order", () => {
     );
     expect(pass?.posted).toBe(0);
     expect(pass?.note).toContain("already committed");
-    // And it did NOT burn a week of the plan on a week it could not act in.
-    expect(pass?.weeks_remaining).toBe(4);
-    expect((await readBountyPlan(testEnv))?.weeks_remaining).toBe(4);
+    // And it did NOT burn a press on a pass it could not act in.
+    expect(pass?.runs_remaining).toBe(4);
+    expect((await readBountyPlan(testEnv))?.runs_remaining).toBe(4);
   });
 
-  it("refuses to post while payouts are paused, and keeps its weeks", async () => {
+  it("refuses to post while payouts are paused, and keeps its presses", async () => {
     await testEnv.COUNTERS.put(
       KV_KEYS.wardRoundLatest,
       JSON.stringify(round()),
     );
     await writeBountyPlan(testEnv, {
-      version: 1,
-      weeks_remaining: 2,
-      per_week: 2,
+      version: 2,
+      runs_remaining: 2,
+      per_run: 2,
+      every_hours: 168,
+      max_open: 12,
+      revisit_days: 0,
       reward_usd: 0.25,
       tier: "sprint",
       rails: [],
@@ -143,40 +149,222 @@ describe("the standing bounty order", () => {
     );
     expect(pass?.posted).toBe(0);
     expect(pass?.note).toContain("payouts are paused");
-    expect(pass?.weeks_remaining).toBe(2);
+    expect(pass?.runs_remaining).toBe(2);
   });
 
-  it("runs a week once, however many times the tick fires", async () => {
+  /*
+   * THE CADENCE IS THE KEEPER'S (2026-09-19). It was the ISO week and
+   * only the ISO week: the pass stamped the week and returned for
+   * every firing after the first, so the board was restocked once in
+   * seven days while its listings were claimed within hours of each
+   * posting. The window is now a number of hours, and the two things
+   * that must hold are that a tick inside the window does nothing and
+   * a tick after it acts.
+   *
+   * The budget here is deliberately spent, so this test knocks on no
+   * stranger's door: what it is checking is the clock, not the press.
+   */
+  it("holds its window, then comes due", async () => {
     await testEnv.COUNTERS.put(KV_KEYS.bountyBudget("2026-W38"), "9.95");
     await testEnv.COUNTERS.put(
       KV_KEYS.wardRoundLatest,
       JSON.stringify(round()),
     );
     await writeBountyPlan(testEnv, {
-      version: 1,
-      weeks_remaining: 3,
-      per_week: 2,
+      version: 2,
+      runs_remaining: 3,
+      per_run: 2,
+      every_hours: 12,
+      max_open: 12,
+      revisit_days: 0,
       reward_usd: 0.25,
       tier: "sprint",
       rails: [],
       created_at: NOW.toISOString(),
+      last_run_at: NOW.toISOString(),
     });
     const signed = { ...testEnv, FIELD_WALLET_KEY: `0x${"01".repeat(32)}` } as Env;
-    const first = await bountyPlanPass(signed, NOW);
-    expect(first).not.toBeNull();
-    // Every later firing inside the same ISO week is a no-op.
-    for (let index = 0; index < 3; index += 1) {
+    for (const hours of [1, 6, 11]) {
       expect(
-        await bountyPlanPass(signed, new Date(NOW.getTime() + (index + 1) * 3_600_000)),
+        await bountyPlanPass(signed, new Date(NOW.getTime() + hours * 3_600_000)),
       ).toBeNull();
     }
+    const due = await bountyPlanPass(
+      signed,
+      new Date(NOW.getTime() + 12 * 3_600_000),
+    );
+    expect(due).not.toBeNull();
+    expect(due?.pressed).toBe(false);
   });
 
-  it("retires itself once its weeks are used up", async () => {
+  /*
+   * POST AS I PLEASE (2026-09-19, the keeper's words). The forced pass
+   * skips the CADENCE and nothing else — every rule that stands
+   * between a stranger and a listing this board cannot honour is
+   * still checked, and this proves the first of them is.
+   */
+  it("presses on demand inside its window, and still refuses to overcommit", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.bountyBudget("2026-W38"), "9.95");
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify(round()),
+    );
     await writeBountyPlan(testEnv, {
-      version: 1,
-      weeks_remaining: 0,
-      per_week: 2,
+      version: 2,
+      runs_remaining: 3,
+      per_run: 2,
+      every_hours: 168,
+      max_open: 12,
+      revisit_days: 0,
+      reward_usd: 0.25,
+      tier: "sprint",
+      rails: [],
+      created_at: NOW.toISOString(),
+      last_run_at: NOW.toISOString(),
+    });
+    const signed = { ...testEnv, FIELD_WALLET_KEY: `0x${"01".repeat(32)}` } as Env;
+    const at = new Date(NOW.getTime() + 3_600_000);
+    expect(await bountyPlanPass(signed, at)).toBeNull();
+    const forced = await bountyPlanPass(signed, at, { force: true });
+    expect(forced?.note).toContain("already committed");
+    expect(forced?.runs_remaining).toBe(3);
+  });
+
+  /*
+   * THE RUNS IT SPENT ON DOORS IT COULD NEVER POST (2026-09-19). The
+   * plan took never-walked candidates in the desk's own order, and the
+   * never-walked rows that STAY never-walked are the ones every press
+   * refuses: a door asking $1.00 cannot be posted at any reward under
+   * the $0.25 ceiling. Four candidates, four refusals, nothing posted,
+   * and the week decremented anyway. Now it knocks on none of them and
+   * says exactly what it found.
+   */
+  it("posts nothing, knocks on nothing, and names the ceiling when every door is priced out", async () => {
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify({
+        ...round(),
+        hosts: [
+          { ...host("dear.example"), offer: { networks: [], schemes: [], min_usdc: 1 } },
+          { ...host("dearer.example"), offer: { networks: [], schemes: [], min_usdc: 5 } },
+        ],
+      }),
+    );
+    await writeBountyPlan(testEnv, {
+      version: 2,
+      runs_remaining: 4,
+      per_run: 2,
+      every_hours: 24,
+      max_open: 12,
+      revisit_days: 0,
+      reward_usd: 0.1,
+      tier: "sprint",
+      rails: [],
+      created_at: NOW.toISOString(),
+    });
+    const pass = await bountyPlanPass(
+      { ...testEnv, FIELD_WALLET_KEY: `0x${"01".repeat(32)}` } as Env,
+      NOW,
+    );
+    expect(pass?.posted).toBe(0);
+    expect(pass?.pressed).toBe(false);
+    expect(pass?.note).toContain("2 priced above the $0.25 ceiling");
+    // The run is untouched: nothing was attempted, so nothing is charged.
+    expect(pass?.runs_remaining).toBe(4);
+    expect((await readBountyPlan(testEnv))?.runs_remaining).toBe(4);
+  });
+
+  /*
+   * A BOARD ALREADY FULL IS A REASON TO WAIT (2026-09-19). The brake
+   * is on the board rather than on the plan, so listings the keeper
+   * posted by hand count against it — the walkers cannot tell which
+   * hand opened a listing, and neither should the ceiling.
+   */
+  it("stops at its open ceiling, counting listings it did not post", async () => {
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify(round()),
+    );
+    for (const id of ["h1", "h2"]) {
+      await testEnv.COUNTERS.put(
+        KV_KEYS.bounty(id),
+        JSON.stringify({
+          bounty_id: id,
+          target_url: `https://${id}.example/x`,
+          domain: `${id}.example`,
+          pay_to: `0x${"11".repeat(20)}`,
+          amount_atomic: "1000",
+          amount_usd: 0.001,
+          reward_usd: 0.1,
+          opened_at: "2026-09-14T11:00:00.000Z",
+          opened_block: 1,
+          expires_at: "2026-09-30T11:00:00.000Z",
+          status: "open",
+        }),
+      );
+    }
+    await writeBountyPlan(testEnv, {
+      version: 2,
+      runs_remaining: 4,
+      per_run: 2,
+      every_hours: 6,
+      max_open: 2,
+      revisit_days: 0,
+      reward_usd: 0.1,
+      tier: "sprint",
+      rails: [],
+      created_at: NOW.toISOString(),
+    });
+    const pass = await bountyPlanPass(
+      { ...testEnv, FIELD_WALLET_KEY: `0x${"01".repeat(32)}` } as Env,
+      NOW,
+    );
+    expect(pass?.note).toContain("holds the board at 2");
+    expect(pass?.runs_remaining).toBe(4);
+  });
+
+  /*
+   * A PLAN WRITTEN BEFORE THE CADENCE EXISTED KEEPS ITS WEEK. Read
+   * forward, not rewritten: the keeper asked for a weekly plan and
+   * gets a weekly plan until he says otherwise — and the deploy that
+   * shipped the cadence must not press a second time in a week the
+   * old plan already pressed.
+   */
+  it("reads a v1 plan forward and keeps its weekly clock", async () => {
+    await testEnv.COUNTERS.put(
+      KV_KEYS.bountyPlan,
+      JSON.stringify({
+        version: 1,
+        weeks_remaining: 5,
+        per_week: 3,
+        reward_usd: 0.1,
+        tier: "standard",
+        rails: [],
+        created_at: "2026-09-10T00:00:00.000Z",
+        last_week: "2026-W38",
+        history: [
+          { week: "2026-W37", posted: 2, refused: 1, note: "posted 2 of 3" },
+        ],
+      }),
+    );
+    const plan = await readBountyPlan(testEnv);
+    expect(plan?.runs_remaining).toBe(5);
+    expect(plan?.per_run).toBe(3);
+    expect(plan?.every_hours).toBe(168);
+    expect(plan?.revisit_days).toBe(0);
+    expect(plan?.history?.[0]?.at).toBe("2026-W37");
+    // 2026-09-14 is inside 2026-W38, which this plan already pressed.
+    expect(await bountyPlanPass(testEnv, NOW)).toBeNull();
+  });
+
+  it("retires itself once its presses are used up", async () => {
+    await writeBountyPlan(testEnv, {
+      version: 2,
+      runs_remaining: 0,
+      per_run: 2,
+      every_hours: 168,
+      max_open: 12,
+      revisit_days: 0,
       reward_usd: 0.25,
       tier: "sprint",
       rails: [],
@@ -217,9 +405,135 @@ describe("the standing order has a door on the desk", () => {
     expect(location).toContain("/admin/market");
     expect(decodeURIComponent(location)).toContain("4 a week at $0.25");
     const plan = await readBountyPlan(testEnv);
-    expect(plan?.weeks_remaining).toBe(6);
-    expect(plan?.per_week).toBe(4);
+    expect(plan?.runs_remaining).toBe(6);
+    expect(plan?.per_run).toBe(4);
     expect(plan?.note).toBe("the week's walk");
+  });
+
+  it("takes the cadence dials and says the cadence back in words", async () => {
+    const response = await SELF.fetch(`${BASE}/admin/bounties/plan`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        runs: "24",
+        per_run: "5",
+        every_hours: "12",
+        max_open: "10",
+        revisit_days: "14",
+        reward_usd: "0.12",
+        tier: "sprint",
+      }),
+      redirect: "manual",
+    });
+    expect(response.status).toBe(303);
+    const said = decodeURIComponent(response.headers.get("location") ?? "");
+    expect(said).toContain("5 every 12 hours at $0.12");
+    expect(said).toContain("holding the board at 10 open");
+    expect(said).toContain("revisiting doors older than 14 days");
+    const plan = await readBountyPlan(testEnv);
+    expect(plan?.every_hours).toBe(12);
+    expect(plan?.max_open).toBe(10);
+    expect(plan?.revisit_days).toBe(14);
+    expect(plan?.runs_remaining).toBe(24);
+  });
+
+  /*
+   * THE SECOND WALK, AUTOMATED (2026-09-19). The press had the option
+   * from the day the tier shipped and the standing order had no field
+   * for it, so every automated listing was open to the same wallet
+   * that walked the last one. Two wallets at one door is the only
+   * mechanism here that turns a stranger's claim into evidence without
+   * trusting the stranger.
+   */
+  it("carries the second-walk option onto the plan and says so", async () => {
+    const response = await SELF.fetch(`${BASE}/admin/bounties/plan`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        runs: "8",
+        per_run: "3",
+        every_hours: "24",
+        revisit_days: "10",
+        distinct_payer: "1",
+        reward_usd: "0.12",
+        tier: "standard",
+      }),
+      redirect: "manual",
+    });
+    expect(response.status).toBe(303);
+    expect(decodeURIComponent(response.headers.get("location") ?? "")).toContain(
+      "as second walks",
+    );
+    expect((await readBountyPlan(testEnv))?.distinct_payer).toBe(true);
+  });
+
+  it("refuses a cadence shorter than the tick that would have to run it", async () => {
+    const response = await SELF.fetch(`${BASE}/admin/bounties/plan`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        runs: 4,
+        per_run: 2,
+        every_hours: 0,
+        reward_usd: 0.1,
+        tier: "sprint",
+      }),
+    });
+    expect(response.status).toBe(400);
+    expect(await readBountyPlan(testEnv)).toBeNull();
+  });
+
+  /*
+   * POST AS I PLEASE (2026-09-19). The standing order rode the tick
+   * and only the tick, so "press the dials I already wrote down, now"
+   * meant going and ticking checkboxes by hand.
+   */
+  describe("press it now", () => {
+    it("has nothing to press when no plan is running", async () => {
+      const response = await SELF.fetch(`${BASE}/admin/bounties/plan/run`, {
+        method: "POST",
+        headers: { ...AUTH, "Content-Type": "application/json" },
+      });
+      expect(response.status).toBe(409);
+    });
+
+    it("runs the same pass the tick runs, and reports what it decided", async () => {
+      await testEnv.COUNTERS.put(KV_KEYS.bountyBudget("2026-W38"), "9.95");
+      await testEnv.COUNTERS.put(
+        KV_KEYS.wardRoundLatest,
+        JSON.stringify(round()),
+      );
+      await writeBountyPlan(testEnv, {
+        version: 2,
+        runs_remaining: 3,
+        per_run: 2,
+        every_hours: 168,
+        max_open: 12,
+        revisit_days: 0,
+        reward_usd: 0.25,
+        tier: "sprint",
+        rails: [],
+        created_at: NOW.toISOString(),
+        last_run_at: NOW.toISOString(),
+      });
+      const response = await SELF.fetch(`${BASE}/admin/bounties/plan/run`, {
+        method: "POST",
+        headers: { ...AUTH, "Content-Type": "application/x-www-form-urlencoded" },
+        redirect: "manual",
+      });
+      expect(response.status).toBe(303);
+      const said = decodeURIComponent(response.headers.get("location") ?? "");
+      expect(said).toContain("Pressed now");
+      /*
+       * Forcing skips the CADENCE and not one rule beyond it: the
+       * first guard the forced pass meets here is the field wallet,
+       * which this test environment does not hold, and it stops at it
+       * exactly as the tick would. Nothing was posted and no press was
+       * spent.
+       */
+      expect(said).toContain("payouts are paused");
+      expect((await readBountyPlan(testEnv))?.runs_remaining).toBe(3);
+    });
   });
 
   /*
@@ -248,9 +562,12 @@ describe("the standing order has a door on the desk", () => {
 
   it("retires the plan from the form's own off switch", async () => {
     await writeBountyPlan(testEnv, {
-      version: 1,
-      weeks_remaining: 4,
-      per_week: 2,
+      version: 2,
+      runs_remaining: 4,
+      per_run: 2,
+      every_hours: 168,
+      max_open: 12,
+      revisit_days: 0,
       reward_usd: 0.25,
       tier: "sprint",
       rails: [],
@@ -271,7 +588,7 @@ describe("the standing order has a door on the desk", () => {
      * the pass reads that as "do nothing" — so the fact to assert is
      * that no week is left to run, not that the key is gone.
      */
-    expect((await readBountyPlan(testEnv))?.weeks_remaining).toBe(0);
+    expect((await readBountyPlan(testEnv))?.runs_remaining).toBe(0);
     expect(await bountyPlanPass(testEnv, NOW)).toBeNull();
   });
 
@@ -296,15 +613,24 @@ describe("the standing order has a door on the desk", () => {
   it("shows the plan and this week's headroom on the market desk", async () => {
     await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round()));
     await writeBountyPlan(testEnv, {
-      version: 1,
-      weeks_remaining: 5,
-      per_week: 3,
+      version: 2,
+      runs_remaining: 5,
+      per_run: 3,
+      every_hours: 168,
+      max_open: 12,
+      revisit_days: 0,
       reward_usd: 0.2,
       tier: "standard",
       rails: [],
       created_at: NOW.toISOString(),
       history: [
-        { week: "2026-W37", posted: 0, refused: 0, note: "the week was committed" },
+        {
+          at: "2026-09-08T00:00:00.000Z",
+          week: "2026-W37",
+          posted: 0,
+          refused: 0,
+          note: "the week was committed",
+        },
       ],
     });
     const html = await (
@@ -314,7 +640,7 @@ describe("the standing order has a door on the desk", () => {
     ).text();
     expect(html).toContain("The standing order");
     expect(html).toContain('action="/admin/bounties/plan"');
-    expect(html).toContain("5 weeks left");
+    expect(html).toContain("5 presses left");
     expect(html).toContain("of headroom");
     // The history rides along, so a week that posted nothing is legible.
     expect(html).toContain("the week was committed");

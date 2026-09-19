@@ -192,6 +192,105 @@ describe("the posting list carries what we have already done", () => {
     expect(candidates[0]?.blocked).toContain("one per domain per week");
   });
 
+  /*
+   * THE DESK OFFERED DOORS NO PRESS COULD POST (2026-09-19, the
+   * keeper: the automated bounties "really arent very relevant to the
+   * work we do").
+   *
+   * openBounty refuses a reward that does not EXCEED the door's ask,
+   * because a walker paid less than they spent has been sent to lose
+   * money. That verdict arrived AFTER a stranger's door had been
+   * knocked on and never reached the desk, so the top of the
+   * never-walked list filled with $1 and $5 doors that every press
+   * refused and every following press offered again — and the standing
+   * order, taking never-walked rows first, spent its weeks on them.
+   */
+  it("blocks a door no reward under the ceiling could ever clear, and says so", () => {
+    const candidates = bountyCandidates(
+      round([
+        host("dear.example", "ready", {
+          offer: { networks: [], schemes: [], min_usdc: 1 },
+        }),
+        host("cheap.example", "ready", {
+          offer: { networks: [], schemes: [], min_usdc: 0.001 },
+        }),
+      ]),
+      [],
+      "scvd.store",
+      NOW,
+      24,
+      0.1,
+    );
+    const dear = candidates.find((row) => row.domain === "dear.example");
+    expect(dear?.above_ceiling).toBe(true);
+    expect(dear?.blocked).toContain("ceiling");
+    // Shown, not hidden — the row is the answer to "why is this still
+    // never-walked", and it sorts below everything pressable.
+    expect(candidates[0]?.domain).toBe("cheap.example");
+    expect(candidates[0]?.blocked).toBeUndefined();
+  });
+
+  it("names the reward a door would need, when one under the ceiling exists", () => {
+    const at10 = bountyCandidates(
+      round([
+        host("mid.example", "ready", {
+          offer: { networks: [], schemes: [], min_usdc: 0.111 },
+        }),
+      ]),
+      [],
+      "scvd.store",
+      NOW,
+      24,
+      0.1,
+    );
+    expect(at10[0]?.min_reward_usd).toBe(0.12);
+    expect(at10[0]?.above_ceiling).toBeUndefined();
+    expect(at10[0]?.blocked).toContain("Raise the reward to $0.12");
+    // And at that reward it is simply pressable — same row, same door.
+    const at12 = bountyCandidates(
+      round([
+        host("mid.example", "ready", {
+          offer: { networks: [], schemes: [], min_usdc: 0.111 },
+        }),
+      ]),
+      [],
+      "scvd.store",
+      NOW,
+      24,
+      0.12,
+    );
+    expect(at12[0]?.blocked).toBeUndefined();
+  });
+
+  /*
+   * THE REWARD IS FLAT AND THE DOOR'S PRICE COMES OUT OF THE WALKER'S
+   * OWN WALLET FIRST, so among doors this store has never walked, the
+   * cheapest leave a stranger the most of the finder's fee.
+   */
+  it("offers the cheapest never-walked doors first", () => {
+    const candidates = bountyCandidates(
+      round([
+        host("b.example", "ready", {
+          offer: { networks: [], schemes: [], min_usdc: 0.05 },
+        }),
+        host("a.example", "ready", {
+          offer: { networks: [], schemes: [], min_usdc: 0.001 },
+        }),
+        host("c.example", "ready", {
+          offer: { networks: [], schemes: [], min_usdc: 0.02 },
+        }),
+      ]),
+      [],
+      "scvd.store",
+      NOW,
+    );
+    expect(candidates.map((row) => row.domain)).toEqual([
+      "a.example",
+      "c.example",
+      "b.example",
+    ]);
+  });
+
   it("names one door per domain, whatever the round listed", () => {
     const candidates = bountyCandidates(
       round([

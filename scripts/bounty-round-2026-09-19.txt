@@ -1,0 +1,78 @@
+# A ROUND OF BOUNTIES — the keeper's list, 2026-09-19
+#
+# Press it with the round posted from anywhere:
+#
+#   ADMIN_PASSWORD=… node scripts/post-bounty-round.mjs --reward 0.12 \
+#     --tier standard \
+#     --ask "Did the paid response carry a PAYMENT-RESPONSE receipt?" \
+#     --ask "Send report.body_sha256 and report.etag so a second walker can be held against you." \
+#     --ask "What did the goods actually contain — did they match what the door advertises?" \
+#     < scripts/bounty-round-2026-09-19.txt
+#
+# The doors are the market desk's own never-walked candidates off the
+# 2026-W37/W38 census rounds. The price beside each is the cheapest USDC
+# ask that round read; the live 402 at posting is what actually becomes
+# the terms of record, so a price that moved is a refusal and not a
+# surprise.
+#
+# WHY $0.12 AND NOT THE USUAL $0.10. openBounty refuses a reward that
+# does not EXCEED the door's ask. At $0.10 every door below clears
+# except api.hyperextend.xyz at $0.1110; at $0.12 they all do. Twenty
+# listings at $0.12 is $2.40 of a $10 week.
+
+https://weather.payapi.market/current                                   # $0.0010
+https://chat.gedx402.com/v1/chat/completions                            # $0.0010
+https://lionx402.com/api/x402/wallet-screen-json                        # $0.0010
+https://evm-gas.apitoll.cloud/v1/evm/gas                                # $0.0010
+https://cdp-agent-0-01.onrender.com/                                    # $0.0010
+https://news.apitoll.cloud/v1/cointelegraph/news                        # $0.0010
+https://api.402rates.com/v1/ping                                        # $0.0010
+https://api.justaname.id/ens/v2/resolve                                 # $0.0050
+https://dns.use.x402atlas.com/whois                                     # $0.0050
+https://xmedia.use.x402atlas.com/tweet                                  # $0.0050
+https://pro-api.coingecko.com/api/v3/x402/onchain/simple/networks/base  # $0.0100
+https://email-auth.use.x402atlas.com/check                              # $0.0100
+https://srv1334799.hstgr.cloud/v1/x402/demand/snapshot                  # $0.0100
+https://readx.sh/api/search/tweets                                      # $0.0100
+https://preppers-paradise.com/library/automatetheboringstuffwithpython  # $0.0100
+https://youtube.use.x402atlas.com/transcript                            # $0.0200
+https://fresh-feeds.foomworks.workers.dev/feeds/mcp-registry/changes    # $0.0200
+https://reddit.apitoll.cloud/v1/reddit/search                           # $0.0300
+https://api.linkedpanda.com/agent/v1/profiles/email                     # $0.0500
+https://api.hyperextend.xyz/v1/liquidations/BTC                         # $0.1110
+
+# NOT IN THIS ROUND, AND NOT BECAUSE THEY WERE MISSED.
+#
+# Four doors on the desk ask more than any reward this board may pay.
+# BOUNTY_MAX_REWARD_USD is $0.25 and the reward must EXCEED the ask, so
+# a walker sent at one of these is a walker sent to lose money, and the
+# posting door refuses them by design. They have read "never walked" on
+# every desk since the desk existed for exactly this reason. Raising the
+# ceiling is a keeper's money decision, not a code fix:
+#
+#   https://laso.finance/get-card                                $5.0000
+#   https://agi.apify.com/protocols/x402/prepaid-tokens          $1.0000
+#   https://cheaptokens.ai/api/buy                               $1.0000
+#   https://x402.api.browser-use.com/api/v3/sessions             $1.0000
+#
+# ONE READING FROM THE FREE PREFLIGHT, 2026-09-19, worth carrying into
+# the press: api.hyperextend.xyz answers a well-formed 402 (L3a) but
+# writes its amount as "0.111" — a decimal where x402 requires atomic
+# units, which underprices by a factor of a million — and one of its two
+# accepts entries is on hyperliquid:mainnet, a chain this store reads no
+# addresses for. It may well refuse at posting. That refusal is itself
+# the finding, and it is named at https://scvd.store/defects/amount-not-atomic.
+#
+# ABOUT RAILS, AND WHY THIS ROUND DOES NOT PIN ONE. The board's 85
+# settlements to 2026-09-19 are 80 Base, 4 Solana, 1 Polygon. The
+# unanswered question worth money is whether a door honours every rail
+# it advertises, and pinning is how it gets asked. But a named rail a
+# door does not quote is a REFUSAL, one bounty stands per domain per
+# week, and nothing here has read these doors' accepts — so a pinned
+# round would trade doors for a guess. Post this round as it stands;
+# pin the next one at the doors this one proves multi-rail, with
+#
+#   --rail arbitrum   (or polygon, world, solana, algorand)
+#
+# and read the refusals: a door that takes Base money and refuses
+# Arbitrum money is a defect nothing in this ecosystem currently names.
