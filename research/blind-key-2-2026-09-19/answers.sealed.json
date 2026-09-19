@@ -1,0 +1,195 @@
+{
+ "arrangement": "seancrecord/scvd-general-store-repo#622 — blind key, round two, scvd.store direction",
+ "at_block": 51520000,
+ "doors": [
+  {
+   "door_verdict": "PAID",
+   "name": "anyspend",
+   "rails": [
+    {
+     "at_block": 51520000,
+     "balance_atomic": "9000000",
+     "distinct_payers": null,
+     "distinct_payers_unknown_because": "no transfer window was read, so senders could not be counted",
+     "established_by": "a USDC balance of 9000000 atomic units at block 51520000; a balance can only have arrived, so at least one inbound settlement happened",
+     "nonce": 23709,
+     "pay_to": "0x1e8e93cb91778e5b1a3639706789195a838960f8",
+     "rail": "eip155:8453",
+     "verdict": "PAID",
+     "window": null,
+     "window_from_block": null
+    }
+   ]
+  },
+  {
+   "door_verdict": "PAID",
+   "name": "blockrun",
+   "rails": [
+    {
+     "at_block": 51520000,
+     "balance_atomic": "155861000",
+     "distinct_payers": null,
+     "distinct_payers_unknown_because": "no transfer window was read, so senders could not be counted",
+     "established_by": "a USDC balance of 155861000 atomic units at block 51520000; a balance can only have arrived, so at least one inbound settlement happened",
+     "nonce": 0,
+     "pay_to": "0x6e007731870ede419cfb31889cd5c4493cecb04c",
+     "rail": "eip155:8453",
+     "verdict": "PAID",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "at_block": 51520000,
+     "balance_atomic": "6857849111",
+     "distinct_payers": null,
+     "distinct_payers_unknown_because": "no transfer window was read, so senders could not be counted",
+     "established_by": "a USDC balance of 6857849111 atomic units at block 51520000; a balance can only have arrived, so at least one inbound settlement happened",
+     "nonce": 10,
+     "pay_to": "0xe9030014f5dae217d0a152f02a043567b16c1abf",
+     "rail": "eip155:8453",
+     "verdict": "PAID",
+     "window": null,
+     "window_from_block": null
+    }
+   ]
+  },
+  {
+   "door_verdict": "PAID",
+   "name": "jsonguard",
+   "rails": [
+    {
+     "at_block": 51520000,
+     "balance_atomic": "1377861",
+     "distinct_payers": null,
+     "distinct_payers_unknown_because": "no transfer window was read, so senders could not be counted",
+     "established_by": "a USDC balance of 1377861 atomic units at block 51520000; a balance can only have arrived, so at least one inbound settlement happened",
+     "nonce": 10,
+     "pay_to": "0xa8b061d96f69426f11bcc807bfa00f0af79541a7",
+     "rail": "eip155:8453",
+     "verdict": "PAID",
+     "window": null,
+     "window_from_block": null
+    }
+   ]
+  },
+  {
+   "door_verdict": "PAID",
+   "name": "quicknode",
+   "rails": [
+    {
+     "advertised_pay_to": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "at_block": 51520000,
+     "established_by": "this door advertises 0xf46394addda95a3d5bcc1124605e3d15d204623c on eip155:137, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "eip155:137",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "advertised_pay_to": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "at_block": 51520000,
+     "established_by": "this door advertises 0xf46394addda95a3d5bcc1124605e3d15d204623c on eip155:1952, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "eip155:1952",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "advertised_pay_to": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "at_block": 51520000,
+     "established_by": "this door advertises 0xf46394addda95a3d5bcc1124605e3d15d204623c on eip155:196, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "eip155:196",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "advertised_pay_to": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "at_block": 51520000,
+     "established_by": "this door advertises 0xf46394addda95a3d5bcc1124605e3d15d204623c on eip155:5042002, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "eip155:5042002",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "advertised_pay_to": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "at_block": 51520000,
+     "established_by": "this door advertises 0xf46394addda95a3d5bcc1124605e3d15d204623c on eip155:80002, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "eip155:80002",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "at_block": 51520000,
+     "balance_atomic": "241492000",
+     "distinct_payers": null,
+     "distinct_payers_unknown_because": "no transfer window was read, so senders could not be counted",
+     "established_by": "a USDC balance of 241492000 atomic units at block 51520000; a balance can only have arrived, so at least one inbound settlement happened",
+     "nonce": 1,
+     "pay_to": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "rail": "eip155:8453",
+     "verdict": "PAID",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "advertised_pay_to": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "at_block": 51520000,
+     "established_by": "this door advertises 0xf46394addda95a3d5bcc1124605e3d15d204623c on eip155:84532, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "eip155:84532",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "advertised_pay_to": "2lwbc9mi6drurdehbttons4uddth1a4xwbdm1ekqct57",
+     "at_block": 51520000,
+     "established_by": "this door advertises 2lwbc9mi6drurdehbttons4uddth1a4xwbdm1ekqct57 on solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    },
+    {
+     "advertised_pay_to": "2lwbc9mi6drurdehbttons4uddth1a4xwbdm1ekqct57",
+     "at_block": 51520000,
+     "established_by": "this door advertises 2lwbc9mi6drurdehbttons4uddth1a4xwbdm1ekqct57 on solana:etwtrabzayq6imfeykouru166vu2xqa1, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "solana:etwtrabzayq6imfeykouru166vu2xqa1",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    }
+   ]
+  },
+  {
+   "door_verdict": "UNKNOWN",
+   "name": "verdoc",
+   "rails": [
+    {
+     "advertised_pay_to": "0x0a801e236fbc1a95a35ab8e946837320ddce9d69",
+     "at_block": 51520000,
+     "established_by": "this door advertises 0x0a801e236fbc1a95a35ab8e946837320ddce9d69 on eip155:84532, which this run does not read (this reader holds one rail per run and is reading eip155:8453); UNKNOWN is a gap in the observer, not a finding about the door",
+     "pay_to": null,
+     "rail": "eip155:84532",
+     "verdict": "UNKNOWN",
+     "window": null,
+     "window_from_block": null
+    }
+   ]
+  }
+ ],
+ "inputs": "research/blind-key-2-2026-09-19/our-five-doors.json",
+ "method": "state only: balanceOf and transaction count at the pinned height. No transfer window, so no payer counts. A zero rests on the nonce argument and reaches all of history.",
+ "rail_read": "eip155:8453",
+ "reproducible": "This file carries NO wall-clock field on purpose. Re-running the command in the README at the same pinned height reproduces it BYTE FOR BYTE, so the commitment below is checkable by anyone rather than only by us. Round one sealed read_at and chain_head_when_read and could not make that claim."
+}
