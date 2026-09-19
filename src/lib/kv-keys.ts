@@ -523,6 +523,15 @@ export const KV_KEYS = {
   studyWeekPayout: (weekKey: string, payoutLower: string): string =>
     `study_week:${weekKey}:${payoutLower}`,
   /**
+   * A SCENARIO PUT LIVE from the desk. The catalogue itself is code
+   * (store/study-scenarios.ts) and never KV — only the fact that the
+   * keeper opened one, and until when, lives here. So a scenario
+   * cannot be edited into existence at runtime, and closing one is
+   * deleting a key rather than mutating a definition.
+   */
+  studyScenario: (scenarioId: string): string => `study_scenario:${scenarioId}`,
+  studyScenarioPrefix: "study_scenario:",
+  /**
    * Regulars' credit (services/store-credit.ts): the per-wallet
    * rebate balance, the outstanding-liability aggregate the books
    * watch, and the single-use cash-out challenge. COUNTERS. Keys are

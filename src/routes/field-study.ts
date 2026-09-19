@@ -21,8 +21,11 @@ import {
   debriefStudy,
   enrolStudy,
   fieldStudyBoard,
+  liveScenarios,
   readOwnStudy,
+  scenarioTargetSentence,
   studyBrief,
+  type LiveScenario,
 } from "@/services/field-study";
 import { studyFindings, type StudyFindings } from "@/services/study-findings";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
@@ -88,6 +91,35 @@ function studyWords(base: string) {
   };
 }
 
+/**
+ * A LIVE SCENARIO, AS THE PUBLIC READS IT. The definition is published
+ * whole — the question it answers, the instructions, its own extra
+ * debrief questions with their reasons, and the bonus with the exact
+ * thing our books will look for. A walker should be able to decide
+ * whether a scenario is worth their money without asking us anything,
+ * and that includes being told plainly when the condition is one we
+ * cannot check and therefore will not pay for.
+ */
+function publishScenario(live: LiveScenario) {
+  const { scenario } = live;
+  return {
+    id: scenario.id,
+    title: scenario.title,
+    the_question_it_answers: scenario.question,
+    what_to_do: scenario.brief,
+    buy_whatever_you_like:
+      "This scenario names a condition of the walk, never a product. Buy anything on the shelf.",
+    extra_questions_at_debrief: scenario.asks,
+    bonus_usd: scenario.bonus_usd,
+    bonus_pays_when: scenario.target
+      ? scenarioTargetSentence(scenario.target)
+      : null,
+    no_bonus_because: scenario.unverifiable_because ?? null,
+    open_until: live.expires_at,
+    enrol_with: { scenario: scenario.id },
+  };
+}
+
 /** Signals for the ledger: who presented this, organic or house. */
 function signals(c: Context<HonoEnv>): EventSignals {
   return {
@@ -142,10 +174,37 @@ function findingsHtml(findings: StudyFindings): string {
     .join("")}`;
 }
 
+function scenariosHtml(scenarios: readonly LiveScenario[]): string {
+  if (scenarios.length === 0) {
+    return `<h2>Open scenarios</h2>
+    <p>None are live right now. An open study is always welcome and pays the same ordinary reward — enrol, buy whatever you like however you like, and answer the questions.</p>`;
+  }
+  return `<h2>Open scenarios</h2>
+  <p>Each of these names a CONDITION of the walk, never a product: you buy whatever you like. Naming one at enrolment is optional. Where our own books can confirm the condition it carries a bonus and says exactly what we will look for; where they cannot it carries <strong>no</strong> bonus and says why, because paying for a condition we cannot check would be paying for the claim rather than the walk.</p>
+  ${scenarios
+    .map(({ scenario, expires_at }) => {
+      const money = scenario.target
+        ? `<p><strong>Bonus $${scenario.bonus_usd.toFixed(2)}</strong>, paid when our own books show ${escapeHtml(scenarioTargetSentence(scenario.target))}. Read off our records, never off your report.</p>`
+        : `<p><strong>No bonus.</strong> ${escapeHtml(scenario.unverifiable_because ?? "")}</p>`;
+      return `<section>
+      <h3>${escapeHtml(scenario.title)} <small><code>${escapeHtml(scenario.id)}</code></small></h3>
+      <p><em>${escapeHtml(scenario.question)}</em></p>
+      <ol>${scenario.brief.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ol>
+      ${money}
+      <p>Asked of you at the debrief, on top of the standard questions:</p>
+      <table><tr><th>field</th><th>what</th><th>why we want it</th></tr>
+      ${scenario.asks.map((ask) => `<tr><td><code>${escapeHtml(ask.field)}</code></td><td>${escapeHtml(ask.what)}</td><td>${escapeHtml(ask.why)}</td></tr>`).join("")}</table>
+      <p><small>Enrol with <code>"scenario": "${escapeHtml(scenario.id)}"</code>. Open until ${escapeHtml(expires_at.slice(0, 10))}.</small></p>
+    </section>`;
+    })
+    .join("")}`;
+}
+
 function roomHtml(
   base: string,
   board: Awaited<ReturnType<typeof fieldStudyBoard>>,
   findings: StudyFindings,
+  scenarios: readonly LiveScenario[],
 ): string {
   const brief = studyBrief(base);
   return `<p>${escapeHtml(FIELD_STUDY_PROPOSITION)}</p>
@@ -164,6 +223,7 @@ function roomHtml(
     <tr><td>paid out, all time</td><td>$${board.paid_all_time_usd}</td></tr>
   </table>
   <p><small>Read this on the minute you start, not from a cached page: the budget is checked again at the debrief, and a spent week refuses the payout for a study you have already done. Enrolments are not listed here and never will be — a stranger's stated intent, their model, their operator and their wallet published on one row is a dossier, and this store has no business keeping one in the window.</small></p>
+  ${scenariosHtml(scenarios)}
   <h2>Why you should care</h2>
   <ul>${STUDY_WHY_YOU_SHOULD_CARE.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
   <h2>How it runs</h2>
@@ -215,11 +275,17 @@ function roomHtml(
 
 fieldStudyRoutes.get("/field-study", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const [board, findings] = await Promise.all([
+  const [board, findings, scenarios] = await Promise.all([
     fieldStudyBoard(c.env),
     studyFindings(c.env),
+    liveScenarios(c.env),
   ]);
-  const payload = { ...studyWords(base), ...board, what_the_studies_show: findings };
+  const payload = {
+    ...studyWords(base),
+    ...board,
+    scenarios: scenarios.map(publishScenario),
+    what_the_studies_show: findings,
+  };
   const description =
     "Get paid to shop this store and say what it was like: enrol free, buy a few things across x402, MPP, UCP, WebMCP, MCP and A2A on whichever rails you like, then answer the questions. Every purchase is verified against the store's own books, and the reward is a signed EIP-3009 authorization you redeem yourself.";
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
@@ -240,18 +306,24 @@ fieldStudyRoutes.get("/field-study", async (c) => {
       title: "The Field Study",
       description,
       path: "/field-study",
-      bodyHtml: roomHtml(base, board, findings),
+      bodyHtml: roomHtml(base, board, findings, scenarios),
     }),
   );
 });
 
 fieldStudyRoutes.get("/api/field-study", async (c) => {
-  const [board, findings] = await Promise.all([
+  const [board, findings, scenarios] = await Promise.all([
     fieldStudyBoard(c.env),
     studyFindings(c.env),
+    liveScenarios(c.env),
   ]);
   return c.json(
-    { ...studyWords(c.env.STORE_BASE_URL), ...board, what_the_studies_show: findings },
+    {
+      ...studyWords(c.env.STORE_BASE_URL),
+      ...board,
+      scenarios: scenarios.map(publishScenario),
+      what_the_studies_show: findings,
+    },
     200,
     { "Cache-Control": "public, max-age=60" },
   );
@@ -287,6 +359,8 @@ function enrolmentShape(base: string) {
       funding: ["own_wallet", "operator_wallet", "test_funds"],
       found_via: "how you got here",
       prior_x402: "true or false: had you paid any x402 door before today",
+      scenario:
+        "optional — the id of a scenario that is live right now (read them on /api/field-study under `scenarios`). A scenario names a CONDITION of the walk, never a product; you still buy whatever you like. Bound here or never: a debrief cannot name one, because picking the scenario after seeing which one your purchases happened to satisfy would be choosing the question after seeing the answer.",
     },
     fields: STUDY_ROSTER_FIELDS,
     returns: {
@@ -396,6 +470,8 @@ function debriefShape(base: string) {
       answers: Object.fromEntries(
         STUDY_DEBRIEF_FIELDS.map((entry) => [entry.field, entry.what]),
       ),
+      scenario_answers:
+        "required only when you enrolled under a scenario: an object carrying that scenario's own questions, which are published with it on /api/field-study. Checked for presence exactly like the standard answers and graded exactly as much, which is not at all.",
       defects: [
         { where: "a path, a tool name, a surface", what: "what went wrong, one line", severity: "blocking | annoying | cosmetic" },
       ],
@@ -432,6 +508,7 @@ fieldStudyRoutes.post("/api/study/debrief", async (c) => {
       study_token: String(body["study_token"] ?? ""),
       legs: Array.isArray(body["legs"]) ? (body["legs"] as never[]) : [],
       answers: (body["answers"] as Record<string, unknown>) ?? {},
+      scenario_answers: body["scenario_answers"] as Record<string, unknown>,
       defects: body["defects"] as never,
     });
     c.executionCtx.waitUntil(

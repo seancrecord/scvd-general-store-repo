@@ -1,6 +1,11 @@
 import { escapeHtml } from "@/lib/sanitize";
 import type { MetricEvent, StudyLedger } from "@/lib/metrics";
-import type { StudyRecord, fieldStudyBoard } from "@/services/field-study";
+import type {
+  StudyRecord,
+  fieldStudyBoard,
+  scenarioShelf,
+} from "@/services/field-study";
+import { scenarioTargetSentence } from "@/services/field-study";
 import type { StudyFindings } from "@/services/study-findings";
 
 /**
@@ -35,6 +40,10 @@ export interface FieldStudyDeskData {
   findings: StudyFindings | null;
   ledger: StudyLedger | null;
   attempts: MetricEvent[];
+  /** Every scenario that exists, with whether it is live. Null when unread. */
+  scenarios?: Awaited<ReturnType<typeof scenarioShelf>> | null;
+  /** What the last button press did, echoed back off the redirect. */
+  notice?: string | null;
   now: string;
 }
 
@@ -223,11 +232,79 @@ function attemptsHtml(attempts: MetricEvent[]): string {
   </table>`;
 }
 
+/**
+ * THE SHELF, WITH ITS BUTTONS.
+ *
+ * One form per scenario and one for the whole set, because the keeper
+ * asked to put these live by pressing one thing and a scenario has
+ * nothing to fill in: it is already written, already priced, and
+ * already states what our books can and cannot confirm about it.
+ *
+ * The bonus column is the one worth reading before pressing anything.
+ * A scenario with a target pays on what OUR books show. A scenario
+ * without one pays nothing extra and says why — those are not lesser
+ * scenarios (cold arrival is the most valuable thing on this shelf),
+ * they are the ones where a bonus would be paying for the claim rather
+ * than the walk.
+ */
+function shelfHtml(data: FieldStudyDeskData): string {
+  if (!data.scenarios) return "<p>The scenario shelf did not load.</p>";
+  const live = data.scenarios.filter((row) => row.live).length;
+  const rows = data.scenarios
+    .map(
+      ({ scenario, live: isLive, expires_at }) => `<tr>
+      <td>${isLive ? '<strong style="color:#2f6b2f">live</strong>' : "<small>off</small>"}${
+        isLive && expires_at
+          ? `<br><small>until ${escapeHtml(expires_at.slice(0, 10))}</small>`
+          : ""
+      }</td>
+      <td><strong>${escapeHtml(scenario.title)}</strong><br><small><code>${escapeHtml(scenario.id)}</code></small></td>
+      <td><small>${escapeHtml(scenario.question)}</small></td>
+      <td>${
+        scenario.target
+          ? `$${scenario.bonus_usd.toFixed(2)}<br><small>when our books show ${escapeHtml(scenarioTargetSentence(scenario.target))}</small>`
+          : "<small>no bonus — nothing here for our books to confirm</small>"
+      }</td>
+      <td><form method="post" action="/admin/field-study/scenarios">
+        <input type="hidden" name="scenario_id" value="${escapeHtml(scenario.id)}">
+        <input type="hidden" name="action" value="${isLive ? "close" : "open"}">
+        <button type="submit">${isLive ? "take down" : "put live"}</button>
+      </form></td>
+    </tr>`,
+    )
+    .join("\n");
+  return `${
+    data.notice
+      ? `<p><strong>${escapeHtml(data.notice)}</strong></p>`
+      : ""
+  }
+  <p><strong>${live}</strong> of ${data.scenarios.length} scenarios live.
+  <small>A scenario never picks the product — walkers buy whatever they like — it names a condition of the walk, because the condition is what is being measured. Putting one live is safe to press twice: it extends rather than refuses.</small></p>
+  <form method="post" action="/admin/field-study/scenarios" style="display:inline">
+    <input type="hidden" name="action" value="open_all">
+    <button type="submit">Put the whole shelf live</button>
+  </form>
+  <form method="post" action="/admin/field-study/scenarios" style="display:inline">
+    <input type="hidden" name="action" value="close_all">
+    <button type="submit">Take the whole shelf down</button>
+  </form>
+  <p><small>With a fresh shelf the honest first move is the whole thing: which scenarios anybody actually takes is the question, and choosing for them before a single walk has come in would be guessing at exactly what this instrument exists to stop you guessing at. Taking one down stops new enrolments and never cancels a walk in flight — somebody is out there spending their own money on the strength of a listing we published.</small></p>
+  <table>
+    <tr><th>state</th><th>scenario</th><th>the question it answers</th><th>bonus</th><th></th></tr>
+    ${rows}
+  </table>`;
+}
+
 export function fieldStudySection(data: FieldStudyDeskData): string {
   return `
   <section>
     <h2>The field study — the week's budget</h2>
     ${budgetHtml(data.board)}
+  </section>
+
+  <section>
+    <h2>The field study — the scenario shelf</h2>
+    ${shelfHtml(data)}
   </section>
 
   <section>

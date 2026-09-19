@@ -19,6 +19,17 @@ import {
   studyReward,
   type StudyLeg,
 } from "@/services/field-study";
+import {
+  STUDY_SCENARIOS,
+  scenarioById,
+} from "@/store/study-scenarios";
+import {
+  closeScenario,
+  liveScenarios,
+  openScenario,
+  scenarioShelf,
+  scenarioTargetMet,
+} from "@/services/field-study";
 import { findingsFrom, caveatFor } from "@/services/study-findings";
 import { fieldSignerFromKey } from "@/services/launch-check";
 import { purchaseIntentStore } from "@/services/purchase-intent";
@@ -771,5 +782,246 @@ describe("the register itself", () => {
     await expect(
       enrolStudy(testEnv, {}, await options()),
     ).rejects.toBeInstanceOf(StudyRefused);
+  });
+});
+
+
+describe("the scenario shelf", () => {
+  it("carries the predetermined set, each with a distinct id", () => {
+    expect(STUDY_SCENARIOS.length).toBeGreaterThanOrEqual(20);
+    const ids = STUDY_SCENARIOS.map((scenario) => scenario.id);
+    expect(new Set(ids).size, "ids are distinct").toBe(ids.length);
+  });
+
+  /**
+   * THE HONESTY RULE OF THE WHOLE SHELF, as a test. A scenario whose
+   * condition our books cannot confirm must pay NOTHING extra — not a
+   * reduced bonus, none — because a bonus on an unverifiable condition
+   * is a bounty on claiming it rather than walking it. The inverse
+   * matters too: a scenario that CAN be checked and pays nothing is a
+   * harder walk priced as an easy one.
+   */
+  it("prices only what our own books can confirm, and says so either way", () => {
+    for (const scenario of STUDY_SCENARIOS) {
+      if (scenario.target === null) {
+        expect(scenario.bonus_usd, `${scenario.id} pays no bonus`).toBe(0);
+        expect(
+          scenario.unverifiable_because?.length ?? 0,
+          `${scenario.id} says why it cannot be checked`,
+        ).toBeGreaterThan(40);
+      } else {
+        expect(scenario.bonus_usd, `${scenario.id} pays for the harder walk`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("asks nothing without saying what the answer buys", () => {
+    for (const scenario of STUDY_SCENARIOS) {
+      expect(scenario.brief.length, `${scenario.id} has instructions`).toBeGreaterThan(0);
+      expect(scenario.question.length, `${scenario.id} names its question`).toBeGreaterThan(30);
+      expect(scenario.asks.length, `${scenario.id} asks something extra`).toBeGreaterThan(0);
+      for (const ask of scenario.asks) {
+        expect(ask.why.length, `${scenario.id}.${ask.field} says why`).toBeGreaterThan(40);
+      }
+    }
+  });
+
+  it("reads every target off verified legs and never off a declaration", () => {
+    const leg = (over: Partial<StudyLeg["observed"]> = {}): StudyLeg => ({
+      purchase_id: JSON.stringify(over),
+      declared: { surface: "ucp" },
+      observed: {
+        door: "http", protocol: "x402", network: "eip155:8453",
+        path: "/api/buy/thing", settled: true,
+        created_at: "2026-09-19T00:00:00.000Z", payer_digest: "d", ...over,
+      },
+    });
+    expect(scenarioTargetMet([leg({ door: "mcp" })], { kind: "door", door: "mcp" })).toBe(true);
+    expect(scenarioTargetMet([leg({ door: "http" })], { kind: "door", door: "mcp" })).toBe(false);
+    // Declared `ucp` on every leg above; a target must never read it.
+    expect(scenarioTargetMet([leg()], { kind: "door", door: "ucp" })).toBe(false);
+    expect(
+      scenarioTargetMet([leg({ network: "eip155:137" })], { kind: "rail_other_than", network: "eip155:8453" }),
+    ).toBe(true);
+    expect(
+      scenarioTargetMet([leg({ item: "a" }), leg({ item: "b" }), leg({ item: "c" })], { kind: "distinct_items", count: 3 }),
+    ).toBe(true);
+    expect(
+      scenarioTargetMet(
+        [leg({ created_at: "2026-09-19T00:00:00.000Z" }), leg({ created_at: "2026-09-19T05:00:00.000Z" })],
+        { kind: "spread_hours", hours: 4 },
+      ),
+    ).toBe(true);
+    // An unsettled leg alone is not the abandonment study; it needs a real one beside it.
+    expect(scenarioTargetMet([leg({ settled: false })], { kind: "unsettled_leg" })).toBe(false);
+    expect(scenarioTargetMet([leg(), leg({ settled: false })], { kind: "unsettled_leg" })).toBe(true);
+  });
+
+  it("goes live and comes down from the keeper's hand alone", async () => {
+    await openScenario(testEnv, "mcp_only");
+    expect((await liveScenarios(testEnv)).some((row) => row.scenario.id === "mcp_only")).toBe(true);
+    const shelf = await scenarioShelf(testEnv);
+    expect(shelf.length).toBe(STUDY_SCENARIOS.length);
+    expect(shelf.find((row) => row.scenario.id === "mcp_only")?.live).toBe(true);
+    await closeScenario(testEnv, "mcp_only");
+    expect((await liveScenarios(testEnv)).some((row) => row.scenario.id === "mcp_only")).toBe(false);
+  });
+
+  it("refuses to open a scenario that is not written", async () => {
+    await expect(openScenario(testEnv, "not_a_scenario")).rejects.toThrow(/no scenario is called/);
+  });
+
+  it("refuses an enrolment naming a scenario that is not live", async () => {
+    await closeScenario(testEnv, "off_base");
+    await expect(
+      enrolStudy(
+        testEnv,
+        { ...ROSTER, payout_to: "0xaaac111111111111111111111111111111111111", scenario: "off_base" },
+        await options(),
+      ),
+    ).rejects.toThrow(/not a scenario that is live/);
+  });
+
+  it("pays the bonus when our books show the target, and asks the scenario's own questions", async () => {
+    const now = new Date();
+    await openScenario(testEnv, "mcp_only", now);
+    const { study_id, study_token } = await enrolStudy(
+      testEnv,
+      { ...ROSTER, payout_to: "0xaaad111111111111111111111111111111111111", scenario: "mcp_only" },
+      await options(now),
+    );
+    const leg = await seedPurchase({
+      id: hex("c1"), token: hex("d1"), door: "mcp", network: "eip155:8453",
+      createdAt: new Date(now.getTime() + 1000).toISOString(),
+    });
+    const scenario = scenarioById("mcp_only")!;
+    // Missing the scenario's own question is refused by name, and pays nothing.
+    await expect(
+      debriefStudy(
+        testEnv,
+        { study_id, study_token, legs: [{ ...leg, surface: "mcp" }], answers: ANSWERS },
+        await options(now),
+      ),
+    ).rejects.toThrow(new RegExp(scenario.asks[0]!.field));
+
+    const result = await debriefStudy(
+      testEnv,
+      {
+        study_id, study_token,
+        legs: [{ ...leg, surface: "mcp" }],
+        answers: ANSWERS,
+        scenario_answers: Object.fromEntries(
+          scenario.asks.map((ask) => [ask.field, `an answer for ${ask.field}`]),
+        ),
+      },
+      await options(now),
+    );
+    expect(result.scenario?.id).toBe("mcp_only");
+    expect(result.scenario?.target_met).toBe(true);
+    expect(result.scenario?.bonus_usd).toBe(scenario.bonus_usd);
+    expect(
+      result.reward_usd,
+      "the bonus rides ON TOP of the ordinary ladder",
+    ).toBe(STUDY_BASE_REWARD_USD + STUDY_LEG_REWARD_USD + scenario.bonus_usd);
+    await closeScenario(testEnv, "mcp_only");
+  });
+
+  it("pays the ordinary reward untouched when the target is missed", async () => {
+    const now = new Date();
+    await openScenario(testEnv, "off_base", now);
+    const { study_id, study_token } = await enrolStudy(
+      testEnv,
+      { ...ROSTER, payout_to: "0xaaae111111111111111111111111111111111111", scenario: "off_base" },
+      await options(now),
+    );
+    // Settled on Base — precisely what this scenario asked them not to do.
+    const leg = await seedPurchase({
+      id: hex("c2"), token: hex("d2"), door: "http", network: "eip155:8453",
+      createdAt: new Date(now.getTime() + 1000).toISOString(),
+    });
+    const scenario = scenarioById("off_base")!;
+    const result = await debriefStudy(
+      testEnv,
+      {
+        study_id, study_token,
+        legs: [{ ...leg, surface: "x402_http" }],
+        answers: ANSWERS,
+        scenario_answers: Object.fromEntries(
+          scenario.asks.map((ask) => [ask.field, `an answer for ${ask.field}`]),
+        ),
+      },
+      await options(now),
+    );
+    expect(result.scenario?.target_met).toBe(false);
+    expect(result.scenario?.bonus_usd).toBe(0);
+    expect(
+      result.reward_usd,
+      "a missed target is not a penalty",
+    ).toBe(STUDY_BASE_REWARD_USD + STUDY_LEG_REWARD_USD);
+    expect(String(result.scenario?.how)).toMatch(/Nothing is deducted/);
+    await closeScenario(testEnv, "off_base");
+  });
+
+  /**
+   * SOMEBODY IS OUT THERE SPENDING THEIR OWN MONEY on the strength of
+   * a listing we published. Taking it down must stop new enrolments
+   * and never cancel a walk in flight.
+   */
+  it("lets a study already enrolled debrief after its scenario is taken down", async () => {
+    const now = new Date();
+    await openScenario(testEnv, "three_items", now);
+    const { study_id, study_token } = await enrolStudy(
+      testEnv,
+      { ...ROSTER, payout_to: "0xaaaf111111111111111111111111111111111111", scenario: "three_items" },
+      await options(now),
+    );
+    await closeScenario(testEnv, "three_items");
+    const leg = await seedPurchase({
+      id: hex("c3"), token: hex("d3"), door: "http", network: "eip155:8453",
+      createdAt: new Date(now.getTime() + 1000).toISOString(),
+    });
+    const scenario = scenarioById("three_items")!;
+    const result = await debriefStudy(
+      testEnv,
+      {
+        study_id, study_token,
+        legs: [{ ...leg, surface: "x402_http" }],
+        answers: ANSWERS,
+        scenario_answers: Object.fromEntries(
+          scenario.asks.map((ask) => [ask.field, `an answer for ${ask.field}`]),
+        ),
+      },
+      await options(now),
+    );
+    expect(result.scenario?.id).toBe("three_items");
+    expect(result.reward_usd).toBeGreaterThan(0);
+  });
+
+  it("puts the whole shelf live from one button, and takes it down again", async () => {
+    const AUTH = {
+      Authorization: `Basic ${btoa(`keeper:${(testEnv as unknown as { ADMIN_PASSWORD: string }).ADMIN_PASSWORD}`)}`,
+      "Content-Type": "application/json",
+    };
+    const open = await SELF.fetch(`${BASE}/admin/field-study/scenarios`, {
+      method: "POST", headers: AUTH, body: JSON.stringify({ action: "open_all" }),
+    });
+    expect(open.status).toBe(200);
+    expect((await liveScenarios(testEnv)).length).toBe(STUDY_SCENARIOS.length);
+
+    const room = await (
+      await SELF.fetch(`${BASE}/api/field-study`, { headers: { Accept: "application/json" } })
+    ).json() as { scenarios: { id: string; bonus_usd: number; bonus_pays_when: string | null; no_bonus_because: string | null }[] };
+    expect(room.scenarios.length).toBe(STUDY_SCENARIOS.length);
+    for (const published of room.scenarios) {
+      // The promise the shelf makes, kept on the public surface too.
+      if (published.bonus_usd === 0) expect(published.no_bonus_because).toBeTruthy();
+      else expect(published.bonus_pays_when).toBeTruthy();
+    }
+
+    const close = await SELF.fetch(`${BASE}/admin/field-study/scenarios`, {
+      method: "POST", headers: AUTH, body: JSON.stringify({ action: "close_all" }),
+    });
+    expect(close.status).toBe(200);
+    expect((await liveScenarios(testEnv)).length).toBe(0);
   });
 });

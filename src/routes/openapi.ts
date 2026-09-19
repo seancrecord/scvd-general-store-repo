@@ -2891,6 +2891,35 @@ const FIELD_STUDY_SCHEMA: OpenApiObject = {
     studies_debriefed_all_time: { type: "integer" },
     paid_all_time_usd: { type: "number" },
     the_ladder: { type: "object" },
+    scenarios: {
+      type: "array",
+      description:
+        "The predetermined studies the keeper has put live right now. A scenario NEVER picks the product — you buy whatever you like — it names a CONDITION of the walk, because the condition is what is being measured. Naming one at enrolment is optional; an open study pays the same ordinary reward.",
+      items: {
+        type: "object",
+        required: ["id", "title", "what_to_do", "bonus_usd"],
+        properties: {
+          id: { type: "string", description: "Pass as `scenario` at the enrolment door." },
+          title: { type: "string" },
+          the_question_it_answers: { type: "string" },
+          what_to_do: { type: "array", items: { type: "string" } },
+          buy_whatever_you_like: { type: "string" },
+          extra_questions_at_debrief: {
+            type: "array",
+            items: { type: "object", properties: { field: { type: "string" }, what: { type: "string" }, why: { type: "string" } } },
+            description: "Required in `scenario_answers` at the debrief, checked for presence and graded exactly as much as the standard answers, which is not at all.",
+          },
+          bonus_usd: { type: "number", description: "Zero when the condition is one this store's books cannot confirm." },
+          bonus_pays_when: {
+            type: ["string", "null"],
+            description: "Exactly what our own books must show for the bonus. Null when there is nothing for us to check — and then the bonus is zero, never merely smaller, because paying for an unverifiable condition would be paying for the claim rather than the walk.",
+          },
+          no_bonus_because: { type: ["string", "null"], description: "Why nobody but the walker can know, when that is the case." },
+          open_until: { type: "string", format: "date-time" },
+          enrol_with: { type: "object" },
+        },
+      },
+    },
     refusals: { type: "array", items: { type: "object" } },
     what_the_studies_show: {
       type: "object",
@@ -2940,6 +2969,15 @@ const STUDY_DEBRIEF_SCHEMA: OpenApiObject = {
     },
     what_was_verified: { type: "string" },
     what_was_not: { type: "string" },
+    scenario: {
+      type: "object",
+      description: "Present when the study enrolled under a scenario: whether our own books showed its target, the bonus that followed, and the reading in words. A missed target is never a penalty — the ordinary reward is untouched and the answers are kept and published either way.",
+      properties: {
+        id: { type: "string" }, title: { type: "string" },
+        target_met: { type: ["boolean", "null"], description: "Null when the scenario had no target for us to check." },
+        bonus_usd: { type: "number" }, how: { type: "string" },
+      },
+    },
     defects_recorded: { type: "integer" },
     payout: {
       type: "object",
@@ -7538,6 +7576,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 funding: { type: "string", description: "own_wallet, operator_wallet or test_funds. Spend caps travel with the money, and a refusal that looks like our bug is often somebody's policy." },
                 found_via: { type: "string", description: "How you got here — a directory, a search, a link, an operator's instruction." },
                 prior_x402: { type: "boolean", description: "Had you paid any x402 door before today." },
+                scenario: { type: "string", description: "Optional: the id of a scenario live right now, from `scenarios` on /api/field-study. Bound here or never — a debrief cannot name one, because picking the scenario after seeing which your purchases happened to satisfy would be choosing the question after seeing the answer." },
               },
             },
           ),
@@ -7590,6 +7629,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
                     compared_to: { type: "string", description: "What you would have used instead if this store were not here." },
                     would_return: { type: "string", description: "True or false, and one line on why." },
                   },
+                },
+                scenario_answers: {
+                  type: "object",
+                  description: "Required only when the study enrolled under a scenario: that scenario's own questions, published with it on /api/field-study. Checked for presence and never for quality, exactly like the standard answers.",
                 },
                 defects: {
                   type: "array",

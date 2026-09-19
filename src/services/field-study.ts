@@ -14,6 +14,12 @@ import {
   type SanctionsScreen,
   type FieldSigner,
 } from "@/services/launch-check";
+import {
+  STUDY_SCENARIOS,
+  scenarioById,
+  type ScenarioTarget,
+  type StudyScenario,
+} from "@/store/study-scenarios";
 import type { Env } from "@/types";
 
 /**
@@ -106,6 +112,13 @@ export const STUDY_ANSWER_CAP = 800;
 export const STUDY_NOTE_CAP = 600;
 export const STUDY_DEFECT_CAP = 10;
 export const STUDY_DEFECT_LENGTH = 400;
+/**
+ * HOW LONG A SCENARIO STANDS once the keeper puts it live. Long enough
+ * that opening one is not a chore to repeat, short enough that a shelf
+ * nobody is walking empties itself rather than advertising studies the
+ * store stopped caring about. Re-opening is one button. ⚑ keeper dial.
+ */
+export const STUDY_SCENARIO_DAYS = 28;
 /**
  * THE SURFACES A RESEARCHER MAY DECLARE, and why the list is closed.
  *
@@ -385,6 +398,15 @@ export interface StudyRecord {
   /** Where the reward goes. Taken at enrolment so it can be screened early. */
   payout_to: string;
   /**
+   * THE SCENARIO THIS STUDY ENROLLED UNDER, if any. Bound at enrolment
+   * and never afterwards: a walk that could pick its scenario at the
+   * debrief would be picking the one its purchases happened to satisfy,
+   * which is choosing the question after seeing the answer. Absent on
+   * an open study, which is always allowed — the shelf is a set of
+   * invitations, not a gate.
+   */
+  scenario?: string;
+  /**
    * THE TOKEN IS NEVER STORED. Only its sha256 is, so the roster this
    * store publishes and the desk the keeper reads can both walk every
    * record without either of them holding a bearer credential for a
@@ -395,6 +417,8 @@ export interface StudyRecord {
   debrief?: {
     at: string;
     answers: StudyDebriefAnswers;
+    /** The scenario's own questions, answered. Present only under one. */
+    scenario_answers?: Record<string, string>;
     legs: StudyLeg[];
     defects?: StudyDefect[];
     reward_usd: number;
@@ -416,6 +440,21 @@ export interface StudyReward {
   /** Distinct OBSERVED rails, and what they paid. */
   rails: string[];
   rails_usd: number;
+  /**
+   * THE SCENARIO'S OWN BONUS, and it is a separate line on purpose.
+   * It pays only when the target is met AND the target exists: a
+   * scenario our books cannot confirm carries no bonus at all, never a
+   * smaller one, because a bonus on an unverifiable condition is a
+   * bounty on claiming it rather than walking it.
+   */
+  scenario?: {
+    id: string;
+    /** Null when the scenario has no target for us to check. */
+    target_met: boolean | null;
+    bonus_usd: number;
+    /** What we looked for, or why there was nothing to look for. */
+    how: string;
+  };
   /** Before the per-study ceiling. */
   subtotal_usd: number;
   /** After it. This is what was signed. */
@@ -549,6 +588,8 @@ function isEvmAddress(value: unknown): value is string {
  */
 export function studyBrief(base: string) {
   return {
+    scenarios_note:
+      "The store keeps a shelf of predetermined scenarios, and whichever the keeper has put live are published on /api/field-study under `scenarios`. A scenario NEVER picks your product — you buy whatever you like — it names a CONDITION of the walk, because the condition is what is being measured. Naming one at enrolment is optional and an open study is always welcome at the same ordinary reward. Where our own books can confirm the condition, the scenario carries a bonus and states exactly what we will look for; where they cannot, it carries NO bonus and says why, because paying for a condition we cannot check would be paying for the claim rather than the walk.",
     what_we_want:
       "Shop this store the way you would actually shop it, several different ways, and then tell us what the shopping was like. We can already see what you bought. We cannot see what you read first, which step you retried, or what you would have used instead — and those are what we are paying for.",
     steps: [
@@ -702,6 +743,25 @@ export async function enrolStudy(
       "The sanctions screen could not be reached at enrolment. It is re-run and fails closed at the debrief.";
   }
 
+  /*
+   * THE SCENARIO, BOUND HERE OR NEVER. Optional — an open study is
+   * always allowed and the shelf is a set of invitations rather than a
+   * gate — but if one is named it must be LIVE now, because a walker
+   * who enrolled under a scenario the keeper had already taken down
+   * would be answering questions nobody is reading.
+   */
+  let scenarioId: string | undefined;
+  const namedScenario = input["scenario"];
+  if (typeof namedScenario === "string" && namedScenario.trim().length > 0) {
+    const live = await liveScenario(env, namedScenario.trim(), now);
+    if (!live) {
+      throw new StudyRefused(
+        `\`${namedScenario.trim().slice(0, 60)}\` is not a scenario that is live right now. Read the open shelf on /api/field-study under \`scenarios\` and name one of those, or leave \`scenario\` out entirely — an open study is always welcome and pays the same ordinary reward.`,
+      );
+    }
+    scenarioId = live.id;
+  }
+
   const study_token = newStudyToken();
   const record: StudyRecord = {
     study_id: newStudyId(),
@@ -710,6 +770,7 @@ export async function enrolStudy(
     roster,
     status: "enrolled",
     payout_to: payoutTo.toLowerCase(),
+    ...(scenarioId ? { scenario: scenarioId } : {}),
     token_sha256: await sha256Hex(study_token),
   };
   await saveStudy(env, record);
@@ -834,6 +895,89 @@ async function verifyLeg(
 }
 
 /**
+ * DID OUR OWN BOOKS SHOW WHAT THE SCENARIO ASKED FOR?
+ *
+ * Every branch reads VERIFIED legs only — the rows this store already
+ * confirmed against its own purchase records — and never a word the
+ * researcher wrote. A scenario target is therefore exactly as
+ * trustworthy as the base reward, which is the property that let it
+ * carry money at all.
+ *
+ * The one branch that pays for a failure is `unsettled_leg`, and it
+ * requires a settled leg beside it: a debrief with nothing but
+ * abandonment is refused upstream, and rightly — but a walker who
+ * bought something AND handed us the id of the thing they gave up on
+ * has given this store the one outcome its books are structurally
+ * blind to.
+ */
+export function scenarioTargetMet(
+  legs: readonly StudyLeg[],
+  target: ScenarioTarget,
+): boolean {
+  const settled = legs.filter((leg) => leg.observed.settled);
+  switch (target.kind) {
+    case "door":
+      return settled.some((leg) => leg.observed.door === target.door);
+    case "protocol":
+      return settled.some((leg) => leg.observed.protocol === target.protocol);
+    case "rail_other_than":
+      return settled.some(
+        (leg) => leg.observed.network.toLowerCase() !== target.network.toLowerCase(),
+      );
+    case "distinct_rails":
+      return (
+        new Set(settled.map((leg) => leg.observed.network.toLowerCase())).size >=
+        target.count
+      );
+    case "distinct_doors":
+      return new Set(settled.map((leg) => leg.observed.door)).size >= target.count;
+    case "distinct_items":
+      return (
+        new Set(
+          settled
+            .map((leg) => leg.observed.item)
+            .filter((item): item is string => Boolean(item)),
+        ).size >= target.count
+      );
+    case "legs":
+      return settled.length >= target.count;
+    case "spread_hours": {
+      if (settled.length < 2) return false;
+      const times = settled
+        .map((leg) => new Date(leg.observed.created_at).getTime())
+        .sort((a, b) => a - b);
+      return times[times.length - 1]! - times[0]! >= target.hours * 3600 * 1000;
+    }
+    case "unsettled_leg":
+      return settled.length > 0 && legs.some((leg) => !leg.observed.settled);
+  }
+}
+
+/** What we looked for, in words, printed beside the verdict. */
+export function scenarioTargetSentence(target: ScenarioTarget): string {
+  switch (target.kind) {
+    case "door":
+      return `a settled purchase through the ${target.door} door, as our own books recorded it`;
+    case "protocol":
+      return `a settled purchase paid under the ${target.protocol} protocol, as our own books recorded it`;
+    case "rail_other_than":
+      return `a settled purchase on any rail other than ${target.network}`;
+    case "distinct_rails":
+      return `settled purchases spanning at least ${target.count} distinct rails`;
+    case "distinct_doors":
+      return `settled purchases spanning at least ${target.count} distinct doors`;
+    case "distinct_items":
+      return `settled purchases of at least ${target.count} distinct catalogue items`;
+    case "legs":
+      return `at least ${target.count} settled purchases`;
+    case "spread_hours":
+      return `a first and last settled purchase at least ${target.hours} hours apart`;
+    case "unsettled_leg":
+      return "a cited purchase that did NOT settle, beside at least one that did";
+  }
+}
+
+/**
  * THE ARITHMETIC, IN ONE PLACE AND EXPORTED so the room, the debrief
  * response and the test all read the same function rather than three
  * copies of the same sum. Every input is an OBSERVED fact: a leg
@@ -841,7 +985,10 @@ async function verifyLeg(
  * door+protocol pair our books recorded, a rail counts as the network
  * the terms named. Nothing the researcher typed reaches this.
  */
-export function studyReward(legs: readonly StudyLeg[]): StudyReward {
+export function studyReward(
+  legs: readonly StudyLeg[],
+  scenario?: StudyScenario | null,
+): StudyReward {
   const settled = legs.filter((leg) => leg.observed.settled);
   const legsCounted = Math.min(settled.length, STUDY_LEGS_COUNTED);
   const surfaces = [
@@ -853,9 +1000,51 @@ export function studyReward(legs: readonly StudyLeg[]): StudyReward {
   const surfacesUsd = Math.max(0, surfaces.length - 1) * STUDY_SURFACE_BONUS_USD;
   const railsUsd = Math.max(0, rails.length - 1) * STUDY_RAIL_BONUS_USD;
   const round = (n: number): number => Math.round(n * 100) / 100;
+
+  /*
+   * THE SCENARIO LINE. A scenario with no target pays nothing extra —
+   * not a reduced bonus, none — and says so in `how` rather than
+   * leaving a zero for the reader to interpret. A scenario whose
+   * target our books did not show pays nothing extra either, and the
+   * ordinary reward is untouched: missing a scenario target is not a
+   * penalty, it is simply the bonus not being earned, and the walk is
+   * still worth what the walk was worth.
+   */
+  let scenarioLine: StudyReward["scenario"];
+  let bonus = 0;
+  if (scenario) {
+    if (!scenario.target) {
+      scenarioLine = {
+        id: scenario.id,
+        target_met: null,
+        bonus_usd: 0,
+        how: `This scenario carries no bonus, because our books cannot confirm the condition it asks for. ${scenario.unverifiable_because ?? ""} The ordinary study reward below is unaffected and is what this walk is worth.`.trim(),
+      };
+    } else {
+      const met = settled.length > 0 && scenarioTargetMet(legs, scenario.target);
+      bonus = met ? scenario.bonus_usd : 0;
+      scenarioLine = {
+        id: scenario.id,
+        target_met: met,
+        bonus_usd: round(bonus),
+        how: met
+          ? `Our own books show ${scenarioTargetSentence(scenario.target)}. The bonus is paid on that reading and on nothing you wrote.`
+          : `Our own books do not show ${scenarioTargetSentence(scenario.target)}, so the scenario bonus is not earned. Nothing is deducted for it — the ordinary reward below is untouched, and the answers you sent are kept and published either way.`,
+      };
+    }
+  }
+
   const subtotal = round(base + legsUsd + surfacesUsd + railsUsd);
-  const total = round(Math.min(subtotal, STUDY_MAX_REWARD_USD));
+  /*
+   * THE CEILING BITES THE LADDER, NOT THE BONUS. Capping the two
+   * together would let a well-covered walk silently swallow the
+   * scenario reward, so a walker who did the harder thing would be
+   * paid exactly the same as one who did not — which is the whole
+   * point of the bonus, undone by an ordering accident.
+   */
+  const total = round(Math.min(subtotal, STUDY_MAX_REWARD_USD) + bonus);
   return {
+    ...(scenarioLine ? { scenario: scenarioLine } : {}),
     base_usd: round(base),
     legs_counted: legsCounted,
     legs_usd: round(legsUsd),
@@ -863,7 +1052,7 @@ export function studyReward(legs: readonly StudyLeg[]): StudyReward {
     surfaces_usd: round(surfacesUsd),
     rails,
     rails_usd: round(railsUsd),
-    subtotal_usd: subtotal,
+    subtotal_usd: round(subtotal + bonus),
     total_usd: total,
     capped: subtotal > STUDY_MAX_REWARD_USD,
   };
@@ -874,6 +1063,8 @@ export interface DebriefInput {
   study_token: string;
   legs: StudyLegInput[];
   answers: Record<string, unknown>;
+  /** The scenario's own questions, when the study enrolled under one. */
+  scenario_answers?: Record<string, unknown>;
   defects?: StudyDefect[];
 }
 
@@ -885,6 +1076,14 @@ export interface DebriefResult {
   what_was_verified: string;
   what_was_not: string;
   your_answers_are: string;
+  /** Present when the study enrolled under a scenario: how it went. */
+  scenario?: {
+    id: string;
+    title: string;
+    target_met: boolean | null;
+    bonus_usd: number;
+    how: string;
+  };
   defects_recorded: number;
   payout: {
     method: "eip3009_transfer_with_authorization";
@@ -903,6 +1102,33 @@ function readAnswers(raw: Record<string, unknown>): StudyDebriefAnswers {
     answers[entry.field] = requiredText(raw[entry.field], entry.field, STUDY_ANSWER_CAP);
   }
   return answers as StudyDebriefAnswers;
+}
+
+/**
+ * THE SCENARIO'S OWN QUESTIONS, required when one was enrolled under.
+ *
+ * Required for the same reason the standard set is: under a scenario,
+ * these ARE the goods. Somebody enrolled under "cold arrival" and left
+ * `first_ninety_seconds` blank has handed back an ordinary study, and
+ * the ordinary study is what the base reward already pays for.
+ *
+ * Checked for presence and nothing else, exactly like the standard
+ * answers, and for the same reason: completeness is a fact, quality is
+ * an opinion, and only one of those is safe to attach money to.
+ */
+function readScenarioAnswers(
+  scenario: StudyScenario,
+  raw: Record<string, unknown> | undefined,
+): Record<string, string> {
+  const answers: Record<string, string> = {};
+  for (const ask of scenario.asks) {
+    answers[ask.field] = requiredText(
+      (raw ?? {})[ask.field],
+      `scenario_answers.${ask.field}`,
+      STUDY_ANSWER_CAP,
+    );
+  }
+  return answers;
 }
 
 function readDefects(raw: unknown): StudyDefect[] {
@@ -1016,6 +1242,21 @@ export async function debriefStudy(
     seen.add(leg.purchase_id);
   }
   const answers = readAnswers(input.answers ?? {});
+  /*
+   * THE SCENARIO IS READ OFF THE RECORD, never off the debrief body.
+   * Letting a walk name its scenario here would let it pick the one
+   * its purchases happened to satisfy — choosing the question after
+   * seeing the answer, and paying a bonus for the coincidence. It was
+   * bound at enrolment or it does not apply.
+   *
+   * A scenario since taken down still applies to a study enrolled
+   * under it: closing the shelf stops new enrolments, it does not
+   * cancel a walk somebody is halfway through with their own money.
+   */
+  const scenario = record.scenario ? scenarioById(record.scenario) : null;
+  const scenarioAnswers = scenario
+    ? readScenarioAnswers(scenario, input.scenario_answers)
+    : undefined;
   const defects = readDefects(input.defects);
 
   /*
@@ -1134,7 +1375,7 @@ export async function debriefStudy(
       );
     }
 
-    const reward = studyReward(legs);
+    const reward = studyReward(legs, scenario);
     const spent = await studyWeekSpent(env, weekKey);
     if (spent + reward.total_usd > STUDY_WEEKLY_BUDGET_USD) {
       throw new StudyRefused(
@@ -1188,6 +1429,7 @@ export async function debriefStudy(
       debrief: {
         at: now.toISOString(),
         answers,
+        ...(scenarioAnswers ? { scenario_answers: scenarioAnswers } : {}),
         legs,
         ...(defects.length > 0 ? { defects } : {}),
         reward_usd: reward.total_usd,
@@ -1209,6 +1451,17 @@ export async function debriefStudy(
       what_was_not:
         "Your answers. Every one of them is recorded verbatim as YOUR claim and none of it was graded — this store did not watch you shop and does not pretend to. Completeness was checked; quality never was, because a store that paid more for answers it liked would be buying the answers it wanted and calling the result research.",
       your_answers_are: `Recorded against study ${record.study_id} and destined for the field-study room in aggregate. What is published is the shape of the answers across studies, never a roster of who said what: the model, the harness and the autonomy are columns; your operator string and your free text are not republished beside your wallet.`,
+      ...(scenario && reward.scenario
+        ? {
+            scenario: {
+              id: scenario.id,
+              title: scenario.title,
+              target_met: reward.scenario.target_met,
+              bonus_usd: reward.scenario.bonus_usd,
+              how: reward.scenario.how,
+            },
+          }
+        : {}),
       defects_recorded: defects.length,
       payout: {
         method: "eip3009_transfer_with_authorization",
@@ -1223,6 +1476,131 @@ export async function debriefStudy(
     await rollBack();
     throw error;
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * THE SCENARIO SHELF                                                   *
+ * ------------------------------------------------------------------ */
+
+/**
+ * A scenario the keeper has put live. The DEFINITION is code and never
+ * KV — only the opening is stored, so a scenario cannot be edited into
+ * existence at runtime and closing one deletes a key rather than
+ * mutating a definition somebody is mid-walk on.
+ */
+export interface OpenScenario {
+  scenario_id: string;
+  opened_at: string;
+  expires_at: string;
+}
+
+/** A live scenario, with the definition read back off the shelf. */
+export interface LiveScenario extends OpenScenario {
+  scenario: StudyScenario;
+}
+
+/**
+ * PUT ONE LIVE. The keeper's hand only (the admin route is the single
+ * caller), and it is one button because there is nothing to decide: a
+ * scenario is already written, already priced, and already says what
+ * it can and cannot verify. Re-opening a live one extends it rather
+ * than refusing — the button is meant to be safe to press twice.
+ */
+export async function openScenario(
+  env: Env,
+  scenarioId: string,
+  now: Date = new Date(),
+  days: number = STUDY_SCENARIO_DAYS,
+): Promise<OpenScenario> {
+  const scenario = scenarioById(scenarioId);
+  if (!scenario) {
+    throw new StudyRefused(
+      `no scenario is called \`${scenarioId}\`. The shelf is code (store/study-scenarios.ts), so a scenario that is not written cannot be opened — which is the point.`,
+    );
+  }
+  const record: OpenScenario = {
+    scenario_id: scenario.id,
+    opened_at: now.toISOString(),
+    expires_at: new Date(now.getTime() + days * 24 * 3600 * 1000).toISOString(),
+  };
+  await kvPut(
+    env.COUNTERS,
+    KV_KEYS.studyScenario(scenario.id),
+    JSON.stringify(record),
+  );
+  return record;
+}
+
+/**
+ * TAKE ONE DOWN. Studies already enrolled under it are untouched and
+ * still debrief normally — closing a scenario stops new enrolments,
+ * it does not cancel a walk somebody is halfway through with their own
+ * money.
+ */
+export async function closeScenario(env: Env, scenarioId: string): Promise<void> {
+  await env.COUNTERS.delete(KV_KEYS.studyScenario(scenarioId));
+}
+
+/** Every scenario live right now, in the shelf's own order. */
+export async function liveScenarios(
+  env: Env,
+  now: Date = new Date(),
+): Promise<LiveScenario[]> {
+  const keys = STUDY_SCENARIOS.map((scenario) =>
+    KV_KEYS.studyScenario(scenario.id),
+  );
+  const rows = await bulkGetJson<OpenScenario>(env.COUNTERS, keys);
+  const live: LiveScenario[] = [];
+  for (const scenario of STUDY_SCENARIOS) {
+    const row = rows.get(KV_KEYS.studyScenario(scenario.id));
+    if (!row) continue;
+    // Derived from the clock on every read, never from a sweep: a
+    // stored "open" that nothing flipped is a listing that refuses the
+    // enrolment it advertised.
+    if (new Date(row.expires_at).getTime() <= now.getTime()) continue;
+    live.push({ ...row, scenario });
+  }
+  return live;
+}
+
+/** One live scenario by id, or null. Used at the enrolment door. */
+export async function liveScenario(
+  env: Env,
+  scenarioId: string,
+  now: Date = new Date(),
+): Promise<StudyScenario | null> {
+  const row = await kvGetJson<OpenScenario>(
+    env.COUNTERS,
+    KV_KEYS.studyScenario(scenarioId),
+  );
+  if (!row || new Date(row.expires_at).getTime() <= now.getTime()) return null;
+  return scenarioById(scenarioId);
+}
+
+/**
+ * THE WHOLE SHELF WITH ITS STATE, for the keeper's desk: every
+ * scenario that exists, live or not, so the buttons can be drawn
+ * beside the ones already pressed.
+ */
+export async function scenarioShelf(
+  env: Env,
+  now: Date = new Date(),
+): Promise<
+  Array<{ scenario: StudyScenario; live: boolean; expires_at?: string }>
+> {
+  const keys = STUDY_SCENARIOS.map((scenario) =>
+    KV_KEYS.studyScenario(scenario.id),
+  );
+  const rows = await bulkGetJson<OpenScenario>(env.COUNTERS, keys);
+  return STUDY_SCENARIOS.map((scenario) => {
+    const row = rows.get(KV_KEYS.studyScenario(scenario.id));
+    const live = Boolean(row) && new Date(row!.expires_at).getTime() > now.getTime();
+    return {
+      scenario,
+      live,
+      ...(row ? { expires_at: row.expires_at } : {}),
+    };
+  });
 }
 
 /**

@@ -65,6 +65,62 @@ offer, and it is the whole reason this instrument is worth paying for.
    unredeemed, it expires on its own and the budget takes it back. Same
    instrument as the bounty board's payout, and for the same reasons.
 
+## The scenario shelf
+
+Twenty-eight predetermined studies live in `src/store/study-scenarios.ts`.
+The keeper puts any of them live from `/admin/bounties` with one button,
+or the whole shelf with one more. Nothing is filled in, because nothing
+is decided: a scenario is already written, already priced, and already
+states what our books can and cannot confirm about it.
+
+**A scenario never picks the product.** Walkers buy whatever they like.
+What a scenario names is a *condition of the walk* — arrive cold, come in
+through the MCP tools only, settle somewhere other than Base, find the
+price without opening a wallet, start something and stop — because the
+condition is the thing being measured. A scenario that named an item
+would be measuring that item, and the question here is never what a thing
+is like to own; it is what this store is like to shop. Free choice of
+product is also the only thing that exercises the shelf: twenty-eight
+studies all told to buy the same penny good would leave every other
+listing unwalked.
+
+**The verifiable and the merely asked.** This is the whole honesty of the
+shelf, and it is enforced by test.
+
+Some conditions our own books can confirm — which door, which protocol,
+which rail, how many distinct items, how far apart in time, and whether a
+cited purchase failed to settle. Those carry a `target`, and the bonus
+pays when the books agree. No judgement, no grading: the same rule the
+base reward lives under.
+
+Others cannot be confirmed by anybody but the walker — whether they
+really arrived cold, whether they really read `llms.txt` first, whether a
+human really approved each payment. Those carry `target: null` and an
+`unverifiable_because` published on the listing, and they pay **no bonus
+at all**. Not a reduced one — none. A bonus on an unverifiable condition
+is a bounty on *claiming* it, and the store would be paying for the
+sentence rather than the walk.
+
+That is not a reason to leave them off the shelf. Cold arrival is the
+single most valuable study on it. The honest way to run it is to ask, pay
+the ordinary reward for the ordinary verified legs, and say plainly that
+the condition rode on trust.
+
+**Bound at enrolment or not at all.** A debrief cannot name a scenario.
+Letting it would let a walk pick the scenario its purchases happened to
+satisfy — choosing the question after seeing the answer, and collecting a
+bonus for the coincidence.
+
+**The ceiling bites the ladder, not the bonus.** Capping them together
+would let a well-covered walk silently swallow the scenario reward, so a
+walker who did the harder thing would be paid exactly what one who did
+not was paid.
+
+**Closing never cancels a walk in flight.** Taking a scenario down stops
+new enrolments. Studies already enrolled under it debrief normally,
+because somebody is out there spending their own money on the strength of
+a listing we published.
+
 ## Declared first, then observed — and why the order is the instrument
 
 Enrolment happens **before** any money moves. The researcher states
@@ -198,7 +254,9 @@ it was a confiscation.
 ## Where it lives
 
 - Room: `https://scvd.store/field-study` (HTML, JSON by Accept,
-  markdown twin)
+  markdown twin) — live scenarios are published under `scenarios`
+- The shelf's buttons: `/admin/bounties`, posting to
+  `/admin/field-study/scenarios`
 - Board as JSON: `https://scvd.store/api/field-study`
 - Enrol: `POST https://scvd.store/api/study/enrol` (GET for the shape)
 - Debrief: `POST https://scvd.store/api/study/debrief` (GET for the
@@ -207,8 +265,11 @@ it was a confiscation.
   token
 - Keeper's desk: `/admin/bounties`, below the bounty board
 
-Code: `src/services/field-study.ts` (the instrument, and the only part
-that can sign), `src/services/study-findings.ts` (the aggregate, which
+Code: `src/store/study-scenarios.ts` (the shelf — definitions are code
+and never KV, so a scenario cannot be edited into existence at runtime
+and closing one deletes a key rather than mutating a definition somebody
+is mid-walk on), `src/services/field-study.ts` (the instrument, and the
+only part that can sign), `src/services/study-findings.ts` (the aggregate, which
 reads KV directly so that the collector cannot reach a signer — the same
 ruling `crowd-walks.ts` is written under), `src/routes/field-study.ts`,
 `src/pages/admin/field-study-section.ts`.
