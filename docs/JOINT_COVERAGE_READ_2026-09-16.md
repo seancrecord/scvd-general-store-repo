@@ -135,10 +135,30 @@ on it.
 
 |  | StillOS Notary | scvd.store |
 |---|---|---|
-| rails read | USDC on Base, XRP on XRPL, USDC on Solana — the Solana probe reads current balance only and can never return `ZERO_OBSERVED` (from `answers.json`, `global_blind_spots`) | Base, Arbitrum, Polygon, World, Ethereum, Optimism, Avalanche (EVM USDC); Solana and Algorand in the store's older readers |
+| rails **read** by the instrument that produced these numbers | USDC on Base, XRP on XRPL, USDC on Solana — the Solana probe reads current balance only and can never return `ZERO_OBSERVED` (from `answers.json`, `global_blind_spots`) | USDC on **Base and Arbitrum One**, and nothing else. See the correction below. |
+| rails the registry **supports** | `[StillOS]` | Base, Arbitrum, Polygon, World, Ethereum, Optimism, Avalanche, plus Solana and Algorand in older readers. Support is not a reading. |
 | depth | genesis → pinned ceiling, full index history | blocks 50918945 → 51316142 for counting; all-time for zeroes, via the nonce argument |
 | ceiling | `eip155:8453` block 51316142 | the same block, deliberately |
 | cost shape | index history | two calls per address, plus a bounded window where a count is wanted |
+
+**A correction to this table, 2026-09-19, found while posing the next
+key.** An earlier revision of this row listed all seven EVM rails under
+*rails read* for scvd.store. That was an overclaim of exactly the kind
+this paper is about — listed, not walked. The instrument that produced
+every number in this paper has read **two** chains, Base and Arbitrum
+One. Of the seven in the registry, five have never answered a call from
+it: from the environment these readings were taken in, Polygon,
+Avalanche, World, Ethereum and Optimism all refuse the connection, and
+that was true on 2026-09-03 when the registry's own docblock recorded
+it and is still true today.
+
+The store's own code was already more honest than this paper: its bank
+walk and inflow census run over `WALKED_EVM_CHAINS`, which is **two**
+chains, and a settlement read that cannot reach its chain returns
+`window_unreadable` with the provider's reason rather than a partial
+statement. The prose overran the code. Corrected here, and it is the
+second time in this exchange that reaching for the next piece of work
+exposed an overclaim in the last one.
 
 **Neither scope is the correct one and neither is crowned.** StillOS's
 reaches further back; scvd.store's reproduces cheaply against a public

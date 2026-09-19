@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   windowTrustworthy,
+  railCoveredByRun,
   PAID_RESIDUAL,
   readDoor,
   PAID_VERDICTS,
@@ -283,4 +284,18 @@ test("an untrustworthy window reaches the verdict as UNKNOWN, never as a zero", 
   });
   assert.equal(row.verdict, "UNKNOWN");
   assert.doesNotMatch(String(row.established_by), /ZERO_OBSERVED/);
+});
+
+test("a pinned rail is read only by the run that covers it, because every EVM address is well-formed everywhere", () => {
+  // Found building the second blind key, on a door advertising nine
+  // rails from one address. Reading its Polygon payTo against Base's
+  // USDC contract SUCCEEDS and returns a balance — a well-formed wrong
+  // value, the same shape as an address re-typed from a truncated
+  // display, and it renders as a reading of Polygon.
+  assert.equal(railCoveredByRun("eip155:8453", "eip155:8453"), true);
+  assert.equal(railCoveredByRun("eip155:137", "eip155:8453"), false);
+  assert.equal(railCoveredByRun("eip155:42161", "eip155:8453"), false);
+  // An unpinned rail is the single-rail door case and stays readable.
+  assert.equal(railCoveredByRun(null, "eip155:8453"), true);
+  assert.equal(railCoveredByRun(undefined, "eip155:8453"), true);
 });

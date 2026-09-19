@@ -1,0 +1,13 @@
+{
+ "arrangement": "seancrecord/scvd-general-store-repo#622 \u2014 blind key, round two, scvd.store direction",
+ "committed_at": "2026-09-19T17:20:00Z",
+ "answer_commitment": {
+  "file": "answers.sealed.json",
+  "sha256": "7737c1c598a0f053538618540c37a914ac39939ac24af65ad6a3bd4e34fd91b6",
+  "byte_length": 8556,
+  "hashed_over": "raw bytes of the file as written, not a re-serialisation of a parsed object"
+ },
+ "verify": "On reveal: sha256 the published answers.sealed.json as raw bytes and compare the digest AND the byte length. Both must match or the commitment is void and say so publicly.",
+ "reproducible_without_the_file": "Unlike round one, this answer file carries no wall-clock field. Re-running `npm run paid-doors -- --rail eip155:8453 --state-only --doors research/blind-key-2-2026-09-19/our-five-doors.json --at-block 51520000` and rebuilding the file reproduces these exact bytes, so the commitment is checkable by a third party and survives the loss of our copy.",
+ "not_in_this_repository_until_reveal": "The sealed answers are deliberately absent from this tree. A sealed answer sitting in a public repository is not sealed."
+}

@@ -21,7 +21,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail, windowTrustworthy,
+  PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail, windowTrustworthy, railCoveredByRun,
 } from "./lib/paid-doors.mjs";
 import { railFor } from "./lib/evm-chains.mjs";
 import { useEnvProxy } from "./lib/proxy-fetch.mjs";
@@ -259,7 +259,7 @@ async function readEvmRail({ payTo, scheme }) {
 function outOfReachRail({ rail, payTo }) {
   const row = readDoorRail({ rail: rail ?? "non-evm", payTo: null, atBlock, fromBlock });
   row.advertised_pay_to = payTo ?? null;
-  row.established_by = `this door advertises ${payTo ?? "an address"} on ${rail ?? "an unnamed rail"}, which this instrument does not read; UNKNOWN is a gap in the observer, not a finding about the door`;
+  row.established_by = `this door advertises ${payTo ?? "an address"} on ${rail ?? "an unnamed rail"}, which this run does not read (this reader holds one rail per run and is reading ${RAIL_FLAG}); UNKNOWN is a gap in the observer, not a finding about the door`;
   return row;
 }
 
@@ -271,8 +271,20 @@ for (const door of doors) {
     // is what the door rule requires before a zero may stand.
     entry.pinned_rails = door.rails.length;
     for (const rail of door.rails) {
+      /*
+       * A 0x ADDRESS IS NOT A PERMISSION TO READ IT HERE (2026-09-19).
+       * This reader holds one rail per run — RAIL_FLAG — and every EVM
+       * chain uses the same address format. Reading a pinned Polygon
+       * payTo against Base's USDC contract answers a question nobody
+       * asked and answers it confidently: the address exists on both
+       * chains, the call succeeds, and the row looks like a reading.
+       * That is StillOS's truncation near-miss in a third coat — a
+       * well-formed wrong value. A rail is read only when the door
+       * pinned it to the rail this run is reading.
+       */
       const isEvm = typeof rail.payTo === "string" && rail.payTo.startsWith("0x");
-      entry.rails.push(isEvm ? await readEvmRail(rail) : outOfReachRail(rail));
+      const thisRail = railCoveredByRun(rail.rail, RAIL_FLAG);
+      entry.rails.push(isEvm && thisRail ? await readEvmRail(rail) : outOfReachRail(rail));
     }
   } else {
     const resolved = door.payTo
