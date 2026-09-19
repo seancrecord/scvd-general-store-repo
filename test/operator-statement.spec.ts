@@ -209,7 +209,7 @@ describe("the sweep, pass by pass", () => {
     };
     useChain(fakeChain(state));
     const t0 = Date.now();
-    expect(await sweepOperatorStatements(testEnv, t0)).toBe(1);
+    expect((await sweepOperatorStatements(testEnv, t0)).worked).toBe(1);
     let record = (await readOperatorStatement(testEnv, term.statement_id))!;
     expect(record.passes).toHaveLength(1);
     const first = record.passes[0]!;
@@ -224,12 +224,12 @@ describe("the sweep, pass by pass", () => {
     expect(first.signature).toMatch(/^[0-9a-f]{128}$/);
 
     // Too soon: the floor between passes holds.
-    expect(await sweepOperatorStatements(testEnv, t0 + 3600_000)).toBe(0);
+    expect((await sweepOperatorStatements(testEnv, t0 + 3600_000)).worked).toBe(0);
 
     // Six hours on, the chain moved: the next pass starts one block after the last.
     state.head = 1_000_200;
     state.inbound.push({ tx: "0xc1", from: C, amount: 3_000_000n, block: 1_000_150 });
-    expect(await sweepOperatorStatements(testEnv, t0 + OPERATOR_PASS_HOURS * 3600_000)).toBe(1);
+    expect((await sweepOperatorStatements(testEnv, t0 + OPERATOR_PASS_HOURS * 3600_000)).worked).toBe(1);
     record = (await readOperatorStatement(testEnv, term.statement_id))!;
     expect(record.passes[1]!.from_block).toBe(1_000_101);
     expect(record.passes[1]!.to_block).toBe(1_000_200);
@@ -283,7 +283,7 @@ describe("the sweep, pass by pass", () => {
       ends_at: new Date(Date.now() - 60_000).toISOString(),
     });
     useChain(fakeChain({ head: 1_000_100, inbound: [], outbound: [] }));
-    expect(await sweepOperatorStatements(testEnv)).toBe(0);
+    expect((await sweepOperatorStatements(testEnv)).worked).toBe(0);
     const history = (await (await SELF.fetch(`${BASE}/api/operator-statement/${term.statement_id}`)).json()) as Record<string, any>;
     expect(history.complete).toBe(true);
     expect(history.the_next_month.ended).toBe(true);
@@ -305,6 +305,7 @@ describe("the sweep, pass by pass", () => {
       entriesOf: (record) => record.entries,
       observe: async () => ({ at: new Date().toISOString() }),
     });
-    expect(worked).toBe(2);
+    expect(worked.worked).toBe(2);
+    expect(worked.budget_stopped).toBe(true);
   });
 });

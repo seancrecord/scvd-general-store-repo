@@ -14,7 +14,7 @@ import {
   probeWithMethod,
   type ProbeMethod,
 } from "@/lib/probe-method";
-import { sweepWatches } from "@/services/watch-sweep";
+import { sweepWatches, type WatchSweepReport } from "@/services/watch-sweep";
 import {
   captureWatchEvidenceKeepingBody,
   recipientsFromChallenge,
@@ -608,7 +608,7 @@ async function probeOnce(
 export async function sweepStandingWatches(
   env: Env,
   options: { burstGapMs?: number } = {},
-): Promise<number> {
+): Promise<WatchSweepReport> {
   const burstGapMs = options.burstGapMs ?? BURST_GAP_MS;
   let bursts = 0;
   return sweepWatches<StandingWatchRecord, WatchProbe>({

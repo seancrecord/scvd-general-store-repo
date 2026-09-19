@@ -184,7 +184,7 @@ describe("the watch's week, swept", () => {
     );
 
     const first = await sweepConformanceWatches(testEnv);
-    expect(first).toBeGreaterThanOrEqual(1);
+    expect(first.worked).toBeGreaterThanOrEqual(1);
     // The doubled cron tick: same day, no second pass for this watch.
     await sweepConformanceWatches(testEnv);
     const history = await readConformanceWatch(testEnv, record.watch_id);

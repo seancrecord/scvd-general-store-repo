@@ -1,4 +1,5 @@
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
+import { watchSweepGaps, type WatchSweepReport } from "@/services/watch-sweep";
 import { withPatientKv } from "@/lib/kv-retry";
 import type { Context } from "hono";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
@@ -908,9 +909,22 @@ const worker: ExportedHandler<Env> = {
     // daily (23-hour floor per record) — a failed sweep alerts for
     // the same reason: a skipped day becomes a days_unchecked row in
     // a customer's history. Our gap, on their record.
+    /**
+     * A PASS THAT COULD NOT SEE ITS SHELF SAYS SO (2026-09-19). The
+     * sweeps returned a count and this cron dropped it, so a
+     * truncated walk or an unreadable record was indistinguishable
+     * from a quiet hour — the ward heartbeat's finding, on the paid
+     * watches it never covered. Deduped by kind and gap, as the
+     * heartbeat is; a spent budget and a spacing skip are the design
+     * working and do not page.
+     */
+    const reportGaps = (kind: string) => (report: WatchSweepReport) => {
+      const gap = watchSweepGaps(kind, report);
+      return gap ? sendAlert(env, { condition: "worker_health", ...gap }).catch(() => undefined) : undefined;
+    };
     ctx.waitUntil(
       sweepConformanceWatches(env).then(
-        () => undefined,
+        reportGaps("conformance watch"),
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
@@ -920,7 +934,7 @@ const worker: ExportedHandler<Env> = {
     );
     ctx.waitUntil(
       sweepStandingWatches(env).then(
-        () => undefined,
+        reportGaps("standing watch"),
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
@@ -935,7 +949,7 @@ const worker: ExportedHandler<Env> = {
      */
     ctx.waitUntil(
       sweepOperatorStatements(env).then(
-        () => undefined,
+        reportGaps("operator statement"),
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
