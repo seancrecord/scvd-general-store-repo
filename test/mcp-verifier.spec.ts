@@ -94,7 +94,52 @@ describe("tools/list", () => {
         (mine["annotations"] as Record<string, unknown>)["openWorldHint"],
         `${entry.name} and ${entry.base} disagree about openWorldHint`,
       ).toBe(theirs.annotations?.openWorldHint);
+      /*
+       * 2026-09-19. The same guard, on the field the submission round
+       * corrected: a metered handler is not read-only, whichever door
+       * names it. Both doors read METERED_TOOL_EFFECTS for the shared
+       * verification handlers, so the pairs agree today; this holds
+       * them to it.
+       */
+      for (const hint of ["readOnlyHint", "destructiveHint"] as const) {
+        expect(
+          (mine["annotations"] as Record<string, unknown>)[hint],
+          `${entry.name} and ${entry.base} disagree about ${hint}`,
+        ).toBe(theirs.annotations?.[hint]);
+      }
     }
+  });
+
+  it("pins exactly which /mcp tools still declare themselves read-only, dated", () => {
+    /*
+     * docs/SPEC_READS.md (2026-09-16): OpenAI's guidelines read
+     * readOnlyHint as false for any handler that writes, counters
+     * included, and the verifier door was corrected to say so before
+     * submission. /mcp still declares readOnlyHint: true for the free
+     * instruments below, whose handlers bump the porch counters; the
+     * keeper has deliberately left that standing rather than take the
+     * auto-approval friction a flip would add to every free call. That
+     * is a decision, not drift — so the set is held EXACTLY, by name:
+     * a tool that joins it or leaves it fails here and is argued for in
+     * a commit, and the annotation itself moves only on his call.
+     */
+    const readOnly = mcpToolCatalog(BASE)
+      .filter((tool) => tool.annotations?.readOnlyHint === true)
+      .map((tool) => tool.name)
+      .sort();
+    expect(readOnly).toEqual([
+      "check_a2a_card",
+      "check_before_you_pay",
+      "check_order",
+      "check_purchase",
+      "find_in_catalog",
+      "look_at_door",
+      "look_in_window",
+      "read_binder",
+      "read_store_guide",
+    ]);
+    // None of them is a shared verification handler: those carry the metered effects on both doors.
+    for (const name of readOnly) expect(VERIFIER_TOOLS.map((tool) => tool.base)).not.toContain(name);
   });
 
   it("reads open world as what the call touches, not what the answer is about", () => {

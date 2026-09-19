@@ -192,6 +192,18 @@ rather than take the auto-approval friction that flipping `/mcp` would
 add to twelve free instruments. Named, dated, unresolved — not
 forgotten.
 
+Re-read 2026-09-19 against the served catalogs: `/mcp` applies the
+same metered effects as the verifier door to the shared verification
+handlers, so the two renamed pairs agree on `readOnlyHint` and
+`destructiveHint` and the cross-door guard now compares those fields
+too. Nine `/mcp` tools, not twelve, still declare `readOnlyHint: true`
+while their handlers bump the porch counters (`check_a2a_card`,
+`check_before_you_pay`, `check_order`, `check_purchase`,
+`find_in_catalog`, `look_at_door`, `look_in_window`, `read_binder`,
+`read_store_guide`); the set is pinned by name in
+`test/mcp-verifier.spec.ts` so it can only change on purpose. The
+annotations themselves are unchanged, per the keeper's standing call.
+
 The procedure that produced the successful submission is
 `.claude/skills/directory-submission/SKILL.md`. It exists because this
 took two attempts.
