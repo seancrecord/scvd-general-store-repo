@@ -78,7 +78,7 @@ export function webmcpPurchaseTools() {
   return [
     {
       name: "quote_store_purchase",
-      description: "A free quote for a catalog buy_url or paid publication URL, including query inputs: the x402 v2 terms (offered networks, atomic USDC amounts) and, where the door offers one, the native MPP challenge keyed to the quote's retry key. Returns a quote_id and that key. No wallet is opened and no payment is sent. The compact catalog is /menu.json?view=compact.",
+      description: "A free quote for a catalog buy_url or paid publication URL, including query inputs: the x402 v2 terms (offered networks, atomic USDC amounts) and, where the door offers one, the native MPP challenge keyed to the quote's retry key. Returns a quote_id and that key. No wallet is opened and no payment is sent. Two calls in flight for one URL share a single quote and key. The compact catalog is /menu.json?view=compact.",
       inputSchema: { type: "object", properties: { buy_url: { type: "string", description: "A buy_url on this store with the required query inputs filled in." } }, required: ["buy_url"], additionalProperties: false },
       outputSchema: { type: "object", properties: {
         ...resultProperties,
