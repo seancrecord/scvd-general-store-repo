@@ -1,6 +1,6 @@
 {
   "name": "scvd-preflight",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Zero-dependency client for scvd.store's free x402 preflight: one probe per door, every check named, the remediation rows, and the deploy gate's exit law. The GitHub Action's file as a library and a command.",
   "type": "module",
   "main": "./x402-preflight.js",

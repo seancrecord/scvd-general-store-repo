@@ -1,4 +1,5 @@
 import { searchCatalog } from "@/routes/catalog";
+import purchaseSource from "../webmcp/purchase.js";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { webmcpScript, webmcpPurchaseTools } from "@/routes/webmcp";
@@ -18,11 +19,15 @@ describe("WebMCP exposes an explicit quote and signed-payment retry", () => {
     expect(source).toContain('"signed_credential"');
     expect(source).toContain('"payment_receipt"');
   });
-  it("serves the same payment module tested in Node", async () => {
+  it("serves the same payment module tested in Node, byte for byte", async () => {
+    // Until 2026-09-19 this checked that one line was present; the till's
+    // guard (test/browser-till.spec.ts) compares the bytes, and the module
+    // carrying buyer payment decisions deserves no weaker a check.
     const response = await SELF.fetch("https://scvd.store/webmcp-purchase.js");
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toContain("javascript");
-    expect(await response.text()).toContain("export function createPurchaseBridge");
+    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(await response.text()).toBe(purchaseSource);
   });
   it("describes the quote handoff and delivery before a browser agent calls", () => {
     const tools: Array<{ name: string; outputSchema?: { type: string; properties: Record<string, unknown> } }> = webmcpPurchaseTools();

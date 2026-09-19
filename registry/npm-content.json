@@ -4,17 +4,18 @@
   "packages": {
     "scvd-preflight": {
       "directory": "x402-preflight",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "files": {
-        "CHANGELOG.md": "7ea5e3ab9e790c257c2d0ffa6961020967f423a3462401120080e2a7086b26c5",
+        "CHANGELOG.md": "bb3ab4b883568dd98fec92cce67cb7b0a5858eda1d09722c5405ea4f86995015",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
         "README.md": "0b29444acc6d33422700ffcfd33bc7f3ff30c1c61940f0ff5ad1d2670ef01e87",
         "bin.mjs": "ff92d61a65f6abcd4d0f9e950da127324e4dbfdcebd1ac22fee27b45a1eab5cd",
         "example.mjs": "997aae0b2f8104cb42257c054f6f027fb7a728d15f2b1b8f2cda4fe8291f5c47",
         "fixtures/accepts-empty.json": "aa518ae230051033c30464164ffe56f4ed53807a9911124ac0fb690254750625",
+        "fixtures/exit-law.json": "890b8e86226eced2303fc90c78c29c937eee84c1a2c0345cb4bcae5ee8861622",
         "fixtures/ready-would-sign.json": "02a9ab094d76a67c38060d3942a451bfbff6847b67521a7c20204a0ea3454df9",
         "fixtures/unreachable.json": "88553f4d3767b897f07cc2e2ff3c08433f6c38758f8dfc588f82e6b25701c2c5",
-        "package.json": "42226278886613118e2f688b79821b4ab90369f630595bafce1448c8d41121b6",
+        "package.json": "a3ddeea34f24746daa046d217bd0f5fe33f0adc7fd2767f2ef9b982832914206",
         "x402-preflight.d.ts": "392fd069dc8669c4ae5c872547190f25d79da5b23ec4054e436ffc723b812456",
         "x402-preflight.js": "86f8cfe4818a289352fcd0849c2f416336051acc1559d8e79ce8052539b472ab"
       }

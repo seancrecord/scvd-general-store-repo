@@ -1,0 +1,22 @@
+{
+  "what": "The deploy gate's exit law, read by all three preflight clients (JavaScript, Python, Go) so the law is typed once. Each case is a list of per-door outcomes, an optional fail_on set (null means the client's default, {not_ready}), and the exit code the gate must return. Exit codes are integers on purpose: each port keeps its own named constants, and the fixture is the boundary they agree at.",
+  "cases": [
+    { "name": "all ready", "outcomes": ["ready"], "fail_on": null, "exit": 0 },
+    { "name": "a not_ready fails", "outcomes": ["ready", "not_ready"], "fail_on": null, "exit": 1 },
+    { "name": "unreachable passes by default: a fact about the network path, not the door", "outcomes": ["ready", "unreachable"], "fail_on": null, "exit": 0 },
+    { "name": "unreachable alone still passes by default", "outcomes": ["unreachable"], "fail_on": null, "exit": 0 },
+    { "name": "unreachable fails when asked", "outcomes": ["ready", "unreachable"], "fail_on": ["not_ready", "unreachable"], "exit": 1 },
+    { "name": "refused is usage: a door nobody looked at must not pass a gate", "outcomes": ["ready", "refused"], "fail_on": null, "exit": 2 },
+    { "name": "refused outranks a negative verdict", "outcomes": ["refused", "not_ready"], "fail_on": null, "exit": 2 },
+    { "name": "store down is unreachable", "outcomes": ["ready", "store_unreachable"], "fail_on": null, "exit": 3 },
+    { "name": "store down alone is unreachable", "outcomes": ["store_unreachable"], "fail_on": null, "exit": 3 },
+    { "name": "refused outranks store down", "outcomes": ["refused", "store_unreachable"], "fail_on": null, "exit": 2 },
+    { "name": "store down outranks a negative verdict", "outcomes": ["store_unreachable", "not_ready"], "fail_on": null, "exit": 3 }
+  ],
+  "worst": [
+    { "name": "unreachable outranks refused and ready", "outcomes": ["ready", "unreachable", "refused"], "worst": "unreachable" },
+    { "name": "store_unreachable folds into unreachable and not_ready outranks it", "outcomes": ["store_unreachable", "not_ready"], "worst": "not_ready" },
+    { "name": "store_unreachable alone reads as unreachable", "outcomes": ["store_unreachable"], "worst": "unreachable" },
+    { "name": "all ready is ready", "outcomes": ["ready", "ready"], "worst": "ready" }
+  ]
+}

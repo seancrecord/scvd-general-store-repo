@@ -119,26 +119,32 @@ class PreflightPortTest(unittest.TestCase):
         self.assertIsNone(result.status)
 
     def test_exit_law_matches_the_javascript(self):
-        ready = PreflightResult(url="a", outcome="ready")
-        not_ready = PreflightResult(url="b", outcome="not_ready")
-        unreachable = PreflightResult(url="c", outcome="unreachable")
-        refused = PreflightResult(url="d", outcome="refused")
-        down = PreflightResult(url="e", outcome="store_unreachable")
-
-        self.assertEqual(exit_code_for([ready]), EXIT_OK)
-        self.assertEqual(exit_code_for([ready, not_ready]), EXIT_VERDICT_NEGATIVE)
-        # unreachable is a fact about the network path, not the door,
-        # so it does not fail a gate unless the caller asks it to.
-        self.assertEqual(exit_code_for([ready, unreachable]), EXIT_OK)
+        # The law is typed once, in x402-preflight/fixtures/exit-law.json,
+        # and read by all three clients (2026-09-19): this title is only
+        # true while one table feeds every suite. The integers are the
+        # boundary; the named constants stay here and are held to it.
+        law = json.loads((FIXTURES / "exit-law.json").read_text())
+        self.assertGreaterEqual(len(law["cases"]), 7)
+        self.assertGreaterEqual(len(law["worst"]), 2)
         self.assertEqual(
-            exit_code_for([ready, unreachable], ["not_ready", "unreachable"]),
-            EXIT_VERDICT_NEGATIVE,
+            {case["exit"] for case in law["cases"]},
+            {EXIT_OK, EXIT_VERDICT_NEGATIVE, EXIT_USAGE, EXIT_UNREACHABLE},
         )
-        # A door nobody looked at must not pass a gate.
-        self.assertEqual(exit_code_for([ready, refused]), EXIT_USAGE)
-        self.assertEqual(exit_code_for([ready, down]), EXIT_UNREACHABLE)
-        # Refused outranks store_unreachable, as in the JavaScript.
-        self.assertEqual(exit_code_for([refused, down]), EXIT_USAGE)
+
+        def results(outcomes):
+            return [PreflightResult(url=chr(ord("a") + i), outcome=o) for i, o in enumerate(outcomes)]
+
+        for case in law["cases"]:
+            with self.subTest(case["name"]):
+                got = (
+                    exit_code_for(results(case["outcomes"]))
+                    if case["fail_on"] is None
+                    else exit_code_for(results(case["outcomes"]), case["fail_on"])
+                )
+                self.assertEqual(got, case["exit"])
+        for case in law["worst"]:
+            with self.subTest(case["name"]):
+                self.assertEqual(worst_outcome(results(case["outcomes"])), case["worst"])
 
     def test_worst_outcome_folds_store_unreachable_into_unreachable(self):
         self.assertEqual(worst_outcome([PreflightResult("a", "ready")]), "ready")
