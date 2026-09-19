@@ -1,4 +1,5 @@
-import { paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { paymentMethod } from "@/lib/payment-networks";
+import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { STORE_SERVICE_NAME } from "@/store/metadata";
 
 /**
@@ -59,13 +60,15 @@ export const JSONLD_TRADE_ACCEPTED_PAYMENT =
   "Billed to a marketplace trade account on a statement (scvd.store/trade); not paid over x402";
 
 /** The fields every priced Offer carries: an ISO code and the asset in words. */
-export function offerCurrencyFields(env?: PaymentNetworkConfig): {
+export function offerCurrencyFields(env?: PurchaseCapabilityConfig): {
   priceCurrency: string;
   acceptedPaymentMethod: string;
 } {
   return {
     priceCurrency: JSONLD_PRICE_CURRENCY,
-    acceptedPaymentMethod: env ? paymentMethod(env) : JSONLD_ACCEPTED_PAYMENT,
+    // Both lanes while both are offered (checkoutMethod); the x402
+    // sentence alone with no config, which is the pre-native shape.
+    acceptedPaymentMethod: env ? checkoutMethod(env) : JSONLD_ACCEPTED_PAYMENT,
   };
 }
 

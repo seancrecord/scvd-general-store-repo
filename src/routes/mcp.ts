@@ -7,6 +7,7 @@ import { freeA2ACheck } from "@/lib/a2a-admission";
 import { readPurchaseStatus } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
+import { nativeMcpInstruction } from "@/lib/purchase-capabilities";
 import { decodeBase64Json } from "@/lib/base64-json";
 import { priceLine } from "@/services/menu-markdown";
 import { CAPABILITY_QUERY } from "@/store/spec";
@@ -440,7 +441,7 @@ function serverCapabilities(): Record<string, unknown> {
 // sentence an MCP client caches about us, so it carries the entity
 // and both differentiators, then the operating facts. Served on
 // `initialize` (legacy) and `server/discover` (modern) alike.
-const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
+const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment'].__NATIVE__ ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
 
 /** Methods whose results the modern revision marks cacheable. */
 const CACHEABLE_METHODS = new Set([
@@ -1376,6 +1377,19 @@ function standardPayment(c: Context<HonoEnv>): boolean {
   return c.req.query("payment") === MCP_TOOL_RESULT_PAYMENT;
 }
 
+/**
+ * The handshake sentence, per request: the x402 clause reads by the
+ * client's chosen payment carriage, and the native clause appears
+ * exactly while the MCP door's native lane is enabled for this Worker
+ * (nativeMcpInstruction derives it from the same predicate that mints
+ * the challenge), so the string never names a lane the door lacks.
+ */
+function instructions(c: Context<HonoEnv>): string {
+  const native = nativeMcpInstruction(c.env);
+  const text = INSTRUCTIONS.replace("__NATIVE__", native ? ` ${native}` : "");
+  return standardPayment(c) ? text.replace("402 terms in error.data", "payment terms in result.structuredContent (isError: true)") : text;
+}
+
 function requestTools(c: Context<HonoEnv>): McpTool[] {
   const selected = c.req.query("item_id");
   if (selected !== undefined) {
@@ -1558,7 +1572,7 @@ async function dispatchRpc(
           : DEFAULT_PROTOCOL,
         capabilities: serverCapabilities(),
         serverInfo: serverInfo(c.env.STORE_BASE_URL),
-        instructions: `${standardPayment(c) ? INSTRUCTIONS.replace("402 terms in error.data", "payment terms in result.structuredContent (isError: true)") : INSTRUCTIONS} ${buyerQuickStart(c.env.STORE_BASE_URL)}`,
+        instructions: `${instructions(c)} ${buyerQuickStart(c.env.STORE_BASE_URL)}`,
       });
     }
     /**
@@ -1574,7 +1588,7 @@ async function dispatchRpc(
       return rpcResult(id, {
         supportedVersions: [...PROTOCOL_VERSIONS],
         capabilities: serverCapabilities(),
-        instructions: `${standardPayment(c) ? INSTRUCTIONS.replace("402 terms in error.data", "payment terms in result.structuredContent (isError: true)") : INSTRUCTIONS} ${buyerQuickStart(c.env.STORE_BASE_URL)}`,
+        instructions: `${instructions(c)} ${buyerQuickStart(c.env.STORE_BASE_URL)}`,
         // The modern envelope (resultType, cache hint, serverInfo in
         // _meta) is added by modernize() for modern callers; a legacy
         // caller gets the bare result plus the identity below, which

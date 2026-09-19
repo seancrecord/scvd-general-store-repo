@@ -81,3 +81,71 @@ it('listing specifications defer payment network selection to the current quote'
     expect(listingSpec(item, base).verification.certificate_binds_note).not.toContain('a Base explorer');
   }
 });
+
+/**
+ * THE SECOND LANE, NAMED WHERE THE FIRST ONE IS (2026-09-19, the MPP-P1
+ * wording follow-up). Native MPP checkout opened on every HTTP door
+ * (#790), the MCP door and the browser bridge, and every surface that
+ * said how the till is paid kept saying x402 alone: true, and no longer
+ * the whole truth, on the exact sentence an MPP client reads before
+ * deciding whether to stay. The sentence is now derived from the same
+ * predicate that mints the challenge, so this walks the surfaces twice —
+ * lane offered, lane withheld — and asserts the clause follows the fact
+ * in both directions. Asserting the x402 clause survives intact is the
+ * half that guards the older readers.
+ */
+describe('the checkout sentence names the native lane exactly while it is offered', () => {
+  const withLane = { MPP_CHECKOUT_ENABLED: 'true', MPP_CHALLENGE_KEY: 'fixture-native-checkout-hmac-key' };
+  const withoutLane = { MPP_CHECKOUT_ENABLED: 'false', MPP_CHALLENGE_KEY: 'fixture-native-checkout-hmac-key' };
+
+  async function sentences(patch: Record<string, string>): Promise<Record<string, string>> {
+    const bindings = { ...env, POLYGON_PAY_TO: '', SOLANA_PAY_TO: '', ...patch } as Env;
+    const get = (path: string, accept = 'application/json', init: RequestInit = {}) =>
+      app.request(base + path, { ...init, headers: { Accept: accept, ...(init.headers ?? {}) } }, bindings);
+    const storefront = await (await get('/', 'text/html')).text();
+    const menuPage = await (await get('/menu/settlement_attestation', 'text/html')).text();
+    const openapi = await (await get('/openapi.json')).json() as { info: { description: string } };
+    const ucp = await (await get('/.well-known/ucp')).json() as Record<string, { how_to_actually_buy?: { payment_method: string } }>;
+    const ucpBlock = Object.values(ucp).find(block => block && typeof block === 'object' && 'how_to_actually_buy' in block);
+    const howItWorks = await (await get('/how-it-works.json')).json() as { how_money_works: { rails: string } };
+    const what = await (await get('/what')).json() as { one_question_per_shelf: { answer: string }[] };
+    const mcpMd = await (await get('/mcp.md', 'text/markdown')).text();
+    const developers = await (await get('/developers', 'text/markdown')).text();
+    const itemMd = await (await get('/menu/settlement_attestation', 'text/markdown')).text();
+    const initialize = await (await get('/mcp', 'application/json, text/event-stream', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'copy-walk', version: '0' } } }),
+    })).json() as { result: { instructions: string } };
+    return {
+      storefront_pay_rails: storefront.match(/<p class="pay-rails">([^<]+)</)?.[1] ?? '',
+      storefront_website_jsonld: storefront.match(/"@type":"WebSite"[^<]*?"description":"([^"]+)"/)?.[1] ?? '',
+      menu_page_offer: menuPage.match(/"acceptedPaymentMethod":"([^"]+)"/)?.[1] ?? '',
+      menu_page_checklist: menuPage.match(/<strong>Checkout:<\/strong> ([^<]+)<\/p>/)?.[1] ?? '',
+      openapi_info: openapi.info.description,
+      ucp_payment_method: ucpBlock?.how_to_actually_buy?.payment_method ?? '',
+      how_it_works_rails: howItWorks.how_money_works.rails,
+      what_long_tail: what.one_question_per_shelf.find(pair => pair.answer.includes('Buy: GET'))?.answer ?? '',
+      mcp_md_paid_shelves: mcpMd.split('\n').find(line => line.includes('paid shelves')) ?? '',
+      developers_lede: developers.split('\n\n').find(block => block.includes('paid ones take')) ?? '',
+      item_markdown_buy: itemMd.split('\n').find(line => line.startsWith('- **buy:**')) ?? '',
+      mcp_instructions: initialize.result.instructions,
+    };
+  }
+
+  it('names MPP on every surface while the lane is offered, and on none while it is withheld', async () => {
+    const offered = await sentences(withLane);
+    const withheld = await sentences(withoutLane);
+    for (const [surface, sentence] of Object.entries(offered)) {
+      expect(sentence, `${surface} read nothing`).not.toBe('');
+      expect(sentence, `${surface} with the lane offered`).toMatch(/over MPP|take MPP/);
+      // The older reader's clause is untouched: the x402 lane is still named first, on its networks.
+      expect(sentence, `${surface} still names x402`).toMatch(/x402/);
+      expect(withheld[surface], `${surface} read nothing with the lane withheld`).not.toBe('');
+      expect(withheld[surface], `${surface} with the lane withheld`).not.toMatch(/MPP/);
+    }
+    // The derivation is one function, so the words agree across the surfaces that quote it whole.
+    expect(offered.ucp_payment_method).toBe(offered.menu_page_offer);
+    expect(offered.ucp_payment_method).toContain('USDC over x402 v2 on Base, or USDC over MPP (evm/charge) on Base for every shelf item');
+  });
+});

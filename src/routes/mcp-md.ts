@@ -7,6 +7,7 @@ import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { DOCS_TOOL_NAME } from "@/routes/mcp-docs";
 import { VERIFIER_TOOLS } from "@/routes/mcp-verifier";
 import type { HonoEnv } from "@/types";
+import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 
 /**
  * GET /mcp.md — WHICH DOOR TO USE, AND WHAT IT DOES NOT DO YET.
@@ -36,7 +37,7 @@ import type { HonoEnv } from "@/types";
  */
 export const mcpMdRoutes = new Hono<HonoEnv>();
 
-export function mcpMd(base: string): string {
+export function mcpMd(base: string, config?: PurchaseCapabilityConfig): string {
   const catalog = mcpToolCatalog(base);
   const free = catalog.filter((tool) => !tool.itemId && !tool.itemIds);
   const paid = catalog.filter((tool) => tool.itemId || tool.itemIds);
@@ -82,7 +83,7 @@ either is not us.
 \`tools/list\` and \`resources/list\` are free and unauthenticated.
 
 - **${free.length} free tools:** ${free.map((t) => `\`${t.name}\``).join(", ")}
-- **${paid.length} paid shelves** (x402 in-band, USDC over x402 on a network offered in the current payment quote): ${paid.map((t) => `\`${t.name}\``).join(", ")}
+- **${paid.length} paid shelves** (in-band; ${checkoutMethod(config)}): ${paid.map((t) => `\`${t.name}\``).join(", ")}
 - **${shelves} readable resources** (no tool call spent): ${mcpResourceCatalog().map((r) => `\`${r.uri}\``).join(", ")}
 - **${cards} \`ui://\` card templates** (MCP Apps, SEP-1865) for hosts that render them.
 
@@ -220,7 +221,7 @@ issue.
 }
 
 mcpMdRoutes.get("/mcp.md", (c) =>
-  c.text(mcpMd(c.env.STORE_BASE_URL), 200, {
+  c.text(mcpMd(c.env.STORE_BASE_URL, c.env), 200, {
     "content-type": MARKDOWN_MEDIA_TYPE,
     Vary: VARY_ACCEPT,
   }),
