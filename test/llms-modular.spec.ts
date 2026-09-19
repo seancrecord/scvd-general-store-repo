@@ -1060,8 +1060,10 @@ const BASE = "https://scvd.store";
 // lib/ucp/launch.ts writes both texts). Verified across the merge: with
 // only that paragraph restored to its catalog-only wording, main's
 // 529e622f reproduced, and this copy reproduces the new one.
+// 2026-09-19: re-taken with the till sentence replaced by UNPAID_READ_NOTE
+// and the mpp-tiers practice pointer (see the note in "nothing was rewritten").
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "81998b4df81639a226350ccd420656d9722ddb3b513764a459e61f31ff2b99b4";
+  "c7f04b55cbaa1e01a98f1fdd03ce2192a57dfc127856c281730afd0efaa517a8";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1104,8 +1106,12 @@ describe("nothing was rewritten", () => {
     // the sellers line in the guide (see GUIDE_DIGEST_BEFORE_THE_SPLIT).
     // Then across the UCP launch merge: with the catalog-only wording
     // restored, f6be9ead reproduced, and this copy reproduces the new one.
+    // 2026-09-19: re-taken with the second-wire paragraph's till sentence
+    // replaced by the shared UNPAID_READ_NOTE (the till has spoken MPP
+    // since 2026-09-18) and the mpp-tiers practice pointer beside
+    // mpp-shape; with those two lines restored, a03d8e21 reproduced.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "a03d8e210ba749334447914c454ae47b87338af9a58b06d14d62e0e527a91ee4",
+      "6fb54921ce1a8b31a5e25233935ef0e19fea692f3f41aff9a3464b6e7195690a",
     );
   });
 

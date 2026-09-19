@@ -47,6 +47,9 @@ function accepts(entry: Record<string, unknown>): string {
   return b64({ x402Version: 2, accepts: [entry] });
 }
 
+/** The tiered practice door's amounts, minimum first: the shape of a tipping door's list, never an offer. */
+const PRACTICE_TIERS_ATOMIC = ["1000", "2000", "5000"] as const;
+
 function scenarios(base: string): Scenario[] {
   return [
     {
@@ -154,6 +157,19 @@ function scenarios(base: string): Scenario[] {
         "(x402 battery: not_ready on payment-required-header; MPP battery: every check passes, protocols_spoken is [\"mpp\"] — read the mpp block)",
       header: null,
       mpp_challenge: `Payment id="prac_mpp_shape_0001", realm="scvd.store", method="evm", intent="charge", request="${btoa(JSON.stringify({ amount: "1000", currency: USDC_BASE, methodDetails: { chainId: 8453, credentialTypes: ["authorization"] }, recipient: DEAD_ADDRESS })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}", description="practice door: read the shape, do not pay"`,
+    },
+    {
+      id: "mpp-tiers",
+      what_is_wrong:
+        `NOTHING, and there are ${PRACTICE_TIERS_ATOMIC.length} of them: a door that takes tips lists one Payment challenge per price tier in ONE WWW-Authenticate header, comma-separated as RFC 9110 §11.6.1 allows, minimum first. A client that reads only the first challenge pays the minimum, which is correct; a client that reads the header as one challenge and chokes on the second id is the defect this door is here to catch. No payment path stands behind it (the door opened 2026-09-19): the list is a shape to read, not an offer to pay.`,
+      what_a_good_client_does:
+        "Splits the header at each `Payment ` scheme boundary (the parameters carry no bare comma), reads every challenge, and takes the first unless the buyer chose to tip; then signs exactly one. It never merges parameters across challenges and never treats the second id as a duplicate parameter of the first.",
+      preflight_names_this:
+        "(x402 battery: not_ready on payment-required-header; MPP battery: every check passes on every listed challenge, protocols_spoken is [\"mpp\"])",
+      header: null,
+      mpp_challenge: PRACTICE_TIERS_ATOMIC.map((amount, index) =>
+        `Payment id="prac_mpp_tiers_000${index + 1}", realm="scvd.store", method="evm", intent="charge", request="${btoa(JSON.stringify({ amount, currency: USDC_BASE, methodDetails: { chainId: 8453, credentialTypes: ["authorization"] }, recipient: DEAD_ADDRESS })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}", description="practice door, tier ${index + 1} of ${PRACTICE_TIERS_ATOMIC.length}: read the list, do not pay"`,
+      ).join(", "),
     },
     {
       id: "dust-correct",
