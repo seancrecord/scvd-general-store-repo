@@ -605,8 +605,12 @@ absent receipt is named as exactly that.
 
 **Still open, deliberately:** row 16 (registry coverage fields
 dropped at publish — needs a `RegistryWeekEntry` shape decision),
-row 21 (fresh-set/OKF `observed_at` on long-walk weeks — needs
-per-row timestamps through `LongWalkState`), row 24's live rail
+row 21 for the fresh set's own
+seal (the per-row timestamps arrived 2026-09-05 through the probe's
+knock, and since 2026-09-19 every date on an OKF host concept and the
+index line reads the row's `observed_at` rather than the round's seal —
+`test/okf-bundle.spec.ts`; the fresh-set concept is about the round and
+keeps the seal), row 24's live rail
 fact (the CI dogfood proves v1 core, the L3b trio and the depth reads on
 every shelf door since 2026-09-19, and proves the Solana rail read applies
 to our own accepts and decides both ways on them against a stubbed ledger;

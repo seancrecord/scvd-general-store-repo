@@ -94,8 +94,19 @@ export function renderConcept(concept: OkfConcept): string {
 /* Concepts                                                            */
 /* ------------------------------------------------------------------ */
 
+/**
+ * DATED BY THE ROW'S OWN KNOCK (2026-09-19; instrument audit row 21).
+ * A long-walk week probes hosts over several days and seals the round
+ * at the end; the fresh set has carried each row's own `observed_at`
+ * since 2026-09-05, and this concept kept stamping every host with the
+ * round's seal — up to days after the door was actually read, so
+ * `stale_after` flattered freshness on the one surface built for
+ * routing. Every date on a host concept now reads the row; the round's
+ * seal stays on the fresh set and the index, which are about the round.
+ */
 function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
   const rails = row.rails ?? [];
+  const observedAt = row.observed_at;
   const tags = ["x402", "endpoint", ...rails];
   const ask =
     row.min_usdc !== undefined ? `$${row.min_usdc} USDC` : "an amount its 402 did not price in USDC";
@@ -108,7 +119,7 @@ function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
     `resource: ${yamlString(row.url)}`,
     `tags: ${yamlList(tags)}`,
     `status: ${yamlString("stable")}`,
-    `stale_after: ${yamlString(staleAfter(set.observed_at))}`,
+    `stale_after: ${yamlString(staleAfter(observedAt))}`,
     /*
      * The ROW's cited battery where the row states one — a host
      * concept must name the criteria that produced ITS verdict, not
@@ -117,10 +128,10 @@ function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
      */
     "generated:",
     `  by: ${yamlString(row.battery !== "unstated" ? `scvd-census/${row.battery}` : "scvd-census/battery-unstated")}`,
-    `  at: ${yamlString(set.observed_at)}`,
+    `  at: ${yamlString(observedAt)}`,
     "verified:",
     `  - by: ${yamlString(row.battery !== "unstated" ? `scvd-census/${row.battery}` : "scvd-census/battery-unstated")}`,
-    `    at: ${yamlString(set.observed_at)}`,
+    `    at: ${yamlString(observedAt)}`,
     "sources:",
     `  - id: ${yamlString("history")}`,
     `    resource: ${yamlString(row.history_url)}`,
@@ -131,7 +142,7 @@ function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
   const body = [
     `# ${row.host}`,
     "",
-    `On ${set.observed_at} this store walked \`${row.url}\` and it answered a`,
+    `On ${observedAt} this store walked \`${row.url}\` and it answered a`,
     `payment challenge that parsed against the published preflight battery.`,
     rails.length
       ? `The door's own 402 offered ${rails.join(", ")}, asking ${ask}.`
@@ -305,7 +316,7 @@ function indexMd(set: FreshSet | null, hosts: readonly FreshSetRow[]): string {
   ];
   for (const row of hosts) {
     lines.push(
-      `* [${row.host}](host/${row.host}.md) - answered a conformant challenge on ${(set?.observed_at ?? "").slice(0, 10)}.`,
+      `* [${row.host}](host/${row.host}.md) - answered a conformant challenge on ${row.observed_at.slice(0, 10)}.`,
     );
   }
   if (hosts.length === 0) {
