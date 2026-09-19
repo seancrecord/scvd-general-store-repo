@@ -161,6 +161,17 @@ buys — does not carry the stage yet. That is the remaining half of
 ROADMAP row D-AVU, and until it lands, a seller who wants this finding
 has to be walked rather than served.
 
+**Landed 2026-09-15, recorded here 2026-09-19.** The paragraph above is
+kept as written. Vocabulary v17 made the class obtainable: the launch
+check's settle stage compares the offer the door serves after refusing a
+correctly signed payment against the offer it served unpaid, on the five
+material terms alone, and reports present, not present, or not checked
+(`advertisedVersionUnpayable` in `src/services/launch-check.ts`;
+`our_signal` in `src/store/defect-vocabulary.ts` names the stage, with
+the ledger kept beside it). The roadmap row still read "REMAINING" for
+four days after; the pointer from the class to the paid instrument was
+never wrong, only this record and that row.
+
 
 ## The chain instrument's definition, as received (2026-09-15)
 

@@ -603,8 +603,12 @@ step 3 now branch on `tx_hash_status`: "the settlement is on chain"
 is said only when our own chain read confirmed it, and a claimed or
 absent receipt is named as exactly that.
 
-**Still open, deliberately:** row 16 (registry coverage fields
-dropped at publish — needs a `RegistryWeekEntry` shape decision),
+**Still open, deliberately:** row 16 only in its history (the
+`RegistryWeekEntry` shape decision was taken: `buildRegistryWeek` in
+`src/services/registry-pulse.ts` publishes `coverage` — capped,
+coverage_suspect, the discovery stop, the coverage drop and the
+population denominator — and a week that predates the block reads as
+not recorded, never as fine; noted 2026-09-19),
 row 21 for the fresh set's own
 seal (the per-row timestamps arrived 2026-09-05 through the probe's
 knock, and since 2026-09-19 every date on an OKF host concept and the
