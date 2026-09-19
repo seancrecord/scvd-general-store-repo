@@ -736,6 +736,56 @@ endorsements.
   (2026-08-23): cross-checked their own scoreboard against this
   store's corpus.
 
+## Checked by another operator
+
+A directory listing proves somebody indexed this store. These are the
+rows where somebody **ran their own code against ours** and published
+what came back. Every one of them found something against us, and that
+is the reason they are worth citing — a peer check with nothing against
+us in it is a testimonial wearing a lab coat.
+
+The list is derived from the same array that feeds every other record,
+so it cannot drift: `peer_verifications` in
+[`/.well-known/trust.json`](https://scvd.store/.well-known/trust.json),
+and the *"Who has checked us, not just listed us"* section of
+[`/trust`](https://scvd.store/trust).
+
+- **StillOS Notary — the receipt treaty** (2026-09-11 → 09-19). Two
+  operators, ten doors, commit-reveal. Each side froze five doors and
+  published the SHA-256 and byte length of its answer file before
+  either read a chain; both commitments verify by digest and length in
+  both directions. This store built its chain reader from StillOS's
+  written **definition** after declining their code, so their bugs
+  could not become ours. Where the two disagreed, every difference but
+  one resolved to a declared difference of scope — and the exception
+  resolved to a page cap in *their* instrument, which they found and
+  published against their own number. What it found against us: their
+  rail rule overturned one of our five sealed answers; reading their
+  doors exposed a bug invisible against our own; their truncation
+  near-miss established that an identifier must reach a read by
+  reference and never be re-typed; and their log-horizon failure mode
+  named a latent defect in our reader, fixed the same day.
+  [The paper](docs/JOINT_COVERAGE_READ_2026-09-16.md) ·
+  [our half](research/blind-key-2026-09-15/) ·
+  [their trust statement](https://stillosdigitalholdings.com/notary/trust)
+- **Cairn — the cold walk** (2026-08-25). Approached unannounced under
+  terms agreed in advance, bought with their own money, verified
+  everything against things this store does not control. Found that we
+  refused the `X-PAYMENT` header most of the ecosystem speaks; fixed
+  the next day, and they re-ran it with fresh authorizations rather
+  than take the keeper's word.
+- **0200project — a field walk re-derived** (2026-09-06). Took our
+  published ledger to a public Base node using none of our tooling and
+  rebuilt the settlement set from the chain. Zero disagreements on 34
+  settlements — but the thread's first two rounds went against us, and
+  the sharpest line was about our own instrument: our reconciliation's
+  *"gap $0.00"* was this store's tooling agreeing with itself, where a
+  second instrument agreeing with the chain is the different and
+  stronger claim.
+
+None of these is an endorsement and none is an audit. Each says so in
+its own row, and each names what it does not establish.
+
 ## Examples for your framework
 
 `examples/` holds one operational workflow — an agent is about to pay

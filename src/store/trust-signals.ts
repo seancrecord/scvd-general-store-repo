@@ -51,6 +51,29 @@ import { SCVD_AGENT_ID, SCVD_AGENT_REGISTRY } from "@/store/agent-identity";
  */
 
 export interface ExternalRecord {
+  /**
+   * WHAT KIND OF RECORD THIS IS, and the field exists because 75 rows
+   * of directory listing can bury the three that are worth more than
+   * all of them put together.
+   *
+   * Absent means a DIRECTORY LISTING: somebody indexed us, usually
+   * because we asked. `instrument` means an outside prober reads a
+   * door of ours and publishes what it saw, on their schedule.
+   * `peer_verification` is the strong one and the rarest: another
+   * operator ran THEIR OWN CODE against our artifacts or our doors and
+   * published what they found, including where it went against us.
+   *
+   * A `peer_verification` row MUST carry `found_against_us`. A peer
+   * check with nothing against us in it is a testimonial wearing a
+   * lab coat, and the test suite refuses it.
+   */
+  kind?: "peer_verification" | "instrument";
+  /**
+   * What this peer found that went AGAINST this store — required on
+   * every `peer_verification` row. Not a courtesy: the whole value of
+   * an outside reader is the part we would not have written ourselves.
+   */
+  found_against_us?: string;
   /** What this particular record indexes, not a claim of conformance. */
   protocols?: readonly DiscoveryProtocol[];
   /** Where the record lives. Must be a real, checked URL. */
@@ -642,6 +665,9 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
     registry: "Cairn (cairnwake.com) — the cold walk, published by arrangement",
+    kind: "peer_verification",
+    found_against_us:
+      "The store refused the X-PAYMENT header most of the ecosystem speaks. Filed on /corrections, fixed the next day, and Cairn re-ran the walk with fresh authorizations rather than take the keeper's word for the fix.",
     confirmed: "2026-09-02",
     what_it_proves:
       "That an independent tester walked the store cold on 2026-08-25, paid with their own wallet, verified the certificate offline against the published key, read the settlement back from a Base RPC, watched the public ledger move, found one defect (the X-PAYMENT header refused) and re-tested the fix the next day with fresh authorizations. Not an endorsement and not an audit of anything beyond that night: one dated observation by one buyer, published with the unflattering part in it, and the defect it found is on /corrections under its own date.",
@@ -677,9 +703,51 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     url: "https://github.com/seancrecord/scvd-general-store-repo/issues/188#issuecomment-5555985899",
     registry:
       "0200project (base-tx-explain) — an independent re-derivation of a field walk, published in thread",
+    kind: "peer_verification",
+    found_against_us:
+      "Two findings, both on /corrections, and the thread's first two rounds went against this store: the walk ledger published an EIP-3009 authorization nonce under prose calling it a transaction hash (2026-09-04), and then the overcorrection — our \"no node will ever answer it\", when AuthorizationUsed is indexed and answers exactly that (2026-09-05). Sharpest of all was about our own instrument: our reconciliation's \"gap $0.00\" was this store's tooling agreeing with itself, where a second instrument agreeing with the chain is the different and stronger claim. The walk report now says so beside the number on every run.",
     confirmed: "2026-09-06",
     what_it_proves:
       "That on 2026-09-06 an outside operator re-derived this store's 2026-09-05 field walk from a public Base node using none of our tooling: 34 chain transfers totalling $0.0350 against 34 settled ledger rows, all 31 rows carrying a transaction hash agreeing with the chain on amount and recipient, and the 3 rows whose receipts named no transaction recovered from their authorization nonce. Zero disagreements. Their own decoder separately read one of those transactions and agreed with our row on every field both instruments hold. Not an endorsement and not an audit: one run, one day, 34 settlements on the simplest shape either instrument handles, and it establishes nothing about the paid audits, watches or attestations. The same thread carries two findings against this store, both on /corrections, and one the other operator disclosed against their own product.",
+  },
+  {
+    /**
+     * THE RECEIPT TREATY, and the strongest row in this array — the
+     * only one where an outside operator and this store each ran their
+     * OWN implementation against the other's doors under terms frozen
+     * in public before either read anything.
+     *
+     * Each side sealed five doors, published the SHA-256 and byte
+     * length of its answer file, and revealed after. Both commitments
+     * verify: theirs at 0b080261…92bd0 / 9286 bytes, fetched raw and
+     * hashed here on 2026-09-17; ours at 48e221eb…19ec / 8912 bytes,
+     * hashed by them. Neither instrument shares a line of code with
+     * the other: this store built its chain reader from their written
+     * DEFINITION after declining their code, precisely so that their
+     * bugs could not become ours.
+     *
+     * WHAT MAKES IT WORTH MORE THAN A LISTING is that it ran against
+     * both of us. Their rail rule overturned one of our sealed
+     * answers. Reading THEIR doors exposed a bug invisible against our
+     * own. Their truncation near-miss gave us a rule we did not have.
+     * Their log-horizon failure mode exposed a latent defect in our
+     * reader, fixed the day they published it. And the one row where
+     * the two instruments genuinely contradicted each other resolved
+     * against THEIR number, which they found and published themselves.
+     *
+     * THE URL IS THEIRS, deliberately. The thread where most of this
+     * happened lives on a host this store controls and could delete;
+     * their trust statement and their repositories do not.
+     */
+    url: "https://stillosdigitalholdings.com/notary/trust",
+    registry: "StillOS Notary — the receipt treaty, two instruments reading each other",
+    kind: "peer_verification",
+    protocols: ["x402"],
+    found_against_us:
+      "Four things, and the exchange is worth citing because of them rather than in spite of them. Their rail rule — a zero requires EVERY advertised rail to resolve empty — moved one of our five sealed answers from ZERO_OBSERVED to UNKNOWN, and our own reader had already carried the reason in its own words and returned the zero anyway. Reading their five exposed a bug ours could not see against our own: a complete-window branch shadowing the stronger nonce argument, so facts we could prove for all of history were handed back in their weaker windowed form. Their truncation near-miss — a payTo re-entered from a 22-character display, producing a confident zero on a door carrying 805 settlements — established the rule that an identifier must reach a read by reference and never be re-typed, which our frozen door files now carry as provenance on every address. And their log-horizon failure mode, published 2026-09-19, named a defect latent in our own reader: a provider pruning logs answers an empty array rather than an error, which our instrument would have read as a zero. Fixed the same day with a horizon canary, under test.",
+    confirmed: "2026-09-19",
+    what_it_proves:
+      "That between 2026-09-11 and 2026-09-19 an independent operator and this store each read the other's advertised payTo addresses with their own code, under verdict definitions and four rules frozen in public before either side read a chain, and published both columns including the misses. Both sealed commitments verify by digest and byte length in both directions. Ten doors were read this way; where the two disagreed, every difference but one resolved to a declared difference of scope, and the exception resolved to a page cap in their instrument which they found and corrected against their own published number. Not an endorsement and not an audit: it establishes that two instruments agree about ten doors on the rails they share, that each found real defects in the other, and nothing about this store's paid audits, watches or attestations. The artifacts are theirs as well as ours — their sealed answers and their MIT zero-nonce reader are published in their own repositories under stillmarcus24, and this store's half is in research/blind-key-2026-09-15/ with their three files copied in unmodified so the digest check reproduces from either tree.",
   },
   {
     /**
@@ -699,6 +767,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      */
     url: "https://probe402.com/grade?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fsmall_blessing",
     registry: "probe402 — dated probe record",
+    kind: "instrument",
     protocols: ["x402"],
     confirmed: "2026-09-02",
     what_it_proves:
@@ -1091,6 +1160,23 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
  * with a link that proves somebody else exists, which is worse than
  * the empty space it fills.
  */
+/**
+ * The rows where somebody ran their own code against ours and
+ * published what they found. DERIVED, never a second list: a curated
+ * copy would drift from the array it summarises, which is the defect
+ * class this store publishes about.
+ */
+export const PEER_VERIFICATIONS: readonly ExternalRecord[] = EXTERNAL_RECORDS.filter(
+  (record) => record.kind === "peer_verification",
+);
+
+/**
+ * Why the distinction is drawn at all, in the one sentence a reader
+ * needs before the count means anything.
+ */
+export const PEER_VERIFICATION_NOTE =
+  "Most rows above are directory listings: somebody indexed this store, usually because we asked, and that proves we exist and were found. These are the rows where an outside operator ran THEIR OWN code against our doors, our artifacts or our published ledger and printed what came back — including, in every case, something that went against us. That is a different and much stronger kind of record, and it is separated here because a reader scanning seventy-odd listings would otherwise never see which three or four carry real weight. None of them is an endorsement, none is an audit, and each says so in its own row.";
+
 export const RECORDS_NOT_LISTED =
   "Five further listings exist and are deliberately not linked in the sameAs above, for one reason: none publishes a per-service page that points at THIS store. The official MCP registry has carried this store as store.scvd/general-store since 2026-07-30, and x402scout.com lists it too — in both you are in the index and that is all there is. The MCP Census (mcpcensus.com) returns both of this repo's servers to a lookup and no page of their own, and Spanly (spanly.com) will scan the door on demand and list its tools without keeping a record of having done so; a search result and a scan-on-demand are both true and neither is an address. MIT's Project NANDA index (the 'DNS of the agentic web', where an agent publishes an Agent Facts file) lists the store as scvd.store, and its entry links OUT to this site's llms.txt — which is NANDA pointing at us, not a NANDA page identifying us, so there is still no URL that points at this store rather than at the directory. NANDA carries no organization verification of the entry, and this says so rather than borrowing the word. That is a permanent property of these catalogues rather than a link nobody has found yet, and the difference matters to whoever reads this next. A catalogue root will not be added to stand in for one: schema.org's sameAs means a page that unambiguously indicates THIS item's identity, and a directory homepage identifies the directory. Padding a legitimacy document with a link that proves somebody else exists is worse than the space it fills. All five are named here rather than quietly dropped, because a curated list with no statement of its own edges is a list you cannot tell is curated.";
 

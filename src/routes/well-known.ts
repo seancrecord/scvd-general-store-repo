@@ -64,6 +64,8 @@ import conformanceVectors from "../../conformance/offer-receipt-vectors.json";
 import {
   DATA_HANDLING,
   EXTERNAL_RECORDS,
+  PEER_VERIFICATIONS,
+  PEER_VERIFICATION_NOTE,
   discoveryProtocolIndex,
   NOT_CLAIMED,
   OPERATOR,
@@ -191,6 +193,16 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * claiming legitimacy would be the strongest argument against it.
      */
     external_records: EXTERNAL_RECORDS,
+    /**
+     * DERIVED from external_records, never a second list. The rows
+     * where somebody ran their own code against ours and published
+     * what came back — each carrying what it found against us.
+     */
+    peer_verifications: {
+      count: PEER_VERIFICATIONS.length,
+      note: PEER_VERIFICATION_NOTE,
+      records: PEER_VERIFICATIONS,
+    },
     discovery_by_protocol: discoveryProtocolIndex(base),
     external_records_omitted: RECORDS_NOT_LISTED,
     data_handling: DATA_HANDLING,
