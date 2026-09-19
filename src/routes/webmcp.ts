@@ -103,6 +103,8 @@ export function webmcpPurchaseTools() {
           request: { type: "object", description: "amount is atomic USDC; currency and recipient are checksummed addresses." },
           expires: { type: ["string", "null"], format: "date-time" }, meta: { type: "object" },
         } },
+        payment_challenges: { type: ["array", "null"], description: "Every native challenge bound to idempotency_key, one per price tier, minimum first; payment_challenge is the first. Sign a higher tier to tip.",
+          items: { type: "object" } },
         payment_sent: { type: "boolean", const: false },
         next: { type: "string" },
       } },
@@ -115,7 +117,7 @@ export function webmcpPurchaseTools() {
       inputSchema: { type: "object", properties: {
         quote_id: { type: "string" },
         signed_payment: { type: "object", description: "The signed x402 v2 JSON payload from the buyer's wallet/client, containing x402Version, accepted and payload." },
-        signed_credential: { type: ["string", "object"], description: "The native MPP credential for this quote's payment_challenge: the Payment <base64url> Authorization value, or its {challenge, payload} object." },
+        signed_credential: { type: ["string", "object"], description: "The native MPP credential for one of this quote's payment_challenges: the Payment <base64url> Authorization value, or its {challenge, payload} object." },
       }, required: ["quote_id"], additionalProperties: false },
       outputSchema: { type: "object", properties: {
         ...resultProperties,

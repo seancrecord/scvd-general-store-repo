@@ -103,8 +103,9 @@ door with a `?summary=`; why it passed is not established here.
 
 ## Not in this release
 
-The packages, other networks and assets, native tips, Stripe, subscriptions,
+The packages, other networks and assets, Stripe, subscriptions,
 and a services-directory claim; the WebMCP bridge followed in
-[its own release](MPP_WEBMCP_CHECKOUT_2026-09-18.md). The live house
+[its own release](MPP_WEBMCP_CHECKOUT_2026-09-18.md), and native tips in
+[theirs](MPP_NATIVE_TIPS_2026-09-19.md). The live house
 qualification covered the HTTP pilot's door; the MCP lane is qualified by the
 fixtures above and by the shared lifecycle, not by a live purchase.

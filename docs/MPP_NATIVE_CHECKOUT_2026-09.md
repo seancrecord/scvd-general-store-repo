@@ -21,8 +21,9 @@ existing catalog/payment configuration. There is no second price table.
 Since the [MCP release](MPP_MCP_CHECKOUT_2026-09-18.md) the MCP door
 carries the same offer on tools/call in the SDK's MCP wire shape, and since
 the [browser bridge release](MPP_WEBMCP_CHECKOUT_2026-09-18.md) the WebMCP
-quote carries it too. Native tips, other networks and other assets are not
-enabled here.
+quote carries it too. Since the [native tips release](MPP_NATIVE_TIPS_2026-09-19.md)
+a pay-what-it-deserves door offers one challenge per tier; other networks and
+other assets are not enabled here.
 
 When explicitly enabled, an unsigned request gets the existing x402 offer
 and a genuine MPP `WWW-Authenticate` challenge. The dedicated

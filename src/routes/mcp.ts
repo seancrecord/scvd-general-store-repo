@@ -1405,7 +1405,7 @@ function standardPaymentResult(
   challenge: Record<string, unknown>,
   retryKey?: string | null,
   inputDigest: string | null = null,
-  native?: Challenge.Challenge,
+  native?: Challenge.Challenge[],
 ): Record<string, unknown> {
   return {
     isError: true,

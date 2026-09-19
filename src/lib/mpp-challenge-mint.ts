@@ -1,6 +1,7 @@
 import { getAddress } from "viem";
 import { USDC_DECIMALS } from "@/lib/payments";
-import { nativeCheckoutTerms } from "@/lib/purchase-capabilities";
+import { nativeCheckoutTiers } from "@/lib/purchase-capabilities";
+import type { PaymentRequirements } from "@x402/core/types";
 import { nativeCheckoutItem, nativeChallengeMintable } from "@/lib/mpp-checkout-capability";
 import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
 import { suggestedIdempotencyKey, usableIdempotencyKey } from "@/lib/idempotency";
@@ -77,27 +78,33 @@ export async function mintNativeChallenge(env: Env, url: string, suppliedKey: st
   if (secret.length < MIN_CHALLENGE_KEY_BYTES) return null;
   if (suppliedKey !== undefined && !usableIdempotencyKey(suppliedKey)) return null;
   const purchaseKey = suppliedKey ?? suggestedIdempotencyKey(item.id);
-  const terms = nativeCheckoutTerms(env, item);
-  // The charge method's request, as its schema emits it: atomic amount,
-  // checksummed addresses, the chain and the credential type it takes.
-  const request = serializeRequest({
-    amount: terms.amount,
-    currency: getAddress(terms.asset),
-    methodDetails: { chainId: Number(terms.network.split(":")[1]), credentialTypes: ["authorization"], decimals: USDC_DECIMALS },
-    recipient: getAddress(terms.payTo),
-  });
-  // The store's binding, then the SDK's own scope slot.
+  // The store's binding, then the SDK's own scope slot: the same on every tier.
   const opaque = serializeRequest({ request_digest: await httpArtifactDigest(url), purchase_key: purchaseKey, _mppx_scope: path });
   const realm = new URL(env.STORE_BASE_URL).host;
-  const expires = new Date(Date.now() + terms.maxTimeoutSeconds * 1000).toISOString();
-  // §5.1.2.1.1: realm | method | intent | request | expires | digest | opaque, digest empty.
-  const binding = [realm, "evm", "charge", request, expires, "", opaque].join("|");
   const key = await crypto.subtle.importKey("raw", secret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const id = base64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(binding))));
-  return `Payment ${[
-    authParam("id", id), authParam("realm", realm), authParam("method", "evm"), authParam("intent", "charge"),
-    authParam("request", request), authParam("expires", expires), authParam("opaque", opaque),
-  ].join(", ")}`;
+  const mint = async (terms: PaymentRequirements): Promise<string> => {
+    // The charge method's request, as its schema emits it: atomic amount,
+    // checksummed addresses, the chain and the credential type it takes.
+    const request = serializeRequest({
+      amount: terms.amount,
+      currency: getAddress(terms.asset),
+      methodDetails: { chainId: Number(terms.network.split(":")[1]), credentialTypes: ["authorization"], decimals: USDC_DECIMALS },
+      recipient: getAddress(terms.payTo),
+    });
+    const expires = new Date(Date.now() + terms.maxTimeoutSeconds * 1000).toISOString();
+    // §5.1.2.1.1: realm | method | intent | request | expires | digest | opaque, digest empty.
+    const binding = [realm, "evm", "charge", request, expires, "", opaque].join("|");
+    const id = base64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(binding))));
+    return `Payment ${[
+      authParam("id", id), authParam("realm", realm), authParam("method", "evm"), authParam("intent", "charge"),
+      authParam("request", request), authParam("expires", expires), authParam("opaque", opaque),
+    ].join(", ")}`;
+  };
+  // One challenge per tier, minimum first, joined as RFC 9110's challenge
+  // list: the same list the store's own attach writes (native tips, 2026-09-19).
+  const challenges: string[] = [];
+  for (const terms of nativeCheckoutTiers(env, item)) challenges.push(await mint(terms));
+  return challenges.join(", ");
 }
 
 /** The same headers the store's own attach sets beside the challenge. */

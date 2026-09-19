@@ -283,3 +283,49 @@ test("a lost native response preserves the credential's retry identity and never
   assert.equal(f.requests[2].init.headers.Authorization, credential);
   assert.equal(f.requests[2].init.headers["Idempotency-Key"], quote.idempotency_key);
 });
+
+
+/*
+ * NATIVE TIPS (2026-09-19): a door that takes tips lists one challenge per
+ * price tier in the same header, minimum first. The quote carries the list
+ * as payment_challenges and keeps payment_challenge as the minimum; a
+ * credential for any listed tier completes, and the store books the excess.
+ */
+import { parsePaymentChallenges } from "./purchase.js";
+function tierHeaders(purchaseKey) {
+  const tier = (id, amount) => challengeHeader(purchaseKey, { id, request: b64url({ amount, currency: "0x1111111111111111111111111111111111111111", methodDetails: { chainId: 8453, credentialTypes: ["authorization"], decimals: 6 }, recipient: "0x2222222222222222222222222222222222222222" }) });
+  return [challengeHeader(purchaseKey), tier("tier-generous", "8000"), tier("tier-patron", "20000")].join(", ");
+}
+
+test("a tipping door's quote lists every tier, keeps the minimum first, and completes with a credential for any tier", async () => {
+  const f = fixture(async (_url, init, n) => {
+    if (n === 1) { const res = response(); res.headers.set("WWW-Authenticate", tierHeaders(init.headers["Idempotency-Key"])); return res; }
+    return nativeResponse(init, 200);
+  });
+  const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  assert.equal(quote.payment_challenge.id, "challenge-id-fixture", "the minimum stays first");
+  assert.deepEqual(quote.payment_challenges.map(offered => offered.request.amount), ["4000", "8000", "20000"]);
+  assert.ok(quote.payment_challenges.every(offered => offered.meta.purchase_key === quote.idempotency_key));
+  assert.match(quote.next, /3 native price tiers/);
+  const result = await f.complete({ quote_id: quote.quote_id, signed_credential: credentialFor("tier-patron") });
+  assert.equal(result.structuredContent.status, 200);
+  assert.equal(result.structuredContent.payment_receipt, "receipt-native-fixture");
+  assert.equal(f.requests[1].init.headers.Authorization, credentialFor("tier-patron"));
+  assert.equal(f.requests[1].init.headers["Idempotency-Key"], quote.idempotency_key);
+});
+
+test("a single-tier door lists one challenge, another scheme beside it is skipped, and a tier keyed elsewhere is dropped", async () => {
+  const parsed = parsePaymentChallenges('Bearer realm="x", ' + tierHeaders("k"));
+  assert.deepEqual(parsed.map(offered => offered.id), ["challenge-id-fixture", "tier-generous", "tier-patron"]);
+  assert.equal(parsePaymentChallenges("Bearer realm=\"x\"").length, 0);
+  const f = fixture(async (_url, init, n) => {
+    if (n === 1) { const res = response(); res.headers.set("WWW-Authenticate", [challengeHeader(init.headers["Idempotency-Key"]), challengeHeader("another-key-0000000000", { id: "foreign-tier" })].join(", ")); return res; }
+    return nativeResponse(init, 200);
+  });
+  const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
+  assert.deepEqual(quote.payment_challenges.map(offered => offered.id), ["challenge-id-fixture"]);
+  assert.doesNotMatch(quote.next, /price tiers/);
+  const refused = await f.complete({ quote_id: quote.quote_id, signed_credential: credentialFor("foreign-tier") });
+  assert.match(refused.structuredContent.error, /different challenge/);
+  assert.equal(f.requests.length, 1, "nothing left the page");
+});
