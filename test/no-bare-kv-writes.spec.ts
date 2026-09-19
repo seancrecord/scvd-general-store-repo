@@ -123,8 +123,34 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
   ],
 };
 
+/**
+ * A ROUTER IS NOT A STORE, AND `.put` IS BOTH THEIR VERB.
+ *
+ * Hono registers an HTTP PUT with `router.put("/path", handler)`. The
+ * alias check below looks for a lowercase receiver calling `.put(`,
+ * which is exactly that shape — so the day this store served its
+ * first PUT route (UCP Update Checkout, 2026-09-19) the guard called
+ * a route registration an unguarded KV write. Every route in the
+ * store until then was GET or POST, which is why it took this long.
+ *
+ * The exemption is deliberately narrow, because the whole value of
+ * this guard is that it cannot be talked out of a real write: the
+ * file must be a route module, the receiver must be a router by name,
+ * and the first argument must be a quoted PATH. A KV alias in a route
+ * file still fails, and so does `router.put(key, value)` with a
+ * non-path first argument — which is what a storage write inside a
+ * route file would actually look like.
+ */
+const ROUTE_REGISTRATION = /^\s*[a-z][A-Za-z]*(?:Routes|App|app)\.put\(\s*["'`]\//;
+
+function honoRouteRegistration(path: string, line: string): boolean {
+  const routeModule = path.startsWith("/src/routes/") || path === "/src/index.ts";
+  return routeModule && ROUTE_REGISTRATION.test(line);
+}
+
 function unguardedAliasWrite(path: string, line: string): boolean {
   return Boolean(line.match(/^\s*(?:await\s+)?[a-z][A-Za-z]*\.put\(/)) &&
+    !honoRouteRegistration(path, line) &&
     !line.includes("kvPut(") && !line.includes("withKvRetry") &&
     !DURABLE_TRANSACTION_WRITES[path]?.includes(line.trim());
 }
@@ -178,6 +204,24 @@ describe("the Durable Object exception does not exempt KV aliases", () => {
         expect(unguardedAliasWrite("/src/services/other.ts", line)).toBe(true);
       }
     }
+  });
+
+  it("lets a router register a PUT route, and nothing else wearing that shape", () => {
+    const route = 'ucpCheckoutRoutes.put("/ucp/v1/checkout-sessions/:id", async (c) => {';
+    // The real registration, in the real file, is not an offender.
+    expect(sources["/src/routes/ucp-checkout.ts"]).toContain(route);
+    expect(unguardedAliasWrite("/src/routes/ucp-checkout.ts", route)).toBe(false);
+    // The same line anywhere else is. A service does not mount routes.
+    expect(unguardedAliasWrite("/src/services/other.ts", route)).toBe(true);
+    for (const line of [
+      // A KV alias inside a route file: still a bare write.
+      'await kv.put("receipt", value);',
+      'await namespace.put("receipt", value);',
+      // A router-named receiver whose first argument is NOT a path —
+      // which is what a storage write hiding in a route file looks like.
+      'ucpCheckoutRoutes.put(key, value);',
+      'someRoutes.put("receipt", value);',
+    ]) expect(unguardedAliasWrite("/src/routes/ucp-checkout.ts", line), line).toBe(true);
   });
 
   it("still catches new aliases in the recovery service, including one named txn", () => {

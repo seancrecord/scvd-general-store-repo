@@ -117,11 +117,13 @@ export const PINS = [
      */
     id: "ucp-shopping-rest",
     claim: "The store serves UCP Shopping over REST at the operations and paths the 2026-08-25 transport contract defines",
-    cited_in: "src/routes/ucp.ts",
+    cited_in:
+      "src/routes/ucp.ts, src/routes/ucp-checkout.ts, schemas/ucp/vendor/2026-08-25-rest/shopping.openapi.json, test/ucp/transport-contract.spec.ts",
     source: "ucp",
     paths: ["source/services/shopping/rest.openapi.json"],
-    read_date: "2026-09-16",
-    on_drift: "The transport moved. Check method, path and body shape for every operation this store implements, and for checkout-sessions and orders before implementing them.",
+    read_date: "2026-09-19",
+    on_drift:
+      "The transport moved. Re-copy it to schemas/ucp/vendor/2026-08-25-rest/ and run test/ucp/transport-contract.spec.ts, which will name any operation of an advertised capability the store does not serve. A drift that ADDS an operation under a capability the profile advertises is a promise this store is not keeping until it is served or the capability is withdrawn.",
   },
   {
     id: "mpp-core-draft",

@@ -355,6 +355,15 @@ export function ucpCatalog(base: string): UcpProduct[] {
 export function catalogPolicies(
   products: UcpProduct[],
   base: string,
+  /**
+   * WHERE THE POLICY POINTS, which is a property of the RESPONSE
+   * rather than of the policy. A search or lookup answers with
+   * `products[]`; get_product answers with a singular `product`, and
+   * a `$.products[0]` target there would be a JSONPath resolving to
+   * nothing in the document it travels in. The caller that knows the
+   * shape of its own response names the target.
+   */
+  targetFor: (index: number) => string = (index) => `$.products[${index}]`,
 ): UcpPolicy[] {
   const policies: UcpPolicy[] = [];
   products.forEach((product, index) => {
@@ -363,7 +372,7 @@ export function catalogPolicies(
     const item = getMenuItem(itemId);
     if (!item) return;
     for (const policy of policiesFor(item, base)) {
-      policies.push({ ...policy, applies_to: [`$.products[${index}]`] });
+      policies.push({ ...policy, applies_to: [targetFor(index)] });
     }
   });
   return policies;
