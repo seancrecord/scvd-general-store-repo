@@ -1,4 +1,5 @@
-import { nativeCheckoutTerms } from "@/lib/purchase-capabilities";
+import { nativeCheckoutTiers, nativeTermsForAmount } from "@/lib/purchase-capabilities";
+import type { PaymentRequirements } from "@x402/core/types";
 import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
 import type { Context, Next } from "hono";
 import { Credential, PaymentRequest } from "mppx";
@@ -22,12 +23,12 @@ import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import { openDeliveryIntent, closeDeliveryIntent } from "@/services/delivery-audit";
 import type { HonoEnv } from "@/types";
 
-async function adapterFor(c: Context<HonoEnv>, purchaseKey: string) {
-  // The door names the item; the item names the terms. The gate already
-  // refused any path that is not a native door before this is reached.
+async function adapterFor(c: Context<HonoEnv>, purchaseKey: string, terms: PaymentRequirements) {
+  // The door names the item; the item names its tiers; the caller names
+  // the tier (native tips, 2026-09-19). The gate already refused any path
+  // that is not a native door before this is reached.
   const item = nativeCheckoutItem(c.req.path, "GET");
   if (!item) throw new Error("Not a native door");
-  const terms = nativeCheckoutTerms(c.env, item);
   const facilitator = getPaymentStack(c.env).facilitator;
   return { item, terms, adapter: createMppEvmAdapter({ secretKey: c.env.MPP_CHALLENGE_KEY!,
     realm: new URL(c.env.STORE_BASE_URL).host, scope: c.req.path,
@@ -45,11 +46,17 @@ export async function attachMppChallenge(c: Context<HonoEnv>, response: Response
   const item = nativeCheckoutItem(c.req.path, "GET");
   if (!item) return;
   const key = supplied ?? suggestedIdempotencyKey(item.id);
-  const { adapter } = await adapterFor(c, key);
-  const challenge = await adapter.challenge();
+  // One challenge per tier, minimum first, in one header: RFC 9110's
+  // challenge list, which the SDK's client reads whole and takes the
+  // first candidate of. A fixed-price door has one tier and one challenge.
+  const headers: string[] = [];
+  for (const terms of nativeCheckoutTiers(c.env, item)) {
+    const { adapter } = await adapterFor(c, key, terms);
+    headers.push((await adapter.challenge()).header);
+  }
   // A real Payment challenge replaces the informational hint. x402's own
   // PAYMENT-REQUIRED and body remain independently usable.
-  response.headers.set("WWW-Authenticate", challenge.header);
+  response.headers.set("WWW-Authenticate", headers.join(", "));
   response.headers.set("Cache-Control", "no-store");
   response.headers.append("Vary", "Authorization, Idempotency-Key");
 }
@@ -106,7 +113,13 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
   const supplied = c.req.header("Idempotency-Key");
   if (typeof purchaseKey !== "string" || !usableIdempotencyKey(purchaseKey) ||
     (supplied !== undefined && supplied !== purchaseKey)) return refusal("mpp_purchase_key_mismatch", 400);
-  const { item, terms, adapter } = await adapterFor(c, purchaseKey);
+  // The credential's challenge names its tier. An amount the tier list
+  // never offered is refused here, before the facilitator is asked,
+  // whatever its challenge id: the list is what the store agreed to sell at.
+  const door = nativeCheckoutItem(c.req.path, "GET");
+  const tier = door && nativeTermsForAmount(c.env, door, (credential.challenge.request as { amount?: unknown }).amount);
+  if (!tier) return refusal("mpp_verification_refused", 402);
+  const { item, terms, adapter } = await adapterFor(c, purchaseKey, tier);
   let verified: Awaited<ReturnType<typeof adapter.validate>>;
   try { verified = await adapter.validate(header); }
   catch { return refusal("mpp_verification_refused", 402); }

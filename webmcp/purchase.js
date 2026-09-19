@@ -78,22 +78,40 @@ function authParams(input) {
   return out;
 }
 /**
- * The native MPP challenge a door offers beside its x402 terms, decoded for
- * the buyer's payment client: the raw `Payment` header to sign, and its
- * fields. Null when the header carries no Payment scheme or is unreadable.
+ * The native MPP challenges a door offers beside its x402 terms, decoded for
+ * the buyer's payment client: for each, the raw `Payment` header to sign and
+ * its fields. A door that takes tips offers one challenge per price tier in
+ * one header (RFC 9110 §11.6.1, comma-separated), minimum first; a Payment
+ * challenge's parameters carry no bare comma (its request and opaque are
+ * base64url), so the scheme name is the only boundary. Empty when the header
+ * carries no readable Payment scheme.
  */
+export function parsePaymentChallenges(header) {
+  if (typeof header !== "string") return [];
+  const starts = [];
+  const scheme = /(?:^|,\s*)(Payment)\s+/gi;
+  let match;
+  while ((match = scheme.exec(header))) starts.push(match.index + match[0].indexOf(match[1]));
+  const out = [];
+  for (let i = 0; i < starts.length; i++) {
+    const chunk = header.slice(starts[i], i + 1 < starts.length ? starts[i + 1] : header.length).replace(/,\s*$/, "").trim();
+    const parsed = parseOneChallenge(chunk.slice("Payment".length).trim());
+    if (parsed) out.push(parsed);
+  }
+  return out;
+}
+/** The first challenge, the minimum where the door takes tips; null when there is none. */
 export function parsePaymentChallenge(header) {
-  if (typeof header !== "string") return null;
-  const match = /(?:^|,\s*)Payment\s+(.*)$/is.exec(header);
-  if (!match) return null;
+  return parsePaymentChallenges(header)[0] ?? null;
+}
+function parseOneChallenge(paramsText) {
   try {
-    const params = authParams(match[1]);
+    const params = authParams(paramsText);
     if (!params.id || !params.realm || params.method !== "evm" || params.intent !== "charge" || !params.request) return null;
     const request = base64UrlDecode(params.request);
     const meta = params.opaque ? base64UrlDecode(params.opaque) : {};
     if (!record(request) || typeof request.amount !== "string" || !/^[0-9]+$/.test(request.amount) || !record(meta)) return null;
-    const raw = "Payment " + match[1].trim();
-    return { header: raw, id: params.id, realm: params.realm, method: params.method, intent: params.intent, request, expires: params.expires || null, meta };
+    return { header: "Payment " + paramsText, id: params.id, realm: params.realm, method: params.method, intent: params.intent, request, expires: params.expires || null, meta };
   } catch { return null; }
 }
 /** The credential as the Authorization header value, from the string a client emits or its {challenge, payload} object. */
@@ -149,7 +167,7 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
     if (header.length > MAX_CREDENTIAL_BYTES) return answer({ error: "The credential is larger than a Payment header carries. No payment was sent." }, true);
     let wire;
     try { wire = base64UrlDecode(header.slice("Payment ".length)); } catch { return answer({ error: "The credential is not readable base64url JSON. No payment was sent." }, true); }
-    if (!record(wire) || !record(wire.challenge) || wire.challenge.id !== quote.challenge.id) return answer({ error: "The signed credential answers a different challenge than this quote's. No payment was sent." }, true);
+    if (!record(wire) || !record(wire.challenge) || !quote.challenges.some(offered => offered.id === wire.challenge.id)) return answer({ error: "The signed credential answers a different challenge than this quote's. No payment was sent." }, true);
     quote.busy = true;
     try {
       const response = await request(quote.url, { method: "GET", headers: { Accept: "application/json", Authorization: header, "Idempotency-Key": quote.key }, credentials: "omit", redirect: "error", signal });
@@ -186,14 +204,17 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
         // The native challenge, when the door offers one and it is bound to this
         // quote's key; a challenge keyed elsewhere is not offered, since its
         // credential could never retry under this quote.
-        const parsed = parsePaymentChallenge(response.headers.get("WWW-Authenticate"));
-        const challenge = parsed && parsed.meta.purchase_key === key ? parsed : null;
+        const challenges = parsePaymentChallenges(response.headers.get("WWW-Authenticate")).filter(offered => offered.meta.purchase_key === key);
+        const challenge = challenges[0] ?? null;
+        // A door that takes tips lists every tier, minimum first; signing a
+        // higher tier's header tips, and the store books the excess.
+        const tiers = challenges.length > 1 ? " This door offers " + challenges.length + " native price tiers in payment_challenges, minimum first; signing a higher tier's header tips, and the excess is booked as a tip on the same purchase." : "";
         const duration = Math.min(MAX_QUOTE_AGE_MS, ...required.accepts.map(offer => Number.isFinite(offer.maxTimeoutSeconds) && offer.maxTimeoutSeconds > 0 ? offer.maxTimeoutSeconds * 1000 : MAX_QUOTE_AGE_MS));
-        const quote = { url, required, challenge, key, expires: now() + duration, busy: false };
+        const quote = { url, required, challenge, challenges, key, expires: now() + duration, busy: false };
         quotes.set(id, quote);
-        return answer({ quote_id: id, buy_url: url, idempotency_key: key, expires_at: new Date(quote.expires).toISOString(), payment_required: required, payment_challenge: challenge, payment_sent: false,
+        return answer({ quote_id: id, buy_url: url, idempotency_key: key, expires_at: new Date(quote.expires).toISOString(), payment_required: required, payment_challenge: challenge, payment_challenges: challenges.length ? challenges : null, payment_sent: false,
           next: challenge
-            ? "Two ways to pay, one purchase. x402: a buyer-authorized wallet or payment client signs one offered accept within the buyer's budget, and complete_store_purchase takes this quote_id and that signed x402 v2 JSON payload as signed_payment. Native MPP: a compatible payment client signs payment_challenge.header, and complete_store_purchase takes this quote_id and the resulting Payment credential as signed_credential. Send one, never both. Amounts are atomic USDC: copy them unchanged. Without a compatible signer, stop; no private keys or wallet secrets belong here."
+            ? "Two ways to pay, one purchase. x402: a buyer-authorized wallet or payment client signs one offered accept within the buyer's budget, and complete_store_purchase takes this quote_id and that signed x402 v2 JSON payload as signed_payment. Native MPP: a compatible payment client signs payment_challenge.header, and complete_store_purchase takes this quote_id and the resulting Payment credential as signed_credential. Send one, never both. Amounts are atomic USDC: copy them unchanged. Without a compatible signer, stop; no private keys or wallet secrets belong here." + tiers
             : "A buyer-authorized wallet or payment client signs one offered accept within the buyer's budget. complete_store_purchase takes this quote_id and that signed x402 v2 JSON payload. Amounts are atomic USDC: copy them unchanged. Without a compatible signer, stop; no private keys or wallet secrets belong here." });
       } finally { pendingQuotes -= 1; }
     },

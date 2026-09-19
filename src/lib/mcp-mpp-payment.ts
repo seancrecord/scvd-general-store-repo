@@ -2,7 +2,8 @@ import { Credential, Mcp, PaymentRequest, type Challenge } from "mppx";
 import { AuthorizationPayloadSchema } from "mppx/evm";
 import { createMppEvmAdapter } from "@/lib/mpp-evm-adapter";
 import { nativeMcpCheckoutEnabled } from "@/lib/mpp-checkout-capability";
-import { nativeCheckoutTerms } from "@/lib/purchase-capabilities";
+import { nativeCheckoutTiers, nativeTermsForAmount } from "@/lib/purchase-capabilities";
+import type { PaymentRequirements } from "@x402/core/types";
 import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { getPaymentStack, atomicToUsdc, tipFromPaid,
@@ -46,8 +47,7 @@ export function mcpNativeScope(item: MenuItem): string {
   return `mcp:buy_${item.id}`;
 }
 
-async function adapterFor(env: Env, item: MenuItem, inputDigest: string, purchaseKey: string) {
-  const terms = nativeCheckoutTerms(env, item);
+async function adapterFor(env: Env, item: MenuItem, inputDigest: string, purchaseKey: string, terms: PaymentRequirements) {
   const facilitator = getPaymentStack(env).facilitator;
   return { terms, adapter: createMppEvmAdapter({ secretKey: env.MPP_CHALLENGE_KEY!,
     realm: new URL(env.STORE_BASE_URL).host, scope: mcpNativeScope(item),
@@ -57,19 +57,24 @@ async function adapterFor(env: Env, item: MenuItem, inputDigest: string, purchas
 }
 
 /**
- * The native challenge for one unpaid tools/call, or nothing when the
- * lane is not enabled here. The purchase key is the one the door
- * quotes beside it, so the credential's key and the retry's key agree.
+ * The native challenges for one unpaid tools/call, one per price tier
+ * with the minimum first (native tips, 2026-09-19), or nothing when the
+ * lane is not enabled here. The purchase key is the one the door quotes
+ * beside them, so the credential's key and the retry's key agree.
  */
-export async function readMcpMppChallenge(env: Env, item: MenuItem, inputDigest: string, purchaseKey: string): Promise<Challenge.Challenge | undefined> {
+export async function readMcpMppChallenge(env: Env, item: MenuItem, inputDigest: string, purchaseKey: string): Promise<Challenge.Challenge[] | undefined> {
   if (!nativeMcpCheckoutEnabled(env, item) || !usableIdempotencyKey(purchaseKey)) return undefined;
-  const { adapter } = await adapterFor(env, item, inputDigest, purchaseKey);
-  return (await adapter.challenge()).challenge;
+  const challenges: Challenge.Challenge[] = [];
+  for (const terms of nativeCheckoutTiers(env, item)) {
+    const { adapter } = await adapterFor(env, item, inputDigest, purchaseKey, terms);
+    challenges.push((await adapter.challenge()).challenge);
+  }
+  return challenges;
 }
 
-/** The SDK's payment-required data shape, for error.data and result._meta alike. */
-export function mcpPaymentRequired(challenge: Challenge.Challenge): Mcp.ErrorObject["data"] {
-  return { httpStatus: 402, challenges: [challenge] };
+/** The SDK's payment-required data shape, for error.data and result._meta alike; the list is the tier list. */
+export function mcpPaymentRequired(challenges: Challenge.Challenge[]): Mcp.ErrorObject["data"] {
+  return { httpStatus: 402, challenges };
 }
 
 /** A retained purchase answers with the receipt of the challenge this credential named. */
@@ -148,7 +153,13 @@ export async function runMcpMppPayment(env: Env, item: MenuItem, credentialMeta:
   if (typeof purchaseKey !== "string" || !usableIdempotencyKey(purchaseKey) || (suppliedKey !== undefined && suppliedKey !== purchaseKey)) {
     return refusal("mpp_purchase_key_mismatch", "The credential's purchase key is missing or disagrees with _meta['x402/idempotency-key']. Send the key the challenge was minted with, or omit it. Nothing was charged.", 400);
   }
-  const { terms, adapter } = await adapterFor(env, item, inputDigest, purchaseKey);
+  // The credential's challenge names its tier; an amount the list never
+  // offered is refused before the facilitator is asked, whatever its id.
+  const tier = nativeTermsForAmount(env, item, (credential.challenge.request as { amount?: unknown }).amount);
+  if (!tier) {
+    return refusal("mpp_verification_refused", "The native credential names an amount this door does not offer. Nothing was charged; sign one of the challenges the unpaid call quoted.", 402);
+  }
+  const { terms, adapter } = await adapterFor(env, item, inputDigest, purchaseKey, tier);
   let verified: Awaited<ReturnType<typeof adapter.validate>>;
   try { verified = await adapter.validate(header); }
   catch {

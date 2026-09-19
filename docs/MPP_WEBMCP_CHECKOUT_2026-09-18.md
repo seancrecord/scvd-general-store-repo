@@ -74,6 +74,6 @@ challenge carries none, and the SDK resolves it from its own asset registry
 
 ## Not in this release
 
-Signing in the page, a wallet API, other networks and assets, native tips,
-the packages. The lane is qualified by the fixtures above and the shared
+Signing in the page, a wallet API, other networks and assets, the packages.
+Native tips followed in [their own release](MPP_NATIVE_TIPS_2026-09-19.md). The lane is qualified by the fixtures above and the shared
 HTTP lifecycle, not by a live browser purchase.
