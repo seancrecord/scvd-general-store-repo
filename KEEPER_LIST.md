@@ -782,6 +782,25 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### The contract's read budget (2026-09-19, `docs/OPENAPI_READ_BUDGET_2026-09-19.md`)
+
+The six-doors read found `/openapi.json` at 716,135 bytes, past your
+700,000, while the local ceiling built the document without the
+native lane and read 662,100. Thinned by 40,378 bytes without touching
+the inline `Idempotency-Key` or the 402 (the MCP and WebMCP rows ride
+once at the root, the metered 429 is one component), and the local
+test now builds the lane too: 674,723 against 700,000, about three
+listings of room.
+
+- **RULE:** may the `If-None-Match` parameter (eighty-three free
+  doors, 25,232 bytes) and the negotiated `Accept` (twenty, 9,830)
+  become `components.parameters` references? OpenAPI's own answer,
+  and the next 35,000 bytes; but the September 5 note on the
+  idempotency parameter records a scanner that does not resolve
+  parameter references and called the referenced component floating
+  and unused. A caching header may be able to take that warning where
+  the payment key could not. Your call; nothing moves until it.
+
 ### The Paywall (2026-09-12, first pass reconciled, `docs/CARD_TABLE_2026-09.md`)
 
 Built on `claude/compassionate-planck-6pba4v` to your handoff and

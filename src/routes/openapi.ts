@@ -1,7 +1,7 @@
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { getAddress } from "viem";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
-import { checkoutMethod, nativePublicationsEnabled, purchaseCapabilities } from "@/lib/purchase-capabilities";
+import { checkoutMethod, nativeMcpCheckoutShape, nativePublicationsEnabled, nativeWebmcpCheckoutShape, purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { MPP_CORE_BATTERY, MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
@@ -435,6 +435,14 @@ const SHARED_RESPONSES: Record<string, OpenApiObject> = {
     "No such resource. The body names where to look instead.",
   ),
   TooManyRequests: TOO_MANY_REQUESTS,
+  /**
+   * The same refusal on a METERED door, carrying the RateLimit fields
+   * (2026-09-19). withRateLimitHeaders used to inline the shared 429
+   * on every metered operation to hang the headers on it: five copies
+   * of two kilobytes, on a document the live read had just found past
+   * its scanner budget. One copy, referenced, the way the 304 went.
+   */
+  TooManyRequestsMetered: { ...TOO_MANY_REQUESTS, headers: { ...(TOO_MANY_REQUESTS["headers"] as OpenApiObject), ...RATE_LIMIT_HEADER_REFS } },
   ServerError: PROBLEM_RESPONSE("Something fell off a shelf. Nothing was charged."),
 };
 
@@ -5082,6 +5090,10 @@ function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
     ...operation,
     responses: Object.fromEntries(
       Object.entries(responses).map(([status, response]) => {
+        // The shared 429 has a metered twin in components; reference it rather than inline the fields.
+        if (status === "429" && response["$ref"] === "#/components/responses/TooManyRequests") {
+          return [status, { $ref: "#/components/responses/TooManyRequestsMetered" }];
+        }
         const concrete = inlineSharedResponse(response);
         if (!METERED_STATUSES.has(status)) return [status, concrete];
         return [
@@ -5377,6 +5389,22 @@ function ucpExtension(env: Env): Record<string, unknown> {
   };
 }
 
+/**
+ * THE NATIVE LANE'S OTHER TWO DOORS, ONCE (2026-09-19). The MCP and
+ * WebMCP capability rows differ per item only in the terms the HTTP
+ * row already carries, and the compact catalog has carried them once
+ * per page since the MCP release for that reason. The document did
+ * not: thirty-five copies of each, 33 KB, on the day the six-doors
+ * read found the live document past its scanner budget. Same enabled
+ * answer as the rows, so a store with the lane withheld says nothing.
+ */
+function nativeCheckoutExtension(env: Env): Record<string, unknown> {
+  const mcp = nativeMcpCheckoutShape(env);
+  const webmcp = nativeWebmcpCheckoutShape(env);
+  if (!mcp || !webmcp) return {};
+  return { "x-scvd-native-checkout": { mcp, webmcp } };
+}
+
 function paidOp(
   env: Env,
   summary: string,
@@ -5618,8 +5646,11 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     );
   }
   const capabilities = purchaseCapabilities(item, env);
-  // The UCP row is the shelf's, not the operation's: see ucpExtension.
-  operation["x-scvd-payment-capabilities"] = capabilities.filter((row) => row.protocol !== "ucp");
+  // The UCP row is the shelf's, not the operation's: see ucpExtension. The
+  // MCP and WebMCP rows are item-independent and ride once at the root
+  // (nativeCheckoutExtension), as the compact catalog carries them once
+  // per page: the door keeps the rows that name its own path and amount.
+  operation["x-scvd-payment-capabilities"] = capabilities.filter((row) => row.protocol !== "ucp" && row.transport === "http");
   const paymentInfo = operation["x-payment-info"] as OpenApiObject;
   // Directory readers use AgentCash's protocol objects, not our capability
   // extension. Derive the additive MPP entry from the same enabled offer.
@@ -5853,6 +5884,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
      */
     ...provenanceExtension(c.env),
     ...ucpExtension(c.env),
+    ...nativeCheckoutExtension(c.env),
     "x-rate-limiting": {
       /*
        * TRUE SINCE 2026-08-03 AND SAID FALSE HERE UNTIL 2026-08-26,
