@@ -149,34 +149,70 @@ func TestAStoreThatNeverAnsweredIsStoreUnreachable(t *testing.T) {
 	}
 }
 
-func TestExitLawMatchesTheOtherClients(t *testing.T) {
-	ready := Result{URL: "a", Outcome: "ready"}
-	notReady := Result{URL: "b", Outcome: "not_ready"}
-	unreachable := Result{URL: "c", Outcome: "unreachable"}
-	refused := Result{URL: "d", Outcome: "refused"}
-	down := Result{URL: "e", Outcome: "store_unreachable"}
+// The law is typed once, in ../x402-preflight/fixtures/exit-law.json,
+// and read by all three clients (2026-09-19): a title claiming the
+// ports agree is only true while one table feeds every suite. The
+// integers are the boundary; the named constants stay here and are
+// held to the fixture below.
+type exitLawFixture struct {
+	Cases []struct {
+		Name     string   `json:"name"`
+		Outcomes []string `json:"outcomes"`
+		FailOn   []string `json:"fail_on"`
+		Exit     int      `json:"exit"`
+	} `json:"cases"`
+	Worst []struct {
+		Name     string   `json:"name"`
+		Outcomes []string `json:"outcomes"`
+		Worst    string   `json:"worst"`
+	} `json:"worst"`
+}
 
-	cases := []struct {
-		name    string
-		results []Result
-		failOn  []string
-		want    int
-	}{
-		{"all ready", []Result{ready}, nil, ExitOK},
-		{"a not_ready fails", []Result{ready, notReady}, nil, ExitVerdictNegative},
-		// unreachable is a fact about the network path, not the door,
-		// so it does not fail a gate unless the caller asks it to.
-		{"unreachable passes by default", []Result{ready, unreachable}, nil, ExitOK},
-		{"unreachable fails when asked", []Result{ready, unreachable}, []string{"not_ready", "unreachable"}, ExitVerdictNegative},
-		// A door nobody looked at must not pass a gate.
-		{"refused is usage", []Result{ready, refused}, nil, ExitUsage},
-		{"store down is unreachable", []Result{ready, down}, nil, ExitUnreachable},
-		{"refused outranks store down", []Result{refused, down}, nil, ExitUsage},
+func loadExitLaw(t *testing.T) exitLawFixture {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("..", "x402-preflight", "fixtures", "exit-law.json"))
+	if err != nil {
+		t.Fatalf("reading the exit law: %v", err)
 	}
-	for _, testCase := range cases {
-		t.Run(testCase.name, func(t *testing.T) {
-			if got := ExitCodeFor(testCase.results, testCase.failOn); got != testCase.want {
-				t.Fatalf("exit = %d, want %d", got, testCase.want)
+	var law exitLawFixture
+	if err := json.Unmarshal(raw, &law); err != nil {
+		t.Fatalf("decoding the exit law: %v", err)
+	}
+	if len(law.Cases) < 7 || len(law.Worst) < 2 {
+		t.Fatalf("the exit law fixture is too small to be the law: %d cases, %d worst", len(law.Cases), len(law.Worst))
+	}
+	return law
+}
+
+func resultsOf(outcomes []string) []Result {
+	results := make([]Result, 0, len(outcomes))
+	for i, outcome := range outcomes {
+		results = append(results, Result{URL: string(rune('a' + i)), Outcome: outcome})
+	}
+	return results
+}
+
+func TestExitLawMatchesTheOtherClients(t *testing.T) {
+	law := loadExitLaw(t)
+	seen := map[int]bool{}
+	for _, testCase := range law.Cases {
+		seen[testCase.Exit] = true
+		t.Run(testCase.Name, func(t *testing.T) {
+			// A null fail_on in the fixture is a nil slice here: the client's default set.
+			if got := ExitCodeFor(resultsOf(testCase.Outcomes), testCase.FailOn); got != testCase.Exit {
+				t.Fatalf("exit = %d, want %d", got, testCase.Exit)
+			}
+		})
+	}
+	for _, code := range []int{ExitOK, ExitVerdictNegative, ExitUsage, ExitUnreachable} {
+		if !seen[code] {
+			t.Fatalf("the fixture never exercises exit %d", code)
+		}
+	}
+	for _, testCase := range law.Worst {
+		t.Run(testCase.Name, func(t *testing.T) {
+			if got := WorstOutcome(resultsOf(testCase.Outcomes)); got != testCase.Worst {
+				t.Fatalf("worst = %q, want %q", got, testCase.Worst)
 			}
 		})
 	}

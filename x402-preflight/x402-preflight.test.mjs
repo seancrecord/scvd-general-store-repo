@@ -63,16 +63,21 @@ test("one probe, one POST, the body kept whole; 429 and refusals are named, neve
   assert.equal(dead.outcome, "store_unreachable");
 });
 
-test("the exit law and the worst outcome", () => {
+test("the exit law and the worst outcome, from the fixture the three clients share", () => {
+  // The law was a truth table typed three times, one per port, and the
+  // ordering case Go and Python both pinned was absent here. It is now
+  // fixtures/exit-law.json, read by all three (2026-09-19): one edit to
+  // the law is three red suites. The integers are the boundary; each
+  // port keeps its own named constants and holds them to the fixture.
+  const law = JSON.parse(readFileSync(new URL("./fixtures/exit-law.json", import.meta.url), "utf8"));
   const r = (outcome) => ({ url: "u", outcome, detail: null, status: 200, body: null });
-  assert.equal(exitCodeFor([r("ready")]), EXIT.ok);
-  assert.equal(exitCodeFor([r("ready"), r("not_ready")]), EXIT.verdictNegative);
-  assert.equal(exitCodeFor([r("unreachable")]), EXIT.ok);
-  assert.equal(exitCodeFor([r("unreachable")], ["not_ready", "unreachable"]), EXIT.verdictNegative);
-  assert.equal(exitCodeFor([r("refused"), r("not_ready")]), EXIT.usage);
-  assert.equal(exitCodeFor([r("store_unreachable")]), EXIT.unreachable);
-  assert.equal(worstOutcome([r("ready"), r("unreachable"), r("refused")]), "unreachable");
-  assert.equal(worstOutcome([r("store_unreachable"), r("not_ready")]), "not_ready");
+  assert.ok(law.cases.length >= 7 && law.worst.length >= 2);
+  assert.deepEqual(new Set(law.cases.map((c) => c.exit)), new Set(Object.values(EXIT)), "every exit code is exercised");
+  for (const c of law.cases) {
+    const results = c.outcomes.map(r);
+    assert.equal(c.fail_on === null ? exitCodeFor(results) : exitCodeFor(results, c.fail_on), c.exit, c.name);
+  }
+  for (const c of law.worst) assert.equal(worstOutcome(c.outcomes.map(r)), c.worst, c.name);
 });
 
 test("the command exits per the law and prints the store's lines", async () => {
