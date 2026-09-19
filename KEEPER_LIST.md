@@ -1217,7 +1217,14 @@ what you ruled and what is still yours to look at.
   re-read September 19 after the publication doors deployed (#826): 38 of 38
   paid routes `[x402, mpp]`, same three warnings
   ([receipt](research/distribution-2026-09-19/mppscan-discover.json)).
-  PRESS: register at [www.mppscan.com/register](https://www.mppscan.com/register),
+  PRESSED September 19: the listing is at
+  [mppscan.org/server/d58b4c8d…](https://mppscan.org/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b),
+  on `.org` rather than the `.com` the draft named. Its contents are still
+  unread — this container's proxy refuses that host too — so nothing from it
+  has entered the trust records. READ BACK and paste: how many resources it
+  lists, how the network reads on a row (`Base`, or the `tempo:8453` of
+  Merit #1209), and any error or verification notice. The old press line,
+  for the record: register at [www.mppscan.com/register](https://www.mppscan.com/register),
   Add Server, `https://scvd.store`; the [draft](registry/mppscan-submission.md)
   says what to expect and what to bring back, and to stop if the page asks
   for a fee, sign-in or wallet. The checker’s Base-network
