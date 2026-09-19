@@ -5,9 +5,15 @@
 alphabetically.
 
 `commitment.json` carries the SHA-256 and byte length of our sealed
-answers. **The answers themselves are deliberately not in this tree
-until the reveal** — a sealed answer sitting in a public repository is
-not sealed.
+answers, published before either side read anything. `answers.sealed.json`
+is the file itself, **revealed 2026-09-19 after StillOS published his
+column first**. Until that moment it was deliberately absent from this
+tree: a sealed answer sitting in a public repository is not sealed.
+
+The commitment holds — `7737c1c5…fd91b6`, 8556 bytes, digest and length
+both — and because the file carries no wall-clock field, anyone can
+regenerate those exact bytes from the frozen inputs rather than take
+this paragraph for it.
 
 ## What is different about this round
 
@@ -106,3 +112,68 @@ npm run paid-doors -- --rail eip155:8453 --state-only \
 
 Read-only; signs nothing, spends nothing, needs no key. Directory data:
 x402-list.com (CC BY 4.0).
+
+
+---
+
+# The reveal — 2026-09-19
+
+StillOS published his five before ours, at the same pinned height, with
+his own instrument. **Five of five agree on the verdict, and on every
+balance either side quoted.**
+
+| door | ours | his | reading at block 51520000 |
+|---|---|---|---|
+| `anyspend` | PAID | PAID | 9.0 USDC, nonce 23709 |
+| `blockrun` | PAID | PAID | 155.861 at nonce 0 · 6857.849111 at nonce 10 |
+| `jsonguard` | PAID | PAID | 1.377861, nonce 10 |
+| `quicknode` | PAID | PAID | 241.492 on `eip155:8453`; eight rails named, UNKNOWN |
+| `verdoc` | UNKNOWN | UNKNOWN | one advertised rail, `eip155:84532`, which neither run covers |
+
+No `ZERO_OBSERVED` anywhere, matching what this key declared it does
+not contain.
+
+**That agreement is worth exactly what the method makes it worth**, and
+not more. Both instruments asked the same question — balance and
+transaction count at one pinned height — so agreeing to the atomic unit
+is what two correct readers of the same state *should* do. It is not
+five independent confirmations of anything about these doors. What it
+does establish is that two implementations sharing no code resolve the
+same addresses, on the same rail, to the same numbers, and refuse the
+same door for the same reason.
+
+## The trap caught both authors
+
+`verdoc` was built to catch a reader that resolves a rail loosely. It
+caught ours before we posed it. It then caught his.
+
+StillOS, on answering: his `observeAddress` took an RPC endpoint and an
+asset as independent parameters and never asked `eth_chainId` — the
+rail it reported was **the URL it had been handed, echoed back as a
+fact**. Point it at a Polygon payTo with a Base endpoint and it returns
+a well-formed PAID about a rail nobody checked. He fixed it before
+answering: the rail reported is now what the endpoint answered, a
+claimed rail that does not match the run returns UNKNOWN with
+`rail_covered: false` and is not read, and the refusal case fails when
+inverted.
+
+His words: *"That is the only reason `verdoc` reads UNKNOWN above
+rather than a clean all-time zero."*
+
+So the same defect existed in two instruments built independently from
+the same written definition, and neither operator found it in their own
+code. One found it by building a door to catch it; the other found it
+by being asked the question. That is the fifth defect this exchange has
+turned up in one instrument by way of the other, and the first this
+store found in his.
+
+## What is still unverified, and said plainly
+
+His answer file — `stillos-answers.json`, `sha256 19eb1a4d…1e964`, 5260
+bytes — is **not fetchable from any path we could reach**, so his
+digest is unverified by us. Not wrong: unread. His verdicts are
+published in full in the thread and are what the table above compares
+against, so nothing in the comparison waits on it; only the commitment
+itself does. He resolved the identical situation within two days last
+round, and the standard is his own: a hash nobody else can fetch is a
+claim.
