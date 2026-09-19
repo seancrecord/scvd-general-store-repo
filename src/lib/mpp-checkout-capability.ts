@@ -21,14 +21,18 @@ export function mppPaymentHeader(authorization: string | undefined): string | un
  * THE NATIVE DOOR SET IS THE SHELF (whole store, 2026-09-18). Every
  * product the HTTP door sells over x402 is offered over MPP too, from
  * the same catalog row, at the same minimum: an unpaid GET on
- * /api/buy/{item} for an item on the shelf. The path is matched
- * exactly; a trailing slash is not a door (test/doors-parity.spec.ts
- * holds the edges). MCP, WebMCP and the packages keep their existing
- * x402 checkout, and nothing here claims otherwise for them.
+ * /api/buy/{item} for an item on the shelf. A trailing slash is the
+ * same door, as it is for the x402 lane (routes/buy.ts turns strict
+ * matching off and lib/metrics.ts drops the slash from the item key;
+ * until 2026-09-19 this lane refused it while the other answered, so
+ * the slashed knock got a thinner 402 with no native challenge).
+ * test/doors-parity.spec.ts holds the edges. MCP, WebMCP and the
+ * packages keep their existing x402 checkout, and nothing here claims
+ * otherwise for them.
  */
 export function nativeCheckoutItem(path: string, method: string): MenuItem | undefined {
   if (method !== "GET") return undefined;
-  const match = /^\/api\/buy\/([a-z0-9_-]+)$/.exec(path);
+  const match = /^\/api\/buy\/([a-z0-9_-]+)\/?$/.exec(path);
   return match ? getMenuItem(match[1]!) : undefined;
 }
 
