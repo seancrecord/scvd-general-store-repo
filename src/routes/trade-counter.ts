@@ -48,6 +48,7 @@ import {
   TRADE_EXAMPLE_SHARE_BPS,
   TRADE_FAQ,
   TRADE_FOR_MONEY,
+  TRADE_FREE_FIRST,
   TRADE_HONEST_LIMITS,
   TRADE_RESPONSE_INVARIANTS,
   TRADE_SETTLEMENT_CURRENCY,
@@ -622,6 +623,7 @@ function roomJson(base: string) {
       this_surface: "free",
       cadence: "not applicable — nothing is charged for reading this",
       for_money: TRADE_FOR_MONEY,
+      free_first: TRADE_FREE_FIRST,
       the_counter: pricingBlock(),
       shelf: shelfRows(base),
       accounts_today: TRADE_PARTNERS.map((partner) => ({
@@ -752,6 +754,7 @@ function roomHtml(base: string): string {
   return `<section>
   <p class="menu-desc"><strong>${escapeHtml(TRADE_STANDFIRST)}</strong></p>
   <p class="menu-desc">${escapeHtml(TRADE_WHAT_THIS_IS)}</p>
+  <p class="menu-meta">${escapeHtml(TRADE_FREE_FIRST)}</p>
   <p class="menu-desc"><strong>The numbers first.</strong> ${tradeShelf().length} instruments at the counter, from $${Math.min(...tradeShelf().map((row) => row.item.price_usdc))} retail. ${escapeHtml(TRADE_FOR_MONEY)} ${TRADE_PARTNERS.length} account${TRADE_PARTNERS.length === 1 ? "" : "s"} open today. Every account's receivable is public at <a href="/api/trade/ledger"><code>/api/trade/ledger</code></a>.</p>
 </section>
 <section>
@@ -881,7 +884,7 @@ ${TRADE_STANDFIRST}
 
 ${TRADE_WHAT_THIS_IS}
 
-${TRADE_FOR_MONEY}
+${TRADE_FOR_MONEY} ${TRADE_FREE_FIRST}
 
 ## Try it now, no account
 ${

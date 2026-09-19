@@ -7,18 +7,21 @@ import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import { paymentNetworkNames } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
-import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
-import { CARDS_FOR_MONEY, CARDS_PROPOSITION } from "@/store/cards";
-import { SCORERS_FOR_MONEY, SCORERS_PROPOSITION } from "@/store/copy/scorers";
-import { OPERATORS_FOR_MONEY, OPERATORS_PROPOSITION } from "@/store/copy/operators";
+import { TRADE_FOR_MONEY, TRADE_FREE_FIRST, TRADE_PROPOSITION } from "@/store/trade-counter";
+import { CARDS_FOR_MONEY, CARDS_FREE_FIRST, CARDS_PROPOSITION } from "@/store/cards";
+import { SCORERS_FOR_MONEY, SCORERS_FREE_FIRST, SCORERS_PROPOSITION } from "@/store/copy/scorers";
+import { OPERATORS_FOR_MONEY, OPERATORS_FREE_FIRST, OPERATORS_PROPOSITION } from "@/store/copy/operators";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import {
   LEDGER_FOR_MONEY,
+  LEDGER_FREE_FIRST,
   LEDGER_PROPOSITION,
   MCP_WARD_FOR_MONEY,
+  MCP_WARD_FREE_FIRST,
   MCP_WARD_PROPOSITION,
   SOURCES_FOR_MONEY,
+  SOURCES_FREE_FIRST,
   SOURCES_PROPOSITION,
 } from "@/store/copy/instruments";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -387,7 +390,7 @@ ${base}/feeds/corrections.xml and ${base}/feeds/disagreements.xml —
 and every entry links the page it came from, where the derivation and
 the denominator are.
 For an operator: ${base}/operators. ${OPERATORS_PROPOSITION}
-${OPERATORS_FOR_MONEY} The census walks doors, not homepages, and its
+${OPERATORS_FOR_MONEY} ${OPERATORS_FREE_FIRST} The census walks doors, not homepages, and its
 roster comes from the discovery feed; a host the feed does not name
 can serve its own /.well-known/x402 listing its doors and the weekly
 sweep reads it, or POST ${base}/api/declare-door with its host to be
@@ -395,7 +398,7 @@ read now. The store reads only that host's own file, never what anyone
 else says about it, and a file may only declare doors on the host that
 serves it.
 For a scorer or a marketplace: ${base}/scorers. ${SCORERS_PROPOSITION}
-${SCORERS_FOR_MONEY} The page says how to pull the corpus, verify it,
+${SCORERS_FOR_MONEY} ${SCORERS_FREE_FIRST} The page says how to pull the corpus, verify it,
 cite a row by its entry URL and digest (every row surface prints the
 citation for you), reproduce a probe and re-observe. Reproduce is one call: the
 look with "since" names a signed week, and the answer is classed
@@ -601,7 +604,7 @@ shelf. The retained reader follows its original calendar.
 
 Paywall, the counter's pressings, at ${base}/design, JSON by Accept.
 ${CARDS_PROPOSITION}
-${CARDS_FOR_MONEY} The pack is \`GET ${base}/api/buy/pack\`; a pick off
+${CARDS_FOR_MONEY} ${CARDS_FREE_FIRST} The pack is \`GET ${base}/api/buy/pack\`; a pick off
 the window is \`GET ${base}/api/buy/window_pick\`; the bell hands out
 one common a day; the set is free at \`${base}/api/paywall/set\`; a
 pressing hangs at \`${base}/p/{card_id}\` and unfurls wherever it is
@@ -1108,7 +1111,7 @@ never a host named beside its verdict.
 The same week READ, rather than tabulated: ${base}/ledger is The
 Week's Ledger, one page per signed week at \`${base}/ledger/{week}\`
 with JSON at \`${base}/ledger/{week}.json\`. ${LEDGER_PROPOSITION}
-${LEDGER_FOR_MONEY} Everything on it was
+${LEDGER_FOR_MONEY} ${LEDGER_FREE_FIRST} Everything on it was
 already published and already signed — the brief has served the
 counts, the changes feed the movement, /sources the feeds' own
 health, /corrections what we got wrong. What none of them did was
@@ -1242,7 +1245,7 @@ ranking. The per-host read above carries the same tier with its rows.
 ## Where our numbers come from
 
 ${base}/sources, JSON at ${base}/sources.json. ${SOURCES_PROPOSITION}
-${SOURCES_FOR_MONEY}
+${SOURCES_FOR_MONEY} ${SOURCES_FREE_FIRST}
 
 Every figure this store publishes about the x402 ecosystem rests on a
 handful of public directories. This is the list of them and, the column that matters,
@@ -1290,7 +1293,7 @@ to read as continuous coverage.
 ## The MCP ward
 
 ${base}/mcp-ward, JSON at ${base}/mcp-ward.json. ${MCP_WARD_PROPOSITION}
-${MCP_WARD_FOR_MONEY}
+${MCP_WARD_FOR_MONEY} ${MCP_WARD_FREE_FIRST}
 
 A second ward on the same instrument design, pointed at the official
 MCP registry instead of at x402 doors, and kept rigorously apart from
@@ -1444,7 +1447,7 @@ rather than pretending.
 Round the back, for platforms that resell to agents. ${TRADE_PROPOSITION}
 The instruction is HMAC-SHA256 over timestamp, nonce and the exact
 body, sent to \`POST ${base}/api/trade/{account}/{item_id}\`. The
-customer never touches x402. ${TRADE_FOR_MONEY} The certificate says
+customer never touches x402. ${TRADE_FOR_MONEY} ${TRADE_FREE_FIRST} The certificate says
 settled_via: trade_account, names the account, the trade price and
 the digest of your instruction, and carries NO chain fields, because
 no chain was involved. Every trade price is printed per item at

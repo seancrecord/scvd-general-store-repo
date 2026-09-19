@@ -36,6 +36,7 @@ import {
   TRADE_COUNTER_NAME,
   TRADE_COUNTER_OPENED,
   TRADE_FOR_MONEY,
+  TRADE_FREE_FIRST,
   TRADE_PROPOSITION,
 } from "@/store/trade-counter";
 
@@ -115,8 +116,7 @@ export const FEATURES: readonly Feature[] = [
     room: "/trade",
     proposition: TRADE_PROPOSITION,
     for_money: TRADE_FOR_MONEY,
-    free_first:
-      "The sandbox account and its check desk are free and need no conversation.",
+    free_first: TRADE_FREE_FIRST,
     doors: [
       "/trade.md",
       "/health",

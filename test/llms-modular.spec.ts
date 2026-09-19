@@ -1062,8 +1062,12 @@ const BASE = "https://scvd.store";
 // 529e622f reproduced, and this copy reproduces the new one.
 // 2026-09-19: re-taken with the till sentence replaced by UNPAID_READ_NOTE
 // and the mpp-tiers practice pointer (see the note in "nothing was rewritten").
+// 2026-09-19, later: re-taken with each room's registered free-first
+// sentence beside its money sentence (rule 60.2's third sentence, which
+// the guide carried for two rooms and now carries for all nine); with
+// those seven insertions removed, c7f04b55 reproduces.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c7f04b55cbaa1e01a98f1fdd03ce2192a57dfc127856c281730afd0efaa517a8";
+  "1c8eed2a53a5672b5875064767b8de234628eef04f204b35b8078746d665f470";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1110,8 +1114,10 @@ describe("nothing was rewritten", () => {
     // replaced by the shared UNPAID_READ_NOTE (the till has spoken MPP
     // since 2026-09-18) and the mpp-tiers practice pointer beside
     // mpp-shape; with those two lines restored, a03d8e21 reproduced.
+    // 2026-09-19, later: re-taken with the seven free-first sentences
+    // beside their money sentences; with them removed, 6fb54921 reproduces.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "6fb54921ce1a8b31a5e25233935ef0e19fea692f3f41aff9a3464b6e7195690a",
+      "423001c45ee6ecac0a46e16303ba72e8772bcb10f5a3a9981f8f118cb6321e40",
     );
   });
 
