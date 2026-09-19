@@ -555,6 +555,17 @@ export function porchSurface(path: string, method: string): string | undefined {
   if (path === "/api/study/debrief") {
     return method === "POST" ? "study-debrief" : "study-debrief:read";
   }
+  /*
+   * A researcher reading their OWN study back, after the two exact
+   * doors above have had their say. One bucket, never one per study —
+   * the same rule the credit desk keeps for wallets, and for the same
+   * reason: a surface counted per subject is a surface nobody can
+   * total. What it measures is worth having on its own line, though:
+   * whether anybody ever checks the record we kept of them.
+   */
+  if (path.startsWith("/api/study/")) {
+    return "study:read";
+  }
   /* The mailbox: a letter posted, or a pickup slip checked for a reply. */
   if (path === "/api/letter") {
     return method === "POST" ? "letter:write" : "letter:read";
