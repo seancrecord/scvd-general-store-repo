@@ -792,6 +792,12 @@ once at the root, the metered 429 is one component), and the local
 test now builds the lane too: 674,723 against 700,000, about three
 listings of room.
 
+- **NOTE, same night:** the header guards had the same blind spot and
+  were fixed the same way (`docs/HEADER_BUDGET_LANE_2026-09-19.md`): the
+  widest live 402 is 14,017 bytes of Node's 16,384, 1,343 under the
+  line held, and a sixth rail would cross the line. And the MCP tool
+  catalogue sits 204 bytes under its 152,000 ratchet (151,796): the
+  next description edit is a cut or a ruling, not a number to move.
 - **RULE:** may the `If-None-Match` parameter (eighty-three free
   doors, 25,232 bytes) and the negotiated `Accept` (twenty, 9,830)
   become `components.parameters` references? OpenAPI's own answer,

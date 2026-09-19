@@ -1,6 +1,9 @@
-import { installBuyerHarness, baseline, items } from "./helpers/buyer-harness";
+import { installBuyerHarness, baseline, items, request, testEnv } from "./helpers/buyer-harness";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
+import { checkoutNetworks } from "@/lib/payment-networks";
+import { PWID_TIER_MULTIPLIERS } from "@/lib/payments";
+import { parseWwwAuthenticate } from "@/lib/mpp-challenge";
 
 installBuyerHarness();
 const BASE = "https://scvd.store";
@@ -23,11 +26,26 @@ const NODE_MAX_HEADER_SIZE = 16_384;
 const HEADER_BUDGET = 15_360;
 
 /**
- * The widest shelf this store can quote: three rails (Base, Polygon,
- * Solana) times three patronage tiers. Production issues nine signed
- * offers for such an item.
+ * The widest shelf this store can quote: every checkout rail times the
+ * patronage tiers. Derived (2026-09-19), because the typed "nine" from
+ * three rails stood here for thirteen days after the fourth and fifth
+ * rails opened on 2026-09-06, and a projection built on a stale count
+ * under-projects the header by six offers.
  */
-const WIDEST_ACCEPTS = 9;
+const EVERY_RAIL = { ...testEnv, ARBITRUM_PAY_TO: "0x1111111111111111111111111111111111111111", WORLD_PAY_TO: "0x1111111111111111111111111111111111111111" };
+const WIDEST_ACCEPTS = checkoutNetworks(EVERY_RAIL).length * PWID_TIER_MULTIPLIERS.length;
+
+/**
+ * THE NATIVE LANE'S ENVELOPE (2026-09-19). Since the native tips
+ * release a pay-what-it-deserves door also carries one Payment
+ * challenge per tier in WWW-Authenticate, beside the x402 offers, and
+ * a stock Node client counts those bytes against the same 16,384. One
+ * challenge is one challenge everywhere: id, realm, method, intent,
+ * expires, the base64url request and the signature. Measured 709 on the
+ * widest door the day this was written; 800 leaves room for a longer
+ * resource path, not for a second request object.
+ */
+const CHALLENGE_ENVELOPE_BUDGET = 800;
 
 /**
  * WHY THIS FILE PROJECTS INSTEAD OF ONLY MEASURING, and it is the
@@ -121,6 +139,21 @@ describe("every priced door fits through a stock Node client", () => {
       perOffer,
       `one offer is ${perOffer}B; ${WIDEST_ACCEPTS} of them ride every challenge on the widest shelf, base64-expanded by a third, and a stock Node client refuses the response at ${NODE_MAX_HEADER_SIZE}B`,
     ).toBeLessThan(OFFER_ENVELOPE_BUDGET);
+  });
+
+  it("keeps one Payment challenge under its envelope budget, on the widest door", async () => {
+    testEnv.MPP_CHECKOUT_ENABLED = "true";
+    testEnv.MPP_CHALLENGE_KEY = "fixture-native-checkout-hmac-key";
+    const response = await request("/api/buy/graffiti_on_a_train?tag=fixture");
+    expect(response.status).toBe(402);
+    const challenges = parseWwwAuthenticate(response.headers.get("WWW-Authenticate")).filter((challenge) => challenge.scheme === "payment");
+    expect(challenges.length, "one challenge per tier").toBe(PWID_TIER_MULTIPLIERS.length);
+    // The header's own bytes per challenge: the whole list, shared evenly, is what the client counts.
+    const perChallenge = Math.ceil((response.headers.get("WWW-Authenticate") ?? "").length / challenges.length);
+    expect(
+      perChallenge,
+      `one Payment challenge is ${perChallenge}B; ${PWID_TIER_MULTIPLIERS.length} of them ride beside ${WIDEST_ACCEPTS} offers on the widest shelf, and a stock Node client refuses the response at ${NODE_MAX_HEADER_SIZE}`,
+    ).toBeLessThan(CHALLENGE_ENVELOPE_BUDGET);
   });
 
   it("measures the live catalogue too, for what this worker can see", async () => {
