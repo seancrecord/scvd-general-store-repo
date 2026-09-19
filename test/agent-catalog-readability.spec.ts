@@ -1,4 +1,4 @@
-import { SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
+import { LLMS_INDEX_CHARACTER_BUDGET, SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import Ajv from "ajv/dist/2020";
@@ -97,7 +97,16 @@ describe("agent catalog contracts and reading budgets", () => {
   it("keeps a short linked index and a full guide, with room below existing limits", async () => {
     const index = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
     const full = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
-    expect(index.length).toBeLessThan(25_000);
+    /*
+     * The index budget is spelled once, in store/reader-limits, where
+     * the machine-surface ceiling for /llms.txt already reads it and
+     * test/llms-modular holds the same number (a typed 25_000 sat
+     * here until 2026-09-19, a second and stricter copy of the same
+     * budget that nobody reconciled with the register — the defect
+     * AT_SCALE rule 1 names, and the one the scanner budget on the
+     * line below was fixed for the same day).
+     */
+    expect(index.length).toBeLessThan(LLMS_INDEX_CHARACTER_BUDGET);
     expect(index).toMatch(/^- \[[^\]]+\]\(https:\/\/scvd.store\/developers\/llms.txt\)/m);
     expect(full).toContain("Well well. Come in then.");
     const spec = await (await SELF.fetch(`${BASE}/openapi.json`)).text();

@@ -538,6 +538,9 @@ export const TRADE_PROPOSITION =
   "Your customer pays you; you send us one signed instruction; we deliver the same signed goods the front door sells and bill your account on a statement.";
 export const TRADE_FOR_MONEY =
   "Trade price is retail plus 20% net of your share, rounded up to the cent, billed per delivery and never for a delivery that did not happen.";
+/** Rule 60.2's third sentence; registered in features.ts since the counter opened, served since 2026-09-19. */
+export const TRADE_FREE_FIRST =
+  "The sandbox account and its check desk are free and need no conversation.";
 
 export const TRADE_STANDFIRST = `Round the back, for marketplaces. ${TRADE_PROPOSITION} Your customer never touches x402.`;
 

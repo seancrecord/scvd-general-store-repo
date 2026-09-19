@@ -100,11 +100,15 @@ describe.each(FEATURES.map((feature) => [feature.id, feature] as const))(
       expect(typed.length, `a typed schema.org node for what ${feature.id} IS, not only a page (found: ${types.join(", ")})`).toBeGreaterThan(0);
     });
 
-    it("60.2 — the proposition and the money sentence read identically on the page, the twin and llms.txt", async () => {
+    it("60.2 — the proposition, the money sentence and the free-first sentence read identically on the page, the twin and llms.txt", async () => {
+      // Until 2026-09-19 this loop checked two of the register's three
+      // sentences; the free-first line — the one a buyer gets before
+      // paying — was validated for shape and compared against nothing,
+      // and one room served it nowhere.
       const page = await text(feature.room, HTML);
       const twin = await text(feature.room, JSON_ACCEPT);
       const guide = await text("/llms-full.txt", {});
-      for (const sentence of [feature.proposition, feature.for_money]) {
+      for (const sentence of [feature.proposition, feature.for_money, feature.free_first]) {
         expect(page, `page carries: ${sentence}`).toContain(escapeLikeThePage(sentence));
         expect(twin, `JSON twin carries: ${sentence}`).toContain(JSON.stringify(sentence).slice(1, -1));
         expect(guide, `llms.txt carries: ${sentence}`).toContain(sentence);
