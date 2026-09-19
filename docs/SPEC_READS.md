@@ -2280,3 +2280,20 @@ No native OpenCode run or independent community-adoption evidence was establishe
 These remain candidates, not submitted listings; see the same completion record.
 
 OpenCode follow-through, September 18: the documented npm CLI route installed version 1.18.31 in temporary storage. Native `debug skill` discovered both unchanged SCVD skills and `mcp list` connected both configured servers. [Receipt](../research/distribution-2026-09-18/opencode-qualification.json). This qualifies discovery/connection only. The listed free model returned a provider 403 FreeTierError before skill/tool execution; no successful execution is claimed. [CLI reference](https://opencode.ai/docs/cli/).
+
+
+### 2026-09-19 — UCP launch distribution and Muse intake
+
+Read the live [SCVD UCP profile](https://scvd.store/.well-known/ucp) and hello catalog lookup; catalog, checkout and order advertised live. Read #842's scoped hello/Base paid evidence and #843's additional-rail driver work; no new payment or independent chain read in this pass. [Saved responses and receipts](../research/ucp-distribution-2026-09-19/README.md).
+
+Read [UCP core concepts](https://ucp.dev/documentation/core-concepts/) for permissionless profile discovery and [Google Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center) for the separate platform onboarding and product gates. Neither establishes Google's acceptance of SCVD's custom payment handler.
+
+Read [community node registration instructions](https://github.com/homototus/ucp-directory) and its registration issue template; submitted #3 after duplicate checks. Read [UCPList contribution evidence policy](https://github.com/Full-Vibe/ucp-ecosystem/blob/main/CONTRIBUTING.md), source listings, and rendered submission/pricing pages; free Merchants submission confirmed received. No public listing yet. Web-reader returned no usable pricing content; browser supplied it.
+
+Read rendered [Muse platform](https://muse.ai/platform) and sign-in flow. Business-email code requested; further requirements remain behind verification. No terms accepted, connector submitted or payment compatibility established.
+
+Read [Awesome UCP contribution rules](https://github.com/Upsonic/awesome-ucp/blob/master/CONTRIBUTING.md), current README and prior PR search. One factual merchant implementation entry submitted as #30 with affiliation and qualification limits.
+
+Read UCP Checker directory instructions, free check form and the resulting [SCVD public report](https://ucpchecker.com/check/scvd.store). The report labels the profile Verified and retains root signing-key warnings; no paid operation, monitoring subscription, account or fee. Its wider platform-support claims were not independently verified or adopted.
+
+Checked the current [UCP profile structure](https://ucp.dev/specification/overview/) after the scanner warning: public signing keys are optional at the profile level; when published they belong in top-level `keys[]`. That does not settle requirements of signing-dependent flows. No authentication or key change was made.

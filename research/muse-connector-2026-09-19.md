@@ -26,3 +26,8 @@ Inspect the developer intake after work-email sign-in, establish fees and connec
 ## Keeper sequencing — September 19
 
 Bundle Muse intake with the UCP-specific distribution round after UCP is live. Continue the existing ERC-8004 follow-ups first. No recurring-fee route and no early UCP support claim.
+
+
+## Intake started after launch confirmation
+
+September 19: keeper confirmed UCP live. Opened Submit a connector, entered the authorized business contact, and requested the email sign-in code. The screen confirms the code was sent; user verification is pending. No connector form reached, no terms accepted and no fee agreed. [UCP distribution receipts](ucp-distribution-2026-09-19/README.md).

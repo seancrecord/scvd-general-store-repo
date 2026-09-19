@@ -83,6 +83,13 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://ucpchecker.com/check/scvd.store",
+    registry: "UCP Checker — public profile report",
+    protocols: ["ucp"],
+    confirmed: "2026-09-19",
+    what_it_proves: "That UCP Checker fetched the store's public UCP profile and published a Verified report on September 19, 2026, detecting catalog search/lookup, checkout, order and the custom USDC payment handler. Its report retains schema warnings, including root signing-key placement. This is a dated discovery report, not an endorsement, a paid checkout qualification or Google admission.",
+  },
+  {
     url: "https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b",
     registry: "MPPScan — payment API directory",
     protocols: ["mpp"],
