@@ -1932,6 +1932,13 @@ export function theRestOfTheLadder(battery: string, base: string): Record<string
       proves_payment_or_delivery: false,
       scope: "An unsigned, unpaid preflight reading. Read the actual verdict, reached_level, checks and gaps; ready does not prove settlement, delivery, reliability or permission to spend.",
     },
+    free_signed_history: {
+      history_url_template: `${base}/corpus/host/{host}.json`,
+      issuer_key_url: `${base}/.well-known/scvd-signing-key`,
+      guide_url: `${base}${VERIFICATION_SKILL.path}`,
+      requires_spend_authorization: false,
+      scope: "The host-history lookup is unsigned. Its cited signed snapshots and the public issuer-key record are free to retrieve; a missing or unsuitable row is a coverage gap. Verify the exact endpoint in the signed data against an independently established issuer key and apply the caller's age limit to the observation date, not publication time. A historical SCVD observation does not authenticate a merchant's current offer or prove payment or delivery.",
+    },
     climbed,
     unclimbed: [
       {
@@ -1962,7 +1969,7 @@ export function theRestOfTheLadder(battery: string, base: string): Record<string
       signs_previous_preflight: false,
       requires_spend_authorization: true,
       guide_url: `${base}${VERIFICATION_SKILL.path}`,
-      scope: "Optional fresh signed observation, not proof of payment or delivery. With no spend authorization, stop with the unsigned result and report the signed-evidence stage incomplete. Missing evidence in hand does not establish that no evidence exists.",
+      scope: "Optional fresh signed observation, not proof of payment or delivery. Without spend authorization, do not purchase this fresh probe. Check free_signed_history for existing signed observations and report any retention, verification or freshness gaps. Missing evidence in hand does not establish that no evidence exists.",
       verification: "Retain the signed certificate and the report bytes it binds. Verify locally with an independently established issuer key; verify_artifact is a hosted lookup, not an offline check. Check subject, date, any expiry and missing evidence separately from signature validity.",
     },
   };

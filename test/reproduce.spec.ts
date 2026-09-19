@@ -167,7 +167,7 @@ function stubDoor(answer: () => Response): void {
   });
 }
 
-async function seedRound(hosts: { host: string; verdict: string; failed?: string[]; battery?: string }[], sequence = 1, week = "2026-W34"): Promise<void> {
+async function seedRound(hosts: { host: string; verdict: string; failed?: string[]; battery?: string; observed_at?: string }[], sequence = 1, week = "2026-W34"): Promise<void> {
   const takenAt = `2026-08-${String(18 + sequence).padStart(2, "0")}T17:00:00.000Z`;
   const snapshot = {
     version: 1,
@@ -190,6 +190,7 @@ async function seedRound(hosts: { host: string; verdict: string; failed?: string
         failed: h.failed ?? [],
         advisories: [],
         ...(h.battery ? { battery: h.battery } : {}),
+        ...(h.observed_at ? { observed_at: h.observed_at } : {}),
       })),
     },
   };
@@ -254,6 +255,39 @@ describe("the look carries the reproduction", () => {
 });
 
 describe("the cite box is one shape on every row surface", () => {
+  it("cites a host's observation date across surfaces when its snapshot seals later", async () => {
+    const observed = "2026-08-17T12:00:00.000Z";
+    await seedRound([{ host: "looked.example", verdict: "ready", battery: "preflight-v2", observed_at: observed }]);
+    const host = await (await SELF.fetch(`${BASE}/corpus/host/looked.example.json`)).json() as {
+      cite_json: { observed_at: string }; timeline: { taken_at: string }[];
+    };
+    expect(host.cite_json.observed_at).toBe(observed);
+    for (const accept of ["text/markdown", "text/html"]) {
+      const response = await SELF.fetch(`${BASE}/corpus/host/looked.example`, { headers: { Accept: accept } });
+      expect(response.status).toBe(200);
+      const page = await response.text();
+      expect(page).toContain(`observed ${observed}`);
+      expect(page).not.toContain(`observed ${host.timeline[0]!.taken_at}`);
+    }
+    const snapshot = await (await SELF.fetch(`${BASE}/corpus/1.json`)).json() as { cite_json: { observed_at: string } };
+    expect(snapshot.cite_json.observed_at).toBe(host.timeline[0]!.taken_at);
+  });
+
+  it("keeps the observation date on the compared row and its citation", () => {
+    const observed = "2026-08-17T12:00:00.000Z";
+    const row = round("2026-W34", 1, { observed_at: observed, battery: "preflight-v2" });
+    const out = reproduceAgainst(BASE, "looked.example", { timeline: [row] }, { verdict: "ready", failed: [], battery: "v2" });
+    expect(out.compared_with).toMatchObject({ observed_at: observed, taken_at: row.taken_at });
+    expect(out.cite?.json.observed_at).toBe(observed);
+    expect(out.cite?.text).toContain(`observed ${observed}`);
+  });
+
+  it("keeps publication dates for snapshot citations and legacy rows without an observation date", () => {
+    const row = round("2026-W34", 1);
+    expect(citeRow(BASE, { host: "looked.example", ...row }).json.observed_at).toBe(row.taken_at);
+    expect(citeRow(BASE, { ...row, observed_at: "2026-08-17T12:00:00.000Z" }).json.observed_at).toBe(row.taken_at);
+  });
+
   it("host JSON, host page, snapshot and round all print it, with the row's own digest", async () => {
     await seedRound([{ host: "looked.example", verdict: "ready", battery: "preflight-v2" }], 1, "2026-W34");
     const host = (await (await SELF.fetch(`${BASE}/corpus/host/looked.example.json`)).json()) as Record<string, any>;
@@ -274,7 +308,7 @@ describe("the cite box is one shape on every row surface", () => {
     const round = (await (await SELF.fetch(`${BASE}/corpus/round/2026-W34`, { headers: { Accept: "application/json" } })).json()) as Record<string, any>;
     expect(typeof round.cite).toBe("string");
     expect(round.cite_json.cites).toBe(`${BASE}/corpus/1.json`);
-    const expected = citeRow(BASE, { host: "looked.example", week: "2026-W34", sequence: 1, taken_at: host.timeline[0].taken_at, digest: "1".repeat(64), entry_url: `${BASE}/corpus/1.json` });
+    const expected = citeRow(BASE, { host: "looked.example", week: "2026-W34", sequence: 1, taken_at: host.timeline[0]!.taken_at, digest: "1".repeat(64), entry_url: `${BASE}/corpus/1.json` });
     expect(host.cite_json).toEqual(expected.json);
   });
 });

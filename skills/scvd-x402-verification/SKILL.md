@@ -55,10 +55,13 @@ version rather than assuming it selected HTTP v2.
    receipts. Its findings concern that artifact; a seller's signature is
    not an independent SCVD observation of delivery.
 
-## Optional signed observation
+## Free signed history; a fresh signed observation costs money
 
-Stop after the free reading when it answers the question. First check for
-free historical evidence at `https://scvd.store/corpus/host/{host}.json`.
+Stop after the free reading when it answers the question. When the caller
+asks for independently verifiable evidence, check the free signed history
+before deciding that the remaining evidence requires payment. The host-history
+lookup is unsigned; the signed snapshot it links and the public issuer-key
+record are free to retrieve. Start at `https://scvd.store/corpus/host/{host}.json`.
 Follow its cited signed snapshot, confirm the exact endpoint and observation
 date inside the signed data, and verify it locally with `scvd-evidence`.
 The corpus index is at `https://scvd.store/corpus/index.json`. A historical
@@ -85,9 +88,10 @@ Never call a paid tool merely because the tool is installed.
 Never retry with a signed payment without the caller's authorization and
 budget. Signing belongs in the caller's payment client, never in a request
 for wallet secrets. Use the documented idempotency key for paid retries.
-With a zero budget, stop here: free inspection may be complete while the
-signed-evidence stage remains incomplete. Do not buy just to complete a
-test. A sample for another endpoint does not prove anything about this one.
+A zero budget rules out a fresh paid observation, not the free signed
+history above. If no suitable signed history is available, report that gap;
+do not buy just to complete a test. A sample for another endpoint does not
+prove anything about this one.
 
 ## Verify what a recipient actually receives
 

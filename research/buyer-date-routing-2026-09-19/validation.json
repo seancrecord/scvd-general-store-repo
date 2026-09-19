@@ -1,0 +1,98 @@
+{
+  "scope": "Citation-date repair, preserved comparison observation time, and free signed-history routing. No native buyer acceptance claimed.",
+  "base_revision": "cddf0e6667be857fe80600ce1d86600ec047bca3",
+  "full_local_suite": {
+    "stage": "citation and guide repair, before the subsequent preflight routing change and main integration",
+    "base_revision": "905e088798032d89cf291d90d54b750d88ceaad7",
+    "files_passed": 793,
+    "tests_passed": 15145,
+    "tests_skipped": 1,
+    "exit_code": 0
+  },
+  "red_controls": {
+    "citation_and_comparison_failures": 2,
+    "preflight_free_history_failures": 2
+  },
+  "final_checks": {
+    "affected_files_passed": 12,
+    "affected_tests_passed": 145,
+    "buyer_tests_passed": 236,
+    "typecheck": "pass",
+    "bundles": "pass",
+    "docs": "pass",
+    "corrections_index_tests_passed": 2
+  },
+  "required_before_merge": "All four hosted CI shards and required checks on the final PR head.",
+  "retained_log_hashes": [
+    {
+      "file": "buyer.log",
+      "bytes": 46759,
+      "sha256": "62e653665fb35c1ed4549389e65b3cf68a2329e7343328d2169360c11f82b995"
+    },
+    {
+      "file": "citation-stage-build.log",
+      "bytes": 3924,
+      "sha256": "d8a7d68fd62ff08e60e752b2151a20812a090fae5485ff27de6238da5ba4b911"
+    },
+    {
+      "file": "corrections.log",
+      "bytes": 517,
+      "sha256": "b09bbd775fbbbdc0780c5215e664a6942dfa138396978c65a12f6486ead11d81"
+    },
+    {
+      "file": "docs.log",
+      "bytes": 4114,
+      "sha256": "c9cde4cfddc7ed23f21dcc2a829d61bfe2da7c2dcca7aaccdef28c17e5a3d3bc"
+    },
+    {
+      "file": "final-build.log",
+      "bytes": 4032,
+      "sha256": "3c20defd3004b0659d74e1147263175bb366e201aa3bbfbd630a603fdcdd1098"
+    },
+    {
+      "file": "final-buyer.log",
+      "bytes": 46703,
+      "sha256": "0386874d651742cc841effb1b5317023b206c45351e3507b1e335e4248ba2bdc"
+    },
+    {
+      "file": "final-docs.log",
+      "bytes": 4114,
+      "sha256": "edeeda5b0965afb166b4ae6d7013137a0ab88fa9fa05486ba226c17355156e8a"
+    },
+    {
+      "file": "final-targeted.log",
+      "bytes": 62579,
+      "sha256": "a032bb4665a9a7523798206506138a82752087839e11612ba38e0d81ca60d3ac"
+    },
+    {
+      "file": "final-typecheck.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "focused.log",
+      "bytes": 61925,
+      "sha256": "d996a3e86cbc723b402df91acf3561c7d0914ee54cbf5dd053bfa5ed74458df9"
+    },
+    {
+      "file": "free-history-red.log",
+      "bytes": 63319,
+      "sha256": "bbf36480274b998f1912d33f00628cf2463a4fa980317910d81f1fa36b33465f"
+    },
+    {
+      "file": "full-citation-stage.log",
+      "bytes": 398952,
+      "sha256": "9e38394c7661aed31be4f2d1b90f8b025caf2dd0714cc178a42ae6a41db4b2e6"
+    },
+    {
+      "file": "red.log",
+      "bytes": 64228,
+      "sha256": "1e596372ee480f79f5fba058016ef8c707bd02e9ccf4a235f533a1380b1c48f5"
+    },
+    {
+      "file": "typecheck.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    }
+  ]
+}
