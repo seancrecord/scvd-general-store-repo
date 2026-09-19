@@ -26,6 +26,11 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **x402-verify 1.6.0 and 1.7.0 published, September 19 — no press needed.**
+  Fresh registry installations match the reviewed source; the latest package
+  has verified npm signature and provenance. [Release and acceptance record](research/subject-acceptance-2026-09-19/REPORT.md).
+  Buyer usability remains on ROADMAP TR3; no complete journey passed the new cohort.
+
 - **The doors mint the native challenge, 2026-09-18 — no press needed.**
   The whole-shelf native release (`docs/MPP_WHOLE_STORE_2026-09-18.md`)
   made every HTTP door a native door, and you put the store's

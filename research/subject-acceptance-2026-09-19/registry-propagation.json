@@ -1,0 +1,14 @@
+{
+  "first_read_at": "2026-09-19T12:24:52Z",
+  "workflow": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35442741062",
+  "workflow_conclusion": "success",
+  "first_fresh_registry_install": "version 1.7.0 not yet visible (E404)",
+  "republished": false,
+  "subsequent_readback": {
+    "checked_at": "2026-09-19T12:26:07.635199+00:00",
+    "version": "1.7.0",
+    "fresh_install": "success",
+    "registry_signature": "verified",
+    "provenance_attestation": "verified"
+  }
+}

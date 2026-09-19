@@ -1,0 +1,48 @@
+{
+  "recorded_at": "2026-09-19T12:42:29.661482+00:00",
+  "typecheck": "pass",
+  "docs_check": "pass",
+  "report_json_and_reference_hashes": "pass",
+  "controller_tests": {
+    "pass": 236,
+    "fail": 0
+  },
+  "verifier_tests": {
+    "pass": 164,
+    "fail": 0
+  },
+  "full_local_suite": {
+    "state": "incomplete",
+    "initial_sandbox_attempt": "EPERM binding local 127.0.0.1",
+    "subsequent_attempts": [
+      {
+        "command": "npm test",
+        "state": "stopped_by_controller_after_repeated_worker_internal_errors_without_test_results"
+      },
+      {
+        "command": "npm test -- --maxWorkers=2",
+        "state": "stopped_by_controller_after_repeated_worker_internal_errors_without_test_results"
+      }
+    ],
+    "cause": "Undiagnosed. Concurrent tests in other worktrees were observed; causality is not established. No timeouts, tests or configuration changed.",
+    "merge_gate": "All required hosted CI checks must pass."
+  },
+  "local_log_hashes": {
+    "typecheck": {
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "bytes": 54
+    },
+    "docs": {
+      "sha256": "c9cde4cfddc7ed23f21dcc2a829d61bfe2da7c2dcca7aaccdef28c17e5a3d3bc",
+      "bytes": 4114
+    },
+    "full-test": {
+      "sha256": "b4670ea86c9435c09a85ce1dd2f5a0e0a867b1308b8673bddc8fecc21a907570",
+      "bytes": 142667
+    },
+    "full-test-bounded": {
+      "sha256": "b11f1b3acc91e7faa34e4dd1ede3a02ea20ab61b8d4fe8a40a1324010b9c5388",
+      "bytes": 118526
+    }
+  }
+}

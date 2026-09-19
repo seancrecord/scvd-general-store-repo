@@ -1,0 +1,18 @@
+Verification result: no authenticated evidence was available.
+
+- All six manifest-listed artifacts were supplied and hash-verified. No capture failures or omitted retained files are recorded.
+- `artifacts/0-corpus_host.json` is an unsigned host-history summary, not a signed corpus snapshot. It has no signed payload, signature, or public key; `createEvidenceBundle` rejects it as `invalid_artifact`.
+- `artifacts/5-preflight.json` is explicitly unsigned. It reports one probe at L3a: HTTP 402, parseable x402 v2 challenge, payable mainnet address, atomic amount, and signable transfer method.
+- No exact signed message exists to report, and no independently captured key record exists. Therefore signature validity, issuer identity, and key authorization are all unverified. Any key mentioned in text would not independently establish issuer identity.
+
+Unsigned observations:
+
+- Current preflight: `ready`, observed around `2026-09-19T12:30:32Z`; unsigned and limited to one unpaid probe.
+- Historical corpus summary: rows for the endpoint were marked ready in sequences 4, 5, and 7. Sequence 7 gives `observed_at: 2026-09-07T02:30:20.531Z`, with no declared expiry. At the review date this is 12 days old, within the report’s stated 14-day historical window, but it remains unsigned.
+- The history reports 3 of 6 rounds probed (60%), with two `listed_not_walked` gaps. Older rows lacking `observed_at` are historical summary entries, not authenticated observations.
+
+Limits and gaps:
+
+- The preflight does not establish signed-offer authenticity (L3c), day-to-day consistency (L3d), payment, delivery, reliability, or issuer identity.
+- The buyer report claims an Ed25519-signed corpus row and cites a separate key, but the cited signed snapshot and key record are absent from the supplied inventory. This is a coverage gap; it is not evidence that the buyer failed to retain them.
+- No signed message, declared signed expiry, or authenticated issuer identity can be independently verified from this handoff.

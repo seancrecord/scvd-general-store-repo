@@ -1,0 +1,134 @@
+{
+  "version": "1.7.0",
+  "reviewed_source_commit": "905e088798032d89cf291d90d54b750d88ceaad7",
+  "dry_run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35442655045",
+  "prior_1_6_publication": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35442689679",
+  "registry_dist": {
+    "shasum": "107683a92370e95792dcab43cd6b0f6329ae3a92",
+    "tarball": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.7.0.tgz",
+    "fileCount": 24,
+    "integrity": "sha512-OZn2A0obWdLUeD1dO0OUMd8erpWsm1bL7BvpgLMq9GawSqrNk/H5Wkt7PTpxWtORnpq0WYwC1StqXqqm5jKzHw==",
+    "signatures": [
+      {
+        "sig": "MEUCIQDRnv4X32P/N9ZjTdi0bZcjWvnQO8DfBtSMPWfpLuxECgIgTParQe2+BuqsDLEhiPwCpXU31uaF4giEIkmzA/ZRUUc=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEQCIDRazZPjZvYqSLUxNyaId7A2r65bACDIAxqVyOp1mMCkAiBZ7ETqkQqs85dY6gAZxsbkngS42hWcy7T4xH4QyfMjMw=="
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.7.0",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 303554
+  },
+  "all_packed_files_match_source": true,
+  "files": {
+    "CHANGELOG.md": {
+      "bytes": 6379,
+      "sha256": "31f8e1c724c8fe0e671735b3533bc05f7aaa05d0d2344bfc582fa8889fbfa24a"
+    },
+    "LICENSE": {
+      "bytes": 1068,
+      "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+    },
+    "README.md": {
+      "bytes": 34696,
+      "sha256": "6e3b87f2c2ea253115c3f178fc877064b43c4373f7fcb11d181d64233e07150f"
+    },
+    "evidence-bundle.d.ts": {
+      "bytes": 1831,
+      "sha256": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a"
+    },
+    "evidence-bundle.js": {
+      "bytes": 9551,
+      "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+    },
+    "evidence-cli.mjs": {
+      "bytes": 11486,
+      "sha256": "46b8081af27aa120469256e7caf09aeb5d61f346e1299e7040d1d32b1715b3ec"
+    },
+    "examples/verify-receipt.mjs": {
+      "bytes": 1334,
+      "sha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8"
+    },
+    "fixtures/independent/matrix.json": {
+      "bytes": 164861,
+      "sha256": "d97a7433f9323c9398770769a299377764b266a907c1caba743152802fb35b95"
+    },
+    "fixtures/independent/README.md": {
+      "bytes": 5590,
+      "sha256": "f94705fc218c5d91b648317cc33a0619175e27cc0913b6ccc02daac4bc5c64e4"
+    },
+    "fixtures/issuer-key-document.json": {
+      "bytes": 344,
+      "sha256": "09fa3404fca2f70fbdc3ea761421c651d914ab22056aed3d7b0fb3bd17d70756"
+    },
+    "fixtures/offer-expired-but-wellformed.json": {
+      "bytes": 935,
+      "sha256": "8bd00bc6e0669f729de267744fd590f6dd25b1e77d37374e0e9f240e7279ee9b"
+    },
+    "fixtures/offer-tampered-payload.json": {
+      "bytes": 843,
+      "sha256": "30a0c7955220d7fa2e38e376ae432e593516ccca821c2c5829bba3d43d3d16f2"
+    },
+    "fixtures/offer-valid.json": {
+      "bytes": 1110,
+      "sha256": "509906bef539a7df8eb9d555281966d1766a6e6a38c7a0457073c4cefeeabda9"
+    },
+    "fixtures/receipt-missing-payer.json": {
+      "bytes": 762,
+      "sha256": "a071e8bd9a7b18966e31aa9170b57f766032674c210ba6634f77c931f34f6977"
+    },
+    "fixtures/receipt-valid.json": {
+      "bytes": 1090,
+      "sha256": "666bb748b58daa4b7473db2f1b68a0b6b5e97566bc12f902fe0534eaddd4c518"
+    },
+    "fixtures/receipt-wrong-key.json": {
+      "bytes": 961,
+      "sha256": "8b161596280b9943f1b00a6814cdce0c698b4dafeb9b95c07fd9e5c0aae26586"
+    },
+    "fixtures/start-here/issuer-key.json": {
+      "bytes": 560,
+      "sha256": "019399acc8a3b59e69f7f29204e86461314ba68549bd38580f5672c5dd7882a6"
+    },
+    "fixtures/start-here/README.md": {
+      "bytes": 1330,
+      "sha256": "6c027dc167ff9523928c37fa74ef151b764a633a44be7a71d49ec39529563bc3"
+    },
+    "fixtures/start-here/receipt-es256.json": {
+      "bytes": 597,
+      "sha256": "45bdfcae94d63dcc18c05fe6f81388f5819890a196a1e8c44e0e3297352f1092"
+    },
+    "fixtures/start-here/receipt-tampered.json": {
+      "bytes": 603,
+      "sha256": "07409ebf6846fa09fed38b607b8b227b02c1df71579ec0a6506ea03f1617d1b2"
+    },
+    "fixtures/start-here/receipt.json": {
+      "bytes": 597,
+      "sha256": "34a6a41737b0e8b86a76c6f923da232be26cf60768a9fc11156c6080df36e3cf"
+    },
+    "package.json": {
+      "bytes": 1511,
+      "sha256": "51bc4750f0a9523349a83d321fc7d6ca306c91acf87beac679e5d8dfe5f4745f"
+    },
+    "x402-verify.d.ts": {
+      "bytes": 10333,
+      "sha256": "4e5ba26c307c067b7cfacb368bf062a76cea441e98a65cef2b82f5536f56afbd"
+    },
+    "x402-verify.js": {
+      "bytes": 45182,
+      "sha256": "d516f8d5fed4b2cf330bde7562ef957b88b9884ea3602f069e279f8a59070b9f"
+    }
+  },
+  "npm_audit_signatures": "audited 1 package in 0s\n\n1 package has a verified registry signature\n\n1 package has a verified attestation\n\n",
+  "limits": [
+    "Registry/package qualification; not a native buyer acceptance result."
+  ],
+  "publication": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35442741062",
+  "verified_at": "2026-09-19T12:26:07.635199+00:00"
+}

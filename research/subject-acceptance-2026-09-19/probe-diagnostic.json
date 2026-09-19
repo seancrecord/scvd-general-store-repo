@@ -1,0 +1,65 @@
+{
+  "checked_at": "2026-09-19T12:38:49.467500+00:00",
+  "kind": "post-run controller diagnostic, not native qualification",
+  "trace_sha256": "41e98c7503702d2d94c743c54b44b8cb046608f43e5ea5b1552f4958a71ba760",
+  "vectors_sha256": "d518a28bc415ee96b406abbbfa95233d5f5c465734a86b0106261b8981d9bdec",
+  "openssl_version": "OpenSSL 3.5.1 1 Jul 2025 (Library: OpenSSL 3.5.1 1 Jul 2025)",
+  "finding": "Native OpenSSL calls decoded the public key but passed the hex signature text directly to -sigfile. Correctly decoding the signature reproduces all four expected outcomes. The original qualification failure and skipped buyers remain unchanged.",
+  "expected": {
+    "a": true,
+    "b": true,
+    "c": false,
+    "d": true
+  },
+  "results": {
+    "a": {
+      "hex_text": {
+        "signature_bytes": 128,
+        "valid": false,
+        "exit_code": 1
+      },
+      "decoded_bytes": {
+        "signature_bytes": 64,
+        "valid": true,
+        "exit_code": 0
+      }
+    },
+    "b": {
+      "hex_text": {
+        "signature_bytes": 128,
+        "valid": false,
+        "exit_code": 1
+      },
+      "decoded_bytes": {
+        "signature_bytes": 64,
+        "valid": true,
+        "exit_code": 0
+      }
+    },
+    "c": {
+      "hex_text": {
+        "signature_bytes": 128,
+        "valid": false,
+        "exit_code": 1
+      },
+      "decoded_bytes": {
+        "signature_bytes": 64,
+        "valid": false,
+        "exit_code": 1
+      }
+    },
+    "d": {
+      "hex_text": {
+        "signature_bytes": 128,
+        "valid": false,
+        "exit_code": 1
+      },
+      "decoded_bytes": {
+        "signature_bytes": 64,
+        "valid": true,
+        "exit_code": 0
+      }
+    }
+  },
+  "limits": "Uses retained public vector data and regular temporary files; does not requalify the native host or establish all other runtime behavior."
+}
