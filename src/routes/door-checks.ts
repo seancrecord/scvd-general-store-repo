@@ -1,4 +1,5 @@
 import { mppPaymentHeader, mppCheckoutCors } from "@/lib/mpp-checkout-capability";
+import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import { recoverSignedPurchase } from "@/services/signed-purchase-recovery";
 import { decodePaymentHeader } from "@/lib/decline-diagnosis";
 import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
@@ -56,7 +57,7 @@ import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 
 export function buyRequestPath(c: { req: { path: string } }): string {
   const path = c.req.path;
-  return path.length > 1 && path.endsWith("/") ? path.replace(/\/+$/, "") : path;
+  return path.length > 1 && path.endsWith("/") ? stripTrailingSlashes(path) : path;
 }
 
 export function buyItemId(c: { req: { path: string } }): string {

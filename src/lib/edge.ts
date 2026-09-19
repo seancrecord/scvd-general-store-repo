@@ -1,4 +1,5 @@
 import { VARY_ACCEPT } from "@/lib/accept";
+import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import type { EventSignals } from "@/lib/metrics";
 import {
   itemKeyFromPath,
@@ -120,7 +121,7 @@ export const isolateTiming: MiddlewareHandler<HonoEnv> = async (c, next) => {
     url.pathname.endsWith("/") &&
     !url.pathname.startsWith("/api/")
   ) {
-    url.pathname = url.pathname.replace(/\/+$/, "") || "/";
+    url.pathname = stripTrailingSlashes(url.pathname) || "/";
     return c.redirect(url.toString(), 301);
   }
   const coldIsolate = requestsServedByThisIsolate === 0;
