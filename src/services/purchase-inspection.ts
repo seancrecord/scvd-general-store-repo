@@ -1,3 +1,4 @@
+import { mppSaleItemKey } from "@/services/mpp-sales";
 import { purchaseIntentStore, purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { settlementAssetMetadata } from "@/lib/payments";
 import { isRecord, type Env } from "@/types";
@@ -90,7 +91,7 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
       if (!isRecord(sale) || ![sale.id, sale.month, sale.payer, sale.transaction, sale.amount].every(value => typeof value === "string") ||
         typeof sale.house !== "boolean" || (sale.item !== undefined && typeof sale.item !== "string")) throw new Error("Invalid ledger evidence");
       const expected = record.state === "settled" ? mppSaleEvidence(record) :
-        { id, month, payer: record.payer, transaction: record.payment?.transaction, amount: record.terms.amount, house: record.mpp!.house, item: record.item?.id };
+        { id, month, payer: record.payer, transaction: record.payment?.transaction, amount: record.terms.amount, house: record.mpp!.house, item: mppSaleItemKey(record) };
       // A row booked during the one-product pilot names no item; it is that product, not a mismatch.
       const mismatched_fields = Object.entries(expected).filter(([key, value]) =>
         !(key === "item" && sale.item === undefined && value === LEGACY_NATIVE_ITEM) && sale[key] !== value).map(([key]) => key);

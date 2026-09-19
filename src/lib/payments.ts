@@ -935,6 +935,34 @@ export function minimumUsdcForPath(path: string): number {
 }
 
 /**
+ * THE PUBLICATION DOORS, BY FAMILY (native publications, 2026-09-19).
+ * A page of the almanac, a gazette issue, an archived zodiac week and
+ * an Open for Business issue are the paid doors that are not shelf
+ * items: minimumUsdcForPath above prices them by prefix, and the
+ * native lane needs the same answer as a family with its tiers, so the
+ * ledger can split a native sale under one spelling per family the way
+ * it splits shelf sales per item. The patterns are the doors' own route
+ * shapes (routes/almanac.ts, trading-post.ts, zodiac.ts,
+ * open-for-business.ts); an index page is not a door.
+ */
+export type PublicationFamily = "almanac" | "gazette" | "zodiac_archive" | "open_for_business";
+export const PUBLICATION_FAMILIES: readonly PublicationFamily[] = ["almanac", "gazette", "zodiac_archive", "open_for_business"];
+export function publicationFamilyForPath(path: string): PublicationFamily | undefined {
+  if (/^\/almanac\/[a-z0-9_-]+$/.test(path)) return "almanac";
+  if (/^\/gazette\/issue-[0-9]+$/.test(path)) return "gazette";
+  if (/^\/zodiac\/archive\/[a-z_]+\/week-[0-9]+$/.test(path)) return "zodiac_archive";
+  if (/^\/open-for-business\/[A-Za-z0-9-]+$/.test(path)) return "open_for_business";
+  return undefined;
+}
+
+/** The family's tiers, minimum first: what its x402 accepts offer, and what its native challenges mirror. */
+export function publicationTiersUsdcForPath(path: string): number[] | undefined {
+  const family = publicationFamilyForPath(path);
+  if (!family) return undefined;
+  return family === "open_for_business" ? openForBusinessTiersUsdc() : pennyPageTiersUsdc();
+}
+
+/**
  * WHY A PAYMENT WAS DECLINED — the most valuable fact this store can
  * produce, and until 2026-07-28 the one most likely to be lost.
  *

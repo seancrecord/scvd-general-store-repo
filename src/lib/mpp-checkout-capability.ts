@@ -2,6 +2,7 @@ import type { Env, MenuItem } from "@/types";
 import type { MiddlewareHandler } from "hono";
 import type { HonoEnv } from "@/types";
 import { getMenuItem } from "@/store";
+import { publicationFamilyForPath, publicationTiersUsdcForPath, type PublicationFamily } from "@/lib/payments";
 
 /**
  * THE PILOT'S ONE PRODUCT (2026-09-16 to 2026-09-18). Native checkout
@@ -33,13 +34,30 @@ export function nativeCheckoutItem(path: string, method: string): MenuItem | und
 }
 
 /**
- * Advertised: the flag is on and the path is a native door. The doors
- * Worker asks this to decide whether the knock has a native answer at
- * all; it holds no durable bindings, so it is never asked the fuller
- * question below.
+ * THE PUBLICATION DOORS ARE NATIVE DOORS TOO (2026-09-19). An almanac
+ * page, a gazette issue, an archived zodiac week and an Open for
+ * Business issue sell over x402 at their family's tiers with no shelf
+ * item behind them; the native lane offers the same tiers on the same
+ * unpaid GET. The family is the ledger's spelling for the sale, the way
+ * an item id is for a shelf sale. The doors Worker never fronts these
+ * paths, so this is the store's answer alone.
+ */
+export interface NativePublicationDoor { family: PublicationFamily; tiersUsdc: number[] }
+export function nativePublicationDoor(path: string, method: string): NativePublicationDoor | undefined {
+  if (method !== "GET") return undefined;
+  const family = publicationFamilyForPath(path);
+  const tiersUsdc = publicationTiersUsdcForPath(path);
+  return family && tiersUsdc ? { family, tiersUsdc } : undefined;
+}
+
+/**
+ * Advertised: the flag is on and the path is a native door, a shelf
+ * item's or a publication's. The doors Worker asks this to decide
+ * whether the knock has a native answer at all; it holds no durable
+ * bindings, so it is never asked the fuller question below.
  */
 export function nativeOfferAdvertised(env: Pick<Env, "MPP_CHECKOUT_ENABLED">, path: string, method: string): boolean {
-  return env.MPP_CHECKOUT_ENABLED === "true" && nativeCheckoutItem(path, method) !== undefined;
+  return env.MPP_CHECKOUT_ENABLED === "true" && (nativeCheckoutItem(path, method) !== undefined || nativePublicationDoor(path, method) !== undefined);
 }
 
 /** Mintable: advertised, and this Worker holds the challenge key. The doors mint on this alone. */

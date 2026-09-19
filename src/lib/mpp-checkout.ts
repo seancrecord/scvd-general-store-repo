@@ -1,11 +1,11 @@
-import { nativeCheckoutTiers, nativeTermsForAmount } from "@/lib/purchase-capabilities";
+import { nativeCheckoutTiers, nativePublicationTiers, nativeTierForAmount } from "@/lib/purchase-capabilities";
 import type { PaymentRequirements } from "@x402/core/types";
 import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
 import type { Context, Next } from "hono";
 import { Credential, PaymentRequest } from "mppx";
 import { AuthorizationPayloadSchema } from "mppx/evm";
 import { createMppEvmAdapter } from "@/lib/mpp-evm-adapter";
-import { mppCheckoutEnabled, nativeCheckoutItem } from "@/lib/mpp-checkout-capability";
+import { mppCheckoutEnabled, nativeCheckoutItem, nativePublicationDoor, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { getPaymentStack, atomicToUsdc, tipFromPaid,
   SettlementUnknown, SettlementDeclined, type SettledPayment } from "@/lib/payments";
@@ -21,37 +21,55 @@ import { isHouseTraffic } from "@/lib/channel";
 import { recordDeliveredSettlement } from "@/services/settlement-records";
 import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import { openDeliveryIntent, closeDeliveryIntent } from "@/services/delivery-audit";
-import type { HonoEnv } from "@/types";
+import { encodeBase64Json } from "@/lib/base64-json";
+import type { PublicationSnapshot } from "@/lib/publication-recovery";
+import type { HonoEnv, MenuItem } from "@/types";
+
+/**
+ * THE DOOR THE KNOCK IS ON. A shelf item's door names its item, its
+ * price and its tiers; a publication door (native publications,
+ * 2026-09-19) names its family and the family's tiers, with no item
+ * behind it. The key is the stem of the suggested purchase key and the
+ * ledger's spelling of the sale. The gate already refused any path that
+ * is neither before this is reached.
+ */
+type NativeDoor =
+  | { kind: "item"; item: MenuItem; key: string; tiers: PaymentRequirements[]; minimumUsdc: number }
+  | { kind: "publication"; door: NativePublicationDoor; key: string; tiers: PaymentRequirements[]; minimumUsdc: number };
+
+function nativeDoorFor(c: Context<HonoEnv>): NativeDoor | undefined {
+  const item = nativeCheckoutItem(c.req.path, c.req.method);
+  if (item) return { kind: "item", item, key: item.id, tiers: nativeCheckoutTiers(c.env, item), minimumUsdc: item.price_usdc };
+  const door = nativePublicationDoor(c.req.path, c.req.method);
+  if (door) return { kind: "publication", door, key: door.family, tiers: nativePublicationTiers(c.env, door), minimumUsdc: door.tiersUsdc[0]! };
+  return undefined;
+}
 
 async function adapterFor(c: Context<HonoEnv>, purchaseKey: string, terms: PaymentRequirements) {
-  // The door names the item; the item names its tiers; the caller names
-  // the tier (native tips, 2026-09-19). The gate already refused any path
-  // that is not a native door before this is reached.
-  const item = nativeCheckoutItem(c.req.path, "GET");
-  if (!item) throw new Error("Not a native door");
+  // The caller names the tier (native tips, 2026-09-19); the path is the scope.
   const facilitator = getPaymentStack(c.env).facilitator;
-  return { item, terms, adapter: createMppEvmAdapter({ secretKey: c.env.MPP_CHALLENGE_KEY!,
+  return createMppEvmAdapter({ secretKey: c.env.MPP_CHALLENGE_KEY!,
     realm: new URL(c.env.STORE_BASE_URL).host, scope: c.req.path,
     requestDigest: await httpArtifactDigest(c.req.url), purchaseKey, terms,
     verify: (payload, accepted) => facilitator.verify(payload, accepted),
-  }) };
+  });
 }
 
 export async function attachMppChallenge(c: Context<HonoEnv>, response: Response): Promise<void> {
   // The gate asks on "advertised"; the store answers only when it can
   // also admit and account, so discovery never outruns the bindings.
-  if (!mppCheckoutEnabled(c.env, c.req.path, "GET")) return;
+  if (!mppCheckoutEnabled(c.env, c.req.path, c.req.method)) return;
   const supplied = c.req.header("Idempotency-Key");
   if (supplied && !usableIdempotencyKey(supplied)) return;
-  const item = nativeCheckoutItem(c.req.path, "GET");
-  if (!item) return;
-  const key = supplied ?? suggestedIdempotencyKey(item.id);
+  const native = nativeDoorFor(c);
+  if (!native) return;
+  const key = supplied ?? suggestedIdempotencyKey(native.key);
   // One challenge per tier, minimum first, in one header: RFC 9110's
   // challenge list, which the SDK's client reads whole and takes the
   // first candidate of. A fixed-price door has one tier and one challenge.
   const headers: string[] = [];
-  for (const terms of nativeCheckoutTiers(c.env, item)) {
-    const { adapter } = await adapterFor(c, key, terms);
+  for (const terms of native.tiers) {
+    const adapter = await adapterFor(c, key, terms);
     headers.push((await adapter.challenge()).header);
   }
   // A real Payment challenge replaces the informational hint. x402's own
@@ -116,10 +134,11 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
   // The credential's challenge names its tier. An amount the tier list
   // never offered is refused here, before the facilitator is asked,
   // whatever its challenge id: the list is what the store agreed to sell at.
-  const door = nativeCheckoutItem(c.req.path, "GET");
-  const tier = door && nativeTermsForAmount(c.env, door, (credential.challenge.request as { amount?: unknown }).amount);
-  if (!tier) return refusal("mpp_verification_refused", 402);
-  const { item, terms, adapter } = await adapterFor(c, purchaseKey, tier);
+  const native = nativeDoorFor(c);
+  if (!native) return refusal("mpp_checkout_unavailable", 503);
+  const terms = nativeTierForAmount(native.tiers, (credential.challenge.request as { amount?: unknown }).amount);
+  if (!terms) return refusal("mpp_verification_refused", 402);
+  const adapter = await adapterFor(c, purchaseKey, terms);
   let verified: Awaited<ReturnType<typeof adapter.validate>>;
   try { verified = await adapter.validate(header); }
   catch { return refusal("mpp_verification_refused", 402); }
@@ -130,13 +149,17 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
   const unavailable = await c.get("purchaseAdmission")?.();
   if (unavailable) return unavailable;
 
-  const paidUsdc = atomicToUsdc(terms.amount), tipUsdc = tipFromPaid(paidUsdc, item.price_usdc);
+  const paidUsdc = atomicToUsdc(terms.amount), tipUsdc = tipFromPaid(paidUsdc, native.minimumUsdc);
   let purchase: PurchaseIntent | undefined;
   let settled: SettledPayment | undefined;
   let deliveryKey: string | null = null;
   let attempt: Promise<SettledPayment> | undefined;
+  // A publication's good is the page the handler prepares; it is
+  // retained on the record before the settle, as the x402 gate does.
+  let publication: PublicationSnapshot | undefined;
   const settle = async (): Promise<SettledPayment> => {
-    purchase = await beginVerifiedPurchaseIntent(c.env, { payment: verified.payment, terms, item,
+    purchase = await beginVerifiedPurchaseIntent(c.env, { payment: verified.payment, terms,
+      ...(native.kind === "item" ? { item: native.item } : {}), ...(publication ? { publication } : {}),
       path: c.req.path, door: "http", request: new URL(c.req.url).searchParams.toString(), idempotency,
       mpp: { challenge_id: credential.challenge.id, house: isHouseTraffic(c.env, { ...gateSignals(c), payer: verified.payment.payer }) },
     });
@@ -154,8 +177,10 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
         transaction: result.result.transaction, settleHeaders: { "Payment-Receipt": result.header } };
       await store.updatePurchase({ state: "settled", payment: settled }).catch(() => undefined);
       await store.accountMppPurchase().catch(() => undefined);
-      deliveryKey = await openDeliveryIntent(c.env, { path: c.req.path, query: purchase.request,
-        transaction: settled.transaction, payer: settled.payer, paid_usdc: paidUsdc, settled_at: new Date().toISOString() }).catch(() => null);
+      if (native.kind === "item") {
+        deliveryKey = await openDeliveryIntent(c.env, { path: c.req.path, query: purchase.request,
+          transaction: settled.transaction, payer: settled.payer, paid_usdc: paidUsdc, settled_at: new Date().toISOString() }).catch(() => null);
+      }
       c.set("payment", settled);
       return settled;
     } catch {
@@ -178,12 +203,43 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
     // The observation families prepare their signed reading before the
     // settle and retain it under the purchase identity; the x402 gate
     // builds the same checkpoint from the same verified payload shape.
-    observation: await verifiedObservationCheckpoint(c.env, item, terms.network, verified.payment.payer, verified.payload, c.req.path, request.digest),
+    // A publication has no observation to prepare.
+    observation: native.kind === "item"
+      ? await verifiedObservationCheckpoint(c.env, native.item, terms.network, verified.payment.payer, verified.payload, c.req.path, request.digest)
+      : undefined,
     settle: () => attempt ??= settle(), purchaseRecovery: () => purchase && purchaseRecovery(c.env, purchase),
     purchaseCreatedAt: () => purchase?.created_at });
   await next();
+  if (native.kind === "publication" && !settled && c.res.status < 300) {
+    // The page handler delivers first and never settles; the gate settles
+    // for it after a 2xx, stock x402's own ordering, with the page retained
+    // on the record so a lost response is recovered from the journal.
+    const markdown = await c.res.clone().text();
+    const content_type = c.res.headers.get("Content-Type") ?? "";
+    if (!markdown.trim() || !content_type.startsWith("text/markdown")) {
+      c.res = c.json({ code: "publication_unavailable", charged: false, settlement_attempted: false,
+        error: "The page could not be prepared. No payment was submitted. Retry this same request." }, 503);
+      return;
+    }
+    publication = { markdown, content_type, minimum_usdc: native.minimumUsdc };
+    try { await (attempt ??= settle()); }
+    catch (error) {
+      // A refused or uncertain settle must not be served as a delivered page.
+      if (error instanceof SettlementUnknown) { c.res = error.response(); return; }
+      if (error instanceof SettlementDeclined) { c.res = error.response; return; }
+      throw error;
+    }
+  }
   if (!settled || !purchase) return;
   for (const [name, value] of Object.entries(settled.settleHeaders)) c.res.headers.set(name, value);
+  if (native.kind === "publication") {
+    // The retained page is the good; the record derives its delivery
+    // (publicationDelivery), so nothing further joins the journal.
+    c.res.headers.set("Purchase-Recovery", encodeBase64Json(purchaseRecovery(c.env, purchase)));
+    c.res.headers.set("Cache-Control", "no-store");
+    await recordDeliveredSettlement(c.env, settled.transaction);
+    return;
+  }
   if (c.res.status < 300) {
     const delivery = await c.res.clone().json<Record<string, unknown>>();
     await purchaseIntentStore(c.env, purchase.id).completeMppPurchase(delivery).catch(() => undefined);

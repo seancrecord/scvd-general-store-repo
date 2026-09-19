@@ -2,7 +2,7 @@ import type { Env, MenuItem } from "@/types";
 import type { PaymentRequirements } from "@x402/core/types";
 import { manifestAccepts, priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
 import { BASE_NETWORK, type PaymentNetworkConfig } from "@/lib/payment-networks";
-import { mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
+import { mppCheckoutEnabled, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
 import { ucpItemSellable } from "@/lib/ucp/launch";
 import { MENU_ITEMS } from "@/store";
 import { MCP_CREDENTIAL_META_KEY, MCP_PAYMENT_REQUIRED_META_KEY, MCP_RECEIPT_META_KEY } from "@/lib/mpp-mcp-keys";
@@ -43,9 +43,24 @@ export function ucpCapability(item: MenuItem, config?: PurchaseCapabilityConfig)
  * that is not on it is refused before settlement (nativeTermsForAmount).
  */
 export function nativeCheckoutTiers(config: PaymentNetworkConfig, item: MenuItem): PaymentRequirements[] {
-  const tiers = manifestAccepts(config, priceTiersUsdc(item)).filter(row => row.network === BASE_NETWORK) as PaymentRequirements[];
+  return nativeTiersFor(config, priceTiersUsdc(item));
+}
+
+/** The Base rows of any tier list, minimum first; the publication doors' tiers come from their family. */
+export function nativeTiersFor(config: PaymentNetworkConfig, tiersUsdc: number[]): PaymentRequirements[] {
+  const tiers = manifestAccepts(config, tiersUsdc).filter(row => row.network === BASE_NETWORK) as PaymentRequirements[];
   if (!tiers.length) throw new Error("MPP terms unavailable");
   return tiers;
+}
+
+export function nativePublicationTiers(config: PaymentNetworkConfig, door: NativePublicationDoor): PaymentRequirements[] {
+  return nativeTiersFor(config, door.tiersUsdc);
+}
+
+/** The tier a credential's challenge names within a list, or nothing. */
+export function nativeTierForAmount(tiers: PaymentRequirements[], amountAtomic: unknown): PaymentRequirements | undefined {
+  if (typeof amountAtomic !== "string") return undefined;
+  return tiers.find(row => row.amount === amountAtomic);
 }
 
 /** Discovery and the first challenge share the item's minimum entitlement on Base. */
@@ -55,8 +70,7 @@ export function nativeCheckoutTerms(config: PaymentNetworkConfig, item: MenuItem
 
 /** The tier a credential's challenge names, or nothing: an amount the shelf never quoted is not for sale. */
 export function nativeTermsForAmount(config: PaymentNetworkConfig, item: MenuItem, amountAtomic: unknown): PaymentRequirements | undefined {
-  if (typeof amountAtomic !== "string") return undefined;
-  return nativeCheckoutTiers(config, item).find(row => row.amount === amountAtomic);
+  return nativeTierForAmount(nativeCheckoutTiers(config, item), amountAtomic);
 }
 
 /** Store-specific capability contract; not the draft MPP x-payment-info schema. */
@@ -120,10 +134,21 @@ export function nativeCheckoutDoors(config?: PurchaseCapabilityConfig): MenuItem
   return MENU_ITEMS.filter(item => purchaseCapabilities(item, config).some(row => row.protocol === "mpp"));
 }
 
+/**
+ * The publication doors are enabled by the same flag, key and bindings
+ * as the shelf; one representative page path asks the shared check, so
+ * the guide and the discovery descriptor cannot say yes when the gate
+ * would say no.
+ */
+export const NATIVE_PUBLICATION_PROBE_PATH = "/almanac/probe";
+export function nativePublicationsEnabled(config?: PurchaseCapabilityConfig): boolean {
+  return !!config && mppCheckoutEnabled(config, NATIVE_PUBLICATION_PROBE_PATH, "GET");
+}
+
 export function nativeCheckoutGuide(config?: PurchaseCapabilityConfig): string {
   const doors = nativeCheckoutDoors(config);
   const sample = doors[0] && purchaseCapabilities(doors[0], config).find(row => row.protocol === "mpp");
   if (!sample || !("network" in sample)) return "";
   const count = doors.length === MENU_ITEMS.length ? `every one of the ${doors.length}` : `${doors.length} of the ${MENU_ITEMS.length}`;
-  return `Native MPP checkout: HTTP GET /api/buy/{item} on ${count} shelf items also offers evm/charge on ${sample.network}, ${sample.currency} (${sample.asset}), at that item's own minimum in atomic units with ${sample.decimals} decimals; the exact amount is in the door's WWW-Authenticate: Payment challenge and in its payment_capabilities row. A pay-what-it-deserves door offers one challenge per price tier in that header (an RFC 9110 challenge list, minimum first; the row's tip_tiers_atomic), so a client that takes the first challenge pays the minimum; sign a higher tier's challenge to tip, and the excess is booked as a tip on the same purchase, as it is over x402. Read the current challenge, authorize it in a compatible client, and retry identical inputs with Authorization: Payment and the quote's Idempotency-Key. Do not combine it with an x402 payment header. After an uncertain result, keep the original credential and recovery handle; do not sign another payment. The same offer stands on the MCP door: an unpaid buy_* tools/call answers with the challenge under ${MCP_PAYMENT_REQUIRED_META_KEY} (in error.data, or in result._meta with ?payment=tool-result), the retry carries the credential in _meta['${MCP_CREDENTIAL_META_KEY}'] with identical arguments, and the receipt returns in result._meta['${MCP_RECEIPT_META_KEY}']. On WebMCP, quote_store_purchase returns the same challenge as payment_challenge, keyed to the quote's retry key, and complete_store_purchase takes the signed Payment credential as signed_credential and returns payment_receipt; the packages retain their existing x402 checkout. The challenge carries no EIP-712 domain: a stock mppx client resolves the token's name and version from its own asset registry (currencies: [Assets.base.USDC]) or an explicit authorization option. Offers remain subject to input, stock and availability checks. The store-specific payment_capabilities field and OpenAPI x-scvd-payment-capabilities describe enabled rails; x-payment-info adds the enabled MPP method, intent and currency for directory readers while preserving x402 discovery. Runtime challenges remain the source of current payment terms.`;
+  return `Native MPP checkout: HTTP GET /api/buy/{item} on ${count} shelf items also offers evm/charge on ${sample.network}, ${sample.currency} (${sample.asset}), at that item's own minimum in atomic units with ${sample.decimals} decimals; the exact amount is in the door's WWW-Authenticate: Payment challenge and in its payment_capabilities row. A pay-what-it-deserves door offers one challenge per price tier in that header (an RFC 9110 challenge list, minimum first; the row's tip_tiers_atomic), so a client that takes the first challenge pays the minimum; sign a higher tier's challenge to tip, and the excess is booked as a tip on the same purchase, as it is over x402. ${nativePublicationsEnabled(config) ? "The publication pages carry the same lane at their own tiers: almanac pages, gazette issues and archived zodiac weeks at a penny, Open for Business issues at the issue price, each an unpaid GET on the page itself. " : ""}Read the current challenge, authorize it in a compatible client, and retry identical inputs with Authorization: Payment and the quote's Idempotency-Key. Do not combine it with an x402 payment header. After an uncertain result, keep the original credential and recovery handle; do not sign another payment. The same offer stands on the MCP door: an unpaid buy_* tools/call answers with the challenge under ${MCP_PAYMENT_REQUIRED_META_KEY} (in error.data, or in result._meta with ?payment=tool-result), the retry carries the credential in _meta['${MCP_CREDENTIAL_META_KEY}'] with identical arguments, and the receipt returns in result._meta['${MCP_RECEIPT_META_KEY}']. On WebMCP, quote_store_purchase returns the same challenge as payment_challenge, keyed to the quote's retry key, and complete_store_purchase takes the signed Payment credential as signed_credential and returns payment_receipt; the packages retain their existing x402 checkout. The challenge carries no EIP-712 domain: a stock mppx client resolves the token's name and version from its own asset registry (currencies: [Assets.base.USDC]) or an explicit authorization option. Offers remain subject to input, stock and availability checks. The store-specific payment_capabilities field and OpenAPI x-scvd-payment-capabilities describe enabled rails; x-payment-info adds the enabled MPP method, intent and currency for directory readers while preserving x402 discovery. Runtime challenges remain the source of current payment terms.`;
 }

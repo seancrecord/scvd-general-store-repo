@@ -2,6 +2,7 @@ import { BASE_NETWORK } from "@/lib/payment-networks";
 import { BASE_USDC } from "@/lib/base-rpc";
 import { LEGACY_NATIVE_ITEM } from "@/lib/mpp-checkout-capability";
 import { getMenuItem } from "@/store";
+import { publicationFamilyForPath, PUBLICATION_FAMILIES } from "@/lib/payments";
 import type { Env } from "@/types";
 import { purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { monthsSinceOpening } from "@/lib/metrics";
@@ -49,11 +50,24 @@ export interface MppSaleEvidence {
   item?: string;
 }
 
+/**
+ * THE SALE'S SPELLING IN THE SPLIT. A shelf sale is its item id; a
+ * publication sale (native publications, 2026-09-19) is its family,
+ * derived from the record's path the way the till prices it, so one
+ * row per family stands beside the per-item rows. Shared by the writer,
+ * the inspection and the read-only comparison.
+ */
+export function mppSaleItemKey(record: Pick<PurchaseIntent, "item" | "publication" | "path">): string | undefined {
+  if (record.item) return record.item.id;
+  return record.publication ? publicationFamilyForPath(record.path) : undefined;
+}
+
 /** Shared by the writer and the read-only comparison; one definition of a sale. */
 export function mppSaleEvidence(record: PurchaseIntent): MppSaleEvidence {
-  const item = record.item?.id;
+  const item = mppSaleItemKey(record);
+  const known = item !== undefined && (record.item ? !!getMenuItem(item) : (PUBLICATION_FAMILIES as readonly string[]).includes(item));
   if (purchaseProtocol(record) !== "mpp" || record.state !== "settled" || !record.payment || !record.mpp ||
-    record.terms.network !== BASE_NETWORK || record.terms.asset.toLowerCase() !== BASE_USDC.toLowerCase() || !item || !getMenuItem(item)) {
+    record.terms.network !== BASE_NETWORK || record.terms.asset.toLowerCase() !== BASE_USDC.toLowerCase() || !item || !known) {
     throw new Error("MPP sale is not confirmed");
   }
   const month = record.created_at.slice(0, 7);

@@ -1,9 +1,9 @@
+import { storePaymentGate } from "@/lib/store-payment-gate";
 import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
-import { paymentGate } from "@/lib/payment-gate";
 import { PENNY_PAGE_USDC,
   PAYMENT_VARY,
 } from "@/lib/payments";
@@ -207,7 +207,7 @@ const ISSUE_PATTERN = "/gazette/:issue{issue-[0-9]+}";
 
 tradingPostRoutes.use(ISSUE_PATTERN, noStore);
 tradingPostRoutes.use(ISSUE_PATTERN, issueCheck);
-tradingPostRoutes.use(ISSUE_PATTERN, paymentGate);
+tradingPostRoutes.use(ISSUE_PATTERN, storePaymentGate);
 
 tradingPostRoutes.get(ISSUE_PATTERN, async (c) => {
   /*
