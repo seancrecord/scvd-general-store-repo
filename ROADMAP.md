@@ -71,6 +71,14 @@ sleep. Neither was retried. Earlier timeout cause remains unknown. Preserve
 old results and current caps; record awake conditions before any new freeze.
 [Integrated result and next work](research/integrated-buyer-2026-09-18/REPORT.md).
 
+**TR3 evidence-date follow-through, September 19:** independent review found
+that host-row citations used snapshot publication time even when the observation
+was older. The shared citation and comparison projections now preserve the
+observation date, with snapshot/legacy behavior retained. The shared preflight ladder and focused guide
+also distinguish free signed history from a fresh paid observation. Tests
+and scope are in [the repair record](docs/BUYER_CITATION_DATES_2026-09-19.md).
+This does not change the active cohort's evidence or establish buyer acceptance.
+
 **TR3 repair follow-through, September 18:** address-digest guidance now names
 its fields separately from snapshot references. The runner records elapsed,
 stop-request and close times, rejects timing interruptions as incomplete, and

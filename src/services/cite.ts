@@ -14,6 +14,7 @@ export interface CitationSource {
   week: string;
   sequence: number;
   taken_at: string;
+  observed_at?: string;
   digest: string;
   entry_url: string;
 }
@@ -39,6 +40,9 @@ export interface Citation {
 }
 
 export function citeRow(base: string, source: CitationSource): Citation {
+  // Host observations can predate sealing. Snapshot citations and legacy
+  // rows without their own timestamp retain the publication-date fallback.
+  const observedAt = source.host ? source.observed_at ?? source.taken_at : source.taken_at;
   const subject = source.host ? `${source.host}, ` : "";
   /*
    * ONE LINE FORMAT (2026-09-04, merged): the sentence is lib/cite's
@@ -49,7 +53,7 @@ export function citeRow(base: string, source: CitationSource): Citation {
     base,
     what: source.host ? "host row" : "corpus snapshot",
     which: `${subject}week ${source.week}, snapshot ${source.sequence}, sha256 ${source.digest}`,
-    observed_at: source.taken_at,
+    observed_at: observedAt,
     url: source.entry_url,
   });
   const markdown = `[scvd.store corpus, ${subject}week ${source.week}, snapshot ${source.sequence}](${source.entry_url}) — sha256 \`${source.digest}\``;
@@ -61,7 +65,7 @@ export function citeRow(base: string, source: CitationSource): Citation {
       ...(source.host ? { host: source.host } : {}),
       week: source.week,
       sequence: source.sequence,
-      observed_at: source.taken_at,
+      observed_at: observedAt,
       digest: source.digest,
       ...(source.host ? { rows: `${base}/corpus/host/${source.host}.json` } : {}),
       index: `${base}/corpus.json`,

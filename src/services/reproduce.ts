@@ -43,6 +43,7 @@ export interface ComparedRow {
   week: string;
   sequence: number;
   taken_at: string;
+  observed_at?: string;
   entry_url: string;
   digest: string;
   verdict: SubjectRound["verdict"] | null;
@@ -88,6 +89,7 @@ export function comparedRowOf(round: SubjectRound): ComparedRow {
     week: round.week,
     sequence: round.sequence,
     taken_at: round.taken_at,
+    ...(round.observed_at ? { observed_at: round.observed_at } : {}),
     entry_url: round.entry_url,
     digest: round.digest,
     verdict: round.verdict ?? null,
