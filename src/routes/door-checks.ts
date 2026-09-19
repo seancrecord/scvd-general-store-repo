@@ -44,7 +44,7 @@ import {
   checkPurchaseInputSafety,
   queryArgs,
 } from "@/lib/purchase-args";
-import { stockedShelfCount } from "@/services/stock";
+import { readShelfStock } from "@/services/stock";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { capacityVerdict } from "@/services/queue-capacity";
 import { remainingInventory } from "@/services/orders";
@@ -316,8 +316,24 @@ export const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const itemId = buyItemId(c);
   const item = getMenuItem(itemId);
   if (item?.stocked) {
-    const count = await stockedShelfCount(c.env, item);
-    if (count === 0) {
+    const shelf = await readShelfStock(c.env, item);
+    if (shelf === null) {
+      // The shelf could not be read. Not bare: unknown. A refusal that
+      // names the store's own gap, never the sold-out sentence below,
+      // which is a claim about the shelf this read did not make.
+      return c.json(
+        {
+          charged: false,
+          code: "shelf_unreadable",
+          error: `The stocked shelf for "${item.name}" could not be read just now, so the store cannot say whether a unit is there. Nothing charged; try again shortly. This is the store's gap, not a sold-out shelf.`,
+          fulfillment_class: "stocked",
+          stock: null,
+          menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
+        },
+        503,
+      );
+    }
+    if (shelf.count === 0) {
       return c.json(
         {
           /* 57.4: the fact an agent needs first, machine-readable. */

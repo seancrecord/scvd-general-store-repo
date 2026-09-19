@@ -32,7 +32,7 @@ import { JSONLD_PRICE_CURRENCY, jsonLdScript, offerCurrencyFields, organizationR
 import { firstPartyScriptCsp } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { buyInputSchema, requiredParamsNote } from "@/lib/bazaar-discovery";
-import { stockedShelfCount } from "@/services/fulfillment";
+import { readShelfStock } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
 import type { ShutterState } from "@/services/shutter";
@@ -90,20 +90,25 @@ interface CatalogItem extends MenuItem {
 
 interface FulfillmentState {
   class: "stocked" | "instant" | "commission";
-  stock?: number;
+  /** Units on the shelf; null when the shelf could not be read (see stock_read). */
+  stock?: number | null;
+  /** How to read `stock`: exact, a floor past the scan cap, or unreadable just now. */
+  stock_read?: "exact" | "at_least" | "unreadable";
   shutter: "open" | "closed";
   sla_hours?: number;
 }
 
 async function fulfillmentState(
-  env: Parameters<typeof stockedShelfCount>[0],
+  env: Parameters<typeof readShelfStock>[0],
   item: MenuItem,
   shutter: ShutterState,
 ): Promise<FulfillmentState> {
   if (item.stocked) {
+    const shelf = await readShelfStock(env, item);
     return {
       class: "stocked",
-      stock: await stockedShelfCount(env, item),
+      stock: shelf ? shelf.count : null,
+      stock_read: shelf === null ? "unreadable" : shelf.truncated ? "at_least" : "exact",
       shutter: "open",
     };
   }

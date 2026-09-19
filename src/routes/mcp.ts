@@ -74,7 +74,7 @@ import { earnedPressing, readBinder, readWindow, WINDOW_SIZE } from "@/services/
 import { pressingSummary } from "@/services/instant-goods";
 import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import { getCertificate } from "@/services/certificates";
-import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
+import { fulfillPurchase, readShelfStock } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
   IDEMPOTENCY_TTL_SECONDS,
@@ -1016,8 +1016,14 @@ async function callPurchaseTool(
       message: VOICE.soldOut,
       details: waitlistHowToJoin(c.env.STORE_BASE_URL, item.id),
     };
-    if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
-      return {
+    if (item.stocked) {
+      const shelf = await readShelfStock(c.env, item);
+      // Unreadable is not bare (rule 52): the door names its own gap.
+      if (shelf === null) return {
+        code: "shelf_unreadable",
+        message: `The stocked shelf for "${item.name}" could not be read just now, so the store cannot say whether a unit is there. Nothing charged; try again shortly.`,
+      };
+      if (shelf.count === 0) return {
         code: "sold_out",
         message: `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge.`,
       };

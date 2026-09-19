@@ -105,10 +105,15 @@ export async function stockUnit(
   return { stocked: unit };
 }
 
-export async function listStock(
+/**
+ * The shelf as read, with the one fact a caller must not lose: whether
+ * the walk reached the end of the prefix. Past STOCK_CAP the units are
+ * a page, and "oldest first" below means oldest in the page (rule 52).
+ */
+export async function readStock(
   env: Env,
   itemId: string,
-): Promise<StockUnit[]> {
+): Promise<{ units: StockUnit[]; truncated: boolean }> {
   const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.stockPrefix(itemId), cap: STOCK_CAP });
   const values = await bulkGetJson<StockUnit>(
     env.ORDERS,
@@ -121,7 +126,14 @@ export async function listStock(
     }
   }
   units.sort((a, b) => a.stocked_at.localeCompare(b.stocked_at));
-  return units;
+  return { units, truncated: listed.truncated };
+}
+
+export async function listStock(
+  env: Env,
+  itemId: string,
+): Promise<StockUnit[]> {
+  return (await readStock(env, itemId)).units;
 }
 
 export async function removeStockUnit(
@@ -152,9 +164,30 @@ export async function takeStockUnit(
  * in fulfillment, whose import graph is the whole delivery floor —
  * the doors Worker must never carry that (2026-09-05).
  */
-export async function stockedShelfCount(
+export interface ShelfStock {
+  /** Units on the shelf; a floor, not the population, when `truncated`. */
+  count: number;
+  truncated: boolean;
+}
+
+/**
+ * A SHELF THAT COULD NOT BE READ IS NOT A BARE SHELF (2026-09-19,
+ * rule 52). This used to be `listStock(...).catch(() => [])).length`,
+ * so a KV hiccup read as zero and the door published "Sold out,
+ * honestly" — a definite fact about the shelf, in machine-readable
+ * form, over a read that never happened. The failure direction was
+ * safe (a sale refused, never a sale of stock that may not exist) and
+ * stays safe: a read that failed is `null`, and every caller answers
+ * "could not read the shelf" rather than "bare".
+ */
+export async function readShelfStock(
   env: Env,
   item: MenuItem,
-): Promise<number> {
-  return (await listStock(env, item.id).catch(() => [])).length;
+): Promise<ShelfStock | null> {
+  try {
+    const { units, truncated } = await readStock(env, item.id);
+    return { count: units.length, truncated };
+  } catch {
+    return null;
+  }
 }
