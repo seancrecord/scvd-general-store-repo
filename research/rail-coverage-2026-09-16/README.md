@@ -53,8 +53,15 @@ money was ever going to move on them.
 
 He wrote "you read Arbitrum; I read XRPL." That is true of this store —
 `src/lib/base-rpc.ts` has carried seven EVM chains with their USDC
-contracts and RPC fallbacks for months, and the store reads all of them
-for settlement attestations and wallet statements.
+contracts and RPC fallbacks for months, and the store reads a named one
+on demand for settlement attestations and wallet statements.
+
+**Corrected 2026-09-19:** this sentence first read "the store reads all
+of them", which overstated it. The registry SUPPORTS seven; the bank
+walk and inflow census run over `WALKED_EVM_CHAINS`, which is two; and
+a chain a reader cannot reach returns `window_unreadable` rather than a
+partial statement. Support is not a reading, and the research
+instrument in this directory has read two chains — Base and Arbitrum.
 
 It was **not** true of the chain reader built on 2026-09-15, which
 hardcoded Base's USDC address and read one rail, sitting beside that

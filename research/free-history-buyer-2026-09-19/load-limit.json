@@ -1,0 +1,5 @@
+{
+  "observed_at": "2026-09-19T16:27:04.193375+00:00",
+  "interpretation": "A test process in a separate checkout started at 2026-09-19 12:11:59 America/New_York (16:11:59 UTC), during the buyer window and before recipients. It was running with Worker children at this later observation. Exact resource contention during each native call was not measured. No native timing interruption was recorded. This controller started its own full suite only after the last recipient completed.",
+  "limit": "The pre-launch process check found no native experiment or heavy tests; it does not establish the absence of processes started later. No causal attribution of outcomes to load."
+}

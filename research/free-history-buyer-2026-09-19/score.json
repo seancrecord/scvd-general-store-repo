@@ -1,0 +1,477 @@
+{
+  "schema_version": 2,
+  "discovery": {
+    "attempts": 0,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 0
+  },
+  "directed": {
+    "attempts": 4,
+    "pass": 1,
+    "fail": 2,
+    "incomplete": 1
+  },
+  "distinct_hosts_completed": 1,
+  "limitation": "Controlled cold usability evidence only; no organic adoption, paid completion or universal readiness claim.",
+  "capability": {
+    "plan_sha256": "46cbfa32c0681c633cc74a82e3fdcb7706b6ebf17df7901c3c870791ca011460",
+    "source_sha256": "9809e6354a0c2d7d4352c92c39ae41d8e3e809441df67c11d8bd3a4c2acf709a",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [
+          "shasum"
+        ]
+      }
+    }
+  },
+  "scorer_sha256": "262c2d5ad6e3b5d4ca3c08ec8c96d709f3b51e2a50d100b08c0057c51a2296aa",
+  "plan_sha256": "46cbfa32c0681c633cc74a82e3fdcb7706b6ebf17df7901c3c870791ca011460",
+  "runs": [
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached the public guide, free preflight and host history.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d3e101b363c4a908d25db8e02b79031310642057e28f0caf173b093b29e0d870"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Read the exact endpoint preflight and historical row. Signed retained bytes separately establish the September 7 observation inside the frozen fourteen-day window.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d3e101b363c4a908d25db8e02b79031310642057e28f0caf173b093b29e0d870"
+            },
+            {
+              "file": "evidence/06-corpus-7.body.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "The final report correctly names one signed endpoint observation, but the retained verification note says the snapshot itself reports two history gaps and an indeterminate tier. Those claims are in unsigned host history, not the authenticated snapshot. The complete handoff therefore contains an uncorrected signed-scope error.",
+          "evidence": [
+            {
+              "file": "evidence/08-verification.md",
+              "sha256": "c7b482dad4c023c7c7db1866b40c3f35c3099f2522850ede540bdf07d2b565f8"
+            },
+            {
+              "file": "events.jsonl",
+              "sha256": "d3e101b363c4a908d25db8e02b79031310642057e28f0caf173b093b29e0d870"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "The complete signed original and separately fetched public key are retained within the frozen file/byte limits.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d3e101b363c4a908d25db8e02b79031310642057e28f0caf173b093b29e0d870"
+            },
+            {
+              "file": "evidence/06-corpus-7.body.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/05-issuer-key.body.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ]
+        },
+        "verify": {
+          "state": "pass",
+          "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "d3e101b363c4a908d25db8e02b79031310642057e28f0caf173b093b29e0d870"
+            },
+            {
+              "file": "evidence/06-corpus-7.body.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/05-issuer-key.body.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ],
+          "signature": true,
+          "issuer_binding": true,
+          "subject_matches": true,
+          "expiry": "not_declared",
+          "observation_age_ms": 1086003243,
+          "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+        }
+      },
+      "usable": "fail",
+      "verification": {
+        "state": "pass",
+        "signature": true,
+        "issuer_binding": true,
+        "subject_matches": true,
+        "expiry": "not_declared",
+        "observation_age_ms": 1086003243,
+        "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+        "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached the public guide, free preflight and host history.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "abbceeff2b8629bf9ecd56dcfd044cecbd4d958ea4e589b58ffa97cecbfde41e"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Read the exact endpoint preflight and historical row. Signed retained bytes separately establish the September 7 observation inside the frozen fourteen-day window.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "abbceeff2b8629bf9ecd56dcfd044cecbd4d958ea4e589b58ffa97cecbfde41e"
+            },
+            {
+              "file": "evidence/corpus_7.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "The final report calls three historical observations independently signed after retaining and verifying only snapshot 7, which contains one exact endpoint observation. Earlier rows are unsigned history in this capture.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "abbceeff2b8629bf9ecd56dcfd044cecbd4d958ea4e589b58ffa97cecbfde41e",
+              "start_line": 79,
+              "end_line": 80
+            },
+            {
+              "file": "evidence/corpus_7.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "The complete signed original and separately fetched public key are retained within the frozen file/byte limits.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "abbceeff2b8629bf9ecd56dcfd044cecbd4d958ea4e589b58ffa97cecbfde41e"
+            },
+            {
+              "file": "evidence/corpus_7.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ]
+        },
+        "verify": {
+          "state": "pass",
+          "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "abbceeff2b8629bf9ecd56dcfd044cecbd4d958ea4e589b58ffa97cecbfde41e"
+            },
+            {
+              "file": "evidence/corpus_7.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ],
+          "signature": true,
+          "issuer_binding": true,
+          "subject_matches": true,
+          "expiry": "not_declared",
+          "observation_age_ms": 1086097977,
+          "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+        }
+      },
+      "usable": "fail",
+      "verification": {
+        "state": "pass",
+        "signature": true,
+        "issuer_binding": true,
+        "subject_matches": true,
+        "expiry": "not_declared",
+        "observation_age_ms": 1086097977,
+        "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+        "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached the public guide, free preflight and host history.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "1080f94ac81bf488c4b5e0ff33a02713c0246dec708028383007a4b136a9cabb"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Read the exact endpoint preflight and historical row. Signed retained bytes separately establish the September 7 observation inside the frozen fourteen-day window.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "1080f94ac81bf488c4b5e0ff33a02713c0246dec708028383007a4b136a9cabb"
+            },
+            {
+              "file": "evidence/07-snapshot.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "Final report separates one exact signed historical observation from unsigned current preflight/history, limits issuer binding to the supplied published key/DID consistency, and leaves payment and delivery unproven. The mistaken address/snapshot digest comparison in an intermediate command is corrected before the final report.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "1080f94ac81bf488c4b5e0ff33a02713c0246dec708028383007a4b136a9cabb",
+              "start_line": 25,
+              "end_line": 31
+            },
+            {
+              "file": "evidence/00-run-log.md",
+              "sha256": "5c89bb549452c2650c94d8cfc3a417f52fa16b9e6559cfd26d3ca707e220e7b5"
+            },
+            {
+              "file": "evidence/10-verification.json",
+              "sha256": "aa4d40b16eb5a4793dce444350a1e36eb1726000f136cad36679ab497619236e"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "The complete signed original and separately fetched public key are retained within the frozen file/byte limits.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "1080f94ac81bf488c4b5e0ff33a02713c0246dec708028383007a4b136a9cabb"
+            },
+            {
+              "file": "evidence/07-snapshot.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/06-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ]
+        },
+        "verify": {
+          "state": "pass",
+          "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "1080f94ac81bf488c4b5e0ff33a02713c0246dec708028383007a4b136a9cabb"
+            },
+            {
+              "file": "evidence/07-snapshot.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/06-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ],
+          "signature": true,
+          "issuer_binding": true,
+          "subject_matches": true,
+          "expiry": "not_declared",
+          "observation_age_ms": 1086250989,
+          "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict."
+        }
+      },
+      "usable": "pass",
+      "verification": {
+        "state": "pass",
+        "signature": true,
+        "issuer_binding": true,
+        "subject_matches": true,
+        "expiry": "not_declared",
+        "observation_age_ms": 1086250989,
+        "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+        "reason": "Retained original bytes, portable verification, frozen freshness and recipient review checked; no delivery claim."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Reached the public guide, free preflight and host history.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "e24dbef420a234ae9163d71886cec1cb1dc8536b68762dac0fce40a36220a140"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Read the exact endpoint preflight and historical row. Signed retained bytes separately establish the September 7 observation inside the frozen fourteen-day window.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "e24dbef420a234ae9163d71886cec1cb1dc8536b68762dac0fce40a36220a140"
+            },
+            {
+              "file": "evidence/corpus_7.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            }
+          ]
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "The buyer reached its tool-call limit before a final report. It retained originals and began local cryptography but has no completed decision or successful native signature result.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "e24dbef420a234ae9163d71886cec1cb1dc8536b68762dac0fce40a36220a140"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "The complete signed original and separately fetched public key are retained within the frozen file/byte limits.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "e24dbef420a234ae9163d71886cec1cb1dc8536b68762dac0fce40a36220a140"
+            },
+            {
+              "file": "evidence/corpus_7.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "Controller verification succeeds on the retained original, but native buyer verification did not finish and the capped buyer is ineligible for a recipient.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "e24dbef420a234ae9163d71886cec1cb1dc8536b68762dac0fce40a36220a140"
+            },
+            {
+              "file": "evidence/corpus_7.json",
+              "sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ]
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Runtime did not complete; retained stage findings are partial.",
+        "Run reached tool_calls cap; full completion unproven."
+      ],
+      "catalogue_absence": "unverified"
+    }
+  ]
+}

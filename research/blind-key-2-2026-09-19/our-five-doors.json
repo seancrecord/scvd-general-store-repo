@@ -1,0 +1,220 @@
+{
+ "posed_by": "scvd.store",
+ "posed_on": "2026-09-19",
+ "round": "second",
+ "question": "For each door, for each rail you can read: has the advertised payTo ever received that rail's USDC? State PAID, ZERO_OBSERVED or UNKNOWN per rail, and a door verdict aggregated across them. This is deliberately the question StillOS's zero-nonce-reader answers, so the two columns compare rather than talk past each other. Distinct payer counts are NOT asked for and are not in our sealed answer.",
+ "verdicts": {
+  "PAID": "at least one inbound settlement to an advertised payTo was observed",
+  "ZERO_OBSERVED": "the rail was read and nothing has ever arrived",
+  "UNKNOWN": "the rail was not readable, or is out of scope for your instrument"
+ },
+ "rules": [
+  "StillOS's four rules of 2026-09-15 stand unchanged, including that UNKNOWN is not a miss and that five doors cannot establish a rate.",
+  "The rail rule stands: ZERO_OBSERVED requires EVERY advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN.",
+  "PAID is monotone: an observed settlement is not undone by a rail the reader could not reach. Both instruments reached this aggregation independently in round one."
+ ],
+ "observation_boundary": {
+  "eip155:8453": {
+   "base_block": 51520000
+  },
+  "note": "Pinned so both readings cover the same height. Reading past it is not wrong, only not comparable. Non-Base rails carry no pinned height because neither operator has committed to reading them: name them and return UNKNOWN."
+ },
+ "method_we_used": "State only: balanceOf and the transaction count at the pinned height, two calls per address. A positive settles PAID from the balance alone. A zero settles only under the nonce argument and then reaches all of history. No transfer window, so no payer counts, and every row says so.",
+ "why_these_five": "Chosen by SHAPE, not at random. Each targets a failure mode this exchange has already produced in one instrument or the other: a page cap, a log horizon, a chain-reference truncation, an address serving many doors, and a rail resolved loosely. A random five would have tested nothing either of us has learned. Rule 4 therefore binds twice over.",
+ "what_is_lookupable": "All five carry a traction block in x402-list.com, so a FLOOR on the rails that directory measures can be looked up rather than read. What is not lookupable: every rail the directory does not measure (most of quicknode, and the only rail verdoc actually advertises), and whether any zero is all-time rather than merely recent \u2014 the directory publishes counts, not the nonce argument. Stated because both earlier keys failed this test and both sides said so before reveal.",
+ "what_this_key_does_not_contain": "An all-time zero on a rail a door actually advertises. We looked: 45 low-traction Base doors were state-read at the pinned height and not one advertised payTo was an untouched address. That is a weakness in this key as a false-positive control, named rather than hidden, and it is a small finding in its own right \u2014 among currently listed doors, an advertised payTo that has never received anything is rare. verdoc is the nearest thing to a control here, and it is a trap rather than a clean zero.",
+ "doors": [
+  {
+   "name": "anyspend",
+   "url": "https://x402.anyspend.com",
+   "rails": [
+    {
+     "rail": "eip155:8453",
+     "payTo": "0x1e8e93cb91778e5b1a3639706789195a838960f8",
+     "scheme": "exact"
+    }
+   ],
+   "advertised_rail_count": 1,
+   "why_this_door": "THE HORIZON CASE. 206,058 settlements all-time and ZERO in thirty days, last settled 2026-08-17. A provider pruning logs past a horizon answers an empty array rather than an error for everything older, so a window reader with no canary reports a confident zero at a door with two hundred thousand settlements behind it. This door is the shape of that failure, and it is the failure StillOS named on 2026-09-19 and we found latent in our own reader the same day.",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/anyspend endpoints[].pricing[], fetched 2026-09-19T17:10:00Z. Copied BY REFERENCE, never re-typed. The directory is the source of these addresses, so an address wrong there is wrong here; declared rather than resolved. The doors' own 402s were not reachable from the environment this was posed in, so the RESOLUTION half of the question is not being tested \u2014 it is answered in these inputs.",
+   "directory_says": {
+    "status": "measured",
+    "measured_networks": [
+     "eip155:8453"
+    ],
+    "tx_count_all_time": 206058,
+    "tx_count_30d": 0,
+    "unique_buyers_30d": 0,
+    "first_settlement_at": "2026-01-01T00:00:01Z",
+    "last_settlement_at": "2026-08-17T19:23:05Z",
+    "shared_payout": false,
+    "shared_with": 0,
+    "settled_via": []
+   }
+  },
+  {
+   "name": "blockrun",
+   "url": "https://blockrun.ai",
+   "rails": [
+    {
+     "rail": "eip155:8453",
+     "payTo": "0x6e007731870ede419cfb31889cd5c4493cecb04c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "eip155:8453",
+     "payTo": "0xe9030014f5dae217d0a152f02a043567b16c1abf",
+     "scheme": "exact"
+    }
+   ],
+   "advertised_rail_count": 2,
+   "why_this_door": "THE VOLUME CASE. 27,815,763 settlements all-time on the directory's own count, still settling today, and TWO advertised payTo addresses on one rail. Any reader paginating an index meets its ceiling here, and any reader aggregating per door must decide what two addresses mean. StillOS's 185 was a page cap published as a count, at a door two orders of magnitude smaller than this one.",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/blockrun endpoints[].pricing[], fetched 2026-09-19T17:10:00Z. Copied BY REFERENCE, never re-typed. The directory is the source of these addresses, so an address wrong there is wrong here; declared rather than resolved. The doors' own 402s were not reachable from the environment this was posed in, so the RESOLUTION half of the question is not being tested \u2014 it is answered in these inputs.",
+   "directory_says": {
+    "status": "measured",
+    "measured_networks": [
+     "eip155:8453"
+    ],
+    "tx_count_all_time": 27815763,
+    "tx_count_30d": 893134,
+    "unique_buyers_30d": 442,
+    "first_settlement_at": "2026-01-01T04:27:37Z",
+    "last_settlement_at": "2026-09-19T12:58:51Z",
+    "shared_payout": false,
+    "shared_with": 0,
+    "settled_via": [
+     "coinbase"
+    ]
+   }
+  },
+  {
+   "name": "jsonguard",
+   "url": "https://jsonguard.leeworks.dev",
+   "rails": [
+    {
+     "rail": "eip155:8453",
+     "payTo": "0xa8b061d96f69426f11bcc807bfa00f0af79541a7",
+     "scheme": "exact"
+    }
+   ],
+   "advertised_rail_count": 1,
+   "why_this_door": "THE ATTRIBUTION RESIDUAL, made concrete. One payout address shared with five other doors, each reporting the same 24 settlements all-time. Both instruments carry a caveat saying an address may serve several doors and that a balance is arrival rather than demand. Neither has been posed a door where that is certainly true. Anything counted here belongs to six doors at once and to none of them individually.",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/jsonguard endpoints[].pricing[], fetched 2026-09-19T17:10:00Z. Copied BY REFERENCE, never re-typed. The directory is the source of these addresses, so an address wrong there is wrong here; declared rather than resolved. The doors' own 402s were not reachable from the environment this was posed in, so the RESOLUTION half of the question is not being tested \u2014 it is answered in these inputs.",
+   "directory_says": {
+    "status": "measured",
+    "measured_networks": [
+     "eip155:8453"
+    ],
+    "tx_count_all_time": 24,
+    "tx_count_30d": 1,
+    "unique_buyers_30d": 1,
+    "first_settlement_at": "2026-07-21T22:33:03Z",
+    "last_settlement_at": "2026-09-01T08:19:47Z",
+    "shared_payout": true,
+    "shared_with": 5,
+    "settled_via": [
+     "payAI"
+    ]
+   }
+  },
+  {
+   "name": "quicknode",
+   "url": "https://x402.quicknode.com",
+   "rails": [
+    {
+     "rail": "eip155:137",
+     "payTo": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "eip155:1952",
+     "payTo": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "eip155:196",
+     "payTo": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "eip155:5042002",
+     "payTo": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "eip155:80002",
+     "payTo": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "eip155:8453",
+     "payTo": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "eip155:84532",
+     "payTo": "0xf46394addda95a3d5bcc1124605e3d15d204623c",
+     "scheme": "exact"
+    },
+    {
+     "rail": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+     "payTo": "2lwbc9mi6drurdehbttons4uddth1a4xwbdm1ekqct57",
+     "scheme": "exact"
+    },
+    {
+     "rail": "solana:etwtrabzayq6imfeykouru166vu2xqa1",
+     "payTo": "2lwbc9mi6drurdehbttons4uddth1a4xwbdm1ekqct57",
+     "scheme": "exact"
+    }
+   ],
+   "advertised_rail_count": 9,
+   "why_this_door": "THE RAIL RULE AT ITS HARDEST, and the CAIP-2 trap inside a single door. Nine advertised rails \u2014 one EVM address across seven chains, one Solana address across two chain references \u2014 of which the directory measures three. The two Solana references are `solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp` and `solana:etwtrabzayq6imfeykouru166vu2xqa1`: the truncation StillOS found across the whole directory, sitting beside a full reference on the same door, same address. Two EVM rails, eip155:196 and eip155:1952, are in neither operator's registry. Last settled 2026-07-14.",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/quicknode endpoints[].pricing[], fetched 2026-09-19T17:10:00Z. Copied BY REFERENCE, never re-typed. The directory is the source of these addresses, so an address wrong there is wrong here; declared rather than resolved. The doors' own 402s were not reachable from the environment this was posed in, so the RESOLUTION half of the question is not being tested \u2014 it is answered in these inputs.",
+   "directory_says": {
+    "status": "measured",
+    "measured_networks": [
+     "eip155:137",
+     "eip155:8453",
+     "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+    ],
+    "tx_count_all_time": 7232,
+    "tx_count_30d": 0,
+    "unique_buyers_30d": 0,
+    "first_settlement_at": "2026-02-07T01:05:51Z",
+    "last_settlement_at": "2026-07-14T21:25:26Z",
+    "shared_payout": false,
+    "shared_with": 0,
+    "settled_via": []
+   }
+  },
+  {
+   "name": "verdoc",
+   "url": "https://verdoc.dev",
+   "rails": [
+    {
+     "rail": "eip155:84532",
+     "payTo": "0x0a801e236fbc1a95a35ab8e946837320ddce9d69",
+     "scheme": "exact"
+    }
+   ],
+   "advertised_rail_count": 1,
+   "why_this_door": "THE CONTROL, and it is a trap rather than a plain zero. This door advertises ONE rail: eip155:84532, Base Sepolia, a testnet neither operator reads. The directory's traction block for it reports zero all-time with measured_networks eip155:137 and eip155:8453 \u2014 two mainnets this door does not advertise at all. Its address is untouched on Base mainnet at the pinned height, so a reader that resolves 'Base' loosely will find a clean all-time zero and report it. That answer is well-formed, confident, and about a rail the door never offered. The correct door verdict is UNKNOWN, because the only rail actually advertised is one nobody here reads.",
+   "payTo_provenance": "https://x402-list.com/api/v1/services/verdoc endpoints[].pricing[], fetched 2026-09-19T17:10:00Z. Copied BY REFERENCE, never re-typed. The directory is the source of these addresses, so an address wrong there is wrong here; declared rather than resolved. The doors' own 402s were not reachable from the environment this was posed in, so the RESOLUTION half of the question is not being tested \u2014 it is answered in these inputs.",
+   "directory_says": {
+    "status": "measured",
+    "measured_networks": [
+     "eip155:137",
+     "eip155:8453"
+    ],
+    "tx_count_all_time": 0,
+    "tx_count_30d": 0,
+    "unique_buyers_30d": 0,
+    "first_settlement_at": null,
+    "last_settlement_at": null,
+    "shared_payout": false,
+    "shared_with": 0,
+    "settled_via": []
+   }
+  }
+ ]
+}
