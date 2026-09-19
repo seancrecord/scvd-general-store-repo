@@ -4,6 +4,19 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## 1.7.0 — source prepared 2026-09-19
+
+**Added.** `CAPABILITIES`, the package's machine-readable inventory of what
+it dispatches on (formats, kinds, algorithms, key types and sources, DID
+methods, schema versions, check names, the unsupported reason codes and the
+non-claims), and `runtimeCapabilities(options)`, which proves the current
+runtime's Ed25519 on RFC 8032's first test vector rather than declaring it.
+`scvd-evidence capabilities` prints both as one JSON document. The inventory
+is held to the code and the README by `capabilities.test.mjs`; it names no
+payment rail, chain or settlement capability, because a verifier has none.
+No verification behavior, result shape, format, limit or exit meaning
+changes. A version in package.json is not proof of publication.
+
 ## 1.6.0 — source prepared 2026-09-18
 
 `verify-source --subject <exact-endpoint-url>` selects complete exact-URL

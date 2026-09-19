@@ -14,7 +14,7 @@ Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.6.0.tgz
+npm install ./x402-verify-1.7.0.tgz
 ```
 
 Structured status fields require 1.4.0 or newer; older versions may not expose
@@ -127,6 +127,45 @@ The local schema still requires offer `validUntil` and does not check every
 field type in the current extension. See the [independent fixture matrix](fixtures/independent/README.md)
 for signed counterexamples, provenance and unsupported-family controls.
 No SCVD key or issuer receives special treatment; there is no call home.
+
+## Capability inventory
+
+The table above is prose; the same facts ship as data, held to the code
+by `capabilities.test.mjs` (every listed algorithm verifies, every
+unlisted one earns the listed reason code, the check names match the
+type declarations, and this section names every row). Read it before
+feeding the verifier an artifact from a family it may not dispatch on:
+
+```js
+import { CAPABILITIES, runtimeCapabilities } from "x402-verify";
+console.log(CAPABILITIES.algorithms);            // ["EdDSA"]
+console.log(await runtimeCapabilities());        // { ed25519: "verified", … } on this runtime
+```
+
+`CAPABILITIES` is the **package**: `artifact_formats` `compact-jws`;
+`artifact_kinds` `offer`, `receipt`; `algorithms` `EdDSA`; `key_types`
+`Ed25519`; `key_sources` `publicKey`, `issuerKeyUrl`, `did:web`;
+`did_methods` `web`; `payload_schema_versions` `1`; `checks` `parse`,
+`alg`, `kid`, `schema`, `key-resolution`, `signature`, `expiry`
+(`advisory_checks`: `expiry`); `unsupported_reason_codes`
+`unsupported_format`, `unsupported_algorithm`,
+`unsupported_schema_version`, `unsupported_did_method`,
+`unsupported_key_type`, `unsupported_runtime`; and `not_established`,
+the same lists `DOES_NOT_ESTABLISH` carries. Its `scope` says in words
+what it is not: no payment rail, chain or settlement capability lives
+here — those are properties of a store's till, and the store that
+publishes this package lists its own at `/rails`.
+
+`runtimeCapabilities(options)` is **this runtime**, proven rather than
+declared: the Ed25519 seam (WebCrypto or your `verify`) is exercised on
+RFC 8032's first test vector and reports `verified`, `failed` or
+`unavailable` with its source; `did_resolution` and `sha256` report by
+presence. Pass the same options you will pass to `verifyArtifact`, so the
+answer is about the call you are going to make. The CLI prints both:
+
+```sh
+npx scvd-evidence capabilities
+```
 
 ## Integrate your own artifact
 

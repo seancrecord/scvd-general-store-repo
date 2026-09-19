@@ -3,6 +3,7 @@ import { open, mkdir, access, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { webcrypto } from "node:crypto";
 import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit } from "./evidence-bundle.js";
+import { CAPABILITIES, runtimeCapabilities } from "./x402-verify.js";
 
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
 globalThis.crypto ??= webcrypto;
@@ -13,7 +14,8 @@ const HELP = `scvd-evidence — free export and offline verification
   verify <bundle.json> --public-key <independently-trusted-public-key-hex>
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
     [--evidence <local-file> ...] [--subject <exact-endpoint-url>]
-  All commands: [--max-bytes <integer>]
+  capabilities
+  All commands but capabilities: [--max-bytes <integer>]
 
 Default input/output limit: ${EVIDENCE_BUNDLE_MAX_BYTES} bytes; explicit maximum:
 ${EVIDENCE_BUNDLE_HARD_MAX_BYTES} bytes. Bundles include unsigned context and can
@@ -116,6 +118,12 @@ function subjectEvidence(result, url) {
 async function main(args) {
   if (!args.length || args.includes("--help")) { console.log(HELP); return; }
   const [command, input, ...rest] = args;
+  if (command === "capabilities") {
+    // The package's inventory beside this runtime's proven answer, as one JSON document.
+    if (input !== undefined) throw new Error("invalid_arguments");
+    console.log(JSON.stringify({ package: CAPABILITIES, runtime: await runtimeCapabilities() }, null, 2));
+    return;
+  }
   const flags = {}; const evidence = [];
   for (let i = 0; i < rest.length; i += 2) {
     const [key, value] = [rest[i], rest[i + 1]];
