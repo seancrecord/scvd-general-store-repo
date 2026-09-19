@@ -1,4 +1,5 @@
 import { purchaseCapabilities } from "@/lib/purchase-capabilities";
+import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import { purchaseChecklist, purchaseChecklistHtml } from "@/lib/purchase-checklist";
 import { publicationCollections } from "@/lib/publication-checkout";
 import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
@@ -686,7 +687,7 @@ function renderItemPage(
 
 async function serveMenuItem(c: Context<HonoEnv>) {
   const base = c.env.STORE_BASE_URL;
-  const itemId = (c.req.param("item_id") ?? "").replace(/\/+$/, "");
+  const itemId = stripTrailingSlashes(c.req.param("item_id") ?? "");
   const item = getMenuItem(itemId);
   if (!item) {
     const retired = getRetiredItem(itemId);

@@ -1,4 +1,5 @@
 import { mppPaymentHeader, nativeChallengeMintable, nativeOfferAdvertised } from "@/lib/mpp-checkout-capability";
+import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import { attachNativeChallengeHeaders, mintNativeChallenge } from "@/lib/mpp-challenge-mint";
 /**
  * THE DOORS — a Worker that answers one question: what does this door
@@ -150,7 +151,7 @@ export const handOverFirst: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // buyer nothing, so the store, which holds the key, answers instead.
   if (nativeOfferAdvertised(c.env, c.req.path, c.req.method) &&
     !nativeChallengeMintable(c.env, c.req.path, c.req.method)) return handToStore(c, "passed");
-  const itemPath = c.req.path.replace(/\/+$/, "");
+  const itemPath = stripTrailingSlashes(c.req.path);
   if (["/api/buy/launch_check", "/api/buy/opening_day", "/api/buy/a2a_repair_kit"].includes(itemPath) &&
     new URL(c.req.url).searchParams.has("url")) return handToStore(c, "passed");
   if (c.req.raw.body !== null && !c.req.raw.bodyUsed) {
