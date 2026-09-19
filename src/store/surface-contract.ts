@@ -327,6 +327,21 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     what_to_do:
       "The body carries the waitlist URL and the method (POST, JSON, optional agent_name and callback_url; a GET on it answers with the same instructions). Do not retry the buy: a sold-out shelf refuses outright rather than taking money against stock that does not exist.",
   },
+  /*
+   * NOT THE SAME AS sold_out (2026-09-19). A stocked shelf whose walk
+   * failed used to answer as a bare one — a definite fact about the
+   * shelf, in machine-readable form, over a read that never happened.
+   * Rule 52: the store names its own gap instead of the shelf's.
+   */
+  {
+    code: "shelf_unreadable",
+    http: 503,
+    charged: false,
+    means:
+      "the stocked shelf could not be read just now, so the store cannot say whether a unit is there. This is the store's gap, not a sold-out shelf: `stock` is null, not zero",
+    what_to_do:
+      "Retry shortly. Nothing was charged, no order was created and nothing was reserved; do not read this as sold out and do not join the waitlist on its account.",
+  },
 ] as const;
 
 /**
@@ -423,6 +438,15 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
       "the weekly stock is exhausted, or a shelf of keeper-made units is bare; this new request created no order and reserved nothing",
     what_to_do:
       "Nothing was charged. Follow the waitlist URL and POST instructions when supplied, or return after restocking. Keep the original payment and key to retrieve an existing purchase.",
+  },
+  {
+    code: "shelf_unreadable",
+    jsonrpc: -32000,
+    charged: false,
+    means:
+      "a shelf of keeper-made units could not be read just now, so the store cannot say whether one is there; the store's gap, not a bare shelf",
+    what_to_do:
+      "Nothing was charged and nothing was reserved. Retry shortly; do not read it as sold out. Keep the original payment and key to retrieve an existing purchase.",
   },
   {
     code: "capacity_unavailable",

@@ -1617,6 +1617,9 @@ function underContract(tool: McpTool, base: string): McpTool {
     const item = id ? getMenuItem(id) : undefined;
     return item && (item.stocked || item.weekly_inventory !== undefined);
   });
+  // Only a keeper-made shelf is READ before a sale, so only a tool
+  // that sells one can meet the read failing (rule 52, 2026-09-19).
+  const stocked = [tool.itemId, ...(tool.itemIds ?? [])].some(id => Boolean(id && getMenuItem(id)?.stocked));
   return {
     ...tool,
     // Both MCP doors call these same metered handlers. A free call can
@@ -1637,6 +1640,7 @@ function underContract(tool: McpTool, base: string): McpTool {
       (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) &&
         (!["purchase_resolved", "callback_refused", "capacity_unavailable", "shelf_closed"].includes(refusal.code) || human) &&
         (refusal.code !== "sold_out" || scarce) &&
+        (refusal.code !== "shelf_unreadable" || stocked) &&
         (refusal.code !== "window_refused" || sellsWindowPick),
     ),
     security: securityBlock(base, {
