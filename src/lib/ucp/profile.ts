@@ -193,7 +193,7 @@ export function ucpProfile(env: Env): UcpProfile {
               ucp: `POST ${base}/ucp/v1/checkout-sessions with line_items, then POST ${base}/ucp/v1/checkout-sessions/{id}/complete with an x402 payment signed against the quoted handler. The shape is at ${base}/ucp/specs/payment/usdc-x402.`,
             }
           : {}),
-        http: `${base}/api/buy/{item_id} — x402 v2. Knock unpaid for the 402 terms, sign one of the accepts, knock again with the payment.`,
+        http: `${base}/api/buy/{item_id} — ${checkoutMethod(env)}. Knock unpaid for the terms, sign one of them, knock again with the payment.`,
         mcp: `${base}/mcp — the same catalog behind buy_* tools; tools/list is free.`,
         payment_method: checkoutMethod(env),
         guide: `${base}/agents.md`,

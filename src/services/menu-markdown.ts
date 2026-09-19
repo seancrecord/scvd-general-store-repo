@@ -123,6 +123,7 @@ ${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${
 export function renderMenuMarkdown(
   items: readonly MenuItem[],
   base: string,
+  config?: PurchaseCapabilityConfig,
 ): string {
   const rows = items
     .map(
@@ -137,7 +138,7 @@ export function renderMenuMarkdown(
 ${rows}
 
 One item up close: \`GET ${base}/menu/{item_id}\` (this same document knows JSON too, plain Accept gets JSON).
-Buying: \`GET ${base}/api/buy/{item_id}\` over x402 v2. Full onboarding at ${base}/skill.md; contract at ${base}/openapi.json.
+Buying: \`GET ${base}/api/buy/{item_id}\` — ${checkoutMethod(config)}. Full onboarding at ${base}/skill.md; contract at ${base}/openapi.json.
 `;
 }
 

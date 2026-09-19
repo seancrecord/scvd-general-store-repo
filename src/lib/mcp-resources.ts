@@ -79,7 +79,7 @@ function definitions(): ResourceDefinition[] {
       description:
         "Every item on the shelf: id, price in USDC, what it delivers, whether it is instant or human-fulfilled, and the exact query parameters it requires. The same catalog as GET /menu.json.",
       mimeType: "text/markdown",
-      read: (_env, base) => renderMenuMarkdown(MENU_ITEMS, base),
+      read: (env, base) => renderMenuMarkdown(MENU_ITEMS, base, env),
     },
     {
       uri: `${SCHEME}://criteria`,
