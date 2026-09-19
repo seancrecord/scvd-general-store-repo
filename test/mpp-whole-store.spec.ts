@@ -208,11 +208,14 @@ it("the split is keyed by shelf items only: an object's own reserved names are r
   await expect(readMppSales(testEnv)).rejects.toThrow("MPP sales unreadable");
 });
 
-it("no challenge where there is no door: an unknown item, a trailing slash, MCP", async () => {
-  for (const path of ["/api/buy/no_such_item", "/api/buy/hello/"]) {
-    const response = await request(path);
-    expect(response.headers.get("WWW-Authenticate") ?? "").not.toMatch(/^Payment /);
-  }
+it("no challenge where there is no door: an unknown item, MCP; a trailing slash is the same door", async () => {
+  const unknown = await request("/api/buy/no_such_item");
+  expect(unknown.headers.get("WWW-Authenticate") ?? "").not.toMatch(/^Payment /);
+  // Until 2026-09-19 this lane refused the slashed spelling while the x402
+  // lane answered it; routes/buy.ts calls the two one door, and now both
+  // lanes do (test/trailing-slash-door.spec.ts holds the whole answer equal).
+  const slashed = await request("/api/buy/hello/");
+  expect(slashed.headers.get("WWW-Authenticate") ?? "").toMatch(/^Payment /);
   const listed = await request("/mcp", { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }) });
   expect(JSON.stringify(await listed.json())).not.toContain("WWW-Authenticate");

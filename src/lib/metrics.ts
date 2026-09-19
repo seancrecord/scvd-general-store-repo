@@ -136,12 +136,30 @@ export function monthsSinceOpening(now: Date = new Date()): string[] {
   return months;
 }
 
-/** Collapses a gated path to a stable per-item metric key. */
+/**
+ * Collapses a gated path to a stable per-item metric key.
+ *
+ * ONE DOOR, ONE KEY (2026-09-19, the trailing-slash 402 the parity
+ * test exposed on 2026-09-05). routes/buy.ts matches `/api/buy/hello`
+ * and `/api/buy/hello/` as one door, and the shelf checks canonicalize
+ * through buyRequestPath — but the gate's own lookups read this key,
+ * and "hello/" is no item, so the slashed knock answered a 402 with no
+ * buyer guidance, no sample, no idempotency block and no native
+ * challenge, and its counters landed under a phantom item. The slash
+ * is dropped here, where every gate lookup already reads, so the two
+ * spellings answer alike and count alike.
+ */
 export function itemKeyFromPath(path: string): string {
-  if (path.startsWith("/api/buy/")) {
-    return path.slice("/api/buy/".length);
+  // A loop, not /\/+$/: this reads every gated request path, and a
+  // pattern anchored after a repeat runs polynomially on a path made of
+  // slashes (CodeQL flagged exactly that on the first draft).
+  let end = path.length;
+  while (end > 1 && path.charCodeAt(end - 1) === 47 /* "/" */) end -= 1;
+  const canonical = path.slice(0, end);
+  if (canonical.startsWith("/api/buy/")) {
+    return canonical.slice("/api/buy/".length);
   }
-  return path.replace(/^\//, "").replace(/\//g, ":");
+  return canonical.replace(/^\//, "").replace(/\//g, ":");
 }
 
 async function bump(env: Env, key: string): Promise<void> {

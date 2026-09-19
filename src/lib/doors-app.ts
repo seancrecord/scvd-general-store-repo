@@ -192,12 +192,15 @@ const handOverElsewhere: MiddlewareHandler<HonoEnv> = async (c) => {
  * STRICT, LIKE THE STORE. The store's root app is a strict Hono; only
  * routes/buy.ts turns strict off, and a sub-app's setting does not
  * survive being mounted. So `/api/buy/spot_check/` reaches the store's
- * gate with the slash still on `c.req.path`, the item lookup inside the
- * 402 body misses, and the store answers a thinner 402 than it does
- * without the slash. Found by the parity test on the first run
- * (2026-09-05): a non-strict doors app trimmed the slash and answered
- * the fuller body. Whether the store should be fixed is a question for
- * routes/buy.ts; the doors' job is to answer as the store answers.
+ * gate with the slash still on `c.req.path`; until 2026-09-19 the item
+ * lookup inside the 402 body missed on it, and the store answered a
+ * thinner 402 than it did without the slash. Found by the parity test
+ * on the first run (2026-09-05): a non-strict doors app trimmed the
+ * slash and answered the fuller body. The store was fixed where its
+ * lookups read (lib/metrics.ts itemKeyFromPath, and the native lane's
+ * nativeCheckoutItem); the doors' job is still to answer as the store
+ * answers, and test/trailing-slash-door.spec.ts holds the two
+ * spellings equal.
  */
 export const doors = new Hono<HonoEnv>();
 doors.use("*", handOverFirst);
