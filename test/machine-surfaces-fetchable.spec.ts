@@ -46,6 +46,22 @@ describe("machine surfaces stay inside the reader's limit", () => {
     ]);
   });
 
+  /*
+   * THE TITLE BELOW PROMISED TWO THINGS AND CHECKED ONE (2026-09-19).
+   * "inside each budget, which is inside each fetch cap" was read as
+   * prose rather than as an assertion, so /llms.txt could carry a
+   * budget equal to its cap — alarm and wall on the same character —
+   * and no guard said a word. The register's own reason for keeping a
+   * budget under a cap is that a guard firing at the limit fires too
+   * late to be cheap; a table that allows the two to be equal cannot
+   * deliver that. Held here, where the promise was made.
+   */
+  it("keeps every budget strictly under its own fetch cap", () => {
+    const flat = SURFACES.filter((surface) => surface.budget >= surface.fetchCap)
+      .map((surface) => `${surface.path}: budget ${surface.budget} is not under its ${surface.fetchCap} cap`);
+    expect(flat.join("\n")).toBe("");
+  });
+
   it("stays inside each budget, which is inside each fetch cap", async () => {
     const over: string[] = [];
     for (const surface of SURFACES) {

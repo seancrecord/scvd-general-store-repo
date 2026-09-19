@@ -65,6 +65,36 @@ export const SCANNER_BUDGET_BYTES = 700_000;
  */
 export const LLMS_INDEX_CHARACTER_BUDGET = 30_000;
 
+/**
+ * THE ALARM UNDER THAT WALL (2026-09-19), and the reason it had to be
+ * named rather than shared.
+ *
+ * /llms.txt was the one row in the ceiling table whose budget WAS its
+ * fetch cap: both read LLMS_INDEX_CHARACTER_BUDGET, so the alarm and
+ * the wall fired on the same character. That is the shape the scanner
+ * budget above exists to avoid, in its own words: a guard that fires
+ * at the limit fires when it is already too late to do anything cheap.
+ * A stricter number did sit on the index, typed as 25_000 in
+ * test/agent-catalog-readability.spec.ts under the title "with room
+ * below existing limits" — the room, not a stale copy — and #839 read
+ * it as a duplicate of the register and removed it, which left the
+ * index with no early warning at all.
+ *
+ * WHY 27,000 AND NOT 25,000. The index measured 25,303 characters the
+ * day this was written, having crossed the old line by 303 when rule
+ * 60.2's free-first sentences landed in two kept sections. Restoring
+ * 25,000 would have meant trimming 330 characters to sit 27 under the
+ * alarm, which is not headroom, and the trim would have taken the
+ * "what is free before you pay" line out of the block a reader
+ * arrives at. 27,000 leaves the index 1,697 characters to grow and
+ * still rings 3,000 short of the llmstxt.org wall, which is about ten
+ * sentences of the size that just went in.
+ *
+ * ⚑ Keeper's pen on the number: the next ring is a ruling about what
+ * the index carries, not a number to move.
+ */
+export const LLMS_INDEX_ALARM_CHARACTERS = 27_000;
+
 export type MachineSurfaceKind = "json" | "text";
 
 export interface MachineSurfaceCeiling {
@@ -139,7 +169,7 @@ export const MACHINE_SURFACE_CEILINGS: readonly MachineSurfaceCeiling[] = [
   },
   {
     path: "/llms.txt",
-    budget: LLMS_INDEX_CHARACTER_BUDGET,
+    budget: LLMS_INDEX_ALARM_CHARACTERS,
     fetchCap: LLMS_INDEX_CHARACTER_BUDGET,
     kind: "text",
   },
