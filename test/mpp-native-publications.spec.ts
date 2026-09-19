@@ -185,7 +185,8 @@ it("the indexes' checkout block names the lane exactly while the page's 402 carr
     expect(index.checkout.mpp).toMatchObject({ protocol: "mpp", payment_method: "evm", intent: "charge", network: BASE_NETWORK, currency: "USDC", method: "GET", delivery_mime_type: "text/markdown", per_purchase_certificate: false });
     expect((index.checkout.mpp!.steps as string[]).join(" ")).toMatch(/one Payment challenge per price tier/);
   }
-  const almanac = await (await request("/almanac?view=compact")).json<{ checkout: Record<string, unknown> }>();
+  const almanac = await (await request("/almanac?view=compact")).json<{ checkout: Record<string, unknown>; how_to_buy: string }>();
+  expect(almanac.how_to_buy, "the index's own sentence names the lane beside the penny").toMatch(/signed penny \(x402 v2\), or authorize one of its Payment challenges \(MPP/);
   const quote = await request(PAGE);
   expect(quote.status).toBe(402);
   expect(quote.headers.get("WWW-Authenticate")).toMatch(/^Payment /);
@@ -201,7 +202,9 @@ it("the indexes' checkout block names the lane exactly while the page's 402 carr
     const withheld = await (await request(`${path}?view=compact`)).json<{ checkout: Record<string, unknown> }>();
     expect(withheld.checkout.mpp, path).toBeUndefined();
   }
-  expect((await (await request("/almanac?view=compact")).json<{ checkout: Record<string, unknown> }>()).checkout).toEqual(x402Only);
+  const withheldAlmanac = await (await request("/almanac?view=compact")).json<{ checkout: Record<string, unknown>; how_to_buy: string }>();
+  expect(withheldAlmanac.checkout).toEqual(x402Only);
+  expect(withheldAlmanac.how_to_buy).not.toMatch(/MPP/);
   expect((await (await request(PAGE)).json<{ checkout: Record<string, unknown> }>()).checkout).toEqual(x402Only);
   const disabled = await (await request("/.well-known/x402.json")).json<{ resources: { resource: string; checkout: Record<string, unknown> }[] }>();
   expect(disabled.resources.find(row => row.resource.endsWith(PAGE))!.checkout).toEqual(x402Only);

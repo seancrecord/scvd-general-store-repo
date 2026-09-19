@@ -151,7 +151,14 @@ export function nativeCheckoutLane(config?: PurchaseCapabilityConfig): string {
   if (!sample || !("network" in sample)) return "";
   const label = checkoutNetworks(config!).find(row => row.network === sample.network)?.label ?? sample.network;
   const count = doors.length === MENU_ITEMS.length ? "every shelf item" : `${doors.length} of ${MENU_ITEMS.length} shelf items`;
-  return `${sample.currency} over MPP (evm/charge) on ${label} for ${count}`;
+  // The doors beyond the shelf (2026-09-19), each from its own enabled
+  // answer, so the sentence never claims a door the gate would not open.
+  const beyond = [
+    ...(nativePublicationsEnabled(config) ? ["every publication page"] : []),
+    ...(nativeCommissionEnabled(config) ? ["the commission desk"] : []),
+  ];
+  const doorsNamed = beyond.length ? `${[count, ...beyond].slice(0, -1).join(", ")} and ${beyond[beyond.length - 1]}` : count;
+  return `${sample.currency} over MPP (evm/charge) on ${label} for ${doorsNamed}`;
 }
 
 /**
