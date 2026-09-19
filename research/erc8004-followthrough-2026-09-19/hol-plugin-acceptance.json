@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-09-19T12:35:08.772799+00:00",
+  "pr": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349",
+  "mergedAt": "2026-09-19T01:52:56Z",
+  "mergeCommit": "3e1262deac87c60d831493553aa67bbf8ae2fb73",
+  "sourceCatalog": "https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations",
+  "sourceRead": "GitHub contents API, current main README.md and plugins.json; SCVD entry present in both",
+  "scope": "Community plugin catalog admission; separate ERC-8004 indexing remains unresolved",
+  "webDetail": {
+    "url": "https://hol.org/registry/plugins/seancrecord%2Fscvd-general-store-repo",
+    "result": "Registry page not found",
+    "limit": "The source-catalog admission is confirmed; a public HOL web detail page is not."
+  }
+}

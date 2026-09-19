@@ -1,5 +1,41 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-18–19 — ERC-8004 follow-through, free OASF routes and Muse
+
+The September 19 continuation confirmed [HOL plugin PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349)
+merged, with SCVD present in the current README and plugins.json. This supports
+a community source-catalog listing, separately from HOL's ERC-8004 index.
+[Agent Arena's official page](https://agentarena.site/) documents free identity
+lookup; SCVD returned 404 and its own Base identity control returned 200.
+AgentRanking returned 522 and 8004.directory failed DNS in the browser.
+[Evidence](../research/erc8004-followthrough-2026-09-19/README.md).
+
+Read the [ERC-8004 specification](https://eips.ethereum.org/EIPS/eip-8004),
+[HOL search contract](https://hol.org/docs/registry-broker/search/) and
+[OpenAPI](https://hol.org/registry/api/v1/openapi.json). Registration,
+A2A and OASF agreed in the September 18 live reads; no new on-chain read
+was made. HOL exact nativeId and domain queries returned zero hits with a
+working ERC-8004 control September 18–19. That is bounded search evidence,
+not a complete census or a diagnosed ingestion fault. AgentERC and HOL
+operator requests are sent. [Readings and receipts](../research/erc8004-followthrough-2026-09-19/README.md).
+
+The [AGNTCY maintainer answer](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900)
+says the shared testbed is read-only. The keeper declined recurring fees;
+Anro's free external-ingestion request was sent September 18. No hosting
+provisioned or current-byte signature/publication claimed.
+
+Read [Agentscan docs](https://agentscan.info/docs), the linked AliasAI
+validator repository and operator site September 19. No appropriate
+GitHub support tracker or email route established. Its AI taxonomy panel
+remains a separate upstream finding; do not rewrite canonical OASF to match it.
+
+Read the rendered [Muse platform](https://muse.ai/platform) September 19.
+Its review path and Stripe Link mention do not establish MCP, x402, MPP
+or UCP compatibility. Work-email sign-in gates further requirements; fees
+and connector format remain unknown. Web-reader fetch failed; the browser
+rendered the official page. [Candidate/intake notes](../research/muse-connector-2026-09-19.md).
+Bundle this intake with the UCP-specific round after release, as requested.
+
 ## 2026-09-18 — MPPScan registration path, qualified live
 
 The register flow is a one-click "Add Server" at `www.mppscan.com/register`

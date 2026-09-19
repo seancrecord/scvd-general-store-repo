@@ -83,6 +83,13 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations",
+    registry: "HOL — Awesome AI Plugins community catalog",
+    protocols: ["skills", "mcp"],
+    confirmed: "2026-09-19",
+    what_it_proves: "That HOL accepted SCVD General Store into its community plugin catalog through PR #349. The source README and machine-readable plugins.json both list the repository, its skills and hosted MCP. This establishes catalog admission, not inclusion in HOL's separate ERC-8004 agent index or acceptance by every supported client marketplace. Not an endorsement and not an audit of runtime behavior, purchases or security.",
+  },
+  {
     url: "https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a",
     registry: "A2A Registry — community API register",
     protocols: ["a2a"],
