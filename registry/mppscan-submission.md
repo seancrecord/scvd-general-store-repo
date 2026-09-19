@@ -87,3 +87,32 @@ The outcome is recorded, dated, in `docs/SPEC_READS.md` and
 `DISTRIBUTION.md`; an accepted listing joins the trust records only after it
 is read back from their public page, and a `tempo:8453` label in that readback
 is cited beside Merit #1209 rather than corrected on our side.
+
+## PRESSED — September 19, 2026, and what is still unread
+
+The keeper pressed Add Server and brought back a server page:
+
+<https://mppscan.org/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b>
+
+Two facts and one gap, kept apart on purpose.
+
+- **The listing exists.** The id is the 64 hex the drafted expectation
+  predicted, so the flow ran and produced a server page rather than an error.
+- **The host is `mppscan.org`, not the `.com` this draft named.** Both
+  resolve in a search index; the register page was read at `www.mppscan.com`
+  and the result page returned on `mppscan.org`. The keeper's list is
+  corrected to point at the `.org` result. Which host is canonical is not
+  established here and is not assumed.
+- **Its contents are NOT read back.** This container's egress proxy refuses
+  `mppscan.org` exactly as it refused `mppscan.com` on September 18: a 403 on
+  the CONNECT tunnel for curl and the fetcher alike, and the page is absent
+  from the search index. So the count of accepted resources, the network
+  label on each row, and any warning text remain unread from here.
+
+Until they are read, nothing about this listing enters the trust records,
+`docs/SPEC_READS.md` or `DISTRIBUTION.md` beyond the URL above. What is
+wanted, verbatim from the page, is the count of resources listed, how the
+network reads on a row (`Base` or the `tempo:8453` of Merit #1209), whether
+both protocols are shown, and any error or verification notice. The store's
+own side was re-read the same day and is unchanged: 38 paid routes, all 38
+`[x402, mpp]` ([receipt](../research/distribution-2026-09-19/mppscan-discover.json)).
