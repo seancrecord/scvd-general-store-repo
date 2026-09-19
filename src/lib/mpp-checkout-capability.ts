@@ -2,7 +2,8 @@ import type { Env, MenuItem } from "@/types";
 import type { MiddlewareHandler } from "hono";
 import type { HonoEnv } from "@/types";
 import { getMenuItem } from "@/store";
-import { publicationFamilyForPath, publicationTiersUsdcForPath, type PublicationFamily } from "@/lib/payments";
+import { commissionRungFromPath, publicationFamilyForPath, publicationTiersUsdcForPath, type PublicationFamily } from "@/lib/payments";
+import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
 
 /**
  * THE PILOT'S ONE PRODUCT (2026-09-16 to 2026-09-18). Native checkout
@@ -55,13 +56,29 @@ export function nativePublicationDoor(path: string, method: string): NativePubli
 }
 
 /**
+ * THE COMMISSION DESK'S RUNGS ARE NATIVE DOORS (2026-09-19). A rung
+ * pays a live keeper quote at exactly its price, against ?commission=
+ * naming a request quoted there; the route fixes the price and the
+ * desk's admission fixes which quote it honours, before any settlement.
+ * The native lane offers one challenge at the rung on the same unpaid
+ * GET; the desk's own item is the sale's spelling in the ledger.
+ */
+export interface NativeCommissionDoor { rung: number; item: MenuItem }
+export function nativeCommissionDoor(path: string, method: string): NativeCommissionDoor | undefined {
+  if (method !== "GET") return undefined;
+  const rung = commissionRungFromPath(path);
+  const item = rung === null ? undefined : getMenuItem(COMMISSION_ITEM_ID);
+  return rung !== null && item ? { rung, item } : undefined;
+}
+
+/**
  * Advertised: the flag is on and the path is a native door, a shelf
- * item's or a publication's. The doors Worker asks this to decide
+ * item's, a publication's or a commission rung. The doors Worker asks this to decide
  * whether the knock has a native answer at all; it holds no durable
  * bindings, so it is never asked the fuller question below.
  */
 export function nativeOfferAdvertised(env: Pick<Env, "MPP_CHECKOUT_ENABLED">, path: string, method: string): boolean {
-  return env.MPP_CHECKOUT_ENABLED === "true" && (nativeCheckoutItem(path, method) !== undefined || nativePublicationDoor(path, method) !== undefined);
+  return env.MPP_CHECKOUT_ENABLED === "true" && (nativeCheckoutItem(path, method) !== undefined || nativePublicationDoor(path, method) !== undefined || nativeCommissionDoor(path, method) !== undefined);
 }
 
 /** Mintable: advertised, and this Worker holds the challenge key. The doors mint on this alone. */

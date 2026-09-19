@@ -1,3 +1,5 @@
+import { isBuying } from "@/routes/door-checks";
+import { storePaymentGate } from "@/lib/store-payment-gate";
 import { captureCommissionPurchase, fulfillCommissionPurchase } from "@/services/commission-purchase";
 import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
@@ -5,7 +7,6 @@ import type { SettledPayment } from "@/lib/payments";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { Hono } from "hono";
 import type { Context, MiddlewareHandler } from "hono";
-import { paymentGate } from "@/lib/payment-gate";
 import { SettlementDeclined, SettlementUnknown } from "@/lib/payments";
 import { sanitizeText } from "@/lib/sanitize";
 import {
@@ -44,12 +45,6 @@ const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
   c.res.headers.set("Cache-Control", "no-store");
 };
 
-/** Mirrors buy.ts: a signature means buying; its absence asks the price. */
-function isBuying(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): boolean {
-  return Boolean(
-    c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT"),
-  );
-}
 
 /**
  * What the desk says about a request in public. The CONTACT NEVER
@@ -242,7 +237,7 @@ commissionRoutes.use("/api/commission/pay/:rung", async (c, next) => {
   }
   await next();
 });
-commissionRoutes.use("/api/commission/pay/:rung", paymentGate);
+commissionRoutes.use("/api/commission/pay/:rung", storePaymentGate);
 
 commissionRoutes.get("/api/commission/pay/:rung", async (c) => {
   // Admission captured the live quote before any settlement.

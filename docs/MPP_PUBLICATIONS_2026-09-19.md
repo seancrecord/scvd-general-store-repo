@@ -74,7 +74,7 @@ parity has nothing new to hold.
 ## Not in this release
 
 Commission rungs (`/api/commission/pay/{rung}`, a quoted price per brief)
-keep x402 alone; the catalog's `checkout` block on the publication indexes
+followed the same night in [their own release](MPP_COMMISSION_2026-09-19.md); the catalog's `checkout` block on the publication indexes
 still describes the x402 shape, and the guide carries the native clause
 instead; the WebMCP bridge already quotes and completes any page it lists
 through the same headers; other networks and assets; a live purchase.
