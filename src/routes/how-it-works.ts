@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
@@ -115,7 +116,7 @@ const HOW_MONEY_WORKS = {
     "Our labour on the record. Never the record itself: the corpus, the battery, the vocabulary and every published observation are free forever and are not behind any payment. A purchase buys a fresh look, a longer look, a look aimed somewhere specific, or a signed artifact you can hand to a third party.",
   what_money_never_buys:
     "A verdict. Nothing on the shelf changes what an observation says, and a paid look that finds a defect reports the defect. If money could move a reading, every reading would be worth nothing.",
-  rails: "USDC over x402 on a network offered in the current payment quote.",
+  rails: (config?: PurchaseCapabilityConfig) => `${checkoutMethod(config)}.`,
   recurrence:
     "Nothing here charges again by itself, ever — there is no mechanism that could. Some items cover a term of days for one payment; when the term ends it stops, and a further purchase is a decision you make.",
   refunds:
@@ -288,7 +289,7 @@ const FAQ = [
 
 /* ------------------------------------------------------------------ */
 
-function bodyJson(base: string) {
+function bodyJson(base: string, config?: PurchaseCapabilityConfig) {
   return {
     what_this_is: WHAT_THIS_IS,
     what_you_can_use_it_for: WHAT_IT_IS_FOR,
@@ -296,6 +297,7 @@ function bodyJson(base: string) {
     how_evidence_is_made: HOW_EVIDENCE_IS_MADE,
     how_money_works: {
       ...HOW_MONEY_WORKS,
+      rails: HOW_MONEY_WORKS.rails(config),
       cheapest_on_the_shelf_usdc: cheapestUsdc(),
       the_whole_shelf: `${base}/menu.json`,
     },
@@ -329,7 +331,7 @@ function bodyJson(base: string) {
   };
 }
 
-function landingHtml(base: string): string {
+function landingHtml(base: string, config?: PurchaseCapabilityConfig): string {
   const steps = HOW_EVIDENCE_IS_MADE.map(
     (entry) =>
       `<li><strong>${escapeHtml(entry.name)}.</strong> ${escapeHtml(entry.what_happens)} <em>Check it yourself: ${escapeHtml(entry.what_you_can_check)}</em></li>`,
@@ -361,7 +363,7 @@ function landingHtml(base: string): string {
       <p class="menu-desc"><strong>${escapeHtml(HOW_MONEY_WORKS.order_of_operations)}</strong></p>
       <p class="menu-desc">${escapeHtml(HOW_MONEY_WORKS.what_money_buys)}</p>
       <p class="menu-desc">${escapeHtml(HOW_MONEY_WORKS.what_money_never_buys)}</p>
-      <p class="menu-desc">${escapeHtml(HOW_MONEY_WORKS.recurrence)} Paid in ${escapeHtml(HOW_MONEY_WORKS.rails)}</p>
+      <p class="menu-desc">${escapeHtml(HOW_MONEY_WORKS.recurrence)} Paid in ${escapeHtml(HOW_MONEY_WORKS.rails(config))}</p>
     </section>
     <section>
       <h2>What you can do with this</h2>
@@ -404,7 +406,7 @@ function howItWorksJsonLd(base: string): string {
   });
 }
 
-howItWorksRoutes.get("/how-it-works.json", (c) => c.json(bodyJson(c.env.STORE_BASE_URL)));
+howItWorksRoutes.get("/how-it-works.json", (c) => c.json(bodyJson(c.env.STORE_BASE_URL, c.env)));
 
 howItWorksRoutes.get("/how-it-works", (c) => {
   const base = c.env.STORE_BASE_URL;
@@ -414,7 +416,7 @@ howItWorksRoutes.get("/how-it-works", (c) => {
       path: "/how-it-works",
       title: "How this store works",
       description: "How scvd.store turns an observation of somebody else's payment endpoint into signed evidence a third party can check without trusting us — and what happens to your money if you buy our labour on top of it.",
-      document: bodyJson(base) as unknown as Record<string, unknown>,
+      document: bodyJson(base, c.env) as unknown as Record<string, unknown>,
     });
   }
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
@@ -424,9 +426,9 @@ howItWorksRoutes.get("/how-it-works", (c) => {
         description:
           "How scvd.store turns an observation of somebody else's payment endpoint into signed evidence a third party can check without trusting us — and what happens to your money if you buy our labour on top of it.",
         path: "/how-it-works",
-        bodyHtml: `${landingHtml(base)}\n${howItWorksJsonLd(base)}`,
+        bodyHtml: `${landingHtml(base, c.env)}\n${howItWorksJsonLd(base)}`,
       }),
     );
   }
-  return c.json(bodyJson(base));
+  return c.json(bodyJson(base, c.env));
 });

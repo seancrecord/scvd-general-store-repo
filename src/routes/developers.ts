@@ -6,6 +6,7 @@ import {
 } from "@/services/preflight";
 import { MARKDOWN_MEDIA_TYPE, negotiate, VARY_ACCEPT } from "@/lib/accept";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { escapeHtml } from "@/lib/sanitize";
 import { declinedPositions } from "@/store/copy/declined";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
@@ -274,7 +275,7 @@ function conventions(base: string): Array<{ q: string; a: string }> {
   ];
 }
 
-function developersMarkdown(base: string): string {
+function developersMarkdown(base: string, config?: PurchaseCapabilityConfig): string {
   const sections = surfaces(base)
     .map(
       (section) =>
@@ -289,8 +290,8 @@ function developersMarkdown(base: string): string {
   return `# ${STORE_SERVICE_NAME} — developer documentation
 
 > Build against ${base}. No account, no API key, no SDK required.
-> Free endpoints are plain HTTPS; paid ones take a signed x402 v2
-> payment in USDC over x402 on a network offered in the current payment quote, per request.
+> Free endpoints are plain HTTPS; paid ones take one signed payment
+> per request: ${checkoutMethod(config)}.
 
 ${sections}
 
@@ -310,7 +311,7 @@ A person reads this address: ${STORE_CONTACT_EMAIL}
 `;
 }
 
-function developersHtml(base: string): string {
+function developersHtml(base: string, config?: PurchaseCapabilityConfig): string {
   const sections = surfaces(base)
     .map(
       (section) => `
@@ -344,8 +345,8 @@ function developersHtml(base: string): string {
    */
   return `
     <p class="lede">Build against <code>${escapeHtml(base)}</code>. No account,
-    no API key, no SDK. Free endpoints are plain HTTPS; paid ones take a signed
-    x402 v2 payment in USDC over x402 on a network offered in the current payment quote, one payment per request.</p>
+    no API key, no SDK. Free endpoints are plain HTTPS; paid ones take one signed
+    payment per request: ${escapeHtml(checkoutMethod(config))}.</p>
     ${sections}
     <h2>Conventions</h2>
     ${rules}
@@ -488,7 +489,7 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
       "text/markdown",
     ]);
     if (representation === "text/markdown") {
-      return c.text(developersMarkdown(base), 200, {
+      return c.text(developersMarkdown(base, c.env), 200, {
         "content-type": MARKDOWN_MEDIA_TYPE,
         Vary: VARY_ACCEPT,
       });
@@ -551,7 +552,7 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
         title: `${STORE_SERVICE_NAME} developer documentation`,
         description: DESCRIPTION,
         path: "/developers",
-        bodyHtml: `<p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests and signed reports.</p>` + developersHtml(base),
+        bodyHtml: `<p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests and signed reports.</p>` + developersHtml(base, c.env),
         extraCss: DEV_CSS,
       }),
     );

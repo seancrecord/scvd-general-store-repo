@@ -1,4 +1,4 @@
-import { paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -102,7 +102,7 @@ import type { GuestbookEntry } from "@/types";
  */
 
 export interface StorefrontData {
-  paymentConfig?: PaymentNetworkConfig;
+  paymentConfig?: PurchaseCapabilityConfig;
   /** Origin, for the offer URLs in the structured data. */
   base?: string;
   weekNote: string;
@@ -655,7 +655,7 @@ function freeServicesJsonLd(base: string): string {
   });
 }
 
-function productListJsonLd(base: string, paymentConfig?: PaymentNetworkConfig): string {
+function productListJsonLd(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -667,7 +667,7 @@ function productListJsonLd(base: string, paymentConfig?: PaymentNetworkConfig): 
       item: {
         "@type": "Product",
         name: item.name,
-        description: `${item.description} ${paymentMethod(paymentConfig)}.`,
+        description: `${item.description} ${checkoutMethod(paymentConfig)}.`,
         url: `${base}/menu/${item.id}`,
         image: `${base}${item.sample_url ?? "/og.png"}`,
         brand: { "@type": "Brand", name: STORE_SERVICE_NAME },
@@ -778,7 +778,7 @@ function postalAddress(): object {
  * `publisher` joins the two nodes rather than repeating the
  * Organization's fields, which would be a second copy free to drift.
  */
-function webSiteJsonLd(base: string, paymentConfig?: PaymentNetworkConfig): string {
+function webSiteJsonLd(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -787,12 +787,12 @@ function webSiteJsonLd(base: string, paymentConfig?: PaymentNetworkConfig): stri
     alternateName: ALTERNATE_NAMES,
     url: `${base}/`,
     inLanguage: "en",
-    description: `${COPY.metaDescription} ${paymentMethod(paymentConfig)}.`,
+    description: `${COPY.metaDescription} ${checkoutMethod(paymentConfig)}.`,
     publisher: organizationRef(base),
   });
 }
 
-function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConfig?: PaymentNetworkConfig): string {
+function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConfig?: PurchaseCapabilityConfig): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -1119,7 +1119,7 @@ ${webmcpOriginTrialTags()}
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${COPY.intentLine}</p>
       ${data.ledgerLine ? `<p class="track-record">${escapeHtml(data.ledgerLine)}</p>` : ""}
-      <p class="pay-rails">${escapeHtml(paymentMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>. <a href="/rails">Payment breakdown</a>.</p>
+      <p class="pay-rails">${escapeHtml(checkoutMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>. <a href="/rails">Payment breakdown</a>.</p>
     </header>
 
     <nav class="first-actions" data-first-actions aria-label="Start here">

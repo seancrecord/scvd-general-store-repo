@@ -9,6 +9,7 @@ import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { CAPABILITY_QUERY, SPEC_RETURNS } from "@/store/spec";
 import { WHAT_COPY, whatFaq, type FaqPair } from "@/store/copy/what";
 import type { HonoEnv } from "@/types";
+import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 
 /**
  * GET /what, the Operator Glance. All the words live in
@@ -41,7 +42,7 @@ function faqJsonLd(pairs: FaqPair[]): string {
  * price, the registrar-plain Returns line, the buy URL). Nothing here
  * is hand-typed prose, so nothing here rots when a price moves.
  */
-function longTailFaq(base: string): FaqPair[] {
+function longTailFaq(base: string, config?: PurchaseCapabilityConfig): FaqPair[] {
   return MENU_ITEMS.filter((item) => CAPABILITY_QUERY[item.id]).map((item) => {
     const query = CAPABILITY_QUERY[item.id]!;
     const question = `${query.startsWith("Be ") ? "How can I" : "How do I"} ${query.charAt(0).toLowerCase()}${query.slice(1)}?`;
@@ -52,7 +53,7 @@ function longTailFaq(base: string): FaqPair[] {
     const returns = SPEC_RETURNS[item.id] ?? item.description;
     return {
       question,
-      answer: `"${item.name}" (${price}, USDC over x402; choose a network in the current quote): ${returns} Buy: GET ${base}/api/buy/${item.id} — machine spec at ${base}/menu/${item.id}, live terms in the 402 itself.`,
+      answer: `"${item.name}" (${price}, ${checkoutMethod(config)}): ${returns} Buy: GET ${base}/api/buy/${item.id} — machine spec at ${base}/menu/${item.id}, live terms in the 402 itself.`,
     };
   });
 }
@@ -60,7 +61,7 @@ function longTailFaq(base: string): FaqPair[] {
 whatRoutes.get("/what", (c) => {
   const base = c.env.STORE_BASE_URL;
   const pairs = whatFaq(base);
-  const longTail = longTailFaq(base);
+  const longTail = longTailFaq(base, c.env);
   /*
    * Hoisted so the markdown twin below renders the same
    * object the JSON serves rather than a second copy.

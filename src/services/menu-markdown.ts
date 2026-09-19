@@ -1,5 +1,6 @@
 import { artifactClassForItem } from "@/store/attestation-spec";
 import { priceTiersUsdc } from "@/lib/payments";
+import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { STORE_METADATA } from "@/store/metadata";
 import { getMenuItem } from "@/store/menu";
 import type { MenuItem } from "@/types";
@@ -94,7 +95,7 @@ export function fulfillmentLine(item: MenuItem): string {
     : `fulfilled by a human within ${item.sla_hours ?? 168} hours`;
 }
 
-export function renderItemMarkdown(item: MenuItem, base: string): string {
+export function renderItemMarkdown(item: MenuItem, base: string, config?: PurchaseCapabilityConfig): string {
   const constraints = item.constraints?.length
     ? `\nHouse rules: ${item.constraints.join("; ").toLowerCase()}.\n`
     : "";
@@ -109,7 +110,7 @@ ${item.description}
 - **id:** \`${item.id}\`
 - **price:** ${priceLine(item)}
 - **fulfillment:** ${fulfillmentLine(item)}
-- **buy:** \`GET ${base}/api/buy/${item.id}\` (x402 v2; USDC on a network offered in the current quote)
+- **buy:** \`GET ${base}/api/buy/${item.id}\` (${checkoutMethod(config)})
 ${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${
     artifactClassForItem(item.id)
       ? `- **does not prove:** ${artifactClassForItem(item.id)!.does_not_prove}\n`

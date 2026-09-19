@@ -38,7 +38,10 @@ history: the scheme was accepted through a scoped pilot
 [MCP door](docs/MPP_MCP_CHECKOUT_2026-09-18.md) and the
 [browser bridge](docs/MPP_WEBMCP_CHECKOUT_2026-09-18.md), and two house
 purchases from an outside wallet with the stock client are recorded in
-[the dated result](docs/MPP_LIVE_RESULT_2026-09-18.md). The store's MPP
+[the dated result](docs/MPP_LIVE_RESULT_2026-09-18.md). The sentence the
+priced surfaces use to say how the till is paid derives both lanes from
+the same configuration since 2026-09-19
+([MPP_CHECKOUT_WORDING_2026-09-19](docs/MPP_CHECKOUT_WORDING_2026-09-19.md)). The store's MPP
 readings of other services never rest on this till: the reading surfaces
 say so in one spelled-once sentence (`UNPAID_READ_NOTE`,
 `src/lib/mpp-challenge.ts`).

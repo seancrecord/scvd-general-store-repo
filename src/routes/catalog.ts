@@ -729,7 +729,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   const canonical = { Link: `<${base}/menu/${item.id}>; rel="canonical"` };
   varyOnAccept(c);
   if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
-    return c.text(renderItemMarkdown(item, base), 200, {
+    return c.text(renderItemMarkdown(item, base, c.env), 200, {
       ...MARKDOWN_HEADERS,
       ...canonical,
     });

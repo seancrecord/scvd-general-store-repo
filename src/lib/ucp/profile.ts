@@ -1,4 +1,4 @@
-import { paymentMethod } from "@/lib/payment-networks";
+import { checkoutMethod } from "@/lib/purchase-capabilities";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
 import {
   usdcPaymentHandlers,
@@ -195,7 +195,7 @@ export function ucpProfile(env: Env): UcpProfile {
           : {}),
         http: `${base}/api/buy/{item_id} — x402 v2. Knock unpaid for the 402 terms, sign one of the accepts, knock again with the payment.`,
         mcp: `${base}/mcp — the same catalog behind buy_* tools; tools/list is free.`,
-        payment_method: paymentMethod(env),
+        payment_method: checkoutMethod(env),
         guide: `${base}/agents.md`,
       },
       /**
