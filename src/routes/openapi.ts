@@ -2949,6 +2949,90 @@ const STUDY_DEBRIEF_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * WHAT A "READ THE SHAPE" DOOR HANDS BACK. Both study write-doors
+ * answer GET with their own contract rather than a 404 — the courtesy
+ * the preflight and the bounty claim door already extend — and a door
+ * that answers deserves a described answer: a generated client that
+ * learns only "JSON is JSON" has learned nothing the 404 did not tell
+ * it. `body` and `fields` carry the questions; `refusals` carries
+ * every way the door says no, published before anybody spends
+ * anything on the walk that would meet one.
+ */
+const STUDY_DOOR_SHAPE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["this_door_takes", "refusals"],
+  properties: {
+    this_door_takes: { type: "string", description: "Always POST; this GET is the contract for it." },
+    free: { type: "string", description: "On the enrolment door: that it opens no wallet and submits no payment." },
+    why_first: { type: "string", description: "On the enrolment door: why enrolling before shopping is the instrument rather than a formality." },
+    what_it_does: { type: "string", description: "On the debrief door: what is verified, in what order, and what comes back." },
+    body: { type: "object", description: "The exact body this door takes, field by field." },
+    fields: {
+      type: "array",
+      items: { type: "object", required: ["field", "what", "why"], properties: {
+        field: { type: "string" }, what: { type: "string" },
+        why: { type: "string", description: "What this answer buys the store — published so an agent can judge the ask rather than take it on trust." },
+        choices: { type: "array", items: { type: "string" } },
+      } },
+    },
+    returns: { type: "object", description: "What a successful call hands back, including that the study token is returned once and never recoverable." },
+    on_the_legs: { type: "string" },
+    on_the_answers: { type: "string" },
+    on_the_reward: { type: "string" },
+    refusals: {
+      type: "array",
+      items: { type: "object", required: ["refusal", "why"], properties: { refusal: { type: "string" }, why: { type: "string" } } },
+      description: "Every way this door says no, with the reason each rule exists. A refusal an agent cannot anticipate is a refusal that costs them a walk they had already paid for.",
+    },
+    then: { type: "string", format: "uri" },
+    room: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * ONE STUDY, READ BACK BY THE PARTY THAT WROTE IT. The token digest is
+ * the one field deliberately absent from the response and therefore
+ * from this shape: the store keeps only a sha256 of the study token,
+ * and it has no business handing even that back.
+ */
+const STUDY_RECORD_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["study_id", "enrolled_at", "expires_at", "roster", "status"],
+  properties: {
+    study_id: { type: "string" },
+    enrolled_at: { type: "string", format: "date-time" },
+    expires_at: { type: "string", format: "date-time" },
+    status: { type: "string", enum: ["enrolled", "debriefed", "expired"], description: "Derived from the clock on every read, never from a sweep." },
+    payout_to: { type: "string", description: "Where a reward would go, as given at enrolment." },
+    roster: {
+      type: "object",
+      description: "What was declared at enrolment, read back as stored. Theirs, never this store's observation.",
+      required: ["model", "harness", "operator", "task", "purpose", "autonomy", "funding", "found_via", "prior_x402"],
+      properties: {
+        model: { type: "string" }, harness: { type: "string" }, harness_other: { type: "string" },
+        operator: { type: "string" }, task: { type: "string" }, purpose: { type: "string" },
+        autonomy: { type: "string" }, funding: { type: "string" }, found_via: { type: "string" },
+        prior_x402: { type: "boolean" },
+      },
+    },
+    debrief: {
+      type: "object",
+      description: "Present once debriefed: the answers as written, the legs with our books beside their declaration, the defects, and the reward with its arithmetic.",
+      properties: {
+        at: { type: "string", format: "date-time" },
+        answers: { type: "object" },
+        legs: { type: "array", items: { type: "object" } },
+        defects: { type: "array", items: { type: "object" } },
+        reward_usd: { type: "number" },
+        reward_breakdown: { type: "object" },
+        authorization_nonce: { type: "string" },
+        authorization_valid_before: { type: "string" },
+      },
+    },
+  },
+};
+
 /** The wallet-claim desk: how to prove a wallet is yours, and its limits. */
 const CLAIMS_DOC_SCHEMA: OpenApiObject = {
   type: "object",
@@ -7429,7 +7513,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "The enrolment shape, and why each field is asked",
             "Every field the roster takes, with one line on what that answer buys this store, plus every way the door says no. Free, and answered rather than 404ed so a client that introspects before it posts gets structure. The American spelling /api/study/enroll serves the same document and the same door.",
           ),
-          { type: "object" },
+          STUDY_DOOR_SHAPE_SCHEMA,
         ),
         post: returns(
           postOp(
@@ -7466,7 +7550,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "The debrief shape, and every way it says no",
             "The exact body the debrief takes, every question with the reason this store cannot answer it from its own logs, and the full refusal catalogue. Free.",
           ),
-          { type: "object" },
+          STUDY_DOOR_SHAPE_SCHEMA,
         ),
         post: returns(
           postOp(
@@ -7532,7 +7616,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "Read your own study back",
               "One study, to the one party that wrote it. The study_token is required — as a Bearer header or a study_token query parameter — because the record holds the researcher's own words and a study id alone would be a guessable handle to a stranger's report. Nothing here is public.",
             ),
-            { type: "object" },
+            STUDY_RECORD_SCHEMA,
           ),
           parameters: [pathParam("study_id", "The sty_… id from your enrolment.")],
         },
