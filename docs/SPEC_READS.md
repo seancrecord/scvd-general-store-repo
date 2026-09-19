@@ -2297,3 +2297,8 @@ Read [Awesome UCP contribution rules](https://github.com/Upsonic/awesome-ucp/blo
 Read UCP Checker directory instructions, free check form and the resulting [SCVD public report](https://ucpchecker.com/check/scvd.store). The report labels the profile Verified and retains root signing-key warnings; no paid operation, monitoring subscription, account or fee. Its wider platform-support claims were not independently verified or adopted.
 
 Checked the current [UCP profile structure](https://ucp.dev/specification/overview/) after the scanner warning: public signing keys are optional at the profile level; when published they belong in top-level `keys[]`. That does not settle requirements of signing-dependent flows. No authentication or key change was made.
+
+
+### 2026-09-19 — Muse form and confirmed submission
+
+Read Muse's authenticated three-step form: it accepts **Existing MCP**, a hosted endpoint, public documentation, access requirements and optional authentication methods. Prepared the existing free verifier with no authentication or payments, and verified its five tools through a fresh tools/list. Policy/support links and the public skill were reachable. The required [Connector Terms](https://muse.ai/platform/terms) were unavailable to both browser and web-reader, so the agent did not accept them. Keeper submitted personally; the browser then confirmed receipt naming SCVD x402 Verifier. No public listing ID, approval or native execution result. [Receipt](../research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press).

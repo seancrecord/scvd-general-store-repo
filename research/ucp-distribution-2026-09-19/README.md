@@ -23,7 +23,7 @@ GET https://scvd.store/ucp/v1/catalog/lookup?id=hello returned the [saved catalo
 
 ## Next / boundaries
 
-- **Muse:** intake at https://muse.ai/platform now sent an email code to the authorized business contact. User verification pending. No connector application submitted, account terms accepted or fee agreed. Initial proposed connector uses free verification tools; custom payment-handler compatibility is unresolved. [Prepared scope](../muse-connector-2026-09-19.md).
+- **Muse:** keeper submitted SCVD x402 Verifier September 19; browser confirmed receipt. Existing MCP connection with five free verification tools, no payment tools or authentication. Review pending, no public listing or host execution qualification. The agent could not read the linked Connector Terms and handed the final agreement/press to the keeper. [Submission receipt and scope](../muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press).
 - **Google:** UCP discovery itself is permissionless; Google's own onboarding is separate. Official [Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center) require an account in good standing, approved products, product eligibility and feed configuration. This reading does not establish SCVD eligibility or Google support for the custom USDC handler. Preserve the keeper's existing merchant-intake status; do not duplicate it or claim approval.
 - **Additional community candidates:** [UCPStore](https://www.ucpstore.dev/). Submission rules, payment compatibility and fees remain to be checked; these are candidates, not submissions.
 
