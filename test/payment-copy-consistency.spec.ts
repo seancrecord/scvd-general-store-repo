@@ -105,7 +105,8 @@ describe('the checkout sentence names the native lane exactly while it is offere
     const storefront = await (await get('/', 'text/html')).text();
     const menuPage = await (await get('/menu/settlement_attestation', 'text/html')).text();
     const openapi = await (await get('/openapi.json')).json() as { info: { description: string } };
-    const ucp = await (await get('/.well-known/ucp')).json() as Record<string, { how_to_actually_buy?: { payment_method: string } }>;
+    const ucp = await (await get('/.well-known/ucp')).json() as Record<string, { how_to_actually_buy?: { payment_method: string; http: string } }>;
+    const menuMd = await (await get('/menu.json', 'text/markdown')).text();
     const ucpBlock = Object.values(ucp).find(block => block && typeof block === 'object' && 'how_to_actually_buy' in block);
     const howItWorks = await (await get('/how-it-works.json')).json() as { how_money_works: { rails: string } };
     const what = await (await get('/what')).json() as { one_question_per_shelf: { answer: string }[] };
@@ -124,6 +125,8 @@ describe('the checkout sentence names the native lane exactly while it is offere
       menu_page_checklist: menuPage.match(/<strong>Checkout:<\/strong> ([^<]+)<\/p>/)?.[1] ?? '',
       openapi_info: openapi.info.description,
       ucp_payment_method: ucpBlock?.how_to_actually_buy?.payment_method ?? '',
+      ucp_http_line: ucpBlock?.how_to_actually_buy?.http ?? '',
+      menu_markdown_buying: menuMd.split('\n').find(line => line.startsWith('Buying:')) ?? '',
       how_it_works_rails: howItWorks.how_money_works.rails,
       what_long_tail: what.one_question_per_shelf.find(pair => pair.answer.includes('Buy: GET'))?.answer ?? '',
       mcp_md_paid_shelves: mcpMd.split('\n').find(line => line.includes('paid shelves')) ?? '',

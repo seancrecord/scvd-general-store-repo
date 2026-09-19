@@ -144,7 +144,7 @@ catalogRoutes.get("/menu.json", async (c) => {
     return page ? c.json(page) : c.json({ code: "bad_page", charged: false }, 400);
   }
   if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
-    return c.text(renderMenuMarkdown(MENU_ITEMS, base), 200, MARKDOWN_HEADERS);
+    return c.text(renderMenuMarkdown(MENU_ITEMS, base, c.env), 200, MARKDOWN_HEADERS);
   }
   // The books are part of the catalog's root metadata (C2); a ledger
   // hiccup never blocks the menu.
@@ -917,7 +917,7 @@ function serveMenuIndex(c: Context<HonoEnv>) {
    * differs, which is the whole point of a twin.
    */
   if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
-    return c.text(renderMenuMarkdown(MENU_ITEMS, c.env.STORE_BASE_URL), 200, MARKDOWN_HEADERS);
+    return c.text(renderMenuMarkdown(MENU_ITEMS, c.env.STORE_BASE_URL, c.env), 200, MARKDOWN_HEADERS);
   }
   return c.redirect(`${c.env.STORE_BASE_URL}/menu.json`, 301);
 }
