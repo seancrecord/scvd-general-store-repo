@@ -84,6 +84,9 @@ describe("every served tool answers 57.4 and 57.5", () => {
       const scarce = MENU_ITEMS.some(item => ids.includes(item.id) && (item.stocked || item.weekly_inventory !== undefined));
       const codes = errors.map((error) => String(error.code));
       expect(codes.includes("sold_out"), `${tool.name} stock contract mismatch`).toBe(scarce);
+      // An unreadable shelf can only be met where a shelf is read (2026-09-19).
+      const stocked = MENU_ITEMS.some(item => ids.includes(item.id) && item.stocked);
+      expect(codes.includes("shelf_unreadable"), `${tool.name} shelf-read contract mismatch`).toBe(stocked);
       expect(codes).toContain("bad_request");
     }
   });

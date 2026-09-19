@@ -103,7 +103,7 @@ export const GRIEVANCE_CAP = 280;
 // stockedShelfCount moved to services/stock.ts (2026-09-05) so the
 // doors Worker can read a shelf without carrying the delivery floor;
 // re-exported here for the callers that always found it under this name.
-export { stockedShelfCount } from "@/services/stock";
+export { readShelfStock } from "@/services/stock";
 
 export interface FulfillmentInput {
   agentName?: string;

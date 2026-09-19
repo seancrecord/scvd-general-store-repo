@@ -127,7 +127,15 @@ const KNOWN_UNACKNOWLEDGED = [
    * diagnostics, where the invariant sweep pages a person. Either way
    * the question is answered in the code instead of left open.
    */
-  "../src/services/stock.ts",
+  /*
+   * stock.ts CAME OFF THIS LIST ON 2026-09-19. Its one bounded read
+   * used to swallow every failure into zero, and the stock check
+   * turned that zero into "sold out" — a definite fact about the
+   * shelf over a read that never happened. readStock now carries the
+   * cap's `truncated` flag and readShelfStock answers null when the
+   * walk failed, so the door refuses with its own gap named
+   * (shelf_unreadable) instead of the shelf's.
+   */
   "../src/services/tips.ts",
   "../src/services/train.ts",
   "../src/services/trust-profile.ts",
