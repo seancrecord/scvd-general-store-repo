@@ -83,6 +83,13 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b",
+    registry: "MPPScan — payment API directory",
+    protocols: ["mpp"],
+    confirmed: "2026-09-19",
+    what_it_proves: "That MPPScan accepted the store's public origin and displays SCVD General Store with a resource list linking back to scvd.store. Registration reported 193 of 195 resources accepted, including free resources; two path templates were excluded after 404 probes, and nonblocking schema/payment warnings remained. This is a dated listing record, not proof of complete coverage or correct payment parsing. Not an endorsement and not an audit of purchases or settlement.",
+  },
+  {
     url: "https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations",
     registry: "HOL — Awesome AI Plugins community catalog",
     protocols: ["skills", "mcp"],

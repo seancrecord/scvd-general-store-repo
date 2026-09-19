@@ -1,5 +1,22 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-19 — MPPScan registration completed and read back
+
+Read the rendered [register page](https://www.mppscan.com/register), entered
+SCVD's origin, inspected verification results and submitted the eligible
+resources under the keeper's free-registration authorization. The page
+confirmed 193 of 195 resources registered; both excluded routes were literal
+path templates returning 404. One endpoint was skipped; 73 nonblocking
+warnings remained, including input-schema and payment-option warnings across
+36 paid endpoints. No fee, account or wallet requested. The public server
+page displayed SCVD and its resource list. [Receipt and exact URL](../research/erc8004-followthrough-2026-09-19/mppscan-registration.json).
+
+A fresh unpaid Context Anchor request still returned HTTP 402 with MPP
+evm/charge, chainId 8453 and six decimals. This does not establish why the
+hosted scanner reported missing payment options. No purchase or canonical
+metadata rewrite. The older package-parser report #1209 remains open; [new hosted-scanner evidence](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5741960729) was added without asserting a shared cause.
+
+
 ## 2026-09-18–19 — ERC-8004 follow-through, free OASF routes and Muse
 
 The September 19 continuation confirmed [HOL plugin PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349)

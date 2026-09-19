@@ -54,3 +54,15 @@ sources are https://scvd.store/.well-known/agent-registration.json and
 https://scvd.store/agents/general-store. Is there a correction or refresh path
 for that separate AI panel? This asks about the classification only; we have
 not established its cause and are keeping the existing identity.
+
+## MPPScan registration completed
+
+Continued the already-authorized free registration after opening PR #844.
+The browser successfully registered 193 of 195 resources and opened the
+resulting SCVD server page. No fee, account or wallet needed. The two failed
+template probes, skipped endpoint and nonblocking warnings are retained in
+[the registration receipt](mppscan-registration.json). Public trust records,
+README and the existing MPPScan packet now link the confirmed listing.
+The new hosted-scanner warnings were added to the existing
+[Merit parser report](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5741960729),
+with one fresh unpaid challenge comparison and no asserted root cause.

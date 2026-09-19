@@ -1199,12 +1199,7 @@ what you ruled and what is still yours to look at.
   re-read September 19 after the publication doors deployed (#826): 38 of 38
   paid routes `[x402, mpp]`, same three warnings
   ([receipt](research/distribution-2026-09-19/mppscan-discover.json)).
-  PRESS: register at [www.mppscan.com/register](https://www.mppscan.com/register),
-  Add Server, `https://scvd.store`; the [draft](registry/mppscan-submission.md)
-  says what to expect and what to bring back, and to stop if the page asks
-  for a fee, sign-in or wallet. The checker’s Base-network
-  mislabel is reported in [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209)
-  and is theirs to fix; cite it beside any `tempo:8453` in the listing.
+  DONE September 19: [MPPScan registration](https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b) completed without fee, sign-in or wallet. The public listing was opened; 193 of 195 resources registered, two path templates excluded after 404 probes and nonblocking schema/payment warnings retained. [Receipt](research/erc8004-followthrough-2026-09-19/mppscan-registration.json). Investigate those warnings separately; registration is not a paid qualification. The existing [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209) parser report remains open.
   PRESS (optional, goodwill): file the [mppx upstream note](registry/upstream-mppx-x402-resource-url.md)
   on `wevm/mppx` after checking their tracker for a duplicate; nothing here depends on it.
   The [OpenAPI repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) adds the enabled
