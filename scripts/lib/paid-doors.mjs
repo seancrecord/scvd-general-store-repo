@@ -139,6 +139,25 @@ export function windowTrustworthy({ logs = [], canary = null } = {}) {
   };
 }
 
+/**
+ * A 0x ADDRESS IS NOT A PERMISSION TO READ IT HERE (2026-09-19).
+ *
+ * Every EVM chain uses one address format, and this reader holds one
+ * rail per run. So a pinned Polygon payTo read against Base's USDC
+ * contract SUCCEEDS — the address exists there too, the call returns,
+ * and the row looks like a reading of Polygon. It is a well-formed
+ * wrong value, the same shape as an address re-typed from a truncated
+ * display, and it was live in this CLI until a nine-rail door in the
+ * next blind key walked into it.
+ *
+ * A rail is read only when the door pinned it to the rail this run is
+ * reading. Anything else is named and returned UNKNOWN.
+ */
+export function railCoveredByRun(doorRail, runRail) {
+  if (doorRail === null || doorRail === undefined) return true;
+  return doorRail === runRail;
+}
+
 export function railInReach(scheme) {
   return scheme === null || scheme === undefined || scheme === "exact";
 }
