@@ -249,13 +249,13 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
        */
       apiEntry({
         anchor: `${base}/.well-known/ucp`,
-        title: `${STORE_SERVICE_NAME} — UCP business profile (catalog only)`,
+        title: `${STORE_SERVICE_NAME} — UCP business profile`,
         desc: [
           {
             href: `${base}/.well-known/ucp`,
             type: "application/json",
             title:
-              "UCP profile: version, shopping service endpoint, catalog capabilities, and the checkout this store does not implement",
+              "UCP profile: version, shopping service endpoint, catalog capabilities, the payment handler, and the checkout and order capabilities exactly when this deployment has them switched on",
           },
         ],
         doc: [

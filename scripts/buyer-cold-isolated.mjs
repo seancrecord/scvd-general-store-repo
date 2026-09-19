@@ -8,6 +8,7 @@ import {pathToFileURL} from 'node:url';
 import {adapter, recipientLaunch, buildPrompt, buildCapabilityPrompt, capabilityVectors, scoreCapability, validatePlan, normalizeTrace, hash, scoreColdRun, cohortSummary, SESSION_WORKSPACE} from './lib/buyer-cold.mjs';
 
 import {prepareHandoff} from './buyer-recipient-handoff.mjs';
+import {readRecipientVerifier,RECIPIENT_VERIFIER_FILES} from './lib/recipient-verifier.mjs';
 import {retainArtifacts} from './lib/buyer-retention.mjs';
 import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
 export {retainArtifacts};
@@ -112,7 +113,7 @@ export async function scoreCohort(root) {
   return {...cohortSummary(rows),...(capability?{capability}:{}),scorer_sha256:hash(fs.readFileSync(new URL('lib/buyer-cold.mjs',import.meta.url))),plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),runs:rows};
 }
 // The exact collector bytes, frozen beside every acquisition and probe.
-const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','buyer-recipient-handoff.mjs','lib/buyer-cold.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','../verifier/evidence-bundle.js','../verifier/x402-verify.js'];
+const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','buyer-recipient-handoff.mjs','lib/buyer-cold.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','lib/recipient-verifier.mjs',...RECIPIENT_VERIFIER_FILES.map(file=>'../verifier/'+file)];
 export function freezeInstrument(root) {
   const files = {};
   for (const name of INSTRUMENT_FILES) {
@@ -162,6 +163,7 @@ function checkQualification(root,capability,context) {
 // only when there is something independent to compare its retention against.
 export async function runCapabilityProbe(plan, root) {
   validatePlan(plan);
+  readRecipientVerifier(plan);
   if(plan.schema_version<4)throw new Error('Host capability probes belong to schema 4 plans.');
   fs.mkdirSync(root,{mode:0o700});
   writeJson(path.join(root,'plan.json'),plan);
@@ -227,6 +229,7 @@ export async function runCapabilityProbe(plan, root) {
 }
 export async function runCohort(plan,root,options={}) {
   validatePlan(plan);
+  readRecipientVerifier(plan);
   // Schema 4 spends nothing on a host that has not shown, under this exact
   // frozen plan and adapter, that it can keep bytes and run a local check.
   let capability=null;
@@ -284,6 +287,7 @@ export async function runCohort(plan,root,options={}) {
 export function prepareRecipient(root,cellId) {
   const read=name=>fs.readFileSync(path.join(root,name));
   const planBytes=read('plan.json'),plan=validatePlan(JSON.parse(planBytes));
+  readRecipientVerifier(plan);
   if(plan.schema_version!==6)throw Error('Integrated recipients require a schema 6 acquisition; old cohorts stay unchanged.');
   const cell=plan.cells.find(c=>c.id===cellId);if(!cell)throw Error('Unknown frozen cell.');
   const protocol=JSON.parse(read('recipient-protocol.json')),context=JSON.parse(read('host-context.json'));

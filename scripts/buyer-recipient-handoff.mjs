@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {hash,readEvidence,readEvidenceBytes,normalizeTrace,inventoryRecipientPrompt,recipientLaunch} from './lib/buyer-cold.mjs';
+import {readRecipientVerifier} from './lib/recipient-verifier.mjs';
 const ROLES=['signature_candidate','issuer_key','unsigned_context','other'];
 export function prepareHandoff(root,selection,out,frozen=null) {
   const runBytes=fs.readFileSync(path.join(root,'run.json')),run=JSON.parse(runBytes);
@@ -39,8 +40,9 @@ export function prepareHandoff(root,selection,out,frozen=null) {
   if(!terminal)throw Error('No successful terminal event in the buyer trace.');
   const final=run.cell.host==='codex'?events.filter(e=>e.type==='item.completed'&&e.item?.type==='agent_message').at(-1)?.item.text:events.filter(e=>e.type==='result').at(-1)?.result;
   if(typeof final!=='string'||!final.trim())throw Error('No buyer final report to hand off.');
-  const machinery=['evidence-bundle.js','x402-verify.js'].map(file=>({file,bytes:fs.readFileSync(new URL('../verifier/'+file,import.meta.url))}));
-  const manifest={...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),schema_version:1,scope:selection.scope,citation_policy:unclassified?'unclassified':'reviewer_declared',subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
+  const pinned=readRecipientVerifier(frozen?.plan);
+  const machinery=pinned??['evidence-bundle.js','x402-verify.js'].map(file=>({file,bytes:fs.readFileSync(new URL('../verifier/'+file,import.meta.url))}));
+  const manifest={...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),...(pinned?{verifier:frozen.plan.recipient.verifier}:{}),schema_version:1,scope:selection.scope,citation_policy:unclassified?'unclassified':'reviewer_declared',subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
     selection_sha256:hash(JSON.stringify(selection)),capture_state:run.retained_artifacts.state,capture_issues:run.retained_artifacts.issues??[],
     files:inputs.map(x=>x.row),buyer_report:{file:'buyer-handoff.md',sha256:hash(final),source:'Verbatim final buyer text from the hash-checked host trace.'},
     machinery:machinery.map(x=>({file:x.file,sha256:hash(x.bytes),source:'Public verifier supplied by the reviewer, not a buyer-exported artifact.'})),
@@ -53,7 +55,7 @@ export function prepareHandoff(root,selection,out,frozen=null) {
   const write=(file,bytes)=>fs.writeFileSync(path.join(out,file),bytes,{flag:'wx',mode:0o600});
   for(const input of inputs)if(input.row.supplied)write(input.row.destination,input.bytes);
   for(const module of machinery)write(module.file,module.bytes);
-  write('buyer-handoff.md',final);write('package.json','{"type":"module"}\n');write('recipient-prompt.txt',prompt);
+  write('buyer-handoff.md',final);if(!pinned)write('package.json','{"type":"module"}\n');write('recipient-prompt.txt',prompt);
   manifest.prompt_sha256=hash(prompt);write('input-manifest.json',JSON.stringify(manifest,null,2)+'\n');
   return manifest;
 }

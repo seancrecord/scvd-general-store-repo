@@ -94,6 +94,7 @@ repair annotations; do not tally those paragraphs as current status.
 
 | Run | Evidence and limits |
 |---|---|
+| Pinned recipient CLI repair, September 18 | [Report](research/recipient-cli-handoff-2026-09-18/REPORT.md). New schema-6 plans can supply hash-pinned CLI and package metadata with a neutral invocation template. Local executable and tamper controls pass; registry publication and a fresh qualified native cohort remain separate gates. |
 | Deployment boundary, September 11–12 | [Report](research/deployment-boundary-2026-09-11/REPORT.md) and [benchmark](research/BUYER_DEPLOYMENT_BOUNDARY.md). Recorded Base purchases and an isolated human-order control; identical deployed module bytes do not prove changed-code/schema compatibility. The report does not close earlier findings. |
 | Four-wave buyer run, September 12 | [Report](research/buyer-waves-2026-09-12/REPORT.md) and [run order](research/BUYER_RUN_ORDER.md). Wave 1 partial; waves 2–4 not executed in that run. Cold-to-quote success does not establish purchase or purchased-artifact verification. |
 | Buyer-first takeoff baseline (TR1), September 16 | [Baseline](research/takeoff-readiness-2026-09-16/REPORT.md) and [acceptance plan](docs/TAKEOFF_READINESS_2026-09.md). Six retry attempts: four discovery misses, one directed journey incomplete, one interpretation failure. Initial infrastructure failures remain a separate cohort; no complete journey passed. |

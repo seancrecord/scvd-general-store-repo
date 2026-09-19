@@ -13,6 +13,7 @@ import {
   USDC_HANDLER_TYPE,
 } from "@/lib/ucp/payments/usdc-x402";
 import { ucpProfile } from "@/lib/ucp/profile";
+import { ucpLaunchStatus } from "@/lib/ucp/launch";
 import {
   SCVD_EXTENSION_VERSION,
   SCVD_NAMESPACE,
@@ -58,6 +59,7 @@ ucpRoutes.get("/.well-known/ucp.json", (c) => c.json(ucpProfile(c.env)));
  */
 ucpRoutes.get("/ucp/v1", (c) => {
   const base = c.env.STORE_BASE_URL;
+  const launch = ucpLaunchStatus(c.env);
   return c.json({
     service: `${UCP_NAMESPACE}.shopping`,
     version: UCP_VERSION,
@@ -73,11 +75,40 @@ ucpRoutes.get("/ucp/v1", (c) => {
         url: `${base}/ucp/v1/catalog/lookup`,
         body: { ids: ["product id, variant id, handle, SKU or shelf item id"] },
       },
+      /**
+       * The transactional operations, listed exactly while the profile
+       * advertises them: the same switch, the same answer.
+       */
+      ...(launch.open
+        ? {
+            "checkout.create": {
+              method: "POST",
+              url: `${base}/ucp/v1/checkout-sessions`,
+              body: {
+                line_items: [{ item: { id: "variant id from the catalog" }, quantity: 1 }],
+                [SCVD_NAMESPACE]: { inputs: { "<required input name>": "value" }, network: "CAIP-2 id of a rail listed in the profile (optional)" },
+              },
+            },
+            "checkout.get": { method: "GET", url: `${base}/ucp/v1/checkout-sessions/{id}` },
+            "checkout.complete": {
+              method: "POST",
+              url: `${base}/ucp/v1/checkout-sessions/{id}/complete`,
+              body: { payment: { instruments: [{ id: "pi_1", handler_id: "the quoted handler's id", type: "x402", selected: true, credential: { type: "x402", x402Version: 2, payload: "the signed x402 payment payload" } }] } },
+              shape: `${base}/ucp/specs/payment/usdc-x402`,
+            },
+            "checkout.cancel": { method: "POST", url: `${base}/ucp/v1/checkout-sessions/{id}/cancel` },
+            "order.get": { method: "GET", url: `${base}/ucp/v1/orders/{id}` },
+          }
+        : {}),
     },
     also_readable_by_get:
-      "Both operations answer GET with ?q= and ?id= as a convenience for people and crawlers. That spelling is not the protocol and is not what the profile advertises.",
-    not_implemented: ["checkout", "order"],
-    to_buy: `${base}/api/buy/{item_id} over x402 v2, or the MCP door at ${base}/mcp.`,
+      "Both catalog operations answer GET with ?q= and ?id= as a convenience for people and crawlers. That spelling is not the protocol and is not what the profile advertises.",
+    ...(launch.open
+      ? { open_for: { rails: launch.rails, items: launch.items } }
+      : { not_enabled: ["checkout", "order"], because: launch.closed_because }),
+    to_buy: launch.open
+      ? `A UCP checkout on the items and rails above, or ${base}/api/buy/{item_id} over x402 v2, or the MCP door at ${base}/mcp.`
+      : `${base}/api/buy/{item_id} over x402 v2, or the MCP door at ${base}/mcp.`,
     profile: `${base}/.well-known/ucp`,
   });
 });
@@ -189,6 +220,7 @@ ucpRoutes.get("/ucp/schemas/payment/usdc-x402.json", (c) =>
 
 ucpRoutes.get("/ucp/specs/payment/usdc-x402", (c) => {
   const base = c.env.STORE_BASE_URL;
+  const launch = ucpLaunchStatus(c.env);
   return c.json({
     type: USDC_HANDLER_TYPE,
     version: SCVD_EXTENSION_VERSION,
@@ -209,8 +241,59 @@ ucpRoutes.get("/ucp/specs/payment/usdc-x402", (c) => {
     address_spelling:
       "EVM addresses are emitted in one spelling storewide. On 2026-09-12 the same wallet written lowercase on one surface and checksummed on another was filed by an outside directory as a pay-to rotation; these documents and the x402 quote read from the same constants and the same helpers so that cannot happen again.",
     instances: usdcPaymentHandlers(c.env, base),
-    not_yet_negotiable:
-      "This handler is published for review. It is not declared under ucp.payment_handlers because this store has no UCP checkout to transact through yet. Buy over x402 directly, or through the MCP door.",
+    negotiable: launch.open,
+    ...(launch.open
+      ? {
+          negotiable_note:
+            "Declared under ucp.payment_handlers and drivable through the checkout capability the profile advertises. A checkout narrows to the one instance it was quoted on, and that instance's config then carries amount_atomic, checkout_id, checkout_version, expires_at and terms_digest: the exact transfer to sign.",
+        }
+      : {
+          not_yet_negotiable:
+            "This handler is declared under ucp.payment_handlers because the business schema requires it and the declaration is true. It is not drivable through UCP on this deployment, because checkout is switched off here and the profile advertises no checkout capability. Buy over x402 directly, or through the MCP door.",
+        }),
+    /**
+     * WHAT COMPLETE TAKES. The credential is an x402 v2 payment payload
+     * — the same bytes the buy door takes in PAYMENT-SIGNATURE, as JSON
+     * rather than base64 — signed against the quoted instance's config.
+     * The store re-accepts it against the checkout's frozen terms, so
+     * the `accepted` block may be omitted or must agree.
+     */
+    complete_request: {
+      method: "POST",
+      url: `${base}/ucp/v1/checkout-sessions/{id}/complete`,
+      payment: {
+        instruments: [
+          {
+            id: "pi_1",
+            handler_id: "scvd-usdc-base (the quoted instance's id)",
+            type: "x402",
+            selected: true,
+            credential: {
+              type: "x402",
+              x402Version: 2,
+              payload: {
+                signature: "0x… (EIP-3009 transferWithAuthorization signature; on Solana, the signed transaction)",
+                authorization: {
+                  from: "the payer",
+                  to: "config.pay_to",
+                  value: "config.amount_atomic",
+                  validAfter: "0",
+                  validBefore: "unix seconds",
+                  nonce: "0x + 64 hex, fresh",
+                },
+              },
+            },
+          },
+        ],
+      },
+      answers: {
+        "200 completed": "The checkout with status completed and its order {id, permalink_url}. The same request sent again returns the same order and charges nothing again.",
+        "200 complete_in_progress": "The payment was submitted and the outcome is not yet known; read the checkout, do not sign another payment.",
+        "402": "The payment was refused or declined; nothing was charged; the checkout is payable again.",
+        "409": "The checkout is not payable in its current state (completing, completed under another payment, re-quoted, or not open for UCP here).",
+        "503": "UCP checkout is switched off on this deployment; nothing was charged.",
+      },
+    },
   });
 });
 
@@ -309,6 +392,7 @@ ucpRoutes.get("/ucp/schemas/items/:file", (c) => {
  */
 ucpRoutes.get("/ucp", (c) => {
   const base = c.env.STORE_BASE_URL;
+  const launch = ucpLaunchStatus(c.env);
   return c.json({
     title: "Universal Commerce Protocol at this store",
     ucp_version: UCP_VERSION,
@@ -323,9 +407,21 @@ ucpRoutes.get("/ucp", (c) => {
       url: `${base}/ucp/v1/catalog/lookup`,
       example_body: { ids: ["service_audit"] },
     },
-    what_works: "Catalog search and lookup, over REST, pinned to UCP " + UCP_VERSION + ".",
-    what_does_not:
-      "Checkout and order. They are not built, so they are not advertised in the profile. To buy, use x402 at /api/buy/{item_id} or the MCP door at /mcp.",
+    ...(launch.open
+      ? {
+          what_works:
+            `Catalog search and lookup, checkout and order, over REST, pinned to UCP ${UCP_VERSION}. Checkout is open on ${launch.rails.join(", ")} for ${launch.items.length === coreCommerceItems().length ? "every catalog item" : `${launch.items.length} catalog items (the profile lists them)`}; an identical Complete sent again returns the same order and never charges again.`,
+          checkout: {
+            create: { method: "POST", url: `${base}/ucp/v1/checkout-sessions` },
+            complete: { method: "POST", url: `${base}/ucp/v1/checkout-sessions/{id}/complete`, shape: `${base}/ucp/specs/payment/usdc-x402` },
+            order: { method: "GET", url: `${base}/ucp/v1/orders/{id}` },
+          },
+        }
+      : {
+          what_works: "Catalog search and lookup, over REST, pinned to UCP " + UCP_VERSION + ".",
+          what_does_not:
+            "Checkout and order. They are built and switched off on this deployment, so they are not advertised in the profile. To buy, use x402 at /api/buy/{item_id} or the MCP door at /mcp.",
+        }),
     schemas: {
       payment_handler: `${base}/ucp/schemas/payment/usdc-x402.json`,
       purchase_inputs: `${base}/ucp/schemas/shopping-inputs.json`,

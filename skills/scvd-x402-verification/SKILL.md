@@ -96,6 +96,25 @@ issuer again is not offline verification. Use the published `x402-verify`
 package's `scvd-evidence` command locally; installation and format details:
 https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence
 
+Save the whole original **before** inspecting it. For a cited corpus snapshot,
+replace `ACTUAL_CITED_SNAPSHOT_URL` below with the exact URL from the lookup.
+Create `./evidence` if it does not exist, then run each command separately:
+
+```sh
+node -e "require('node:fs').mkdirSync('./evidence', { recursive: true })"
+curl --fail --output ./evidence/original.json "ACTUAL_CITED_SNAPSHOT_URL"
+curl --fail --output ./evidence/issuer-key.json "https://scvd.store/.well-known/scvd-signing-key"
+```
+
+Use distinct filenames for additional responses; do not overwrite retained
+originals. Keep source URLs and acquisition times beside these files. Inspect
+bounded fields from the saved original afterward. A response too large to print
+can still fit the caller's declared file allowance; retain its complete bytes.
+If capture fails or exceeds that allowance, report incomplete evidence rather
+than substituting a summary, shortened payload or placeholder signature.
+A separately fetched issuer key records what that source served; identifying
+the issuer still requires a trusted key binding independent of the artifact.
+
 For an original response already saved locally, check whether the installed
 `scvd-evidence --help` lists `verify-source` (added in 1.5.0; source and
 registry versions can differ). If available, use
@@ -106,6 +125,17 @@ whole signed payload. Otherwise use the existing export/verify path below.
 Keep original responses, independent key observations and source URLs for a
 recipient; a short verification result is not a replacement for those files.
 Keep installed packages and their caches outside that evidence directory.
+
+When using the existing `x402-verify/bundle` API, call `createEvidenceBundle`
+and `verifyEvidenceBundle` with the documented size allowance and an
+independently established `publicKey`. Require both `valid` and
+`evidence_complete` before reporting authenticated observations. Read those
+observations only from the returned `signed_claims`, not adjacent response
+metadata or a host-history summary. For a corpus snapshot, match the exact
+endpoint in `signed_claims.round.hosts` and report its `observed_at` separately
+from the snapshot's `taken_at`. One signed row cannot authenticate other
+weeks in an unsigned history. Publication does not refresh an observation;
+apply the caller's age limit to the observation date.
 
 Retain the purchase certificate, its exact `signed_payload`, signature,
 and the purchased report. Establish the issuer public key independently
@@ -146,6 +176,6 @@ that the merchant failed.
 Also check the signed subject matches the intended endpoint, the date is
 useful for this decision, any declared expiry, the key's service dates,
 and the observation's gaps. Not every artifact has an expiry. A valid
-signature proves who signed those bytes; it does not prove the observation
-was truthful, the endpoint still behaves that way, or a future payment
+signature authenticates those bytes against the supplied key; it does not
+by itself identify the issuer or prove the observation was truthful, the endpoint still behaves that way, or a future payment
 will deliver. Report those limits with the result.

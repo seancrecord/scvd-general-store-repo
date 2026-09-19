@@ -3,11 +3,33 @@ import type { PaymentRequirements } from "@x402/core/types";
 import { manifestAccepts, priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
 import { BASE_NETWORK, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
+import { ucpItemSellable } from "@/lib/ucp/launch";
 import { MENU_ITEMS } from "@/store";
 import { MCP_CREDENTIAL_META_KEY, MCP_PAYMENT_REQUIRED_META_KEY, MCP_RECEIPT_META_KEY } from "@/lib/mpp-mcp-keys";
 
 export type PurchaseCapabilityConfig = PaymentNetworkConfig & Partial<Pick<Env,
-  "MPP_CHECKOUT_ENABLED" | "MPP_CHALLENGE_KEY" | "PAID_RECOVERIES" | "COUNTER_LEDGER">>;
+  "MPP_CHECKOUT_ENABLED" | "MPP_CHALLENGE_KEY" | "PAID_RECOVERIES" | "COUNTER_LEDGER" |
+  "UCP_CHECKOUT_ENABLED" | "UCP_CHECKOUT_RAILS" | "UCP_CHECKOUT_ITEMS">>;
+
+/**
+ * THE UCP ROW (2026-09-18): present on an item exactly while a UCP
+ * checkout can be opened for it here — the same switch and allow-lists
+ * the profile reads. A directory reader that finds it knows to read
+ * /.well-known/ucp and Create a checkout; one that does not still finds
+ * x402 and, when enabled, MPP, untouched.
+ *
+ * FOUR FIELDS, ON PURPOSE. The row rides every shelf item into
+ * menu.json, the compact contracts and OpenAPI, and OpenAPI has a
+ * byte ceiling (test/agent-catalog-readability.spec.ts) that the
+ * disclosure block of the same day already spent most of. The rails,
+ * the currency and the handler are the profile's to state, once; a
+ * pointer that repeated them thirty-five times would be paying bytes
+ * to say less reliably what one document says exactly.
+ */
+export function ucpCapability(item: MenuItem, config?: PurchaseCapabilityConfig) {
+  if (!config || !ucpItemSellable(config, item.id)) return undefined;
+  return { protocol: "ucp", transport: "rest", path: "/ucp/v1/checkout-sessions", profile: "/.well-known/ucp" };
+}
 
 /**
  * EVERY TIER, MINIMUM FIRST (native tips, 2026-09-19). The x402 offer on
@@ -42,14 +64,16 @@ export function purchaseCapabilities(item: MenuItem, config?: PurchaseCapability
   const path = `/api/buy/${item.id}`;
   const x402 = { protocol: "x402", transport: "http", method: "GET", path,
     request_header: "PAYMENT-SIGNATURE", challenge_header: "PAYMENT-REQUIRED", currency: "USDC" };
-  if (!config || !mppCheckoutEnabled(config, path, "GET")) return [x402];
+  const ucp = ucpCapability(item, config);
+  const rows = ucp ? [x402, ucp] : [x402];
+  if (!config || !mppCheckoutEnabled(config, path, "GET")) return rows;
   const tiers = nativeCheckoutTiers(config, item);
   const terms = tiers[0]!;
   const native = { protocol: "mpp", payment_method: "evm", intent: "charge", network: terms.network, asset: terms.asset,
     currency: "USDC", decimals: USDC_DECIMALS, amount_atomic: terms.amount,
     // Present only where the door takes tips: every offered amount, minimum first, the challenge list's order.
     ...(tiers.length > 1 ? { tip_tiers_atomic: tiers.map(row => row.amount) } : {}) };
-  return [x402,
+  return [...rows,
     { ...native, transport: "http", method: "GET", path,
       request_header: "Authorization", authorization_scheme: "Payment", challenge_header: "WWW-Authenticate",
       response_header: "Payment-Receipt", idempotency_header: "Idempotency-Key" },

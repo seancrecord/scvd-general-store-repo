@@ -150,6 +150,11 @@
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",
+    // UCP checkout is NOT a var here, on purpose: its switch lives in
+    // secrets (below), where the keeper turns it on one rail and one
+    // item at a time without a deploy, and where a deploy cannot wipe
+    // it. Absent = closed (lib/ucp/launch.ts). A var of the same name
+    // in this block would collide with the secret and fail the deploy.
     "STORE_BASE_URL": "https://scvd.store",
     // Settlement attestation reads Base once per purchase. The public
     // endpoint is fine at this volume; swap it the day it isn't. Not a
@@ -166,6 +171,13 @@
     "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"
   }
   // Secrets (never in this file — set via `wrangler secret put <NAME>`):
+  //   UCP_CHECKOUT_ENABLED  "true" opens UCP checkout AND advertises the
+  //                         capability in /.well-known/ucp; anything else
+  //                         or absent = closed (lib/ucp/launch.ts)
+  //   UCP_CHECKOUT_RAILS    comma-separated CAIP-2 ids, e.g. eip155:8453;
+  //                         absent = every rail the till settles on
+  //   UCP_CHECKOUT_ITEMS    comma-separated shelf ids, e.g. hello;
+  //                         absent = the whole UCP catalog
   //   PAY_TO_ADDRESS      Base wallet that receives USDC
   //   CDP_API_KEY_ID      Coinbase Developer Platform key id (facilitator auth)
   //   CDP_API_KEY_SECRET  Coinbase Developer Platform key secret

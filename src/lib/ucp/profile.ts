@@ -1,4 +1,5 @@
 import { paymentMethod } from "@/lib/payment-networks";
+import { ucpLaunchStatus } from "@/lib/ucp/launch";
 import {
   usdcPaymentHandlers,
   USDC_HANDLER_TYPE,
@@ -23,31 +24,30 @@ import type { Env } from "@/types";
  * makes the profile a promise rather than a brochure, and the way to
  * break it is to list a capability whose endpoint is not there.
  *
- * SO CHECKOUT IS NOT IN THIS DOCUMENT. Catalog search and lookup are
- * implemented and served; a UCP checkout and order lifecycle are not,
- * and will not be advertised until they are deployed and probed cold
- * from outside. A negotiator that reads this profile, finds no
- * checkout capability and declines to transact has read it correctly.
- * The way to actually buy from this store today is x402 over HTTP or
- * the MCP door, and both are named below so the answer to "then how do
- * I pay you" is in the same document as the refusal.
+ * CHECKOUT AND ORDER ARE IN THIS DOCUMENT EXACTLY WHEN THE DOOR IS
+ * OPEN. The checkout, the settlement and the order are built and
+ * tested (test/ucp/), and whether THIS deployment has switched them on
+ * is one question with one answer, asked of lib/ucp/launch.ts by the
+ * profile and by the Complete door alike. Open: the capabilities are
+ * declared, the payment handlers are the rails a UCP checkout may be
+ * quoted on, and Complete settles. Closed: no checkout capability, no
+ * order capability, and Complete refuses in writing. A negotiator
+ * that reads a closed profile, finds no checkout capability and
+ * declines to transact has read it correctly, and the way to actually
+ * buy is still named below so the answer to "then how do I pay you"
+ * is in the same document as the refusal.
  *
- * THE PAYMENT HANDLER IS DECLARED, AND THAT WAS A CORRECTION.
- *
- * It was held out of `ucp.payment_handlers` on the reasoning that a
- * handler is an offer to transact and this store has no UCP checkout
- * to transact through. Then the pinned schema was actually read:
- * ucp.json's business_schema REQUIRES `services` and
- * `payment_handlers`, so a profile without them is not a cautious
- * profile, it is an invalid one — and an invalid profile is a worse
- * answer to "can I trust this merchant" than an honest declaration.
- *
- * The declaration is true on its own terms: this store does take USDC
- * on those rails, by that scheme, at those addresses, today. What a
- * negotiator must not conclude is that it can drive that handler
- * through UCP, and the thing that says so is the absence of a checkout
- * CAPABILITY — which is the field negotiation actually reads — plus
- * the status block below, in words.
+ * THE PAYMENT HANDLER IS DECLARED EITHER WAY, AND THAT WAS A
+ * CORRECTION. It was held out of `ucp.payment_handlers` on the
+ * reasoning that a handler is an offer to transact. Then the pinned
+ * schema was actually read: ucp.json's business_schema REQUIRES
+ * `services` and `payment_handlers`, so a profile without them is not
+ * a cautious profile, it is an invalid one. The declaration is true on
+ * its own terms — this store does take USDC on those rails, by that
+ * scheme, at those addresses — and what a negotiator may conclude
+ * about driving it through UCP is answered by the checkout CAPABILITY,
+ * which is the field negotiation actually reads, plus the status block
+ * below, in words.
  */
 
 export interface UcpProfile {
@@ -57,7 +57,17 @@ export interface UcpProfile {
 
 export function ucpProfile(env: Env): UcpProfile {
   const base = env.STORE_BASE_URL;
-  const handlers = usdcPaymentHandlers(env, base);
+  const launch = ucpLaunchStatus(env);
+  const everyRail = usdcPaymentHandlers(env, base);
+  /**
+   * Open: the handlers are the rails a UCP checkout will actually be
+   * quoted on, so a platform never signs against a rail Create would
+   * refuse. Closed: every rail the till settles on, as a true
+   * statement about where the store takes USDC today.
+   */
+  const handlers = launch.open
+    ? everyRail.filter((instance) => launch.rails.includes(instance.config.network))
+    : everyRail;
   /**
    * The excluded prices are read off the shelf, never typed. A
    * hand-copied "$0.004" outliving the price it described is the
@@ -72,6 +82,8 @@ export function ucpProfile(env: Env): UcpProfile {
     .map((item) => `$${item.price_usdc}`)
     .sort()
     .join(", ");
+  const catalogCount = coreCommerceItems().length;
+  const wholeCatalog = launch.items.length === catalogCount;
   return {
     ucp: {
       version: UCP_VERSION,
@@ -107,6 +119,27 @@ export function ucpProfile(env: Env): UcpProfile {
           },
         ],
         /**
+         * THE INVARIANT, in the field negotiation reads: present when
+         * Complete settles, absent when it refuses. Same source, same
+         * answer, no third state.
+         */
+        ...(launch.open
+          ? {
+              [`${UCP_NAMESPACE}.shopping.checkout`]: [
+                {
+                  version: UCP_VERSION,
+                  schema: `${UCP_SCHEMA_BASE}/shopping/checkout.json`,
+                },
+              ],
+              [`${UCP_NAMESPACE}.shopping.order`]: [
+                {
+                  version: UCP_VERSION,
+                  schema: `${UCP_SCHEMA_BASE}/shopping/order.json`,
+                },
+              ],
+            }
+          : {}),
+        /**
          * The store's own extension, in the store's own namespace,
          * resolving to the store's own schema. `store.scvd.*` rather
          * than a borrowed name: an extension that claims somebody
@@ -137,13 +170,29 @@ export function ucpProfile(env: Env): UcpProfile {
      * still get a correct answer from `ucp` above.
      */
     [SCVD_NAMESPACE]: {
-      status: {
-        catalog: "live",
-        checkout: "not implemented",
-        order: "not implemented",
-        note: "Catalog search and lookup are served and tested. UCP checkout and order are not built, so they are not advertised. Nothing on this shelf can be bought through UCP today.",
-      },
+      status: launch.open
+        ? {
+            catalog: "live",
+            checkout: "live",
+            order: "live",
+            rails: launch.rails,
+            items: wholeCatalog ? "every item in the UCP catalog" : launch.items,
+            note: wholeCatalog
+              ? `Catalog, checkout and order are served. Create a checkout at POST ${base}/ucp/v1/checkout-sessions, pay the quoted x402 terms, and Complete settles it: the order is written beside the checkout in one transaction and an identical Complete sent again returns the same order without charging again.`
+              : `Catalog, checkout and order are served, and checkout is open for ${launch.items.length} of the ${catalogCount} catalog items (listed in \`items\`) on the rails listed in \`rails\`, while the launch is qualified item by item. Create refuses the rest in writing; every item is still for sale over x402 at ${base}/api/buy/{item_id}.`,
+          }
+        : {
+            catalog: "live",
+            checkout: "not enabled",
+            order: "not enabled",
+            note: `Catalog search and lookup are served. UCP checkout and order are built and tested, and are switched off on this deployment (${launch.closed_because ?? "closed"}), so they are not advertised and Complete refuses in writing. Nothing on this shelf can be bought through UCP here today.`,
+          },
       how_to_actually_buy: {
+        ...(launch.open
+          ? {
+              ucp: `POST ${base}/ucp/v1/checkout-sessions with line_items, then POST ${base}/ucp/v1/checkout-sessions/{id}/complete with an x402 payment signed against the quoted handler. The shape is at ${base}/ucp/specs/payment/usdc-x402.`,
+            }
+          : {}),
         http: `${base}/api/buy/{item_id} — x402 v2. Knock unpaid for the 402 terms, sign one of the accepts, knock again with the payment.`,
         mcp: `${base}/mcp — the same catalog behind buy_* tools; tools/list is free.`,
         payment_method: paymentMethod(env),
@@ -156,15 +205,16 @@ export function ucpProfile(env: Env): UcpProfile {
       payment_handler_note: {
         type: USDC_HANDLER_TYPE,
         settles_today: true,
-        drivable_through_ucp: false,
-        reason:
-          "The business schema requires payment_handlers, and the declaration is true: this store takes USDC on these rails by this scheme today. It is not drivable through UCP, because there is no UCP checkout capability to drive it from — which is why no checkout capability is advertised above. Pay over x402 directly, or through the MCP door.",
+        drivable_through_ucp: launch.open,
+        reason: launch.open
+          ? "The instances declared above are the rails a UCP checkout is quoted on here; the checkout narrows to the one rail it was quoted for and its config then carries the exact transfer to sign. Complete verifies and settles that transfer through the same facilitator the x402 door uses."
+          : "The business schema requires payment_handlers, and the declaration is true: this store takes USDC on these rails by this scheme today. It is not drivable through UCP on this deployment, because the checkout capability is switched off here — which is why no checkout capability is advertised above. Pay over x402 directly, or through the MCP door.",
         spec: `${base}/ucp/specs/payment/usdc-x402`,
         schema: `${base}/ucp/schemas/payment/usdc-x402.json`,
       },
       catalog: {
         products_total: MENU_ITEMS.length,
-        products_in_ucp_catalog: coreCommerceItems().length,
+        products_in_ucp_catalog: catalogCount,
         excluded: {
           count: excluded.length,
           reason: `Priced below one cent. UCP quotes a price as an integer number of an ISO-4217 currency's minor units, so the smallest USD price that can be written is one cent. These items cost ${excludedPrices}, and they are still for sale at those prices over x402 — what they are not is rounded into a catalog row quoting a price the till would not charge.`,

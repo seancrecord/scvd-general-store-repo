@@ -14,6 +14,10 @@ passing journey: a reviewer checks what actually happened against the evidence.
 - [Current integration and draft next plan](../research/takeoff-recipient-integration-2026-09-18/REPORT.md):
   what the revised instrument does and what still needs live qualification.
 
+- [Full-inventory schema-5 cohort](../research/full-inventory-buyer-2026-09-18/REPORT.md):
+  zero complete journeys out of four; capture and interpretation gaps remain.
+  This acquisition predates the schema-6 controller and does not qualify it.
+
 Historical reports describe the software at their acquisition date. Their
 outcomes remain unchanged after a repair. Public records omit raw local traces;
 those stay in the private acquisition directories and keeper backups.
@@ -97,6 +101,21 @@ interruption. Its capture can still contain gaps, which remain explicit and
 prevent full acceptance. The recipient receives all captured files, unchanged,
 plus the buyer's verbatim final report. No reviewer chooses a flattering subset,
 fetches a replacement or labels a file authenticated before the recipient checks.
+
+## Retain the original and check signed scope
+
+The focused buyer skill supplies separate commands to save the complete cited
+snapshot and issuer-key response before inspecting either. The inventory
+recipient prompt includes a one-call example using the two supplied verifier
+modules, with the size allowance derived from the frozen plan. No new package
+or evidence fetch is required. The example prints only exact-subject rows from
+successfully verified `signed_claims`, with observation and publication times
+separate; it refuses incomplete evidence and unsupported artifact shapes.
+
+This is [guidance and example validation](BUYER_RETENTION_SCOPE_2026-09-18.md),
+not a fresh native acceptance result. The example is part of the frozen prompt,
+so earlier qualification cannot be reused after this change. Budgets, offline
+qualification, one-attempt gates and the observation-age policy stay unchanged.
 
 ## What to inspect after a handoff
 

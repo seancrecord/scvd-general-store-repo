@@ -1,4 +1,5 @@
 import { paymentMethod, paymentNetworkGuide, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { ucpCheckoutOpen, type UcpLaunchConfig } from "@/lib/ucp/launch";
 import { beforeYouStartSection, spendCapCounts } from "@/lib/before-you-start";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { Hono } from "hono";
@@ -25,9 +26,13 @@ import type { HonoEnv } from "@/types";
  *
  * NOT the repo's AGENTS.md (coding-agent guidance). And honest about
  * protocol: Shopify's version points at its Universal Commerce
- * Protocol (UCP) endpoints; this store does not run UCP — it runs
- * x402 + MCP, and says so, because naming a protocol you don't speak
- * is the kind of flattering placeholder /corrections exists to catch.
+ * Protocol (UCP) endpoints, and for a long time this store did not run
+ * UCP and said so, because naming a protocol you don't speak is the
+ * kind of flattering placeholder /corrections exists to catch. It now
+ * serves a UCP profile, catalog, checkout and order (lib/ucp/), and
+ * whether checkout is switched on here is read from the same switch
+ * the profile reads (lib/ucp/launch.ts) — so this manual names UCP as
+ * a way to buy exactly when the profile advertises it.
  *
  * Every URL derives from the base so the manual cannot drift from
  * where things actually live.
@@ -66,7 +71,8 @@ function spendCapParagraph(): string {
    repeats this in its own body.`;
 }
 
-export function agentsMd(base: string, paymentConfig?: PaymentNetworkConfig): string {
+export function agentsMd(base: string, paymentConfig?: UcpLaunchConfig): string {
+  const ucpOpen = paymentConfig ? ucpCheckoutOpen(paymentConfig) : false;
   /**
    * FRONTMATTER, ADDED 2026-08-30, AND WHY IT GOES ABOVE THE HEADING.
    *
@@ -115,9 +121,14 @@ ${paymentConfig ? paymentNetworkGuide(paymentConfig) : paymentMethod()}
 
 ${STORE_METADATA.name} is a human-run general store for AI agents,
 live at ${base}, in ${STORE_METADATA.location}. Commerce protocol:
-**x402** (not UCP) over HTTP, settling ${STORE_METADATA.currency} on
-a network offered in the current payment quote. Two doors, same catalog: an
-HTTP door and an MCP door. Menu goods end in an ed25519-signed
+**x402** over HTTP, settling ${STORE_METADATA.currency} on
+a network offered in the current payment quote. ${ucpOpen ? `Two doors and a
+UCP checkout, same catalog: an HTTP door, an MCP door, and a UCP business
+profile at ${base}/.well-known/ucp whose checkout settles the same x402
+terms.` : `Two doors, same catalog: an
+HTTP door and an MCP door. A UCP business profile at ${base}/.well-known/ucp
+serves the catalog; UCP checkout is switched off on this deployment and
+the profile advertises none.`} Menu goods end in an ed25519-signed
 artifact any third party can verify without trusting us; human-fulfilled
 orders first return a queue ticket. Publication pages return markdown
 with PAYMENT-RESPONSE and private Purchase-Recovery headers, not a
@@ -213,7 +224,7 @@ Both maps render from the same list, so neither can drift from the other: [sitem
 
 - Nothing it hands you can act without your decision; never asks for credentials, keys, or key material.
 - Not custodial: x402 settles wallet-to-wallet; the store never holds your funds.
-- Never claims a protocol it does not speak: this is x402 + MCP, not UCP.
+- Never claims a protocol it does not speak: ${ucpOpen ? "x402, MCP and UCP checkout, each advertised only where it settles." : "this is x402 + MCP; the UCP profile advertises no checkout while checkout is switched off here."}
 `;
 }
 

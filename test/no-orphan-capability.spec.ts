@@ -44,24 +44,20 @@ const DELIBERATELY_QUIET: Record<string, string> = {
    * redirect block below makes.
    */
   /*
-   * THE CHECKOUT DOORS (2026-09-16), quiet on purpose and quiet for a
-   * reason that is written down in the profile itself: this store
-   * cannot settle a payment through UCP yet, so it advertises no
-   * checkout capability. Listing these doors on the surfaces agents
-   * read would be advertising a way to buy that does not work — the
-   * exact overclaim the missing capability exists to prevent. They go
-   * on the surfaces the day Complete settles, and not before.
+   * THE CHECKOUT DOORS (2026-09-16, opened 2026-09-18). While Complete
+   * could not settle they were quiet on purpose, and the reason was
+   * written in the profile itself. Complete now settles behind the
+   * launch switch, the suite runs with it open, and the guide names
+   * the checkout door and the order door — so those two entries came
+   * off this list the day they were promised to. The two id-scoped
+   * sub-doors stay: a caller reaches them FROM the checkout it already
+   * holds (the service index at /ucp/v1 and the checkout document
+   * name them), never from a discovery surface.
    */
-  "/ucp/v1/checkout-sessions":
-    "the checkout is built but cannot settle yet, and the profile advertises no checkout capability for that reason; listing it where agents read would advertise a way to buy that does not work",
-  // The walk probes a static prefix, so the two sub-doors need their
-  // own rows. Same reason, and it will be the same removal.
   "/ucp/v1/checkout-sessions/cancel":
-    "withdraws a checkout the caller already holds; reached from that checkout, not from a discovery surface, and quiet for the same reason the checkout is",
+    "withdraws a checkout the caller already holds; reached from that checkout and from the service index at /ucp/v1, not from a discovery surface",
   "/ucp/v1/checkout-sessions/complete":
-    "cannot settle yet and refuses in writing, naming the x402 door that does take the money; it goes on the surfaces the day it works",
-  "/ucp/v1/orders":
-    "the order a completed checkout points at, reached from that checkout's confirmation and from nowhere else; quiet until Complete opens, and listed the same day it does",
+    "pays a checkout the caller already holds; reached from that checkout's quoted handler and from the service index at /ucp/v1, and the guide lists the checkout door itself",
   "/.well-known/ucp.json":
     "alias of /.well-known/ucp, the path the protocol names and the guide lists; served so a reader who guessed .json gets the profile instead of a 404 that reads as 'no UCP here'",
   "/ucp/schemas/items":

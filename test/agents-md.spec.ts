@@ -1,4 +1,6 @@
-import { SELF } from "cloudflare:test";
+import { agentsMd } from "@/routes/agents-md";
+import type { Env } from "@/types";
+import { SELF, env } from "cloudflare:test";
 import { INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { describe, expect, it } from "vitest";
 
@@ -59,9 +61,19 @@ describe("/agents.md", () => {
     expect(text.toLowerCase()).toContain("act without your decision");
   });
 
-  it("is honest that the protocol is x402 + MCP, not Shopify's UCP", async () => {
+  it("names UCP as a way to buy exactly when the profile advertises checkout, and never before", async () => {
+    // The suite runs with UCP checkout OPEN (vitest.config.ts): the
+    // manual names the profile and no longer disowns the protocol.
     const text = await (await SELF.fetch(`${BASE}/agents.md`)).text();
-    expect(text).toContain("not UCP");
+    expect(text).not.toContain("not UCP");
+    expect(text).toContain(`${BASE}/.well-known/ucp`);
+    expect(text).toContain("UCP checkout");
+    // Closed (the shipped default): the profile advertises no checkout
+    // and the manual says so, in the same words the profile uses.
+    const shut = agentsMd(BASE, { ...(env as unknown as Env), UCP_CHECKOUT_ENABLED: "false" });
+    expect(shut).toContain("switched off");
+    expect(shut).toContain("advertises no checkout");
+    expect(shut).not.toContain("UCP checkout settles");
   });
 
   it("derives every URL from the request base, so it cannot drift", async () => {

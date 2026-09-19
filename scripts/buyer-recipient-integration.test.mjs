@@ -7,7 +7,7 @@ import {spawnSync} from 'node:child_process';
 import {hash,recipientLaunch,validatePlan,recipientCompletion} from './lib/buyer-cold.mjs';
 import {freezeInstrument,hostContext,childEnvironment,TIMING_POLICY,prepareRecipient,runRecipient,runCapabilityProbe,runCohort} from './buyer-cold-isolated.mjs';
 const json=(p,v)=>fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n');
-function fixture(){
+function fixture(verifier=null){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'recipient-integration-test-'));
  const saved={PATH:process.env.PATH,HOME:process.env.HOME};
  const bin=path.join(root,'bin');fs.mkdirSync(bin);const home=path.join(root,'home');fs.mkdirSync(home);
@@ -15,6 +15,7 @@ function fixture(){
  fs.writeFileSync(path.join(bin,'codex'),`#!${process.execPath}\nif(process.argv.includes('--version'))console.log('fixture-cli');else{process.stdin.resume();process.stdin.on('end',()=>{console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Fixture recipient only; no acceptance claim.'}}));console.log(JSON.stringify({type:'turn.completed'}));});}\n`,{mode:0o700});
  process.env.PATH=bin;process.env.HOME=home;
  const plan={schema_version:6,subject:'https://merchant.example/paid',spend_usdc:0,budgets:{wall_ms:2000,tool_calls:10,output_bytes:100000,output_tokens:1000,artifact_bytes:100000,artifact_files:8},freshness:{max_age_ms:86400000},capability:{public_url:'https://example.com/public'},recipient:{host:'codex',model:'fixture-model',network:'disabled',attempts_per_eligible_cell:1,input_scope:'all-retained-and-buyer-report',budgets:{wall_ms:2000,tool_calls:8,output_bytes:100000,output_tokens:500}},cells:[{id:'fixture',host:'codex',model:'fixture-model',lane:'directed',verification:'prompted',entry:'https://example.com/guide'}]};
+ if(verifier)plan.recipient.verifier=verifier;
  const cohort=path.join(root,'cohort');fs.mkdirSync(cohort);json(path.join(cohort,'plan.json'),plan);freezeInstrument(cohort);
  const context=hostContext(new Map([['codex',{version:'fixture-cli'}]]),childEnvironment());json(path.join(cohort,'host-context.json'),context);
  json(path.join(cohort,'capability.json'),{plan_sha256:hash(fs.readFileSync(path.join(cohort,'plan.json'))),recipient:{state:'pass'},hosts:{codex:{state:'pass'}},note:'Synthetic fixture, not qualification evidence.'});
@@ -125,5 +126,30 @@ test('a completed recipient cannot be transplanted onto a changed buyer record',
  f.run.subject='https://different.example/';json(path.join(f.source,'run.json'),f.run);
  assert.equal(recipientCompletion(f.source,review).state,'incomplete');
  fs.rmSync(JSON.parse(fs.readFileSync(path.join(f.source,'recipient/launch.json'))).cwd,{recursive:true,force:true});
+ }finally{f.clean();}
+});
+
+test('the integrated recipient supplies pinned CLI machinery and freezes its exact bytes',async()=>{
+ const names=['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json'];
+ const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
+ const verifier={name:pkg.name,version:pkg.version,files:Object.fromEntries(names.map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]))};
+ const f=fixture(verifier);try{
+  const prepared=prepareRecipient(f.cohort,'fixture');assert.ok(prepared.launch.inputs.includes('evidence-cli.mjs'));assert.match(prepared.launch.prompt,/node evidence-cli/);
+  await runRecipient(f.cohort,'fixture');const out=path.join(f.source,'recipient');
+  const manifest=JSON.parse(fs.readFileSync(path.join(out,'inputs/input-manifest.json'))),instrument=JSON.parse(fs.readFileSync(path.join(f.cohort,'instrument.json')));
+  assert.deepEqual(manifest.verifier,verifier);
+  for(const file of names){assert.equal(hash(fs.readFileSync(path.join(out,'inputs',file))),verifier.files[file]);assert.equal(instrument.files['../verifier/'+file],verifier.files[file]);}
+  fs.appendFileSync(path.join(f.cohort,'verifier/evidence-cli.mjs'),' changed');assert.throws(()=>prepareRecipient(f.cohort,'fixture'),/instrument/i);
+  fs.rmSync(JSON.parse(fs.readFileSync(path.join(out,'launch.json'))).cwd,{recursive:true,force:true});
+ }finally{f.clean();}
+});
+
+test('incorrect frozen CLI bytes stop qualification before any native child or output directory',async()=>{
+ const names=['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json'];
+ const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
+ const verifier={name:pkg.name,version:pkg.version,files:Object.fromEntries(names.map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]))};
+ const f=fixture(verifier);try{
+  f.plan.recipient.verifier.files['evidence-cli.mjs']='0'.repeat(64);
+  const out=path.join(f.root,'refused');await assert.rejects(runCapabilityProbe(f.plan,out),/verifier bytes/);assert.equal(fs.existsSync(out),false);
  }finally{f.clean();}
 });

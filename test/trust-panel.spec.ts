@@ -119,7 +119,7 @@ describe("the independent records on the panel", () => {
     expect(groups.map((group) => group.id)).toEqual(expect.arrayContaining([
       "x402", "mpp", "mcp", "webmcp", "erc8004", "a2a", "oasf", "ucp", "skills",
     ]));
-    expect(groups.find((group) => group.id === "ucp")?.status).toBe("planned");
+    expect(groups.find((group) => group.id === "ucp")?.status).toBe("available");
     expect(groups.find((group) => group.id === "ucp")?.records).toEqual([]);
     const urls = groups.flatMap((group) => group.records.map((record) => record.url));
     for (const group of groups) {
