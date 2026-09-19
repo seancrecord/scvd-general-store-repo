@@ -603,11 +603,24 @@ step 3 now branch on `tx_hash_status`: "the settlement is on chain"
 is said only when our own chain read confirmed it, and a claimed or
 absent receipt is named as exactly that.
 
-**Still open, deliberately:** row 16 (registry coverage fields
-dropped at publish — needs a `RegistryWeekEntry` shape decision),
-row 21 (fresh-set/OKF `observed_at` on long-walk weeks — needs
-per-row timestamps through `LongWalkState`), row 24 (the CI dogfood
-still proves v1 core only on our own door), the minor residue not
+**Still open, deliberately:** row 16 only in its history (the
+`RegistryWeekEntry` shape decision was taken: `buildRegistryWeek` in
+`src/services/registry-pulse.ts` publishes `coverage` — capped,
+coverage_suspect, the discovery stop, the coverage drop and the
+population denominator — and a week that predates the block reads as
+not recorded, never as fine; noted 2026-09-19),
+row 21 for the fresh set's own
+seal (the per-row timestamps arrived 2026-09-05 through the probe's
+knock, and since 2026-09-19 every date on an OKF host concept and the
+index line reads the row's `observed_at` rather than the round's seal —
+`test/okf-bundle.spec.ts`; the fresh-set concept is about the round and
+keeps the seal), row 24's live rail
+fact (the CI dogfood proves v1 core, the L3b trio and the depth reads on
+every shelf door since 2026-09-19, and proves the Solana rail read applies
+to our own accepts and decides both ways on them against a stubbed ledger;
+whether our live wallet holds a USDC account is a ledger fact CI cannot
+read, so the served sentence still rests on that one read being run from
+outside — `test/preflight.spec.ts`), the minor residue not
 named above, the whole of §6's depth ladder (each rung its own ask; NOW-6
 stays the keeper's open ruling), and every §4 corrections entry —
 those wait for the keeper's hand, and their mechanisms now exist to

@@ -1,6 +1,10 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { ADVISORY_NAMES, PRE_HANDLER_PAYMENT_FLOWS, SPEC_SCHEMES, runChecks } from "@/services/preflight";
+import { RECEIVABLE_CHECK, checkRailReceivable, solanaPayTos } from "@/services/rail-receivable";
+import { solanaPayTo } from "@/lib/payment-networks";
+import { MENU_ITEMS } from "@/store";
+import type { Env } from "@/types";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
 /**
@@ -42,6 +46,87 @@ describe("the store passes its own preflight", () => {
     const flagged = advisories.map((advisory) => advisory.name);
     expect(flagged).not.toContain("testnet-network");
     expect(flagged).not.toContain("amount-not-atomic");
+  });
+
+  /**
+   * THE v2 HALF OF THE CLAIM (2026-09-19; instrument audit row 24).
+   * The refusal above is served to v2 callers too, and v2 folds the
+   * L3b consistency trio and the Solana rail read into its verdict —
+   * neither was ever proven on our own door, because the block above
+   * destructured `{checks}` and stopped. This reads the whole return
+   * the way the served route does (body and probed URL supplied, so
+   * the body-placement and resource-host reads run rather than skip),
+   * and holds every L3b check to a pass on every shelf door.
+   */
+  it("our live 402 clears the L3b consistency trio and the depth reads on every door", async () => {
+    let quoted = 0;
+    for (const item of MENU_ITEMS) {
+      const url = `${BASE}/api/buy/${item.id}`;
+      const challenge = await SELF.fetch(url);
+      // A human-labour door is shuttered until the keeper is seen; that is
+      // a 503 with no terms, not a door this battery can read. Anything
+      // else that is not a quote is a door answering wrong.
+      if (challenge.status === 503) continue;
+      expect(challenge.status, item.id).toBe(402);
+      quoted += 1;
+      const ran = runChecks(challenge, false, await challenge.text(), url);
+      expect(ran.method_unresolved, item.id).toBeUndefined();
+      expect(ran.accepts?.length ?? 0, `${item.id}: accepts parsed`).toBeGreaterThan(0);
+      for (const check of [...ran.checks, ...(ran.l3b ?? [])]) {
+        expect(check.ok, `${item.id} ${check.name}: ${check.detail}`).toBe(true);
+      }
+      const l3b = (ran.l3b ?? []).map((check) => check.name);
+      for (const name of ["payto-payable", "amount-atomic", "network-mainnet", "transfer-method-signable"]) {
+        expect(l3b, `${item.id}: ${name} ran`).toContain(name);
+      }
+      // The depth reads that only run with the body and the knocked URL
+      // in hand. resource-host-mismatch is an advisory that fires only on
+      // a mismatch, so its silence is proven from the input rather than
+      // assumed: the resource the challenge names is on the knocked host.
+      const names = ran.checks.map((check) => check.name);
+      expect(names, item.id).toContain("signed-offers");
+      const terms = JSON.parse(atob(challenge.headers.get("PAYMENT-REQUIRED") ?? "")) as { resource?: { url?: string } | string };
+      const resource = typeof terms.resource === "string" ? terms.resource : terms.resource?.url;
+      expect(resource && new URL(resource).host, `${item.id}: resource host`).toBe(new URL(url).host);
+      expect(ran.advisories.map((advisory) => advisory.name), item.id).not.toContain("resource-host-mismatch");
+    }
+    // Most of the shelf quotes unshuttered; a walk that read almost nothing proves nothing.
+    expect(quoted).toBeGreaterThan(MENU_ITEMS.length / 2);
+  });
+
+  /**
+   * THE RAIL READ NEEDS A LEDGER, so CI cannot prove the live fact and
+   * does not pretend to (rail-receivable.ts says why it lives outside
+   * runChecks). What CI can prove is the instrument: our own accepts
+   * carry the Solana payTo the configuration names, so the read
+   * applies to our door rather than silently not applying; and given
+   * a ledger it says receivable for an owner with a USDC account and
+   * not receivable for one without — the check fires both ways on our
+   * bytes, and a pass is never the answer to a read that could not run.
+   */
+  it("the Solana rail read applies to our own accepts and decides both ways on them", async () => {
+    const challenge = await SELF.fetch(`${BASE}/api/buy/small_blessing`);
+    const { accepts } = runChecks(challenge, false);
+    const configured = solanaPayTo(env as unknown as Env);
+    expect(configured, "the test environment offers a Solana rail").toBeTruthy();
+    expect(solanaPayTos(accepts ?? [])).toEqual([configured]);
+    const ledger = (accounts: string[]) => vi.stubGlobal("fetch", vi.fn(async (_url: unknown, init?: { body?: string }) => {
+      const body = JSON.parse(init?.body ?? "{}") as { method?: string };
+      const value = body.method === "getTokenAccountsByOwner" ? accounts.map((pubkey) => ({ pubkey })) : null;
+      return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: value === null ? null : { value } }));
+    }));
+    try {
+      ledger(["AtaOfOurReceiver1111111111111111111111111111"]);
+      const held = await checkRailReceivable(env as unknown as Env, accepts ?? []);
+      expect(held.check?.name).toBe(RECEIVABLE_CHECK);
+      expect(held.check?.ok).toBe(true);
+      ledger([]);
+      const empty = await checkRailReceivable(env as unknown as Env, accepts ?? []);
+      expect(empty.check?.name).toBe(RECEIVABLE_CHECK);
+      expect(empty.check?.ok).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

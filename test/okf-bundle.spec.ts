@@ -166,6 +166,39 @@ describe("the trust family says only what the census actually did", () => {
     expect(concept).toContain(staleAfter("2026-08-19T17:00:00.000Z"));
   });
 
+  /**
+   * DATED BY THE ROW, NOT THE SEAL (2026-09-19; instrument audit row
+   * 21). A long-walk week reads hosts over days and seals the round at
+   * the end. The fresh set has carried each row's own `observed_at`
+   * since 2026-09-05; the host concept kept stamping the seal on every
+   * row, so `stale_after` ran up to days late on the routing surface.
+   * Every date on a host concept must be the row's; the round's seal
+   * stays on the fresh set, which is about the round.
+   */
+  it("dates each host concept by its own knock, and the fresh set by the round's seal", async () => {
+    const knocked = "2026-08-16T09:30:00.000Z";
+    const sealed = "2026-08-19T17:00:00.000Z";
+    const early = host("early.example", "ready", { ...READY, host: "early.example", url: "https://early.example/api/x", observed_at: knocked } as Partial<WardHostResult>);
+    // A row that predates per-row stamps reads the seal — stated in fresh-set.ts, held here.
+    await seed(round([early, READY], { at: sealed }));
+    const bundle = await buildOkfBundle(testEnv);
+    const concept = bundle!.files.get("/host/early.example.md") ?? "";
+    expect(concept).toContain(`stale_after: "${staleAfter(knocked)}"`);
+    expect(concept).not.toContain(staleAfter(sealed));
+    expect(concept).toContain(`  at: "${knocked}"`);
+    expect(concept).toContain(`    at: "${knocked}"`);
+    expect(concept).not.toContain(sealed);
+    expect(concept).toContain(`On ${knocked} this store walked`);
+    const index = bundle!.files.get("/index.md") ?? "";
+    expect(index).toContain("[early.example](host/early.example.md) - answered a conformant challenge on 2026-08-16.");
+    expect(index).toContain("[good.example](host/good.example.md) - answered a conformant challenge on 2026-08-19.");
+    const unstamped = bundle!.files.get("/host/good.example.md") ?? "";
+    expect(unstamped).toContain(`stale_after: "${staleAfter(sealed)}"`);
+    const freshSet = bundle!.files.get("/fresh-set.md") ?? "";
+    expect(freshSet).toContain(`stale_after: "${staleAfter(sealed)}"`);
+    expect(freshSet).toContain(`  at: "${sealed}"`);
+  });
+
   it("names only the doors that answered, and counts the rest", async () => {
     await seed(round([READY, host("bad.example", "not_ready")]));
     const bundle = await buildOkfBundle(testEnv);
