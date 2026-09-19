@@ -34,6 +34,21 @@ on:
   push:
     branches: [main]
   pull_request:
+  # A DROPPED EVENT USED TO MEAN A PR NOBODY COULD VERIFY (2026-09-19).
+  #
+  # GitHub silently delivered no `synchronize` for two heads of #853 —
+  # d6104f5 and 4566279 — while a third on the same branch fired
+  # normally. The PR sat with only the Cloudflare preview checks on it:
+  # not red, not green, just never run. Nothing above can be re-fired by
+  # hand, and re-running the previous run only re-tests the stale head,
+  # so the only way back to a verified head was to find a legitimate
+  # commit to push. That is a bad reason to push code.
+  #
+  # This trigger is the manual re-fire. It runs the same jobs against
+  # whatever ref it is dispatched on, so a lost event costs one button
+  # rather than an invented commit — and it is NOT a way around a red
+  # suite: the jobs are unchanged and `check` still gates.
+  workflow_dispatch:
 
 # A newer PR commit supersedes its previous checks. Main runs retain their
 # release evidence and are not cancelled by this performance change.
