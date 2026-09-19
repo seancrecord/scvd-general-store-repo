@@ -1160,7 +1160,10 @@ what you ruled and what is still yours to look at.
   WebMCP bridge matched its source. No duplicate submission or expanded
   listing was made; external review remains pending.
   MPPScan discovery qualification DONE September 18 against the live shelf
-  ([receipt](research/distribution-2026-09-18/mppscan-live-check.json)).
+  ([receipt](research/distribution-2026-09-18/mppscan-live-check.json));
+  re-read September 19 after the publication doors deployed (#826): 38 of 38
+  paid routes `[x402, mpp]`, same three warnings
+  ([receipt](research/distribution-2026-09-19/mppscan-discover.json)).
   PRESS: register at [www.mppscan.com/register](https://www.mppscan.com/register),
   Add Server, `https://scvd.store`; the [draft](registry/mppscan-submission.md)
   says what to expect and what to bring back, and to stop if the page asks
