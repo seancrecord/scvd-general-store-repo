@@ -1,9 +1,9 @@
+import { storePaymentGate } from "@/lib/store-payment-gate";
 import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
-import { paymentGate } from "@/lib/payment-gate";
 import { PENNY_PAGE_USDC,
   PAYMENT_VARY,
 } from "@/lib/payments";
@@ -121,7 +121,7 @@ const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 almanacRoutes.use("/almanac/:slug", noStore);
 almanacRoutes.use("/almanac/:slug", pageCheck);
-almanacRoutes.use("/almanac/:slug", paymentGate);
+almanacRoutes.use("/almanac/:slug", storePaymentGate);
 
 almanacRoutes.get("/almanac/:slug", async (c) => {
   // pageCheck guarantees the entry exists by the time we're here.

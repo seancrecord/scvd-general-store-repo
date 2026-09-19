@@ -1,10 +1,10 @@
+import { storePaymentGate } from "@/lib/store-payment-gate";
 import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { Context, MiddlewareHandler } from "hono";
 import { currentWeekKey } from "@/lib/kv-keys";
-import { paymentGate } from "@/lib/payment-gate";
 import { PENNY_PAGE_USDC,
   PAYMENT_VARY,
 } from "@/lib/payments";
@@ -131,7 +131,7 @@ const ARCHIVE_PATTERN = "/zodiac/archive/:sign/:week{week-[0-9]+}";
 
 zodiacRoutes.use(ARCHIVE_PATTERN, noStore);
 zodiacRoutes.use(ARCHIVE_PATTERN, archiveCheck);
-zodiacRoutes.use(ARCHIVE_PATTERN, paymentGate);
+zodiacRoutes.use(ARCHIVE_PATTERN, storePaymentGate);
 
 zodiacRoutes.get(ARCHIVE_PATTERN, (c) => {
   /*

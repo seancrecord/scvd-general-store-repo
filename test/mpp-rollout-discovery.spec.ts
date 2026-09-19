@@ -1,3 +1,4 @@
+import { publicationFamilyForPath } from "@/lib/payments";
 import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { afterEach, expect, it, vi } from "vitest";
 import { Challenge } from "mppx";
@@ -73,7 +74,10 @@ it("directory metadata matches native HTTP challenges and every enabled shelf do
     for (const [method, operation] of Object.entries(methods)) {
       const info = operation['x-payment-info'];
       const legacy = disabled.paths[path][method]['x-payment-info'];
-      expect(info?.protocols?.some((row: Record<string, unknown>) => 'mpp' in row) ?? false, `${method} ${path}`).toBe(method === 'get' && shelfPaths.has(path));
+      // A shelf door, or a publication door (native publications, 2026-09-19): the
+      // template's braces stand for any page, the family matcher decides.
+      const publicationDoor = publicationFamilyForPath(path.replace(/\{[a-z_]+\}/g, "x")) !== undefined;
+      expect(info?.protocols?.some((row: Record<string, unknown>) => 'mpp' in row) ?? false, `${method} ${path}`).toBe(method === 'get' && (shelfPaths.has(path) || publicationDoor));
       // Every pre-existing price, input and x402 offer field remains equivalent.
       if (info) expect({ ...info, protocols: legacy.protocols }, `${method} ${path}`).toEqual(legacy);
     }
@@ -89,6 +93,9 @@ it("directory metadata omits MPP when any checkout prerequisite is absent", asyn
     const doc = await request("/openapi.json", config);
     for (const item of MENU_ITEMS) {
       expect(doc.paths[`/api/buy/${item.id}`].get['x-payment-info'].protocols).toEqual([{ x402: {} }]);
+    }
+    for (const path of ["/almanac/{slug}", "/open-for-business/{week}"]) {
+      expect(doc.paths[path].get['x-payment-info'].protocols, path).toEqual([{ x402: {} }]);
     }
   }
 });

@@ -1,9 +1,9 @@
+import { storePaymentGate } from "@/lib/store-payment-gate";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
-import { paymentGate } from "@/lib/payment-gate";
 import { PAYMENT_VARY, openForBusinessTiersUsdc } from "@/lib/payments";
 import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
@@ -209,7 +209,7 @@ const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 openForBusinessRoutes.use(`${PATH}/:week`, noStore);
 openForBusinessRoutes.use(`${PATH}/:week`, issueCheck);
-openForBusinessRoutes.use(`${PATH}/:week`, paymentGate);
+openForBusinessRoutes.use(`${PATH}/:week`, storePaymentGate);
 
 openForBusinessRoutes.get(`${PATH}/:week`, async (c) => {
   // issueCheck guarantees the issue exists by the time we are here.

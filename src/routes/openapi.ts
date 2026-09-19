@@ -1,6 +1,7 @@
+import { BASE_NETWORK } from "@/lib/payment-networks";
 import { getAddress } from "viem";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
-import { checkoutMethod, purchaseCapabilities } from "@/lib/purchase-capabilities";
+import { checkoutMethod, nativePublicationsEnabled, purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { MPP_CORE_BATTERY, MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
@@ -5384,6 +5385,10 @@ function paidOp(
   markdown = false,
 ): OpenApiObject {
   const accepts = manifestAccepts(env, priceUsdcOptions);
+  // A markdown page is a publication door; since 2026-09-19 it carries
+  // the native lane at its family's tiers when the shelf does, and the
+  // directory descriptor says so from the same enabled answer.
+  const nativePage = markdown && nativePublicationsEnabled(env) ? accepts.find((accept) => accept.network === BASE_NETWORK) : undefined;
   return {
     summary,
     description,
@@ -5422,7 +5427,7 @@ function paidOp(
        * array below unreadable. Decimal USD, derived from the same
        * tiers the accepts are, so the two cannot drift.
        */
-      protocols: [{ x402: {} }],
+      protocols: nativePage ? [{ x402: {} }, { mpp: { method: "evm", intent: "charge", currency: getAddress(nativePage.asset) } }] : [{ x402: {} }],
       ...discoveryPriceHint(priceUsdcOptions),
       x402Version: 2,
       scheme: "exact",
