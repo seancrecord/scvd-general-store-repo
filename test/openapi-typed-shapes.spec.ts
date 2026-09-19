@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import type { PreflightReport } from "@/services/preflight";
+import { PREFLIGHT_BATTERY, theRestOfTheLadder, type PreflightReport } from "@/services/preflight";
 
 const BASE = "https://scvd.store";
 
@@ -271,6 +271,20 @@ describe("the preflight verdict schema cannot drift from its type", () => {
       missing.join(", "),
       "PreflightReport carries these fields and the contract does not describe them",
     ).toBe("");
+  });
+
+  it.each(["current_reading", "free_signed_history"])("describes %s in the evidence ladder", async (field) => {
+    const schema = preflightVerdictSchema(await spec());
+    const properties = schema["properties"] as Record<string, Record<string, unknown>>;
+    const ladderSchema = properties["the_rest_of_the_ladder"]?.["properties"] as Record<string, Record<string, unknown>>;
+    const ladder = theRestOfTheLadder(PREFLIGHT_BATTERY, BASE);
+    expect(ladderSchema[field], field).toBeDefined();
+    const described = ladderSchema[field]?.["properties"] as Record<string, { type: string }>;
+    const actual = ladder[field] as Record<string, unknown>;
+    expect(Object.keys(described).sort()).toEqual(Object.keys(actual).sort());
+    for (const [name, value] of Object.entries(actual)) {
+      expect(described[name]?.type, `${field}.${name}`).toBe(typeof value);
+    }
   });
 
   it("marks nothing required that the report leaves optional", async () => {

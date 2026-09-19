@@ -53,3 +53,23 @@ harness tests, typecheck, both Worker bundles and the SDK bundle, documentation
 and the generated corrections index. The [validation record](../research/buyer-date-routing-2026-09-19/validation.json)
 distinguishes the full citation-stage run from final targeted validation and
 retains log hashes. All required hosted CI checks still gate merge.
+
+## Read-only verifier follow-through
+
+The `/mcp/verifier` preflight projection removed the new `current_reading`
+and `free_signed_history` fields along with its paid offers. The follow-through
+preserves those two shared fields in both structured and text output. It still
+removes purchase tools, purchase URLs and prices. OpenAPI also describes the
+fields so generated clients can retain the unsigned-reading limits and free
+historical route.
+
+Before the fix, both not-ready and unreachable verifier responses omitted the
+fields, and both OpenAPI field regressions failed. Historical evidence still
+requires subject, signature and observation-age checks; this repair does not
+establish a successful native buyer journey. After merge and public readback,
+TR3 still needs a separately frozen, qualified cohort under its existing limits.
+
+Follow-through validation: 48 tests across eight affected verifier, schema,
+free-history and response-budget files pass, along with typecheck, both Worker
+bundles, the SDK bundle and documentation checks. The new regression cases were
+observed failing before the repair. All hosted CI shards remain merge gates.
