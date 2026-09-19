@@ -1,6 +1,8 @@
-import { SELF } from "cloudflare:test";
-import { app } from "@/index";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { app } from "@/index";
+import { productionShape } from "./helpers/production-shape";
+import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
 
@@ -121,7 +123,8 @@ describe("the discovery documents stay small enough to be read", () => {
   it.each(Object.entries(CEILINGS))(
     "%s is inside its byte ceiling",
     async (path, ceiling) => {
-      const res = await SELF.fetch(`${BASE}${path}`);
+      // As production serves it: every rail and the native lane (helpers/production-shape, 2026-09-19).
+      const res = await app.request(`${BASE}${path}`, {}, productionShape(env as unknown as Env));
       if (ENV_GATED.has(path) && res.status === 404) {
         // Its secret is unset in this fixture; production serves it and
         // the ceiling below applies there. Nothing to measure here.

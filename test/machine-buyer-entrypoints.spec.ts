@@ -1,5 +1,8 @@
-import { COMPACT_CATALOG_BUDGET_BYTES, SINGLE_ITEM_TOOL_BUDGET_BYTES } from "@/store/reader-limits";
-import { SELF } from "cloudflare:test";
+import { COMPACT_CATALOG_BUDGET_BYTES, COMPACT_ITEM_CONTRACT_BUDGET_BYTES, SINGLE_ITEM_TOOL_BUDGET_BYTES } from "@/store/reader-limits";
+import { SELF, env } from "cloudflare:test";
+import { app } from "@/index";
+import { productionShape } from "./helpers/production-shape";
+import type { Env } from "@/types";
 import { beforeAll, describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
@@ -13,8 +16,21 @@ const obj = (value: unknown): Record<string, unknown> => isRecord(value) ? value
 let facilitator: ReturnType<typeof installFacilitatorMock>;
 beforeAll(() => { facilitator = installFacilitatorMock(); });
 
-async function rpc(path: string, method: string, params: Record<string, unknown> = {}, modern = false) {
-  const response = await SELF.fetch(`${BASE}${path}`, {
+/**
+ * The reads a byte budget judges are taken as production serves them:
+ * every rail and the native lane (helpers/production-shape). The rest
+ * of this file keeps the fixture's own shape, since the facilitator
+ * mock quotes the fixture's rails.
+ */
+const shaped = productionShape(env as unknown as Env);
+const shapedFetch = (path: string, init?: RequestInit) => app.request(`${BASE}${path}`, init, shaped);
+
+async function rpc(path: string, method: string, params: Record<string, unknown> = {}, modern = false, bindings?: Env) {
+  const response = await (bindings ? app.request(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  }, bindings) : SELF.fetch(`${BASE}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(modern ? {
       "MCP-Protocol-Version": LATEST_PROTOCOL, "Mcp-Method": method,
@@ -27,7 +43,7 @@ async function rpc(path: string, method: string, params: Record<string, unknown>
         "io.modelcontextprotocol/clientCapabilities": {}, ...obj(params._meta),
       } } : {}),
     } }),
-  });
+  }));
   return { status: response.status, body: obj(await response.json()) };
 }
 
@@ -182,16 +198,17 @@ describe("repair and discovery do not depend on reading prose", () => {
 describe("a bounded catalog leads to a single-item tool with ordinary required fields", () => {
   it("keeps every one-item contract and tool bounded and isolates the selected item", async () => {
     for (const item of MENU_ITEMS) {
-      const response = await SELF.fetch(`${BASE}/menu/${item.id}?view=compact`);
+      // The one-item contract carries the lane's three rows; its target is its own (reader-limits, 2026-09-19).
+      const response = await shapedFetch(`/menu/${item.id}?view=compact`);
       const text = await response.text();
-      expect(text.length, item.id).toBeLessThan(COMPACT_CATALOG_BUDGET_BYTES);
+      expect(new TextEncoder().encode(text).length, item.id).toBeLessThan(COMPACT_ITEM_CONTRACT_BUDGET_BYTES);
       const contract = obj(JSON.parse(text));
       expect(contract.description, item.id).toBe(item.description);
       expect(contract.constraints, item.id).toEqual(item.constraints);
       expect(contract.reads, item.id).toBe(item.reads);
       expect(contract.sample_url, item.id).toBe(item.sample_url);
       const path = String(contract.mcp_url).replace(BASE, "");
-      const listed = obj((await rpc(path, "tools/list")).body.result);
+      const listed = obj((await rpc(path, "tools/list", {}, false, shaped)).body.result);
       const tools = listed.tools as Record<string, unknown>[];
       expect(tools).toHaveLength(1);
       expect(obj(tools[0]!.inputSchema).required ?? [], item.id).toEqual(buyInputSchema(item).required ?? []);
@@ -208,7 +225,7 @@ describe("a bounded catalog leads to a single-item tool with ordinary required f
     let url: string | null = `${BASE}/menu.json?view=compact`;
     const seen: string[] = [];
     while (url) {
-      const response = await SELF.fetch(url);
+      const response = await shapedFetch(url.replace(BASE, ""));
       const text = await response.text();
       expect(new TextEncoder().encode(text).length).toBeLessThan(COMPACT_CATALOG_BUDGET_BYTES);
       const page = obj(JSON.parse(text));

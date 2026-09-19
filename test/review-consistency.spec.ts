@@ -8,7 +8,8 @@ import { priceTiersUsdc } from '@/lib/payments';
 import type { Env } from '@/types';
 import { webmcpTools } from '@/routes/webmcp';
 import { compactItemContract } from '@/lib/buyer-contract';
-import { COMPACT_CATALOG_BUDGET_BYTES } from '@/store/reader-limits';
+import { COMPACT_ITEM_CONTRACT_BUDGET_BYTES } from '@/store/reader-limits';
+import { productionShape } from './helpers/production-shape';
 
 const BASE = 'https://scvd.store';
 interface Tool { name: string; annotations: Record<string, unknown> }
@@ -83,11 +84,12 @@ it('follows enabled checkout flags and retains optional tip ceilings', async () 
   const { purchaseChecklist } = await import('@/lib/purchase-checklist');
   const off = { PAY_TO_ADDRESS: '0x1111111111111111111111111111111111111111' };
   const on = { ...off, POLYGON_PAY_TO: off.PAY_TO_ADDRESS, ARBITRUM_PAY_TO: off.PAY_TO_ADDRESS, WORLD_PAY_TO: off.PAY_TO_ADDRESS, SOLANA_PAY_TO: '11111111111111111111111111111111' };
-  for (const config of [off, on, { ...on, ARBITRUM_PAY_TO: 'invalid', WORLD_PAY_TO: '' }]) {
+  // The fourth shape is production's: every rail and the native lane, through the real bindings (2026-09-19).
+  for (const config of [off, on, { ...on, ARBITRUM_PAY_TO: 'invalid', WORLD_PAY_TO: '' }, productionShape(env as unknown as Env)]) {
     for (const item of MENU_ITEMS) {
       const checklist = purchaseChecklist(item, config);
       expect(checklist.networks).toEqual(acceptedNetworks(config));
-      expect(new TextEncoder().encode(JSON.stringify(compactItemContract(item, BASE, config))).length, item.id).toBeLessThan(COMPACT_CATALOG_BUDGET_BYTES);
+      expect(new TextEncoder().encode(JSON.stringify(compactItemContract(item, BASE, config))).length, item.id).toBeLessThan(COMPACT_ITEM_CONTRACT_BUDGET_BYTES);
       expect(checklist.price_tiers_usdc).toEqual(priceTiersUsdc(item));
       expect(checklist.default_client.tiers_above_ceiling).toBe(priceTiersUsdc(item).filter(tier => tier > CLIENT_CAP_USD).length);
     }
