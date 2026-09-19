@@ -205,6 +205,34 @@ export interface VerifyOfferInput {
 
 export declare const DOES_NOT_ESTABLISH: { receipt: readonly string[]; offer: readonly string[] };
 export declare const VERIFICATION_URL: string;
+
+/** What the package dispatches on, as data; never a statement about the runtime or any payment rail. */
+export interface PackageCapabilities {
+  scope: string;
+  artifact_formats: readonly string[];
+  artifact_kinds: readonly ("offer" | "receipt")[];
+  algorithms: readonly string[];
+  key_types: readonly string[];
+  key_sources: readonly string[];
+  did_methods: readonly string[];
+  payload_schema_versions: readonly number[];
+  checks: readonly VerifyCheck["name"][];
+  advisory_checks: readonly VerifyCheck["name"][];
+  unsupported_reason_codes: readonly VerificationReasonCode[];
+  not_established: { receipt: readonly string[]; offer: readonly string[] };
+}
+export declare const CAPABILITIES: Readonly<PackageCapabilities>;
+
+/** What this runtime can do for the verifier, with Ed25519 proven on a known vector. */
+export interface RuntimeCapabilities {
+  ed25519: "verified" | "failed" | "unavailable";
+  ed25519_source: "webcrypto" | "injected" | "unavailable";
+  did_resolution: "global-fetch" | "injected" | "unavailable";
+  sha256: "webcrypto" | "injected" | "unavailable";
+}
+export declare function runtimeCapabilities(
+  options?: Pick<VerifyOptions, "subtle" | "verify" | "fetch" | "digest">,
+): Promise<Readonly<RuntimeCapabilities>>;
 export declare function verifyReceipt(input: VerifyReceiptInput, options?: VerifyOptions): Promise<BoundedVerification>;
 export declare function verifyOffer(input: VerifyOfferInput, options?: VerifyOptions): Promise<BoundedVerification>;
 

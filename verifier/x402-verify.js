@@ -464,6 +464,79 @@ export const DOES_NOT_ESTABLISH = Object.freeze({
 
 export const VERIFICATION_URL = "https://scvd.store/api/conformance/v1";
 
+/**
+ * THE CAPABILITY INVENTORY (1.7.0, 2026-09-19). What this package can
+ * check, as data, so an integrator or an agent reads the shape of the
+ * support before feeding it an artifact, and a document about the
+ * package is derived from the same list the dispatch is held to
+ * (capabilities.test.mjs proves each row against the code: every
+ * listed algorithm verifies, anything else earns the listed reason
+ * code). It says nothing about payment rails, chains or settlement:
+ * those are properties of a store's till, not of a verifier, and a
+ * reader wanting them goes to the store's own /rails.
+ *
+ * PACKAGE, NOT RUNTIME. This is what the code dispatches on. Whether
+ * the runtime it is running in can actually perform Ed25519 is a
+ * separate question with a separate answer: runtimeCapabilities()
+ * below, which proves it rather than declares it.
+ */
+export const CAPABILITIES = Object.freeze({
+  scope: "signature and shape of x402 signed offers and receipts; no payment rail, chain or settlement capability",
+  artifact_formats: Object.freeze(["compact-jws"]),
+  artifact_kinds: Object.freeze(["offer", "receipt"]),
+  algorithms: Object.freeze(["EdDSA"]),
+  key_types: Object.freeze(["Ed25519"]),
+  key_sources: Object.freeze(["publicKey", "issuerKeyUrl", "did:web"]),
+  did_methods: Object.freeze(["web"]),
+  payload_schema_versions: Object.freeze([1]),
+  checks: Object.freeze(["parse", "alg", "kid", "schema", "key-resolution", "signature", "expiry"]),
+  advisory_checks: Object.freeze(["expiry"]),
+  unsupported_reason_codes: Object.freeze([
+    "unsupported_format", "unsupported_algorithm", "unsupported_schema_version",
+    "unsupported_did_method", "unsupported_key_type", "unsupported_runtime",
+  ]),
+  not_established: DOES_NOT_ESTABLISH,
+});
+
+/**
+ * RFC 8032 §7.1 test vector 1: the empty message under a published key
+ * and signature. A runtime that verifies it can do Ed25519; one that
+ * throws, refuses or answers false cannot, whatever it declares.
+ */
+const ED25519_KNOWN_VECTOR = Object.freeze({
+  publicKeyHex: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+  signatureHex: "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b",
+  signingInput: "",
+});
+
+/**
+ * What THIS runtime can do for the verifier, proven rather than read
+ * off a feature flag: the Ed25519 seam (WebCrypto, or the caller's
+ * verify) is exercised on a known-good vector; fetch and SHA-256 are
+ * reported by presence, since exercising them would reach the network
+ * or cost nothing to fake. Same options object as verifyArtifact, so
+ * the answer is about the call the caller is going to make.
+ */
+export async function runtimeCapabilities(options = {}) {
+  const subtle = options.subtle ?? globalThis.crypto?.subtle;
+  const source = typeof options.verify === "function" ? "injected"
+    : subtle && typeof subtle.importKey === "function" && typeof subtle.verify === "function" ? "webcrypto"
+      : "unavailable";
+  let ed25519 = "unavailable";
+  if (source !== "unavailable") {
+    const proof = await signatureFinding(ED25519_KNOWN_VECTOR.signingInput, hexToBytes(ED25519_KNOWN_VECTOR.signatureHex),
+      hexToBytes(ED25519_KNOWN_VECTOR.publicKeyHex), options);
+    ed25519 = proof.ok ? "verified" : proof.status === "unsupported" ? "unavailable" : "failed";
+  }
+  const fetchImpl = options.fetch ?? globalThis.fetch;
+  return Object.freeze({
+    ed25519,
+    ed25519_source: source,
+    did_resolution: typeof fetchImpl !== "function" ? "unavailable" : options.fetch ? "injected" : "global-fetch",
+    sha256: typeof options.digest === "function" ? "injected" : subtle && typeof subtle.digest === "function" ? "webcrypto" : "unavailable",
+  });
+}
+
 async function verifyBounded(kind, jws, input, options) {
   const publicKey = input?.publicKey ?? options.publicKey;
   const keyUrl = input?.issuerKeyUrl ?? null;
