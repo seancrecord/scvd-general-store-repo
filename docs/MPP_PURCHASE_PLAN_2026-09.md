@@ -46,8 +46,8 @@ replacement of the merge gate is introduced.
   Pay-what-it-deserves amounts above the minimum are tips for the same
   entitlement, not premium variants. Publication and commission pricing
   also need explicit coverage; menu products are not the entire store.
-  (Publications covered 2026-09-19, [release](MPP_PUBLICATIONS_2026-09-19.md);
-  commission rungs remain x402 alone.)
+  (Both covered 2026-09-19: [publications](MPP_PUBLICATIONS_2026-09-19.md),
+  [commission rungs](MPP_COMMISSION_2026-09-19.md).)
 - `lib/payment-networks.ts`: configured checkout networks; reader support
   does not imply checkout support.
 - `lib/offer-receipt.ts`: signed x402 offers/receipts. These optional

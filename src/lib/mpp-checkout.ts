@@ -1,11 +1,11 @@
-import { nativeCheckoutTiers, nativePublicationTiers, nativeTierForAmount } from "@/lib/purchase-capabilities";
+import { nativeCheckoutTiers, nativePublicationTiers, nativeTiersFor, nativeTierForAmount } from "@/lib/purchase-capabilities";
 import type { PaymentRequirements } from "@x402/core/types";
 import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
 import type { Context, Next } from "hono";
 import { Credential, PaymentRequest } from "mppx";
 import { AuthorizationPayloadSchema } from "mppx/evm";
 import { createMppEvmAdapter } from "@/lib/mpp-evm-adapter";
-import { mppCheckoutEnabled, nativeCheckoutItem, nativePublicationDoor, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
+import { mppCheckoutEnabled, nativeCheckoutItem, nativeCommissionDoor, nativePublicationDoor, type NativePublicationDoor } from "@/lib/mpp-checkout-capability";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { getPaymentStack, atomicToUsdc, tipFromPaid,
   SettlementUnknown, SettlementDeclined, type SettledPayment } from "@/lib/payments";
@@ -35,13 +35,18 @@ import type { HonoEnv, MenuItem } from "@/types";
  */
 type NativeDoor =
   | { kind: "item"; item: MenuItem; key: string; tiers: PaymentRequirements[]; minimumUsdc: number }
-  | { kind: "publication"; door: NativePublicationDoor; key: string; tiers: PaymentRequirements[]; minimumUsdc: number };
+  | { kind: "publication"; door: NativePublicationDoor; key: string; tiers: PaymentRequirements[]; minimumUsdc: number }
+  // A commission rung (2026-09-19): the desk's item at the rung's price,
+  // one tier; the desk's admission fixes which quote the price honours.
+  | { kind: "commission"; item: MenuItem; rung: number; key: string; tiers: PaymentRequirements[]; minimumUsdc: number };
 
 function nativeDoorFor(c: Context<HonoEnv>): NativeDoor | undefined {
   const item = nativeCheckoutItem(c.req.path, c.req.method);
   if (item) return { kind: "item", item, key: item.id, tiers: nativeCheckoutTiers(c.env, item), minimumUsdc: item.price_usdc };
   const door = nativePublicationDoor(c.req.path, c.req.method);
   if (door) return { kind: "publication", door, key: door.family, tiers: nativePublicationTiers(c.env, door), minimumUsdc: door.tiersUsdc[0]! };
+  const desk = nativeCommissionDoor(c.req.path, c.req.method);
+  if (desk) return { kind: "commission", item: desk.item, rung: desk.rung, key: desk.item.id, tiers: nativeTiersFor(c.env, [desk.rung]), minimumUsdc: desk.rung };
   return undefined;
 }
 
@@ -157,9 +162,15 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
   // A publication's good is the page the handler prepares; it is
   // retained on the record before the settle, as the x402 gate does.
   let publication: PublicationSnapshot | undefined;
+  // The desk's admission, run under purchaseAdmission above, captured the
+  // live quote this rung honours; the record carries the desk's item at
+  // that quote and the accepted terms, as the x402 gate writes them.
+  const commission = native.kind === "commission" ? c.get("commissionPurchase") : undefined;
+  const recordItem = native.kind === "item" ? native.item
+    : native.kind === "commission" ? { ...native.item, price_usdc: commission?.quote_usdc ?? native.rung } : undefined;
   const settle = async (): Promise<SettledPayment> => {
     purchase = await beginVerifiedPurchaseIntent(c.env, { payment: verified.payment, terms,
-      ...(native.kind === "item" ? { item: native.item } : {}), ...(publication ? { publication } : {}),
+      ...(recordItem ? { item: recordItem } : {}), ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),
       path: c.req.path, door: "http", request: new URL(c.req.url).searchParams.toString(), idempotency,
       mpp: { challenge_id: credential.challenge.id, house: isHouseTraffic(c.env, { ...gateSignals(c), payer: verified.payment.payer }) },
     });
@@ -177,7 +188,7 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
         transaction: result.result.transaction, settleHeaders: { "Payment-Receipt": result.header } };
       await store.updatePurchase({ state: "settled", payment: settled }).catch(() => undefined);
       await store.accountMppPurchase().catch(() => undefined);
-      if (native.kind === "item") {
+      if (native.kind !== "publication") {
         deliveryKey = await openDeliveryIntent(c.env, { path: c.req.path, query: purchase.request,
           transaction: settled.transaction, payer: settled.payer, paid_usdc: paidUsdc, settled_at: new Date().toISOString() }).catch(() => null);
       }
@@ -204,7 +215,7 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
     // settle and retain it under the purchase identity; the x402 gate
     // builds the same checkpoint from the same verified payload shape.
     // A publication has no observation to prepare.
-    observation: native.kind === "item"
+    observation: native.kind !== "publication"
       ? await verifiedObservationCheckpoint(c.env, native.item, terms.network, verified.payment.payer, verified.payload, c.req.path, request.digest)
       : undefined,
     settle: () => attempt ??= settle(), purchaseRecovery: () => purchase && purchaseRecovery(c.env, purchase),
