@@ -150,7 +150,12 @@ export function monthsSinceOpening(now: Date = new Date()): string[] {
  * spellings answer alike and count alike.
  */
 export function itemKeyFromPath(path: string): string {
-  const canonical = path.length > 1 ? path.replace(/\/+$/, "") : path;
+  // A loop, not /\/+$/: this reads every gated request path, and a
+  // pattern anchored after a repeat runs polynomially on a path made of
+  // slashes (CodeQL flagged exactly that on the first draft).
+  let end = path.length;
+  while (end > 1 && path.charCodeAt(end - 1) === 47 /* "/" */) end -= 1;
+  const canonical = path.slice(0, end);
   if (canonical.startsWith("/api/buy/")) {
     return canonical.slice("/api/buy/".length);
   }
