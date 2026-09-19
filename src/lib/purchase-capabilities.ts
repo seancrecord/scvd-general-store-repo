@@ -1,7 +1,7 @@
 import type { Env, MenuItem } from "@/types";
 import type { PaymentRequirements } from "@x402/core/types";
 import { manifestAccepts, priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
-import { BASE_NETWORK, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { BASE_NETWORK, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
 import { ucpItemSellable } from "@/lib/ucp/launch";
 import { MENU_ITEMS } from "@/store";
@@ -118,6 +118,44 @@ export function nativeMcpCheckoutShape(config?: PurchaseCapabilityConfig) {
 /** The doors that carry a native row: derived from the shelf and the config, never typed. */
 export function nativeCheckoutDoors(config?: PurchaseCapabilityConfig): MenuItem[] {
   return MENU_ITEMS.filter(item => purchaseCapabilities(item, config).some(row => row.protocol === "mpp"));
+}
+
+/**
+ * THE NATIVE LANE IN ONE CLAUSE (2026-09-19, the MPP-P1 wording
+ * follow-up). paymentMethod() names the x402 lane and nothing else,
+ * and every surface that quoted it kept saying so after the native
+ * lane opened on every HTTP door (#790), the MCP door and the browser
+ * bridge: a reader holding an MPP client read the door's own words
+ * and left. Derived from the same rows the challenge is minted from,
+ * so a store with the flag off says exactly what it said before, and
+ * nothing here can name a lane the till does not take. Empty while
+ * the lane is not offered — the caller's sentence must survive that.
+ */
+export function nativeCheckoutLane(config?: PurchaseCapabilityConfig): string {
+  const doors = nativeCheckoutDoors(config);
+  const sample = doors[0] && purchaseCapabilities(doors[0], config).find(row => row.protocol === "mpp");
+  if (!sample || !("network" in sample)) return "";
+  const label = checkoutNetworks(config!).find(row => row.network === sample.network)?.label ?? sample.network;
+  const count = doors.length === MENU_ITEMS.length ? "every shelf item" : `${doors.length} of ${MENU_ITEMS.length} shelf items`;
+  return `${sample.currency} over MPP (evm/charge) on ${label} for ${count}`;
+}
+
+/**
+ * The till in words: the x402 clause from the enabled checkout
+ * networks, and the native clause beside it while the lane is offered.
+ * The x402 clause keeps its exact shape, since discovery guards
+ * (test/payment-copy-consistency.spec.ts) read it by that shape.
+ */
+export function checkoutMethod(config?: PurchaseCapabilityConfig): string {
+  const native = nativeCheckoutLane(config);
+  return native ? `${paymentMethod(config)}, or ${native}` : paymentMethod(config);
+}
+
+/** The MCP handshake's one sentence about the native lane, or nothing while it is not offered. */
+export function nativeMcpInstruction(config?: PurchaseCapabilityConfig): string {
+  const shape = nativeMcpCheckoutShape(config);
+  if (!shape) return "";
+  return `The same buy_* tools also take MPP: the unpaid call carries the Payment challenge list under ${shape.challenge_key} beside the x402 terms, and the retry carries the signed credential in _meta['${shape.credential_meta_key}'] with identical arguments; the receipt returns in result._meta['${shape.receipt_meta_key}'].`;
 }
 
 export function nativeCheckoutGuide(config?: PurchaseCapabilityConfig): string {

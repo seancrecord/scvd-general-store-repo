@@ -1,6 +1,6 @@
 import { getAddress } from "viem";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
-import { purchaseCapabilities } from "@/lib/purchase-capabilities";
+import { checkoutMethod, purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { ZODIAC_ARCHIVE_NOTICE, ZODIAC_STATUS } from "@/store/zodiac";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { MPP_CORE_BATTERY, MPP_CORE_SPEC } from "@/lib/mpp-core-spec";
@@ -5764,7 +5764,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       // the contract's description travels into other people's
       // catalogs, so it carries the entity and both differentiators.
       description:
-        `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on a network offered in the current quote). ${DELIVERY_ORDER} ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and it never asks for credentials, keys, or wallet secrets.`,
+        `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases settle in ${checkoutMethod(c.env)}. ${DELIVERY_ORDER} ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and it never asks for credentials, keys, or wallet secrets.`,
       // x402scan verifies ownership from this and nothing else; a
       // store that asks to be checked has to be reachable.
       contact: { url: base, email: STORE_CONTACT_EMAIL },
