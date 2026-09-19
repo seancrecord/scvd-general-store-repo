@@ -174,7 +174,10 @@ the store either way.
 1. **Derive or refuse — never a hand-typed value beside the code it
    describes.** Five in one day: the rotation count, "never rotated,"
    the /attestation field list, the alert-condition count, the skill
-   version. All now derive, or make the tool fail.
+   version. All now derive, or make the tool fail. *Held for chain
+   ids since 2026-09-19:* `npm run chains:check` refuses any CAIP-2
+   literal in `src/` that no register file owns, so a mistyped id
+   cannot ship; the registers are named in `scripts/chain-ids.mjs`.
 2. **Identifiers name immutable things, never slots.** The kid that
    read `#key-1` meaning "current" would have broken every receipt at
    the next rotation. "Current" is a query, not a name.

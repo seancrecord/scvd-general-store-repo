@@ -1,4 +1,5 @@
 import { getMenuItem } from "@/store/menu";
+import { BASE_NETWORK } from "@/lib/payment-networks";
 import { buyerLinks } from "@/lib/buyer-contract";
 import { VERIFICATION_SKILL } from "@/store/verification-skill";
 import { readMppCore, type MppCoreBlock } from "@/services/mpp-core";
@@ -435,8 +436,8 @@ export const ACCEPT_REQUIRED_FIELDS = [
   "payTo",
 ] as const;
 
-/** Base mainnet, the only network this store's own till accepts. */
-const MAINNET = "eip155:8453";
+/** Base mainnet, read from the checkout register rather than retyped (rule 1). */
+const MAINNET = BASE_NETWORK;
 const PROBE_TIMEOUT_MS = 8000;
 const MAX_BODY_BYTES = 256 * 1024;
 
