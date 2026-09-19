@@ -1066,8 +1066,17 @@ const BASE = "https://scvd.store";
 // sentence beside its money sentence (rule 60.2's third sentence, which
 // the guide carried for two rooms and now carries for all nine); with
 // those seven insertions removed, c7f04b55 reproduces.
+// 2026-09-19, the field study (FIELD_STUDY.md): the guide gains the
+// instrument in two places — the field study between the bounty board
+// and regulars' credit under "Money that flows the other way" (whose
+// opening line now counts three doors rather than two), and a FIELD
+// STUDY block beside the A2A desk under "More ways to use the store",
+// which is the section that also rides the index. Nothing else in the
+// document was touched, and that was verified rather than asserted:
+// with src/routes/llms.ts reverted to its pre-field-study state, the
+// prior 1c8eed2a reproduced exactly.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1c8eed2a53a5672b5875064767b8de234628eef04f204b35b8078746d665f470";
+  "65a0775f58bd9795f0218838e7e19005d3c16c15928860f8168b9c8f3134aa8f";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1116,8 +1125,18 @@ describe("nothing was rewritten", () => {
     // mpp-shape; with those two lines restored, a03d8e21 reproduced.
     // 2026-09-19, later: re-taken with the seven free-first sentences
     // beside their money sentences; with them removed, 6fb54921 reproduces.
+    // 2026-09-19, the field study (FIELD_STUDY.md): three additions to
+    // the guide and nothing else touched. "Money that flows the other
+    // way" opens "Three doors" rather than "Two" and gains the field
+    // study between the bounty board and regulars' credit; "More ways
+    // to use the store" gains a FIELD STUDY block beside the A2A desk,
+    // which is what puts the room on the INDEX as well as in the full
+    // prose. Verified the way this pin is meant to be verified rather
+    // than asserted: with src/routes/llms.ts reverted to its pre-field-
+    // study state and nothing else changed, 423001c4 below and the
+    // 1c8eed2a in GUIDE_DIGEST_BEFORE_THE_SPLIT both reproduced exactly.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "423001c45ee6ecac0a46e16303ba72e8772bcb10f5a3a9981f8f118cb6321e40",
+      "28afd25f9e5bf59a93d646cf2b18b901d196f1e30c6285ca6a72c114d8cd524c",
     );
   });
 

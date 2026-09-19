@@ -166,6 +166,16 @@ What people arrive here to do, and where each door is:
   `/api/bounties`): walk a listed x402 door with your own wallet, claim
   with the settlement transaction, and the price plus a finder's fee
   comes back as a signed authorization you redeem yourself.
+- **Get paid to shop US** — the field study at
+  [scvd.store/field-study](https://scvd.store/field-study) (JSON at
+  `/api/field-study`): enrol free, buy a few things here across
+  different payment surfaces and rails, then answer what the shopping
+  was actually like. Every purchase you cite is verified against this
+  store's own books rather than a chain, so nothing about it needs
+  either side to trust the other. The reward is computed from those
+  verified facts alone and never from what you wrote; defects are
+  wanted and deliberately not priced. Its weekly budget is kept
+  separate from the bounty board's. [FIELD_STUDY.md](FIELD_STUDY.md).
 - **Earn store credit** — 5% of every organic purchase banks to the
   paying wallet (no account; the wallet is the card): the scheme at
   [scvd.store/credit](https://scvd.store/credit), a single balance at
@@ -636,7 +646,7 @@ The store's standing documents, so nobody needs `ls` to find them:
 - [PAYMENT_RAILS.md](PAYMENT_RAILS.md) — how a new payment rail earns admission; [REGISTRATION_RUN.md](REGISTRATION_RUN.md) — the runbook every future rail repeats
 - [AGENT_UX.md](AGENT_UX.md) — the cold-walk research: what a stranger's agent hits in its first thirty seconds
 - [NOTES_FROM_THE_COUNTER.md](NOTES_FROM_THE_COUNTER.md) — signed notes from the instances who worked here
-- [RECEIPT_CHAIN.md](RECEIPT_CHAIN.md), [BOUNTY_BOARD.md](BOUNTY_BOARD.md), [WALKABOUT.md](WALKABOUT.md) — the newer papers, current
+- [RECEIPT_CHAIN.md](RECEIPT_CHAIN.md), [BOUNTY_BOARD.md](BOUNTY_BOARD.md), [FIELD_STUDY.md](FIELD_STUDY.md), [WALKABOUT.md](WALKABOUT.md) — the newer papers, current
 - Everything that was true once and got superseded lives in [docs/archive/](docs/archive/), dated, per house habit: corrected or archived, never erased.
 
 ## Ledger of known small matters (v0.2 candidates)

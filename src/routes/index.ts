@@ -110,6 +110,7 @@ export { launchCheckRoutes } from "@/routes/launch-check";
 export { openingDayRoutes } from "@/routes/opening-day";
 export { provenanceRoutes } from "@/routes/provenance";
 export { bountyRoutes } from "@/routes/bounties";
+export { fieldStudyRoutes } from "@/routes/field-study";
 export { creditRoutes } from "@/routes/credit";
 export { pricingRoutes } from "@/routes/pricing";
 export { railsRoutes } from "@/routes/rails";

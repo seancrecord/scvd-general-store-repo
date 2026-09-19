@@ -503,6 +503,26 @@ export const KV_KEYS = {
    */
   bountyPlan: "bounty_plan",
   /**
+   * THE FIELD STUDY (FIELD_STUDY.md): paid agent research on this
+   * store's OWN user journey. COUNTERS, and every key here is
+   * deliberately disjoint from the bounty board's above — a separate
+   * weekly budget so a busy week of studies cannot quietly eat the
+   * money set aside for door walks, and a separate replay guard
+   * because the thing claimed once is a PURCHASE in our own books
+   * rather than a settlement on somebody else's chain.
+   *
+   * `studyLeg` is the one-purchase-one-study guard; `studyWeekPayout`
+   * is the one-study-per-wallet-per-week guard, keyed by the ISO week
+   * and the lowercased payout address so it expires by being a
+   * different key next Monday rather than by a sweep.
+   */
+  study: (studyId: string): string => `study:${studyId}`,
+  studyPrefix: "study:",
+  studyBudget: (weekKey: string): string => `study_budget:${weekKey}`,
+  studyLeg: (purchaseId: string): string => `study_leg:${purchaseId}`,
+  studyWeekPayout: (weekKey: string, payoutLower: string): string =>
+    `study_week:${weekKey}:${payoutLower}`,
+  /**
    * Regulars' credit (services/store-credit.ts): the per-wallet
    * rebate balance, the outstanding-liability aggregate the books
    * watch, and the single-use cash-out challenge. COUNTERS. Keys are

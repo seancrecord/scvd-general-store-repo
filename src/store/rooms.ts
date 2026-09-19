@@ -420,6 +420,15 @@ export const ROOMS: readonly Room[] = [
    */
   { path: "/rails", name: "Where the money settles" },
   { path: "/bounties", name: "The Bounty Board" },
+  /**
+   * THE FIELD STUDY (2026-09-19), and it sits beside the board on
+   * purpose: an agent reading one is demonstrably the kind of agent
+   * that would take the other. What it is NOT is the same instrument —
+   * the board pays a stranger to walk somebody else's door, this pays
+   * them to walk ours and say what it was like. Separate budget,
+   * separate rules, both rooms say so in their own words.
+   */
+  { path: "/field-study", name: "The Field Study" },
   { path: "/credit", name: "Regulars' credit" },
   { path: "/rights", name: "What's yours" },
   /**

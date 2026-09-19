@@ -3583,6 +3583,27 @@ adminRoutes.get("/admin/bounties", async (c) => {
   const { renderBountiesPage, moneyOutAllTime } = await import(
     "@/pages/admin/bounties-page"
   );
+  /*
+   * THE FIELD STUDY'S SHELF (FIELD_STUDY.md, 2026-09-19), loaded on
+   * the same page and settled separately: five reads, every one of
+   * them allowed to fail without taking the bounty board's desk down
+   * with it. The keeper asked for both instruments in one place; that
+   * must not mean one bad KV read costs him the other's numbers.
+   */
+  const [studyBoard, studies, studyFindingsRead, studyLedger, studyAttempts] =
+    await Promise.allSettled([
+      import("@/services/field-study").then(({ fieldStudyBoard }) =>
+        fieldStudyBoard(c.env),
+      ),
+      import("@/services/field-study").then(({ allStudies }) => allStudies(c.env)),
+      import("@/services/study-findings").then(({ studyFindings }) =>
+        studyFindings(c.env),
+      ),
+      import("@/lib/metrics").then(({ readStudyLedger }) => readStudyLedger(c.env)),
+      import("@/lib/metrics").then(({ listRecentStudyEvents }) =>
+        listRecentStudyEvents(c.env, 40),
+      ),
+    ]);
   const porchLedger = shelf(porch, null, "the porch", notes);
   const organic = (surface: string): number =>
     porchLedger?.surfaces[surface]?.["organic"] ?? 0;
@@ -3623,6 +3644,14 @@ adminRoutes.get("/admin/bounties", async (c) => {
       creditHolders: shelf(creditHolders, null, "the credit ledger", notes),
       redemptions,
       now: new Date().toISOString(),
+      fieldStudy: {
+        board: shelf(studyBoard, null, "the field study", notes),
+        studies: shelf(studies, null, "the study records", notes),
+        findings: shelf(studyFindingsRead, null, "the study findings", notes),
+        ledger: shelf(studyLedger, null, "the study ledger", notes),
+        attempts: shelf(studyAttempts, [], "study events", notes),
+        now: new Date().toISOString(),
+      },
       loadNotes: notes,
     }),
   );

@@ -4,6 +4,17 @@ Status: BUILT 2026-08-19 (the keeper's ruling stands: build and
 iterate, no spec gate) — this document describes what runs and
 iterates with it.
 
+## Its sibling, pointed the other way
+
+[FIELD_STUDY.md](FIELD_STUDY.md) is this board turned around: it pays
+strangers to shop THIS store across its different payment surfaces and
+rails, and then answer for what the shopping was like. The difference
+that matters is evidence, not direction — a bounty claim rests on a
+chain this store can read and a stranger's unverifiable account of the
+rest, while a study's every cited purchase is a row in our own books.
+Separate weekly budget, separate rules, separate refusals, and a walker
+may take both.
+
 ## The idea, which is older than the internet
 
 Every real-world chain pays mystery shoppers: strangers who buy,
