@@ -1,5 +1,6 @@
 import { recordPaymentOperation } from "@/lib/payment-operations";
 import { mppPaymentHeader, nativeOfferAdvertised } from "@/lib/mpp-checkout-capability";
+import { isQuoteOnlyMethod, quotedMethod } from "@/lib/quote-method";
 import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { publicationResponse, type PublicationSnapshot } from "@/lib/publication-recovery";
@@ -676,6 +677,11 @@ export function gateSignals(c: Context<HonoEnv>): EventSignals {
 export const PAYMENT_HEADER = "PAYMENT-SIGNATURE";
 export const PAYMENT_HEADER_V1_ALIAS = "X-PAYMENT";
 
+/** Both spellings, lowercased once, for the reads that must find neither. */
+const PAYMENT_HEADER_NAMES: ReadonlySet<string> = new Set(
+  [PAYMENT_HEADER, PAYMENT_HEADER_V1_ALIAS].map((name) => name.toLowerCase()),
+);
+
 /**
  * THE ENVELOPE, IN WHICHEVER DIALECT IT ARRIVED (task #50).
  *
@@ -701,11 +707,30 @@ export const PAYMENT_HEADER_V1_ALIAS = "X-PAYMENT";
  * truthiness. A second reading would be a second opinion.
  */
 export function paymentHeaderOf(c: Context<HonoEnv>): string | undefined {
+  // A HEAD is answered, never charged (lib/quote-method): a signature
+  // riding one is not read, so no caller downstream can act on it.
+  if (isQuoteOnlyMethod(c.req.method)) return undefined;
   return c.req.header(PAYMENT_HEADER) ?? c.req.header(PAYMENT_HEADER_V1_ALIAS);
 }
 
 class DialectTolerantAdapter extends HonoAdapter {
+  /**
+   * THE SDK IS TOLD THE PAYING METHOD, so a HEAD matches the same
+   * `GET /path` route config a GET does and is quoted the same terms
+   * — and it is told NO PAYMENT, so the one thing it will not do on a
+   * HEAD is verify and settle one. Both halves live here because both
+   * are answers to "what did the client send", which is this class's
+   * whole job; splitting them would leave the gate able to charge a
+   * knock it cannot deliver to.
+   */
+  override getMethod(): string {
+    return quotedMethod(super.getMethod());
+  }
+
   override getHeader(name: string): string | undefined {
+    if (isQuoteOnlyMethod(super.getMethod()) && PAYMENT_HEADER_NAMES.has(name.toLowerCase())) {
+      return undefined;
+    }
     const direct = super.getHeader(name);
     if (direct !== undefined) {
       return direct;
@@ -788,8 +813,12 @@ export function createPaymentGate(loadNative?: () => Promise<NativeCheckout>): M
   return async (c, next) => {
     const startedAt = Date.now();
     let response: Response | void;
+    // Not on a HEAD: the native lane settles too, and a settled HEAD
+    // is money out with the goods thrown away by the runtime.
+    const mpp = isQuoteOnlyMethod(c.req.method)
+      ? undefined
+      : mppPaymentHeader(c.req.header("Authorization"));
     try {
-      const mpp = mppPaymentHeader(c.req.header("Authorization"));
       response = mpp
         ? loadNative
           ? await (await loadNative()).runMppCheckout(c, next, mpp)
@@ -813,7 +842,7 @@ export function createPaymentGate(loadNative?: () => Promise<NativeCheckout>): M
     if (status !== undefined) recordPaymentOperation(c, status);
     if (status === 402) {
       attachChallengeHint(c, response);
-      if (loadNative && !paymentHeaderOf(c) && !mppPaymentHeader(c.req.header("Authorization")) && nativeOfferAdvertised(c.env, c.req.path, c.req.method)) {
+      if (loadNative && !paymentHeaderOf(c) && !mpp && nativeOfferAdvertised(c.env, c.req.path, c.req.method)) {
         // Optional negotiation cannot take the independently usable x402 door down.
         try { await (await loadNative()).attachMppChallenge(c, response ?? c.res); } catch { /* no native offer */ }
       }
@@ -902,7 +931,10 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const context: HTTPRequestContext = {
     adapter,
     path: c.req.path,
-    method: c.req.method,
+    // Every paid route is keyed `GET /path`, and a HEAD asks about the
+    // same door (lib/quote-method). Before 2026-09-20 it matched none
+    // of them and was waved through to a 402 that quoted nothing.
+    method: quotedMethod(c.req.method),
     [DECLINE_SLOT_KEY]: declineSlot,
   } as HTTPRequestContext;
 
