@@ -121,8 +121,12 @@ describe("the independent records on the panel", () => {
     ]));
     expect(groups.find((group) => group.id === "ucp")?.status).toBe("available");
     expect(groups.find((group) => group.id === "ucp")?.records).toEqual([
+      { url: "https://ucptools.dev/directory/scvd.store" },
       { url: "https://ucpchecker.com/check/scvd.store" },
     ]);
+    expect(groups.flatMap((group) => group.records).some(
+      (record) => new URL(record.url).hostname === "ucpregistry.com",
+    )).toBe(false);
     const urls = groups.flatMap((group) => group.records.map((record) => record.url));
     for (const group of groups) {
       for (const record of group.records) expect(Object.keys(record)).toEqual(["url"]);
