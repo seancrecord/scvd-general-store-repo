@@ -20,6 +20,13 @@ import { usdcPaymentHandlers } from "@/lib/ucp/payments/usdc-x402";
 import { SCVD_NAMESPACE, UCP_VERSION } from "@/lib/ucp/version";
 import { acceptedNetworks } from "@/lib/payment-networks";
 import { ucpCheckoutStore, type StoredCheckout } from "@/services/ucp-checkout-store";
+import {
+  IDEMPOTENCY_KEY_MAX_LENGTH,
+  IDEMPOTENCY_KEY_MIN_LENGTH,
+  idempotencySlotName,
+  idempotentPurchaseSlot,
+  usableIdempotencyKey,
+} from "@/lib/idempotency";
 import { admitUcpCompletion } from "@/services/ucp-admission";
 import { walkToSettlementBoundary } from "@/services/ucp-settlement-boundary";
 import { realSettlementProducer } from "@/services/ucp-settlement-producer";
@@ -228,8 +235,79 @@ ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions", async (c) => {
 
   const inputs = readInputs(body);
   const missing = missingInputs(lines, inputs);
-  const id = newCheckoutId();
   const now = Date.now();
+
+  /**
+   * IDEMPOTENCY, WHERE THE CONTRACT PUTS IT AND WHERE IT ACTUALLY BIT.
+   *
+   * `Idempotency-Key` is REQUIRED on this operation and the store read
+   * it nowhere, so a retried Create — a lost response, a timeout, an
+   * ordinary retry policy — minted a second checkout with a second
+   * quote. The other three mutating operations already kept the
+   * promise by other means; this one did not.
+   *
+   * SCOPED TO THE AGENT, NOT THE KEY ALONE. A key is unique to the
+   * client that generated it; honouring it storewide would hand one
+   * platform's checkout to whoever else happened to generate the same
+   * string. `UCP-Agent` is the identity the contract already requires
+   * on every request, so it is the scope, and the pair is hashed
+   * through the same one-way derivation the x402 door's slots use.
+   *
+   * A KEY THIS STORE CANNOT HONOUR IS SAID OUT LOUD. A discarded key
+   * fails silently by design — the checkout is still created, and a
+   * retry still duplicates — so a caller who asked for idempotency and
+   * cannot have it is told which half was missing rather than left to
+   * discover it on the retry.
+   */
+  const presentedKey = c.req.header("Idempotency-Key");
+  const agent = c.req.header("UCP-Agent")?.trim();
+  const key = usableIdempotencyKey(presentedKey);
+  const unhonouredKey = presentedKey
+    ? !key
+      ? `The Idempotency-Key sent is ${presentedKey.length} characters; this store honours ${IDEMPOTENCY_KEY_MIN_LENGTH} to ${IDEMPOTENCY_KEY_MAX_LENGTH}. It was not applied, so a retry of this request would create a second checkout.`
+      : !agent
+        ? "An Idempotency-Key was sent without a UCP-Agent header. A key identifies a retry only within the client that generated it, so this store scopes it to the agent and cannot apply one without it; the key was not applied, and a retry of this request would create a second checkout."
+        : null
+    : null;
+
+  let id = newCheckoutId();
+  if (key && agent) {
+    const claim = await idempotentPurchaseSlot(
+      c.env,
+      await idempotencySlotName("ucp-checkout-create", agent, key),
+    ).claimUcpCheckout({ proposed: id, nowMs: now });
+    id = claim.checkout_id;
+    if (!claim.created) {
+      /**
+       * The key already names a checkout. Hand back THAT one, in the
+       * state it is actually in — which is the whole point: the
+       * caller's first request may have gone on to be quoted, revised
+       * or paid, and a retry must not describe a checkout that never
+       * happened. A claim whose checkout is missing (the first attempt
+       * died between the claim and the create) falls through and
+       * creates it under the claimed id, which is idempotent per
+       * instance, so the retry heals the gap rather than widening it.
+       */
+      const held = await ucpCheckoutStore(c.env, id).readUcpCheckout();
+      if (held) {
+        const original = plain(held);
+        return c.json(
+          checkoutDocument(original, base, {
+            paymentHandlers: handlersFor(c, original),
+            messages: [
+              {
+                type: "info",
+                code: "idempotent_replay",
+                content: `This Idempotency-Key already opened a checkout, so this is that checkout as it stands now rather than a second one. Send a fresh key to open another.`,
+              },
+            ],
+          }),
+          201,
+        );
+      }
+    }
+  }
+
   const store = ucpCheckoutStore(c.env, id);
   let checkout: StoredCheckout = plain(
     await store.createUcpCheckout({ id, lines, inputs, nowMs: now }),
@@ -328,7 +406,217 @@ ucpCheckoutRoutes.post("/ucp/v1/checkout-sessions", async (c) => {
     const quoted = await store.quoteUcpCheckout({ ...quote, nowMs: now });
     if (quoted.ok) checkout = plain(quoted.checkout);
   }
-  return c.json(checkoutDocument(checkout, base, { paymentHandlers: handlersFor(c, checkout) }), 201);
+  return c.json(
+    checkoutDocument(checkout, base, {
+      paymentHandlers: handlersFor(c, checkout),
+      ...(unhonouredKey
+        ? { messages: [{ type: "warning", code: "idempotency_key_ignored", content: unhonouredKey }] }
+        : {}),
+    }),
+    201,
+  );
+});
+
+/**
+ * UPDATE CHECKOUT: A FULL REPLACEMENT, AND WHAT IT COSTS.
+ *
+ * The contract is explicit that this is a replacement rather than a
+ * patch — the body is a whole checkout, and what it says is what the
+ * checkout becomes. That makes it the operation that withdraws a
+ * quote: changing the lines, the inputs or the rail bumps the version
+ * and throws the payment terms away, which is exactly what makes a
+ * signature against the old terms refusable rather than dangerous
+ * (see UcpCheckoutStore.revise).
+ *
+ * THE ONE STATE IT IS FORBIDDEN IN, and the one this store adds.
+ * The contract forbids an update while the checkout is
+ * `complete_in_progress`: leave it unchanged and answer with the
+ * current checkout and a recoverable error. This store refuses on a
+ * bound completion too, which is the same fact one moment earlier —
+ * between admission and the settlement boundary a checkout still
+ * reads `ready_for_complete` while a payment it already owns is on
+ * its way to the facilitator. Re-quoting underneath that would
+ * withdraw the terms the money is moving against. Money fails closed.
+ *
+ * AN IDENTICAL UPDATE CHANGES NOTHING, deliberately. The contract
+ * says duplicate requests remain subject to replay protection, and
+ * this store has no idempotency key at this layer; what it has is the
+ * ability to notice that the replacement is the checkout it already
+ * holds. A retried update must not withdraw the quote the buyer is
+ * signing against merely because their first request's response was
+ * lost.
+ *
+ * EVERY ANSWER IS 200 ONCE THE CHECKOUT EXISTS. The contract defines
+ * one response — "the current Checkout state after the Update
+ * request, whether the update was applied or rejected" — so a refusal
+ * is a checkout carrying a message, not a status code a caller has to
+ * interpret. An id that names no checkout is the exception: there is
+ * no checkout state to return.
+ */
+ucpCheckoutRoutes.put("/ucp/v1/checkout-sessions/:id", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const id = c.req.param("id");
+  const store = ucpCheckoutStore(c.env, id);
+  const stored = await store.readUcpCheckout();
+  if (!stored) return c.json(errorBody("not_found", "No such checkout."), 404);
+  let checkout = plain(stored);
+
+  const say = (
+    state: StoredCheckout,
+    message?: { type: "error" | "warning" | "info"; code: string; severity?: string; content: string },
+  ) =>
+    c.json(
+      checkoutDocument(state, base, {
+        paymentHandlers: handlersFor(c, state),
+        ...(message ? { messages: [message] } : {}),
+      }),
+      200,
+    );
+
+  if (checkout.status === "complete_in_progress" || checkout.completion) {
+    return say(checkout, {
+      type: "error",
+      code: "checkout_not_payable",
+      severity: "recoverable",
+      content:
+        "A completion is being processed for this checkout, so it cannot be replaced: money may already be moving against the terms it holds. Nothing was changed. Read this checkout — it becomes completed with its order, or payable again if the payment is declined, and it is updatable again then.",
+    });
+  }
+  if (checkout.status === "completed" || checkout.status === "canceled") {
+    return say(checkout, {
+      type: "error",
+      code: "checkout_not_payable",
+      severity: "unrecoverable",
+      content:
+        checkout.status === "completed"
+          ? "This checkout is paid and has an order. A finished sale is not editable; start a new checkout."
+          : "This checkout was withdrawn. A canceled checkout is a finished fact; start a new one.",
+    });
+  }
+
+  let body: Record<string, unknown> = {};
+  try {
+    body = (await c.req.json()) as Record<string, unknown>;
+  } catch {
+    return say(checkout, {
+      type: "error",
+      code: "not_found",
+      severity: "requires_buyer_input",
+      content:
+        "Update Checkout is a full replacement: send the whole checkout as JSON, with line_items. Nothing was changed.",
+    });
+  }
+
+  let lines: CheckoutLineTerms[];
+  try {
+    lines = linesFrom(body);
+  } catch (error) {
+    return say(checkout, {
+      type: "error",
+      code: "item_unavailable",
+      severity: "requires_buyer_input",
+      content: `${error instanceof Error ? error.message : "Unusable line items."} Nothing was changed.`,
+    });
+  }
+
+  const launch = ucpLaunchStatus(c.env);
+  if (launch.open) {
+    const closedItem = lines.find((line) => !ucpItemSellable(c.env, line.item_id));
+    if (closedItem) {
+      return say(checkout, {
+        type: "error",
+        code: "item_unavailable",
+        severity: "unrecoverable",
+        content: `${closedItem.item_id} is not open for UCP checkout on this deployment yet; the items that are: ${launch.items.join(", ")}. Nothing was changed. It is still for sale over x402 at ${base}/api/buy/${closedItem.item_id}, or through the MCP door at ${base}/mcp.`,
+      });
+    }
+  }
+
+  const rails = launch.open ? ucpCheckoutRails(c.env) : acceptedNetworks(c.env);
+  const asked =
+    typeof (body[SCVD_NAMESPACE] as Record<string, unknown>)?.network === "string"
+      ? String((body[SCVD_NAMESPACE] as Record<string, unknown>).network)
+      : (checkout.quote?.terms.network ?? rails[0]);
+  if (!asked || !rails.includes(asked)) {
+    return say(checkout, {
+      type: "error",
+      code: "payment_failed",
+      severity: "requires_buyer_input",
+      content: `UCP checkout settles on ${rails.join(", ")} here. "${asked}" is not one of them. Nothing was changed.`,
+    });
+  }
+
+  const inputs = readInputs(body);
+  /**
+   * THE REPLACEMENT THAT REPLACES NOTHING. Same lines, same inputs,
+   * same rail as the checkout already holds: the buyer's second copy
+   * of the same request, and the right answer is the checkout they
+   * already have — same version, same quote, same signature still
+   * good.
+   */
+  const unchanged =
+    JSON.stringify(checkout.lines) === JSON.stringify(lines) &&
+    JSON.stringify(checkout.inputs ?? {}) === JSON.stringify(inputs) &&
+    checkout.quote?.terms.network === asked;
+  if (unchanged) return say(checkout, undefined);
+
+  const missing = missingInputs(lines, inputs);
+  const now = Date.now();
+  const revised = await store.reviseUcpCheckout({
+    lines,
+    inputs,
+    /**
+     * A replacement that drops a required input is no longer payable,
+     * and the status says so rather than leaving a `ready_for_complete`
+     * checkout with nothing behind it. quoteUcpCheckout puts it back
+     * when the terms are issuable again.
+     */
+    ...(missing.length > 0 ? { status: "incomplete" as const } : {}),
+    nowMs: now,
+  });
+  if (!revised.ok) {
+    const state = revised.checkout ? plain(revised.checkout) : checkout;
+    return say(state, {
+      type: "error",
+      code: revised.reason === "expired" ? "checkout_expired" : "checkout_not_payable",
+      severity: "unrecoverable",
+      content:
+        revised.reason === "expired"
+          ? "This checkout expired before the update arrived. Nothing was changed; start a new checkout."
+          : "This checkout cannot be replaced in its current state. Nothing was changed.",
+    });
+  }
+  checkout = plain(revised.checkout);
+
+  if (missing.length > 0) {
+    return say(checkout, {
+      type: "error",
+      code: "eligibility_invalid",
+      severity: "requires_buyer_input",
+      content: `This item needs ${missing.join(", ")} before it can be made. Send them under ${SCVD_NAMESPACE}.inputs; the schema for each is at ${base}/ucp/schemas/items/{item_id}.input.json.`,
+    });
+  }
+
+  for (const line of lines) {
+    const item = getMenuItem(line.item_id);
+    if (!item) continue;
+    const capacity = await capacityVerdict(c.env, item);
+    if (!capacity.ok) {
+      return say(checkout, {
+        type: "error",
+        code: "out_of_stock",
+        severity: "recoverable",
+        content: capacity.reason,
+      });
+    }
+  }
+
+  const quote = await quoteFor(c, checkout, asked);
+  if (quote) {
+    const quoted = await store.quoteUcpCheckout({ ...quote, nowMs: now });
+    if (quoted.ok) checkout = plain(quoted.checkout);
+  }
+  return say(checkout, undefined);
 });
 
 ucpCheckoutRoutes.get("/ucp/v1/checkout-sessions/:id", async (c) => {

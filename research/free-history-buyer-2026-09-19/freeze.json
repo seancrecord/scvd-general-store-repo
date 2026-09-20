@@ -1,0 +1,40 @@
+{
+  "frozen_at": "2026-09-19T16:02:28.939314+00:00",
+  "source_commit": "89268979dcce9019855b77d34ffc40255c11956a",
+  "plan_sha256": "46cbfa32c0681c633cc74a82e3fdcb7706b6ebf17df7901c3c870791ca011460",
+  "controller_tests": {
+    "passed": 236,
+    "failed": 0
+  },
+  "public_readback": [
+    {
+      "file": "skill.md",
+      "url": "https://scvd.store/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "read_at": "2026-09-19T16:02:26.945162+00:00",
+      "status": 200,
+      "bytes": 10209,
+      "sha256": "f6a56576ff0095b026acbb2f7be51655d935acda44c534c212e4e31f79adcce5"
+    },
+    {
+      "file": "entry.md",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "read_at": "2026-09-19T16:02:27.349700+00:00",
+      "status": 200,
+      "bytes": 10209,
+      "sha256": "f6a56576ff0095b026acbb2f7be51655d935acda44c534c212e4e31f79adcce5"
+    },
+    {
+      "file": "host.json",
+      "url": "https://scvd.store/corpus/host/lionx402.com.json",
+      "read_at": "2026-09-19T16:02:27.539690+00:00",
+      "status": 200,
+      "bytes": 9707,
+      "sha256": "2c504671e10f8c0fc293d527576486e1281ad5ea3af44fb2f55361c19809842d"
+    }
+  ],
+  "observation_at_freeze": "2026-09-07T02:30:20.531Z",
+  "freshness_limit_ms": 1209600000,
+  "awake_policy": "caffeinate -i wraps each native invocation; no concurrent native session or heavy tests; existing timing detector and caps unchanged",
+  "native_attempt_policy": "Fresh qualification once per buyer host and offline recipient; four planned buyers, at most one recipient per eligible completed buyer; no retries or budget/freshness expansion.",
+  "scope": "New separate directed zero-spend cohort after PR #848: test the combined free signed-history routing and observation-date corrections under unchanged models, budgets, qualification and freshness rules. Not causal attribution, unbranded discovery, paid delivery or organic demand."
+}

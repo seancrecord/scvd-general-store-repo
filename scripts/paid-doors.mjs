@@ -21,7 +21,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail,
+  PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail, windowTrustworthy, railCoveredByRun,
 } from "./lib/paid-doors.mjs";
 import { railFor } from "./lib/evm-chains.mjs";
 import { useEnvProxy } from "./lib/proxy-fetch.mjs";
@@ -114,10 +114,44 @@ async function resolvePayTo(url) {
 }
 
 /**
+ * THE HORIZON CANARY (2026-09-19, StillOS Notary's third failure mode).
+ *
+ * A provider that prunes logs past a horizon returns an EMPTY ARRAY,
+ * not an error, for any range older than it keeps. That is byte-identical
+ * to a door nobody paid. The retry catch above cannot see it, because
+ * nothing failed.
+ *
+ * So before any empty window is allowed to become a zero, ask the same
+ * range a question we already know the answer to: were there ANY USDC
+ * transfers at all in it? On a mainnet USDC contract there are
+ * thousands per hundred blocks. An empty answer there is the provider
+ * telling us it does not serve this range, and the window is reported
+ * incomplete rather than quiet.
+ *
+ * One extra call, and only on the doors that would otherwise read
+ * ZERO_OBSERVED — the only rows where the difference can be believed.
+ */
+async function horizonServes(fromBlock, toBlock) {
+  const from = BigInt(fromBlock);
+  const end = BigInt(toBlock);
+  const probeTo = from + 99n > end ? end : from + 99n;
+  try {
+    const page = await rpc("eth_getLogs", [{
+      address: RAIL_USDC, topics: [TRANSFER_TOPIC],
+      fromBlock: hex(from), toBlock: hex(probeTo),
+    }]);
+    return { served: Array.isArray(page) && page.length > 0, probed: `${from}-${probeTo}`, saw: Array.isArray(page) ? page.length : null };
+  } catch (error) {
+    return { served: false, probed: `${from}-${probeTo}`, saw: null, error: error?.message ?? String(error) };
+  }
+}
+
+/**
  * The transfer window, and whether it was COMPLETE. A provider that
  * caps a range hands back an empty array that looks exactly like a
  * quiet door, so a capped read is reported as incomplete rather than
  * as a zero. The window is walked in spans and any failure marks it.
+ * An empty result is additionally canaried against the horizon above.
  */
 async function transferWindow(payTo, fromBlock, toBlock, span = LOG_SPAN) {
   const logs = [];
@@ -137,6 +171,17 @@ async function transferWindow(payTo, fromBlock, toBlock, span = LOG_SPAN) {
       return { logs, complete: false, incomplete_because: `${error?.message ?? error} (span ${from}-${to})` };
     }
     from = to + 1n;
+  }
+  if (logs.length === 0) {
+    // Nothing found. Before that becomes a zero, prove the provider
+    // serves this range at all. The rule is in the library; this is
+    // only the request that feeds it.
+    const canary = await horizonServes(fromBlock, toBlock);
+    const trust = windowTrustworthy({ logs, canary });
+    if (!trust.trustworthy) {
+      return { logs, complete: false, incomplete_because: `${trust.because} Refusing to read it as a zero.`, horizon_canary: canary };
+    }
+    return { logs, complete: true, horizon_canary: canary };
   }
   return { logs, complete: true };
 }
@@ -199,6 +244,9 @@ async function readEvmRail({ payTo, scheme }) {
   if (nonce !== null) row.nonce = Number(BigInt(nonce));
   if (readError) { row.read_failed = true; row.read_error = readError; }
   if (window && !window.complete) row.incomplete_because = window.incomplete_because;
+  // A guard nobody can see is worth no more than no guard. When a zero
+  // rests on a canaried window, the row carries the canary.
+  if (window?.horizon_canary) row.horizon_canary = window.horizon_canary;
   return row;
 }
 
@@ -211,7 +259,7 @@ async function readEvmRail({ payTo, scheme }) {
 function outOfReachRail({ rail, payTo }) {
   const row = readDoorRail({ rail: rail ?? "non-evm", payTo: null, atBlock, fromBlock });
   row.advertised_pay_to = payTo ?? null;
-  row.established_by = `this door advertises ${payTo ?? "an address"} on ${rail ?? "an unnamed rail"}, which this instrument does not read; UNKNOWN is a gap in the observer, not a finding about the door`;
+  row.established_by = `this door advertises ${payTo ?? "an address"} on ${rail ?? "an unnamed rail"}, which this run does not read (this reader holds one rail per run and is reading ${RAIL_FLAG}); UNKNOWN is a gap in the observer, not a finding about the door`;
   return row;
 }
 
@@ -223,8 +271,20 @@ for (const door of doors) {
     // is what the door rule requires before a zero may stand.
     entry.pinned_rails = door.rails.length;
     for (const rail of door.rails) {
+      /*
+       * A 0x ADDRESS IS NOT A PERMISSION TO READ IT HERE (2026-09-19).
+       * This reader holds one rail per run — RAIL_FLAG — and every EVM
+       * chain uses the same address format. Reading a pinned Polygon
+       * payTo against Base's USDC contract answers a question nobody
+       * asked and answers it confidently: the address exists on both
+       * chains, the call succeeds, and the row looks like a reading.
+       * That is StillOS's truncation near-miss in a third coat — a
+       * well-formed wrong value. A rail is read only when the door
+       * pinned it to the rail this run is reading.
+       */
       const isEvm = typeof rail.payTo === "string" && rail.payTo.startsWith("0x");
-      entry.rails.push(isEvm ? await readEvmRail(rail) : outOfReachRail(rail));
+      const thisRail = railCoveredByRun(rail.rail, RAIL_FLAG);
+      entry.rails.push(isEvm && thisRail ? await readEvmRail(rail) : outOfReachRail(rail));
     }
   } else {
     const resolved = door.payTo

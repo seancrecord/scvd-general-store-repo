@@ -137,8 +137,47 @@ async function bodyOf(response) {
 }
 function aborted(signal) { if (signal) signal.throwIfAborted(); }
 
+/**
+ * WHAT A DUPLICATE SUBMISSION IS TOLD, when the page will not choose between
+ * two credentials for one quote. One quote is one purchase; two signed
+ * instruments against it are two payments for one intent, and picking either
+ * is the page deciding with somebody else's money.
+ */
+const CONTESTED = "This purchase is already in flight under a DIFFERENT credential. Wait for that submission's result; no second request was sent. One quote carries one payment: to pay twice on purpose, request a second quote.";
+const INTERRUPTED_X402 = "The purchase response was interrupted; payment status is unknown. Retry this quote with the same signed payment and key, or recover the original request. Do not authorize a new purchase to recover this one.";
+const INTERRUPTED_NATIVE = "The purchase response was interrupted; payment status is unknown. Retry this quote with the same signed credential and key, or recover the original request. Do not sign a new credential to recover this one.";
+const UNREADABLE_QUOTE = "The free quote could not be read. No payment was sent.";
+
 export function createPurchaseBridge({ origin, itemIds, fetch: request = globalThis.fetch, now = Date.now, randomId = () => crypto.randomUUID() }) {
   const quotes = new Map();
+  /**
+   * THE FREE KNOCKS CURRENTLY OUT, one entry per purchase — the page's answer
+   * to two tool calls for ONE intent (PROBLEMS #27, from CV's reading of
+   * quicknode-x402's payment-in-flight mutex, 2026-09-19).
+   *
+   * Every quote used to mint its own random retry key, so an agent that
+   * fired `quote` twice in parallel for one buy_url got two keys, and two
+   * keys are two slots at the store's own gate (lib/idempotency): two
+   * purchases, two charges, one thing wanted. Nothing on either side of the
+   * wire could collide them, because THE KEY IS THE ONLY THING THAT CAN and
+   * this page was the one making them different. That is the store's
+   * suggested key inverted: till.js echoes the door's suggestion and gets
+   * bucketing for free; this bridge cannot, because the native MPP challenge
+   * is minted against the key the buyer sends BEFORE the 402 that carries
+   * the suggestion (lib/mpp-challenge-mint), so the key has to be ours. If
+   * it has to be ours, the coalescing has to be ours too.
+   *
+   * A knock is FREE and nothing is signed against it, so joining one costs a
+   * caller nothing it could have kept. SIMULTANEITY IS THE EVIDENCE OF ONE
+   * INTENT: two calls in flight at once are one agent's parallelism, while a
+   * quote requested AFTER the first came back is a buyer asking for a second
+   * purchase and still gets its own key. That line is where this file agrees
+   * with lib/idempotency — where the reading is genuinely ambiguous, fail
+   * toward a second charge, never toward handing somebody the first
+   * purchase's goods. In flight only, for the same reason: a key that
+   * outlived its quote would outlive the challenge signed against it.
+   */
+  const knocks = new Map();
   let pendingQuotes = 0;
   const base = new URL(origin).origin;
   const buyPaths = new Set(itemIds.map(id => "/api/buy/" + id));
@@ -150,8 +189,83 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
     url.searchParams.set("src", "webmcp");
     return url.href;
   }
+  /**
+   * ONE PURCHASE, for the purpose of joining a knock: the quoted URL with its
+   * query sorted, which is how the store's own slot reads it (lib/idempotency
+   * idempotencyScope). Sorted THROUGH URLSearchParams, so a value carrying
+   * `&` or `=` is re-encoded rather than becoming structure — the same care
+   * the store takes, and the reason `?tag=one&z=two` and `?tag=one%26z%3Dtwo`
+   * stay two purchases here exactly as they do there. The URL that goes on
+   * the wire is untouched; only this local name is normalized.
+   */
+  function samePurchase(href) {
+    const url = new URL(href);
+    url.searchParams.sort();
+    return url.href;
+  }
   function prune() {
-    for (const [id, quote] of quotes) if (!quote.busy && now() >= quote.expires) quotes.delete(id);
+    for (const [id, quote] of quotes) if (!quote.inflight && now() >= quote.expires) quotes.delete(id);
+  }
+  /**
+   * A KNOCK'S OUTCOME, TRANSLATED BY THE CALLER'S OWN SIGNAL. A shared knock
+   * settles to an answer or to null — null being "the request died in
+   * flight" — and never rejects, so one caller's cancellation is never
+   * delivered to another as its own AbortError.
+   */
+  async function joinKnock(knock, signal) {
+    const outcome = await knock;
+    if (outcome) return outcome;
+    aborted(signal);
+    return answer({ error: UNREADABLE_QUOTE }, true);
+  }
+  /**
+   * ONE SUBMISSION PER QUOTE, and this promise never rejects either.
+   *
+   * A quote holds at most one payment in flight and a duplicate joins it
+   * rather than sending a second, so the same rule as joinKnock applies with
+   * more at stake: the submission settles to the ANSWER or to null, each
+   * caller decides what its own signal means about that, and a submission
+   * that SUCCEEDED is never discarded because the caller waiting on it had
+   * gone. The retry key is the quote's, on both lanes, on every attempt.
+   */
+  function submit(quote, fingerprint, headers, native, signal) {
+    quote.submission = fingerprint;
+    quote.inflight = (async () => {
+      try {
+        const response = await request(quote.url, { method: "GET", headers: { Accept: "application/json", ...headers, "Idempotency-Key": quote.key }, credentials: "omit", redirect: "error", signal });
+        const body = await bodyOf(response);
+        // Publications carry their private status handle in a header, not the markdown body.
+        const result = answer({ status: response.status, body,
+          payment_response: native ? null : response.headers.get("PAYMENT-RESPONSE"),
+          payment_receipt: native ? response.headers.get("Payment-Receipt") : null,
+          purchase_recovery: response.headers.get("Purchase-Recovery"), idempotency_key: quote.key, buy_url: quote.url }, !response.ok);
+        if (response.ok) quote.result = result;
+        return result;
+      } catch {
+        return null;
+      } finally {
+        quote.inflight = null;
+      }
+    })();
+    return quote.inflight;
+  }
+  /** A second credential against one in-flight purchase; the page does not choose. */
+  function contested(quote, fingerprint) {
+    return Boolean(quote.inflight) && quote.submission !== fingerprint;
+  }
+  /**
+   * The in-flight submission when it is THIS credential's — the duplicate
+   * collects the original result instead of a refusal it would answer by
+   * requesting a fresh quote, which is a fresh key, which is the second
+   * charge this whole arrangement exists to prevent.
+   */
+  async function deliver(quote, fingerprint, headers, native, interrupted, signal) {
+    const result = await (quote.inflight && quote.submission === fingerprint
+      ? quote.inflight
+      : submit(quote, fingerprint, headers, native, signal));
+    if (result) return result;
+    aborted(signal);
+    return answer({ error: interrupted, idempotency_key: quote.key, buy_url: quote.url }, true);
   }
   /**
    * The native lane: the credential a payment client signed against this
@@ -168,33 +282,30 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
     let wire;
     try { wire = base64UrlDecode(header.slice("Payment ".length)); } catch { return answer({ error: "The credential is not readable base64url JSON. No payment was sent." }, true); }
     if (!record(wire) || !record(wire.challenge) || !quote.challenges.some(offered => offered.id === wire.challenge.id)) return answer({ error: "The signed credential answers a different challenge than this quote's. No payment was sent." }, true);
-    quote.busy = true;
-    try {
-      const response = await request(quote.url, { method: "GET", headers: { Accept: "application/json", Authorization: header, "Idempotency-Key": quote.key }, credentials: "omit", redirect: "error", signal });
-      const body = await bodyOf(response);
-      const result = answer({ status: response.status, body, payment_response: null, payment_receipt: response.headers.get("Payment-Receipt"), purchase_recovery: response.headers.get("Purchase-Recovery"), idempotency_key: quote.key, buy_url: quote.url }, !response.ok);
-      if (response.ok) quote.result = result;
-      return result;
-    } catch {
-      aborted(signal);
-      return answer({ error: "The purchase response was interrupted; payment status is unknown. Retry this quote with the same signed credential and key, or recover the original request. Do not sign a new credential to recover this one.", idempotency_key: quote.key, buy_url: quote.url }, true);
-    } finally { quote.busy = false; }
+    const fingerprint = "mpp:" + header;
+    if (contested(quote, fingerprint)) return answer({ error: CONTESTED }, true);
+    return deliver(quote, fingerprint, { Authorization: header }, true, INTERRUPTED_NATIVE, signal);
   }
   return {
     async quote(args, signal) {
       aborted(signal);
       prune();
-      if (quotes.size + pendingQuotes >= MAX_QUOTES) return answer({ error: "This page already holds its quote limit. Finish a purchase or wait for an old quote to expire." }, true);
       let url;
       try { url = purchaseUrl(args?.buy_url); } catch (error) { return answer({ error: error.message }, true); }
+      // A knock already out for this purchase is this caller's knock too: one
+      // free request, one quote, one retry key. It consumes no quota, because
+      // it adds no quote to hold.
+      const purchase = samePurchase(url);
+      const joined = knocks.get(purchase);
+      if (joined) return joinKnock(joined, signal);
+      if (quotes.size + pendingQuotes >= MAX_QUOTES) return answer({ error: "This page already holds its quote limit. Finish a purchase or wait for an old quote to expire." }, true);
       const key = randomId();
-      pendingQuotes += 1;
-      try {
+      const knock = (async () => {
         let response;
         // The retry key rides the free quote too: the store binds its native
         // challenge to a supplied key, so the credential and the retry agree.
         try { response = await request(url, { method: "GET", headers: { Accept: "application/json", "Idempotency-Key": key }, credentials: "omit", redirect: "error", signal }); }
-        catch { aborted(signal); return answer({ error: "The free quote could not be read. No payment was sent." }, true); }
+        catch { return null; }
         const body = await bodyOf(response);
         if (response.status !== 402) return answer({ status: response.status, body, payment_sent: false }, !response.ok);
         let required;
@@ -210,13 +321,17 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
         // higher tier's header tips, and the store books the excess.
         const tiers = challenges.length > 1 ? " This door offers " + challenges.length + " native price tiers in payment_challenges, minimum first; signing a higher tier's header tips, and the excess is booked as a tip on the same purchase." : "";
         const duration = Math.min(MAX_QUOTE_AGE_MS, ...required.accepts.map(offer => Number.isFinite(offer.maxTimeoutSeconds) && offer.maxTimeoutSeconds > 0 ? offer.maxTimeoutSeconds * 1000 : MAX_QUOTE_AGE_MS));
-        const quote = { url, required, challenge, challenges, key, expires: now() + duration, busy: false };
+        const quote = { url, required, challenge, challenges, key, expires: now() + duration, inflight: null };
         quotes.set(id, quote);
         return answer({ quote_id: id, buy_url: url, idempotency_key: key, expires_at: new Date(quote.expires).toISOString(), payment_required: required, payment_challenge: challenge, payment_challenges: challenges.length ? challenges : null, payment_sent: false,
           next: challenge
             ? "Two ways to pay, one purchase. x402: a buyer-authorized wallet or payment client signs one offered accept within the buyer's budget, and complete_store_purchase takes this quote_id and that signed x402 v2 JSON payload as signed_payment. Native MPP: a compatible payment client signs payment_challenge.header, and complete_store_purchase takes this quote_id and the resulting Payment credential as signed_credential. Send one, never both. Amounts are atomic USDC: copy them unchanged. Without a compatible signer, stop; no private keys or wallet secrets belong here." + tiers
             : "A buyer-authorized wallet or payment client signs one offered accept within the buyer's budget. complete_store_purchase takes this quote_id and that signed x402 v2 JSON payload. Amounts are atomic USDC: copy them unchanged. Without a compatible signer, stop; no private keys or wallet secrets belong here." });
-      } finally { pendingQuotes -= 1; }
+      })();
+      knocks.set(purchase, knock);
+      pendingQuotes += 1;
+      try { return await joinKnock(knock, signal); }
+      finally { pendingQuotes -= 1; knocks.delete(purchase); }
     },
     async complete(args, signal) {
       aborted(signal);
@@ -224,7 +339,6 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
       const quote = quotes.get(args?.quote_id);
       if (!quote) return answer({ error: "Quote missing or expired. For a new purchase, request a free quote. If an earlier submission may have settled, recover it using its original URL, payment and idempotency key; a new quote is a new purchase." }, true);
       if (quote.result) return quote.result;
-      if (quote.busy) return answer({ error: "This purchase is already in flight. Wait for its result; no second request was sent." }, true);
       const payment = args?.signed_payment;
       const credential = args?.signed_credential;
       // One credential per call, as the store's own doors refuse: an ambiguous
@@ -237,18 +351,11 @@ export function createPurchaseBridge({ origin, itemIds, fetch: request = globalT
       // Only protocol fields cross the wire. Extra tool arguments cannot become
       // headers, redirect targets, private-key fields, or a different purchase.
       const payload = { x402Version: payment.x402Version, accepted: payment.accepted, payload: payment.payload, ...(payment.resource ? { resource: payment.resource } : {}), ...(payment.extensions ? { extensions: payment.extensions } : {}) };
-      quote.busy = true;
-      try {
-        const response = await request(quote.url, { method: "GET", headers: { Accept: "application/json", "PAYMENT-SIGNATURE": encoded(payload), "Idempotency-Key": quote.key }, credentials: "omit", redirect: "error", signal });
-        const body = await bodyOf(response);
-        // Publications carry their private status handle in a header, not the markdown body.
-        const result = answer({ status: response.status, body, payment_response: response.headers.get("PAYMENT-RESPONSE"), payment_receipt: null, purchase_recovery: response.headers.get("Purchase-Recovery"), idempotency_key: quote.key, buy_url: quote.url }, !response.ok);
-        if (response.ok) quote.result = result;
-        return result;
-      } catch {
-        aborted(signal);
-        return answer({ error: "The purchase response was interrupted; payment status is unknown. Retry this quote with the same signed payment and key, or recover the original request. Do not authorize a new purchase to recover this one.", idempotency_key: quote.key, buy_url: quote.url }, true);
-      } finally { quote.busy = false; }
+      // Two submissions are ONE when the signed bytes are the same instrument,
+      // read through the same canonicalizer that matched the accept above.
+      const fingerprint = "x402:" + JSON.stringify(canonical(payload));
+      if (contested(quote, fingerprint)) return answer({ error: CONTESTED }, true);
+      return deliver(quote, fingerprint, { "PAYMENT-SIGNATURE": encoded(payload) }, false, INTERRUPTED_X402, signal);
     },
   };
 }

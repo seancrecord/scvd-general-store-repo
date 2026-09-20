@@ -3,6 +3,7 @@ import { buyInputSchema } from "@/lib/bazaar-discovery";
 import {
   clampLimit,
   lookupResponse,
+  productResponse,
   searchResponse,
 } from "@/lib/ucp/responses";
 import {
@@ -14,6 +15,11 @@ import {
 } from "@/lib/ucp/payments/usdc-x402";
 import { ucpProfile } from "@/lib/ucp/profile";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
+import {
+  IDEMPOTENCY_KEY_MAX_LENGTH,
+  IDEMPOTENCY_KEY_MIN_LENGTH,
+  IDEMPOTENCY_TTL_SECONDS,
+} from "@/lib/idempotency";
 import {
   SCVD_EXTENSION_VERSION,
   SCVD_NAMESPACE,
@@ -32,8 +38,9 @@ import type { HonoEnv } from "@/types";
  * profile points at it, and nothing the profile does not point at is
  * served here.
  *
- * READ-ONLY, ON PURPOSE. Catalog search and lookup answer questions;
- * they do not take money and they do not reserve anything. UCP is
+ * READ-ONLY, ON PURPOSE. The three catalog operations answer
+ * questions; they do not take money and they do not reserve
+ * anything. UCP is
  * explicit that a catalog's price and availability are not a
  * transactional commitment, and on this shelf that is load-bearing
  * rather than boilerplate: two items are capped at a few keeper-hours
@@ -76,6 +83,20 @@ ucpRoutes.get("/ucp/v1", (c) => {
         body: { ids: ["product id, variant id, handle, SKU or shelf item id"] },
       },
       /**
+       * The third operation of the lookup capability, and the one a
+       * platform reaches for when it has narrowed to one row: the
+       * whole product, with its option axis and which variant the
+       * caller's selections land on.
+       */
+      "catalog.product": {
+        method: "POST",
+        url: `${base}/ucp/v1/catalog/product`,
+        body: {
+          id: "product id, variant id, handle, SKU or shelf item id",
+          selected: [{ name: "Tier", label: "an option value from the response's options[]" }],
+        },
+      },
+      /**
        * The transactional operations, listed exactly while the profile
        * advertises them: the same switch, the same answer.
        */
@@ -88,8 +109,34 @@ ucpRoutes.get("/ucp/v1", (c) => {
                 line_items: [{ item: { id: "variant id from the catalog" }, quantity: 1 }],
                 [SCVD_NAMESPACE]: { inputs: { "<required input name>": "value" }, network: "CAIP-2 id of a rail listed in the profile (optional)" },
               },
+              /**
+               * The header the contract requires here, and what this
+               * store does with it — said at the door rather than left
+               * for a caller to discover on the retry that duplicated.
+               */
+              idempotency: {
+                headers: ["Idempotency-Key", "UCP-Agent"],
+                honoured_for_hours: IDEMPOTENCY_TTL_SECONDS / 3600,
+                key_length: [IDEMPOTENCY_KEY_MIN_LENGTH, IDEMPOTENCY_KEY_MAX_LENGTH],
+                note: "A repeated Idempotency-Key returns the checkout it already opened, as it stands now, rather than a second one. The key is scoped to the UCP-Agent that sent it, so both headers are needed; a key this store cannot honour is named in a warning on the response rather than discarded in silence.",
+              },
             },
             "checkout.get": { method: "GET", url: `${base}/ucp/v1/checkout-sessions/{id}` },
+            /**
+             * A full replacement, not a patch: what the body says is
+             * what the checkout becomes, which withdraws the quote it
+             * replaces and bumps the version a payment is signed
+             * against.
+             */
+            "checkout.update": {
+              method: "PUT",
+              url: `${base}/ucp/v1/checkout-sessions/{id}`,
+              body: {
+                line_items: [{ item: { id: "variant id from the catalog" }, quantity: 1 }],
+                [SCVD_NAMESPACE]: { inputs: { "<required input name>": "value" }, network: "CAIP-2 id of a rail listed in the profile (optional)" },
+              },
+              note: "Refused while a completion is being processed: the checkout comes back unchanged with a recoverable message.",
+            },
             "checkout.complete": {
               method: "POST",
               url: `${base}/ucp/v1/checkout-sessions/{id}/complete`,
@@ -102,7 +149,7 @@ ucpRoutes.get("/ucp/v1", (c) => {
         : {}),
     },
     also_readable_by_get:
-      "Both catalog operations answer GET with ?q= and ?id= as a convenience for people and crawlers. That spelling is not the protocol and is not what the profile advertises.",
+      "Catalog search and lookup also answer GET with ?q= and ?id= as a convenience for people and crawlers. That spelling is not the protocol and is not what the profile advertises.",
     ...(launch.open
       ? { open_for: { rails: launch.rails, items: launch.items } }
       : { not_enabled: ["checkout", "order"], because: launch.closed_because }),
@@ -181,6 +228,33 @@ ucpRoutes.post("/ucp/v1/catalog/lookup", async (c) => {
     );
   }
   return c.json(lookupResponse(c.env.STORE_BASE_URL, ids), 200);
+});
+
+/**
+ * ONE PRODUCT, IN FULL. The contract puts Get Product under the same
+ * capability as Lookup (its request schema is a `$def` of
+ * catalog_lookup.json), which is why advertising
+ * `dev.ucp.shopping.catalog.lookup` and serving only the batch was a
+ * promise this store was not keeping until 2026-09-19.
+ *
+ * Singular, so a miss is an error_response rather than an empty list:
+ * `product` is a required field, and there is no honest half-answer.
+ */
+ucpRoutes.post("/ucp/v1/catalog/product", async (c) => {
+  let body: Record<string, unknown> = {};
+  try {
+    const parsed = await c.req.json();
+    if (parsed && typeof parsed === "object") body = parsed as Record<string, unknown>;
+  } catch {
+    // An unparseable body is a request with no id, and gets the answer
+    // a request with no id gets.
+  }
+  const answer = productResponse(c.env.STORE_BASE_URL, {
+    id: typeof body.id === "string" ? body.id : "",
+    ...(Array.isArray(body.selected) ? { selected: body.selected } : {}),
+    ...(body.preferences !== undefined ? { preferences: body.preferences } : {}),
+  });
+  return c.json(answer.body, answer.status);
 });
 
 /**
@@ -407,10 +481,15 @@ ucpRoutes.get("/ucp", (c) => {
       url: `${base}/ucp/v1/catalog/lookup`,
       example_body: { ids: ["service_audit"] },
     },
+    catalog_product: {
+      method: "POST",
+      url: `${base}/ucp/v1/catalog/product`,
+      example_body: { id: "service_audit" },
+    },
     ...(launch.open
       ? {
           what_works:
-            `Catalog search and lookup, checkout and order, over REST, pinned to UCP ${UCP_VERSION}. Checkout is open on ${launch.rails.join(", ")} for ${launch.items.length === coreCommerceItems().length ? "every catalog item" : `${launch.items.length} catalog items (the profile lists them)`}; an identical Complete sent again returns the same order and never charges again.`,
+            `Catalog search, lookup and product detail, checkout and order, over REST, pinned to UCP ${UCP_VERSION}. Checkout is open on ${launch.rails.join(", ")} for ${launch.items.length === coreCommerceItems().length ? "every catalog item" : `${launch.items.length} catalog items (the profile lists them)`}; an identical Complete sent again returns the same order and never charges again.`,
           checkout: {
             create: { method: "POST", url: `${base}/ucp/v1/checkout-sessions` },
             complete: { method: "POST", url: `${base}/ucp/v1/checkout-sessions/{id}/complete`, shape: `${base}/ucp/specs/payment/usdc-x402` },
@@ -418,7 +497,7 @@ ucpRoutes.get("/ucp", (c) => {
           },
         }
       : {
-          what_works: "Catalog search and lookup, over REST, pinned to UCP " + UCP_VERSION + ".",
+          what_works: "Catalog search, lookup and product detail, over REST, pinned to UCP " + UCP_VERSION + ".",
           what_does_not:
             "Checkout and order. They are built and switched off on this deployment, so they are not advertised in the profile. To buy, use x402 at /api/buy/{item_id} or the MCP door at /mcp.",
         }),

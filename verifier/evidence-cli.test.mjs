@@ -257,3 +257,72 @@ test("export refuses a redirect, reads only the named URL and its own origin's k
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+// Exercise the command a cold buyer actually sees, not a second hand-written
+// invocation that could keep passing while the installable guide drifts.
+test("buyer guide command selects signed endpoint evidence without authenticating adjacent history", async (t) => {
+  const guide = await readFile(new URL("../skills/scvd-x402-verification/SKILL.md", import.meta.url), "utf8");
+  const command = [...guide.matchAll(/```sh\n([\s\S]*?)\n```/g)]
+    .map(match => match[1].replace(/\\\n\s*/g, " ").trim())
+    .find(block => block.startsWith("scvd-evidence verify-source ") && block.includes("--subject"));
+  assert.ok(command, "the buyer guide must provide an executable exact-subject verification command");
+  const words = command.match(/'[^']*'|"[^"]*"|\S+/g).map(word => word.replace(/^(['"])(.*)\1$/, "$2"));
+  const dir = await mkdtemp(join(tmpdir(), "scvd-buyer-guide-"));
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const key = publicKey.export({ type: "spki", format: "der" }).subarray(-32).toString("hex");
+  const url = "https://merchant.example/paid?kind=one";
+  const row = { url, verdict: "ready", observed_at: "2026-09-07T02:30:20.531Z", gaps: ["delivery untested"] };
+  const snapshot = { version: 1, sequence: 7, taken_at: "2026-09-18T14:22:58.378Z", previous_digest: null, source: "ward_round", week: "2026-W37", round: { hosts: [row, { ...row, url: "https://merchant.example/paid?kind=two" }] } };
+  const payload = JSON.stringify(snapshot);
+  const doc = { snapshot, digest: createHash("sha256").update(payload).digest("hex"), signature: sign(null, Buffer.from(payload), privateKey).toString("hex"), public_key: key,
+    context: { tier: "unsigned-tier", observation_count: 3, observed_at: "2026-09-19T00:00:00Z" } };
+  const source = join(dir, "original.json");
+  const substitutions = { "./evidence/original.json": source, TRUSTED_PUBLIC_KEY_HEX: key, CALLER_MAX_BYTES: "32768", EXACT_ENDPOINT_URL: url };
+  const args = words.slice(1).map(word => substitutions[word] ?? word);
+  const noNetwork = join(dir, "no-network.mjs");
+  await writeFile(noNetwork, 'globalThis.fetch = () => { throw new Error("network_forbidden"); };');
+  const invoke = (overrides = {}) => run(args.map(arg => overrides[arg] ?? arg), ["--import", noNetwork]);
+  try {
+    await writeFile(source, JSON.stringify(doc));
+    await t.test("one exact signed row, separate observation date, unchanged original", async () => {
+      const before = await readFile(source, "utf8"), result = await invoke();
+      assert.equal(result.code, 0, result.stderr);
+      const reading = JSON.parse(result.stdout);
+      assert.equal(reading.valid, true); assert.equal(reading.evidence_complete, true);
+      assert.equal(reading.subject_evidence.status, "present");
+      assert.equal(reading.subject_evidence.matched_observations, 1);
+      assert.equal(reading.subject_evidence.omitted_observations, 0);
+      assert.deepEqual(reading.subject_evidence.observations.map(entry => entry.value), [row]);
+      assert.equal(reading.subject_evidence.snapshot_taken_at, snapshot.taken_at);
+      assert.equal(result.stdout.includes("unsigned-tier"), false);
+      assert.equal(await readFile(source, "utf8"), before);
+      assert.deepEqual((await readdir(dir)).sort(), ["no-network.mjs", "original.json"]);
+    });
+    await t.test("exit zero for a valid snapshot does not establish an absent subject", async () => {
+      const result = await invoke({ [url]: "https://merchant.example/paid" });
+      assert.equal(result.code, 0);
+      const reading = JSON.parse(result.stdout).subject_evidence;
+      assert.equal(reading.status, "absent_from_snapshot");
+      assert.deepEqual(reading.observations, []);
+    });
+    await t.test("wrong key exposes no authenticated observations", async () => {
+      const result = await invoke({ [key]: "0".repeat(64) });
+      assert.equal(result.code, 1);
+      assert.deepEqual(JSON.parse(result.stdout).subject_evidence.observations, []);
+    });
+    await t.test("tampered and rehashed signed row still fails", async () => {
+      const changed = structuredClone(doc); changed.snapshot.round.hosts[0].verdict = "changed";
+      changed.digest = createHash("sha256").update(JSON.stringify(changed.snapshot)).digest("hex");
+      await writeFile(source, JSON.stringify(changed));
+      const result = await invoke();
+      assert.equal(result.code, 1);
+      assert.equal(JSON.parse(result.stdout).subject_evidence.status, "not_verified");
+      assert.deepEqual(JSON.parse(result.stdout).subject_evidence.observations, []);
+    });
+    await t.test("unsigned host history cannot substitute for an original", async () => {
+      await writeFile(source, JSON.stringify({ host: "merchant.example", tier: doc.context.tier, timeline: [row], public_key: key }));
+      const result = await invoke();
+      assert.equal(result.code, 2);
+    });
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});

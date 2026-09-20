@@ -1,0 +1,161 @@
+{
+  "observedAt": "2026-09-19T12:35:08.772799+00:00",
+  "items": [
+    {
+      "repo": "github/awesome-copilot",
+      "number": 3255,
+      "url": "https://github.com/github/awesome-copilot/issues/3255",
+      "state": "open",
+      "updatedAt": "2026-09-17T19:17:05Z",
+      "comments": 2,
+      "pr": null
+    },
+    {
+      "repo": "github/agentfinder-catalog",
+      "number": 34,
+      "url": "https://github.com/github/agentfinder-catalog/pull/34",
+      "state": "open",
+      "updatedAt": "2026-09-16T00:52:08Z",
+      "comments": 0,
+      "pr": {
+        "url": "https://api.github.com/repos/github/agentfinder-catalog/pulls/34",
+        "html_url": "https://github.com/github/agentfinder-catalog/pull/34",
+        "diff_url": "https://github.com/github/agentfinder-catalog/pull/34.diff",
+        "patch_url": "https://github.com/github/agentfinder-catalog/pull/34.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "repo": "cline/marketplace",
+      "number": 122,
+      "url": "https://github.com/cline/marketplace/pull/122",
+      "state": "open",
+      "updatedAt": "2026-09-18T18:18:09Z",
+      "comments": 0,
+      "pr": {
+        "url": "https://api.github.com/repos/cline/marketplace/pulls/122",
+        "html_url": "https://github.com/cline/marketplace/pull/122",
+        "diff_url": "https://github.com/cline/marketplace/pull/122.diff",
+        "patch_url": "https://github.com/cline/marketplace/pull/122.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "repo": "cline/marketplace",
+      "number": 123,
+      "url": "https://github.com/cline/marketplace/pull/123",
+      "state": "open",
+      "updatedAt": "2026-09-18T18:18:14Z",
+      "comments": 0,
+      "pr": {
+        "url": "https://api.github.com/repos/cline/marketplace/pulls/123",
+        "html_url": "https://github.com/cline/marketplace/pull/123",
+        "diff_url": "https://github.com/cline/marketplace/pull/123.diff",
+        "patch_url": "https://github.com/cline/marketplace/pull/123.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "repo": "anomalyco/opencode",
+      "number": 49834,
+      "url": "https://github.com/anomalyco/opencode/pull/49834",
+      "state": "open",
+      "updatedAt": "2026-09-18T18:43:02Z",
+      "comments": 2,
+      "pr": {
+        "url": "https://api.github.com/repos/anomalyco/opencode/pulls/49834",
+        "html_url": "https://github.com/anomalyco/opencode/pull/49834",
+        "diff_url": "https://github.com/anomalyco/opencode/pull/49834.diff",
+        "patch_url": "https://github.com/anomalyco/opencode/pull/49834.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "repo": "awesome-opencode/awesome-opencode",
+      "number": 736,
+      "url": "https://github.com/awesome-opencode/awesome-opencode/pull/736",
+      "state": "open",
+      "updatedAt": "2026-09-18T18:31:37Z",
+      "comments": 0,
+      "pr": {
+        "url": "https://api.github.com/repos/awesome-opencode/awesome-opencode/pulls/736",
+        "html_url": "https://github.com/awesome-opencode/awesome-opencode/pull/736",
+        "diff_url": "https://github.com/awesome-opencode/awesome-opencode/pull/736.diff",
+        "patch_url": "https://github.com/awesome-opencode/awesome-opencode/pull/736.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "repo": "hashgraph-online/awesome-ai-plugins",
+      "number": 349,
+      "url": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349",
+      "state": "closed",
+      "updatedAt": "2026-09-19T01:52:57Z",
+      "comments": 2,
+      "pr": {
+        "url": "https://api.github.com/repos/hashgraph-online/awesome-ai-plugins/pulls/349",
+        "html_url": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349",
+        "diff_url": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349.diff",
+        "patch_url": "https://github.com/hashgraph-online/awesome-ai-plugins/pull/349.patch",
+        "merged_at": "2026-09-19T01:52:56Z"
+      }
+    },
+    {
+      "repo": "0xBebis/aifi-directory",
+      "number": 13,
+      "url": "https://github.com/0xBebis/aifi-directory/pull/13",
+      "state": "open",
+      "updatedAt": "2026-09-18T16:19:15Z",
+      "comments": 1,
+      "pr": {
+        "url": "https://api.github.com/repos/0xBebis/aifi-directory/pulls/13",
+        "html_url": "https://github.com/0xBebis/aifi-directory/pull/13",
+        "diff_url": "https://github.com/0xBebis/aifi-directory/pull/13.diff",
+        "patch_url": "https://github.com/0xBebis/aifi-directory/pull/13.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "repo": "alt-research/8004scan-issue-tracker",
+      "number": 51,
+      "url": "https://github.com/alt-research/8004scan-issue-tracker/issues/51",
+      "state": "open",
+      "updatedAt": "2026-09-17T18:34:44Z",
+      "comments": 0,
+      "pr": null
+    },
+    {
+      "repo": "trust8004/requests-issues",
+      "number": 1,
+      "url": "https://github.com/trust8004/requests-issues/issues/1",
+      "state": "open",
+      "updatedAt": "2026-09-17T19:21:40Z",
+      "comments": 0,
+      "pr": null
+    },
+    {
+      "repo": "tempoxyz/mpp",
+      "number": 991,
+      "url": "https://github.com/tempoxyz/mpp/pull/991",
+      "state": "open",
+      "updatedAt": "2026-09-18T19:58:15Z",
+      "comments": 5,
+      "pr": {
+        "url": "https://api.github.com/repos/tempoxyz/mpp/pulls/991",
+        "html_url": "https://github.com/tempoxyz/mpp/pull/991",
+        "diff_url": "https://github.com/tempoxyz/mpp/pull/991.diff",
+        "patch_url": "https://github.com/tempoxyz/mpp/pull/991.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "repo": "Merit-Systems/x402scan",
+      "number": 1209,
+      "url": "https://github.com/Merit-Systems/x402scan/issues/1209",
+      "state": "open",
+      "updatedAt": "2026-09-18T18:09:44Z",
+      "comments": 2,
+      "pr": null
+    }
+  ]
+}

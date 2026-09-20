@@ -1,0 +1,112 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "SCVD General Store",
+  "description": "An evidence observatory for agentic commerce: independent signed observation of x402 endpoints, payments and receipts. Preflight a door before paying and check any issuer's signed receipt after \u2014 both free. Never a ranking, and never a verdict without its derivation and denominator beside it. Also a general store for agents, paid in USDC over x402 from $0.001. Every artifact verifies offline, free, forever.",
+  "image": "https://scvd.store/favicon.svg",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "https://scvd.store/"
+    },
+    {
+      "name": "MCP",
+      "endpoint": "https://scvd.store/mcp",
+      "version": "2026-07-28",
+      "mcpTools": [
+        "check_a2a_card",
+        "check_purchase",
+        "read_store_guide",
+        "ring_bell",
+        "read_binder",
+        "look_in_window",
+        "sign_guestbook",
+        "preflight_endpoint",
+        "look_at_door",
+        "check_before_you_pay",
+        "check_conformance",
+        "verify_artifact",
+        "check_order",
+        "find_in_catalog",
+        "buy_simple",
+        "buy_signed_record",
+        "buy_human_task",
+        "buy_observation",
+        "buy_memory_anchor",
+        "buy_small_pleasure"
+      ]
+    },
+    {
+      "name": "A2A",
+      "endpoint": "https://scvd.store/.well-known/agent-card.json",
+      "version": "0.3.0"
+    },
+    {
+      "name": "x402",
+      "endpoint": "https://scvd.store/.well-known/x402.json",
+      "version": "2"
+    },
+    {
+      "name": "openapi",
+      "endpoint": "https://scvd.store/openapi.json"
+    },
+    {
+      "name": "atlas",
+      "endpoint": "https://scvd.store/atlas.json"
+    },
+    {
+      "name": "OASF",
+      "endpoint": "https://scvd.store/agents/general-store",
+      "version": "v1.1.0",
+      "skills": [
+        "business_professional/investment_trading/payments_integration",
+        "science_specialized/blockchain_web3/onchain_data_analysis",
+        "research_knowledge_productivity/web_search/fact_verification",
+        "tool_use_automation/api_schema_understanding"
+      ],
+      "domains": [
+        "finance_and_business/payments",
+        "technology/blockchain"
+      ]
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:8453:0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:137:0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:42161:0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:480:0xDD350976B8cfFc65938C0464d39A2C78BE079bd0"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"
+    },
+    {
+      "name": "DID",
+      "endpoint": "did:web:scvd.store",
+      "version": "v1"
+    },
+    {
+      "name": "email",
+      "endpoint": "sean@recordcreativeco.com"
+    }
+  ],
+  "x402Support": true,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 86957,
+      "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    }
+  ],
+  "supportedTrust": [
+    "reputation"
+  ]
+}

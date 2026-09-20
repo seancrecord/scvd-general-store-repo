@@ -1,4 +1,8 @@
-# MPPScan registration — draft, September 18, 2026
+# MPPScan registration — completed September 19, 2026
+
+[Public listing](https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b) opened and verified. Registration reported 193 of 195 resources accepted, two path templates excluded after 404 probes, one endpoint skipped and 73 warnings. Counts include free resources. No fee, account, wallet or terms acceptance requested. [Dated receipt](../research/erc8004-followthrough-2026-09-19/mppscan-registration.json). Do not repeat the submission; remaining parser/schema warnings are separate follow-through. The skipped purchase-status route remains bearer-protected; the scanner’s suggestion to declare it public is not applicable.
+
+## Historical preparation — September 18
 
 **What is submitted:** the store's origin, `https://scvd.store`, to MPPScan's
 "Add Server" flow at <https://www.mppscan.com/register>. The flow reads the
@@ -14,8 +18,8 @@ and two outside-wallet purchases with the stock client are
 [recorded](../docs/MPP_LIVE_RESULT_2026-09-18.md). The keeper authorized
 registration on September 18 if it costs nothing.
 
-**Who presses:** the keeper (rule 30). This container cannot reach
-`mppscan.com` at all, so nothing here was submitted and the register page
+**Access at the September 18 drafting pass:** this container could not reach
+`mppscan.com` at all, so nothing was submitted in that pass and the register page
 itself was not read from here; its mechanics below are read from search-index
 snippets of that page, `mpp.dev/advanced/discovery`, the `tempoxyz/mpp`
 README and two third-party write-ups. Re-read the page before pressing
@@ -70,7 +74,7 @@ with `@agentcash/discovery@1.7.5`, the package `apps/scan` in
   payment guide), so a crawler that probes without inputs still reads a
   paid door.
 
-## What to press, and what to bring back
+## Historical instructions — completed, do not resubmit
 
 1. Open <https://www.mppscan.com/register>. If the page asks for anything
    beyond the origin URL (a sign-in, a wallet connection, a fee), stop: none

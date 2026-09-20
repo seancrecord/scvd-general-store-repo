@@ -2,11 +2,11 @@
 
 Status: researched, not deployed. [Maintainer answer](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900): the shared testbed is read-only; publishing requires our own node in federation mode. An OIDC login is not publisher admission.
 
-## Decision in front of the keeper
+## Keeper decision — September 18
 
-Operating a Directory node adds a persistent service beside the store. The immediate decision is whether that ongoing operation is justified for SCVD's discovery. No hosting provider, monthly budget, permanent trust domain or DNS names have been approved. No cloud resources have been created.
+The keeper declined recurring/monthly fees for distribution and hosting. Do not provision paid federation infrastructure. No cloud resources have been created. The deployment scope and price comparison below are retained as dated research, not an open spending decision.
 
-Recommendation: pursue Anro's external-ingestion answer first while deciding whether federation has value beyond this listing. OASF remains publicly served and linked from ERC-8004 meanwhile. A third-party operator importing our record would need its own explicit agreement; no such arrangement is established.
+Current route: await Anro's free external-ingestion answer. OASF remains publicly served and linked from ERC-8004 meanwhile. A third-party operator importing our record would need its own explicit agreement; no such arrangement is established.
 
 ## Deployment scope
 
@@ -32,10 +32,10 @@ Maintainer onboarding is documented in [the public staging instructions](https:/
 
 ## Anro remains a separate route
 
-[Anro's discovery documentation](https://anroagents.com/docs/agent-discovery/) describes domain manifests and paid publication of agents hosted by Anro. That does not establish a free external OASF submission API. Our publisher lookup still returned zero entries after the maintainer answer. The prepared support request asks whether SCVD's existing manifest can be crawled without moving hosting; it remains unsent pending explicit email authorization.
+[Anro's discovery documentation](https://anroagents.com/docs/agent-discovery/) describes domain manifests and paid publication of agents hosted by Anro. That does not establish a free external OASF submission API. Our publisher lookup still returned zero entries after the maintainer answer. The authorized support request was sent September 18 from sean@recordcreativeco.com to support@anroagents.com, asking whether SCVD's existing manifest can be crawled without moving hosting. Gmail confirmed Message sent and the Sent readback. [Sanitized receipt](../../research/erc8004-followthrough-2026-09-18/anro-contact-receipt.json). Await the operator's answer; do not resend.
 
 
-## Planning cost comparison — September 18 readback
+## Historical planning comparison — paid route declined September 18
 
 | Candidate | Published price and arithmetic | Limit of this estimate |
 | --- | --- | --- |
@@ -44,6 +44,6 @@ Maintainer onboarding is documented in [the public staging instructions](https:/
 
 Sources: [DigitalOcean Basic pricing](https://www.digitalocean.com/pricing/droplets), [backup pricing](https://www.digitalocean.com/pricing/backups), [AWS EKS pricing](https://aws.amazon.com/eks/pricing/). Prices exclude applicable tax, extra storage/traffic, separate off-host exports and maintenance labor. Existing SCVD domain/DNS is assumed; no paid managed database or load balancer is included in the single-VM example. Automatic disk backups do not establish database-consistent recovery; restore testing remains necessary. No provider is selected and nothing has been purchased.
 
-[Anro's separate directory page](https://directory.anroagents.com/) explicitly advertises free publication, with payment only for its agent-building/hosting platform. Its Connect section documents public query/federation endpoints and domain manifests, but no external record-upload or crawl-trigger form was established. Treat the free-listing claim separately from the platform's paid hosting documentation. Our prepared email asks for the missing ingestion step; no need to purchase an Anro hosting plan to ask that question.
+[Anro's separate directory page](https://directory.anroagents.com/) explicitly advertises free publication, with payment only for its agent-building/hosting platform. Its Connect section documents public query/federation endpoints and domain manifests, but no external record-upload or crawl-trigger form was established. Treat the free-listing claim separately from the platform's paid hosting documentation. Our sent email asks for the missing ingestion step. Paid hosting remains declined.
 
 A second documented discovery check, `POST /ard/search` with query `SCVD scvd.store evidence observatory x402` and `federation: "none"`, also returned an empty `results` array. This is a dated negative result for that query, alongside the exact publisher filter; it is not evidence that the registry's crawler attempted or rejected our manifest.
