@@ -43,6 +43,7 @@ import { agentAuthBlock } from "@/store/agent-auth";
 import { freshness } from "@/lib/freshness";
 import {
   manifestAccepts,
+  MANIFEST_X402_VERSION,
   PENNY_PAGE_USDC,
   acceptedNetworks,
   priceTiersUsdc,
@@ -258,6 +259,12 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
 });
 
 /**
+ * What this host is, in the discovery extension's vocabulary. Not
+ * `facilitator` and not `both`: see the note at the field itself.
+ */
+const MANIFEST_KIND = "resource-server";
+
+/**
  * THE MINIMAL DOCUMENT, WHICH WAS TOO MINIMAL TO BE FILED WELL.
  *
  * Until 2026-07-31 this served `{ version, resources }` and nothing
@@ -314,6 +321,35 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
      * buys every size-limited fetcher.
      */
     ...agentToolsVerifyField(),
+    /*
+     * THE TWO FIELDS THE DISCOVERY EXTENSION MAKES MUST, HOISTED FOR
+     * THE SAME REASON THE OWNERSHIP CLAIM ABOVE IS (2026-09-20).
+     *
+     * x402#2979 (specs/extensions/discovery.md, unmerged at the time
+     * of writing) requires `x402Version` — a JSON integer, and "MUST
+     * NOT be spelled `version`" — and `kind`, one of `facilitator`,
+     * `resource-server` or `both`. This store runs no facilitator: it
+     * serves no /supported, /verify or /settle, it routes its own
+     * payments through someone else's, so the honest value is
+     * `resource-server` and never `both`. A store that named itself a
+     * facilitator here would be advertising a capability a consumer
+     * MUST then find at a baseUrl we do not serve.
+     *
+     * `version: 1` above KEEPS ITS PLACE, and that is a reading of
+     * the draft rather than an oversight: the MUST-NOT binds how the
+     * version field is spelled, and the same document says unknown
+     * fields MUST be ignored, so a conforming reader takes
+     * `x402Version` and discards the older key. The additive-only law
+     * therefore survives intact — nothing that learned `version` is
+     * broken by this, and no conforming reader is confused by it.
+     *
+     * They sit in the first hundred bytes with the ownership claim
+     * because they are read by the same kind of client: a validator
+     * with a read cap, on a ~326 KB document. A MUST field after
+     * `resources` is a MUST field a truncating fetcher never sees.
+     */
+    x402Version: MANIFEST_X402_VERSION,
+    kind: MANIFEST_KIND,
     resources: await structuredPaidResources(c.env),
     publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
@@ -375,16 +411,37 @@ async function structuredPaidResources(env: Env) {
    * per-entry timestamp.
    */
   const lastUpdated = freshness().as_of;
-  // C1: the fact block tops every catalog entry; S1: the uniform spec
-  // rides each resource (indexers that don't know the field ignore it).
+  /*
+   * `url` IS THE FIELD THE SPEC ACTUALLY DEREFERENCES (2026-09-20).
+   *
+   * Every entry here named its target twice — `resource` (the Bazaar
+   * list spelling) and `resourceUrl` (ours, kept for readers that
+   * learned it) — and the x402 discovery extension reads NEITHER. It
+   * defines an entry as a bare pointer carrying `url`, a complete
+   * payment description, or a bare string coerced to `{url}`; and it
+   * makes `resources` a MAY, so a consumer finding no `url` discards
+   * the array without an error surface.
+   *
+   * That is the whole reason the two MUST fields above could not ship
+   * alone. Without `url`, adding them moves this store from "fails
+   * shape validation, gets skipped" to "passes validation, publishes
+   * an empty shelf" — a conforming crawler would read a valid
+   * manifest from a host with nothing for sale, which is worse than
+   * being skipped because it looks like an answer. A third spelling
+   * of one string is a cheap price for that not happening.
+   *
+   * C1: the fact block tops every catalog entry; S1: the uniform spec
+   * rides each resource (indexers that don't know the field ignore it).
+   */
   const menuResources = MENU_ITEMS.map((item) => ({
     accepts: manifestAccepts(env, priceTiersUsdc(item)),
+    url: `${base}/api/buy/${item.id}`,
     resource: `${base}/api/buy/${item.id}`,
     type: "http",
     lastUpdated,
     resourceUrl: `${base}/api/buy/${item.id}`,
     method: "GET",
-    x402Version: 2,
+    x402Version: MANIFEST_X402_VERSION,
     description: `${factBlockText(item)} ${item.name}, ${item.description}`,
     mimeType: "application/json",
     price_usdc_options: priceTiersUsdc(item),
@@ -402,13 +459,14 @@ async function structuredPaidResources(env: Env) {
   }));
   const almanacResources = (await listAlmanacEntries(env)).map((entry) => ({
     accepts: manifestAccepts(env, pennyPageTiersUsdc()),
+    url: `${base}/almanac/${entry.slug}`,
     resource: `${base}/almanac/${entry.slug}`,
     type: "http",
     lastUpdated,
     resourceUrl: `${base}/almanac/${entry.slug}`,
     ...publicationLinks(`${base}/almanac/${entry.slug}`),
     method: "GET",
-    x402Version: 2,
+    x402Version: MANIFEST_X402_VERSION,
     description: `Keeper's Almanac, "${entry.title}" (${entry.date}).`,
     mimeType: "text/markdown",
     price_usdc_options: pennyPageTiersUsdc(),
@@ -419,13 +477,14 @@ async function structuredPaidResources(env: Env) {
   const sellerIssues = await listOpenForBusinessIssues(env).catch(() => []);
   const openForBusinessResources = sellerIssues.map((issue) => ({
     accepts: manifestAccepts(env, openForBusinessTiersUsdc()),
+    url: `${base}/open-for-business/${issue.week}`,
     resource: `${base}/open-for-business/${issue.week}`,
     type: "http",
     lastUpdated,
     resourceUrl: `${base}/open-for-business/${issue.week}`,
     ...publicationLinks(`${base}/open-for-business/${issue.week}`),
     method: "GET",
-    x402Version: 2,
+    x402Version: MANIFEST_X402_VERSION,
     description: `Open for Business, ${issue.week}: ${issue.title}. The weekly issue for sellers.`,
     mimeType: "text/markdown",
     price_usdc_options: openForBusinessTiersUsdc(),
@@ -436,13 +495,14 @@ async function structuredPaidResources(env: Env) {
   const issues = await listIssues(env).catch(() => []);
   const gazetteResources = issues.map((issue) => ({
     accepts: manifestAccepts(env, pennyPageTiersUsdc()),
+    url: `${base}/gazette/issue-${issue.issue_number}`,
     resource: `${base}/gazette/issue-${issue.issue_number}`,
     type: "http",
     lastUpdated,
     resourceUrl: `${base}/gazette/issue-${issue.issue_number}`,
     ...publicationLinks(`${base}/gazette/issue-${issue.issue_number}`),
     method: "GET",
-    x402Version: 2,
+    x402Version: MANIFEST_X402_VERSION,
     description: `The Gazette. Issue no. ${issue.issue_number}: ${issue.title}`,
     mimeType: "text/markdown",
     price_usdc_options: pennyPageTiersUsdc(),
@@ -456,7 +516,16 @@ async function structuredPaidResources(env: Env) {
 wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
-    x402Version: 2,
+    x402Version: MANIFEST_X402_VERSION,
+    /*
+     * The richer document has carried `x402Version` since it was
+     * built, so the discovery extension found it already half-
+     * conforming; `kind` is the one MUST it was missing. Both
+     * manifests answer this the same way, from the same constant,
+     * because two documents describing one host disagreeing about
+     * what that host IS is the failure the extension exists to stop.
+     */
+    kind: MANIFEST_KIND,
     // The ownership claim rides both well-known documents; a checker
     // that fetches this one rather than the thin one beside it must
     // not read a missing field as a failed claim.
