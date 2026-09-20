@@ -1066,14 +1066,33 @@ const BASE = "https://scvd.store";
 // sentence beside its money sentence (rule 60.2's third sentence, which
 // the guide carried for two rooms and now carries for all nine); with
 // those seven insertions removed, c7f04b55 reproduces.
+// 2026-09-19, the field study (FIELD_STUDY.md): the guide gains the
+// instrument in two places — the field study between the bounty board
+// and regulars' credit under "Money that flows the other way" (whose
+// opening line now counts three doors rather than two), and a FIELD
+// STUDY block beside the A2A desk under "More ways to use the store",
+// which is the section that also rides the index. Nothing else in the
+// document was touched, and that was verified rather than asserted:
+// with src/routes/llms.ts reverted to its pre-field-study state, the
+// prior 1c8eed2a reproduced exactly.
 // 2026-09-19, later still: the UCP paragraph now names all THREE catalog
 // operations. Get Product (POST /ucp/v1/catalog/product) was defined by
 // the pinned transport contract under a capability this store advertises
 // and was not served; it is served now, and the guide said "readable one
 // product at a time" of the BATCH door, which was the wrong door for that
 // sentence. With the two-door wording restored, 1c8eed2a reproduces.
+// 2026-09-19, THE MERGE of those two: the field study branch and main's
+// third catalog operation met, and both had re-pinned this digest for
+// their own reasons — so the pin below is neither half's. It is the
+// MERGED guide, reproduced from the merged tree, which is the only
+// reading that covers both edits at once; the two notes above both
+// stand and this one says why there is a third. Verified the way this
+// file asks rather than asserted: with src/routes/llms.ts reverted to
+// its pre-field-study state inside the merged tree, main's d37dd386
+// reproduced exactly, which is what proves the field study is the
+// whole of the difference between the two.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d37dd386d0e9fb7a44b6c25252ce3b8072915ab1c22b487bece6cff4f32bfd78";
+  "76f98ccf0ef7f6ac5909313a54885d25f14e85af5bdc597024676bb9e6346c26";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1122,11 +1141,25 @@ describe("nothing was rewritten", () => {
     // mpp-shape; with those two lines restored, a03d8e21 reproduced.
     // 2026-09-19, later: re-taken with the seven free-first sentences
     // beside their money sentences; with them removed, 6fb54921 reproduces.
+    // 2026-09-19, the field study (FIELD_STUDY.md): three additions to
+    // the guide and nothing else touched. "Money that flows the other
+    // way" opens "Three doors" rather than "Two" and gains the field
+    // study between the bounty board and regulars' credit; "More ways
+    // to use the store" gains a FIELD STUDY block beside the A2A desk,
+    // which is what puts the room on the INDEX as well as in the full
+    // prose. Verified the way this pin is meant to be verified rather
+    // than asserted: with src/routes/llms.ts reverted to its pre-field-
+    // study state and nothing else changed, 423001c4 below and the
+    // 1c8eed2a in GUIDE_DIGEST_BEFORE_THE_SPLIT both reproduced exactly.
     // 2026-09-19, later still: re-taken with the UCP paragraph naming all
     // three catalog operations (see GUIDE_DIGEST_BEFORE_THE_SPLIT); with
     // the two-door wording restored, 423001c4 reproduced.
+    // 2026-09-19, THE MERGE of those two: both halves re-pinned this line
+    // for their own reasons, so this pin is the merged guide and neither
+    // half's. Verified inside the merged tree: with llms.ts reverted to
+    // its pre-field-study state, main's 1c798e47 reproduced exactly.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "1c798e475caec68d336e884062b6e1289983c6826a60fe5132ccb62cffbcc87e",
+      "f8597f7aa8aa5a02f8cfc968b85d28debd0909687c5bda5dbd19d7a394b5979a",
     );
   });
 

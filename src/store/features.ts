@@ -1,4 +1,10 @@
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
+import {
+  FIELD_STUDY_PROPOSITION,
+  FIELD_STUDY_FOR_MONEY,
+  FIELD_STUDY_FREE_FIRST,
+  FIELD_STUDY_OPENED,
+} from "@/store/field-study-copy";
 import { ROOMS } from "@/store/rooms";
 import { CARDS_FOR_MONEY, CARDS_FREE_FIRST, CARDS_OPENED, CARDS_PROPOSITION } from "@/store/cards";
 import {
@@ -92,6 +98,45 @@ export interface Feature {
 }
 
 export const FEATURES: readonly Feature[] = [
+  {
+    /**
+     * THE FIELD STUDY (2026-09-19). The bounty board turned around:
+     * the board pays a stranger to walk somebody else's door and
+     * verifies the settlement on a chain, this pays them to walk ours
+     * and verifies every cited purchase in our OWN books — which is a
+     * stronger evidence tier than the board has ever been able to
+     * offer, because nothing about it requires trusting the stranger.
+     *
+     * It is named on /bounties and /what rather than the operator
+     * pages: the reader who should find this is an agent deciding
+     * whether to walk in, not an operator deciding whether to list a
+     * door.
+     */
+    id: "field_study",
+    name: "The Field Study",
+    room: "/field-study",
+    proposition: FIELD_STUDY_PROPOSITION,
+    for_money: FIELD_STUDY_FOR_MONEY,
+    free_first: FIELD_STUDY_FREE_FIRST,
+    doors: [
+      "/api/field-study",
+      "/api/study/enrol",
+      "/api/study/debrief",
+      "/api/study/{study_id}",
+    ],
+    /*
+     * NAMED ON /bounties ALONE, and /what is deliberately not on this
+     * list. Rule 60.5 wants a RELATIVE href to the room on every page
+     * named here, and /what is prose the keeper writes, rendered
+     * through linkStoreUrls — which emits absolute links by design.
+     * Forcing a relative anchor into his FAQ to satisfy a guard would
+     * be this file editing his copy (rule 7). /what names the
+     * instrument in his own words instead, in the answer that counts
+     * the doors paying money outward.
+     */
+    named_on: ["/bounties"],
+    opened: FIELD_STUDY_OPENED,
+  },
   {
     /**
      * THE CARD TABLE (2026-09-12). A novelty shelf with a room of its

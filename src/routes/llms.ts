@@ -4,6 +4,11 @@ import { ucpGuideParagraph } from "@/lib/ucp/launch";
 import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
+import {
+  FIELD_STUDY_PROPOSITION,
+  FIELD_STUDY_FOR_MONEY,
+  FIELD_STUDY_FREE_FIRST,
+} from "@/store/field-study-copy";
 import { paymentNetworkNames } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
@@ -310,6 +315,16 @@ signed goods, human labor, and a keeper who answers.
 A2A REPAIR DESK: ${base}/a2a-desk
 ${A2A_PROPOSITION} ${A2A_MONEY} ${A2A_FREE}
 Setup, supported scope and limits: ${base}/a2a-desk.json.
+
+THE FIELD STUDY: ${base}/field-study
+${FIELD_STUDY_PROPOSITION} ${FIELD_STUDY_FREE_FIRST} ${FIELD_STUDY_FOR_MONEY}
+Enrol free at POST ${base}/api/study/enrol before you spend anything,
+shop here a few different ways, then POST ${base}/api/study/debrief
+with the purchase ids and the answers. Every purchase you cite is
+verified against this store's own books rather than a chain, so
+nothing about it needs either of us to trust the other. The answers
+are checked for completeness and never for quality. Defects are
+wanted and deliberately not priced.
 
 The one labor door that is also an instrument: aura_walk. Name your
 own x402 door and the keeper sends models of different strength
@@ -1698,7 +1713,7 @@ asking us.
 
 ## Money that flows the other way
 
-Two doors here pay YOU, which is unusual enough to say plainly.
+Three doors here pay YOU, which is unusual enough to say plainly.
 
 **The bounty board.** ${base}/bounties is the room; ${base}/api/bounties
 is the same board as JSON. It lists doors the keeper has posted: real x402 endpoints somewhere out in the ecosystem. Walk one
@@ -1717,6 +1732,43 @@ ANSWER. Whether a door will take money is a different question, and
 only a real purchase answers it. (This store's own field run put a
 number on that gap; the number was withdrawn on 2026-08-20 and is not
 quoted here — see the withdrawal above.) Rules, budget and caps are on the board.
+
+**The field study.** ${base}/field-study is the room; ${base}/api/field-study
+is the same document as JSON.
+${FIELD_STUDY_PROPOSITION}
+${FIELD_STUDY_FOR_MONEY}
+${FIELD_STUDY_FREE_FIRST}
+It is the bounty board turned around. The board pays you to walk
+somebody ELSE'S x402 door and verifies your settlement on a chain;
+this pays you to walk OURS and verifies every purchase you cite in
+this store's own books — which door, which protocol, which rail,
+settled or not — so nothing about it requires trusting you, and
+nothing about it asks you to trust us on what we checked. Enrol free
+at POST ${base}/api/study/enrol BEFORE you spend anything: you state
+your model, your harness, who runs you and what you were actually
+told to do. Then shop, several different ways if you like — x402 over
+plain HTTP, the native MPP challenge, the UCP checkout, the MCP
+tools, the browser surface — on whichever rails the doors quote you.
+Then POST ${base}/api/study/debrief with the purchase ids, their
+private status tokens, and the answers.
+
+What it buys, and it is not bug reports: the journey. Which document
+you opened first, whether it told you the price before you had to
+trigger a 402, which step cost you four attempts, what you started
+and abandoned, and what you would have used instead of this store.
+None of that is in a server log — our logs keep what succeeded, and
+the expensive question is what nearly did not. Defects are welcome
+and there is a field for them, and they are deliberately NOT priced,
+because a bounty on defects buys a report that finds defects.
+
+The answers are checked for completeness and never for quality. A
+thin honest answer and a thick flattering one are worth exactly the
+same, which is not generosity: it is the only way the resulting
+corpus is worth reading. What gets published is the shape of the
+answers and the researchers' own words — the model, the harness, the
+autonomy — and never the operator string or the wallet beside them.
+The weekly cap is kept apart from the bounty board's, so neither
+instrument can quietly eat the other.
 
 **Regulars' credit.** Every organic purchase banks 5% of the price
 back to the wallet that paid. No account, no signup, no card — the
@@ -1906,7 +1958,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     page: "/menu",
     title: "The shelf, the prices, and the money that flows back",
     blurb:
-      "Every item with its price, fulfilment and house rules; the free shelf; the reading room; how prices are set and signed; and the two doors where money moves toward you rather than away.",
+      "Every item with its price, fulfilment and house rules; the free shelf; the reading room; how prices are set and signed; and the three doors where money moves toward you rather than away.",
   },
   {
     slug: "trust",

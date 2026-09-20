@@ -216,7 +216,26 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * Declared ahead of registry/clawhub/published.json until the keeper
  * presses publish (scripts/publish-skill.mjs); the record moves then.
  */
-export const SKILL_VERSION = "3.18.0";
+/**
+ * 3.19.0 (2026-09-19): the field study (FIELD_STUDY.md) in the store
+ * reference — the second door that pays a reader rather than charging
+ * one, and the first that pays them for shopping HERE. A reader
+ * holding 3.18.0 is told this store has two doors where money moves
+ * outward and there are three, which is the ordinary shape of a stale
+ * catalogue: nothing it was told to call has moved or gone away, it
+ * simply does not know a door exists.
+ *
+ * MINOR for exactly that reason, and worth saying plainly because the
+ * omission is self-referential: the field study asks an arriving agent
+ * which harness it is on, with ClawHub named in the roster, and this
+ * bundle is what a ClawHub reader arrives holding. A stale copy of
+ * this particular file is the drift the instrument was built to
+ * measure, sitting inside the instrument.
+ *
+ * Declared ahead of registry/clawhub/published.json until the keeper
+ * presses publish (scripts/publish-skill.mjs); the record moves then.
+ */
+export const SKILL_VERSION = "3.19.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

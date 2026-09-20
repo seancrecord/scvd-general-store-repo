@@ -106,6 +106,13 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://ucptools.dev/directory/scvd.store",
+    registry: "UCP.tools — community merchant directory",
+    protocols: ["ucp"],
+    confirmed: "2026-09-20",
+    what_it_proves: "That UCP.tools published an operator-submitted SCVD General Store listing on September 20, 2026, displaying REST and linking to the store and its live UCP profile. The directory's score and grade remain its own and are not adopted here. This is discovery evidence, not an endorsement, an audit, paid checkout qualification or Google admission.",
+  },
+  {
     url: "https://ucpchecker.com/check/scvd.store",
     registry: "UCP Checker — public profile report",
     protocols: ["ucp"],
