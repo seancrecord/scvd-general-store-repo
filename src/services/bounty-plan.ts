@@ -375,6 +375,20 @@ export async function bountyPlanPass(
   const { bountyCandidates, openBountyBatch } = await import(
     "@/services/bounty-batch"
   );
+  /*
+   * WHAT THE LAST PRESS WAS TOLD AT EACH DOOR (2026-09-20). Without
+   * this the plan is the worst offender: three doors that answered
+   * 526, 401 and 301 on 2026-09-19 still read "ready, never walked,
+   * cheap" in the census, so a twelve-hour cadence would knock on all
+   * three fourteen times a week and collect the same three refusals.
+   * The memory expires against the next census round, not a clock.
+   */
+  const { readRefusalMemory, refusalsForRound } = await import(
+    "@/services/bounty-refusals"
+  );
+  const refusals = await readRefusalMemory(env)
+    .then((memory) => refusalsForRound(memory, round.at))
+    .catch(() => ({}));
   const board = await bountyBoard(env, now);
   const ourHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const offered = bountyCandidates(
@@ -392,6 +406,7 @@ export async function bountyPlanPass(
      */
     Number.MAX_SAFE_INTEGER,
     reward,
+    refusals,
   );
   const candidates = offered.filter((candidate) => {
     if (candidate.blocked) return false;
@@ -412,11 +427,12 @@ export async function bountyPlanPass(
   });
   if (candidates.length === 0) {
     const ceilinged = offered.filter((row) => row.above_ceiling).length;
+    const refused = offered.filter((row) => row.last_refusal).length;
     const pricedOut = offered.filter(
       (row) => row.blocked && !row.above_ceiling && row.min_reward_usd !== undefined,
     ).length;
     return quiet(
-      `no door in the round this plan can post at $${reward.toFixed(2)}: ${offered.length} ready rows, ${ceilinged} priced above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} ceiling, ${pricedOut} needing a bigger reward than this plan pays, the rest already walked${plan.revisit_days > 0 ? ` inside ${plan.revisit_days} days` : " (revisits are off)"}`,
+      `no door in the round this plan can post at $${reward.toFixed(2)}: ${offered.length} ready rows, ${ceilinged} priced above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} ceiling, ${pricedOut} needing a bigger reward than this plan pays, ${refused} refused by the door itself since this round was taken, the rest already walked${plan.revisit_days > 0 ? ` inside ${plan.revisit_days} days` : " (revisits are off)"}`,
     );
   }
 
@@ -440,6 +456,7 @@ export async function bountyPlanPass(
       urls,
       rewardUsd: reward,
       tier: plan.tier,
+      roundAt: round.at,
       ...(plan.distinct_payer ? { distinctPayer: true } : {}),
       ...(rail ? { rail } : {}),
       ...(plan.note ? { note: plan.note } : {}),

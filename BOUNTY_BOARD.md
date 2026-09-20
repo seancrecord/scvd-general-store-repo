@@ -480,3 +480,58 @@ The reward ceiling stays $0.25 and the weekly budget stays $10. Both are
 money decisions and both are the keeper's; raising the ceiling is what
 would make the $1.00 and $5.00 doors postable, and until he does, the
 desk says so on the row rather than offering them again.
+
+## The desk could not see liveness (2026-09-20)
+
+The round posted on 2026-09-19 pressed twenty doors and three refused.
+Read through the store's own free preflight the next morning:
+
+- `weather.payapi.market/current` — **526**, Cloudflare holding no valid
+  certificate from the origin.
+- `pro-api.coingecko.com/api/v3/x402/onchain/simple/networks/base` —
+  **401**, a keyed PRO endpoint rather than an open door. No stranger
+  can walk it at any price.
+- `preppers-paradise.com/library/…` — **301**, a redirect. The 402 does
+  not live at the URL the listing names.
+
+All three are the `no-402` defect class, and all three were **ready in
+the census round**. Three of twenty is a 15% decay between a census and
+a press made five days later, which is a fact about this ecosystem
+worth writing down on its own.
+
+The part that was ours: nothing carried the refusal back. Those doors
+stayed "ready, never walked, cheap" at the top of the candidate list —
+so the next press would be offered them again, and a standing order on
+a twelve-hour cadence would collect the same three refusals fourteen
+times a week. The price filter shipped the day before catches what a
+door ASKS; it cannot catch whether the door is still there, because
+liveness is not in the census row.
+
+So a press writes down what it was told, per domain, and the desk reads
+it back (`src/services/bounty-refusals.ts`). Two rules keep it from
+becoming the one thing this store does not keep — a blacklist, rule 43,
+no scores on doors:
+
+**Only what is about the DOOR.** Each refusal a posting can produce now
+carries a code beside its words, written at the throw site where the
+fact is known, because string-matching a sentence somebody will reword
+is how a guard quietly stops guarding. `no-402`, `bad-challenge`,
+`no-usdc-rail`, `payto-not-address` and `unreachable` describe the door
+and are remembered. `already-open`, `reward-below-price`,
+`reward-out-of-range`, `rail-not-offered`, `rail-unreadable` and
+`bad-length` describe THIS PRESS — a different week, reward or rail
+changes the answer — and are never cached, because caching one would
+hide a door the keeper could post by moving a dial.
+
+**It expires against the census, not a clock.** Every memory carries
+the round it was taken against. The moment a newer round has probed
+that host, the memory is ignored and the door returns to the desk on
+its own, because the thing that would settle the question has happened.
+Nothing is published, nothing is permanent, and no keeper ever clears a
+list. A press that names no round remembers nothing at all — a refusal
+with no round to expire against would be permanent, and permanent is
+the one thing this must never be.
+
+The blocked row is still SHOWN, with what the door said and the date it
+said it. "This door is ready in the census and gone on the wire" is
+exactly the kind of thing this store exists to notice.

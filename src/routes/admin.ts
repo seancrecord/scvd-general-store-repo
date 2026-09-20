@@ -2501,6 +2501,17 @@ adminRoutes.get("/admin/market", async (c) => {
     Number.isFinite(askedReward) && askedReward > 0
       ? Math.min(askedReward, BOUNTY_MAX_REWARD_USD)
       : BOUNTY_BATCH_DEFAULT_REWARD;
+  /*
+   * AND WHAT THOSE DOORS SAID LAST TIME (2026-09-20). Read fail-soft:
+   * the memory is an optimisation, and a desk that cannot read it
+   * offers the doors it would have offered before it existed.
+   */
+  const { readRefusalMemory, refusalsForRound } = await import(
+    "@/services/bounty-refusals"
+  );
+  const refusals = await readRefusalMemory(c.env)
+    .then((memory) => refusalsForRound(memory, round.at))
+    .catch(() => ({}));
   const candidates = board
     ? bountyCandidates(
         round,
@@ -2509,6 +2520,7 @@ adminRoutes.get("/admin/market", async (c) => {
         new Date(),
         undefined,
         deskReward,
+        refusals,
       )
     : [];
   /*
@@ -2578,10 +2590,18 @@ adminRoutes.post("/admin/bounties/batch", async (c) => {
       : c.redirect(`/admin/market?bounty_batch=${encodeURIComponent(message)}`, 303);
   }
   const extras = postingExtras(body);
+  /*
+   * THE ROUND THIS PRESS IS BEING MADE AGAINST, so the refusals it
+   * collects can expire against the next one (2026-09-20). Fail-soft:
+   * no round, no memory, same press.
+   */
+  const { latestWardRound } = await import("@/services/ward-round");
+  const pressRound = await latestWardRound(c.env).catch(() => null);
   const result = await openBountyBatch(c.env, {
     urls,
     rewardUsd,
     ...(note ? { note } : {}),
+    ...(pressRound?.at ? { roundAt: pressRound.at } : {}),
     ...extras,
   });
   if (contentType.includes("json")) {

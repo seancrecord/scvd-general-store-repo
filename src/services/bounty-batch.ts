@@ -1,11 +1,13 @@
 import {
   BOUNTY_MAX_REWARD_USD,
   BountyRefused,
+  type BountyRefusalCode,
   openBounty,
   type BountyBoardOptions,
   type BountyRecord,
   type BountyTier,
 } from "@/services/bounty-board";
+import type { RefusalMemory } from "@/services/bounty-refusals";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -92,6 +94,14 @@ export interface BountyCandidate {
    * press and no standing order will ever attempt it.
    */
   above_ceiling?: boolean;
+  /**
+   * What this door said the last time a press knocked, when that was
+   * a fact about the DOOR and no newer census round has re-read it
+   * (services/bounty-refusals.ts). The census says ready; the press
+   * found out otherwise; this row is how the desk stops offering it
+   * until the census itself asks again.
+   */
+  last_refusal?: { at: string; code: string; refusal: string };
 }
 
 /** The latest bounty this store opened at each domain. */
@@ -134,6 +144,12 @@ export function bountyCandidates(
    * is reading it against the number already in the reward box.
    */
   rewardUsd: number = BOUNTY_BATCH_DEFAULT_REWARD,
+  /**
+   * What the last press was told at each door, already narrowed to
+   * this round by refusalsForRound (2026-09-20). Empty by default, so
+   * a caller that does not hold it gets exactly the old behaviour.
+   */
+  refusals: RefusalMemory = {},
 ): BountyCandidate[] {
   const history = historyByDomain(bounties);
   const seen = new Set<string>();
@@ -196,9 +212,31 @@ export function bountyCandidates(
         candidate.above_ceiling = true;
       }
     }
+    /*
+     * WHAT THE DOOR SAID LAST TIME (2026-09-20). Three of the twenty
+     * doors in the 2026-09-19 round refused the press — 526, 401, 301
+     * — and all three had read "ready, never walked, cheap" on this
+     * desk, which is where they would have stayed: at the top of the
+     * list, offered to every press until the census next re-read them.
+     * A standing order on a twelve-hour cadence would have collected
+     * the same three refusals fourteen times a week.
+     *
+     * The memory is already narrowed to this round by the caller, so a
+     * newer census round clears it with no hand on any lever.
+     */
+    const remembered = refusals[domain];
+    if (remembered) {
+      candidate.last_refusal = {
+        at: remembered.at,
+        code: remembered.code,
+        refusal: remembered.refusal,
+      };
+    }
     if (state === "open") {
       candidate.blocked =
         "a bounty is already open here — one per domain per week";
+    } else if (remembered) {
+      candidate.blocked = `the last press here was refused on ${remembered.at.slice(0, 10)} (${remembered.code}): ${remembered.refusal} — the round still reads this door ready, and it comes back to this list the moment a newer round re-reads it`;
     } else if (candidate.above_ceiling) {
       candidate.blocked = `its cheapest ask ($${candidate.min_usdc?.toFixed(4)}) is at or above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} reward ceiling — no reward this board may pay would clear it, so no press can post this door at all`;
     } else if (
@@ -269,6 +307,8 @@ export interface BatchOutcome {
   amount_usd?: number;
   /** The refusal, verbatim from the posting door that produced it. */
   refusal?: string;
+  /** Its code, for a caller that must decide rather than display. */
+  code?: BountyRefusalCode;
 }
 
 export interface BatchResult {
@@ -318,6 +358,14 @@ export async function openBountyBatch(
      * more Base rows.
      */
     rail?: string;
+    /**
+     * The census round this press was chosen from (`round.at`). Given,
+     * the press writes down every refusal that was about a DOOR, so the
+     * desk stops offering a door the census still calls ready and the
+     * wire says is gone. Left out, nothing is remembered and the press
+     * behaves exactly as it did before.
+     */
+    roundAt?: string;
   },
   options: BountyBoardOptions = {},
 ): Promise<BatchResult> {
@@ -350,6 +398,12 @@ export async function openBountyBatch(
         amount_usd: bounty.amount_usd,
       });
     } catch (error) {
+      /*
+       * A THROW THAT IS NOT A REFUSAL IS THE DOOR NOT ANSWERING AT ALL
+       * — openBounty's only unguarded await is the fetch, so a raw
+       * error here is a host that could not be reached. That is as
+       * much a fact about the door as a 301 is, and it is coded as one.
+       */
       outcomes.push({
         url,
         ok: false,
@@ -357,8 +411,33 @@ export async function openBountyBatch(
           error instanceof BountyRefused
             ? error.message
             : `the posting failed: ${String(error instanceof Error ? error.message : error).slice(0, 200)}`,
+        ...(error instanceof BountyRefused
+          ? error.code
+            ? { code: error.code }
+            : {}
+          : { code: "unreachable" as const }),
       });
     }
+  }
+  /*
+   * WRITE DOWN WHAT THE DOORS SAID. After the press, never during: a
+   * memory that fails to save costs one wasted knock next time, and
+   * nothing about it is worth failing a press over.
+   */
+  if (input.roundAt) {
+    const { recordRefusals } = await import("@/services/bounty-refusals");
+    await recordRefusals(
+      env,
+      input.roundAt,
+      outcomes
+        .filter((outcome) => !outcome.ok)
+        .map((outcome) => ({
+          domain: hostOf(outcome.url),
+          ...(outcome.code ? { code: outcome.code } : {}),
+          refusal: outcome.refusal ?? "",
+        })),
+      options.now,
+    );
   }
   const posted = outcomes.filter((outcome) => outcome.ok).length;
   return {
@@ -372,6 +451,14 @@ export async function openBountyBatch(
       ? { trimmed: wanted.length - urls.length }
       : {}),
   };
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
 }
 
 /** One line a keeper can read at a glance, for the notice after a press. */

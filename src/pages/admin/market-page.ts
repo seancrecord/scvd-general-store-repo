@@ -99,7 +99,7 @@ function candidatesHtml(
     .join("\n");
   const pressable = candidates.filter((candidate) => !candidate.blocked).length;
   return `<h3>Post a round of bounties</h3>
-  <p class="menu-meta">${pressable} of these ${candidates.length} can be posted at $${reward.toFixed(2)}. The rest carry their reason: a door already open here this week, a price that needs a bigger reward, or an ask at or above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} ceiling that no reward this board may pay can clear.</p>
+  <p class="menu-meta">${pressable} of these ${candidates.length} can be posted at $${reward.toFixed(2)}. The rest carry their reason: a door already open here this week, a price that needs a bigger reward, an ask at or above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} ceiling that no reward this board may pay can clear, or a door the last press found gone — the census still calls it ready, and it returns to this list the moment a newer round re-reads it.</p>
   <form method="GET" action="/admin/market">
     <label>Read this list against a different reward $<input type="number" name="reward" min="0.01" max="${BOUNTY_MAX_REWARD_USD}" step="0.01" value="${reward.toFixed(2)}" style="width:6em"></label>
     <button type="submit">Re-read</button>
