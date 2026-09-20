@@ -440,6 +440,43 @@ describe("what it refuses to publish", () => {
 });
 
 describe("the door it is served through", () => {
+  it("labels the unsigned history across views while retaining the signed original", async () => {
+    await chain([round("2026-W01", [host("a.example", "ready")])]);
+    const originalUrl = `${BASE}/corpus/1.json`;
+    const original = await (await SELF.fetch(originalUrl)).text();
+    for (const query of ["", "?view=stable"]) {
+      const body = await (await SELF.fetch(`${BASE}/corpus/host/a.example.json${query}`)).json() as {
+        evidence_scope: { signed: boolean; description: string };
+        signature?: string;
+        timeline: { entry_url: string }[];
+      };
+      expect(body.signature).toBeUndefined();
+      expect(body.evidence_scope?.signed).toBe(false);
+      expect(body.evidence_scope.description).toMatch(/unsigned/i);
+      expect(body.timeline[0]!.entry_url).toBe(originalUrl);
+    }
+    for (const accept of ["text/html", "text/markdown"]) {
+      const response = await SELF.fetch(`${BASE}/corpus/host/a.example`, { headers: { Accept: accept } });
+      expect(response.status).toBe(200);
+      const text = await response.text();
+      expect(text).toMatch(/unsigned host-history summary/i);
+      expect(text).not.toMatch(/signed rows (behind this page )?are at/);
+      expect(text).toContain(originalUrl);
+    }
+    const api = await (await SELF.fetch(`${BASE}/openapi.json`)).json() as {
+      paths: Record<string, { get: { responses: { "200": { content: {
+        "application/json": { schema: { required: string[]; properties: {
+          evidence_scope: { properties: { signed: { const: boolean } } };
+        } } };
+      } } } } }>;
+    };
+    const schema = api.paths["/corpus/host/{host}.json"]!.get.responses["200"].content["application/json"].schema;
+    expect(schema.required).toContain("evidence_scope");
+    expect(schema.properties.evidence_scope.properties.signed.const).toBe(false);
+    expect(await (await SELF.fetch(originalUrl)).text()).toBe(original);
+    expect(JSON.parse(original).signature).toMatch(/^[0-9a-f]+$/);
+  });
+
   it("serves one host at /corpus/host/{host}.json without colliding with the sequence route", async () => {
     await chain([round("2026-W01", [host("a.example", "ready")])]);
 

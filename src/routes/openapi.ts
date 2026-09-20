@@ -7641,12 +7641,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/corpus/host/{host}.json": {
         get: {
-          ...freeOp("Read one host's recorded history", "Free underlying evidence for Spot Check. Add view=stable to omit the request-time asked_at field and revalidate exact published bytes with If-None-Match. A 304 means this published view is unchanged, not that the host is unchanged or that a new probe ran. The default view retains asked_at."),
+          ...freeOp("Read one host's recorded history", "Free unsigned host-history summary linking the signed corpus originals. Verify each retained original and its exact endpoint rows separately; tier and gap counts are derived context. Add view=stable to omit the request-time asked_at field and revalidate exact published bytes with If-None-Match. A 304 means this published view is unchanged, not that the host is unchanged or that a new probe ran. The default view retains asked_at."),
           parameters: [pathParam("host", "A bare hostname"), {name:"view",in:"query",required:false,schema:{type:"string",enum:["stable"]}}],
           responses: { ...COMMON_RESPONSES,
             "200": {description:"Recorded history, dated observations and gaps",content:{"application/json":{schema:{
-              type:"object", required:["host","timeline","rounds_probed","rounds_gapped","what_this_cannot_see"],
+              type:"object", required:["host","timeline","rounds_probed","rounds_gapped","what_this_cannot_see","evidence_scope"],
               properties:{
+                evidence_scope:{type:"object",required:["signed","description"],properties:{signed:{type:"boolean",const:false},description:{type:"string"}}},
                 host:{type:"string"}, asked_at:{type:"string",format:"date-time",description:"Request time, omitted with view=stable"},
                 first_observed:{type:["string","null"],format:"date-time"}, last_observed:{type:["string","null"],format:"date-time"},
                 rounds_in_chain:{type:"integer"}, rounds_since_first_sighting:{type:"integer"}, rounds_probed:{type:"integer"}, rounds_gapped:{type:"integer"},
