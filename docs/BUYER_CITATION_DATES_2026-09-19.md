@@ -73,3 +73,9 @@ Follow-through validation: 48 tests across eight affected verifier, schema,
 free-history and response-budget files pass, along with typecheck, both Worker
 bundles, the SDK bundle and documentation checks. The new regression cases were
 observed failing before the repair. All hosted CI shards remain merge gates.
+
+September 20 production readback: HTTP preflight, general MCP and read-only MCP
+all expose identical `current_reading` and `free_signed_history` fields; OpenAPI
+describes both, and the verifier still excludes paid fields. All four requests
+returned HTTP 200. [Dated responses and hashes](../research/verifier-routing-2026-09-20/reading.json)
+close the #849 public-field gate; they do not qualify a native buyer journey.
