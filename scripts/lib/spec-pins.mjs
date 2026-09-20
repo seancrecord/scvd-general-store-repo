@@ -74,7 +74,8 @@ export const PINS = [
      * the family specs were edited continuously through the window
      * while our advisory sat still.
      */
-    on_drift: "Re-read specs/schemes/ and reconcile SPEC_SCHEMES and the nonstandard-scheme advisory. A new family means the advisory is accusing doors that implement it.",
+    on_drift:
+      "Re-read specs/schemes/ and reconcile SPEC_SCHEMES and the nonstandard-scheme advisory. A new family means the advisory is accusing doors that implement it. test/spec-pins-agree-with-the-code.spec.ts holds SPEC_SCHEMES to the family list THIS lock records, so re-pinning without reconciling fails the build rather than passing quietly — which is the half of this instruction --update cannot carry out for you.",
   },
   {
     id: "x402-core-v2",
@@ -92,7 +93,7 @@ export const PINS = [
     source: "x402",
     paths: ["specs/extensions/"],
     read_date: "2026-09-14",
-    on_drift: "A new or changed extension. Re-generate the coverage matrix; five of seven already have no reader here.",
+    on_drift: "A new or changed extension. Re-generate the coverage matrix; six of the nine already have no reader here.",
   },
   {
     /**
