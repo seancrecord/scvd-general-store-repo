@@ -16,6 +16,11 @@ import {
 import { ucpProfile } from "@/lib/ucp/profile";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
 import {
+  IDEMPOTENCY_KEY_MAX_LENGTH,
+  IDEMPOTENCY_KEY_MIN_LENGTH,
+  IDEMPOTENCY_TTL_SECONDS,
+} from "@/lib/idempotency";
+import {
   SCVD_EXTENSION_VERSION,
   SCVD_NAMESPACE,
   UCP_NAMESPACE,
@@ -103,6 +108,17 @@ ucpRoutes.get("/ucp/v1", (c) => {
               body: {
                 line_items: [{ item: { id: "variant id from the catalog" }, quantity: 1 }],
                 [SCVD_NAMESPACE]: { inputs: { "<required input name>": "value" }, network: "CAIP-2 id of a rail listed in the profile (optional)" },
+              },
+              /**
+               * The header the contract requires here, and what this
+               * store does with it — said at the door rather than left
+               * for a caller to discover on the retry that duplicated.
+               */
+              idempotency: {
+                headers: ["Idempotency-Key", "UCP-Agent"],
+                honoured_for_hours: IDEMPOTENCY_TTL_SECONDS / 3600,
+                key_length: [IDEMPOTENCY_KEY_MIN_LENGTH, IDEMPOTENCY_KEY_MAX_LENGTH],
+                note: "A repeated Idempotency-Key returns the checkout it already opened, as it stands now, rather than a second one. The key is scoped to the UCP-Agent that sent it, so both headers are needed; a key this store cannot honour is named in a warning on the response rather than discarded in silence.",
               },
             },
             "checkout.get": { method: "GET", url: `${base}/ucp/v1/checkout-sessions/{id}` },
