@@ -108,6 +108,7 @@ import {
   openingDayRoutes,
   provenanceRoutes,
   bountyRoutes,
+  fieldStudyRoutes,
   creditRoutes,
   pricingRoutes,
   railsRoutes,
@@ -227,6 +228,7 @@ app.route("/", launchCheckRoutes);
 app.route("/", openingDayRoutes);
 app.route("/", provenanceRoutes);
 app.route("/", bountyRoutes);
+app.route("/", fieldStudyRoutes);
 app.route("/", creditRoutes);
 app.route("/", pricingRoutes);
 app.route("/", railsRoutes);

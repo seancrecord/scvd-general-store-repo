@@ -3583,6 +3583,30 @@ adminRoutes.get("/admin/bounties", async (c) => {
   const { renderBountiesPage, moneyOutAllTime } = await import(
     "@/pages/admin/bounties-page"
   );
+  /*
+   * THE FIELD STUDY'S SHELF (FIELD_STUDY.md, 2026-09-19), loaded on
+   * the same page and settled separately: five reads, every one of
+   * them allowed to fail without taking the bounty board's desk down
+   * with it. The keeper asked for both instruments in one place; that
+   * must not mean one bad KV read costs him the other's numbers.
+   */
+  const [studyBoard, studies, studyFindingsRead, studyLedger, studyAttempts, shelf_] =
+    await Promise.allSettled([
+      import("@/services/field-study").then(({ fieldStudyBoard }) =>
+        fieldStudyBoard(c.env),
+      ),
+      import("@/services/field-study").then(({ allStudies }) => allStudies(c.env)),
+      import("@/services/study-findings").then(({ studyFindings }) =>
+        studyFindings(c.env),
+      ),
+      import("@/lib/metrics").then(({ readStudyLedger }) => readStudyLedger(c.env)),
+      import("@/lib/metrics").then(({ listRecentStudyEvents }) =>
+        listRecentStudyEvents(c.env, 40),
+      ),
+      import("@/services/field-study").then(({ scenarioShelf }) =>
+        scenarioShelf(c.env),
+      ),
+    ]);
   const porchLedger = shelf(porch, null, "the porch", notes);
   const organic = (surface: string): number =>
     porchLedger?.surfaces[surface]?.["organic"] ?? 0;
@@ -3623,9 +3647,89 @@ adminRoutes.get("/admin/bounties", async (c) => {
       creditHolders: shelf(creditHolders, null, "the credit ledger", notes),
       redemptions,
       now: new Date().toISOString(),
+      fieldStudy: {
+        board: shelf(studyBoard, null, "the field study", notes),
+        studies: shelf(studies, null, "the study records", notes),
+        findings: shelf(studyFindingsRead, null, "the study findings", notes),
+        ledger: shelf(studyLedger, null, "the study ledger", notes),
+        attempts: shelf(studyAttempts, [], "study events", notes),
+        scenarios: shelf(shelf_, null, "the scenario shelf", notes),
+        notice: c.req.query("scenario") ?? null,
+        now: new Date().toISOString(),
+      },
       loadNotes: notes,
     }),
   );
+});
+
+/**
+ * THE SCENARIO SHELF'S BUTTONS (FIELD_STUDY.md, 2026-09-19).
+ *
+ * The keeper asked for predetermined studies he can put live by
+ * pressing one thing, and this is that one thing. There is nothing to
+ * fill in because there is nothing to decide: a scenario is already
+ * written, already priced, and already states what our books can and
+ * cannot confirm about it. The form posts an id and an action.
+ *
+ * `open_all` exists because the honest first move with a fresh shelf
+ * is to put the whole thing up and see which scenarios anybody takes —
+ * choosing for them, before a single walk has come in, would be the
+ * keeper guessing at exactly the question the instrument was built to
+ * stop him guessing at.
+ *
+ * Closing never cancels a walk in flight: studies already enrolled
+ * under a scenario debrief normally, because somebody is out there
+ * spending their own money on the strength of a listing we published.
+ */
+adminRoutes.post("/admin/field-study/scenarios", async (c) => {
+  const { openScenario, closeScenario, StudyRefused } = await import(
+    "@/services/field-study"
+  );
+  const { STUDY_SCENARIOS } = await import("@/store/study-scenarios");
+  const contentType = c.req.header("Content-Type") ?? "";
+  const body = contentType.includes("json")
+    ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+    : Object.fromEntries((await c.req.formData()).entries());
+  const action = String(body["action"] ?? "open");
+  const scenarioId = String(body["scenario_id"] ?? "").trim();
+  const wantsJson = contentType.includes("json");
+  const done = (message: string, status: 200 | 400 = 200) =>
+    wantsJson
+      ? c.json({ ok: status === 200, message }, status)
+      : c.redirect(
+          `/admin/bounties?scenario=${encodeURIComponent(message.slice(0, 300))}`,
+          303,
+        );
+  try {
+    if (action === "open_all") {
+      for (const scenario of STUDY_SCENARIOS) {
+        await openScenario(c.env, scenario.id);
+      }
+      return done(
+        `Put all ${STUDY_SCENARIOS.length} scenarios live. Which ones anybody actually takes is now a fact rather than a guess.`,
+      );
+    }
+    if (action === "close_all") {
+      for (const scenario of STUDY_SCENARIOS) {
+        await closeScenario(c.env, scenario.id);
+      }
+      return done(
+        `Took all ${STUDY_SCENARIOS.length} scenarios down. Studies already enrolled under one still debrief normally — closing the shelf stops new enrolments, it does not cancel a walk somebody is halfway through.`,
+      );
+    }
+    if (!scenarioId) return done("Name a scenario_id.", 400);
+    if (action === "close") {
+      await closeScenario(c.env, scenarioId);
+      return done(
+        `Took ${scenarioId} down. Anyone already enrolled under it still debriefs normally.`,
+      );
+    }
+    const opened = await openScenario(c.env, scenarioId);
+    return done(`${scenarioId} is live until ${opened.expires_at.slice(0, 10)}.`);
+  } catch (error) {
+    if (error instanceof StudyRefused) return done(error.message, 400);
+    return done(`That did not go through: ${String(error).slice(0, 200)}`, 400);
+  }
 });
 
 adminRoutes.get("/admin/declines", async (c) => {

@@ -360,6 +360,18 @@ function boardHtml(
       <h2>What your walk becomes</h2>
       <p class="menu-desc">The chain-verified half — that a settlement happened, to that address, for that amount, after the bounty opened — is what the reward pays for, and it is the half this store can prove. Whatever you say the door did is recorded verbatim, attributed to you, and filed as crowd-walked evidence: a tier below what the house walked itself, printed as such wherever it is used. Nobody's report is quietly promoted to a fact here.</p>
     </section>
+    <section>
+      <h2>The other instrument that pays you</h2>
+      <p class="menu-desc">This board pays you to walk somebody ELSE'S
+      x402 door. <a href="/field-study">The Field Study</a> pays you to
+      walk OURS and then say what the shopping was actually like —
+      enrol free, buy a few things here across whichever surfaces and
+      rails you like, answer the questions, collect the reward. Every
+      purchase you cite there is verified against this store's own
+      books rather than a chain, which makes it the one instrument here
+      that needs neither of us to trust the other. Separate weekly
+      budget, separate rules, and you may do both.</p>
+    </section>
     ${bountyBoardJsonLd(base)}`;
 }
 
