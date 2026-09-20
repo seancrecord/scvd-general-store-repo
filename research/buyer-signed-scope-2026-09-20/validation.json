@@ -1,0 +1,118 @@
+{
+  "base_commit": "585ad5a240c84e7c052ed155f63ef9829c29a899",
+  "full_local_suite": {
+    "files_passed": 798,
+    "tests_passed": 15183,
+    "tests_skipped": 1,
+    "tests_failed": 0,
+    "exit_code": 0
+  },
+  "typecheck": "pass",
+  "build_check": "pass",
+  "docs_check": "pass",
+  "skill_check": "pass",
+  "controller_tests": 236,
+  "evidence_tests": 202,
+  "targeted_tests_before_schema_assertion": 38,
+  "guide_cli_tests": 7,
+  "red_proof": "Guide execution and host-history labeling tests failed with the three repaired source files stashed; source restored before the full suite.",
+  "native_acceptance": "Not established by these checks; a separate release freeze and fresh qualification are required.",
+  "required_before_merge": "All hosted PR gates must pass on the final head.",
+  "logs": {
+    "scvd-exact-subject-docs.log": {
+      "bytes": 4293,
+      "sha256": "d38e1bd537d3f551d388c7b355360504edd803be4ee222a486840269d58668ea"
+    },
+    "scvd-exact-subject-evidence.log": {
+      "bytes": 40780,
+      "sha256": "85861b64dfd63f6eaaafd922b2477635f66efd4109b78cdaea38c22975634de8"
+    },
+    "scvd-exact-subject-controller.log": {
+      "bytes": 46705,
+      "sha256": "6fd7aa120eb2a3c07ce45f39f712324476d23955e75a053e32ff523e65ffa3d6"
+    },
+    "scvd-exact-subject-build.log": {
+      "bytes": 4032,
+      "sha256": "94425b4ee92ab35f8cc37dc9ed547f42675ea1cc6a3feb868d4aff92e55ca9c0"
+    },
+    "scvd-exact-subject-skill-check.log": {
+      "bytes": 1111,
+      "sha256": "1b05fb56004f138bc97c835d780fd7e653877b548d0a1f2e0937e1680602d165"
+    },
+    "scvd-exact-subject-typecheck.log": {
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "scvd-exact-subject-corrections.log": {
+      "bytes": 124,
+      "sha256": "a12d177ee71fd25dfa546c10d8a9d80673582528d51006cb687658d80df33dc5"
+    },
+    "scvd-exact-subject-corrections-test.log": {
+      "bytes": 514,
+      "sha256": "ecce14a6f38f5769e95444ad0450f5be4e8a707938209789ae00e869da0ac48e"
+    },
+    "scvd-exact-subject-full.log": {
+      "bytes": 385946,
+      "sha256": "b6847fbe435d70744086604aa1dd990a041fb63a983c9ad98b7de3d1cf85ad49"
+    },
+    "scvd-exact-subject-install.log": {
+      "bytes": 144,
+      "sha256": "037f0aca82b058ca254b975d8a99bccf674d1f056ce0d31f1d8b7fbd69ffb063"
+    },
+    "scvd-exact-subject-targeted.log": {
+      "bytes": 59850,
+      "sha256": "7830fcbf625f1d3810f6712f9deea38634deac07873604cda7f9b39a64145b80"
+    },
+    "scvd-exact-subject-guide-red.log": {
+      "bytes": 1008,
+      "sha256": "a0a7126741be9185859c6796fcfb3a4ebd294cac5177a8b6c09810214fe55ea0"
+    },
+    "scvd-exact-subject-history-red.log": {
+      "bytes": 61317,
+      "sha256": "b5092de480690662e912c599e80759afdf94a72073b503dba931161add1214b2"
+    },
+    "scvd-exact-subject-guide-green.log": {
+      "bytes": 1927,
+      "sha256": "c487c93458f8c92de471c30b8672ab23dfd3924f377e616d0192727df76efb22"
+    },
+    "scvd-exact-subject-integrated-tests.log": {
+      "bytes": 59851,
+      "sha256": "7d38e1f35972adcddbf4732037720c8f240137e0a042ef544577574bfc4b4758"
+    },
+    "scvd-exact-subject-integrated-docs.log": {
+      "bytes": 4293,
+      "sha256": "5734f7c2fdd1b86850f07d981795dad055e71c3c127472ba9939e8aa6335799c"
+    },
+    "scvd-exact-subject-integrated-build.log": {
+      "bytes": 4032,
+      "sha256": "91c708bf5c5cace033e7bd73931c7321204efb5f4f44dcf725c54c752389faac"
+    },
+    "scvd-exact-subject-integrated-typecheck.log": {
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "scvd-exact-subject-integrated-verifier.log": {
+      "bytes": 2828,
+      "sha256": "00244a0a8301c51fd9da49094f2c14f0fbebee1730bf4a67dbe5a76859940635"
+    }
+  },
+  "local_test_load": "Another checkout started concurrent Worker tests during the full local suite; process evidence is retained. Native acquisition had not started.",
+  "integration": {
+    "base_commit": "48ec3371054a6885c375a9a672697da3deeb7316",
+    "scope": "Preserves PR #862 guide and executable regression. Drops the parallel draft guide/test; this PR now supplies the unsigned-history surface labels, schema, correction and regression. The full local suite above preceded this integration.",
+    "checks": {
+      "typecheck": "pass",
+      "worker_and_sdk_bundles": "pass",
+      "docs": "pass",
+      "targeted_tests": {
+        "files_passed": 6,
+        "tests_passed": 54,
+        "tests_failed": 0
+      },
+      "verifier_cli_tests": {
+        "passed": 12,
+        "failed": 0
+      }
+    }
+  }
+}

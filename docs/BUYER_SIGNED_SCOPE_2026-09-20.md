@@ -39,3 +39,27 @@ and qualify separately. Preserve every previous score and budget. The September 
 observation ages out September 21 at 02:30:20.531 UTC under the existing fourteen-day
 policy; use suitable newer evidence or record incompleteness after that time.
 Do not widen the window or retry closed cells to obtain a pass.
+
+## Unsigned host-history follow-through
+
+The guide repair merged in [PR #862](https://github.com/seancrecord/scvd-general-store-repo/pull/862).
+The host page and Markdown twin still called their unsigned JSON summary “the
+signed rows.” They now label the view unsigned; default and stable JSON expose
+`evidence_scope.signed: false`, and OpenAPI describes that boundary. The public
+correction records the withdrawn wording. Signed originals, tier calculations,
+gap counts and historical bytes are unchanged.
+
+The served-view regression failed with the source repair stashed. It covers both
+JSON views, HTML, Markdown and OpenAPI, and verifies unchanged original bytes.
+The pre-integration full local suite passed 798 files and 15,183 tests, one skip,
+zero failures. Integration preserves #862's guide and executable test rather than
+replacing them with the parallel draft. [Validation and log hashes](../research/buyer-signed-scope-2026-09-20/validation.json)
+separate that full run from checks on the integrated release.
+
+A September 20 controller read also verified public snapshot 8: one exact
+endpoint row observed September 14 at 01:30:09.376 UTC, separately from its
+September 20 publication. This is a controller check of available evidence,
+not native acceptance or independent issuer identity. A new freeze must record
+that evidence change; comparison with September 19 cannot isolate a wording effect.
+
+Integrated checks pass: 54 tests across six served-surface files, 12 verifier CLI tests, typecheck, both Worker bundles, the SDK bundle and documentation checks. All hosted gates still apply to the final PR head.

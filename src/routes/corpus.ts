@@ -64,6 +64,12 @@ import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
  */
 export const corpusRoutes = new Hono<HonoEnv>();
 
+// A reference to a signed snapshot does not sign the view that links it.
+const HOST_HISTORY_SCOPE = {
+  signed: false,
+  description: "Unsigned host-history summary. The timeline, tier and gap counts are derived context, not a signed artifact. Each timeline entry links a corpus original: retain it and an independently established issuer key, verify its signature, then match the exact endpoint and observation date inside its signed data. One verified snapshot does not authenticate other weeks or this summary.",
+} as const;
+
 const citingPathHeaders: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
   const base = c.env.STORE_BASE_URL.replace(/\/$/, "");
@@ -349,6 +355,7 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
     ...(c.req.query("view") === "stable" ? stableHistory : { ...stableHistory, asked_at }),
     /* The Atom feed of this host's changes (2026-09-17): one entry per
      * verdict or pay-to change, derived from these same rows. */
+    evidence_scope: HOST_HISTORY_SCOPE,
     feed_url: `${base}/feeds/host/${host}.xml`,
     tier: deriveTier(
       tierInputFromHistory(observation.history, observation),
@@ -416,8 +423,10 @@ ${description}
 Reason recorded: ${gone.reason}.
 
 The aggregates at ${base}/corpus and ${base}/doors are unchanged; the
-signed rows are still at ${base}/corpus/host/${host}.json. Only this
-page is withdrawn.
+unsigned history linking the corpus originals remains at
+${base}/corpus/host/${host}.json. Only this page is withdrawn.
+
+${HOST_HISTORY_SCOPE.description}
 `;
   }
 
@@ -485,6 +494,8 @@ Where it asks to be paid, as digests: ${
 
 # ${title}
 
+${HOST_HISTORY_SCOPE.description}
+
 **${tier.line}** — ${tier.rule}. The rule and every tier are at
 ${base}/criteria. ${NEVER_A_RANKING_SENTENCE}
 
@@ -525,7 +536,7 @@ POST ${base}/api/preflight/v1
 {"url": "https://${host}/…"}
 \`\`\`
 
-The signed rows behind this page are at ${base}/corpus/host/${host}.json;
+The unsigned history at ${base}/corpus/host/${host}.json links the corpus originals;
 every entry links the snapshot it came from, and the chain is at
 ${base}/corpus.json. If you operate this host and want the page
 withdrawn, the notice desk is at ${base}/notice. Corrections:
@@ -657,9 +668,11 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   const bodyHtml = gone
     ? `<section>
         <p class="menu-desc">${escapeHtml(description)}</p>
-        <p class="menu-meta">Reason recorded: ${escapeHtml(gone.reason)}. The aggregates at <a href="/corpus">/corpus</a> and <a href="/doors">/doors</a> are unchanged; the signed rows are at <code>${escapeHtml(`${base}/corpus/host/${host}.json`)}</code>.</p>
+        <p class="menu-meta">Reason recorded: ${escapeHtml(gone.reason)}. The aggregates at <a href="/corpus">/corpus</a> and <a href="/doors">/doors</a> are unchanged; the unsigned history linking the corpus originals is at <code>${escapeHtml(`${base}/corpus/host/${host}.json`)}</code>.</p>
+        <p class="menu-meta">${escapeHtml(HOST_HISTORY_SCOPE.description)}</p>
       </section>${jsonLd}`
     : `<section>
+        <p class="menu-meta">${escapeHtml(HOST_HISTORY_SCOPE.description)}</p>
         <p class="menu-desc"><strong>${escapeHtml(tier.line)}</strong> — ${escapeHtml(tier.rule)}. The rule and every tier are at <a href="/criteria">/criteria</a>; the rows are below. ${escapeHtml(NEVER_A_RANKING_SENTENCE)}</p>
         <p class="menu-meta">Latest observation: <code>${escapeHtml(String(tier.latest.verdict ?? "none"))}</code>${tier.latest.observed_at ? ` on ${escapeHtml(tier.latest.observed_at)}` : ""}. Rounds since first sighting: ${history.rounds_since_first_sighting}; probed: ${history.rounds_probed}; missed: ${history.rounds_gapped}${history.observation_coverage_pct !== null ? ` (our coverage of this host: ${history.observation_coverage_pct}%)` : ""}.${tier.coverage_suspect ? " Our own coverage was suspect somewhere in the window, which the tier already reflects." : ""}</p>
       </section>
@@ -705,7 +718,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       })()}
       <section>
         <h2>Check it yourself</h2>
-        <p class="menu-desc">The free preflight runs the same battery on any door right now: <code>POST ${escapeHtml(base)}/api/preflight/v1</code> with <code>{"url": "https://${escapeHtml(host)}/…"}</code>. The signed rows behind this page are at <a href="/corpus/host/${escapeHtml(host)}.json"><code>/corpus/host/${escapeHtml(host)}.json</code></a>; every entry links the snapshot it came from and the chain at <a href="/corpus.json"><code>/corpus.json</code></a>. To be woken only when this record moves, the host's own Atom feed is <a href="/feeds/host/${escapeHtml(host)}.xml"><code>/feeds/host/${escapeHtml(host)}.xml</code></a>. If you operate this host and want the page withdrawn, the <a href="/notice">notice desk</a> is the door. Corrections: <a href="/corrections">/corrections</a>.</p>
+        <p class="menu-desc">The free preflight runs the same battery on any door right now: <code>POST ${escapeHtml(base)}/api/preflight/v1</code> with <code>{"url": "https://${escapeHtml(host)}/…"}</code>. The unsigned history linking the corpus originals is at <a href="/corpus/host/${escapeHtml(host)}.json"><code>/corpus/host/${escapeHtml(host)}.json</code></a>; every entry links the snapshot it came from and the chain at <a href="/corpus.json"><code>/corpus.json</code></a>. To be woken only when this record moves, the host's own Atom feed is <a href="/feeds/host/${escapeHtml(host)}.xml"><code>/feeds/host/${escapeHtml(host)}.xml</code></a>. If you operate this host and want the page withdrawn, the <a href="/notice">notice desk</a> is the door. Corrections: <a href="/corrections">/corrections</a>.</p>
       </section>${jsonLd}`;
   return c.html(
     renderSimplePage({
