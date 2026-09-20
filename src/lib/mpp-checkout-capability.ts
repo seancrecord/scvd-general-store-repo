@@ -4,6 +4,7 @@ import type { HonoEnv } from "@/types";
 import { getMenuItem } from "@/store";
 import { commissionRungFromPath, publicationFamilyForPath, type PublicationFamily } from "@/lib/door-paths";
 import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
+import { quotedMethod } from "@/lib/quote-method";
 
 /**
  * THE PILOT'S ONE PRODUCT (2026-09-16 to 2026-09-18). Native checkout
@@ -33,7 +34,8 @@ export function mppPaymentHeader(authorization: string | undefined): string | un
  * otherwise for them.
  */
 export function nativeCheckoutItem(path: string, method: string): MenuItem | undefined {
-  if (method !== "GET") return undefined;
+  // A HEAD asks the same question a GET asks (lib/quote-method).
+  if (quotedMethod(method) !== "GET") return undefined;
   const match = /^\/api\/buy\/([a-z0-9_-]+)\/?$/.exec(path);
   return match ? getMenuItem(match[1]!) : undefined;
 }
@@ -49,7 +51,7 @@ export function nativeCheckoutItem(path: string, method: string): MenuItem | und
  */
 export interface NativePublicationDoor { family: PublicationFamily }
 export function nativePublicationDoor(path: string, method: string): NativePublicationDoor | undefined {
-  if (method !== "GET") return undefined;
+  if (quotedMethod(method) !== "GET") return undefined;
   const family = publicationFamilyForPath(path);
   return family ? { family } : undefined;
 }
@@ -85,7 +87,7 @@ export const NATIVE_HTTP_HEADERS = { request_header: "Authorization", authorizat
  */
 export interface NativeCommissionDoor { rung: number; item: MenuItem }
 export function nativeCommissionDoor(path: string, method: string): NativeCommissionDoor | undefined {
-  if (method !== "GET") return undefined;
+  if (quotedMethod(method) !== "GET") return undefined;
   const rung = commissionRungFromPath(path);
   const item = rung === null ? undefined : getMenuItem(COMMISSION_ITEM_ID);
   return rung !== null && item ? { rung, item } : undefined;

@@ -108,16 +108,63 @@ test("quotes are bounded and expired quotes cannot submit", async () => {
   assert.equal((await f.quote({ buy_url: "/api/buy/hello" })).isError, false);
 });
 
-test("concurrent payment calls submit a quote only once", async () => {
+/*
+ * ONE QUOTE, ONE PAYMENT IN FLIGHT (rewritten 2026-09-19, PROBLEMS #27).
+ * Until this entry a duplicate submission was REFUSED, which was safe on the
+ * wire and unsafe in the agent: the honest answer to "already in flight" is
+ * to ask for another quote, and another quote is another retry key, which is
+ * a real second charge. The duplicate now collects the original result. A
+ * DIFFERENT credential against one in-flight quote is still refused; that is
+ * two payments for one purchase and the page will not choose.
+ */
+test("a duplicate submission collects the original result instead of sending a second", async () => {
   let finish;
   const f = fixture(async (_url, _init, n) => n === 1 ? response() : await new Promise(resolve => { finish = resolve; }));
   const quote = (await f.quote({ buy_url: "/api/buy/hello" })).structuredContent;
   const first = f.complete({ quote_id: quote.quote_id, signed_payment: signed });
-  const second = await f.complete({ quote_id: quote.quote_id, signed_payment: signed });
-  assert.equal(second.isError, true);
-  assert.equal(f.requests.length, 2);
+  const duplicate = f.complete({ quote_id: quote.quote_id, signed_payment: signed });
+  const other = await f.complete({ quote_id: quote.quote_id, signed_payment: { ...signed, payload: { signature: "another-wallet", authorization: { nonce: "other" } } } });
+  assert.equal(other.isError, true, "a different credential is not queued behind this one");
+  assert.match(other.structuredContent.error, /DIFFERENT credential/);
+  assert.equal(f.requests.length, 2, "nothing left the page for either second call");
   finish(response(200, { delivered: true }));
-  assert.equal((await first).isError, false);
+  const settled = await first;
+  assert.equal(settled.isError, false);
+  assert.equal(await duplicate, settled, "the duplicate is handed the original answer, not a refusal");
+  assert.equal(f.requests.length, 2, "one payment for one quote");
+});
+
+/*
+ * CONCURRENT QUOTES FOR ONE PURCHASE (2026-09-19, PROBLEMS #27). Every quote
+ * mints its own retry key, so two parallel tool calls for one buy_url used to
+ * become two keys, two slots at the store's gate, and two charges for one
+ * intent. Knocks in flight for the same purchase now join.
+ */
+test("concurrent quotes for one purchase knock once and share a retry key", async () => {
+  let finish;
+  const f = fixture((_url, _init, n) => n === 1 ? new Promise(resolve => { finish = resolve; }) : response());
+  const calls = [
+    f.quote({ buy_url: "/api/buy/service_audit?url=a&name=b" }),
+    f.quote({ buy_url: "/api/buy/service_audit?name=b&url=a" }),
+    f.quote({ buy_url: "/api/buy/service_audit?url=a&name=b" }),
+  ];
+  assert.equal(f.requests.length, 1, "one free knock for one purchase, query order included");
+  // A value carrying the query's own delimiters is a DIFFERENT purchase here,
+  // exactly as it is in the store's slot, and knocks on its own.
+  const injected = f.quote({ buy_url: "/api/buy/service_audit?url=a%26name%3Db" });
+  assert.equal(f.requests.length, 2);
+  finish(response());
+  const [a, b, c] = (await Promise.all(calls)).map(result => result.structuredContent);
+  assert.equal(b.quote_id, a.quote_id);
+  assert.equal(c.quote_id, a.quote_id);
+  assert.equal(b.idempotency_key, a.idempotency_key);
+  assert.notEqual((await injected).structuredContent.quote_id, a.quote_id);
+  // A quote asked for AFTER the first came back is a deliberate second
+  // purchase, and gets its own key.
+  const later = (await f.quote({ buy_url: "/api/buy/service_audit?url=a&name=b" })).structuredContent;
+  assert.notEqual(later.quote_id, a.quote_id);
+  assert.notEqual(later.idempotency_key, a.idempotency_key);
+  assert.equal(f.requests.length, 3);
 });
 
 test("malformed quotes are errors, and free/refused responses never become payment quotes", async () => {
@@ -134,11 +181,17 @@ test("malformed quotes are errors, and free/refused responses never become payme
 test("concurrent quote requests cannot exceed the page's memory bound", async () => {
   const finishes = [];
   const f = fixture(() => new Promise(resolve => finishes.push(resolve)));
-  const pending = Array.from({ length: MAX_QUOTES }, () => f.quote({ buy_url: "/api/buy/hello" }));
-  assert.equal((await f.quote({ buy_url: "/api/buy/hello" })).isError, true);
+  // DISTINCT purchases: concurrent knocks for the SAME purchase now join one
+  // another, so the bound is only reachable with different ones. A joined
+  // caller holds no quote of its own and consumes no quota.
+  const pending = Array.from({ length: MAX_QUOTES }, (_, i) => f.quote({ buy_url: `/gazette/issue-${i + 1}` }));
+  assert.equal((await f.quote({ buy_url: `/gazette/issue-${MAX_QUOTES + 1}` })).isError, true);
   assert.equal(f.requests.length, MAX_QUOTES);
+  const joined = f.quote({ buy_url: "/gazette/issue-1" });
+  assert.equal(f.requests.length, MAX_QUOTES, "joining a knock needs no quota and sends nothing");
   for (const finish of finishes) finish(response());
   assert.ok((await Promise.all(pending)).every(result => result.isError === false));
+  assert.equal((await joined).structuredContent.quote_id, (await pending[0]).structuredContent.quote_id);
 });
 
 

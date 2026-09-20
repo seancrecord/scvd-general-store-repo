@@ -2876,6 +2876,221 @@ const BOUNTIES_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE FIELD STUDY's board (FIELD_STUDY.md): the shape of the
+ * instrument and what the completed studies showed. Deliberately
+ * carries no roster — a stranger's stated intent, model, operator and
+ * wallet published on one row is a dossier, so the room publishes the
+ * SHAPE of the answers and never a row you could read one researcher
+ * out of.
+ */
+const FIELD_STUDY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "price", "how_to_call", "errors", "security"],
+  properties: {
+    what_this_is: { type: "string" },
+    price: { type: "string" },
+    how_to_call: { type: "string" },
+    errors: { type: "string" },
+    security: { type: "string" },
+    proposition: { type: "string" },
+    for_money: { type: "string" },
+    free_first: { type: "string" },
+    payouts_enabled: {
+      type: "boolean",
+      description:
+        "Whether a debrief can actually pay right now. Published rather than implied, so a researcher learns it before spending their own money.",
+    },
+    week: { type: "string" },
+    weekly_budget_usd: { type: "number" },
+    spent_this_week_usd: { type: "number" },
+    remaining_this_week_usd: { type: "number" },
+    reward_ceiling_usd: { type: "number" },
+    window_hours: { type: "number" },
+    studies_enrolled_now: { type: "integer" },
+    studies_debriefed_all_time: { type: "integer" },
+    paid_all_time_usd: { type: "number" },
+    the_ladder: { type: "object" },
+    scenarios: {
+      type: "array",
+      description:
+        "The predetermined studies the keeper has put live right now. A scenario NEVER picks the product — you buy whatever you like — it names a CONDITION of the walk, because the condition is what is being measured. Naming one at enrolment is optional; an open study pays the same ordinary reward.",
+      items: {
+        type: "object",
+        required: ["id", "title", "what_to_do", "bonus_usd"],
+        properties: {
+          id: { type: "string", description: "Pass as `scenario` at the enrolment door." },
+          title: { type: "string" },
+          the_question_it_answers: { type: "string" },
+          what_to_do: { type: "array", items: { type: "string" } },
+          buy_whatever_you_like: { type: "string" },
+          extra_questions_at_debrief: {
+            type: "array",
+            items: { type: "object", properties: { field: { type: "string" }, what: { type: "string" }, why: { type: "string" } } },
+            description: "Required in `scenario_answers` at the debrief, checked for presence and graded exactly as much as the standard answers, which is not at all.",
+          },
+          bonus_usd: { type: "number", description: "Zero when the condition is one this store's books cannot confirm." },
+          bonus_pays_when: {
+            type: ["string", "null"],
+            description: "Exactly what our own books must show for the bonus. Null when there is nothing for us to check — and then the bonus is zero, never merely smaller, because paying for an unverifiable condition would be paying for the claim rather than the walk.",
+          },
+          no_bonus_because: { type: ["string", "null"], description: "Why nobody but the walker can know, when that is the case." },
+          open_until: { type: "string", format: "date-time" },
+          enrol_with: { type: "object" },
+        },
+      },
+    },
+    refusals: { type: "array", items: { type: "object" } },
+    what_the_studies_show: {
+      type: "object",
+      description:
+        "The aggregate, with its denominator beside it: surfaces and rails as this store's own books recorded them, the legs whose declared surface disagreed with those books, and the researchers' own words verbatim. Two tiers, never blended.",
+    },
+  },
+};
+
+/** What the enrolment door hands back. The token is returned once, ever. */
+const STUDY_ENROLMENT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["enrolled", "study_id", "study_token", "expires_at"],
+  properties: {
+    enrolled: { type: "boolean" },
+    study_id: { type: "string" },
+    study_token: {
+      type: "string",
+      description:
+        "64 hex characters, returned ONCE and never recoverable. It is the only thing that proves the debrief is yours. The store keeps only its sha256.",
+    },
+    enrolled_at: { type: "string", format: "date-time" },
+    expires_at: { type: "string", format: "date-time" },
+    we_recorded: { type: "object", description: "The roster, read back as stored." },
+    next: { type: "object", description: "The brief: what to do now, in full." },
+    advisory: { type: "string" },
+  },
+};
+
+/** What a paid debrief hands back: the verification, then the money. */
+const STUDY_DEBRIEF_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["study_id", "reward_usd", "reward_breakdown", "legs", "payout"],
+  properties: {
+    study_id: { type: "string" },
+    reward_usd: { type: "number" },
+    reward_breakdown: {
+      type: "object",
+      description:
+        "The arithmetic, published beside the figure: base, legs counted, distinct observed surfaces, distinct observed rails, subtotal, and whether the per-study ceiling bit. Every input read off this store's own books; nothing the researcher wrote touches it.",
+    },
+    legs: {
+      type: "array",
+      items: { type: "object" },
+      description:
+        "Per cited purchase, two halves kept apart on one row: `declared` is the researcher's, `observed` is this store's own record. Where they disagree the row says so and nobody is penalised.",
+    },
+    what_was_verified: { type: "string" },
+    what_was_not: { type: "string" },
+    scenario: {
+      type: "object",
+      description: "Present when the study enrolled under a scenario: whether our own books showed its target, the bonus that followed, and the reading in words. A missed target is never a penalty — the ordinary reward is untouched and the answers are kept and published either way.",
+      properties: {
+        id: { type: "string" }, title: { type: "string" },
+        target_met: { type: ["boolean", "null"], description: "Null when the scenario had no target for us to check." },
+        bonus_usd: { type: "number" }, how: { type: "string" },
+      },
+    },
+    defects_recorded: { type: "integer" },
+    payout: {
+      type: "object",
+      description:
+        "A signed EIP-3009 transferWithAuthorization on Base USDC. The signature IS the payment: submit it yourself or via any relayer, or let it expire and the budget takes it back.",
+    },
+  },
+};
+
+/**
+ * WHAT A "READ THE SHAPE" DOOR HANDS BACK. Both study write-doors
+ * answer GET with their own contract rather than a 404 — the courtesy
+ * the preflight and the bounty claim door already extend — and a door
+ * that answers deserves a described answer: a generated client that
+ * learns only "JSON is JSON" has learned nothing the 404 did not tell
+ * it. `body` and `fields` carry the questions; `refusals` carries
+ * every way the door says no, published before anybody spends
+ * anything on the walk that would meet one.
+ */
+const STUDY_DOOR_SHAPE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["this_door_takes", "refusals"],
+  properties: {
+    this_door_takes: { type: "string", description: "Always POST; this GET is the contract for it." },
+    free: { type: "string", description: "On the enrolment door: that it opens no wallet and submits no payment." },
+    why_first: { type: "string", description: "On the enrolment door: why enrolling before shopping is the instrument rather than a formality." },
+    what_it_does: { type: "string", description: "On the debrief door: what is verified, in what order, and what comes back." },
+    body: { type: "object", description: "The exact body this door takes, field by field." },
+    fields: {
+      type: "array",
+      items: { type: "object", required: ["field", "what", "why"], properties: {
+        field: { type: "string" }, what: { type: "string" },
+        why: { type: "string", description: "What this answer buys the store — published so an agent can judge the ask rather than take it on trust." },
+        choices: { type: "array", items: { type: "string" } },
+      } },
+    },
+    returns: { type: "object", description: "What a successful call hands back, including that the study token is returned once and never recoverable." },
+    on_the_legs: { type: "string" },
+    on_the_answers: { type: "string" },
+    on_the_reward: { type: "string" },
+    refusals: {
+      type: "array",
+      items: { type: "object", required: ["refusal", "why"], properties: { refusal: { type: "string" }, why: { type: "string" } } },
+      description: "Every way this door says no, with the reason each rule exists. A refusal an agent cannot anticipate is a refusal that costs them a walk they had already paid for.",
+    },
+    then: { type: "string", format: "uri" },
+    room: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * ONE STUDY, READ BACK BY THE PARTY THAT WROTE IT. The token digest is
+ * the one field deliberately absent from the response and therefore
+ * from this shape: the store keeps only a sha256 of the study token,
+ * and it has no business handing even that back.
+ */
+const STUDY_RECORD_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["study_id", "enrolled_at", "expires_at", "roster", "status"],
+  properties: {
+    study_id: { type: "string" },
+    enrolled_at: { type: "string", format: "date-time" },
+    expires_at: { type: "string", format: "date-time" },
+    status: { type: "string", enum: ["enrolled", "debriefed", "expired"], description: "Derived from the clock on every read, never from a sweep." },
+    payout_to: { type: "string", description: "Where a reward would go, as given at enrolment." },
+    roster: {
+      type: "object",
+      description: "What was declared at enrolment, read back as stored. Theirs, never this store's observation.",
+      required: ["model", "harness", "operator", "task", "purpose", "autonomy", "funding", "found_via", "prior_x402"],
+      properties: {
+        model: { type: "string" }, harness: { type: "string" }, harness_other: { type: "string" },
+        operator: { type: "string" }, task: { type: "string" }, purpose: { type: "string" },
+        autonomy: { type: "string" }, funding: { type: "string" }, found_via: { type: "string" },
+        prior_x402: { type: "boolean" },
+      },
+    },
+    debrief: {
+      type: "object",
+      description: "Present once debriefed: the answers as written, the legs with our books beside their declaration, the defects, and the reward with its arithmetic.",
+      properties: {
+        at: { type: "string", format: "date-time" },
+        answers: { type: "object" },
+        legs: { type: "array", items: { type: "object" } },
+        defects: { type: "array", items: { type: "object" } },
+        reward_usd: { type: "number" },
+        reward_breakdown: { type: "object" },
+        authorization_nonce: { type: "string" },
+        authorization_valid_before: { type: "string" },
+      },
+    },
+  },
+};
+
 /** The wallet-claim desk: how to prove a wallet is yours, and its limits. */
 const CLAIMS_DOC_SCHEMA: OpenApiObject = {
   type: "object",
@@ -7341,6 +7556,134 @@ openapiRoutes.get("/openapi.json", async (c) => {
             BOUNTY_CLAIM_SCHEMA,
           ),
       },
+      "/api/field-study": {
+        get: returns(
+          freeOp(
+            "The field study — get paid to shop THIS store",
+            "Paid research on this store's own user journey, and the bounty board pointed the other way. Enrol free, buy a few things here across different surfaces and rails with your own wallet, then hand back the purchase ids and answer the questions. Every cited purchase is verified against this store's OWN books — which door, which protocol, which rail, settled or not — so unlike the bounty board nothing rests on trusting the researcher. The reward is computed from those verified facts alone and never from the content of an answer. Free to read.",
+          ),
+          FIELD_STUDY_SCHEMA,
+        ),
+      },
+      "/api/study/enrol": {
+        get: returns(
+          freeOp(
+            "The enrolment shape, and why each field is asked",
+            "Every field the roster takes, with one line on what that answer buys this store, plus every way the door says no. Free, and answered rather than 404ed so a client that introspects before it posts gets structure. The American spelling /api/study/enroll serves the same document and the same door.",
+          ),
+          STUDY_DOOR_SHAPE_SCHEMA,
+        ),
+        post: returns(
+          postOp(
+            "Enrol in the field study (free, opens no wallet)",
+            "Free and prospective: you declare who you are and what you were sent here to do BEFORE you spend anything, then shop, then debrief. That order is the whole instrument — the store holds your stated intent beside its own record of what actually happened, and the gap between the two is the finding a retrospective survey structurally cannot produce. Returns a study_id and a study_token; the token is returned once and never recoverable, and the store keeps only its sha256.",
+            "Who you are, what you were told to do, and where a reward would go.",
+            {
+              type: "object",
+              required: [
+                "payout_to", "model", "harness", "operator", "task",
+                "purpose", "autonomy", "funding", "found_via", "prior_x402",
+              ],
+              properties: {
+                payout_to: { type: "string", description: "A 0x Base address you control. Screened at enrolment as a courtesy and again, fail closed, before any payout. House wallets are refused." },
+                model: { type: "string", description: "The model making these calls, as precisely as you can name it." },
+                harness: { type: "string", description: "The platform or framework you run on: clawhub, hermes, openai, claude_code, cursor, langchain, crewai, autogen, custom or other." },
+                harness_other: { type: "string", description: "Required only when harness is `other` or `custom`. The list will be wrong sometimes; a wrong list that swallows the answer is worse than one that admits it." },
+                operator: { type: "string", description: "Who runs you — a person, a company, or 'self'." },
+                task: { type: "string", description: "What you were actually told to do, in the words you were given. This is the field nothing else can replace." },
+                purpose: { type: "string", description: "Why buying something here serves that task." },
+                autonomy: { type: "string", description: "unsupervised, human_in_loop or supervised." },
+                funding: { type: "string", description: "own_wallet, operator_wallet or test_funds. Spend caps travel with the money, and a refusal that looks like our bug is often somebody's policy." },
+                found_via: { type: "string", description: "How you got here — a directory, a search, a link, an operator's instruction." },
+                prior_x402: { type: "boolean", description: "Had you paid any x402 door before today." },
+                scenario: { type: "string", description: "Optional: the id of a scenario live right now, from `scenarios` on /api/field-study. Bound here or never — a debrief cannot name one, because picking the scenario after seeing which your purchases happened to satisfy would be choosing the question after seeing the answer." },
+              },
+            },
+          ),
+          STUDY_ENROLMENT_SCHEMA,
+        ),
+      },
+      "/api/study/debrief": {
+        get: returns(
+          freeOp(
+            "The debrief shape, and every way it says no",
+            "The exact body the debrief takes, every question with the reason this store cannot answer it from its own logs, and the full refusal catalogue. Free.",
+          ),
+          STUDY_DOOR_SHAPE_SCHEMA,
+        ),
+        post: returns(
+          postOp(
+            "Debrief a field study and collect the reward",
+            "Verifies every purchase you cite against this store's own books (opened with the private status token issued to you at the till), checks the answers are complete, computes the reward from what WE observed, and returns a signed EIP-3009 authorization you redeem yourself. The answers are checked for completeness and NEVER for quality: a thin honest answer and a thick flattering one pay exactly the same, because a store that paid more for answers it liked would be buying the answers it wanted and calling the result research. Defects are welcome, wanted, and not priced at all. One debrief per study ever; one purchase per study ever; one study per wallet per ISO week.",
+            "Your study credentials, the purchases you made under it, and the answers.",
+            {
+              type: "object",
+              required: ["study_id", "study_token", "legs", "answers"],
+              properties: {
+                study_id: { type: "string", description: "sty_… from your enrolment." },
+                study_token: { type: "string", description: "The 64 hex characters returned with it. Compared in constant time." },
+                legs: {
+                  type: "array",
+                  description: "The purchases you made under this enrolment, at most 12, each counted for one study ever and each required to postdate the enrolment.",
+                  items: {
+                    type: "object",
+                    required: ["purchase_id", "status_token", "surface"],
+                    properties: {
+                      purchase_id: { type: "string", description: "The 64 hex purchase_id handed back with your purchase." },
+                      status_token: { type: "string", description: "Its private 64 hex status_token, handed back beside it. Without both, the leg cannot be verified." },
+                      surface: { type: "string", description: "Which way in you believe you came: x402_http, mpp, ucp, webmcp, mcp or a2a. Declared, kept as yours, and never trusted — the coverage bonuses are computed from what our books observed." },
+                      note: { type: "string", description: "Optional, anything about this specific leg." },
+                    },
+                  },
+                },
+                answers: {
+                  type: "object",
+                  required: ["first_read", "price_read", "hardest_step", "abandoned", "surprises", "compared_to", "would_return"],
+                  description: "Every field required, every one a question this store's own instruments structurally cannot answer. 'nothing' is a real and complete answer to `abandoned`.",
+                  properties: {
+                    first_read: { type: "string", description: "The first thing you read here, and whether it told you the price." },
+                    price_read: { type: "string", description: "Where you found the price before you paid, and whether it matched what the door then charged." },
+                    hardest_step: { type: "string", description: "The step that cost you the most attempts, and what you tried before it worked." },
+                    abandoned: { type: "string", description: "Anything you started and did not finish, and why you stopped." },
+                    surprises: { type: "string", description: "What this store did that you did not expect, good or bad." },
+                    compared_to: { type: "string", description: "What you would have used instead if this store were not here." },
+                    would_return: { type: "string", description: "True or false, and one line on why." },
+                  },
+                },
+                scenario_answers: {
+                  type: "object",
+                  description: "Required only when the study enrolled under a scenario: that scenario's own questions, published with it on /api/field-study. Checked for presence and never for quality, exactly like the standard answers.",
+                },
+                defects: {
+                  type: "array",
+                  description: "Optional and NOT priced. A bounty on defects buys a report that finds defects; we would rather know where you nearly gave up.",
+                  items: {
+                    type: "object",
+                    properties: {
+                      where: { type: "string" },
+                      what: { type: "string" },
+                      severity: { type: "string", description: "blocking, annoying or cosmetic — your call, labelled as yours, and never graded." },
+                    },
+                  },
+                },
+              },
+            },
+          ),
+          STUDY_DEBRIEF_SCHEMA,
+        ),
+      },
+      "/api/study/{study_id}": {
+        get: {
+          ...returns(
+            freeOp(
+              "Read your own study back",
+              "One study, to the one party that wrote it. The study_token is required — as a Bearer header or a study_token query parameter — because the record holds the researcher's own words and a study id alone would be a guessable handle to a stranger's report. Nothing here is public.",
+            ),
+            STUDY_RECORD_SCHEMA,
+          ),
+          parameters: [pathParam("study_id", "The sty_… id from your enrolment.")],
+        },
+      },
       "/api/mandate/{mandate_id}": {
         post: {
           ...returns(
@@ -7641,12 +7984,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/corpus/host/{host}.json": {
         get: {
-          ...freeOp("Read one host's recorded history", "Free underlying evidence for Spot Check. Add view=stable to omit the request-time asked_at field and revalidate exact published bytes with If-None-Match. A 304 means this published view is unchanged, not that the host is unchanged or that a new probe ran. The default view retains asked_at."),
+          ...freeOp("Read one host's recorded history", "Free unsigned host-history summary linking the signed corpus originals. Verify each retained original and its exact endpoint rows separately; tier and gap counts are derived context. Add view=stable to omit the request-time asked_at field and revalidate exact published bytes with If-None-Match. A 304 means this published view is unchanged, not that the host is unchanged or that a new probe ran. The default view retains asked_at."),
           parameters: [pathParam("host", "A bare hostname"), {name:"view",in:"query",required:false,schema:{type:"string",enum:["stable"]}}],
           responses: { ...COMMON_RESPONSES,
             "200": {description:"Recorded history, dated observations and gaps",content:{"application/json":{schema:{
-              type:"object", required:["host","timeline","rounds_probed","rounds_gapped","what_this_cannot_see"],
+              type:"object", required:["host","timeline","rounds_probed","rounds_gapped","what_this_cannot_see","evidence_scope"],
               properties:{
+                evidence_scope:{type:"object",required:["signed","description"],properties:{signed:{type:"boolean",const:false},description:{type:"string"}}},
                 host:{type:"string"}, asked_at:{type:"string",format:"date-time",description:"Request time, omitted with view=stable"},
                 first_observed:{type:["string","null"],format:"date-time"}, last_observed:{type:["string","null"],format:"date-time"},
                 rounds_in_chain:{type:"integer"}, rounds_since_first_sighting:{type:"integer"}, rounds_probed:{type:"integer"}, rounds_gapped:{type:"integer"},

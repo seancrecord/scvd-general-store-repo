@@ -1,0 +1,62 @@
+{
+  "scope": "Controller public response readback against the public example.com homepage; no native agent, purchase or full-journey acceptance. Source deployment is not inferred from response content.",
+  "target": "https://example.com/",
+  "responses": {
+    "http": {
+      "url": "https://scvd.store/api/preflight/v1",
+      "status": 200,
+      "read_at": "2026-09-20T17:25:20.811253+00:00",
+      "bytes": 14765,
+      "sha256": "61c292fe4a666fa55d89a42547ea50488828b09d188154e5d8e16efbec3c8600"
+    },
+    "mcp": {
+      "url": "https://scvd.store/mcp",
+      "status": 200,
+      "read_at": "2026-09-20T17:25:21.244831+00:00",
+      "bytes": 30229,
+      "sha256": "1ffca52595ce2959311d1c66ab88c414616eb3881459ce965dcba7af91027c1a"
+    },
+    "verifier": {
+      "url": "https://scvd.store/mcp/verifier",
+      "status": 200,
+      "read_at": "2026-09-20T17:25:21.576259+00:00",
+      "bytes": 23312,
+      "sha256": "8e442c602de4c4bcdaccaafa8708e71adfd9af15fa1df1149b4c9cf8effe8bb0"
+    },
+    "openapi": {
+      "url": "https://scvd.store/openapi.json",
+      "status": 200,
+      "read_at": "2026-09-20T17:25:21.925647+00:00",
+      "bytes": 676470,
+      "sha256": "07b072604aed2428e8134106979ee935cfa93ae7c466458a536fdb70a33b945b"
+    }
+  },
+  "checks": {
+    "fields_present": {
+      "http": {
+        "current_reading": true,
+        "free_signed_history": true
+      },
+      "mcp": {
+        "current_reading": true,
+        "free_signed_history": true
+      },
+      "verifier": {
+        "current_reading": true,
+        "free_signed_history": true
+      }
+    },
+    "openapi_fields": {
+      "current_reading": true,
+      "free_signed_history": true
+    },
+    "shared_fields_equal": {
+      "current_reading": true,
+      "free_signed_history": true
+    },
+    "verifier_excludes_paid_fields": true
+  },
+  "all_expected_fields_present": true,
+  "retention": "Original public response bytes retained in ignored research/verifier-routing-20260919.local/20260920T172520Z in the main local checkout.",
+  "pull_request": "https://github.com/seancrecord/scvd-general-store-repo/pull/849"
+}

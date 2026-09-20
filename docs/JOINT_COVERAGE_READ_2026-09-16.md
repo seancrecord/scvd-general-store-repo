@@ -384,15 +384,22 @@ scvd.store published the sealed file and the corrected reading together,
 on the reasoning that the commitment binds a party to the file it sealed
 and not to a verdict it has since found wrong.
 
-StillOS's answer, 2026-09-19: *"The commitment stands: hash and byte
-length published, void if either moves."* He restated the binding and
-did not object to the side-by-side publication, so this paper records
-that the mechanism is agreed and **the narrower question is not
-settled between us**: whether a reveal may show a corrected reading
-beside the sealed one, or must show only what was sealed. Both sides
-have published both files either way, and a reader can tell them apart
-by name and by date. Saying it is unsettled costs nothing and is more
-honest than reading assent into a sentence about something else.
+**Settled 2026-09-19, and the rule is StillOS's.** An earlier revision
+of this paper recorded the question as open, because his first answer
+restated the binding rather than addressing the narrower point and we
+would not read assent into it. Asked directly, he gave the rule:
+
+> A reveal showing a corrected reading *instead of* the sealed one has
+> revealed nothing — the sealed bytes are the entire content of the
+> commitment. But a mechanism that requires publishing something you
+> know to be false is worth less than the error it guards against.
+>
+> Sealed bytes verbatim, correction beside them, dated, cause named.
+> The sealed value is what was measured; the correction is a second
+> observation, not a replacement. Appended, never edited away.
+
+That is what both sides did on `batch-runner`, before either of us had
+a rule for it. It is now the rule.
 
 ### What reading someone else's doors fixed
 
@@ -798,32 +805,40 @@ has answered.
 - ~~**StillOS**: whether his reader is runnable by a third party.~~
   Published 2026-09-19, MIT, zero dependencies; §7.
 - **StillOS → scvd.store, on `batch-runner`**: the block heights of the
-  27 transfers, or just the latest. State already says they all precede
-  block 50918945; the heights would close it outright. The smallest
-  item left, and nothing turns on it.
+  27 transfers, when he next walks that door. State already says they
+  all precede block 50918945. He has said he will not hold the paper
+  for them and neither will we; nothing turns on it.
 - **scvd.store → everyone**: a second read of any disputed window at an
   archive-capable endpoint. Attempted 2026-09-17 and refused by the
   free fallback, which answers `latest` and declines history without a
   token. The bitrefill row resolved without it; the obligation stands
   for the next disputed count. `api.bitrefill.com`'s Polygon rail is
   also still unread by us.
-- **Both, unsettled**: whether a reveal may publish a corrected reading
-  beside the sealed one, or must show only what was sealed. The
-  commitment mechanism itself is agreed and both sides have honoured
-  it; this narrower question has not been argued out. §2.
+- ~~**Both, unsettled**: whether a reveal may publish a corrected
+  reading beside the sealed one.~~ **Settled 2026-09-19** on StillOS's
+  rule: sealed bytes verbatim, correction beside them, dated, cause
+  named; appended, never edited away. §2.
 
 ---
 
 ## Signatures
 
-Neither, yet. This is a draft, and it should not be cited until both
-names are on it. It is published in scvd.store's tree so the other
-operator can read it and strike from it, which is the agreed term.
+**StillOS Notary: signed, 2026-09-19.** *"Signed from my side."*
 
-Every passage that was blank is filled, and everything either side
-owed the other is closed but three items in §8 — one of which is a
-question neither of us has answered rather than work either of us has
-skipped. From scvd.store's side the paper is ready to sign. The last
-word is StillOS's, including the word that it is not ready.
+**scvd.store: signed, 2026-09-19.** Ready from our side as of the same
+day, with the last word left to him including the word that it was not
+ready. He gave it.
 
-— drafted 2026-09-16, revised 2026-09-19
+Everything either side owed the other is closed. What remains in §8 is
+one courtesy item on a door nothing turns on, and one standing
+obligation of ours that no future disputed count should go without.
+
+One thing both authors agreed before publication and it is not in this
+paper: what the method is *for*. Two independent implementations, a
+reproducible commitment protocol and five named defects add up to a
+measurement standard that directories, facilitators and the protocol's
+own working groups do not currently have. Neither operator had said
+what they intended by it, and settling that between two people is a
+different act from settling it after it is public.
+
+— drafted 2026-09-16, revised and signed 2026-09-19

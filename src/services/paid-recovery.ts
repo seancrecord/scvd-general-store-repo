@@ -9,6 +9,7 @@ import { PatronAnchorStore, type PatronAnchorRecord } from "@/services/patron-an
 import { humanResolutionKey, type HumanResolutionRecord } from "@/services/human-resolution-record";
 import { HostedObservationStore, type HostedObservation, type HostedPurchase } from "@/services/hosted-observation";
 import { UcpCheckoutStore } from "@/services/ucp-checkout-store";
+import { UcpCheckoutClaims } from "@/services/ucp-checkout-claims";
 import {
   SUBMISSION_ROW,
   type SettlementSubmission,
@@ -165,6 +166,15 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   declineUcpCheckout() { return this.ucpCheckout.declined(); }
   enterUcpSettlement(input: Parameters<UcpCheckoutStore["enterSettlement"]>[0]) { return this.ucpCheckout.enterSettlement(input); }
   cancelUcpCheckout() { return this.ucpCheckout.cancel(); }
+
+  /**
+   * The Create idempotency claim. A DIFFERENT named instance from the
+   * checkout above — named for (UCP-Agent, Idempotency-Key) rather
+   * than for a checkout id — which is why it is a second store on the
+   * same class rather than another row on the checkout's.
+   */
+  private readonly ucpClaims = new UcpCheckoutClaims(this.ctx.storage);
+  claimUcpCheckout(input: Parameters<UcpCheckoutClaims["claim"]>[0]) { return this.ucpClaims.claim(input); }
 
   private readonly hosted = new HostedObservationStore(this.ctx.storage, this.env);
 

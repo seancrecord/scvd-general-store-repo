@@ -119,16 +119,41 @@ than substituting a summary, shortened payload or placeholder signature.
 A separately fetched issuer key records what that source served; identifying
 the issuer still requires a trusted key binding independent of the artifact.
 
-For an original response already saved locally, check whether the installed
-`scvd-evidence --help` lists `verify-source` (added in 1.5.0; source and
-registry versions can differ). If available, use
-`scvd-evidence verify-source original.json --public-key TRUSTED_PUBLIC_KEY_HEX`
-with the documented size allowance and any bound `--evidence` file. It checks
-the original offline without writing duplicate export files or printing the
-whole signed payload. Otherwise use the existing export/verify path below.
-Keep original responses, independent key observations and source URLs for a
-recipient; a short verification result is not a replacement for those files.
-Keep installed packages and their caches outside that evidence directory.
+For a saved corpus snapshot, check that `scvd-evidence --help` lists both
+`verify-source` and `--subject` (the exact-subject option was added in 1.6.0;
+source and registry versions can differ). Replace the key with your independently
+established issuer key, `CALLER_MAX_BYTES` with the caller's allowed input size,
+and `EXACT_ENDPOINT_URL` with the full requested endpoint, including its query:
+
+```sh
+scvd-evidence verify-source ./evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes CALLER_MAX_BYTES \
+  --subject 'EXACT_ENDPOINT_URL'
+```
+
+This verifies the original offline and selects only exact-URL rows from its
+signed claims. It avoids duplicate exports and printing the whole snapshot.
+Require `valid: true`, `evidence_complete: true` and
+`subject_evidence.status: "present"`; exit 0 alone does not establish a match.
+Read `subject_evidence.observations` and `omitted_observations` before reporting
+what was checked. Each selected row's `value.observed_at` is its observation date;
+`snapshot_taken_at` is publication time. An absent match, omitted row, invalid
+signature or missing bound evidence remains a stated gap. A valid signature
+alone does not establish freshness or payment/delivery.
+
+Keep signed observations and unsigned context separate in both the final answer
+and saved verification notes. The host-history lookup's tier, coverage fraction
+and other weeks do not become claims of this snapshot because it verified.
+Describe only the selected signed rows as authenticated; attribute other history
+to the unsigned lookup. Do not guess whether a signature covers a digest or JSON
+bytes: use the existing verifier's format handling.
+
+If the installed command lacks `--subject`, use the documented bundle API below
+or the published package installation above. For other artifact families, use
+`verify-source` with any bound `--evidence` file; the corpus subject selector is
+not their verification contract. Keep originals, the verifier's result, separate
+key observations and source URLs for a recipient; a short result cannot replace
+the originals. Keep installed packages and caches outside the evidence directory.
 
 When using the existing `x402-verify/bundle` API, call `createEvidenceBundle`
 and `verifyEvidenceBundle` with the documented size allowance and an

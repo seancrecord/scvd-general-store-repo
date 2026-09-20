@@ -3,6 +3,10 @@ import type { BountyLedger, MetricEvent } from "@/lib/metrics";
 import type { bountyBoard, PayoutRedemption } from "@/services/bounty-board";
 import type { FieldWalletReading } from "@/services/field-wallet";
 import { renderAdminShell } from "@/pages/admin/layout";
+import {
+  fieldStudySection,
+  type FieldStudyDeskData,
+} from "@/pages/admin/field-study-section";
 
 /**
  * THE BOUNTY BOARD, FROM THE KEEPER'S SIDE (2026-09-04).
@@ -78,6 +82,14 @@ export interface BountiesPageData {
   /** ISO, the moment the page was read; outstanding payouts are judged against it. */
   now: string;
   loadNotes: string[];
+  /**
+   * THE FIELD STUDY, ON THE SAME PAGE (FIELD_STUDY.md, 2026-09-19).
+   * Optional so the page still renders when the study shelf fails to
+   * load — the same courtesy every other section here gets, and the
+   * reason the desk survives one bad read. Absent means "not read",
+   * never "nothing there".
+   */
+  fieldStudy?: FieldStudyDeskData | null;
 }
 
 /** The take's mirror, off the board's own records (bounded by the board's scan cap). */
@@ -411,6 +423,12 @@ export function renderBountiesPage(data: BountiesPageData): string {
     and never verified by this store. "Signed" is what this store did;
     "redeemed" is what the chain says the walker did with it.</small></p>
     ${boardHtml(data.board, data.redemptions, data.now)}
-  </section>`;
+  </section>
+
+  ${
+    data.fieldStudy
+      ? fieldStudySection(data.fieldStudy)
+      : "<section><h2>The field study</h2><p>The field study did not load; nothing in it is zero. Reload to retry.</p></section>"
+  }`;
   return renderAdminShell("bounties", body, data.loadNotes);
 }

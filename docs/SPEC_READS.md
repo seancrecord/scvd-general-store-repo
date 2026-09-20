@@ -1,5 +1,23 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-20 — UCP.tools listing and UCPRegistry intake
+
+Read the rendered [UCP.tools directory](https://ucptools.dev/directory), searched
+for SCVD, submitted the no-account merchant form, and opened the resulting
+[public SCVD detail](https://ucptools.dev/directory/scvd.store). It displays the
+submitted identity and description, REST, dated listing/validation and links
+back to the store and its profile. The directory's score/grade remains its own;
+this establishes indexing, not paid qualification or endorsement. A later
+web-fetch client could not retrieve the detail page; the successful primary
+read was in the browser.
+
+Read [UCPRegistry pricing](https://ucpregistry.com/pricing) and its rendered
+[Merchant intake](https://ucpregistry.com/submit). Pricing states free community
+submissions; the form confirmed receipt. No listing ID or public record yet.
+These are community directories, not official UCP or Google admission. No
+subscription, trial or paid monitoring selected. [Receipts and limits](../research/ucp-distribution-2026-09-19/README.md#september-20-follow-through).
+
+
 ## 2026-09-19 — MPPScan registration completed and read back
 
 Read the rendered [register page](https://www.mppscan.com/register), entered
