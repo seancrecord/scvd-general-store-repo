@@ -2465,7 +2465,9 @@ adminRoutes.get("/admin/market", async (c) => {
     return c.json({ week: round.week, at: round.at, market });
   }
   const { renderMarketPage } = await import("@/pages/admin/market-page");
-  const { bountyBoard } = await import("@/services/bounty-board");
+  const { bountyBoard, BOUNTY_MAX_REWARD_USD } = await import(
+    "@/services/bounty-board"
+  );
   const board = await bountyBoard(c.env).catch(() => null);
   const posted = c.req.query("bounty_posted");
   const refused = c.req.query("bounty_refused");
@@ -2484,12 +2486,41 @@ adminRoutes.get("/admin/market", async (c) => {
    * pays nothing extra for it, and a board that would not read simply
    * offers no list rather than taking the page down.
    */
-  const { bountyCandidates } = await import("@/services/bounty-batch");
+  const { bountyCandidates, BOUNTY_BATCH_DEFAULT_REWARD } = await import(
+    "@/services/bounty-batch"
+  );
+  /*
+   * THE DESK IS READ AGAINST A REWARD (2026-09-19). Which rows a press
+   * can actually post depends on what that press pays — a door asking
+   * $0.111 is unpostable at $0.10 and postable at $0.12 — so the list
+   * is computed against the number in the reward box, and the box is
+   * settable from the page.
+   */
+  const askedReward = Number.parseFloat(c.req.query("reward") ?? "");
+  const deskReward =
+    Number.isFinite(askedReward) && askedReward > 0
+      ? Math.min(askedReward, BOUNTY_MAX_REWARD_USD)
+      : BOUNTY_BATCH_DEFAULT_REWARD;
+  /*
+   * AND WHAT THOSE DOORS SAID LAST TIME (2026-09-20). Read fail-soft:
+   * the memory is an optimisation, and a desk that cannot read it
+   * offers the doors it would have offered before it existed.
+   */
+  const { readRefusalMemory, refusalsForRound } = await import(
+    "@/services/bounty-refusals"
+  );
+  const refusals = await readRefusalMemory(c.env)
+    .then((memory) => refusalsForRound(memory, round.at))
+    .catch(() => ({}));
   const candidates = board
     ? bountyCandidates(
         round,
         board.bounties,
         new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
+        new Date(),
+        undefined,
+        deskReward,
+        refusals,
       )
     : [];
   /*
@@ -2507,11 +2538,19 @@ adminRoutes.get("/admin/market", async (c) => {
   ]);
   const planNotice = c.req.query("plan_notice");
   return c.html(
-    renderMarketPage(round, market, board, notice, candidates, {
-      plan,
-      committed,
-      ...(planNotice ? { notice: planNotice } : {}),
-    }),
+    renderMarketPage(
+      round,
+      market,
+      board,
+      notice,
+      candidates,
+      {
+        plan,
+        committed,
+        ...(planNotice ? { notice: planNotice } : {}),
+      },
+      deskReward,
+    ),
   );
 });
 
@@ -2551,10 +2590,18 @@ adminRoutes.post("/admin/bounties/batch", async (c) => {
       : c.redirect(`/admin/market?bounty_batch=${encodeURIComponent(message)}`, 303);
   }
   const extras = postingExtras(body);
+  /*
+   * THE ROUND THIS PRESS IS BEING MADE AGAINST, so the refusals it
+   * collects can expire against the next one (2026-09-20). Fail-soft:
+   * no round, no memory, same press.
+   */
+  const { latestWardRound } = await import("@/services/ward-round");
+  const pressRound = await latestWardRound(c.env).catch(() => null);
   const result = await openBountyBatch(c.env, {
     urls,
     rewardUsd,
     ...(note ? { note } : {}),
+    ...(pressRound?.at ? { roundAt: pressRound.at } : {}),
     ...extras,
   });
   if (contentType.includes("json")) {
@@ -2568,12 +2615,17 @@ adminRoutes.post("/admin/bounties/batch", async (c) => {
 
 /**
  * THE STANDING ORDER (2026-09-10). GET reads the plan and what this
- * week has already committed; POST writes it. Setting `weeks` to 0
+ * week has already committed; POST writes it. Setting `runs` to 0
  * retires it, which is the off switch and needs no separate door.
  *
  * The headroom figure is served beside the plan on purpose: it is the
- * number that decides whether next week posts anything, and a keeper
- * setting `per_week` without seeing it is guessing.
+ * number that decides whether the next press posts anything, and a
+ * keeper setting `per_run` without seeing it is guessing.
+ *
+ * THE OLD SPELLINGS STILL ANSWER (2026-09-19). `weeks` and `per_week`
+ * were the dials before the cadence was settable, and they are still
+ * read here: a caller written against the weekly plan keeps working
+ * and gets a weekly cadence, which is exactly what it asked for.
  */
 adminRoutes.get("/admin/bounties/plan", async (c) => {
   const { readBountyPlan, committedThisWeek } = await import(
@@ -2587,15 +2639,27 @@ adminRoutes.get("/admin/bounties/plan", async (c) => {
 });
 
 adminRoutes.post("/admin/bounties/plan", async (c) => {
-  const { readBountyPlan, writeBountyPlan, committedThisWeek } = await import(
-    "@/services/bounty-plan"
-  );
+  const {
+    readBountyPlan,
+    writeBountyPlan,
+    committedThisWeek,
+    nextRunAt,
+    PLAN_MIN_EVERY_HOURS,
+    PLAN_MAX_EVERY_HOURS,
+    PLAN_DEFAULT_EVERY_HOURS,
+    PLAN_MAX_OPEN_CAP,
+  } = await import("@/services/bounty-plan");
   const { BOUNTY_MAX_REWARD_USD } = await import("@/services/bounty-board");
+  const { BOUNTY_BATCH_CAP } = await import("@/services/bounty-batch");
   const contentType = c.req.header("Content-Type") ?? "";
   const body: Record<string, unknown> = contentType.includes("json")
     ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
     : ((await c.req.parseBody({ all: true })) as Record<string, unknown>);
-  const weeks = Number.parseInt(String(body["weeks"] ?? ""), 10);
+  /* Either spelling: `runs` is the dial now, `weeks` is what it was. */
+  const runs = Number.parseInt(
+    String(body["runs"] ?? body["weeks"] ?? ""),
+    10,
+  );
   /*
    * A FORM IS ANSWERED WITH A PAGE, A JSON CALL WITH JSON (2026-09-13).
    * The desk grew a form on the market page; a keeper who presses it
@@ -2609,13 +2673,13 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
       `/admin/market?plan_notice=${encodeURIComponent(message.slice(0, 400))}`,
       303,
     );
-  if (!Number.isFinite(weeks) || weeks < 0 || weeks > 52) {
-    const message = "weeks must be a whole number from 0 to 52";
+  if (!Number.isFinite(runs) || runs < 0 || runs > 104) {
+    const message = "runs must be a whole number from 0 to 104";
     return isForm
       ? back(`Nothing was set: ${message}.`)
       : c.json({ error: message }, 400);
   }
-  if (weeks === 0) {
+  if (runs === 0) {
     await writeBountyPlan(c.env, null);
     return isForm
       ? back(
@@ -2623,13 +2687,54 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
         )
       : c.json({ ok: true, retired: true });
   }
-  const perWeek = Number.parseInt(String(body["per_week"] ?? ""), 10);
+  const perRun = Number.parseInt(
+    String(body["per_run"] ?? body["per_week"] ?? ""),
+    10,
+  );
   const reward = Number.parseFloat(String(body["reward_usd"] ?? ""));
   const tier = String(body["tier"] ?? "sprint");
-  if (!Number.isFinite(perWeek) || perWeek < 1 || perWeek > 10) {
+  const everyHours = Number.parseInt(
+    String(body["every_hours"] ?? PLAN_DEFAULT_EVERY_HOURS),
+    10,
+  );
+  const revisitDays = Number.parseInt(String(body["revisit_days"] ?? "0"), 10);
+  if (!Number.isFinite(perRun) || perRun < 1 || perRun > BOUNTY_BATCH_CAP) {
+    const message = `per_run must be between 1 and ${BOUNTY_BATCH_CAP}`;
     return isForm
-      ? back("Nothing was set: per_week must be between 1 and 10.")
-      : c.json({ error: "per_week must be between 1 and 10" }, 400);
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
+  }
+  if (
+    !Number.isFinite(everyHours) ||
+    everyHours < PLAN_MIN_EVERY_HOURS ||
+    everyHours > PLAN_MAX_EVERY_HOURS
+  ) {
+    const message = `every_hours must be between ${PLAN_MIN_EVERY_HOURS} and ${PLAN_MAX_EVERY_HOURS} (the tick fires hourly, so an hour is the shortest cadence there is)`;
+    return isForm
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
+  }
+  if (!Number.isFinite(revisitDays) || revisitDays < 0 || revisitDays > 365) {
+    const message = "revisit_days must be between 0 and 365 (0 keeps to never-walked doors)";
+    return isForm
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
+  }
+  /*
+   * THE BRAKE ON THE BOARD, NOT ON THE PLAN. Default it to one full
+   * press left standing: a cadence the walkers keep up with never
+   * touches this, and one they do not stops here rather than at the
+   * budget — which is the ceiling that costs a stranger money.
+   */
+  const maxOpen = Number.parseInt(
+    String(body["max_open"] ?? perRun * 2),
+    10,
+  );
+  if (!Number.isFinite(maxOpen) || maxOpen < 1 || maxOpen > PLAN_MAX_OPEN_CAP) {
+    const message = `max_open must be between 1 and ${PLAN_MAX_OPEN_CAP}`;
+    return isForm
+      ? back(`Nothing was set: ${message}.`)
+      : c.json({ error: message }, 400);
   }
   if (!Number.isFinite(reward) || reward <= 0 || reward > BOUNTY_MAX_REWARD_USD) {
     const message = `reward_usd must be between 0 and $${BOUNTY_MAX_REWARD_USD}`;
@@ -2655,10 +2760,17 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
       ? rawAsks.split("\n").map((line) => line.trim()).filter(Boolean)
       : [];
   const existing = await readBountyPlan(c.env);
+  const second = body["distinct_payer"] ?? body["second_walk"];
+  const distinctPayer =
+    second === true || second === "on" || second === "1" || second === "true";
   await writeBountyPlan(c.env, {
-    version: 1,
-    weeks_remaining: weeks,
-    per_week: perWeek,
+    version: 2,
+    runs_remaining: runs,
+    per_run: perRun,
+    every_hours: everyHours,
+    max_open: maxOpen,
+    revisit_days: revisitDays,
+    ...(distinctPayer ? { distinct_payer: true } : {}),
     reward_usd: reward,
     tier,
     rails,
@@ -2669,23 +2781,73 @@ adminRoutes.post("/admin/bounties/plan", async (c) => {
   });
   const committed = await committedThisWeek(c.env, new Date());
   const affordable = Math.floor(committed.headroom / reward);
+  const cadence = describeCadence(everyHours);
   if (isForm) {
     return back(
-      `Standing order set: ${perWeek} a week at $${reward.toFixed(2)} for ${weeks} week${weeks === 1 ? "" : "s"}. This week's headroom ($${committed.headroom.toFixed(2)}) affords ${affordable}${affordable < perWeek ? ` of them, so it will post fewer until the week turns over` : ""}.`,
+      `Standing order set: ${perRun} ${cadence} at $${reward.toFixed(2)} for ${runs} press${runs === 1 ? "" : "es"}, holding the board at ${maxOpen} open${revisitDays > 0 ? `, revisiting doors older than ${revisitDays} days` : ""}${distinctPayer ? ", as second walks (a wallet that already walked a door is refused there)" : ""}. This week's headroom ($${committed.headroom.toFixed(2)}) affords ${affordable}${affordable < perRun ? ` of them, so it will post fewer until the week turns over` : ""}.`,
     );
   }
+  const written = await readBountyPlan(c.env);
   return c.json({
     ok: true,
-    plan: await readBountyPlan(c.env),
+    plan: written,
     this_week: committed,
+    ...(written ? { next_run_at: nextRunAt(written, new Date()) } : {}),
     /*
-     * The keeper asked for N a week; say plainly how many this week
+     * The keeper asked for N a press; say plainly how many this week
      * can actually pay for, because the plan will quietly post fewer
      * and it should not be a surprise when it does.
      */
     affordable_this_week: affordable,
   });
 });
+
+/**
+ * PRESS IT NOW (2026-09-19, the keeper: "so i can post as i please").
+ *
+ * The standing order rode the tick and only the tick, so the answer to
+ * "post a round now, on the dials I already wrote down" was to go and
+ * tick the checkboxes by hand. This runs the same pass the tick runs,
+ * skipping the CADENCE and nothing else: the budget reservation, the
+ * open ceiling, the reward that must clear each door's price, the
+ * field wallet and one-bounty-per-domain-per-week all hold exactly as
+ * they do at three in the morning. It spends one of the plan's runs,
+ * because it is one of the plan's presses.
+ */
+adminRoutes.post("/admin/bounties/plan/run", async (c) => {
+  const { bountyPlanPass, readBountyPlan } = await import(
+    "@/services/bounty-plan"
+  );
+  const isForm = !(c.req.header("Content-Type") ?? "").includes("json");
+  const plan = await readBountyPlan(c.env);
+  if (!plan || plan.runs_remaining <= 0) {
+    const message =
+      "There is no standing order to press — set one above, or post a round by hand from the desk.";
+    return isForm
+      ? c.redirect(`/admin/market?plan_notice=${encodeURIComponent(message)}`, 303)
+      : c.json({ error: message }, 409);
+  }
+  const pass = await bountyPlanPass(c.env, new Date(), { force: true });
+  const message = pass
+    ? `Pressed now: ${pass.note}. ${pass.runs_remaining} press${pass.runs_remaining === 1 ? "" : "es"} left.`
+    : "The plan declined to press and said nothing, which should not happen — check the round and the field wallet.";
+  return isForm
+    ? c.redirect(
+        `/admin/market?plan_notice=${encodeURIComponent(message.slice(0, 400))}`,
+        303,
+      )
+    : c.json({ ok: true, pass });
+});
+
+/** A cadence in the words a keeper would use for it. */
+function describeCadence(hours: number): string {
+  if (hours === 1) return "an hour";
+  if (hours === 24) return "a day";
+  if (hours === 168) return "a week";
+  if (hours % 168 === 0) return `every ${hours / 168} weeks`;
+  if (hours % 24 === 0) return `every ${hours / 24} days`;
+  return `every ${hours} hours`;
+}
 
 /**
  * THE OUTREACH DESK (2026-08-19): the ward's private readings put to

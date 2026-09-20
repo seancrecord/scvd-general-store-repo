@@ -484,7 +484,54 @@ async function weekSpent(env: Env, weekKey: string): Promise<number> {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export class BountyRefused extends Error {}
+/**
+ * WHY A POSTING WAS REFUSED, IN A WORD (2026-09-20).
+ *
+ * The refusal prose is written for the keeper reading one press, and
+ * it is the right thing to show him. It is the WRONG thing to make a
+ * decision from: string-matching a sentence somebody will reword is
+ * how a guard quietly stops guarding. So each refusal a posting can
+ * produce carries a code beside its words, and the two are written
+ * together at the throw site where the fact is actually known.
+ *
+ * The split that matters to a caller: `no-402`, `bad-challenge`,
+ * `no-usdc-rail`, `payto-not-address` and `unreachable` are facts
+ * about the DOOR and stay true until somebody re-reads it.
+ * `already-open`, `reward-out-of-range`, `reward-below-price`,
+ * `rail-not-offered`, `rail-unreadable` and `bad-length` are facts
+ * about THIS PRESS — a different reward, a different rail or a
+ * different week changes the answer, so nothing may cache them as a
+ * property of the door.
+ */
+export type BountyRefusalCode =
+  | "already-open"
+  | "reward-out-of-range"
+  | "no-402"
+  | "bad-challenge"
+  | "rail-unreadable"
+  | "rail-not-offered"
+  | "no-usdc-rail"
+  | "payto-not-address"
+  | "reward-below-price"
+  | "bad-length"
+  | "unreachable";
+
+/** Codes that describe the DOOR, and so outlive the press that found them. */
+export const DOOR_REFUSAL_CODES: readonly BountyRefusalCode[] = [
+  "no-402",
+  "bad-challenge",
+  "no-usdc-rail",
+  "payto-not-address",
+  "unreachable",
+];
+
+export class BountyRefused extends Error {
+  readonly code?: BountyRefusalCode;
+  constructor(message: string, code?: BountyRefusalCode) {
+    super(message);
+    this.code = code;
+  }
+}
 
 /**
  * THE KEEPER'S HAND ONLY (the admin route is the single caller): open
@@ -532,6 +579,7 @@ export async function openBounty(
   ) {
     throw new BountyRefused(
       `reward must be between $0 and $${BOUNTY_MAX_REWARD_USD} (BOUNTY_BOARD.md, the dials)`,
+      "reward-out-of-range",
     );
   }
   const url = new URL(input.targetUrl);
@@ -548,6 +596,7 @@ export async function openBounty(
   ) {
     throw new BountyRefused(
       `an open bounty already stands on ${domain} this week — one per domain per week`,
+      "already-open",
     );
   }
 
@@ -557,6 +606,7 @@ export async function openBounty(
   if (response.status !== 402) {
     throw new BountyRefused(
       `the door answered ${response.status}, not 402 — a bounty needs a payment gate to walk through`,
+      "no-402",
     );
   }
   const headerRaw = response.headers.get("payment-required");
@@ -601,6 +651,7 @@ export async function openBounty(
     if (!wanted) {
       throw new BountyRefused(
         `this store cannot verify a settlement on "${input.rail}" — the rails it reads are ${bountyRailNames()}`,
+        "rail-unreadable",
       );
     }
     const offered = [
@@ -618,6 +669,7 @@ export async function openBounty(
     if (!offersWanted) {
       throw new BountyRefused(
         `this door quotes no ${input.rail} entry — it offers ${offered.join(", ") || "no network at all"}. Nothing is posted: a bounty captured on another rail is not the evidence that was asked for`,
+        "rail-not-offered",
       );
     }
   }
@@ -695,6 +747,7 @@ export async function openBounty(
   if (wanted && !chosenPair && !chosenSolana && !chosenAlgorand) {
     throw new BountyRefused(
       `this door quotes ${input.rail} but no payable USDC entry on it that this store can verify — nothing is posted`,
+      "rail-not-offered",
     );
   }
   const chosen = chosenPair?.entry ?? chosenSolana ?? chosenAlgorand;
@@ -710,6 +763,7 @@ export async function openBounty(
   if (!chosen?.payTo || !assetMatches) {
     throw new BountyRefused(
       `no payable USDC rail this store reads (${bountyRailNames()}) could be read from the door's 402 — the claim verifier would have nothing to verify against`,
+      "no-usdc-rail",
     );
   }
   /**
@@ -734,12 +788,14 @@ export async function openBounty(
   if (!payToRead.payable) {
     throw new BountyRefused(
       `${payToRead.detail} A bounty captures this value and the claim verifier compares an on-chain transfer against it, so a shopper who managed to pay could never prove it — no bounty is opened, and nothing is held.`,
+      "payto-not-address",
     );
   }
   const price = amountUsd(chosen);
   if (price >= input.rewardUsd) {
     throw new BountyRefused(
       `the reward ($${input.rewardUsd}) must exceed the door's price ($${price}) or the shopper walks at a loss`,
+      "reward-below-price",
     );
   }
 
@@ -754,6 +810,7 @@ export async function openBounty(
   if (!Number.isFinite(openDays) || openDays < 1 || openDays > BOUNTY_MAX_OPEN_DAYS) {
     throw new BountyRefused(
       `a listing stands between 1 and ${BOUNTY_MAX_OPEN_DAYS} days (asked for ${openDays})`,
+      "bad-length",
     );
   }
   const asks = (input.asks ?? [])

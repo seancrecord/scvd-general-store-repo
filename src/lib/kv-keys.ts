@@ -503,6 +503,15 @@ export const KV_KEYS = {
    */
   bountyPlan: "bounty_plan",
   /**
+   * WHAT THE DOORS SAID LAST TIME WE KNOCKED (2026-09-20). One value
+   * holding the last posting refusal per domain, with the census round
+   * it was recorded against — so a door that no longer serves a 402 is
+   * not offered to every press until the next round re-reads it.
+   * COUNTERS, and an optimisation rather than a rule: losing this key
+   * costs one wasted knock per door and nothing else.
+   */
+  bountyRefusals: "bounty_refusals",
+  /**
    * Regulars' credit (services/store-credit.ts): the per-wallet
    * rebate balance, the outstanding-liability aggregate the books
    * watch, and the single-use cash-out challenge. COUNTERS. Keys are
