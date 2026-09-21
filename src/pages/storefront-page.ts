@@ -2,6 +2,7 @@ import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-ca
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { catalogLastUpdated } from "@/lib/freshness";
+import { FULFILLMENT_DATASET_DESCRIPTION, FULFILLMENT_DATASET_NAME } from "@/store/refund-policy";
 import {
   JSONLD_PRICE_CURRENCY,
   jsonLdBody,
@@ -734,6 +735,44 @@ function corpusDatasetJsonLd(base: string): string {
 }
 
 /**
+ * THE RECORD OF WHETHER THE PROMISE WAS KEPT (2026-09-21).
+ *
+ * Declared here, beside the corpus Dataset and for the same reason: a
+ * crawler reads the storefront, and the data sits at another URL. Name
+ * and description are imported, not typed, because the one time two
+ * declarations of a Dataset were written separately they drifted into
+ * an item Search Console rejected outright.
+ *
+ * `dateModified` is catalogLastUpdated() — the same derivation
+ * freshness() exposes as `as_of` on every machine surface, so the date
+ * a crawler reads is the date the store publishes and there is no
+ * third answer.
+ *
+ * No aggregateRating, for the reason store/refund-policy.ts states at
+ * length: a clean delivery run is one field away from becoming a
+ * self-issued score, and this store does not mint opinions about
+ * itself. Counts and denominators, and the reader divides them.
+ */
+function fulfillmentDatasetJsonLd(base: string): string {
+  return jsonLdSafe({
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: FULFILLMENT_DATASET_NAME,
+    description: FULFILLMENT_DATASET_DESCRIPTION,
+    license: CORPUS_DATASET_LICENSE,
+    url: `${base}/fulfillment-log`,
+    creator: organizationRef(base),
+    isAccessibleForFree: true,
+    dateModified: catalogLastUpdated(),
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: `${base}/fulfillment-log`,
+    },
+  });
+}
+
+/**
  * THE TOWN, AS schema.org SPEAKS IT.
  *
  * Split from `OPERATOR.location` rather than typed out beside it, so
@@ -1081,6 +1120,7 @@ export function renderStorefront(data: StorefrontData): string {
   <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store", data.paymentConfig)}</script>
   <script type="application/ld+json">${freeServicesJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${corpusDatasetJsonLd(data.base ?? "https://scvd.store")}</script>
+  <script type="application/ld+json">${fulfillmentDatasetJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
   <!--
     THE WEBMCP SURFACE (P7). Registers the store's free, read-only

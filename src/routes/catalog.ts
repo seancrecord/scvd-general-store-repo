@@ -5,6 +5,7 @@ import { publicationCollections } from "@/lib/publication-checkout";
 import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
 import { catalogRecovery } from "@/lib/catalog-recovery";
+import { REFUND_POLICY } from "@/store/refund-policy";
 import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
 import {
@@ -247,6 +248,46 @@ catalogRoutes.get("/menu.json", async (c) => {
      * drift this sweep exists to end.
      */
     description: STORE_METADATA.description,
+    /**
+     * THE REFUND TERMS ON THE DOCUMENT AN AGENT PLANS FROM
+     * (2026-09-21).
+     *
+     * A cold buyer walking the store found the money-back promise
+     * living "only in prose" and asked for it machine-readably at
+     * purchase time. Half of that was already true and stayed where it
+     * was: a human-fulfilled item's own 402 carries the promise and,
+     * since today, the fields beside it, and instant items
+     * deliberately carry neither — there is no window to miss in a
+     * response that either contains the goods or took no money
+     * (test/loud-promise.spec.ts holds that line).
+     *
+     * What had no home was the STORE-WIDE statement. A planning agent
+     * reads this catalog before it reads any single door, and the
+     * terms that decide whether the whole shelf is worth transacting
+     * with were reachable only by following a link to prose. So the
+     * citable block rides here: derived from store/refund-policy.ts,
+     * which is the same document /rights and /fulfillment-log serve,
+     * never a second copy that can drift from it.
+     *
+     * The two clauses a machine acts on are lifted to the top, because
+     * a reader that takes only the first fields still gets the pair
+     * that matters: detection is mechanical, payment is a person.
+     */
+    refund_terms: {
+      breach_detection: "timed_sweep",
+      payment: "by_hand",
+      commitment: REFUND_POLICY.commitment,
+      mechanism: REFUND_POLICY.mechanism,
+      instant_items: REFUND_POLICY.instant_items,
+      what_this_is_not: REFUND_POLICY.what_this_is_not,
+      terms_url: `${base}/rights`,
+      record_url: `${base}/fulfillment-log`,
+      // What happens to all of this if the store ever closes, answered
+      // in advance rather than during. The page existed; nothing
+      // machine-readable pointed at it, so a buyer asking "what if you
+      // disappear" had to find it by browsing.
+      if_the_store_closes_url: `${base}/wind-down`,
+    },
     ...(stats ? { payments: stats.payments } : {}),
     store: {
       ...STORE_METADATA,
