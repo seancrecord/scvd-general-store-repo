@@ -61,6 +61,12 @@ const PAYING_TOOLS = [
    * round reads its completed pass through directory-pass.ts and never
    * this module. Named here so the walk is proven to see the signer. */
   "/src/services/directory-walk.ts",
+  /* The field study signs a researcher's reward the same way the board
+   * signs a walker's (FIELD_STUDY.md). The collector that counts what
+   * the studies showed is services/study-findings.ts, which reads the
+   * records straight off KV for exactly this reason and must never
+   * appear in this list. */
+  "/src/services/field-study.ts",
 ];
 
 const STATIC_IMPORT = /^import\s+(?!type\s)[^;]*?from\s*["'](@\/[^"']+|\.{1,2}\/[^"']+)["']/gms;

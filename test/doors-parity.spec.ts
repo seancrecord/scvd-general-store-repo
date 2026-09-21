@@ -239,9 +239,14 @@ describe("byte parity: the unpaid knock", () => {
     const [first] = MENU_ITEMS;
     expect(first).toBeDefined();
     const door = `/api/buy/${first!.id}`;
-    // An unpaid HEAD passes the gate (x402 requires payment of a GET)
-    // and the store's own handler answers it; the doors hand it over.
-    await bothAnswerAlike(door, { method: "HEAD", headers: JSON_ACCEPT }, { handOver: "passed" });
+    // AN UNPAID HEAD IS ANSWERED HERE NOW (2026-09-20). Until this day
+    // it passed the gate — every paid route is keyed `GET /path`, so
+    // nothing matched — and the store's own handler answered it with a
+    // 402 that quoted nothing, which the doors dutifully handed over.
+    // A HEAD is a GET with the body withheld (lib/quote-method), so it
+    // is quoted like one, and the doors mint that quote themselves:
+    // the store's isolate no longer wakes for a probe that never buys.
+    await bothAnswerAlike(door, { method: "HEAD", headers: JSON_ACCEPT });
     await bothAnswerAlike(`${door}/`, { headers: JSON_ACCEPT });
     await bothAnswerAlike(`${door}.`, { headers: JSON_ACCEPT, redirect: "manual" });
     await bothAnswerAlike(door, { headers: { Accept: "text/html,application/xhtml+xml", "User-Agent": "Mozilla/5.0" } });

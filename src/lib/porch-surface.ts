@@ -87,6 +87,8 @@ export const PORCH_EXACT = new Map<string, string>([
    */
   ["/bounties", "bounties"],
   ["/api/bounties", "bounties.json"],
+  ["/field-study", "field-study"],
+  ["/api/field-study", "field-study.json"],
   ["/credit", "credit"],
   ["/api/credit/redeem", "credit:redeem"],
   ["/api/credit/challenge", "credit:challenge"],
@@ -268,6 +270,8 @@ const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["replay", "instrument"],
   ["bounty", "door"],
   ["bounties", "door"],
+  ["field-study", "door"],
+  ["study", "door"],
   ["letter:", "door"],
   ["credit", "door"],
   ["guestbook:", "door"],
@@ -538,6 +542,31 @@ export function porchSurface(path: string, method: string): string | undefined {
    */
   if (path === "/api/bounty-claim") {
     return method === "POST" ? "bounty-claim" : "bounty-claim:read";
+  }
+  /**
+   * THE FIELD STUDY'S TWO DOORS. A POST to the enrolment is an agent
+   * declaring what it came for BEFORE it spends anything, which is the
+   * only signal this store has ever had that distinguishes "walked in
+   * and left" from "never walked in". A POST to the debrief is money
+   * going out. Both spellings of enrol bucket as one row — the
+   * orthography is ours, and it should not split our own counts.
+   */
+  if (path === "/api/study/enrol" || path === "/api/study/enroll") {
+    return method === "POST" ? "study-enrol" : "study-enrol:read";
+  }
+  if (path === "/api/study/debrief") {
+    return method === "POST" ? "study-debrief" : "study-debrief:read";
+  }
+  /*
+   * A researcher reading their OWN study back, after the two exact
+   * doors above have had their say. One bucket, never one per study —
+   * the same rule the credit desk keeps for wallets, and for the same
+   * reason: a surface counted per subject is a surface nobody can
+   * total. What it measures is worth having on its own line, though:
+   * whether anybody ever checks the record we kept of them.
+   */
+  if (path.startsWith("/api/study/")) {
+    return "study:read";
   }
   /* The mailbox: a letter posted, or a pickup slip checked for a reply. */
   if (path === "/api/letter") {

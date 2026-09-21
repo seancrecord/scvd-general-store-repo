@@ -217,7 +217,18 @@ export type MetricEventKind =
    * refusing for ninety minutes from a stranger's letter. Same
    * instrument as declines, pointed the other way.
    */
-  | "bounty";
+  | "bounty"
+  /**
+   * A field-study enrolment or debrief (FIELD_STUDY.md). The board's
+   * lesson, applied before it had to be learned twice: money OUT needs
+   * a row whether it paid or bounced, or the first the keeper hears of
+   * a door refusing everybody is a letter from a stranger. Enrolments
+   * ride here too, and they are the more interesting half — an
+   * enrolment that never debriefs is an agent that walked in, said
+   * what it came for, and gave up, which is the single most expensive
+   * fact this instrument can collect and leaves no other trace.
+   */
+  | "study";
 
 export interface MetricEvent {
   /** Set by the checkout accounting source, never by a visitor header. */
@@ -2098,6 +2109,113 @@ export async function listRecentBountyEvents(
     if (listed.list_complete) {
       break;
     }
+    cursor = listed.cursor;
+  }
+  return events;
+}
+
+/**
+ * THE FIELD STUDY'S OWN ROWS. Deliberately a separate kind from
+ * "bounty" rather than a reused one: both are money out, but the
+ * bounty ledger answers "is the board paying walkers" and this one
+ * answers "is anybody finishing a study", and a single column that
+ * mixed them would answer neither on the week one of them broke.
+ */
+export type StudyOutcome = "enrolled" | "paid" | "refused" | "error";
+
+export async function recordStudyEvent(
+  env: Env,
+  studyId: string,
+  outcome: StudyOutcome,
+  reason: string,
+  signals: EventSignals = {},
+): Promise<void> {
+  const event = buildEvent(
+    env,
+    "study",
+    `study:${studyId.slice(0, 60) || "(no id)"}`,
+    signals,
+  );
+  event.note = `${outcome}: ${reason}`.slice(0, 200);
+  await bump(
+    env,
+    KV_KEYS.metric(metricsMonth(), `study${bucketSuffix(event, false)}`, outcome),
+  );
+  await writeEvent(env, event);
+}
+
+export interface StudyLedger {
+  month: string;
+  /** Organic this month by outcome. */
+  enrolled: number;
+  paid: number;
+  refused: number;
+  errors: number;
+  /** The keeper's own, kept apart like every house column. */
+  enrolledHouse: number;
+  paidHouse: number;
+  refusedHouse: number;
+  errorsHouse: number;
+}
+
+/** The month's study counters, one bounded prefix read. */
+export async function readStudyLedger(
+  env: Env,
+  month: string = metricsMonth(),
+): Promise<StudyLedger> {
+  const ledger: StudyLedger = {
+    month,
+    enrolled: 0,
+    paid: 0,
+    refused: 0,
+    errors: 0,
+    enrolledHouse: 0,
+    paidHouse: 0,
+    refusedHouse: 0,
+    errorsHouse: 0,
+  };
+  const prefix = `${KV_KEYS.metricMonthPrefix(month)}study`;
+  const listed = await listKeys(env.COUNTERS, { prefix, cap: 50 });
+  const values = await bulkGetText(env.COUNTERS, listed.names);
+  for (const name of listed.names) {
+    const value = parseInt(values.get(name) ?? "0", 10);
+    const [kind, outcome] = name
+      .slice(KV_KEYS.metricMonthPrefix(month).length)
+      .split(":");
+    const house = kind === "studyh";
+    if (kind !== "study" && !house) continue;
+    if (outcome === "enrolled") house ? (ledger.enrolledHouse += value) : (ledger.enrolled += value);
+    else if (outcome === "paid") house ? (ledger.paidHouse += value) : (ledger.paid += value);
+    else if (outcome === "refused") house ? (ledger.refusedHouse += value) : (ledger.refused += value);
+    else if (outcome === "error") house ? (ledger.errorsHouse += value) : (ledger.errors += value);
+  }
+  return ledger;
+}
+
+/** Every study event presented, newest first, from the raw 90-day rows. */
+export async function listRecentStudyEvents(
+  env: Env,
+  limit = 30,
+): Promise<MetricEvent[]> {
+  const events: MetricEvent[] = [];
+  let cursor: string | undefined;
+  let scanned = 0;
+  const SCAN_CAP = 3000;
+  while (events.length < limit && scanned < SCAN_CAP) {
+    const listed = await kvList(env.COUNTERS, {
+      prefix: "evt:",
+      limit: 1000,
+      ...(cursor ? { cursor } : {}),
+    });
+    const names = listed.keys.map((key) => key.name);
+    scanned += names.length;
+    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+    for (const name of names) {
+      if (events.length >= limit) break;
+      const event = values.get(name);
+      if (event?.kind === "study") events.push(event);
+    }
+    if (listed.list_complete) break;
     cursor = listed.cursor;
   }
   return events;
