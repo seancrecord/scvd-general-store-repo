@@ -441,7 +441,18 @@ function serverCapabilities(): Record<string, unknown> {
 // sentence an MCP client caches about us, so it carries the entity
 // and both differentiators, then the operating facts. Served on
 // `initialize` (legacy) and `server/discover` (modern) alike.
-const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment'].__NATIVE__ ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
+//
+// THE KEY THAT WENT UNNAMED (2026-09-21). An agent review asked us to
+// walk the MCP buy path and confirm the documented meta keys match
+// reality. They do, with one omission it found: every OTHER key was
+// written down somewhere — x402/payment and x402/idempotency-key in
+// the tool descriptions, and all three MPP keys in this sentence —
+// while `x402/payment-required`, the key an x402 client must read to
+// find the terms at all, was named on no surface the store serves.
+// It was discoverable only by inspecting error.data and guessing
+// right. Its MPP twin was spelled out three times over; the lane we
+// lead with was the lane left implicit.
+const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data['x402/payment-required'], sign one of the accepts, and call again with the payment in _meta['x402/payment'] (retries ride _meta['x402/idempotency-key'], whose suggested value comes back in the same error).__NATIVE__ ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
 
 /** Methods whose results the modern revision marks cacheable. */
 const CACHEABLE_METHODS = new Set([
