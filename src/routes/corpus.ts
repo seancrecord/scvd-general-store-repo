@@ -570,6 +570,11 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   }
   const observation = await effectivePassportObservation(c.env, host);
   const history = observation.history;
+  // An unrecorded suffixed name belongs to the shared markdown fallback.
+  // Recorded .md domains remain real host pages, not aliases of another host.
+  if (host.endsWith(".md") && history.rounds_since_first_sighting === 0 && !history.listing) {
+    return c.notFound();
+  }
   if (history.rounds_probed === 0) {
     c.executionCtx.waitUntil(recordAsk(c.env, host, "corpus_host"));
   }
