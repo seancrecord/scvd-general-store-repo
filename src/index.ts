@@ -116,6 +116,7 @@ import {
   railsRoutes,
   privacyRoutes,
   mandateRoutes,
+  mandateSpecRoutes,
   statementRoutes,
   operatorStatementRoutes,
   onpageRoutes,
@@ -236,6 +237,7 @@ app.route("/", pricingRoutes);
 app.route("/", railsRoutes);
 app.route("/", privacyRoutes);
 app.route("/", mandateRoutes);
+app.route("/", mandateSpecRoutes);
 app.route("/", statementRoutes);
 app.route("/", operatorStatementRoutes);
 app.route("/", onpageRoutes);

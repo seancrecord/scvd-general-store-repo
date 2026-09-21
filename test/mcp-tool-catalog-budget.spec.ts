@@ -44,7 +44,23 @@ const BASE = "https://scvd.store";
  * budget in store/reader-limits.ts; the second assertion below still
  * holds the catalog well under what the specs cost.
  */
-const CATALOG_BYTE_CEILING = 152_000;
+/**
+ * RAISED 152,000 → 165,000 on 2026-09-21, when the mandate got a tool
+ * of its own (buy_mandate): the authorization primitive had been the
+ * seventeenth id inside buy_observation, whose purpose never said
+ * "authorization". What the measurement found while arguing the
+ * bytes: every tool carries the same `errors` (4,975 bytes) and
+ * `security` (1,057 bytes) blocks, so twenty-one tools spend about
+ * 126 KB of a 162 KB catalog repeating one contract. A one-item shelf
+ * now states its own compact output shape (ShelfCluster.outputSchema)
+ * and that saved a few hundred bytes; the six kilobytes a new tool
+ * really costs are the repeated blocks. The ceiling moves by eight
+ * percent to admit this one tool and stays thirty percent under what
+ * this catalog replaced; the next tool argues its bytes here, and the
+ * honest saving — hoisting the identical blocks once per catalog —
+ * is a change to the contract every client reads, not to this test.
+ */
+const CATALOG_BYTE_CEILING = 165_000;
 const LARGEST_TOOL_BYTE_CEILING = 40_000;
 /** What it was before, kept so the test states what it prevents. */
 const BYTES_BEFORE = 234_492;
@@ -67,7 +83,10 @@ describe("the tool catalog every session downloads", () => {
   it("stays under its budget, and is well under what it replaced", () => {
     const bytes = JSON.stringify(catalog()).length;
     expect(bytes, `tools/list is ${bytes} bytes`).toBeLessThan(CATALOG_BYTE_CEILING);
-    expect(bytes).toBeLessThan(BYTES_BEFORE / 1.5);
+    // 1.5 → 1.4 with the ceiling above (2026-09-21): still a third under what
+    // it replaced once the repeated blocks are hoisted; until then, this is
+    // the bound one more tool leaves, and the next tool argues its bytes.
+    expect(bytes).toBeLessThan(BYTES_BEFORE / 1.4);
   });
 
   it("has no single tool big enough to crowd out a small context on its own", () => {

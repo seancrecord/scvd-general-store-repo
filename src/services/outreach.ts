@@ -2,6 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
 import { retractionFor } from "@/store/retracted-readings";
+import type { BuyerSignals } from "@/services/buyer-signals";
 import type {
   WardHostResult,
   WardRound,
@@ -1596,4 +1597,44 @@ export async function wireAllScouted(
     }
   }
   return report;
+}
+
+
+/**
+ * THE READ-SPIKE TIER (2026-09-21, docs/COUNTERS_LINKS_PAGES D4).
+ * Hosts whose pages about them were read this month in more than
+ * one format, or past a repeat threshold, by anyone but a crawler —
+ * from the signal store's per-subject rows and nothing else.
+ * Keeper-facing only: hosts are never named on a public surface, and
+ * rule 30 is untouched — this derives a list; it sends nothing, and
+ * a note about a door still states a verified fact about the door,
+ * never that "someone is evaluating you", which is an inference about
+ * a stranger and not an observation.
+ */
+export interface ReadSpike {
+  host: string;
+  reads: number;
+  formats: string[];
+  self_referred: number;
+}
+
+export const READ_SPIKE_MIN_READS = 5;
+
+export function deriveReadSpikes(signals: BuyerSignals): ReadSpike[] {
+  const formats: Record<string, Set<string>> = {};
+  for (const key of Object.keys(signals.subject_formats)) {
+    if (key === "other") continue;
+    const cut = key.lastIndexOf(":");
+    if (cut <= 0) continue;
+    (formats[key.slice(0, cut)] ??= new Set()).add(key.slice(cut + 1));
+  }
+  const rows: ReadSpike[] = [];
+  for (const [host, reads] of Object.entries(signals.subjects)) {
+    if (host === "other") continue;
+    const seen = [...(formats[host] ?? [])].sort();
+    if (seen.length < 2 && reads < READ_SPIKE_MIN_READS) continue;
+    rows.push({ host, reads, formats: seen, self_referred: signals.selfreads[host] ?? 0 });
+  }
+  // Alphabetical, never by count: a keeper's queue, not a ranking of hosts.
+  return rows.sort((a, b) => a.host.localeCompare(b.host));
 }

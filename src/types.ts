@@ -1512,6 +1512,37 @@ export interface WeeklyDigest {
   failed_item_requests: Record<string, number>;
   /** Letters in the box the keeper hasn't read yet. */
   unread_letters?: number;
+  /**
+   * THE STORE'S OWN BUYERS, IN THE SUNDAY DIGEST (2026-09-21). The
+   * public counters the pulse, the rails and the observatory already
+   * serve, gathered into the one signed weekly document, month to
+   * date, each figure with its window and instrument beside it.
+   * Absent when a newer instrument could not be read: the digest is
+   * older machinery and does not die of the newer.
+   */
+  store_buyers?: StoreBuyersDigest;
+}
+
+export interface StoreBuyersDigest {
+  window: string;
+  instrument: string;
+  organic_challenges: number;
+  organic_payments_presented: number;
+  organic_settled: number;
+  organic_declines: number;
+  conversion_rate: number | null;
+  /** The all-time organic settles by network, or null when the split is withheld. */
+  by_rail: Record<string, number> | null;
+  /** Who reads the pages about a host this month: the concentration histogram, no host named. */
+  host_pages: {
+    subjects: number;
+    by_formats: { one: number; two: number; three: number };
+    repeat: { at_least_2: number; at_least_5: number; at_least_10: number };
+    reads: number;
+    overflow: number;
+  };
+  exclusions: string[];
+  note: string;
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

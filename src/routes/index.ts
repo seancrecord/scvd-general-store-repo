@@ -116,6 +116,7 @@ export { pricingRoutes } from "@/routes/pricing";
 export { railsRoutes } from "@/routes/rails";
 export { privacyRoutes } from "@/routes/privacy";
 export { mandateRoutes } from "@/routes/mandate";
+export { mandateSpecRoutes } from "@/routes/mandate-spec";
 export { statementRoutes } from "@/routes/statement";
 export { operatorStatementRoutes } from "@/routes/operator-statement";
 export { onpageRoutes } from "@/routes/onpage";

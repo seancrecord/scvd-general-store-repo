@@ -173,6 +173,15 @@ export interface ShelfCluster {
   /** The lead line: what calling this does, in the agent's terms. */
   purpose: string;
   itemIds: readonly string[];
+  /**
+   * A one-item shelf may state its own response shape instead of the
+   * generic union every shelf carries (2026-09-21): the union is the
+   * price of a shelf that sells twenty things, and a tool that sells
+   * one pays it for nothing. Every session downloads tools/list, and
+   * test/mcp-tool-catalog-budget.spec.ts holds the whole catalog
+   * under its ceiling.
+   */
+  outputSchema?: Schema;
 }
 
 export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
@@ -255,10 +264,11 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // The same read kept up for a month on an operator's receiving
       // address, four signed passes a day, payers counted (S10).
       "operator_statement",
-      // And pointed BEFORE the acting: the claimed authorization,
-      // recorded and dated by a party that is neither the agent nor
-      // its principal, citable on every later certificate.
-      "the_mandate",
+      // the_mandate left this shelf for its own tool on 2026-09-21: an
+      // authorization record is not an observation of anything, and
+      // the seventeenth id inside a tool whose purpose never said
+      // "authorization" was where the most interesting thing on the
+      // shelf had been hiding.
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.
@@ -280,6 +290,25 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // answer.
       "spot_check",
     ],
+  },
+  {
+    name: "buy_mandate",
+    title: "The Mandate",
+    purpose:
+      "Purpose: record what an agent is authorized to do BEFORE it spends — the claimed instructions verbatim, who submitted them (agent or principal, itself a claim), an optional declared cap in USDC and expiry — as a signed, dated record held by a party that is neither the agent nor its principal, at a free permanent URL, with a mandate_id every later purchase here can cite; a citation that does not resolve is refused before any charge, so it always lands signed on the citing certificate. A second party can counter-sign the record free with its own ed25519 key. Chain-of-custody, never truth-of-intent: the cap and expiry are declared and never enforced. Schema /schemas/scvd-mandate-v1.json; the pattern for other issuers at /mandate-spec.",
+    itemIds: ["the_mandate"],
+    // One item, one shape: the generic shelf union would cost every session six kilobytes for nothing.
+    outputSchema: {
+      type: "object",
+      properties: {
+        message: { type: "string", description: "The store's confirmation line." },
+        mandate_id: { type: "string", description: "The id every later purchase here may cite as mandate_id." },
+        mandate_url: { type: "string", description: "The record's free permanent URL (/api/mandate/{mandate_id}); POST there to counter-sign." },
+        mandate: { type: "object", description: "The signed record; its schema is /schemas/scvd-mandate-v1.json." },
+        verify_url: { type: "string", description: "The purchase certificate whose attests field binds the record's evidence hash." },
+        paid_usdc: { type: "number", description: "What settled, in USDC." },
+      },
+    },
   },
   {
     name: "buy_memory_anchor",
@@ -795,7 +824,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
      */
     description: `${cluster.purpose} ${clusterPriceRange(items)}${secondDoor}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\nOn cadence, for all of the above: ${NEVER_AUTO_RENEWS}.\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT}`,
     inputSchema: clusterInputSchema(items),
-    outputSchema: clusterOutputSchema(items),
+    outputSchema: cluster.outputSchema ?? clusterOutputSchema(items),
     annotations: {
       title: cluster.title,
       readOnlyHint: false,

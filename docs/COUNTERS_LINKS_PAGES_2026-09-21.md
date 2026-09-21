@@ -1,7 +1,20 @@
 # Counters, links, pages — the plan after the September read
 
-**Status: PROPOSED. Nothing here is built. Four rulings are on the
-keeper before a line of code (section 6).** Dated 2026-09-21.
+**Status: BUILT on branch `claude/intelligent-cerf-vyweys`, 2026-09-21,
+the same day it was proposed. The four rulings in section 6 were
+taken by the keeper in session (R1 yes with did:key beside, R2 the
+Durable Object, R3 publish enveloped, R4 drafted for review) and each
+phase shipped as its own commit; what each commit holds is in its
+message. Two things the build changed against this plan: the host
+page was not registered as a room (its path varies per host, so the
+room's deeper rung could never fire there; the derived next step is
+rendered on the page directly), and the cold pass runs on a schedule
+as a workflow that keeps its output as a run artifact for the keeper
+to promote, never committing transcripts. One cost to know: the MCP
+catalog byte ceiling moved from 152,000 to 165,000 to admit
+buy_mandate; the measurement found every tool repeating the same
+6 KB of errors and security prose, which is the real saving and a
+follow-up.** Originally dated 2026-09-21 as PROPOSED.
 
 ## 1. Why
 
