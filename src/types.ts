@@ -330,6 +330,32 @@ export interface Env {
  */
 export type Channel =
   | "mcp"
+  /**
+   * THE TWO DOORS THAT HAD NO CHANNEL (2026-09-21, keeper-approved).
+   *
+   * routes/ucp-checkout.ts and routes/a2a-desk.ts have been live and
+   * answering, and every call at either fell into "direct" — pooled
+   * with hand-rolled curl, indistinguishable from it forever after.
+   * So the office could not count a UCP checkout or an A2A task at
+   * all, on any page, while the books two records away recorded the
+   * door correctly.
+   *
+   * THE SEAM IS AT THE DEPLOY, AND IT IS REAL. Rows written before
+   * this stay "direct" and cannot be re-derived: the door was never
+   * on them. So any channel denominator spanning the date has two
+   * meanings in it, and a page reading one must say so — the same way
+   * the take page already says "counts start when this instrument is
+   * deployed; no earlier history is inferred". An empty ucp or a2a
+   * column before the seam is a missing label, never a quiet door.
+   *
+   * Set by the route that answered, never from anything the caller
+   * sends. The `?src=` mechanism is deliberately NOT used here: it
+   * works for WebMCP because our own webmcp.js appends it to its own
+   * fetches, and it would have required editing every directory
+   * listing the store is already in to work for these.
+   */
+  | "ucp"
+  | "a2a"
   | "bazaar"
   | "skill"
   | "webmcp"

@@ -1,6 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { fraction } from "@/pages/admin/reading-limits";
 import type { DisclosureCensus } from "@/services/disclosure-census";
 
 /**
@@ -23,11 +24,6 @@ export interface DisclosurePageData {
   month: string;
   paid: DisclosureCensus;
   free: DisclosureCensus;
-}
-
-function fraction(n: number, of: number): string {
-  if (of === 0) return `${n} of 0`;
-  return `${n} of ${of} (${Math.round((n / of) * 100)}%)`;
 }
 
 function valueList(map: Record<string, number> | undefined): string {
@@ -77,5 +73,5 @@ export function renderDisclosurePage(data: DisclosurePageData): string {
   <section>
     <p><small>If the ignores stay near the whole after a month, the ask is wrong, not the buyers, and rule 56 wants that said on /corrections rather than read as "agents don't disclose".</small></p>
   </section>`;
-  return renderAdminShell("disclosure", body);
+  return renderAdminShell("disclosure", body, [], { window: data.month });
 }
