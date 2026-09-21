@@ -21,9 +21,26 @@ export function wantsMarkdown(acceptHeader: string | undefined): boolean {
  * buyer acts on — and it got it wrong on the first try, printing a
  * pay-what-it-deserves minimum as though it were a fixed price.
  */
-export function priceLine(item: MenuItem): string {
-  return `${amountPhrase(item)}, ${cadenceLine(item)}`;
+export function priceLine(item: MenuItem, opts?: PriceTextOptions): string {
+  return `${amountPhrase(item, opts)}, ${cadenceLine(item)}`;
 }
+
+/**
+ * WHERE THE CURRENCY GOES (2026-09-21). Three surfaces wanted the
+ * unit printed and each appended it to the END of priceLine, which
+ * ends in the store-wide never-renews clause — so the item pages and
+ * the price list read "there is no mechanism that could USDC". The
+ * unit belongs to the amount, not to the sentence about mandates, so
+ * it is threaded through amountPhrase and every caller that wants it
+ * asks for it here rather than gluing it on afterwards.
+ */
+export type PriceTextOptions = {
+  /** Print the settlement unit beside the amount: `$5 USDC fixed`. */
+  readonly currency?: boolean;
+};
+
+/** The unit every price on this shelf is quoted and settled in. */
+export const PRICE_CURRENCY = "USDC";
 
 /**
  * THE AMOUNT ON ITS OWN, split out 2026-08-30 when the MCP tool
@@ -38,10 +55,11 @@ export function priceLine(item: MenuItem): string {
  * still composes these two, so the phrasing has exactly one home and
  * a channel that wants half of it takes half of THIS, not a copy.
  */
-export function amountPhrase(item: MenuItem): string {
+export function amountPhrase(item: MenuItem, opts?: PriceTextOptions): string {
+  const unit = opts?.currency ? ` ${PRICE_CURRENCY}` : "";
   return item.pricing === "fixed"
-    ? `$${item.price_usdc} fixed`
-    : `$${item.price_usdc} minimum, pay what it deserves (tiers: ${priceTiersUsdc(
+    ? `$${item.price_usdc}${unit} fixed`
+    : `$${item.price_usdc}${unit} minimum, pay what it deserves (tiers: ${priceTiersUsdc(
         item,
       )
         .map((tier) => `$${tier}`)

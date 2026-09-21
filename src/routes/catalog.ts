@@ -462,34 +462,59 @@ function itemServiceJsonLd(
     url: `${base}/menu/${item.id}`,
     provider: organizationRef(base),
     termsOfService: `${base}/rights`,
-    offers: {
-      "@type": "Offer",
-      /*
-       * "USD" for the validator, the asset in words beside it —
-       * JSONLD_PRICE_CURRENCY in lib/jsonld.ts has the 2026-09-02
-       * reversal. The 402 and menu.json still say USDC.
-       */
-      ...offerCurrencyFields(paymentConfig),
-      ...(item.pricing === "fixed"
-        ? { price: String(item.price_usdc) }
-        : {
-            /*
-             * Pay-what-it-deserves is a FLOOR, and an Offer with a
-             * bare `price` on one would read as a fixed charge. The
-             * tiers above it are the buyer's choice and recorded as a
-             * tip; misstating that as the price is the same defect
-             * the paper page had on its first draft.
-             */
-            priceSpecification: {
-              "@type": "PriceSpecification",
-              minPrice: String(item.price_usdc),
-              priceCurrency: JSONLD_PRICE_CURRENCY,
-            },
-          }),
-      availability,
-      url: `${base}/menu/${item.id}`,
-    },
+    offers: itemOffer(item, base, paymentConfig, availability),
   });
+}
+
+/**
+ * ONE OFFER NODE, TWO PAGES (2026-09-21).
+ *
+ * Split out of itemServiceJsonLd when /menu grew an ItemList. The
+ * shelf and the item page must quote the same number or an engine
+ * reading both sees this store contradict itself about a price —
+ * exactly the drift the paper page was already guarded against. So
+ * the Offer is built once and both callers read it.
+ *
+ * `availability` is a parameter rather than derived here because only
+ * the item page knows it: the shelf does not read fulfillment state
+ * for thirty-five items, and asserting InStock without having looked
+ * would be a claim the till might decline. The shelf passes nothing,
+ * its offers carry no availability, and the `url` on each one points
+ * at the page that does derive it.
+ */
+function itemOffer(
+  item: MenuItem,
+  base: string,
+  paymentConfig?: PaymentNetworkConfig,
+  availability?: string,
+): Record<string, unknown> {
+  return {
+    "@type": "Offer",
+    /*
+     * "USD" for the validator, the asset in words beside it —
+     * JSONLD_PRICE_CURRENCY in lib/jsonld.ts has the 2026-09-02
+     * reversal. The 402 and menu.json still say USDC.
+     */
+    ...offerCurrencyFields(paymentConfig),
+    ...(item.pricing === "fixed"
+      ? { price: String(item.price_usdc) }
+      : {
+          /*
+           * Pay-what-it-deserves is a FLOOR, and an Offer with a
+           * bare `price` on one would read as a fixed charge. The
+           * tiers above it are the buyer's choice and recorded as a
+           * tip; misstating that as the price is the same defect
+           * the paper page had on its first draft.
+           */
+          priceSpecification: {
+            "@type": "PriceSpecification",
+            minPrice: String(item.price_usdc),
+            priceCurrency: JSONLD_PRICE_CURRENCY,
+          },
+        }),
+    ...(availability ? { availability } : {}),
+    url: `${base}/menu/${item.id}`,
+  };
 }
 
 /**
@@ -521,7 +546,7 @@ export function atAGlance(
     output: `${SPEC_RETURNS[item.id] ?? `The deliverable as JSON, plus a signed ${artifactClass?.name ?? "certificate"}`} Every artifact carries a cert_id and verifies free at ${base}/api/verify/{cert_id}.`,
     cryptography: `ed25519 signature by this store's key, published at ${base}/.well-known/scvd-signing-key and carried inside every 402`,
     verify: `GET ${base}/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key`,
-    price_and_fulfilment: `${priceLine(item)} USDC; ${fulfillmentLine(item)}`,
+    price_and_fulfilment: `${priceLine(item, { currency: true })}; ${fulfillmentLine(item)}`,
     does_not_attest: artifactClass?.does_not_prove ?? NOT_GUARANTEED.join("; "),
   };
 }
@@ -559,7 +584,7 @@ function renderItemPage(
    * which is the one fact on the page a buyer acts on.
    */
   const facts: Array<[string, string]> = [
-    ["Price", `${priceLine(item)} USDC`],
+    ["Price", priceLine(item, { currency: true })],
     ["Fulfilment", fulfillmentLine(item)],
     ["Item id", item.id],
     ["Buy", `GET ${base}/api/buy/${item.id}`],
@@ -868,12 +893,21 @@ async function serveMenuItem(c: Context<HonoEnv>) {
  * fetch gets a 301 to the real one, which is what conventional.ts
  * already does for every other guessed URL.
  */
-function renderMenuIndex(base: string): string {
+function renderMenuIndex(base: string, paymentConfig?: PaymentNetworkConfig): string {
   const rows = MENU_ITEMS.map(
     // data-item is the item's own id, so a script reading the shelf
     // holds the same identifier the API, the menu and the till use —
     // never the display name, which is copy and gets rewritten.
-    (item) => `<div class="menu-item" data-item="${escapeHtml(item.id)}">
+    //
+    // THE PRICE AS A NUMBER, NOT ONLY AS A SENTENCE (2026-09-21).
+    // Every row has always printed a price, but only as prose ending
+    // in the store-wide never-renews clause — so a scraper comparing
+    // this shelf against menu.json had to parse an English sentence
+    // to get a figure, and a review reading the page concluded six
+    // items were unpriced. The figures ride as attributes now, in the
+    // same units and off the same fields menu.json serves, so the two
+    // representations cannot disagree without a test noticing.
+    (item) => `<div class="menu-item" data-item="${escapeHtml(item.id)}" data-price-usdc="${escapeHtml(String(item.price_usdc))}" data-price-tiers-usdc="${escapeHtml(priceTiersUsdc(item).join(","))}" data-pricing="${escapeHtml(item.pricing)}" data-cadence="${escapeHtml(item.cadence)}"${item.cadence === "term" ? ` data-term-days="${escapeHtml(String(item.term_days))}"` : ""}>
       <div class="menu-line">
         <span class="menu-name"><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a>${item.subtitle ? ` <span class="menu-meta">— ${escapeHtml(item.subtitle)}</span>` : ""}</span>
         <span class="menu-dots"></span>
@@ -883,6 +917,40 @@ function renderMenuIndex(base: string): string {
       <p class="menu-meta">${escapeHtml(fulfillmentLine(item))} \u2022 <code>GET /api/buy/${escapeHtml(item.id)}</code></p>
     </div>`,
   ).join("\n");
+
+  /*
+   * THE SHELF'S OWN STRUCTURED DATA (2026-09-21).
+   *
+   * /menu carried a bare WebPage node and nothing else: every item
+   * page published an Offer, menu.json published prices, and the
+   * parent listing that links to all thirty-five published none. An
+   * engine that read the shelf saw a store with no prices on it.
+   *
+   * ItemList of Service nodes, each carrying the same Offer the item
+   * page carries — itemOffer is the one builder, so the number here
+   * is the number there by construction.
+   */
+  const listJsonLd = jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${base}/menu#items`,
+    name: "The Shelf",
+    url: `${base}/menu`,
+    numberOfItems: MENU_ITEMS.length,
+    itemListOrder: "https://schema.org/ItemListUnordered",
+    itemListElement: MENU_ITEMS.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Service",
+        name: item.name,
+        description: item.description,
+        url: `${base}/menu/${item.id}`,
+        provider: organizationRef(base),
+        offers: itemOffer(item, base, paymentConfig),
+      },
+    })),
+  });
 
   return renderSimplePage({
     title: "The Shelf",
@@ -899,14 +967,16 @@ function renderMenuIndex(base: string): string {
       <section>
         <h2>For machines</h2>
         <p class="menu-meta">The same shelf, machine-readable: <a href="/menu.json"><code>/menu.json</code></a> (markdown by Accept) \u2022 this area's guide: <a href="/menu/llms.txt"><code>/menu/llms.txt</code></a> \u2022 the whole store: <a href="/llms.txt"><code>/llms.txt</code></a></p>
-      </section>`,
+        <p class="menu-meta">Every row above also carries its price as data rather than prose: <code>data-price-usdc</code>, <code>data-price-tiers-usdc</code>, <code>data-pricing</code> and <code>data-cadence</code> on each <code>.menu-item</code>, and the same figures again as schema.org offers in this page's <code>ItemList</code>. All three read off the one catalog \u2014 if they ever disagree, that is a bug and the <a href="/corrections">corrections desk</a> wants it.</p>
+      </section>
+      ${listJsonLd}`,
   });
 }
 
 function serveMenuIndex(c: Context<HonoEnv>) {
   varyOnAccept(c);
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.html(renderMenuIndex(c.env.STORE_BASE_URL));
+    return c.html(renderMenuIndex(c.env.STORE_BASE_URL, c.env));
   }
   /*
    * MARKDOWN IS SERVED, NOT REDIRECTED (2026-09-16).
