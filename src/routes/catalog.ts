@@ -3,7 +3,7 @@ import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import { purchaseChecklist, purchaseChecklistHtml } from "@/lib/purchase-checklist";
 import { publicationCollections } from "@/lib/publication-checkout";
 import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
-import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
+import { buyerLinks, buyUrlTemplate, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
 import { catalogRecovery } from "@/lib/catalog-recovery";
 import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
@@ -981,6 +981,8 @@ interface CatalogRow {
   fulfillment: string;
   reads: string;
   buy_url: string;
+  /** Present only on doors the bare buy_url will not serve. */
+  buy_url_template?: string;
   listing_url: string;
 }
 
@@ -998,6 +1000,21 @@ function catalogRow(item: MenuItem, base: string): CatalogRow {
     fulfillment: item.fulfillment,
     reads: item.reads,
     buy_url: `${base}/api/buy/${item.id}`,
+    /*
+     * THE ONE THING THIS ROW NEVER SAID (2026-09-21). This is the
+     * bounded price-discovery row — checkoutContract's own
+     * price_discovery_url — and it carries a `buy_url` with no hint
+     * that twelve of these doors refuse the paid request without an
+     * input. It has no room for required_params and a size ceiling
+     * that says so (test/discovery-budget.spec.ts), so the input
+     * rides the URL instead of a second key: emitted ONLY where it
+     * differs from buy_url, which makes its presence the signal that
+     * the bare door will not serve. Same <slot> string as the compact
+     * contract and the 402's retry_url_template.
+     */
+    ...(buyUrlTemplate(item, base) === `${base}/api/buy/${item.id}`
+      ? {}
+      : { buy_url_template: buyUrlTemplate(item, base) }),
     listing_url: `${base}/menu/${item.id}`,
   };
 }

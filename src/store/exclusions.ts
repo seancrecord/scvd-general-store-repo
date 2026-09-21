@@ -127,6 +127,15 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 12,
     crawler_names: 73,
   },
+  {
+    date: "2026-09-21",
+    what_changed:
+      "One name joined the crawler table and one was widened, both off the decline desk. StillOS-payability-census/1.0 (+https://stillosdigitalholdings.com/settlement; measurement, no payment attached; contact stillmarcus24@gmail.com) sat in the intent-bearing column with twenty-four declines, of which sixteen were missing-input, across two identical three-door sweeps eleven minutes apart, twelve requests each at two seconds a request, and the six of its rows that recorded a payer at all name the zero-one address — the ecrecover precompile, which no buyer holds a key to, not a funded wallet. It is a census by its own name, so `census-probe` is widened to the bare word `census` the 2026-07-23 entry already meant when it said 'trust indexes and censuses probing settled routes on a loop'; and it writes 'no payment attached' into its user-agent, so `no payment` joins `no-pay` and `dry-only` as the same declaration of intent spelled out in English. Both are bare words a machine chose for itself, per this table's standing rule, and the generic clients walking beside it (node, curl, python-httpx, axios, Deno, the bare no-user-agent row) are still deliberately out, for the reason this register keeps repeating: a generic string promoted here is misclassified forever.",
+    effect:
+      "The organic 402 count falls by this client's asks, and its declines move off the decline desk's intent-bearing column into the noise floor — 54 intent-bearing declines in the 2026-09-06 window become 30 and the noise floor rises from 19 to 43, from seven outside clients to six, and the desk's 'money the store turned away' count falls from 25 to 9. That is the largest single correction this register has made to a decline headline. The discoverability finding those rows carry is NOT withdrawn: the shared-reason count deliberately includes the noise floor, so a census that read our challenge and could not find a required input still counts as evidence about the challenge. No settle moved: it never paid, and by its own user-agent it never meant to.",
+    house_wallets: 12,
+    crawler_names: 74,
+  },
 ];
 
 export interface NamedExclusions {
