@@ -56,3 +56,52 @@ describe("machinery over the MCP door", () => {
     expect(isInfrastructureUserAgent("")).toBe(false);
   });
 });
+
+/**
+ * A HEADER WITH TWO READERS AND NO WRITER (2026-09-21).
+ *
+ * `gateSignals` and the verify route both trusted an inbound
+ * `X-SCVD-Channel: mcp` and set `viaMcp` from it. The comment beside
+ * one of them said the header was "set only by our own MCP handler on
+ * internal dispatch" and "stripped from anything a visitor could
+ * spoof" — and a grep across src/, test/ and the doors Worker finds
+ * NOBODY setting it and NOTHING stripping it. The internal dispatch it
+ * described is gone; mcpSignals() sets `viaMcp` directly now.
+ *
+ * So what was left was a request header any caller could send to be
+ * counted as an MCP client at the paid door and at the receipt reader.
+ * The same shape as the `?source=` seam at the buyer-signals desk, in
+ * the second place it could live.
+ *
+ * The door is ours to say. A caller's header does not get to say it.
+ */
+describe("the caller does not get to declare its own door", () => {
+  it("does not read a channel out of the request at all", () => {
+    const sources = import.meta.glob("../src/**/*.ts", {
+      query: "?raw",
+      import: "default",
+      eager: true,
+    });
+    const touches: string[] = [];
+    for (const [path, source] of Object.entries(sources)) {
+      // Quoted, so this file's own prose about the removal does not
+      // count as the header coming back.
+      if (/["'`]X-SCVD-Channel["'`]/i.test(String(source))) touches.push(path.replace("../", ""));
+    }
+    // Both directions, deliberately: a reader with no writer IS the
+    // defect, and a writer reintroduced later would bring the reader
+    // back with it. The door is set in code by the route that answered
+    // — routes/mcp.ts mcpSignals — not carried on the wire.
+    expect(
+      touches,
+      `X-SCVD-Channel is back in: ${touches.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("leaves the route-set flag as the only way to claim a door", () => {
+    // inferChannel is the whole judgement; viaMcp comes from the route
+    // that answered, never from bytes the caller chose.
+    expect(inferChannel({ userAgent: "curl/8.4.0" })).toBe("direct");
+    expect(inferChannel({ viaMcp: true, userAgent: "curl/8.4.0" })).toBe("mcp");
+  });
+});

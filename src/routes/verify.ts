@@ -305,9 +305,6 @@ async function noteVerify(
   if (houseHeader) {
     signals.houseHeader = houseHeader;
   }
-  if (c.req.header("X-SCVD-Channel") === "mcp") {
-    signals.viaMcp = true;
-  }
   /**
    * WHO READS RECEIPTS (buyer signals, 2026-09-18). Classed from the
    * same headers this function already holds — nothing new is asked

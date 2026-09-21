@@ -137,24 +137,26 @@ export const STUDY_SCENARIO_DAYS = 28;
  * books are kept as OURS, side by side, and the reward's coverage
  * bonuses are computed from ours alone.
  */
-export const STUDY_SURFACES = [
-  "x402_http",
-  "mpp",
-  "ucp",
-  "webmcp",
-  "mcp",
-  "a2a",
-] as const;
-export type StudySurface = (typeof STUDY_SURFACES)[number];
+/**
+ * PROMOTED, NOT COPIED (2026-09-21). This list was the only correct
+ * six-way vocabulary in the tree and exactly one instrument used it.
+ * It now lives in lib/surfaces.ts beside the rail axis it was always
+ * half of, and the study reads it from there — so the office can count
+ * the same six things the study asks about, and the study's column
+ * cannot drift from whatever the office decides a surface is.
+ *
+ * The names are re-exported under their old spellings: every reference
+ * below, and every stored study row, keeps meaning what it meant.
+ */
+import {
+  BUYER_SURFACES,
+  BUYER_SURFACE_NOTES,
+  type BuyerSurface,
+} from "@/lib/surfaces";
 
-export const STUDY_SURFACE_NOTES: Readonly<Record<StudySurface, string>> = {
-  x402_http: "a plain HTTP buy_url paid with an x402 payment header",
-  mpp: "the native MPP challenge (WWW-Authenticate: Payment) on any door that offers one",
-  ucp: "the UCP checkout — create, then settle",
-  webmcp: "the browser surface: document.modelContext tools on our pages",
-  mcp: "the MCP server's buy_* tools over JSON-RPC",
-  a2a: "the A2A desk, agent card and task",
-};
+export const STUDY_SURFACES = BUYER_SURFACES;
+export const STUDY_SURFACE_NOTES = BUYER_SURFACE_NOTES;
+export type StudySurface = BuyerSurface;
 
 /**
  * WHERE THE AGENT IS RUNNING, as a closed list for the same reason.

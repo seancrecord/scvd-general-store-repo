@@ -614,3 +614,27 @@ export function porchSurface(path: string, method: string): string | undefined {
   }
   return undefined;
 }
+
+/**
+ * WHICH OF OUR DOORS A PORCH SURFACE BELONGS TO (2026-09-21).
+ *
+ * The surfaces above have named the UCP checkout and the A2A desk from
+ * the day each shipped — so those calls WERE counted, on the right
+ * rows. What they were not was attributed: every one of them inferred
+ * the channel "direct" and pooled with hand-rolled curl, because
+ * `Channel` had no member for either door and nothing told the
+ * classifier which door had answered.
+ *
+ * Derived from the surface rather than carried on the request. The
+ * surface is computed from the path by the table above, so this cannot
+ * be spoofed the way an inbound header could — which is the seam
+ * removed from gateSignals and the verify route the same day.
+ *
+ * MCP keeps its own flag: it is set at the MCP handler, which knows
+ * things the path does not, and its ruling about machinery is older.
+ */
+export function doorOfSurface(surface: string): "ucp" | "a2a" | null {
+  if (surface === "ucp" || surface.startsWith("ucp:")) return "ucp";
+  if (surface === "a2a" || surface.startsWith("a2a:")) return "a2a";
+  return null;
+}
