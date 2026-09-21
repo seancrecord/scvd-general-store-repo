@@ -164,5 +164,5 @@ export function renderSignalsPage(data: SignalsPageData): string {
     <p><small>Flip <code>BUYER_SIGNALS_ENABLED</code> in <code>src/services/buyer-signals.ts</code> and every write stops the next deploy. The keys live under <code>metric:&lt;month&gt;:signals:</code> and nothing else reads them.
     Deleting the area is that file, this page, and the call sites that name them. If after a month none of the readings changed a decision, that is the finding.</small></p>
   </section>`;
-  return renderAdminShell("signals", body);
+  return renderAdminShell("signals", body, [], { window: `${s.month}${s.enabled ? "" : " — dial off"}` });
 }

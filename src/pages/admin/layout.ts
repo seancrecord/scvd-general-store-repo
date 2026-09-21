@@ -143,6 +143,58 @@ export type AdminTab =
   | "trade";
 
 /**
+ * WHAT EVERY ROOM IS, IN ONE LINE (2026-09-21).
+ *
+ * Twenty-six of the thirty pages opened straight into an <h2>, under a
+ * shell <h1> that said "Keep's Office" on all of them. Landing on one
+ * cold, the only thing naming it was the bolded nav entry — so the
+ * page you were on looked like every other page you were not on, and
+ * nothing said what it counted or when it was read.
+ *
+ * The line lives HERE rather than in each page for the reason the nav
+ * does: the map belongs in one file. It is also exhaustive over
+ * AdminTab, so a new room cannot be built without being named — the
+ * compiler asks, instead of a reviewer remembering.
+ *
+ * `what` answers "what am I looking at", not "what is this for". A
+ * page that needs a paragraph still writes one; this is the line above
+ * it.
+ */
+export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string }>> = {
+  round: { title: "The round", what: "What ran, when, and what is waiting on your hand." },
+  office: { title: "The desk", what: "The take, the month's slice, and the ledger's answers per item." },
+  counter: { title: "The counter", what: "The day's actual work: orders, alarms, letters, review queues." },
+  tools: { title: "The back shelf", what: "Levers that change something. Rarely pulled, never by accident." },
+  reconciliation: { title: "The books check", what: "Every audit that can disagree with itself, with its verdict." },
+  files: { title: "Keeper's files", what: "The tax file, the founding edition, the Sunday digest." },
+  declines: { title: "Declines", what: "Who opened a wallet here and was turned away, and over what." },
+  bounties: { title: "The bounty board", what: "The paying wallet, the week's budget, and where every claim went." },
+  referrals: { title: "Word of mouth", what: "Who said our name, and who carried a link. Two different mechanisms." },
+  buyers: { title: "The buyers", what: "Every outside wallet holding a certificate, and what it bought." },
+  disclosure: { title: "What they told us", what: "Who fills the optional block at the door, and who ignores it." },
+  signals: { title: "Buyer signals", what: "What the till sees without asking. A trial area, built to be stopped." },
+  "open-for-business": { title: "Open for Business", what: "This week's issue for sellers, drafted here and published by hand." },
+  instruments: { title: "Free instruments", what: "Which free tools agents actually use, and what follows a check." },
+  growth: { title: "Growth", what: "Every month since opening, side by side." },
+  peers: { title: "The peers", what: "The directory shelf we are listed on, ours beside theirs. Never a ranking." },
+  ward: { title: "The ward", what: "The weekly x402 census of other operators' doors, and what changed." },
+  "mcp-ward": { title: "The MCP ward", what: "The registry walk. Its own denominator; never added to the first ward's." },
+  cv: { title: "CV's corner", what: "The partner's surface." },
+  census: { title: "The census", what: "Who ever tried, who only ever looked, and which walkers still count as organic." },
+  recount: { title: "The recount", what: "The counters audited against the raw rows they claim to total." },
+  bell: { title: "The bell", what: "The bell ledger, ring by ring." },
+  digest: { title: "The digest", what: "The compiled weekly digest, as JSON." },
+  testing: { title: "Testing", what: "Exercises for things that have never met reality." },
+  events: { title: "Item events", what: "One item's whole trail." },
+  trace: { title: "Client trace", what: "One user-agent's whole trail, so a count can be traced instead of believed." },
+  take: { title: "The take", what: "Real money off the certificates, split by shelf kind. The slow page, on purpose." },
+  funnel: { title: "The funnel", what: "Where the asks go, and which wall to fix." },
+  market: { title: "The market", what: "The doors worth posting a bounty against, and what the feed shows." },
+  outreach: { title: "Outreach", what: "Doors we wrote to, doors worth writing to, and what came back." },
+  trade: { title: "The trade counter", what: "Every partner account, both sides, newest first." },
+};
+
+/**
  * The rooms. Always first, always in this order — and the round is
  * first among them since 2026-09-08: it is the page that says whether
  * the others are worth opening today.
@@ -201,10 +253,35 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
 const PARTNER: readonly { tab: AdminTab; href: string; label: string }[] = [
 ];
 
+/**
+ * WHEN THE PAGE WAS READ. Optional because not every room has one
+ * number to date — the back shelf is levers, the files are files. Where
+ * a page IS a reading, this is the difference between a quiet week and
+ * a shelf that stopped loading, which is the one misreading the office
+ * must not permit (see the ward's own note on its heartbeat block).
+ */
+export interface PageAsOf {
+  /** An ISO instant, or a month/week the page is scoped to. */
+  at?: string;
+  /** What window the numbers cover, in the page's own words. */
+  window?: string;
+}
+
+function headHtml(tab: AdminTab, asOf?: PageAsOf): string {
+  const head = PAGE_HEADS[tab];
+  const read = asOf?.at
+    ? `Read ${escapeHtml(asOf.at.slice(0, 16).replace("T", " "))}${asOf.at.includes("T") ? "Z" : ""}`
+    : "";
+  const line = [read, asOf?.window ? escapeHtml(asOf.window) : ""].filter(Boolean).join(" &middot; ");
+  return `<h1>${escapeHtml(head.title)}</h1>
+  <p class="page-what">${escapeHtml(head.what)}${line ? ` <span class="page-asof">${line}</span>` : ""}</p>`;
+}
+
 export function renderAdminShell(
   tab: AdminTab,
   bodyHtml: string,
   loadNotes: string[] = [],
+  asOf?: PageAsOf,
 ): string {
   const link = (entry: {
     tab: AdminTab;
@@ -230,8 +307,7 @@ export function renderAdminShell(
 </head>
 <body>
   <div class="room">
-  <h1>Keep<span class="lamp">'</span>s Office</h1>
-  <p class="room-sub">Sean-Claude Van Damme's General Store &middot; back room</p>
+  <p class="office-eyebrow">Keep<span class="lamp">'</span>s Office &middot; Sean-Claude Van Damme's General Store</p>
   <nav>
     ${ROOMS.map(link).join("\n    ")}
     <a href="/">Front of house</a>
@@ -240,6 +316,7 @@ export function renderAdminShell(
     ${READINGS.map(link).join("\n    ")}
     ${PARTNER.map(link).join("\n    ")}
   </nav>
+  ${headHtml(tab, asOf)}
   ${notes}
   ${bodyHtml}
   </div>

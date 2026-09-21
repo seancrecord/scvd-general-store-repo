@@ -123,6 +123,8 @@ export function renderWardPage(
         ${runButton}
       </section>
       ${instrumentBlock(register, beat)}`,
+      [],
+      { window: "no round on the books" },
     );
   }
 
@@ -252,6 +254,14 @@ export function renderWardPage(
       are private readings for outreach, never published as rows —
       aggregate only, by hand, per the consent ruling.</p>
     </section>`,
+    [],
+    /**
+     * The round's OWN week and instant, not the hour this page was
+     * opened. A page that stamps itself "read just now" over a round
+     * three weeks stale is the exact misreading the heartbeat block
+     * below was built to prevent, committed by the header above it.
+     */
+    { at: round.at, window: `round ${round.week}` },
   );
 }
 

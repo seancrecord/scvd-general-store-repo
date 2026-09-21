@@ -2454,7 +2454,7 @@ adminRoutes.get("/admin/market", async (c) => {
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "market",
-            "<h1>The market</h1><p class='empty'>No ward round yet — the desk derives everything from the round's rows.</p>",
+            "<p class='empty'>No ward round yet — the desk derives everything from the round's rows.</p>",
           ),
         )
       : c.json({ error: "no ward round yet" }, 404);
@@ -2868,7 +2868,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "outreach",
-            "<h1>Outreach</h1><p class='empty'>No ward round yet — the queue derives itself from the round's rows.</p>",
+            "<p class='empty'>No ward round yet — the queue derives itself from the round's rows.</p>",
           ),
         )
       : c.json({ error: "no ward round yet" }, 404);
@@ -3337,7 +3337,7 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "market",
-            "<h1>Inflows</h1><p class='empty'>No ward round yet — there are no advertised addresses to watch.</p>",
+            "<h2>Inflows</h2><p class='empty'>No ward round yet — there are no advertised addresses to watch.</p>",
           ),
         )
       : c.json({ error: "no ward round yet" }, 404);
@@ -3405,7 +3405,7 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
   return c.html(
     renderAdminShell(
       "market",
-      `<h1>Inflows — week ${escapeHtml(census.week)}</h1>
+      `<h2>Inflows — week ${escapeHtml(census.week)}</h2>
       <p class="lead">${headline}
       ${census.addresses_capped ? `<strong>The ceiling bound:</strong> the round advertised ${census.addresses_advertised} and this run watched ${census.addresses_checked} on a rotating window.` : ""}</p>
 
@@ -3527,7 +3527,7 @@ adminRoutes.get("/admin/market/authenticity", async (c) => {
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "market",
-            "<h1>Offer authenticity</h1><p class='empty'>No ward round yet — there are no stored challenges to verify.</p>",
+            "<h2>Offer authenticity</h2><p class='empty'>No ward round yet — there are no stored challenges to verify.</p>",
           ),
         )
       : c.json({ error: "no ward round yet" }, 404);
@@ -3565,7 +3565,7 @@ adminRoutes.get("/admin/market/authenticity", async (c) => {
   return c.html(
     renderAdminShell(
       "market",
-      `<h1>Offer authenticity — week ${escapeHtml(reading.week)}</h1>
+      `<h2>Offer authenticity — week ${escapeHtml(reading.week)}</h2>
       ${
         reading.hosts_with_evidence === 0
           ? `<p class="lead"><strong>This instrument could not look.</strong> All

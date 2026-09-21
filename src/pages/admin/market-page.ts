@@ -598,7 +598,6 @@ export function renderMarketPage(
     : "";
 
   const body = `
-  <h1>The market — what the round's numbers mean</h1>
   <p class="menu-desc">Derived entirely from round <strong>${escapeHtml(round.week)}</strong>
   (${escapeHtml(round.at.slice(0, 16))}Z): ${market.probed} doors probed, ${market.ready} ready.
   Zero extra contact — every fact here was already in the responses the

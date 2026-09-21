@@ -77,5 +77,5 @@ export function renderDisclosurePage(data: DisclosurePageData): string {
   <section>
     <p><small>If the ignores stay near the whole after a month, the ask is wrong, not the buyers, and rule 56 wants that said on /corrections rather than read as "agents don't disclose".</small></p>
   </section>`;
-  return renderAdminShell("disclosure", body);
+  return renderAdminShell("disclosure", body, [], { window: data.month });
 }

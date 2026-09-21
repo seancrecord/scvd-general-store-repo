@@ -73,6 +73,26 @@ h1 .lamp { color: var(--brass); }
   text-transform: uppercase;
   margin-bottom: 1.4rem;
 }
+/* The store's name, above the rail. The room's own name is the h1. */
+.office-eyebrow {
+  color: var(--brass-dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.9rem;
+}
+/* One line under every room's name: what you are looking at, and when
+   it was read. --ivory-dim rather than --brass-dim: this one is meant
+   to be read, not glanced past. */
+.page-what {
+  color: var(--ivory-dim);
+  font-size: 0.86rem;
+  margin: 0 0 1.4rem;
+  max-width: 62ch;
+}
+.page-asof {
+  color: var(--brass-dim);
+}
 h2 {
   font-size: 0.84rem;
   letter-spacing: 0.14em;
