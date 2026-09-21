@@ -1,5 +1,6 @@
 import { canonicalAddress } from "@/lib/addresses";
 import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
+import { isMachineryCrawler, isUserInitiatedFetcher } from "@/lib/crawlers";
 import type { Channel, Env } from "@/types";
 
 /**
@@ -146,7 +147,36 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
  */
 export function isInfrastructureUserAgent(userAgent: string | undefined): boolean {
   const ua = (userAgent ?? "").toLowerCase();
-  return ua.length > 0 && INFRASTRUCTURE_UA_HINTS.some((hint) => ua.includes(hint));
+  if (ua.length === 0) return false;
+  /**
+   * ONE TABLE, TWO SOURCES (2026-09-21). The hints above are machinery
+   * by its own verb; the crawler list (lib/crawlers.ts) is machinery
+   * by its vendor's published purpose, the same list robots.txt
+   * prints and the signals page classes by. For a month they were
+   * consulted by different instruments: PetalBot, Amazonbot, Applebot
+   * and forty more named crawlers were "crawler" on /admin/signals
+   * and organic "direct" on /observatory, on the same request. A
+   * person's errand (a user-initiated fetcher) is checked first and
+   * is never machinery, because Diffbot-User contains Diffbot.
+   */
+  if (isUserInitiatedFetcher(ua)) return false;
+  return INFRASTRUCTURE_UA_HINTS.some((hint) => ua.includes(hint)) || isMachineryCrawler(ua);
+}
+
+export type ReaderClass = "browser" | "agent" | "fetcher" | "crawler";
+
+/**
+ * WHO IS READING, from headers the store already keeps — the one
+ * classifier the observatory, the decline desk and the signals page
+ * all read, so no two of them can file one request two ways.
+ * Crawler is machinery by either table; fetcher is a person's errand
+ * through a model; browser is whoever asked for HTML; everything
+ * else is an agent, and an agent using curl is a customer.
+ */
+export function readerClass(userAgent: string | undefined, accept: string | undefined): ReaderClass {
+  if (isInfrastructureUserAgent(userAgent)) return "crawler";
+  if (isUserInitiatedFetcher(userAgent)) return "fetcher";
+  return (accept ?? "").includes("text/html") ? "browser" : "agent";
 }
 
 export interface ChannelSignals {
@@ -199,6 +229,11 @@ export function inferChannel(signals: ChannelSignals): Channel {
   }
   if (machinery) {
     return "infrastructure";
+  }
+  // A person asked a model to read this page, now: organic, and its
+  // own channel rather than noise in "direct" (2026-09-21).
+  if (isUserInitiatedFetcher(userAgent)) {
+    return "fetcher";
   }
   if (BAZAAR_REFERRER_HINTS.some((hint) => referrer.includes(hint))) {
     return "bazaar";

@@ -3,8 +3,9 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
 import { metricsMonth, verifyAgeBucket } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { buyInputExample, buyInputSchema } from "@/lib/bazaar-discovery";
-import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, isInfrastructureUserAgent } from "@/lib/channel";
-import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, isKnownCrawler, isSocialUnfurler } from "@/lib/crawlers";
+import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, readerClass } from "@/lib/channel";
+import type { ReaderClass } from "@/lib/channel";
+import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, SOCIAL_UNFURLERS } from "@/lib/crawlers";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { Context } from "hono";
 import type { Env, HonoEnv, MenuItem } from "@/types";
@@ -95,7 +96,8 @@ export type SignalKind =
   | "selfreads"
   | "artifacts";
 export type ReadKind = "replay" | "order_poll" | "purchase_status" | "check_order";
-export type ReaderClass = "browser" | "agent" | "crawler";
+export type { ReaderClass };
+export { readerClass };
 export type RefusalReason = "missing" | "malformed" | "example" | "other";
 export type PageKind = "corpus_host" | "passport";
 export type PageFormat = "html" | "markdown" | "json";
@@ -283,30 +285,16 @@ export async function recordReceiptRead(env: Env, read: ReceiptRead): Promise<vo
 }
 
 /**
- * Crawler is the shared tables (named AI and search crawlers, the
- * infrastructure hints, and the link unfurlers, which are bots even
- * though the page negotiation hands them HTML); browser is whoever
- * asked for HTML; everything else is an agent. One classifier, so
- * the receipt page and the subject pages cannot come to disagree
- * about who a reader was.
- *
- * Deliberately built from lib/ alone and not from the page
- * negotiator: this service is imported by the corpus and passport
- * routes, which the doors worker also bundles, and a page import
- * here dragged the storefront and the WebMCP bridge into that bundle
- * (2026-09-18, caught by build:check).
+ * THE CLASSIFIER LIVES IN lib/channel.ts (2026-09-21), beside the
+ * channel split, so the observatory and this page read one function.
+ * Re-exported above so the call sites keep their import.
  */
-export function readerClass(userAgent: string | undefined, accept: string | undefined): ReaderClass {
-  if (isInfrastructureUserAgent(userAgent) || crawlerName(userAgent) !== undefined) return "crawler";
-  if (isKnownCrawler(userAgent) || isSocialUnfurler(userAgent)) return "crawler";
-  return (accept ?? "").includes("text/html") ? "browser" : "agent";
-}
 
 /** The crawler's own name, from the tables robots.txt and the classifier already share. */
 export function crawlerName(userAgent: string | undefined): string | undefined {
   const ua = (userAgent ?? "").toLowerCase();
   if (!ua) return undefined;
-  for (const token of [...NAMED_AI_CRAWLERS, ...SEARCH_CRAWLERS, ...INFRASTRUCTURE_UA_HINTS]) {
+  for (const token of [...NAMED_AI_CRAWLERS, ...SEARCH_CRAWLERS, ...SOCIAL_UNFURLERS, ...INFRASTRUCTURE_UA_HINTS]) {
     if (ua.includes(token.toLowerCase())) return token.toLowerCase();
   }
   return undefined;

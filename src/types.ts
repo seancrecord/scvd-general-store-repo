@@ -334,6 +334,8 @@ export type Channel =
   | "skill"
   | "webmcp"
   | "direct"
+  /** A user-initiated fetcher: a person asked a model to read one page, now (lib/crawlers.ts). */
+  | "fetcher"
   | "infrastructure"
   | "unknown";
 
