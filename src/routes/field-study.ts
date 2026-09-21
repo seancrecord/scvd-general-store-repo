@@ -348,7 +348,6 @@ function enrolmentShape(base: string) {
     why_first:
       "Enrolling BEFORE you shop is what makes this a study rather than a survey. You state what you were sent here to do; then we watch what actually happens; the gap between the two is the finding. A retrospective account cannot produce that gap — it only produces the story told afterwards.",
     body: {
-      payout_to: "0x… — a Base address you control. Rewards pay in Base USDC.",
       model: "the model making these calls, as precisely as you can name it",
       harness: STUDY_HARNESSES,
       harness_other: "required only when harness is `other` or `custom`",
@@ -359,6 +358,8 @@ function enrolmentShape(base: string) {
       funding: ["own_wallet", "operator_wallet", "test_funds"],
       found_via: "how you got here",
       prior_x402: "true or false: had you paid any x402 door before today",
+      payout_to:
+        "OPTIONAL here, and required at the debrief instead — 0x… a Base address you control. Enrolment opens no wallet and moves no money, so this door has no need of it; give it when you collect. Sent here anyway, it is sanctions-screened early as a courtesy, so a wallet this store cannot pay learns so before spending its own money.",
       scenario:
         "optional — the id of a scenario that is live right now (read them on /api/field-study under `scenarios`). A scenario names a CONDITION of the walk, never a product; you still buy whatever you like. Bound here or never: a debrief cannot name one, because picking the scenario after seeing which one your purchases happened to satisfy would be choosing the question after seeing the answer.",
     },
@@ -370,6 +371,8 @@ function enrolmentShape(base: string) {
       expires_at: `${STUDY_WINDOW_HOURS} hours out. Debrief before then.`,
       brief: "what to do next, in full",
     },
+    every_problem_at_once:
+      "A refused enrolment names EVERY field that needs fixing, in `problems`, each with what was expected and what the answer buys this store. One more call is always enough; you never have to discover the roster one refusal at a time.",
     refusals: STUDY_REFUSALS,
     then: `${base}/api/study/debrief`,
     room: `${base}/field-study`,
@@ -427,7 +430,21 @@ async function handleEnrol(c: Context<HonoEnv>) {
         recordStudyEvent(c.env, "(enrolment)", "refused", error.message, signals(c)),
       );
       return c.json(
-        { error: error.message, shape: `${c.env.STORE_BASE_URL}/api/study/enrol`, refusals: STUDY_REFUSALS },
+        {
+          error: error.message,
+          /*
+           * EVERY FIELD AT ONCE. The door used to report only its
+           * first complaint, so an agent learned the roster one
+           * refusal at a time — and because `payout_to` was checked
+           * first, every refusal in the instrument's opening days
+           * reported that one word whatever was really wrong.
+           */
+          ...(error.problems.length > 0 ? { problems: error.problems } : {}),
+          nothing_was_spent: true,
+          you_may_try_again: "Enrolment is free and re-takeable. Fix what is named above and post again.",
+          shape: `${c.env.STORE_BASE_URL}/api/study/enrol`,
+          refusals: STUDY_REFUSALS,
+        },
         400,
       );
     }
@@ -459,6 +476,8 @@ function debriefShape(base: string) {
     body: {
       study_id: "sty_… from your enrolment",
       study_token: "the 64 hex characters returned with it",
+      payout_to:
+        "0x… a Base address you control. Required here unless you already gave one at enrolment, and it overrides that one if you did — a wallet changed mid-study should not cost you the walk. Sanctions-screened, fail closed, before anything is signed.",
       legs: [
         {
           purchase_id: "the 64 hex purchase_id handed back with your purchase",
@@ -508,6 +527,7 @@ fieldStudyRoutes.post("/api/study/debrief", async (c) => {
       study_token: String(body["study_token"] ?? ""),
       legs: Array.isArray(body["legs"]) ? (body["legs"] as never[]) : [],
       answers: (body["answers"] as Record<string, unknown>) ?? {},
+      payout_to: body["payout_to"],
       scenario_answers: body["scenario_answers"] as Record<string, unknown>,
       defects: body["defects"] as never,
     });
@@ -529,6 +549,7 @@ fieldStudyRoutes.post("/api/study/debrief", async (c) => {
       return c.json(
         {
           error: error.message,
+          ...(error.problems.length > 0 ? { problems: error.problems } : {}),
           nothing_was_paid: true,
           your_enrolment:
             "Unless the refusal says otherwise, your enrolment still stands and you may present the debrief again.",

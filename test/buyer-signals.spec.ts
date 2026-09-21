@@ -83,6 +83,37 @@ describe("the four readings", () => {
     expect(capped.purposes_truncated).toBe(true);
   });
 
+  /**
+   * THE DEFECT THE KEEPER'S OWN DESK SHOWED (2026-09-21): this
+   * recorder counted conformance walkers beside buyers, and the total
+   * was published as a sentence about agents. Both directions are
+   * pinned, because dropping machinery entirely would be the opposite
+   * error — whether a linter can satisfy an input contract is evidence
+   * about the challenge.
+   */
+  it("keeps machinery off the buyers' count and still counts it", async () => {
+    const spot = getMenuItem("spot_check");
+    await recordInputRefusal(testEnv, spot, "spot_check", { code: "bad_request", input_field: "host" }, "nope",
+      { userAgent: "python-httpx/0.28.1" });
+    await recordInputRefusal(testEnv, spot, "spot_check", { code: "bad_request", input_field: "host" }, "nope",
+      { userAgent: "StillOS-payability-census/1.0 (+https://example.invalid; measurement, no payment attached)" });
+    await recordInputRefusal(testEnv, spot, "spot_check", { code: "bad_request", input_field: "host" }, "nope",
+      { userAgent: "x402lint/0.1 (+https://x402lint.dev)" });
+    const s = await readBuyerSignals(testEnv);
+    expect(s.refusal["spot_check:host:malformed"], "one buyer-shaped client").toBe(1);
+    expect(
+      s.refusal_machinery["spot_check:host:malformed"],
+      "the census and the linter, kept rather than dropped",
+    ).toBe(2);
+  });
+
+  it("classes a census that names its own job as machinery", () => {
+    expect(
+      readerClass("StillOS-payability-census/1.0 (measurement, no payment attached)", undefined),
+      "the table held census-probe and this one is a census; the near-miss matched nothing",
+    ).toBe("crawler");
+  });
+
   it("keys a refusal by item, field and why, and overflows to other past the cap", async () => {
     const spot = getMenuItem("spot_check");
     await recordInputRefusal(testEnv, spot, "spot_check", { code: "bad_request", input_field: "host" }, "https://a.example/api");
