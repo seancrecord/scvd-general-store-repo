@@ -1,6 +1,11 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { GrowthLedger, GrowthMonth, SurfaceDelta } from "@/services/growth";
+import {
+  DOOR_RATIO_NOTE,
+  MARKET_NOTE,
+  type GrowthHypothesis,
+} from "@/services/growth-hypothesis";
 
 /**
  * THE GROWTH PAGE (2026-09-11; docs/GROWTH_LEDGER_2026-09.md). Months
@@ -192,6 +197,96 @@ function demandHtml(months: GrowthMonth[]): string {
   </section>`;
 }
 
+/**
+ * THE HYPOTHESIS, FIRST ON THE PAGE.
+ *
+ * "We will grow with the market" is the claim the store is run on, so
+ * it leads, and it leads with the sentence rather than the numbers —
+ * the same order the round uses, for the same reason. A reading that
+ * says THE MARKET GREW AND WE DID NOT is the one this block exists to
+ * make impossible to scroll past; it is the only row here rendered in
+ * the oxblood the alarms use.
+ *
+ * The market's numbers are the corpus's own, signed. Ours are the
+ * ledger's. They sit in one column per month so a divergence has
+ * nowhere to hide, and neither side is ever divided into the other:
+ * a share would invent a denominator the store does not have.
+ */
+function hypothesisHtml(months: GrowthMonth[]): string {
+  const h = (m: GrowthMonth) => m.hypothesis;
+  const market = (m: GrowthMonth, pick: (r: NonNullable<GrowthHypothesis["now"]["market"]>) => string): string =>
+    h(m).now.market ? pick(h(m).now.market!) : "<small>not measured</small>";
+  const verdict = (m: GrowthMonth): string =>
+    h(m).against_us
+      ? `<strong style="color:var(--oxblood)">${escapeHtml(h(m).reading)}</strong>`
+      : `<small>${escapeHtml(h(m).reading)}</small>`;
+  const ratio = (value: number | null, suffix: string): string =>
+    value === null ? "<small>—</small>" : `${value}${suffix}`;
+  const found = months[0] ? h(months[0]).found_us : null;
+
+  return `<section>
+    <h2>The hypothesis: do we grow with the market</h2>
+    <p><small>The claim the store is run on, with the receipts that would refute it. The market's row is the signed
+    corpus's closing week; ours is the ledger's. They are never divided into one another — a share would need a
+    denominator the store does not have.</small></p>
+    <table border="1" cellpadding="4">
+      ${monthHead(months)}
+      ${row("<strong>the market</strong> — doors listed", months, (m) => market(m, (r) => `<strong>${r.listed}</strong>`))}
+      ${row("<small>&nbsp;&nbsp;of those, payable</small>", months, (m) => market(m, (r) => `<small>${r.payable}</small>`))}
+      ${row("<strong>us</strong> — organic settles", months, (m) => `<strong>${h(m).now.settles}</strong>`)}
+      ${row("new faces <small>(first purchase)</small>", months, (m) => String(h(m).now.new_faces))}
+      ${row("<small>&nbsp;&nbsp;wallets that came back</small>", months, (m) => `<small>${h(m).now.returning_faces}</small>`)}
+      ${row("the reading", months, verdict)}
+    </table>
+    <p><small>${escapeHtml(MARKET_NOTE)}</small></p>
+    <p><small><strong>A wallet is not a buyer.</strong> A custodial signer is many agents and one operator can hold
+    several wallets; the store cannot tell either from a wallet that is exactly what it looks like. New faces is a
+    count, never a growth rate: at this volume one wallet is a hundred per cent and the next month's absence is
+    half, and neither is a fact about the market.</small></p>
+
+    <h3>Is the door getting easier</h3>
+    <table border="1" cellpadding="4">
+      ${monthHead(months)}
+      ${row("declines", months, (m) => String(h(m).door.declines))}
+      ${row("settles", months, (m) => String(h(m).door.settles))}
+      ${row("declines per hundred settles", months, (m) => ratio(h(m).door.per_hundred_settles, ""))}
+    </table>
+    <p><small>${escapeHtml(DOOR_RATIO_NOTE)}</small></p>
+
+    <h3>Where the checks go</h3>
+    <table border="1" cellpadding="4">
+      ${monthHead(months)}
+      ${row("free checks carrying an argument", months, (m) => String(h(m).loop.checks))}
+      ${row("settles per hundred checks", months, (m) => ratio(h(m).loop.settles_per_hundred_checks, ""))}
+    </table>
+    <p><small>Three counts in a row, not a joined journey: the store has no cookie and does not follow a buyer between
+    them. A check today and a purchase next week is invisible here, counted as a probe forever.</small></p>
+
+    <h3>Who found us</h3>
+    ${
+      found === null
+        ? "<p class='empty'>No months read.</p>"
+        : `<p>Of <strong>${found.watched}</strong> pages the Sunday watch fetches,
+      <strong>${found.citing}</strong> carry a live citation:
+      <strong>${found.unprompted}</strong> from systems we never wrote to,
+      ${found.prompted} after a note we stamped.</p>
+      ${
+        found.began.length === 0
+          ? "<p><small>Nobody cites the corpus yet. That is the honest zero this row starts from, and the one number on this page our own effort cannot manufacture.</small></p>"
+          : `<ul>${found.began
+              .map(
+                (b) =>
+                  `<li><strong>${escapeHtml(b.name)}</strong> since ${escapeHtml(b.since)} — ${b.asked ? "after we wrote" : "<strong>unasked</strong>"}</li>`,
+              )
+              .join("")}</ul>`
+      }`
+    }
+    <p><small><strong>Unprompted is a ceiling, not a proof.</strong> The register records a STAMPED note; the keeper
+    talks to people, and a mention in a thread the repo never saw leaves no stamp. So a row counted unasked may have
+    been asked somewhere this file cannot see.</small></p>
+  </section>`;
+}
+
 function x402Html(months: GrowthMonth[]): string {
   const reading = (m: GrowthMonth, pick: (c: GrowthMonth["x402_economy"]) => string): string =>
     m.x402_economy ? pick(m.x402_economy) : "<small>no signed week</small>";
@@ -224,6 +319,7 @@ export function renderGrowthPage(ledger: GrowthLedger): string {
     <p><small>Floors: the porch writes at most ${ledger.floors.porch_writes_per_minute} visits a minute per isolate; each month's scan stops at ${ledger.floors.ledger_key_cap} keys${floors.length > 0 ? ` — hit in ${floors.map(escapeHtml).join(", ")}, so those months undercount` : ""}. Porch counting began ${escapeHtml(ledger.porch_counting_since)}; the interactive doors and rooms got their lines ${escapeHtml(ledger.doors_logged_since)}. The same figures as JSON: <a href="/admin/growth.json">/admin/growth.json</a>.</small></p>
     ${loggedHtml(months)}
   </section>
+  ${hypothesisHtml(months)}
   ${instrumentsHtml(months)}
   ${storeHtml(months)}
   ${agentsHtml(months)}
