@@ -1,6 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
-import { PURPOSES_CAP, SIGNAL_MAP_CAP, SUBJECT_MAP_CAP, type BuyerSignals } from "@/services/buyer-signals";
+import { PURPOSES_CAP, type BuyerSignals } from "@/services/buyer-signals";
 
 /**
  * BUYER SIGNALS, the trial page. One number per reading up top, the
@@ -93,14 +93,25 @@ export function renderSignalsPage(data: SignalsPageData): string {
     if (relation === "self") selfReferred[page ?? "page"] = (selfReferred[page ?? "page"] ?? 0) + n;
   }
   const repeats = sorted(s.subjects).filter(([k, n]) => k !== "other" && n >= 2);
+  const formatsBySubject: Record<string, string[]> = {};
+  for (const key of Object.keys(s.subject_formats)) {
+    if (key === "other") continue;
+    const cut = key.lastIndexOf(":");
+    if (cut <= 0) continue;
+    (formatsBySubject[key.slice(0, cut)] ??= []).push(key.slice(cut + 1));
+  }
+  const h = s.histogram;
+  const histogramLine = h.subjects === 0
+    ? "No subject read yet by anyone but a crawler."
+    : `${h.subjects} subjects read by a browser, an agent or a fetcher (${h.reads} reads): ${h.by_formats.one} in one format, ${h.by_formats.two} in two, ${h.by_formats.three} in three; ${h.repeat.at_least_2} read 2+ times, ${h.repeat.at_least_5} read 5+, ${h.repeat.at_least_10} read 10+.${h.overflow ? ` ${h.overflow} reads landed in the overflow bucket and are in none of those.` : ""}`;
   const selfHosts = sorted(s.selfreads).filter(([k]) => k !== "other");
   const pagesLine = total(s.pages) === 0
     ? "No reads of a host page or a passport since the signal went in."
     : `${total(s.pages)} reads of pages about a host: ${sorted(pagesByReader).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ")}. Referred from the subject itself: ${total(selfReferred)}. Subjects read more than once by a browser or an agent: ${repeats.length}.`;
   const repeatDetail = repeats.length === 0
     ? "<p><small>No subject read twice yet by anyone but a crawler.</small></p>"
-    : `<table border="1" cellpadding="4"><tr><th>subject host</th><th>reads</th><th>of which self-referred</th></tr>
-      ${repeats.map(([k, n]) => `<tr><td><code>${escapeHtml(k)}</code></td><td>${n}</td><td>${s.selfreads[k] ?? 0}</td></tr>`).join("")}
+    : `<table border="1" cellpadding="4"><tr><th>subject host</th><th>reads</th><th>of which self-referred</th><th>formats</th></tr>
+      ${repeats.map(([k, n]) => `<tr><td><code>${escapeHtml(k)}</code></td><td>${n}</td><td>${s.selfreads[k] ?? 0}</td><td>${escapeHtml((formatsBySubject[k] ?? []).sort().join(", ") || "—")}</td></tr>`).join("")}
     </table>`;
   const artifactRepeats = sorted(s.artifacts).filter(([k, n]) => k !== "other" && n >= 2);
   const artifactsLine = total(s.artifacts) === 0
@@ -111,7 +122,7 @@ export function renderSignalsPage(data: SignalsPageData): string {
     <h2>Buyer signals, ${escapeHtml(s.month)} <small>(trial)</small></h2>
     ${s.enabled ? "" : "<p><strong>The dial is off.</strong> Nothing below is being written; what shows is what was recorded before it was turned off.</p>"}
     <p><small>Observed, never asked: what the till sees without a cookie, an account or a question. Every write is deferred beside the answer; house wallets are skipped at settle.
-    Each map holds ${SIGNAL_MAP_CAP} keys (${SUBJECT_MAP_CAP} for subjects and receipts) and counts the rest as "other"; counts are floors (one key, read-modify-write). Another month: <code>?month=YYYY-MM</code>.
+    Storage: <code>${escapeHtml(s.storage.path)}</code>. ${escapeHtml(s.storage.note)} Caps on this path: ${Object.entries(s.storage.caps).map(([k, n]) => `${escapeHtml(k)} ${n}`).join(", ")}. Another month: <code>?month=YYYY-MM</code>.
     What buyers <em>chose</em> to tell us is on <a href="/admin/disclosure">the disclosure page</a>; this page is the other half.</small></p>
   </section>
   ${reading("Which rail, by door", railLine, `<h3>HTTP</h3>${table(railHttp, ["network", "settles"])}<h3>MCP</h3>${table(railMcp, ["network", "settles"])}`,
@@ -120,6 +131,8 @@ export function renderSignalsPage(data: SignalsPageData): string {
     "missing: the field was absent. malformed: it failed the published pattern. example: the worked example was pasted back. other: an encoding or callback refusal. A field that leads this table is a description or an example to rewrite, not a buyer to blame; an example bought as-is is a signed reading of a placeholder, which is the same defect from the other side.")}
   ${reading("Who reads receipts", readersLine, `<h3>By reader and artifact age</h3>${table(s.readers, ["reader:age", "reads"])}<h3>Where they were shown (referrer host)</h3>${table(s.referrers, ["host", "reads"])}`,
     "Classed from headers the verify route already keeps for ninety days; nothing is placed on the receipt and nothing new is collected. browser is whoever negotiated HTML, crawler is the shared table, agent is the rest. A browser read over a week after minting is a person being shown proof; the host it came from is where the store's artifacts travel. own means a link from our own pages; none means no referrer was sent, which is most agents.")}
+  ${reading("How concentrated the reading is", histogramLine, `<h3>Subjects by formats read, and by repeat threshold</h3><table border="1" cellpadding="4"><tr><th>subjects</th><th>one format</th><th>two</th><th>three</th><th>2+ reads</th><th>5+</th><th>10+</th><th>reads</th><th>overflow</th></tr><tr><td>${h.subjects}</td><td>${h.by_formats.one}</td><td>${h.by_formats.two}</td><td>${h.by_formats.three}</td><td>${h.repeat.at_least_2}</td><td>${h.repeat.at_least_5}</td><td>${h.repeat.at_least_10}</td><td>${h.reads}</td><td>${h.overflow}</td></tr></table>`,
+    "A sweep reads every page once in one format and moves on; evaluation comes back, and comes back for the other twin. Fractions over the month's subject count, never a host name on a public surface; the same rows /observatory derives its histogram from.")}
   ${reading("Who reads the pages about somebody", pagesLine, `<h3>By page, format, reader and referrer relation</h3>${table(s.pages, ["page:format:reader:relation", "reads"])}<h3>Crawlers, by name</h3>${table(s.crawlers, ["page:crawler", "reads"])}<h3>Subjects read more than once</h3>${repeatDetail}<h3>Self-referred, by subject</h3>${table(selfHosts.length ? Object.fromEntries(selfHosts) : {}, ["subject host", "reads from itself"])}`,
     "A corpus host page or a passport is a page ABOUT a host. self means the referrer was the subject host or a page under it, which is the one honest sign of an operator looking at their own listing; own is a link from our pages; none is most agents and every crawler. A crawler that reads every page once, the same count on each, is an index walk, not interest, so crawlers are named here and kept out of the subject counts. Repeat means the record was read again, not that it was the same viewer: with no cookie the store cannot tell, and it is not going to start.")}
   ${reading("Receipts read again", artifactsLine, table(Object.fromEntries(artifactRepeats), ["certificate", "reads"]),

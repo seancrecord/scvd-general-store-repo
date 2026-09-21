@@ -1,4 +1,5 @@
 import { SELF, env } from "cloudflare:test";
+import { signalStore } from "@/services/signal-store";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
@@ -76,6 +77,7 @@ async function publish(week = "2026-W38", markdown = ISSUE, teaser = ""): Promis
  */
 
 beforeEach(async () => {
+  await signalStore(testEnv)?.reset();
   const listed = await testEnv.COUNTERS.list({ prefix: "metric:" });
   for (const key of listed.keys) {
     if (key.name.includes(":signals:")) await testEnv.COUNTERS.delete(key.name);

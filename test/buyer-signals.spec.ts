@@ -1,4 +1,5 @@
 import { SELF, env } from "cloudflare:test";
+import { signalStore } from "@/services/signal-store";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { houseWallets } from "@/lib/channel";
 import {
@@ -60,6 +61,7 @@ beforeAll(() => {
 });
 
 beforeEach(async () => {
+  await signalStore(testEnv)?.reset();
   const listed = await testEnv.COUNTERS.list({ prefix: "metric:" });
   for (const key of listed.keys) {
     if (key.name.includes(":signals:") || key.name.includes(":verifyage:")) await testEnv.COUNTERS.delete(key.name);
@@ -193,10 +195,26 @@ describe("at the doors", () => {
     expect(s.subjects[host]).toBe(3);
     expect(s.selfreads[host]).toBe(2);
     expect(Object.keys(s.subjects).some((k) => k.startsWith("never-met-"))).toBe(false);
+    // The same reads by format: two of the page, one of the twin — a return, not a sweep.
+    expect(s.subject_formats[`${host}:html`]).toBe(2);
+    expect(s.subject_formats[`${host}:json`]).toBe(1);
+    expect(s.histogram).toEqual({
+      subjects: 1,
+      by_formats: { one: 0, two: 1, three: 0 },
+      repeat: { at_least_2: 1, at_least_5: 0, at_least_10: 0 },
+      reads: 3,
+      overflow: 0,
+    });
+    // Read from the one writer, and the reading says so, with the caps that applied.
+    expect(s.storage.path).toBe("signal_store");
+    expect(s.storage.caps["referrers"]).toBe(SIGNAL_MAP_CAP);
     const html = await (await SELF.fetch(`${BASE}/admin/signals`, { headers: AUTH })).text();
     expect(html).toContain("Who reads the pages about somebody");
     expect(html).toContain("Subjects read more than once");
-    expect(html).toContain(`<code>${host}</code></td><td>3</td><td>2</td>`);
+    expect(html).toContain(`<code>${host}</code></td><td>3</td><td>2</td><td>html, json</td>`);
+    expect(html).toContain("How concentrated the reading is");
+    expect(html).toContain("Storage: <code>signal_store</code>");
+    expect(html).toContain("Caps on this path: refusal 100, referrers 100");
   });
 
   it("classes a reader once for every page, and a referrer by its relation to the subject", () => {

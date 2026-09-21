@@ -33,7 +33,25 @@ function monthTable(month: ObservatoryMonth): string {
     <table border="1" cellpadding="6">
       <tr><th>surface</th><th>organic</th><th>by channel</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
-    </table>`;
+    </table>
+    ${hostPagesTable(month)}`;
+}
+
+function hostPagesTable(month: ObservatoryMonth): string {
+  const reading = month.host_pages;
+  if (!reading) return `<p class="menu-meta">Who reads the host pages: the signals could not be read for ${escapeHtml(month.month)}.</p>`;
+  const h = reading.histogram;
+  const cells = Object.entries(reading.by_format_and_reader);
+  return `<h3>Who reads the pages about a host, ${escapeHtml(month.month)}</h3>
+    <table border="1" cellpadding="6">
+      <tr><th>format : reader</th><th>reads</th></tr>
+      ${cells.length === 0 ? "<tr><td colspan=\"2\">nothing counted</td></tr>" : cells.map(([k, n]) => `<tr><td><code>${escapeHtml(k)}</code></td><td>${n}</td></tr>`).join("\n")}
+    </table>
+    <table border="1" cellpadding="6">
+      <tr><th>subjects</th><th>one format</th><th>two</th><th>three</th><th>2+ reads</th><th>5+</th><th>10+</th><th>reads</th><th>overflow</th></tr>
+      <tr><td>${h.subjects}</td><td>${h.by_formats.one}</td><td>${h.by_formats.two}</td><td>${h.by_formats.three}</td><td>${h.repeat.at_least_2}</td><td>${h.repeat.at_least_5}</td><td>${h.repeat.at_least_10}</td><td>${h.reads}</td><td>${h.overflow}</td></tr>
+    </table>
+    <p class="menu-meta">Rows from ${escapeHtml(reading.storage)}. Every figure is over the month's subject count beside it; a sweep reads each page once in one format, and a return is the signal.</p>`;
 }
 
 /**
@@ -74,6 +92,8 @@ function observatoryJsonLd(base: string, observatory: Awaited<ReturnType<typeof 
       "organic visits per month, house and infrastructure buckets excluded",
       "visits per counted surface, per month",
       "whether a month's ledger was truncated by the key cap",
+      "reads of corpus host pages per month by format served and reader class (browser, agent, fetcher, crawler), house excluded",
+      "subjects read in one, two or three formats, and subjects past a repeat threshold, over the month's subject count",
     ],
     measurementTechnique: `${observatory.what_this_is_not} Counted by name only: a surface absent from the counted list is not counted, which is not the same as unvisited. ${observatory.house_flag_policy}`,
     distribution: {
@@ -110,6 +130,7 @@ observatoryRoutes.get("/observatory", async (c) => {
       bodyHtml: `${observatoryJsonLd(base, observatory)}<section>
         <p class="menu-desc">${escapeHtml(observatory.what_this_is)}</p>
         <p class="menu-desc"><strong>${escapeHtml(observatory.what_this_is_not)}</strong></p>
+        <p class="menu-meta">${escapeHtml(observatory.host_pages_note)}</p>
       </section>
       <section>
         ${observatory.months.map(monthTable).join("\n")}

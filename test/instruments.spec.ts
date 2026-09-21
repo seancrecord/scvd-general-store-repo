@@ -20,8 +20,10 @@ const NOW = new Date("2026-09-05T21:00:00.000Z");
 
 const sample: Observatory = {
   computed_at: NOW.toISOString(),
+  host_pages_note: "",
   months: [{
     month: "2026-09", organic_visits: 0, truncated: false,
+      host_pages: null,
     surfaces: [
       { surface: "mcp:tool:preflight_endpoint", organic: 45, by_channel: { mcp: 45 }, house: 0, infrastructure: 0 },
       { surface: "mcp:tool:check_before_you_pay", organic: 24, by_channel: { mcp: 24 }, house: 0, infrastructure: 0 },
@@ -41,6 +43,7 @@ const sample: Observatory = {
     ],
   }, {
     month: "2026-08", organic_visits: 0, truncated: false,
+      host_pages: null,
     surfaces: [
       { surface: "corpus:host", organic: 300, by_channel: { direct: 300 }, house: 0, infrastructure: 0 },
     ],

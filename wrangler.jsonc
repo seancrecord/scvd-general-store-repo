@@ -132,7 +132,11 @@
       { "name": "BOUNTY_CLAIM_LOCKS", "class_name": "BountyClaimLocks" },
       // Every counter's one writer (2026-09-11): a burst of sales on
       // KV read-add-write lost counts; this cannot. services/counter-ledger.ts.
-      { "name": "COUNTER_LEDGER", "class_name": "CounterLedger" }
+      { "name": "COUNTER_LEDGER", "class_name": "CounterLedger" },
+      // The buyer-signals maps' one writer (2026-09-21): no cap on a map
+      // the store itself bounds, and the one cap that stays is returned
+      // with the reading. services/signal-store.ts.
+      { "name": "SIGNALS", "class_name": "SignalStore" }
     ]
   },
   "migrations": [
@@ -146,7 +150,9 @@
     // door documented and KV could not close.
     { "tag": "v5-bounty-claim-locks", "new_sqlite_classes": ["BountyClaimLocks"] },
     // One writer per counter; the tally that lost counts under a burst.
-    { "tag": "v6-counter-ledger", "new_sqlite_classes": ["CounterLedger"] }
+    { "tag": "v6-counter-ledger", "new_sqlite_classes": ["CounterLedger"] },
+    // The signal maps' one writer; the capped KV maps stay as the fail-open path.
+    { "tag": "v7-signal-store", "new_sqlite_classes": ["SignalStore"] }
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",

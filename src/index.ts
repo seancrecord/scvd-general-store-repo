@@ -1,4 +1,5 @@
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
+import { signalStore } from "@/services/signal-store";
 import { watchSweepGaps, type WatchSweepReport } from "@/services/watch-sweep";
 import { withPatientKv } from "@/lib/kv-retry";
 import type { Context } from "hono";
@@ -684,6 +685,8 @@ const worker: ExportedHandler<Env> = {
           ),
         ),
       );
+      // The signal store keeps six months; the Sunday walk is when the older ones go (services/signal-store.ts).
+      ctx.waitUntil(Promise.resolve(signalStore(env)?.reap()).catch(() => undefined));
       ctx.waitUntil(compileDigest(env));
       // Weekly Gazette self-drafting retired 2026-08-05 (keeper's
       // ruling: duplicative of the Almanac, standing maintenance the
@@ -1363,3 +1366,4 @@ export { A2ATaskStore } from "@/services/a2a-tasks";
 export { A2AKitStore } from "@/services/a2a-kit";
 export { BountyClaimLocks } from "@/services/bounty-claim-locks";
 export { CounterLedger } from "@/services/counter-ledger";
+export { SignalStore } from "@/services/signal-store";

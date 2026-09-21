@@ -153,6 +153,12 @@ export interface Env {
   COUNTER_LEDGER?: DurableObjectNamespace<import("@/services/counter-ledger").CounterLedger>;
   /** Test pool only: the ledger follows KV when a test changes a key under it (services/counter-ledger.ts). */
   COUNTER_LEDGER_FOLLOW_KV?: string;
+  /**
+   * The buyer-signals maps' one writer (services/signal-store.ts).
+   * Optional for the same reason as the ledger: absent, the maps fall
+   * back to the capped KV read-modify-write and the reading says so.
+   */
+  SIGNALS?: DurableObjectNamespace<import("@/services/signal-store").SignalStore>;
   PATRONS: KVNamespace;
   /**
    * The corpus's object store (2026-08-19, the R2 graduation the

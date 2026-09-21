@@ -7,6 +7,8 @@ import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, readerClass } from "@/lib/channe
 import type { ReaderClass } from "@/lib/channel";
 import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, SOCIAL_UNFURLERS } from "@/lib/crawlers";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { signalStore } from "@/services/signal-store";
+import { concentrationHistogram, subjectTotals, type ConcentrationHistogram } from "@/lib/signal-histogram";
 import type { Context } from "hono";
 import type { Env, HonoEnv, MenuItem } from "@/types";
 
@@ -78,10 +80,25 @@ import type { Env, HonoEnv, MenuItem } from "@/types";
 /** ⚑ keeper dial. Off, nothing below writes and the page says so. */
 export const BUYER_SIGNALS_ENABLED = true;
 
+/**
+ * THE CAPS, AND WHERE THEY STILL APPLY (2026-09-21). On the signal
+ * store (services/signal-store.ts) a map the store itself bounds — a
+ * subject is a host the chain has met, a receipt is a certificate
+ * that exists, a crawler is a name from the tables — carries no cap
+ * at all; the September read quoted "299 hosts re-read" off a map
+ * that could hold 400 of the corpus's 6,300, with the overflow
+ * bucketed into "other" and no page saying so. The one map whose
+ * keys a stranger can invent (the referrer hosts) keeps SIGNAL_MAP_CAP
+ * on every path, and the reading carries the cap so the page prints
+ * it beside the number. Without the store binding the KV maps keep
+ * every cap they had, and the reading says which path it came from.
+ */
 export const SIGNAL_MAP_CAP = 100;
-/** Subject and receipt maps are wider: one key per host or receipt, crawlers kept out of them. */
+/** KV fallback only: subject and receipt maps are wider there, one key per host or receipt. */
 export const SUBJECT_MAP_CAP = 400;
 export const PURPOSES_CAP = 200;
+/** Maps whose keys a stranger can invent or steer (a referrer host, the item id a knock named) keep a cap on every path. */
+const STRANGER_KEYED: Partial<Record<SignalKind, number>> = { referrers: SIGNAL_MAP_CAP, refusal: SIGNAL_MAP_CAP };
 
 export type SignalKind =
   | "rail"
@@ -126,8 +143,18 @@ export interface BuyerSignals {
   pages: Record<string, number>;
   /** `${page}:${crawler}` — the named crawlers walking the subject pages. */
   crawlers: Record<string, number>;
-  /** Reads per subject host by browsers and agents, all pages about it, house excluded. */
+  /** Reads per subject host by browsers, agents and fetchers, all pages about it, house excluded — derived from subject_formats. */
   subjects: Record<string, number>;
+  /** `${subject}:${format}` — the same reads, by the format they were read in; the histogram's rows. */
+  subject_formats: Record<string, number>;
+  /** How concentrated the reading is: subjects by formats read and by repeat threshold, with the denominator (lib/signal-histogram.ts). */
+  histogram: ConcentrationHistogram;
+  /** Where these maps were read from, and the caps that applied on that path. */
+  storage: {
+    path: "signal_store" | "kv_fallback";
+    caps: Record<string, number>;
+    note: string;
+  };
   /** Reads per subject host that were referred from the subject itself. */
   selfreads: Record<string, number>;
   /** Reads per receipt at /api/verify by browsers and agents, house excluded. */
@@ -153,10 +180,20 @@ async function readMap(env: Env, kind: SignalKind, month: string): Promise<Recor
   }
 }
 
-/** Read-modify-write on one key: a floor under contention, stated on the page. */
+/**
+ * One bump. On the signal store: one statement, one writer, a cap
+ * only where a stranger names the key. Without it: the KV
+ * read-modify-write, a floor under contention with every cap it had,
+ * stated on the page.
+ */
 async function bumpMap(env: Env, kind: SignalKind, entry: string, cap = SIGNAL_MAP_CAP): Promise<void> {
   if (!BUYER_SIGNALS_ENABLED) return;
   const month = metricsMonth();
+  const store = signalStore(env);
+  if (store) {
+    await store.bump({ month, kind, entry, cap: STRANGER_KEYED[kind] });
+    return;
+  }
   const map = await readMap(env, kind, month);
   if (map[entry] === undefined && Object.keys(map).length >= cap) {
     map["other"] = (map["other"] ?? 0) + 1;
@@ -349,7 +386,8 @@ export async function recordPageRead(env: Env, read: PageRead): Promise<void> {
     return;
   }
   const subject = slug(read.subject, "unnamed");
-  await bumpMap(env, "subjects", subject, SUBJECT_MAP_CAP);
+  // Keyed by the format too, so the histogram can tell a sweep (each format once) from a return.
+  await bumpMap(env, "subjects", `${subject}:${read.format}`, SUBJECT_MAP_CAP);
   if (relation === "self") await bumpMap(env, "selfreads", subject, SUBJECT_MAP_CAP);
 }
 
@@ -378,18 +416,23 @@ export async function recordPostPurchaseRead(env: Env, kind: ReadKind, mintedIso
 }
 
 export async function readBuyerSignals(env: Env, month = metricsMonth()): Promise<BuyerSignals> {
-  const [rail, refusal, reads, readers, referrers, examples, pages, crawlers, subjects, selfreads, artifacts, purposesRaw, ...verify] = await Promise.all([
-    readMap(env, "rail", month),
-    readMap(env, "refusal", month),
-    readMap(env, "reads", month),
-    readMap(env, "readers", month),
-    readMap(env, "referrers", month),
-    readMap(env, "examples", month),
-    readMap(env, "pages", month),
-    readMap(env, "crawlers", month),
-    readMap(env, "subjects", month),
-    readMap(env, "selfreads", month),
-    readMap(env, "artifacts", month),
+  const store = signalStore(env);
+  // One call for the whole month on the store; the KV maps one key each otherwise.
+  const fromStore = store ? await store.readMonth(month) : null;
+  const read = (kind: SignalKind): Promise<Record<string, number>> =>
+    fromStore ? Promise.resolve(fromStore[kind] ?? {}) : readMap(env, kind, month);
+  const [rail, refusal, reads, readers, referrers, examples, pages, crawlers, subjectFormats, selfreads, artifacts, purposesRaw, ...verify] = await Promise.all([
+    read("rail"),
+    read("refusal"),
+    read("reads"),
+    read("readers"),
+    read("referrers"),
+    read("examples"),
+    read("pages"),
+    read("crawlers"),
+    read("subjects"),
+    read("selfreads"),
+    read("artifacts"),
     kvGet(env.COUNTERS, key("purposes", month)),
     ...["under_1h", "under_1d", "under_1w", "over_1w", "unknown_age"].map((bucket) =>
       kvGet(env.COUNTERS, KV_KEYS.metric(month, "verifyage", bucket)),
@@ -418,11 +461,24 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     examples,
     pages,
     crawlers,
-    subjects,
+    subjects: subjectTotals(subjectFormats),
+    subject_formats: subjectFormats,
+    histogram: concentrationHistogram(subjectFormats),
     selfreads,
     artifacts,
     purposes,
     purposes_truncated: purposes.length >= PURPOSES_CAP,
     verify_age: verifyAge,
+    storage: fromStore
+      ? {
+          path: "signal_store",
+          caps: { refusal: SIGNAL_MAP_CAP, referrers: SIGNAL_MAP_CAP, purposes: PURPOSES_CAP },
+          note: "Read from the signal store: one writer, one statement per count, no cap on a map the store itself bounds. The refusal and referrer maps keep their cap because a stranger can steer those keys; the overflow is each map's `other` row.",
+        }
+      : {
+          path: "kv_fallback",
+          caps: { maps: SIGNAL_MAP_CAP, subjects: SUBJECT_MAP_CAP, artifacts: SUBJECT_MAP_CAP, referrers: SIGNAL_MAP_CAP, purposes: PURPOSES_CAP },
+          note: "Read from the KV maps: read-modify-write on one key, a floor under contention, every map capped and the overflow in its `other` row. The signal store binding was absent.",
+        },
   };
 }

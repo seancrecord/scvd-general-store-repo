@@ -70,6 +70,8 @@ export default defineConfig({
           BOUNTY_CLAIM_LOCKS: { className: "BountyClaimLocks", scriptName: undefined },
           // The counters run the real serialized ledger in the suite too.
           COUNTER_LEDGER: { className: "CounterLedger", scriptName: undefined, useSQLite: true },
+          // The signal maps run on the real store in the suite too (services/signal-store.ts).
+          SIGNALS: { className: "SignalStore", scriptName: undefined, useSQLite: true },
         },
         bindings: {
           // A plain (nonexistent) wallet address, not a token contract.

@@ -634,6 +634,65 @@ export const PUBLISHED_COUNTS: readonly PublishedCount[] = [
     },
   ]),
 
+  ...rows("/observatory", [
+    {
+      path: "months[].host_pages.by_format_and_reader.*",
+      kind: "count",
+      unit: "reads of a corpus host page in the named format by the named reader class",
+      instrument: "the buyer-signals page-read row, classed by lib/channel.ts readerClass (services/buyer-signals.ts recordPageRead)",
+      population: "every read of a corpus host page the chain has met, house excluded; the classes and formats divide it",
+      window: "the named month",
+      exclusions: [HOUSE],
+      floor: "before the signal store (2026-09-21) the map was KV read-modify-write, a floor under contention",
+    },
+    {
+      path: "months[].host_pages.histogram.subjects",
+      kind: "count",
+      unit: "subjects read by a browser, an agent or a fetcher",
+      instrument: "derived from the per-subject, per-format map (lib/signal-histogram.ts)",
+      population: "every host with a page that was read this month by anyone but a crawler; the denominator of every histogram figure",
+      window: "the named month",
+      exclusions: [HOUSE, "crawlers by name"],
+      cap: "on the KV fallback only, 400 subjects; the overflow figure beside it counts what fell past it",
+    },
+    {
+      path: "months[].host_pages.histogram.by_formats.*",
+      kind: "count",
+      unit: "subjects read in the named number of formats",
+      instrument: "derived (lib/signal-histogram.ts)",
+      population: "histogram.subjects",
+      window: "the named month",
+      exclusions: [HOUSE, "crawlers by name"],
+    },
+    {
+      path: "months[].host_pages.histogram.repeat.*",
+      kind: "count",
+      unit: "subjects with at least the named number of reads across every format",
+      instrument: "derived (lib/signal-histogram.ts)",
+      population: "histogram.subjects",
+      window: "the named month",
+      exclusions: [HOUSE, "crawlers by name"],
+    },
+    {
+      path: "months[].host_pages.histogram.reads",
+      kind: "count",
+      unit: "reads behind the histogram",
+      instrument: "derived (lib/signal-histogram.ts)",
+      population: "every read of a page about a host by anyone but a crawler; a mean per subject can be checked against histogram.subjects",
+      window: "the named month",
+      exclusions: [HOUSE, "crawlers by name"],
+    },
+    {
+      path: "months[].host_pages.histogram.overflow",
+      kind: "count",
+      unit: "reads that fell past a capped map into its other row",
+      instrument: "the capped map's other row (services/buyer-signals.ts)",
+      population: "histogram.reads + overflow; zero on the signal store, where the subject map has no cap",
+      window: "the named month",
+      exclusions: [],
+    },
+  ]),
+
   // /corpus.json — the index of the signed weekly chain.
   ...rows("/corpus.json", [
     {
