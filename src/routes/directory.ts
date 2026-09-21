@@ -31,6 +31,20 @@ export const directoryRoutes = new Hono<HonoEnv>();
 
 const DIRECTORY: DirectoryData = directoryData;
 
+/**
+ * WHAT THE PAGE SAYS IT IS, typed once (2026-09-21, his brief: "more
+ * of like who we are seeing about town"). It rode in two places, the
+ * paper page and the markdown twin, and a description hand-typed
+ * twice is a description that drifts — AT_SCALE rule 1 in miniature.
+ *
+ * The old line called this "a short book, kept short on purpose,"
+ * which stopped being true the day the September receipts landed and
+ * the book went from four names to twenty-two. What has not changed
+ * is how a name gets on it, so the copy says that instead of counting.
+ */
+const DIRECTORY_DESCRIPTION =
+  "Who we've been seeing about town. Other services in the neighbourhood, each one listed by hand after the keeper used it, and what it was like when he did.";
+
 /** Origins normalize loosely: a trailing slash is not a different neighbor. */
 function sameOrigin(a: string, b: string): boolean {
   try {
@@ -208,7 +222,7 @@ directoryRoutes.get("/directory", (c) => {
       path: "/directory",
       title: "Town Directory",
       description:
-        "Other services in the neighbourhood, listed by hand with what each one does. A short book, kept short on purpose.",
+        DIRECTORY_DESCRIPTION,
       document: indexPayload as unknown as Record<string, unknown>,
     });
   }
@@ -223,7 +237,7 @@ directoryRoutes.get("/directory", (c) => {
       renderSimplePage({
         title: "Town Directory",
         description:
-          "Other services in the neighbourhood, listed by hand with what each one does. A short book, kept short on purpose.",
+          DIRECTORY_DESCRIPTION,
         path: "/directory",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(DIRECTORY.note)}</p>

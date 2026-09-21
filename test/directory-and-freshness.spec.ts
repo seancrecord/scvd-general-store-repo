@@ -128,6 +128,21 @@ describe("the town directory", () => {
     expect(html).toContain("/neighbours");
   });
 
+  it("says the same thing about itself on the paper page and the twin", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/directory`, { headers: { Accept: "text/html" } })
+    ).text();
+    const markdown = await (
+      await SELF.fetch(`${BASE}/directory`, { headers: { Accept: "text/markdown" } })
+    ).text();
+    const said = "Who we&#39;ve been seeing about town";
+    expect(html).toContain(said);
+    expect(markdown).toContain("Who we've been seeing about town");
+    // The line that stopped being true when the book went to twenty-two.
+    expect(html).not.toContain("kept short on purpose");
+    expect(markdown).not.toContain("kept short on purpose");
+  });
+
   it("keeps every listing reachable under a slug of its own", () => {
     const slugs = directoryData.listings.map((listing) => listing.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
