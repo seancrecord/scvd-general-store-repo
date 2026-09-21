@@ -1,4 +1,5 @@
 import { recordPaymentOperation } from "@/lib/payment-operations";
+import { storeLinks } from "@/lib/store-links";
 import { mppPaymentHeader, nativeOfferAdvertised } from "@/lib/mpp-checkout-capability";
 import { isQuoteOnlyMethod, quotedMethod } from "@/lib/quote-method";
 import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
@@ -525,6 +526,12 @@ async function enrich402Body(
      * common scam shape belongs where they will actually meet it.
      */
     house_rule: HOUSE_RULE,
+    /**
+     * THE LINK SET (2026-09-21): where the store is and what comes
+     * next, the same on every envelope this store serves. An index
+     * that stores this body can answer "where do I buy" from it.
+     */
+    store_links: storeLinks(base, { item: item?.id, path }),
     verification: {
       /**
        * NAMED AS PRE-PAYMENT, because the cold walk found step 4 — the

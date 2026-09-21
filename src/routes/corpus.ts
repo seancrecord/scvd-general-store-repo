@@ -1,4 +1,5 @@
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
+import { storeLinks } from "@/lib/store-links";
 import { publishedCountsBlock } from "@/store/published-counts";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse, markdownCell } from "@/lib/json-markdown";
@@ -354,16 +355,22 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
   // Opt-in stable bytes let a buyer revalidate the evidence without a request
   // timestamp changing the ETag. The existing full view keeps asked_at.
   const { asked_at, ...stableHistory } = observation.history;
+  const tier = deriveTier(tierInputFromHistory(observation.history, observation), `${base}/criteria`);
   return c.json({
     ...(c.req.query("view") === "stable" ? stableHistory : { ...stableHistory, asked_at }),
     /* The Atom feed of this host's changes (2026-09-17): one entry per
      * verdict or pay-to change, derived from these same rows. */
     evidence_scope: HOST_HISTORY_SCOPE,
     feed_url: `${base}/feeds/host/${host}.xml`,
-    tier: deriveTier(
-      tierInputFromHistory(observation.history, observation),
-      `${base}/criteria`,
-    ),
+    tier,
+    /* THE LINK SET (2026-09-21). This twin is what the index walkers
+     * store; without a store behind it a reader cannot get from these
+     * rows to a door. The next step is the one this host's own tier
+     * picks, derived, never a ranking. */
+    store_links: storeLinks(base, {
+      path: "/corpus/host/",
+      host: { host, tier: tier.tier, refreshed: tier.latest?.source === "paid_refresh" },
+    }),
     /*
      * THE CITE BOX (2026-09-04): the latest probed row, in the shape
      * the watch reads; every timeline entry carries entry_url and

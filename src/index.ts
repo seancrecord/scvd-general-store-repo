@@ -1,4 +1,5 @@
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
+import { whereToLookNext } from "@/lib/store-links";
 import { signalStore } from "@/services/signal-store";
 import { watchSweepGaps, type WatchSweepReport } from "@/services/watch-sweep";
 import { withPatientKv } from "@/lib/kv-retry";
@@ -337,14 +338,8 @@ app.route("/", adminRoutes);
  * than the session.
  */
 function notFoundLinks(base: string): Array<{ url: string; what: string }> {
-  return [
-    { url: `${base}/llms.txt`, what: "the front door: what this store is, in full" },
-    { url: `${base}/agents.md`, what: "the operational manual: how to transact here" },
-    { url: `${base}/menu.json`, what: "the catalog: every item, price and input contract" },
-    { url: `${base}/openapi.json`, what: "the OpenAPI 3.1 contract for every endpoint" },
-    { url: `${base}/developers`, what: "the developer portal" },
-    { url: `${base}/sitemap.xml`, what: "every public URL this store serves" },
-  ];
+  // Derived from the one roster every envelope shares (lib/store-links.ts), 2026-09-21.
+  return whereToLookNext(base);
 }
 
 /**

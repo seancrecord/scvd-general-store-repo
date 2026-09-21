@@ -1,4 +1,5 @@
 import { settlementExplorer } from "@/lib/payment-networks";
+import { storeLinks } from "@/lib/store-links";
 import { EVIDENCE_TOOLS_SOURCE, EVIDENCE_TOOLS_DESCRIPTION } from "@/store/evidence-tools";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
@@ -581,6 +582,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       valid,
       artifact_class: "ecosystem_report",
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      store_links: storeLinks(c.env.STORE_BASE_URL),
       report_url: `${c.env.STORE_BASE_URL}/api/report/${id}`,
       signature,
       public_key: publicKey,
@@ -716,6 +718,11 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
        * or an anchor travels the same way a cert does.
        */
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      // The link set (2026-09-21): the store, the next step for this item, and the buy→attest loop with the settlement prefilled.
+      store_links: storeLinks(c.env.STORE_BASE_URL, {
+        item: record.certificate.item,
+        ...(record.certificate.settlement_tx ? { settlement: { tx: record.certificate.settlement_tx, item: record.certificate.item } } : {}),
+      }),
       certificate: record.certificate,
       offline_verification: { source: EVIDENCE_TOOLS_SOURCE, description: EVIDENCE_TOOLS_DESCRIPTION },
       signature: record.signature,
@@ -841,6 +848,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
        * or an anchor travels the same way a cert does.
        */
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      store_links: storeLinks(c.env.STORE_BASE_URL),
       stamp: stampRecord.stamp,
       signature: stampRecord.signature,
       public_key: stampRecord.public_key,
@@ -867,6 +875,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
        * or an anchor travels the same way a cert does.
        */
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      store_links: storeLinks(c.env.STORE_BASE_URL),
       anchor: anchorRecord.anchor,
       signature: anchorRecord.signature,
       public_key: anchorRecord.public_key,
@@ -890,6 +899,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     return c.json({
       valid,
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      store_links: storeLinks(c.env.STORE_BASE_URL),
       card: cardRecord.card,
       signature: cardRecord.signature,
       public_key: cardRecord.public_key,
@@ -914,6 +924,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     return c.json({
       valid,
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      store_links: storeLinks(c.env.STORE_BASE_URL),
       pack: packRecord.pack,
       signature: packRecord.signature,
       public_key: packRecord.public_key,
@@ -942,6 +953,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
        * or an anchor travels the same way a cert does.
        */
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      store_links: storeLinks(c.env.STORE_BASE_URL),
       lucky: luckyRecord.lucky,
       signature: luckyRecord.signature,
       public_key: luckyRecord.public_key,
@@ -1008,6 +1020,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
        * or an anchor travels the same way a cert does.
        */
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      store_links: storeLinks(c.env.STORE_BASE_URL),
       kind: "phantom_check",
       observation: phantomRecord.observation,
       signature: phantomRecord.signature,
