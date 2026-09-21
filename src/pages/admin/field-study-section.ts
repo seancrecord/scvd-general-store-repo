@@ -89,10 +89,11 @@ function lapsedHtml(studies: StudyRecord[] | null, now: string): string {
     <td>${escapeHtml(study.roster.operator)}</td>
     <td><small>${escapeHtml(study.roster.task)}</small></td>
     <td><small>${escapeHtml(study.roster.found_via)}</small></td>
+    <td>${study.payout_to ? "yes" : "<strong>no</strong>"}</td>
     <td>${escapeHtml(study.enrolled_at.slice(0, 16))}</td>
   </tr>`;
   return `<table>
-    <tr><th>study</th><th>state</th><th>who</th><th>operator</th><th>the task they typed</th><th>found us via</th><th>enrolled</th></tr>
+    <tr><th>study</th><th>state</th><th>who</th><th>operator</th><th>the task they typed</th><th>found us via</th><th>payout given?</th><th>enrolled</th></tr>
     ${standing.map((study) => row(study, "still open")).join("\n")}
     ${lapsed.map((study) => row(study, "lapsed, never debriefed")).join("\n")}
   </table>
@@ -176,7 +177,7 @@ function studiesHtml(studies: StudyRecord[] | null): string {
         found us via ${escapeHtml(study.roster.found_via)}<br>
         <em>task:</em> ${escapeHtml(study.roster.task)}<br>
         <em>purpose:</em> ${escapeHtml(study.roster.purpose)}<br>
-        <small>payout <code>${escapeHtml(study.payout_to)}</code>, authorization valid until unix ${escapeHtml(debrief.authorization_valid_before)}</small></p>
+        <small>payout <code>${escapeHtml(study.payout_to ?? "(none recorded)")}</code>, authorization valid until unix ${escapeHtml(debrief.authorization_valid_before)}</small></p>
       <p><strong>The legs, ours beside theirs:</strong></p>
       <table><tr><th>purchase</th><th>they declared</th><th>our books recorded</th><th>what</th><th>state</th><th>disagreement</th></tr>${legs}</table>
       <p><strong>The reward, derived:</strong> $${reward.base_usd.toFixed(2)} base + $${reward.legs_usd.toFixed(2)} for ${reward.legs_counted} legs + $${reward.surfaces_usd.toFixed(2)} for ${reward.surfaces.length} surfaces + $${reward.rails_usd.toFixed(2)} for ${reward.rails.length} rails = $${reward.subtotal_usd.toFixed(2)}${reward.capped ? `, capped to $${reward.total_usd.toFixed(2)}` : ""}.

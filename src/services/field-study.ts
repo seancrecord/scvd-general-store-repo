@@ -395,8 +395,23 @@ export interface StudyRecord {
   expires_at: string;
   roster: StudyRoster;
   status: "enrolled" | "debriefed" | "expired";
-  /** Where the reward goes. Taken at enrolment so it can be screened early. */
-  payout_to: string;
+  /**
+   * WHERE THE REWARD GOES, AND IT IS OPTIONAL HERE (2026-09-21).
+   *
+   * It was required at enrolment so a wallet this store cannot pay
+   * would learn so before spending its own money. The reasoning was
+   * sound and the cost was the whole instrument: it was the first
+   * thing the door checked, so every refused body reported it, and
+   * thirteen agents were told to hand over a wallet address before
+   * they had been told anything else about the study.
+   *
+   * That is the shape of a scam, and a careful agent is right to stop
+   * there — which means the requirement was selecting against exactly
+   * the carefulness this store advertises. The money moves at the
+   * debrief; the address is needed at the debrief. It can be given
+   * here, and it is screened early as a courtesy when it is.
+   */
+  payout_to?: string;
   /**
    * THE SCENARIO THIS STUDY ENROLLED UNDER, if any. Bound at enrolment
    * and never afterwards: a walk that could pick its scenario at the
@@ -462,7 +477,76 @@ export interface StudyReward {
   capped: boolean;
 }
 
-export class StudyRefused extends Error {}
+/** One thing wrong with a body, named where a parser can reach it. */
+export interface StudyProblem {
+  field: string;
+  /** What is wrong with what arrived. */
+  problem: string;
+  /** What a good value looks like. */
+  expected?: string;
+  /** What the answer buys this store — the field's own reason. */
+  why?: string;
+}
+
+/**
+ * A REFUSAL THAT NAMES EVERY PROBLEM AT ONCE (2026-09-21).
+ *
+ * THIRTEEN REFUSALS AND NOT ONE ENROLMENT, on the instrument's first
+ * two days, and every one of them reported `payout_to`. That number
+ * is the finding, and it is not thirteen agents who all forgot a
+ * wallet: `payout_to` was simply the FIRST thing the door checked, so
+ * every malformed body in the world came back saying the same word.
+ * A door that reports only its first complaint is a door an agent has
+ * to knock on nine times to enter, learning one requirement per
+ * refusal — and it hid twelve other diagnoses behind the first one,
+ * which is why the desk could not say what was really going wrong.
+ *
+ * So a refusal now carries the WHOLE list. One round trip, every
+ * field named, each with what was expected and what the answer buys.
+ * The single-string message stays for readers that only print
+ * `error`, and it is built from the same list rather than typed
+ * beside it.
+ *
+ * The lesson is the one this whole instrument was built to collect,
+ * arriving at our own door before a single researcher got through it:
+ * our logs recorded thirteen refusals and could not tell us what the
+ * agents were actually trying to do.
+ */
+export class StudyRefused extends Error {
+  readonly problems: readonly StudyProblem[];
+  constructor(message: string, problems: readonly StudyProblem[] = []) {
+    super(message);
+    this.problems = problems;
+  }
+}
+
+/** Internal: "there is nothing to screen", not a failure of the screen. */
+class SkipScreen extends Error {}
+
+/** Gathers problems instead of throwing at the first one. */
+class ProblemList {
+  private readonly problems: StudyProblem[] = [];
+
+  add(problem: StudyProblem): void {
+    this.problems.push(problem);
+  }
+
+  get length(): number {
+    return this.problems.length;
+  }
+
+  /** Throw one refusal carrying every problem, or return cleanly. */
+  throwIfAny(lead: string): void {
+    if (this.problems.length === 0) return;
+    const named = this.problems
+      .map((entry) => `\`${entry.field}\`: ${entry.problem}`)
+      .join(" · ");
+    throw new StudyRefused(
+      `${lead} ${this.problems.length === 1 ? "One field needs fixing" : `${this.problems.length} fields need fixing`}, all of them here so one more call is enough: ${named}`,
+      this.problems,
+    );
+  }
+}
 
 /**
  * EVERY WAY THIS DOOR SAYS NO, WRITTEN DOWN (the board's habit, kept).
@@ -473,7 +557,11 @@ export class StudyRefused extends Error {}
 export const STUDY_REFUSALS: readonly { refusal: string; why: string }[] = [
   {
     refusal: "an enrolment field is missing or blank",
-    why: "the answers are the goods here, not a courtesy attached to them. Enrolment is free and re-takeable, so a refusal at this door costs a walk nothing; a paid blank would cost the price and the corpus row both.",
+    why: "the answers are the goods here, not a courtesy attached to them. Enrolment is free and re-takeable, so a refusal at this door costs a walk nothing; a paid blank would cost the price and the corpus row both. The refusal names EVERY field that needs fixing at once, in `problems`, so one more call is always enough.",
+  },
+  {
+    refusal: "a payout address at the debrief that is missing, malformed, or a house wallet",
+    why: "the reward is signed at the debrief, so the address is needed at the debrief. It is OPTIONAL at enrolment on purpose: asking a stranger for a wallet before telling them anything is the shape of a scam, and a careful agent is right to stop there. Give it at either door; the debrief's wins if you give it at both.",
   },
   {
     refusal: "the enrolment window has lapsed",
@@ -593,10 +681,10 @@ export function studyBrief(base: string) {
     what_we_want:
       "Shop this store the way you would actually shop it, several different ways, and then tell us what the shopping was like. We can already see what you bought. We cannot see what you read first, which step you retried, or what you would have used instead — and those are what we are paying for.",
     steps: [
-      "1. Enrol before you spend anything. POST /api/study/enrol with the roster below. It is free, no payment and no wallet is opened, and it returns a study_id and a private study_token. Enrolling first is what makes this a study rather than a survey: you state the intent, then we watch what happens.",
+      "1. Enrol before you spend anything. POST /api/study/enrol with the roster below. It is free, no payment and no wallet is opened, and it returns a study_id and a private study_token. No payout address is asked for here — the reward is signed at the debrief, so the address is wanted there. Enrolling first is what makes this a study rather than a survey: you state the intent, then we watch what happens.",
       `2. Buy a few things, in DIFFERENT ways. The surfaces are ${STUDY_SURFACES.join(", ")} and the rails are whichever the door quotes you. Keep the purchase_id and status_token handed back by each purchase — those are how we verify the leg against our own books, and without them we are taking dictation.`,
       "3. Note any defect you hit. There is a field for it. It is not required and it is not priced — a defect report is a by-product here, not the product.",
-      `4. Debrief within ${STUDY_WINDOW_HOURS} hours. POST /api/study/debrief with your study_id, study_token, the legs you bought and the answers. The reward is signed and returned in that same response.`,
+      `4. Debrief within ${STUDY_WINDOW_HOURS} hours. POST /api/study/debrief with your study_id, study_token, a payout_to you control, the legs you bought and the answers. The reward is signed and returned in that same response.`,
     ],
     the_ladder: {
       base_usd: STUDY_BASE_REWARD_USD,
@@ -675,46 +763,106 @@ export async function enrolStudy(
   options: StudyOptions = {},
 ): Promise<{ study_id: string; study_token: string; record: StudyRecord; advisory?: string }> {
   const now = options.now ?? new Date();
-  const payoutTo = input["payout_to"];
-  if (!isEvmAddress(payoutTo)) {
-    throw new StudyRefused(
-      "`payout_to` must be a 0x Base address you control. Rewards pay in Base USDC as a signed EIP-3009 authorization you redeem yourself — the store holds no gas and broadcasts nothing, so there is nowhere else for it to go.",
-    );
-  }
-  if (isHouseWallet(env, payoutTo)) {
-    throw new StudyRefused(
-      "that payout address is a house wallet. The keeper's own runs are already written down as house tests; paying ourselves for one would put family money in the organic column and make the whole study worthless to read.",
-    );
+  const found = new ProblemList();
+  const reasons = new Map(STUDY_ROSTER_FIELDS.map((entry) => [entry.field, entry.why]));
+  const why = (field: string): string | undefined => reasons.get(field as keyof StudyRoster);
+
+  /*
+   * OPTIONAL, AND SCREENED WHEN GIVEN. An address that is present and
+   * malformed is still a problem worth naming — silently dropping it
+   * would let a researcher believe a reward was routed somewhere it
+   * was not.
+   */
+  let payoutTo: string | undefined;
+  const givenPayout = input["payout_to"];
+  if (givenPayout !== undefined && givenPayout !== null && givenPayout !== "") {
+    if (!isEvmAddress(givenPayout)) {
+      found.add({
+        field: "payout_to",
+        problem: "this is not a 0x Base address. It is OPTIONAL here — leave it out entirely and give it at the debrief instead, where the money actually moves.",
+        expected: "0x followed by 40 hex characters, an address you control",
+        why: "rewards pay in Base USDC as a signed EIP-3009 authorization you redeem yourself; the store holds no gas and broadcasts nothing, so there is nowhere else for it to go",
+      });
+    } else if (isHouseWallet(env, givenPayout)) {
+      found.add({
+        field: "payout_to",
+        problem: "that is a house wallet.",
+        expected: "a wallet that is not the keeper's own",
+        why: "the keeper's runs are already written down as house tests; paying ourselves would put family money in the organic column and make the study worthless to read",
+      });
+    } else {
+      payoutTo = givenPayout.toLowerCase();
+    }
   }
 
-  const harness = oneOf(input["harness"], STUDY_HARNESSES, "harness");
+  const text = (field: keyof StudyRoster, cap: number): string => {
+    const value = input[field];
+    if (typeof value !== "string" || value.trim().length === 0) {
+      found.add({
+        field,
+        problem: value === undefined ? "not sent." : "sent empty.",
+        expected: STUDY_ROSTER_FIELDS.find((entry) => entry.field === field)?.what,
+        why: why(field),
+      });
+      return "";
+    }
+    return value.trim().slice(0, cap);
+  };
+  const pick = <T extends string>(field: keyof StudyRoster, choices: readonly T[]): T => {
+    const value = input[field];
+    if (typeof value === "string" && (choices as readonly string[]).includes(value)) {
+      return value as T;
+    }
+    found.add({
+      field,
+      problem: value === undefined ? "not sent." : `\`${String(value).slice(0, 40)}\` is not one of the accepted values.`,
+      expected: `one of: ${choices.join(", ")}`,
+      why: why(field),
+    });
+    return choices[0]!;
+  };
+
+  const harness = pick("harness", STUDY_HARNESSES);
   const harnessOther = optionalText(input["harness_other"], STUDY_NOTE_CAP);
   if ((harness === "other" || harness === "custom") && !harnessOther) {
-    throw new StudyRefused(
-      "`harness` is `" +
-        harness +
-        "`, so `harness_other` is required — name it. The list will be wrong sometimes; a wrong list that swallows the answer is worse than one that admits it.",
-    );
+    found.add({
+      field: "harness_other",
+      problem: `required because \`harness\` is \`${harness}\`.`,
+      expected: "the name of the platform or framework you run on",
+      why: "the list will be wrong sometimes, and a wrong list that swallows the answer is worse than one that admits it",
+    });
   }
   const priorX402 = input["prior_x402"];
   if (typeof priorX402 !== "boolean") {
-    throw new StudyRefused(
-      "`prior_x402` must be true or false: had you paid any x402 door before today. A first-timer's friction and a veteran's are different problems with different fixes, and we have been reading them as one number.",
-    );
+    found.add({
+      field: "prior_x402",
+      problem: priorX402 === undefined ? "not sent." : "must be a JSON boolean, not a string.",
+      expected: "true or false",
+      why: why("prior_x402"),
+    });
   }
 
   const roster: StudyRoster = {
-    model: requiredText(input["model"], "model", STUDY_NOTE_CAP),
+    model: text("model", STUDY_NOTE_CAP),
     harness,
     ...(harnessOther ? { harness_other: harnessOther } : {}),
-    operator: requiredText(input["operator"], "operator", STUDY_NOTE_CAP),
-    task: requiredText(input["task"], "task", STUDY_ANSWER_CAP),
-    purpose: requiredText(input["purpose"], "purpose", STUDY_ANSWER_CAP),
-    autonomy: oneOf(input["autonomy"], STUDY_AUTONOMY, "autonomy"),
-    funding: oneOf(input["funding"], STUDY_FUNDING, "funding"),
-    found_via: requiredText(input["found_via"], "found_via", STUDY_NOTE_CAP),
-    prior_x402: priorX402,
+    operator: text("operator", STUDY_NOTE_CAP),
+    task: text("task", STUDY_ANSWER_CAP),
+    purpose: text("purpose", STUDY_ANSWER_CAP),
+    autonomy: pick("autonomy", STUDY_AUTONOMY),
+    funding: pick("funding", STUDY_FUNDING),
+    found_via: text("found_via", STUDY_NOTE_CAP),
+    prior_x402: priorX402 === true,
   };
+
+  /*
+   * EVERY PROBLEM, ONCE. Thrown here rather than at each check so a
+   * researcher fixes the whole body in one more call instead of
+   * discovering the requirements one refusal at a time.
+   */
+  found.throwIfAny(
+    "This enrolment was not opened, and nothing was spent — enrolment is free and re-takeable.",
+  );
 
   /*
    * THE EARLY SCREEN, and it is advisory ON PURPOSE. A sanctions
@@ -726,6 +874,10 @@ export async function enrolStudy(
    */
   let advisory: string | undefined;
   try {
+    // Only when one was given: the screen has nothing to read otherwise,
+    // and an address withheld here is screened at the debrief like any
+    // other, fail closed, where the money actually moves.
+    if (!payoutTo) throw new SkipScreen();
     const screen = options.screen ?? oracleScreen(rpcEndpoints(env), options.fetch ?? fetch);
     const screened = await screen(payoutTo);
     if (screened.listed === true) {
@@ -739,8 +891,14 @@ export async function enrolStudy(
     }
   } catch (error) {
     if (error instanceof StudyRefused) throw error;
+    if (!(error instanceof SkipScreen)) {
+      advisory =
+        "The sanctions screen could not be reached at enrolment. It is re-run and fails closed at the debrief.";
+    }
+  }
+  if (!payoutTo) {
     advisory =
-      "The sanctions screen could not be reached at enrolment. It is re-run and fails closed at the debrief.";
+      "No payout address was given, which is fine: enrolment does not need one. Bring a 0x Base address to the debrief as `payout_to` and the reward is signed to it there, after it is sanctions-screened.";
   }
 
   /*
@@ -769,7 +927,7 @@ export async function enrolStudy(
     expires_at: new Date(now.getTime() + STUDY_WINDOW_HOURS * 3600 * 1000).toISOString(),
     roster,
     status: "enrolled",
-    payout_to: payoutTo.toLowerCase(),
+    ...(payoutTo ? { payout_to: payoutTo } : {}),
     ...(scenarioId ? { scenario: scenarioId } : {}),
     token_sha256: await sha256Hex(study_token),
   };
@@ -1063,6 +1221,13 @@ export interface DebriefInput {
   study_token: string;
   legs: StudyLegInput[];
   answers: Record<string, unknown>;
+  /**
+   * WHERE THE REWARD GOES, when the enrolment did not carry one — and
+   * it may override one that did, because a researcher who changed
+   * wallets between enrolling and debriefing should not have to
+   * abandon a walk they already paid for.
+   */
+  payout_to?: unknown;
   /** The scenario's own questions, when the study enrolled under one. */
   scenario_answers?: Record<string, unknown>;
   defects?: StudyDefect[];
@@ -1241,6 +1406,42 @@ export async function debriefStudy(
     }
     seen.add(leg.purchase_id);
   }
+  /*
+   * THE ADDRESS IS RESOLVED HERE, because here is where the money
+   * moves. The debrief's own `payout_to` wins over the enrolment's:
+   * an agent that changed wallets mid-study should not have to throw
+   * the walk away. Every check the enrolment door used to run happens
+   * here too — shape, house wallet, and the sanctions screen below,
+   * which fails closed.
+   */
+  const payoutTo = ((): string => {
+    const given = input.payout_to;
+    if (given !== undefined && given !== null && given !== "") {
+      if (!isEvmAddress(given)) {
+        throw new StudyRefused(
+          "`payout_to` is not a 0x Base address. Rewards pay in Base USDC as a signed EIP-3009 authorization you redeem yourself, so there is nowhere else for it to go. Nothing was spent and the study still stands — present the debrief again with a good address.",
+          [{ field: "payout_to", problem: "not a 0x Base address.", expected: "0x followed by 40 hex characters, an address you control" }],
+        );
+      }
+      return given.toLowerCase();
+    }
+    if (record.payout_to) return record.payout_to;
+    throw new StudyRefused(
+      "no payout address. It is optional at enrolment and required here, because here is where the reward is signed — send `payout_to` as a 0x Base address you control. Nothing was spent and your study still stands.",
+      [{
+        field: "payout_to",
+        problem: "not given at enrolment and not sent here.",
+        expected: "0x followed by 40 hex characters, an address you control",
+        why: "the reward is a signed EIP-3009 authorization on Base USDC that you redeem yourself; the store holds no gas and broadcasts nothing",
+      }],
+    );
+  })();
+  if (isHouseWallet(env, payoutTo)) {
+    throw new StudyRefused(
+      "that payout address is a house wallet. The keeper's own runs are already written down as house tests; paying ourselves for one would put family money in the organic column and make the whole study worthless to read.",
+    );
+  }
+
   const answers = readAnswers(input.answers ?? {});
   /*
    * THE SCENARIO IS READ OFF THE RECORD, never off the debrief body.
@@ -1346,7 +1547,7 @@ export async function debriefStudy(
     // One study per wallet per ISO week: the coverage this sells is
     // the number of DIFFERENT agents, never the number of rows.
     const weekKey = currentWeekKey(now);
-    const walletKey = KV_KEYS.studyWeekPayout(weekKey, record.payout_to);
+    const walletKey = KV_KEYS.studyWeekPayout(weekKey, payoutTo);
     const already = await kvGet(env.COUNTERS, walletKey);
     if (already && already !== record.study_id) {
       throw new StudyRefused(
@@ -1363,7 +1564,7 @@ export async function debriefStudy(
     // 429 from the public endpoint alone refused every bounty claim
     // for ninety minutes on 2026-09-03 while the keyed ones sat idle.
     const screen = options.screen ?? oracleScreen(rpcEndpoints(env), options.fetch ?? fetch);
-    const screened = await screen(record.payout_to);
+    const screened = await screen(payoutTo);
     if (screened.listed !== false) {
       if (screened.listed === null) {
         await raiseScreenUnavailable(env, `study debrief ${record.study_id}`, screened.source);
@@ -1396,7 +1597,7 @@ export async function debriefStudy(
     const signer = options.signer ?? (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
     const authorization = {
       from: signer.address,
-      to: record.payout_to,
+      to: payoutTo,
       value: String(Math.round(reward.total_usd * 1e6)),
       validAfter: "0",
       validBefore: String(Math.floor(now.getTime() / 1000) + STUDY_AUTH_VALID_SECONDS),
@@ -1425,6 +1626,8 @@ export async function debriefStudy(
 
     const debriefed: StudyRecord = {
       ...record,
+      // The address that was actually paid, whichever door supplied it.
+      payout_to: payoutTo,
       status: "debriefed",
       debrief: {
         at: now.toISOString(),
