@@ -164,12 +164,9 @@ export function attestLoop(base: string, settlement: { tx: string; item: string 
 }
 
 export function storeLinks(base: string, ctx: LinkContext = {}): StoreLinks {
-  const next: NextStep[] = [];
-  const seen = new Set<string>(ctx.item ? [ctx.item] : []);
+  const candidates: NextStep[] = [];
   const push = (candidate: NextStep | null) => {
-    if (!candidate || seen.has(candidate.item)) return;
-    seen.add(candidate.item);
-    next.push(candidate);
+    if (candidate && candidate.item !== ctx.item) candidates.push(candidate);
   };
   if (ctx.item) {
     for (const recipe of USE_WHEN) {
@@ -196,6 +193,20 @@ export function storeLinks(base: string, ctx: LinkContext = {}): StoreLinks {
     if (!ctx.host.refreshed) {
       push(step(base, "passport_refresh", `the newest observation of ${ctx.host.host} is the weekly round's; a refresh is a new one now`, "host_tier", `${base}/api/buy/passport_refresh?host=${host}`));
     }
+  }
+  /*
+   * ONE ENTRY PER ITEM, THE MOST SPECIFIC ONE. A host page sits under
+   * the corpus room, whose deeper rung is a bare spot check; the host's
+   * own tier derives the same item with the host already in the URL.
+   * The later source is the more specific one by construction, so on a
+   * duplicate the later candidate wins and keeps its place.
+   */
+  const next: NextStep[] = [];
+  const kept = new Set<string>();
+  for (const candidate of [...candidates].reverse()) {
+    if (kept.has(candidate.item)) continue;
+    kept.add(candidate.item);
+    next.unshift(candidate);
   }
   return {
     store: storeDoors(base),

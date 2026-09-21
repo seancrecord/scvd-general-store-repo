@@ -12,6 +12,9 @@ import type { Context } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { isUrlTemplatePlaceholder } from "@/lib/url-template";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { artifactPageHtml, developerDoorsHtml, nextStepsHtml, type ArtifactKind } from "@/pages/artifact-page";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
+import type { StoreLinks } from "@/lib/store-links";
 import { citeBlock } from "@/lib/cite";
 import { storeIdentity } from "@/lib/identity";
 import { recordVerifyCall } from "@/lib/metrics";
@@ -382,12 +385,71 @@ function anchorLine(existence: ExistenceVerdict | undefined): string {
   return `Existed by <strong>Bitcoin block ${by ? by.block_height : "?"}</strong>${by?.block_time ? ` (mined ${escapeHtml(by.block_time.slice(0, 10))})` : ""} <span class="menu-meta">${escapeHtml(existence.verdict)}</span>`;
 }
 
+/**
+ * JSON to a machine, the same record rendered for a person (2026-09-21):
+ * every artifact class answers a browser with a page, not only the
+ * purchase certificate. The document is built once; the page is a
+ * rendering of it and invents nothing.
+ */
+function artifactResponse(c: Context<HonoEnv>, id: string, kind: ArtifactKind, document: Record<string, unknown>): Response {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.html(artifactPageHtml({ base: c.env.STORE_BASE_URL, id, kind, document }));
+  }
+  return c.json(document);
+}
+
+/**
+ * WHO IS READING THE RECEIPT, from the certificate alone (2026-09-21).
+ * A read inside the hour is the buyer checking its own purchase; an
+ * artifact whose inputs name a third party (a host, a transaction, a
+ * wallet) is being read by someone evaluating that party; everything
+ * else is a reader. Never stored, never inferred from the visitor.
+ */
+export type ReceiptAudience = "buyer" | "counterparty" | "reader";
+export function receiptAudience(cert: Certificate, now = Date.now()): ReceiptAudience {
+  const minted = Date.parse(cert.date);
+  if (Number.isFinite(minted) && now - minted < 60 * 60 * 1000) return "buyer";
+  const item = getMenuItem(cert.item);
+  const required = item ? buyInputSchema(item).required ?? [] : [];
+  if (required.some((field) => ["host", "url", "tx_hash", "wallet", "address", "hosts", "tx_hashes"].includes(field))) return "counterparty";
+  return "reader";
+}
+
+function audienceHtml(audience: ReceiptAudience, links: StoreLinks): string {
+  const d = links.store;
+  if (audience === "buyer") {
+    return `<section>
+      <h2>Your purchase, checked</h2>
+      <p class="menu-desc">This is the receipt for what your agent just bought. It will verify at this URL forever, for anyone.</p>
+      ${nextStepsHtml(links, "What agents who bought this buy next")}
+      <p class="menu-desc"><a href="/bell">Ring the bell</a> (free, one a day, a card comes with it) · <a href="/api/stamp">take a visit stamp</a> (free, signed, dated) · <a href="/guestbook">sign the guestbook</a>.</p>
+      ${developerDoorsHtml(links)}
+    </section>`;
+  }
+  if (audience === "counterparty") {
+    return `<section>
+      <h2>Reading this about somebody else</h2>
+      <p class="menu-desc">This artifact is an observation of a third party, signed by this store. What the signature covers and whose word you are taking is stated per class at <a href="/attestation">/attestation</a>; the rule every derived reading follows is at <a href="/criteria">/criteria</a>. The verifier, not the shelf, is the product here.</p>
+      <p class="menu-desc"><strong>Get your own:</strong> <a href="/api/buy/launch_check">a launch check</a> before a door opens, <a href="/api/buy/standing_watch">a standing watch</a> on a door for a week, <a href="/api/buy/conformance_watch">a conformance watch</a> on signed offers and receipts. Free first: <a href="${escapeHtml(d.preflight)}">the preflight</a> on any door, <a href="${escapeHtml(d.conformance_desk)}">the conformance desk</a> on any issuer's artifacts.</p>
+      ${nextStepsHtml(links)}
+    </section>`;
+  }
+  return `<section>
+      <h2>Holding this</h2>
+      <p class="menu-desc">A signed receipt from a human-run general store for agents, paid over x402. You own what was bought outright and owe the store nothing for it (<a href="/rights">/rights</a>). The store: <a href="/">the front</a> · <a href="/menu">the shelf</a> · <a href="/observatory">what gets read here</a>.</p>
+      ${nextStepsHtml(links)}
+      ${developerDoorsHtml(links)}
+    </section>`;
+}
+
 function receiptPageHtml(
   cert: Certificate,
   valid: boolean,
   form: string,
   existence: ExistenceVerdict | undefined,
   checks: ReceiptChecks,
+  links?: StoreLinks,
+  audience: ReceiptAudience = "reader",
 ): string {
   // The certificate binds the item ID; the page shows the shelf name
   // where the menu still knows it, and the honest id where it doesn't
@@ -424,7 +486,7 @@ function receiptPageHtml(
           ? `Signature verified just now (${escapeHtml(form)} form) — this receipt is genuine.`
           : "SIGNATURE DID NOT VERIFY. Do not trust this page's contents; the machine record below is the authority."
       }</strong></p>
-      ${row("Item", escapeHtml(itemName))}
+      ${row("Item", getMenuItem(cert.item) ? `<a href="/menu/${escapeHtml(cert.item)}">${escapeHtml(itemName)}</a>` : escapeHtml(itemName))}
       ${row("Date", escapeHtml(cert.date.slice(0, 10)))}
       ${row("Paid", escapeHtml(money))}
       ${row("Patron number", `#${cert.patron_number}`)}
@@ -484,7 +546,8 @@ function receiptPageHtml(
 npx -p x402-verify scvd-evidence verify ./receipt-${escapeHtml(cert.cert_id)}/bundle.json --public-key &lt;the key you fetched&gt;</code></pre>
       <p class="menu-desc">Or replay the whole call as an integration test — the signed bytes, the accepted terms and a JWS offer over them, the settlement transaction, the sale's standing, and the refusal body a wrong-scope re-presentation gets — in one signed document: <a href="/api/replay/${escapeHtml(cert.cert_id)}"><code>/api/replay/${escapeHtml(cert.cert_id)}</code></a>.</p>
       <p class="menu-meta">This page re-checks the ed25519 signature on every load; reload it and the check runs again. Re-verification is free, forever, and answers for anyone, not only whoever bought the thing.</p>
-    </section>`;
+    </section>
+    ${links ? audienceHtml(audience, links) : ""}`;
 }
 
 /**
@@ -661,6 +724,11 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
               verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}`,
               settlement: await settlementStateFor(c.env, record.certificate),
             },
+            storeLinks(c.env.STORE_BASE_URL, {
+              item: record.certificate.item,
+              ...(record.certificate.settlement_tx ? { settlement: { tx: record.certificate.settlement_tx, item: record.certificate.item } } : {}),
+            }),
+            receiptAudience(record.certificate),
           )}${jsonLdScript({
             "@context": "https://schema.org",
             "@type": "DigitalDocument",
@@ -840,7 +908,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   if (stampRecord) {
     await noteVerify(c, `stamp:${stampRecord.stamp.variant}`);
     const valid = await verifyStampSignature(stampRecord);
-    return c.json({
+    return artifactResponse(c, id, "stamp", {
       valid,
       /**
        * Every verify response, not only the certificate one: an
@@ -867,7 +935,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   if (anchorRecord) {
     await noteVerify(c, "context_anchor");
     const valid = await verifyAnchorSignature(anchorRecord);
-    return c.json({
+    return artifactResponse(c, id, "anchor", {
       valid,
       /**
        * Every verify response, not only the certificate one: an
@@ -896,7 +964,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   if (cardRecord) {
     await noteVerify(c, "pack");
     const valid = await verifyCardSignature(cardRecord);
-    return c.json({
+    return artifactResponse(c, id, "card", {
       valid,
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
       store_links: storeLinks(c.env.STORE_BASE_URL),
@@ -921,7 +989,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   if (packRecord) {
     await noteVerify(c, "pack");
     const valid = await verifyPackSignature(packRecord);
-    return c.json({
+    return artifactResponse(c, id, "pack", {
       valid,
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
       store_links: storeLinks(c.env.STORE_BASE_URL),
@@ -945,7 +1013,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   if (luckyRecord) {
     await noteVerify(c, "luckies");
     const valid = await verifyLuckySignature(luckyRecord);
-    return c.json({
+    return artifactResponse(c, id, "lucky", {
       valid,
       /**
        * Every verify response, not only the certificate one: an
@@ -978,7 +1046,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     if (issue) {
       await noteVerify(c, "gazette");
       const valid = await verifyIssueSignature(issue);
-      return c.json({
+      return artifactResponse(c, id, "gazette_issue", {
         valid,
         kind: "gazette_issue",
         issue_number: issue.issue_number,
@@ -1004,7 +1072,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   if (phantomRecord) {
     await noteVerify(c, "phantom_check");
     if (phantomRecord.status === "scheduled") {
-      return c.json({
+      return artifactResponse(c, id, "phantom_check", {
         valid: false,
         kind: "phantom_check",
         status: "scheduled",
@@ -1012,7 +1080,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       });
     }
     const valid = await verifyPhantomSignature(phantomRecord);
-    return c.json({
+    return artifactResponse(c, id, "phantom_check", {
       valid,
       /**
        * Every verify response, not only the certificate one: an
@@ -1054,7 +1122,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     const handoverRecord = await getHandover(c.env, id);
     if (handoverRecord) {
       const valid = await verifyHandoverSignature(handoverRecord);
-      return c.json({
+      return artifactResponse(c, id, "handover", {
         valid,
         handover: handoverRecord.handover,
         signature: handoverRecord.signature,

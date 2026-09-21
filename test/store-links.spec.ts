@@ -30,7 +30,8 @@ describe("the link set", () => {
     const links = storeLinks(BASE, { item: first, path: "/corpus", settlement: { tx: "0xabc", item: first! } });
     const bySource = (source: string) => links.next.filter((step) => step.source === source);
     expect(bySource("use_when").map((step) => step.item)).toContain(second);
-    expect(bySource("use_when").every((step) => step.why === recipe.when)).toBe(true);
+    // Every recipe-derived step carries the sentence of a recipe that names it (the last such recipe wins on a duplicate).
+    expect(bySource("use_when").every((step) => USE_WHEN.some((entry) => entry.when === step.why && entry.items.includes(step.item)))).toBe(true);
     expect(bySource("room").map((step) => step.item)).toEqual(ROOMS.find((room) => room.path === "/corpus")!.deeper);
     expect(bySource("settlement").map((step) => step.item)).toEqual(["settlement_attestation"]);
     expect(links.next.map((step) => step.item)).not.toContain(first);
