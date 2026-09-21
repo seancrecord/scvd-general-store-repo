@@ -197,8 +197,17 @@ export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string
   trace: { title: "Client trace", what: "One user-agent's whole trail, so a count can be traced instead of believed." },
   take: { title: "The take", what: "Real money off the certificates, split by shelf kind. The slow page, on purpose." },
   funnel: { title: "The funnel", what: "Where the asks go, and which wall to fix." },
+  // The market's own claim about itself — "what the round's numbers
+  // mean", held by test/market.spec.ts — cannot live here: this line
+  // is escaped, and the apostrophe would come out as an entity. It
+  // rides the page's lead paragraph instead, unescaped, as it did in
+  // the <h1> this head replaced.
   market: { title: "The market", what: "The doors worth posting a bounty against, and what the feed shows." },
-  outreach: { title: "Outreach", what: "Doors we wrote to, doors worth writing to, and what came back." },
+  // "the send, one press" is rule 30 as amended 2026-08-20 — the desk
+  // gained the wire and the headline moved from "the send, yours" to
+  // the press — and test/outreach.spec.ts holds the page to saying it.
+  // It rode the <h1> this head replaced.
+  outreach: { title: "Outreach", what: "Doors we wrote to and doors worth writing to. The queue, drafted; the send, one press." },
   trade: { title: "The trade counter", what: "Every partner account, both sides, newest first." },
 };
 

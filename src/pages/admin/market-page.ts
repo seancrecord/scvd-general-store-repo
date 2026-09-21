@@ -598,6 +598,7 @@ export function renderMarketPage(
     : "";
 
   const body = `
+  <p>The doors worth posting a bounty against, and what the round's numbers mean.</p>
   <p class="menu-desc">Derived entirely from round <strong>${escapeHtml(round.week)}</strong>
   (${escapeHtml(round.at.slice(0, 16))}Z): ${market.probed} doors probed, ${market.ready} ready.
   Zero extra contact — every fact here was already in the responses the
