@@ -1,0 +1,44 @@
+{
+  "source_commit": "633d490ae96238491767abe31dea0e56910f548a",
+  "scope": "Report and release bookkeeping only; no product or harness change. Native results remain separate.",
+  "typecheck": "pass",
+  "full_local_suite": {
+    "files_passed": 799,
+    "tests_passed": 15239,
+    "tests_skipped": 1,
+    "tests_failed": 0,
+    "duration_seconds": 1493.14,
+    "exit_code": null,
+    "completion_evidence": "Saved Vitest final summary reports every file passed; original process handle is unavailable after session resume."
+  },
+  "report_integrity": {
+    "state": "pass",
+    "raw_files_hashed_and_backup_verified": 260,
+    "review_references_verified": 78,
+    "summary_rederived": {
+      "attempts": 4,
+      "pass": 1,
+      "fail": 1,
+      "incomplete": 2
+    },
+    "acquisition_score_preserved": true,
+    "captured_codex_guides_match_freeze": true
+  },
+  "docs_check": "pass",
+  "required_before_merge": "All hosted gates on the final report head.",
+  "logs": {
+    "scvd-exact-subject-report-full.log": {
+      "bytes": 385689,
+      "sha256": "a9f132f394d2ffcbb14edfb0b92fd0e42bb27fccae468d6ad9a6121863851c95"
+    },
+    "scvd-exact-subject-report-docs.log": {
+      "bytes": 4716,
+      "sha256": "e830e74e14edf2ce2ed4f5ee6c9ecc43442d8b3b51cf2ffe245453135aa0daba"
+    },
+    "scvd-exact-subject-report-typecheck.log": {
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    }
+  },
+  "recorded_at": "2026-09-21T14:07:20.879736+00:00"
+}
