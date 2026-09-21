@@ -746,6 +746,7 @@ export async function fulfillPurchase(
       purpose: minted.certificate.purpose,
       house: isHouseWallet(env, payment.payer ?? ""),
       ...(input.exampleCopied ? { exampleCopied: input.exampleCopied } : {}),
+      ...(pending.quoteToPayMs !== undefined ? { quoteToPayMs: pending.quoteToPayMs } : {}),
     }).catch(() => undefined);
     if (hooks?.defer) hooks.defer(signal);
     else void signal;

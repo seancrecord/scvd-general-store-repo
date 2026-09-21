@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cadenceFor } from "@/lib/cadence";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { namelessVisitorKey } from "@/lib/visitor-day-key";
 import { sanitizeText } from "@/lib/sanitize";
 import {
   LETTER_CAP,
@@ -109,12 +110,13 @@ letterRoutes.post("/api/letter", async (c) => {
 
   // One letter per visitor per day, same easy arithmetic as the bell.
   const fromName = sanitizeText(body["from_name"], 80);
+  const today = new Date().toISOString().slice(0, 10);
+  // A nameless correspondent is keyed on a one-day digest of its
+  // address, never the address (lib/visitor-day-key.ts).
   const who =
     fromName ||
-    c.req.header("CF-Connecting-IP") ||
-    c.req.header("X-Forwarded-For") ||
+    (await namelessVisitorKey((name) => c.req.header(name), today)) ||
     "a-mysterious-correspondent";
-  const today = new Date().toISOString().slice(0, 10);
   const sentKey = KV_KEYS.letterSent(who.toLowerCase(), today);
   if (await kvGet(c.env.COUNTERS, sentKey)) {
     const now = new Date();

@@ -73,6 +73,7 @@ import {
 import { KV_KEYS } from "@/lib/kv-keys";
 import { getOpenDeliveryIntent, openDeliveryIntent } from "@/services/delivery-audit";
 import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
+import { quoteToPayMs, quotedAtFromPaymentHeader, stampQuotedAt } from "@/lib/quote-stamp";
 import { isRecord } from "@/types";
 import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
 import { withSignedOffers } from "@/lib/offer-receipt";
@@ -226,7 +227,8 @@ export async function readMcpPaymentChallenge(env: Env, itemId: string): Promise
   if (result.type !== "payment-error" || result.response.status !== 402) {
     throw new Error("MCP quote did not produce payment requirements");
   }
-  const challenge = await withSignedOffers(env, result.response.headers, decodeChallengeHeader(result.response.headers));
+  const stamped = stampQuotedAt(result.response.headers, result.response.body, new Date().toISOString());
+  const challenge = await withSignedOffers(env, stamped.headers, decodeChallengeHeader(stamped.headers));
   if (!isRecord(challenge)) throw new Error("MCP quote has no readable payment requirements");
   return challenge;
 }
@@ -273,6 +275,17 @@ export async function runMcpPayment(
     signals.userAgent ?? "mcp-client",
   );
   const paymentHeader = encodePaymentMeta(paymentMeta);
+  /*
+   * THE QUOTE THIS PAYMENT ANSWERS, same law as gateSignals on the HTTP
+   * door (lib/quote-stamp.ts): the echoed stamp rides every decline
+   * and settle this call books; the instant minted here rides the
+   * challenge it issues. Reassigned rather than mutated — the route's
+   * signals object is the route's.
+   */
+  const echoedQuotedAt = quotedAtFromPaymentHeader(paymentHeader);
+  if (echoedQuotedAt) signals = { ...signals, quotedAt: echoedQuotedAt };
+  const quotedAt = new Date().toISOString();
+  const challengeSignals: EventSignals = { ...signals, quotedAt };
 
   // THE PRE-FLIGHT, same as the HTTP door. Added 2026-07-29: this door
   // had its own copy of the pipeline and therefore none of the
@@ -281,7 +294,7 @@ export async function runMcpPayment(
   const preflight = preflightBlockers(paymentHeader);
   const refused = preflightRefusalBody(preflight);
   if (refused) {
-    await recordChallengeIssued(env, path, signals);
+    await recordChallengeIssued(env, path, challengeSignals);
     await recordPaymentDecline(env, path, refused.reason, signals).catch(
       () => undefined,
     );
@@ -331,9 +344,12 @@ export async function runMcpPayment(
       if (unavailable) return { kind: "admission-refused", refusal: unavailable };
     }
     if (result.response.status === 402) {
-      await recordChallengeIssued(env, path, signals);
+      await recordChallengeIssued(env, path, challengeSignals);
     }
-    let body = result.response.body;
+    // Stamped after the diagnosis below has compared the buyer's echo
+    // against the offer as built; see the HTTP gate for the same order.
+    const stamped = stampQuotedAt(result.response.headers, result.response.body, quotedAt);
+    let body = stamped.body;
     // BOOK IT. Until 2026-07-29 this door recorded no declines at all,
     // so an agent bouncing off MCP was invisible in the one instrument
     // built to catch a buyer bouncing. The HTTP door alarmed; this one
@@ -412,7 +428,7 @@ export async function runMcpPayment(
       status: result.response.status,
       body,
     };
-    const challenge = decodeChallengeHeader(result.response.headers);
+    const challenge = decodeChallengeHeader(stamped.headers);
     if (challenge !== undefined) {
       // The store's signed offer rides along here, the way it rides
       // the header on the HTTP door. Same commitment, both channels.
@@ -779,6 +795,8 @@ export async function runMcpPayment(
   };
 
   const acceptedQuote = quotedTerms(result.paymentRequirements);
+  // Same reading as the HTTP gate: the decision time, at verify.
+  const decisionMs = quoteToPayMs(echoedQuotedAt, Date.now());
   const pending: PendingPayment = {
     observation,
     paidUsdc: paidUsdcQuoted,
@@ -789,6 +807,7 @@ export async function runMcpPayment(
     // Same law as the HTTP gate: the accepted terms are hashed by the
     // door that verified them (discovery/receipt-surface.ts).
     ...(acceptedQuote ? { quote: await hashQuotedTerms(acceptedQuote) } : {}),
+    ...(decisionMs !== null ? { quoteToPayMs: decisionMs } : {}),
     settle,
     purchaseRecovery: () => recoveryHandle,
     purchaseCreatedAt: () => purchasedAt,

@@ -74,6 +74,14 @@ export interface FacilitatorMockState {
   settleOmitsPayer: boolean;
   webhookCalls: WebhookCall[];
   /**
+   * Every payload the store handed to verify and settle, as the far end
+   * would have parsed it (2026-09-21). The quote stamp the 402 carries
+   * must never appear here: lib/quote-stamp.ts strips it on the way
+   * out, and a test that only counted calls could not see whether it
+   * did.
+   */
+  facilitatorPayloads: Array<{ lane: "verify" | "settle"; body: Record<string, unknown> }>;
+  /**
    * EIP-3009 nonces this mock has already settled. The chain enforces
    * nonce-once (TransferWithAuthorization reverts on reuse); a mock
    * that settles the same authorization twice is LOOSER than reality,
@@ -164,7 +172,17 @@ function createFacilitatorMock(uniqueTransactions: boolean): FacilitatorMockStat
     settledTransactions: [],
     settleOmitsPayer: false,
     webhookCalls: [],
+    facilitatorPayloads: [],
     settledNonces: new Set(),
+  };
+  const capture = (lane: "verify" | "settle", init?: RequestInit): void => {
+    try {
+      const raw = typeof init?.body === "string" ? init.body : "";
+      const body = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      state.facilitatorPayloads.push({ lane, body });
+    } catch {
+      // A body the mock cannot read is still a call; the counters below say so.
+    }
   };
 
   const mockFetch = async (
@@ -198,6 +216,7 @@ function createFacilitatorMock(uniqueTransactions: boolean): FacilitatorMockStat
     }
     if (url.endsWith("/x402/verify")) {
       state.verifyCalls += 1;
+      capture("verify", init);
       if (state.verifyNetworkFailures > 0) {
         state.verifyNetworkFailures -= 1;
         // No status, no body: the far end never spoke. This is what
@@ -218,6 +237,7 @@ function createFacilitatorMock(uniqueTransactions: boolean): FacilitatorMockStat
     }
     if (url.endsWith("/x402/settle")) {
       state.settleCalls += 1;
+      capture("settle", init);
       if (state.settleTransient502s > 0) {
         state.settleTransient502s -= 1;
         // Byte-for-byte the live shape: Cloudflare's canned error body,
