@@ -111,9 +111,30 @@ describe("the receipt page: same URL, human register", () => {
     expect(page).toContain("Accept: application/json");
     expect(page).toContain("/.well-known/scvd-signing-key");
     expect(page).toContain("scvd-evidence export");
-    // The store's word prints on the human copy.
+    /*
+     * THE STORE'S WORD PRINTS ON THE HUMAN COPY — compared the way the
+     * page writes it, which is escaped.
+     *
+     * This assertion was a landmine that fired one week in six. The
+     * note rotates by ISO week (receiptNoteForWeek, weekNumber % 6),
+     * and exactly one of the six contains an apostrophe: "Come back
+     * when your context resets. We'll still remember." The page is
+     * right to escape it to We&#39;ll, so a raw `includes` could never
+     * match it — and the test went red on 2026-W39 with no code change,
+     * having passed all through W38 and due to pass again in W40.
+     *
+     * That is the shape AGENTS.md names: a test whose verdict moves
+     * with the wall clock is not a test. Escaping both sides pins the
+     * real claim (the store's word reaches the human copy) for all six
+     * notes and every week, rather than for the five weeks in six when
+     * the punctuation happened to be harmless.
+     */
     const { RECEIPT_NOTES } = await import("@/store/copy/receipt-notes");
-    expect(RECEIPT_NOTES.some((note) => page.includes(note))).toBe(true);
+    const { escapeHtml } = await import("@/lib/sanitize");
+    expect(
+      RECEIPT_NOTES.some((note) => page.includes(escapeHtml(note))),
+      "no rotated receipt note reached the human copy",
+    ).toBe(true);
     // The machine register is untouched at the same URL.
     const json = (await (await SELF.fetch(verifyUrl)).json()) as Record<string, unknown>;
     expect(json.valid).toBe(true);
