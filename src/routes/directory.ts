@@ -161,6 +161,20 @@ function directoryJsonLd(base: string): string {
     description: DIRECTORY.note,
     url: `${base}/directory`,
     dateModified: catalogLastUpdated(),
+    /*
+     * THE ORDER IS NOT A RANKING, said to the crawler in its own
+     * vocabulary (2026-09-21). `position` is required markup for an
+     * ItemList and stays, but at four listings an index reads as
+     * arrival order and at twenty-two it starts reading as a league
+     * table — and "never a ranking" is the one thing this store says
+     * on every surface it publishes.
+     *
+     * ItemListUnordered is schema.org's own way to declare that the
+     * sequence carries no meaning, so the position numbers cannot be
+     * mistaken for places. Machines get the disclaimer in the format
+     * they parse; the human page never numbered the listings at all.
+     */
+    itemListOrder: "https://schema.org/ItemListUnordered",
     numberOfItems: DIRECTORY.listings.length,
     itemListElement: DIRECTORY.listings.map((listing, index) => ({
       "@type": "ListItem",
