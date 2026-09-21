@@ -112,19 +112,10 @@ describe("the receipt page: same URL, human register", () => {
     expect(page).toContain("Accept: application/json");
     expect(page).toContain("/.well-known/scvd-signing-key");
     expect(page).toContain("scvd-evidence export");
-    // The store's word prints on the human copy — ESCAPED, the way
-    // verify.ts:440 writes it. 2026-09-21: this line read the raw note
-    // against the rendered HTML and went red at midnight with no code
-    // change, because the ISO-week rotation crossed into W39 and
-    // landed on index 3, the one note carrying an apostrophe ("We'll")
-    // — which the page correctly renders as `We&#39;ll`. A verdict
-    // that moves with the calendar is not a test: the assertion now
-    // compares what the page actually carries, so every note in the
-    // bank passes in the week it is drawn.
-    const { RECEIPT_NOTES } = await import("@/store/copy/receipt-notes");
-    expect(RECEIPT_NOTES.some((note) => page.includes(escapeHtml(note)))).toBe(
-      true,
-    );
+    // Match this certificate's note in its HTML form: the weekly bank
+    // includes an apostrophe, so raw-text matching fails on those weeks.
+    expect(cert.from_the_store).toBeTypeOf("string");
+    expect(page).toContain(`<em>${escapeHtml(cert.from_the_store!)}</em>`);
     // The machine register is untouched at the same URL.
     const json = (await (await SELF.fetch(verifyUrl)).json()) as Record<string, unknown>;
     expect(json.valid).toBe(true);
