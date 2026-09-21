@@ -823,12 +823,28 @@ export function buyerInputRepair(
   location: "query" | "arguments",
   refusalBody?: Record<string, unknown>,
 ) {
+  const required = buyInputSchema(item).required ?? [];
   return {
-    required_params: [...(buyInputSchema(item).required ?? [])],
+    required_params: [...required],
+    /*
+     * THE REPAIR, AS A URL RATHER THAN AS A READING (2026-09-21). A
+     * query-door refusal already named the fields; the reader still
+     * had to rebuild the URL from them. This is that URL, in the same
+     * <slot> form as the catalog's buy_url_template and the 402's
+     * retry_url_template, so the same string appears in all three
+     * places a refused buyer might look. Query doors only: over MCP
+     * the inputs are tool arguments and there is no URL to rebuild.
+     */
+    ...(location === "query" && required.length > 0
+      ? { buy_url_template: `${base}/api/buy/${item.id}?${required.map((name) => `${name}=<${name}>`).join("&")}` }
+      : {}),
     input_contract_url: `${base}/menu/${item.id}?view=compact`,
     issues: purchaseInputIssues(item, args, location, refusalBody),
     ...catalogRecovery(base, item.id),
-    next_action: "Read the free input contract for prices and required fields, correct the inputs, then retry the same purchase. No charge was taken.",
+    next_action:
+      location === "query" && required.length > 0
+        ? "Fetch buy_url_template with every <slot> replaced by your value, then retry the payment against that exact URL. The free input contract has the prices and the full schema. No charge was taken."
+        : "Read the free input contract for prices and required fields, correct the inputs, then retry the same purchase. No charge was taken.",
   };
 }
 

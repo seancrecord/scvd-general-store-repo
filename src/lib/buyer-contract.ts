@@ -14,9 +14,56 @@ import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
 export const COMPACT_CATALOG_PAGE_SIZE = 8;
 export const MCP_TOOL_RESULT_PAYMENT = "tool-result";
 
+/**
+ * THE BUY URL THAT COULD NOT BE BOUGHT AT (2026-09-21, off the
+ * decline desk).
+ *
+ * `buy_url` is published bare for every item, and for the twelve
+ * input-taking doors that URL refuses the purchase it advertises.
+ * The requirement was in `required_params` directly beside it — a
+ * SIBLING field the reader has to notice, cross-reference and then
+ * act on by rewriting the URL itself. An agent that does the obvious
+ * thing with a field called `buy_url` gets a signable 402 and then a
+ * refusal before the gate, and x402 has nowhere left to put the rule:
+ * v2's ResourceInfo is {url, description, mimeType, serviceName,
+ * tags, iconUrl} and PaymentRequirements carries no input schema at
+ * all, so the description and the extensions beside it (already used,
+ * since 2026-09-15) are the end of what the protocol offers.
+ *
+ * So the fix is not another place to read the rule. It is a URL that
+ * does not need the rule read: `buy_url_template` is the same door
+ * with its required inputs already in place as `<name>` slots, in the
+ * same form the 402's own required-inputs extension uses for
+ * retry_url_template, so the two documents agree character for
+ * character.
+ *
+ * `buy_url` STAYS BARE and is untouched. A bare probe of it answers
+ * 402 — that is the probe rule (routes/door-checks.ts), and it is
+ * what indexers and directory checkers register and re-check. Moving
+ * the parameters onto `buy_url` would answer their probe with a field
+ * refusal and read as a dead door: the exact regression of 2026-07-26
+ * and again of 2026-09-11. This adds a key; it moves none.
+ *
+ * EMITTED ON EVERY ITEM, equal to `buy_url` where nothing is
+ * required, for the reason routes/catalog.ts gives for
+ * required_params one line below: a machine reads one key with one
+ * type and never has to tell "absent" from "needs nothing". So the
+ * whole instruction to a buyer collapses to one sentence — fetch
+ * buy_url_template, substituting any <slots> — with no second field
+ * to consult and no URL to rebuild.
+ */
+export function buyUrlTemplate(item: MenuItem, base: string): string {
+  const url = `${base}/api/buy/${item.id}`;
+  const required = buyInputSchema(item).required ?? [];
+  return required.length === 0
+    ? url
+    : `${url}?${required.map((name) => `${name}=<${name}>`).join("&")}`;
+}
+
 export function buyerLinks(item: MenuItem, base: string) {
   return {
     required_params: [...(buyInputSchema(item).required ?? [])],
+    buy_url_template: buyUrlTemplate(item, base),
     input_contract_url: `${base}/menu/${item.id}?view=compact`,
     mcp_url: `${base}/mcp?view=compact&item_id=${item.id}&payment=${MCP_TOOL_RESULT_PAYMENT}`,
   };
@@ -48,7 +95,7 @@ export function checkoutContract(base: string) {
     mcp_idempotency_key: "x402/idempotency-key",
     steps: [
       "Use the item's input contract and mcp_url for required inputs and its single buy tool.",
-      "GET buy_url with query inputs. The free 402 quote names required_params; PAYMENT-REQUIRED is base64 JSON. A bare GET also quotes; invalid supplied inputs are refused.",
+      "GET buy_url_template, replacing every <slot> with your value; it is buy_url with this door's required inputs already in place. The free 402 quote names required_params; PAYMENT-REQUIRED is base64 JSON. A bare GET of buy_url also quotes, but a door with required inputs refuses the PAID request without them, so buy the template URL, not the bare one.",
       "Select an offered network and amount within budget; copy atomic amounts unchanged. Without a supported wallet/client, stop before signing.",
       "Retry identical inputs with the signed v2 payload in PAYMENT-SIGNATURE and Idempotency-Key from quote.idempotency.suggested_key. X-PAYMENT also accepts v2, never v1.",
       "MCP: tools/list at mcp_url. Unpaid: isError:true and structuredContent quote. Retry with params._meta['x402/payment']; copy result._meta['x402/idempotency-key'] to the same key in params._meta.",
