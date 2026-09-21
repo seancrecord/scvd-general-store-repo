@@ -2266,6 +2266,12 @@ adminRoutes.get("/admin/signals", async (c) => {
   return c.html(renderSignalsPage({ signals: await readBuyerSignals(c.env, month) }));
 });
 
+adminRoutes.get("/admin/protocols", async (c) => {
+  const { readProtocols } = await import("@/services/protocol-reading");
+  const { renderProtocolsPage } = await import("@/pages/admin/protocols-page");
+  return c.html(renderProtocolsPage(await readProtocols(c.env)));
+});
+
 adminRoutes.get("/admin/open-for-business", async (c) => {
   const { draftOpenForBusiness, nextAutomaticIssue, renderOpenForBusinessMarkdown } = await import("@/services/open-for-business");
   const { renderOpenForBusinessPage } = await import("@/pages/admin/open-for-business-page");

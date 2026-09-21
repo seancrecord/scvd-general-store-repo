@@ -76,6 +76,13 @@ export type AdminTab =
    */
   | "signals"
   /**
+   * THE PROTOCOL READING (2026-09-21). The office could read MPP in
+   * two places, UCP in none and A2A in none, while the store served
+   * all of them. One page for what we speak and who used it, with the
+   * market's own census beside it.
+   */
+  | "protocols"
+  /**
    * OPEN FOR BUSINESS (2026-09-18), the weekly issue for sellers, drafted by
    * the instruments and read here before the keeper publishes it by
    * hand. A draft on the desk, never a publication surface.
@@ -173,6 +180,7 @@ export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string
   buyers: { title: "The buyers", what: "Every outside wallet holding a certificate, and what it bought." },
   disclosure: { title: "What they told us", what: "Who fills the optional block at the door, and who ignores it." },
   signals: { title: "Buyer signals", what: "What the till sees without asking. A trial area, built to be stopped." },
+  protocols: { title: "Protocols", what: "What we speak, who used it, and what the market speaks. Four instruments, never added together." },
   "open-for-business": { title: "Open for Business", what: "This week's issue for sellers, drafted here and published by hand." },
   instruments: { title: "Free instruments", what: "Which free tools agents actually use, and what follows a check." },
   growth: { title: "Growth", what: "Every month since opening, side by side." },
@@ -223,6 +231,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
   { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
   { tab: "signals", href: "/admin/signals", label: "Buyer signals (trial)" },
+  { tab: "protocols", href: "/admin/protocols", label: "Protocols" },
   { tab: "open-for-business", href: "/admin/open-for-business", label: "Open for Business" },
   { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
   { tab: "growth", href: "/admin/growth", label: "Growth" },
