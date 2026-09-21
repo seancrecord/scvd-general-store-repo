@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import {
-  computeStats,
+  computeStatsDiagnosed,
   HOUSE_FLAG_POLICY,
   trackRecordLine,
 } from "@/services/stats";
@@ -17,7 +17,9 @@ export const statsRoutes = new Hono<HonoEnv>();
 
 statsRoutes.get("/stats", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const stats = await computeStats(c.env);
+  // The books with the per-item till beside them (ruling R3, 2026-09-21).
+  const books = await computeStatsDiagnosed(c.env);
+  const stats = books.stats;
   /**
    * The net-by-chain statement rides the same response rather than a
    * new room: an agent doing diligence is already reading this JSON,
@@ -32,6 +34,19 @@ statsRoutes.get("/stats", async (c) => {
     ...stats,
     // Rule 43 for the numbers: every count above, with what it is out of (store/published-counts.ts).
     published_counts: publishedCountsBlock("/stats"),
+    /**
+     * THE TILL, BY ITEM, PUBLIC (ruling R3, 2026-09-21). The same
+     * counters the organic figure is summed from, left un-summed, so
+     * the next catalogue cut is a derivation anyone can check rather
+     * than a keeper's ruling. RAW, and said so: the reclassification
+     * ledger moves family settles from organic to house in the totals
+     * only and does not know which item they were on, so these rows
+     * do not follow it; a shelf item by its id, a penny page by its
+     * path with slashes turned to colons.
+     */
+    till_by_item: books.till_by_item,
+    till_by_item_note:
+      "Settles at the till per item, organic and house, every month added, raw: the reclassification ledger (reclassified_house above) is applied to the totals only and cannot be applied per item, so a family settle booked organic before its wallet was listed still sits in that item's organic column here. Never a ranking; the rows are in the till's own order. Published under rule 43 as amended 2026-09-21 with the rest of the counts.",
     track_record: trackRecordLine(stats, base),
     house_flag_policy: HOUSE_FLAG_POLICY,
     identity_policy: IDENTITY_POLICY,

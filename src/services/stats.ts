@@ -228,8 +228,10 @@ export interface BooksDiagnostics {
    * reclassification ledger moves family settles from organic to
    * house in the totals only; it does not know which item they were
    * on, so these rows cannot follow it and say so where they render.
-   * Not published on /stats — the public books are aggregates by
-   * rule; this is the back room's cross-check.
+   * PUBLISHED ON /stats since 2026-09-21 (ruling R3): the public books
+   * were aggregates by rule until the September read asked which doors
+   * actually sell, and the honest answer was these rows, raw, with the
+   * reclassification caveat printed beside them.
    */
   till_by_item: Record<string, TillItemCount>;
   /** Set when the rail records claim more sales than the counters know. */
