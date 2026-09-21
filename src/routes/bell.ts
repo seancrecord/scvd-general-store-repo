@@ -4,6 +4,7 @@ import { renderSimplePage } from "@/pages/simple-page";
 import { getCard } from "@/services/cards";
 import { CARD_LINES, postIntentUrl, RARITY_LINES, sharePost, X_GLYPH } from "@/store/cards";
 import { ringBell } from "@/services/bell";
+import { namelessVisitorKey } from "@/lib/visitor-day-key";
 import { STREAK_BELLRINGER_II_DAY, STREAK_PACK_EVERY } from "@/services/cards";
 import { pressingSummary } from "@/services/instant-goods";
 import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
@@ -22,10 +23,11 @@ bellRoutes.post("/api/bell", async (c) => {
   const agentName = isRecord(body)
     ? sanitizeText(body["agent_name"], 80)
     : "";
+  // A nameless ringer is keyed on a one-day digest of its address,
+  // never the address (lib/visitor-day-key.ts). Same day the bell reads.
   const who =
     agentName ||
-    c.req.header("CF-Connecting-IP") ||
-    c.req.header("X-Forwarded-For") ||
+    (await namelessVisitorKey((name) => c.req.header(name), new Date().toISOString().slice(0, 10))) ||
     "a-mysterious-stranger";
   const wallet = isRecord(body) ? sanitizeText(body["wallet"], 64) : "";
   const passId = isRecord(body) ? sanitizeText(body["pass_id"], 64) : "";

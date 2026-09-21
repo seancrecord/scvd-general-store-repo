@@ -12,6 +12,15 @@ import {
   type PorchLedger,
 } from "@/lib/metrics";
 import { porchSurfaceKind, type PorchSurfaceKind } from "@/lib/porch-surface";
+import {
+  deriveHypothesis,
+  readFoundUs,
+  readNewFaces,
+  type FoundUs,
+  type GrowthHypothesis,
+  type HypothesisSide,
+  type NewFaces,
+} from "@/services/growth-hypothesis";
 import { readReferrerCensus } from "@/lib/referrer-census";
 import { readInstrumentClients, type InstrumentClients } from "@/lib/client-census";
 import { readBellRings } from "@/services/bell";
@@ -175,6 +184,12 @@ export interface GrowthMonth {
   demand: GrowthDemand;
   /** Null when the signed chain holds no week taken in this month: not measured, never zero. */
   x402_economy: GrowthX402 | null;
+  /**
+   * THE CLAIM AND ITS RECEIPTS (2026-09-21). "We will grow with the
+   * market" beside the market's own signed numbers, in the same month,
+   * so the reading can say the market grew and we did not.
+   */
+  hypothesis: GrowthHypothesis;
   floors: {
     ledger_truncated: boolean;
     porch_truncated: boolean;
@@ -266,6 +281,12 @@ export interface MonthInputs {
   seenBefore: ReadonlySet<string>;
   /** The month before's organic count per surface; null when this is the first month read. */
   previous: Map<string, number> | null;
+  /** Wallets first seen in this month, and ones returning to it. */
+  newFaces: NewFaces | null;
+  /** The month before's side of the hypothesis, for the comparison. */
+  hypothesisBefore: HypothesisSide | null;
+  /** Who cites us and whether we asked; the register is static. */
+  foundUs: FoundUs;
 }
 
 /**
@@ -440,6 +461,29 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
       }
     : null;
 
+  /**
+   * The hypothesis rides the month it belongs to, built from figures
+   * already derived above rather than re-counted: the market off the
+   * signed chain, the settles off the ledger, the loop off the free
+   * instruments' own funnel.
+   */
+  const side: HypothesisSide = {
+    market: x402 ? { week: x402.closing.week, listed: x402.closing.listed, payable: x402.closing.payable } : null,
+    settles: store.organic_settles,
+    new_faces: inputs.newFaces?.first_time ?? 0,
+    returning_faces: inputs.newFaces?.returning ?? 0,
+    checks: freeInstruments.funnel.free_argument_uses,
+  };
+  const hypothesis = deriveHypothesis({
+    now: side,
+    before: inputs.hypothesisBefore,
+    declines: store.organic_declines,
+    settles: store.organic_settles,
+    checks: freeInstruments.funnel.free_argument_uses,
+    settlesPerHundredChecks: freeInstruments.funnel.settles_per_hundred_checks,
+    foundUs: inputs.foundUs,
+  });
+
   const logged = inputs.logged;
   return {
     month,
@@ -449,6 +493,7 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
     free_instruments: freeInstruments,
     demand,
     x402_economy: x402,
+    hypothesis,
     floors: {
       ledger_truncated: ledger.truncated === true,
       porch_truncated: porch.truncated,
@@ -513,10 +558,12 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
   if (!all.includes(current)) all.push(current);
   const wanted = options.months ? all.filter((month) => options.months!.includes(month)) : all;
 
-  const [rails, pulse, states, reads] = await Promise.all([
+  const [rails, pulse, states, newFaces, reads] = await Promise.all([
     readRailCountersByMonth(env).catch(() => [] as RailMonth[]),
     computePulse(env).catch(() => null),
     monthlyStates(env),
+    // One payer scan for every month, not one per month.
+    readNewFaces(env).catch(() => new Map<string, NewFaces>()),
     Promise.all(
       all.map(async (month) => {
         const [porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged, instrumentClients] = await Promise.all([
@@ -537,24 +584,34 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
   const railByMonth = new Map(rails.map((row) => [row.month, row]));
   const pulseByMonth = new Map((pulse?.months ?? []).filter((w) => w.month).map((w) => [w.month!, w]));
 
+  const foundUs = readFoundUs();
   const months: GrowthMonth[] = [];
   const seenBefore = new Set<string>();
   let previous: Map<string, number> | null = null;
+  /**
+   * The hypothesis compares against the month BEFORE, and the loop
+   * already walks oldest first for the demand block's memory. Every
+   * month derives its own side, including the ones the caller did not
+   * ask for, so a filtered read still compares against a real month
+   * rather than against nothing.
+   */
+  let hypothesisBefore: HypothesisSide | null = null;
   for (const read of reads) {
     const thisMonth = organicBySurface(read.porch);
-    if (wanted.includes(read.month)) {
-      months.push(
-        deriveGrowthMonth({
-          ...read,
-          now,
-          rail: railByMonth.get(read.month) ?? null,
-          pulse: pulseByMonth.get(read.month) ?? null,
-          state: states.get(read.month) ?? null,
-          seenBefore,
-          previous,
-        }),
-      );
-    }
+    const month = deriveGrowthMonth({
+      ...read,
+      now,
+      rail: railByMonth.get(read.month) ?? null,
+      pulse: pulseByMonth.get(read.month) ?? null,
+      state: states.get(read.month) ?? null,
+      seenBefore,
+      previous,
+      newFaces: newFaces.get(read.month) ?? null,
+      hypothesisBefore,
+      foundUs,
+    });
+    if (wanted.includes(read.month)) months.push(month);
+    hypothesisBefore = month.hypothesis.now;
     for (const surface of thisMonth.keys()) seenBefore.add(surface);
     previous = thisMonth;
   }

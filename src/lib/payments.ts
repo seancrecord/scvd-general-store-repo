@@ -28,6 +28,7 @@ import {
   tipCappedNotice,
 } from "@/lib/client-spend-cap";
 import { extractPaymentNonce, payerOfVerifiedPayload } from "@/lib/replay-guard";
+import { withoutQuoteStamp } from "@/lib/quote-stamp";
 import { BASE_CHAIN, findAuthorizationUse } from "@/lib/base-rpc";
 import {
   getMenuItem,
@@ -1311,8 +1312,18 @@ export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
   }
 
   override async verify(
-    ...args: Parameters<HTTPFacilitatorClient["verify"]>
+    ...[payload, ...rest]: Parameters<HTTPFacilitatorClient["verify"]>
   ): Promise<Awaited<ReturnType<HTTPFacilitatorClient["verify"]>>> {
+    /*
+     * THE FACILITATOR SEES THE PAYLOAD AS IT WAS BEFORE THE STAMP
+     * (lib/quote-stamp.ts, 2026-09-21). The store's 402 carries
+     * `extra.quotedAt` on every offer and a compliant client echoes it
+     * back; CDP runs code we cannot read against that echo, so the
+     * copy that crosses to them is stripped of the one field they have
+     * never seen. Verify and settle both, or the two calls would
+     * describe two payloads.
+     */
+    const args = [withoutQuoteStamp(payload), ...rest] as Parameters<HTTPFacilitatorClient["verify"]>;
     try {
       return await this.verifyLane.verify(...args);
     } catch (error) {
@@ -1382,8 +1393,10 @@ export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
    * test/settle-timeout.spec.ts pins both halves.
    */
   override async settle(
-    ...args: Parameters<HTTPFacilitatorClient["settle"]>
+    ...[payload, ...rest]: Parameters<HTTPFacilitatorClient["settle"]>
   ): Promise<Awaited<ReturnType<HTTPFacilitatorClient["settle"]>>> {
+    // Same stripped copy the verify lane sent; see verify above.
+    const args = [withoutQuoteStamp(payload), ...rest] as Parameters<HTTPFacilitatorClient["settle"]>;
     try {
       return await super.settle(...args);
     } catch (error) {
@@ -1939,6 +1952,12 @@ export interface PendingPayment {
    * on retained-artifact replays, which never mint.
    */
   quote?: string;
+  /**
+   * Milliseconds between the 402 this payment echoes and the moment it
+   * verified (lib/quote-stamp.ts). Absent when the echo carried no
+   * readable stamp; the buyer signal books that as unstamped.
+   */
+  quoteToPayMs?: number;
   /**
    * Present the authorization and take the money. MEMOIZED — calling
    * twice settles once and returns the same result, so a handler need

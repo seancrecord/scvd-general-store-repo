@@ -76,5 +76,10 @@ describe("the data stance is published where the question gets asked", () => {
     // The load-bearing one: a limit you can inspect beats a policy you
     // have to trust.
     expect(body.data_handling["uniqueness"]).toMatch(/deliberately unavailable/i);
+    // The 2026-09-21 restatement: the one kind of key the store does
+    // issue is named, with what it is not, on the same page.
+    expect(body.data_handling["join_keys"]).toMatch(/quotedAt/);
+    expect(body.data_handling["join_keys"]).toMatch(/never for a person/i);
+    expect(body.data_handling["ip_addresses"]).toMatch(/digest/);
   });
 });

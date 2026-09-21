@@ -147,9 +147,17 @@ imports), and a green test suite can still fail the real deploy.
 
 ## Commits & branches
 
-- Work on the designated feature branch; never commit straight to `main`
-  without cause. The established flow: commit to the branch, merge to
-  `main` (which deploys), push both.
+- Work on the designated feature branch; never commit straight to `main`.
+  CORRECTED 2026-09-21: this line used to say "merge to `main` (which
+  deploys), push both," and that has not been possible since the
+  repository ruleset landed. `main` requires the `check` status, `check`
+  only runs on a pull request, so a direct push is rejected outright
+  (`GH013: Required status check "check" is expected`) no matter whose
+  hands are on it. The flow is: commit to the branch, push the branch,
+  open a PR, and land it once the four `tests` shards and `check` are
+  green — `enable_pr_auto_merge` does that without a human waiting on it.
+  A merge commit, not a squash, keeps the base merges legible when `main`
+  has moved underneath the branch.
 - End commit messages with the `Co-Authored-By` / `Claude-Session`
   footer already used throughout the history.
 - Commit or push only when the task asks for it.

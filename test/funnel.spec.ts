@@ -181,6 +181,34 @@ describe("readings bounded by retained evidence", () => {
     expect(row.verdict).toContain("1 unknown");
   });
 
+  /**
+   * THE CONTROL GROUP, PINNED (2026-09-21). Every locked row invites
+   * the conclusion that required inputs are where the shelf loses
+   * people. The doors requiring NO input are the control for that
+   * claim, and when both sides sit at zero the report has to say so in
+   * as many words — otherwise the page keeps arguing for an input fix
+   * the data does not support.
+   */
+  it("prints the gated-versus-open comparison, and refuses the input story when both are zero", async () => {
+    for (let i = 0; i < 4; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
+        ...organic,
+        missingRequired: ["tx_hash"],
+      });
+    }
+    // hello needs no input at all: the control group, same window.
+    for (let i = 0; i < 3; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/hello", organic);
+    }
+    const report = await auditFunnel(testEnv);
+    expect(report.input_gate_reading).toContain("REQUIRE an input");
+    expect(report.input_gate_reading).toContain("require NONE");
+    expect(
+      report.input_gate_reading,
+      "neither side settled, so the input cannot be the cause and the page must say it",
+    ).toContain("not the input");
+  });
+
   it("separates missing input evidence from unannotated requests", async () => {
     for (let i = 0; i < 6; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
@@ -193,7 +221,19 @@ describe("readings bounded by retained evidence", () => {
     expect(row.asks_organic).toBe(7);
     expect(row.asks_locked).toBe(6);
     expect(row.locked_inputs).toEqual({ tx_hash: 6 });
-    expect(row.verdict).toContain("LOCKED DOOR: 6 of the 7 asks");
+    /*
+     * The wording changed on 2026-09-21 and the DISTINCTION is what is
+     * pinned now: an ask without inputs is an agent pricing a door
+     * before it holds one, and the row must say so rather than calling
+     * it a locked door, which pointed readers at a discoverability fix
+     * that had already shipped. An input REFUSAL is the thing that
+     * means somebody was turned away, and it is stated apart.
+     */
+    expect(row.verdict).toContain("ASKED THE PRICE WITHOUT INPUTS: 6 of the 7 asks");
+    expect(row.verdict).toContain("(tx_hash ×6)");
+    expect(row.verdict, "the probe rule is cited, not implied").toContain("probe rule");
+    expect(row.verdict, "refusals are named apart from probes").toContain("input refusal, counted apart: 0");
+    expect(row.verdict, "the old verdict asserted a cause it could not show").not.toContain("LOCKED DOOR");
     expect(row.asks_inputs_unknown).toBe(1);
     expect(row.verdict).toContain("1 unknown");
     expect(row.verdict).not.toContain("could have");
@@ -205,7 +245,7 @@ describe("readings bounded by retained evidence", () => {
     }
     const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "small_blessing")!;
     expect(row.asks_locked).toBe(0);
-    expect(row.verdict).not.toContain("LOCKED DOOR");
+    expect(row.verdict).not.toContain("ASKED THE PRICE WITHOUT INPUTS");
   });
 
   it("carries the missing input evidence on a refusal row too", async () => {
@@ -216,7 +256,7 @@ describe("readings bounded by retained evidence", () => {
     await recordPaymentDecline(testEnv, "/api/buy/settlement_attestation", "verify_error:timeout", organic);
     const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
     expect(row.verdict).toContain("REFUSALS RECORDED");
-    expect(row.verdict).toContain("LOCKED DOOR");
+    expect(row.verdict).toContain("ASKED THE PRICE WITHOUT INPUTS");
   });
 
   /**

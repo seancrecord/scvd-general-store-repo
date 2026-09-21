@@ -1,6 +1,7 @@
 import { ReceiptEvidenceUnavailable } from "@/lib/receipt-context";
 import { storeLinks } from "@/lib/store-links";
 import { decodePaymentHeader } from "@/lib/decline-diagnosis";
+import { namelessVisitorKey } from "@/lib/visitor-day-key";
 import { recoverSignedPurchase } from "@/services/signed-purchase-recovery";
 import { signedRecoveryOutcome } from "@/lib/mcp-payment";
 import { buyerGuidance } from "@/lib/buyer-guidance";
@@ -569,9 +570,11 @@ export async function callFreeTool(
     return { guide: storeGuideText(c.env.STORE_BASE_URL, c.env) };
   }
   if (name === "ring_bell") {
+    // Same key as the HTTP bell: a nameless ringer is a one-day digest
+    // of its address, never the address (lib/visitor-day-key.ts).
     const who =
       sanitizeText(args["agent_name"], 80) ||
-      c.req.header("CF-Connecting-IP") ||
+      (await namelessVisitorKey((name) => c.req.header(name), new Date().toISOString().slice(0, 10))) ||
       "a-mysterious-stranger";
     const wallet = typeof args["wallet"] === "string" ? args["wallet"].trim() : "";
     const passId = typeof args["pass_id"] === "string" ? args["pass_id"].trim() : "";
@@ -922,7 +925,8 @@ async function callPurchaseTool(
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.
     if (refusal.status === 400) {
       const field = typeof refusal.body["input_field"] === "string" ? refusal.body["input_field"] : "";
-      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? args[field] : undefined));
+      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? args[field] : undefined,
+        { userAgent: c.req.header("User-Agent"), accept: c.req.header("Accept") }));
     }
     return rpcRefusal(
       id,
@@ -1206,6 +1210,7 @@ async function callPurchaseTool(
    */
   const input = purchaseInputFrom(item, toolArgs(args));
   input.source = "mcp";
+  input.door = "mcp";
   if (idempotencyKey) input.idempotent = true;
   const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
   if (userAgent) {

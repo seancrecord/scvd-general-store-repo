@@ -131,16 +131,80 @@ describe("enrolment: free, prospective, and refused rather than paid blank", () 
     for (const field of ["model", "operator", "task", "purpose", "found_via"]) {
       const body: Record<string, unknown> = { ...ROSTER };
       delete body[field];
-      await expect(enrolStudy(testEnv, body, await options())).rejects.toThrow(
-        new RegExp(`\`${field}\``),
+      const thrown = await enrolStudy(testEnv, body, await options()).catch(
+        (error: unknown) => error as StudyRefused,
       );
+      expect(thrown).toBeInstanceOf(StudyRefused);
+      const problem = (thrown as StudyRefused).problems.find((p) => p.field === field);
+      expect(problem, `${field} is named`).toBeDefined();
+      expect(
+        problem?.why?.length ?? 0,
+        `${field} says what the answer buys, not just that it is missing`,
+      ).toBeGreaterThan(40);
+      expect(String((thrown as StudyRefused).message)).toContain(field);
     }
   });
 
   it("refuses a harness off the closed list, and names the list", async () => {
-    await expect(
-      enrolStudy(testEnv, { ...ROSTER, harness: "something-else" }, await options()),
-    ).rejects.toThrow(/clawhub/);
+    const thrown = await enrolStudy(
+      testEnv,
+      { ...ROSTER, harness: "something-else" },
+      await options(),
+    ).catch((error: unknown) => error as StudyRefused);
+    expect(thrown).toBeInstanceOf(StudyRefused);
+    const harness = (thrown as StudyRefused).problems.find((p) => p.field === "harness");
+    expect(harness?.expected, "the accepted values ride the problem").toMatch(/clawhub/);
+  });
+
+  /**
+   * THE DEFECT THE LIVE DESK FOUND (2026-09-21): thirteen refusals,
+   * zero enrolments, every one of them reporting `payout_to` — not
+   * because thirteen agents forgot a wallet, but because it was the
+   * FIRST thing checked, so every malformed body came back saying the
+   * same word and twelve other diagnoses stayed hidden behind it.
+   */
+  it("names every problem at once rather than only the first", async () => {
+    const thrown = await enrolStudy(testEnv, {}, await options()).catch(
+      (error: unknown) => error as StudyRefused,
+    );
+    expect(thrown).toBeInstanceOf(StudyRefused);
+    const fields = (thrown as StudyRefused).problems.map((p) => p.field).sort();
+    expect(fields, "every required roster field is named in one refusal").toEqual(
+      [
+        "autonomy", "found_via", "funding", "harness", "model",
+        "operator", "prior_x402", "purpose", "task",
+      ],
+    );
+    for (const problem of (thrown as StudyRefused).problems) {
+      expect(problem.problem.length, `${problem.field} says what is wrong`).toBeGreaterThan(0);
+    }
+    expect(
+      fields,
+      "an empty body must NOT be reported as a payout_to problem — that was the bug",
+    ).not.toContain("payout_to");
+  });
+
+  /**
+   * ASKING A STRANGER FOR A WALLET BEFORE TELLING THEM ANYTHING is the
+   * shape of a scam, and a careful agent is right to stop there. The
+   * money moves at the debrief; the address is wanted at the debrief.
+   */
+  it("enrols with no payout address at all, and says where to bring one", async () => {
+    const body: Record<string, unknown> = { ...ROSTER };
+    delete body["payout_to"];
+    const { record, advisory } = await enrolStudy(testEnv, body, await options());
+    expect(record.payout_to).toBeUndefined();
+    expect(record.status).toBe("enrolled");
+    expect(String(advisory)).toMatch(/debrief/);
+  });
+
+  it("still refuses a payout address that is present and malformed", async () => {
+    const thrown = await enrolStudy(
+      testEnv,
+      { ...ROSTER, payout_to: "not-an-address" },
+      await options(),
+    ).catch((error: unknown) => error as StudyRefused);
+    expect((thrown as StudyRefused).problems.some((p) => p.field === "payout_to")).toBe(true);
   });
 
   it("requires harness_other when the harness is other or custom", async () => {
@@ -165,11 +229,7 @@ describe("enrolment: free, prospective, and refused rather than paid blank", () 
     ).rejects.toThrow(/house wallet/);
   });
 
-  it("refuses a payout address that is not a 0x address at all", async () => {
-    await expect(
-      enrolStudy(testEnv, { ...ROSTER, payout_to: "not-an-address" }, await options()),
-    ).rejects.toThrow(/payout_to/);
-  });
+
 });
 
 describe("the debrief verifies against our own books, never the researcher's word", () => {
@@ -515,6 +575,100 @@ describe("the debrief verifies against our own books, never the researcher's wor
         },
       ),
     ).rejects.toThrow(/did not answer/);
+  });
+});
+
+describe("the payout address, now wanted where the money moves", () => {
+  async function enrolledWithoutPayout(now: Date) {
+    const body: Record<string, unknown> = { ...ROSTER };
+    delete body["payout_to"];
+    return enrolStudy(testEnv, body, await options(now));
+  }
+
+  it("refuses a debrief with no address anywhere, and keeps the study alive", async () => {
+    const now = new Date();
+    const { study_id, study_token } = await enrolledWithoutPayout(now);
+    const leg = await seedPurchase({
+      id: hex("e1"), token: hex("f1"), door: "http", network: "eip155:8453",
+      createdAt: new Date(now.getTime() + 1000).toISOString(),
+    });
+    const thrown = await debriefStudy(
+      testEnv,
+      { study_id, study_token, legs: [{ ...leg, surface: "x402_http" }], answers: ANSWERS },
+      await options(now),
+    ).catch((error: unknown) => error as StudyRefused);
+    expect(thrown).toBeInstanceOf(StudyRefused);
+    expect((thrown as StudyRefused).problems.some((p) => p.field === "payout_to")).toBe(true);
+    const after = JSON.parse((await testEnv.COUNTERS.get(KV_KEYS.study(study_id)))!);
+    expect(after.status, "a refusal never spends the study").toBe("enrolled");
+    expect(
+      await testEnv.COUNTERS.get(KV_KEYS.studyLeg(hex("e1"))),
+      "and never burns the purchase it cited",
+    ).toBeNull();
+  });
+
+  it("pays an enrolment that brought no address, when the debrief brings one", async () => {
+    const now = new Date();
+    const wallet = "0xbbb1111111111111111111111111111111111111";
+    const { study_id, study_token } = await enrolledWithoutPayout(now);
+    const leg = await seedPurchase({
+      id: hex("e2"), token: hex("f2"), door: "http", network: "eip155:8453",
+      createdAt: new Date(now.getTime() + 1000).toISOString(),
+    });
+    const result = await debriefStudy(
+      testEnv,
+      {
+        study_id, study_token, payout_to: wallet,
+        legs: [{ ...leg, surface: "x402_http" }], answers: ANSWERS,
+      },
+      await options(now),
+    );
+    expect(result.reward_usd).toBeGreaterThan(0);
+    expect(String(result.payout.authorization["to"]).toLowerCase()).toBe(wallet);
+  });
+
+  /** A wallet changed mid-study must not cost a walk already paid for. */
+  it("lets the debrief override the address the enrolment gave", async () => {
+    const now = new Date();
+    const later = "0xbbb2222222222222222222222222222222222222";
+    const { study_id, study_token } = await enrolStudy(
+      testEnv,
+      { ...ROSTER, payout_to: "0xbbb3333333333333333333333333333333333333" },
+      await options(now),
+    );
+    const leg = await seedPurchase({
+      id: hex("e3"), token: hex("f3"), door: "http", network: "eip155:8453",
+      createdAt: new Date(now.getTime() + 1000).toISOString(),
+    });
+    const result = await debriefStudy(
+      testEnv,
+      {
+        study_id, study_token, payout_to: later,
+        legs: [{ ...leg, surface: "x402_http" }], answers: ANSWERS,
+      },
+      await options(now),
+    );
+    expect(String(result.payout.authorization["to"]).toLowerCase()).toBe(later);
+  });
+
+  it("refuses a house wallet at the debrief, not only at enrolment", async () => {
+    const now = new Date();
+    const { study_id, study_token } = await enrolledWithoutPayout(now);
+    const leg = await seedPurchase({
+      id: hex("e4"), token: hex("f4"), door: "http", network: "eip155:8453",
+      createdAt: new Date(now.getTime() + 1000).toISOString(),
+    });
+    await expect(
+      debriefStudy(
+        testEnv,
+        {
+          study_id, study_token,
+          payout_to: "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7",
+          legs: [{ ...leg, surface: "x402_http" }], answers: ANSWERS,
+        },
+        await options(now),
+      ),
+    ).rejects.toThrow(/house wallet/);
   });
 });
 

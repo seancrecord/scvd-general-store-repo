@@ -429,7 +429,8 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.
     if (refusal.status === 400) {
       const field = typeof refusal.body["input_field"] === "string" ? refusal.body["input_field"] : "";
-      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? c.req.query(field) : undefined));
+      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? c.req.query(field) : undefined,
+        { userAgent: c.req.header("User-Agent"), accept: c.req.header("Accept") }));
     }
     c.set("inputRefusal", refusal.body);
     return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body) : {}) }, refusal.status);

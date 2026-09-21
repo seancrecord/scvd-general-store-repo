@@ -9,7 +9,9 @@ import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, SOCIAL_UNFURLERS } from "@/lib/craw
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import { signalStore } from "@/services/signal-store";
 import { concentrationHistogram, subjectTotals, type ConcentrationHistogram } from "@/lib/signal-histogram";
+import { quoteToPayBucket } from "@/lib/quote-stamp";
 import type { Context } from "hono";
+import type { PurchaseDoor } from "@/services/purchase-intent";
 import type { Env, HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -64,11 +66,21 @@ import type { Env, HonoEnv, MenuItem } from "@/types";
  *               that keeps being verified stands out from the ones
  *               read once by the buyer and never again.
  *
- * WHAT IS NOT HERE, and why. Quote-to-pay latency needs the 402 and
- * the paid retry linked, and without a session the only link is a
- * timestamp echoed inside the accepted terms, which the signature
- * binds: a change to money. Client-from-handshake needs an MCP
- * session; the door is stateless. Both wait on a ruling.
+ *   latency     how long a buyer took between our quote and its
+ *               payment (2026-09-21, the keeper's ruling on the line
+ *               below): the 402 stamps its instant into every offer,
+ *               the paid retry echoes it, and the door that verified
+ *               the payment hands the elapsed time here, bucketed by
+ *               door. Unstamped is its own bucket, because a client
+ *               that rebuilds `accepted` by hand drops the stamp and
+ *               that is a fact about clients worth a count.
+ *
+ * WHAT IS NOT HERE, and why. Client-from-handshake needs an MCP
+ * session; the door is stateless. It waits on a ruling. Quote-to-pay
+ * latency waited here too, on the same page, until the keeper ruled
+ * on 2026-09-21 that a stamp echoed inside the accepted terms is a
+ * join between one quote and one payment and not an identity;
+ * lib/quote-stamp.ts is the ruling built.
  *
  * ONE DIAL, ONE PREFIX, ONE PAGE. Flip BUYER_SIGNALS_ENABLED and every
  * write stops; the keys sit under `metric:<month>:signals:` and expire
@@ -98,11 +110,29 @@ export const SIGNAL_MAP_CAP = 100;
 export const SUBJECT_MAP_CAP = 400;
 export const PURPOSES_CAP = 200;
 /** Maps whose keys a stranger can invent or steer (a referrer host, the item id a knock named) keep a cap on every path. */
-const STRANGER_KEYED: Partial<Record<SignalKind, number>> = { referrers: SIGNAL_MAP_CAP, refusal: SIGNAL_MAP_CAP };
+const STRANGER_KEYED: Partial<Record<SignalKind, number>> = {
+  referrers: SIGNAL_MAP_CAP,
+  // `refusal` is retired (the split below); both halves key on the item id a
+  // knock named, which a stranger steers, so both keep the cap.
+  refusal: SIGNAL_MAP_CAP,
+  refusal_organic: SIGNAL_MAP_CAP,
+  refusal_machinery: SIGNAL_MAP_CAP,
+};
 
 export type SignalKind =
   | "rail"
+  /**
+   * THE AVOIDABLE 400s, SPLIT (2026-09-21). `refusal` is retired and
+   * no longer read: it counted machinery beside buyers, so every
+   * figure it produced is withdrawn. These two replace it, and the
+   * pair is published rather than the organic half alone — whether a
+   * conformance walker can satisfy an input contract is evidence
+   * about the CHALLENGE and worth keeping, it is simply not a lost
+   * sale.
+   */
   | "refusal"
+  | "refusal_organic"
+  | "refusal_machinery"
   | "reads"
   | "readers"
   | "referrers"
@@ -111,7 +141,8 @@ export type SignalKind =
   | "crawlers"
   | "subjects"
   | "selfreads"
-  | "artifacts";
+  | "artifacts"
+  | "latency";
 export type ReadKind = "replay" | "order_poll" | "purchase_status" | "check_order";
 export type { ReaderClass };
 export { readerClass };
@@ -131,7 +162,10 @@ export interface BuyerSignals {
   enabled: boolean;
   month: string;
   rail: Record<string, number>;
+  /** Agents and browsers: clients this store counts as possible buyers. */
   refusal: Record<string, number>;
+  /** Self-identified machinery, kept and shown rather than dropped. */
+  refusal_machinery: Record<string, number>;
   reads: Record<string, number>;
   /** `${class}:${age}` for every verify hit, house excluded. */
   readers: Record<string, number>;
@@ -159,6 +193,8 @@ export interface BuyerSignals {
   selfreads: Record<string, number>;
   /** Reads per receipt at /api/verify by browsers and agents, house excluded. */
   artifacts: Record<string, number>;
+  /** `${door}:${bucket}` — quote-to-pay, from lib/quote-stamp.ts; unstamped is a bucket, not a zero. */
+  latency: Record<string, number>;
   purposes: PurposeRow[];
   purposes_truncated: boolean;
   /** Read from the existing verify counters, not written here. */
@@ -210,13 +246,16 @@ function slug(raw: string | undefined, fallback: string): string {
 }
 
 export interface SettleSignal {
-  door: "http" | "mcp";
+  /** The door that answered, from the one closed set (services/purchase-intent). */
+  door: PurchaseDoor;
   network: string | undefined;
   item: string;
   purpose: string | undefined;
   house: boolean;
   /** Fields whose value was the published worked example, verbatim. */
   exampleCopied?: string[];
+  /** Quote to payment, in milliseconds, from the door that verified it; absent when the echo carried no stamp. */
+  quoteToPayMs?: number;
 }
 
 /**
@@ -227,6 +266,7 @@ export interface SettleSignal {
 export async function recordSettleSignal(env: Env, signal: SettleSignal): Promise<void> {
   if (!BUYER_SIGNALS_ENABLED || signal.house) return;
   await bumpMap(env, "rail", `${signal.door}:${slug(signal.network, "no_rail")}`);
+  await bumpMap(env, "latency", `${signal.door}:${quoteToPayBucket(signal.quoteToPayMs)}`);
   for (const field of signal.exampleCopied ?? []) {
     await bumpMap(env, "examples", `${slug(signal.item, "item")}:${slug(field, "field")}`);
   }
@@ -279,10 +319,36 @@ export async function recordInputRefusal(
   itemId: string,
   body: Record<string, unknown>,
   value: unknown,
+  who: { userAgent?: string; accept?: string } = {},
 ): Promise<void> {
   const field = typeof body["input_field"] === "string" ? body["input_field"] : typeof body["code"] === "string" ? body["code"] : "unnamed";
   const reason = typeof body["input_field"] === "string" ? refusalReason(item, field, value) : "other";
-  await bumpMap(env, "refusal", `${slug(itemId, "item")}:${slug(field, "unnamed")}:${reason}`);
+  /*
+   * WHO WAS REFUSED, which this desk did not ask until 2026-09-21.
+   *
+   * Every other recorder in this file skips the house — settles,
+   * receipt reads and subject reads all do, and the settle signal says
+   * why in its own comment: "the family's own wallets would be the
+   * loudest voice in a signal this quiet." This one asked nothing at
+   * all, so conformance walkers, censuses and linters were counted
+   * beside buyers and published on /open-for-business as "agents
+   * refused before paying". A payability census that writes "no
+   * payment attached" into its user-agent was never a lost sale.
+   *
+   * The same lesson had already been learned TWICE on the decline desk
+   * next door (the corrections of 2026-09-15 and 2026-09-16). It did
+   * not cross the gap between two desks in one file.
+   *
+   * Machinery is kept rather than dropped, on its own map: whether a
+   * linter can satisfy an input contract is evidence about the
+   * challenge, and this store does not hide a denominator it has.
+   */
+  const machinery = readerClass(who.userAgent, who.accept) === "crawler";
+  await bumpMap(
+    env,
+    machinery ? "refusal_machinery" : "refusal_organic",
+    `${slug(itemId, "item")}:${slug(field, "unnamed")}:${reason}`,
+  );
 }
 
 export interface ReceiptRead {
@@ -421,9 +487,10 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
   const fromStore = store ? await store.readMonth(month) : null;
   const read = (kind: SignalKind): Promise<Record<string, number>> =>
     fromStore ? Promise.resolve(fromStore[kind] ?? {}) : readMap(env, kind, month);
-  const [rail, refusal, reads, readers, referrers, examples, pages, crawlers, subjectFormats, selfreads, artifacts, purposesRaw, ...verify] = await Promise.all([
+  const [rail, refusal, refusalMachinery, reads, readers, referrers, examples, pages, crawlers, subjectFormats, selfreads, artifacts, latency, purposesRaw, ...verify] = await Promise.all([
     read("rail"),
-    read("refusal"),
+    read("refusal_organic"),
+    read("refusal_machinery"),
     read("reads"),
     read("readers"),
     read("referrers"),
@@ -433,6 +500,7 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     read("subjects"),
     read("selfreads"),
     read("artifacts"),
+    read("latency"),
     kvGet(env.COUNTERS, key("purposes", month)),
     ...["under_1h", "under_1d", "under_1w", "over_1w", "unknown_age"].map((bucket) =>
       kvGet(env.COUNTERS, KV_KEYS.metric(month, "verifyage", bucket)),
@@ -455,6 +523,7 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     month,
     rail,
     refusal,
+    refusal_machinery: refusalMachinery,
     reads,
     readers,
     referrers,
@@ -466,13 +535,14 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     histogram: concentrationHistogram(subjectFormats),
     selfreads,
     artifacts,
+    latency,
     purposes,
     purposes_truncated: purposes.length >= PURPOSES_CAP,
     verify_age: verifyAge,
     storage: fromStore
       ? {
           path: "signal_store",
-          caps: { refusal: SIGNAL_MAP_CAP, referrers: SIGNAL_MAP_CAP, purposes: PURPOSES_CAP },
+          caps: { refusal_organic: SIGNAL_MAP_CAP, refusal_machinery: SIGNAL_MAP_CAP, referrers: SIGNAL_MAP_CAP, purposes: PURPOSES_CAP },
           note: "Read from the signal store: one writer, one statement per count, no cap on a map the store itself bounds. The refusal and referrer maps keep their cap because a stranger can steer those keys; the overflow is each map's `other` row.",
         }
       : {

@@ -25,6 +25,7 @@ import { venueCounterKey } from "@/store/venues";
 import { recordReferrerHost } from "@/lib/referrer-census";
 import { recordInstrumentClient } from "@/lib/client-census";
 import { isCensusedInstrument } from "@/lib/instrument-roster";
+import { quoteToPayMs } from "@/lib/quote-stamp";
 import type { Channel, Env, PayerRecord } from "@/types";
 
 /**
@@ -292,6 +293,16 @@ export interface MetricEvent {
    * vendor prose, but they are still not a place for an unbounded blob.
    */
   mismatch?: { field: string; we_offered: string; you_sent: string };
+  /**
+   * THE QUOTE AND THE DECISION (lib/quote-stamp.ts, 2026-09-21). On a
+   * challenge row, the instant this 402 was minted. On a settle or a
+   * decline, the instant of the 402 the buyer's echoed terms name, and
+   * how long the buyer took to answer it. Absent when the client
+   * echoed no readable stamp; absence is booked as absence, never as a
+   * zero. Not an identity: it joins one quote to one payment.
+   */
+  quoted_at?: string;
+  quote_to_pay_ms?: number;
 }
 
 export interface EventSignals extends ChannelSignals, HouseSignals {
@@ -302,6 +313,8 @@ export interface EventSignals extends ChannelSignals, HouseSignals {
   signatureAgent?: string;
   /** The first field disagreement; see MetricEvent.mismatch. */
   mismatch?: { field: string; we_offered: string; you_sent: string };
+  /** The quote stamp; see MetricEvent.quoted_at. */
+  quotedAt?: string;
 }
 
 /**
@@ -362,6 +375,13 @@ function buildEvent(
       we_offered: signals.mismatch.we_offered.slice(0, 80),
       you_sent: signals.mismatch.you_sent.slice(0, 80),
     };
+  }
+  if (signals.quotedAt) {
+    event.quoted_at = signals.quotedAt.slice(0, 40);
+    if (kind === "settle" || kind === "decline") {
+      const elapsed = quoteToPayMs(signals.quotedAt, Date.parse(event.at));
+      if (elapsed !== null) event.quote_to_pay_ms = elapsed;
+    }
   }
   return event;
 }

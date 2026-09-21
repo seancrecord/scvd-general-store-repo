@@ -43,6 +43,7 @@ import {
   recordSettlement,
 } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
+import { quoteToPayMs, quotedAtFromPaymentHeader, stampQuotedAt } from "@/lib/quote-stamp";
 import {
   bookedReason,
   withVerdictClass,
@@ -636,10 +637,16 @@ export function gateSignals(c: Context<HonoEnv>): EventSignals {
   if (houseParam) {
     signals.houseParam = houseParam;
   }
-  if (c.req.header("X-SCVD-Channel") === "mcp") {
-    // Set only by our own MCP handler on internal dispatch; stripped
-    // from anything a visitor could spoof by being definitive-only here.
-    signals.viaMcp = true;
+  /*
+   * THE QUOTE THIS PAYMENT ANSWERS (lib/quote-stamp.ts). A signed
+   * retry echoes the accepted terms whole, stamp included, so a settle
+   * or a decline books which 402 it followed and how long the decision
+   * took. A bare knock carries no echo and books nothing here; the
+   * gate stamps the fresh instant onto its own challenge row instead.
+   */
+  const quotedAt = quotedAtFromPaymentHeader(paymentHeaderOf(c));
+  if (quotedAt) {
+    signals.quotedAt = quotedAt;
   }
   return signals;
 }
@@ -930,6 +937,9 @@ export async function signedRecoveryResponse(c: Context<HonoEnv>, recovery: Sign
 const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new DialectTolerantAdapter(c);
+  // The instant any 402 this request mints will carry, minted once so
+  // the challenge row and the offers it stamps cannot disagree.
+  const quotedAt = new Date().toISOString();
   // The decline slot rides along on the context. The SDK shallow-copies
   // this object on its way to the verify hooks, and a shallow copy keeps
   // the slot BY REFERENCE — so the hook writes the reason here and we
@@ -1076,7 +1086,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // gap between them is the signal.
       const tally = (): Promise<unknown> =>
         Promise.all([
-          recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(
+          recordChallengeIssued(c.env, c.req.path, { ...gateSignals(c), quotedAt }).catch(
             (error) => console.error("challenge count lost:", String(error)),
           ),
           recordReferralFor(c, "arrived").catch(() => undefined),
@@ -1183,6 +1193,17 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           },
         ).catch(() => undefined);
       }
+      /*
+       * STAMPED HERE AND NOT EARLIER: everything above compared the
+       * buyer's echo against the offer as the SDK built it, so a
+       * decline is never explained as a disagreement over the stamp.
+       * Everything below — the offers mirror and its budget, the
+       * fill-in-the-blanks template, the response itself — reads the
+       * stamped bytes, so a client that copies our template echoes
+       * the instant back like a compliant one does.
+       */
+      const quoted = stampQuotedAt(result.response.headers, result.response.body, quotedAt);
+      result = { ...result, response: { ...result.response, headers: quoted.headers, body: quoted.body } };
       if (!result.response.isHtml) {
         /**
          * x402 Signed Offers & Receipts: one JWS offer per accepts
@@ -1822,6 +1843,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * asks, or if it succeeds and never asked.
    */
   const acceptedQuote = quotedTerms(verifiedRequirements);
+  // How long the buyer took between our quote and this payment, read
+  // at the moment it verified; the buyer signal buckets it at settle.
+  const decisionMs = quoteToPayMs(quotedAtFromPaymentHeader(paymentHeaderOf(c)), Date.now());
   c.set("pending", {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
@@ -1833,6 +1857,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // verified against, so the certificate's `quote` cannot be a
     // caller's guess (discovery/receipt-surface.ts).
     ...(acceptedQuote ? { quote: await hashQuotedTerms(acceptedQuote) } : {}),
+    ...(decisionMs !== null ? { quoteToPayMs: decisionMs } : {}),
     observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), verifiedRequirements.network, payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot), verifiedPayload, c.req.path, await httpArtifactDigest(c.req.url)),
     settle: settleNow,
     purchaseRecovery: () => till.recovery,

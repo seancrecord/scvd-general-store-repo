@@ -4,6 +4,8 @@ import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
 import { isWalkedAsk, WALK_MIN_ITEMS, WALK_RULE, walkersAmong } from "@/lib/walkers";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { getMenuItem } from "@/store";
 
 /**
  * Retained event counts describe what was recorded, not unique buyers
@@ -82,6 +84,19 @@ export interface FunnelReport {
   observed_from: string | null;
   observed_through: string | null;
   items: ItemFunnel[];
+  /**
+   * THE ONE COMPARISON THAT SETTLES THE INPUT QUESTION (2026-09-21).
+   *
+   * Every locked row on this page invites the same conclusion — that
+   * required inputs are where the shelf loses people — and it is the
+   * conclusion the page used to push, by printing LOCKED DOOR over
+   * what was really an agent asking a price. The items that require NO
+   * input are the control group, and they were sitting on the same
+   * page the whole time converting at the same rate. Derived here so a
+   * reader is handed the comparison rather than having to scroll for
+   * it and do the arithmetic.
+   */
+  input_gate_reading: string;
   what_this_cannot_see: string[];
   /** The behaviour rule the walked column was drawn by. */
   walk_rule: typeof WALK_RULE;
@@ -92,10 +107,32 @@ function inputClause(row: Omit<ItemFunnel, "verdict">): string {
     .sort((a, b) => b[1] - a[1])
     .map(([name, n]) => `${name} ×${n}`)
     .join(", ");
-  const missing = row.asks_locked > 0
-    ? ` LOCKED DOOR: ${row.asks_locked} of the ${row.asks_organic} asks arrived without a required input (${inputs}).`
+  /*
+   * THIS SAID "LOCKED DOOR" UNTIL 2026-09-21, and it was naming the
+   * store's own intended behaviour as a defect.
+   *
+   * An ask that carries no required input is what ASKING THE PRICE
+   * looks like. The published probe rule (spec 3.16.7) answers a bare
+   * GET with 402 and required_params for exactly that reason: an agent
+   * pricing settlement_attestation has no tx_hash yet, because it is
+   * shopping. Nobody was turned away.
+   *
+   * The label mattered because it pointed the reader at a fix that had
+   * already shipped — the 2026-09-15 correction put required_params
+   * into the PAYMENT-REQUIRED description, ahead of the pitch — for a
+   * problem the rest of this page says is not discoverability at all.
+   * The items requiring NO input convert at the same rate as these,
+   * which is the comparison inputGateReading now prints on the report.
+   *
+   * What a locked door actually looks like is an input REFUSAL: a
+   * client that supplied something and was turned away before the
+   * gate. That count is on the row and is named here beside the
+   * probes, so the two can never again be read as one thing.
+   */
+  const probes = row.asks_locked > 0
+    ? ` ASKED THE PRICE WITHOUT INPUTS: ${row.asks_locked} of the ${row.asks_organic} asks arrived without a required input (${inputs}). The published probe rule answers a bare GET with 402 and required_params, so this is what pricing a door looks like before you hold the input — it is not evidence anybody was refused. What would be is an input refusal, counted apart: ${row.input_refusals_organic} on this item.`
     : "";
-  return `${missing} Input presence on asks: ${row.asks_inputs_present} present, ${row.asks_locked} missing, ${row.asks_inputs_unknown} unknown. Presence does not establish validity.`;
+  return `${probes} Input presence on asks: ${row.asks_inputs_present} present, ${row.asks_locked} missing, ${row.asks_inputs_unknown} unknown. Presence does not establish validity.`;
 }
 
 function walkedClause(row: Omit<ItemFunnel, "verdict">): string {
@@ -280,7 +317,33 @@ export async function auditFunnel(
         b.asks_organic - a.asks_organic,
     );
 
+  /*
+   * Gated = the door publishes a required input; open = it does not.
+   * An item the menu no longer carries is left out of both rather than
+   * guessed at, and said so below when it happens.
+   */
+  let gatedAsks = 0, gatedSettles = 0, gatedItems = 0;
+  let openAsks = 0, openSettles = 0, openItems = 0;
+  let unknownItems = 0;
+  for (const row of items) {
+    const menuItem = getMenuItem(row.item);
+    if (!menuItem) { unknownItems += 1; continue; }
+    const gated = (buyInputSchema(menuItem).required ?? []).length > 0;
+    if (gated) { gatedItems += 1; gatedAsks += row.asks_organic; gatedSettles += row.settles_organic; }
+    else { openItems += 1; openAsks += row.asks_organic; openSettles += row.settles_organic; }
+  }
+  const rate = (settles: number, asks: number): string =>
+    asks === 0 ? "no asks to judge by" : `${settles} of ${asks}`;
+  const input_gate_reading =
+    gatedAsks === 0 && openAsks === 0
+      ? "No organic asks on either side in this window; the comparison has nothing to stand on."
+      : `Doors that REQUIRE an input: ${rate(gatedSettles, gatedAsks)} organic asks settled, across ${gatedItems} items. Doors that require NONE: ${rate(openSettles, openAsks)}, across ${openItems} items.${unknownItems > 0 ? ` ${unknownItems} item${unknownItems === 1 ? "" : "s"} no longer on the menu, left out of both.` : ""} ` +
+        (openAsks > 0 && openSettles === 0 && gatedSettles === 0
+          ? "Both sides are at zero, so whatever is stopping these clients is not the input: a door with nothing to supply lost them at the same rate. Reading the locked rows as an input problem would be reading past the control group on this very page."
+          : "Read the two rates against each other before treating a missing input as the cause; the open doors are the control group for that claim.");
+
   return {
+    input_gate_reading,
     rows_scanned: scanned,
     capped,
     observed_from: oldest ?? null,

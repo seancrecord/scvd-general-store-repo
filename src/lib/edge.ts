@@ -7,7 +7,7 @@ import {
   recordPorchVisit,
   recordServerError,
 } from "@/lib/metrics";
-import { porchSurface } from "@/lib/porch-surface";
+import { doorOfSurface, porchSurface } from "@/lib/porch-surface";
 import { STORE_HEADER } from "@/lib/identity";
 import { conditionalGet } from "@/lib/conditional-get";
 import { scriptFence } from "@/lib/csp";
@@ -257,6 +257,15 @@ export const porchVisit: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const surface = porchSurface(c.req.path, c.req.method);
   if (surface) {
     const signals: EventSignals = {};
+    /**
+     * The door, off the surface the table just named — not off
+     * anything the caller sent. Until this existed, every UCP checkout
+     * and every A2A desk call inferred "direct" and was pooled with
+     * hand-rolled curl on every reading in the office.
+     */
+    const door = doorOfSurface(surface);
+    if (door === "ucp") signals.viaUcp = true;
+    if (door === "a2a") signals.viaA2a = true;
     const userAgent = c.req.header("User-Agent");
     if (userAgent) {
       signals.userAgent = userAgent;
