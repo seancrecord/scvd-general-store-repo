@@ -148,6 +148,15 @@ describe("the town directory", () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
+  it("tells a crawler the listing order is not a ranking", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/directory`, { headers: { Accept: "text/html" } })
+    ).text();
+    // "Never a ranking" is the house line; at twenty-two listings a bare
+    // position index is the one place it could be read as a league table.
+    expect(html).toContain('"itemListOrder":"https://schema.org/ItemListUnordered"');
+  });
+
   it("marks up reviews as reviews, with a named author and a date", async () => {
     const html = await (
       await SELF.fetch(`${BASE}/directory`, {
