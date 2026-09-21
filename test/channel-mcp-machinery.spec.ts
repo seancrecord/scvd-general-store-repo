@@ -86,7 +86,11 @@ describe("the caller does not get to declare its own door", () => {
     for (const [path, source] of Object.entries(sources)) {
       // Quoted, so this file's own prose about the removal does not
       // count as the header coming back.
-      if (/["'`]X-SCVD-Channel["'`]/i.test(String(source))) touches.push(path.replace("../", ""));
+      // Anchored and repeated: a bare replace("../", "") takes only the
+      // FIRST occurrence, which CodeQL calls incomplete escaping and is
+      // right to — a deeper glob prefix would have left "../" in the
+      // middle of the name this failure prints.
+      if (/["'`]X-SCVD-Channel["'`]/i.test(String(source))) touches.push(path.replace(/^(?:\.\.\/)+/, ""));
     }
     // Both directions, deliberately: a reader with no writer IS the
     // defect, and a writer reintroduced later would bring the reader
