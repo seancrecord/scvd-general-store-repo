@@ -1,5 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { cannotSeeHtml } from "@/pages/admin/reading-limits";
 import type { Buyer, BuyersReport, TurnedAway } from "@/services/buyers";
 
 function short(address: string): string {
@@ -24,6 +25,12 @@ function turnedAwayRow(t: TurnedAway): string {
   const top = (r: Record<string, number>) => Object.entries(r).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ");
   return `<tr><td><code>${escapeHtml(t.user_agent)}</code></td><td>${t.declines}</td><td>${top(t.items)}</td><td>${top(t.reasons)}</td><td>${escapeHtml(t.last.slice(0, 16))}</td></tr>`;
 }
+
+const CANNOT_SEE = [
+  "Wallets holding a certificate, which is not the same population as everyone who ever paid: a settle that never minted, and the founding rows that predate the meter, are not here.",
+  "One wallet is not one buyer. A custodial signer can be many agents and one operator can hold several wallets.",
+  "House wallets are skipped at settle. Anything the house classification missed is counted here as an outside buyer.",
+];
 
 export function renderBuyersPage(report: BuyersReport): string {
   const s = report.summary;
@@ -69,5 +76,5 @@ export function renderBuyersPage(report: BuyersReport): string {
       ${report.turned_away.map(turnedAwayRow).join("")}
     </table>`}
   </section>`;
-  return renderAdminShell("buyers", body);
+  return renderAdminShell("buyers", body + cannotSeeHtml(CANNOT_SEE));
 }

@@ -1,6 +1,7 @@
 import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { ADMIN_PAGES } from "@/pages/admin/layout";
+import { ADMIN_PAGES, PAGE_HEADS, SHELVES } from "@/pages/admin/layout";
+import { escapeHtml } from "@/lib/sanitize";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 
@@ -41,6 +42,79 @@ describe("the office nav", () => {
           `${page.href} has no way to reach ${other.href}`,
         ).toBe(true);
       }
+    }
+  });
+
+  /**
+   * EVERY ROOM SAYS ITS OWN NAME (2026-09-21). Twenty-six of thirty
+   * pages opened into an <h2> under a shell <h1> reading "Keep's
+   * Office", so the page you were on looked like every page you were
+   * not on. The head is rendered by the shell off PAGE_HEADS, which is
+   * exhaustive over AdminTab — this holds the rendering to it, so the
+   * map cannot be filled in and then quietly not used.
+   */
+  it("names itself, in one line, on every page", async () => {
+    const seen = new Map<string, string>();
+    for (const page of ADMIN_PAGES) {
+      const html = await (
+        await SELF.fetch(`${BASE}${page.href}`, { headers: BROWSER })
+      ).text();
+      const head = PAGE_HEADS[page.tab];
+
+      // Compared through the same escape the shell renders with, so a
+      // name with an apostrophe in it is held to the real output.
+      expect(
+        html.includes(`<h1>${escapeHtml(head.title)}</h1>`),
+        `${page.href} does not render its own name as the h1`,
+      ).toBe(true);
+      expect(
+        html.includes(escapeHtml(head.what)),
+        `${page.href} renders no line saying what it is`,
+      ).toBe(true);
+
+      // Exactly one h1: the shell's old "Keep's Office" heading is an
+      // eyebrow now, and a page adding its own back would make two.
+      expect(
+        (html.match(/<h1[ >]/g) ?? []).length,
+        `${page.href} does not have exactly one h1`,
+      ).toBe(1);
+
+      const clash = seen.get(head.title);
+      expect(clash, `${page.href} and ${clash} share the name "${head.title}"`).toBe(undefined);
+      seen.set(head.title, page.href);
+    }
+  });
+
+  /**
+   * EVERY READING ON EXACTLY ONE SHELF (2026-09-21). The 08-05
+   * consolidation's note says "eleven tabs was a corridor"; the list
+   * had grown back to twenty in one undifferentiated row. Grouping is
+   * only an improvement while the groups stay honest — a reading on no
+   * shelf is invisible again, and one on two shelves is a reading the
+   * keeper cannot learn the location of.
+   */
+  it("puts every reading on exactly one shelf", () => {
+    const placed = SHELVES.flatMap((shelf) => shelf.hrefs);
+    expect(new Set(placed).size, `a reading is on two shelves: ${placed.join(", ")}`).toBe(placed.length);
+
+    const rooms = new Set(["/admin/round", "/admin", "/admin/counter", "/admin/tools"]);
+    const readings = ADMIN_PAGES.map((page) => page.href).filter((href) => !rooms.has(href));
+    for (const href of readings) {
+      expect(placed, `${href} is on the nav but on no shelf`).toContain(href);
+    }
+    for (const href of placed) {
+      expect(readings, `${href} is on a shelf but not on the nav`).toContain(href);
+    }
+  });
+
+  it("names each shelf once, above the readings it holds", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/admin`, { headers: BROWSER })
+    ).text();
+    for (const { shelf } of SHELVES) {
+      expect(html, `the ${shelf} shelf is not signposted`).toContain(
+        `<span class="shelf-name">${shelf}</span>`,
+      );
     }
   });
 

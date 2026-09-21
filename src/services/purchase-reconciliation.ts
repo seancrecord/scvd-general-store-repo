@@ -121,6 +121,12 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
   const args = record.door === "mcp" ? JSON.parse(record.request) as Record<string, unknown> : null;
   const input = purchaseInputFrom(item, args ? toolArgs(args) : queryArgs(name => query.get(name) ?? undefined));
   if (record.door === "mcp") input.source = "mcp";
+  /**
+   * The recovered purchase knows its own door. Deriving one from
+   * `source` here would re-file a UCP recovery as an HTTP sale, the
+   * same silent default this record was written to avoid.
+   */
+  input.door = record.door;
   const digest = args ? await sha256Hex(jcsCanonicalize(args))
     : await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
   return fulfillPurchase(env, item, { ...payment, observation: supportsObservationRecovery(item) ? observationCheckpoint(env, record.id, record.path, digest, true) : undefined, settle: async () => payment }, input,

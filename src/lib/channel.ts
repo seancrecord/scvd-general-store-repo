@@ -63,7 +63,7 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
   "x402scan", "x402-crawler", "clawhub-scanner",
   // The x402 indexing economy, observed on our own porch 2026-07-23:
   // trust indexes and censuses probing settled routes on a loop.
-  "census-probe", "trust-index", "x402-observer", "402explorer",
+  "census", "trust-index", "x402-observer", "402explorer",
   "carbonmonitor", "healthcheck", "uptime",
   "censysinspect", "shodan", "expanse", "paloaltonetworks", "qualys",
   "nuclei", "zgrab", "masscan", "nmap",
@@ -136,6 +136,46 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
    * buyer's SDK calls itself contains it.
    */
   "lint",
+  /**
+   * Sixth pass, 2026-09-21, off the decline desk. StillOS-payability-
+   * census/1.0 (+https://stillosdigitalholdings.com/settlement;
+   * measurement, no payment attached; contact stillmarcus24@gmail.com)
+   * walked the same three doors twice in eleven minutes, twelve
+   * requests a sweep at two seconds a request, and supplied SIXTEEN of
+   * the twenty-five declines the desk was calling "money the store
+   * turned away" — more than every other client on that list put
+   * together. Its twenty-four rows in all move to the noise floor,
+   * taking the intent-bearing count from 54 to 30.
+   *
+   * It is machinery three ways over, and it says so itself. Its name
+   * is a CENSUS, which is the verb this table has promoted since the
+   * 2026-07-23 pass ("trust indexes and censuses probing settled
+   * routes on a loop" — that entry said censuses and matched only
+   * `census-probe`, so the narrow string is widened to the bare word
+   * it always meant). It declares MEASUREMENT, NO PAYMENT ATTACHED in
+   * its own user-agent, which is the same self-declaration
+   * x402-band-hunt-b/1.0 made with `+dry-only; no-pay` in the
+   * 2026-09-06 pass, written out in English. And the six of its rows
+   * that recorded a payer at all name 0x…0001, the ecrecover
+   * precompile — an address no buyer holds a key to, not a funded
+   * wallet.
+   *
+   * A client that writes "no payment attached" into its user-agent and
+   * signs from the zero-one address is not a sale the store lost. The
+   * discoverability finding its refusals carry is untouched and still
+   * printed: the escalation counts the noise floor toward the shared
+   * count on purpose, because a census that read our challenge and
+   * could not find a required input is evidence about the challenge
+   * whatever it meant to spend. What moves is only the word OURS,
+   * which on that desk means money — the same correction the
+   * 2026-09-16 entry made for x402lint and vet402.
+   *
+   * `no payment` is kept as the bare declaration rather than the
+   * versioned name, per this table's standing rule, and nothing a real
+   * buyer's SDK calls itself contains it: node, curl, python-httpx,
+   * axios and Deno stay deliberately off, as every pass above says.
+   */
+  "no payment",
 ];
 
 /**
@@ -154,6 +194,15 @@ export interface ChannelSignals {
   userAgent?: string;
   /** Set by the /mcp handler; definitive. */
   viaMcp?: boolean;
+  /**
+   * Set by the UCP checkout and A2A desk routes, the same way and for
+   * the same reason: the route that answered knows which door it is,
+   * and nothing the caller sends is allowed to claim one. Never read
+   * off a header or a query param — see the X-SCVD-Channel removal in
+   * test/channel-mcp-machinery.spec.ts for what that costs.
+   */
+  viaUcp?: boolean;
+  viaA2a?: boolean;
   /** The skill's designed self-identification (?src=clawhub-skill). */
   declaredSource?: string;
 }
@@ -181,8 +230,23 @@ export function inferChannel(signals: ChannelSignals): Channel {
    * table wins; the rest of the MCP branch is untouched, so a real
    * buyer's SDK over MCP still counts as "mcp" exactly as before.
    */
-  if (signals.viaMcp) {
-    return machinery ? "infrastructure" : "mcp";
+  /**
+   * The door the route answered at, if it announced one. The
+   * infrastructure table still wins, per the 2026-09-08 ruling above:
+   * a monitor is a monitor whichever door it uses, and the
+   * reclassifier — which re-derives from the user-agent alone, with no
+   * door at all — must not reach a different verdict about the same
+   * client than the live path just did.
+   */
+  const door: Channel | null = signals.viaMcp
+    ? "mcp"
+    : signals.viaUcp
+      ? "ucp"
+      : signals.viaA2a
+        ? "a2a"
+        : null;
+  if (door) {
+    return machinery ? "infrastructure" : door;
   }
   if (declared === "clawhub-skill" || declared === "skill") {
     return "skill";

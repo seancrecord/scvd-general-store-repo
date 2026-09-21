@@ -2,6 +2,7 @@ import type { CensusClient, CensusResult } from "@/lib/census";
 import { CENSUS_WALK_RULE } from "@/lib/census";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { cannotSeeHtml } from "@/pages/admin/reading-limits";
 
 /**
  * THE CENSUS, on its own page for the same reason the recount is: the
@@ -49,6 +50,12 @@ function clientTable(
     ${clients.map((client) => clientRow(client, catalogSize)).join("\n")}
   </table>`;
 }
+
+const CANNOT_SEE = [
+  "A user-agent is a string a client chose. The crawler table catches the ones that say what they are; a walker with a buyer's SDK string is not caught by it, which is why the behavioural detector sits beside it.",
+  "Calls, not callers: no cookie, no account, no unique heads. One client is many rows and two clients behind one string are one row.",
+  "Channel is inferred once, at write time, and never revisited. A row's channel is what the classifier believed that day, not what a later table would say.",
+];
 
 export function renderCensusPage(data: CensusPageData): string {
   const c = data.census;
@@ -138,5 +145,5 @@ export function renderCensusPage(data: CensusPageData): string {
     )}
   </section>`;
 
-  return renderAdminShell("census", body);
+  return renderAdminShell("census", body + cannotSeeHtml(CANNOT_SEE));
 }

@@ -49,13 +49,27 @@ export function renderFunnelPage(
   const tier = report.items.filter((row) => row.verification_tier);
   const rest = report.items.filter((row) => !row.verification_tier);
   const body = `
-  <h1>The funnel — where the asks go</h1>
   <p>An <strong>ask</strong> is a 402 issued to organic traffic.
   Refusals are counted by the recorded stage: input checks, payment
   parsing or verification, and settlement. These are event counts;
   retries can appear more than once. They are not joined buyer journeys,
   and missing outcomes do not establish intent or a reason for leaving.</p>
   <p><small>${escapeHtml(report.window_note)}</small></p>
+
+  <section>
+    <h2>Is the input the problem?</h2>
+    <p>${escapeHtml(report.input_gate_reading)}</p>
+    <p><small>Printed above the tables on purpose. Every row below that
+    names a missing input invites the conclusion that required inputs are
+    where the shelf loses people — and the doors requiring none are the
+    control group for that claim, sitting on the same page. Until
+    2026-09-21 this page called a bare price ask a LOCKED DOOR, which
+    pointed at a discoverability fix that had already shipped
+    (required_params has ridden the PAYMENT-REQUIRED description since
+    the correction of 2026-09-15). An ask without inputs is an agent
+    asking a price before it holds one; an input REFUSAL is somebody
+    turned away, and those are counted apart in every row.</small></p>
+  </section>
 
   <h2>⚑ The verification tier — the shelf the strategy rides on</h2>
   ${

@@ -932,7 +932,8 @@ async function callPurchaseTool(
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.
     if (refusal.status === 400) {
       const field = typeof refusal.body["input_field"] === "string" ? refusal.body["input_field"] : "";
-      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? args[field] : undefined));
+      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? args[field] : undefined,
+        { userAgent: c.req.header("User-Agent"), accept: c.req.header("Accept") }));
     }
     return rpcRefusal(
       id,
@@ -1213,6 +1214,7 @@ async function callPurchaseTool(
    */
   const input = purchaseInputFrom(item, toolArgs(args));
   input.source = "mcp";
+  input.door = "mcp";
   if (idempotencyKey) input.idempotent = true;
   const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
   if (userAgent) {

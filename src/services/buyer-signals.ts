@@ -7,6 +7,7 @@ import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, isInfrastructureUserAgent } from
 import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, isKnownCrawler, isSocialUnfurler } from "@/lib/crawlers";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { Context } from "hono";
+import type { PurchaseDoor } from "@/services/purchase-intent";
 import type { Env, HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -84,7 +85,18 @@ export const PURPOSES_CAP = 200;
 
 export type SignalKind =
   | "rail"
+  /**
+   * THE AVOIDABLE 400s, SPLIT (2026-09-21). `refusal` is retired and
+   * no longer read: it counted machinery beside buyers, so every
+   * figure it produced is withdrawn. These two replace it, and the
+   * pair is published rather than the organic half alone — whether a
+   * conformance walker can satisfy an input contract is evidence
+   * about the CHALLENGE and worth keeping, it is simply not a lost
+   * sale.
+   */
   | "refusal"
+  | "refusal_organic"
+  | "refusal_machinery"
   | "reads"
   | "readers"
   | "referrers"
@@ -112,7 +124,10 @@ export interface BuyerSignals {
   enabled: boolean;
   month: string;
   rail: Record<string, number>;
+  /** Agents and browsers: clients this store counts as possible buyers. */
   refusal: Record<string, number>;
+  /** Self-identified machinery, kept and shown rather than dropped. */
+  refusal_machinery: Record<string, number>;
   reads: Record<string, number>;
   /** `${class}:${age}` for every verify hit, house excluded. */
   readers: Record<string, number>;
@@ -171,7 +186,8 @@ function slug(raw: string | undefined, fallback: string): string {
 }
 
 export interface SettleSignal {
-  door: "http" | "mcp";
+  /** The door that answered, from the one closed set (services/purchase-intent). */
+  door: PurchaseDoor;
   network: string | undefined;
   item: string;
   purpose: string | undefined;
@@ -240,10 +256,36 @@ export async function recordInputRefusal(
   itemId: string,
   body: Record<string, unknown>,
   value: unknown,
+  who: { userAgent?: string; accept?: string } = {},
 ): Promise<void> {
   const field = typeof body["input_field"] === "string" ? body["input_field"] : typeof body["code"] === "string" ? body["code"] : "unnamed";
   const reason = typeof body["input_field"] === "string" ? refusalReason(item, field, value) : "other";
-  await bumpMap(env, "refusal", `${slug(itemId, "item")}:${slug(field, "unnamed")}:${reason}`);
+  /*
+   * WHO WAS REFUSED, which this desk did not ask until 2026-09-21.
+   *
+   * Every other recorder in this file skips the house — settles,
+   * receipt reads and subject reads all do, and the settle signal says
+   * why in its own comment: "the family's own wallets would be the
+   * loudest voice in a signal this quiet." This one asked nothing at
+   * all, so conformance walkers, censuses and linters were counted
+   * beside buyers and published on /open-for-business as "agents
+   * refused before paying". A payability census that writes "no
+   * payment attached" into its user-agent was never a lost sale.
+   *
+   * The same lesson had already been learned TWICE on the decline desk
+   * next door (the corrections of 2026-09-15 and 2026-09-16). It did
+   * not cross the gap between two desks in one file.
+   *
+   * Machinery is kept rather than dropped, on its own map: whether a
+   * linter can satisfy an input contract is evidence about the
+   * challenge, and this store does not hide a denominator it has.
+   */
+  const machinery = readerClass(who.userAgent, who.accept) === "crawler";
+  await bumpMap(
+    env,
+    machinery ? "refusal_machinery" : "refusal_organic",
+    `${slug(itemId, "item")}:${slug(field, "unnamed")}:${reason}`,
+  );
 }
 
 export interface ReceiptRead {
@@ -390,9 +432,10 @@ export async function recordPostPurchaseRead(env: Env, kind: ReadKind, mintedIso
 }
 
 export async function readBuyerSignals(env: Env, month = metricsMonth()): Promise<BuyerSignals> {
-  const [rail, refusal, reads, readers, referrers, examples, pages, crawlers, subjects, selfreads, artifacts, purposesRaw, ...verify] = await Promise.all([
+  const [rail, refusal, refusalMachinery, reads, readers, referrers, examples, pages, crawlers, subjects, selfreads, artifacts, purposesRaw, ...verify] = await Promise.all([
     readMap(env, "rail", month),
-    readMap(env, "refusal", month),
+    readMap(env, "refusal_organic", month),
+    readMap(env, "refusal_machinery", month),
     readMap(env, "reads", month),
     readMap(env, "readers", month),
     readMap(env, "referrers", month),
@@ -424,6 +467,7 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     month,
     rail,
     refusal,
+    refusal_machinery: refusalMachinery,
     reads,
     readers,
     referrers,

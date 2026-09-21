@@ -82,6 +82,7 @@ import { bestowedNameNote, drawerNote } from "@/store/copy";
 import { getMenuItem, VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
 import { recordSettleSignal } from "@/services/buyer-signals";
+import type { PurchaseDoor } from "@/services/purchase-intent";
 
 /**
  * What happens after money settles, on any channel: mint the
@@ -168,6 +169,13 @@ export interface FulfillmentInput {
   detail?: string;
   /** Commission Desk: the quote's own promised window, in hours. */
   slaHours?: number;
+  /**
+   * WHICH OF OUR DOORS ANSWERED. Set by the route, never from the
+   * request: `source` below can be a stranger's `?source=` string, so
+   * it must not decide this. Absent means the HTTP door, which is the
+   * only door that does not have to announce itself.
+   */
+  door?: PurchaseDoor;
   source?: string;
   userAgent?: string;
   referrer?: string;
@@ -732,7 +740,7 @@ export async function fulfillPurchase(
    */
   {
     const signal = recordSettleSignal(env, {
-      door: input.source === "mcp" ? "mcp" : "http",
+      door: input.door ?? "http",
       network: payment.network,
       item: item.id,
       purpose: minted.certificate.purpose,

@@ -116,8 +116,17 @@ describe("an ask that could not have bought is marked as such", () => {
     expect(row.asks_organic).toBe(1);
     expect(row.asks_locked).toBe(1);
     expect(row.locked_inputs).toEqual({ tx_hash: 1 });
-    expect(row.verdict).toContain("LOCKED DOOR");
+    /*
+     * The marker changed on 2026-09-21: an ask carrying no required
+     * input is an agent PRICING the door, which is exactly what the
+     * published probe rule answers a bare GET for. Calling it a locked
+     * door asserted a refusal that never happened. The row still has to
+     * stamp the missing input — that is what this test is for — and it
+     * now says what the stamp means.
+     */
+    expect(row.verdict).toContain("ASKED THE PRICE WITHOUT INPUTS");
     expect(row.verdict).toContain("tx_hash ×1");
+    expect(row.verdict, "the marker names the rule it follows from").toContain("probe rule");
   });
 
   it("leaves an ask that brought its input unlocked", async () => {
@@ -127,7 +136,7 @@ describe("an ask that could not have bought is marked as such", () => {
     expect(row.asks_locked).toBe(0);
     expect(row.asks_inputs_present).toBe(1);
     expect(row.asks_inputs_unknown).toBe(0);
-    expect(row.verdict).not.toContain("LOCKED DOOR");
+    expect(row.verdict).not.toContain("ASKED THE PRICE WITHOUT INPUTS");
   });
 
   it("never marks a door with no prerequisite", async () => {
@@ -136,7 +145,7 @@ describe("an ask that could not have bought is marked as such", () => {
     expect(row.asks_locked).toBe(0);
     expect(row.asks_inputs_present).toBe(1);
     expect(row.asks_inputs_unknown).toBe(0);
-    expect(row.verdict).not.toContain("LOCKED DOOR");
+    expect(row.verdict).not.toContain("ASKED THE PRICE WITHOUT INPUTS");
   });
 
   it("records present required inputs on the MCP ask row", async () => {

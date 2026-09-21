@@ -30,6 +30,7 @@ export const CATALOG_ROW_SCHEMA = {
     fulfillment: { type: "string", description: "instant, or human-fulfilled with a window." },
     reads: { type: "string", description: "What the item reads: our_books, subject_fetch, made_here." },
     buy_url: { type: "string", format: "uri", description: "The x402 door that sells it." },
+    buy_url_template: { type: "string", format: "uri", description: "Where present, buy this instead: the door with its required inputs as <slot>s to fill." },
     listing_url: { type: "string", format: "uri", description: "The room that describes it in full." },
   },
   required: ["id", "name", "price_usdc", "cadence", "fulfillment", "reads", "buy_url", "listing_url"],
