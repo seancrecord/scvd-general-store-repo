@@ -51,9 +51,24 @@ describe("an agent can find the mandate", () => {
      * so this is the assertion that matters most in this file.
      */
     const purpose = shelf(OBSERVATION).purpose.toLowerCase();
-    for (const word of ["authorization", "ceiling", "expiry", "before it spends"]) {
+    for (const word of ["authorization", "before it spends"]) {
       expect(purpose, `buy_observation's purpose never says "${word}"`).toContain(word);
     }
+    /*
+     * WHAT IS DELIBERATELY NOT HERE, because the first draft of this
+     * test asserted it and two separate budgets said no. The ceiling
+     * and the expiry are the mandate's own fields, and naming them in
+     * this purpose costs bytes twice over: the OASF record cuts its
+     * directory description from this first sentence and caps it at
+     * 500 (test/oasf-record.spec.ts — "a stranger's indexer reads this
+     * one"), and the whole catalog rides a ceiling with 418 bytes of
+     * headroom. Spelling the fields out here spent both.
+     *
+     * Routing only needs the noun an agent searches with. The fields
+     * live where they always did: the item's own listing, one click
+     * down, and the line this shelf already prints for it.
+     */
+    expect(getMenuItem("the_mandate")!.description.toLowerCase()).toContain("ceiling");
   });
 
   it("puts it near the front of the shelf rather than last", () => {
