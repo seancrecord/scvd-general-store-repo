@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "plan_sha256": "f8148b806ad5a28ad2a7e51ed013a8c0106a4c4c42bedcb8187e6086da99c0f0",
+  "instrument_sha256": "28594837b34d06536d8ddac2291192e926d7f7aebd22252e4ddbe4db59c05695",
+  "host_context_sha256": "15908ea4873e5d44ecba91790841ffdba336c489be1ba990ee13de347225a67c",
+  "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+  "probed_at": "2026-09-20T18:42:48.571Z",
+  "hosts": {
+    "codex": {
+      "state": "pass",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [],
+      "executed": [
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh"
+      ]
+    },
+    "claude": {
+      "state": "pass",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [
+        "python3"
+      ],
+      "executed": [
+        "ls",
+        "node",
+        "node",
+        "node"
+      ]
+    }
+  },
+  "limits": [
+    "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+  ],
+  "recipient": {
+    "state": "pass",
+    "trace_sha256": "a4caec4feebd2857cdf2f62fcbd3b4d0a2964802c0914240c54a68d97c648cd8",
+    "limits": [
+      "Local retention and cryptography under offline adapter settings; not proof of all possible sandbox escapes or a buyer journey."
+    ]
+  }
+}

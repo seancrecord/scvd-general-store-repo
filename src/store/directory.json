@@ -1,7 +1,7 @@
 {
   "note": "The Town Directory, kept at Hurricane Junction. Keeper-edited by hand in src/store/directory.json: one honest line per neighbor, no pay-for-placement, ever. Suggest a listing via POST /api/request with a suggest_listing field.",
   "district": "Hurricane Junction",
-  "updated": "2026-07-28",
+  "updated": "2026-09-20",
   "listings": [
     {
       "name": "x402scan",
@@ -34,6 +34,150 @@
       "review": "Our own wall, listed here so the directory covers the town and not just the neighbors. A dollar buys a tag on a signed certificate; the keeper decides what goes up on the steel. Free to read, and the only listing on this page we are not a disinterested party about.",
       "added": "2026-07-28",
       "slug": "the-train"
+    },
+    {
+      "name": "402sentinel",
+      "url": "https://402sentinel.com",
+      "category": "instrument",
+      "review": "We asked it to score our own payment address off nothing but chain history. It came back `review`, 63 out of 100, because almost nobody but us had ever paid us. True, and the most useful thing anyone has told us — we published /house-ledger.json so the next person can subtract our addresses and score us again.",
+      "added": "2026-09-20",
+      "slug": "402sentinel"
+    },
+    {
+      "name": "jsonguard",
+      "url": "https://jsonguard.leeworks.dev",
+      "category": "tools",
+      "review": "A hand-rolled client with no SDK behind it cleared their door on the first real attempt: clean 402, then a 200, payload shaped exactly as the spec said it would be. We had just spent an evening failing to pay ourselves, so we knew what the bar was when we saw it cleared.",
+      "added": "2026-09-20",
+      "slug": "jsonguard"
+    },
+    {
+      "name": "true402",
+      "url": "https://true402.dev",
+      "category": "instrument",
+      "review": "Pre-trade token safety, an adjacent lane rather than ours. The part worth copying: a null honeypot result says plainly that it could not be simulated, and warns you never to read that as safe. Saying what an answer is not is the same discipline we try to hold here.",
+      "added": "2026-09-20",
+      "slug": "true402"
+    },
+    {
+      "name": "Rubric Protocol",
+      "url": "https://rubric-protocol.com",
+      "category": "attestation",
+      "review": "We walked the whole shelf — 18 signed buys across all 17 doors, methods rotated, one of them a Solana rail — and 16 of the 17 came back clean, with post-quantum signatures on the attestations and error messages that meant something. The GET-versus-POST mismatch we found in their docs went to them by email the same evening.",
+      "added": "2026-09-20",
+      "slug": "rubric-protocol"
+    },
+    {
+      "name": "LION",
+      "url": "https://lionx402.com",
+      "category": "data",
+      "review": "Bought all 31 doors in one sitting and got 31 clean settlements back, every response carrying an ed25519 attestation block. Their free sample doors are allowlist-gated and refused scvd.store honestly rather than pretending otherwise. One signer key covers the shelf, with no key registry and no verify URL — worth knowing before you lean on those attestations.",
+      "added": "2026-09-20",
+      "slug": "lion"
+    },
+    {
+      "name": "agentstools",
+      "url": "https://api.agentstools.dev",
+      "category": "data",
+      "review": "Three doors, three clean x402 v2 settlements, hand-rolled payments, money moved straight away. Boring in the best way. They advertise the same catalogue over Solana as well, which we did not test and so cannot tell you anything about.",
+      "added": "2026-09-20",
+      "slug": "agentstools"
+    },
+    {
+      "name": "The Clinic",
+      "url": "https://clinic.sapthumbprint.com",
+      "category": "writing",
+      "review": "Sells a named nurse practitioner's writing by the line — a tenth of a cent a line, up to a dollar an article, never paraphrased and never summarised. Of everything we bought across three field runs, this is the closest cousin anywhere to the keeper's own letters.",
+      "added": "2026-09-20",
+      "slug": "the-clinic"
+    },
+    {
+      "name": "AgentBIT",
+      "url": "https://agentbit.app",
+      "category": "tools",
+      "review": "The first growth mechanic we have seen ride inside a 402: our first call came back 200 marked first_call_free, and the chain confirmed no funds moved, with volume tiers advertised in the challenge itself. One hazard we hit going through — their middleware wants PAYMENT-SIGNATURE in exact uppercase, so a case-normalising client fails at the door.",
+      "added": "2026-09-20",
+      "slug": "agentbit"
+    },
+    {
+      "name": "SniperX",
+      "url": "https://x402.sniperx.fun",
+      "category": "data",
+      "review": "The one door in three field runs where our money moved and nothing came back for it: a cent settled on Solana mainnet, then the call 404'd — payment taken before the resource was validated. The signature is on the receipt if you want to open it. A cent of tuition in why settle-after-validate is an ordering property.",
+      "added": "2026-09-20",
+      "slug": "sniperx"
+    },
+    {
+      "name": "x402engine",
+      "url": "https://x402engine.app",
+      "category": "data",
+      "review": "Three doors, three clean, on a shelf that takes Base first and also accepts USDm and Solana on every door. A POST to a GET-shaped door answers 403 rather than 402 or 404, which is mild shape noise and cost us nothing.",
+      "added": "2026-09-20",
+      "slug": "x402engine"
+    },
+    {
+      "name": "thirdmade",
+      "url": "https://shelf.thirdmade.net",
+      "category": "tools",
+      "review": "Three doors bought off their live manifest: two delivered clean, and one 404'd while still listed active on the board. The dead door took no money for failing. The rest of the shelf worked as written.",
+      "added": "2026-09-20",
+      "slug": "thirdmade"
+    },
+    {
+      "name": "agenttoll",
+      "url": "https://agenttoll.app",
+      "category": "tools",
+      "review": "Three for three, clean and cheap and fast. Does what it says at the price it says, which is a shorter line than most shelves earn and the only one this one needs.",
+      "added": "2026-09-20",
+      "slug": "agenttoll"
+    },
+    {
+      "name": "Otto AI",
+      "url": "https://x402.ottoai.services",
+      "category": "data",
+      "review": "We bought three doors off a shelf that lists around eighty more. The news door returned a market brief generated that same hour, and chain-status returned live Base block data that matched our own RPC reads. The rest we did not buy, and this line says nothing about them.",
+      "added": "2026-09-20",
+      "slug": "otto-ai"
+    },
+    {
+      "name": "API Acre",
+      "url": "https://apiacre.com",
+      "category": "data",
+      "review": "Of the shelves we bought from in that run, the one whose answers say where they came from: SEC, GLEIF, OFAC, USAspending, the Federal Register, NOAA, with versioned service names and a request id on every response you can quote back at them.",
+      "added": "2026-09-20",
+      "slug": "api-acre"
+    },
+    {
+      "name": "Usenami",
+      "url": "https://api.usenami.io",
+      "category": "data",
+      "review": "Funding rates across thirty-odd perp venues, and documentation that talks you out of overspending: the schema says paging is there so you do not pull the whole thing into your context. Vendor honesty as a feature. We copied the instinct into our own buyer guidance the same week.",
+      "added": "2026-09-20",
+      "slug": "usenami"
+    },
+    {
+      "name": "Bitrefill",
+      "url": "https://api.bitrefill.com",
+      "category": "goods",
+      "review": "Their own documented example slug was stale — and the 404 that came back carried a machine-readable error code, instructions for the agent reading it, a next step, and correct slugs to try instead. They settled nothing for the failed call. An established commerce company running a real x402 storefront.",
+      "added": "2026-09-20",
+      "slug": "bitrefill"
+    },
+    {
+      "name": "SuVerse Pay",
+      "url": "https://proxy.suverse.io",
+      "category": "data",
+      "review": "Around five hundred proxied endpoints, with a fiftyfold step between the tenth-of-a-cent teasers and the real data doors at five cents. Works as advertised, and their ip-geolocation correctly outed our box as an IPv6 in France. Read the price column before you buy.",
+      "added": "2026-09-20",
+      "slug": "suverse-pay"
+    },
+    {
+      "name": "ForgeMesh",
+      "url": "https://x402.forgemesh.io",
+      "category": "tools",
+      "review": "The first verified-badged service we walked on the directory board, and the badge held up under real signed payments: three for three, right hashes, right arithmetic. Every response carries a self-describing meta block — price, fetch time, related doors, a link to the catalogue.",
+      "added": "2026-09-20",
+      "slug": "forgemesh"
     }
   ]
 }

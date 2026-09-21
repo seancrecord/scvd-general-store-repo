@@ -1,5 +1,8 @@
-import { SELF } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { SELF, env } from "cloudflare:test";
+import { beforeEach, describe, expect, it } from "vitest";
+import { KV_KEYS } from "@/lib/kv-keys";
+import { takeCorpusSnapshot } from "@/services/corpus";
+import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
 
@@ -127,14 +130,30 @@ describe("the landing pages' markdown representation", () => {
  * only ever saw three of them.
  */
 describe("one host's history as markdown", () => {
+  const testEnv = env as unknown as Env;
+  beforeEach(async () => {
+    const entries = await testEnv.COUNTERS.list({ prefix: KV_KEYS.corpusPrefix });
+    await Promise.all(entries.keys.map((entry) => testEnv.COUNTERS.delete(entry.name)));
+    await testEnv.COUNTERS.delete(KV_KEYS.populationRegister);
+    const hosts = ["markdown.example", "observed.md"].map((host) => ({
+      host, url: `https://${host}/x402`, verdict: "ready",
+      failed: [], advisories: [], source: "discovery",
+    }));
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify({
+      week: "2026-W01", at: "2026-01-01T00:00:00.000Z",
+      listed_resources: hosts.length, coverage_suspect: false, capped: false,
+      our_search_presence: true, hosts,
+    }));
+    const snapshot = await takeCorpusSnapshot(testEnv, {
+      now: new Date("2026-01-02T00:00:00.000Z"),
+      calendars: ["https://calendar.test"],
+      fetch: (async () => new Response(new Uint8Array([1, 2, 3]))) as typeof fetch,
+    });
+    expect(snapshot.taken).toBe(true);
+  });
+
   it("serves markdown for a host the chain has met", async () => {
-    // Whichever host the index names first; the corpus is seeded
-    // differently per run, so the test asks rather than hardcodes.
-    const doors = (await (
-      await SELF.fetch(`${BASE}/doors.json`)
-    ).json()) as { hosts?: { host: string }[] };
-    const host = doors.hosts?.[0]?.host;
-    if (!host) return; // An empty chain is a fixture fact, not a failure.
+    const host = "markdown.example";
 
     const response = await SELF.fetch(`${BASE}/corpus/host/${host}`, {
       headers: { Accept: "text/markdown" },
@@ -152,7 +171,29 @@ describe("one host's history as markdown", () => {
     // And the suffix now resolves to the same bytes.
     const twin = await SELF.fetch(`${BASE}/corpus/host/${host}.md`);
     expect(twin.status).toBe(200);
+    expect(twin.headers.get("content-type")).toContain("text/markdown");
+    expect(twin.headers.get("link")).toContain(`<${BASE}/corpus/host/${host}>; rel="canonical"`);
     expect(await twin.text()).toBe(body);
+  });
+
+  it("preserves a recorded hostname ending in .md and its own markdown twin", async () => {
+    const page = await SELF.fetch(`${BASE}/corpus/host/observed.md`, {
+      headers: { Accept: "text/html" },
+    });
+    expect(page.status).toBe(200);
+    expect(page.headers.get("content-type")).toContain("text/html");
+    expect(await page.text()).toContain("observed.md");
+    const direct = await SELF.fetch(`${BASE}/corpus/host/observed.md`, {
+      headers: { Accept: "text/markdown" },
+    });
+    const twin = await SELF.fetch(`${BASE}/corpus/host/observed.md.md`);
+    expect(twin.status).toBe(200);
+    expect(await twin.text()).toBe(await direct.text());
+  });
+
+  it("keeps an unknown host's markdown suffix a missing page", async () => {
+    const response = await SELF.fetch(`${BASE}/corpus/host/never-seen.invalid.md`);
+    expect(response.status).toBe(404);
   });
 
   it("still 404s for a host the chain has never carried", async () => {

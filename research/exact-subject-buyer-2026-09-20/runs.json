@@ -1,0 +1,298 @@
+{
+  "codex-directed-r1": {
+    "started_at": "2026-09-20T18:45:54.808Z",
+    "ended_at": "2026-09-20T18:49:17.522Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-20T18:45:54.808Z",
+      "ended_at": "2026-09-20T18:49:17.522Z",
+      "wall_elapsed_ms": 202714,
+      "monotonic_elapsed_ms": 202716.069125,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "trace_sha256": "572ffa08fe4e0b18ec33fbaff7d28b9f943bc3959acf7b5e618a53e9af903988",
+    "output_bytes": 97311,
+    "cell": {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "tool_calls": 11,
+    "resolved_models": [],
+    "capture": {
+      "state": "complete",
+      "bytes": 4071204,
+      "files": 27,
+      "issues": []
+    },
+    "recipient": {
+      "started_at": "2026-09-20T18:55:56.810Z",
+      "ended_at": "2026-09-20T19:05:28.676Z",
+      "runtime": {
+        "state": "failed",
+        "exit_code": null,
+        "signal": "SIGTERM",
+        "spawn_error": null,
+        "budget_stop": "timing_interrupted",
+        "stop_requested": {
+          "at": "2026-09-20T19:05:28.670Z",
+          "close_observed": false,
+          "signal_requested": true,
+          "wall_elapsed_ms": 571860,
+          "monotonic_elapsed_ms": 571854.947833
+        }
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-20T18:55:56.810Z",
+        "ended_at": "2026-09-20T19:05:28.676Z",
+        "wall_elapsed_ms": 571866,
+        "monotonic_elapsed_ms": 571860.09175,
+        "max_callback_gap_ms": 539796,
+        "interruption": {
+          "reason": "callback_gap",
+          "previous": {
+            "wall_ms": 1789930588874,
+            "monotonic_ms": 32397.082583
+          },
+          "observed": {
+            "wall_ms": 1789931128670,
+            "monotonic_ms": 572189.705
+          },
+          "wall_gap_ms": 539796,
+          "monotonic_gap_ms": 539792.622417
+        }
+      },
+      "trace_sha256": "a68c2f52868d7afec2cf69b859a8a75fc4d48942dee1487ad8866b733843ceaf",
+      "input_manifest_sha256": "e4f0074d5999b5e6052f35576b802b82f941aaa6510dfee05d955b3b5d7c39ab",
+      "tool_calls": 4
+    }
+  },
+  "claude-directed-r1": {
+    "started_at": "2026-09-20T18:49:17.538Z",
+    "ended_at": "2026-09-20T18:50:31.713Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-20T18:49:17.538Z",
+      "ended_at": "2026-09-20T18:50:31.713Z",
+      "wall_elapsed_ms": 74175,
+      "monotonic_elapsed_ms": 74175.3915,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "trace_sha256": "01714f5980b9113a5650de17da5f0f153d15f4d2e67764b66dc6bff2a175b5f9",
+    "output_bytes": 103287,
+    "cell": {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "tool_calls": 8,
+    "resolved_models": [
+      "claude-sonnet-5"
+    ],
+    "capture": {
+      "state": "complete",
+      "bytes": 4031215,
+      "files": 6,
+      "issues": []
+    },
+    "recipient": {
+      "started_at": "2026-09-20T19:07:43.491Z",
+      "ended_at": "2026-09-20T19:09:49.359Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-20T19:07:43.491Z",
+        "ended_at": "2026-09-20T19:09:49.359Z",
+        "wall_elapsed_ms": 125868,
+        "monotonic_elapsed_ms": 125866.672125,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "trace_sha256": "7bee73f73a349c4a34c9e4514d6902bb3218394d8bef23e66a760b2c4ea7b2f2",
+      "input_manifest_sha256": "20760070fa55a3e0fdbe1bb0a0734e89b68febc1107bdbb9a9cecdbdccd5f428",
+      "tool_calls": 6
+    }
+  },
+  "codex-directed-r2": {
+    "started_at": "2026-09-20T18:50:31.722Z",
+    "ended_at": "2026-09-20T18:53:31.661Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-20T18:50:31.722Z",
+      "ended_at": "2026-09-20T18:53:31.661Z",
+      "wall_elapsed_ms": 179939,
+      "monotonic_elapsed_ms": 179939.58120800002,
+      "max_callback_gap_ms": 1002.0976249999949,
+      "interruption": null
+    },
+    "trace_sha256": "3222cb8cdb3904eaf29f978087c4ff6eb276cd1e39d5ba0351228f4025d73b40",
+    "output_bytes": 1207762,
+    "cell": {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "tool_calls": 6,
+    "resolved_models": [],
+    "capture": {
+      "state": "complete",
+      "bytes": 4075600,
+      "files": 20,
+      "issues": []
+    },
+    "recipient": {
+      "started_at": "2026-09-20T19:10:31.525Z",
+      "ended_at": "2026-09-20T19:12:02.658Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-20T19:10:31.525Z",
+        "ended_at": "2026-09-20T19:12:02.658Z",
+        "wall_elapsed_ms": 91133,
+        "monotonic_elapsed_ms": 91137.431375,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "trace_sha256": "5bb001fbc12391119c348c49e4cd676d76f1b9744b10ea8ce8e2834b52764382",
+      "input_manifest_sha256": "b715588051eefb2cc1b17a6654dae053119a0273fd275780181c96ab1e61e5dc",
+      "tool_calls": 8
+    }
+  },
+  "claude-directed-r2": {
+    "started_at": "2026-09-20T18:53:31.685Z",
+    "ended_at": "2026-09-20T18:55:12.092Z",
+    "runtime": {
+      "state": "failed",
+      "exit_code": 143,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": "timing_interrupted",
+      "stop_requested": {
+        "at": "2026-09-20T18:55:11.544Z",
+        "close_observed": false,
+        "signal_requested": true,
+        "wall_elapsed_ms": 99859,
+        "monotonic_elapsed_ms": 99849.62045900006
+      }
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-20T18:53:31.685Z",
+      "ended_at": "2026-09-20T18:55:12.092Z",
+      "wall_elapsed_ms": 100407,
+      "monotonic_elapsed_ms": 100395.86362500006,
+      "max_callback_gap_ms": 35781,
+      "interruption": {
+        "reason": "callback_gap",
+        "previous": {
+          "wall_ms": 1789930475763,
+          "monotonic_ms": 521221.453833
+        },
+        "observed": {
+          "wall_ms": 1789930511544,
+          "monotonic_ms": 557000.496166
+        },
+        "wall_gap_ms": 35781,
+        "monotonic_gap_ms": 35779.04233300005
+      }
+    },
+    "trace_sha256": "fc8e1e276f09495602fbaf4f442a33d7c29f3c62d1ae944757f7cae953808d09",
+    "output_bytes": 84659,
+    "cell": {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "tool_calls": 13,
+    "resolved_models": [
+      "claude-sonnet-5"
+    ],
+    "capture": {
+      "state": "complete",
+      "bytes": 4031997,
+      "files": 6,
+      "issues": []
+    }
+  }
+}

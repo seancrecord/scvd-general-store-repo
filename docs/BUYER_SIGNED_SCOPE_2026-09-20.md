@@ -63,3 +63,15 @@ not native acceptance or independent issuer identity. A new freeze must record
 that evidence change; comparison with September 19 cannot isolate a wording effect.
 
 Integrated checks pass: 54 tests across six served-surface files, 12 verifier CLI tests, typecheck, both Worker bundles, the SDK bundle and documentation checks. All hosted gates still apply to the final PR head.
+
+## Released and read back
+
+[PR #863](https://github.com/seancrecord/scvd-general-store-repo/pull/863) merged
+as `8202a9a3eb30395bd7a45b88a331f810d5cfc44c` after every required gate passed.
+The final integrated [hosted suite](../research/buyer-signed-scope-2026-09-20/hosted-validation.json)
+passed 798 files and 15,183 tests, with one skip and no failures. Quality, aggregate,
+security and both Worker builds also passed. The [public readback](../research/buyer-signed-scope-2026-09-20/release-readback.json)
+at 18:41–18:42 UTC confirms matching guide bytes and the scope labels in default/stable
+host JSON, HTML, Markdown, OpenAPI and the correction. This establishes release,
+not native buyer acceptance. The separately frozen September 20 cohort records
+that next question.

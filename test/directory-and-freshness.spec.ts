@@ -8,6 +8,7 @@ import {
 } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
 import { TRUST_LIST_ENTRIES } from "@/store/trust-list";
+import { NEIGHBOUR_RECEIPTS } from "@/store/neighbours";
 import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -60,6 +61,91 @@ describe("the town directory", () => {
         `${BASE}/directory/${listing.slug}</loc>`,
       );
     }
+  });
+
+  /**
+   * THE SEPTEMBER CATCH-UP (2026-09-20). Eighteen listings arrived out
+   * of /neighbours at once, and every one of them was paid for. The
+   * old copy told any listing off the signed trust list that "nothing
+   * about this neighbor is signed" — which for a row resting on a
+   * Solana mainnet signature is a false negative about our own
+   * evidence. These hold the two instruments apart without either one
+   * denying the other.
+   */
+  it("points a bought line at its receipt rather than calling it unsigned", async () => {
+    const bought = directoryData.listings.filter((listing) =>
+      NEIGHBOUR_RECEIPTS.some(
+        (row) => new URL(row.origin).origin === new URL(listing.url).origin,
+      ),
+    );
+    // The catch-up is the point: if this is zero the test proves nothing.
+    expect(bought.length).toBeGreaterThan(0);
+    for (const listing of bought) {
+      const receipt = NEIGHBOUR_RECEIPTS.find(
+        (row) => new URL(row.origin).origin === new URL(listing.url).origin,
+      );
+      const body: unknown = await (
+        await SELF.fetch(`${BASE}/directory/${listing.slug}`)
+      ).json();
+      if (!isRecord(body) || !isRecord(body.receipt) || !isRecord(body.trust_list)) {
+        throw new Error(`no receipt block on ${listing.slug}`);
+      }
+      expect(body.receipt.paid, listing.slug).toBe(true);
+      expect(body.receipt.date, listing.slug).toBe(receipt?.date);
+      expect(body.receipt.paid_usdc, listing.slug).toBe(receipt?.paid_usdc);
+      expect(body.receipt.receipts_url, listing.slug).toBe(`${BASE}/neighbours`);
+      // The denial the receipt disproves must not survive beside it.
+      expect(String(body.trust_list.note), listing.slug).not.toContain(
+        "nothing about this neighbor is signed",
+      );
+    }
+  });
+
+  it("claims no receipt for a listing nobody bought from", async () => {
+    const unbought = directoryData.listings.filter(
+      (listing) =>
+        !NEIGHBOUR_RECEIPTS.some(
+          (row) => new URL(row.origin).origin === new URL(listing.url).origin,
+        ),
+    );
+    expect(unbought.length).toBeGreaterThan(0);
+    for (const listing of unbought) {
+      const body: unknown = await (
+        await SELF.fetch(`${BASE}/directory/${listing.slug}`)
+      ).json();
+      if (!isRecord(body)) throw new Error("no body");
+      expect(body.receipt, listing.slug).toBeUndefined();
+    }
+  });
+
+  it("says on the human page what the JSON says about a purchase", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/directory/sniperx`, {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    expect(html).toContain("Written after a purchase");
+    expect(html).toContain("/neighbours");
+  });
+
+  it("says the same thing about itself on the paper page and the twin", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/directory`, { headers: { Accept: "text/html" } })
+    ).text();
+    const markdown = await (
+      await SELF.fetch(`${BASE}/directory`, { headers: { Accept: "text/markdown" } })
+    ).text();
+    const said = "Who we&#39;ve been seeing about town";
+    expect(html).toContain(said);
+    expect(markdown).toContain("Who we've been seeing about town");
+    // The line that stopped being true when the book went to twenty-two.
+    expect(html).not.toContain("kept short on purpose");
+    expect(markdown).not.toContain("kept short on purpose");
+  });
+
+  it("keeps every listing reachable under a slug of its own", () => {
+    const slugs = directoryData.listings.map((listing) => listing.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
   });
 
   it("marks up reviews as reviews, with a named author and a date", async () => {
