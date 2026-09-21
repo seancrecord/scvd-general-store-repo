@@ -157,6 +157,19 @@ export const CERT_FIELDS = [
    * and "what was quoted" is exactly the claim a dispute turns on.
    */
   "quote",
+  /**
+   * THE ISSUER, added 2026-09-21 (ruling R1). Appended, never
+   * inserted, and OUT of LEGACY_FIELDS_ADDED_SINCE by the same law as
+   * the mandate link: no legacy certificate can honestly name an
+   * issuer (the field did not exist), so stapling one onto an old
+   * certificate must break BOTH forms. It is did:web:<host> — an
+   * identity, deliberately not a URL: the verify URL is derived from
+   * issuer and cert_id and never signed, so the store signs a name it
+   * can keep and not a location it might have to move. Unsigned, the
+   * one field that says who issued this would be anyone's to change
+   * under our signature, which is the maker's-mark lesson again.
+   */
+  "issuer",
 ] as const;
 
 /**

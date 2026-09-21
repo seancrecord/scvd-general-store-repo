@@ -624,6 +624,17 @@ export interface Certificate {
    * into the certificate so the existing /api/verify answers for the
    * attestation too rather than a second endpoint being built.
    */
+  /**
+   * THE ISSUER, SIGNED (2026-09-21, ruling R1). did:web:<the store's
+   * host>: identity, not location. The verify URL stays derived from
+   * this and cert_id and is never signed, because a URL is a promise
+   * about where to look and this store signs only what it can keep
+   * true. The DID document lists a did:key beside the did:web, so the
+   * name survives a domain move. Absent on every certificate minted
+   * before this field existed; those keep verifying over their own
+   * bytes, and nothing is resigned.
+   */
+  issuer?: string;
   attests?: string;
   /**
    * THE BUYER'S WHY, added 2026-08-19 (the receipt chain). Any item,

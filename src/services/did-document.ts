@@ -1,4 +1,5 @@
 import { cachedPublicKeyHex } from "@/lib/signing";
+import { didKeyFromEd25519Hex } from "@/lib/did-key";
 import {
   currentKeyInServiceFrom,
   retiredKeysFor,
@@ -48,6 +49,16 @@ export async function buildDidDocument(env: Env): Promise<object> {
       "https://w3id.org/security/suites/jws-2020/v1",
     ],
     id: did,
+    /**
+     * THE SAME KEY UNDER A NAME THAT NEEDS NO SERVER (2026-09-21,
+     * ruling R1). A certificate signs `issuer: did:web:<host>`; that
+     * name resolves only while this domain serves this document. The
+     * did:key beside it is the key itself as an identifier — resolve
+     * it anywhere, forever — so the signed issuer survives a domain
+     * move: two names, one key, and a verifier that trusts the key
+     * needs neither of us.
+     */
+    alsoKnownAs: [didKeyFromEd25519Hex(publicKey)],
     verificationMethod: [
       {
         id: kid,
@@ -96,6 +107,9 @@ export async function buildDidDocument(env: Env): Promise<object> {
        */
       retired_keys_note:
         "Retired keys are recorded here and never listed under verificationMethod, because that array means authorised NOW and a retired key is not. What a retired key can still do is verify what it signed while it was in service, which is what the dates are for.",
+      issuer_on_certificates: did,
+      issuer_note:
+        "Every purchase certificate minted from 2026-09-21 carries `issuer` inside its signed bytes: this document's id. The verify URL is derived from it and the certificate id and is never signed. alsoKnownAs carries the same key as a did:key, so the issuer stays resolvable if this domain ever stops serving this document.",
       what_this_key_signs: `${base}/attestation`,
       trust: `${base}/.well-known/trust.json`,
     },
