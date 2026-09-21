@@ -1,0 +1,117 @@
+{
+  "sampling_scope": "Five-second ps samples of vitest/workerd processes only; absence in samples does not establish absence of all host load, especially across sampling gaps.",
+  "first_sample": "2026-09-20T18:42:31.974796+00:00",
+  "last_sample": "2026-09-20T19:13:06.485767+00:00",
+  "samples": 229,
+  "nonempty_samples": 0,
+  "sample_errors": 0,
+  "gaps_over_ten_seconds": [
+    {
+      "from": "2026-09-20T18:54:34.575422+00:00",
+      "to": "2026-09-20T18:55:14.416226+00:00",
+      "seconds": 39.840804
+    },
+    {
+      "from": "2026-09-20T18:56:26.546417+00:00",
+      "to": "2026-09-20T19:05:30.393766+00:00",
+      "seconds": 543.847349
+    },
+    {
+      "from": "2026-09-20T19:06:15.888098+00:00",
+      "to": "2026-09-20T19:06:26.419521+00:00",
+      "seconds": 10.531423
+    },
+    {
+      "from": "2026-09-20T19:07:06.842627+00:00",
+      "to": "2026-09-20T19:07:35.066611+00:00",
+      "seconds": 28.223984
+    },
+    {
+      "from": "2026-09-20T19:09:51.573064+00:00",
+      "to": "2026-09-20T19:10:26.502107+00:00",
+      "seconds": 34.929043
+    },
+    {
+      "from": "2026-09-20T19:12:02.507568+00:00",
+      "to": "2026-09-20T19:12:56.373434+00:00",
+      "seconds": 53.865866
+    }
+  ],
+  "sleep_wake_events": [
+    {
+      "local_time": "2026-09-20 14:54:34 -0400",
+      "event": "Sleep",
+      "reason": "Clamshell Sleep"
+    },
+    {
+      "local_time": "2026-09-20 14:55:11 -0400",
+      "event": "DarkWake",
+      "reason": "DarkWake from Deep Idle [CDNP]"
+    },
+    {
+      "local_time": "2026-09-20 14:55:12 -0400",
+      "event": "Wake",
+      "reason": "DarkWake to FullWake from Deep Idle [CDNVAP]"
+    },
+    {
+      "local_time": "2026-09-20 14:55:14 -0400",
+      "event": "Sleep",
+      "reason": "Notification Wake Back to Sleep"
+    },
+    {
+      "local_time": "2026-09-20 14:55:33 -0400",
+      "event": "Sleep",
+      "reason": "Notification Wake Back to Sleep"
+    },
+    {
+      "local_time": "2026-09-20 14:55:42 -0400",
+      "event": "DarkWake",
+      "reason": "DarkWake from Deep Idle [CDNP]"
+    },
+    {
+      "local_time": "2026-09-20 14:56:27 -0400",
+      "event": "Sleep",
+      "reason": "Maintenance Sleep"
+    },
+    {
+      "local_time": "2026-09-20 15:05:28 -0400",
+      "event": "DarkWake",
+      "reason": "DarkWake from Deep Idle [CDNP]"
+    },
+    {
+      "local_time": "2026-09-20 15:06:14 -0400",
+      "event": "Sleep",
+      "reason": "Maintenance Sleep"
+    },
+    {
+      "local_time": "2026-09-20 15:06:21 -0400",
+      "event": "DarkWake",
+      "reason": "DarkWake from Deep Idle [CDNP]"
+    },
+    {
+      "local_time": "2026-09-20 15:07:07 -0400",
+      "event": "Sleep",
+      "reason": "Maintenance Sleep"
+    },
+    {
+      "local_time": "2026-09-20 15:07:32 -0400",
+      "event": "DarkWake",
+      "reason": "DarkWake from Deep Idle [CDNP]"
+    }
+  ],
+  "adjustment": {
+    "recorded_at": "2026-09-20T19:07:43.151776+00:00",
+    "basis": "macOS power log records maintenance/deep-idle sleep overlapping timing interruptions. Initial native invocations used caffeinate -i as frozen. No sampled heavy test process was present.",
+    "remaining_unlaunched_recipients": [
+      "claude-directed-r1",
+      "codex-directed-r2"
+    ],
+    "operating_adjustment": "Add caffeinate -s alongside -i for the remaining unlaunched recipients while on AC power; no permanent power setting changed. Record as changed execution condition, not a correction of interrupted attempts.",
+    "limits_unchanged": true,
+    "retry": false
+  },
+  "raw_sha256": {
+    "load-samples.jsonl": "94caa9b6c45de512963f30870183db9fa8a2fa80e6fd0f919a1063929f3b816e",
+    "power-sleep-events.txt": "1989d34eec57fcdf2f7c9975c5c82e3e437f5210ef15f3f876c20c94082c967d"
+  }
+}

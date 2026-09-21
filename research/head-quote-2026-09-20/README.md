@@ -59,6 +59,39 @@ the fixed worker produces:
 | GET | paid | yes | 6 | none |
 | HEAD | paid | yes | 6 | none |
 
+## Measurement 3 — the deployed door, after the fix merged
+
+`#865` merged and deployed at 19:30 UTC the same day. Their checker,
+run again against the live store with nothing stubbed:
+
+| door | GET | HEAD |
+| --- | --- | --- |
+| `/api/buy/hello` | clean, 6 payment options | clean, 6 |
+| `/api/buy/the_statement` | clean, 6 | clean, 6 |
+| `/almanac/notes-from-a-tuesday-in-oak-city` | clean, 18 | clean, 18 |
+
+A fourth door, `/api/commission/pay/25`, was probed directly rather
+than through their checker (see the note on load below): 402 with both
+`payment-required` and `WWW-Authenticate` down each method.
+
+### The stall, named so nobody re-chases it
+
+Their probe fires all eight HTTP methods at one path at once and leaves
+every response body unread. Through this sandbox's HTTPS proxy that
+sometimes strands one of the eight for minutes. It stranded a different
+request on each run, never the same one twice, and did not reproduce on
+a clean re-run of any door — which is this house's own rule for load
+rather than defect (AGENTS.md, the timeout note). Measured directly,
+every door answers every method in under 1.5s over HTTP/1.1 and HTTP/2
+alike. It is the reading, not the door.
+
+Header blocks while we were looking, against Node's 16,384 cliff that
+`test/challenge-header-budget.spec.ts` guards: 7,923 bytes at the
+commission rung, 9,905 at the almanac page, 11,306 at the widest shelf
+door — and HEAD measures a byte or two BELOW its GET every time, never
+above. Quoting a HEAD spent nothing against the limit, because each
+response still carries one copy of the challenge.
+
 ## What this does not show
 
 That MPPScan's hosted register flow is the same code path as the
@@ -68,5 +101,9 @@ The claim this evidence supports is narrower and sufficient: the
 published checker, applied to our live door, produces those exact 36
 warnings from the HEAD record and none from the GET record, and stops
 producing them once the HEAD record carries what the GET record
-carries. The listing itself is a thing to re-read after deploy, not a
-thing to predict.
+carries. The listing itself is a thing to re-read, not a thing to predict: this
+session's egress answers 403 on CONNECT for their site and for the
+`*.workers.dev` branch preview alike, so both the listing and the
+pre-merge preview were out of reach from here. What measurement 3
+establishes is the deployed door's own answer, which is the half that
+was ours to fix.

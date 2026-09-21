@@ -1,0 +1,79 @@
+{
+  "at": "2026-09-20T18:41:55.969420+00:00",
+  "source_commit": "8202a9a3eb30395bd7a45b88a331f810d5cfc44c",
+  "checks": {
+    "guide_matches_source": true,
+    "host_unsigned": true,
+    "stable_unsigned": true,
+    "html_label": true,
+    "markdown_label": true,
+    "correction": true,
+    "openapi_scope": true
+  },
+  "responses": [
+    {
+      "file": "guide.txt",
+      "url": "https://scvd.store/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-20T18:41:56.431051+00:00"
+    },
+    {
+      "file": "entry.txt",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-20T18:41:56.553268+00:00"
+    },
+    {
+      "file": "host.txt",
+      "url": "https://scvd.store/corpus/host/lionx402.com.json",
+      "status": 200,
+      "bytes": 10912,
+      "sha256": "d081aaf1a8f34a5d16a4f829f9c4f4829e88f78d00cc129b4d199030ffece522",
+      "read_at": "2026-09-20T18:41:58.086660+00:00"
+    },
+    {
+      "file": "stable.txt",
+      "url": "https://scvd.store/corpus/host/lionx402.com.json?view=stable",
+      "status": 200,
+      "bytes": 10874,
+      "sha256": "26a009b65b5620309a14827147a012f68fc3621070c81e33145c19b0360ef8fd",
+      "read_at": "2026-09-20T18:41:58.578901+00:00"
+    },
+    {
+      "file": "html.txt",
+      "url": "https://scvd.store/corpus/host/lionx402.com",
+      "status": 200,
+      "bytes": 28999,
+      "sha256": "6dd9b13b7308e48446b94972ea564ff11e89d5eb78106f83402c06f309404b54",
+      "read_at": "2026-09-20T18:41:58.720895+00:00"
+    },
+    {
+      "file": "markdown.txt",
+      "url": "https://scvd.store/corpus/host/lionx402.com",
+      "status": 200,
+      "bytes": 6394,
+      "sha256": "94fa0deb138c17a55d1e90eb7155e5ffca14e2bd0ca67ff7a32ffecfd5850db6",
+      "read_at": "2026-09-20T18:41:59.699164+00:00"
+    },
+    {
+      "file": "openapi.txt",
+      "url": "https://scvd.store/openapi.json",
+      "status": 200,
+      "bytes": 698339,
+      "sha256": "4773dcfee55c028362b355afac6d4d443fc503da6d6a20e61f6d5d351ee4f4b4",
+      "read_at": "2026-09-20T18:42:00.428189+00:00"
+    },
+    {
+      "file": "corrections.txt",
+      "url": "https://scvd.store/corrections",
+      "status": 200,
+      "bytes": 171555,
+      "sha256": "a89f263d4d9830c882b1136e8b9abfd0d1fb690c21d5effdfbc70ebc6befb4ac",
+      "read_at": "2026-09-20T18:42:00.519912+00:00"
+    }
+  ]
+}

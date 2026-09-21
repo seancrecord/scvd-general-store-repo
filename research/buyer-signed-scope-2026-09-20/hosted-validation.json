@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-09-20T18:41:03.175664+00:00",
+  "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/863",
+  "head": "b6a395deeebda003908aae26ce3cdd34c8b88870",
+  "ci": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35528479992",
+  "shards": [
+    {
+      "artifact": "test-results-1",
+      "files": 198,
+      "passed": 3642,
+      "skipped": 0,
+      "failed": 0,
+      "sha256": "95ef3972d86d0de36fd802233f5b108ead2e05a8abf58baa8f5e8ac56456e853"
+    },
+    {
+      "artifact": "test-results-4",
+      "files": 202,
+      "passed": 4249,
+      "skipped": 0,
+      "failed": 0,
+      "sha256": "b10a2c5847b508b564a26b1931969407ec440748cd47eafab011e2804fb653f1"
+    },
+    {
+      "artifact": "test-results-3",
+      "files": 199,
+      "passed": 3692,
+      "skipped": 0,
+      "failed": 0,
+      "sha256": "fedba8da9733e1db5ffd8a09bdb995095d06dab683987c4fd10ea1b56bc5597a"
+    },
+    {
+      "artifact": "test-results-2",
+      "files": 199,
+      "passed": 3600,
+      "skipped": 1,
+      "failed": 0,
+      "sha256": "4d803a933ad1502e699caf8fd7797cf7dfe06e5986bf1d871d20f79dd4c4d3c8"
+    }
+  ],
+  "totals": {
+    "files": 798,
+    "passed": 15183,
+    "skipped": 1,
+    "failed": 0
+  }
+}
