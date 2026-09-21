@@ -111,9 +111,31 @@ describe("the receipt page: same URL, human register", () => {
     expect(page).toContain("Accept: application/json");
     expect(page).toContain("/.well-known/scvd-signing-key");
     expect(page).toContain("scvd-evidence export");
-    // The store's word prints on the human copy.
+    /*
+     * The store's word prints on the human copy — AS THE PAGE RENDERS
+     * IT, which is escaped (2026-09-21).
+     *
+     * This asserted the RAW note against an escaped page, so its
+     * verdict moved with the calendar. receiptNoteForWeek picks
+     * RECEIPT_NOTES[isoWeek % 6]; exactly one of the six carries an
+     * apostrophe ("We'll still remember"), and routes/verify.ts renders
+     * every note through escapeHtml, which writes `'` as `&#39;`. One
+     * week in six the page could not contain the string this line
+     * looked for, and nothing about the store had changed.
+     *
+     * It detonated for the first time this week: the note bank shipped
+     * 2026-09-17 inside ISO week 38 (index 2, no apostrophe) and week
+     * 39 began on the 21st. AGENTS.md already names the class — a test
+     * whose verdict can move with the wall clock is not a test.
+     *
+     * Escaping is what the page SHOULD do, so the assertion moves to
+     * the rendered form rather than the page losing the escape. That
+     * is also the stronger assertion: a page that stopped escaping our
+     * words now fails here, which the raw comparison could never see.
+     */
     const { RECEIPT_NOTES } = await import("@/store/copy/receipt-notes");
-    expect(RECEIPT_NOTES.some((note) => page.includes(note))).toBe(true);
+    const { escapeHtml } = await import("@/lib/sanitize");
+    expect(RECEIPT_NOTES.some((note) => page.includes(escapeHtml(note)))).toBe(true);
     // The machine register is untouched at the same URL.
     const json = (await (await SELF.fetch(verifyUrl)).json()) as Record<string, unknown>;
     expect(json.valid).toBe(true);
