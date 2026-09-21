@@ -1,11 +1,13 @@
 import {
   BOUNTY_MAX_REWARD_USD,
   BountyRefused,
+  type BountyRefusalCode,
   openBounty,
   type BountyBoardOptions,
   type BountyRecord,
   type BountyTier,
 } from "@/services/bounty-board";
+import type { RefusalMemory } from "@/services/bounty-refusals";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -44,6 +46,10 @@ export const BOUNTY_BATCH_CAP = 10;
 /** How many candidates the desk offers to choose from. */
 export const BOUNTY_CANDIDATE_CAP = 24;
 
+/** The reward a batch defaults to: the cap's ceiling is never the default. */
+export const BOUNTY_BATCH_DEFAULT_REWARD =
+  Math.round(BOUNTY_MAX_REWARD_USD * 40) / 100;
+
 /** What this store has already done at a door, in one word and a date. */
 export interface DoorHistory {
   state: "never" | "open" | "paid" | "expired";
@@ -70,6 +76,32 @@ export interface BountyCandidate {
    * actually asking, and hiding the row makes him ask it again.
    */
   blocked?: string;
+  /**
+   * THE SMALLEST REWARD THAT CLEARS THIS DOOR'S PRICE, when the round
+   * read a price at all (2026-09-19). openBounty refuses a reward that
+   * does not EXCEED the ask — a walker paid less than they spent is
+   * walking at a loss — so a door quoting $1.00 cannot be posted at
+   * any reward this board is allowed to pay, and a door quoting $0.111
+   * can be, at $0.12 and not at $0.10. That arithmetic used to live
+   * only inside the refusal a press came back with; it belongs on the
+   * row, before the press.
+   */
+  min_reward_usd?: number;
+  /**
+   * Set when no reward under BOUNTY_MAX_REWARD_USD could ever clear
+   * this door. The row stays on the desk — "why has this door sat
+   * never-walked for a month" is a question with an answer — but no
+   * press and no standing order will ever attempt it.
+   */
+  above_ceiling?: boolean;
+  /**
+   * What this door said the last time a press knocked, when that was
+   * a fact about the DOOR and no newer census round has re-read it
+   * (services/bounty-refusals.ts). The census says ready; the press
+   * found out otherwise; this row is how the desk stops offering it
+   * until the census itself asks again.
+   */
+  last_refusal?: { at: string; code: string; refusal: string };
 }
 
 /** The latest bounty this store opened at each domain. */
@@ -105,6 +137,19 @@ export function bountyCandidates(
   ourHost: string,
   now: Date = new Date(),
   cap = BOUNTY_CANDIDATE_CAP,
+  /**
+   * The reward a press would pay, so the desk can say which rows that
+   * press can actually post (2026-09-19). Defaulted to the batch's own
+   * default rather than left undefined: a keeper reading the desk cold
+   * is reading it against the number already in the reward box.
+   */
+  rewardUsd: number = BOUNTY_BATCH_DEFAULT_REWARD,
+  /**
+   * What the last press was told at each door, already narrowed to
+   * this round by refusalsForRound (2026-09-20). Empty by default, so
+   * a caller that does not hold it gets exactly the old behaviour.
+   */
+  refusals: RefusalMemory = {},
 ): BountyCandidate[] {
   const history = historyByDomain(bounties);
   const seen = new Set<string>();
@@ -143,9 +188,62 @@ export function bountyCandidates(
         : {}),
       ...(host.observed_at ? { observed_at: host.observed_at } : {}),
     };
+    /*
+     * WHAT THE REWARD CAN ACTUALLY CLEAR (2026-09-19, the keeper: the
+     * automated bounties "really arent very relevant to the work we
+     * do").
+     *
+     * openBounty refuses a reward that does not EXCEED the door's
+     * price, because a walker paid less than they spent has been sent
+     * to lose money. That check ran at the END of a posting — after a
+     * stranger's door had been knocked on — and its verdict never
+     * reached the desk, so the top of the never-walked list filled
+     * with doors asking $1.00 and $5.00 that every press refused and
+     * every following press offered again. The standing order took
+     * those same rows first and spent its week on them: four presses,
+     * four refusals, nothing posted, a week burned.
+     *
+     * The round already read each door's cheapest ask. The arithmetic
+     * is done here, once, where it can be shown.
+     */
+    if (candidate.min_usdc !== undefined) {
+      candidate.min_reward_usd = Math.ceil((candidate.min_usdc + 0.001) * 100) / 100;
+      if (candidate.min_usdc >= BOUNTY_MAX_REWARD_USD) {
+        candidate.above_ceiling = true;
+      }
+    }
+    /*
+     * WHAT THE DOOR SAID LAST TIME (2026-09-20). Three of the twenty
+     * doors in the 2026-09-19 round refused the press — 526, 401, 301
+     * — and all three had read "ready, never walked, cheap" on this
+     * desk, which is where they would have stayed: at the top of the
+     * list, offered to every press until the census next re-read them.
+     * A standing order on a twelve-hour cadence would have collected
+     * the same three refusals fourteen times a week.
+     *
+     * The memory is already narrowed to this round by the caller, so a
+     * newer census round clears it with no hand on any lever.
+     */
+    const remembered = refusals[domain];
+    if (remembered) {
+      candidate.last_refusal = {
+        at: remembered.at,
+        code: remembered.code,
+        refusal: remembered.refusal,
+      };
+    }
     if (state === "open") {
       candidate.blocked =
         "a bounty is already open here — one per domain per week";
+    } else if (remembered) {
+      candidate.blocked = `the last press here was refused on ${remembered.at.slice(0, 10)} (${remembered.code}): ${remembered.refusal} — the round still reads this door ready, and it comes back to this list the moment a newer round re-reads it`;
+    } else if (candidate.above_ceiling) {
+      candidate.blocked = `its cheapest ask ($${candidate.min_usdc?.toFixed(4)}) is at or above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} reward ceiling — no reward this board may pay would clear it, so no press can post this door at all`;
+    } else if (
+      candidate.min_reward_usd !== undefined &&
+      candidate.min_reward_usd > rewardUsd
+    ) {
+      candidate.blocked = `$${candidate.min_usdc?.toFixed(4)} needs a reward above its price; this press pays $${rewardUsd.toFixed(2)}. Raise the reward to $${candidate.min_reward_usd.toFixed(2)} and it posts`;
     }
     out.push(candidate);
   }
@@ -177,9 +275,25 @@ export function bountyCandidates(
    * never-walked, not because of where the probe happened to find it.
    */
   out.sort((a, b) => {
-    if (a.blocked !== b.blocked) return a.blocked ? 1 : -1;
+    if (Boolean(a.blocked) !== Boolean(b.blocked)) return a.blocked ? 1 : -1;
     if (a.history.state === "never" && b.history.state !== "never") return -1;
     if (b.history.state === "never" && a.history.state !== "never") return 1;
+    /*
+     * CHEAPEST FIRST INSIDE THE GROUP (2026-09-19). The reward is flat
+     * and the door's price comes out of the walker's own wallet first,
+     * so a $0.001 door leaves them the whole finder's fee and a $0.20
+     * door leaves them cents. Breadth is still the sort's first
+     * question — never-walked before revisited — but among doors this
+     * store has never walked, the ones a walker profits most from
+     * walking go to the top. A door whose price the round could not
+     * read sorts with the rest by date rather than being guessed at.
+     */
+    const priceGap = (a.min_usdc ?? Number.POSITIVE_INFINITY) - (b.min_usdc ?? Number.POSITIVE_INFINITY);
+    if (a.min_usdc !== undefined && b.min_usdc !== undefined && priceGap !== 0) {
+      return priceGap;
+    }
+    if (a.min_usdc === undefined && b.min_usdc !== undefined) return 1;
+    if (b.min_usdc === undefined && a.min_usdc !== undefined) return -1;
     return (a.history.at ?? "").localeCompare(b.history.at ?? "");
   });
   return out.slice(0, cap);
@@ -193,6 +307,8 @@ export interface BatchOutcome {
   amount_usd?: number;
   /** The refusal, verbatim from the posting door that produced it. */
   refusal?: string;
+  /** Its code, for a caller that must decide rather than display. */
+  code?: BountyRefusalCode;
 }
 
 export interface BatchResult {
@@ -242,6 +358,14 @@ export async function openBountyBatch(
      * more Base rows.
      */
     rail?: string;
+    /**
+     * The census round this press was chosen from (`round.at`). Given,
+     * the press writes down every refusal that was about a DOOR, so the
+     * desk stops offering a door the census still calls ready and the
+     * wire says is gone. Left out, nothing is remembered and the press
+     * behaves exactly as it did before.
+     */
+    roundAt?: string;
   },
   options: BountyBoardOptions = {},
 ): Promise<BatchResult> {
@@ -274,6 +398,12 @@ export async function openBountyBatch(
         amount_usd: bounty.amount_usd,
       });
     } catch (error) {
+      /*
+       * A THROW THAT IS NOT A REFUSAL IS THE DOOR NOT ANSWERING AT ALL
+       * — openBounty's only unguarded await is the fetch, so a raw
+       * error here is a host that could not be reached. That is as
+       * much a fact about the door as a 301 is, and it is coded as one.
+       */
       outcomes.push({
         url,
         ok: false,
@@ -281,8 +411,33 @@ export async function openBountyBatch(
           error instanceof BountyRefused
             ? error.message
             : `the posting failed: ${String(error instanceof Error ? error.message : error).slice(0, 200)}`,
+        ...(error instanceof BountyRefused
+          ? error.code
+            ? { code: error.code }
+            : {}
+          : { code: "unreachable" as const }),
       });
     }
+  }
+  /*
+   * WRITE DOWN WHAT THE DOORS SAID. After the press, never during: a
+   * memory that fails to save costs one wasted knock next time, and
+   * nothing about it is worth failing a press over.
+   */
+  if (input.roundAt) {
+    const { recordRefusals } = await import("@/services/bounty-refusals");
+    await recordRefusals(
+      env,
+      input.roundAt,
+      outcomes
+        .filter((outcome) => !outcome.ok)
+        .map((outcome) => ({
+          domain: hostOf(outcome.url),
+          ...(outcome.code ? { code: outcome.code } : {}),
+          refusal: outcome.refusal ?? "",
+        })),
+      options.now,
+    );
   }
   const posted = outcomes.filter((outcome) => outcome.ok).length;
   return {
@@ -296,6 +451,14 @@ export async function openBountyBatch(
       ? { trimmed: wanted.length - urls.length }
       : {}),
   };
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
 }
 
 /** One line a keeper can read at a glance, for the notice after a press. */
@@ -317,6 +480,3 @@ export function batchNotice(result: BatchResult): string {
     : `${head}; ${refusals.length} refused: ${refusals.join(" · ")}.${trimmed}`;
 }
 
-/** The reward a batch defaults to: the cap's ceiling is never the default. */
-export const BOUNTY_BATCH_DEFAULT_REWARD =
-  Math.round(BOUNTY_MAX_REWARD_USD * 40) / 100;

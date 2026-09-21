@@ -834,7 +834,17 @@ const worker: ExportedHandler<Env> = {
      * Posting was sixty seconds of attention per door every week, and
      * a week the keeper was busy was a week the board sat empty in
      * front of walkers who poll it. The plan is him writing down what
-     * he would have pressed, once, for as many weeks as he means it.
+     * he would have pressed, once, for as many presses as he means it.
+     *
+     * THE TICK IS HOURLY AND THE CADENCE IS THE PLAN'S (2026-09-19).
+     * It was the ISO week, and only the week: the pass stamped the
+     * week and returned for every firing after the first, so a board
+     * whose listings were claimed within hours of posting stood empty
+     * for the six days after. The plan now carries `every_hours` and
+     * this tick asks it every hour whether its window has closed. A
+     * pass that attempts nothing — no headroom, no affordable door, no
+     * census round, payouts paused — costs the plan no press and is
+     * asked again next hour rather than next week.
      *
      * IT CHOOSES NO DOORS OF ITS OWN. Candidates come from this
      * week's census round through bountyCandidates — the same

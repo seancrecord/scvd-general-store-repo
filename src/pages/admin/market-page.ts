@@ -44,7 +44,10 @@ export interface StandingOrderView {
  * away would answer the keeper's question by hiding it, and he would
  * ask it again next week.
  */
-function candidatesHtml(candidates: readonly BountyCandidate[]): string {
+function candidatesHtml(
+  candidates: readonly BountyCandidate[],
+  reward: number,
+): string {
   const railOptions = bountyRails()
     .map(
       (rail) =>
@@ -65,10 +68,26 @@ function candidatesHtml(candidates: readonly BountyCandidate[]): string {
             : candidate.history.state === "paid"
               ? `<strong style="color:#2f6b2f">walked and paid</strong> ${escapeHtml((candidate.history.at ?? "").slice(0, 10))}`
               : `expired unclaimed ${escapeHtml((candidate.history.at ?? "").slice(0, 10))}`;
+      /*
+       * THE PRICE AND WHAT IT TAKES TO CLEAR IT (2026-09-19). A door's
+       * ask is only half the fact a press needs: openBounty refuses a
+       * reward that does not EXCEED it, so the row has to say what
+       * reward would. The ones asking a dollar and more can never be
+       * posted at all, and saying so is the difference between a desk
+       * that answers "why is this still never-walked" and one that
+       * offers the same unpostable door every week.
+       */
       const price =
         candidate.min_usdc === undefined
-          ? "<small>price not read</small>"
-          : `$${candidate.min_usdc.toFixed(4)}`;
+          ? "<small>price not read — the press finds out at the door</small>"
+          : `$${candidate.min_usdc.toFixed(4)}${
+              candidate.above_ceiling
+                ? `<br><small><strong>above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} ceiling</strong></small>`
+                : candidate.min_reward_usd !== undefined &&
+                    candidate.min_reward_usd > reward
+                  ? `<br><small>needs $${candidate.min_reward_usd.toFixed(2)}</small>`
+                  : ""
+            }`;
       return `<tr>
       <td><input type="checkbox" name="url" value="${escapeHtml(candidate.url)}"${candidate.blocked ? " disabled" : ""}></td>
       <td>${escapeHtml(candidate.domain)}<br><small>${escapeHtml(candidate.url.slice(0, 70))}</small></td>
@@ -78,7 +97,13 @@ function candidatesHtml(candidates: readonly BountyCandidate[]): string {
     </tr>`;
     })
     .join("\n");
+  const pressable = candidates.filter((candidate) => !candidate.blocked).length;
   return `<h3>Post a round of bounties</h3>
+  <p class="menu-meta">${pressable} of these ${candidates.length} can be posted at $${reward.toFixed(2)}. The rest carry their reason: a door already open here this week, a price that needs a bigger reward, an ask at or above the $${BOUNTY_MAX_REWARD_USD.toFixed(2)} ceiling that no reward this board may pay can clear, or a door the last press found gone — the census still calls it ready, and it returns to this list the moment a newer round re-reads it.</p>
+  <form method="GET" action="/admin/market">
+    <label>Read this list against a different reward $<input type="number" name="reward" min="0.01" max="${BOUNTY_MAX_REWARD_USD}" step="0.01" value="${reward.toFixed(2)}" style="width:6em"></label>
+    <button type="submit">Re-read</button>
+  </form>
   <form method="POST" action="/admin/bounties/batch">
     <table border="1" cellpadding="6">
       <tr><th>post</th><th>door</th><th>its cheapest ask, last round</th><th>what we have done here</th><th></th></tr>
@@ -86,7 +111,7 @@ function candidatesHtml(candidates: readonly BountyCandidate[]): string {
     </table>
     <p>
       <label>Reward each (USD, on top of each door's own price)<br>
-        <input type="number" name="reward_usd" required min="0.01" max="0.25" step="0.01" value="${BOUNTY_BATCH_DEFAULT_REWARD.toFixed(2)}">
+        <input type="number" name="reward_usd" required min="0.01" max="${BOUNTY_MAX_REWARD_USD}" step="0.01" value="${reward.toFixed(2)}">
       </label>
     </p>
     <p>
@@ -161,6 +186,24 @@ function candidatesHtml(candidates: readonly BountyCandidate[]): string {
  * self-nominates onto that list; the anti-farming design in
  * BOUNTY_BOARD.md is untouched by anything on this page.
  */
+/** A cadence in the words a keeper would use for it. */
+function cadenceWords(hours: number): string {
+  if (hours === 1) return "an hour";
+  if (hours === 24) return "a day";
+  if (hours === 168) return "a week";
+  if (hours % 168 === 0) return `every ${hours / 168} weeks`;
+  if (hours % 24 === 0) return `every ${hours / 24} days`;
+  return `every ${hours} hours`;
+}
+
+function cadenceOption(
+  hours: number,
+  label: string,
+  selected: number | undefined,
+): string {
+  return `<option value="${hours}"${selected === hours ? " selected" : ""}>${escapeHtml(label)}</option>`;
+}
+
 function standingOrderHtml(
   view: StandingOrderView | null,
   board: BoardState | null,
@@ -172,10 +215,10 @@ function standingOrderHtml(
   </section>`;
   }
   const { plan, committed, notice } = view;
-  const running = plan !== null && plan.weeks_remaining > 0;
+  const running = plan !== null && plan.runs_remaining > 0;
   /*
    * A RETIRED PLAN IS A ZEROED ONE, NOT AN ABSENT ONE. writeBountyPlan
-   * stores `{weeks_remaining: 0, per_week: 0, reward_usd: 0}` where a
+   * stores `{runs_remaining: 0, per_run: 0, reward_usd: 0}` where a
    * delete might be expected, and the pass reads that as "do nothing"
    * correctly. The form must not read its DIALS off it: a $0 reward
    * would render a box the browser refuses (min 0.01) and divide the
@@ -196,8 +239,14 @@ function standingOrderHtml(
   const affordable =
     committed && reward > 0 ? Math.floor(committed.headroom / reward) : null;
   const state = running
-    ? `<p><strong style="font-size:1.1em">Running — ${plan.weeks_remaining} week${plan.weeks_remaining === 1 ? "" : "s"} left</strong>: ${plan.per_week} a week at $${plan.reward_usd.toFixed(2)}, ${escapeHtml(plan.tier)}${plan.rails.length > 0 ? ` on ${escapeHtml(plan.rails.join(", "))}` : ", whatever rail each door quotes first"}.${plan.last_week ? ` Last acted in ${escapeHtml(plan.last_week)}.` : " Has not acted yet."}</p>`
-    : `<p><strong style="font-size:1.1em">No standing order.</strong> Every bounty on the board is one the keeper pressed by hand, and the week nobody presses, the board stands empty for the walkers who poll it.</p>`;
+    ? `<p><strong style="font-size:1.1em">Running — ${plan.runs_remaining} press${plan.runs_remaining === 1 ? "" : "es"} left</strong>: ${plan.per_run} ${escapeHtml(cadenceWords(plan.every_hours))} at $${plan.reward_usd.toFixed(2)}, ${escapeHtml(plan.tier)}, holding the board at ${plan.max_open} open${plan.revisit_days > 0 ? `, revisiting doors last walked over ${plan.revisit_days} days ago` : ", never-walked doors only"}${plan.distinct_payer ? ", as second walks" : ""}${plan.rails.length > 0 ? ` on ${escapeHtml(plan.rails.join(", "))}` : ", whatever rail each door quotes first"}.${
+        plan.last_run_at
+          ? ` Last pressed ${escapeHtml(plan.last_run_at.slice(0, 16).replace("T", " "))}Z; next due ${escapeHtml(new Date(Date.parse(plan.last_run_at) + plan.every_hours * 3_600_000).toISOString().slice(0, 16).replace("T", " "))}Z.`
+          : plan.last_week
+            ? ` Last acted in ${escapeHtml(plan.last_week)} (on the weekly clock this replaced).`
+            : " Has not pressed yet."
+      }${plan.last_note ? `<br><small>Last pass did nothing: ${escapeHtml(plan.last_note)}</small>` : ""}</p>`
+    : `<p><strong style="font-size:1.1em">No standing order.</strong> Every bounty on the board is one the keeper pressed by hand, and the day nobody presses, the board stands empty for the walkers who poll it.</p>`;
   /*
    * THE NUMBER THAT DECIDES NEXT WEEK, said before the dials rather
    * than after. `open` is the half a naive reading misses: the budget
@@ -214,10 +263,11 @@ function standingOrderHtml(
   const history = plan?.history?.length
     ? `<h3>What it has done</h3>
     <table border="1" cellpadding="6">
-      <tr><th>week</th><th>posted</th><th>refused</th><th>what it decided</th></tr>
+      <tr><th>pressed</th><th>week</th><th>posted</th><th>refused</th><th>what it decided</th></tr>
       ${plan.history
         .map(
           (row) => `<tr>
+        <td>${escapeHtml((row.at ?? row.week).slice(0, 16).replace("T", " "))}</td>
         <td>${escapeHtml(row.week)}</td>
         <td>${row.posted}</td>
         <td>${row.refused}</td>
@@ -226,7 +276,7 @@ function standingOrderHtml(
         )
         .join("\n")}
     </table>
-    <p class="menu-desc">A week that posted nothing is not a week that failed — "the budget was already committed" and "every candidate refused" are both the plan working. The note says which.</p>`
+    <p class="menu-desc">Only presses are listed. A pass that attempted nothing — no headroom, no affordable door, no census round, payouts paused — costs the plan no press and says so on the line above instead, because a run this board never made is not a run this board should be charged for.</p>`
     : "";
   return `<section>
     <h2>The standing order</h2>
@@ -236,14 +286,39 @@ function standingOrderHtml(
     ${paused}
     <form method="POST" action="/admin/bounties/plan">
       <p>
-        <label>Run for how many weeks (0 retires it)<br>
-          <input type="number" name="weeks" required min="0" max="52" step="1" value="${running ? plan.weeks_remaining : 6}">
+        <label>How many presses to make (0 retires it)<br>
+          <input type="number" name="runs" required min="0" max="104" step="1" value="${running ? plan.runs_remaining : 24}">
+        </label>
+        <small class="menu-meta">A press is spent when doors are actually knocked on. A pass that found no headroom, no affordable door, no census round or a paused wallet costs nothing and tries again on the next tick.</small>
+      </p>
+      <p>
+        <label>How often<br>
+          <select name="every_hours">
+            ${cadenceOption(6, "every 6 hours", dials?.every_hours ?? 24)}
+            ${cadenceOption(12, "every 12 hours", dials?.every_hours ?? 24)}
+            ${cadenceOption(24, "daily", dials?.every_hours ?? 24)}
+            ${cadenceOption(48, "every 2 days", dials?.every_hours ?? 24)}
+            ${cadenceOption(168, "weekly — the old cadence", dials?.every_hours ?? 24)}
+          </select>
+        </label>
+        <small class="menu-meta">The tick fires hourly, so the plan presses on the first tick after the window closes. The board was restocked once a week until 2026-09-19 and its listings were claimed within hours of each posting: the walkers poll faster than a week.</small>
+      </p>
+      <p>
+        <label>How many listings a press<br>
+          <input type="number" name="per_run" required min="1" max="${BOUNTY_BATCH_CAP}" step="1" value="${dials?.per_run ?? 4}">
         </label>
       </p>
       <p>
-        <label>How many listings a week<br>
-          <input type="number" name="per_week" required min="1" max="10" step="1" value="${dials?.per_week ?? 4}">
+        <label>Hold the board at this many open listings<br>
+          <input type="number" name="max_open" required min="1" max="40" step="1" value="${dials?.max_open ?? 12}">
         </label>
+        <small class="menu-meta">Counts every open listing, including ones pressed by hand. A cadence the walkers keep up with never reaches this; one they do not stops here rather than at the weekly budget, which is the ceiling that costs a stranger money.</small>
+      </p>
+      <p>
+        <label>Revisit a door this store already walked, once its last bounty is this many days old (0 = never-walked doors only)<br>
+          <input type="number" name="revisit_days" required min="0" max="365" step="1" value="${dials?.revisit_days ?? 0}">
+        </label>
+        <small class="menu-meta">"Did the door that took money on the 9th still take money on the 19th" is a question only a second settlement answers, and it is the one piece of evidence here that expires. It is also what keeps the plan posting once every affordable never-walked door in the round has been walked.</small>
       </p>
       <p>
         <label>Reward each (USD, on top of each door's own price)<br>
@@ -258,6 +333,10 @@ function standingOrderHtml(
             ${tierOption("long", "long — 21 days (wait for a DIFFERENT walker to find it)")}
           </select>
         </label>
+      </p>
+      <p>
+        <label><input type="checkbox" name="distinct_payer" value="1"${dials?.distinct_payer ? " checked" : ""}> <strong>Second walks</strong> — refuse a claim from a wallet that already walked that door.</label><br>
+        <small class="menu-meta">Read off the board on 2026-09-19: four doors had been walked more than once, and only one of them by two different wallets — agent402.tools, whose two reported digests DIFFER. That is the only row in the corpus this store can hold without trusting either stranger. The other three were walked three times each by one wallet and produced no such comparison. With a revisit window set, this is what turns a re-walk into that evidence instead of a repeat.</small>
       </p>
       <p>
         Rails to pin, cycled one per posting<br>
@@ -275,12 +354,20 @@ function standingOrderHtml(
         </label>
       </p>
       <button type="submit"><strong>${running ? "Replace the standing order" : "Set the standing order"}</strong></button>
-      <p class="menu-desc">Once per ISO week, on the first hourly tick after the week turns. It picks from the same house-picked candidates above, takes only doors this store has never walked, and stops early rather than post one listing the week cannot honour. It chooses no doors by any new rule and nothing self-nominates onto that list.</p>
+      <p class="menu-desc">It presses on the first hourly tick after its window closes. It picks from the same house-picked candidates below, takes only doors whose price its own reward can clear, and stops early rather than post one listing the week cannot honour. It chooses no doors by any new rule and nothing self-nominates onto that list.</p>
     </form>
     ${
       running
+        ? `<form method="POST" action="/admin/bounties/plan/run" style="margin-top:1em">
+      <button type="submit"><strong>Press it now</strong></button>
+      <small class="menu-meta">Runs the same pass the tick runs, skipping the cadence and nothing else — the budget reservation, the open ceiling, the reward that must clear each door's price and one-bounty-per-domain-per-week all hold. It spends one of the plan's presses, because it is one of them.</small>
+    </form>`
+        : ""
+    }
+    ${
+      running
         ? `<form method="POST" action="/admin/bounties/plan" style="margin-top:1em">
-      <input type="hidden" name="weeks" value="0">
+      <input type="hidden" name="runs" value="0">
       <button type="submit">Retire it</button>
       <small class="menu-meta">Stops the posting. Listings already standing run their term and pay their claims as normal — retiring the plan is not a retraction of anything it opened.</small>
     </form>`
@@ -294,6 +381,7 @@ function bountyDeskHtml(
   board: BoardState | null,
   notice: string | undefined,
   candidates: readonly BountyCandidate[],
+  reward: number,
 ): string {
   if (!board) {
     return `<section>
@@ -325,7 +413,7 @@ function bountyDeskHtml(
     </table>`
         : "<p class='menu-desc'>Nothing posted this week.</p>"
     }
-    ${candidatesHtml(candidates)}
+    ${candidatesHtml(candidates, reward)}
     <h3>Or post one door by hand</h3>
     <form method="POST" action="/admin/bounties">
       <p>
@@ -431,6 +519,8 @@ export function renderMarketPage(
   candidates: readonly BountyCandidate[] = [],
   /** The standing order and the headroom that decides whether it posts. */
   standing: StandingOrderView | null = null,
+  /** The reward the desk's rows are read against. */
+  reward: number = BOUNTY_BATCH_DEFAULT_REWARD,
 ): string {
   const so = market.signed_offers;
   const rails = market.rails;
@@ -525,7 +615,7 @@ export function renderMarketPage(
   ${schemes ? `<section><h2>Schemes offered</h2><p class="menu-desc">${schemes}</p></section>` : ""}
   ${fieldsSection}
 
-  ${bountyDeskHtml(board, bountyNotice, candidates)}
+  ${bountyDeskHtml(board, bountyNotice, candidates, reward)}
 
   ${standingOrderHtml(standing, board)}
 
