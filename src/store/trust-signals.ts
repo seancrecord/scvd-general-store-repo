@@ -1331,12 +1331,15 @@ export const DATA_HANDLING = {
   cookies: "None. Not for sessions, not for analytics, not at all.",
   client_side_tracking:
     "None. No pixels, no beacons, no third-party script of any kind. One first-party script is served, /till.js, and only on pages that sell something: it asks a wallet for a signature so a person can buy in a browser at all. It reports nothing anywhere, stores nothing in the browser, and talks only to this origin — the source is in the public repository and is served byte-for-byte as it is written there, unminified, so the thing your browser runs is the thing you can read.",
-  ip_addresses: "Not stored and not logged by this store.",
+  ip_addresses:
+    "Not stored and not logged as a visit. The address is read at three doors and kept nowhere past them: the admin login throttle holds a failure count against it for minutes and names it to the keeper while a guessing run is in progress; the bell and the letterbox hold one turn a day for a visitor who gave no name under a truncated one-day digest of the address, which expires with the day. No page view, price check, tool call or purchase records an address.",
   accounts: "None exist. There is nothing to sign up for and no password to lose.",
   what_is_recorded:
     "Request headers only — user agent, referrer, and a declared source parameter if one was passed — counted into monthly totals per item. No request bodies. Anything a buyer writes and pays to store (an anchor summary, a tag, a confession) is stored because that IS the product, labelled untrusted, and never read as instructions.",
   uniqueness:
-    "Deliberately unavailable. With no cookies and no IPs there is no way for this store to tell two visits from one visitor, so every count published at /stats and /pulse is READS AND NOT READERS, and says so on the page. That is a limit built in on purpose, not a gap waiting to be closed.",
+    "Deliberately unavailable. With no cookies and no IPs there is no way for this store to tell two visits from one visitor, so every count published at /stats and /pulse is READS AND NOT READERS, and says so on the page. That is a limit built in on purpose, not a gap waiting to be closed. Stated as three lines, since 2026-09-21: no identity is kept across requests, ever; an address may be used at a door for a throttle or a one-a-day line and is not kept past its window; a key issued for one exchange may be echoed back inside that exchange.",
+  join_keys:
+    "Issued for one exchange, never for a person. Every x402 offer this store quotes carries the instant it was minted (extra.quotedAt); a compliant client echoes the accepted offer back whole, so the payment names the quote it answers and the books record how long the decision took. Two knocks in one millisecond carry one stamp, two purchases carry unrelated ones, and nothing joins a stamp to a wallet, a session or a visitor. The field study's enrolment id is the same kind of key, given by the researcher on purpose. An MCP session id would be too; the doors are stateless today and issue none.",
   third_party_processors:
     "Payments settle through the Coinbase CDP facilitator and the chain the buyer selected from the current payment quote — listed at /rails — which see the transaction because they are the transaction. Hosting is Cloudflare. Both are listed with their failure modes at /stack. Nothing else receives anything.",
   selling_data: "Never, and there is nothing to sell.",

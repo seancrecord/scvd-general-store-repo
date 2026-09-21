@@ -3,6 +3,7 @@ import { getPaymentStack } from "@/lib/payments";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { sha256Hex } from "@/lib/idempotency";
 import { extractPaymentNonce } from "@/lib/replay-guard";
+import { withoutQuoteStamp } from "@/lib/quote-stamp";
 import { installLaborAdmissionHarness, laborNetworks, signLabor, sendLabor } from "./helpers/labor-admission";
 import { call, items, shelves, request, object, testEnv, sourceEnv, NOW } from "./helpers/buyer-harness";
 import { evmBuyer, solBuyer } from "./helpers/buyer-signed-payments";
@@ -19,6 +20,11 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) {
       const item = items.find(i => i.id === "context_anchor")!;
       const args = { summary: "padding ".repeat(100) + `SCVD-E2E-${crypto.randomUUID()} 🧾 e\u0301`, purpose: "original purchase" };
       const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(o => o.network === network)!;
+      // The record keeps the terms the till verified against, which are the
+      // SDK's own build. The offer the buyer signed carries the quote stamp
+      // on top (lib/quote-stamp.ts): bookkeeping the buyer echoes, never a
+      // term, and never in the record.
+      const terms = withoutQuoteStamp({ accepted: offer }).accepted;
       const payment = await signLabor(offer), key = crypto.randomUUID();
       const payer = network.startsWith("eip155:") ? evmBuyer.address.toLowerCase() : solBuyer;
       const identity = extractPaymentNonce(payment) ?? object(payment.payload).transaction;
@@ -39,7 +45,7 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) {
       });
       const first = await sendLabor(item.id, door, args, payment, key);
       expect(landed).toBe(true);
-      expect(captured).toMatchObject({ payer, path: new URL(item.buy_url, "https://scvd.store").pathname, terms: offer, state: "unknown" });
+      expect(captured).toMatchObject({ payer, path: new URL(item.buy_url, "https://scvd.store").pathname, terms, state: "unknown" });
       expect(door === "http" ? new URLSearchParams(String(captured.request)).get("summary") : object(JSON.parse(String(captured.request))).summary).toBe(args.summary);
       if (network.startsWith("eip155:")) expect(captured.authorization).toMatchObject({
         nonce: String(object(object(payment.payload).authorization).nonce).toLowerCase(),
@@ -55,7 +61,7 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) {
       const status = await read();
       expect(status.status).toBe(200);
       expect(status.headers.get("Cache-Control")).toBe("no-store");
-      expect(object(await status.json())).toMatchObject({ purchase_id: purchaseId, payment_state: "unknown", charged: null, terms: offer });
+      expect(object(await status.json())).toMatchObject({ purchase_id: purchaseId, payment_state: "unknown", charged: null, terms });
       expect((await request(String(recovery.status_url))).status).toBe(404);
       expect((await read("0".repeat(64))).status).toBe(404);
       const mcpStatus = async (token: string) => object(await (await request(door === "mcp-standard" ? "/mcp?payment=tool-result" : "/mcp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
@@ -63,7 +69,7 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) {
       }) })).json());
       const readOverMcp = object((await mcpStatus(String(recovery.status_token))).result);
       expect(readOverMcp.isError).not.toBe(true);
-      expect(readOverMcp.structuredContent).toMatchObject({ purchase_id: purchaseId, charged: null, terms: offer, request: captured.request });
+      expect(readOverMcp.structuredContent).toMatchObject({ purchase_id: purchaseId, charged: null, terms, request: captured.request });
       expect(object((await mcpStatus("0".repeat(64))).result).isError).toBe(true);
       // Lose both the response and the best-effort reconciliation row. The
       // second request must retrieve the same record, never resubmit payment.

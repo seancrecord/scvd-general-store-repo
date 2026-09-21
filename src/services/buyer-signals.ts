@@ -6,6 +6,7 @@ import { buyInputExample, buyInputSchema } from "@/lib/bazaar-discovery";
 import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, isInfrastructureUserAgent } from "@/lib/channel";
 import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, isKnownCrawler, isSocialUnfurler } from "@/lib/crawlers";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { quoteToPayBucket } from "@/lib/quote-stamp";
 import type { Context } from "hono";
 import type { PurchaseDoor } from "@/services/purchase-intent";
 import type { Env, HonoEnv, MenuItem } from "@/types";
@@ -62,11 +63,21 @@ import type { Env, HonoEnv, MenuItem } from "@/types";
  *               that keeps being verified stands out from the ones
  *               read once by the buyer and never again.
  *
- * WHAT IS NOT HERE, and why. Quote-to-pay latency needs the 402 and
- * the paid retry linked, and without a session the only link is a
- * timestamp echoed inside the accepted terms, which the signature
- * binds: a change to money. Client-from-handshake needs an MCP
- * session; the door is stateless. Both wait on a ruling.
+ *   latency     how long a buyer took between our quote and its
+ *               payment (2026-09-21, the keeper's ruling on the line
+ *               below): the 402 stamps its instant into every offer,
+ *               the paid retry echoes it, and the door that verified
+ *               the payment hands the elapsed time here, bucketed by
+ *               door. Unstamped is its own bucket, because a client
+ *               that rebuilds `accepted` by hand drops the stamp and
+ *               that is a fact about clients worth a count.
+ *
+ * WHAT IS NOT HERE, and why. Client-from-handshake needs an MCP
+ * session; the door is stateless. It waits on a ruling. Quote-to-pay
+ * latency waited here too, on the same page, until the keeper ruled
+ * on 2026-09-21 that a stamp echoed inside the accepted terms is a
+ * join between one quote and one payment and not an identity;
+ * lib/quote-stamp.ts is the ruling built.
  *
  * ONE DIAL, ONE PREFIX, ONE PAGE. Flip BUYER_SIGNALS_ENABLED and every
  * write stops; the keys sit under `metric:<month>:signals:` and expire
@@ -105,7 +116,8 @@ export type SignalKind =
   | "crawlers"
   | "subjects"
   | "selfreads"
-  | "artifacts";
+  | "artifacts"
+  | "latency";
 export type ReadKind = "replay" | "order_poll" | "purchase_status" | "check_order";
 export type ReaderClass = "browser" | "agent" | "crawler";
 export type RefusalReason = "missing" | "malformed" | "example" | "other";
@@ -145,6 +157,8 @@ export interface BuyerSignals {
   selfreads: Record<string, number>;
   /** Reads per receipt at /api/verify by browsers and agents, house excluded. */
   artifacts: Record<string, number>;
+  /** `${door}:${bucket}` — quote-to-pay, from lib/quote-stamp.ts; unstamped is a bucket, not a zero. */
+  latency: Record<string, number>;
   purposes: PurposeRow[];
   purposes_truncated: boolean;
   /** Read from the existing verify counters, not written here. */
@@ -194,6 +208,8 @@ export interface SettleSignal {
   house: boolean;
   /** Fields whose value was the published worked example, verbatim. */
   exampleCopied?: string[];
+  /** Quote to payment, in milliseconds, from the door that verified it; absent when the echo carried no stamp. */
+  quoteToPayMs?: number;
 }
 
 /**
@@ -204,6 +220,7 @@ export interface SettleSignal {
 export async function recordSettleSignal(env: Env, signal: SettleSignal): Promise<void> {
   if (!BUYER_SIGNALS_ENABLED || signal.house) return;
   await bumpMap(env, "rail", `${signal.door}:${slug(signal.network, "no_rail")}`);
+  await bumpMap(env, "latency", `${signal.door}:${quoteToPayBucket(signal.quoteToPayMs)}`);
   for (const field of signal.exampleCopied ?? []) {
     await bumpMap(env, "examples", `${slug(signal.item, "item")}:${slug(field, "field")}`);
   }
@@ -432,7 +449,7 @@ export async function recordPostPurchaseRead(env: Env, kind: ReadKind, mintedIso
 }
 
 export async function readBuyerSignals(env: Env, month = metricsMonth()): Promise<BuyerSignals> {
-  const [rail, refusal, refusalMachinery, reads, readers, referrers, examples, pages, crawlers, subjects, selfreads, artifacts, purposesRaw, ...verify] = await Promise.all([
+  const [rail, refusal, refusalMachinery, reads, readers, referrers, examples, pages, crawlers, subjects, selfreads, artifacts, latency, purposesRaw, ...verify] = await Promise.all([
     readMap(env, "rail", month),
     readMap(env, "refusal_organic", month),
     readMap(env, "refusal_machinery", month),
@@ -445,6 +462,7 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     readMap(env, "subjects", month),
     readMap(env, "selfreads", month),
     readMap(env, "artifacts", month),
+    readMap(env, "latency", month),
     kvGet(env.COUNTERS, key("purposes", month)),
     ...["under_1h", "under_1d", "under_1w", "over_1w", "unknown_age"].map((bucket) =>
       kvGet(env.COUNTERS, KV_KEYS.metric(month, "verifyage", bucket)),
@@ -477,6 +495,7 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     subjects,
     selfreads,
     artifacts,
+    latency,
     purposes,
     purposes_truncated: purposes.length >= PURPOSES_CAP,
     verify_age: verifyAge,

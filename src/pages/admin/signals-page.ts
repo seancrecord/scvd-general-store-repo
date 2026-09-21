@@ -136,6 +136,16 @@ export function renderSignalsPage(data: SignalsPageData): string {
     ? "No receipt read by a browser or an agent since the signal went in."
     : `${Object.keys(s.artifacts).filter((k) => k !== "other").length} receipts read, ${artifactRepeats.length} of them more than once.`;
 
+  // Quote to payment: one section per door, the buckets in the order
+  // a decision takes, unstamped beside them rather than under them.
+  const latencyByDoor = PURCHASE_DOORS.map((door) => ({ door, rows: group(s.latency, door) }));
+  const stamped = Object.entries(s.latency).filter(([k]) => !k.endsWith(":unstamped")).reduce((n, [, v]) => n + v, 0);
+  const latencyLine = total(s.latency) === 0
+    ? "No settle since the stamp went in (2026-09-21)."
+    : `${total(s.latency)} organic settles, ${stamped} answering a stamped quote: ${latencyByDoor
+      .map(({ door, rows }) => `${sorted(rows).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ") || "none"} over ${DOOR_LABELS[door]}`)
+      .join("; ")}.`;
+
   const body = `<section>
     <h2>Buyer signals, ${escapeHtml(s.month)} <small>(trial)</small></h2>
     ${s.enabled ? "" : "<p><strong>The dial is off.</strong> Nothing below is being written; what shows is what was recorded before it was turned off.</p>"}
@@ -147,6 +157,10 @@ export function renderSignalsPage(data: SignalsPageData): string {
     .map(({ door, rows }) => `<h3>${DOOR_LABELS[door]}</h3>${table(rows, ["network", "settles"])}`)
     .join("")}${Object.keys(unplaced).length === 0 ? "" : `<h3>Door not recorded</h3>${table(unplaced, ["network", "settles"])}<p><small>A door this page cannot name. Not a zero for any door, and not an HTTP sale.</small></p>`}`,
     "The rails offered are on /rails. A rail nobody chooses is a fact; a rail chosen only over MCP is a client default showing through. The doors are our own; which rail rode which door is two facts, not one — do not add them together. The UCP row starts 2026-09-21: until then every door but MCP was written as HTTP, so earlier UCP settles are inside the HTTP count and cannot be taken back out. An empty UCP row before that date is a missing label, not a missing sale.")}
+  ${reading("How long a buyer takes between the quote and the payment", latencyLine, latencyByDoor
+    .map(({ door, rows }) => `<h3>${DOOR_LABELS[door]}</h3>${table(rows, ["bucket", "settles"])}`)
+    .join(""),
+    "The 402 stamps its own instant into every offer (extra.quotedAt); a compliant client echoes the accepted offer whole, so the payment names the quote it answers and the elapsed time is read at verify. Not an identity: two knocks in one millisecond carry one stamp, and nothing here joins two purchases. unstamped is a client that rebuilt the accepted terms by hand and dropped the field, or a door whose checkout carries no x402 echo at all (UCP); count it, do not read it as fast or slow. Under five seconds is a script; over ten minutes is a human in the loop or a queue.")}
   ${reading("Avoidable 400s, by item, field and why", refusalLine, `${table(s.refusal, ["item:field:reason", "refusals"])}<h3>The worked example, bought as-is</h3><p>${examplesLine}</p>${table(s.examples, ["item:field", "purchases"])}`,
     "missing: the field was absent. malformed: it failed the published pattern. example: the worked example was pasted back. other: an encoding or callback refusal. A field that leads this table is a description or an example to rewrite, not a buyer to blame; an example bought as-is is a signed reading of a placeholder, which is the same defect from the other side.")}
   ${reading("Who reads receipts", readersLine, `<h3>By reader and artifact age</h3>${table(s.readers, ["reader:age", "reads"])}<h3>Where they were shown (referrer host)</h3>${table(s.referrers, ["host", "reads"])}`,
