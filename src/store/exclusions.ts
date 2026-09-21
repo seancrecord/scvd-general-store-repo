@@ -127,6 +127,15 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 12,
     crawler_names: 73,
   },
+  {
+    date: "2026-09-21",
+    what_changed:
+      "One name for looking, `census`, joined the crawler table off the avoidable-400s desk. StillOS-payability-census/1.0 writes its own intention into its user-agent — measurement, no payment attached — and was sitting in the intent-bearing column anyway, because the table held `census-probe` and this client calls itself a census without the probe. That is this register's oldest lesson arriving again: a string nearly right matches nothing. The table already held validator, verifier, observatory, prober and scanner; a census censuses, which is the same verb, and `census-probe` above it was the narrower half of a word that should always have been whole. Kept as the bare word rather than the versioned string, and the generic clients walking beside it (node, curl, python-httpx, the bare no-user-agent row) are still deliberately out, for the reason this register keeps repeating: a generic string promoted here is misclassified forever.",
+    effect:
+      "The organic 402 count falls by this client's asks. Its input refusals move off the avoidable-400s desk's agents column into the machinery column published beside it — that desk counted machinery as buyers until today and its prior figures are withdrawn rather than restated, which is recorded in the correction of the same date. No settle moved: it never paid.",
+    house_wallets: 12,
+    crawler_names: 74,
+  },
 ];
 
 export interface NamedExclusions {
