@@ -1,6 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
 import type { RecountResult } from "@/lib/recount";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { cannotSeeHtml } from "@/pages/admin/reading-limits";
 
 /**
  * THE RECOUNT, on its own page because the row scan is expensive and
@@ -23,6 +24,12 @@ function pct(part: number, whole: number): string {
   }
   return `${((part / whole) * 100).toFixed(1)}%`;
 }
+
+const CANNOT_SEE = [
+  "Only comparable when the scan covers the same window as the counters. A partial scan against whole-month counters is not a disagreement, it is two different questions.",
+  "The counters are read-modify-write against KV and lose increments under a burst, so a counter short of its rows is the expected failure and not evidence of a lost sale.",
+  "This audits the counters against the rows the store kept. It cannot audit the rows against what actually happened.",
+];
 
 export function renderRecountPage(data: RecountPageData): string {
   const r = data.recount;
@@ -144,5 +151,5 @@ export function renderRecountPage(data: RecountPageData): string {
     it has an outside witness.</p>
   </section>`;
 
-  return renderAdminShell("recount", body);
+  return renderAdminShell("recount", body + cannotSeeHtml(CANNOT_SEE));
 }

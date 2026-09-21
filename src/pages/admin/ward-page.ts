@@ -2,6 +2,7 @@ import { renderIndexReading } from "@/pages/admin/index-reading";
 import { MPP_CENSUS_NOTE, mppCensusLine, mppCensusOf } from "@/services/mpp-census";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { cannotSeeHtml } from "@/pages/admin/reading-limits";
 import type { WardDelta, WardRound } from "@/services/ward-round";
 import type { SourceRegister } from "@/services/source-liveness";
 import type { Heartbeat } from "@/services/ward-heartbeat";
@@ -84,6 +85,13 @@ function instrumentBlock(
   </section>`;
 }
 
+const CANNOT_SEE = [
+  "One unpaid GET per host per week. Nothing here rests on a payment, so credentials, delivery and receipts were not observed on any door.",
+  "A host is on this list because a directory named it. A door nobody lists is a door this round cannot see, and the round says nothing about how many of those there are.",
+  "Verdicts are this reader's reading of one response. A door that was down for the minute we knocked reads the same as a door that is broken.",
+  "Volume claims are the counting service's, not ours, over their window. They are a claim for population, never for importance.",
+];
+
 export function renderWardPage(
   round: WardRound | null,
   previous: WardRound | null,
@@ -122,7 +130,8 @@ export function renderWardPage(
         press (11:00 UTC), or walk it now:</p>
         ${runButton}
       </section>
-      ${instrumentBlock(register, beat)}`,
+      ${instrumentBlock(register, beat)}
+      ${cannotSeeHtml(CANNOT_SEE)}`,
       [],
       { window: "no round on the books" },
     );
@@ -253,7 +262,8 @@ export function renderWardPage(
       <p>One GET per host per week, same as any indexer. Verdicts here
       are private readings for outreach, never published as rows —
       aggregate only, by hand, per the consent ruling.</p>
-    </section>`,
+    </section>
+    ${cannotSeeHtml(CANNOT_SEE)}`,
     [],
     /**
      * The round's OWN week and instant, not the hour this page was

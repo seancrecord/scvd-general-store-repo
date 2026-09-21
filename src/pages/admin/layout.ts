@@ -219,31 +219,86 @@ const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
  * that measures somebody trying to buy, and it should be the first
  * thing a keeper's eye lands on.
  */
-const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
-  { tab: "reconciliation", href: "/admin/reconciliation", label: "The books check" },
-  { tab: "declines", href: "/admin/declines", label: "Declines" },
-  { tab: "bounties", href: "/admin/bounties", label: "The bounty board" },
-  { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
-  // Promoted to the nav 2026-09-04: the keeper could not find it. The
-  // 08-05 consolidation left it reachable only from a footnote on the
-  // books check, which is not reachable, it is remembered.
-  { tab: "census", href: "/admin/census", label: "The census" },
-  { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
-  { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
-  { tab: "signals", href: "/admin/signals", label: "Buyer signals (trial)" },
-  { tab: "protocols", href: "/admin/protocols", label: "Protocols" },
-  { tab: "open-for-business", href: "/admin/open-for-business", label: "Open for Business" },
-  { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
-  { tab: "growth", href: "/admin/growth", label: "Growth" },
-  { tab: "peers", href: "/admin/peers", label: "The peers" },
-  { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
-  { tab: "ward", href: "/admin/ward", label: "The ward" },
-  { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
-  { tab: "market", href: "/admin/market", label: "The market" },
-  { tab: "outreach", href: "/admin/outreach", label: "Outreach" },
-  { tab: "trade", href: "/admin/trade", label: "The trade counter" },
-  { tab: "files", href: "/admin/files", label: "Keeper's files" },
+/**
+ * THE READINGS, IN FOUR SHELVES (2026-09-21).
+ *
+ * The 08-05 consolidation's own note says "eleven tabs was a
+ * corridor". It was down to four rooms and a short list; the list is
+ * twenty entries again, in one undifferentiated row, and a keeper
+ * scanning it reads twenty equal things and finds none of them.
+ *
+ * Grouped rather than cut, because every one of them earns its place —
+ * what was missing was not fewer readings, it was an answer to "which
+ * of these is about the question I have". Four shelves, each a
+ * question: where the money went, who the buyers are, what is outside,
+ * what we publish.
+ *
+ * The shelf labels are lowercase and quiet on purpose. They are
+ * signposts for the eye, not headings competing with the room's own
+ * name above them.
+ */
+const READING_SHELVES: readonly {
+  shelf: string;
+  entries: readonly { tab: AdminTab; href: string; label: string }[];
+}[] = [
+  {
+    shelf: "money",
+    entries: [
+      { tab: "reconciliation", href: "/admin/reconciliation", label: "The books check" },
+      { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
+      { tab: "bounties", href: "/admin/bounties", label: "The bounty board" },
+      { tab: "trade", href: "/admin/trade", label: "The trade counter" },
+    ],
+  },
+  {
+    shelf: "buyers",
+    entries: [
+      // Declines first on the shelf, for the reason it led the whole
+      // list before: it is the only reading that measures somebody
+      // trying to buy and failing.
+      { tab: "declines", href: "/admin/declines", label: "Declines" },
+      { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
+      // Promoted to the nav 2026-09-04: the keeper could not find it. The
+      // 08-05 consolidation left it reachable only from a footnote on the
+      // books check, which is not reachable, it is remembered.
+      { tab: "census", href: "/admin/census", label: "The census" },
+      { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
+      { tab: "signals", href: "/admin/signals", label: "Buyer signals (trial)" },
+      { tab: "protocols", href: "/admin/protocols", label: "Protocols" },
+      { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
+    ],
+  },
+  {
+    shelf: "outside",
+    entries: [
+      { tab: "ward", href: "/admin/ward", label: "The ward" },
+      { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
+      { tab: "market", href: "/admin/market", label: "The market" },
+      { tab: "outreach", href: "/admin/outreach", label: "Outreach" },
+      { tab: "peers", href: "/admin/peers", label: "The peers" },
+    ],
+  },
+  {
+    shelf: "what we publish",
+    entries: [
+      { tab: "open-for-business", href: "/admin/open-for-business", label: "Open for Business" },
+      { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
+      { tab: "growth", href: "/admin/growth", label: "Growth" },
+      { tab: "files", href: "/admin/files", label: "Keeper's files" },
+    ],
+  },
 ];
+
+/** Flattened, because the reach and navigation specs walk one list. */
+const READINGS: readonly { tab: AdminTab; href: string; label: string }[] =
+  READING_SHELVES.flatMap((shelf) => shelf.entries);
+
+/** Exported so a test can hold every reading to exactly one shelf. */
+export const SHELVES: readonly { shelf: string; hrefs: readonly string[] }[] =
+  READING_SHELVES.map((shelf) => ({
+    shelf: shelf.shelf,
+    hrefs: shelf.entries.map((entry) => entry.href),
+  }));
 
 /**
  * CV'S CORNER, listed in the nav and DELIBERATELY OUTSIDE ADMIN_PAGES.
@@ -322,7 +377,12 @@ export function renderAdminShell(
     <a href="/">Front of house</a>
   </nav>
   <nav class="readings">
-    ${READINGS.map(link).join("\n    ")}
+    ${READING_SHELVES.map(
+      (shelf) =>
+        `<span class="shelf"><span class="shelf-name">${shelf.shelf}</span>${shelf.entries
+          .map(link)
+          .join(" ")}</span>`,
+    ).join("\n    ")}
     ${PARTNER.map(link).join("\n    ")}
   </nav>
   ${headHtml(tab, asOf)}

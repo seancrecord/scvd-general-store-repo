@@ -1,6 +1,6 @@
 import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { ADMIN_PAGES, PAGE_HEADS } from "@/pages/admin/layout";
+import { ADMIN_PAGES, PAGE_HEADS, SHELVES } from "@/pages/admin/layout";
 import { escapeHtml } from "@/lib/sanitize";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
@@ -82,6 +82,39 @@ describe("the office nav", () => {
       const clash = seen.get(head.title);
       expect(clash, `${page.href} and ${clash} share the name "${head.title}"`).toBe(undefined);
       seen.set(head.title, page.href);
+    }
+  });
+
+  /**
+   * EVERY READING ON EXACTLY ONE SHELF (2026-09-21). The 08-05
+   * consolidation's note says "eleven tabs was a corridor"; the list
+   * had grown back to twenty in one undifferentiated row. Grouping is
+   * only an improvement while the groups stay honest — a reading on no
+   * shelf is invisible again, and one on two shelves is a reading the
+   * keeper cannot learn the location of.
+   */
+  it("puts every reading on exactly one shelf", () => {
+    const placed = SHELVES.flatMap((shelf) => shelf.hrefs);
+    expect(new Set(placed).size, `a reading is on two shelves: ${placed.join(", ")}`).toBe(placed.length);
+
+    const rooms = new Set(["/admin/round", "/admin", "/admin/counter", "/admin/tools"]);
+    const readings = ADMIN_PAGES.map((page) => page.href).filter((href) => !rooms.has(href));
+    for (const href of readings) {
+      expect(placed, `${href} is on the nav but on no shelf`).toContain(href);
+    }
+    for (const href of placed) {
+      expect(readings, `${href} is on a shelf but not on the nav`).toContain(href);
+    }
+  });
+
+  it("names each shelf once, above the readings it holds", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/admin`, { headers: BROWSER })
+    ).text();
+    for (const { shelf } of SHELVES) {
+      expect(html, `the ${shelf} shelf is not signposted`).toContain(
+        `<span class="shelf-name">${shelf}</span>`,
+      );
     }
   });
 

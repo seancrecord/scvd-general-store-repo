@@ -1,6 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { fraction } from "@/pages/admin/reading-limits";
 import type { DisclosureCensus } from "@/services/disclosure-census";
 
 /**
@@ -23,11 +24,6 @@ export interface DisclosurePageData {
   month: string;
   paid: DisclosureCensus;
   free: DisclosureCensus;
-}
-
-function fraction(n: number, of: number): string {
-  if (of === 0) return `${n} of 0`;
-  return `${n} of ${of} (${Math.round((n / of) * 100)}%)`;
 }
 
 function valueList(map: Record<string, number> | undefined): string {
