@@ -156,6 +156,7 @@ import {
   runEvmReconciliations,
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
+import { catalogRecovery } from "@/lib/catalog-recovery";
 import { edgeMiddleware, edgeOnError } from "@/lib/edge";
 import type { Env, HonoEnv } from "@/types";
 
@@ -498,6 +499,20 @@ app.notFound(async (c) => {
     return c.json(
       {
         error: `This door exists and takes ${allow}, not ${c.req.method.toUpperCase()}.`,
+        /*
+         * THE MACHINE HALF OF THE SAME SENTENCE (2026-09-21). An agent
+         * review asked for one error shape across the store so a
+         * caller can branch on a field instead of reading four
+         * dialects of English. The item errors carried `code`,
+         * `charged` and `retry_same_request`; the two envelopes every
+         * wrong guess lands on — this one and the 404 below — carried
+         * none of them, so the most-hit refusals in the store were the
+         * least machine-readable. Codes are from the vocabulary
+         * already in use, not new ones.
+         */
+        code: "method_not_allowed",
+        charged: false,
+        retry_same_request: false,
         allow: allowed,
         what_this_is_not:
           "Not a missing endpoint and not an outage. The path is served; the method was wrong.",
@@ -509,7 +524,9 @@ app.notFound(async (c) => {
   const links = notFoundLinks(base);
   const message = "That aisle doesn't exist.";
   if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
-    const body = `# 404 — no such aisle\n\n${message} Nothing here has moved; this path was never a door.\n\n## Where to look next\n\n${links
+    // The markdown dialect names the same code, so a reader that
+    // asked for prose is not the one reader who cannot branch on it.
+    const body = `# 404 — no such aisle\n\n${message} Nothing here has moved; this path was never a door.\n\n\`code: not_found\` — nothing was charged, and this request is not worth repeating unchanged.\n\n## Where to look next\n\n${links
       .map((link) => `- [${link.url}](${link.url}) — ${link.what}`)
       .join("\n")}\n`;
     return c.text(body, 404, {
@@ -521,6 +538,13 @@ app.notFound(async (c) => {
   return c.json(
     {
       error: `${message} The whole store fits on one page:`,
+      // Same three fields, same reason as the 405 above: a lost agent
+      // is the reader here, and it should not have to parse prose to
+      // learn that nothing was charged and the request is not worth
+      // repeating unchanged.
+      code: "not_found",
+      charged: false,
+      ...catalogRecovery(base),
       menu_url: `${base}/menu.json`,
       front_door: `${base}/llms.txt`,
       // The same set the markdown body carries, so neither dialect

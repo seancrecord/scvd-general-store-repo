@@ -206,8 +206,38 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_observation",
     title: "Third-Party Observation",
     purpose:
-      "Purpose: a signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, or a Bitcoin timestamp — have a disinterested third party go and look at something, then sign what it saw: whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
+      "Purpose: a signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, a Bitcoin timestamp, or the authorization an agent claims to act under, recorded before it spends — have a disinterested third party look at something, or hold a dated record of a claim, and sign it: whether a URL still answered hours later, or what the chain says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
     itemIds: [
+      /**
+       * SECOND, NOT SEVENTEENTH (2026-09-21).
+       *
+       * This door was last on a twenty-one item shelf, and the
+       * position was the least of it. An MCP client picks a TOOL by
+       * its purpose and only then an item from that tool's list, and
+       * the purpose above named settlement attestations, audits,
+       * monitoring, client tests, launch checks and Bitcoin
+       * timestamps — not authorization, not mandates, not delegation.
+       * So an agent looking to record what it was authorized to spend
+       * had no reason to open this tool at all and never reached
+       * position seventeen to be disappointed by it. The purpose now
+       * says the word; this puts the item where a reader who came for
+       * it lands.
+       *
+       * It is also the one item here that observes nothing. Grouped
+       * by `reads`, this shelf is seventeen items that go and look at
+       * something external and four that do not; `the_mandate` is
+       * `made_here` and records what the BUYER supplies. That is a
+       * different verb from the rest of the shelf, and the honest fix
+       * is its own tool — costed at +11,005 bytes against 418 bytes
+       * of headroom, which two separate budget guards refused
+       * (test/mcp-tool-catalog-budget.spec.ts). A cluster's bytes are
+       * mostly per-tool furniture rather than its items: ~4,975 of
+       * published refusal vocabulary and ~1,057 of security block
+       * repeat verbatim in every buy_* tool. Trim that once and the
+       * shelf becomes affordable; until then this is the reachable
+       * half of the fix, for about two hundred bytes.
+       */
+      "the_mandate",
       "settlement_attestation",
       // Settlement observed at one turn deeper: not "did it settle"
       // but "did what moved stay inside an attributable or declared limit" — and
@@ -255,10 +285,6 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // The same read kept up for a month on an operator's receiving
       // address, four signed passes a day, payers counted (S10).
       "operator_statement",
-      // And pointed BEFORE the acting: the claimed authorization,
-      // recorded and dated by a party that is neither the agent nor
-      // its principal, citable on every later certificate.
-      "the_mandate",
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.

@@ -1091,8 +1091,21 @@ const BASE = "https://scvd.store";
 // its pre-field-study state inside the merged tree, main's d37dd386
 // reproduced exactly, which is what proves the field study is the
 // whole of the difference between the two.
+// 2026-09-21, THE REFUND PROMISE: STORE_METADATA.refund_policy is
+// rendered into the guide, and it was rewritten — the only change to
+// any text this digest covers. A cold buyer read the old line ("the
+// keeper sends it himself, and you won't have to argue for it") as
+// programmatic; the 2026-07-27 correction had removed the WORD
+// "automatic" and left the shape of the claim, an unconditional
+// transfer with no actor and no delay in it. The new line names which
+// half is mechanical (a timed sweep finds the miss, late deliveries
+// included) and which half is a person (he pays by hand, recorded with
+// its transaction hash), so it claims MORE and every clause is
+// checkable. Verified the way this file asks rather than asserted:
+// with refund_policy alone reverted and nothing else touched, both
+// digests below reproduced exactly on the first try.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "76f98ccf0ef7f6ac5909313a54885d25f14e85af5bdc597024676bb9e6346c26";
+  "99af0b51243f37e3e308d029595afe746cfb1aab4b68f300e920ee9e1ada5558";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1158,8 +1171,21 @@ describe("nothing was rewritten", () => {
     // for their own reasons, so this pin is the merged guide and neither
     // half's. Verified inside the merged tree: with llms.ts reverted to
     // its pre-field-study state, main's 1c798e47 reproduced exactly.
+    // 2026-09-21, THE REFUND PROMISE: STORE_METADATA.refund_policy is
+    // rendered into the guide, and it was rewritten — the only change to
+    // any text this digest covers. A cold buyer read the old line ("the
+    // keeper sends it himself, and you won't have to argue for it") as
+    // programmatic; the 2026-07-27 correction had removed the WORD
+    // "automatic" and left the shape of the claim, an unconditional
+    // transfer with no actor and no delay in it. The new line names which
+    // half is mechanical (a timed sweep finds the miss, late deliveries
+    // included) and which half is a person (he pays by hand, recorded with
+    // its transaction hash), so it claims MORE and every clause is
+    // checkable. Verified the way this file asks rather than asserted:
+    // with refund_policy alone reverted and nothing else touched, both
+    // digests below reproduced exactly on the first try.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "f8597f7aa8aa5a02f8cfc968b85d28debd0909687c5bda5dbd19d7a394b5979a",
+      "8a6c054b840836f3e35ff36e5f0258b52309ccc35d47bb0135968e7b547eb18d",
     );
   });
 
