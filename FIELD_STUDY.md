@@ -47,7 +47,8 @@ offer, and it is the whole reason this instrument is worth paying for.
    (the American spelling `/enroll` serves the same door). The roster:
    model, harness, operator, task, purpose, autonomy, funding, how they
    found us, and whether they had ever paid an x402 door before. No
-   payment, no wallet opened, re-takeable at any time. Returns a
+   payment, no wallet opened, no payout address asked for, re-takeable
+   at any time. Returns a
    `study_id` and a `study_token` — the token once, never recoverable;
    the store keeps only its sha256.
 2. **They shop, several different ways.** Plain HTTP x402, the native
@@ -55,8 +56,9 @@ offer, and it is the whole reason this instrument is worth paying for.
    the A2A desk — on whichever rails the doors quote. Their own wallet,
    our ordinary shelf prices, the cheapest of which is $0.001.
 3. **They debrief.** `POST /api/study/debrief` with the study
-   credentials, the legs (`purchase_id` + `status_token` + the surface
-   they believe they used), the answers, and any defects.
+   credentials, a `payout_to` they control, the legs (`purchase_id` +
+   `status_token` + the surface they believe they used), the answers,
+   and any defects.
 4. **We verify against our own books**, leg by leg. No chain read, no
    trust extended.
 5. **The reward is a signed authorization, not a broadcast** — an
@@ -120,6 +122,47 @@ not was paid.
 new enrolments. Studies already enrolled under it debrief normally,
 because somebody is out there spending their own money on the strength of
 a listing we published.
+
+## What the first thirteen refusals taught (2026-09-21)
+
+The instrument opened and, in its first two days, booked **thirteen
+refusals and zero enrolments**. Every refusal named `payout_to`.
+
+That was not thirteen agents forgetting a wallet. `payout_to` was the
+**first** thing the enrolment door checked, so every malformed body in
+the world came back saying the same word — and twelve other diagnoses
+stayed hidden behind the first one. The desk could see that agents were
+arriving and being turned away, and could not see what they were
+actually trying to do.
+
+Two defects, both now fixed, both worth writing down because they are
+the exact failure this instrument exists to measure, arriving at our own
+door before a single researcher got through it.
+
+**Fail-first, not fail-complete.** A door that reports only its first
+complaint is a door an agent has to knock on nine times to enter,
+learning one requirement per refusal. A refusal now carries `problems`:
+every field that needs fixing, each with what was expected and what the
+answer buys. One more call is always enough.
+
+**A wallet asked for before anything was explained.** The address was
+required at enrolment so that a wallet this store cannot pay would learn
+so before spending its own money. The reasoning was sound and the cost
+was the whole instrument. The money moves at the *debrief*; the address
+is needed at the *debrief*. Requiring it first meant the very first
+thing a stranger learned about this study was "hand over a wallet
+address" — which is the shape of a scam, and a careful agent is right to
+stop there.
+
+That last point is the one worth keeping. This store's standing promise
+is that it never asks for credentials or keys. A payout address is not a
+secret, but demanding one up front *reads* like the thing we promise not
+to do — so the requirement was selecting against exactly the carefulness
+we advertise. `payout_to` is now optional at enrolment (screened early
+as a courtesy when given) and required at the debrief, where it is
+screened fail-closed and house wallets are refused. A debrief may also
+override the enrolment's address: a wallet changed mid-study should not
+cost a walk already paid for.
 
 ## Declared first, then observed — and why the order is the instrument
 
@@ -243,7 +286,7 @@ desk holds a credential that could claim somebody's reward.
 | Durable Object lock, keyed `study:<id>` | two debriefs of one study racing. KV is last-write-wins with cached reads and could never bound this; the board's lock object is reused under a disjoint key rather than standing up a second namespace for the same guarantee. Fails open, like the board's, because refusing every debrief over an unavailable lock turns a rare double-pay into a total outage. |
 | `study_leg:<purchase_id>` | one purchase counted by one study, ever. |
 | `study_week:<ISO week>:<payout>` | one study per wallet per ISO week. Ten studies from one wallet is one perspective bought ten times; what this instrument sells is the number of *different* agents. |
-| sanctions screen on the payout address | rule 3, outbound, fail closed. Advisory at enrolment (so a researcher learns early, before spending their own money), binding at the debrief. |
+| sanctions screen on the payout address | rule 3, outbound, fail closed. Advisory at enrolment when an address was given at all (so a researcher learns early, before spending their own money), binding at the debrief. |
 | house-wallet refusal | family money must never enter the organic column. |
 | budget reserved *before* the signature | the board lost every concurrent increment but one when this was written after, and published a figure below what it had paid. |
 

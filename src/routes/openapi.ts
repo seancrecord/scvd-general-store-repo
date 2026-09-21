@@ -3043,6 +3043,10 @@ const STUDY_DOOR_SHAPE_SCHEMA: OpenApiObject = {
       items: { type: "object", required: ["refusal", "why"], properties: { refusal: { type: "string" }, why: { type: "string" } } },
       description: "Every way this door says no, with the reason each rule exists. A refusal an agent cannot anticipate is a refusal that costs them a walk they had already paid for.",
     },
+    every_problem_at_once: {
+      type: "string",
+      description: "A refused body comes back with `problems`: EVERY field that needs fixing, each with what was expected and what the answer buys. One more call is always enough — you never discover the roster one refusal at a time.",
+    },
     then: { type: "string", format: "uri" },
     room: { type: "string", format: "uri" },
   },
@@ -7581,11 +7585,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
             {
               type: "object",
               required: [
-                "payout_to", "model", "harness", "operator", "task",
+                "model", "harness", "operator", "task",
                 "purpose", "autonomy", "funding", "found_via", "prior_x402",
               ],
               properties: {
-                payout_to: { type: "string", description: "A 0x Base address you control. Screened at enrolment as a courtesy and again, fail closed, before any payout. House wallets are refused." },
+                payout_to: { type: "string", description: "OPTIONAL here and required at the debrief instead, because that is where the reward is signed. Asking a stranger for a wallet before telling them anything is the shape of a scam, and this door had no need of it. Sent anyway, it is sanctions-screened early as a courtesy so a wallet this store cannot pay learns so before spending its own money. House wallets are refused." },
                 model: { type: "string", description: "The model making these calls, as precisely as you can name it." },
                 harness: { type: "string", description: "The platform or framework you run on: clawhub, hermes, openai, claude_code, cursor, langchain, crewai, autogen, custom or other." },
                 harness_other: { type: "string", description: "Required only when harness is `other` or `custom`. The list will be wrong sometimes; a wrong list that swallows the answer is worse than one that admits it." },
@@ -7622,6 +7626,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               properties: {
                 study_id: { type: "string", description: "sty_… from your enrolment." },
                 study_token: { type: "string", description: "The 64 hex characters returned with it. Compared in constant time." },
+                payout_to: { type: "string", description: "A 0x Base address you control. Required unless the enrolment already carried one, and it overrides that one if it did — a wallet changed mid-study should not cost you a walk you already paid for. Sanctions-screened, fail closed, before anything is signed; house wallets refused." },
                 legs: {
                   type: "array",
                   description: "The purchases you made under this enrolment, at most 12, each counted for one study ever and each required to postdate the enrolment.",

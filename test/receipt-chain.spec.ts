@@ -112,8 +112,28 @@ describe("the receipt page: same URL, human register", () => {
     expect(page).toContain("Accept: application/json");
     expect(page).toContain("/.well-known/scvd-signing-key");
     expect(page).toContain("scvd-evidence export");
-    // Match this certificate's note in its HTML form: the weekly bank
-    // includes an apostrophe, so raw-text matching fails on those weeks.
+    /*
+     * THE STORE'S WORD PRINTS ON THE HUMAN COPY, in the form the page
+     * writes it — which is escaped, and which is THIS certificate's
+     * note rather than any of the six.
+     *
+     * This assertion was a landmine that fired one week in six. The
+     * note rotates by ISO week (receiptNoteForWeek, weekNumber % 6),
+     * and exactly one of the six contains an apostrophe: "Come back
+     * when your context resets. We'll still remember." The page is
+     * right to escape it to We&#39;ll, so a raw `includes` could never
+     * match it — and the test went red on 2026-W39 with no code change,
+     * having passed all through W38 and due to pass again in W40.
+     * AGENTS.md names that shape: a test whose verdict moves with the
+     * wall clock is not a test.
+     *
+     * Two branches fixed it the same day and this is the stronger of
+     * the two. Asserting that SOME note from the bank reached the page
+     * would go green on a page carrying a different week's note than
+     * the one signed into the certificate beside it; reading
+     * cert.from_the_store pins the page to its own record, and the
+     * <em> pins the rendering.
+     */
     expect(cert.from_the_store).toBeTypeOf("string");
     expect(page).toContain(`<em>${escapeHtml(cert.from_the_store!)}</em>`);
     // The machine register is untouched at the same URL.

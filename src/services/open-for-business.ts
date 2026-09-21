@@ -135,7 +135,7 @@ function hungUp(signals: BuyerSignals | null, declines: Awaited<ReturnType<typeo
     heading: "Where they got hung up",
     lead: refusals === 0 && (!declines || declines.outside_count === 0)
       ? "Nobody was refused before paying this month, and nobody who paid was declined."
-      : `${refusals} agents were refused before paying this month, ${byReason["missing"] ?? 0} for a field they left out, ${byReason["malformed"] ?? 0} for a field in the wrong shape, ${byReason["example"] ?? 0} for pasting the worked example back.`,
+      : `${refusals} agents were refused before paying this month, ${byReason["missing"] ?? 0} for a field they left out, ${byReason["malformed"] ?? 0} for a field in the wrong shape, ${byReason["example"] ?? 0} for pasting the worked example back. Beside them ${sum(signals?.refusal_machinery ?? {})} refusals went to self-identified machinery — censuses, linters and observatories walking the input contracts — counted here and kept out of the number above, because whether a conformance walker can satisfy a contract is evidence about the challenge and was never a lost sale.`,
     numbers,
     rows,
     not_seen: [
