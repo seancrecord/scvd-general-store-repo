@@ -6,6 +6,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { publishedCountsBlock } from "@/store/published-counts";
 import type { CoverageDepth } from "@/evidence/types";
 import type { HonoEnv } from "@/types";
 
@@ -32,11 +33,11 @@ import type { HonoEnv } from "@/types";
 export const coverageRoutes = new Hono<HonoEnv>();
 
 coverageRoutes.get("/coverage.json", (c) => {
-  return c.json(publicCoverageDocument(c.env.STORE_BASE_URL));
+  return c.json({ ...publicCoverageDocument(c.env.STORE_BASE_URL), published_counts: publishedCountsBlock("/coverage") });
 });
 
 coverageRoutes.get("/.well-known/coverage.json", (c) => {
-  return c.json(publicCoverageDocument(c.env.STORE_BASE_URL));
+  return c.json({ ...publicCoverageDocument(c.env.STORE_BASE_URL), published_counts: publishedCountsBlock("/coverage") });
 });
 
 /** Depth as a word plus what it MEANS, because "challenge" and "read"
@@ -56,16 +57,18 @@ table.coverage td:first-child { white-space: nowrap; }
 coverageRoutes.get("/coverage", (c) => {
   const base = c.env.STORE_BASE_URL;
   const doc = publicCoverageDocument(base);
+  // Rule 43 for the numbers: the matrix serves no count today; the block says so on every rendering.
+  const document: Record<string, unknown> = { ...doc, published_counts: publishedCountsBlock("/coverage") };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
       base,
       path: "/coverage",
       title: "What we observe, and what we do not",
       description: "The derived coverage matrix: every observation class against every chain we know, with the depth we actually reach — and `none` stated rather than left out.",
-      document: doc as unknown as Record<string, unknown>,
+      document,
     });
   }
-  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(doc);
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(document);
 
   const chains = [...KNOWN_CHAINS];
   const rows = coverageMatrix()

@@ -5,6 +5,7 @@ import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { computeObservatory, type ObservatoryMonth } from "@/services/observatory";
+import { denominatorsSectionHtml, publishedCountsBlock } from "@/store/published-counts";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -86,17 +87,19 @@ function observatoryJsonLd(base: string, observatory: Awaited<ReturnType<typeof 
 observatoryRoutes.get("/observatory", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const observatory = await computeObservatory(c.env);
+  // Rule 43 for the numbers: every count, with what it is out of (store/published-counts.ts).
+  const document = { ...observatory, published_counts: publishedCountsBlock("/observatory") };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
       base,
       path: "/observatory",
       title: "The observatory",
       description: "What gets read here, counted: every surface the porch counts, per month, organic visits beside the house and infrastructure buckets kept out of them. In name order, never by count.",
-      document: observatory as unknown as Record<string, unknown>,
+      document: document as unknown as Record<string, unknown>,
     });
   }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json(observatory);
+    return c.json(document);
   }
   return c.html(
     renderSimplePage({
@@ -118,7 +121,8 @@ observatoryRoutes.get("/observatory", async (c) => {
           .map(([path, surface]) => `<code>${escapeHtml(path)}</code> → ${escapeHtml(surface)}`)
           .join(" · ")}. A surface absent from this list is not counted, which is not the same as unvisited.</p>
         <p class="menu-meta">Machine-readable at the same URL with <code>Accept: application/json</code>; computed live at ${escapeHtml(observatory.computed_at)} from the counters the admin desk reads. ${escapeHtml(observatory.corrections)} The funnel itself is at <a href="/pulse">${escapeHtml(base)}/pulse</a>.</p>
-      </section>`,
+      </section>
+      ${denominatorsSectionHtml("/observatory", escapeHtml)}`,
     }),
   );
 });

@@ -1,0 +1,111 @@
+{
+ "all_time": {
+  "arbitrum": 1,
+  "base": 105,
+  "computed_at": "2026-09-21T18:30:23.345Z",
+  "polygon": 1,
+  "rail_not_recorded": 0,
+  "solana": 4
+ },
+ "by_month_from_the_till": [
+  {
+   "base": 15,
+   "month": "2026-08",
+   "other": 0,
+   "polygon": 0,
+   "solana": 1
+  },
+  {
+   "arbitrum": 1,
+   "base": 84,
+   "month": "2026-09",
+   "other": 0,
+   "polygon": 1,
+   "solana": 1
+  }
+ ],
+ "method": "The monthly series is the till's own rail counters (recorded in the same call that produces the organic count). The all-time split additionally counts certificate-era sales from before the till kept rails, and names what neither record placed as rail_not_recorded rather than guessing.",
+ "payments": {
+  "by_currency": [
+   {
+    "name": "USDC",
+    "purchases": 111
+   }
+  ],
+  "by_network": [
+   {
+    "name": "Base",
+    "purchases": 105
+   },
+   {
+    "name": "Polygon",
+    "purchases": 1
+   },
+   {
+    "name": "Arbitrum",
+    "purchases": 1
+   },
+   {
+    "name": "World",
+    "purchases": 0
+   },
+   {
+    "name": "Solana",
+    "purchases": 4
+   },
+   {
+    "name": "Network not recorded",
+    "purchases": 0
+   }
+  ],
+  "by_protocol": [
+   {
+    "name": "x402",
+    "purchases": 111
+   },
+   {
+    "name": "mpp",
+    "purchases": 0
+   }
+  ],
+  "method": "The same purchases, grouped three ways: payment protocol, settlement network, and currency. Each group divides the organic purchase total; do not add the groups together. House purchases are excluded. These are purchase counts, not revenue or unique buyers. Network gaps remain unrecorded; endpoint observations and trade-counter deliveries are outside these settlement counts.",
+  "organic_purchases": 111
+ },
+ "rails_accepted": [
+  "eip155:8453",
+  "eip155:137",
+  "eip155:42161",
+  "eip155:480",
+  "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+ ],
+ "the_books": "https://scvd.store/stats",
+ "trade_counter": {
+  "accounts": [
+   {
+    "account": "sandbox",
+    "delivered_live": 0,
+    "delivered_test": 1,
+    "mode": "test",
+    "net_usd": 0,
+    "outstanding_usd": 0,
+    "paid_usd": 0,
+    "truncated": false
+   },
+   {
+    "account": "hal",
+    "delivered_live": 0,
+    "delivered_test": 0,
+    "mode": "live",
+    "net_usd": 0,
+    "outstanding_usd": 0,
+    "paid_usd": 0,
+    "truncated": false
+   }
+  ],
+  "delivered_live_total": 0,
+  "ledger": "https://scvd.store/api/trade/ledger",
+  "outstanding_usd_total": 0,
+  "what_this_is": "Not a rail. Sales through the trade counter (/trade) are paid to a marketplace, off-chain from our view, and billed on a statement; they land on no chain and are counted here beside the rails so the denominator is honest, never inside them."
+ },
+ "what_this_is": "Organic purchases by payment protocol, network and currency, plus the monthly network history, from the same books /stats serves. House purchases excluded."
+}

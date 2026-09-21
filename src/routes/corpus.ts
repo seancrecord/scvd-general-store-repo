@@ -1,4 +1,5 @@
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
+import { publishedCountsBlock } from "@/store/published-counts";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse, markdownCell } from "@/lib/json-markdown";
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
@@ -249,6 +250,8 @@ corpusRoutes.get("/corpus.json", async (c) => {
     },
     started: first,
     entries: records.length,
+    // Rule 43 for the numbers: every count on this index, with what it is out of; the signed snapshot under `latest` is quoted, not restated (store/published-counts.ts).
+    published_counts: publishedCountsBlock("/corpus.json"),
     /**
      * THE WEEKS THE CHAIN DOES NOT HOLD (2026-09-04).
      *

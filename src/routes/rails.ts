@@ -6,6 +6,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { denominatorsSectionHtml, publishedCountsBlock } from "@/store/published-counts";
 import { readRailCountersByMonth, type RailMonth } from "@/services/rails";
 import { computeStats } from "@/services/stats";
 import type { HonoEnv } from "@/types";
@@ -147,6 +148,8 @@ railsRoutes.get("/rails", async (c) => {
       "The monthly series is the till's own rail counters (recorded in the same call that produces the organic count). The all-time split additionally counts certificate-era sales from before the till kept rails, and names what neither record placed as rail_not_recorded rather than guessing.",
     the_books: `${base}/stats`,
     trade_counter: tradeCounter,
+    // Rule 43 for the numbers: every count, with what it is out of (store/published-counts.ts).
+    published_counts: publishedCountsBlock("/rails"),
   };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
@@ -219,6 +222,7 @@ railsRoutes.get("/rails", async (c) => {
         <h2>Method, and what this cannot say</h2>
         <p class="menu-desc">The monthly series is the till's own per-rail counters, written in the same call that produces the organic count — a sale that has one has the other. The all-time split adds certificate-era sales from before the till kept rails, and anything neither record placed is printed as "before the till kept rails" rather than guessed. These are OUR BOOKS, not the chain: the independent check is the hourly bank walk, whose per-chain statement is on <a href="/stats">/stats</a>.</p>
       </section>
+      ${denominatorsSectionHtml("/rails", escapeHtml)}
       ${jsonLdScript({
         "@context": "https://schema.org",
         "@type": "Dataset",

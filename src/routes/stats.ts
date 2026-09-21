@@ -6,6 +6,7 @@ import {
   trackRecordLine,
 } from "@/services/stats";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
+import { publishedCountsBlock } from "@/store/published-counts";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -29,6 +30,8 @@ statsRoutes.get("/stats", async (c) => {
   const netByChain = await computeNetStatement(c.env).catch(() => null);
   return c.json({
     ...stats,
+    // Rule 43 for the numbers: every count above, with what it is out of (store/published-counts.ts).
+    published_counts: publishedCountsBlock("/stats"),
     track_record: trackRecordLine(stats, base),
     house_flag_policy: HOUSE_FLAG_POLICY,
     identity_policy: IDENTITY_POLICY,

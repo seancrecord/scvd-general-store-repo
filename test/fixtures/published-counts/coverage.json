@@ -1,0 +1,254 @@
+{
+ "chains": [
+  "eip155:8453",
+  "eip155:84532",
+  "eip155:137",
+  "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+  "eip155:1",
+  "eip155:42161",
+  "eip155:10",
+  "eip155:43114",
+  "eip155:480"
+ ],
+ "corrections_url": "https://scvd.store/corrections",
+ "depths": {
+  "challenge": "We will read a 402 that offers this chain. We do not settle, walk, or read the chain.",
+  "none": "This class does not operate on this chain.",
+  "read": "We read public chain state (a claimed tx, a wallet window, an oracle).",
+  "till": "We accept payment on this rail.",
+  "walk": "We pay someone else's door on this rail from the field wallet."
+ },
+ "does_not_prove": "That a given door on a covered chain will be observed, or that a till rail is lit on this deployment (Polygon and Solana are flag-gated).",
+ "matrix": [
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "read",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "read",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "read"
+   },
+   "class_id": "settlement_attestation",
+   "does": "Independent on-chain read of a claimed settlement. Identifier shape picks the chain."
+  },
+  {
+   "chains": {
+    "eip155:1": "read",
+    "eip155:10": "read",
+    "eip155:137": "read",
+    "eip155:42161": "read",
+    "eip155:43114": "read",
+    "eip155:480": "read",
+    "eip155:8453": "read",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "read"
+   },
+   "class_id": "the_statement",
+   "does": "Wallet-window USDC in/out, observed from the chain walks, signed by neither party."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "till",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "till",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "till"
+   },
+   "class_id": "till",
+   "does": "We accept USDC on these rails. Polygon and Solana are flag-gated; the code can offer them."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "none",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "walk",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "none"
+   },
+   "class_id": "launch_check",
+   "does": "One real purchase attempt from the field wallet. The wallet pays Base USDC only."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "none",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "read",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "none"
+   },
+   "class_id": "sanctions_screen",
+   "does": "Chainalysis on-chain oracle, Base USDC addresses. Not a Solana screen."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "challenge",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "challenge",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "challenge"
+   },
+   "class_id": "service_audit",
+   "does": "Point-in-time unpaid (and paid-where-offered) look at a door's 402."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "challenge",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "challenge",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "challenge"
+   },
+   "class_id": "standing_watch",
+   "does": "Repeated unpaid looks at one door across a window."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "challenge",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "challenge",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "challenge"
+   },
+   "class_id": "conformance_watch",
+   "does": "The conformance battery, daily, for a week."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "challenge",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "challenge",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "challenge"
+   },
+   "class_id": "ward_round",
+   "does": "Weekly census walk of listed doors."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "challenge",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "challenge",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "challenge"
+   },
+   "class_id": "preflight",
+   "does": "Free unpaid read of a 402 challenge. Flags testnet; does not walk."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "none",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "none",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "none"
+   },
+   "class_id": "discovery_coherence",
+   "does": "Join of a host's machine catalogs: do the surfaces agree. No chain dimension."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "none",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "none",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "none"
+   },
+   "class_id": "schema_coherence",
+   "does": "Join of required-input schemas on the same route: OpenAPI, x402 catalog, MCP tools. No chain dimension."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "none",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "none",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "none"
+   },
+   "class_id": "receipt_coherence",
+   "does": "Join of a receipt against the catalog surface the buyer selected. No chain dimension."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "none",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "none",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "none"
+   },
+   "class_id": "capability_coherence",
+   "does": "Join of claimed capabilities across catalogs: chains, primary transport, schemes, streaming. No live probe this rev. No chain dimension."
+  },
+  {
+   "chains": {
+    "eip155:1": "none",
+    "eip155:10": "none",
+    "eip155:137": "none",
+    "eip155:42161": "none",
+    "eip155:43114": "none",
+    "eip155:480": "none",
+    "eip155:8453": "none",
+    "eip155:84532": "none",
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "none"
+   },
+   "class_id": "freshness_coherence",
+   "does": "Join of dated catalog facts: as_of and valid_until. No live probe this rev. No chain dimension."
+  }
+ ],
+ "matrix_url": "https://scvd.store/.well-known/coverage.json",
+ "sandbox_chain": "eip155:84532",
+ "sandbox_note": "Listed so a subject on it is valid. No production class claims depth there.",
+ "schema": "scvd-coverage/v1",
+ "what": "Stated coverage: observation class \u00d7 chain \u00d7 depth. Absence is `none`, never implied. Derived from the modules that already know the chain ids \u2014 not a brochure."
+}
