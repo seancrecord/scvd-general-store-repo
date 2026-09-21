@@ -136,6 +136,26 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
    * buyer's SDK calls itself contains it.
    */
   "lint",
+  /**
+   * Sixth pass, 2026-09-21, off the avoidable-400s desk. The store
+   * booked 1,053 pre-payment 400s in a month, 287 of them malforming
+   * ONE field at one door, and the keeper read that as a usability
+   * crisis. A buyer does not malform the same field 287 times; a
+   * census walking every door on a loop does.
+   *
+   * StillOS-payability-census/1.0 writes its intention into its own
+   * user-agent — "measurement, no payment attached" — and was sitting
+   * in the organic column anyway, because the table held
+   * "census-probe" and this one calls itself a census without the
+   * probe. That is the table's oldest lesson arriving again: the
+   * string was nearly right and therefore matched nothing.
+   *
+   * "census" is the whole-word job name, same verb class as the
+   * validator, the verifier and the observatory already here, and it
+   * generalises the "census-probe" entry above rather than sitting
+   * beside it. Nothing a real buyer's SDK calls itself contains it.
+   */
+  "census",
 ];
 
 /**
