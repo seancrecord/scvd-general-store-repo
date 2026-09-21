@@ -76,6 +76,13 @@ export type AdminTab =
    */
   | "signals"
   /**
+   * THE PROTOCOL READING (2026-09-21). The office could read MPP in
+   * two places, UCP in none and A2A in none, while the store served
+   * all of them. One page for what we speak and who used it, with the
+   * market's own census beside it.
+   */
+  | "protocols"
+  /**
    * OPEN FOR BUSINESS (2026-09-18), the weekly issue for sellers, drafted by
    * the instruments and read here before the keeper publishes it by
    * hand. A draft on the desk, never a publication surface.
@@ -143,6 +150,68 @@ export type AdminTab =
   | "trade";
 
 /**
+ * WHAT EVERY ROOM IS, IN ONE LINE (2026-09-21).
+ *
+ * Twenty-six of the thirty pages opened straight into an <h2>, under a
+ * shell <h1> that said "Keep's Office" on all of them. Landing on one
+ * cold, the only thing naming it was the bolded nav entry — so the
+ * page you were on looked like every other page you were not on, and
+ * nothing said what it counted or when it was read.
+ *
+ * The line lives HERE rather than in each page for the reason the nav
+ * does: the map belongs in one file. It is also exhaustive over
+ * AdminTab, so a new room cannot be built without being named — the
+ * compiler asks, instead of a reviewer remembering.
+ *
+ * `what` answers "what am I looking at", not "what is this for". A
+ * page that needs a paragraph still writes one; this is the line above
+ * it.
+ */
+export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string }>> = {
+  round: { title: "The round", what: "What ran, when, and what is waiting on your hand." },
+  office: { title: "The desk", what: "The take, the month's slice, and the ledger's answers per item." },
+  counter: { title: "The counter", what: "The day's actual work: orders, alarms, letters, review queues." },
+  tools: { title: "The back shelf", what: "Levers that change something. Rarely pulled, never by accident." },
+  reconciliation: { title: "The books check", what: "Every audit that can disagree with itself, with its verdict." },
+  files: { title: "Keeper's files", what: "The tax file, the founding edition, the Sunday digest." },
+  declines: { title: "Declines", what: "Who opened a wallet here and was turned away, and over what." },
+  bounties: { title: "The bounty board", what: "The paying wallet, the week's budget, and where every claim went." },
+  referrals: { title: "Word of mouth", what: "Who said our name, and who carried a link. Two different mechanisms." },
+  buyers: { title: "The buyers", what: "Every outside wallet holding a certificate, and what it bought." },
+  disclosure: { title: "What they told us", what: "Who fills the optional block at the door, and who ignores it." },
+  signals: { title: "Buyer signals", what: "What the till sees without asking. A trial area, built to be stopped." },
+  protocols: { title: "Protocols", what: "What we speak, who used it, and what the market speaks. Four instruments, never added together." },
+  "open-for-business": { title: "Open for Business", what: "This week's issue for sellers, drafted here and published by hand." },
+  instruments: { title: "Free instruments", what: "Which free tools agents actually use, and what follows a check." },
+  growth: { title: "Growth", what: "Every month since opening, side by side." },
+  peers: { title: "The peers", what: "The directory shelf we are listed on, ours beside theirs. Never a ranking." },
+  ward: { title: "The ward", what: "The weekly x402 census of other operators' doors, and what changed." },
+  "mcp-ward": { title: "The MCP ward", what: "The registry walk. Its own denominator; never added to the first ward's." },
+  cv: { title: "CV's corner", what: "The partner's surface." },
+  census: { title: "The census", what: "Who ever tried, who only ever looked, and which walkers still count as organic." },
+  recount: { title: "The recount", what: "The counters audited against the raw rows they claim to total." },
+  bell: { title: "The bell", what: "The bell ledger, ring by ring." },
+  digest: { title: "The digest", what: "The compiled weekly digest, as JSON." },
+  testing: { title: "Testing", what: "Exercises for things that have never met reality." },
+  events: { title: "Item events", what: "One item's whole trail." },
+  trace: { title: "Client trace", what: "One user-agent's whole trail, so a count can be traced instead of believed." },
+  take: { title: "The take", what: "Real money off the certificates, split by shelf kind. The slow page, on purpose." },
+  funnel: { title: "The funnel", what: "Where the asks go, and which wall to fix." },
+  // The market's own claim about itself — "what the round's numbers
+  // mean", held by test/market.spec.ts — cannot live here: this line
+  // is escaped, and the apostrophe would come out as an entity. It
+  // rides the page's lead paragraph instead, unescaped, as it did in
+  // the <h1> this head replaced.
+  market: { title: "The market", what: "The doors worth posting a bounty against, and what the feed shows." },
+  // "the send, one press" is rule 30 as amended 2026-08-20 — the desk
+  // gained the wire and the headline moved from "the send, yours" to
+  // the press — and test/outreach.spec.ts holds the page to saying it.
+  // It rode the <h1> this head replaced.
+  outreach: { title: "Outreach", what: "Doors we wrote to and doors worth writing to. The queue, drafted; the send, one press." },
+  trade: { title: "The trade counter", what: "Every partner account, both sides, newest first." },
+};
+
+/**
  * The rooms. Always first, always in this order — and the round is
  * first among them since 2026-09-08: it is the page that says whether
  * the others are worth opening today.
@@ -159,30 +228,86 @@ const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
  * that measures somebody trying to buy, and it should be the first
  * thing a keeper's eye lands on.
  */
-const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
-  { tab: "reconciliation", href: "/admin/reconciliation", label: "The books check" },
-  { tab: "declines", href: "/admin/declines", label: "Declines" },
-  { tab: "bounties", href: "/admin/bounties", label: "The bounty board" },
-  { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
-  // Promoted to the nav 2026-09-04: the keeper could not find it. The
-  // 08-05 consolidation left it reachable only from a footnote on the
-  // books check, which is not reachable, it is remembered.
-  { tab: "census", href: "/admin/census", label: "The census" },
-  { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
-  { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
-  { tab: "signals", href: "/admin/signals", label: "Buyer signals (trial)" },
-  { tab: "open-for-business", href: "/admin/open-for-business", label: "Open for Business" },
-  { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
-  { tab: "growth", href: "/admin/growth", label: "Growth" },
-  { tab: "peers", href: "/admin/peers", label: "The peers" },
-  { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
-  { tab: "ward", href: "/admin/ward", label: "The ward" },
-  { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
-  { tab: "market", href: "/admin/market", label: "The market" },
-  { tab: "outreach", href: "/admin/outreach", label: "Outreach" },
-  { tab: "trade", href: "/admin/trade", label: "The trade counter" },
-  { tab: "files", href: "/admin/files", label: "Keeper's files" },
+/**
+ * THE READINGS, IN FOUR SHELVES (2026-09-21).
+ *
+ * The 08-05 consolidation's own note says "eleven tabs was a
+ * corridor". It was down to four rooms and a short list; the list is
+ * twenty entries again, in one undifferentiated row, and a keeper
+ * scanning it reads twenty equal things and finds none of them.
+ *
+ * Grouped rather than cut, because every one of them earns its place —
+ * what was missing was not fewer readings, it was an answer to "which
+ * of these is about the question I have". Four shelves, each a
+ * question: where the money went, who the buyers are, what is outside,
+ * what we publish.
+ *
+ * The shelf labels are lowercase and quiet on purpose. They are
+ * signposts for the eye, not headings competing with the room's own
+ * name above them.
+ */
+const READING_SHELVES: readonly {
+  shelf: string;
+  entries: readonly { tab: AdminTab; href: string; label: string }[];
+}[] = [
+  {
+    shelf: "money",
+    entries: [
+      { tab: "reconciliation", href: "/admin/reconciliation", label: "The books check" },
+      { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
+      { tab: "bounties", href: "/admin/bounties", label: "The bounty board" },
+      { tab: "trade", href: "/admin/trade", label: "The trade counter" },
+    ],
+  },
+  {
+    shelf: "buyers",
+    entries: [
+      // Declines first on the shelf, for the reason it led the whole
+      // list before: it is the only reading that measures somebody
+      // trying to buy and failing.
+      { tab: "declines", href: "/admin/declines", label: "Declines" },
+      { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
+      // Promoted to the nav 2026-09-04: the keeper could not find it. The
+      // 08-05 consolidation left it reachable only from a footnote on the
+      // books check, which is not reachable, it is remembered.
+      { tab: "census", href: "/admin/census", label: "The census" },
+      { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
+      { tab: "signals", href: "/admin/signals", label: "Buyer signals (trial)" },
+      { tab: "protocols", href: "/admin/protocols", label: "Protocols" },
+      { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
+    ],
+  },
+  {
+    shelf: "outside",
+    entries: [
+      { tab: "ward", href: "/admin/ward", label: "The ward" },
+      { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
+      { tab: "market", href: "/admin/market", label: "The market" },
+      { tab: "outreach", href: "/admin/outreach", label: "Outreach" },
+      { tab: "peers", href: "/admin/peers", label: "The peers" },
+    ],
+  },
+  {
+    shelf: "what we publish",
+    entries: [
+      { tab: "open-for-business", href: "/admin/open-for-business", label: "Open for Business" },
+      { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
+      { tab: "growth", href: "/admin/growth", label: "Growth" },
+      { tab: "files", href: "/admin/files", label: "Keeper's files" },
+    ],
+  },
 ];
+
+/** Flattened, because the reach and navigation specs walk one list. */
+const READINGS: readonly { tab: AdminTab; href: string; label: string }[] =
+  READING_SHELVES.flatMap((shelf) => shelf.entries);
+
+/** Exported so a test can hold every reading to exactly one shelf. */
+export const SHELVES: readonly { shelf: string; hrefs: readonly string[] }[] =
+  READING_SHELVES.map((shelf) => ({
+    shelf: shelf.shelf,
+    hrefs: shelf.entries.map((entry) => entry.href),
+  }));
 
 /**
  * CV'S CORNER, listed in the nav and DELIBERATELY OUTSIDE ADMIN_PAGES.
@@ -201,10 +326,35 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
 const PARTNER: readonly { tab: AdminTab; href: string; label: string }[] = [
 ];
 
+/**
+ * WHEN THE PAGE WAS READ. Optional because not every room has one
+ * number to date — the back shelf is levers, the files are files. Where
+ * a page IS a reading, this is the difference between a quiet week and
+ * a shelf that stopped loading, which is the one misreading the office
+ * must not permit (see the ward's own note on its heartbeat block).
+ */
+export interface PageAsOf {
+  /** An ISO instant, or a month/week the page is scoped to. */
+  at?: string;
+  /** What window the numbers cover, in the page's own words. */
+  window?: string;
+}
+
+function headHtml(tab: AdminTab, asOf?: PageAsOf): string {
+  const head = PAGE_HEADS[tab];
+  const read = asOf?.at
+    ? `Read ${escapeHtml(asOf.at.slice(0, 16).replace("T", " "))}${asOf.at.includes("T") ? "Z" : ""}`
+    : "";
+  const line = [read, asOf?.window ? escapeHtml(asOf.window) : ""].filter(Boolean).join(" &middot; ");
+  return `<h1>${escapeHtml(head.title)}</h1>
+  <p class="page-what">${escapeHtml(head.what)}${line ? ` <span class="page-asof">${line}</span>` : ""}</p>`;
+}
+
 export function renderAdminShell(
   tab: AdminTab,
   bodyHtml: string,
   loadNotes: string[] = [],
+  asOf?: PageAsOf,
 ): string {
   const link = (entry: {
     tab: AdminTab;
@@ -230,16 +380,21 @@ export function renderAdminShell(
 </head>
 <body>
   <div class="room">
-  <h1>Keep<span class="lamp">'</span>s Office</h1>
-  <p class="room-sub">Sean-Claude Van Damme's General Store &middot; back room</p>
+  <p class="office-eyebrow">Keep<span class="lamp">'</span>s Office &middot; Sean-Claude Van Damme's General Store</p>
   <nav>
     ${ROOMS.map(link).join("\n    ")}
     <a href="/">Front of house</a>
   </nav>
   <nav class="readings">
-    ${READINGS.map(link).join("\n    ")}
+    ${READING_SHELVES.map(
+      (shelf) =>
+        `<span class="shelf"><span class="shelf-name">${shelf.shelf}</span>${shelf.entries
+          .map(link)
+          .join(" ")}</span>`,
+    ).join("\n    ")}
     ${PARTNER.map(link).join("\n    ")}
   </nav>
+  ${headHtml(tab, asOf)}
   ${notes}
   ${bodyHtml}
   </div>

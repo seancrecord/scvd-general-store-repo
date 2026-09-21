@@ -7,6 +7,7 @@ import { INFRASTRUCTURE_UA_HINTS, isHouseAgent, isInfrastructureUserAgent } from
 import { NAMED_AI_CRAWLERS, SEARCH_CRAWLERS, isKnownCrawler, isSocialUnfurler } from "@/lib/crawlers";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { Context } from "hono";
+import type { PurchaseDoor } from "@/services/purchase-intent";
 import type { Env, HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -185,7 +186,8 @@ function slug(raw: string | undefined, fallback: string): string {
 }
 
 export interface SettleSignal {
-  door: "http" | "mcp";
+  /** The door that answered, from the one closed set (services/purchase-intent). */
+  door: PurchaseDoor;
   network: string | undefined;
   item: string;
   purpose: string | undefined;

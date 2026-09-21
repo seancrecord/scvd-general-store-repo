@@ -629,11 +629,6 @@ export function gateSignals(c: Context<HonoEnv>): EventSignals {
   if (houseParam) {
     signals.houseParam = houseParam;
   }
-  if (c.req.header("X-SCVD-Channel") === "mcp") {
-    // Set only by our own MCP handler on internal dispatch; stripped
-    // from anything a visitor could spoof by being definitive-only here.
-    signals.viaMcp = true;
-  }
   return signals;
 }
 

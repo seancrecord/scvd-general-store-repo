@@ -74,8 +74,8 @@ export function renderRoundPage(round: KeepersRound): string {
   const late = round.rows.filter(
     (row) => row.state === "late" || row.state === "never",
   );
-  const body = `<h1>The round</h1>
-  <p class="room-sub">What ran, when, and what is waiting on your hand. Read ${escapeHtml(round.at.slice(0, 16).replace("T", " "))}Z, live — nothing on this page is cached and nothing on it presses anything.</p>
+  const body = `
+  <p><small>Live — nothing on this page is cached, and nothing on it presses anything.</small></p>
 
   <section>
     <h2>What you owe</h2>
@@ -101,5 +101,5 @@ export function renderRoundPage(round: KeepersRound): string {
     </table>
     <p><small>"Due" and "late" are this page's own judgement against each machine's stated cadence, not an alarm the machine raised. A row that says <em>not read</em> is a shelf that failed to load: it is not a zero and it is not health.</small></p>
   </section>`;
-  return renderAdminShell("round", body, round.notes);
+  return renderAdminShell("round", body, round.notes, { at: round.at });
 }

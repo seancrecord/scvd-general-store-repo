@@ -1,5 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { cannotSeeHtml } from "@/pages/admin/reading-limits";
 import type { McpPass, McpRegister, McpWalkState } from "@/services/mcp-ward";
 
 /**
@@ -29,6 +30,12 @@ import type { McpPass, McpRegister, McpWalkState } from "@/services/mcp-ward";
  * for every host across all passes, is untouched. A discarded partial
  * pass could never have recorded a delisting anyway.
  */
+const CANNOT_SEE = [
+  "The registries' own listings, read once a week. A server that is not listed is not counted, and this says nothing about how many are not listed.",
+  "A listing is a claim by whoever filed it. Nothing here was installed, called or paid.",
+  "Its denominator is its own. These counts share no population with the x402 ward and must never be added to it.",
+];
+
 export function renderMcpWardPage(
   walk: McpWalkState | null,
   register: McpRegister,
@@ -123,6 +130,7 @@ export function renderMcpWardPage(
       Nothing here is private: the ward observes a public registry and issues
       no verdict on anybody, so there is no per-operator finding to hold back
       the way the x402 ward holds its per-host rows.</p>
-    </section>`,
+    </section>
+    ${cannotSeeHtml(CANNOT_SEE)}`,
   );
 }

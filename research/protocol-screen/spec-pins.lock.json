@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-16",
+ "updated": "2026-09-21",
  "pins": {
   "x402-scheme-families": {
    "digest": "sha256:384a7dad52e1badc6e74032fb3f92897ef994352f94f816422a9d758d20a4c0b",
@@ -44,7 +44,7 @@
   },
   "x402-extensions": {
    "digest": "sha256:d7f3734d871f66380af2a3113f1a69b565b4285f3b96b44f4ecb5d9e5edafe8c",
-   "read_date": "2026-09-14",
+   "read_date": "2026-09-21",
    "files": 9,
    "lines": [
     "00579025df94b5cf0ea349347f2cf6205fc0ad6e specs/extensions/eip2612_gas_sponsoring.md",

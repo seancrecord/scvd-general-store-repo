@@ -595,7 +595,6 @@ export function renderOutreachPage(
    * ranking comes after the work, not before it.
    */
   const body = `
-  <h1>Outreach — the queue, drafted; the send, one press</h1>
   ${noticeBlock}
   <section id="bench">
   <form method="post" action="/admin/outreach/scout" style="display:inline">

@@ -174,6 +174,15 @@ export interface ChannelSignals {
   userAgent?: string;
   /** Set by the /mcp handler; definitive. */
   viaMcp?: boolean;
+  /**
+   * Set by the UCP checkout and A2A desk routes, the same way and for
+   * the same reason: the route that answered knows which door it is,
+   * and nothing the caller sends is allowed to claim one. Never read
+   * off a header or a query param — see the X-SCVD-Channel removal in
+   * test/channel-mcp-machinery.spec.ts for what that costs.
+   */
+  viaUcp?: boolean;
+  viaA2a?: boolean;
   /** The skill's designed self-identification (?src=clawhub-skill). */
   declaredSource?: string;
 }
@@ -201,8 +210,23 @@ export function inferChannel(signals: ChannelSignals): Channel {
    * table wins; the rest of the MCP branch is untouched, so a real
    * buyer's SDK over MCP still counts as "mcp" exactly as before.
    */
-  if (signals.viaMcp) {
-    return machinery ? "infrastructure" : "mcp";
+  /**
+   * The door the route answered at, if it announced one. The
+   * infrastructure table still wins, per the 2026-09-08 ruling above:
+   * a monitor is a monitor whichever door it uses, and the
+   * reclassifier — which re-derives from the user-agent alone, with no
+   * door at all — must not reach a different verdict about the same
+   * client than the live path just did.
+   */
+  const door: Channel | null = signals.viaMcp
+    ? "mcp"
+    : signals.viaUcp
+      ? "ucp"
+      : signals.viaA2a
+        ? "a2a"
+        : null;
+  if (door) {
+    return machinery ? "infrastructure" : door;
   }
   if (declared === "clawhub-skill" || declared === "skill") {
     return "skill";

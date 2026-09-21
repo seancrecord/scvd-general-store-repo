@@ -1,6 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { pendingPaymentStub } from "./helpers/payment";
+import { escapeHtml } from "@/lib/sanitize";
 
 const BASE = "https://scvd.store";
 const testEnv = env as never as import("@/types").Env;
@@ -112,8 +113,9 @@ describe("the receipt page: same URL, human register", () => {
     expect(page).toContain("/.well-known/scvd-signing-key");
     expect(page).toContain("scvd-evidence export");
     /*
-     * THE STORE'S WORD PRINTS ON THE HUMAN COPY — compared the way the
-     * page writes it, which is escaped.
+     * THE STORE'S WORD PRINTS ON THE HUMAN COPY, in the form the page
+     * writes it — which is escaped, and which is THIS certificate's
+     * note rather than any of the six.
      *
      * This assertion was a landmine that fired one week in six. The
      * note rotates by ISO week (receiptNoteForWeek, weekNumber % 6),
@@ -122,19 +124,18 @@ describe("the receipt page: same URL, human register", () => {
      * right to escape it to We&#39;ll, so a raw `includes` could never
      * match it — and the test went red on 2026-W39 with no code change,
      * having passed all through W38 and due to pass again in W40.
+     * AGENTS.md names that shape: a test whose verdict moves with the
+     * wall clock is not a test.
      *
-     * That is the shape AGENTS.md names: a test whose verdict moves
-     * with the wall clock is not a test. Escaping both sides pins the
-     * real claim (the store's word reaches the human copy) for all six
-     * notes and every week, rather than for the five weeks in six when
-     * the punctuation happened to be harmless.
+     * Two branches fixed it the same day and this is the stronger of
+     * the two. Asserting that SOME note from the bank reached the page
+     * would go green on a page carrying a different week's note than
+     * the one signed into the certificate beside it; reading
+     * cert.from_the_store pins the page to its own record, and the
+     * <em> pins the rendering.
      */
-    const { RECEIPT_NOTES } = await import("@/store/copy/receipt-notes");
-    const { escapeHtml } = await import("@/lib/sanitize");
-    expect(
-      RECEIPT_NOTES.some((note) => page.includes(escapeHtml(note))),
-      "no rotated receipt note reached the human copy",
-    ).toBe(true);
+    expect(cert.from_the_store).toBeTypeOf("string");
+    expect(page).toContain(`<em>${escapeHtml(cert.from_the_store!)}</em>`);
     // The machine register is untouched at the same URL.
     const json = (await (await SELF.fetch(verifyUrl)).json()) as Record<string, unknown>;
     expect(json.valid).toBe(true);

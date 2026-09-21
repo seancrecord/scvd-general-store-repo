@@ -1,0 +1,166 @@
+{
+  "codex-directed-r1": {
+    "originals": [
+      {
+        "file": "evidence/corpus-8.json",
+        "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+        "envelope_pointer": ""
+      }
+    ],
+    "issuer_records": [
+      {
+        "file": "evidence/issuer-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    ],
+    "checks": [
+      {
+        "original": {
+          "file": "evidence/corpus-8.json",
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        "envelope_pointer": "",
+        "issuer": {
+          "file": "evidence/issuer-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "signature_valid": true,
+        "evidence_complete": true,
+        "signed_subject_rows": [
+          {
+            "pointer": "/round/hosts/52",
+            "url": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-14T01:30:09.376Z",
+            "verdict": "ready"
+          }
+        ],
+        "publication_at": "2026-09-20T11:00:28.668Z",
+        "embedded_key_matches_separate_record": true
+      }
+    ],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  },
+  "claude-directed-r1": {
+    "originals": [
+      {
+        "file": "evidence/corpus_8.json",
+        "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+        "envelope_pointer": ""
+      }
+    ],
+    "issuer_records": [
+      {
+        "file": "evidence/scvd_signing_key.txt",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    ],
+    "checks": [
+      {
+        "original": {
+          "file": "evidence/corpus_8.json",
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        "envelope_pointer": "",
+        "issuer": {
+          "file": "evidence/scvd_signing_key.txt",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "signature_valid": true,
+        "evidence_complete": true,
+        "signed_subject_rows": [
+          {
+            "pointer": "/round/hosts/52",
+            "url": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-14T01:30:09.376Z",
+            "verdict": "ready"
+          }
+        ],
+        "publication_at": "2026-09-20T11:00:28.668Z",
+        "embedded_key_matches_separate_record": true
+      }
+    ],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  },
+  "codex-directed-r2": {
+    "originals": [
+      {
+        "file": "evidence/snapshot8.json",
+        "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+        "envelope_pointer": ""
+      }
+    ],
+    "issuer_records": [
+      {
+        "file": "evidence/issuer-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    ],
+    "checks": [
+      {
+        "original": {
+          "file": "evidence/snapshot8.json",
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        "envelope_pointer": "",
+        "issuer": {
+          "file": "evidence/issuer-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "signature_valid": true,
+        "evidence_complete": true,
+        "signed_subject_rows": [
+          {
+            "pointer": "/round/hosts/52",
+            "url": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-14T01:30:09.376Z",
+            "verdict": "ready"
+          }
+        ],
+        "publication_at": "2026-09-20T11:00:28.668Z",
+        "embedded_key_matches_separate_record": true
+      }
+    ],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  },
+  "claude-directed-r2": {
+    "originals": [
+      {
+        "file": "evidence/scvd-corpus.json",
+        "sha256": "a6e132e35a1cf7a532ba1caf9a9988989dbde72decf58109d32d6e001259e3ef",
+        "envelope_pointer": "/latest"
+      }
+    ],
+    "issuer_records": [
+      {
+        "file": "evidence/scvd-signing-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    ],
+    "checks": [
+      {
+        "original": {
+          "file": "evidence/scvd-corpus.json",
+          "sha256": "a6e132e35a1cf7a532ba1caf9a9988989dbde72decf58109d32d6e001259e3ef"
+        },
+        "envelope_pointer": "/latest",
+        "issuer": {
+          "file": "evidence/scvd-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "signature_valid": true,
+        "evidence_complete": true,
+        "signed_subject_rows": [
+          {
+            "pointer": "/round/hosts/52",
+            "url": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-14T01:30:09.376Z",
+            "verdict": "ready"
+          }
+        ],
+        "publication_at": "2026-09-20T11:00:28.668Z",
+        "embedded_key_matches_separate_record": true
+      }
+    ],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  }
+}

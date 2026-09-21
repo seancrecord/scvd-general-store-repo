@@ -49,7 +49,6 @@ export function renderFunnelPage(
   const tier = report.items.filter((row) => row.verification_tier);
   const rest = report.items.filter((row) => !row.verification_tier);
   const body = `
-  <h1>The funnel — where the asks go</h1>
   <p>An <strong>ask</strong> is a 402 issued to organic traffic.
   Refusals are counted by the recorded stage: input checks, payment
   parsing or verification, and settlement. These are event counts;

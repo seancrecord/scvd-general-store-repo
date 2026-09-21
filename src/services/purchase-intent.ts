@@ -22,6 +22,18 @@ export const PURCHASE_RECORD_CODES = {
 // Advisory polling cadence, not a fulfillment deadline or alarm guarantee.
 export const PURCHASE_STATUS_POLL_SECONDS = 60;
 
+/**
+ * WHICH OF OUR OWN DOORS THE BUYER KNOCKED ON. Set by the route that
+ * answered, never by anything the buyer sends — the HTTP door's
+ * `?source=` is a stranger's string and must not reach this field.
+ *
+ * Exported so every reader of the door names the same closed set. The
+ * two that did not, and silently meant "mcp, or else http", are the
+ * subject of test/ucp/purchase-door.spec.ts.
+ */
+export const PURCHASE_DOORS = ["http", "mcp", "ucp"] as const;
+export type PurchaseDoor = (typeof PURCHASE_DOORS)[number];
+
 export interface PurchaseIntent {
   version: 1 | 2;
   /** Present on v2; v1 records retain their historical x402 interpretation. */
@@ -30,7 +42,7 @@ export interface PurchaseIntent {
   id: string;
   token: string;
   path: string;
-  door: "http" | "mcp" | "ucp";
+  door: PurchaseDoor;
   payer: string;
   terms: PaymentRequirements;
   /** One-way fingerprint of the verified wire payment, never executable bytes. */

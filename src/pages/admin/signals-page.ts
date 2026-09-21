@@ -1,6 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { PURPOSES_CAP, SIGNAL_MAP_CAP, SUBJECT_MAP_CAP, type BuyerSignals } from "@/services/buyer-signals";
+import { PURCHASE_DOORS, type PurchaseDoor } from "@/services/purchase-intent";
 
 /**
  * BUYER SIGNALS, the trial page. One number per reading up top, the
@@ -38,21 +39,49 @@ function reading(title: string, headline: string, detail: string, note: string):
   </section>`;
 }
 
-function group(map: Record<string, number>, prefix: string): Record<string, number> {
+/**
+ * Rows under one door, or — with no prefix given — the rows no door in
+ * the closed list claims: a door this page has not been taught yet, or
+ * a malformed key. Shown as its own block rather than folded into
+ * HTTP, so a door we cannot name never reads as the default one.
+ *
+ * This is NOT where the pre-2026-09-21 settles are. Those were written
+ * with the door already collapsed to `http`, so they are claimed, and
+ * they are not recoverable from the key. The page says so beside the
+ * table rather than implying the UCP row was always zero.
+ */
+function group(map: Record<string, number>, prefix?: string): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [k, n] of Object.entries(map)) {
     const [head, ...rest] = k.split(":");
-    if (head !== prefix) continue;
-    out[rest.join(":") || "unnamed"] = (out[rest.join(":") || "unnamed"] ?? 0) + n;
+    const claimed = (PURCHASE_DOORS as readonly string[]).includes(head ?? "");
+    if (prefix === undefined ? claimed : head !== prefix) continue;
+    const label = (prefix === undefined ? k : rest.join(":")) || "unnamed";
+    out[label] = (out[label] ?? 0) + n;
   }
   return out;
 }
 
+/** The keeper's words for our own doors; the list itself is the code's. */
+const DOOR_LABELS: Record<PurchaseDoor, string> = {
+  http: "HTTP",
+  mcp: "MCP",
+  ucp: "UCP checkout",
+};
+
 export function renderSignalsPage(data: SignalsPageData): string {
   const s = data.signals;
-  const railHttp = group(s.rail, "http");
-  const railMcp = group(s.rail, "mcp");
-  const railLine = `${total(s.rail)} organic settles: ${sorted(railHttp).map(([k, n]) => `${escapeHtml(k)} ×${n} over HTTP`).join(", ") || "none over HTTP"}; ${sorted(railMcp).map(([k, n]) => `${escapeHtml(k)} ×${n} over MCP`).join(", ") || "none over MCP"}.`;
+  /**
+   * ONE SECTION PER DOOR, OFF THE DOOR LIST ITSELF. Two hardcoded
+   * headings here meant a UCP settle had no row to land in even once
+   * the till started labelling it — so the page would have gone on
+   * reading right while the books underneath it had been fixed.
+   */
+  const railByDoor = PURCHASE_DOORS.map((door) => ({ door, rows: group(s.rail, door) }));
+  const unplaced = group(s.rail, undefined);
+  const railLine = `${total(s.rail)} organic settles: ${railByDoor
+    .map(({ door, rows }) => `${sorted(rows).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ") || "none"} over ${DOOR_LABELS[door]}`)
+    .join("; ")}.`;
   const refusalTop = sorted(s.refusal).slice(0, 3);
   const refusalLine = total(s.refusal) === 0
     ? "No pre-payment 400s this month."
@@ -114,8 +143,10 @@ export function renderSignalsPage(data: SignalsPageData): string {
     Each map holds ${SIGNAL_MAP_CAP} keys (${SUBJECT_MAP_CAP} for subjects and receipts) and counts the rest as "other"; counts are floors (one key, read-modify-write). Another month: <code>?month=YYYY-MM</code>.
     What buyers <em>chose</em> to tell us is on <a href="/admin/disclosure">the disclosure page</a>; this page is the other half.</small></p>
   </section>
-  ${reading("Which rail, by door", railLine, `<h3>HTTP</h3>${table(railHttp, ["network", "settles"])}<h3>MCP</h3>${table(railMcp, ["network", "settles"])}`,
-    "The rails offered are on /rails. A rail nobody chooses is a fact; a rail chosen only over MCP is a client default showing through.")}
+  ${reading("Which rail, by door", railLine, `${railByDoor
+    .map(({ door, rows }) => `<h3>${DOOR_LABELS[door]}</h3>${table(rows, ["network", "settles"])}`)
+    .join("")}${Object.keys(unplaced).length === 0 ? "" : `<h3>Door not recorded</h3>${table(unplaced, ["network", "settles"])}<p><small>A door this page cannot name. Not a zero for any door, and not an HTTP sale.</small></p>`}`,
+    "The rails offered are on /rails. A rail nobody chooses is a fact; a rail chosen only over MCP is a client default showing through. The doors are our own; which rail rode which door is two facts, not one — do not add them together. The UCP row starts 2026-09-21: until then every door but MCP was written as HTTP, so earlier UCP settles are inside the HTTP count and cannot be taken back out. An empty UCP row before that date is a missing label, not a missing sale.")}
   ${reading("Avoidable 400s, by item, field and why", refusalLine, `${table(s.refusal, ["item:field:reason", "refusals"])}<h3>The worked example, bought as-is</h3><p>${examplesLine}</p>${table(s.examples, ["item:field", "purchases"])}`,
     "missing: the field was absent. malformed: it failed the published pattern. example: the worked example was pasted back. other: an encoding or callback refusal. A field that leads this table is a description or an example to rewrite, not a buyer to blame; an example bought as-is is a signed reading of a placeholder, which is the same defect from the other side.")}
   ${reading("Who reads receipts", readersLine, `<h3>By reader and artifact age</h3>${table(s.readers, ["reader:age", "reads"])}<h3>Where they were shown (referrer host)</h3>${table(s.referrers, ["host", "reads"])}`,
@@ -133,5 +164,5 @@ export function renderSignalsPage(data: SignalsPageData): string {
     <p><small>Flip <code>BUYER_SIGNALS_ENABLED</code> in <code>src/services/buyer-signals.ts</code> and every write stops the next deploy. The keys live under <code>metric:&lt;month&gt;:signals:</code> and nothing else reads them.
     Deleting the area is that file, this page, and the call sites that name them. If after a month none of the readings changed a decision, that is the finding.</small></p>
   </section>`;
-  return renderAdminShell("signals", body);
+  return renderAdminShell("signals", body, [], { window: `${s.month}${s.enabled ? "" : " — dial off"}` });
 }

@@ -73,6 +73,26 @@ h1 .lamp { color: var(--brass); }
   text-transform: uppercase;
   margin-bottom: 1.4rem;
 }
+/* The store's name, above the rail. The room's own name is the h1. */
+.office-eyebrow {
+  color: var(--brass-dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.9rem;
+}
+/* One line under every room's name: what you are looking at, and when
+   it was read. --ivory-dim rather than --brass-dim: this one is meant
+   to be read, not glanced past. */
+.page-what {
+  color: var(--ivory-dim);
+  font-size: 0.86rem;
+  margin: 0 0 1.4rem;
+  max-width: 62ch;
+}
+.page-asof {
+  color: var(--brass-dim);
+}
 h2 {
   font-size: 0.84rem;
   letter-spacing: 0.14em;
@@ -105,13 +125,30 @@ nav.readings {
   border-bottom: 0;
   padding-bottom: 0;
 }
-nav.readings::before {
-  content: "readings";
+/* Four shelves, each on its own line, each with a quiet signpost. The
+   single "readings" eyebrow is gone: it labelled twenty equal things,
+   which is the same as labelling none of them. */
+nav.readings .shelf {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+nav.readings .shelf-name {
+  display: inline-block;
+  min-width: 7.5rem;
   color: var(--brass-dim);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-size: 0.7rem;
-  margin-right: 1.1rem;
+  margin-right: 0.6rem;
+}
+/* On a phone the signpost sits above its shelf rather than stealing
+   half the line from it. */
+@media (max-width: 40rem) {
+  nav.readings .shelf-name {
+    display: block;
+    min-width: 0;
+    margin: 0.5rem 0 0.1rem;
+  }
 }
 
 /* A working surface: baize under glass, brass at the edge. */
