@@ -27,3 +27,11 @@ responses and hashes are retained privately under
 `research/host-markdown-suffix-20260920.local/`. This discovery is a controller
 readback, not a fresh native buyer result. Release still needs a live suffix
 readback; a new buyer cohort keeps its separate qualification and freeze.
+
+The first hosted run exposed an existing calendar-sensitive receipt assertion:
+this week's signed note contains an apostrophe, which the page correctly escapes.
+The test compared unescaped text instead. It failed again locally. The shared
+correction from the concurrent acceptance-report task checks this certificate's
+actual note in its escaped HTML form, preserving the rendering and signature
+behavior. All 47 focused tests across four files and typecheck pass with that
+correction. The final head must pass the full hosted suite with that test repair.
