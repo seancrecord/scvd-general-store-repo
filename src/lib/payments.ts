@@ -614,6 +614,20 @@ export function settlementAssetMetadata(network: string, asset: string): { symbo
   return matches ? { symbol: "USDC", decimals: USDC_DECIMALS } : null;
 }
 
+/**
+ * THE VERSION THE MANIFESTS CLAIM, AND WHY IT IS A NAME.
+ *
+ * The x402 discovery extension requires the well-known manifest to
+ * carry `x402Version` as an integer, and says it "carries the same
+ * name and type as the `x402Version` in the host's own 402 challenge"
+ * — confirm the value by reading your own 402. The authority is
+ * therefore `payment-gate`'s challenge, not this line: this constant
+ * exists so the manifests quote ONE number instead of six, and
+ * test/x402-discovery-shape.spec.ts pins it against a live 402 so the
+ * quote cannot drift from the money path in silence (AT_SCALE rule 1).
+ */
+export const MANIFEST_X402_VERSION = 2;
+
 export function manifestAccepts(
   env: PaymentNetworkConfig,
   tiersUsdc: number[],
