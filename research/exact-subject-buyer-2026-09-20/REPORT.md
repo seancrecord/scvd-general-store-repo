@@ -189,3 +189,10 @@ public references to that retained bundle; raw host context is not republished.
 The acquisition score is preserved separately from the reviewed score.
 [Validation](validation.json) records report checks and the required full-suite
 outcomes separately from native results.
+
+Hosted report validation on September 21 exposed an existing calendar-dependent
+receipt-page assertion: the weekly note now contains an apostrophe, and the test
+compared its raw text against correctly escaped HTML. The unchanged test failed
+locally too. This PR corrects the assertion to match the exact certificate note
+in its HTML form; production behavior and native cohort results are unchanged.
+The failing run and subsequent checks are recorded in validation.
