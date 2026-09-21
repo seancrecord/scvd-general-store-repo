@@ -112,9 +112,11 @@ describe("every refusal answers in one shape", () => {
     const [catalog, returns, shipping] = await Promise.all(
       ["/catalog", "/returns", "/shipping"].map((path) => refusal(path)),
     );
-    expect(catalog.status).toBe(404);
-    expect(Object.keys(catalog.body).sort()).toEqual(Object.keys(returns.body).sort());
-    expect(Object.keys(catalog.body).sort()).toEqual(Object.keys(shipping.body).sort());
+    expect(catalog!.status).toBe(404);
+    const keys = Object.keys(catalog!.body).sort();
+    expect(keys.length).toBeGreaterThan(3);
+    expect(Object.keys(returns!.body).sort()).toEqual(keys);
+    expect(Object.keys(shipping!.body).sort()).toEqual(keys);
   });
 
   it("resolves the aliases the review read as inconsistent errors", async () => {
@@ -138,6 +140,49 @@ describe("every refusal answers in one shape", () => {
       expect(response.headers.get("Location"), alias).toMatch(
         new RegExp(`^(${BASE})?${target}$`),
       );
+    }
+  });
+
+  it("names the missing input in fields, to every client shape", async () => {
+    /*
+     * The review's companion ask: "make sure JSON clients get a
+     * structured error naming the missing param with a link to the
+     * input schema, not just the friendly HTML page."
+     *
+     * They do, and so does everyone else — the friendly page belongs
+     * to the 402 and has never been served on a 400. This pins that a
+     * bad input is answered in FIELDS whoever asks, because the
+     * tempting change here is to start negotiating this response the
+     * way the 402 is negotiated, which would hand a browser-shaped
+     * agent prose where it needs a field name.
+     */
+    const shapes: Array<Record<string, string>> = [
+      { Accept: "application/json" },
+      { Accept: "*/*" },
+      {
+        Accept: "text/html,application/xhtml+xml",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36",
+      },
+    ];
+    for (const headers of shapes) {
+      const response = await SELF.fetch(
+        `${BASE}/api/buy/spot_check?host=${encodeURIComponent("not a host")}`,
+        { headers },
+      );
+      expect(response.status, JSON.stringify(headers)).toBe(400);
+      expect(response.headers.get("Content-Type")).toContain("application/json");
+
+      const body = (await response.json()) as Envelope;
+      expect(body["charged"]).toBe(false);
+      expect(body["code"]).toBe("bad_request");
+      expect(body["retry_same_request"]).toBe(false);
+      // The parameter, by name, and the contract that describes it.
+      expect(body["required_params"]).toContain("host");
+      expect(body["input_contract_url"]).toContain("/menu/spot_check");
+      const issues = body["issues"] as Array<{ field: string; code: string; location: string }>;
+      expect(issues.some((issue) => issue.field === "host")).toBe(true);
+      expect(issues[0]!.location).toBe("query");
     }
   });
 
