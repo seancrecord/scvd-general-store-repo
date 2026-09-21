@@ -1202,6 +1202,7 @@ async function callPurchaseTool(
    */
   const input = purchaseInputFrom(item, toolArgs(args));
   input.source = "mcp";
+  input.door = "mcp";
   if (idempotencyKey) input.idempotent = true;
   const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
   if (userAgent) {

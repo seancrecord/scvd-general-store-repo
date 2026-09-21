@@ -311,7 +311,7 @@ export async function walkToSettlementBoundary(
       env,
       item!,
       pending,
-      fulfillmentInputFor(item!, checkout.inputs ?? {}),
+      { ...fulfillmentInputFor(item!, checkout.inputs ?? {}), door: "ucp" },
       locator,
     );
   } catch (error) {
