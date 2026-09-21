@@ -7,6 +7,7 @@ import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import directoryData from "@/store/directory.json";
 import { TRUST_LIST_ENTRIES } from "@/store/trust-list";
+import { NEIGHBOUR_RECEIPTS } from "@/store/neighbours";
 import type { DirectoryData, DirectoryListing, HonoEnv } from "@/types";
 
 /**
@@ -30,6 +31,20 @@ export const directoryRoutes = new Hono<HonoEnv>();
 
 const DIRECTORY: DirectoryData = directoryData;
 
+/**
+ * WHAT THE PAGE SAYS IT IS, typed once (2026-09-21, his brief: "more
+ * of like who we are seeing about town"). It rode in two places, the
+ * paper page and the markdown twin, and a description hand-typed
+ * twice is a description that drifts — AT_SCALE rule 1 in miniature.
+ *
+ * The old line called this "a short book, kept short on purpose,"
+ * which stopped being true the day the September receipts landed and
+ * the book went from four names to twenty-two. What has not changed
+ * is how a name gets on it, so the copy says that instead of counting.
+ */
+const DIRECTORY_DESCRIPTION =
+  "Who we've been seeing about town. Other services in the neighbourhood, each one listed by hand after the keeper used it, and what it was like when he did.";
+
 /** Origins normalize loosely: a trailing slash is not a different neighbor. */
 function sameOrigin(a: string, b: string): boolean {
   try {
@@ -46,14 +61,44 @@ function trustEntryFor(listing: DirectoryListing) {
   );
 }
 
+/**
+ * THE RECEIPT BEHIND A LINE, when there is one (2026-09-20, the
+ * September catch-up). Eighteen listings arrived at once out of
+ * /neighbours, and every one of them has something the four older
+ * listings do not: money moved, on a date, for a named amount.
+ *
+ * Until now a listing off the signed trust list was told "nothing
+ * about this neighbor is signed," which for these eighteen is a FALSE
+ * NEGATIVE ABOUT OUR OWN EVIDENCE — the SniperX line rests on a
+ * Solana mainnet signature a stranger can open. The trust list and
+ * the receipts table are different instruments and neither stands in
+ * for the other, so the listing points at whichever one it actually
+ * has, and says so in those words.
+ */
+function receiptFor(listing: DirectoryListing) {
+  return NEIGHBOUR_RECEIPTS.find((row) => sameOrigin(row.origin, listing.url));
+}
+
 function listingJson(
   listing: DirectoryListing,
   base: string,
 ): Record<string, unknown> {
   const entry = trustEntryFor(listing);
+  const receipt = receiptFor(listing);
   return {
     ...listing,
     listing_url: `${base}/directory/${listing.slug}`,
+    ...(receipt
+      ? {
+          receipt: {
+            paid: true,
+            date: receipt.date,
+            paid_usdc: receipt.paid_usdc,
+            receipts_url: `${base}/neighbours`,
+            note: "This line was written after a purchase. The dated receipt — what we asked, what came back, what it cost — is on /neighbours, and it is an observation of one transaction rather than a claim about this neighbor today.",
+          },
+        }
+      : {}),
     trust_list: entry
       ? {
           listed: true,
@@ -64,7 +109,9 @@ function listingJson(
         }
       : {
           listed: false,
-          note: "Reviewed here, not on the signed trust list. The review is an opinion and nothing about this neighbor is signed.",
+          note: receipt
+            ? "Not on the signed trust list. What stands behind this line is the dated receipt above, on /neighbours."
+            : "Reviewed here, not on the signed trust list. The review is an opinion and nothing about this neighbor is signed.",
         },
   };
 }
@@ -80,6 +127,13 @@ function listingHtml(listing: DirectoryListing, base: string): string {
             : "used, with nothing paid",
       )}, first checked ${escapeHtml(entry.first_verified)}.</p>`
     : "";
+  // The human page says what the JSON says: a line bought and paid
+  // for points at its receipt, rather than going quiet because the
+  // trust list happens not to carry the name.
+  const receipt = receiptFor(listing);
+  const receiptLine = receipt
+    ? `<p class="menu-meta">Written after a purchase: $${escapeHtml(String(receipt.paid_usdc))} on ${escapeHtml(receipt.date)}. The <a href="/neighbours">receipt</a> says what we asked and what came back.</p>`
+    : "";
   return `<div class="menu-item">
     <div class="menu-line">
       <span class="menu-name"><a href="${base}/directory/${escapeHtml(listing.slug)}">${escapeHtml(listing.name)}</a></span>
@@ -88,6 +142,7 @@ function listingHtml(listing: DirectoryListing, base: string): string {
     </div>
     <p class="menu-desc">${escapeHtml(listing.review)}</p>
     <p class="menu-meta"><a href="${escapeHtml(listing.url)}">${escapeHtml(listing.url)}</a> • added ${escapeHtml(listing.added)}</p>
+    ${receiptLine}
     ${signedLine}
   </div>`;
 }
@@ -167,7 +222,7 @@ directoryRoutes.get("/directory", (c) => {
       path: "/directory",
       title: "Town Directory",
       description:
-        "Other services in the neighbourhood, listed by hand with what each one does. A short book, kept short on purpose.",
+        DIRECTORY_DESCRIPTION,
       document: indexPayload as unknown as Record<string, unknown>,
     });
   }
@@ -182,7 +237,7 @@ directoryRoutes.get("/directory", (c) => {
       renderSimplePage({
         title: "Town Directory",
         description:
-          "Other services in the neighbourhood, listed by hand with what each one does. A short book, kept short on purpose.",
+          DIRECTORY_DESCRIPTION,
         path: "/directory",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(DIRECTORY.note)}</p>
