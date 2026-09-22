@@ -215,8 +215,9 @@ required.
 
 Every tool in \`tools/list\` carries the codes it can refuse with and,
 on each, whether money moved. The prose is here rather than repeated
-on all twenty-one tools, which is the one hop house rule 57.4 allows
-and is worth about 100 KB of a catalogue every session downloads.
+on all ${catalog.length} tools, which is the one hop house rule 57.4
+allows and is worth about 100 KB of a catalogue every session
+downloads.
 \`charged\` stays on the tool itself: a caller must never fetch a
 document to learn whether it was billed.
 

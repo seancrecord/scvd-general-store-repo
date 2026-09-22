@@ -328,7 +328,7 @@ export const PUBLISHED_COUNTS: readonly PublishedCount[] = [
       kind: "count",
       unit: "distinct paying wallets",
       instrument: "one payer row per wallet, counted (services/stats.ts)",
-      population: "wallets that settled an organic purchase; one buyer on two wallets reads as two",
+      population: "wallets that settled an organic purchase; one buyer paying from a second wallet reads as two",
       window: SINCE_OPENING,
       exclusions: [HOUSE],
       floor:
