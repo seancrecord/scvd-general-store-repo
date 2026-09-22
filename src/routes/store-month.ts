@@ -220,8 +220,9 @@ storeMonthRoutes.get("/store-month", async (c) => {
     A Bitcoin stamp reading <code>pending</code> means a calendar accepted the
     digest, not that Bitcoin confirmed it.</p>
     <p class="menu-desc">The window is a month because the counters are kept by
-    month. There is no weekly cut of these numbers, and inventing one would
-    have meant printing month-to-date figures under a weekly heading.</p>
+    month: as of 2026-09-22 there is no weekly cut of these numbers, and
+    inventing one would have meant printing month-to-date figures under a
+    weekly heading.</p>
   </section>
   <section><h2>The chain</h2>
     <p class="menu-meta">Newest first. <a href="/store-month/verify.json">Verify
