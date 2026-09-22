@@ -1,5 +1,5 @@
-import { SELF } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { SELF, env } from "cloudflare:test";
+import { beforeAll, describe, expect, it } from "vitest";
 import {
   PUBLISHED_COUNTS,
   PUBLISHED_COUNTS_RULE,
@@ -14,6 +14,8 @@ import RAILS_SHAPE from "./fixtures/published-counts/rails.json";
 import OBSERVATORY_SHAPE from "./fixtures/published-counts/observatory.json";
 import COVERAGE_SHAPE from "./fixtures/published-counts/coverage.json";
 import CORPUS_SHAPE from "./fixtures/published-counts/corpus.json";
+import { sealStoreMonth, unsealedMonths } from "@/services/store-month";
+import type { Env } from "@/types";
 
 /**
  * THE PUBLISHED COUNTS GUARD (2026-09-21). Rule 43 for the numbers:
@@ -25,7 +27,18 @@ import CORPUS_SHAPE from "./fixtures/published-counts/corpus.json";
  * net-by-chain month, a correction) is held too.
  */
 
-const ROUTES: Array<{ route: CountRoute; url: string; shape: unknown }> = [
+/**
+ * THE STORE'S OWN MONTH has no recorded production shape yet: nothing
+ * is sealed in production until the first month closes under the new
+ * chain. So `shape` is optional, and the live walk is made meaningful
+ * instead — beforeAll seals a month into the suite's own store, so
+ * the walk reads a real entry with real figures rather than an empty
+ * chain that would pass by having nothing in it. A route walked with
+ * no rows is a guard asleep, which is the failure this file exists to
+ * prevent. When the first month is sealed in production, record its
+ * shape here like the others.
+ */
+const ROUTES: Array<{ route: CountRoute; url: string; shape?: unknown }> = [
   { route: "/stats", url: "/stats", shape: STATS_SHAPE },
   { route: "/pulse", url: "/pulse.json", shape: PULSE_SHAPE },
   { route: "/pulse", url: "/pulse", shape: PULSE_SHAPE },
@@ -33,7 +46,23 @@ const ROUTES: Array<{ route: CountRoute; url: string; shape: unknown }> = [
   { route: "/observatory", url: "/observatory", shape: OBSERVATORY_SHAPE },
   { route: "/coverage", url: "/coverage.json", shape: COVERAGE_SHAPE },
   { route: "/corpus.json", url: "/corpus.json", shape: CORPUS_SHAPE },
+  { route: "/store-month", url: "/store-month.json" },
 ];
+
+/**
+ * Seal one month so the /store-month walk above reads an entry. The
+ * calendar is stubbed: a guard that depends on the network is a guard
+ * that goes red for reasons that have nothing to do with the register.
+ */
+beforeAll(async () => {
+  const testEnv = env as unknown as Env;
+  const [month] = await unsealedMonths(testEnv);
+  if (month) {
+    await sealStoreMonth(testEnv, month, {
+      submit: async () => ({ status: "pending" as const, submitted_at: "2026-09-22T00:00:00.000Z" }),
+    });
+  }
+});
 
 function numericLeaves(node: unknown, path: string, out: Set<string>): void {
   if (typeof node === "number") {
@@ -82,6 +111,7 @@ describe("every published count has its denominator registered", () => {
   }
 
   for (const { route, url, shape } of ROUTES) {
+    if (shape === undefined) continue; // no production shape recorded yet
     it(`serves no numeric leaf without a row: ${url} (recorded production shape)`, () => {
       expect(unregistered(route, shape)).toEqual([]);
     });

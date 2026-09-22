@@ -49,6 +49,31 @@ export const LEDGER_FOR_MONEY =
 export const LEDGER_FREE_FIRST =
   "Every week the chain holds is free to read as a page or as JSON, and each one names the signed snapshot it counted so you can rebuild the whole reading yourself.";
 
+/* ── /store-month ─────────────────────────────────────────────────── */
+
+/**
+ * THE ONE INSTRUMENT POINTED AT US (2026-09-22). Every other row here
+ * is a reading of somebody else's door. This one is the store's own
+ * books held to the terms the store asks of everybody else, which is
+ * the only answer to "why should we believe your numbers" that does
+ * not require believing us.
+ */
+export const STORE_MONTH_OPENED = "2026-09-22";
+
+/*
+ * NO APOSTROPHE, NO QUOTE, in any of the three (house rule 60.2): the
+ * page escapes them and the identical-text match across the page, the
+ * JSON twin and llms.txt dies on the escape rather than on the words.
+ */
+export const STORE_MONTH_PROPOSITION =
+  "One closed month at this store, frozen and signed: what was offered, what was presented, what settled and what declined, which rails and which items took the money, and who read the pages about a host — linked to the month before it and stamped into Bitcoin time.";
+
+export const STORE_MONTH_FOR_MONEY =
+  "Nothing here costs money and nothing here is for sale: it is the evidence we owe for asking anyone to cite our other readings, and a record the seller pays to publish about itself is worth less rather than more.";
+
+export const STORE_MONTH_FREE_FIRST =
+  "Every sealed month is free to read as a page or as JSON with its signature and its digest beside it, and the chain verifies on demand so a reader can catch us editing it without having to ask us whether we did.";
+
 /* ── /mcp-ward ────────────────────────────────────────────────────── */
 
 export const MCP_WARD_PROPOSITION =

@@ -1126,8 +1126,20 @@ const BASE = "https://scvd.store";
 // the merged document and is neither of theirs; the two notes above
 // both stand and this one says why there is a third. Taken from the
 // merged tree, the way this file asks.
+// 2026-09-22, THE STORE'S OWN MONTH: the guide gained a paragraph in
+// the evidence section naming /store-month — the chain that points
+// this store's instruments at its own books — because house rule 60.2
+// requires the register's three sentences to read identically on the
+// page, the JSON twin and llms.txt, and rule 57's one hop needs the
+// room named where an agent is standing. The paragraph was trimmed
+// once on the way in: its first draft put the corpus section at 30,153
+// bytes against a 30,000 ceiling, and the ceiling is the thing that
+// holds, so the prose went rather than the budget. Verified the way
+// this file asks rather than asserted: with routes/llms.ts alone
+// reverted and nothing else touched, both digests below reproduced
+// their previous values exactly.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "90c49eea3b2caf1e66e5c405026a5fc89321c3ab8fc264098596ed35cfe086b1";
+  "a873cb856e5ac67fd0d1a3f0bd4714dcd815a85a30604c315f9ec90a23b8acfa";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1217,7 +1229,9 @@ describe("nothing was rewritten", () => {
 // both stand and this one says why there is a third. Taken from the
 // merged tree, the way this file asks.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "e48cdfc54b98617dcae6c170e95ca4a913da2d04228b4abf062a559137a40506",
+      // Re-pinned 2026-09-22 with the store-month paragraph; see the
+      // note on GUIDE_DIGEST_BEFORE_THE_SPLIT for how it was verified.
+      "3c4fad79393cd163fc62be029b76d9ae067a37e7d238eded01be346251222803",
     );
   });
 

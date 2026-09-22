@@ -332,6 +332,7 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
   "/credit": ["application/json", "text/html"],
   "/samples": ["application/json", "text/html"],
   "/ledger": ["application/json", "text/html"],
+  "/store-month": ["application/json", "text/markdown", "text/html"],
   "/doors": ["application/json", "text/html"],
   "/zodiac": ["application/json", "text/html"],
   "/almanac": ["application/json", "text/html"],
@@ -6294,6 +6295,30 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "What happens to anything this store holds for you if it closes for good, decided in advance and dated: signed artifacts, private confessions, held grudges and the public wall each get a different ending. HTML for browsers, JSON otherwise. Free.",
           ),
           WIND_DOWN_SCHEMA,
+        ),
+      },
+      /**
+       * THE STORE'S OWN MONTH (2026-09-22). The chain that points the
+       * observatory at its own books. Free, unauthenticated, and in
+       * the contract because a record nobody can find is a record
+       * nobody can check.
+       */
+      "/store-month.json": {
+        get: returns(
+          freeOp(
+            "The store's own months, signed and chained",
+            "Every sealed month of this store's own funnel, rails, per-item till and reading concentration, each one frozen, signed, linked to the month before it and stamped into Bitcoin time. Each entry serves the exact string its signature covers, so the check does not require trusting us. Free. The human twin is /store-month.",
+          ),
+          { type: "object" },
+        ),
+      },
+      "/store-month/verify.json": {
+        get: returns(
+          freeOp(
+            "The chain's own verdict on itself",
+            "Every entry rehashed from its published document, every signature checked against the key that entry names, and every link walked. Run by us on our own chain, which is why each entry serves its signed bytes for a reader to check independently. Free.",
+          ),
+          { type: "object" },
         ),
       },
       "/pulse.json": {

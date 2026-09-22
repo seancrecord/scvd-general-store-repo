@@ -36,7 +36,7 @@
  * quoted and points at the bytes.
  */
 
-export type CountRoute = "/stats" | "/pulse" | "/rails" | "/observatory" | "/coverage" | "/corpus.json";
+export type CountRoute = "/stats" | "/pulse" | "/rails" | "/observatory" | "/coverage" | "/corpus.json" | "/store-month";
 
 export type CountKind =
   /** A tally of events or things. */
@@ -86,6 +86,18 @@ const INFRA = "infrastructure: crawlers, scanners, monitors and indexes by name 
 const KV_FLOOR =
   "KV read-add-write before 2026-09-11 could drop a count under a burst; since then the counter ledger's single writer holds the truth and KV mirrors it (services/counter-ledger.ts)";
 const SINCE_OPENING = "since 2026-07-22, the store's first day";
+/**
+ * A month that has finished. The signed record refuses to seal the
+ * month in progress, so this window never means "so far".
+ */
+const CLOSED_MONTH = "the closed calendar month the entry names, UTC";
+/**
+ * The prefix every figure row on /store-month sits under. Long, and
+ * deliberately not shortened: the register's paths are the paths a
+ * reader walks in the served JSON, and a prettier key that does not
+ * match the document is a register describing a different response.
+ */
+const STORE_MONTH_FIGURE = "entries[].document.figures.";
 const TILL = "the till, in the call that produces the organic count (lib/metrics.ts recordSettle)";
 const PORCH = "the porch counter on every counted surface (lib/metrics.ts recordPorchVisit, lib/porch-surface.ts)";
 const PORCH_FLOOR =
@@ -789,6 +801,138 @@ export const PUBLISHED_COUNTS: readonly PublishedCount[] = [
       exclusions: [],
       cap: "stated inside the round: listed_resources, capped, door_bank, coverage_suspect",
     },
+  ]),
+  /**
+   * THE STORE'S OWN MONTH (2026-09-22). Every row here is a figure the
+   * live surfaces already serve under their own register rows; what is
+   * different is that these are FROZEN, so the window is a closed month
+   * and the reader is told which figures are nonetheless all-time.
+   *
+   * The `entries[].document.figures.` prefix is long and is not
+   * shortened: the register's paths are the paths a reader actually
+   * walks in the served JSON, and a prettier key that does not match
+   * the document is a register describing a different response.
+   */
+  ...rows("/store-month", [
+  {
+    path: "entries[].document.version",
+    kind: "constant",
+    unit: "the chain schema's version",
+    instrument: "services/store-month.ts",
+    population: "not a count — the document shape a reader pins against",
+    window: "the entry's own seal",
+    exclusions: [],
+  },
+  {
+    path: "entries[].document.sequence",
+    kind: "constant",
+    unit: "position in the chain, 1-based and contiguous",
+    instrument: "services/store-month.ts",
+    population: "not a count — a position in the chain; a gap here is a chain fault rather than a quiet month",
+    window: "the entry's own seal",
+    exclusions: [],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}organic_challenges`,
+    kind: "count",
+    unit: "402s offered to organic traffic",
+    instrument: "the pulse's monthly window (services/pulse.ts), frozen",
+    population: "the funnel's denominator for this month",
+    window: CLOSED_MONTH,
+    exclusions: [HOUSE],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}organic_payments_presented`,
+    kind: "count",
+    unit: "payments actually presented",
+    instrument: "the pulse's monthly window, frozen; the sum of settled and declined",
+    population: "organic_challenges",
+    window: CLOSED_MONTH,
+    exclusions: [HOUSE],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}organic_settled`,
+    kind: "count",
+    unit: "settled purchases",
+    instrument: "the pulse's monthly window, frozen",
+    population: "organic_payments_presented",
+    window: CLOSED_MONTH,
+    exclusions: [HOUSE, "family settles reclassified after the fact"],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}organic_declines`,
+    kind: "count",
+    unit: "payments presented and refused",
+    instrument: "the pulse's monthly window, frozen",
+    population: "organic_payments_presented",
+    window: CLOSED_MONTH,
+    exclusions: [HOUSE],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}conversion_rate`,
+    kind: "rate",
+    unit: "settled over offered",
+    instrument: "the pulse's own derivation, frozen",
+    population: "organic_settled / organic_challenges; null, never zero, when nothing was offered",
+    window: CLOSED_MONTH,
+    exclusions: [HOUSE],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}by_rail.*`,
+    kind: "count",
+    unit: "organic settles on that network",
+    instrument: "the books' rail split (services/stats.ts), frozen",
+    population: "ALL TIME, not this month — the split the books keep; null when it is withheld",
+    window: SINCE_OPENING,
+    exclusions: [HOUSE],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}by_item.*.organic`,
+    kind: "count",
+    unit: "organic settles on that item",
+    instrument: "the per-item till (services/stats.ts, ruling R3), frozen",
+    population:
+      "ALL TIME, not this month; RAW — the reclassification ledger moves family settles in the totals only and cannot follow these rows",
+    window: SINCE_OPENING,
+    exclusions: [],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}by_item.*.house`,
+    kind: "count",
+    unit: "house settles on that item",
+    instrument: "the per-item till (services/stats.ts, ruling R3), frozen",
+    population: "ALL TIME, not this month; the house half of the same rows, kept apart rather than netted",
+    window: SINCE_OPENING,
+    exclusions: [],
+  },
+  {
+    path: `${STORE_MONTH_FIGURE}host_pages.**`,
+    kind: "count",
+    unit: "subjects and reads in the concentration histogram",
+    instrument: "the signal store's per-subject rows (services/buyer-signals.ts), frozen",
+    population:
+      "subjects read this month, over the month's subject count; no host is named and `overflow` carries what a capped map bucketed",
+    window: CLOSED_MONTH,
+    exclusions: ["infrastructure and crawlers by name"],
+  },
+  {
+    path: "entries",
+    kind: "count",
+    unit: "sealed months in the chain",
+    instrument: "services/store-month.ts",
+    population: "every month sealed since the chain opened; `scan_truncated` says when the scan did not reach them all",
+    window: "the chain's whole life",
+    exclusions: [],
+  },
+  {
+    path: "checks[].sequence",
+    kind: "constant",
+    unit: "the entry a verdict row is about",
+    instrument: "verifyStoreMonthChain (services/store-month.ts)",
+    population: "not a count — the entry each verdict row is about, one row per entry the scan reached",
+    window: "the chain's whole life",
+    exclusions: [],
+  },
   ]),
 ];
 

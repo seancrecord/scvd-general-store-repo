@@ -134,6 +134,7 @@ import {
   replayRoutes,
   wellKnownRoutes,
   coverageRoutes,
+  storeMonthRoutes,
   sourceRoutes,
   ledgerRoutes,
   mcpWardRoutes,
@@ -293,6 +294,7 @@ app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
 app.route("/", coverageRoutes);
+app.route("/", storeMonthRoutes);
 app.route("/", sourceRoutes);
 app.route("/", ledgerRoutes);
 app.route("/", mcpWardRoutes);
@@ -576,6 +578,28 @@ const worker: ExportedHandler<Env> = {
      */
     await publishSeedRecord(env, utcDate()).catch(() => undefined);
     if (event.cron === "0 11 * * SUN") {
+      /**
+       * THE STORE'S OWN MONTH, SEALED (2026-09-22). It rides the
+       * Sunday press rather than taking a cron of its own because it
+       * is idempotent per month: on the Sundays inside a month it
+       * refuses the month in progress and does nothing, and on the
+       * first Sunday after a month closes it seals it.
+       *
+       * OLDEST FIRST, AND EVERY UNSEALED MONTH, not just last one.
+       * The registry press built a permanent hole in a public tally
+       * by reading only the latest round, so a month missed while the
+       * store was down is picked up on the next pass instead of being
+       * lost. A month the pulse can no longer see is refused rather
+       * than sealed empty, and the refusal is not an alert: it is the
+       * designed end of a trailing window.
+       */
+      ctx.waitUntil(
+        import("@/services/store-month").then(async ({ sealStoreMonth, unsealedMonths }) => {
+          for (const month of await unsealedMonths(env)) {
+            await sealStoreMonth(env, month);
+          }
+        }),
+      );
       /**
        * THE COLD EXPORT rides the same press as the ward round
        * (roadmap 0.11). Every signature, digest and OpenTimestamps

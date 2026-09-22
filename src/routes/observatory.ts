@@ -141,7 +141,7 @@ observatoryRoutes.get("/observatory", async (c) => {
         <p class="menu-meta">Counted by name: ${Object.entries(observatory.counted_paths)
           .map(([path, surface]) => `<code>${escapeHtml(path)}</code> → ${escapeHtml(surface)}`)
           .join(" · ")}. A surface absent from this list is not counted, which is not the same as unvisited.</p>
-        <p class="menu-meta">Machine-readable at the same URL with <code>Accept: application/json</code>; computed live at ${escapeHtml(observatory.computed_at)} from the counters the admin desk reads. ${escapeHtml(observatory.corrections)} The funnel itself is at <a href="/pulse">${escapeHtml(base)}/pulse</a>.</p>
+        <p class="menu-meta">Machine-readable at the same URL with <code>Accept: application/json</code>; computed live at ${escapeHtml(observatory.computed_at)} from the counters the admin desk reads. ${escapeHtml(observatory.corrections)} The funnel itself is at <a href="/pulse">${escapeHtml(base)}/pulse</a>, and the closed months of both — frozen, signed and linked so a cited figure cannot move — are at <a href="/store-month">the store's own month</a>.</p>
       </section>
       ${denominatorsSectionHtml("/observatory", escapeHtml)}`,
     }),

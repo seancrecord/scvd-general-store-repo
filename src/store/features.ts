@@ -21,6 +21,10 @@ import {
 } from "@/store/copy/operators";
 import {
   INSTRUMENTS_OPENED,
+  STORE_MONTH_FOR_MONEY,
+  STORE_MONTH_FREE_FIRST,
+  STORE_MONTH_OPENED,
+  STORE_MONTH_PROPOSITION,
   LEDGER_FOR_MONEY,
   LEDGER_FREE_FIRST,
   LEDGER_PROPOSITION,
@@ -248,6 +252,25 @@ export const FEATURES: readonly Feature[] = [
      * list it points at; both are where a reader meets this need. */
     named_on: ["/corpus", "/doors"],
     opened: INSTRUMENTS_OPENED,
+  },
+  {
+    /**
+     * THE STORE'S OWN MONTH (2026-09-22). Every other instrument here
+     * reads somebody else's door; this one reads ours, on the terms we
+     * ask of them. Named on /pulse and /observatory because those are
+     * the live PAGES whose figures it freezes — a reader watching a
+     * number move is exactly the reader owed the frozen one. Not
+     * /stats, which serves JSON only and has no link to carry.
+     */
+    id: "store_month",
+    name: "The store's own month, signed",
+    room: "/store-month",
+    proposition: STORE_MONTH_PROPOSITION,
+    for_money: STORE_MONTH_FOR_MONEY,
+    free_first: STORE_MONTH_FREE_FIRST,
+    doors: ["/store-month.json", "/store-month/verify.json"],
+    named_on: ["/pulse", "/observatory"],
+    opened: STORE_MONTH_OPENED,
   },
   {
     id: "mcp_ward",
