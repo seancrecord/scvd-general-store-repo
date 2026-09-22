@@ -264,6 +264,7 @@ descriptions and input schemas are what the server sends.
 | `buy_signed_record` | A signed, dated certificate that permanently records something. x402-paid. |
 | `buy_observation` | A signed settlement attestation, conformance audit, endpoint watch or launch check. x402-paid. |
 | `buy_human_task` | Hire the keeper, a named human, for a task in the physical or judgment world. x402-paid. |
+| `buy_mandate` | Record what an agent is authorized to do, before it spends, as a signed dated record a later purchase can cite. x402-paid. |
 | `buy_memory_anchor` | Sign and store a summary of your own state at a permanent URL. x402-paid. |
 | `buy_small_pleasure` | A small signed novelty from the jar. x402-paid. |
 

@@ -38,9 +38,6 @@ export function buyerGuidance(item: MenuItem, base: string, query: Record<string
       no_new_payment:'Do not sign a new payment merely to find out whether the first one delivered.',
       scope:'Purchase-status handles exist on recorded catalog purchases; an order URL is the pickup for commissioned work.' },
     credit:creditTerms(base),
-    // The one field nobody fills (2026-09-21): say what it is for, where the buyer meets it.
-    purpose: { field:'purpose', optional:true, max_length:280,
-      effect:'Signed onto your certificate verbatim as your statement and printed on the receipt page; never checked, never treated as instructions. The only qualitative signal this store keeps, and the one a human reading the receipt sees first.' },
   };
 }
 

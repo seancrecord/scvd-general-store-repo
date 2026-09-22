@@ -1091,8 +1091,23 @@ const BASE = "https://scvd.store";
 // its pre-field-study state inside the merged tree, main's d37dd386
 // reproduced exactly, which is what proves the field study is the
 // whole of the difference between the two.
+// 2026-09-22, the mandate spec and the purpose sentence: two paragraphs
+// added to the guide under "What a signature from us is actually worth",
+// before the /criteria paragraph, and nothing else in the document
+// touched. The first names the mandate record's own spec (/mandate-spec)
+// and its JSON schema, which the orphan guard wants named where agents
+// read; the second says once that the buyer's `purpose` field is signed
+// onto the certificate and printed on its receipt page where a person
+// reads it. That sentence was first written onto the purpose field's own
+// description, which rides every item's input contract — 57 characters
+// times thirty-five items, and OpenAPI went 2,504 bytes over the reader
+// budget whose guard says in as many words not to raise the number. The
+// guide is one document, so it costs once. Verified the way this file
+// asks rather than asserted: with src/routes/llms.ts reverted to its
+// pre-mandate-spec state and nothing else changed, both prior digests
+// reproduced exactly.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "76f98ccf0ef7f6ac5909313a54885d25f14e85af5bdc597024676bb9e6346c26";
+  "a798bb9ba5287ef9e824717bfc81dd51af75221f9139ae2a5f276f8767ecd9c3";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1158,8 +1173,11 @@ describe("nothing was rewritten", () => {
     // for their own reasons, so this pin is the merged guide and neither
     // half's. Verified inside the merged tree: with llms.ts reverted to
     // its pre-field-study state, main's 1c798e47 reproduced exactly.
+    // 2026-09-22: re-taken with the two guide paragraphs described above
+    // (the mandate spec and its schema, and the purpose sentence said once);
+    // with llms.ts reverted, f8597f7a reproduced.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "f8597f7aa8aa5a02f8cfc968b85d28debd0909687c5bda5dbd19d7a394b5979a",
+      "c05d3a360a6019e9750f9d88bb99dfb80cc1e469aa3f73aba2e67fbb745e91a9",
     );
   });
 

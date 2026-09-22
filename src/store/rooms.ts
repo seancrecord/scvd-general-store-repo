@@ -399,6 +399,15 @@ export const ROOMS: readonly Room[] = [
    */
   { path: "/criteria", name: "What 'verified' means", on_storefront: false },
   /**
+   * THE MANDATE RECORD'S SPEC (2026-09-21). Off the storefront like
+   * /criteria — the front is the keeper's copy (rule 7) — but a room,
+   * because it is the one page written for somebody else to
+   * IMPLEMENT: another issuer reading it should find it the way an
+   * agent finds anything here, and the orphan guard is what noticed
+   * it was reachable only from prose that named it.
+   */
+  { path: "/mandate-spec", name: "The mandate record, v1", on_storefront: false, deeper: ["the_mandate"] },
+  /**
    * The two money-out rooms, given crawlable landings 2026-08-20 and
    * front slots the same day — the keeper ruled they follow the
    * held-back path "with one distinction: there should be a note for

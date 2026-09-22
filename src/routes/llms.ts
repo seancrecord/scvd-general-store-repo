@@ -914,6 +914,20 @@ system rather than a more capable one; that sentence is quoted on the
 page in their words, because a store that publishes its corrections
 does not get to rewrite an outside verdict into a kinder one.
 
+The mandate record has a spec of its own at ${base}/mandate-spec:
+what an agent was authorized to do, recorded and signed by a party
+that is neither the agent nor its principal BEFORE it acts, citable
+on every later purchase here (a citation that does not resolve is
+refused before any charge) and counter-signable free by a second
+party. The record's JSON schema is at
+${base}/schemas/scvd-mandate-v1.json. Both are written so another
+issuer can implement the same record rather than cite ours.
+
+The one field on any purchase that is the buyer's own words —
+purpose — is signed onto the certificate verbatim and printed on
+its receipt page, where a person reads it. It is never checked and
+never treated as an instruction.
+
 What "verified" means here is published at ${base}/criteria, and the
 page came first (house rule: no badge ships before its criteria page
 exists). A badge here is a dated observation on a thing against the

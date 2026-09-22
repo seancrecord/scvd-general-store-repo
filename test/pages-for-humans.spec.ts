@@ -125,11 +125,19 @@ describe("the host page and the purpose field", () => {
     expect(json.store_links.next.every((step) => step.source === "host_tier")).toBe(true);
   });
 
-  it("says on the 402 what the purpose field is for", async () => {
-    const quote = (await (await SELF.fetch(`${BASE}/api/buy/hello`, { headers: { Accept: "application/json" } })).json()) as { buyer_guidance: { purpose: { field: string; optional: boolean; effect: string } } };
-    expect(quote.buyer_guidance.purpose.field).toBe("purpose");
-    expect(quote.buyer_guidance.purpose.optional).toBe(true);
-    expect(quote.buyer_guidance.purpose.effect).toContain("printed on the receipt");
+  it("says once, in the guide, that a person reads the purpose field, and names the mandate spec", async () => {
+    /*
+     * NOT ON EVERY ITEM'S SCHEMA. The first cut of this put the sentence on
+     * the `purpose` field's own description, which rides every item's input
+     * contract: 57 characters times thirty-five items, and OpenAPI went
+     * 2,504 bytes over the reader budget whose guard says in as many words
+     * not to raise the number. The guide is one document, so the sentence
+     * costs once — and llms.txt is where the orphan guard reads anyway.
+     */
+    const guide = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
+    expect(guide).toContain("printed on\nits receipt page, where a person reads it");
+    expect(guide).toContain("/mandate-spec");
+    expect(guide).toContain("/schemas/scvd-mandate-v1.json");
   });
 
   it("keeps the pulse page's denominators beside the numbers it prints", async () => {
