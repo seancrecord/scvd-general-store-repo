@@ -1237,11 +1237,12 @@ const SUPPORTED_KINDS_EDGE_CACHE_SECONDS = 3600;
  *
  * SETTLE'S DEADLINE IS DELIBERATELY NOT SHORTENED HERE. A verify
  * timeout means "ask again"; a settle timeout means "the money may
- * have moved" — that question gets the full default deadline, and its
- * retry lives in processSettlementWithRetry where the
- * ambiguous-outcome rescue can see it. (Seeing it took a fix: the
- * settle override below converts the timeout's CLASS so the decline
- * shape actually forms — the deadline itself is untouched.)
+ * have moved" — that question gets the long deadline
+ * (SETTLE_TIMEOUT_MS below), and its retry lives in
+ * processSettlementWithRetry where the ambiguous-outcome rescue can
+ * see it. (Seeing it took a fix: the settle override below converts
+ * the timeout's CLASS so the decline shape actually forms — the
+ * deadline itself is untouched.)
  * test/verify-short-leash.spec.ts pins the verify lane into the
  * prototype chain.
  */
@@ -1249,11 +1250,39 @@ export const VERIFY_TIMEOUT_MS = 10_000;
 export const VERIFY_RETRY_DELAY_MS = 400;
 
 /**
+ * THE SETTLE DEADLINE IS THE STORE'S NUMBER, NOT THE LIBRARY'S
+ * (found reviewing the @x402/core 2.25.0 → 2.26.0 bump).
+ *
+ * Settle was the one lane with no explicit deadline: verify and
+ * getSupported each build their own client above, and settle rode
+ * whatever `DEFAULT_TIMEOUT_MS` @x402/core happened to ship, because
+ * @coinbase/x402's createFacilitatorConfig sets only `url` and
+ * `createAuthHeaders`. 2.26.0 moved that default from 30s to 90s in
+ * one line of a patch-shaped release. Nothing in this repo asked for
+ * that, no test would have caught it (test/settle-timeout.spec.ts
+ * passes its own timeoutMs), and it is the worst lane to lengthen by
+ * accident: a hung facilitator would hold a buyer's Worker request
+ * for 90s, then the one retry in processSettlementWithRetry for 90s
+ * more, before the ambiguous-settle rescue ever gets to ask the chain
+ * whether the authorization burned. Three minutes of silence where
+ * there used to be one, on the call where the money may already have
+ * moved.
+ *
+ * 30s is what the store has actually been running, and what every
+ * comment around here was written against ("a half-minute hang"
+ * below). Pinning it keeps the deadline a decision someone made
+ * rather than a constant someone else can change: a caller that
+ * passes its own `timeoutMs` still wins, so the tests keep their
+ * short leashes.
+ */
+export const SETTLE_TIMEOUT_MS = 30_000;
+
+/**
  * THE SUPPORTED SHORT-LEASH (the keeper's latency prompt, 2026-08-27,
  * closing the last cold corner of ledger #51). The KV warm covers
  * every isolate except the one that has never banked the kinds — a
  * brand-new store, or KV wiped — and that one used to wait on the
- * library's default deadline, which is sized for settle, where money
+ * settle deadline, which is sized for settle, where money
  * is in flight. Quoting a price is not that. getSupported is
  * read-only and retried implicitly by the next request, so it gets a
  * short lane: a dead facilitator becomes a bounded refusal in front
@@ -1353,6 +1382,21 @@ export function verifyFailureReason(error: unknown): string {
   return `verify_error:${classifyVerifyFailure(error)}`;
 }
 
+/**
+ * The settle lane's config: the caller's, with the store's deadline
+ * filled in where the caller named none. Separate from the class so it
+ * can run before super(), and so the "only if absent" rule is one
+ * readable line rather than a spread whose order decides it.
+ */
+function withSettleDeadline(
+  config: ConstructorParameters<typeof HTTPFacilitatorClient>[0],
+  settleTimeoutMs: number,
+): ConstructorParameters<typeof HTTPFacilitatorClient>[0] {
+  const merged = { ...(config ?? {}) };
+  if (typeof merged.timeoutMs !== "number") merged.timeoutMs = settleTimeoutMs;
+  return merged;
+}
+
 export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
   /** Same facilitator, same auth — shorter deadline, verify only. */
   private readonly verifyLane: HTTPFacilitatorClient;
@@ -1364,8 +1408,17 @@ export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
     private readonly kv: KVNamespace,
     verifyTimeoutMs: number = VERIFY_TIMEOUT_MS,
     supportedTimeoutMs: number = SUPPORTED_TIMEOUT_MS,
+    settleTimeoutMs: number = SETTLE_TIMEOUT_MS,
   ) {
-    super(config);
+    /*
+     * `super` IS THE SETTLE LANE. verify and getSupported are both
+     * overridden onto their own clients above, so the base client this
+     * call builds is reached by exactly one method: settle. Naming its
+     * deadline here is what keeps SETTLE_TIMEOUT_MS true — see that
+     * constant for why the library's own default is not trustworthy
+     * footing. A caller that supplied timeoutMs keeps it.
+     */
+    super(withSettleDeadline(config, settleTimeoutMs));
     this.verifyLane = new HTTPFacilitatorClient({
       ...(config ?? {}),
       timeoutMs: verifyTimeoutMs,
