@@ -1119,14 +1119,15 @@ const BASE = "https://scvd.store";
 // checkable. Verified the way this file asks rather than asserted:
 // with refund_policy alone reverted and nothing else touched, both
 // digests below reproduced exactly on the first try.
+// 2026-09-22, THE MERGE of those two: both halves re-pinned this line
+// for their own reasons — this branch for the mandate-spec paragraphs,
+// main for the rewritten refund promise — and the merged guide carries
+// BOTH changes, so neither half's digest describes it. The pin below is
+// the merged document and is neither of theirs; the two notes above
+// both stand and this one says why there is a third. Taken from the
+// merged tree, the way this file asks.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
   "90c49eea3b2caf1e66e5c405026a5fc89321c3ab8fc264098596ed35cfe086b1";
-// 2026-09-22, THE MERGE of those two: the refund promise (main) and the
-// mandate spec with the purpose sentence (this branch) both re-pinned
-// this digest for their own reasons, so the pin below is neither half's.
-// It is the MERGED guide, reproduced from the merged tree, which is the
-// only reading that covers both edits at once; both notes above stand
-// and this one says why there is a third.
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1208,14 +1209,15 @@ describe("nothing was rewritten", () => {
     // checkable. Verified the way this file asks rather than asserted:
     // with refund_policy alone reverted and nothing else touched, both
     // digests below reproduced exactly on the first try.
+// 2026-09-22, THE MERGE of those two: both halves re-pinned this line
+// for their own reasons — this branch for the mandate-spec paragraphs,
+// main for the rewritten refund promise — and the merged guide carries
+// BOTH changes, so neither half's digest describes it. The pin below is
+// the merged document and is neither of theirs; the two notes above
+// both stand and this one says why there is a third. Taken from the
+// merged tree, the way this file asks.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
       "e48cdfc54b98617dcae6c170e95ca4a913da2d04228b4abf062a559137a40506",
-// 2026-09-22, THE MERGE of those two: the refund promise (main) and the
-// mandate spec with the purpose sentence (this branch) both re-pinned
-// this digest for their own reasons, so the pin below is neither half's.
-// It is the MERGED guide, reproduced from the merged tree, which is the
-// only reading that covers both edits at once; both notes above stand
-// and this one says why there is a third.
     );
   });
 
