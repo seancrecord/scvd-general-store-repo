@@ -358,6 +358,16 @@ export const KV_KEYS = {
    */
   corpusPrefix: "corpus_log:",
   /**
+   * The store's own monthly record: this store's funnel, rails,
+   * per-item till and reading concentration, frozen, signed,
+   * hash-linked and OTS-stamped. A THIRD chain with a third prefix,
+   * for the same reason the corpus got the second: the corpus is a
+   * verdict on other people's doors and this is a verdict on ours,
+   * and a stranger reproducing either schema must never have to know
+   * which rows in one prefix belong to which instrument.
+   */
+  storeMonthPrefix: "store_month:",
+  /**
    * A derivation over the corpus (the door index, a feed's entries,
    * the monthly states), kept until the chain or the deploy moves:
    * surface, the deployed version's id, the chain fingerprint. Never

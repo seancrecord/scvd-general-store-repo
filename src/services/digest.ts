@@ -10,10 +10,9 @@ import {
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { Env, OrderRecord, WeeklyDigest } from "@/types";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
-import { computePulse } from "@/services/pulse";
 import { computeStats } from "@/services/stats";
-import { readBuyerSignals } from "@/services/buyer-signals";
 import { metricsMonth } from "@/lib/metrics";
+import { storeMonthFigures } from "@/services/store-figures";
 import type { StoreBuyersDigest } from "@/types";
 
 /**
@@ -83,23 +82,30 @@ export async function compileDigest(env: Env): Promise<WeeklyDigest> {
  * here is a new measurement; the register on those routes holds the
  * denominators (store/published-counts.ts).
  */
+/**
+ * The digest's store-buyers section (2026-09-21, phase D1).
+ *
+ * The figures moved to services/store-figures.ts on 2026-09-22 so the
+ * signed public monthly record reads the same derivation rather than
+ * a second copy of it. This shape is unchanged: the section keeps the
+ * fields the digest has always printed, and the per-item till the
+ * record also carries is not added to a keeper's page that did not
+ * ask for it.
+ */
 export async function storeBuyersDigest(env: Env): Promise<StoreBuyersDigest> {
-  const month = metricsMonth();
-  const [pulse, stats, signals] = await Promise.all([computePulse(env), computeStats(env), readBuyerSignals(env, month)]);
-  const window = pulse.months.find((entry) => entry.month === month) ?? pulse.months[0];
-  const { computed_at: _at, ...rail } = stats.organic_by_rail ?? { computed_at: "" };
+  const figures = await storeMonthFigures(env, metricsMonth());
   return {
-    window: `${month}, month to date, read at ${pulse.computed_at}`,
-    instrument: "the pulse's monthly window (services/pulse.ts), the books' rail split (services/stats.ts) and the signal store's per-subject rows (services/buyer-signals.ts); every figure's population is on /pulse, /stats and /observatory under published_counts",
-    organic_challenges: window?.organic_challenges ?? 0,
-    organic_payments_presented: window?.organic_payments_presented ?? 0,
-    organic_settled: window?.organic_settled ?? 0,
-    organic_declines: window?.organic_declines ?? 0,
-    conversion_rate: window?.conversion_rate ?? null,
-    by_rail: stats.organic_by_rail ? (rail as Record<string, number>) : null,
-    host_pages: signals.histogram,
-    exclusions: ["house traffic, flagged at the till", "infrastructure and crawlers by name", "family settles reclassified after the fact"],
-    note: "Counts, not visitors; floors, not censuses; the rail split is all time and the rest is this month so far. No host is named and no wallet is here.",
+    window: figures.window,
+    instrument: figures.instrument,
+    organic_challenges: figures.organic_challenges,
+    organic_payments_presented: figures.organic_payments_presented,
+    organic_settled: figures.organic_settled,
+    organic_declines: figures.organic_declines,
+    conversion_rate: figures.conversion_rate,
+    by_rail: figures.by_rail,
+    host_pages: figures.host_pages,
+    exclusions: figures.exclusions,
+    note: figures.note,
   };
 }
 
