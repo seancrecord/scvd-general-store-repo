@@ -158,6 +158,45 @@ export function railCoveredByRun(doorRail, runRail) {
   return doorRail === runRail;
 }
 
+/**
+ * Why a window-scoped zero could not be widened to all of history.
+ * Derived from what was actually read, because the reasons are
+ * different facts and only one of them is ever true at a time.
+ */
+/**
+ * WHETHER AN RPC STATUS IS WORTH ASKING AGAIN (2026-09-22).
+ *
+ * A 5xx or a dropped socket is the provider having a bad second and
+ * says nothing about the chain. Most of the 4xx family is the
+ * provider's stated ceiling, and retrying it is rudeness that ends in
+ * the same answer.
+ *
+ * 429 AND 408 SIT ON THE WRONG SIDE OF THAT LINE, and they were filed
+ * with the ceilings until a 126-page walk hit one 429 in the middle,
+ * truncated the window, and published a poorer reading than the data
+ * allowed. "Too many requests" and "request timeout" are the provider
+ * saying COME BACK — the opposite of a limit on what it will answer.
+ * This store has the 107-of-132 correction on file for mishandling
+ * this exact status in the other direction.
+ */
+export function rpcRetryable(status) {
+  if (typeof status !== "number" || !Number.isFinite(status)) return false;
+  return status >= 500 || status === 429 || status === 408;
+}
+
+export function whyNoNonceArgument({ balance = null, nonce = null } = {}) {
+  if (balance === null) {
+    return "The nonce argument cannot widen it: that argument needs a balance, and none was read for this address.";
+  }
+  if (nonce === null) {
+    return "The nonce argument cannot widen it: that argument needs a transaction count, and none was read for this address.";
+  }
+  if (nonce !== 0) {
+    return "The nonce argument does not apply here: this address has moved funds out at some point, so its balance is not monotonically non-decreasing.";
+  }
+  return "The nonce argument cannot widen it either: at a transaction count of zero it settles that nothing has ever LEFT this address, which says nothing about what arrived before the window.";
+}
+
 export function railInReach(scheme) {
   return scheme === null || scheme === undefined || scheme === "exact";
 }
@@ -237,6 +276,39 @@ export function readDoorRail({
         distinct_payers: null,
       };
     }
+    /*
+     * PAID IS MONOTONE, AND A BALANCE REACHES BACK PAST THE WINDOW
+     * (2026-09-22). A complete empty window over blocks X-Y beside a
+     * NON-ZERO balance is not a door nobody paid. It is a door paid
+     * before block X: a balance can only have arrived, and the paper's
+     * own rule is that an observed settlement is not undone by
+     * something we did not read.
+     *
+     * Returning ZERO_OBSERVED here because the window branch happened
+     * to run first is the 2026-09-16 under-claim in its mirror image,
+     * and worse, because the verdict a reader quotes would be the
+     * opposite of the fact. Found answering a counterparty about his
+     * own door: an empty August window beside 2.703 USDC already sat
+     * at the address, and the row said ZERO_OBSERVED.
+     *
+     * The window's emptiness is kept — it is a real finding, and the
+     * narrower one — but it is carried as a scope beside PAID rather
+     * than published as the verdict.
+     */
+    if (balance !== null && BigInt(balance) > 0n) {
+      return {
+        ...base,
+        verdict: "PAID",
+        established_by: `a USDC balance of ${BigInt(balance).toString()} atomic units at block ${atBlock}; a balance can only have arrived, so at least one inbound settlement happened. The transfer window ${inWindow} was read complete and contained none of it, so every settlement this address has received arrived BEFORE block ${fromBlock}.`,
+        scope: "all_time",
+        zero_in_window: window,
+        zero_in_window_means: `no inbound USDC reached this address in blocks ${window}. That is a real finding and the narrower one; it is not the door's verdict, because a balance already sitting here proves the door was paid earlier.`,
+        distinct_payers: null,
+        distinct_payers_unknown_because: `the window that was read is empty, so it counts nobody; the senders who funded this balance are in blocks before ${fromBlock}, which this reading did not walk`,
+        payers_in_window: 0,
+        received_in_window_atomic: "0",
+      };
+    }
     // THE STRONGER ARGUMENT WINS (2026-09-16). A complete empty window
     // and the nonce argument are two independent reasons for the same
     // zero, and the nonce one reaches further: it covers all of
@@ -263,8 +335,16 @@ export function readDoorRail({
       verdict: "ZERO_OBSERVED",
       established_by: `the transfer window to this address ${inWindow} was read complete and contained no inbound USDC`,
       scope: window ? "window" : "all_time",
+      /*
+       * AND THE CAVEAT MUST NAME THE ACTUAL REASON (2026-09-22). This
+       * sentence used to say, always, that the address had moved funds
+       * out — beside rows reading `nonce: 0`, where nothing ever had.
+       * It is the same defect as the `non-zero transaction count`
+       * caveat corrected on 2026-09-17, in the neighbouring branch, and
+       * it is worse than no caveat because it gets believed.
+       */
       scope_caveat: window
-        ? `this is a zero IN blocks ${window} and says nothing about any block before ${fromBlock}. The nonce argument does not apply here: this address has moved funds out at some point, so its balance is not monotonically non-decreasing.`
+        ? `this is a zero IN blocks ${window} and says nothing about any block before ${fromBlock}. ${whyNoNonceArgument({ balance, nonce })}`
         : null,
       distinct_payers: 0,
       total_received_atomic: "0",

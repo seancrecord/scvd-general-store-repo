@@ -7,6 +7,8 @@ import {
   knownAnswersFor,
   knownAnswerRun,
   balanceFromCallResult,
+  whyNoNonceArgument,
+  rpcRetryable,
   PAID_RESIDUAL,
   readDoor,
   PAID_VERDICTS,
@@ -435,5 +437,77 @@ test("an empty eth_call return is a read failure, never a zero balance", () => {
     const out = balanceFromCallResult(junk);
     assert.equal(out.balance, null, `${JSON.stringify(junk)} is not a balance`);
     assert.ok(out.error, `${JSON.stringify(junk)} must carry a reason`);
+  }
+});
+
+
+test("an empty window beside a balance is a door paid BEFORE the window, not a door nobody paid", () => {
+  // Found 2026-09-22 answering a counterparty about his own door: his
+  // advertised payTo took no inbound USDC across the days in question
+  // and already held 2.703 USDC when the window opened. The row said
+  // ZERO_OBSERVED. PAID is monotone — the paper's own rule — and a
+  // balance can only have arrived, so the verdict a reader would have
+  // quoted was the opposite of the fact.
+  const row = readDoorRail({
+    rail: "eip155:8453", payTo, atBlock: 50550000, fromBlock: 50300000,
+    logs: [], logsComplete: true, balance: 2_703_000n, nonce: 0,
+  });
+  assert.equal(row.verdict, "PAID");
+  assert.equal(row.scope, "all_time");
+  // The window's emptiness is the narrower finding and must survive.
+  assert.equal(row.zero_in_window, "50300000-50550000");
+  assert.equal(row.payers_in_window, 0);
+  // And it must not be reported as a payer count for the door.
+  assert.equal(row.distinct_payers, null);
+  assert.match(row.established_by, /arrived BEFORE block 50300000/);
+
+  // A complete empty window with NO balance read is still the zero it
+  // always was: this rule must not swallow the case it sits next to.
+  const unread = readDoorRail({ rail: "eip155:8453", payTo, atBlock: 50550000, fromBlock: 50300000, logs: [], logsComplete: true });
+  assert.equal(unread.verdict, "ZERO_OBSERVED");
+});
+
+test("a window-scoped zero says why it is not an all-time one, and the reason is the true one", () => {
+  // The same defect as the `non-zero transaction count` caveat
+  // corrected on 2026-09-17, one branch over: this sentence used to
+  // claim the address had moved funds out, printed beside rows
+  // reading nonce 0 where nothing ever had.
+  assert.match(whyNoNonceArgument({ balance: 0n, nonce: 7 }), /moved funds out/);
+  assert.match(whyNoNonceArgument({ balance: null, nonce: 0 }), /needs a balance/);
+  assert.match(whyNoNonceArgument({ balance: 0n, nonce: null }), /needs a transaction count/);
+
+  const zeroNonce = whyNoNonceArgument({ balance: 0n, nonce: 0 });
+  assert.match(zeroNonce, /nothing has ever LEFT/);
+  assert.doesNotMatch(zeroNonce, /moved funds out/);
+
+  // And it must reach the row rather than living in a helper nobody calls.
+  const row = readDoorRail({
+    rail: "eip155:8453", payTo, atBlock: 50550000, fromBlock: 50300000,
+    logs: [], logsComplete: true, balance: null, nonce: null,
+  });
+  assert.equal(row.verdict, "ZERO_OBSERVED");
+  assert.match(row.scope_caveat, /needs a balance/);
+  assert.doesNotMatch(row.scope_caveat, /moved funds out/);
+});
+
+
+test("a rate limit is asked again; a stated ceiling is not", () => {
+  // 429 and 408 were filed with the ceilings until a 126-page walk hit
+  // one 429 in the middle. The window truncated, the door fell through
+  // to its balance, and the reading published was poorer than the data
+  // allowed — for no reason but a misfiled status code.
+  assert.equal(rpcRetryable(429), true, "too many requests means come back");
+  assert.equal(rpcRetryable(408), true, "request timeout means come back");
+  assert.equal(rpcRetryable(500), true);
+  assert.equal(rpcRetryable(503), true);
+
+  // And the ceilings stay ceilings: the public endpoints answer a
+  // range they will not serve with 413, and asking twice is rudeness
+  // that ends in the same answer.
+  for (const stated of [400, 401, 403, 404, 413, 422]) {
+    assert.equal(rpcRetryable(stated), false, `${stated} is the provider's stated answer`);
+  }
+  for (const junk of [null, undefined, "429", NaN]) {
+    assert.equal(rpcRetryable(junk), false);
   }
 });

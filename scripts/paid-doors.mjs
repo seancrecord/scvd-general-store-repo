@@ -22,7 +22,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail, windowTrustworthy, railCoveredByRun,
-  knownAnswersFor, knownAnswerRun, balanceFromCallResult,
+  knownAnswersFor, knownAnswerRun, balanceFromCallResult, rpcRetryable,
 } from "./lib/paid-doors.mjs";
 import { railFor } from "./lib/evm-chains.mjs";
 import { useEnvProxy } from "./lib/proxy-fetch.mjs";
@@ -59,13 +59,27 @@ const fail = (m) => { console.error(`\n✗ ${m}\n`); process.exit(1); };
 /**
  * One RPC call, retried only on transport trouble. A 5xx or a dropped
  * socket is the provider having a bad second and says nothing about the
- * chain; a 4xx is the provider's stated ceiling and retrying it is just
- * rudeness that ends in the same answer. The distinction matters here
- * more than usual, because a page this function gives up on becomes an
- * incomplete window, and an incomplete window is refused a zero — so a
- * retryable hiccup left unretried would be published as ignorance.
+ * chain; most of the 4xx family is the provider's stated ceiling and
+ * retrying it is just rudeness that ends in the same answer. The
+ * distinction matters here more than usual, because a page this
+ * function gives up on becomes an incomplete window, and an incomplete
+ * window is refused a zero — so a retryable hiccup left unretried would
+ * be published as ignorance.
+ *
+ * 429 AND 408 ARE THE EXCEPTIONS, and leaving them in with the rest was
+ * a live defect until 2026-09-22. "Too many requests" and "request
+ * timeout" are the provider saying COME BACK, not the provider stating
+ * a limit on what it will ever answer — the opposite of a ceiling.
+ * Found while walking a 126-page window to answer a counterparty: one
+ * 429 in the middle truncated the window, the door fell through to its
+ * balance, and the row came back PAID with `distinct_payers: null`
+ * where a completed walk would have counted them. The verdict was not
+ * wrong; the reading was poorer than the data allowed, for no reason
+ * but a misfiled status code. This store has the 107-of-132 correction
+ * on file for mishandling this exact status in the other direction.
  */
-async function rpc(method, params, attempts = 4) {
+
+async function rpc(method, params, attempts = 6) {
   let last;
   for (let i = 0; i < attempts; i += 1) {
     if (i > 0) await new Promise((done) => setTimeout(done, 500 * 2 ** (i - 1)));
@@ -75,7 +89,15 @@ async function rpc(method, params, attempts = 4) {
         body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
         signal: AbortSignal.timeout(30_000),
       });
-      if (r.status >= 500) { last = new Error(`${method}: HTTP ${r.status}`); continue; }
+      if (rpcRetryable(r.status)) {
+        last = new Error(`${method}: HTTP ${r.status}`);
+        // A rate limit answered as fast as the last request is a rate
+        // limit again. Honour Retry-After when it is given, and give
+        // the backoff below room when it is not.
+        const after = Number(r.headers.get("retry-after"));
+        if (Number.isFinite(after) && after > 0) await new Promise((done) => setTimeout(done, Math.min(after, 20) * 1000));
+        continue;
+      }
       if (!r.ok) throw new Error(`${method}: HTTP ${r.status}`);
       const b = await r.json();
       if (b.error) throw new Error(`${method}: ${JSON.stringify(b.error)}`);

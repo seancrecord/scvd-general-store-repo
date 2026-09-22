@@ -934,6 +934,43 @@ surfaced.
    it anyway, on the afternoon we spent implementing a term about
    confident wrong values.
 
+### Three more, found the same afternoon, answering him
+
+The seventh term also came with a disclosure: two funded payments from
+this store's field agent to `/notary/commit` on 2026-08-25, refused by
+his middleware before it read the signature. Answering it meant walking
+126 log pages over blocks 50300000–50550000, and the walk found three
+defects of its own. The full reading is
+`research/cv-august-window-2026-09-22/`.
+
+4. **A 429 filed with the stated ceilings.** This reader retried 5xx
+   and refused to retry 4xx, on the reasoning that a 4xx is the
+   provider naming a limit. `429` and `408` are the provider saying
+   *come back*. One rate limit in the middle of the walk truncated the
+   window; the door fell through to its balance and published a verdict
+   with no payer count where a completed walk had one. This store has
+   the 107-of-132 correction on file for mishandling the same status in
+   the other direction, and filed it wrong again in the neighbouring
+   branch.
+5. **An empty window beside a balance read `ZERO_OBSERVED`.** The first
+   completed run of that question returned that verdict for an address
+   holding 2.703 USDC at a transaction count of zero. PAID is monotone
+   — this paper's own rule, §1 — so an observed balance cannot be
+   undone by a window that did not contain it. The verdict a reader
+   would have quoted was the opposite of the fact. A balance now wins,
+   and the window's emptiness is carried beside it as the narrower
+   finding it is.
+6. **A scope caveat that misnamed its cause.** It said the address "has
+   moved funds out at some point" on a row reading `nonce: 0`, where
+   nothing ever had. Identical in kind to the `non-zero transaction
+   count` caveat corrected on 2026-09-17, one branch over — which is
+   the part worth recording: the correction was made, and the same
+   mistake was sitting six lines away, unlooked at.
+
+Six defects in one instrument in one day, all found by one term, none
+of them findable by declaring scope. That is the argument for the term,
+made against the operator who accepted it.
+
 ### What it does not catch
 
 Said here rather than discovered later. The controls read **state**, so
