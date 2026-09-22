@@ -172,7 +172,7 @@ function priceListHtml(config: PaymentNetworkConfig): string {
       .sort((a,b) => a.price_usdc - b.price_usdc || a.name.localeCompare(b.name))
       .map(item => `<article class="menu-item" data-item="${escapeHtml(item.id)}">
         <h3><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a></h3>
-        <p class="menu-desc">USDC ${escapeHtml(priceLine(item))}; ${escapeHtml(fulfillmentLine(item))}.</p>
+        <p class="menu-desc">${escapeHtml(priceLine(item, { currency: true }))}; ${escapeHtml(fulfillmentLine(item))}.</p>
         ${purchaseChecklistHtml(item, config)}
       </article>`).join('')}
   </section>`;

@@ -52,6 +52,7 @@ it("MCP discovery explains weekly sold-out refusals and the waitlist", async () 
   const response = await request("/mcp", { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 8, method: "tools/list" }) });
   const tools = object(object(await response.json()).result).tools as Obj[];
+  const page = await (await request("/mcp.md")).text();
   const purchases = tools.filter(tool => String(tool.name).startsWith("buy_"));
   expect(purchases.length).toBeGreaterThan(0);
   for (const tool of purchases) {
@@ -59,8 +60,11 @@ it("MCP discovery explains weekly sold-out refusals and the waitlist", async () 
     const ids = [tool.itemId, ...(Array.isArray(tool.itemIds) ? tool.itemIds : [])];
     const scarce = MENU_ITEMS.some(item => ids.includes(item.id) && (item.stocked || item.weekly_inventory !== undefined));
     if (scarce) {
-      expect(String(soldOut?.means)).toMatch(/week/i);
-      expect(String(soldOut?.what_to_do)).toMatch(/waitlist/i);
+      expect(soldOut).toBeTruthy();
+      // Same hop as every other refusal since 2026-09-22.
+      expect(String(tool.errors_url)).toContain("/mcp.md");
+      expect(page).toMatch(/sold_out[\s\S]{0,400}week/i);
+      expect(page).toMatch(/sold_out[\s\S]{0,400}waitlist/i);
     } else expect(soldOut).toBeUndefined();
   }
 });

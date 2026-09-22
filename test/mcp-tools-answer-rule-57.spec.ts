@@ -61,6 +61,8 @@ describe("every served tool answers 57.4 and 57.5", () => {
 
   it("names what it can refuse, and only what it can", async () => {
     const published = new Set(MCP_REFUSAL_CODES.map((refusal) => refusal.code));
+    const vocabulary = new Map(MCP_REFUSAL_CODES.map((refusal) => [refusal.code, refusal]));
+    const page = await (await SELF.fetch(`${BASE}/mcp.md`)).text();
     for (const tool of await tools()) {
       const errors = (tool.errors ?? []) as Record<string, any>[];
       expect(errors.length, `${tool.name} names no error categories`).toBeGreaterThan(1);
@@ -68,11 +70,26 @@ describe("every served tool answers 57.4 and 57.5", () => {
         expect(published, `${tool.name} invents ${error.code}`).toContain(error.code);
         if (error.tool_result === true) expect(error.jsonrpc).toBeUndefined();
         else expect(typeof error.jsonrpc).toBe("number");
-        expect(String(error.means).length).toBeGreaterThan(20);
+        /*
+         * THE PROSE MOVED, SO THIS GUARD FOLLOWS IT (2026-09-22) — and
+         * gets stricter, not looser. Rule 57.4 allows "a named link to
+         * the page that answers it, as long as the hop is FROM the
+         * surface an agent is holding", and the prose was byte-
+         * identical on all twenty-one tools: ~100 KB of a catalogue
+         * every session downloads before it can do anything. So the
+         * tool names the codes and the hop, and this asserts that the
+         * hop RESOLVES and that the page actually spells out this
+         * code — which the old inline check could never fail on.
+         */
+        expect(String(tool.errors_url), `${tool.name} names no hop for its refusals`).toContain("/mcp.md");
+        const spelled = vocabulary.get(String(error.code));
+        expect(spelled, `${error.code} on ${tool.name} is named nowhere`).toBeTruthy();
+        expect(String(spelled!.means).length).toBeGreaterThan(20);
         expect(
-          String(error.what_to_do).length,
-          `${error.code} on ${tool.name} says what it is and not what to do`,
+          String(spelled!.what_to_do).length,
+          `${error.code} says what it is and not what to do`,
         ).toBeGreaterThan(30);
+        expect(page, `${error.code} is not on the page the tools point at`).toContain(String(error.code));
       }
       /*
        * A free instrument sells nothing, so the shelf refusals cannot
@@ -92,14 +109,22 @@ describe("every served tool answers 57.4 and 57.5", () => {
   });
 
   it("says what it does in your name, what it stores, and what we hold to", async () => {
+    const page = await (await SELF.fetch(`${BASE}/mcp.md`)).text();
     for (const tool of await tools()) {
       const security = tool.security as Record<string, string> | undefined;
       expect(security, `${tool.name} has no security block`).toBeTruthy();
       expect(String(security!.what_this_does_in_your_name).length).toBeGreaterThan(80);
       expect(String(security!.what_it_stores_about_you).length).toBeGreaterThan(60);
-      expect(security!.what_we_never_do).toContain("No account");
-      expect(security!.standards).toContain("private-first");
-      expect(security!.reporting).toContain("security.txt");
+      /*
+       * The two that differ per tool stay on the tool; the three that
+       * were identical on every one of them are the hop rule 57.5
+       * allows. Asserted where they now live, and that the tool names
+       * the way there.
+       */
+      expect(security!.the_rest, `${tool.name} names no hop for the rest`).toContain("/mcp.md");
+      expect(security!.the_rest).toContain("security.txt");
+      expect(page).toContain("No account");
+      expect(page).toContain("private-first");
       // Never, on any tool, a request for something that could spend.
       expect(security!.what_this_does_in_your_name).toContain(
         "never asks for a credential",

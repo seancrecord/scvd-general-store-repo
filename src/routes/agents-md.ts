@@ -16,6 +16,47 @@ import { CLIENT_CAP_LABEL } from "@/lib/client-spend-cap";
 import type { HonoEnv } from "@/types";
 
 /**
+ * HOW TO ACT ON A MISSED WINDOW, WITHOUT A HUMAN IN THE LOOP
+ * (2026-09-21).
+ *
+ * An agent review: "/try says 'refunds are a mailbox,' but there is no
+ * machine-visible way to request one; the money-back promise lives
+ * only in /what prose. Add a refund mechanism agents can use — an
+ * endpoint, or at minimum a documented process in agents.md /
+ * openapi.json — so an agent can act on a missed delivery window."
+ *
+ * WHY THIS IS THE DOCUMENTED PROCESS AND NOT A NEW DOOR. A door that
+ * creates a refund is a door that moves the keeper's money on an
+ * unauthenticated caller's say-so, and this store has exactly one
+ * person paying them, by hand, from /admin. Publishing
+ * `POST /api/refund` would also put us back where rule 10 was written:
+ * describing a mechanism we do not have. The keeper decides whether
+ * that door exists; until then the honest fix is that every step an
+ * agent CAN take is named, addressable and free.
+ *
+ * All of it already existed and none of it was written down in one
+ * place a machine reads. The delivery guarantee, the window to measure
+ * against, the door to ask at, the handle to poll — four facts on four
+ * surfaces, assembled here in the order an agent needs them.
+ */
+function refundPath(base: string): string {
+  return [
+    `- **Asking for a refund (the whole process, no human needed on your side).** ${STORE_METADATA.refund_policy}`,
+    `  1. *Check whether there is anything to refund.* ${nothingToRefund(base)}`,
+    `  2. *Measure the window.* Every item's promised window is on the shelf: \`fulfillment\` and \`sla_hours\` in ${base}/menu.json, and the same figures per item at ${base}/menu/{item_id}?view=compact. An instant item that returned a certificate is delivered; a human-labor item is late only after its own \`sla_hours\` have passed.`,
+    `  3. *Ask.* POST ${base}/api/letter — free, no account, one per visitor per day. Send the \`cert_id\` or \`order_id\`, the item, and what did not arrive. This is the mailbox /try means; it is a real endpoint with a real contract in ${base}/openapi.json, not an email address.`,
+    `  4. *Poll the answer.* The letter returns an id: GET ${base}/api/letter/{letter_id} carries its status and the keeper's signed reply when there is one. If a refund is opened you get a \`refund_id\`, and GET ${base}/api/refund/{refund_id} reports it \`pending\` until the keeper sends it, then \`paid\` with the transaction hash.`,
+    `  5. *What the store will not claim.* Nothing here refunds automatically. A person reads the letter and pays the refund by hand, which is why steps 3 and 4 are an ask and a poll rather than a settlement. Saying otherwise would describe a mechanism this store does not have.`,
+  ].join("\n");
+}
+
+/** The architectural half of the promise, stated once and reused. */
+function nothingToRefund(base: string): string {
+  return `This store delivers first and settles after: the payment is presented at the last moment before the artifact is signed, so a delivery that fails takes no money at all. Check the purchase before you chase it — GET ${base}/api/verify/{cert_id} is free and forever, and an order is at GET ${base}/api/order/{order_id}. No certificate and no settled payment means nothing was charged and there is nothing to refund.`;
+}
+
+
+/**
  * GET /agents.md — the OPERATIONAL transaction manual for autonomous
  * agents, in the structure Shopify made canonical in May 2026 (H1,
  * blockquote summary, H2 sections with link lists). The distinction
@@ -197,6 +238,7 @@ ${spendCapParagraph()}
 
 - What you own after buying: ${base}/rights
 - Refund commitment (human-labor items): ${base}/rights and ${base}/fulfillment-log
+${refundPath(base)}
 - What a signature does and does not prove: ${base}/attestation
 - Signed-artifact format spec (scvd-attestation/v1) — canonical forms, encodings, the certificate binding convention, offline verification steps: ${base}/spec/scvd-attestation/v1
 - What is and is NOT claimed: ${base}/.well-known/trust.json

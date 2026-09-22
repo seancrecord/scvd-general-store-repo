@@ -45,22 +45,26 @@ const BASE = "https://scvd.store";
  * holds the catalog well under what the specs cost.
  */
 /**
- * RAISED 152,000 → 165,000 on 2026-09-21, when the mandate got a tool
- * of its own (buy_mandate): the authorization primitive had been the
- * seventeenth id inside buy_observation, whose purpose never said
- * "authorization". What the measurement found while arguing the
- * bytes: every tool carries the same `errors` (4,975 bytes) and
- * `security` (1,057 bytes) blocks, so twenty-one tools spend about
- * 126 KB of a 162 KB catalog repeating one contract. A one-item shelf
- * now states its own compact output shape (ShelfCluster.outputSchema)
- * and that saved a few hundred bytes; the six kilobytes a new tool
- * really costs are the repeated blocks. The ceiling moves by eight
- * percent to admit this one tool and stays thirty percent under what
- * this catalog replaced; the next tool argues its bytes here, and the
- * honest saving — hoisting the identical blocks once per catalog —
- * is a change to the contract every client reads, not to this test.
+ * BACK TO 152,000 — AND THE FURNITURE IS GONE (2026-09-22).
+ *
+ * This number was raised to 165,000 on 2026-09-21 to admit
+ * buy_mandate, which is the move main declined the same day for the
+ * right reason: the shelf was costed at +11,005 bytes against 418 of
+ * headroom and two guards refused it, so the item went second inside
+ * buy_observation as "the reachable half of the fix" with the
+ * prerequisite named — a cluster's bytes are mostly per-tool
+ * furniture, ~4,975 of refusal vocabulary and ~1,057 of security
+ * block repeating verbatim on every buy_* tool, and trimming that
+ * once makes the shelf affordable.
+ *
+ * The trim landed. Each tool keeps the codes it can refuse with and
+ * the `charged` flag on each (money safety stays local); the prose
+ * moved to /mcp.md, which is the one named hop rule 57.4 allows. So
+ * the ceiling goes back to where the keeper set it rather than where
+ * one tool needed it, and buy_mandate fits under it with room the
+ * next tool can argue for.
  */
-const CATALOG_BYTE_CEILING = 165_000;
+const CATALOG_BYTE_CEILING = 152_000;
 const LARGEST_TOOL_BYTE_CEILING = 40_000;
 /** What it was before, kept so the test states what it prevents. */
 const BYTES_BEFORE = 234_492;
@@ -83,10 +87,7 @@ describe("the tool catalog every session downloads", () => {
   it("stays under its budget, and is well under what it replaced", () => {
     const bytes = JSON.stringify(catalog()).length;
     expect(bytes, `tools/list is ${bytes} bytes`).toBeLessThan(CATALOG_BYTE_CEILING);
-    // 1.5 → 1.4 with the ceiling above (2026-09-21): still a third under what
-    // it replaced once the repeated blocks are hoisted; until then, this is
-    // the bound one more tool leaves, and the next tool argues its bytes.
-    expect(bytes).toBeLessThan(BYTES_BEFORE / 1.4);
+    expect(bytes).toBeLessThan(BYTES_BEFORE / 1.5);
   });
 
   it("has no single tool big enough to crowd out a small context on its own", () => {

@@ -1106,8 +1106,27 @@ const BASE = "https://scvd.store";
 // asks rather than asserted: with src/routes/llms.ts reverted to its
 // pre-mandate-spec state and nothing else changed, both prior digests
 // reproduced exactly.
+// 2026-09-21, THE REFUND PROMISE: STORE_METADATA.refund_policy is
+// rendered into the guide, and it was rewritten — the only change to
+// any text this digest covers. A cold buyer read the old line ("the
+// keeper sends it himself, and you won't have to argue for it") as
+// programmatic; the 2026-07-27 correction had removed the WORD
+// "automatic" and left the shape of the claim, an unconditional
+// transfer with no actor and no delay in it. The new line names which
+// half is mechanical (a timed sweep finds the miss, late deliveries
+// included) and which half is a person (he pays by hand, recorded with
+// its transaction hash), so it claims MORE and every clause is
+// checkable. Verified the way this file asks rather than asserted:
+// with refund_policy alone reverted and nothing else touched, both
+// digests below reproduced exactly on the first try.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a798bb9ba5287ef9e824717bfc81dd51af75221f9139ae2a5f276f8767ecd9c3";
+  "90c49eea3b2caf1e66e5c405026a5fc89321c3ab8fc264098596ed35cfe086b1";
+// 2026-09-22, THE MERGE of those two: the refund promise (main) and the
+// mandate spec with the purpose sentence (this branch) both re-pinned
+// this digest for their own reasons, so the pin below is neither half's.
+// It is the MERGED guide, reproduced from the merged tree, which is the
+// only reading that covers both edits at once; both notes above stand
+// and this one says why there is a third.
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1176,8 +1195,27 @@ describe("nothing was rewritten", () => {
     // 2026-09-22: re-taken with the two guide paragraphs described above
     // (the mandate spec and its schema, and the purpose sentence said once);
     // with llms.ts reverted, f8597f7a reproduced.
+    // 2026-09-21, THE REFUND PROMISE: STORE_METADATA.refund_policy is
+    // rendered into the guide, and it was rewritten — the only change to
+    // any text this digest covers. A cold buyer read the old line ("the
+    // keeper sends it himself, and you won't have to argue for it") as
+    // programmatic; the 2026-07-27 correction had removed the WORD
+    // "automatic" and left the shape of the claim, an unconditional
+    // transfer with no actor and no delay in it. The new line names which
+    // half is mechanical (a timed sweep finds the miss, late deliveries
+    // included) and which half is a person (he pays by hand, recorded with
+    // its transaction hash), so it claims MORE and every clause is
+    // checkable. Verified the way this file asks rather than asserted:
+    // with refund_policy alone reverted and nothing else touched, both
+    // digests below reproduced exactly on the first try.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "c05d3a360a6019e9750f9d88bb99dfb80cc1e469aa3f73aba2e67fbb745e91a9",
+      "e48cdfc54b98617dcae6c170e95ca4a913da2d04228b4abf062a559137a40506",
+// 2026-09-22, THE MERGE of those two: the refund promise (main) and the
+// mandate spec with the purpose sentence (this branch) both re-pinned
+// this digest for their own reasons, so the pin below is neither half's.
+// It is the MERGED guide, reproduced from the merged tree, which is the
+// only reading that covers both edits at once; both notes above stand
+// and this one says why there is a third.
     );
   });
 

@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/sanitize";
 import { commissionGuidance } from "@/lib/buyer-guidance";
 import type { ObservationCheckpoint } from "@/services/purchase-observation";
 import { publicationCheckout } from "@/lib/publication-checkout";
@@ -278,8 +279,41 @@ Retry the same URL with that signed payload in PAYMENT-SIGNATURE and one unique
 Idempotency-Key reused for this purchase's retries. Without a compatible signer,
 stop before payment; never send wallet secrets.</p>
 <p><a href="${env.STORE_BASE_URL}/agents.md">Payment instructions</a> explain the protocol.
-<a href="${env.STORE_BASE_URL}/try">Browser checkout tools</a> can submit an already-signed
-payment in a compatible browser. An interrupted response does not prove payment failed.</p>`;
+The <a href="${env.STORE_BASE_URL}/try">practice counter</a> walks the whole
+flow and can submit an already-signed payment in a compatible browser. An interrupted response does not prove payment failed.</p>`;
+}
+
+/**
+ * WHAT THE DOOR NEEDS, ON THE ONE SURFACE THAT NEVER SAID IT
+ * (2026-09-21).
+ *
+ * A cold integrator read this page in a browser and reported that it
+ * "doesn't name the required host param — a browser-only reader learns
+ * the quote exists but not the missing input."
+ *
+ * Correct, and it is the same defect the price template had, in a
+ * third costume. The requirement is on the challenge `description`
+ * every client decodes, in the 402's JSON body, in the bazaar
+ * `required-inputs` extension and on the item page. This page — the
+ * only one a person actually reads with their eyes — was the one
+ * surface that had it nowhere, so the reader most likely to be
+ * hand-assembling a request was the reader told least.
+ *
+ * Derived from buyInputSchema like every other emitter, so a door that
+ * grows a required input tomorrow says so here tomorrow.
+ */
+function requiredInputsHtml(item: MenuItem, env: Env): string {
+  const required = (buyInputSchema(item).required ?? []).filter(
+    (name) => name !== "agent_name",
+  );
+  if (required.length === 0) return "";
+  const names = required.map((name) => `<code>?${escapeHtml(name)}=</code>`).join(" and ");
+  return `<p><strong>This door needs ${names} on the paid request.</strong>
+A signed request without ${required.length === 1 ? "it" : "them"} is refused before the gate
+and no money moves &mdash; so add ${required.length === 1 ? "it" : "them"} to the URL you sign.
+Asking the price without ${required.length === 1 ? "it" : "them"} is free, which is why you are
+reading this. The full input contract is at
+<a href="${env.STORE_BASE_URL}/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}'s listing</a>.</p>`;
 }
 
 function browserPaywallHtml(item: MenuItem, env: Env): string {
@@ -287,6 +321,7 @@ function browserPaywallHtml(item: MenuItem, env: Env): string {
     "That shelf is for agents",
     `<h1>That shelf is for agents, friend.</h1>
 <p>&ldquo;${item.name}&rdquo; is bought over x402 v2.</p>
+${requiredInputsHtml(item, env)}
 ${paymentHelpHtml(env)}
 <p>You're welcome to browse the <a href="${env.STORE_BASE_URL}/">front of the store</a>
 like a regular person. The guestbook's free.</p>`,
@@ -727,6 +762,36 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
         ...(item.fulfillment === "human_queue"
           ? {
               refund_promise: `Delivered within ${item.sla_hours ?? 168} hours of settlement or your money back — full amount, tip included, paid by the keeper himself with the transaction hash on the public record at ${env.STORE_BASE_URL}/fulfillment-log. The written commitment: ${env.STORE_BASE_URL}/rights.`,
+              /**
+               * THE SAME PROMISE IN FIELDS (2026-09-21). A cold buyer
+               * walking the store said the terms "belong machine-readably
+               * at purchase time, not just in long prose" — and the prose
+               * above, good as it is, makes an agent parse English for the
+               * two facts it has to act on: how long it has to wait, and
+               * whether waiting is all it has to do.
+               *
+               * The sentence stays for the person reading it; this is
+               * beside it, not instead of it. Both derive from the item's
+               * own sla_hours, so they cannot drift apart.
+               *
+               * NO FIELD HERE SAYS "automatic", and the omission is the
+               * point rather than an oversight: `breach_detection` really
+               * is mechanical (services/refund-window.ts sweeps on a timer
+               * and raises a missed window whether or not the buyer
+               * noticed, late deliveries included) while `payment` really
+               * is a person. Naming the detection "automatic" a field away
+               * from the word "refund" is how the 2026-07-27 defect would
+               * come back wearing JSON — so each half is named for what it
+               * actually is and the reader can see they differ.
+               */
+              refund: {
+                window_hours: item.sla_hours ?? 168,
+                covers: "full amount, tip included",
+                breach_detection: "timed_sweep",
+                payment: "by_hand",
+                terms_url: `${env.STORE_BASE_URL}/rights`,
+                record_url: `${env.STORE_BASE_URL}/fulfillment-log`,
+              },
             }
           : {}),
         /**

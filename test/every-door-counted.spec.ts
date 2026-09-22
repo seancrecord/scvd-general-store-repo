@@ -42,7 +42,11 @@ const EXEMPT: ReadonlyArray<{ why: string; test: (route: string) => boolean }> =
   {
     why: "Browser and crawler furniture — icons, robots, sitemaps, the health probe. Fetched by machinery, never chosen by a reader.",
     test: (route) =>
-      /^GET \/(favicon\.(svg|ico)|robots\.txt|sitemap\.(xml|md)|og\.png|site\.webmanifest|schemamap\.xml|health)$/.test(route) ||
+      // sitemap.xsl (2026-09-21) is the stylesheet a browser fetches
+      // while rendering sitemap.xml — the same page load, the same
+      // machinery, never a URL a reader chooses. Counting it would
+      // book two visits for one look at the map.
+      /^GET \/(favicon\.(svg|ico)|robots\.txt|sitemap\.(xml|md|xsl)|og\.png|site\.webmanifest|schemamap\.xml|health)$/.test(route) ||
       /^GET \/[a-z-]*\.js$/.test(route) ||
       route.startsWith("GET /schemas/"),
   },

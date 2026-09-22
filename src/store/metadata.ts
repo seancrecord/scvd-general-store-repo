@@ -47,12 +47,43 @@ export const STORE_METADATA = {
    * repeated "auto-refund if missed" back to us as fact, which is
    * exactly how an unaudited claim travels.
    *
-   * The promise is unchanged and still good. Only the word that
-   * described a mechanism we do not have is gone. ⚑ His pen on the
-   * wording.
+   * CAUGHT A SECOND TIME, 2026-09-21, AND THE FIRST FIX IS WHY. A cold
+   * buyer walking the store read "you get your money back, the keeper
+   * sends it, and you won't have to argue for it" and concluded
+   * refunds were programmatic. The 2026-07-27 fix had deleted the WORD
+   * "automatic" and left the SHAPE of the claim intact — an
+   * unconditional transfer with no actor and no delay in it — so the
+   * sentence went on reading as a mechanism to everyone except the
+   * person who edited it. A rule about claims cannot be satisfied by
+   * removing vocabulary.
+   *
+   * What the line says now is longer and MORE of a promise, because
+   * every clause is a thing somebody can go and check:
+   *
+   *   "finds the miss itself"   — services/refund-window.ts, a timed
+   *                               sweep with a published grace period
+   *                               (WINDOW_GRACE_MINUTES), which raises
+   *                               the breach whether or not the buyer
+   *                               noticed.
+   *   "late deliveries included" — BREACHED_DELIVERED_LATE, the class
+   *                               that stops the store discharging the
+   *                               promise by being slow and finishing.
+   *   "pays it by hand"          — services/refunds.ts createRefund is
+   *                               called from /admin. No code in this
+   *                               store has ever moved money on its own.
+   *   "recorded on the public
+   *    ledger with its hash"     — /fulfillment-log, every refund with
+   *                               its status and tx_hash.
+   *
+   * So the detection really is mechanical and the buyer really does
+   * not have to notice or ask; what was never true is the IMMEDIACY,
+   * and that is now the part said out loud. The full terms are in
+   * store/refund-policy.ts and ride the catalog since today, so this
+   * one-liner is the headline over a citable document rather than the
+   * whole of the claim. ⚑ His pen on the wording.
    */
   refund_policy:
-    "If an item isn't delivered within its promised window, you get your money back. The keeper sends it himself, and you won't have to argue for it.",
+    "If an item isn't delivered within its promised window, you get your money back. The store finds the miss itself \u2014 a timed sweep catches it, late deliveries included, without you having to notice or ask \u2014 and the keeper then pays it by hand, recorded on the public ledger with its transaction hash. Mechanical to find; a person to pay, so not instant.",
   hours:
     "Digital items: always open. Human-labor items: fulfilled weekly by an actual person with a day job.",
 } as const;

@@ -6,11 +6,14 @@ import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-sc
 import { A2A_CHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import {
   MCP_REFUSAL_CODES,
+  refusalVocabularyUrl,
+  toolRefusal,
+  toolSecurity,
   READS_SENTENCE,
   itemReadsSentence,
   securityBlock,
-  type RpcRefusal,
-  type SecurityBlock,
+  type ToolRefusal,
+  type ToolSecurity,
 } from "@/store/surface-contract";
 import { isRecord, type ItemReads } from "@/types";
 import { buyInputExample, buyInputSchema } from "@/lib/bazaar-discovery";
@@ -124,10 +127,12 @@ export interface McpTool {
    * not knock.
    */
   reads?: ItemReads;
-  /** Rule 57.4, filled by the catalogue: what this tool can refuse. */
-  errors?: readonly RpcRefusal[];
+  /** Rule 57.4, filled by the catalogue: the codes this tool can refuse with, and whether money moved. */
+  errors?: readonly ToolRefusal[];
+  /** The named hop rule 57.4 allows: where every code above is spelled out. */
+  errors_url?: string;
   /** Rule 57.5, filled by the catalogue: what it does in your name. */
-  security?: SecurityBlock;
+  security?: ToolSecurity;
   /** Menu item behind a paid tool; absent means free. */
   itemId?: string;
   /** The items a cluster tool can sell, selected by the item_id input. */
@@ -215,8 +220,29 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_observation",
     title: "Third-Party Observation",
     purpose:
-      "Purpose: a signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, or a Bitcoin timestamp — have a disinterested third party go and look at something, then sign what it saw: whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
+      "Purpose: a signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, or a Bitcoin timestamp — have a disinterested third party go and look at something, then sign what it saw: whether a URL still answered hours later, or what the chain says about a settlement. To record what an agent was authorized to do before it spends, which observes nothing and is a different verb, the tool is buy_mandate. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
     itemIds: [
+      /**
+       * THE MANDATE IS NOT ON THIS SHELF ANY MORE (2026-09-22), and
+       * the reasoning that put it here second on 2026-09-21 is why.
+       *
+       * That note said the honest fix was its own tool, costed it at
+       * +11,005 bytes against 418 of headroom, recorded that two
+       * budget guards refused it, and named the prerequisite: a
+       * cluster's bytes are mostly per-tool furniture rather than its
+       * items — ~4,975 of refusal vocabulary and ~1,057 of security
+       * block repeating verbatim in every buy_* tool — so "trim that
+       * once and the shelf becomes affordable". Second position was
+       * called the reachable half of the fix until then.
+       *
+       * The trim landed (underContract below, and /mcp.md now carries
+       * the vocabulary once), so the shelf is affordable and the item
+       * is on it: buy_mandate. It was the one item here that observes
+       * nothing — `made_here`, recording what the BUYER supplies,
+       * a different verb from the seventeen that go and look at
+       * something external — which is why it never belonged on a
+       * shelf whose purpose is third-party observation.
+       */
       "settlement_attestation",
       // Settlement observed at one turn deeper: not "did it settle"
       // but "did what moved stay inside an attributable or declared limit" — and
@@ -264,11 +290,6 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // The same read kept up for a month on an operator's receiving
       // address, four signed passes a day, payers counted (S10).
       "operator_statement",
-      // the_mandate left this shelf for its own tool on 2026-09-21: an
-      // authorization record is not an observation of anything, and
-      // the seventeenth id inside a tool whose purpose never said
-      // "authorization" was where the most interesting thing on the
-      // shelf had been hiding.
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.
@@ -1665,14 +1686,24 @@ function underContract(tool: McpTool, base: string): McpTool {
      * naming policy.
      */
     title: tool.title ?? tool.annotations?.title ?? tool.name,
+    /*
+     * THE CODES HERE, THE PROSE ONCE (2026-09-22). Which refusals this
+     * tool can answer with, and whether money moved, stay on the tool:
+     * a caller must never fetch a document to learn whether it was
+     * billed. The `means` and `what_to_do` for each code live at
+     * errors_url — the one named hop rule 57.4 allows — because they
+     * were byte-identical on all twenty-one tools and made up most of
+     * a catalogue every session downloads.
+     */
     errors: MCP_REFUSAL_CODES.filter(
       (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) &&
         (!["purchase_resolved", "callback_refused", "capacity_unavailable", "shelf_closed"].includes(refusal.code) || human) &&
         (refusal.code !== "sold_out" || scarce) &&
         (refusal.code !== "shelf_unreadable" || stocked) &&
         (refusal.code !== "window_refused" || sellsWindowPick),
-    ),
-    security: securityBlock(base, {
+    ).map(toolRefusal),
+    errors_url: refusalVocabularyUrl(base),
+    security: toolSecurity(base, {
       does_in_your_name: doesInYourName(tool),
       stores: paid
         ? "Purchase inputs, terms, payment state, certificate and patron number are retained for delivery and recovery. Optional agent_name appears on the certificate. No account or cookie."

@@ -272,6 +272,84 @@ async function sitemapPaths(env: HonoEnv["Bindings"]): Promise<string[]> {
   return paths;
 }
 
+/**
+ * GET /sitemap.xsl — THE SITEMAP, FOR A PAIR OF EYES (2026-09-21).
+ *
+ * An agent review filed "/sitemap.xml fails to render in a browser —
+ * low agent relevance, but broken tooling surface." The XML itself is
+ * sound: well-formed, every loc absolute and on-origin, no duplicates,
+ * every entry dated, comfortably inside the 50,000-URL and 50MB limits
+ * the sitemaps.org spec sets. Nothing is broken in the document.
+ *
+ * What is missing is a stylesheet. Without one a browser has no
+ * instruction for a `urlset` and falls back to its raw XML tree view —
+ * which, over six thousand entries and 700KB, is the thing that reads
+ * as "fails to render". A crawler never sees this: an
+ * `<?xml-stylesheet?>` processing instruction is not part of the
+ * document element, so the bytes a parser cares about are unchanged
+ * and the sitemap remains exactly as valid as it was.
+ *
+ * It is served from our own origin because browsers apply XSLT under
+ * the same-origin rule, and it is plain XSLT rather than script, so
+ * the store's script-src stays as tight as it is everywhere else.
+ *
+ * The corpus rows are the bulk of the map and the least interesting to
+ * a person, so the table leads with the count and lets the browser do
+ * the rest; nothing here filters the XML, which would make the page
+ * and the document disagree about what is published.
+ */
+siteMetaRoutes.get("/sitemap.xsl", (c) => {
+  return c.body(
+    `<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:s="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <xsl:output method="html" encoding="UTF-8" indent="yes"/>
+  <xsl:template match="/">
+    <html lang="en">
+      <head>
+        <title>Every public URL this store serves</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <style>
+          body { font-family: Georgia, serif; max-width: 60rem; margin: 2rem auto; padding: 0 1rem; }
+          h1 { font-size: 1.3rem; }
+          p { color: #444; }
+          table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+          th, td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid #ddd; }
+          th { font-weight: normal; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; }
+          td.date { white-space: nowrap; color: #666; }
+        </style>
+      </head>
+      <body>
+        <h1>Every public URL this store serves</h1>
+        <p>
+          <xsl:value-of select="count(s:urlset/s:url)"/>
+          <xsl:text> URLs. This is a sitemap: a crawler reads the XML behind this page. </xsl:text>
+          <xsl:text>The machine-readable guides are at </xsl:text>
+          <a href="/llms.txt">/llms.txt</a><xsl:text>, </xsl:text>
+          <a href="/agents.md">/agents.md</a><xsl:text> and </xsl:text>
+          <a href="/menu.json">/menu.json</a><xsl:text>. The same map in markdown: </xsl:text>
+          <a href="/sitemap.md">/sitemap.md</a><xsl:text>.</xsl:text>
+        </p>
+        <table>
+          <tr><th>URL</th><th>Last modified</th></tr>
+          <xsl:for-each select="s:urlset/s:url">
+            <tr>
+              <td><a href="{s:loc}"><xsl:value-of select="s:loc"/></a></td>
+              <td class="date"><xsl:value-of select="s:lastmod"/></td>
+            </tr>
+          </xsl:for-each>
+        </table>
+      </body>
+    </html>
+  </xsl:template>
+</xsl:stylesheet>
+`,
+    200,
+    { "Content-Type": "application/xslt+xml; charset=utf-8" },
+  );
+});
+
 siteMetaRoutes.get("/sitemap.xml", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const paths = await sitemapPaths(c.env);
@@ -286,6 +364,7 @@ siteMetaRoutes.get("/sitemap.xml", async (c) => {
     .join("\n");
   return c.body(
     `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="${base}/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls}
 </urlset>
