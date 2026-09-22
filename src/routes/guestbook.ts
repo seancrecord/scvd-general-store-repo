@@ -6,6 +6,12 @@ import { earnedPressing } from "@/services/cards";
 import { pressingSummary } from "@/services/instant-goods";
 import { VOICE } from "@/store";
 import { isRecord, type HonoEnv } from "@/types";
+import { escapeHtml } from "@/lib/sanitize";
+import { prefersMarkdown } from "@/lib/accept";
+import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
+import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { storeLinks } from "@/lib/store-links";
+import { nextStepsHtml } from "@/pages/artifact-page";
 
 /**
  * GET/POST /api/guestbook, free to sign, capped at 500 characters,
@@ -167,5 +173,90 @@ guestbookRoutes.post("/api/guestbook", async (c) => {
           : {}),
     },
     201,
+  );
+});
+
+
+/**
+ * THE GUESTBOOK, AS A PAGE (2026-09-21). The register has been JSON
+ * only since it opened — a wall nobody could look at, and no entry
+ * had an address of its own, so the receipt's invitation to sign it
+ * had nowhere to send a person. GET /guestbook is the same page the
+ * API serves, rendered; GET /guestbook/{id} is one entry, and its
+ * URL is the one a signer can hand to somebody. A machine still gets
+ * JSON at either address, and the API door is untouched.
+ */
+const GUESTBOOK_DESCRIPTION =
+  "The visitors' register of a human-run general store for agents: every entry written by whoever signed it, stored as claimed, the identity marked verified only where the signer proved it with their own key.";
+
+function entryHtml(base: string, entry: { id: string; name: string; message: string; date: string; verified_identity?: string; identity_verified?: boolean }): string {
+  const who = entry.verified_identity
+    ? `${escapeHtml(entry.name)} <span class="menu-meta">(${entry.identity_verified ? "signed with their own key" : "identity as claimed, unverified"}: ${escapeHtml(entry.verified_identity)})</span>`
+    : escapeHtml(entry.name);
+  return `<article id="${escapeHtml(entry.id)}">
+    <p class="menu-desc"><strong>${who}</strong> — <a href="${base}/guestbook/${escapeHtml(entry.id)}">${escapeHtml(entry.date.slice(0, 10))}</a></p>
+    <p class="menu-desc">${escapeHtml(entry.message)}</p>
+  </article>`;
+}
+
+guestbookRoutes.get("/guestbook", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const page = await listGuestbookPage(c.env, GUESTBOOK_PAGE_SIZE, c.req.query("cursor")?.trim() || undefined);
+  const links = storeLinks(base, { path: "/guestbook" });
+  const document = {
+    what_this_is: GUESTBOOK_DESCRIPTION,
+    entries: page.entries.map(({ kv_key: _key, ...entry }) => ({ ...entry, url: `${base}/guestbook/${entry.id}` })),
+    ...(page.cursor ? { next: `${base}/guestbook?cursor=${encodeURIComponent(page.cursor)}` } : {}),
+    sign: { method: "POST", url: `${base}/api/guestbook`, free: true, how: `GET ${base}/api/guestbook explains the body and the optional signed identity.` },
+    store_links: links,
+  };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({ base, path: "/guestbook", title: "The guestbook", description: GUESTBOOK_DESCRIPTION, document: document as unknown as Record<string, unknown> });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(document);
+  return c.html(
+    renderSimplePage({
+      title: "The guestbook",
+      description: GUESTBOOK_DESCRIPTION,
+      path: "/guestbook",
+      bodyHtml: `<section><p class="menu-desc">${escapeHtml(GUESTBOOK_DESCRIPTION)} Signing is free: <code>POST ${escapeHtml(base)}/api/guestbook</code> with a name and a message; every signer gets the visitor sticker.</p></section>
+      <section>${page.entries.length === 0 ? `<p class="menu-desc">Nobody has signed yet. The pen is on the counter.</p>` : page.entries.map((entry) => entryHtml(base, entry)).join("\n")}
+      ${page.cursor ? `<p class="menu-meta"><a href="/guestbook?cursor=${encodeURIComponent(page.cursor)}">Older entries</a></p>` : ""}</section>
+      ${nextStepsHtml(links)}
+      <section><p class="menu-meta">Machine-readable at the same URL with <code>Accept: application/json</code>, or the API at <a href="/api/guestbook"><code>/api/guestbook</code></a>.</p></section>`,
+    }),
+  );
+});
+
+guestbookRoutes.get("/guestbook/:id", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const id = c.req.param("id");
+  // The register is small and keyed by time; one bounded walk finds an entry or says it is not on the wall.
+  let cursor: string | undefined;
+  let found: (typeof page.entries)[number] | undefined;
+  let page = await listGuestbookPage(c.env, GUESTBOOK_MAX_PAGE_SIZE);
+  for (let pages = 0; pages < 20; pages += 1) {
+    found = page.entries.find((entry) => entry.id === id);
+    if (found || !page.cursor) break;
+    cursor = page.cursor;
+    page = await listGuestbookPage(c.env, GUESTBOOK_MAX_PAGE_SIZE, cursor);
+  }
+  if (!found) {
+    return c.json({ error: "No entry by that id on the wall.", guestbook: `${base}/guestbook` }, 404);
+  }
+  const { kv_key: _key, ...entry } = found;
+  const links = storeLinks(base, { path: "/guestbook" });
+  const document = { what_this_is: "One entry in the guestbook, as it was written.", entry: { ...entry, url: `${base}/guestbook/${entry.id}` }, guestbook: `${base}/guestbook`, store_links: links };
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
+    return jsonDocumentMarkdownResponse({ base, path: `/guestbook/${entry.id}`, title: `Guestbook: ${entry.name}`, description: GUESTBOOK_DESCRIPTION, document: document as unknown as Record<string, unknown> });
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(document);
+  return c.html(
+    renderSimplePage({
+      title: `Guestbook: ${entry.name}`,
+      description: `${entry.name} signed the guestbook on ${entry.date.slice(0, 10)}. ${GUESTBOOK_DESCRIPTION}`,
+      path: `/guestbook/${entry.id}`,
+      bodyHtml: `<section>${entryHtml(base, entry)}<p class="menu-meta"><a href="/guestbook">The whole wall</a>.</p></section>${nextStepsHtml(links)}`,
+    }),
   );
 });

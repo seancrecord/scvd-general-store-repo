@@ -48,6 +48,34 @@ describe("the counts, read", () => {
     expect(month.organic_visits).toBeGreaterThanOrEqual(3);
   });
 
+  it("publishes who reads the host pages by class and format, and how concentrated, naming nobody", async () => {
+    const { recordPageRead } = await import("@/services/buyer-signals");
+    const { signalStore } = await import("@/services/signal-store");
+    await signalStore(testEnv)?.reset();
+    const read = (format: "html" | "json" | "markdown", userAgent: string, accept: string) =>
+      recordPageRead(testEnv, { page: "corpus_host", format, subject: "seen.example", userAgent, accept, referrer: undefined, ownHost: "scvd.store", house: false });
+    await read("html", "Mozilla/5.0", "text/html");
+    await read("json", "python-httpx/0.27", "application/json");
+    await read("json", "Mozilla/5.0 (compatible; Claude-User/1.0)", "*/*");
+    await read("html", "Mozilla/5.0 (compatible; GPTBot/1.0)", "*/*");
+    const observatory = await computeObservatory(testEnv);
+    const month = observatory.months.find((entry) => entry.month === metricsMonth())!;
+    expect(month.host_pages?.by_format_and_reader).toEqual({ "html:browser": 1, "html:crawler": 1, "json:agent": 1, "json:fetcher": 1 });
+    // The crawler is out of the subject count; the one subject came back in two formats.
+    expect(month.host_pages?.histogram).toEqual({
+      subjects: 1,
+      by_formats: { one: 0, two: 1, three: 0 },
+      repeat: { at_least_2: 1, at_least_5: 0, at_least_10: 0 },
+      reads: 3,
+      overflow: 0,
+    });
+    expect(JSON.stringify(observatory)).not.toContain("seen.example");
+    expect(JSON.stringify(observatory).toLowerCase()).not.toContain("gptbot");
+    const html = await (await SELF.fetch(`${BASE}/observatory`, { headers: { Accept: "text/html", "User-Agent": "Mozilla/5.0" } })).text();
+    expect(html).toContain("Who reads the pages about a host");
+    expect(html).toContain("<code>json:fetcher</code></td><td>1</td>");
+  });
+
   it("quotes the counter's own floors, not a number typed here", () => {
     expect(METRICS_SOURCE).toContain(`PORCH_WRITES_PER_MINUTE = ${OBSERVATORY_PORCH_WRITES_PER_MINUTE};`);
     expect(METRICS_SOURCE).toContain(`METRIC_KEY_CAP = ${OBSERVATORY_LEDGER_KEY_CAP};`);

@@ -1,4 +1,5 @@
 import { ReceiptEvidenceUnavailable } from "@/lib/receipt-context";
+import { storeLinks } from "@/lib/store-links";
 import { decodePaymentHeader } from "@/lib/decline-diagnosis";
 import { namelessVisitorKey } from "@/lib/visitor-day-key";
 import { recoverSignedPurchase } from "@/services/signed-purchase-recovery";
@@ -51,7 +52,7 @@ import {
 } from "@/lib/metrics";
 import { buyInputSchema, missingRequiredInputs, buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { catalogRecovery, CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
-import { factBlockText } from "@/lib/listing-spec";
+import { factBlockText, listingSpec } from "@/lib/listing-spec";
 /**
  * ONE PRE-PAYMENT LAW AND ONE ARGUMENT MAP, shared with the HTTP
  * door. This door's forked copies of both are what let a buyer pay
@@ -1191,6 +1192,9 @@ async function callPurchaseTool(
           stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
           ...replayHorizonBlock(),
         },
+        // The listing spec the HTTP 402 carries and this door dropped (2026-09-21), and the link set every envelope shares.
+        spec: listingSpec(item, base),
+        store_links: storeLinks(base, { item: item.id, path: `/api/buy/${item.id}` }),
         verification: {
           verify_url: `${base}/api/verify/{id}`,
           key_fingerprint: await cachedPublicKeyHex(c.env.SIGNING_KEY),

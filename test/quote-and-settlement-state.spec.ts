@@ -84,7 +84,9 @@ describe("the accepted quote rides the certificate, signed", () => {
     expect(cert.quote).toBe(QUOTE);
     expect(canonicalizeCertificate(cert)).toContain(`"quote":"${QUOTE}"`);
     // Appended, never inserted: the first eight positions stay frozen.
-    expect(CERT_FIELDS.indexOf("quote")).toBe(CERT_FIELDS.length - 1);
+    // Appended, never inserted: quote sat last until the issuer joined behind it (2026-09-21).
+    expect(CERT_FIELDS.indexOf("quote")).toBe(CERT_FIELDS.indexOf("issuer") - 1);
+    expect(CERT_FIELDS.indexOf("issuer")).toBe(CERT_FIELDS.length - 1);
   });
 
   it("omits the key entirely when the door named no terms", async () => {

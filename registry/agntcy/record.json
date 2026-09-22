@@ -215,7 +215,15 @@
           {
             "name": "buy_observation",
             "title": "Third-Party Observation",
-            "description": "A signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, a Bitcoin timestamp, or the authorization an agent claims to act under, recorded before it spends — have a disinterested third party look at something, or hold a dated record of a claim, and sign it: whether a URL still answered hours later, or what the chain says about a settlement.",
+            "description": "A signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, or a Bitcoin timestamp — have a disinterested third party go and look at something, then sign what it saw: whether a URL still answered hours later, or what the chain says about a settlement.",
+            "scopes": [
+              "external"
+            ]
+          },
+          {
+            "name": "buy_mandate",
+            "title": "The Mandate",
+            "description": "Record what an agent is authorized to do BEFORE it spends — the claimed instructions verbatim, who submitted them (agent or principal, itself a claim), an optional declared cap in USDC and expiry — as a signed, dated record held by a party that is neither the agent nor its principal, at a free permanent URL, with a mandate_id every later purchase here can cite; a citation that does not resolve is refused before any charge, so it always lands signed on the citing certificate.",
             "scopes": [
               "external"
             ]

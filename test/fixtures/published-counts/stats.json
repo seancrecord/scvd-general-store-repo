@@ -1,0 +1,200 @@
+{
+ "artifacts_issued": 454,
+ "computed_at": "2026-09-21T18:54:50.568Z",
+ "distinct_organic_buyers": 22,
+ "house_flag_policy": "House traffic (the proprietors' own wallets and tests) is flagged at the till and excluded from every organic figure. Family doesn't make the paper.",
+ "house_settlements": 353,
+ "how_to_check_it_without_us": "An hourly walk compares USDC transfers to our pay-to address against the settlement_tx recorded on every certificate, and a mismatch raises an alert that a person writes up at /corrections. You do not have to take our word for that walk: the pay-to address is public in the 402 terms and at /.well-known/x402.json, every certificate carries its own settlement_tx, and Base is readable by anyone. Walk it yourself and tell us if the two disagree \u2014 the mailbox at /api/letter is free.",
+ "identity_policy": "This wallet, this domain, and 2 signing keys \u2014 1 retired, each kept published forever with its dates and the signed announcement that retired it. A key change here is announced before the new key signs anything and the announcement is signed by the outgoing key; nothing is ever quietly swapped. Full history at /.well-known/scvd-signing-key, policy at /attestation.",
+ "listing_spec_schema": "https://scvd.store/schemas/listing-spec-v1.json",
+ "net_by_chain": {
+  "arbitrum": {
+   "months": [
+    {
+     "booked_house_usdc": 0,
+     "booked_organic_usdc": 0.001,
+     "booked_usdc": 0.001,
+     "difference_usdc": -0.001,
+     "month": "2026-09",
+     "observed_inflow_usdc": 0,
+     "of_which_dust_usdc": 0
+    }
+   ],
+   "observed_since": null
+  },
+  "base": {
+   "months": [
+    {
+     "booked_house_usdc": 135.823,
+     "booked_organic_usdc": 0.574,
+     "booked_usdc": 136.39700000000002,
+     "difference_usdc": -0.003608,
+     "month": "2026-08",
+     "observed_inflow_usdc": 136.393392,
+     "of_which_dust_usdc": 0.000392
+    },
+    {
+     "booked_house_usdc": 900.009,
+     "booked_organic_usdc": 9.756,
+     "booked_usdc": 909.765,
+     "difference_usdc": 236.866676,
+     "month": "2026-09",
+     "observed_inflow_usdc": 1146.631676,
+     "of_which_dust_usdc": 0.000853
+    }
+   ],
+   "observed_since": "2026-08-07T23:30:03.319Z"
+  },
+  "booked_since": "2026-08-07T21:16:56.754Z",
+  "difference_may_contain": [
+   "Dust: transfers below the cheapest listing cannot be purchases and are metered separately as of_which_dust_usdc \u2014 poisoning lures arrive as money and must not read as revenue.",
+   "The keeper moving funds between the store's own declared wallets: the chain sees an arrival, the till correctly books no sale. The wallets are public at /house-ledger.json.",
+   "Month-edge timing: the walk banks a transfer when it reads it, the till books a settle when it happens; a sale in the last hour of a month can land one column over.",
+   "Meter epochs: inflow counting starts when the walk first banked (observed_since, per chain) and booking-by-rail starts at booked_since; before those instants each side is absent rather than zero.",
+   "Anything else is unexplained, and unexplained pages the keeper via the books invariant sweep rather than sitting quietly in a public table."
+  ],
+  "method": "For each chain and month: observed_inflow_usdc is USDC the hourly reconciliation walk saw arrive at this store's receiving wallet, read from the chain itself; booked_usdc is what the till recorded as settled on that chain, written by the same call that produces the organic count. Neither side copies the other. Amounts are stored as integer millionths and rendered as USDC. A transfer is banked to the month the walk saw it (up to an hour behind the chain at month edges); each meter counts from its own published start date, and months before a meter existed are absent, not zero.",
+  "polygon": {
+   "months": [
+    {
+     "booked_house_usdc": 0.5,
+     "booked_organic_usdc": 0,
+     "booked_usdc": 0.5,
+     "difference_usdc": -0.5,
+     "month": "2026-08",
+     "observed_inflow_usdc": 0,
+     "of_which_dust_usdc": 0
+    },
+    {
+     "booked_house_usdc": 7.01,
+     "booked_organic_usdc": 0.001,
+     "booked_usdc": 7.011,
+     "difference_usdc": 0,
+     "month": "2026-09",
+     "observed_inflow_usdc": 7.011,
+     "of_which_dust_usdc": 0
+    }
+   ],
+   "observed_since": "2026-09-04T20:30:55.062Z"
+  },
+  "solana": {
+   "months": [
+    {
+     "booked_house_usdc": 0,
+     "booked_organic_usdc": 0.02,
+     "booked_usdc": 0.02,
+     "difference_usdc": -0.015,
+     "month": "2026-08",
+     "observed_inflow_usdc": 0.005,
+     "of_which_dust_usdc": 0
+    },
+    {
+     "booked_house_usdc": 1.014,
+     "booked_organic_usdc": 0.001,
+     "booked_usdc": 1.015,
+     "difference_usdc": 0,
+     "month": "2026-09",
+     "observed_inflow_usdc": 1.015,
+     "of_which_dust_usdc": 0
+    }
+   ],
+   "observed_since": "2026-08-23T04:30:40.591Z"
+  },
+  "world": {
+   "months": [],
+   "observed_since": null
+  }
+ },
+ "note": "Computed from the same counters the keeper reads. No hand edits; the line rewrites itself as the ledger grows.",
+ "operating_since": "2026-07-22",
+ "organic_by_rail": {
+  "arbitrum": 1,
+  "base": 105,
+  "computed_at": "2026-09-21T18:30:23.345Z",
+  "polygon": 1,
+  "rail_not_recorded": 0,
+  "solana": 4
+ },
+ "organic_settlements": 111,
+ "patrons_method": "distinct_organic_buyers counts payer rows, not sales: one key per wallet that has ever settled here, written at the till, with the house wallets struck out. It is a FLOOR in three directions and none of them inflate it \u2014 a settle whose wallet never came back with the money writes no row (those are counted by item, so the gap is a number rather than a mystery), the founding settles that predate the channel meter have no row either, and one buyer paying from a second wallet reads here as a second patron. It is published beside artifacts_issued deliberately: sales, artifacts and patrons are three different quantities, and this store spent its opening weeks showing one of them under another's name.",
+ "payment_sources": [
+  {
+   "currency": "USDC",
+   "house": 345,
+   "organic": 111,
+   "protocol": "x402"
+  },
+  {
+   "amounts": {
+    "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "house_atomic": "3510000",
+    "network": "eip155:8453",
+    "organic_atomic": "0"
+   },
+   "currency": "USDC",
+   "house": 8,
+   "house_correction": {
+    "amount_atomic": "0",
+    "purchases": 0
+   },
+   "organic": 0,
+   "protocol": "mpp"
+  }
+ ],
+ "payments": {
+  "by_currency": [
+   {
+    "name": "USDC",
+    "purchases": 111
+   }
+  ],
+  "by_network": [
+   {
+    "name": "Base",
+    "purchases": 105
+   },
+   {
+    "name": "Polygon",
+    "purchases": 1
+   },
+   {
+    "name": "Arbitrum",
+    "purchases": 1
+   },
+   {
+    "name": "World",
+    "purchases": 0
+   },
+   {
+    "name": "Solana",
+    "purchases": 4
+   },
+   {
+    "name": "Network not recorded",
+    "purchases": 0
+   }
+  ],
+  "by_protocol": [
+   {
+    "name": "x402",
+    "purchases": 111
+   },
+   {
+    "name": "mpp",
+    "purchases": 0
+   }
+  ],
+  "method": "The same purchases, grouped three ways: payment protocol, settlement network, and currency. Each group divides the organic purchase total; do not add the groups together. House purchases are excluded. These are purchase counts, not revenue or unique buyers. Network gaps remain unrecorded; endpoint observations and trade-counter deliveries are outside these settlement counts.",
+  "organic_purchases": 111
+ },
+ "pre_meter_settlements": 1,
+ "rail_split_method": "organic_by_rail divides the organic figure by the chain the money arrived on, from three records covering disjoint sets of sales so that nothing is counted twice. (1) The TILL: the rail is written in the same call that produces the organic count, so every settle has one, including the penny pages that mint no certificate. (2) The CERTIFICATES, for sales settled before the till started recording rails; that walk stops at exactly the instant the till took over. (3) THE STORE'S OWN CONFIGURATION, for anything the first two missed that predates 2026-08-04 \u2014 the day the Solana rail was built. Before it this store could accept exactly one network, so a sale from those weeks did not probably settle on Base, it could not have settled anywhere else. base + polygon + solana + rail_not_recorded always equals organic_settlements. What is left in rail_not_recorded can only be a sale from between the second rail opening and the till learning to record rails, that also minted no certificate \u2014 a closed set that nothing can join, recoverable by hand from the public receiving wallets against its transaction hash.",
+ "reclassified_house": 19,
+ "sample_artifact_id": "cert_4dww28dx5j",
+ "settled_purchases_total": 465,
+ "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+ "track_record": "Operating since 2026-07-22. Settled purchases: 465 \u2014 111 organic + 353 house-flagged proprietor tests + 1 from before the channel meter. Only the organic figure counts as proof. 111 organic purchases \u2014 111 via x402, 0 via mpp. Of the organic figure, 105 settled in USDC on Base, 1 in USDC on Polygon, 4 in USDC on Solana, 1 in USDC on Arbitrum. Every number here is computed live from https://scvd.store/stats; every artifact ever issued (454, free shelf included) verifies at https://scvd.store/api/verify/{id}.",
+ "verify_url": "https://scvd.store/api/verify/{id}",
+ "what_these_numbers_are": "OUR BOOKS, NOT THE CHAIN. Every figure here is computed from counters this store writes, so a settlement that landed on Base and never bumped one would not appear as a discrepancy \u2014 it would not appear at all, and this page would look clean while a payment went unrecorded. 'Computed live, no hand edits' means nobody typed these numbers; it does not mean anybody outside checked them."
+}

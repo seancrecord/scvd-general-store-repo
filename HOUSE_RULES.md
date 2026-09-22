@@ -372,6 +372,25 @@ LORE & TRADITION
     quote the old sentence keep their bytes; nothing is resigned.
     Dated note on /criteria.
 
+    AMENDED 2026-09-21 (drafted for the keeper's review under ruling
+    R4, docs/COUNTERS_LINKS_PAGES_2026-09-21.md; his ink makes it a
+    rule): the rule extends from verdicts to counters. Every
+    published count ships with its instrument, its population, its
+    window, its exclusions, and any cap or floor that bounded it, on
+    every rendering. The mechanism is the register
+    (src/store/published-counts.ts) and its guard
+    (test/published-counts.spec.ts): a number nobody has written a
+    denominator for cannot reach a public route. Under this rule two
+    instruments that class one request two ways are a defect, not a
+    difference of opinion (the observatory and the signals page, on
+    the same crawler, for a month), and a capped map that buckets its
+    overflow without saying so is a denominator nobody can check.
+    Numbers keep their bytes and their keys; the register rides
+    beside them. Per-item settle counts join the public books the
+    same day (ruling R3), raw and with the reclassification caveat
+    printed beside them, so the next catalogue cut is a derivation
+    anyone can redo.
+
 44. THE SURFACE SWEEP (2026-08-07, keeper's directive): any change to
     what the store IS, SELLS, or CLAIMS ends with a sweep of the
     major surfaces before it ships — SEO, AEO, and agent-facing

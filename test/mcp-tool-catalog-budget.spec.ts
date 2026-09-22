@@ -44,6 +44,26 @@ const BASE = "https://scvd.store";
  * budget in store/reader-limits.ts; the second assertion below still
  * holds the catalog well under what the specs cost.
  */
+/**
+ * BACK TO 152,000 — AND THE FURNITURE IS GONE (2026-09-22).
+ *
+ * This number was raised to 165,000 on 2026-09-21 to admit
+ * buy_mandate, which is the move main declined the same day for the
+ * right reason: the shelf was costed at +11,005 bytes against 418 of
+ * headroom and two guards refused it, so the item went second inside
+ * buy_observation as "the reachable half of the fix" with the
+ * prerequisite named — a cluster's bytes are mostly per-tool
+ * furniture, ~4,975 of refusal vocabulary and ~1,057 of security
+ * block repeating verbatim on every buy_* tool, and trimming that
+ * once makes the shelf affordable.
+ *
+ * The trim landed. Each tool keeps the codes it can refuse with and
+ * the `charged` flag on each (money safety stays local); the prose
+ * moved to /mcp.md, which is the one named hop rule 57.4 allows. So
+ * the ceiling goes back to where the keeper set it rather than where
+ * one tool needed it, and buy_mandate fits under it with room the
+ * next tool can argue for.
+ */
 const CATALOG_BYTE_CEILING = 152_000;
 const LARGEST_TOOL_BYTE_CEILING = 40_000;
 /** What it was before, kept so the test states what it prevents. */

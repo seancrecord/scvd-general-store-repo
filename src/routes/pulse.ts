@@ -3,6 +3,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { denominatorsSectionHtml, publishedCountsBlock } from "@/store/published-counts";
 import { computePulse } from "@/services/pulse";
 import type { PulseWindow } from "@/services/pulse";
 import type { HonoEnv } from "@/types";
@@ -110,22 +111,24 @@ function row(window: PulseWindow, label: string): string {
 }
 
 pulseRoutes.get("/pulse.json", async (c) => {
-  return c.json(await computePulse(c.env));
+  return c.json({ ...(await computePulse(c.env)), published_counts: publishedCountsBlock("/pulse") });
 });
 
 pulseRoutes.get("/pulse", async (c) => {
   const pulse = await computePulse(c.env);
+  // Rule 43 for the numbers: every count, with what it is out of (store/published-counts.ts).
+  const document = { ...pulse, published_counts: publishedCountsBlock("/pulse") };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
       base: c.env.STORE_BASE_URL,
       path: "/pulse",
       title: "The pulse",
       description: "The whole funnel for this x402 store, organic only: how many times a price was quoted (402s answered, not distinct agents), how many purchases settled, and how many artifacts were re-verified afterwards.",
-      document: pulse as unknown as Record<string, unknown>,
+      document: document as unknown as Record<string, unknown>,
     });
   }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json(pulse);
+    return c.json(document);
   }
   const base = c.env.STORE_BASE_URL;
   return c.html(
@@ -151,7 +154,8 @@ pulseRoutes.get("/pulse", async (c) => {
         <p class="menu-meta">${escapeHtml(pulse.house_flag_policy)} Every wallet this store controls is declared, signed, at <a href="/house-ledger.json">/house-ledger.json</a> — subtract them yourself rather than taking our word for the split.</p>
         <p class="menu-meta">Machine-readable at <a href="/pulse.json"><code>${escapeHtml(base)}/pulse.json</code></a>, computed live on every request from the same counters the keeper reads. Nothing here is collected for this page: the counters predate it, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is expected to have minted a signed artifact, and that expectation is checked rather than asserted: the counter is bumped before the handler that mints, so a sale that settled and never delivered would appear here with nothing behind it. A delivery audit and an hourly walk of the chain look for that case; a find goes on /corrections. Check any artifact at <code>${escapeHtml(base)}/api/verify/{id}</code> against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, without asking us.</p>
         <p class="menu-meta">Aggregate counts only. No user-agents, no referrers, no wallet addresses, no per-visitor rows — this store keeps no cookies and no IPs, and a public funnel is exactly where that discipline would be easiest to break quietly.</p>
-      </section>`,
+      </section>
+      ${denominatorsSectionHtml("/pulse", escapeHtml)}`,
     }),
   );
 });

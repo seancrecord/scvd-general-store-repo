@@ -1,4 +1,5 @@
 import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
+import { issuerDid } from "@/lib/did-key";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -207,6 +208,8 @@ async function prepareCertificate(
     item: options.itemId,
     patron_number: patronNumber,
     date,
+    // Who issued this, inside the signed bytes (ruling R1, 2026-09-21).
+    issuer: issuerDid(env.STORE_BASE_URL),
   };
   if (options.agentName) {
     certificate.name = options.agentName;

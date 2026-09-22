@@ -61,6 +61,37 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/**
+ * The shelf that actually sells an item, asked of the door rather
+ * than typed here.
+ *
+ * Typed, this broke on 2026-09-22: `the_mandate` moved onto its own
+ * `buy_mandate` shelf, `buy_observation` started answering the
+ * wrong-shelf redirect instead of the input refusal, and a law about
+ * money not moving failed for a reason that had nothing to do with
+ * money. The law is "a bad input is refused before any settlement",
+ * and it has to hold at whatever door the item is sold from this
+ * week — so the door says which one that is.
+ */
+async function shelfFor(itemId: string): Promise<string> {
+  const body = (await (
+    await SELF.fetch(`${BASE}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    })
+  ).json()) as Record<string, unknown>;
+  const tools = (body["result"] as { tools: Array<Record<string, unknown>> }).tools;
+  const selling = tools.filter((tool) => {
+    const schema = tool["inputSchema"] as { properties?: Record<string, { enum?: unknown[] }> };
+    return schema.properties?.["item_id"]?.enum?.includes(itemId) ?? false;
+  });
+  // Two shelves selling one item is the ambiguity this guard cannot
+  // resolve, and none means the roster moved without the test noticing.
+  expect(selling.map((tool) => String(tool["name"])), `shelves selling ${itemId}`).toHaveLength(1);
+  return String(selling[0]!["name"]);
+}
+
 /** The goods out of a tools/call result, however the door wraps them. */
 function goodsOf(body: Record<string, unknown>): Record<string, unknown> {
   const result = body["result"];
@@ -159,7 +190,8 @@ describe("the MCP door refuses a bad input before any money moves", () => {
       },
       // A statement over MCP used to sign a statement about no wallet.
       { args: { item_id: "the_statement" }, says: "No wallet, no charge" },
-      // A mandate over MCP used to sign a mandate with no text.
+      // A mandate over MCP used to sign a mandate with no text. It is
+      // sold from buy_mandate since 2026-09-22; shelfFor finds it.
       { args: { item_id: "the_mandate" }, says: "Nothing to record, no charge" },
       // The probe law: our own hostname is refused on this door too.
       {
@@ -168,12 +200,13 @@ describe("the MCP door refuses a bad input before any money moves", () => {
       },
     ];
     for (const { args, says } of cases) {
+      const shelf = await shelfFor(String(args["item_id"]));
       const body = (await (
-        await rpc({ name: "buy_observation", arguments: args })
+        await rpc({ name: shelf, arguments: args })
       ).json()) as Record<string, unknown>;
       const error = body["error"] as Record<string, unknown> | undefined;
-      expect(error, `${String(args["item_id"])} was not refused`).toBeTruthy();
-      expect(String(error!["message"]), String(args["item_id"])).toContain(says);
+      expect(error, `${String(args["item_id"])} was not refused by ${shelf}`).toBeTruthy();
+      expect(String(error!["message"]), `${String(args["item_id"])} on ${shelf}`).toContain(says);
       expect((error!["data"] as Record<string, unknown>)["charged"]).toBe(false);
     }
     expect(facilitator.settleCalls).toBe(settlesBefore);
@@ -216,7 +249,7 @@ describe("what an MCP buyer sends is what the till signs", () => {
     );
     const body = (await (
       await rpc({
-        name: "buy_observation",
+        name: await shelfFor("the_mandate"),
         arguments: { item_id: "the_mandate", mandate: text, submitted_as: "principal" },
         _meta: { "x402/payment": payment },
       })

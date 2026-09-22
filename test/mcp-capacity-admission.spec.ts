@@ -71,6 +71,7 @@ it("MCP discovery describes unavailable capacity and a safe next step", async ()
   const response = await request("/mcp", { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 8, method: "tools/list" }) });
   const tools = object(object(await response.json()).result).tools as Obj[];
+  const page = await (await request("/mcp.md")).text();
   const purchases = tools.filter(tool => String(tool.name).startsWith("buy_"));
   expect(purchases.length).toBeGreaterThan(0);
   for (const tool of purchases) {
@@ -79,7 +80,10 @@ it("MCP discovery describes unavailable capacity and a safe next step", async ()
     const humanShelf = ids.some(id => MENU_ITEMS.some(item => item.id === id && item.fulfillment === "human_queue"));
     if (humanShelf) {
       expect(refusal).toMatchObject({ jsonrpc: -32000, charged: false });
-      expect(String(refusal?.what_to_do)).toMatch(/original payment/i);
+      // The prose moved to the page the tool points at (2026-09-22); the
+      // code and the charged flag stay on the tool, and the hop resolves.
+      expect(String(tool.errors_url)).toContain("/mcp.md");
+      expect(page).toMatch(/capacity_unavailable[\s\S]{0,400}original payment/i);
     } else expect(refusal).toBeUndefined();
   }
 });

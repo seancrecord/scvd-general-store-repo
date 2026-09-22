@@ -1,0 +1,371 @@
+{
+ "computed_at": "2026-09-21T17:23:19.215Z",
+ "corrections": "Things this store said that later proved wrong live at /corrections \u2014 dated, with what changed so each cannot recur quietly. If a claim on this surface was ever corrected, that is where the correction stands.",
+ "counted_paths": {
+  "/": "storefront",
+  "/a2a": "a2a",
+  "/a2a-desk": "a2a:desk",
+  "/a2a-desk.json": "a2a:instructions",
+  "/agents/general-store": "oasf-record",
+  "/almanac": "almanac",
+  "/api/a2a/check": "a2a:card-check",
+  "/api/a2a/runner.mjs": "a2a:runner",
+  "/api/before-you-pay": "before-you-pay",
+  "/api/bot-auth/check": "bot-auth:check",
+  "/api/bounties": "bounties.json",
+  "/api/catalog/v1": "catalog-search",
+  "/api/claims": "claims",
+  "/api/conformance": "conformance",
+  "/api/conformance/v1": "conformance",
+  "/api/credit/challenge": "credit:challenge",
+  "/api/credit/redeem": "credit:redeem",
+  "/api/discovery": "discovery",
+  "/api/field-study": "field-study.json",
+  "/api/look": "look",
+  "/api/onpage": "onpage",
+  "/api/practice": "practice",
+  "/api/preflight": "preflight",
+  "/api/preflight/batch": "preflight:batch",
+  "/api/preflight/checks": "preflight:checks",
+  "/api/provenance/self": "provenance:self",
+  "/api/request": "request",
+  "/api/stamp": "stamp",
+  "/api/standing-note": "standing-note",
+  "/api/tip": "tip",
+  "/api/treat": "treat",
+  "/api/verify-receipt": "verify-receipt",
+  "/ask": "ask",
+  "/atlas.json": "atlas",
+  "/attestation": "attestation",
+  "/becoming": "becoming",
+  "/bot-auth": "bot-auth",
+  "/bounties": "bounties",
+  "/conformance": "conformance:desk",
+  "/corpus": "corpus",
+  "/corpus.json": "corpus.json",
+  "/corrections": "corrections",
+  "/coverage": "coverage",
+  "/coverage.json": "coverage.json",
+  "/credit": "credit",
+  "/criteria": "criteria",
+  "/defects": "defects",
+  "/defects.json": "defects.json",
+  "/deprecation": "deprecation",
+  "/developers": "developers",
+  "/directory": "directory",
+  "/disagreements": "disagreements",
+  "/field-study": "field-study",
+  "/fresh-set": "fresh-set",
+  "/fulfillment-log": "fulfillment-log",
+  "/gazette": "gazette",
+  "/gazette/founding": "gazette:founding",
+  "/how-it-works": "how-it-works",
+  "/how-it-works.json": "how-it-works.json",
+  "/index.md": "index.md",
+  "/inflows": "inflows",
+  "/llms-full.txt": "llms-full.txt",
+  "/llms.txt": "llms.txt",
+  "/luckies/house": "luckies:house",
+  "/mcp.md": "mcp.md",
+  "/menu": "menu",
+  "/menu.json": "menu.json",
+  "/neighbours": "neighbours",
+  "/notice": "notice",
+  "/observatory": "observatory",
+  "/okf/index.md": "okf:index",
+  "/okf/log.md": "okf:log",
+  "/open-for-business": "open-for-business",
+  "/openapi-tools.json": "openapi-tools",
+  "/openapi.json": "openapi.json",
+  "/operators": "operators",
+  "/passport": "passport",
+  "/porch": "porch",
+  "/pricing": "pricing",
+  "/pricing.md": "pricing.md",
+  "/privacy": "privacy",
+  "/profiles": "profiles",
+  "/pulse": "pulse",
+  "/pulse.json": "pulse.json",
+  "/rails": "rails",
+  "/registry": "registry",
+  "/rights": "rights",
+  "/samples": "samples",
+  "/sites": "sites",
+  "/skill.md": "skill.md",
+  "/skills/execution-contract.md": "execution-contract",
+  "/stats": "stats",
+  "/trade": "trade",
+  "/trade.json": "trade.json",
+  "/trade.md": "trade.md",
+  "/train": "train",
+  "/trust": "trust",
+  "/try": "try",
+  "/ucp": "ucp",
+  "/ucp/v1": "ucp",
+  "/ucp/v1/catalog/lookup": "ucp:catalog",
+  "/ucp/v1/catalog/product": "ucp:catalog",
+  "/ucp/v1/catalog/search": "ucp:catalog",
+  "/ucp/v1/checkout-sessions": "ucp:checkout",
+  "/visitors": "visitors",
+  "/what": "what",
+  "/wind-down": "wind-down",
+  "/x402-test": "x402-test"
+ },
+ "floors": {
+  "ledger_key_cap": 5000,
+  "note": "Every count is a floor. The porch records at most a fixed number of visits a minute per isolate and drops the rest on the floor rather than queue them; the monthly ledger scans at most a fixed number of counter keys and says when it hit that cap. Both numbers are beside this note.",
+  "porch_writes_per_minute": 100
+ },
+ "house_flag_policy": "House traffic (the proprietors' own wallets and tests) is flagged at the till and excluded from every organic figure. Family doesn't make the paper.",
+ "months": [
+  {
+   "month": "2026-09",
+   "organic_visits": 169058,
+   "surfaces": [
+    {
+     "by_channel": {
+      "direct": 349,
+      "unknown": 4
+     },
+     "house": 0,
+     "infrastructure": 814,
+     "organic": 353,
+     "surface": "a2a"
+    },
+    {
+     "by_channel": {
+      "direct": 68
+     },
+     "house": 0,
+     "infrastructure": 29,
+     "organic": 68,
+     "surface": "a2a:card-check"
+    },
+    {
+     "by_channel": {
+      "direct": 117,
+      "unknown": 19
+     },
+     "house": 0,
+     "infrastructure": 15,
+     "organic": 136,
+     "surface": "a2a:desk"
+    },
+    {
+     "by_channel": {
+      "direct": 147,
+      "unknown": 4
+     },
+     "house": 0,
+     "infrastructure": 96,
+     "organic": 151,
+     "surface": "a2a:instructions"
+    },
+    {
+     "by_channel": {
+      "direct": 65
+     },
+     "house": 0,
+     "infrastructure": 54,
+     "organic": 65,
+     "surface": "a2a:recheck"
+    },
+    {
+     "by_channel": {
+      "direct": 121
+     },
+     "house": 0,
+     "infrastructure": 103,
+     "organic": 121,
+     "surface": "a2a:report"
+    },
+    {
+     "by_channel": {
+      "direct": 80,
+      "unknown": 3
+     },
+     "house": 0,
+     "infrastructure": 54,
+     "organic": 83,
+     "surface": "a2a:runner"
+    },
+    {
+     "by_channel": {
+      "direct": 194,
+      "unknown": 20
+     },
+     "house": 0,
+     "infrastructure": 265,
+     "organic": 214,
+     "surface": "almanac"
+    },
+    {
+     "by_channel": {
+      "direct": 2607,
+      "unknown": 24
+     },
+     "house": 0,
+     "infrastructure": 3411,
+     "organic": 2631,
+     "surface": "artifact:read"
+    },
+    {
+     "by_channel": {
+      "direct": 221,
+      "unknown": 1
+     },
+     "house": 0,
+     "infrastructure": 65,
+     "organic": 222,
+     "surface": "ask"
+    },
+    {
+     "by_channel": {
+      "direct": 53,
+      "unknown": 7
+     },
+     "house": 2,
+     "infrastructure": 72,
+     "organic": 60,
+     "surface": "atlas"
+    },
+    {
+     "by_channel": {
+      "direct": 237,
+      "unknown": 21
+     },
+     "house": 0,
+     "infrastructure": 205,
+     "organic": 258,
+     "surface": "attestation"
+    }
+   ],
+   "truncated": false
+  },
+  {
+   "month": "2026-08",
+   "organic_visits": 79926,
+   "surfaces": [
+    {
+     "by_channel": {
+      "direct": 496,
+      "skill": 3,
+      "unknown": 32
+     },
+     "house": 0,
+     "infrastructure": 410,
+     "organic": 531,
+     "surface": "almanac"
+    },
+    {
+     "by_channel": {
+      "direct": 2
+     },
+     "house": 0,
+     "infrastructure": 0,
+     "organic": 2,
+     "surface": "atlas"
+    },
+    {
+     "by_channel": {
+      "direct": 304,
+      "mcp": 1,
+      "skill": 1
+     },
+     "house": 0,
+     "infrastructure": 409,
+     "organic": 306,
+     "surface": "bell"
+    },
+    {
+     "by_channel": {
+      "direct": 3
+     },
+     "house": 0,
+     "infrastructure": 1,
+     "organic": 3,
+     "surface": "chip"
+    },
+    {
+     "by_channel": {
+      "direct": 771,
+      "unknown": 20
+     },
+     "house": 0,
+     "infrastructure": 162,
+     "organic": 791,
+     "surface": "conformance"
+    },
+    {
+     "by_channel": {
+      "direct": 122
+     },
+     "house": 0,
+     "infrastructure": 0,
+     "organic": 122,
+     "surface": "conformance-watch:history"
+    },
+    {
+     "by_channel": {
+      "mcp": 17
+     },
+     "house": 0,
+     "infrastructure": 0,
+     "organic": 17,
+     "surface": "conformance:mcp"
+    },
+    {
+     "by_channel": {
+      "direct": 118,
+      "unknown": 8
+     },
+     "house": 0,
+     "infrastructure": 5,
+     "organic": 126,
+     "surface": "corpus"
+    },
+    {
+     "by_channel": {
+      "direct": 1306
+     },
+     "house": 0,
+     "infrastructure": 1016,
+     "organic": 1306,
+     "surface": "corpus:host"
+    },
+    {
+     "by_channel": {
+      "direct": 29
+     },
+     "house": 0,
+     "infrastructure": 5,
+     "organic": 29,
+     "surface": "corpus:week"
+    },
+    {
+     "by_channel": {
+      "direct": 78,
+      "unknown": 1
+     },
+     "house": 0,
+     "infrastructure": 116,
+     "organic": 79,
+     "surface": "corpus.json"
+    },
+    {
+     "by_channel": {
+      "direct": 28,
+      "unknown": 7
+     },
+     "house": 0,
+     "infrastructure": 3,
+     "organic": 35,
+     "surface": "defects"
+    }
+   ],
+   "truncated": false
+  }
+ ],
+ "what_this_is": "What gets read here, counted: every surface the porch counts, per month, organic visits beside the house and infrastructure buckets kept out of them, and the channel split inside the organic count. Surfaces are in name order, never by count. Read live from the same counters the admin desk reads; nothing here is typed.",
+ "what_this_is_not": "Not a ranking of our own rooms, not a visitor count (one agent reading a page ten times is ten), and not a claim about anyone but this store. No rate is served: the funnel's one rate lives on /pulse with its denominator explained. No user-agents, no referrers, no per-visitor rows \u2014 this store keeps no cookies and no IPs."
+}

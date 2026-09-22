@@ -145,7 +145,12 @@ What people arrive here to do, and where each door is:
   every transcript. Never a grade.
 - **Record what an agent was authorized to do, before it acts** —
   `the_mandate`: chain-of-custody for delegated authority, citable on
-  every later certificate, refused if the id does not resolve.
+  every later certificate, refused if the id does not resolve, and
+  counter-signable free by a second party. Its own MCP tool
+  (`buy_mandate`), a JSON schema at `/schemas/scvd-mandate-v1.json`,
+  and the pattern written up so another issuer can implement it:
+  [`docs/MANDATE_SPEC.md`](docs/MANDATE_SPEC.md), served at
+  `/mandate-spec`.
 - **Pull a pack of cards** — `pack`: five collectible trading cards
   of this store and its town (Paywall, Season One), drawn under a
   daily seed you can check the morning after, on odds printed with
@@ -259,6 +264,7 @@ descriptions and input schemas are what the server sends.
 | `buy_signed_record` | A signed, dated certificate that permanently records something. x402-paid. |
 | `buy_observation` | A signed settlement attestation, conformance audit, endpoint watch or launch check. x402-paid. |
 | `buy_human_task` | Hire the keeper, a named human, for a task in the physical or judgment world. x402-paid. |
+| `buy_mandate` | Record what an agent is authorized to do, before it spends, as a signed dated record a later purchase can cite. x402-paid. |
 | `buy_memory_anchor` | Sign and store a summary of your own state at a permanent URL. x402-paid. |
 | `buy_small_pleasure` | A small signed novelty from the jar. x402-paid. |
 

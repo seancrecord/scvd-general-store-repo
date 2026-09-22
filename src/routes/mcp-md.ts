@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { SECURITY_INVARIANTS, refusalVocabularyMarkdown } from "@/store/surface-contract";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { webmcpTools } from "@/routes/webmcp";
@@ -209,6 +210,30 @@ required.
 - **Deeper rungs.** Our ladder stops at L3a: shape at one moment. We
   do not measure whether a door delivers after payment, and we say so
   on every reading rather than rounding up.
+
+## What a refusal means
+
+Every tool in \`tools/list\` carries the codes it can refuse with and,
+on each, whether money moved. The prose is here rather than repeated
+on all ${catalog.length} tools, which is the one hop house rule 57.4
+allows and is worth about 100 KB of a catalogue every session
+downloads.
+\`charged\` stays on the tool itself: a caller must never fetch a
+document to learn whether it was billed.
+
+${refusalVocabularyMarkdown()}
+
+## What every tool here promises
+
+Each tool says what it does in your name and what it stores about
+you, because those differ per tool. These two do not, so they are
+here:
+
+- **What we never do.** ${SECURITY_INVARIANTS.what_we_never_do}
+- **The standards.** ${SECURITY_INVARIANTS.standards}
+
+Report a vulnerability at \`${base}/.well-known/security.txt\`;
+something we got wrong at \`${base}/corrections\`.
 
 ## Tell us what would help
 

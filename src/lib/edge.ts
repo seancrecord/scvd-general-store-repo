@@ -1,4 +1,5 @@
 import { VARY_ACCEPT } from "@/lib/accept";
+import { whereToLookNext } from "@/lib/store-links";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import type { EventSignals } from "@/lib/metrics";
 import {
@@ -378,6 +379,7 @@ export const edgeOnError: ErrorHandler<HonoEnv> = (err, c) => {
       // it. Copy untouched; a door added beside it.
       front_door: c.env.STORE_BASE_URL,
       menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
+      where_to_look_next: whereToLookNext(c.env.STORE_BASE_URL),
     },
     500,
   );

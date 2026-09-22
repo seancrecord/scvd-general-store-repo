@@ -385,6 +385,79 @@ export type RpcRefusal = {
   | { tool_result: true; jsonrpc?: never }
 );
 
+/**
+ * THE TOOL-CATALOGUE FORM OF A REFUSAL (2026-09-22).
+ *
+ * Every buy_* tool carried the whole refusal vocabulary with its
+ * prose, and the prose is byte-identical wherever it appears: about
+ * 4,975 bytes per tool, repeated twenty-one times, which is most of a
+ * catalogue every MCP session downloads before it does anything. The
+ * per-tool INFORMATION is which codes this tool can refuse with and
+ * whether money moved; the prose is the store's, once.
+ *
+ * Rule 57.4 is satisfied by the hop the rule itself allows — "a named
+ * link to the page that answers it, as long as the hop is FROM the
+ * surface an agent is holding". The tool carries the codes, the
+ * `charged` flag (money safety stays local: a caller must never have
+ * to fetch a document to learn whether it was billed) and the link.
+ * /mcp.md carries every code's `means` and `what_to_do`, derived from
+ * this same list so the two cannot drift.
+ */
+export type ToolRefusal = Pick<RpcRefusal, "code" | "charged"> & {
+  jsonrpc?: number;
+  tool_result?: true;
+};
+
+export function toolRefusal(refusal: RpcRefusal): ToolRefusal {
+  return {
+    code: refusal.code,
+    ...(refusal.charged === undefined ? {} : { charged: refusal.charged }),
+    ...("tool_result" in refusal && refusal.tool_result
+      ? { tool_result: true as const }
+      : { jsonrpc: (refusal as { jsonrpc: number }).jsonrpc }),
+  };
+}
+
+/** The three security fields that are identical on every tool, published once. */
+export const SECURITY_INVARIANTS = {
+  what_we_never_do:
+    "No account, cookie, caller identifier or IP-based budget. Budgets bound our cost, not caller rank. Requests are never sold, shared or published. The weekly census reads public discovery feeds, never these requests.",
+  standards:
+    "Disclosure is private-first and symmetric: notify the operator before publication, including our own defects. Corrections are dated and public. Signed artifacts verify offline against our published key.",
+} as const;
+
+export interface ToolSecurity {
+  what_this_does_in_your_name: string;
+  what_it_stores_about_you: string;
+  /** The named hop rule 57.5 allows: what we never do, the standards, and where to report. */
+  the_rest: string;
+}
+
+export function toolSecurity(
+  base: string,
+  parts: { does_in_your_name: string; stores: string },
+): ToolSecurity {
+  return {
+    what_this_does_in_your_name: parts.does_in_your_name,
+    what_it_stores_about_you: parts.stores,
+    the_rest: `What this store never does, the standards it holds itself to, and where to report a vulnerability or a correction: ${base}/mcp.md#what-every-tool-here-promises. Reporting directly: ${base}/.well-known/security.txt, ${base}/corrections.`,
+  };
+}
+
+/** Where a tool's refusal codes are spelled out. One page, named on every tool. */
+export function refusalVocabularyUrl(base: string): string {
+  return `${base}/mcp.md#what-a-refusal-means`;
+}
+
+/** The vocabulary rendered once, derived from the list above so the two cannot drift. */
+export function refusalVocabularyMarkdown(): string {
+  const rows = MCP_REFUSAL_CODES.map(
+    (refusal) =>
+      `| \`${refusal.code}\` | ${refusal.charged === false ? "no" : refusal.charged === true ? "yes" : "not stated"} | ${refusal.means} | ${refusal.what_to_do} |`,
+  ).join("\n");
+  return `| code | charged | what it means | what to do |\n| --- | --- | --- | --- |\n${rows}`;
+}
+
 export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
   {
     code: "ambiguous_payment_credentials",

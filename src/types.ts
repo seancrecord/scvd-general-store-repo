@@ -153,6 +153,12 @@ export interface Env {
   COUNTER_LEDGER?: DurableObjectNamespace<import("@/services/counter-ledger").CounterLedger>;
   /** Test pool only: the ledger follows KV when a test changes a key under it (services/counter-ledger.ts). */
   COUNTER_LEDGER_FOLLOW_KV?: string;
+  /**
+   * The buyer-signals maps' one writer (services/signal-store.ts).
+   * Optional for the same reason as the ledger: absent, the maps fall
+   * back to the capped KV read-modify-write and the reading says so.
+   */
+  SIGNALS?: DurableObjectNamespace<import("@/services/signal-store").SignalStore>;
   PATRONS: KVNamespace;
   /**
    * The corpus's object store (2026-08-19, the R2 graduation the
@@ -360,6 +366,8 @@ export type Channel =
   | "skill"
   | "webmcp"
   | "direct"
+  /** A user-initiated fetcher: a person asked a model to read one page, now (lib/crawlers.ts). */
+  | "fetcher"
   | "infrastructure"
   | "unknown";
 
@@ -642,6 +650,17 @@ export interface Certificate {
    * into the certificate so the existing /api/verify answers for the
    * attestation too rather than a second endpoint being built.
    */
+  /**
+   * THE ISSUER, SIGNED (2026-09-21, ruling R1). did:web:<the store's
+   * host>: identity, not location. The verify URL stays derived from
+   * this and cert_id and is never signed, because a URL is a promise
+   * about where to look and this store signs only what it can keep
+   * true. The DID document lists a did:key beside the did:web, so the
+   * name survives a domain move. Absent on every certificate minted
+   * before this field existed; those keep verifying over their own
+   * bytes, and nothing is resigned.
+   */
+  issuer?: string;
   attests?: string;
   /**
    * THE BUYER'S WHY, added 2026-08-19 (the receipt chain). Any item,
@@ -1519,6 +1538,37 @@ export interface WeeklyDigest {
   failed_item_requests: Record<string, number>;
   /** Letters in the box the keeper hasn't read yet. */
   unread_letters?: number;
+  /**
+   * THE STORE'S OWN BUYERS, IN THE SUNDAY DIGEST (2026-09-21). The
+   * public counters the pulse, the rails and the observatory already
+   * serve, gathered into the one signed weekly document, month to
+   * date, each figure with its window and instrument beside it.
+   * Absent when a newer instrument could not be read: the digest is
+   * older machinery and does not die of the newer.
+   */
+  store_buyers?: StoreBuyersDigest;
+}
+
+export interface StoreBuyersDigest {
+  window: string;
+  instrument: string;
+  organic_challenges: number;
+  organic_payments_presented: number;
+  organic_settled: number;
+  organic_declines: number;
+  conversion_rate: number | null;
+  /** The all-time organic settles by network, or null when the split is withheld. */
+  by_rail: Record<string, number> | null;
+  /** Who reads the pages about a host this month: the concentration histogram, no host named. */
+  host_pages: {
+    subjects: number;
+    by_formats: { one: number; two: number; three: number };
+    repeat: { at_least_2: number; at_least_5: number; at_least_10: number };
+    reads: number;
+    overflow: number;
+  };
+  exclusions: string[];
+  note: string;
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

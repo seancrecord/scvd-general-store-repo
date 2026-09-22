@@ -3,6 +3,8 @@ import { metricsMonth, monthsSinceOpening, readPorchLedger } from "@/lib/metrics
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { HOUSE_FLAG_POLICY } from "@/services/stats";
 import { PULSE_MONTHS } from "@/services/pulse";
+import { readBuyerSignals } from "@/services/buyer-signals";
+import type { ConcentrationHistogram } from "@/lib/signal-histogram";
 import type { Env } from "@/types";
 
 /**
@@ -43,12 +45,34 @@ export interface SurfaceCount {
   infrastructure: number;
 }
 
+/**
+ * WHO READS THE PAGES ABOUT SOMEBODY, PUBLIC (2026-09-21). The
+ * September read could not tell a crawler wave from an agent surge
+ * on corpus:host from this page, because this page counted requests
+ * and nothing else; the split lived on the keeper's signals page.
+ * This is that split, bucketed: reads of a host page by the format
+ * served and the reader's class — browser, agent, fetcher, crawler —
+ * and the concentration histogram over the month's subjects. No
+ * host name, no crawler name, no user-agent: classes and counts,
+ * from the same rows the admin page reads (services/buyer-signals.ts).
+ */
+export interface HostPageReading {
+  /** `${format}:${reader}` → reads of a corpus host page, house excluded. */
+  by_format_and_reader: Record<string, number>;
+  /** Subjects by formats read and by repeat threshold, over the month's subject count. */
+  histogram: ConcentrationHistogram;
+  /** Which path the rows came from and the caps that applied there. */
+  storage: string;
+}
+
 export interface ObservatoryMonth {
   month: string;
   organic_visits: number;
   surfaces: SurfaceCount[];
   /** True when the ledger's key scan hit its cap: the counts are floors even more than usual. */
   truncated: boolean;
+  /** The host-page reading for the month, or null when the signals could not be read. */
+  host_pages: HostPageReading | null;
 }
 
 export interface Observatory {
@@ -56,6 +80,8 @@ export interface Observatory {
   months: ObservatoryMonth[];
   /** Every path the porch counts by name, derived from the roster the counter reads; a surface absent here is not counted, not unvisited. */
   counted_paths: Record<string, string>;
+  /** What host_pages on each month is, and is not. */
+  host_pages_note: string;
   floors: {
     porch_writes_per_minute: number;
     ledger_key_cap: number;
@@ -77,8 +103,28 @@ export const OBSERVATORY_WHAT_THIS_IS =
 export const OBSERVATORY_WHAT_THIS_IS_NOT =
   "Not a ranking of our own rooms, not a visitor count (one agent reading a page ten times is ten), and not a claim about anyone but this store. No rate is served: the funnel's one rate lives on /pulse with its denominator explained. No user-agents, no referrers, no per-visitor rows — this store keeps no cookies and no IPs.";
 
+export const OBSERVATORY_HOST_PAGES_NOTE =
+  "host_pages: who reads the pages about a host, by the format served and the reader's class (browser: asked for HTML; agent: everything else that is not machinery; fetcher: a person's errand through a model; crawler: machinery by name), and how concentrated the reading is — subjects read in one, two or three formats, and subjects past a repeat threshold, over the month's subject count. A sweep reads every page once in one format; a return is the signal. Classes and counts only: no host name, no crawler name, no user-agent.";
+
 export const OBSERVATORY_FLOORS_NOTE =
   "Every count is a floor. The porch records at most a fixed number of visits a minute per isolate and drops the rest on the floor rather than queue them; the monthly ledger scans at most a fixed number of counter keys and says when it hit that cap. Both numbers are beside this note.";
+
+/** The host-page split for one month from the signals rows: corpus host pages only, relation folded away, nothing named. */
+async function hostPageReading(env: Env, month: string): Promise<HostPageReading> {
+  const signals = await readBuyerSignals(env, month);
+  const byFormatAndReader: Record<string, number> = {};
+  for (const [key, n] of Object.entries(signals.pages)) {
+    const [page, format, reader] = key.split(":");
+    if (page !== "corpus_host" || !format || !reader) continue;
+    const bucket = `${format}:${reader}`;
+    byFormatAndReader[bucket] = (byFormatAndReader[bucket] ?? 0) + n;
+  }
+  return {
+    by_format_and_reader: Object.fromEntries(Object.entries(byFormatAndReader).sort(([a], [b]) => a.localeCompare(b))),
+    histogram: signals.histogram,
+    storage: `${signals.storage.path}; caps: ${Object.entries(signals.storage.caps).map(([k, n]) => `${k} ${n}`).join(", ")}`,
+  };
+}
 
 function surfaceRows(ledger: Awaited<ReturnType<typeof readPorchLedger>>): SurfaceCount[] {
   return Object.entries(ledger.surfaces)
@@ -107,15 +153,19 @@ export async function computeObservatory(env: Env, now: Date = new Date()): Prom
   // The order of the answer is the order of `months`, not of arrival.
   const read: ObservatoryMonth[] = await Promise.all(
     months.map(async (month) => {
-      const ledger = await readPorchLedger(env, month).catch(() => null);
+      const [ledger, hostPages] = await Promise.all([
+        readPorchLedger(env, month).catch(() => null),
+        hostPageReading(env, month).catch(() => null),
+      ]);
       if (!ledger) {
-        return { month, organic_visits: 0, surfaces: [], truncated: true };
+        return { month, organic_visits: 0, surfaces: [], truncated: true, host_pages: hostPages };
       }
       return {
         month,
         organic_visits: ledger.organicVisits,
         surfaces: surfaceRows(ledger),
         truncated: ledger.truncated,
+        host_pages: hostPages,
       };
     }),
   );
@@ -123,6 +173,7 @@ export async function computeObservatory(env: Env, now: Date = new Date()): Prom
     computed_at: now.toISOString(),
     months: read,
     counted_paths: Object.fromEntries([...PORCH_EXACT.entries()].sort(([a], [b]) => a.localeCompare(b))),
+    host_pages_note: OBSERVATORY_HOST_PAGES_NOTE,
     floors: {
       porch_writes_per_minute: OBSERVATORY_PORCH_WRITES_PER_MINUTE,
       ledger_key_cap: OBSERVATORY_LEDGER_KEY_CAP,

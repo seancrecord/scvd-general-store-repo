@@ -1,4 +1,6 @@
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
+import { storeLinks } from "@/lib/store-links";
+import { publishedCountsBlock } from "@/store/published-counts";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse, markdownCell } from "@/lib/json-markdown";
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
@@ -249,6 +251,8 @@ corpusRoutes.get("/corpus.json", async (c) => {
     },
     started: first,
     entries: records.length,
+    // Rule 43 for the numbers: every count on this index, with what it is out of; the signed snapshot under `latest` is quoted, not restated (store/published-counts.ts).
+    published_counts: publishedCountsBlock("/corpus.json"),
     /**
      * THE WEEKS THE CHAIN DOES NOT HOLD (2026-09-04).
      *
@@ -351,16 +355,22 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
   // Opt-in stable bytes let a buyer revalidate the evidence without a request
   // timestamp changing the ETag. The existing full view keeps asked_at.
   const { asked_at, ...stableHistory } = observation.history;
+  const tier = deriveTier(tierInputFromHistory(observation.history, observation), `${base}/criteria`);
   return c.json({
     ...(c.req.query("view") === "stable" ? stableHistory : { ...stableHistory, asked_at }),
     /* The Atom feed of this host's changes (2026-09-17): one entry per
      * verdict or pay-to change, derived from these same rows. */
     evidence_scope: HOST_HISTORY_SCOPE,
     feed_url: `${base}/feeds/host/${host}.xml`,
-    tier: deriveTier(
-      tierInputFromHistory(observation.history, observation),
-      `${base}/criteria`,
-    ),
+    tier,
+    /* THE LINK SET (2026-09-21). This twin is what the index walkers
+     * store; without a store behind it a reader cannot get from these
+     * rows to a door. The next step is the one this host's own tier
+     * picks, derived, never a ranking. */
+    store_links: storeLinks(base, {
+      path: "/corpus/host/",
+      host: { host, tier: tier.tier, refreshed: tier.latest?.source === "paid_refresh" },
+    }),
     /*
      * THE CITE BOX (2026-09-04): the latest probed row, in the shape
      * the watch reads; every timeline entry carries entry_url and
@@ -527,6 +537,12 @@ ${paymentSection}
 
 ${history.what_this_cannot_see.map((line) => `- ${line}`).join("\n")}
 ${citeSection}
+## If this is your host
+
+This page exists because the store's weekly walk met ${host} and has recorded what it saw since, with the weeks it did not look named as gaps. There is no claim step: the record is earned by observation. Free, for an operator: declare the door (POST ${base}/api/declare-door with {"host": "${host}"}); attach a standing note in your own words (GET ${base}/api/standing-note); or have the page withdrawn at ${base}/notice.
+
+${storeLinks(base, { path: "/corpus/host/", host: { host, tier: tier.tier, refreshed: tier.latest?.source === "paid_refresh" } }).next.map((step) => `- [${step.name}](${step.url}) — $${step.price_usdc}: ${step.why} (derived from the ${step.source.replace("_", " ")})`).join("\n")}
+
 ## Check it yourself
 
 The free preflight runs the same battery on any door right now:
@@ -719,6 +735,20 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
         <p class="menu-desc">${escapeHtml(cite.text)}</p>
         <pre class="menu-meta">${escapeHtml(JSON.stringify(cite.json, null, 2))}</pre>
         <p class="menu-meta">${escapeHtml(CITE_HOW)} Any earlier row cites the same way from its entry link above. How a scorer consumes this: <a href="/scorers">/scorers</a>.</p>
+      </section>`;
+      })()}
+      ${(() => {
+        /* WHY THIS PAGE EXISTS, AND THE DOORS AN OPERATOR HAS (2026-09-21).
+         * The September read found the operator section on this page held
+         * four doors and named none of the free ones an operator actually
+         * has — declaring the door, attaching a standing note — nor the
+         * instrument this host's own tier picks. Derived, never a ranking. */
+        const links = storeLinks(base, { path: "/corpus/host/", host: { host, tier: tier.tier, refreshed: tier.latest?.source === "paid_refresh" } });
+        return `<section>
+        <h2>If this is your host</h2>
+        <p class="menu-desc">This page exists because the store's weekly walk met <code>${escapeHtml(host)}</code>${history.first_observed ? ` on ${escapeHtml(history.first_observed)}` : ""} and has recorded what it saw since, with the weeks it did not look named as gaps. There is no claim step: the record is earned by observation. What an operator can do, free: declare the door so the next walk reads it from your own file — <code>POST ${escapeHtml(base)}/api/declare-door</code> with <code>{"host": "${escapeHtml(host)}"}</code> (<a href="/api/declare-door">how</a>); attach a standing note in your own words, proved with your wallet key or a file on your host (<a href="/api/standing-note">how</a>); or have the page withdrawn at the <a href="/notice">notice desk</a>.</p>
+        <ul>${links.next.map((step) => `<li class="menu-desc"><a href="${escapeHtml(step.url)}">${escapeHtml(step.name)}</a> — $${step.price_usdc} <span class="menu-meta">(${escapeHtml(step.why)}; derived from the ${escapeHtml(step.source.replace("_", " "))})</span></li>`).join("")}</ul>
+        <p class="menu-meta">${escapeHtml(links.derivation)}</p>
       </section>`;
       })()}
       <section>

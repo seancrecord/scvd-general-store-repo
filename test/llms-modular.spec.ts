@@ -1091,6 +1091,21 @@ const BASE = "https://scvd.store";
 // its pre-field-study state inside the merged tree, main's d37dd386
 // reproduced exactly, which is what proves the field study is the
 // whole of the difference between the two.
+// 2026-09-22, the mandate spec and the purpose sentence: two paragraphs
+// added to the guide under "What a signature from us is actually worth",
+// before the /criteria paragraph, and nothing else in the document
+// touched. The first names the mandate record's own spec (/mandate-spec)
+// and its JSON schema, which the orphan guard wants named where agents
+// read; the second says once that the buyer's `purpose` field is signed
+// onto the certificate and printed on its receipt page where a person
+// reads it. That sentence was first written onto the purpose field's own
+// description, which rides every item's input contract — 57 characters
+// times thirty-five items, and OpenAPI went 2,504 bytes over the reader
+// budget whose guard says in as many words not to raise the number. The
+// guide is one document, so it costs once. Verified the way this file
+// asks rather than asserted: with src/routes/llms.ts reverted to its
+// pre-mandate-spec state and nothing else changed, both prior digests
+// reproduced exactly.
 // 2026-09-21, THE REFUND PROMISE: STORE_METADATA.refund_policy is
 // rendered into the guide, and it was rewritten — the only change to
 // any text this digest covers. A cold buyer read the old line ("the
@@ -1104,8 +1119,15 @@ const BASE = "https://scvd.store";
 // checkable. Verified the way this file asks rather than asserted:
 // with refund_policy alone reverted and nothing else touched, both
 // digests below reproduced exactly on the first try.
+// 2026-09-22, THE MERGE of those two: both halves re-pinned this line
+// for their own reasons — this branch for the mandate-spec paragraphs,
+// main for the rewritten refund promise — and the merged guide carries
+// BOTH changes, so neither half's digest describes it. The pin below is
+// the merged document and is neither of theirs; the two notes above
+// both stand and this one says why there is a third. Taken from the
+// merged tree, the way this file asks.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "99af0b51243f37e3e308d029595afe746cfb1aab4b68f300e920ee9e1ada5558";
+  "90c49eea3b2caf1e66e5c405026a5fc89321c3ab8fc264098596ed35cfe086b1";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1171,6 +1193,9 @@ describe("nothing was rewritten", () => {
     // for their own reasons, so this pin is the merged guide and neither
     // half's. Verified inside the merged tree: with llms.ts reverted to
     // its pre-field-study state, main's 1c798e47 reproduced exactly.
+    // 2026-09-22: re-taken with the two guide paragraphs described above
+    // (the mandate spec and its schema, and the purpose sentence said once);
+    // with llms.ts reverted, f8597f7a reproduced.
     // 2026-09-21, THE REFUND PROMISE: STORE_METADATA.refund_policy is
     // rendered into the guide, and it was rewritten — the only change to
     // any text this digest covers. A cold buyer read the old line ("the
@@ -1184,8 +1209,15 @@ describe("nothing was rewritten", () => {
     // checkable. Verified the way this file asks rather than asserted:
     // with refund_policy alone reverted and nothing else touched, both
     // digests below reproduced exactly on the first try.
+// 2026-09-22, THE MERGE of those two: both halves re-pinned this line
+// for their own reasons — this branch for the mandate-spec paragraphs,
+// main for the rewritten refund promise — and the merged guide carries
+// BOTH changes, so neither half's digest describes it. The pin below is
+// the merged document and is neither of theirs; the two notes above
+// both stand and this one says why there is a third. Taken from the
+// merged tree, the way this file asks.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      "8a6c054b840836f3e35ff36e5f0258b52309ccc35d47bb0135968e7b547eb18d",
+      "e48cdfc54b98617dcae6c170e95ca4a913da2d04228b4abf062a559137a40506",
     );
   });
 

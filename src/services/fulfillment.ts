@@ -1,4 +1,5 @@
 import { assertReportedChain } from "@/lib/receipt-context";
+import { attestLoop, storeLinks } from "@/lib/store-links";
 import { feedbackInvite } from "@/store/agent-feedback";
 import { isHouseWallet } from "@/lib/channel";
 import { humanOrderEvidence } from "@/services/human-order-proof";
@@ -815,6 +816,11 @@ export async function fulfillPurchase(
      * hands. Never inside signed_payload — see storeIdentity().
      */
     store_identity: storeIdentity(env.STORE_BASE_URL),
+    // The link set (2026-09-21): the same roster every envelope carries, the next step for this item, the attest loop.
+    store_links: storeLinks(env.STORE_BASE_URL, {
+      item: item.id,
+      ...(payment.transaction ? { settlement: { tx: payment.transaction, item: item.id } } : {}),
+    }),
     verification:
       "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
     /**
@@ -830,18 +836,19 @@ export async function fulfillPurchase(
      * pay. Skipped on the settlement-observation items themselves,
      * where the offer would read as a hall of mirrors.
      */
-    ...(payment.transaction &&
-    !["settlement_attestation", "settlement_reconciliation", "attestation_bundle"].includes(
-      item.id,
-    )
-      ? {
-          attest_this_purchase: {
-            url: `${env.STORE_BASE_URL}/api/buy/settlement_attestation?tx_hash=${payment.transaction}`,
-            price_usdc: getMenuItem("settlement_attestation")!.price_usdc,
-            note: `You now hold a settlement transaction — the input Settlement Attestation requires. $${getMenuItem("settlement_attestation")!.price_usdc} buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL.`,
-          },
-        }
-      : {}),
+    ...(() => {
+      // Built by the same function the link set uses (lib/store-links.ts attestLoop), so the two cannot disagree; this key kept for readers that learned it.
+      const loop = payment.transaction ? attestLoop(env.STORE_BASE_URL, { tx: payment.transaction, item: item.id }) : undefined;
+      return loop
+        ? {
+            attest_this_purchase: {
+              url: loop.url,
+              price_usdc: loop.price_usdc,
+              note: `You now hold a settlement transaction — the input Settlement Attestation requires. $${loop.price_usdc} buys a signed observation that YOUR payment settled: ${loop.what_it_proves} ${loop.conflict}`,
+            },
+          }
+        : {};
+    })(),
     /**
      * THE ONE RECORD OF THIS STORE WE CANNOT WRITE (2026-09-16).
      *

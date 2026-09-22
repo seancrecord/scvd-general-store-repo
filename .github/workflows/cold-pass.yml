@@ -1,0 +1,88 @@
+# The cold pass, on a clock (2026-09-21; docs/COUNTERS_LINKS_PAGES_2026-09-21.md, D3).
+#
+# aura_walk sells "where a weak agent gets stuck at your door" and
+# refuses this store's own hostname, because the store's own cold
+# passes are published free in AGENT_UX.md — by the keeper's hand,
+# when he has a morning for it, and AGENT_UX.md records a fifteen-day
+# gap when nobody walked. This is the same pass on a schedule.
+#
+# TWO JOBS, ONE ALWAYS. The instrument job runs the buyer harness
+# against local fixtures (npm run buyer:test): no model, no payment,
+# and it proves the harness still reads. The pass job launches the
+# real cold buyers (scripts/buyer-cold-isolated.mjs) only when the
+# secrets it needs are present, and keeps what it produced as a
+# workflow artifact for ninety days — never committed by the run,
+# because a transcript carries wallet addresses and the public record
+# omits raw local traces (docs/BUYER_HARNESS.md). Promoting a pass to
+# research/cold-pass-{week}/ as per-cell facts with denominators,
+# scrubbed, is the keeper's hand, like every other publication.
+#
+# NEVER A RANKING. A pass reports, per model and journey, what
+# happened and how many cells there were; nothing here orders one
+# model against another (HOUSE_RULES.md rule 43).
+name: The cold pass
+
+on:
+  schedule:
+    # Mondays, after the Sunday walk has sealed the week.
+    - cron: "0 13 * * MON"
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: "The buyer plan to run"
+        required: false
+        default: "research/takeoff-recipient-integration-2026-09-18/plan.json"
+
+permissions:
+  contents: read
+
+jobs:
+  instrument:
+    name: The harness, against fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run buyer:test
+
+  pass:
+    name: The cold buyers, live
+    needs: instrument
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      COLD_PASS_WALLET_KEY: ${{ secrets.COLD_PASS_WALLET_KEY }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Decide whether the pass can run
+        id: gate
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ] || [ -z "$COLD_PASS_WALLET_KEY" ]; then
+            echo "armed=false" >> "$GITHUB_OUTPUT"
+            echo "The pass needs ANTHROPIC_API_KEY and COLD_PASS_WALLET_KEY (a wallet funded under the wallet law, KEEPER_LIST). Neither is set; the instrument job above is this run's whole reading."
+          else
+            echo "armed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run the cold buyers
+        if: steps.gate.outputs.armed == 'true'
+        run: |
+          week="$(date -u +%G-W%V)"
+          echo "week=$week" >> "$GITHUB_ENV"
+          npm run buyer:cold -- --plan "${{ inputs.plan || 'research/takeoff-recipient-integration-2026-09-18/plan.json' }}" --out "cold-pass/$week"
+      - name: Keep the pass for the keeper's read
+        if: steps.gate.outputs.armed == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cold-pass-${{ env.week }}
+          path: cold-pass/
+          retention-days: 90
+          if-no-files-found: warn

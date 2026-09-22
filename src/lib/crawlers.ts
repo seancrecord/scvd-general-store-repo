@@ -338,6 +338,74 @@ export const HTML_INDEXERS: readonly string[] = [
   ...SEARCH_CRAWLERS,
 ];
 
+/**
+ * WHO IS A PERSON'S ERRAND, NOT A CRAWL (2026-09-21). The named list
+ * splits once more, this time for the counters rather than the
+ * negotiation: a user-initiated fetcher reads one page because one
+ * person asked a model to, in a chat, now. That is neither an index
+ * walk nor a typed URL, and for a month the observatory filed every
+ * one of them as organic "direct" while the signals page filed the
+ * same request as a crawler — two instruments, two answers, on the
+ * same row. Each name here is the vendor's own published purpose,
+ * the same reading MARKDOWN_READERS makes; nothing is guessed from a
+ * string.
+ */
+export const USER_INITIATED_FETCHERS: readonly string[] = [
+  "Claude-User",
+  "ChatGPT-User",
+  "Perplexity-User",
+  "MistralAI-User",
+  "Meta-ExternalFetcher",
+  "Google-NotebookLM",
+  "Amzn-User",
+  "Diffbot-User",
+  // An agent driving a browser on a person's behalf: an errand too.
+  "Google-Agent",
+  // Grounding a customer's app: one fetch because one user asked.
+  "bedrockbot",
+  "Google-CloudVertexBot",
+];
+
+/**
+ * Named in robots.txt so the permission is stated, but a buyer's own
+ * client rather than anybody's crawler: it can pay, and a client that
+ * can pay is never the noise floor.
+ */
+export const AGENT_CLIENTS: readonly string[] = ["Claude-Code"];
+
+/**
+ * Everyone named who is neither a person's errand nor a buyer's
+ * client is machinery: training corpora, answer and search indexes,
+ * link unfurlers. Derived, so a name added to the lists above lands
+ * in exactly one counter class or a test says so. The channel
+ * classifier (lib/channel.ts) reads this beside its own table of
+ * self-describing machinery.
+ */
+export const MACHINERY_CRAWLERS: readonly string[] = [
+  ...NAMED_AI_CRAWLERS.filter(
+    (token) => !USER_INITIATED_FETCHERS.includes(token) && !AGENT_CLIENTS.includes(token),
+  ),
+  ...SEARCH_CRAWLERS,
+  ...SOCIAL_UNFURLERS,
+];
+
+const FETCHER_TOKENS = USER_INITIATED_FETCHERS.map((token) => token.toLowerCase());
+const MACHINERY_TOKENS = MACHINERY_CRAWLERS.map((token) => token.toLowerCase());
+
+/** True when the User-Agent names a user-initiated fetcher. Checked before machinery: Diffbot-User contains Diffbot. */
+export function isUserInitiatedFetcher(userAgent: string | undefined | null): boolean {
+  if (!userAgent) return false;
+  const lower = userAgent.toLowerCase();
+  return FETCHER_TOKENS.some((token) => lower.includes(token));
+}
+
+/** True when the User-Agent names a training crawler, an index or an unfurler, and not a fetcher. */
+export function isMachineryCrawler(userAgent: string | undefined | null): boolean {
+  if (!userAgent || isUserInitiatedFetcher(userAgent)) return false;
+  const lower = userAgent.toLowerCase();
+  return MACHINERY_TOKENS.some((token) => lower.includes(token));
+}
+
 const CRAWLER_TOKENS = [...NAMED_AI_CRAWLERS, ...SEARCH_CRAWLERS].map((token) =>
   token.toLowerCase(),
 );

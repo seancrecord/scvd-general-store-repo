@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/sanitize";
+import type { ReadSpike } from "@/services/outreach";
 import { renderAdminShell } from "@/pages/admin/layout";
 import {
   gmailComposeFor,
@@ -454,6 +455,7 @@ export function renderOutreachPage(
   welcomes: Welcome[] = [],
   citations: CitationWatchReport | null = null,
   showAll = false,
+  readSpikes: ReadSpike[] = [],
 ): string {
   const noticeBlock = notice
     ? `<section><p><strong>${escapeHtml(notice)}</strong></p></section>`
@@ -659,5 +661,15 @@ export function renderOutreachPage(
   ${workedShown.map((p) => prospectCard(p, ledger, base)).join("\n")}`
       : ""
   }`;
-  return renderAdminShell("outreach", body);
+  const spikes = readSpikes.length === 0
+    ? "<p class='empty'>No host's page was read in more than one format or five times by anyone but a crawler this month.</p>"
+    : `<table border="1" cellpadding="4"><tr><th>host</th><th>reads</th><th>formats</th><th>from itself</th><th>the record</th></tr>
+      ${readSpikes.map((row) => `<tr><td><code>${escapeHtml(row.host)}</code></td><td>${row.reads}</td><td>${escapeHtml(row.formats.join(", "))}</td><td>${row.self_referred}</td><td><a href="${escapeHtml(base)}/corpus/host/${escapeHtml(row.host)}">page</a></td></tr>`).join("")}
+    </table>`;
+  return renderAdminShell("outreach", `${body}
+  <section>
+    <h2>Read again (${readSpikes.length})</h2>
+    <p class="menu-meta">Hosts whose page about them was read in more than one format, or five or more times, by a browser, an agent or a fetcher this month — from the signal store's own rows, alphabetical, never a ranking. A return is the one sign of interest an index walk cannot fake. This list sends nothing: a note still goes out by a press, states a fact verified live about the door, and never says anyone was looking.</p>
+    ${spikes}
+  </section>`);
 }

@@ -1,0 +1,76 @@
+{
+ "all_time": {
+  "conversion_rate": 0.00132,
+  "misbooked_house": 19,
+  "organic_challenges": 84031,
+  "organic_declines": 160,
+  "organic_payments_presented": 271,
+  "organic_rechecks": 1111,
+  "organic_settled": 111
+ },
+ "computed_at": "2026-09-21T18:54:59.158Z",
+ "crawler_correction_computed_at": "2026-09-21T13:30:35.775Z",
+ "house_flag_policy": "House traffic (the proprietors' own wallets and tests) is flagged at the till and excluded from every organic figure. Family doesn't make the paper.",
+ "latency": {
+  "bucket_edges_ms": [
+   50,
+   100,
+   250,
+   500,
+   1000,
+   2000,
+   5000
+  ],
+  "external_monitor": "https://stats.uptimerobot.com/VuHaG1k2c5",
+  "method": "One counter per route class per bucket per month, bumped after the response is sent so the instrument never slows the thing it measures. Percentiles are published as the INTERVAL they fall in rather than as a point value, because that is all a histogram can honestly support. THE SAMPLE COUNT IS A FLOOR, NOT A CENSUS: the counters are read-modify-write against Workers KV, which is last-write-wins with no compare-and-swap, so two requests landing in the same bucket in the same instant can record as one. That biases the count down and never up. House and infrastructure traffic are counted here, unlike everywhere else in this document, because latency is a fact about our own server doing work and our own probes run the same code a stranger does \u2014 excluding them would shrink the sample without making it truer. This is the store timing itself, which is exactly the reading nobody should take on trust: the external monitor linked from this store is the one that owes you no favours.",
+  "routes": {
+   "challenge": {
+    "buckets": {
+     "over": 6,
+     "u00050": 54193,
+     "u00100": 3829,
+     "u00250": 4443,
+     "u00500": 1056,
+     "u01000": 782,
+     "u02000": 381,
+     "u05000": 78
+    },
+    "p50_ms_range": [
+     0,
+     50
+    ],
+    "p95_ms_range": [
+     100,
+     250
+    ],
+    "samples": 64768
+   }
+  },
+  "truncated": false,
+  "what_this_is": "How long this store's own server took to produce a 402 challenge, in buckets. SERVER-SIDE ONLY: the clock starts when the payment gate is entered and stops when the challenge is ready, so it excludes DNS, TLS, network transit and everything the buyer's own client does. A reader measuring from outside will always see a larger number than this, and the difference is the network, not us."
+ },
+ "months": [
+  {
+   "conversion_rate": 0.00205,
+   "month": "2026-09",
+   "organic_challenges": 42451,
+   "organic_declines": 104,
+   "organic_payments_presented": 191,
+   "organic_rechecks": 698,
+   "organic_settled": 87
+  },
+  {
+   "conversion_rate": 0.000706,
+   "misbooked_house": 19,
+   "month": "2026-08",
+   "organic_challenges": 32596,
+   "organic_declines": 41,
+   "organic_payments_presented": 64,
+   "organic_rechecks": 340,
+   "organic_settled": 23
+  }
+ ],
+ "note": "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else \u2014 no user-agents, no referrers, no wallet addresses, no per-visitor rows \u2014 and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us \u2014 and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges, declines and re-checks those same wallets generated are still counted organic here. organic_challenges, organic_declines and organic_rechecks are therefore ceilings, and the conversion rate computed from them is a floor. THE FUNNEL'S MIDDLE IS DERIVED, NOT SEPARATELY METERED: the till books every payment actually presented as exactly one of settled or declined, so organic_payments_presented is their sum and cannot drift from the two numbers published beside it. And a naming correction, dated 2026-08-27: the field once called organic_verifies is now organic_rechecks, because it counts free re-checks of already-issued artifacts at /api/verify \u2014 NOT the x402 verify step \u2014 and the old name kept being read as the protocol step it never was.",
+ "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+ "verify_url": "https://scvd.store/api/verify/{id}"
+}

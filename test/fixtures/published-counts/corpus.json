@@ -1,0 +1,196 @@
+{
+ "@context": "https://schema.org",
+ "@type": "Dataset",
+ "chain": {
+  "entries": 8,
+  "intact": true
+ },
+ "citation_shape": {
+  "every_row_prints_one": "https://scvd.store/corpus/host/{host}.json carries `cite`; https://scvd.store/corpus/{n}.json carries `cite`; the look's reproduce block cites the row it compared with.",
+  "how": "Cite a row by its entry URL and digest, never by restating it. The digest is the one the corpus index commits to; if the row's bytes ever changed, the chain check at /corpus.json would fail, which is what makes the citation checkable.",
+  "json": {
+   "cites": "https://scvd.store/corpus/{n}.json",
+   "digest": "<sha256 the index commits to>",
+   "host": "example.com",
+   "observed_at": "2026-08-\u2026",
+   "sequence": 1,
+   "week": "2026-W34"
+  }
+ },
+ "compact_index": "https://scvd.store/corpus/index.json",
+ "conditionsOfAccess": "Free to read. No account, no key, no rate limit.",
+ "continuity": {
+  "weeks_held": 8,
+  "weeks_missing": [],
+  "what_a_gap_means": "A week between our first and newest entry that holds no snapshot at all: the round did not run, or ran and could not be sealed. It is a gap in OUR record, not a quiet week in the ecosystem, and the two are indistinguishable from the outside unless we say which this was."
+ },
+ "corrections": "Things this store said that later proved wrong live at /corrections \u2014 dated, with what changed so each cannot recur quietly. If a claim on this surface was ever corrected, that is where the correction stands.",
+ "creator": {
+  "@id": "https://scvd.store/#organization",
+  "@type": "Organization",
+  "name": "SCVD General Store",
+  "url": "https://scvd.store"
+ },
+ "dateModified": "2026-09-20T11:00:28.668Z",
+ "description": "One snapshot per weekly ward round of the public x402 discovery list \u2014 a round re-run inside its week appends a later entry, and the week's derived views read the newest \u2014 recording which hosts were listed, which answered, and what a single conformance probe saw at that moment. Hash-chained, ed25519-signed, each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, never scores on operators.",
+ "distribution": [
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus.json",
+   "encodingFormat": "application/json",
+   "name": "Index of every snapshot, with the chain check"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/1.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 1 (2026-W32)"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/2.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 2 (2026-W33)"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/3.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 3 (2026-W34)"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/4.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 4 (2026-W35)"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/5.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 5 (2026-W36)"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/6.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 6 (2026-W37)"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/7.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 7 (2026-W37)"
+  },
+  {
+   "@type": "DataDownload",
+   "contentUrl": "https://scvd.store/corpus/8.json",
+   "encodingFormat": "application/json",
+   "name": "Snapshot 8 (2026-W38)"
+  }
+ ],
+ "entries": 8,
+ "honest_limits": "The observations are ours: one instrument, weekly cadence, the hosts the discovery list declared. A host absent from a round was unlisted that week, beyond the round's stated caps, or dropped by our own coverage \u2014 the round's own coverage fields say which, so absence alone proves nothing about the host. One structural exclusion, stated because it flatters our trust-gap numbers: the round can never probe this store's own host (a Worker cannot fetch itself), so our own door is in no denominator here. The chain proves the record has not been rewritten; it cannot prove the round saw everything, and coverage caveats ride inside each round verbatim (capped, coverage_suspect, coverage_drop).",
+ "how_to_verify": [
+  "1. Fetch any entry at https://scvd.store/corpus/{sequence}.json.",
+  "2. Recompute sha256 over the canonical snapshot (fixed field order: version, sequence, taken_at, previous_digest, source, week, round) and compare to `digest`.",
+  "3. Check `signature` over the same canonical string against the key at /.well-known/scvd-signing-key with your own ed25519 library.",
+  "4. Check `previous_digest` equals the prior entry's digest, back to sequence 1 \u2014 that is the whole chain.",
+  "5. Base64-decode `ots.proof_base64` and run `ots verify` against the digest: a Bitcoin-confirmed proof means the snapshot existed by that block, on evidence that is not ours.",
+  "6. A row's `evidence_digest` (rows sealed from 2026-09-10) is sha256 over the RFC 8785 canonical bytes of the probe's capture, served at https://scvd.store/corpus/{sequence}/evidence/{host}.json: hash the body you receive and compare. Rows sealed earlier carry the capture inline as `evidence`, inside the signed bytes themselves."
+ ],
+ "identifier": {
+  "@type": "PropertyValue",
+  "propertyID": "DOI",
+  "value": "10.5281/zenodo.22284887"
+ },
+ "index": [
+  {
+   "digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+   "hosts_observed": 56,
+   "hosts_probed": 39,
+   "ots_status": "complete",
+   "previous_digest": null,
+   "sequence": 1,
+   "taken_at": "2026-08-09T11:00:46.043Z",
+   "url": "https://scvd.store/corpus/1.json",
+   "week": "2026-W32"
+  },
+  {
+   "digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+   "hosts_observed": 60,
+   "hosts_probed": 42,
+   "ots_status": "complete",
+   "previous_digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+   "sequence": 2,
+   "taken_at": "2026-08-16T11:01:00.472Z",
+   "url": "https://scvd.store/corpus/2.json",
+   "week": "2026-W33"
+  },
+  {
+   "digest": "75dcedd2252ef3d893d5f874dcf44992d1a791fc9bec41eda57491cfc26cc64d",
+   "hosts_observed": 59,
+   "hosts_probed": 40,
+   "ots_status": "complete",
+   "previous_digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+   "sequence": 3,
+   "taken_at": "2026-08-19T00:22:32.398Z",
+   "url": "https://scvd.store/corpus/3.json",
+   "week": "2026-W34"
+  }
+ ],
+ "isAccessibleForFree": true,
+ "latest": {
+  "snapshot": {
+   "round": {
+    "hosts": [],
+    "hosts_count": 5021,
+    "listed_resources": 15373
+   },
+   "sequence": 8,
+   "version": 1
+  }
+ },
+ "license": "https://creativecommons.org/licenses/by/4.0/",
+ "measurementTechnique": "One GET per declared host per week against the published preflight battery, at indexer cadence. Coverage caveats ride inside each round verbatim.",
+ "name": "The scvd corpus \u2014 weekly observations of the public x402 ecosystem",
+ "per_subject": {
+  "url_template": "https://scvd.store/corpus/host/{host}.json",
+  "what_it_answers": "Everything this store has observed about one host over time, replayed from the signed chain, with every round it was NOT observed carrying a reason: not listed by any feed, listed but not walked, possibly beyond the round's cap, or the instrument itself degraded. The gaps are the point \u2014 a timeline with misses omitted reads as continuous coverage.",
+  "what_it_will_not_answer": "A ranking, or any figure without its working. A derived reading of these rows \u2014 a tier, a fraction \u2014 appears only with the rule it came from, the denominator, and the rows, so you can redo the arithmetic or apply your own rule to the same rows. The dated observations are all there either way."
+ },
+ "sameAs": [
+  "https://doi.org/10.5281/zenodo.22284887",
+  "https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness"
+ ],
+ "seats": {
+  "dated": "2026-09-03",
+  "dispute_artifact": true,
+  "how_to_consume": "https://scvd.store/scorers",
+  "interpretation": false,
+  "misuse": "If you publish a score, ranking, or certification derived from this corpus, you are responsible for the interpretation. This store does not endorse derived conclusions.",
+  "record": true,
+  "sentence": "The store is the record and the reproducible dispute artifact. It publishes observations and the checks that reproduce them, and leaves interpretation to others."
+ },
+ "started": "2026-08-09T11:00:46.043Z",
+ "temporalCoverage": "2026-08-09T11:00:46.043Z/2026-09-20T11:00:28.668Z",
+ "tiers": {
+  "url": "https://scvd.store/corpus/tiers.json",
+  "what_it_answers": "Every host's tier \u2014 observed, established, standing, broken or indeterminate \u2014 derived from its own rounds by the rule on /criteria and printed with the fraction it came from, alphabetical by host. The rows behind every line are the per-subject read above."
+ },
+ "url": "https://scvd.store/corpus.json",
+ "variableMeasured": [
+  "host listed in the x402 discovery document",
+  "conformance verdict: ready, not_ready, unreachable or not_probed",
+  "named failing checks and advisories",
+  "protocols_spoken: x402, mpp, both or neither observed; absent means not measured",
+  "mpp: read-only challenge checks and advisories under the row's named battery; credentials, binding, delivery and receipts unobserved. No reading here rests on a payment: the till of this store has spoken MPP since 2026-09-18, and that says nothing about the door read.",
+  "mpp_read_error: reader_failed marks our inability to measure, not a defect of the door",
+  "week-over-week delta: newly failing, newly fixed, flappers",
+  "population known versus walked, and the coverage percentage between them",
+  "listing lifecycle: first seen, last seen, newly delisted, listed again",
+  "the discovery catalog's copy of each door's terms against the live 402: agrees, differs (field and rail), not listed, or not comparable, with the catalog's own lastUpdated"
+ ],
+ "what_this_is": "The corpus: the public x402 ecosystem as this store's weekly ward round observed it, frozen one snapshot per round \u2014 hash-chained, ed25519-signed, and each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, kept because a continuous record cannot be backfilled later at any price.",
+ "what_this_is_not": "Never a ranking, and never a verdict without its derivation and denominator beside it. Each entry records what a probe saw at a moment, and never becomes a ranking of one host against another. What may be derived from the entries \u2014 a tier, a fraction \u2014 is published only with its rule, its denominator and its rows (the 2026-09-02 amendment to rule 43, at /criteria)."
+}

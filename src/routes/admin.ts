@@ -2890,6 +2890,10 @@ adminRoutes.get("/admin/outreach", async (c) => {
   const healed = healedAfterOutreach(round, ledger);
   const { readCitationWatch, watchedProspects } = await import("@/services/citation-watch");
   const citations = await readCitationWatch(c.env);
+  // The read-spike tier (2026-09-21): derived from the signal store; sends nothing.
+  const { deriveReadSpikes } = await import("@/services/outreach");
+  const { readBuyerSignals } = await import("@/services/buyer-signals");
+  const readSpikes = deriveReadSpikes(await readBuyerSignals(c.env));
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       week: round.week,
@@ -2900,6 +2904,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
       ledger,
       citations,
       citation_prospects: watchedProspects(),
+      read_spikes: readSpikes,
     });
   }
   const { renderOutreachPage } = await import("@/pages/admin/outreach-page");
@@ -2914,6 +2919,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
       welcomes,
       citations,
       c.req.query("all") === "1",
+      readSpikes,
     ),
   );
 });
