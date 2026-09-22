@@ -22,6 +22,9 @@ import {
   LEDGER_FOR_MONEY,
   LEDGER_FREE_FIRST,
   LEDGER_PROPOSITION,
+  STORE_MONTH_FOR_MONEY,
+  STORE_MONTH_FREE_FIRST,
+  STORE_MONTH_PROPOSITION,
   MCP_WARD_FOR_MONEY,
   MCP_WARD_FREE_FIRST,
   MCP_WARD_PROPOSITION,
@@ -185,7 +188,7 @@ Free instruments (the first two are also MCP tools, preflight_endpoint and check
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
-Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train) · [Open for Business, for sellers](${base}/open-for-business)
+Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [our own month, signed](${base}/store-month) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train) · [Open for Business, for sellers](${base}/open-for-business)
 
 The instrument, reporting on itself: [where our numbers come from](${base}/sources) · [sources.json](${base}/sources.json) · [the MCP ward](${base}/mcp-ward) · [mcp-ward.json](${base}/mcp-ward.json). The first names every directory our figures rest on beside the last time each answered, and carries the heartbeat saying whether the weekly round still runs. The second is a separate ward over the MCP registry, sharing no total with the x402 side.
 
@@ -1136,6 +1139,15 @@ defects by their registered names, and the gaps counted against us —
 read from the latest signed snapshot, with ?week= naming an earlier
 one. Counts with their denominators; never a ratio, never a rank,
 never a host named beside its verdict.
+
+The same instrument pointed at US: ${base}/store-month is the
+store's own month, signed. ${STORE_MONTH_PROPOSITION}
+${STORE_MONTH_FOR_MONEY} ${STORE_MONTH_FREE_FIRST} The chain is at
+\`${base}/store-month.json\`, one month at
+\`${base}/store-month/{YYYY-MM}.json\`, the verdict at
+\`${base}/store-month/verify.json\`. It proves our rows have not
+been edited since they were sealed; it does not prove they were
+right when they were written, and nobody outside has audited them.
 
 The same week READ, rather than tabulated: ${base}/ledger is The
 Week's Ledger, one page per signed week at \`${base}/ledger/{week}\`

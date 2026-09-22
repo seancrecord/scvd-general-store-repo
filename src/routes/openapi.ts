@@ -6296,6 +6296,41 @@ openapiRoutes.get("/openapi.json", async (c) => {
           WIND_DOWN_SCHEMA,
         ),
       },
+      /**
+       * THE STORE'S OWN MONTH (2026-09-22): the chain that points this
+       * observatory at its own books. One door in the contract rather
+       * than three — the verdict and the per-month entries are linked
+       * from this response, and the OpenAPI reader budget had room for
+       * one. Shape declared, not a bare object.
+       */
+      "/store-month.json": {
+        get: returns(
+          freeOp(
+            "This store's own months, signed and chained",
+            "Each sealed month of our funnel, rails, per-item till and reading concentration: frozen, signed, linked to the month before it, stamped into Bitcoin time. Each entry serves the exact bytes its signature covers. Free. Page: /store-month. Verdict: /store-month/verify.json.",
+          ),
+          {
+            type: "object",
+            properties: {
+              chain: { type: "string" },
+              entries: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    document: { type: "object" },
+                    digest: { type: "string" },
+                    signature: { type: "string" },
+                    public_key: { type: "string" },
+                    signed_payload: { type: "string" },
+                  },
+                },
+              },
+              scan_truncated: { type: "boolean" },
+            },
+          },
+        ),
+      },
       "/pulse.json": {
         get: returns(
           freeOp(

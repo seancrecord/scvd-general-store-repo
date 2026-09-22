@@ -10,11 +10,16 @@ page was not registered as a room (its path varies per host, so the
 room's deeper rung could never fire there; the derived next step is
 rendered on the page directly), and the cold pass runs on a schedule
 as a workflow that keeps its output as a run artifact for the keeper
-to promote, never committing transcripts. One cost to know: the MCP
-catalog byte ceiling moved from 152,000 to 165,000 to admit
-buy_mandate; the measurement found every tool repeating the same
-6 KB of errors and security prose, which is the real saving and a
-follow-up.** Originally dated 2026-09-21 as PROPOSED.
+to promote, never committing transcripts. One cost to know, which stopped being a
+cost before the branch merged: admitting buy_mandate first moved the
+MCP catalog byte ceiling from 152,000 to 165,000, and measuring it
+found every tool repeating the same 6 KB of errors and security
+prose. Rather than pay that, the branch trimmed it — the refusal
+vocabulary and the two shared invariants now live once on /mcp.md and
+each tool carries the code, the charged flag and a URL. tools/list is
+122,916 bytes with buy_mandate on the shelf and the ceiling is back at
+152,000. Merged as #883 on 2026-09-22.** Originally dated 2026-09-21
+as PROPOSED.
 
 ## 1. Why
 

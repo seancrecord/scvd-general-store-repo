@@ -286,6 +286,24 @@ export const ROOMS: readonly Room[] = [
    */
   { path: "/coverage", name: "What we observe, and what we do not" },
   /**
+   * THE ONE READING POINTED AT US (2026-09-22). It sits beside the
+   * coverage matrix on purpose: that page says where our looking
+   * stops, and this one holds our own books to the same terms we ask
+   * of every door we look at.
+   */
+  {
+    path: "/store-month",
+    name: "The store's own month, signed",
+    /*
+     * Off the front on purpose: the storefront is the keeper's
+     * curation, and this belongs beside the live figures it freezes
+     * rather than competing with the shelf. It is named on /pulse and
+     * /stats, which is where a reader watching a number move is
+     * standing.
+     */
+    on_storefront: false,
+  },
+  /**
    * THE SOURCE REGISTER, 2026-09-04, and it belongs directly under
    * the coverage matrix because the two answer halves of one
    * question. The matrix says where our looking STOPS; this says

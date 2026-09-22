@@ -11,6 +11,7 @@ export { catalogRoutes } from "@/routes/catalog";
 export { openapiRoutes } from "@/routes/openapi";
 export { wellKnownRoutes } from "@/routes/well-known";
 export { coverageRoutes } from "@/routes/coverage";
+export { storeMonthRoutes } from "@/routes/store-month";
 export { sourceRoutes } from "@/routes/sources";
 export { ledgerRoutes } from "@/routes/ledger";
 export { mcpWardRoutes } from "@/routes/mcp-ward";
