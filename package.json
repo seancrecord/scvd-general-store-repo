@@ -130,7 +130,7 @@
     "@a2a-js/sdk": "1.1.0",
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20260911.1",
-    "@types/node": "^26.5.1",
+    "@types/node": "^26.6.2",
     "@x402/fetch": "^2.25.0",
     "ajv": "^8.20.0",
     "dotenv": "^17.4.2",
