@@ -221,6 +221,14 @@
             ]
           },
           {
+            "name": "buy_mandate",
+            "title": "The Mandate",
+            "description": "Record what an agent is authorized to do BEFORE it spends — the claimed instructions verbatim, who submitted them (agent or principal, itself a claim), an optional declared cap in USDC and expiry — as a signed, dated record held by a party that is neither the agent nor its principal, at a free permanent URL, with a mandate_id every later purchase here can cite; a citation that does not resolve is refused before any charge, so it always lands signed on the citing certificate.",
+            "scopes": [
+              "external"
+            ]
+          },
+          {
             "name": "buy_memory_anchor",
             "title": "Agent Memory",
             "description": "Sign and store a summary of your own state — who you are, what you were doing — at a permanent URL you can read back after a context reset, a restart, or a handoff to another agent.",
