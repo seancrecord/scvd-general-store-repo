@@ -178,6 +178,15 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/pulse.json", "pulse.json"],
   ["/coverage", "coverage"],
   ["/coverage.json", "coverage.json"],
+  /*
+   * THE STORE'S OWN MONTH (2026-09-22). Counted like any other
+   * evidence surface: this store counts the readers of everybody
+   * else's record, and the one record about itself should not be the
+   * one it does not watch.
+   */
+  ["/store-month", "store-month"],
+  ["/store-month.json", "store-month.json"],
+  ["/store-month/verify.json", "store-month:verify"],
   ["/corrections", "corrections"],
   ["/disagreements", "disagreements"],
   ["/criteria", "criteria"],
@@ -280,6 +289,7 @@ const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["passport", "evidence"],
   ["defects", "evidence"],
   ["coverage", "evidence"],
+  ["store-month", "evidence"],
   ["pulse", "evidence"],
   ["watch:", "evidence"],
   ["gazette", "storefront"],
@@ -452,6 +462,16 @@ export function porchSurface(path: string, method: string): string | undefined {
   }
   if (path === "/zodiac" || path.startsWith("/zodiac/")) {
     return "zodiac";
+  }
+  /*
+   * One key for every sealed month, never one per month. The months
+   * are bounded — one a year is twelve — but a per-month key splits a
+   * series for no question anyone asked, and the chain's own page
+   * already says which months exist. The room, the chain and the
+   * verdict are exact entries above and are matched before this.
+   */
+  if (path.startsWith("/store-month/")) {
+    return "store-month:entry";
   }
   /**
    * THE CARD TABLE (2026-09-12): the room, a binder, a card's page.
