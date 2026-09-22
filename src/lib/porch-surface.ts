@@ -478,6 +478,39 @@ export function porchSurface(path: string, method: string): string | undefined {
     return method === "POST" ? "guestbook:write" : "guestbook:read";
   }
   /**
+   * THE ROOMS THIS BRANCH GAVE ADDRESSES A PERSON CAN OPEN
+   * (2026-09-22). The guestbook, one signature in it, and a patronage
+   * pass had only ever been API reads; phase C rendered them for a
+   * browser, which makes them rooms and rooms are counted. The door
+   * guard caught them the way it catches every new door — "count it,
+   * or name it uncounted; silence is not an answer" — and counting is
+   * the honest reading, because "did anybody open the guestbook" is a
+   * question this store asks about every other page it serves.
+   *
+   * Kept distinct from the `guestbook:read` API row above rather than
+   * folded into it: a person opening the book and an agent fetching
+   * its JSON are different readings, and merging them would hide which
+   * one the page earned.
+   */
+  if (path === "/guestbook") {
+    return "guestbook:room";
+  }
+  if (path.startsWith("/guestbook/")) {
+    return "guestbook:entry";
+  }
+  if (path.startsWith("/patronage/")) {
+    return "patronage:pass";
+  }
+  /*
+   * The mandate's own spec, served where another issuer reads it. Its
+   * own row, not the instrument's: "did anyone read the spec" and "did
+   * anyone buy a mandate" are the two halves of whether publishing it
+   * was worth doing.
+   */
+  if (path === "/mandate-spec") {
+    return "mandate-spec";
+  }
+  /**
    * PER-ITEM WINDOW SHOPPING. /menu.json logged as one surface, so a
    * reader who pulled up a single item's page and left was invisible:
    * we could see attention on the menu and money at the till, and
