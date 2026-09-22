@@ -3,6 +3,10 @@ import test from "node:test";
 import {
   windowTrustworthy,
   railCoveredByRun,
+  KNOWN_ANSWERS,
+  knownAnswersFor,
+  knownAnswerRun,
+  balanceFromCallResult,
   PAID_RESIDUAL,
   readDoor,
   PAID_VERDICTS,
@@ -298,4 +302,138 @@ test("a pinned rail is read only by the run that covers it, because every EVM ad
   // An unpinned rail is the single-rail door case and stays readable.
   assert.equal(railCoveredByRun(null, "eip155:8453"), true);
   assert.equal(railCoveredByRun(undefined, "eip155:8453"), true);
+});
+
+
+/**
+ * The known-answer run. These tests feed knownAnswerRun the rows the
+ * CLI would have produced, because the thing under test is the RULE —
+ * that a settled answer coming back wrong stops the run — and a test
+ * that needs a live RPC to say so is a test that goes quiet when the
+ * provider does.
+ */
+const asRow = ({ balance, nonce }) => {
+  const row = readDoorRail({ rail: "eip155:8453", payTo: "0x" + "11".repeat(20), atBlock: AT, scheme: "exact", balance, nonce });
+  if (balance !== null) row.balance_atomic = BigInt(balance).toString();
+  return row;
+};
+/** What each rail's controls are known to hold, read on their own rail. */
+const FUNDED = { balance: 18_692_590_714_101n, nonce: 1 };
+const UNTOUCHED = { balance: 0n, nonce: 0 };
+
+test("a run publishes only when every control returns the answer settled before it began", () => {
+  const rail = "eip155:8453";
+  const out = knownAnswerRun({ rail, controls: knownAnswersFor(rail), rows: [asRow(FUNDED), asRow(UNTOUCHED)] });
+  assert.equal(out.ran, 2);
+  assert.equal(out.passed, true);
+  assert.equal(out.because, null);
+  assert.ok(out.controls.every((c) => c.ok));
+});
+
+test("a funded control reading zero stops the run, and says the whole reading is suspect", () => {
+  // StillOS's 08-21 defect in one line: a wrong field name returned 27
+  // of 27 false zeros, every one of them well-formed. Scope disclosure
+  // catches none of it; an address that is not allowed to read zero does.
+  const rail = "eip155:8453";
+  const out = knownAnswerRun({ rail, controls: knownAnswersFor(rail), rows: [asRow(UNTOUCHED), asRow(UNTOUCHED)] });
+  assert.equal(out.passed, false);
+  assert.match(out.because, /aave-v3-ausdc-base/);
+  assert.match(out.because, /known to read PAID/);
+  assert.match(out.because, /every other row it produced is suspect/);
+});
+
+test("reading a rail's doors against another chain's asset fails the control rather than passing", () => {
+  // The cross-rail defect both operators shipped. Read the Arbitrum
+  // controls against Base's USDC contract and the funded one comes
+  // back as an untouched address — zero balance, zero nonce — which is
+  // exactly what a wrong-chain read looks like and exactly what the
+  // pairing is chosen to make impossible to miss.
+  const rail = "eip155:42161";
+  const out = knownAnswerRun({ rail, controls: knownAnswersFor(rail), rows: [asRow(UNTOUCHED), asRow(FUNDED)] });
+  assert.equal(out.passed, false);
+  assert.equal(out.controls[0].ok, false);
+  assert.equal(out.controls[1].ok, false, "and the untouched control reading funded is the same swap seen from the other side");
+});
+
+test("a control that did not run is not a control that passed", () => {
+  // AT_SCALE rule 5 on this instrument's own reader: a null result from
+  // a probe that cannot run is not evidence. Our 09-15 run swallowed
+  // 107 of 132 reads; a control is how that becomes a refusal.
+  const rail = "eip155:8453";
+  const failed = asRow(FUNDED);
+  failed.read_failed = true;
+  failed.read_error = "HTTP 429";
+  const swallowed = knownAnswerRun({ rail, controls: knownAnswersFor(rail), rows: [failed, asRow(UNTOUCHED)] });
+  assert.equal(swallowed.passed, false);
+  assert.match(swallowed.because, /HTTP 429/);
+
+  const missing = knownAnswerRun({ rail, controls: knownAnswersFor(rail), rows: [] });
+  assert.equal(missing.passed, false);
+  assert.match(missing.because, /never read/);
+});
+
+test("a control's verdict is not enough: the untouched one must keep its all-time reach", () => {
+  // A zero scoped to a window and a zero that holds at every height
+  // are different claims, and the nonce argument is the only thing
+  // that gets us the second. A reader that lost it would still print
+  // ZERO_OBSERVED, so the control checks the reach as well.
+  const rail = "eip155:8453";
+  const windowed = readDoorRail({ rail, payTo: "0x" + "11".repeat(20), atBlock: AT, fromBlock: AT - 2000, logs: [], logsComplete: true, balance: 0n, nonce: 4 });
+  windowed.balance_atomic = "0";
+  const out = knownAnswerRun({ rail, controls: knownAnswersFor(rail), rows: [asRow(FUNDED), windowed] });
+  assert.equal(out.passed, false);
+  assert.match(out.because, /all-time zero under the nonce argument/);
+});
+
+test("a rail with no pinned controls publishes nothing, so extending the reader cannot opt out of the check", () => {
+  const out = knownAnswerRun({ rail: "eip155:137", controls: knownAnswersFor("eip155:137"), rows: [] });
+  assert.equal(out.ran, 0);
+  assert.equal(out.passed, false);
+  assert.match(out.because, /no known-answer controls are pinned/);
+});
+
+test("each pinned rail's funded control is another pinned rail's untouched one", () => {
+  // Derived from the table, never re-typed beside it. This pairing is
+  // the entire reason a wrong-chain read fails a control instead of
+  // going unnoticed, so it is asserted rather than described.
+  const funded = new Map();
+  const untouched = new Map();
+  for (const [rail, controls] of Object.entries(KNOWN_ANSWERS)) {
+    assert.equal(controls.length, 2, `${rail} pins a funded control and an untouched one`);
+    for (const c of controls) {
+      (c.expect_verdict === "PAID" ? funded : untouched).set(c.address.toLowerCase(), rail);
+    }
+  }
+  for (const [address, rail] of funded) {
+    const mirror = untouched.get(address);
+    assert.ok(mirror, `${address} is funded on ${rail} and is not pinned as an untouched control anywhere`);
+    assert.notEqual(mirror, rail, "a control cannot be its own mirror");
+  }
+});
+
+
+test("an empty eth_call return is a read failure, never a zero balance", () => {
+  // Found by the known-answer run on its first live outing, which is
+  // the argument for having one. Pointed at the wrong chain, the USDC
+  // contract simply is not there, eth_call answers `0x` with HTTP 200,
+  // and reading that as a balance turns every door in the run into a
+  // confident ZERO_OBSERVED. The zeros would be well formed, in range,
+  // and wrong — the same defect as a wrong field name, reached from
+  // the other side.
+  const absent = balanceFromCallResult("0x");
+  assert.equal(absent.balance, null);
+  assert.match(absent.error, /holding no code/);
+  assert.match(absent.error, /never a zero balance/);
+
+  // A real zero and a real number both survive: the rule must not
+  // swallow the answers it exists to protect.
+  assert.equal(balanceFromCallResult("0x0").balance, 0n);
+  assert.equal(balanceFromCallResult(`0x${(123456n).toString(16).padStart(64, "0")}`).balance, 123456n);
+  assert.equal(balanceFromCallResult("0x0").error, null);
+
+  for (const junk of [null, undefined, "", "not hex", 7]) {
+    const out = balanceFromCallResult(junk);
+    assert.equal(out.balance, null, `${JSON.stringify(junk)} is not a balance`);
+    assert.ok(out.error, `${JSON.stringify(junk)} must carry a reason`);
+  }
 });

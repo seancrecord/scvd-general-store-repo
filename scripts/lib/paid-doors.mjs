@@ -363,3 +363,204 @@ export function readDoor({ name = null, rails = [] } = {}) {
     established_by: `${verdicts.filter((v) => v === "UNKNOWN").length} of ${rails.length} advertised rail(s) could not be resolved, and a zero is a claim about every way money could have arrived`,
   };
 }
+
+/**
+ * THE KNOWN-ANSWER RUN (2026-09-19, StillOS Notary's seventh term).
+ *
+ * "Disclosure covers what an operator knows it could not see. Every
+ *  defect this thread produced was the other kind — my field name, my
+ *  page cap, your swallowed rate limit, your proxy trap, both our loose
+ *  rails — confident, well-formed, wrong, and invisible to the
+ *  instrument that made it. Declaring scope catches none of them. An
+ *  input whose answer is fixed in advance catches all of them, because
+ *  each one moves a number that is not allowed to move."
+ *
+ * Taken as written. Before this reader is allowed to publish a run, it
+ * reads two addresses whose answers were settled before the run began,
+ * on the same rail, at the same height, through the same code path as
+ * every door. If either comes back other than its fixed answer, the run
+ * is refused rather than annotated: a caveat beside a wrong number gets
+ * quoted without the caveat, and we have the correction on file that
+ * proves it.
+ *
+ * THE PAIR IS CHOSEN SO THAT EACH RAIL'S POSITIVE IS ANOTHER RAIL'S
+ * NEGATIVE. Aave V3's USDC aToken on Base holds millions on Base and
+ * is an untouched address — zero balance, zero nonce — on Arbitrum,
+ * and the Arbitrum aToken is the mirror of that. So reading Arbitrum
+ * doors against Base's USDC contract does not merely go unnoticed: the
+ * positive control reads zero and the run refuses to publish. That is
+ * the cross-rail defect both operators shipped, turned into a tripwire
+ * instead of a paragraph.
+ *
+ * WHAT EACH CONTROL CATCHES, and it is the whole family this thread
+ * found rather than a single bug:
+ *   - positive reads ZERO   → a wrong field name, selector or decode
+ *                             (27 of 27 false zeros, StillOS, 08-21)
+ *   - positive read failed  → a swallowed rate limit or a proxy trap
+ *                             (107 of 132 rows, ours, 09-15)
+ *   - positive on wrong rail→ a pinned address read against another
+ *                             chain's asset (both of us, 09-19)
+ *   - negative reads PAID   → a decode returning non-zero garbage
+ *   - negative loses all_time → the nonce argument path is broken
+ *
+ * WHAT IT DOES NOT CATCH, said here rather than discovered later: it
+ * reads state, so it says nothing about a pruned LOG horizon — that is
+ * the horizon canary's job, above — and it exercises one address at a
+ * time, so it cannot see an aggregation defect like a page cap
+ * published as a population count. Two controls are not a test suite.
+ *
+ * The expected balance is a FLOOR, not a pin. A pinned balance would
+ * have to name a height, and Arbitrum's public node already refuses
+ * state older than a few million blocks, so an exact pin quietly
+ * becomes an unrunnable control — which is the failure this term exists
+ * to prevent. A floor of one million USDC is far below either pool and
+ * far above anything a decode error produces. If a pool ever falls
+ * through it the run refuses and a human re-pins it, loudly.
+ */
+/**
+ * AN EMPTY RETURN IS NOT A ZERO (found 2026-09-19 by the known-answer
+ * run, on its first live outing, which is the argument for the term).
+ *
+ * `eth_call` to an address holding no code returns `0x` — no revert,
+ * no error, HTTP 200. Read that as a balance and every wrong-chain
+ * read becomes a confident ZERO_OBSERVED: the asset contract is absent
+ * on the chain being asked, so EVERY door reads empty and the run
+ * publishes a page of well-formed zeros. It is StillOS's `address_hash`
+ * defect, arrived at from the other direction.
+ *
+ * So empty return data is a READ FAILURE, named, and it sits inside
+ * UNKNOWN with the reason on the row. `0x0` and a padded word are real
+ * answers; `0x` is the absence of one.
+ */
+export function balanceFromCallResult(result) {
+  if (result === null || result === undefined) {
+    return { balance: null, error: "the balance call returned nothing" };
+  }
+  if (typeof result !== "string" || !result.startsWith("0x")) {
+    return { balance: null, error: `the balance call returned ${JSON.stringify(result)}, which is not hex quantity data` };
+  }
+  if (result === "0x") {
+    return {
+      balance: null,
+      error: "the balance call returned empty data (`0x`), which is what an address holding no code answers. There is no asset contract at the address this run is reading on this chain, so this is a gap in the reader — very often the wrong chain — and never a zero balance.",
+    };
+  }
+  try {
+    return { balance: BigInt(result), error: null };
+  } catch {
+    return { balance: null, error: `the balance call returned ${result}, which is not a readable quantity` };
+  }
+}
+
+export const KNOWN_ANSWER_METHOD =
+  "Before any door is read, this reader reads addresses whose answers were settled before the run began, on the same rail, at the same height, through the same function every door goes through. Each rail's funded control is another rail's untouched one, so a read against the wrong chain's asset fails the control rather than passing unnoticed. Every control returns its settled answer or the run publishes nothing. StillOS Notary's seventh term, issue #622, 2026-09-19. It checks state reads only: a pruned log horizon is the canary's job, and an aggregation defect is beyond what two addresses can see.";
+
+export const KNOWN_ANSWER_FLOOR_ATOMIC = 1_000_000_000_000n; // 1,000,000 USDC
+
+export const KNOWN_ANSWERS = Object.freeze({
+  "eip155:8453": Object.freeze([
+    Object.freeze({
+      name: "aave-v3-ausdc-base",
+      address: "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+      what: "Aave V3's USDC aToken on Base, which custodies the pool's USDC",
+      expect_verdict: "PAID",
+      expect_balance_at_least: KNOWN_ANSWER_FLOOR_ATOMIC.toString(),
+    }),
+    Object.freeze({
+      name: "aave-v3-ausdcn-arbitrum-seen-from-base",
+      address: "0x724dc807b04555b71ed48a6896b6F41593b8C637",
+      what: "the Arbitrum aToken's address, untouched on Base: zero balance at zero transaction count",
+      expect_verdict: "ZERO_OBSERVED",
+      expect_scope: "all_time",
+    }),
+  ]),
+  "eip155:42161": Object.freeze([
+    Object.freeze({
+      name: "aave-v3-ausdcn-arbitrum",
+      address: "0x724dc807b04555b71ed48a6896b6F41593b8C637",
+      what: "Aave V3's USDC aToken on Arbitrum One, which custodies the pool's USDC",
+      expect_verdict: "PAID",
+      expect_balance_at_least: KNOWN_ANSWER_FLOOR_ATOMIC.toString(),
+    }),
+    Object.freeze({
+      name: "aave-v3-ausdc-base-seen-from-arbitrum",
+      address: "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+      what: "the Base aToken's address, untouched on Arbitrum: zero balance at zero transaction count",
+      expect_verdict: "ZERO_OBSERVED",
+      expect_scope: "all_time",
+    }),
+  ]),
+});
+
+/**
+ * The controls for a rail, or an empty list where none are pinned. An
+ * empty list is NOT a pass — see knownAnswerRun, which refuses it.
+ */
+export function knownAnswersFor(caip2) {
+  return KNOWN_ANSWERS[caip2] ?? [];
+}
+
+/**
+ * One control against the row this reader produced for it. The row
+ * comes from readDoorRail, the same function every door goes through,
+ * because a control read by a private code path proves that path
+ * works and nothing else.
+ */
+export function checkKnownAnswer(control, row) {
+  const seat = { control: control.name, address: control.address, what: control.what, expected: control.expect_verdict };
+  if (!row) {
+    return { ...seat, ok: false, observed: null, because: "the control was never read, and a control that did not run is not a control that passed" };
+  }
+  if (row.read_failed) {
+    return { ...seat, ok: false, observed: row.verdict ?? null, because: `the control's own state read failed (${row.read_error ?? "no reason recorded"}), so this run cannot show that it can read an address it already knows the answer for` };
+  }
+  if (row.verdict !== control.expect_verdict) {
+    return { ...seat, ok: false, observed: row.verdict, because: `this address is known to read ${control.expect_verdict} on this rail and read ${row.verdict} instead. The instrument is wrong about an answer settled before the run began, so every other row it produced is suspect.` };
+  }
+  if (control.expect_scope && row.scope !== control.expect_scope) {
+    return { ...seat, ok: false, observed: `${row.verdict} scope ${row.scope ?? "none"}`, because: `the verdict is right and its reach is not: this control is an all-time zero under the nonce argument and came back scoped ${row.scope ?? "none"}` };
+  }
+  if (control.expect_balance_at_least !== undefined) {
+    const floor = BigInt(control.expect_balance_at_least);
+    const seen = row.balance_atomic === undefined || row.balance_atomic === null ? null : BigInt(row.balance_atomic);
+    if (seen === null) {
+      return { ...seat, ok: false, observed: row.verdict, because: "the verdict is right and no balance was recorded beside it, so the number this run would publish was never checked against one that is known" };
+    }
+    if (seen < floor) {
+      return { ...seat, ok: false, observed: `${seen} atomic`, because: `this pool holds well above ${floor} atomic units and read ${seen}. Either the decode is wrong or the control is stale; both are a human's to settle before anything is published.` };
+    }
+    return { ...seat, ok: true, observed: `${row.verdict}, ${seen} atomic` };
+  }
+  return { ...seat, ok: true, observed: row.scope ? `${row.verdict} scope ${row.scope}` : row.verdict };
+}
+
+/**
+ * THE GATE. Every control passes, or nothing is published.
+ *
+ * A rail with no pinned controls fails too. The alternative is that
+ * adding a rail silently opts it out of the check that makes the other
+ * rails believable, and a guard that disappears when the reader is
+ * extended is the guard failing exactly when it is needed.
+ */
+export function knownAnswerRun({ rail, controls = [], rows = [] } = {}) {
+  const checked = controls.map((c, i) => checkKnownAnswer(c, rows[i] ?? null));
+  if (controls.length === 0) {
+    return {
+      rail, ran: 0, passed: false, controls: checked,
+      because: `no known-answer controls are pinned for ${rail}. A rail whose reader has never been shown to read a settled answer correctly publishes nothing: pin a funded address and an untouched one in KNOWN_ANSWERS first.`,
+      method: KNOWN_ANSWER_METHOD,
+    };
+  }
+  const failed = checked.filter((c) => !c.ok);
+  return {
+    rail,
+    ran: checked.length,
+    passed: failed.length === 0,
+    controls: checked,
+    because: failed.length === 0
+      ? null
+      : `${failed.length} of ${checked.length} known-answer control(s) did not return their settled answer: ${failed.map((f) => `${f.control} — ${f.because}`).join(" | ")}`,
+    method: KNOWN_ANSWER_METHOD,
+  };
+}
+

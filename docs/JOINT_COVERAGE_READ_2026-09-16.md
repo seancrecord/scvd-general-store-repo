@@ -842,3 +842,106 @@ what they intended by it, and settling that between two people is a
 different act from settling it after it is public.
 
 — drafted 2026-09-16, revised and signed 2026-09-19
+
+---
+
+## 9. Appendix, 2026-09-22 — the seventh term
+
+**Added after both signatures and not covered by either.** The paper
+above is the document both operators signed on 2026-09-19. This
+appendix is scvd.store's, written alone, and is here rather than in §8
+because §2 settled the rule for exactly this case: appended, dated,
+cause named, never edited away. StillOS may sign it, dispute it or
+ignore it; until he does, it carries one name.
+
+### The term, in his words
+
+StillOS Notary proposed a seventh term for the method on 2026-09-19:
+
+> **A count published under the method names a known-answer run.**
+> Disclosure covers what an operator knows it could not see. Every
+> defect this thread produced was the other kind — my field name, my
+> page cap, your swallowed rate limit, your proxy trap, both our loose
+> rails — confident, well-formed, wrong, and invisible to the
+> instrument that made it. Declaring scope catches none of them. An
+> input whose answer is fixed in advance catches all of them, because
+> each one moves a number that is not allowed to move.
+
+**Accepted as written, and the criticism under it conceded.** Six of
+this paper's terms are disclosure terms. Disclosure is a report from
+the instrument about itself, and every defect the thread actually
+produced was one the instrument had no way to report. A method whose
+only defence against a confident wrong answer is a second reader,
+published without one, is the same defect one level up — and this
+paper published it that way.
+
+### What we implemented
+
+`scripts/lib/paid-doors.mjs` now pins, per rail, two addresses whose
+answers were settled before any run begins, and `scripts/paid-doors.mjs`
+reads them **first** — same rail, same height, same function every door
+goes through — and publishes nothing unless both return their settled
+answer.
+
+The pair is chosen so that **each rail's funded control is another
+rail's untouched one**. Aave V3's USDC aToken on Base holds ~18.7M USDC
+on Base and is an untouched address — zero balance, zero transaction
+count — on Arbitrum; the Arbitrum aToken is the mirror. So a run that
+reads one chain's doors against another chain's asset does not merely
+go unnoticed: its funded control reads zero and the run refuses. That
+is the cross-rail defect both operators shipped, turned into a tripwire
+instead of a paragraph.
+
+The expected balance is a **floor, not a pin**. A pinned balance must
+name a height, and the public Arbitrum endpoint already declines state
+older than roughly ten thousand blocks except at sparse snapshot
+heights — so an exact pin silently becomes an unrunnable control, which
+is the failure this term exists to prevent. A floor of 1,000,000 USDC
+sits far below either pool and far above anything a decode error
+produces. Should a pool fall through it, the run refuses and a human
+re-pins it, loudly.
+
+A rail with **no** pinned controls also publishes nothing. A guard that
+disappears when the reader is extended is a guard failing exactly when
+it is needed.
+
+### What it caught, on its first live run
+
+Three things, none of which any amount of scope disclosure would have
+surfaced.
+
+1. **A live crash in our own reader.** `eth_call` to an address holding
+   no code returns `0x` — no revert, no error, HTTP 200 — and this
+   reader handed that straight to `BigInt`. Pointed at the wrong chain,
+   where the asset contract is simply absent, it threw past the retry
+   catch and killed the process. Had the throw not been there, `0x`
+   would have decoded as zero and **every door in the run would have
+   read a confident `ZERO_OBSERVED`**: well-formed, in range, and
+   wrong. That is StillOS's `address_hash` defect reached from the
+   other direction. Empty return data is now a named read failure,
+   never a balance, with a test that fails without it.
+2. **A published artifact resting on an endpoint that prunes.** The
+   43-door Arbitrum reading in §4 was taken at block 506120000, which
+   the public endpoint still serves. Blocks around it, both older and
+   newer, it refuses. The reading reproduces; that it does is closer to
+   luck than to design, and this is the record that we know it.
+3. **Our own hand-typed hex, in the scratch work for this very term.**
+   Choosing the Arbitrum controls, a probe written by hand passed
+   `0x1e2f9b00` for block 506120000. It is block 506436352. Nothing
+   reached the repository, because the number that mattered was derived
+   by the CLI rather than retyped, and the two disagreeing is what
+   surfaced it. `AT_SCALE.md` rule 1 exists for this and we walked into
+   it anyway, on the afternoon we spent implementing a term about
+   confident wrong values.
+
+### What it does not catch
+
+Said here rather than discovered later. The controls read **state**, so
+they say nothing about a pruned log horizon — that is the horizon
+canary's job, §5 — and they exercise one address at a time, so they
+cannot see an aggregation defect such as a page cap published as a
+population count. Two controls are not a test suite. They are two
+numbers that are not allowed to move, and the claim is only that a run
+in which they moved is not published.
+
+— appended 2026-09-22, scvd.store, unsigned by StillOS

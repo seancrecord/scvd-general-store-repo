@@ -22,6 +22,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   PAID_RESIDUAL, TRANSFER_TOPIC, USDC_BASE, readDoor, readDoorRail, windowTrustworthy, railCoveredByRun,
+  knownAnswersFor, knownAnswerRun, balanceFromCallResult,
 } from "./lib/paid-doors.mjs";
 import { railFor } from "./lib/evm-chains.mjs";
 import { useEnvProxy } from "./lib/proxy-fetch.mjs";
@@ -221,26 +222,68 @@ if (STATE_ONLY) {
   console.log(`${spans} log page(s) per door at the RPC's ${LOG_SPAN}-block ceiling\n`);
 }
 
+/**
+ * THE KNOWN-ANSWER RUN, BEFORE ANY DOOR (StillOS Notary's seventh term,
+ * issue #622, 2026-09-19).
+ *
+ * Declaring scope catches what an operator knows it could not see.
+ * Every defect this thread actually produced was the other kind —
+ * their field name, their page cap, our swallowed rate limit, our
+ * proxy trap, both our loose rails — confident, well-formed, wrong,
+ * and invisible to the instrument that made it. An input whose answer
+ * is fixed in advance catches all of them, because each one moves a
+ * number that is not allowed to move.
+ *
+ * It runs FIRST, on purpose, so a broken reader spends nothing on
+ * doors and publishes nothing about them. The rules and the pinned
+ * pair live in the library; this is the request that feeds them.
+ */
+const controls = knownAnswersFor(RAIL_FLAG);
+const controlRows = [];
+for (const control of controls) {
+  // Through readEvmRail, the same path every door takes. A control
+  // read by its own private code proves that code works and nothing else.
+  controlRows.push(await readEvmRail({ payTo: control.address, scheme: "exact" }, { stateOnly: true }));
+}
+const knownAnswers = knownAnswerRun({ rail: RAIL_FLAG, controls, rows: controlRows });
+for (const c of knownAnswers.controls) {
+  console.log(`  ${(c.ok ? "control ok" : "CONTROL FAILED").padEnd(16)} ${String(c.control).padEnd(40)} ${c.observed ?? "not read"}`);
+}
+if (!knownAnswers.passed) {
+  console.error(`\n✗ ${knownAnswers.because}\n\n  Nothing is published from a run that cannot read an answer it already had.\n`);
+  process.exit(1);
+}
+console.log("");
+
 const readings = [];
 
 /** One EVM rail, read. Split out so a multi-rail door reuses it. */
-async function readEvmRail({ payTo, scheme }) {
+async function readEvmRail({ payTo, scheme }, { stateOnly = STATE_ONLY } = {}) {
   // A failed state read is recorded on the row, never folded into a
   // null that reads as "holds nothing" — the 107-of-132 lesson.
   let readError = null;
   const swallow = (error) => { readError = readError ?? (error?.message ?? String(error)); return null; };
+  // The known-answer controls below read state only whatever the run
+  // is doing: their funded address is an Aave pool with millions of
+  // transfers, and a window over it would cost more than the reading.
+  const from = stateOnly ? null : fromBlock;
   const [balance, nonce, window] = await Promise.all([
     rpc("eth_call", [{ to: RAIL_USDC, data: `0x70a08231${payTo.slice(2).toLowerCase().padStart(64, "0")}` }, hex(atBlock)]).catch(swallow),
     rpc("eth_getTransactionCount", [payTo, hex(atBlock)]).catch(swallow),
-    STATE_ONLY ? Promise.resolve(null) : transferWindow(payTo, fromBlock, atBlock),
+    stateOnly ? Promise.resolve(null) : transferWindow(payTo, fromBlock, atBlock),
   ]);
+  // `0x` back from eth_call is an address with no code answering, not
+  // a zero balance — see balanceFromCallResult. Decoding it here, once,
+  // keeps the rule where it can be tested.
+  const decoded = balance === null ? { balance: null, error: null } : balanceFromCallResult(balance);
+  if (decoded.error) readError = readError ?? decoded.error;
   const row = readDoorRail({
-    rail: RAIL_FLAG, payTo, atBlock, fromBlock, scheme: scheme ?? null,
-    balance: balance === null ? null : BigInt(balance),
+    rail: RAIL_FLAG, payTo, atBlock, fromBlock: from, scheme: scheme ?? null,
+    balance: decoded.balance,
     nonce: nonce === null ? null : Number(BigInt(nonce)),
     ...(window ? { logs: window.logs, logsComplete: window.complete } : {}),
   });
-  if (balance !== null) row.balance_atomic = BigInt(balance).toString();
+  if (decoded.balance !== null) row.balance_atomic = decoded.balance.toString();
   if (nonce !== null) row.nonce = Number(BigInt(nonce));
   if (readError) { row.read_failed = true; row.read_error = readError; }
   if (window && !window.complete) row.incomplete_because = window.incomplete_because;
@@ -322,6 +365,7 @@ if (railRows.length > 0 && readFailures > railRows.length / 20) {
   process.exit(1);
 }
 const report = {
+  known_answer_run: knownAnswers,
   read_failures: readFailures,
   read_failures_note: "Rail rows whose balance or nonce request never answered after retries. They sit inside UNKNOWN and are a gap in this reader, never a finding about the door. A run where this is not near zero is not published.",
   what_this_is: "Whether anyone has paid each door's advertised payTo, read to a named block height. Never a ranking: rule 43 forbids ordering one host against another, and these rows are in the order they were given.",

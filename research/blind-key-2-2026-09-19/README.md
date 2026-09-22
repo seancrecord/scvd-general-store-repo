@@ -169,6 +169,11 @@ store found in his.
 
 ## What is still unverified, and said plainly
 
+> **Corrected 2026-09-20 — see the note at the foot of this file.** The
+> paragraph below was true when written and is not true now. It is kept
+> as written because a correction that edits its own cause away is not a
+> correction.
+
 His answer file — `stillos-answers.json`, `sha256 19eb1a4d…1e964`, 5260
 bytes — is **not fetchable from any path we could reach**, so his
 digest is unverified by us. Not wrong: unread. His verdicts are
@@ -177,3 +182,33 @@ against, so nothing in the comparison waits on it; only the commitment
 itself does. He resolved the identical situation within two days last
 round, and the standard is his own: a hash nobody else can fetch is a
 claim.
+
+---
+
+## Correction, 2026-09-20: his digest verifies
+
+The section above says his answer file was not fetchable from any path
+we could reach. It became fetchable. `stillos-answers.json` was
+published inside his reader's repository, `zero-nonce-reader`, and was
+read from there on 2026-09-20.
+
+**`sha256 19eb1a4d…1e964`, 5260 bytes — digest holds, byte length
+holds.** Recomputed from the raw bytes, not from a re-serialisation.
+Both commitments in this round are now verified in both directions:
+his of ours, and ours of his.
+
+## Addendum, 2026-09-22: the seventh term
+
+The cross-rail defect this round found in both instruments is no longer
+defended by a paragraph. Every run of `scripts/paid-doors.mjs` now
+reads two addresses whose answers were settled before the run began,
+on the same rail and at the same height as the doors, and publishes
+nothing unless both come back right. Each rail's funded control is
+another rail's untouched one, so a read pointed at the wrong chain
+fails a control rather than producing a page of well-formed zeros.
+
+On its first live run it found a crash in our own reader: `eth_call`
+to an address holding no code answers `0x`, and this reader handed that
+to `BigInt`. Empty return data is now a named read failure, never a
+balance. The method, the rule and what it cannot see are in §9 of
+`docs/JOINT_COVERAGE_READ_2026-09-16.md`.
