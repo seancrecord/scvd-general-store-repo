@@ -1,0 +1,95 @@
+{
+  "known_answer_run": {
+    "rail": "eip155:8453",
+    "ran": 2,
+    "passed": true,
+    "controls": [
+      {
+        "control": "aave-v3-ausdc-base",
+        "address": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+        "what": "Aave V3's USDC aToken on Base, which custodies the pool's USDC",
+        "expected": "PAID",
+        "ok": true,
+        "observed": "PAID, 23547627059996 atomic"
+      },
+      {
+        "control": "aave-v3-ausdcn-arbitrum-seen-from-base",
+        "address": "0x724dc807b04555b71ed48a6896b6F41593b8C637",
+        "what": "the Arbitrum aToken's address, untouched on Base: zero balance at zero transaction count",
+        "expected": "ZERO_OBSERVED",
+        "ok": true,
+        "observed": "ZERO_OBSERVED scope all_time"
+      }
+    ],
+    "because": null,
+    "method": "Before any door is read, this reader reads addresses whose answers were settled before the run began, on the same rail, at the same height, through the same function every door goes through. Each rail's funded control is another rail's untouched one, so a read against the wrong chain's asset fails the control rather than passing unnoticed. Every control returns its settled answer or the run publishes nothing. StillOS Notary's seventh term, issue #622, 2026-09-19. It checks state reads only: a pruned log horizon is the canary's job, and an aggregation defect is beyond what two addresses can see."
+  },
+  "read_failures": 0,
+  "read_failures_note": "Rail rows whose balance or nonce request never answered after retries. They sit inside UNKNOWN and are a gap in this reader, never a finding about the door. A run where this is not near zero is not published.",
+  "what_this_is": "Whether anyone has paid each door's advertised payTo, read to a named block height. Never a ranking: rule 43 forbids ordering one host against another, and these rows are in the order they were given.",
+  "definition_from": "StillOS Notary (stillosdigitalholdings.com), supplied 2026-09-15 on issue #622 after they withdrew their own implementation. The definition is theirs; this reader is ours, so that a defect in one is not a defect in both.",
+  "read_at": "2026-09-22T16:19:03.109Z",
+  "rail": "eip155:8453",
+  "rail_label": "Base",
+  "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  "window": {
+    "from_block": 50300000,
+    "at_block": 50550000,
+    "log_span": 2000
+  },
+  "chain_head_when_read": 51652284,
+  "distinct_counterparty_means": "a unique sending address. A facilitator settling for ten buyers counts once, so this measures settling addresses and not customers.",
+  "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+  "what_this_is_not": "Not a statement that a door has never been paid: the strongest negative here is ZERO_OBSERVED over the named window, and only a row whose scope reads all_time (the nonce-zero argument) reaches further back than from_block. Not a measure of demand, revenue or quality. Not comparable with any reading taken at a different height.",
+  "posed_inputs": {
+    "question": "Did StillOS Notary's advertised payTo receive any USDC on Base across the days StillOS reports two funded payments from CV, 2026-08-25?",
+    "asked_by": "scvd.store, 2026-09-22, answering issue #622 comment 5779382439",
+    "pay_to_provenance": "read from the 402 challenge StillOS's own door returned to our declared field wallet on 2026-09-12, recorded verbatim in research/field-run-2026-09-12/ledger.jsonl",
+    "window_provenance": "block 50300000 is 2026-08-22T09:02:27Z and block 50550000 is ~2026-08-28, both read from the chain rather than estimated"
+  },
+  "doors": [
+    {
+      "name": "stillos-notary-commit",
+      "url": "https://stillosdigitalholdings.com/notary/commit",
+      "rails": [
+        {
+          "rail": "eip155:8453",
+          "pay_to": "0xfAB07d26F7627fc4cE459ecf90d7E015F7eEcE71",
+          "at_block": 50550000,
+          "window_from_block": 50300000,
+          "window": "50300000-50550000",
+          "residual": "EIP-3009 lets a relayer move funds on a signed authorization without the recipient's nonce moving, and an atomic receive-and-forward in one transaction is invisible to any state read. A ZERO_OBSERVED established from state alone does not exclude either.",
+          "verdict": "PAID",
+          "established_by": "a USDC balance of 2703000 atomic units at block 50550000; a balance can only have arrived, so at least one inbound settlement happened. The transfer window in blocks 50300000-50550000 was read complete and contained none of it, so every settlement this address has received arrived BEFORE block 50300000.",
+          "scope": "all_time",
+          "zero_in_window": "50300000-50550000",
+          "zero_in_window_means": "no inbound USDC reached this address in blocks 50300000-50550000. That is a real finding and the narrower one; it is not the door's verdict, because a balance already sitting here proves the door was paid earlier.",
+          "distinct_payers": null,
+          "distinct_payers_unknown_because": "the window that was read is empty, so it counts nobody; the senders who funded this balance are in blocks before 50300000, which this reading did not walk",
+          "payers_in_window": 0,
+          "received_in_window_atomic": "0",
+          "balance_atomic": "2703000",
+          "nonce": 0,
+          "horizon_canary": {
+            "served": true,
+            "probed": "50300000-50300099",
+            "saw": 11994
+          }
+        }
+      ],
+      "resolved_pay_to": "0xfAB07d26F7627fc4cE459ecf90d7E015F7eEcE71",
+      "resolved_rail": "eip155:8453",
+      "resolution": null,
+      "door": {
+        "name": "stillos-notary-commit",
+        "rails_read": 1,
+        "rail_verdicts": [
+          "PAID"
+        ],
+        "rule": "ZERO_OBSERVED requires every advertised rail to resolve empty; any rail out of reach makes the door UNKNOWN. PAID survives an unreadable rail because an observed settlement cannot be undone by one we did not read. StillOS Notary, 2026-09-15.",
+        "verdict": "PAID",
+        "established_by": "1 of 1 advertised rail(s) showed an observed settlement"
+      }
+    }
+  ]
+}
