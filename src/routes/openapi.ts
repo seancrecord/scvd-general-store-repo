@@ -332,7 +332,6 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
   "/credit": ["application/json", "text/html"],
   "/samples": ["application/json", "text/html"],
   "/ledger": ["application/json", "text/html"],
-  "/store-month": ["application/json", "text/markdown", "text/html"],
   "/doors": ["application/json", "text/html"],
   "/zodiac": ["application/json", "text/html"],
   "/almanac": ["application/json", "text/html"],
@@ -6298,27 +6297,38 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       /**
-       * THE STORE'S OWN MONTH (2026-09-22). The chain that points the
-       * observatory at its own books. Free, unauthenticated, and in
-       * the contract because a record nobody can find is a record
-       * nobody can check.
+       * THE STORE'S OWN MONTH (2026-09-22): the chain that points this
+       * observatory at its own books. One door in the contract rather
+       * than three — the verdict and the per-month entries are linked
+       * from this response, and the OpenAPI reader budget had room for
+       * one. Shape declared, not a bare object.
        */
       "/store-month.json": {
         get: returns(
           freeOp(
-            "The store's own months, signed and chained",
-            "Every sealed month of this store's own funnel, rails, per-item till and reading concentration, each one frozen, signed, linked to the month before it and stamped into Bitcoin time. Each entry serves the exact string its signature covers, so the check does not require trusting us. Free. The human twin is /store-month.",
+            "This store's own months, signed and chained",
+            "Each sealed month of our funnel, rails, per-item till and reading concentration: frozen, signed, linked to the month before it, stamped into Bitcoin time. Each entry serves the exact bytes its signature covers. Free. Page: /store-month. Verdict: /store-month/verify.json.",
           ),
-          { type: "object" },
-        ),
-      },
-      "/store-month/verify.json": {
-        get: returns(
-          freeOp(
-            "The chain's own verdict on itself",
-            "Every entry rehashed from its published document, every signature checked against the key that entry names, and every link walked. Run by us on our own chain, which is why each entry serves its signed bytes for a reader to check independently. Free.",
-          ),
-          { type: "object" },
+          {
+            type: "object",
+            properties: {
+              chain: { type: "string" },
+              entries: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    document: { type: "object" },
+                    digest: { type: "string" },
+                    signature: { type: "string" },
+                    public_key: { type: "string" },
+                    signed_payload: { type: "string" },
+                  },
+                },
+              },
+              scan_truncated: { type: "boolean" },
+            },
+          },
         ),
       },
       "/pulse.json": {

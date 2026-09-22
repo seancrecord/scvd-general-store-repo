@@ -268,7 +268,7 @@ export const FEATURES: readonly Feature[] = [
     proposition: STORE_MONTH_PROPOSITION,
     for_money: STORE_MONTH_FOR_MONEY,
     free_first: STORE_MONTH_FREE_FIRST,
-    doors: ["/store-month.json", "/store-month/verify.json"],
+    doors: ["/store-month.json"],
     named_on: ["/pulse", "/observatory"],
     opened: STORE_MONTH_OPENED,
   },
