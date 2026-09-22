@@ -26,6 +26,34 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **源·ORIGIN (issue #874), read and answered, 2026-09-21/22 — LOOK when their door serves.**
+  A cold co-building invite: their own L1, a premined token, a "Founding
+  99" gate. The spec under it was real — a three-stage receipt chain
+  (`action_ref` → `release receipt` → `verdict`) under our own Boundary
+  rule, reached from the other end and citing internet-court, not us.
+  Four findings went back: eight contracts named against five in the
+  tree, a CI claim with no `.github` directory, "42 tests green" that
+  could not run on a fresh clone, and an `/invite` advertising loopback.
+  They fixed all four inside a day, **deleted** the CI claim rather than
+  soften it (their token lacks `workflow` scope, and they proved it by
+  running the call), found three more themselves, and shipped
+  `scripts/verify.sh` and a finality suite that turns the Boundary rule
+  into failing assertions. Verified here against fresh clones at
+  `629e4a4` and `75d2120`. The test counts are counted, never executed:
+  foundry's installer, its release binaries and
+  `binaries.soliditylang.org` are all refused from our build, and the
+  argument for a command any stranger can run was sent instead of a
+  number we confirm privately. Refused: the `verdict` slot (adjudication
+  absorbs risk between payment and delivery and needs a balance sheet),
+  the ledger (their schema settles in a premined YUAN against a
+  foundation wallet in genesis), and any trust row or treaty entry —
+  they sign nothing verifiable, so `RECEIPT_TREATY_ASK.md`'s bar is
+  unmet and nothing was added to `trust-list.json`. The preflight
+  battery was sent ahead of their build, by check name, so the door can
+  be built to answer clean rather than diagnosed after. Bilingual check
+  run (the CN and EN pages carry the same no-fundraising disclaimer; no
+  divergence). Read: `research/source-origin-read-2026-09-21.md`.
+
 - **x402-verify 1.6.0 and 1.7.0 published, September 19 — no press needed.**
   Fresh registry installations match the reviewed source; the latest package
   has verified npm signature and provenance. [Release and acceptance record](research/subject-acceptance-2026-09-19/REPORT.md).
