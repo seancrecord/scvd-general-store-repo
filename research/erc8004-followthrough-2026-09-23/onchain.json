@@ -1,0 +1,12 @@
+{
+  "observed_at": "2026-09-23T20:03:47.836Z",
+  "rpc": "https://mainnet.base.org",
+  "block_number": "51702240",
+  "registration": {
+    "agentId": 86957,
+    "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+  },
+  "tokenURI": "https://scvd.store/.well-known/agent-registration.json",
+  "matches_domain_document": true,
+  "scope": "Read-only eth_call at the recorded block; no wallet connection or transaction."
+}

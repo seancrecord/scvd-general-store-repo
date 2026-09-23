@@ -2353,6 +2353,32 @@ Fresh reads of SCVD's advertised official schema URLs returned four 404s; their 
 
 Re-read Google's [Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center): approved free-listing products, per-product checkout eligibility and exclusions remain prerequisites. SCVD's admission and custom payment-handler support were not established; its existing intake stays separate.
 
+### 2026-09-23 — distribution return check
+
+Read AgentERC's rendered SCVD Base 86957 profile and WithAI.Top's public
+listing, corroborated by operator/acceptance replies. Read the actual
+MCP.so/MCPpedia configurations before filing corrections against their
+linked issue trackers. Anthropic's submitting-account dashboard conflicts
+with the retained September 17 receipt; added the dated observation to its
+existing disappearance report without resubmitting. Anro's final delivery
+failure replaces the old awaiting-reply status. The fresh listings workflow,
+direct MCP Registry retry and x402-list/live-menu set comparison are scoped
+in the [reconciliation](../research/distribution-2026-09-23/README.md).
+No new protocol support or paid qualification is inferred from a listing.
+
+Read Agentic Market's live [agent guide](https://agentic.market/llms.txt),
+search response and [SCVD detail](https://api.agentic.market/v1/services/scvd-store).
+Search returns 20 endpoints while detail returns 30. The guide does not
+establish publisher eligibility or update mechanics. Reader corrections
+and the dated 30/35 comparison are in the reconciliation above; no inference
+of a complete-index census or registration cause.
+
+The separate [seller validator](https://agentic.market/validate) FAQ says
+Bazaar-indexed endpoints appear automatically. Each of the five detail gaps
+passed its required checks and received verify+settle indexing guidance;
+`hello`, an indexed control, returned Found on Bazaar. These are the
+operator's diagnostic results, not our own settlement-history proof. No
+purchase was made. The per-endpoint results are retained in the receipt.
 
 ### 2026-09-23 — OpenAPI schema reuse and recurrence guard
 
@@ -2373,3 +2399,8 @@ local plugin installation and the separate remote-server configuration. No `agy`
 executable or Antigravity app was found in this qualification environment's
 checked PATH/application locations. No new install, login, native execution or
 admission claim was made; TR-D remains separate from the D1/V3 evidence closeout.
+
+
+### 2026-09-23 — ERC-8004 closeout reading
+
+Read the [current registration example](https://ercs.ethereum.org/ERCS/erc-8004), [AgentRanking public API](https://app.agentranking.io/docs/api), [Agentscan documentation](https://agentscan.info/docs), and [Agent Arena endpoint/registration instructions](https://agentarena.site/). These establish the read routes, not successful SCVD admission. The live AgentRanking API returned 522; Agent Arena’s existing-identity lookup returned 404 with a working control. Canonical chain/HTTP consistency and browser observations are scoped in the [closeout receipt](../research/erc8004-followthrough-2026-09-23/README.md). No payment, second identity or wallet claim.

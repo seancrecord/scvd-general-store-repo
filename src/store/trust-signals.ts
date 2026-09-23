@@ -106,6 +106,20 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: `https://agenterc.com/explore/base/${SCVD_AGENT_ID}`,
+    registry: "AgentERC — ERC-8004 agent index",
+    protocols: ["erc8004"],
+    confirmed: "2026-09-23",
+    what_it_proves: "That AgentERC indexes SCVD's existing Base identity and displays its canonical registration, MCP, A2A and OASF service links and enabled x402 flag. The operator confirmed ingestion after our request; the public profile was read September 23. This establishes indexing, not a service health check, reputation, validation or successful purchase. Not an endorsement and not an audit.",
+  },
+  {
+    url: "https://withai.top/tool/scvd-store",
+    registry: "WithAI.Top — community tool directory",
+    protocols: ["general"],
+    confirmed: "2026-09-23",
+    what_it_proves: "That WithAI.Top accepted the operator-submitted listing and serves a public scvd.store page linking to the store. The September 19 acceptance was checked against the public page on September 23. This is discovery evidence, not protocol certification. Not an endorsement and not an audit of the service.",
+  },
+  {
     url: "https://ucptools.dev/directory/scvd.store",
     registry: "UCP.tools — community merchant directory",
     protocols: ["ucp"],

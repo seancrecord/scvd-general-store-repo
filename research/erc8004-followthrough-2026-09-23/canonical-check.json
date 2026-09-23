@@ -1,0 +1,16 @@
+{
+  "observed_at": "2026-09-23T20:03:47.418632+00:00",
+  "checks": {
+    "base_identity": true,
+    "x402": true,
+    "reputation": true,
+    "oasf_identity": true,
+    "oasf_endpoint": true,
+    "oasf_version": true,
+    "oasf_skills": true,
+    "oasf_domains": true,
+    "a2a_version": true
+  },
+  "service_count": 14,
+  "limits": "Canonical HTTP consistency only. Python urllib MCP initialization was refused HTTP 403; separate 8004scan interactive tester succeeded. No wallet signature, tool invocation, payment or federation verification."
+}

@@ -3,7 +3,7 @@
 Prepared September 17, 2026. This is submission material; current human actions
 are in [KEEPER_LIST](../KEEPER_LIST.md), builds/qualification in
 [ROADMAP TR-D](../ROADMAP.md), and channel status in [DISTRIBUTION](../DISTRIBUTION.md).
-Cursor and Claude were submitted in the September 17 follow-up; both reviews are pending. Kiro was submitted September 18 after native CLI qualification; review is pending.
+Cursor and Claude were submitted in the September 17 follow-up. Cursor review is pending; Claude status is unresolved after its September 23 dashboard showed no submissions. Kiro was submitted September 18 after native CLI qualification; review is pending.
 
 Plugin packaging has its own version in `plugin.json`; host wrappers are held to
 it by tests. A packaging-only release does not require republishing the unchanged
@@ -93,7 +93,7 @@ The failed first attempt above remains part of the record. The corrected package
 is public through merged PR #778. The community marketplace application was subsequently submitted for Claude Code
 with explicit keeper approval of contact sharing and directory terms. Anthropic
 confirmed **Plugin submitted for review**. [Receipt](../research/distribution-2026-09-17/observations/claude-publisher-submission.json).
-Review is pending at [View submissions](https://platform.claude.com/plugins/submissions).
+September 23: [View submissions](https://platform.claude.com/plugins/submissions) shows “No submissions yet” in the submitting account. The September 17 confirmation remains retained. Added evidence to the [existing disappearance report](https://github.com/anthropics/claude-plugins-official/issues/6290#issuecomment-5799240583); do not duplicate the submission. Acceptance and rejection are both unconfirmed.
 Cowork was left unselected because it has not been tested. Marketplace installation, Cowork runtime and
 paid tools were not qualified by this test.
 

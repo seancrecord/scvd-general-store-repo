@@ -131,15 +131,15 @@ export function readClawHub(html, skillName) {
   return { state: "read", version: match[1] };
 }
 
-/** agentic.market's search: the service's endpoint count, when the shape is one we recognise. */
+/**
+ * Agentic Market's service detail, not its partial search result.
+ * September 23: search returned 20 endpoints while detail returned 30.
+ * Count this response only; eligibility and full-index completeness are separate.
+ */
 export function readAgenticMarket(json, host) {
-  const list = Array.isArray(json?.services) ? json.services : Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : null;
-  if (!list) return { state: "unknown", note: "no services array in the answer" };
-  const row = list.find((entry) => JSON.stringify(entry).includes(host));
-  if (!row) return { state: "unknown", note: `no service naming ${host}` };
-  const endpoints = Array.isArray(row.endpoints) ? row.endpoints.length : Array.isArray(row.resources) ? row.resources.length : null;
-  if (endpoints === null) return { state: "unknown", note: "the service row carries no endpoints array we read" };
-  return { state: "read", endpoint_count: endpoints, description: String(row.description ?? "") };
+  if (json?.domain !== host) return { state: "unknown", note: `no detail record for ${host}` };
+  if (!Array.isArray(json.endpoints)) return { state: "unknown", note: "the detail record carries no endpoints array" };
+  return { state: "read", endpoint_count: json.endpoints.length, description: String(json.description ?? "") };
 }
 
 /** The live shelf: menu.json's paid items. */
@@ -205,8 +205,8 @@ export function compareListings(local, reads) {
   }
 
   const market = reads.agentic_market;
-  if (market?.state === "read" && local.shelf?.state === "read") rows.push(row("agentic-market", "doors listed", local.shelf.paid_count, market.endpoint_count));
-  else rows.push(unreadRow("agentic-market", "doors listed", local.shelf?.paid_count, market));
+  if (market?.state === "read" && local.shelf?.state === "read") rows.push(row("agentic-market", "returned endpoints", local.shelf.paid_count, market.endpoint_count, "service-detail response versus paid shelf; eligibility and complete-index coverage unverified"));
+  else rows.push(unreadRow("agentic-market", "returned endpoints", local.shelf?.paid_count, market));
 
   return rows;
 }
@@ -244,7 +244,7 @@ export const INDEX_URLS = Object.freeze({
   npm: (name) => `https://registry.npmjs.org/${name}`,
   clawhub: (skill) => `https://clawhub.ai/skills/${skill}`,
   x402_list: "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
-  agentic_market: "https://api.agentic.market/v1/services/search?q=scvd",
+  agentic_market: "https://api.agentic.market/v1/services/scvd-store",
 });
 
 /**

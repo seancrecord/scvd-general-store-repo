@@ -1,0 +1,61 @@
+{
+  "observed_date": "2026-09-23",
+  "guide_url": "https://agentic.market/llms.txt",
+  "search_url": "https://api.agentic.market/v1/services/search?q=scvd",
+  "search_returned_endpoint_count": 20,
+  "detail_url": "https://api.agentic.market/v1/services/scvd-store",
+  "detail_returned_endpoint_count": 30,
+  "live_menu_count": 35,
+  "not_in_detail": [
+    "a2a_repair_kit",
+    "aura_walk",
+    "opening_day",
+    "operator_statement",
+    "trust_profile"
+  ],
+  "extra_detail_ids": [],
+  "limits": "Dated response comparison; eligibility, completeness and cause unverified. No authentication, mutation or purchase.",
+  "seller_validator": {
+    "url": "https://agentic.market/validate",
+    "method": "GET",
+    "observations": [
+      {
+        "item": "a2a_repair_kit",
+        "result": "Implementation Looks Correct",
+        "checklist": "all passed",
+        "operator_guidance": "A qualifying verify+settle is needed before Bazaar indexing."
+      },
+      {
+        "item": "aura_walk",
+        "result": "Implementation Looks Correct",
+        "checklist": "all passed",
+        "operator_guidance": "A qualifying verify+settle is needed before Bazaar indexing."
+      },
+      {
+        "item": "opening_day",
+        "result": "Implementation Looks Correct",
+        "checklist": "all passed",
+        "operator_guidance": "A qualifying verify+settle is needed before Bazaar indexing."
+      },
+      {
+        "item": "operator_statement",
+        "result": "Implementation Looks Correct",
+        "checklist": "all passed",
+        "operator_guidance": "A qualifying verify+settle is needed before Bazaar indexing."
+      },
+      {
+        "item": "trust_profile",
+        "result": "Implementation Looks Correct",
+        "checklist": "all passed",
+        "operator_guidance": "A qualifying verify+settle is needed before Bazaar indexing."
+      }
+    ],
+    "control": {
+      "item": "hello",
+      "result": "Found on Bazaar",
+      "resource_url": "https://scvd.store/api/buy/hello",
+      "x402_version": 2
+    },
+    "scope": "Browser-observed validator results, not an independent settlement-history audit. No payment made. The listed hello control produced a different, positive indexing result."
+  }
+}
