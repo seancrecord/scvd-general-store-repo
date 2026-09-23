@@ -136,6 +136,15 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 12,
     crawler_names: 74,
   },
+  {
+    date: "2026-09-22",
+    what_changed:
+      "The classifier began reading a second table, and this register did not hear about it. Since #883 (merged 2026-09-22 17:43 UTC), isInfrastructureUserAgent in lib/channel.ts consults lib/crawlers.ts's MACHINERY_CRAWLERS — the named AI crawlers, search crawlers and link unfurlers robots.txt and /admin/signals already class as crawlers — beside its own table of self-describing hints. For a month the two were read by different instruments: PetalBot, Amazonbot, Applebot and the rest of that list were 'crawler' on /admin/signals and organic 'direct' on the till, on the same request. A user-initiated fetcher is still checked first and is never machinery. The crawler table printed here did not change size, which is why the pin in test/named-exclusions.spec.ts let the change land without this row; it is written a day late, and the day it moved is the date above.",
+    effect:
+      "The organic 402 count fell by every named crawler's asks from the deploy on: the office trend's organic column read 578 on 2026-09-22, most of that day counted under the old rule, and 384 by 15:27 UTC on 2026-09-23 (about 600 at that pace, a projection, not a count), against 1,200 to 1,900 on most days before. The day counters are stamped at write time, so days before the deploy keep the old, larger count and a month-over-month read straddles the change. Every conversion denominator computed from organic asks deflates, which moves the published rates UP without a single new sale. No settle moved: settles never bucket as infrastructure (bucketSuffix in lib/metrics.ts), so a named crawler that pays is still counted as a customer.",
+    house_wallets: 12,
+    crawler_names: 74,
+  },
 ];
 
 export interface NamedExclusions {
