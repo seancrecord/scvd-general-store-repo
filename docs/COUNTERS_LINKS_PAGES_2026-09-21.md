@@ -1,9 +1,11 @@
 # Counters, links, pages — the plan after the September read
 
-**Status: BUILT on branch `claude/intelligent-cerf-vyweys`, 2026-09-21,
-the same day it was proposed. The four rulings in section 6 were
+**Status: BUILT 2026-09-21, the same day it was proposed, and merged
+as #883 on 2026-09-22. The four rulings in section 6 were
 taken by the keeper in session (R1 yes with did:key beside, R2 the
-Durable Object, R3 publish enveloped, R4 drafted for review) and each
+Durable Object, R3 publish enveloped, R4 drafted, then inked by the
+keeper 2026-09-23 with its mechanism sentence narrowed to the routes
+the register actually covers) and each
 phase shipped as its own commit; what each commit holds is in its
 message. Two things the build changed against this plan: the host
 page was not registered as a room (its path varies per host, so the
