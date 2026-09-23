@@ -24,6 +24,8 @@ import {
   readWindow,
   redeemCredit,
   releaseStates,
+  STREAK_BELLRINGER_II_DAY,
+  STREAK_PACK_EVERY,
   verifyCardSignature,
   WINDOW_SIZE,
   type BinderRow,
@@ -298,7 +300,7 @@ function roomTwin(
     set,
     pack: { item_id: PACK_ITEM, size: PACK_SIZE, price_usdc: pack?.price_usdc ?? null, buy_url: `${base}/api/buy/${PACK_ITEM}`, menu_url: `${base}/menu/${PACK_ITEM}` },
     window_pick: { item_id: WINDOW_ITEM, price_usdc: pick?.price_usdc ?? null, buy_url: `${base}/api/buy/${WINDOW_ITEM}`, window_url: `${base}/api/paywall/window`, lock_hours: WINDOW_LOCK_HOURS },
-    bell: { anyone: "one common a day", regular: "two packs a day at full odds, with a current pass_id", streaks: "not this build; the first pass puts the streak counter live in week two" },
+    bell: { anyone: "one common a day", regular: "two packs a day at full odds, with a current pass_id", streaks: `Send wallet: one pack at full odds every ${STREAK_PACK_EVERY} consecutive UTC days; Bellringer II on day ${STREAK_BELLRINGER_II_DAY}. A gap resets the run; another ring on the same day earns no second reward.` },
     credit: { burn: BURN_RATES, rares: "never burn", spend_on: ["pack", "window_pick"], never: ["instruments", "specific cards", "cash"] },
     conditions: { clears: CONDITION_CLEARS, reserved: RESERVED_CONDITIONS, under_the_weather: "three or more Conditions at once mark the binder Under the weather until one clears; cosmetic" },
     seed: { today: seed, yesterday, sentence: CARD_LINES.seedSentence },
@@ -885,4 +887,3 @@ cardRoutes.get("/p/:card_id{card_[a-z0-9]+}", async (c) => {
     }),
   );
 });
-

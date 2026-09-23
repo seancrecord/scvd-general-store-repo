@@ -1,0 +1,101 @@
+{
+  "scope": "Original public acquisition and original comparator outputs; plus a frozen copy of the exact repaired comparator used for replay.",
+  "files": [
+    {
+      "path": "a2a.snapshot",
+      "bytes": 3818,
+      "sha256": "da19c16c4fa16323b88d485ed00072ac5bd63c94d6e618d3885b36b3c2a4bc51"
+    },
+    {
+      "path": "acquisition.json",
+      "bytes": 12928,
+      "sha256": "0ffa25b3c1dd090c26febdc4ae0b7ed5e4bb4ccfc9811f859337ac3f9a7c8df8"
+    },
+    {
+      "path": "acquisition.started",
+      "bytes": 24,
+      "sha256": "54e00d2a0cce227f806015920864d42ea10d68012bf0b975a478c2c4ea312d56"
+    },
+    {
+      "path": "catalog.json",
+      "bytes": 50937,
+      "sha256": "bd03fa555801b7bfe09702eef7667a788dedcc59e57e2af36aaa8291b07285b4"
+    },
+    {
+      "path": "comparison.json",
+      "bytes": 69342,
+      "sha256": "8a4f9e6f8fbead7879c2485c3d5cb7b248c6fe3a6679ffd02f29407d3697eb05"
+    },
+    {
+      "path": "error-examples.json.gz",
+      "bytes": 1261902,
+      "sha256": "3a194365f0911d44f214a44ae889c2b61344200a7f5dbb8eef4644bacb1b2c77",
+      "encoding": "gzip",
+      "hash_scope": "decoded bytes"
+    },
+    {
+      "path": "home.snapshot.gz",
+      "bytes": 185853,
+      "sha256": "e1ba9623ececf46e1e84929139ac689c7e9314017c288069e4bfa8e68c2a98d9",
+      "encoding": "gzip",
+      "hash_scope": "decoded bytes"
+    },
+    {
+      "path": "links.json.gz",
+      "bytes": 2095603,
+      "sha256": "3e1a2d118f82035dd235d56ef94ac6f776016b508aa4c4c3dec32afaff3ead48",
+      "encoding": "gzip",
+      "hash_scope": "decoded bytes"
+    },
+    {
+      "path": "llms.snapshot",
+      "bytes": 27433,
+      "sha256": "83fdd666caba22eec6eea05881d55925339f0c70a790b81169b907ab9296804f"
+    },
+    {
+      "path": "manifest.snapshot",
+      "bytes": 465321,
+      "sha256": "0bec5347ea2f3ce991b6899b5c014c2cd2ca672f3dab165d2cbb946a5788276d"
+    },
+    {
+      "path": "mcp.snapshot",
+      "bytes": 123097,
+      "sha256": "04f3e9e739f1fde6e197492fdd1693103ea2ce66f291e17037545927f4bd0cee"
+    },
+    {
+      "path": "menu.snapshot",
+      "bytes": 437303,
+      "sha256": "ba83a59c9a583f499ef0bc3bcc63ce77aa3ee416335189a750b7ff8b770444f8"
+    },
+    {
+      "path": "openapi.snapshot.gz",
+      "bytes": 700901,
+      "sha256": "bf5625483acde9cdfaacdf6907b0253f046860c332f05854e13d0a4458d04010",
+      "encoding": "gzip",
+      "hash_scope": "decoded bytes"
+    },
+    {
+      "path": "prepayment.json.gz",
+      "bytes": 5285248,
+      "sha256": "d549e3625b138a44e611b08f02fe14ddb4d5d6fb99a08d1947e02b35043deb3f",
+      "encoding": "gzip",
+      "hash_scope": "decoded bytes"
+    },
+    {
+      "path": "skill.snapshot",
+      "bytes": 35973,
+      "sha256": "c06e6015e984ae341308e0e90a6121f1f5c62946dfdafbcd9fe84047592c0d47"
+    },
+    {
+      "path": "unresolved-links.json",
+      "bytes": 2142,
+      "sha256": "69af8c89bf562b8e4b02654c8786ffa18fdfa6abc754d4fed396ec732785da18"
+    },
+    {
+      "path": "comparator.mjs",
+      "bytes": 5158,
+      "sha256": "93a3268278d4809b79082ade0576aad8a46ca9fe0b68c548b65f371023bdd9c8",
+      "source": "scripts/lib/buyer-contracts.mjs"
+    }
+  ]
+}

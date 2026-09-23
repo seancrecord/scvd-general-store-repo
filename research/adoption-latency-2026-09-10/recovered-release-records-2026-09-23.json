@@ -1,0 +1,23 @@
+{
+  "scope": "Recovered unchanged September 10 release-branch records; not new production readings.",
+  "files": [
+    {
+      "file": "latency-after.json",
+      "source_commit": "3f69891dd045d0196d9b3786eefc8d90eae6e8f9",
+      "sha256": "3a9db6ad7589878ac989fc2afa98cffd3c4e68fbd168f913ea655d9b8e0663f5",
+      "bytes": 10487
+    },
+    {
+      "file": "live-previews.json",
+      "source_commit": "3f69891dd045d0196d9b3786eefc8d90eae6e8f9",
+      "sha256": "6c58c6e3030ce1b65b43f15479d3a48f48965dc99880c5e5503b48bf09b99934",
+      "bytes": 4535
+    },
+    {
+      "file": "release-acceptance.json",
+      "source_commit": "3f69891dd045d0196d9b3786eefc8d90eae6e8f9",
+      "sha256": "186af2e1a229e145f0254a0dc9fffda750ff92521ee9de5929ba01a029e5c2eb",
+      "bytes": 2716
+    }
+  ]
+}

@@ -1,0 +1,3010 @@
+[
+  {
+    "item": "spot_check",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "host"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "host": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "host"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "host": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "settlement_attestation",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "nonce": {
+              "type": "string"
+            },
+            "amount_usdc": {
+              "type": "number"
+            },
+            "payment_payload": {
+              "type": "string"
+            },
+            "payment_response": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "nonce": {
+              "type": "string"
+            },
+            "amount_usdc": {
+              "type": "number"
+            },
+            "payment_payload": {
+              "type": "string"
+            },
+            "payment_response": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "small_blessing",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "settlement_reconciliation",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "declared_cap_usdc": {
+              "type": "number"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "declared_cap_usdc": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "daily_fortune",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_confession",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "confession"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "confession": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "sign_as": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "confession"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "confession": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "sign_as": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "attestation_bundle",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "tx_hashes"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "tx_hashes": {
+              "type": "string",
+              "maxLength": 1339,
+              "minLength": 133
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "tx_hashes"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hashes": {
+              "type": "string",
+              "maxLength": 1339,
+              "minLength": 133
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_mandate",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "mandate"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "mandate": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "submitted_as": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "principal"
+              ]
+            },
+            "declared_cap_usdc": {
+              "type": "string"
+            },
+            "expires_at": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "mandate"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "mandate": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "submitted_as": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "principal"
+              ]
+            },
+            "declared_cap_usdc": {
+              "type": "string"
+            },
+            "expires_at": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_case_file",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "expected_amount_usdc": {
+              "type": "number"
+            },
+            "mandate_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "claim": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "launch_check_id": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "tx_hash"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tx_hash": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "expected_amount_usdc": {
+              "type": "number"
+            },
+            "mandate_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "claim": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "launch_check_id": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "window_pick",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "hello",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "good_buyer",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            },
+            "max_usd": {
+              "type": "string"
+            },
+            "no_spend_controls": {
+              "type": "string",
+              "enum": [
+                "",
+                "true",
+                "false"
+              ]
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            },
+            "max_usd": {
+              "type": "string"
+            },
+            "no_spend_controls": {
+              "type": "string",
+              "enum": [
+                "",
+                "true",
+                "false"
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "signature_agent_card",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_statement",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "wallet"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "wallet": {
+              "type": "string"
+            },
+            "network": {
+              "type": "string"
+            },
+            "hours": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "wallet"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "wallet": {
+              "type": "string"
+            },
+            "network": {
+              "type": "string"
+            },
+            "hours": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "luckies",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "pack",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "coffees_for_closers",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "win"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "win": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "win"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "win": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "bitcoin_anchor",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "digest"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "digest": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string",
+              "maxLength": 120
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "digest"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "digest": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string",
+              "maxLength": 120
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "context_anchor",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "summary"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "summary": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "summary"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "summary": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "passport_refresh",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "graffiti_on_a_train",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "tag"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "tag": {
+              "type": "string",
+              "maxLength": 140
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "tag"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "tag": {
+              "type": "string",
+              "maxLength": 140
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "a2a_repair_kit",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "standing_watch",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "service_audit",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "conformance_watch",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "onpage_audit",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "launch_check",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "opening_day",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "provenance_check",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "address": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "address": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "recurring_patronage",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "pass_id": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "pass_id": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "trust_profile",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "operator_statement",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "wallet"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "wallet": {
+              "type": "string"
+            },
+            "network": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "wallet"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "wallet": {
+              "type": "string"
+            },
+            "network": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "certificate_of_patronage",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "aura_walk",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "callback_url": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string",
+              "maxLength": 600
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "right": {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "callback_url": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string",
+              "maxLength": 600
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "item": "the_collab",
+    "compared_fields": [
+      "manifest price",
+      "manifest fulfillment",
+      "manifest input schema",
+      "OpenAPI price",
+      "OpenAPI inputs",
+      "manifest spec"
+    ],
+    "issues": [
+      {
+        "field": "OpenAPI inputs",
+        "kind": "contradiction",
+        "left": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "client": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "operator": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "operator_kind": {
+              "type": "string",
+              "enum": [
+                "solo",
+                "company",
+                "research",
+                "self"
+              ]
+            },
+            "came_from": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "prior_cert_id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "callback_url": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string",
+              "maxLength": 600
+            }
+          }
+        },
+        "right": {
+          "required": [],
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "callback_url": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string",
+              "maxLength": 600
+            }
+          }
+        }
+      }
+    ]
+  }
+]

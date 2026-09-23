@@ -24,6 +24,22 @@ reasoning, named as desk reasoning.
 
 ---
 
+## September 23 guide correction — local, awaiting release
+
+The JSON and Markdown `/design` views still said streaks were not built,
+although `advanceStreak` already issues wallet rewards and the bell response
+publishes their thresholds. The guide now derives its reward periods from
+`STREAK_PACK_EVERY` and `STREAK_BELLRINGER_II_DAY`, names consecutive UTC days,
+the wallet requirement, gap reset and same-day repeat behavior. Its string
+field is preserved; no reward, purchase or pricing behavior changes.
+
+The new guide regression failed against the old claim, then passed in both
+machine-readable views. All 36 card tests pass, including the existing actual
+streak, gap and duplicate-reward checks. Typecheck and both Worker/SDK bundles
+pass. Release readback remains open; the old unbuilt list and superseded table
+cells below are corrected without bringing missions, Season Two or NFTs into
+this build.
+
 ## 0. The short version (first pass, as built)
 
 1. **The set (STANDING).** Season One, *Summer of 402 · Oak City*:
@@ -611,13 +627,13 @@ the pixel engine already draws the engraved hand.
 
 - **Nothing from the plan is unbuilt now** except the missions and
   the promotions UI, which the plan itself put outside the first
-  build, and Season Two, which the keeper is holding. Holder perks,
+  build, and Season Two, which the keeper is holding. Wallet streaks, holder perks,
   the reserved Conditions, the PNG face and `/design`'s motion all
   landed 2026-09-12 (§0c).
 - **Missions beyond the bell streak; promotions UI.** The plan's own
   "not in first build".
-- **`/design` motion.** Static; the "boots" data layer on hover is a
-  script, and rule 17's property test applies. PROPOSED.
+- **`/design` motion.** The old static/proposed note was superseded by
+  the CSS-only hover and reduced-motion support in §0c; no script is involved.
 
 ## 5. The face as PNG (STANDING, 2026-09-12)
 
@@ -704,15 +720,15 @@ unbuilt on purpose.
 
 | first pass, "first build" | state |
 | --- | --- |
-| ledger tables (pressings, binder, credit, conditions, seed) | built; streaks not (§4) |
+| ledger tables (pressings, binder, credit, conditions, seed) | built, including wallet streaks (§4) |
 | seed commit/reveal cron and the HMAC draw | built |
 | buy_pack; ring_bell with wallet and pass (two packs for a Regular) | built |
 | binder page, renderer (face, share sheet, condition variant, holo band) | built (face SVG, sheet PNG) |
 | earned-card hooks: bell, guestbook, train, bounty, pass, instruments | built |
-| condition burn rules | built for the four the shelf can clear; Broken Tier and the reserved three empty (§4) |
+| condition burn rules | built, including Broken Tier and the formerly reserved three (§0c) |
 | shop window: five pressings, seed pick, twelve-hour lock, transfer | built |
 | credit: burn 20/5, redeem on pack or pick, rares never | built, behind an EIP-191 challenge |
-| /design; store guide + skill.md text | built, static |
+| /design; store guide + skill.md text | built, with CSS hover and reduced-motion support (§0c) |
 | not in first build: missions, promotions UI, Events by hand | as the plan says |
 
 Art: 46 plates drawn as single-ink silhouettes, aliased to the

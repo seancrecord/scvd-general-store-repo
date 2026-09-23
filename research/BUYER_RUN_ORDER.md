@@ -12,6 +12,13 @@ Run in this order. A payment endpoint returning its documented status is not acc
 
 Current evidence includes the [September 12 baseline](buyer-waves-2026-09-12/REPORT.md), its [machine score](buyer-waves-2026-09-12/score.json) and [quoted shelf grid](buyer-waves-2026-09-12/shelf-quote-grid.json), the [September 14 paid receipt run](buyer-receipt-acceptance-2026-09-14/REPORT.md), the [September 15 remaining live acceptance](buyer-remaining-acceptance-2026-09-15/REPORT.md), and the [September 15 unsigned public refresh](buyer-public-recheck-2026-09-15/REPORT.md). The September 12 baseline spent **0 USDC**; that is not the later paid runs' spend. Waves 1 and 2 are partially measured; neither the full architecture matrix nor full shelf is complete. Attribute each result to its actual product, rail, release and purchase. The latest refresh exposed B-BCOLLECT in the primary comparator/crawler; do not treat its raw differences and placeholder requests as store defects.
 
+**September 23 recheck:** [fresh public evidence](buyer-public-recheck-2026-09-23/REPORT.md)
+did not reproduce BUY-040/042/044 at their stated scope. Thirty-three quoted
+HTTP/MCP pairs agree on x402 rails; two refused pairs are excluded. The repaired
+comparator follows local OpenAPI references and `allOf`; its original 35 false
+contradictions remain beside the zero-issue offline replay. One link timeout
+and all broader Wave 1 gaps remain open. No cold cohort or payment was added.
+
 ## Wave 1 — public contracts, then cold entry
 
 1. Compare discovery across homepage, menu, OpenAPI, manifest, MCP, A2A, skill, llms, developer docs and listing metadata. For each SKU retain ID, name, description, price, fulfillment, SLA, required/optional arguments, lengths, rails, artifact type, verification, examples and closure behavior. Missing versus contradictory are distinct states; silence must not count as agreement.

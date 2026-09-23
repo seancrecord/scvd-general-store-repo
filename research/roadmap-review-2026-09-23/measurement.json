@@ -1,0 +1,19 @@
+{
+  "measurement_recorded_at": "2026-09-23T17:04:10.777989+00:00",
+  "url": "https://scvd.store/openapi.json",
+  "source_revision": "9d04efe5",
+  "decoded_utf8_bytes": 700901,
+  "path_count": 185,
+  "sha256": "bf5625483acde9cdfaacdf6907b0253f046860c332f05854e13d0a4458d04010",
+  "warning_budget_bytes": 700000,
+  "hard_cap_bytes": 1000000,
+  "budget_source": "src/store/reader-limits.ts",
+  "over_warning_bytes": 901,
+  "remaining_to_hard_cap_bytes": 299099,
+  "capture": "openapi.json.gz",
+  "limits": [
+    "One read-only public fetch; no latency or complete six-door result.",
+    "Source revision identifies the reviewed checkout, not the Worker version answering the request.",
+    "Current cause of the local/live difference is not established."
+  ]
+}

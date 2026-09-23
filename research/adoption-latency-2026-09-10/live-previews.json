@@ -1,0 +1,205 @@
+{
+  "checked_at": "2026-09-10T21:18:20.028Z",
+  "menu_products": 33,
+  "unique_preview_urls": 32,
+  "checks": [
+    {
+      "url": "/samples/spot-check.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3126
+    },
+    {
+      "url": "/samples/settlement-attestation.json",
+      "kind": "unsigned_specimen",
+      "status": 200,
+      "bytes": 2572
+    },
+    {
+      "url": "/samples/small-blessing.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 1886
+    },
+    {
+      "url": "/samples/settlement-reconciliation.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3847
+    },
+    {
+      "url": "/samples/daily-fortune.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2049
+    },
+    {
+      "url": "/samples/the-confession.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2537
+    },
+    {
+      "url": "/samples/attestation-bundle.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3064
+    },
+    {
+      "url": "/samples/the-mandate.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 4273
+    },
+    {
+      "url": "/samples/case-file.json",
+      "kind": "unsigned_specimen",
+      "status": 200,
+      "bytes": 4688
+    },
+    {
+      "url": "/samples/hello.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 1828
+    },
+    {
+      "url": "/samples/good-buyer.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 4094
+    },
+    {
+      "url": "/samples/signature-agent-card.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3009
+    },
+    {
+      "url": "/samples/the-statement.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 4477
+    },
+    {
+      "url": "/luckies/sample.svg",
+      "kind": "visual_preview",
+      "status": 200,
+      "bytes": 3707
+    },
+    {
+      "url": "/samples/coffees-for-closers.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2270
+    },
+    {
+      "url": "/samples/bitcoin-anchor.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2992
+    },
+    {
+      "url": "/samples/context-anchor.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2486
+    },
+    {
+      "url": "/samples/passport-refresh.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3349
+    },
+    {
+      "url": "/samples/graffiti-on-a-train.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2506
+    },
+    {
+      "url": "/samples/a2a-repair-kit.json",
+      "kind": "unsigned_specimen",
+      "status": 200,
+      "bytes": 10458
+    },
+    {
+      "url": "/samples/night-watch.json",
+      "kind": "unsigned_specimen",
+      "status": 200,
+      "bytes": 22177
+    },
+    {
+      "url": "/samples/once-over.json",
+      "kind": "unsigned_specimen",
+      "status": 200,
+      "bytes": 8887
+    },
+    {
+      "url": "/samples/conformance-watch.json",
+      "kind": "unsigned_specimen",
+      "status": 200,
+      "bytes": 3949
+    },
+    {
+      "url": "/samples/onpage-audit.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2986
+    },
+    {
+      "url": "/samples/launch-check.json",
+      "kind": "unsigned_specimen",
+      "status": 200,
+      "bytes": 3130
+    },
+    {
+      "url": "/samples/provenance-check.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3394
+    },
+    {
+      "url": "/samples/recurring-patronage.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2031
+    },
+    {
+      "url": "/samples/trust-profile.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3294
+    },
+    {
+      "url": "/samples/operator-statement.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 4147
+    },
+    {
+      "url": "/samples/certificate-of-patronage.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 1940
+    },
+    {
+      "url": "/samples/aura-walk.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 3816
+    },
+    {
+      "url": "/samples/the-collab.json",
+      "kind": "delivery_outline",
+      "status": 200,
+      "bytes": 2311
+    }
+  ],
+  "hello_challenge": {
+    "status": 402,
+    "kind": "delivery_outline"
+  },
+  "hello_html": "input/output example present",
+  "paid_requests": 0
+}

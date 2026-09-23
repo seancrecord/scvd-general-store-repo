@@ -24,7 +24,9 @@
  * from /.well-known/x402 at once, one socket each, and counts how
  * many cold isolates a directory-shaped burst wakes.
  *
- * WHAT IT DOES NOT. It buys nothing, signs nothing, writes nothing.
+ * WHAT IT DOES NOT. It buys nothing, signs nothing, changes nothing remote.
+ * --json-out saves this same observation locally alongside the text report;
+ * it refuses to overwrite an existing file.
  * Its exit code is a reading, not a gate: 0 always, 2 only when the
  * first door could not be reached at all. A slow cold start is a
  * fact to keep, never a red build.
@@ -32,6 +34,7 @@
  * Usage, from the repo root:
  *
  *   npm run cold:read                                  # one door, then six warm
+ *   npm run cold:read -- --json-out=reading.json        # same run, also saved as JSON
  *   npm run cold:read -- --url=https://scvd.store/api/buy/hello --url=https://<canary>.workers.dev/
  *   npm run cold:read -- --burst                       # every paid door at once
  *   npm run cold:read -- --since=2026-09-05T12:11:00Z  # says whether the deploy had landed
@@ -57,6 +60,7 @@
  * cold start, Cloudflare's floor subtracted.
  */
 import https from "node:https";
+import { writeFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 import {
   deployLanded,
@@ -83,6 +87,11 @@ const urls = values("url").length ? values("url") : [DEFAULT_DOOR];
 const warmKnocks = Math.max(0, Number(value("warm", "6")) || 0);
 const since = value("since", "");
 const json = Boolean(flag("json"));
+const jsonOut = value("json-out", "");
+if (flag("json-out") && !jsonOut) {
+  console.error("--json-out requires a new output file path");
+  process.exit(2);
+}
 const burst = Boolean(flag("burst"));
 const control = value("control", "");
 const TIMEOUT_MS = 20_000;
@@ -223,8 +232,12 @@ if (burst && exitCode === 0) {
   }
 }
 
+// The retained JSON and human report must describe the same acquisition.
+// A second --json run measures isolates the first run has already warmed.
+const serialized = JSON.stringify(observation, null, 2);
+if (jsonOut) writeFileSync(jsonOut, serialized + "\n", { flag: "wx" });
 if (json) {
-  console.log(JSON.stringify(observation, null, 2));
+  console.log(serialized);
 } else {
   console.log(`cold read, ${observation.read_at}`);
   console.log(out.join("\n\n"));

@@ -1,0 +1,245 @@
+{
+  "recorded_at": "2026-09-23T17:35:04.589222+00:00",
+  "files": [
+    {
+      "file": "corpus-index.json",
+      "source": "https://scvd.store/corpus/index.json",
+      "decoded_bytes": 2334,
+      "decoded_sha256": "abdc5cb20232cc6c329533e936238f0e2c9ff61387cb3042ccec63df6e304b4e"
+    },
+    {
+      "file": "corpus-8.json.gz",
+      "source": "https://scvd.store/corpus/8.json",
+      "decoded_bytes": 4012197,
+      "decoded_sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+    },
+    {
+      "file": "signing-key.json",
+      "source": "https://scvd.store/.well-known/scvd-signing-key",
+      "decoded_bytes": 3139,
+      "decoded_sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+    },
+    {
+      "file": "corpus-brief.json",
+      "source": "https://scvd.store/corpus/brief",
+      "decoded_bytes": 5079,
+      "decoded_sha256": "7722199ead82eb1553889507ec891eedb495a5dc6dbcfd917366aa7c0b1ee36d"
+    },
+    {
+      "file": "host-history.json",
+      "source": "https://scvd.store/corpus/host/weather.parklandarchives.com.json",
+      "decoded_bytes": 14315,
+      "decoded_sha256": "2ab6211b0fc971c8e754d510793a23f1b286292dcbf3e50d16d5e87193a3c3ea"
+    },
+    {
+      "file": "cold-runs.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/workflows/cold-read.yml",
+      "decoded_bytes": 13110,
+      "decoded_sha256": "9c73b47361c79b3f56d103d16755cd9d1869ef90a07530b968aa01594059fb7c"
+    },
+    {
+      "file": "directory-checks-1400.json",
+      "source": "https://x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store/checks?limit=500&offset=1400",
+      "decoded_bytes": 18465,
+      "decoded_sha256": "1bbfe0a322fa31d68ae750da05603ec06d2ec1a341eb74cc1567cc8dfbc7a75c"
+    },
+    {
+      "file": "directory-checks-1500.json",
+      "source": "https://x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store/checks?limit=100&offset=1500",
+      "decoded_bytes": 18414,
+      "decoded_sha256": "d2b85c7b33fc6ceceeef976fcf08bd8f8d7efeb28f3f586ebc7aed48a7ddf53e"
+    },
+    {
+      "file": "directory-checks-1600.json",
+      "source": "https://x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store/checks?limit=100&offset=1600",
+      "decoded_bytes": 18458,
+      "decoded_sha256": "ebd67e4a14093b9d8beb1bbc80f5bf73360a2c8d17f6dab1a7d198fc6e778bc1"
+    },
+    {
+      "file": "cold-runs/33988797257/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33988797257",
+      "decoded_bytes": 10763,
+      "decoded_sha256": "b91f99e82bef47454780668164f27cf64ee5719a90a51e4501b716257896e79f"
+    },
+    {
+      "file": "cold-runs/33988797257/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33988797257",
+      "decoded_bytes": 790,
+      "decoded_sha256": "06306d4bbe636888ef4587a5400270cfc960da05b943fb8490be4c2adf3e2945"
+    },
+    {
+      "file": "cold-runs/33990813191/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33990813191",
+      "decoded_bytes": 10707,
+      "decoded_sha256": "f771f43e6cfcb844a5c52e4de544cecfaa063b3449b7bda7c3320bc0610114a2"
+    },
+    {
+      "file": "cold-runs/33990813191/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33990813191",
+      "decoded_bytes": 792,
+      "decoded_sha256": "13d65de1208374e919ed9a61f970c03304ea6ffda81bb9642362e5c060acefc2"
+    },
+    {
+      "file": "cold-runs/33991132536/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33991132536",
+      "decoded_bytes": 10762,
+      "decoded_sha256": "7df4e1e45347825772977385efda86956f5714ff315c45ead629b3969f8c5088"
+    },
+    {
+      "file": "cold-runs/33991132536/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33991132536",
+      "decoded_bytes": 808,
+      "decoded_sha256": "faf590aa5139dbb039b3aed784dafa28bd4d80b297542be607725befd2dc5a5d"
+    },
+    {
+      "file": "cold-runs/33992906323/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33992906323",
+      "decoded_bytes": 10726,
+      "decoded_sha256": "0f4029f2778b0be11fa549b3d588d4e8162b95cc948da659086ddaed7761f1f1"
+    },
+    {
+      "file": "cold-runs/33992906323/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33992906323",
+      "decoded_bytes": 779,
+      "decoded_sha256": "8a93eef179d26890463a0fc93c27a6f832b5e3bc2d475346c7d74f90134ce3c1"
+    },
+    {
+      "file": "cold-runs/33992993614/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33992993614",
+      "decoded_bytes": 10728,
+      "decoded_sha256": "d81ea3cc48f7054bc90102c7b84a3670eba579fc5bb8074d5d6e6d18f58a87cc"
+    },
+    {
+      "file": "cold-runs/33992993614/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33992993614",
+      "decoded_bytes": 792,
+      "decoded_sha256": "c016f587513855838bf46352b84fc517b5b707fc4225787e81b102c028781d0e"
+    },
+    {
+      "file": "cold-runs/33994553101/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33994553101",
+      "decoded_bytes": 10754,
+      "decoded_sha256": "0bb741d9e614c9bc6b29e761971c0ed4289487491952dfa7b565bb493de8151c"
+    },
+    {
+      "file": "cold-runs/33994553101/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33994553101",
+      "decoded_bytes": 782,
+      "decoded_sha256": "2c46e2c5d562d9290634a359328b2adbb84776c600497157ca30e6c204cded3a"
+    },
+    {
+      "file": "cold-runs/33995679333/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33995679333",
+      "decoded_bytes": 10743,
+      "decoded_sha256": "e2b2bfaf614c59eb48cef3a7dfa008127d98370d4b4b15aa7b49a92960b517c9"
+    },
+    {
+      "file": "cold-runs/33995679333/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33995679333",
+      "decoded_bytes": 782,
+      "decoded_sha256": "2d2ea784768a145980bbb69b0463a26d60a558c062effa6586c9571a3bfb486c"
+    },
+    {
+      "file": "cold-runs/33996355360/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33996355360",
+      "decoded_bytes": 10733,
+      "decoded_sha256": "673a7bfc0a6cb0da4bfd627adfe152cddbf18cac43f1725f349b8266a48720f7"
+    },
+    {
+      "file": "cold-runs/33996355360/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33996355360",
+      "decoded_bytes": 802,
+      "decoded_sha256": "4e174001c7aa09f6a231fc804371910ee8915207104b2545c62e7b6896a5ae65"
+    },
+    {
+      "file": "cold-runs/33996708307/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33996708307",
+      "decoded_bytes": 10739,
+      "decoded_sha256": "e033155da5b083dcf92bc7283cc3c573584531750f700a781a12277a9697543e"
+    },
+    {
+      "file": "cold-runs/33996708307/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33996708307",
+      "decoded_bytes": 791,
+      "decoded_sha256": "b08fba8d1e271b1daabb95624fae1735c4672d34c50c16df474506c39768a91d"
+    },
+    {
+      "file": "cold-runs/33999798049/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33999798049",
+      "decoded_bytes": 10718,
+      "decoded_sha256": "699d7be4d36192420029f931ffd43562a64a66fcb1cbce988603915be8aab374"
+    },
+    {
+      "file": "cold-runs/33999798049/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33999798049",
+      "decoded_bytes": 780,
+      "decoded_sha256": "e2b7bf7a1d2cfc6f9ebac6e2d96ac1c7cae3510a8f3fdc9e1c70f090402697ed"
+    },
+    {
+      "file": "cold-runs/33999804030/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33999804030",
+      "decoded_bytes": 10747,
+      "decoded_sha256": "e109492c9c46fc2c0988edb02a0ef406972f002ba78a8a6ef9b24dc1eafd549c"
+    },
+    {
+      "file": "cold-runs/33999804030/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/33999804030",
+      "decoded_bytes": 788,
+      "decoded_sha256": "e9bce82e3295625b6e3c90b3c34b7e9bfc8125a652f344979b42adf6448012d1"
+    },
+    {
+      "file": "cold-runs/34000752141/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34000752141",
+      "decoded_bytes": 10734,
+      "decoded_sha256": "2823df150853beb8cd87cec3f2fcadd9663441fb53341aa9e37a7dc560ac1d73"
+    },
+    {
+      "file": "cold-runs/34000752141/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34000752141",
+      "decoded_bytes": 786,
+      "decoded_sha256": "a367ce97dfbf2e1f3f0dc39a0e2b1d5af952868e94e290c595e74abd6d0d7140"
+    },
+    {
+      "file": "cold-runs/34004271544/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34004271544",
+      "decoded_bytes": 10763,
+      "decoded_sha256": "66d7a0b15f7e55d258f1413576ef985a110e125cb3949cb36b3b0590f96872c7"
+    },
+    {
+      "file": "cold-runs/34004271544/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34004271544",
+      "decoded_bytes": 779,
+      "decoded_sha256": "0a18595377fa2c5e2cc7eae8ccfcf3d7eba8fd722a647670ccecb41a5d7db0a6"
+    },
+    {
+      "file": "cold-runs/34029445574/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34029445574",
+      "decoded_bytes": 10719,
+      "decoded_sha256": "640d6f14d5c591bfb66754422388c2efbe8ef79d0e8f60894a91c5649a3ac75c"
+    },
+    {
+      "file": "cold-runs/34029445574/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34029445574",
+      "decoded_bytes": 790,
+      "decoded_sha256": "c043f044277f43887cc5276741af065594f084d04c3e53a05e1ecd244714ca38"
+    },
+    {
+      "file": "cold-runs/34031405404/cold-reading.json",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34031405404",
+      "decoded_bytes": 10722,
+      "decoded_sha256": "ceff9f41d1e1385ad9a3538dee67d0105cde5a3a2329b5ff28d132de5a95481a"
+    },
+    {
+      "file": "cold-runs/34031405404/cold-reading.txt",
+      "source": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34031405404",
+      "decoded_bytes": 784,
+      "decoded_sha256": "42f6153c2a7758283e24c9eb9bb24e5c680f4563fcf5ec03ea601c6533429b29"
+    }
+  ],
+  "directory_attribution": "Data: x402-list.com (CC BY 4.0)",
+  "limits": [
+    "Public key fetched separately from the signature; independent issuer identity and Bitcoin proof verification are not established.",
+    "Workflow artifact pairs are distinct acquisitions; raw npm banners preserved.",
+    "Directory history is a retrospective operator record, not a controlled performance experiment."
+  ]
+}

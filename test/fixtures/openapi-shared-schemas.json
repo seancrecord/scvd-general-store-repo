@@ -1,0 +1,762 @@
+[
+  {
+    "pointers": [
+      "/paths/~1api~1study~1enrol/get/responses/200/content/application~1json/schema",
+      "/paths/~1api~1study~1debrief/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "this_door_takes",
+        "refusals"
+      ],
+      "properties": {
+        "this_door_takes": {
+          "type": "string",
+          "description": "Always POST; this GET is the contract for it."
+        },
+        "free": {
+          "type": "string",
+          "description": "On the enrolment door: that it opens no wallet and submits no payment."
+        },
+        "why_first": {
+          "type": "string",
+          "description": "On the enrolment door: why enrolling before shopping is the instrument rather than a formality."
+        },
+        "what_it_does": {
+          "type": "string",
+          "description": "On the debrief door: what is verified, in what order, and what comes back."
+        },
+        "body": {
+          "type": "object",
+          "description": "The exact body this door takes, field by field."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "field",
+              "what",
+              "why"
+            ],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "what": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string",
+                "description": "What this answer buys the store — published so an agent can judge the ask rather than take it on trust."
+              },
+              "choices": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "returns": {
+          "type": "object",
+          "description": "What a successful call hands back, including that the study token is returned once and never recoverable."
+        },
+        "on_the_legs": {
+          "type": "string"
+        },
+        "on_the_answers": {
+          "type": "string"
+        },
+        "on_the_reward": {
+          "type": "string"
+        },
+        "refusals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "refusal",
+              "why"
+            ],
+            "properties": {
+              "refusal": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Every way this door says no, with the reason each rule exists. A refusal an agent cannot anticipate is a refusal that costs them a walk they had already paid for."
+        },
+        "every_problem_at_once": {
+          "type": "string",
+          "description": "A refused body comes back with `problems`: EVERY field that needs fixing, each with what was expected and what the answer buys. One more call is always enough — you never discover the roster one refusal at a time."
+        },
+        "then": {
+          "type": "string",
+          "format": "uri"
+        },
+        "room": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1doors/get/responses/200/content/application~1json/schema",
+      "/paths/~1doors.json/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "what_this_is",
+        "what_this_is_not",
+        "hosts",
+        "total_hosts",
+        "verdict_means",
+        "honest_limits"
+      ],
+      "properties": {
+        "what_this_is": {
+          "type": "string"
+        },
+        "what_this_is_not": {
+          "type": "string",
+          "description": "Never a ranking of the doors, and no verdict on whoever runs one — a dated observation of what each answered."
+        },
+        "what_you_can_use_it_for": {
+          "type": "string"
+        },
+        "hosts": {
+          "type": "array",
+          "description": "One entry per host, with its latest verdict and when it was taken.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "by_latest_verdict": {
+          "type": "object",
+          "description": "The same hosts grouped by their most recent verdict."
+        },
+        "total_hosts": {
+          "type": "integer"
+        },
+        "returned": {
+          "type": "integer"
+        },
+        "weeks_read": {
+          "type": "integer"
+        },
+        "latest_week": {
+          "type": "object"
+        },
+        "verdict_means": {
+          "type": "object",
+          "description": "What each verdict does and does not assert.",
+          "properties": {
+            "ready": {
+              "type": "string"
+            },
+            "not_ready": {
+              "type": "string"
+            },
+            "unreachable": {
+              "type": "string"
+            },
+            "not_probed": {
+              "type": "string",
+              "description": "Named, because absence from a probe is not a finding about the door."
+            }
+          }
+        },
+        "honest_limits": {
+          "type": "string"
+        },
+        "how_to_call": {
+          "type": "object"
+        },
+        "how_to_rederive": {
+          "type": "string",
+          "description": "How to recompute this whole surface from the signed corpus, without asking us."
+        },
+        "price": {
+          "type": "object"
+        },
+        "security": {
+          "type": "object"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "http": {
+                "type": "integer"
+              },
+              "means": {
+                "type": "string"
+              },
+              "what_to_do": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "q": {
+                "type": "string"
+              },
+              "a": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "expected_outcome": {
+          "type": "string"
+        },
+        "corrections": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1.well-known~1x402/get/responses/200/content/application~1json/schema",
+      "/paths/~1.well-known~1x402.json/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "name",
+        "description",
+        "resources"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "network": {
+          "type": "string",
+          "description": "The single-rail field, kept for readers that learned it before the second rail existed."
+        },
+        "networks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every rail a 402 from this store offers. The truth since the second rail shipped."
+        },
+        "resources": {
+          "type": "array",
+          "description": "Every paid door, with its price and terms.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "when_to_use": {
+          "type": "object"
+        },
+        "openapi": {
+          "type": "string",
+          "format": "uri"
+        },
+        "catalog": {
+          "type": "string",
+          "format": "uri"
+        },
+        "stats": {
+          "type": "string",
+          "format": "uri"
+        },
+        "practice_counter": {
+          "type": "string",
+          "format": "uri"
+        },
+        "listing_spec_schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "signing_key": {
+          "type": "string",
+          "format": "uri"
+        },
+        "attestation": {
+          "type": "string",
+          "format": "uri"
+        },
+        "rights": {
+          "type": "string",
+          "format": "uri"
+        },
+        "trust": {
+          "type": "string",
+          "format": "uri"
+        },
+        "did": {
+          "type": "string",
+          "format": "uri"
+        },
+        "liveness": {
+          "type": "string",
+          "format": "uri"
+        },
+        "anchor_log": {
+          "type": "string",
+          "format": "uri"
+        },
+        "a2a": {
+          "type": "string",
+          "format": "uri"
+        },
+        "conformance": {
+          "type": "string",
+          "format": "uri"
+        },
+        "conformance_landing": {
+          "type": "string",
+          "format": "uri"
+        },
+        "corpus": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1.well-known~1mcp/get/responses/200/content/application~1json/schema",
+      "/paths/~1.well-known~1mcp.json/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "endpoint",
+        "transport",
+        "protocol_versions"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "The SEP-2127 schema URI. The draft's own URI does not resolve yet; it is published as the identifier the spec names, not as a fetchable document."
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "description": "Derived from the server's one version constant."
+        },
+        "icons": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "transport": {
+          "type": "string",
+          "description": "Streamable HTTP."
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "protocol_versions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authentication": {
+          "type": "object",
+          "description": "There is nothing to issue: free tools are open and paid ones take a signed x402 payment per call."
+        },
+        "handshake": {
+          "type": "object"
+        },
+        "free_methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The methods that never cost anything — tools/list among them, so a client can look before it pays."
+        },
+        "capabilities": {
+          "type": "object"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri"
+        },
+        "openapi": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1api~1preflight~1v1/get/responses/200/content/application~1json/schema",
+      "/paths/~1api~1preflight~1v2/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "title",
+        "version",
+        "summary",
+        "method",
+        "url",
+        "what_it_checks",
+        "what_it_cannot_check",
+        "the_ladder"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string",
+          "description": "The verb that runs it."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "request": {
+          "type": "object",
+          "description": "The body shape, stated where a caller is already looking."
+        },
+        "rate_limit": {
+          "type": "string",
+          "description": "What is metered and what is not, in words — the RateLimit headers say it again on every answer."
+        },
+        "what_it_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every named check, so a verdict can be read against them."
+        },
+        "batteries": {
+          "type": "object",
+          "description": "Every published battery and what each folds into its verdict, so a dated verdict stays readable after the next battery ships."
+        },
+        "common_failures_this_catches": {
+          "type": "object"
+        },
+        "what_it_cannot_check": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The limits, published beside the criteria. One probe is one moment; this list is what that buys and what it does not."
+        },
+        "the_ladder": {
+          "type": "object",
+          "description": "The assurance rungs, including the ones this instrument never climbs."
+        },
+        "try_it_against_a_live_endpoint": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1api~1bot-auth~1check/post/responses/200/content/application~1json/schema",
+      "/paths/~1api~1bot-auth-card~1{card_id}/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "subject",
+        "verdict",
+        "checks",
+        "criteria",
+        "what_this_is_not"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "verdict": {
+          "type": "string"
+        },
+        "criteria": {
+          "type": "string",
+          "description": "The criteria version this verdict was rendered under."
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "ok"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "detail": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "directory_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "expected_content_type": {
+          "type": "string"
+        },
+        "signed_version": {
+          "type": "string",
+          "description": "Where to buy the signed, certificate-bound version of this same battery."
+        },
+        "what_this_is_not": {
+          "type": "string",
+          "description": "A well-formed key directory is not a trustworthy operator. This checks the shape, never the party."
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1.well-known~1ard.json/get/responses/200/content/application~1json/schema",
+      "/paths/~1.well-known~1ai-catalog.json/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "specVersion",
+        "host",
+        "entries"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "specVersion": {
+          "type": "string",
+          "description": "The catalog envelope version; distinct from the ARD proposal revision."
+        },
+        "host": {
+          "type": "object",
+          "required": [
+            "displayName",
+            "identifier"
+          ],
+          "properties": {
+            "displayName": {
+              "type": "string"
+            },
+            "identifier": {
+              "type": "string",
+              "description": "The publisher's did:web identity."
+            },
+            "trustManifest": {
+              "type": "object",
+              "description": "Publisher identity and trust evidence; verification procedure at its governanceUri."
+            }
+          }
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "The store's published resources, with per-entry timestamps and identity."
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1bounties/get/responses/200/content/application~1json/schema",
+      "/paths/~1api~1bounties/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "what_this_is",
+        "bounties",
+        "the_rules"
+      ],
+      "properties": {
+        "what_this_is": {
+          "type": "string"
+        },
+        "board": {
+          "type": "string"
+        },
+        "bounties": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "the_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "how_to_claim": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "week": {
+          "type": "string"
+        },
+        "weekly_budget_usd": {
+          "type": "number"
+        },
+        "spent_this_week_usd": {
+          "type": "number"
+        },
+        "payouts_enabled": {
+          "type": "boolean",
+          "description": "Whether the board can actually pay right now. Published rather than implied, so a claimant learns it before doing the work."
+        },
+        "the_board": {
+          "type": "string",
+          "format": "uri"
+        },
+        "the_room": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1api~1trade~1sandbox~1check/post/requestBody/content/application~1json/schema",
+      "/paths/~1api~1trade~1sandbox~1{item_id}/post/requestBody/content/application~1json/schema",
+      "/paths/~1api~1trade~1{partner}~1check/post/requestBody/content/application~1json/schema",
+      "/paths/~1api~1trade~1{partner}~1{item_id}/post/requestBody/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "description": "The item's own fields (see /api/trade/contract shelf[].fields) at the top level or under `inputs`, plus the optional common fields. Sign the EXACT bytes you send.",
+      "properties": {
+        "inputs": {
+          "type": "object",
+          "description": "Optional envelope for the item's fields."
+        },
+        "order_ref": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Your order id. A retry carrying the same order_ref within a day returns the original delivery and bills nothing twice."
+        },
+        "agent_name": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "purpose": {
+          "type": "string",
+          "maxLength": 280
+        },
+        "callback_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional. A public https URL; after the response, the signed delivery receipt (certificate, signature, verify_url) is POSTed there once, with Web Bot Auth headers on the request. The outcome is written on your statement row."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "For the probe items: a public https door."
+        },
+        "summary": {
+          "type": "string",
+          "description": "context_anchor: the state to remember."
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{64}$",
+          "description": "bitcoin_anchor: a sha256 you computed."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "address": {
+          "type": "string",
+          "description": "provenance_check: an EVM address or Solana pubkey."
+        },
+        "max_usd": {
+          "type": "number",
+          "description": "good_buyer: the client's declared per-payment cap."
+        },
+        "no_spend_controls": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+]
