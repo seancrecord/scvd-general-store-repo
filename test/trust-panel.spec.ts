@@ -133,7 +133,8 @@ describe("the independent records on the panel", () => {
     }
     expect(new Set(urls)).toEqual(new Set(EXTERNAL_RECORDS.map((record) => record.url)));
     expect(urls.some((url) => new URL(url).hostname === "ai-catalog.outshift.io")).toBe(false);
-    expect(urls.some((url) => new URL(url).hostname === "agenterc.com")).toBe(false);
+    expect(urls.some((url) => new URL(url).hostname === "agenterc.com")).toBe(true);
+    expect(urls).toContain("https://withai.top/tool/scvd-store");
     const erc = groups.find((group) => group.id === "erc8004")!;
     expect(erc.records.some((record) => new URL(record.url).hostname === "8004scan.io" && new URL(record.url).pathname.startsWith("/agents/base/"))).toBe(true);
     expect(erc.records.some((record) => new URL(record.url).hostname === "agentscan.info" && new URL(record.url).pathname.startsWith("/agents/"))).toBe(true);

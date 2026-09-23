@@ -1182,19 +1182,17 @@ what you ruled and what is still yours to look at.
 
 - **WAIT — OpenCode ecosystem submissions (September 18).** Native skill load and free preflight passed via keeper-authorized ChatGPT OAuth. [Official PR #49834](https://github.com/anomalyco/opencode/pull/49834), linked to the required [issue #49833](https://github.com/anomalyco/opencode/issues/49833), and [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) are submitted. Community schema validation passed; neither listing is accepted yet. [Native receipt](research/distribution-2026-09-18/opencode-native-execution.json).
 
-- **WAIT — September 18 continuation, reconciled September 19.** Current OASF validation passes. [Maintainer confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) the shared testbed is read-only: publishing requires our own federated node. Recurring-fee hosting/distribution declined by the keeper September 18; [federation research](registry/agntcy/FEDERATION.md) is retained as history, not a purchase decision. Anro publisher lookup remains empty; free external-ingestion email sent September 18 and awaits reply. Gemini Google authorization reached a retired consumer-tier gate; keeper requested skipping Gemini September 18. Cline sign-in and native execution completed: verification skill loaded and a free preflight returned not_ready / L1. [Evidence and next steps](research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
+- **WAIT — September 18 continuation, reconciled September 19.** Current OASF validation passes. [Maintainer confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) the shared testbed is read-only: publishing requires our own federated node. Recurring-fee hosting/distribution declined by the keeper September 18; [federation research](registry/agntcy/FEDERATION.md) is retained as history, not a purchase decision. Anro publisher lookup remains empty; free external-ingestion email sent September 18 failed delivery after retries on September 21; another working contact route is needed. Gemini Google authorization reached a retired consumer-tier gate; keeper requested skipping Gemini September 18. Cline sign-in and native execution completed: verification skill loaded and a free preflight returned not_ready / L1. [Evidence and next steps](research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
 
 - **LOOK / PRESS — distribution follow-through (2026-09-17).**
   [Live findings and prepared submissions](research/distribution-2026-09-17/README.md):
   five ERC-8004 directories show SCVD; 8004scan transport health and trust8004
   metadata need operator follow-ups. Agentscan also has an AI taxonomy conflict
-  despite correctly parsing the canonical record. AgentERC again did not return the identity September 18; its Base index status
-  was five days old while Ethereum was current. Investigate ingestion lag before
-  changing canonical metadata; [current readback/contact](research/distribution-2026-09-18/README.md).
+  despite correctly parsing the canonical record. [AgentERC now lists the existing Base identity](https://agenterc.com/explore/base/86957), confirmed by its operator September 19 and public readback September 23. No canonical metadata rewrite or duplicate identity was needed; [current reconciliation](research/distribution-2026-09-23/README.md).
   HOL exact-identity and domain searches returned HTTP 200/zero hits September 18–19 with a working ERC-8004 control; ingestion report sent September 19. AgentERC operator email sent September 18. [Evidence and receipts](research/erc8004-followthrough-2026-09-19/README.md). AgentRanking returned HTTP 522 September 18. Cisco search returned no SCVD result; Anro's
   publisher query returned zero again September 18. Its published external-agent
   route is manifest crawling; SCVD already serves the manifest. Direct OASF
-  upload/admission remains unconfirmed. Await Anro’s free-ingestion answer; the shared AGNTCY testbed is read-only and paid hosting is declined. Current-byte signing and remote discovery remain unverified. The
+  upload/admission remains unconfirmed. Anro’s email failed delivery; find a working free-ingestion contact route; the shared AGNTCY testbed is read-only and paid hosting is declined. Current-byte signing and remote discovery remain unverified. The
   historical CID does not cover the corrected bytes.
   On the keeper's authorization, Awesome Copilot
   [#3255](https://github.com/github/awesome-copilot/issues/3255) was submitted;
@@ -1564,8 +1562,7 @@ what you ruled and what is still yours to look at.
   with a [confirmed receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json).
   The cursor.directory community listing remains separate. Watch for Cursor's
   review response; do not resubmit. Remaining Cursor skill discovery and desktop
-  qualification belong to TR-D. Claude's community plugin application is also **submitted for Claude Code; review
-  pending**. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
+  qualification belong to TR-D. Claude's community plugin application is also **submitted for Claude Code; status now unresolved**: September 23 portal says “No submissions yet.” [Existing dashboard report updated](https://github.com/anthropics/claude-plugins-official/issues/6290#issuecomment-5799240583); do not resubmit while the original record is being traced. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json).
   Cowork was not selected because it remains untested. Watch the existing
   [submission](https://platform.claude.com/plugins/submissions); do not duplicate it.
   Cursor Directory text, both skills and pinned Tab config were updated and publicly

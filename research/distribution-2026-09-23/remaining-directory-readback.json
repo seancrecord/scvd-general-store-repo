@@ -1,0 +1,37 @@
+{
+  "observed_on": "2026-09-23",
+  "observations": [
+    {
+      "url": "https://api.anroagents.com/ard/agents?filter=publisherId%20%3D%20%27scvd.store%27&pageSize=20",
+      "http_status": 200,
+      "body": {
+        "items": [],
+        "total": 0
+      },
+      "scope": "Exact publisher query returned no rows; not proof of complete-index absence or crawler behavior."
+    },
+    {
+      "url": "https://app.agentranking.io/",
+      "http_status": 522,
+      "scope": "Homepage unavailable in this read; identity listing and claim flow remain unverified."
+    },
+    {
+      "url": "https://8004.directory/",
+      "http_status": null,
+      "error": "Could not resolve host",
+      "scope": "This client could not resolve the host; no delisting claim."
+    },
+    {
+      "url": "https://ucpregistry.com/?search=scvd",
+      "query": "scvd",
+      "observed_result": "No results found. Try adjusting your filters.",
+      "scope": "Public search result; earlier submission receipt remains pending, no rejection inferred."
+    },
+    {
+      "url": "https://ucplist.ai/",
+      "query": "scvd",
+      "observed_result": "No listings found. Try a different search or filter.",
+      "scope": "Public directory search result; earlier submission receipt remains pending, no duplicate submission."
+    }
+  ]
+}

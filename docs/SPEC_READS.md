@@ -2352,3 +2352,30 @@ The [UCPStore homepage](https://www.ucpstore.dev/) is a coming-soon integration 
 Fresh reads of SCVD's advertised official schema URLs returned four 404s; their version-pinned counterparts all returned 200 JSON. [Saved HTTP reading](../research/ucp-distribution-2026-09-19/schema-links.json). Read UCP's [dated checkout schema](https://ucp.dev/2026-08-25/schemas/shopping/checkout.json) and [overview](https://ucp.dev/specification/overview/). This is URL retrieval evidence, not paid qualification or acceptance by an agent platform.
 
 Re-read Google's [Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center): approved free-listing products, per-product checkout eligibility and exclusions remain prerequisites. SCVD's admission and custom payment-handler support were not established; its existing intake stays separate.
+
+### 2026-09-23 — distribution return check
+
+Read AgentERC's rendered SCVD Base 86957 profile and WithAI.Top's public
+listing, corroborated by operator/acceptance replies. Read the actual
+MCP.so/MCPpedia configurations before filing corrections against their
+linked issue trackers. Anthropic's submitting-account dashboard conflicts
+with the retained September 17 receipt; added the dated observation to its
+existing disappearance report without resubmitting. Anro's final delivery
+failure replaces the old awaiting-reply status. The fresh listings workflow,
+direct MCP Registry retry and x402-list/live-menu set comparison are scoped
+in the [reconciliation](../research/distribution-2026-09-23/README.md).
+No new protocol support or paid qualification is inferred from a listing.
+
+Read Agentic Market's live [agent guide](https://agentic.market/llms.txt),
+search response and [SCVD detail](https://api.agentic.market/v1/services/scvd-store).
+Search returns 20 endpoints while detail returns 30. The guide does not
+establish publisher eligibility or update mechanics. Reader corrections
+and the dated 30/35 comparison are in the reconciliation above; no inference
+of a complete-index census or registration cause.
+
+The separate [seller validator](https://agentic.market/validate) FAQ says
+Bazaar-indexed endpoints appear automatically. Each of the five detail gaps
+passed its required checks and received verify+settle indexing guidance;
+`hello`, an indexed control, returned Found on Bazaar. These are the
+operator's diagnostic results, not our own settlement-history proof. No
+purchase was made. The per-endpoint results are retained in the receipt.

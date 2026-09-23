@@ -147,7 +147,7 @@ test("ClawHub and agentic.market readers say unknown rather than guess when the 
   // An unlabelled dotted number near the name is not the skill's version.
   assert.equal(readClawHub("<html>scvd-general-store · 65.5.5 downloads · node 22.1.0</html>", "scvd-general-store").state, "unknown");
   assert.equal(readClawHub("<html>something else</html>", "scvd-general-store").state, "unknown");
-  assert.equal(readAgenticMarket({ services: [{ name: "scvd", url: "https://scvd.store", endpoints: [1, 2, 3] }] }, "scvd.store").endpoint_count, 3);
+  assert.equal(readAgenticMarket({ domain: "scvd.store", endpoints: [1, 2, 3] }, "scvd.store").endpoint_count, 3);
   assert.equal(readAgenticMarket({ services: [{ name: "scvd", url: "https://scvd.store" }] }, "scvd.store").state, "unknown");
   assert.equal(readAgenticMarket({}, "scvd.store").state, "unknown");
   assert.equal(readShelf({ items: [{ id: "a", price_usdc: 0.001 }, { id: "b", price_usdc: 0 }] }).paid_count, 1);
@@ -180,7 +180,7 @@ test("the comparison names ours and theirs on every differing fact, and never ma
   assert.equal(by("clawhub", "skill version").state, "unknown");
   assert.equal(by("x402-list", "doctrine sentence present").state, "differs");
   assert.equal(by("x402-list", "doors listed").theirs, 31);
-  assert.equal(by("agentic-market", "doors listed").state, "unreachable");
+  assert.equal(by("agentic-market", "returned endpoints").state, "unreachable");
   for (const r of rows) assert.ok(["agrees", "differs", "unknown", "unreachable"].includes(r.state));
 });
 
@@ -358,4 +358,22 @@ test("the walk reads trust.json, then one page per row, and says so when the ros
   const broken = await readRoster("https://scvd.store", async () => ({ ok: true, status: 200, text: async () => "<html>" }));
   assert.equal(broken.roster_read, false);
   assert.deepEqual(broken.records, []);
+});
+
+test("the version walk reads Agentic Market detail rather than its partial search result", async () => {
+  const calls = [];
+  const local = { server: { name: "store.scvd/general-store" }, tabServer: { name: "store.scvd/tab" }, packages: [], clawhub: { name: "scvd-general-store" } };
+  const fetchImpl = async (url) => {
+    calls.push(url);
+    const detail = { domain: "scvd.store", endpoints: [{ url: "https://scvd.store/api/buy/hello" }, { url: "https://scvd.store/api/buy/pack" }] };
+    const body = url.endsWith("/menu.json") ? { items: [{ id: "hello", price_usdc: 1 }, { id: "pack", price_usdc: 1 }] }
+      : url === "https://api.agentic.market/v1/services/scvd-store" ? detail
+      : url.includes("/services/search") ? { services: [{ ...detail, endpoints: detail.endpoints.slice(0, 1) }] } : {};
+    return { ok: true, status: 200, text: async () => JSON.stringify(body) };
+  };
+  const result = await walkVersions("https://scvd.store", local, fetchImpl);
+  assert.equal(result.reads.agentic_market.endpoint_count, 2);
+  assert.ok(calls.includes("https://api.agentic.market/v1/services/scvd-store"));
+  assert.ok(!calls.some((url) => url.includes("/services/search")));
+  assert.equal(readAgenticMarket({ domain: "other.example", description: "links to scvd.store", endpoints: [] }, "scvd.store").state, "unknown");
 });

@@ -1,0 +1,39 @@
+{
+  "observed_on": "2026-09-23",
+  "local_base": "9d04efe5428eacd9eb997a34cae7e6edad2a3e36",
+  "full_suite": {
+    "command": "npm test -- --maxWorkers=2",
+    "exit_code": 1,
+    "files_passed": 826,
+    "files_failed": 1,
+    "tests_passed": 15479,
+    "tests_failed": 1,
+    "tests_skipped": 1,
+    "unhandled_startup_timeouts": 2,
+    "failed_assertion": "WithAI record must explicitly contain not an endorsement or not an audit.",
+    "startup_files": [
+      "test/discovery-example-urls.spec.ts",
+      "test/host-matchers-are-hostnames.spec.ts"
+    ]
+  },
+  "correction": "Changed WithAI copy to the explicit disclaimer form required by the existing guard.",
+  "retry": {
+    "files": [
+      "test/trust-panel.spec.ts",
+      "test/trust-signals.spec.ts",
+      "test/discovery-example-urls.spec.ts",
+      "test/host-matchers-are-hostnames.spec.ts"
+    ],
+    "files_passed": 4,
+    "tests_passed": 27,
+    "exit_code": 0
+  },
+  "other_checks": {
+    "listing_tests_passed": 38,
+    "typecheck": "passed",
+    "docs": "passed",
+    "worker_and_mpp_bundle": "passed",
+    "diff_whitespace": "passed"
+  },
+  "limits": "The complete local attempt was red, not retrospectively green. Focused retries passed after the copy repair. The complete hosted suite remains the merge gate."
+}
