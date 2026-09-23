@@ -2356,7 +2356,7 @@ function tradeCheckOperation(): OpenApiObject {
               "The check desk: every signature check reported, nothing delivered",
               "Send exactly the headers and body you would send to the order door. All four checks run and each is reported — headers present, provider key, clock skew, nonce shape, whether the HMAC verified under the secret in service or the previous one — with the sha256 of the signing string we computed so you can compare bytes. No nonce is consumed, nothing is delivered, no money moves. On the sandbox account the expected signature is printed, since that secret is public.",
               "The body you would send to the order door, byte for byte.",
-              TRADE_ORDER_BODY,
+              { $ref: "#/components/schemas/TradeOrder" },
             ),
             TRADE_CHECK_REF,
           ),
@@ -2378,7 +2378,7 @@ function tradeItemOperation(): OpenApiObject {
               "Order one item on a trade account (signed, billed on statement)",
               "NOT free and NOT x402: the marketplace named by {partner} collected its customer's payment and is billed the trade price on its statement. The request is authenticated by HMAC-SHA256 over timestamp, nonce and the exact body under the account's dialect (/api/trade/contract), a five-minute window, and a nonce never seen before. Delivers the same signed goods /api/buy/{item_id} would, with a certificate that says settled_via: trade_account and carries no chain fields.",
               "One JSON object: the item's fields plus optional order_ref, agent_name, purpose. Sign the exact bytes.",
-              TRADE_ORDER_BODY,
+              { $ref: "#/components/schemas/TradeOrder" },
             ),
             TRADE_DELIVERY_REF,
           ),
@@ -6084,6 +6084,17 @@ openapiRoutes.get("/openapi.json", async (c) => {
         description: "Private recovery.status_token returned by a catalogue purchase. This capability reads only its original purchase status." } },
       schemas: {
         ...A2A_OPENAPI_SCHEMAS,
+        // Repeated request/response schemas, expanded unchanged (2026-09-23).
+        // Keep parameters and the paid 402 inline for shallow discovery readers.
+        TradeOrder: TRADE_ORDER_BODY,
+        StudyDoorShape: STUDY_DOOR_SHAPE_SCHEMA,
+        DoorIndex: DOOR_INDEX_SCHEMA,
+        X402Discovery: X402_DISCOVERY_SCHEMA,
+        McpCard: MCP_CARD_SCHEMA,
+        PreflightDocument: PREFLIGHT_DOC_SCHEMA,
+        BotAuthCheck: BOT_AUTH_CHECK_SCHEMA,
+        ArdManifest: ARD_MANIFEST_SCHEMA,
+        Bounties: BOUNTIES_SCHEMA,
         BuyerProof: BUYER_PROOF_SCHEMA,
         TradeCheck: TRADE_CHECK_SCHEMA,
         TradeDelivery: TRADE_DELIVERY_SCHEMA,
@@ -7415,7 +7426,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 `The preflight criteria, ${battery}`,
                 `Every check this battery runs and what falsifies each one, as JSON — the published criteria a ${battery} verdict cites. Free.`,
               ),
-              PREFLIGHT_DOC_SCHEMA,
+              { $ref: "#/components/schemas/PreflightDocument" },
             ),
             post: withRateLimitHeaders(returns(postOp(
               `Check an x402 endpoint's payment challenge shape (${battery})`,
@@ -7525,7 +7536,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "The Bounty Board",
             "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
           ),
-          BOUNTIES_SCHEMA,
+          { $ref: "#/components/schemas/Bounties" },
         ),
       },
       "/credit": {
@@ -7555,7 +7566,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "The bounty board — get paid to shop",
             "Open mystery-shopping bounties: walk a listed x402 door with your own wallet, submit the settlement transaction at POST /api/bounty-claim, and the reward comes back as a signed EIP-3009 authorization you redeem on chain yourself. Rules, budget, and claim shape are on the board itself. Free to read.",
           ),
-          BOUNTIES_SCHEMA,
+          { $ref: "#/components/schemas/Bounties" },
         ),
         post: returns(
   postOp(
@@ -7610,7 +7621,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "The enrolment shape, and why each field is asked",
             "Every field the roster takes, with one line on what that answer buys this store, plus every way the door says no. Free, and answered rather than 404ed so a client that introspects before it posts gets structure. The American spelling /api/study/enroll serves the same document and the same door.",
           ),
-          STUDY_DOOR_SHAPE_SCHEMA,
+          { $ref: "#/components/schemas/StudyDoorShape" },
         ),
         post: returns(
           postOp(
@@ -7648,7 +7659,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "The debrief shape, and every way it says no",
             "The exact body the debrief takes, every question with the reason this store cannot answer it from its own logs, and the full refusal catalogue. Free.",
           ),
-          STUDY_DOOR_SHAPE_SCHEMA,
+          { $ref: "#/components/schemas/StudyDoorShape" },
         ),
         post: returns(
           postOp(
@@ -7897,7 +7908,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               },
             },
           ),
-            BOT_AUTH_CHECK_SCHEMA,
+            { $ref: "#/components/schemas/BotAuthCheck" },
           ),
       },
       "/api/bot-auth-card/{card_id}": {
@@ -7907,7 +7918,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "A purchased signature-agent card",
               "The signed card a signature_agent_card purchase produced, with its cert binding and verification steps. Served free, forever.",
             ),
-            BOT_AUTH_CHECK_SCHEMA,
+            { $ref: "#/components/schemas/BotAuthCheck" },
           ),
           parameters: [
             pathParam("card_id", "From the purchase response; starts sacard_."),
@@ -7934,7 +7945,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Agentic Resource Discovery manifest",
             "Every agentic resource this origin publishes, as ARD entries: the MCP server, the A2A agent card, the HTTP API and the store's two skills, each with its IANA media type, its URL, the representative queries a registry indexes it by, and a trust manifest naming this store's did:web. A DIFFERENT document from /.well-known/api-catalog, which is RFC 9727 and answers where the API is documented; this one answers what agentic resources exist here. Free.",
           ),
-          ARD_MANIFEST_SCHEMA,
+          { $ref: "#/components/schemas/ArdManifest" },
         ),
       },
       "/.well-known/ai-catalog.json": {
@@ -7943,7 +7954,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "ARD manifest (predecessor path)",
             "Byte-for-byte the same document as /.well-known/ard.json. ARD §5.1 makes ard.json the path a consumer MUST fetch and names this one its predecessor, which a consumer MAY additionally consult; it is served because a scanner that knows only the old path and gets a 404 cannot tell this origin from one publishing nothing. The Link header on both paths points at ard.json, which is the canonical one.",
           ),
-          ARD_MANIFEST_SCHEMA,
+          { $ref: "#/components/schemas/ArdManifest" },
         ),
       },
       "/.well-known/mcp.json": {
@@ -7952,7 +7963,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "The MCP server manifest (.json alias)",
             "Byte-for-byte the same document as /.well-known/mcp. Two paths because a scanner either knows a fixed path or knows nothing, and a 404 at the one it guessed is indistinguishable from having no MCP server at all. Like its sibling, a POST here completes an MCP handshake against the same server behind /mcp.",
           ),
-          MCP_CARD_SCHEMA,
+          { $ref: "#/components/schemas/McpCard" },
         ),
       },
       "/deprecation": {
@@ -8340,7 +8351,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Every door we have checked",
             "The human room for the same list /doors.json serves: every x402 endpoint the weekly ward round has observed, alphabetical, with the most recent dated observation of each. Serves HTML to a browser and the JSON body to everything else. Free.",
           ),
-          DOOR_INDEX_SCHEMA,
+          { $ref: "#/components/schemas/DoorIndex" },
         ),
       },
       "/doors.json": {
@@ -8350,7 +8361,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Every endpoint observed, listed",
             "One entry per host the signed chain has ever carried: first_seen, last_seen, rounds_present, rounds_scored, the most recent verdict with the week it was taken, and the URL of that host's full replayed history. Alphabetical and deliberately NOT ranked \u2014 no ratio, no standing, no accumulated score on any operator; rounds_scored is published as a denominator and the division is left to the reader. ?verdict= filters to one of ready, not_ready, unreachable, not_probed; anything else answers 400 naming the four. An empty list with total_hosts 0 means the chain holds no signed week yet and is not an error. Derived at read from signed snapshots, with the recipe to rebuild it published beside it. Free.",
           ),
-          DOOR_INDEX_SCHEMA,
+          { $ref: "#/components/schemas/DoorIndex" },
         ),
           parameters: [
             {
@@ -8954,7 +8965,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "x402 discovery (minimal)",
             "The de-facto indexer entry point. Serves the same structured, priced resources as the full catalog — one builder renders both.",
           ),
-          X402_DISCOVERY_SCHEMA,
+          { $ref: "#/components/schemas/X402Discovery" },
         ),
       },
       "/.well-known/x402.json": {
@@ -8963,7 +8974,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "x402 discovery (full)",
             "The richer origin-hosted catalog of payable resources.",
           ),
-          X402_DISCOVERY_SCHEMA,
+          { $ref: "#/components/schemas/X402Discovery" },
         ),
       },
       /**
@@ -8987,7 +8998,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Where the MCP server is",
             "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension. A POST here completes the handshake too, against the same server /mcp answers from — scanners POST their initialize at the manifest path, and a 405 they never read the body of reads to them as no MCP server at all. /mcp remains the canonical endpoint and the one this document names.",
           ),
-          MCP_CARD_SCHEMA,
+          { $ref: "#/components/schemas/McpCard" },
         ),
       },
       "/.well-known/agent-instructions": {

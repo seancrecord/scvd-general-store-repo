@@ -35,5 +35,20 @@
     "worker_and_mpp_bundle": "passed",
     "diff_whitespace": "passed"
   },
-  "limits": "The complete local attempt was red, not retrospectively green. Focused retries passed after the copy repair. The complete hosted suite remains the merge gate."
+  "limits": "The complete local attempt was red, not retrospectively green. Focused retries passed after the copy repair. The complete hosted suite remains the merge gate.",
+  "hosted_before_main_integration": {
+    "head": "6711c6543c7019bbc4957dc30abeeca745211183",
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35908707881",
+    "result": "All four test shards, aggregate gate, quality, CodeQL and both Worker builds passed. Later main changes caused a documentation merge conflict; this result is not the new merge-head gate."
+  },
+  "main_integration_retry": {
+    "conflict": "docs/SPEC_READS.md: retained both independent dated additions",
+    "focused_files_passed": 4,
+    "focused_tests_passed": 27,
+    "listing_tests_passed": 38,
+    "typecheck": "passed",
+    "docs": "passed",
+    "worker_and_mpp_bundle": "passed",
+    "hosted_merge_gate": "pending new head"
+  }
 }

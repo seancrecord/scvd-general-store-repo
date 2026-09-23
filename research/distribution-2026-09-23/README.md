@@ -132,3 +132,7 @@ then passed together: four files, 27 tests. Typecheck, docs, 38 listing tests
 and Worker/MPP dry-run builds passed. [Validation receipt](validation.json).
 The full attempt stays recorded as red; the complete hosted suite gates merge.
 No pending upstream correction is represented as fixed.
+
+## ERC-8004 follow-through
+
+[Canonical chain read, fresh directory results and pause-point dependencies](../erc8004-followthrough-2026-09-23/README.md) are recorded separately. New same-site live-versus-cached MCP evidence was added to 8004scan #51. No remaining external dependency is marked resolved.

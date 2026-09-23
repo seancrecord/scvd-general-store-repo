@@ -1,0 +1,299 @@
+{
+  "manifest_files_verified": 39,
+  "mpp": {
+    "sequence": 8,
+    "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+    "taken_at": "2026-09-20T11:00:28.668Z",
+    "signature_valid": true,
+    "bitcoin_proof_verified": false,
+    "counts": {
+      "probed": 5021,
+      "measured": 860,
+      "unmeasured": 4030,
+      "unreachable": 131,
+      "not_probed": 0,
+      "speaking_mpp": 14,
+      "mpp_only": 0,
+      "both": 14,
+      "x402_only": 262,
+      "neither": 584,
+      "batteries": [
+        "mpp-v1"
+      ]
+    },
+    "observed_dates": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19",
+      "2026-09-20"
+    ],
+    "brief_counts_match": true,
+    "sample_host_history_matches": true,
+    "sample_host": "weather.parklandarchives.com"
+  },
+  "directory": {
+    "before": {
+      "start": "2026-09-05T00:00:00Z",
+      "end": "2026-09-05T12:00:00Z",
+      "count": 45,
+      "first": "2026-09-05T00:06:16.431Z",
+      "last": "2026-09-05T11:58:02.165Z",
+      "median_ms": 988,
+      "p95_nearest_rank_ms": 1619,
+      "max_ms": 1630,
+      "over_500_ms": 31,
+      "all_up": true,
+      "status_codes": [
+        402
+      ],
+      "endpoints_found": [
+        23,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "max_interval_ms": 1052319
+    },
+    "after_activation": {
+      "start": "2026-09-05T19:55:00Z",
+      "end": "2026-09-06T12:00:00Z",
+      "count": 60,
+      "first": "2026-09-05T19:59:01.900Z",
+      "last": "2026-09-06T11:50:02.037Z",
+      "median_ms": 40,
+      "p95_nearest_rank_ms": 100,
+      "max_ms": 141,
+      "over_500_ms": 0,
+      "all_up": true,
+      "status_codes": [
+        402
+      ],
+      "endpoints_found": [
+        31
+      ],
+      "max_interval_ms": 1021084
+    },
+    "overnight": {
+      "start": "2026-09-06T00:00:00Z",
+      "end": "2026-09-06T12:00:00Z",
+      "count": 44,
+      "first": "2026-09-06T00:15:03.101Z",
+      "last": "2026-09-06T11:50:02.037Z",
+      "median_ms": 36,
+      "p95_nearest_rank_ms": 101,
+      "max_ms": 141,
+      "over_500_ms": 0,
+      "all_up": true,
+      "status_codes": [
+        402
+      ],
+      "endpoints_found": [
+        31
+      ],
+      "max_interval_ms": 1021084
+    }
+  },
+  "cold_runs": [
+    {
+      "run_id": 33988797257,
+      "text_at": "2026-09-05T20:05:40.320Z",
+      "text_first_ms": 166,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 31,
+      "json_at": "2026-09-05T20:05:42.319Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33990813191,
+      "text_at": "2026-09-05T20:45:38.484Z",
+      "text_first_ms": 265,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 34,
+      "json_at": "2026-09-05T20:45:40.483Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33991132536,
+      "text_at": "2026-09-05T20:52:18.868Z",
+      "text_first_ms": 25,
+      "text_first_isolate": "warm",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 21,
+      "json_at": "2026-09-05T20:52:20.234Z",
+      "json_first_isolate": "cold",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33992906323,
+      "text_at": "2026-09-05T21:28:30.878Z",
+      "text_first_ms": 133,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 20,
+      "json_at": "2026-09-05T21:28:32.225Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33992993614,
+      "text_at": "2026-09-05T21:30:18.260Z",
+      "text_first_ms": 377,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 73,
+      "json_at": "2026-09-05T21:30:21.445Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33994553101,
+      "text_at": "2026-09-05T22:03:25.303Z",
+      "text_first_ms": 272,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 39,
+      "json_at": "2026-09-05T22:03:27.316Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33995679333,
+      "text_at": "2026-09-05T22:26:41.483Z",
+      "text_first_ms": 165,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 28,
+      "json_at": "2026-09-05T22:26:42.795Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33996355360,
+      "text_at": "2026-09-05T22:40:44.405Z",
+      "text_first_ms": 74,
+      "text_first_isolate": "warm",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 43,
+      "json_at": "2026-09-05T22:40:46.122Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33996708307,
+      "text_at": "2026-09-05T22:48:17.735Z",
+      "text_first_ms": 153,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 39,
+      "json_at": "2026-09-05T22:48:19.299Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33999798049,
+      "text_at": "2026-09-05T23:57:19.445Z",
+      "text_first_ms": 212,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 22,
+      "json_at": "2026-09-05T23:57:21.106Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 33999804030,
+      "text_at": "2026-09-05T23:57:30.673Z",
+      "text_first_ms": 129,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 13,
+      "json_at": "2026-09-05T23:57:31.942Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 34000752141,
+      "text_at": "2026-09-06T00:19:17.923Z",
+      "text_first_ms": 160,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 19,
+      "json_at": "2026-09-06T00:19:19.241Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 34004271544,
+      "text_at": "2026-09-06T01:40:06.132Z",
+      "text_first_ms": 241,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 26,
+      "json_at": "2026-09-06T01:40:07.733Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 34029445574,
+      "text_at": "2026-09-06T11:15:01.170Z",
+      "text_first_ms": 254,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 31,
+      "json_at": "2026-09-06T11:15:02.766Z",
+      "json_first_isolate": "warm",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    },
+    {
+      "run_id": 34031405404,
+      "text_at": "2026-09-06T11:56:00.240Z",
+      "text_first_ms": 231,
+      "text_first_isolate": "cold",
+      "text_warm_knocks": 6,
+      "text_warm_median_ms": 19,
+      "json_at": "2026-09-06T11:56:01.716Z",
+      "json_first_isolate": "cold",
+      "json_burst_doors": 32,
+      "json_burst_answered": 32,
+      "json_burst_402": 32
+    }
+  ]
+}

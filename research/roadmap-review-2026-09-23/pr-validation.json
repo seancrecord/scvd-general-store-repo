@@ -1,0 +1,190 @@
+{
+  "base": "4be8dc24",
+  "full_suite": {
+    "command": "npm test",
+    "status": "interrupted_after_observed_failures",
+    "exit_code": 130,
+    "elapsed_observed": "more than one hour",
+    "cause": "not established; individual unrelated cases stretched to roughly 7\u201316 minutes",
+    "complete_green_verdict": false,
+    "log_sha256": "8ef617bea1136184a4e652d729c37ebaafa4427a215870befd3cbcac7fe580a2",
+    "reported_failures": {
+      "test/settlement-unknown.spec.ts": [
+        {
+          "name": "MCP door: same seam, same row",
+          "duration_ms": 802427
+        }
+      ],
+      "test/legacy-paid-retry.spec.ts": [
+        {
+          "name": "aura_walk http: every rail keeps an unrecoverable historical good owed",
+          "duration_ms": 30399
+        },
+        {
+          "name": "aura_walk mcp: every rail keeps an unrecoverable historical good owed",
+          "duration_ms": 64526
+        },
+        {
+          "name": "the_collab http: every rail keeps an unrecoverable historical good owed",
+          "duration_ms": 508742
+        },
+        {
+          "name": "the_collab mcp: every rail keeps an unrecoverable historical good owed",
+          "duration_ms": 3657
+        },
+        {
+          "name": "the_collab mcp-standard: every rail keeps an unrecoverable historical good owed",
+          "duration_ms": 952501
+        },
+        {
+          "name": "commission: historical HTTP payment cannot buy today's publication or brief on any rail",
+          "duration_ms": 406888
+        },
+        {
+          "name": "gazette: historical HTTP payment cannot buy today's publication or brief on any rail",
+          "duration_ms": 810135
+        }
+      ],
+      "test/url-observation-paid-recovery.spec.ts": [
+        {
+          "name": "signature_agent_card mcp rail 3: report-before recovers original signed evidence with upstream down",
+          "duration_ms": 50274
+        },
+        {
+          "name": "signature_agent_card mcp-standard rail 0: certificate-after recovers original signed evidence with upstream down",
+          "duration_ms": 507775
+        },
+        {
+          "name": "signature_agent_card mcp-standard rail 1: report-before recovers original signed evidence with upstream down",
+          "duration_ms": 944704
+        },
+        {
+          "name": "signature_agent_card mcp-standard rail 1: report-after recovers original signed evidence with upstream down",
+          "duration_ms": 1962
+        },
+        {
+          "name": "signature_agent_card mcp-standard rail 2: report-before recovers original signed evidence with upstream down",
+          "duration_ms": 403464
+        },
+        {
+          "name": "signature_agent_card mcp-standard rail 2: report-after recovers original signed evidence with upstream down",
+          "duration_ms": 1737
+        },
+        {
+          "name": "signature_agent_card mcp-standard rail 3: report-after recovers original signed evidence with upstream down",
+          "duration_ms": 803873
+        },
+        {
+          "name": "signature_agent_card mcp-standard rail 3: response-before recovers original signed evidence with upstream down",
+          "duration_ms": 787
+        }
+      ],
+      "test/launch-paid-recovery.spec.ts": [
+        {
+          "name": "opening_day mcp: observation-after cannot repeat an upstream spend on retry",
+          "duration_ms": 51286
+        },
+        {
+          "name": "opening_day mcp: report-signing cannot repeat an upstream spend on retry",
+          "duration_ms": 1659
+        },
+        {
+          "name": "opening_day mcp: observe-save-after cannot repeat an upstream spend on retry",
+          "duration_ms": 508533
+        },
+        {
+          "name": "opening_day mcp: accepted payment with a lost response remains unknown",
+          "duration_ms": 1612
+        },
+        {
+          "name": "opening_day mcp-standard rail 0: certificate-after retains one original walk and purchase",
+          "duration_ms": 944102
+        },
+        {
+          "name": "opening_day mcp-standard rail 0: response-before retains one original walk and purchase",
+          "duration_ms": 402519
+        },
+        {
+          "name": "opening_day mcp-standard rail 0: watch-before retains one original walk and purchase",
+          "duration_ms": 2101
+        },
+        {
+          "name": "opening_day mcp-standard rail 0: watch-after retains one original walk and purchase",
+          "duration_ms": 5327
+        },
+        {
+          "name": "opening_day mcp-standard rail 0: bundle-before retains one original walk and purchase",
+          "duration_ms": 805404
+        },
+        {
+          "name": "opening_day mcp-standard rail 0: bundle-after retains one original walk and purchase",
+          "duration_ms": 2415
+        }
+      ],
+      "test/solana-purchase-replay.spec.ts": [
+        {
+          "name": "coffees_for_closers mcp-standard same-payment: returns the original Solana good without another settlement",
+          "duration_ms": 51126
+        },
+        {
+          "name": "bitcoin_anchor mcp same-payment: returns the original Solana good without another settlement",
+          "duration_ms": 508279
+        },
+        {
+          "name": "bitcoin_anchor mcp fresh-payment: returns the original Solana good without another settlement",
+          "duration_ms": 1551
+        },
+        {
+          "name": "bitcoin_anchor mcp-standard fresh-payment: returns the original Solana good without another settlement",
+          "duration_ms": 950949
+        },
+        {
+          "name": "context_anchor http already-processed: returns the original Solana good without another settlement",
+          "duration_ms": 402233
+        },
+        {
+          "name": "context_anchor mcp-standard fresh-payment: returns the original Solana good without another settlement",
+          "duration_ms": 802914
+        },
+        {
+          "name": "context_anchor mcp-standard already-processed: returns the original Solana good without another settlement",
+          "duration_ms": 1752
+        }
+      ]
+    }
+  },
+  "focused_application": {
+    "command": "npm test -- --maxWorkers=2 test/openapi-headroom.spec.ts test/openapi-function-calling.spec.ts test/typed-response-schemas.spec.ts test/cards.spec.ts test/subject-history.spec.ts",
+    "files_passed": 5,
+    "tests_passed": 163,
+    "duration_seconds": 24.34,
+    "log_sha256": "0b032417465d97985e83d7fdc7ba272a0979538f1e619a2dcd1f3a133e73832c"
+  },
+  "other_checks": {
+    "typecheck": "passed",
+    "build_check": "passed: store, doors, SDK",
+    "cold_tests": 16,
+    "buyer_tests": 239,
+    "docs_check": "passed",
+    "claims": "56 resolved, zero unbound",
+    "evidence_replays": "both summaries match exactly"
+  },
+  "remaining": "Full hosted CI required before merge; PR stays draft pending that qualification.",
+  "failure_rechecks": {
+    "concurrency": 2,
+    "assertions_or_timeouts_changed": false,
+    "small_settlement_suite": {
+      "files_passed": 1,
+      "tests_passed": 7,
+      "duration_seconds": 28.53
+    },
+    "other_reported_cases": {
+      "files_passed": 4,
+      "tests_passed": 32,
+      "tests_skipped_by_name_selection": 1103,
+      "duration_seconds": 30.01
+    },
+    "result": "All 33 reported failures passed on rerun; not a completed full-suite pass.",
+    "log_sha256": "6d310fdc1b4dea08b9af857ff129674ce11320218cf62fcf9374e147d50a6de3"
+  }
+}

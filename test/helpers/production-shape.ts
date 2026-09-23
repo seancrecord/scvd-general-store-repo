@@ -12,6 +12,11 @@ import type { Env } from "@/types";
  * that grew. A byte budget measured on a smaller document than the one
  * served is a green light with no bulb behind it.
  *
+ * September 23: the OpenAPI guard now reuses this fixture too. It had kept
+ * a shorter Solana recipient in its own copy. Explicit UCP and public-proof
+ * sized fixture values cover the enabled root metadata as well; saved
+ * almanac growth is exercised separately by the headroom test.
+ *
  * Every checkout rail the store can quote and the native lane, with
  * fixture recipients and a fixture challenge key. The x402 facilitator
  * mock lists Base and Solana; a spec that quotes the other three rails
@@ -29,6 +34,9 @@ export function productionShape(env: Env): Env {
     ARBITRUM_PAY_TO: PRODUCTION_RECIPIENT,
     WORLD_PAY_TO: PRODUCTION_RECIPIENT,
     SOLANA_PAY_TO: PRODUCTION_SOLANA_RECIPIENT,
+    UCP_CHECKOUT_ENABLED: "true",
+    // Signature-shaped public provenance values, fixture bytes only.
+    ORIGIN_OWNERSHIP_PROOFS: `0x${"1".repeat(130)},${"2".repeat(88)}`,
     MPP_CHECKOUT_ENABLED: "true",
     MPP_CHALLENGE_KEY: PRODUCTION_CHALLENGE_KEY,
   };

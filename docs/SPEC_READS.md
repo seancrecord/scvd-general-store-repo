@@ -2379,3 +2379,28 @@ passed its required checks and received verify+settle indexing guidance;
 `hello`, an indexed control, returned Found on Bazaar. These are the
 operator's diagnostic results, not our own settlement-history proof. No
 purchase was made. The per-endpoint results are retained in the receipt.
+
+### 2026-09-23 — OpenAPI schema reuse and recurrence guard
+
+Re-read the served contract version's [OpenAPI 3.1.0 Components Object](https://spec.openapis.org/oas/v3.1.0.html#components-object),
+[Media Type Object](https://spec.openapis.org/oas/v3.1.0.html#media-type-object)
+and [Schema Object](https://spec.openapis.org/oas/v3.1.0.html#schema-object).
+Reusable schemas live in `components.schemas` and can be referenced from
+request/response media-type schemas. The repair preserves expanded schemas;
+parameter objects, payment extensions and inline 402 responses keep their
+existing reader shape. This is a serialization change, not a protocol upgrade.
+
+
+### 2026-09-23 — remaining native host qualification prerequisites
+
+Re-read Antigravity's [plugin format](https://antigravity.google/docs/plugins)
+and [MCP configuration](https://antigravity.google/docs/mcp/). They still describe
+local plugin installation and the separate remote-server configuration. No `agy`
+executable or Antigravity app was found in this qualification environment's
+checked PATH/application locations. No new install, login, native execution or
+admission claim was made; TR-D remains separate from the D1/V3 evidence closeout.
+
+
+### 2026-09-23 — ERC-8004 closeout reading
+
+Read the [current registration example](https://ercs.ethereum.org/ERCS/erc-8004), [AgentRanking public API](https://app.agentranking.io/docs/api), [Agentscan documentation](https://agentscan.info/docs), and [Agent Arena endpoint/registration instructions](https://agentarena.site/). These establish the read routes, not successful SCVD admission. The live AgentRanking API returned 522; Agent Arena’s existing-identity lookup returned 404 with a working control. Canonical chain/HTTP consistency and browser observations are scoped in the [closeout receipt](../research/erc8004-followthrough-2026-09-23/README.md). No payment, second identity or wallet claim.

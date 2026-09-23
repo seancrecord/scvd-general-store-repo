@@ -281,6 +281,11 @@ build, it is on the roadmap.
      with deploy command `npx wrangler deploy -c
      doors/wrangler.jsonc`, so a push to main deploys both.
      Until then a shelf change needs step 2 again by hand.
+  Overnight acceptance reconciled September 23: all 31 directory-indexed
+  doors were found in 60 post-activation checks through the next noon;
+  44 were overnight (36 ms median, 101 ms p95). D1 moved to DONE.
+  [Retained readings and the local artifact repair](research/roadmap-next-2026-09-23/README.md).
+
   6. DONE 20:16 UTC: the doors knock cold in 177ms (136 over a
      warm 41), the canary in 31 (8 over 23); the 32-door burst
      woke 9 cold isolates and finished in 330ms. In the note.
@@ -677,10 +682,11 @@ build, it is on the roadmap.
   and current validator have been read; see `docs/SPEC_READS.md` for the
   evidence and its limits. Existing index gaps remain unresolved; another
   purchase has not been requested or made.
-- No agent item is queued (2026-09-02, after S6). The
-  roadmap's NOW table is empty; S8-v3 waits on your yes /
-  no / later, not on a date; everything in LATER needs a
-  trigger or your ruling. One branch at a time (#65).
+- **Queue reference corrected September 23.** The September 2 empty-queue
+  reading is historical. ROADMAP owns the current build order: VQ4 first,
+  VQ5-R second on the keeper's September 23 direction, then its remaining
+  ordered work. S8-v3 still waits on yes / no / later, not a date.
+  One branch at a time (#65).
 
 ---
 
@@ -816,6 +822,16 @@ Do not relitigate without you.
 ## NEXT — your hands
 
 ### The contract's read budget (2026-09-19, `docs/OPENAPI_READ_BUDGET_2026-09-19.md`)
+
+**September 23 update:** the fresh public document is over the warning
+budget again; the build follow-through is ROADMAP VQ5-R, second after VQ4.
+The local September 23 repair and growth guard are complete; public release
+verification is pending release; PR preparation was authorized later September 23. The figures
+below describe September 19, not current headroom. Today's
+capture and the recurrence history are in
+`docs/ROADMAP_RECONCILIATION_2026-09-23.md`. Existing parameter-reference
+and compact-item rulings below remain separate; prioritizing the repair
+neither raises a budget nor approves a reader-compatibility tradeoff.
 
 The six-doors read found `/openapi.json` at 716,135 bytes, past your
 700,000, while the local ceiling built the document without the
@@ -1130,6 +1146,9 @@ what you ruled and what is still yours to look at.
   risk section approved as-is. "Get bolder on actual
   implementation": PR 1 is built the same day. Decisions 1, 4, 5
   and 6 stand as recommended until you say otherwise.
+  September 23: V3's fresh signed-census gate is verified and the roadmap
+  row is DONE; the paid till remains a separately scoped qualification.
+  [Readings and limits](research/roadmap-next-2026-09-23/README.md).
 - **PROTOCOL_EXPANSION §11.** MPP wait-and-see on the TILL
   stands; the READ-ONLY battery is GO (2026-09-03, "go ahead
   and do those", reversing the sheet's default of wait the
@@ -1181,6 +1200,8 @@ what you ruled and what is still yours to look at.
 - **UCP LIVE — distribution started September 19.** Keeper confirmed launch; live profile read back with catalog, checkout and order. [UCP Checker report](https://ucpchecker.com/check/scvd.store) now published with a Verified discovery label and a root signing-key warning to inspect against the actual spec. Paid evidence currently read covers hello/Base; broader advertised scope is not whole-shelf paid qualification. Submitted [community UCP directory #3](https://github.com/homototus/ucp-directory/issues/3), the free UCPList merchant form, [Awesome UCP #30](https://github.com/Upsonic/awesome-ucp/pull/30) and [UCP Merchant Directory #1](https://github.com/awesomeucp/merchants/pull/1); all await review. Directory display repair also submitted as [#3](https://github.com/awesomeucp/merchants/pull/3). [UCP.tools listing](https://ucptools.dev/directory/scvd.store) is live September 20; the free UCPRegistry merchant form confirmed receipt, review pending. No new press needed for either. [Receipts and next routes](research/ucp-distribution-2026-09-19/README.md). [Muse submission](research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press) completed by the keeper September 19; browser confirmed receipt for SCVD x402 Verifier. Review pending; the agent could not read the linked Connector Terms. Existing Google merchant-intake status remains separate. Recurring/monthly fees declined.
 
 - **WAIT — OpenCode ecosystem submissions (September 18).** Native skill load and free preflight passed via keeper-authorized ChatGPT OAuth. [Official PR #49834](https://github.com/anomalyco/opencode/pull/49834), linked to the required [issue #49833](https://github.com/anomalyco/opencode/issues/49833), and [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) are submitted. Community schema validation passed; neither listing is accepted yet. [Native receipt](research/distribution-2026-09-18/opencode-native-execution.json).
+
+- **WAIT / contact — ERC-8004, September 23.** Canonical Base URI and OASF/A2A cross-links checked; no identity rewrite needed. New 8004scan interactive-test evidence added to existing #51; trust8004 #1 still pending. HOL queries still have no match. AgentRanking unavailable. Agentscan taxonomy report remains unsent because its official X channel is signed out; Telegram is the other published contact. [Closeout, evidence and precise resume triggers](research/erc8004-followthrough-2026-09-23/README.md). No new paid registration or recurring service.
 
 - **WAIT — September 18 continuation, reconciled September 19.** Current OASF validation passes. [Maintainer confirmed](https://github.com/agntcy/dir/discussions/455#discussioncomment-18505900) the shared testbed is read-only: publishing requires our own federated node. Recurring-fee hosting/distribution declined by the keeper September 18; [federation research](registry/agntcy/FEDERATION.md) is retained as history, not a purchase decision. Anro publisher lookup remains empty; free external-ingestion email sent September 18 failed delivery after retries on September 21; another working contact route is needed. Gemini Google authorization reached a retired consumer-tier gate; keeper requested skipping Gemini September 18. Cline sign-in and native execution completed: verification skill loaded and a free preflight returned not_ready / L1. [Evidence and next steps](research/distribution-2026-09-18/OASF_FOLLOW_THROUGH.md).
 

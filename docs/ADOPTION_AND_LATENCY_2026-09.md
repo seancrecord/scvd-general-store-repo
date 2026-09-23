@@ -1,8 +1,9 @@
 # Adoption and latency follow-through — September 10, 2026
 
-Status: companion packages published and registry-verified September 10.
-The preview and measurement changes are locally qualified; website release
-acceptance is tracked in [PR #621](https://github.com/seancrecord/scvd-general-store-repo/pull/621). The keeper approved adoption work
+Status: completed and production-qualified September 10 in
+[PR #621](https://github.com/seancrecord/scvd-general-store-repo/pull/621).
+The closing records were recovered unchanged from the release branch on
+September 23; they are September 10 observations, not fresh production tests. The keeper approved adoption work
 and latency measurements while asking for the effort/value of the other
 verification options. Production PQ and standalone screening were not
 activated or sold by this work.
@@ -166,3 +167,29 @@ Sources read September 10:
 - https://www.chainalysis.com/product/address-screening/
 - Installed Wrangler deploy help, locked dependency types, and the source
   and test files named by the changes. No runtime binding API changed.
+
+## Release acceptance recovered September 23
+
+The release merged as `b41e131d94c2a9fa8a14b9cc05502b1ed6a70c01` on
+September 10 at 21:09:31 UTC. The integrated PR CI passed 641 files and
+10,899 tests, with one skip; both merged-revision production Worker builds
+passed. The separate post-merge CI was still running when the record was
+written and is not substituted for the completed PR gate.
+
+At 21:18 UTC, the retained production checks passed all 32 unique free-preview
+URLs for the then-current 33 products, plus the Hello challenge and item-page
+checks. The repeat latency sample answered all 33 attempts across the same
+three endpoints: checkout / compact corpus / developers had comparable warm
+medians of 38 / 71 / 34 ms. These small, uncontrolled samples establish neither
+a global p95 nor a causal speed improvement. No paid request was made.
+
+The three missing records are now retained beside the original observations:
+[release acceptance](../research/adoption-latency-2026-09-10/release-acceptance.json),
+[preview checks](../research/adoption-latency-2026-09-10/live-previews.json), and
+[repeat latency](../research/adoption-latency-2026-09-10/latency-after.json).
+Their exact source is release-branch commit
+`3f69891dd045d0196d9b3786eefc8d90eae6e8f9`; the
+[recovery manifest](../research/adoption-latency-2026-09-10/recovered-release-records-2026-09-23.json)
+pins their recovered bytes. The roadmap's future-tense acceptance was stale.
+VQ8 is complete at this dated scope; the later cold-read workflow artifact
+repair remains a separate local change awaiting release.

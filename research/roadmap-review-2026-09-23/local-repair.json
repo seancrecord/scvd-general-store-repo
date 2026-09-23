@@ -1,0 +1,37 @@
+{
+  "base_revision": "9d04efe5",
+  "status": "local_uncommitted_no_release",
+  "old_fixture_bytes": 699967,
+  "realistic_recipients_bytes": 700447,
+  "provenance_fixture_bytes": 700720,
+  "live_capture_bytes": 700901,
+  "live_minus_realistic_recipients": {
+    "ownership_extension": 273,
+    "saved_almanac_enum_and_example": 181
+  },
+  "short_solana_fixture_missing_bytes": 480,
+  "reused_schemas": 9,
+  "bytes_removed": 13003,
+  "repaired_production_fixture_bytes": 687717,
+  "warning_budget_bytes": 700000,
+  "headroom_bytes": 12283,
+  "growth_case": {
+    "additional_spot_check_sized_path": 1,
+    "keeper_slugs": 31,
+    "slug_length": 80,
+    "total_bytes": 697693,
+    "headroom_bytes": 2307
+  },
+  "full_expanded_contract_equal": true,
+  "expanded_contract_sha256": "2b077a5f382a9d43796e22beb88ae68f060107f3a6d4635a3d5f9e50b6451599",
+  "local_after_sha256": "24fcff57433bad5aeb4ef5d8102c407a40831901333a351bf082817e8b1182d8",
+  "comparison_excludes": [
+    "component storage after resolving refs",
+    "ownership extension absent from first local capture; covered by fixture test"
+  ],
+  "limits": [
+    "Fixture growth case is bounded, not arbitrary future scope or full 200-page capacity.",
+    "Public deployed result has not been rechecked after a release; no release performed.",
+    "Observed structural equality does not attest the production Worker version."
+  ]
+}

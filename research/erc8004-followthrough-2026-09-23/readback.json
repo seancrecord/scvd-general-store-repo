@@ -1,0 +1,145 @@
+[
+  {
+    "key": "registration",
+    "url": "https://scvd.store/.well-known/agent-registration.json",
+    "observed_at": "2026-09-23T20:00:22.448869+00:00",
+    "status": 200,
+    "bytes": 2555,
+    "sha256": "38c1a4c19296e5c6793bc4b0b8ac044e785de5127cb856e79ba893ca4df44e0b"
+  },
+  {
+    "key": "oasf",
+    "url": "https://scvd.store/agents/general-store",
+    "observed_at": "2026-09-23T20:00:22.449188+00:00",
+    "status": 200,
+    "bytes": 9673,
+    "sha256": "65791d9e896a1a14443625316613fc68795651e30a0adb9a45fd80b11d33b14b"
+  },
+  {
+    "key": "a2a",
+    "url": "https://scvd.store/.well-known/agent-card.json",
+    "observed_at": "2026-09-23T20:00:22.449258+00:00",
+    "status": 200,
+    "bytes": 3818,
+    "sha256": "da19c16c4fa16323b88d485ed00072ac5bd63c94d6e618d3885b36b3c2a4bc51"
+  },
+  {
+    "key": "hol-exact",
+    "url": "https://hol.org/registry/api/v1/search?registries=erc-8004&metadata.nativeId=8453%3A86957&includeAggregations=false",
+    "observed_at": "2026-09-23T20:00:22.449317+00:00",
+    "status": 200,
+    "bytes": 111,
+    "summary": {
+      "total": 0
+    },
+    "keys": [
+      "hits",
+      "total",
+      "page",
+      "limit",
+      "totalBeforeFilters",
+      "totalAvailable",
+      "limited",
+      "visible"
+    ],
+    "sha256": "104420801458da0280411d318fd88391b86f568dfe08bf533c744e35116b4e30"
+  },
+  {
+    "key": "hol-keyword",
+    "url": "https://hol.org/registry/api/v1/search?q=scvd.store&includeAggregations=false",
+    "observed_at": "2026-09-23T20:00:22.449371+00:00",
+    "status": 200,
+    "bytes": 111,
+    "summary": {
+      "total": 0
+    },
+    "keys": [
+      "hits",
+      "total",
+      "page",
+      "limit",
+      "totalBeforeFilters",
+      "totalAvailable",
+      "limited",
+      "visible"
+    ],
+    "sha256": "104420801458da0280411d318fd88391b86f568dfe08bf533c744e35116b4e30"
+  },
+  {
+    "key": "hol-control",
+    "url": "https://hol.org/registry/api/v1/search?registries=erc-8004&limit=1&includeAggregations=false",
+    "observed_at": "2026-09-23T20:00:22.449414+00:00",
+    "status": 200,
+    "bytes": 5490,
+    "summary": {
+      "total": 69131
+    },
+    "keys": [
+      "hits",
+      "total",
+      "page",
+      "limit",
+      "totalBeforeFilters",
+      "totalAvailable",
+      "limited",
+      "visible"
+    ],
+    "sha256": "b1778c139261fc13a56dae427dc1c672515adf7d376a9a282fdfe11d20c116a6"
+  },
+  {
+    "key": "arena",
+    "url": "https://agentarena.site/api/agent/8453/86957",
+    "observed_at": "2026-09-23T20:00:22.602915+00:00",
+    "status": 404,
+    "bytes": 282,
+    "summary": {
+      "error": "Agent not found in index",
+      "hint": "This agent may not be indexed yet. The indexer runs every 10 minutes.",
+      "globalId": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432#86957",
+      "onChainUrl": "https://basescan.org/token/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432?a=86957"
+    },
+    "sha256": "5806e707b146e2ae114dcb71f2c928d53cb4a0709382a217954e3890246927e4"
+  },
+  {
+    "key": "arena-control",
+    "url": "https://agentarena.site/api/agent/8453/18500",
+    "observed_at": "2026-09-23T20:00:22.671440+00:00",
+    "status": 200,
+    "bytes": 7666,
+    "summary": {
+      "agentId": "18500",
+      "chainId": 8453,
+      "globalId": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432#18500"
+    },
+    "sha256": "dcd036b0e5db24099aa0be330f7eaf852a3071e0ccf52d867d76068f029d4cfc"
+  },
+  {
+    "key": "arena-home",
+    "url": "https://agentarena.site/",
+    "observed_at": "2026-09-23T20:00:22.686231+00:00",
+    "status": 200,
+    "bytes": 82086,
+    "sha256": "78d128dd0f6440fd0e8bc9cc86ecb3f3541d192ebb978d23e7c0df0db8e5407d"
+  },
+  {
+    "key": "ranking",
+    "url": "https://app.agentranking.io/",
+    "observed_at": "2026-09-23T20:00:22.709683+00:00",
+    "status": 522,
+    "bytes": 16,
+    "sha256": "c8b9f348c8635d7ffcd5d16ad4b9c65289302dc6c4fe2e0210346b23013fb280"
+  },
+  {
+    "key": "directory",
+    "url": "https://8004.directory/",
+    "observed_at": "2026-09-23T20:00:22.816632+00:00",
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+  },
+  {
+    "key": "ranking-detail",
+    "url": "https://app.agentranking.io/api/v1/agents/8453/86957",
+    "observed_on": "2026-09-23",
+    "status": 522,
+    "scope": "Documented public identity API; listing and claim status unverified."
+  }
+]

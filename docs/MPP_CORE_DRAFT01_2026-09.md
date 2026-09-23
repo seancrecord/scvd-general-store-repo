@@ -156,3 +156,12 @@ was regenerated. This does not publish an npm package.
 The original validation history above remains historical. The follow-up
 PR records validation of the integrated main-based tree. Deployment and
 live core verification remain outstanding until that PR reaches main.
+
+
+## Fresh census qualification — September 23
+
+The separate census gate is now met by signed snapshot 8, published September
+20 with MPP measurements dated September 15–20. Its signature, counts, public
+brief and sampled host history reconcile. [Retained evidence and offline replay](../research/roadmap-next-2026-09-23/README.md).
+This is the existing `mpp-v1` census battery; it does not retroactively apply the
+point-in-time core reader to old rows or claim paid MPP qualification.

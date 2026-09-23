@@ -1,0 +1,82 @@
+[
+  {
+    "url": "https://scvd.store/api/provenance-check/%7Bid%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/buy/%7Bitem_id%7D?src=skill",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/menu/%7Bitem_id%7D?view=compact",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/order/%7Border_id%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/verify/%7Bid%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/replay/%7Bcert_id%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/zodiac/%7Byour_address%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/corpus/host/%7Bhost%7D.json",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/mandate/%7Bid%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/credit/%7Byour-wallet%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/menu/%7Bitem_id%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/verify/%7Bid%7D",
+    "from": "skill",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/verify/%7Bid%7D",
+    "from": "llms",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/verify/%7Bcert_id%7D",
+    "from": "llms",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/corpus/month/%7BYYYY-MM%7D",
+    "from": "llms",
+    "reason": "template_needs_concrete_value"
+  },
+  {
+    "url": "https://scvd.store/api/verify/%7Bid%7D",
+    "from": "llms",
+    "reason": "template_needs_concrete_value"
+  }
+]

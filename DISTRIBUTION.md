@@ -22,6 +22,8 @@ builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
 
 [AgentERC](https://agenterc.com/explore/base/86957) and [WithAI.Top](https://withai.top/tool/scvd-store) are confirmed public listings. x402-list now contains all 35 current paid product URLs; official MCP Registry versions agree on direct retry. [MCP.so #4325](https://github.com/chatmcp/mcpso/issues/4325) and [MCPpedia #172](https://github.com/BbekShr/MCPpedia/issues/172) request correction of their Wrangler connection instructions; changes are not yet confirmed. Own acceptance and publication gaps remain in [#803](https://github.com/seancrecord/scvd-general-store-repo/issues/803) and [#805](https://github.com/seancrecord/scvd-general-store-repo/issues/805). [Dated evidence and limits](research/distribution-2026-09-23/README.md).
 
+ERC-8004 follow-through: [September 23 closeout and resume triggers](research/erc8004-followthrough-2026-09-23/README.md). A fresh Base read confirms the canonical URI; the remaining gaps depend on indexer correction, service recovery or a signed-in operator contact.
+
 ## Protocol coverage
 
 | Protocol | SCVD entry point | Distribution state at this reading |
