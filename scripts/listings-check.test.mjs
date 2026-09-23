@@ -373,7 +373,7 @@ test("the version walk reads Agentic Market detail rather than its partial searc
   };
   const result = await walkVersions("https://scvd.store", local, fetchImpl);
   assert.equal(result.reads.agentic_market.endpoint_count, 2);
-  assert.ok(calls.includes("https://api.agentic.market/v1/services/scvd-store"));
+  assert.ok(calls.some((url) => url === "https://api.agentic.market/v1/services/scvd-store"));
   assert.ok(!calls.some((url) => url.includes("/services/search")));
   assert.equal(readAgenticMarket({ domain: "other.example", description: "links to scvd.store", endpoints: [] }, "scvd.store").state, "unknown");
 });
