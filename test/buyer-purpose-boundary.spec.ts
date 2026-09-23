@@ -50,3 +50,36 @@ for (const network of [BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK]) for (cons
     }
   });
 }
+
+/**
+ * "SHOWN ON ITS RECEIPT" (2026-09-23) is a promise the input schema
+ * makes to every buyer, so it is held here rather than trusted: the
+ * description says where the words go, and this proves they arrive —
+ * on the receipt page a person opens, not only in the signed JSON the
+ * test above reads. If the verify page stops printing the row, the
+ * description is a lie and this is where it says so.
+ *
+ * Escaped, because the words are the buyer's and now advertised as
+ * something a person reads. Agent-authored text is stored as written
+ * and escaped everywhere it renders (AGENTS.md); a purpose is the
+ * easiest place on the store to try otherwise.
+ */
+it("the purpose is shown on the receipt page, escaped, where the schema says it goes", async () => {
+  const item = items.find(entry => entry.id === "hello")!, tool = shelves(item)[0]!;
+  const description = String(item.spec.inputs.properties.purpose!.description);
+  expect(description, "the schema must tell a buyer where the words go").toMatch(/receipt/i);
+
+  const purpose = "Checking the store before my operator <b>pays</b> for an audit";
+  const quote = await call(item, "http", { purpose }, tool);
+  const offer = quote.offers.find(entry => entry.network === BASE_NETWORK)!;
+  const paid = await call(item, "http", { purpose }, tool, signature(offer), crypto.randomUUID());
+  expect(paid.settles).toBe(1);
+  const certId = String(paid.body.cert_id ?? object(paid.body.certificate).cert_id);
+
+  const page = await (await request(`/api/verify/${certId}`, {
+    headers: { Accept: "text/html", "User-Agent": "Mozilla/5.0" },
+  })).text();
+  expect(page).toContain("What your agent said this was for");
+  expect(page).toContain("Checking the store before my operator &lt;b&gt;pays&lt;/b&gt; for an audit");
+  expect(page, "the buyer's markup must never render as markup").not.toContain("<b>pays</b>");
+});
