@@ -2141,7 +2141,7 @@ export async function listRecentBountyEvents(
  * answers "is anybody finishing a study", and a single column that
  * mixed them would answer neither on the week one of them broke.
  */
-export type StudyOutcome = "enrolled" | "paid" | "refused" | "error";
+export type StudyOutcome = "enrolled" | "paid" | "refused" | "empty" | "error";
 
 export async function recordStudyEvent(
   env: Env,
@@ -2170,11 +2170,21 @@ export interface StudyLedger {
   enrolled: number;
   paid: number;
   refused: number;
+  /**
+   * A POST carrying none of the fields the door reads. Still refused,
+   * with the same answer every refusal gets — this column changes what
+   * the desk counts, never what the caller hears. It exists because the
+   * first month's "refused" was scanners sending `{}` to every POST in
+   * the spec, and a refusal count padded with them reads as agents
+   * trying and failing when nobody had tried at all.
+   */
+  empty: number;
   errors: number;
   /** The keeper's own, kept apart like every house column. */
   enrolledHouse: number;
   paidHouse: number;
   refusedHouse: number;
+  emptyHouse: number;
   errorsHouse: number;
 }
 
@@ -2188,10 +2198,12 @@ export async function readStudyLedger(
     enrolled: 0,
     paid: 0,
     refused: 0,
+    empty: 0,
     errors: 0,
     enrolledHouse: 0,
     paidHouse: 0,
     refusedHouse: 0,
+    emptyHouse: 0,
     errorsHouse: 0,
   };
   const prefix = `${KV_KEYS.metricMonthPrefix(month)}study`;
@@ -2207,6 +2219,7 @@ export async function readStudyLedger(
     if (outcome === "enrolled") house ? (ledger.enrolledHouse += value) : (ledger.enrolled += value);
     else if (outcome === "paid") house ? (ledger.paidHouse += value) : (ledger.paid += value);
     else if (outcome === "refused") house ? (ledger.refusedHouse += value) : (ledger.refused += value);
+    else if (outcome === "empty") house ? (ledger.emptyHouse += value) : (ledger.empty += value);
     else if (outcome === "error") house ? (ledger.errorsHouse += value) : (ledger.errors += value);
   }
   return ledger;

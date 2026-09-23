@@ -1,5 +1,5 @@
 import { SELF, env } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { recoverTypedDataAddress } from "viem";
 import {
   STUDY_BASE_REWARD_USD,
@@ -34,6 +34,7 @@ import { findingsFrom, caveatFor } from "@/services/study-findings";
 import { fieldSignerFromKey } from "@/services/launch-check";
 import { purchaseIntentStore } from "@/services/purchase-intent";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
+import { listRecentStudyEvents, readStudyLedger } from "@/lib/metrics";
 import { BASE_USDC } from "@/lib/base-rpc";
 import type { Env } from "@/types";
 
@@ -867,6 +868,95 @@ describe("the public doors", () => {
   });
 });
 
+/**
+ * THE EMPTY KNOCK, COUNTED APART. On 2026-09-22 the desk read 25
+ * refused and 0 enrolled, and the rows were a `node` client sending `{}`
+ * to both doors 176ms apart. These hold that such a body is still
+ * refused in full, and booked where it cannot pass for an agent trying.
+ */
+describe("an empty knock is refused like any other, and counted apart", () => {
+  async function post(path: string, body: string, userAgent: string) {
+    return SELF.fetch(`${BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "User-Agent": userAgent },
+      body,
+    });
+  }
+
+  /**
+   * The row is written in waitUntil, after the answer, so the door never
+   * waits on its own bookkeeping. The counter is bumped before the row,
+   * so once the row is readable the ledger is too.
+   */
+  async function rowFor(userAgent: string) {
+    return vi.waitFor(
+      async () => {
+        const rows = await listRecentStudyEvents(testEnv, 200);
+        const row = rows.find((event) => event.user_agent === userAgent);
+        expect(row, `no study row for ${userAgent}`).toBeDefined();
+        return row!;
+      },
+      { timeout: 2000, interval: 25 },
+    );
+  }
+
+  it("books `{}` at the enrolment door as empty, and still names every field", async () => {
+    const before = await readStudyLedger(testEnv);
+    const agent = `empty-knock-enrol/${crypto.randomUUID().slice(0, 8)}`;
+    const response = await post("/api/study/enrol", "{}", agent);
+    expect(response.status).toBe(400);
+    const body = (await response.json()) as { problems?: Array<{ field: string }> };
+    expect(
+      body.problems?.map((problem) => problem.field).sort(),
+      "the caller hears the same full refusal, every required field named",
+    ).toEqual(
+      STUDY_ROSTER_FIELDS.map((entry) => entry.field)
+        // Asked only when `harness` is other or custom; `{}` sent no harness.
+        .filter((field) => field !== "harness_other")
+        .sort(),
+    );
+
+    const row = await rowFor(agent);
+    expect(row?.note?.startsWith("empty: sent {}")).toBe(true);
+    const after = await readStudyLedger(testEnv);
+    // Only the empty column is compared exactly: earlier tests' refusals
+    // land in waitUntil and can still be arriving in the refused one.
+    expect(after.empty + after.emptyHouse).toBe(before.empty + before.emptyHouse + 1);
+  });
+
+  it("books a debrief carrying none of its fields as empty, naming what it did send", async () => {
+    const agent = `empty-knock-debrief/${crypto.randomUUID().slice(0, 8)}`;
+    const response = await post("/api/study/debrief", JSON.stringify({ hello: "world" }), agent);
+    expect(response.status).toBe(400);
+    const row = await rowFor(agent);
+    expect(row?.item).toBe("study:(no id)");
+    expect(row?.note?.startsWith("empty: sent only hello")).toBe(true);
+  });
+
+  it("keeps a body that tried in the refused column, however wrong it was", async () => {
+    const before = await readStudyLedger(testEnv);
+    const agent = `tried-enrol/${crypto.randomUUID().slice(0, 8)}`;
+    const response = await post("/api/study/enrol", JSON.stringify({ model: "m" }), agent);
+    expect(response.status).toBe(400);
+    expect((await rowFor(agent))?.note?.startsWith("refused: ")).toBe(true);
+    const after = await readStudyLedger(testEnv);
+    expect(after.empty + after.emptyHouse, "a body that tried is not an empty knock").toBe(
+      before.empty + before.emptyHouse,
+    );
+  });
+
+  it("answers a JSON body that is not an object with a 400, not an outage", async () => {
+    for (const path of ["/api/study/enrol", "/api/study/debrief"]) {
+      for (const body of ["null", "[]", "7"]) {
+        const response = await post(path, body, "not-an-object/1.0");
+        expect(response.status, `${path} with ${body}`).toBe(400);
+        const answer = (await response.json()) as { error: string };
+        expect(answer.error, "the caller's shape, not our outage").toContain("JSON object");
+      }
+    }
+  });
+});
+
 describe("the keeper's desk", () => {
   const AUTH = {
     Authorization: `Basic ${btoa(`keeper:${(testEnv as unknown as { ADMIN_PASSWORD: string }).ADMIN_PASSWORD}`)}`,
@@ -880,6 +970,7 @@ describe("the keeper's desk", () => {
     expect(html).toContain("The field study — who enrolled and never came back");
     expect(html).toContain("The field study — what the studies show");
     expect(html, "the board's own sections still stand").toContain("The week's budget");
+    expect(html, "empty knocks have their own column, apart from refused").toContain("empty knocks");
     expect(
       html,
       "the two caps are named as separate money on one page",

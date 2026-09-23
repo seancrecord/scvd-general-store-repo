@@ -279,6 +279,28 @@ to follow up on a finding and it is him. The `study_token` is never
 stored anywhere, in any form but its sha256, so neither the room nor the
 desk holds a credential that could claim somebody's reward.
 
+## Empty knocks, counted apart (2026-09-23)
+
+The month's desk then read **25 refused and 0 enrolled**. The two rows
+read closely were one `node` client posting `{}` to the enrolment door
+and, 176ms later, an id-less debrief: nothing on the far end had read the
+refusal between them. That is a scanner walking every `POST` in the spec,
+not an agent trying the study, and a "refused" column padded with it
+reads as willing agents being turned away when nobody had tried.
+
+A body carrying **none** of the fields a door reads is now booked as
+`empty`, its own column on the desk, with a note naming what it did send
+(`sent {}` or `sent only …`). It is answered exactly as before — the full
+refusal, every field named — because a real agent that sent `{}` by
+mistake needs that answer. Only the ledger moves. "Refused" now counts
+callers that tried. The field lists are derived from the roster and the
+debrief's input type, so a new field makes a body non-empty without
+anyone remembering to add it.
+
+In the same change, a JSON body that is not an object (`null`, `[]`, `7`)
+is answered 400 "send a JSON object" instead of throwing inside the
+service and booking a 503 outage row for the caller's own shape.
+
 ## The guards, and the hole each one closes
 
 | guard | what it bounds |

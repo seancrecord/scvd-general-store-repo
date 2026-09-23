@@ -198,8 +198,10 @@ function ledgerHtml(ledger: StudyLedger | null): string {
     ${cell(ledger.enrolled, ledger.enrolledHouse)} enrolled ·
     ${cell(ledger.paid, ledger.paidHouse)} paid ·
     ${cell(ledger.refused, ledger.refusedHouse)} refused ·
-    ${cell(ledger.errors, ledger.errorsHouse)} errored.
-    <small>Organic first, house in brackets. Enrolled far above paid is the number to watch — it means agents are willing and something between the enrolment and the till is stopping them.</small></p>`;
+    ${cell(ledger.errors, ledger.errorsHouse)} errored ·
+    ${cell(ledger.empty, ledger.emptyHouse)} empty knocks.
+    <small>Organic first, house in brackets. Enrolled far above paid is the number to watch — it means agents are willing and something between the enrolment and the till is stopping them.
+    Empty knocks sent none of the fields the door reads — scanners walking every POST with <code>{}</code> — and are refused like any other but kept out of "refused", which counts only callers that tried.</small></p>`;
 }
 
 function attemptsHtml(attempts: MetricEvent[]): string {
@@ -216,7 +218,9 @@ function attemptsHtml(attempts: MetricEvent[]): string {
             ? "#8c2f1b"
             : outcome === "enrolled"
               ? "#2f4f6b"
-              : "inherit";
+              : outcome === "empty"
+                ? "#777"
+                : "inherit";
       return `<tr>
         <td>${escapeHtml(event.at)}</td>
         <td><code>${escapeHtml(event.item.replace(/^study:/, ""))}</code></td>
