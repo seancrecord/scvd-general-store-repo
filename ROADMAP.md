@@ -56,6 +56,13 @@ this section is always the queue and nothing else.
 | B-WAVES | **Four-wave buyer acceptance — Wave 1 partially measured September 12.** Public collection and isolated cold-to-quote cohort complete at their bounded scope; buyer-grade shopping evidence collector built and fixture-tested. | Real buyers need correct goods, recoverable money and consistent terms, not just successful endpoint status. | Complete semantic discovery across all surfaces, recursive concrete-link and all-error coverage; rerun BUY-040/042/044 after repair. Then real cheap-rail scenarios, architecture representatives and offered full shelf in that order under the keeper's ceiling. Require chain reconciliation, correct subject, completed fulfillment and fresh-recipient understanding. No mocked or queued result promoted to paid delivery. EW-01–04; evidence and limits in `research/BUYER_RUN_ORDER.md`. |
 
 
+**TR3 nested-row guidance, September 23:** the existing host-history scope
+explanation names `snapshot.round.hosts`, exact URL matching including queries,
+and the existing `--subject` selector across JSON, HTML and Markdown. The
+[repair record](docs/BUYER_NESTED_ROW_GUIDANCE_2026-09-23.md) retains the failing
+regression and validation. Release checks and a fresh awake cohort remain
+separate gates; no earlier attempt is rescored.
+
 **TR3 separate integrated qualification, September 18 UTC:** this overlaps the
 separately frozen #789 cohort below; its four distinct buyer traces and result
 remain separate. The published 1.5.0 verifier
