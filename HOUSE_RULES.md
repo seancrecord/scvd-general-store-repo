@@ -372,22 +372,25 @@ LORE & TRADITION
     quote the old sentence keep their bytes; nothing is resigned.
     Dated note on /criteria.
 
-    AMENDED 2026-09-21 (drafted for the keeper's review under ruling
-    R4, docs/COUNTERS_LINKS_PAGES_2026-09-21.md; his ink makes it a
-    rule): the rule extends from verdicts to counters. Every
-    published count ships with its instrument, its population, its
-    window, its exclusions, and any cap or floor that bounded it, on
-    every rendering. The mechanism is the register
+    AMENDED 2026-09-21, inked 2026-09-23 — the keeper's ruling (R4,
+    docs/COUNTERS_LINKS_PAGES_2026-09-21.md): the rule extends from
+    verdicts to counters. "No count without its denominator, on
+    every rendering." Every published count ships with its
+    instrument, its population, its window, its exclusions, and any
+    cap or floor that bounded it. The mechanism is the register
     (src/store/published-counts.ts) and its guard
-    (test/published-counts.spec.ts): a number nobody has written a
-    denominator for cannot reach a public route. Under this rule two
-    instruments that class one request two ways are a defect, not a
-    difference of opinion (the observatory and the signals page, on
-    the same crawler, for a month), and a capped map that buckets its
+    (test/published-counts.spec.ts): on every count route the
+    register covers, a number nobody has written a denominator for
+    fails the build. A route that serves counts and is not in the
+    register is this rule's open edge, and widening the register is
+    how it closes — not a pass. Under this rule two instruments that
+    class one request two ways are a defect, not a difference of
+    opinion (the observatory and the signals page, on the same
+    crawler, for a month), and a capped map that buckets its
     overflow without saying so is a denominator nobody can check.
     Numbers keep their bytes and their keys; the register rides
-    beside them. Per-item settle counts join the public books the
-    same day (ruling R3), raw and with the reclassification caveat
+    beside them. Per-item settle counts joined the public books the
+    same day (ruling R3), raw, with the reclassification caveat
     printed beside them, so the next catalogue cut is a derivation
     anyone can redo.
 

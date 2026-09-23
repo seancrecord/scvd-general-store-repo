@@ -73,8 +73,18 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     purpose: {
       type: "string",
       maxLength: PURCHASE_PURPOSE_MAX_LENGTH,
+      /*
+       * SAYS WHERE IT GOES (2026-09-23). Until today this said the text
+       * was signed onto the certificate and stopped there, so a buyer
+       * could not tell it would ever be read — and the September read
+       * found zero purposes filled. It is shown on the receipt page, to
+       * a person, under "What your agent said this was for". The new
+       * wording is two bytes SHORTER than the old: this string is
+       * inlined into every paid door's contract, so a longer one costs
+       * thirty-five times over against a budget with no room.
+       */
       description:
-        "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions.",
+        "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
     },
     /**
      * THE DISCLOSURE BLOCK (2026-09-18, lib/disclosure). Six flat
