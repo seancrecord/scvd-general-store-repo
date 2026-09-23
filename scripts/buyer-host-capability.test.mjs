@@ -123,6 +123,16 @@ test('capability vectors mix valid and tampered signatures and never name a serv
  assert.doesNotMatch(p,/truth/);
 });
 
+test('both online qualification prompts require reports from computed results',()=>{
+ for(const host of ['codex','claude']){
+  const prompt=buildCapabilityPrompt(plan,host,capabilityVectors());
+  assert.match(prompt,/serialize.*computed.*results/i);
+  assert.match(prompt,/do not.*transcribe.*boolean/i);
+  assert.match(prompt,/final.*saved report/i);
+  assert.match(prompt,/cannot complete.*report.*incomplete/i);
+ }
+});
+
 const claudeTrace=(commands)=>commands.map(([command,outcome],i)=>[
  JSON.stringify({type:'assistant',message:{content:[{type:'tool_use',id:`t${i}`,name:'Bash',input:{command}}]}}),
  JSON.stringify({type:'user',message:{content:[{type:'tool_result',tool_use_id:`t${i}`,is_error:outcome!=='completed',content:outcome==='denied'?'Permission to use Bash with command '+command+' has been denied.':outcome==='failed'?'exit 1':'ok'}]}})
@@ -179,6 +189,20 @@ for(const [name,mutate,field,state] of [
  ['a report with no completed local command behind it',f=>{const t=claudeTrace([['python3 -c "x"','denied']]);fs.writeFileSync(path.join(f.d,'events.jsonl'),t);f.run.trace_sha256=hash(t);},'local_check','incomplete'],
 ])test(`capability probe refuses ${name}`,()=>{const f=probeFixture();try{mutate(f);const s=scoreCapability('claude',f.run,f.d,f.vectors,f.reference);assert.equal(s[field].state,state);assert.notEqual(s.state,'pass');}finally{f.cleanup();}});
 test('a capped or failed probe process cannot pass even with good files',()=>{const f=probeFixture();try{f.run.runtime={state:'failed',exit_code:null,budget_stop:'tool_calls'};assert.equal(scoreCapability('claude',f.run,f.d,f.vectors,f.reference).state,'incomplete');}finally{f.cleanup();}});
+
+test('a completed verifier cannot excuse a report that marks a tampered vector valid',()=>{
+ const f=probeFixture();try{
+  const id=Object.keys(f.vectors.truth).find(id=>!f.vectors.truth[id]);
+  // Reproduce the observed failure: correct tool output, then a false saved bit.
+  const trace=claudeTrace([['node verify','completed']]).replace('content":"ok"',`content":${JSON.stringify(JSON.stringify(f.vectors.truth))}`);
+  fs.writeFileSync(path.join(f.d,'events.jsonl'),trace);f.run.trace_sha256=hash(trace);
+  f.report.signatures[id]=true;f.rewrite();
+  const score=scoreCapability('claude',f.run,f.d,f.vectors,f.reference);
+  assert.equal(score.retention.state,'pass');assert.equal(score.local_check.report_matches_retained,true);
+  assert.equal(score.local_check.expected[id],false);assert.equal(score.local_check.reported[id],true);
+  assert.equal(score.state,'fail');
+ }finally{f.cleanup();}
+});
 
 test('probe dry path records unavailable hosts without fetching or launching anything',async()=>{
  const d=root(),savedPath=process.env.PATH,oldFetch=globalThis.fetch;globalThis.fetch=()=>{throw new Error('no network permitted');};

@@ -114,6 +114,10 @@ else{let prompt='';process.stdin.on('data',b=>prompt+=b);process.stdin.on('end',
  assert.equal(result.recipient.state,'pass');
  const launch=JSON.parse(fs.readFileSync(path.join(probe,'recipient/launch.json')));
  assert.ok(launch.args.includes('sandbox_workspace_write.network_access=false'));assert.doesNotMatch(launch.prompt,/merchant\.example|scvd/i);assert.deepEqual(launch.budgets,f.plan.recipient.budgets);
+ assert.match(launch.prompt,/serialize.*computed.*results/i);
+ assert.match(launch.prompt,/do not.*transcribe.*boolean/i);
+ assert.match(launch.prompt,/final.*saved report/i);
+ assert.match(launch.prompt,/cannot complete.*report.*incomplete/i);
  const score=JSON.parse(fs.readFileSync(path.join(probe,'recipient/capability.json')));assert.deepEqual(score.local_check.reported,score.local_check.expected);
  for(const name of ['recipient','codex'])fs.rmSync(JSON.parse(fs.readFileSync(path.join(probe,name,'launch.json'))).cwd,{recursive:true,force:true});
  }finally{globalThis.fetch=fetchBefore;f.clean();}

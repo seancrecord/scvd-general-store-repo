@@ -1,0 +1,100 @@
+{
+  "recorded_at": "2026-09-23T19:14:22.137644+00:00",
+  "state": "qualification_failed_recipient_report_mismatch",
+  "prior_attempts_preserved": true,
+  "buyer_attempts": 0,
+  "qualification_states": {
+    "codex": "pass",
+    "claude": "pass",
+    "offline_recipient": "fail"
+  },
+  "plan_sha256": "77634edceacfdb57052734ab19f2063f008bafd289961d86e464d2c68d4e0196",
+  "instrument_sha256": "28594837b34d06536d8ddac2291192e926d7f7aebd22252e4ddbe4db59c05695",
+  "power_samples": 31,
+  "battery_samples": 0,
+  "workerd_count_range": [
+    0,
+    2
+  ],
+  "vitest_count_range": [
+    0,
+    0
+  ],
+  "runs": {
+    "codex": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-23T19:10:38.795Z",
+        "ended_at": "2026-09-23T19:11:45.065Z",
+        "wall_elapsed_ms": 66270,
+        "monotonic_elapsed_ms": 66270.533209,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "trace_sha256": "00bf0c478a209ea187bad9b0bfce78b6e4d24c5320f50338b4d39ae21025bbc4",
+      "tool_calls": 4
+    },
+    "claude": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-23T19:11:45.134Z",
+        "ended_at": "2026-09-23T19:12:20.215Z",
+        "wall_elapsed_ms": 35081,
+        "monotonic_elapsed_ms": 35081.74949999999,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "trace_sha256": "6d041bd1c973ad32595f3daaacb1d0288925d8873f83e28d3e99046cbf7faac1",
+      "tool_calls": 7
+    },
+    "recipient": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-23T19:12:20.220Z",
+        "ended_at": "2026-09-23T19:13:09.689Z",
+        "wall_elapsed_ms": 49469,
+        "monotonic_elapsed_ms": 49469.178,
+        "max_callback_gap_ms": 1003.1029590000107,
+        "interruption": null
+      },
+      "trace_sha256": "bb20d3a12944f2fbddd7a81b5f3b2c55c8caf41e95c929a012db73f5084b392b",
+      "tool_calls": 5
+    }
+  }
+}
