@@ -130,6 +130,10 @@ test('both online qualification prompts require reports from computed results',(
   assert.match(prompt,/do not.*transcribe.*boolean/i);
   assert.match(prompt,/final.*saved report/i);
   assert.match(prompt,/cannot complete.*report.*incomplete/i);
+  assert.match(prompt,/operational errors.*invalid signatures/i);
+  assert.match(prompt,/nonzero exit.*not.*signature/i);
+  assert.match(prompt,/retain.*stderr.*exit.*exception/i);
+  assert.match(prompt,/leave.*capability\.json.*unwritten.*incomplete/i);
  }
 });
 
@@ -201,6 +205,19 @@ test('a completed verifier cannot excuse a report that marks a tampered vector v
   assert.equal(score.retention.state,'pass');assert.equal(score.local_check.report_matches_retained,true);
   assert.equal(score.local_check.expected[id],false);assert.equal(score.local_check.reported[id],true);
   assert.equal(score.state,'fail');
+ }finally{f.cleanup();}
+});
+
+test('a successful wrapper that converts verifier errors to all-false results still fails qualification',()=>{
+ const f=probeFixture();try{
+  // The native wrapper completed despite unsupported verifier arguments.
+  const trace=claudeTrace([['node verification-wrapper','completed']]);
+  fs.writeFileSync(path.join(f.d,'events.jsonl'),trace);f.run.trace_sha256=hash(trace);
+  f.report.signatures=Object.fromEntries(Object.keys(f.vectors.truth).map(id=>[id,false]));f.rewrite();
+  const score=scoreCapability('claude',f.run,f.d,f.vectors,f.reference);
+  assert.equal(score.retention.state,'pass');assert.equal(score.local_check.report_matches_retained,true);
+  assert.ok(Object.values(score.local_check.expected).some(Boolean));
+  assert.equal(score.local_check.state,'fail');assert.equal(score.state,'fail');
  }finally{f.cleanup();}
 });
 

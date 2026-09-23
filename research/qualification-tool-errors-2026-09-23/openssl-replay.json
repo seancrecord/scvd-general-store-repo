@@ -1,0 +1,64 @@
+{
+  "checked_at": "2026-09-23T20:21:34.132968+00:00",
+  "openssl": "/opt/homebrew/bin/openssl",
+  "version": "OpenSSL 3.5.1 1 Jul 2025 (Library: OpenSSL 3.5.1 1 Jul 2025)",
+  "scope": "Controller replay of retained public vectors. Not a native retry, replacement report or qualification pass.",
+  "vectors": [
+    {
+      "id": "a",
+      "frozen_expected": true,
+      "native_arguments": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pkeyutl: Unknown option: -inform\npkeyutl: Use -help for summary.\n"
+      },
+      "corrected_arguments": {
+        "exit_code": 0,
+        "stdout": "Signature Verified Successfully\n",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "b",
+      "frozen_expected": false,
+      "native_arguments": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pkeyutl: Unknown option: -inform\npkeyutl: Use -help for summary.\n"
+      },
+      "corrected_arguments": {
+        "exit_code": 1,
+        "stdout": "Signature Verification Failure\n",
+        "stderr": "809E56F701000000:error:030000EA:digital envelope routines:EVP_DigestVerify:provider signature failure:crypto/evp/m_sigver.c:770:ED25519 digest_verify:\n"
+      }
+    },
+    {
+      "id": "c",
+      "frozen_expected": false,
+      "native_arguments": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pkeyutl: Unknown option: -inform\npkeyutl: Use -help for summary.\n"
+      },
+      "corrected_arguments": {
+        "exit_code": 1,
+        "stdout": "Signature Verification Failure\n",
+        "stderr": "809E56F701000000:error:030000EA:digital envelope routines:EVP_DigestVerify:provider signature failure:crypto/evp/m_sigver.c:770:ED25519 digest_verify:\n"
+      }
+    },
+    {
+      "id": "d",
+      "frozen_expected": false,
+      "native_arguments": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pkeyutl: Unknown option: -inform\npkeyutl: Use -help for summary.\n"
+      },
+      "corrected_arguments": {
+        "exit_code": 1,
+        "stdout": "Signature Verification Failure\n",
+        "stderr": "809E56F701000000:error:030000EA:digital envelope routines:EVP_DigestVerify:provider signature failure:crypto/evp/m_sigver.c:770:ED25519 digest_verify:\n"
+      }
+    }
+  ]
+}
