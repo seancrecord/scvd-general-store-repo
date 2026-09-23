@@ -1,0 +1,58 @@
+{
+  "frozen_at": "2026-09-23T19:10:36.205138+00:00",
+  "source_commit": "4be8dc24c2b44021bd3b1ed3226185af0551532b",
+  "plan_sha256": "77634edceacfdb57052734ab19f2063f008bafd289961d86e464d2c68d4e0196",
+  "public_readback": [
+    {
+      "file": "skill.md",
+      "url": "https://scvd.store/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-23T19:10:20.807772+00:00"
+    },
+    {
+      "file": "entry.md",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-23T19:10:20.886903+00:00"
+    },
+    {
+      "file": "host.json",
+      "url": "https://scvd.store/corpus/host/lionx402.com.json",
+      "status": 200,
+      "bytes": 12738,
+      "sha256": "002cc535e4da2d972212c614aadd6c073a3e84ecccb2cc04d61ccc63170db9cc",
+      "read_at": "2026-09-23T19:10:21.472874+00:00"
+    },
+    {
+      "file": "candidate-original.json",
+      "url": "https://scvd.store/corpus/8.json",
+      "status": 200,
+      "bytes": 4012197,
+      "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+      "read_at": "2026-09-23T19:10:22.130789+00:00"
+    },
+    {
+      "file": "candidate-key.json",
+      "url": "https://scvd.store/.well-known/scvd-signing-key",
+      "status": 200,
+      "bytes": 3139,
+      "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+      "read_at": "2026-09-23T19:10:22.671547+00:00"
+    }
+  ],
+  "candidate": {
+    "signature_valid": true,
+    "exact_subject_matches": 1,
+    "observed_at": "2026-09-14T01:30:09.376Z",
+    "age_policy_ends_at": "2026-09-28T01:30:09.376000+00:00",
+    "identity_limit": "Published-key consistency only; independent issuer identity is not established."
+  },
+  "awake_policy": "External-monitor closed-lid setup reported by keeper; current AC power verified. Temporary caffeinate -is, serial native sessions, sampled power/process conditions. No permanent power changes. Timing gaps stop attempts without extending limits.",
+  "native_attempt_policy": "Fresh qualification once per buyer host and offline recipient. At most four planned buyers and one recipient per eligible completed buyer; no retries, budget or freshness expansion.",
+  "scope": "Separate directed zero-spend cohort after the September 23 signed-row location guidance in PR #899. Same models, budgets, qualification, recipient and fourteen-day freshness rule as September 20; prior scores and evidence remain unchanged. Tests the combined released surface, not causal attribution, unbranded discovery, paid delivery or organic demand.",
+  "prior_qualification": "September 23 first qualification remains closed with Codex pass and two timing-interrupted incomplete probes. No buyer attempts launched. This separate attempt follows keeper acknowledgment of the accidental interruption and explicit request to try again."
+}

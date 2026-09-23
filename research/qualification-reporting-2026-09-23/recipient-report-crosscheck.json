@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-09-23T19:13:57.217Z",
+  "method": "Independent Node crypto Ed25519 verification over each retained UTF-8 message; public key from frozen vectors.",
+  "reference_sha256": "f93b962e56948c06b2f7022c00e09eba37fc96f20798a5f8210231c67928ba04",
+  "actual": {
+    "a": false,
+    "b": false,
+    "c": true,
+    "d": false
+  },
+  "reported": {
+    "a": true,
+    "b": false,
+    "c": true,
+    "d": false
+  },
+  "mismatches": [
+    "a"
+  ],
+  "trace_evidence": {
+    "command_result_line": 13,
+    "incorrect_claim_line": 14,
+    "saved_report_readback_line": 18,
+    "final_report_line": 19
+  },
+  "limits": "Independent controller diagnosis of a qualification report mismatch; not a replacement native report or buyer result."
+}

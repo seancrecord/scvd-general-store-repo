@@ -1,0 +1,33 @@
+{
+  "regression_before": {
+    "tests": 64,
+    "passed": 62,
+    "failed": 2,
+    "failures": [
+      "Both online qualification prompts lack computed-result reporting guidance.",
+      "Offline recipient launch prompt lacks computed-result reporting guidance."
+    ],
+    "log_sha256": "e476bfb1f15d39a09af0b8e9985a2b92e0de15878f947271855587d9340eef35"
+  },
+  "focused_after": {
+    "tests": 207,
+    "passed": 207,
+    "failed": 0,
+    "log_sha256": "f7b1977e5b8d9a0879f4fb2ca84c6058da419d09bd9552063276fd194e8838ed"
+  },
+  "full_local": {
+    "success": true,
+    "files": 829,
+    "passed": 15492,
+    "failed": 0,
+    "pending": 1,
+    "result_sha256": "c1fc5ca58010061619e0cd907ad43ca12f1ebb6808fe08e4f77b82f4adb44754"
+  },
+  "native_after_change": "not launched; requires new instrument freeze and qualification",
+  "scorer_changed": false,
+  "typecheck": "passed",
+  "worker_bundles": "passed",
+  "document_checks": "passed",
+  "unchanged_scorer_and_following_source_sha256": "b13775e1c98c3f16bdc5e8d18373c42b878b6287e4a38caa8271f8b9628ca0cf",
+  "hosted": "Required on the PR before merge; pending at commit."
+}
