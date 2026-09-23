@@ -25,7 +25,9 @@ import {
   readOwnStudy,
   scenarioTargetSentence,
   studyBrief,
+  type DebriefInput,
   type LiveScenario,
+  type StudyRoster,
 } from "@/services/field-study";
 import { studyFindings, type StudyFindings } from "@/services/study-findings";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
@@ -390,15 +392,70 @@ fieldStudyRoutes.get("/api/study/enrol", (c) => c.json(enrolmentShape(c.env.STOR
  */
 fieldStudyRoutes.get("/api/study/enroll", (c) => c.json(enrolmentShape(c.env.STORE_BASE_URL)));
 
+/**
+ * THE EMPTY KNOCK. A POST that carries none of the fields a door reads
+ * is not an agent failing the study; it is something walking every
+ * POST in the spec with `{}`. On 2026-09-22 the desk read 25 refused
+ * and 0 enrolled, and the rows read closely were a `node` client
+ * sending an empty enrolment and then an id-less debrief 176ms later.
+ * Nothing on the far end had read a word.
+ *
+ * Counted apart, answered the same. The caller still gets the full
+ * refusal, every field named, because a real agent that sent `{}` by
+ * mistake needs exactly that answer. Only the ledger's outcome moves.
+ *
+ * The keys are derived from the types the doors read, so a field added
+ * to the roster or the debrief is a field that makes a body non-empty,
+ * without anyone remembering to add it here.
+ */
+const ENROL_KEYS: ReadonlySet<string> = new Set<string>([
+  ...STUDY_ROSTER_FIELDS.map((entry) => entry.field),
+  "harness_other" satisfies keyof StudyRoster,
+  // Read off the raw body by enrolStudy, and on no type to derive from.
+  "payout_to",
+  "scenario",
+]);
+const DEBRIEF_KEYS: ReadonlySet<string> = new Set([
+  "study_id",
+  "study_token",
+  "legs",
+  "answers",
+  "payout_to",
+  "scenario_answers",
+  "defects",
+] satisfies ReadonlyArray<keyof DebriefInput>);
+
+function emptyKnock(body: Record<string, unknown>, keys: ReadonlySet<string>): boolean {
+  return !Object.keys(body).some((key) => keys.has(key));
+}
+
+/** What the empty knock did send, so the desk can tell `{}` from a wrong schema. */
+function knockNote(body: Record<string, unknown>, reason: string): string {
+  const sent = Object.keys(body);
+  return `${sent.length === 0 ? "sent {}" : `sent only ${sent.slice(0, 6).join(", ")}`} — ${reason}`;
+}
+
+/**
+ * A BODY THAT PARSES BUT IS NOT AN OBJECT. `null`, `[]` or `7` used to
+ * reach the service and throw on the first field read, which booked
+ * "error" and answered 503 "this is ours, not yours" — an outage row
+ * for a shape the caller got wrong.
+ */
+function isObjectBody(body: unknown): body is Record<string, unknown> {
+  return typeof body === "object" && body !== null && !Array.isArray(body);
+}
+
 async function handleEnrol(c: Context<HonoEnv>) {
   let body: Record<string, unknown>;
   try {
-    body = (await c.req.json()) as Record<string, unknown>;
+    const parsed: unknown = await c.req.json();
+    if (!isObjectBody(parsed)) throw new TypeError("not an object");
+    body = parsed;
   } catch {
     return c.json(
       {
         error:
-          "Send a JSON body. GET this same path for the exact shape, every field's reason, and every way this door says no.",
+          "Send a JSON object. GET this same path for the exact shape, every field's reason, and every way this door says no.",
         shape: `${c.env.STORE_BASE_URL}/api/study/enrol`,
       },
       400,
@@ -427,7 +484,9 @@ async function handleEnrol(c: Context<HonoEnv>) {
   } catch (error) {
     if (error instanceof StudyRefused) {
       c.executionCtx.waitUntil(
-        recordStudyEvent(c.env, "(enrolment)", "refused", error.message, signals(c)),
+        emptyKnock(body, ENROL_KEYS)
+          ? recordStudyEvent(c.env, "(enrolment)", "empty", knockNote(body, error.message), signals(c))
+          : recordStudyEvent(c.env, "(enrolment)", "refused", error.message, signals(c)),
       );
       return c.json(
         {
@@ -509,12 +568,14 @@ fieldStudyRoutes.get("/api/study/debrief", (c) => c.json(debriefShape(c.env.STOR
 fieldStudyRoutes.post("/api/study/debrief", async (c) => {
   let body: Record<string, unknown>;
   try {
-    body = (await c.req.json()) as Record<string, unknown>;
+    const parsed: unknown = await c.req.json();
+    if (!isObjectBody(parsed)) throw new TypeError("not an object");
+    body = parsed;
   } catch {
     return c.json(
       {
         error:
-          "Send a JSON body. GET this same path for the exact shape and every way this door says no.",
+          "Send a JSON object. GET this same path for the exact shape and every way this door says no.",
         shape: `${c.env.STORE_BASE_URL}/api/study/debrief`,
       },
       400,
@@ -544,7 +605,9 @@ fieldStudyRoutes.post("/api/study/debrief", async (c) => {
   } catch (error) {
     if (error instanceof StudyRefused) {
       c.executionCtx.waitUntil(
-        recordStudyEvent(c.env, studyId || "(no id)", "refused", error.message, signals(c)),
+        emptyKnock(body, DEBRIEF_KEYS)
+          ? recordStudyEvent(c.env, "(no id)", "empty", knockNote(body, error.message), signals(c))
+          : recordStudyEvent(c.env, studyId || "(no id)", "refused", error.message, signals(c)),
       );
       return c.json(
         {
