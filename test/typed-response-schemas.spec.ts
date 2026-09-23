@@ -247,8 +247,9 @@ function schemaFor(
   doc: Record<string, any>,
   probe: Probe,
 ): Record<string, any> | undefined {
-  return doc["paths"]?.[probe.path]?.[probe.method]?.["responses"]?.["200"]
+  const schema = doc["paths"]?.[probe.path]?.[probe.method]?.["responses"]?.["200"]
     ?.["content"]?.["application/json"]?.["schema"];
+  return deref(doc, schema);
 }
 
 /** The JSON Schema types the store actually uses, checked honestly. */

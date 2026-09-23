@@ -177,3 +177,11 @@ passed its required GitHub CI run `35042487901` and merged at
 local full-run failures and successful reruns remain recorded above; the
 independent green CI does not relabel those attempts. Catalog recovery
 and the remaining original-report gaps keep their stated scope.
+
+
+## September 23 archive follow-through
+
+The six retained manifest/key-file hashes still match. A bounded search of
+seven local archive roots found no exact matches for the 28 unresolved report
+bindings. The search is complete at that scope; VQ4 remains open pending original
+deliveries or other archives. [Aggregate and limitations](../research/historical-evidence-2026-09-23/README.md).

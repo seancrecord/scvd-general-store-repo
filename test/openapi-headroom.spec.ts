@@ -3,17 +3,16 @@ import { describe, expect, it } from "vitest";
 import { openapiRoutes, PAYMENT_CHALLENGE_HEADERS } from "@/routes/openapi";
 import { A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import { SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
+import { KV_KEYS } from "@/lib/kv-keys";
+import sharedSchemas from "./fixtures/openapi-shared-schemas.json";
+import type { Env } from "@/types";
+import { productionShape } from "./helpers/production-shape";
 import { nativeMcpCheckoutShape, nativeWebmcpCheckoutShape } from "@/lib/purchase-capabilities";
 
-/**
- * AS PRODUCTION SERVES IT (2026-09-19): every checkout rail AND the
- * native lane. Until this day the case enabled the rails alone, and
- * the six-doors live read found the served document 54,035 bytes
- * past what this test measured: the lane's per-door rows and the
- * descriptor beside them, on since the whole-shelf release, were
- * bytes this file never built. The ceiling now rings here first.
- */
-const allRails = { ...env, POLYGON_PAY_TO: "0x1111111111111111111111111111111111111111", ARBITRUM_PAY_TO: "0x1111111111111111111111111111111111111111", WORLD_PAY_TO: "0x1111111111111111111111111111111111111111", SOLANA_PAY_TO: "11111111111111111111111111111111", MPP_CHECKOUT_ENABLED: "true", MPP_CHALLENGE_KEY: "fixture-native-checkout-hmac-key" } as typeof env;
+// Golden schemas in fixtures/openapi-shared-schemas.json were captured from
+// 9d04efe5 before component reuse, not generated from the code under test.
+// Keep rail recipients and enabled lanes aligned with the other size guards.
+const allRails = productionShape(env as Env);
 
 // Resolve the contract the same way an OpenAPI client does. Comparing the
 // expanded schema with the shared source catches dropped or changed fields.
@@ -39,7 +38,39 @@ describe("OpenAPI headroom with all checkout rails enabled", () => {
     expect(response.status).toBe(200);
     const text = await response.text();
     const bytes = new TextEncoder().encode(text).byteLength;
+    console.log(JSON.stringify({ openapi_bytes: bytes, headroom_bytes: SCANNER_BUDGET_BYTES - bytes }));
+
     expect(bytes, `${bytes} bytes with every rail and the native lane, against the ${SCANNER_BUDGET_BYTES}-byte scanner budget: move what got inlined into components; do not raise the number`).toBeLessThan(SCANNER_BUDGET_BYTES);
+  });
+
+  it("leaves room for a spot-check-sized door and a month of keeper pages", async () => {
+    // A bounded growth case, not a claim that an arbitrary future feature fits.
+    // Long valid slugs include more bytes than the current saved titles.
+    const slugs = Array.from({ length: 31 }, (_, i) => `budget-${i}-`.padEnd(80, "a"));
+    try {
+      await Promise.all(slugs.map(slug => allRails.ORDERS.put(KV_KEYS.almanacEntry(slug), JSON.stringify({
+        slug, title: "Budget fixture", date: "2026-09-23", teaser: "Fixture", markdown: "Fixture",
+      }))));
+      const document = await (await openapiRoutes.request("https://scvd.store/openapi.json", {}, allRails)).json() as Record<string, unknown>;
+      const paths = document.paths as Record<string, unknown>;
+      paths["/api/buy/growth-fixture"] = paths["/api/buy/spot_check"];
+      const bytes = new TextEncoder().encode(JSON.stringify(document)).byteLength;
+      console.log(JSON.stringify({ growth_bytes: bytes, growth_headroom_bytes: SCANNER_BUDGET_BYTES - bytes }));
+      expect(bytes, `${bytes} bytes after one representative paid door and 31 long saved slugs`).toBeLessThan(SCANNER_BUDGET_BYTES);
+    } finally {
+      await Promise.all(slugs.map(slug => allRails.ORDERS.delete(KV_KEYS.almanacEntry(slug))));
+    }
+  });
+
+  it("preserves the expanded shared schemas captured before the reduction", async () => {
+    const document = await (await openapiRoutes.request("https://scvd.store/openapi.json", {}, allRails)).json() as Record<string, unknown>;
+    for (const { pointers, schema } of sharedSchemas) for (const pointer of pointers) {
+      let value: unknown = document;
+      for (const part of pointer.slice(1).split("/")) {
+        value = (value as Record<string, unknown>)[part.replace(/~1/g, "/").replace(/~0/g, "~")];
+      }
+      expect(expand(value, document), pointer).toEqual(schema);
+    }
   });
 
   it("carries the item-independent MCP and WebMCP rows once at the root, and the metered 429 once in components", async () => {

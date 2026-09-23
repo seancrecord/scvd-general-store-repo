@@ -2352,3 +2352,24 @@ The [UCPStore homepage](https://www.ucpstore.dev/) is a coming-soon integration 
 Fresh reads of SCVD's advertised official schema URLs returned four 404s; their version-pinned counterparts all returned 200 JSON. [Saved HTTP reading](../research/ucp-distribution-2026-09-19/schema-links.json). Read UCP's [dated checkout schema](https://ucp.dev/2026-08-25/schemas/shopping/checkout.json) and [overview](https://ucp.dev/specification/overview/). This is URL retrieval evidence, not paid qualification or acceptance by an agent platform.
 
 Re-read Google's [Merchant Center requirements](https://developers.google.com/merchant/ucp/guides/overview/merchant-center): approved free-listing products, per-product checkout eligibility and exclusions remain prerequisites. SCVD's admission and custom payment-handler support were not established; its existing intake stays separate.
+
+
+### 2026-09-23 — OpenAPI schema reuse and recurrence guard
+
+Re-read the served contract version's [OpenAPI 3.1.0 Components Object](https://spec.openapis.org/oas/v3.1.0.html#components-object),
+[Media Type Object](https://spec.openapis.org/oas/v3.1.0.html#media-type-object)
+and [Schema Object](https://spec.openapis.org/oas/v3.1.0.html#schema-object).
+Reusable schemas live in `components.schemas` and can be referenced from
+request/response media-type schemas. The repair preserves expanded schemas;
+parameter objects, payment extensions and inline 402 responses keep their
+existing reader shape. This is a serialization change, not a protocol upgrade.
+
+
+### 2026-09-23 — remaining native host qualification prerequisites
+
+Re-read Antigravity's [plugin format](https://antigravity.google/docs/plugins)
+and [MCP configuration](https://antigravity.google/docs/mcp/). They still describe
+local plugin installation and the separate remote-server configuration. No `agy`
+executable or Antigravity app was found in this qualification environment's
+checked PATH/application locations. No new install, login, native execution or
+admission claim was made; TR-D remains separate from the D1/V3 evidence closeout.

@@ -1,0 +1,457 @@
+
+> scvd-general-store@0.1.0 cold:read
+> node scripts/cold-read.mjs --url=https://scvd.store/api/buy/hello --burst --warm=0 --json
+
+{
+  "read_at": "2026-09-05T21:30:21.445Z",
+  "since": null,
+  "control": null,
+  "doors": [
+    {
+      "url": "https://scvd.store/api/buy/hello",
+      "first_ms": 62,
+      "first_status": 402,
+      "first_isolate": "warm",
+      "first_age_s": 1,
+      "first_req_ms": 0,
+      "warm_knocks": 0,
+      "warm_median_ms": null,
+      "warm_max_ms": null,
+      "cold_penalty_ms": null,
+      "statuses": [
+        402
+      ],
+      "deploy": {
+        "known": false
+      },
+      "knocks": [
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 62,
+          "handshake_ms": 33,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 0
+          }
+        }
+      ]
+    }
+  ],
+  "burst": {
+    "base": "https://scvd.store",
+    "doors": 32,
+    "answered": 32,
+    "challenged_402": 32,
+    "cold_isolates": 2,
+    "warm_isolates": 30,
+    "unmarked": 0,
+    "min_ms": 35,
+    "median_ms": 64,
+    "max_ms": 316,
+    "slowest": [
+      {
+        "path": "/api/buy/bitcoin_anchor",
+        "ms": 316,
+        "isolate": "cold"
+      },
+      {
+        "path": "/api/buy/luckies",
+        "ms": 228,
+        "isolate": "cold"
+      },
+      {
+        "path": "/api/buy/the_collab",
+        "ms": 116,
+        "isolate": "warm"
+      }
+    ],
+    "readings": [
+      {
+        "path": "/api/buy/spot_check",
+        "url": "https://scvd.store/api/buy/spot_check",
+        "status": 402,
+        "ms": 112,
+        "handshake_ms": 72,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 40
+        }
+      },
+      {
+        "path": "/api/buy/settlement_attestation",
+        "url": "https://scvd.store/api/buy/settlement_attestation",
+        "status": 402,
+        "ms": 65,
+        "handshake_ms": 48,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/small_blessing",
+        "url": "https://scvd.store/api/buy/small_blessing",
+        "status": 402,
+        "ms": 69,
+        "handshake_ms": 52,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/settlement_reconciliation",
+        "url": "https://scvd.store/api/buy/settlement_reconciliation",
+        "status": 402,
+        "ms": 55,
+        "handshake_ms": 52,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/daily_fortune",
+        "url": "https://scvd.store/api/buy/daily_fortune",
+        "status": 402,
+        "ms": 59,
+        "handshake_ms": 47,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/the_confession",
+        "url": "https://scvd.store/api/buy/the_confession",
+        "status": 402,
+        "ms": 56,
+        "handshake_ms": 73,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/attestation_bundle",
+        "url": "https://scvd.store/api/buy/attestation_bundle",
+        "status": 402,
+        "ms": 35,
+        "handshake_ms": 75,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/the_mandate",
+        "url": "https://scvd.store/api/buy/the_mandate",
+        "status": 402,
+        "ms": 75,
+        "handshake_ms": 68,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/the_case_file",
+        "url": "https://scvd.store/api/buy/the_case_file",
+        "status": 402,
+        "ms": 49,
+        "handshake_ms": 40,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/hello",
+        "url": "https://scvd.store/api/buy/hello",
+        "status": 402,
+        "ms": 35,
+        "handshake_ms": 71,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/good_buyer",
+        "url": "https://scvd.store/api/buy/good_buyer",
+        "status": 402,
+        "ms": 46,
+        "handshake_ms": 56,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/signature_agent_card",
+        "url": "https://scvd.store/api/buy/signature_agent_card",
+        "status": 402,
+        "ms": 63,
+        "handshake_ms": 44,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/the_statement",
+        "url": "https://scvd.store/api/buy/the_statement",
+        "status": 402,
+        "ms": 51,
+        "handshake_ms": 51,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/luckies",
+        "url": "https://scvd.store/api/buy/luckies",
+        "status": 402,
+        "ms": 228,
+        "handshake_ms": 78,
+        "timing": {
+          "isolate": "cold",
+          "age": 0,
+          "req": 3
+        }
+      },
+      {
+        "path": "/api/buy/coffees_for_closers",
+        "url": "https://scvd.store/api/buy/coffees_for_closers",
+        "status": 402,
+        "ms": 68,
+        "handshake_ms": 47,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/bitcoin_anchor",
+        "url": "https://scvd.store/api/buy/bitcoin_anchor",
+        "status": 402,
+        "ms": 316,
+        "handshake_ms": 59,
+        "timing": {
+          "isolate": "cold",
+          "age": 0,
+          "req": 5
+        }
+      },
+      {
+        "path": "/api/buy/context_anchor",
+        "url": "https://scvd.store/api/buy/context_anchor",
+        "status": 402,
+        "ms": 54,
+        "handshake_ms": 76,
+        "timing": {
+          "isolate": "warm",
+          "age": 110,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/passport_refresh",
+        "url": "https://scvd.store/api/buy/passport_refresh",
+        "status": 402,
+        "ms": 67,
+        "handshake_ms": 63,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/graffiti_on_a_train",
+        "url": "https://scvd.store/api/buy/graffiti_on_a_train",
+        "status": 402,
+        "ms": 62,
+        "handshake_ms": 32,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/standing_watch",
+        "url": "https://scvd.store/api/buy/standing_watch",
+        "status": 402,
+        "ms": 41,
+        "handshake_ms": 71,
+        "timing": {
+          "isolate": "warm",
+          "age": 111,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/service_audit",
+        "url": "https://scvd.store/api/buy/service_audit",
+        "status": 402,
+        "ms": 61,
+        "handshake_ms": 68,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/conformance_watch",
+        "url": "https://scvd.store/api/buy/conformance_watch",
+        "status": 402,
+        "ms": 45,
+        "handshake_ms": 34,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/onpage_audit",
+        "url": "https://scvd.store/api/buy/onpage_audit",
+        "status": 402,
+        "ms": 39,
+        "handshake_ms": 68,
+        "timing": {
+          "isolate": "warm",
+          "age": 15,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/launch_check",
+        "url": "https://scvd.store/api/buy/launch_check",
+        "status": 402,
+        "ms": 69,
+        "handshake_ms": 70,
+        "timing": {
+          "isolate": "warm",
+          "age": 110,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/opening_day",
+        "url": "https://scvd.store/api/buy/opening_day",
+        "status": 402,
+        "ms": 59,
+        "handshake_ms": 51,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/provenance_check",
+        "url": "https://scvd.store/api/buy/provenance_check",
+        "status": 402,
+        "ms": 81,
+        "handshake_ms": 54,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 28
+        }
+      },
+      {
+        "path": "/api/buy/recurring_patronage",
+        "url": "https://scvd.store/api/buy/recurring_patronage",
+        "status": 402,
+        "ms": 91,
+        "handshake_ms": 46,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/trust_profile",
+        "url": "https://scvd.store/api/buy/trust_profile",
+        "status": 402,
+        "ms": 93,
+        "handshake_ms": 48,
+        "timing": {
+          "isolate": "warm",
+          "age": 3,
+          "req": 7
+        }
+      },
+      {
+        "path": "/api/buy/operator_statement",
+        "url": "https://scvd.store/api/buy/operator_statement",
+        "status": 402,
+        "ms": 76,
+        "handshake_ms": 54,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/certificate_of_patronage",
+        "url": "https://scvd.store/api/buy/certificate_of_patronage",
+        "status": 402,
+        "ms": 66,
+        "handshake_ms": 40,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 0
+        }
+      },
+      {
+        "path": "/api/buy/aura_walk",
+        "url": "https://scvd.store/api/buy/aura_walk",
+        "status": 402,
+        "ms": 90,
+        "handshake_ms": 43,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 26
+        }
+      },
+      {
+        "path": "/api/buy/the_collab",
+        "url": "https://scvd.store/api/buy/the_collab",
+        "status": 402,
+        "ms": 116,
+        "handshake_ms": 49,
+        "timing": {
+          "isolate": "warm",
+          "age": 2,
+          "req": 47
+        }
+      }
+    ]
+  }
+}

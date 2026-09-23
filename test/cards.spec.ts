@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { encodeQr } from "@/lib/qr";
 import { flattenPath } from "@/lib/pixel-card";
-import { bellPressing, burnForCredit, clearConditions, drawSlot, getCard, handPress, holdsRailHolo, openPack, packsOpened, pullReleaseForward, readBinder, readCredit, readRelease, redeemCredit, releaseStates, releaseWheel, windowPick } from "@/services/cards";
+import { bellPressing, burnForCredit, clearConditions, drawSlot, getCard, handPress, holdsRailHolo, openPack, packsOpened, pullReleaseForward, readBinder, readCredit, readRelease, redeemCredit, releaseStates, releaseWheel, STREAK_BELLRINGER_II_DAY, STREAK_PACK_EVERY, windowPick } from "@/services/cards";
 import { commitOf, dayHasEnded, publishSeedRecord, seedFor, utcDate } from "@/services/paywall-seed";
 import { getMenuItem } from "@/store";
 import {
@@ -898,6 +898,20 @@ describe("the holes we walked into ourselves", () => {
 });
 
 describe("the room", () => {
+  it("the buyer guide describes the live wallet streak on both machine-readable views", async () => {
+    const twin = await json(await SELF.fetch(`${BASE}/design`, { headers: { Accept: "application/json" } }));
+    const bell = twin["bell"] as Record<string, unknown>;
+    const streaks = String(bell["streaks"]);
+    expect(streaks).toContain(`every ${STREAK_PACK_EVERY} consecutive UTC days`);
+    expect(streaks).toContain(`day ${STREAK_BELLRINGER_II_DAY}`);
+    expect(streaks).toContain("wallet");
+    expect(streaks).toContain("gap resets");
+    expect(streaks).not.toContain("not this build");
+    const markdown = await SELF.fetch(`${BASE}/design`, { headers: { Accept: "text/markdown" } });
+    expect(markdown.status).toBe(200);
+    expect(await markdown.text()).toContain(streaks);
+  });
+
   it("prints every fraction beside its denominator, today's commit, the rules that do not move, and hangs an honest specimen", async () => {
     const twin = await json(await SELF.fetch(`${BASE}/design`, { headers: { Accept: "application/json" } }));
     const odds = twin["odds"] as Record<string, unknown>;

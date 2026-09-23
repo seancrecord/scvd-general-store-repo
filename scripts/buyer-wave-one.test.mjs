@@ -5,8 +5,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { normalizeBuyerSchema } from './lib/buyer-contracts.mjs';
 const here=path.dirname(fileURLToPath(import.meta.url));
-function fixture(t,{legacy=false,missing=false,changed=false,bodyOnly=false,duplicate=false}={}){
+function fixture(t,{legacy=false,missing=false,changed=false,bodyOnly=false,duplicate=false,shared=false,brokenRef=false,sharedChanged=false}={}){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-wave-contract-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const ids=['small_blessing','the_confession','signature_agent_card','settlement_attestation','attestation_bundle','standing_watch','aura_walk','bitcoin_anchor','graffiti_on_a_train'];
  const schema={type:'object',required:['host'],properties:{host:{type:'string',maxLength:80},agent_name:{type:'string',maxLength:80}}};
@@ -14,6 +15,10 @@ function fixture(t,{legacy=false,missing=false,changed=false,bodyOnly=false,dupl
  const paths=Object.fromEntries(items.map(i=>['/api/buy/'+i.id,{get:{'x-payment':{price_usdc_options:[.001],networks:['eip155:8453']},...(missing?{}:legacy?{'x-request-schema':schema}:{'x-payment-info':{input:{schema}}})}}]));
  const openapi=structuredClone({paths});if(changed){const input=openapi.paths['/api/buy/small_blessing'].get['x-payment-info'].input;input.schema=structuredClone(input.schema);input.schema.properties.host.maxLength=81;}
  if(duplicate){const op=openapi.paths['/api/buy/small_blessing'].get;op['x-request-schema']=structuredClone(schema);op['x-request-schema'].properties.host.maxLength=81;}
+ if(shared){
+  openapi.components={schemas:{Common:{type:'object',required:['host'],properties:{host:{type:'string',maxLength:sharedChanged?81:80}}}}};
+  for(const op of Object.values(openapi.paths))op.get['x-payment-info'].input.schema={type:'object',properties:{agent_name:{type:'string',maxLength:80}},allOf:[{$ref:brokenRef?'#/components/schemas/Absent':'#/components/schemas/Common'}]};
+ }
  const write=(name,value)=>fs.writeFileSync(path.join(root,name),typeof value==='string'?value:JSON.stringify(value));
  write('menu.snapshot',{items});write('openapi.snapshot',openapi);write('manifest.snapshot',{resources:items.map(i=>({resource:'https://scvd.store/api/buy/'+i.id,price_usdc_options:[.001],fulfillment:i.fulfillment,inputSchema:schema,spec:i.spec}))});
  write('mcp.snapshot',{result:{tools:[{name:'buy_fixture',itemIds:ids,inputSchema:{examples:ids.map(item_id=>({item_id,host:'fixture.example'}))}}]}});
@@ -27,6 +32,27 @@ function fixture(t,{legacy=false,missing=false,changed=false,bodyOnly=false,dupl
  return {root,read:name=>JSON.parse(fs.readFileSync(path.join(root,name))),write,run};
 }
 for(const legacy of [false,true])test(`collector reads the ${legacy?'legacy':'current'} published input schema`,t=>{const f=fixture(t,{legacy});assert.deepEqual(f.read('comparison.json').flatMap(r=>r.issues),[]);});
+test('shared OpenAPI fields agree with inline menu fields, while a changed shared limit still disagrees',t=>{
+ assert.deepEqual(fixture(t,{shared:true}).read('comparison.json').flatMap(r=>r.issues),[]);
+ const changed=fixture(t,{shared:true,sharedChanged:true}).read('comparison.json').flatMap(r=>r.issues);
+ assert.equal(changed.length,9);assert(changed.every(r=>r.kind==='contradiction'&&r.field==='OpenAPI inputs'));
+});
+test('an unresolved shared schema is missing evidence, not a contradiction or agreement',t=>{
+ const issues=fixture(t,{shared:true,brokenRef:true}).read('comparison.json').flatMap(r=>r.issues);
+ assert.equal(issues.length,9);assert(issues.every(r=>r.kind==='missing'&&r.reason==='unresolved_schema'));
+});
+test('schema projection handles escaped local references and refuses cycles, remote reads and ambiguous intersections',()=>{
+ const document={components:{schemas:{'a/b~c':{properties:{name:{type:'string',maxLength:80}}}}}};
+ assert.equal(normalizeBuyerSchema({$ref:'#/components/schemas/a~1b~0c'},document).properties.name.maxLength,80);
+ const cyclic={$ref:'#/loop'};
+ assert.throws(()=>normalizeBuyerSchema(cyclic,{loop:cyclic}),/cyclic_reference/);
+ assert.throws(()=>normalizeBuyerSchema({$ref:'https://example.com/schema.json'}),/nonlocal_reference/);
+ assert.throws(()=>normalizeBuyerSchema({oneOf:[{properties:{}},{properties:{}}]}),/unsupported_composition/);
+ assert.throws(()=>normalizeBuyerSchema({allOf:[{properties:{name:{maxLength:80}}},{properties:{name:{maxLength:120}}}]}),/overlapping_constraints/);
+ let deep={properties:{}};for(let n=0;n<34;n++)deep={allOf:[deep]};
+ assert.throws(()=>normalizeBuyerSchema(deep),/schema_budget/);
+ assert.throws(()=>normalizeBuyerSchema({$ref:'#/constructor'}),/unresolved_reference/);
+});
 test('collector distinguishes a missing schema from a contradictory limit',t=>{
  const absent=fixture(t,{missing:true}).read('comparison.json').flatMap(r=>r.issues);assert(absent.length);assert(absent.every(r=>r.kind==='missing'));
  const changed=fixture(t,{changed:true}).read('comparison.json').flatMap(r=>r.issues);assert.equal(changed.length,1);assert.equal(changed[0].kind,'contradiction');assert.equal(changed[0].field,'OpenAPI inputs');

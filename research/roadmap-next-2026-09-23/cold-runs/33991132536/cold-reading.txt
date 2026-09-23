@@ -1,0 +1,17 @@
+
+> scvd-general-store@0.1.0 cold:read
+> node scripts/cold-read.mjs --url=https://scvd.store/api/buy/hello --burst --since=2026-09-05T16:47:10-04:00
+
+cold read, 2026-09-05T20:52:18.868Z
+https://scvd.store/api/buy/hello
+  first knock       25 ms   warm     isolate, age 192s, req 0ms, status 402
+  warm (6)          21 ms   median, max 24ms
+  cold penalty       -      (first knock was not cold; nothing to subtract)
+  deploy        landed   (isolate 192s old, push 309s ago)
+
+https://scvd.store — 32 doors knocked at once, as the directory does
+  answered 32/32, 402 on 32; isolates: 8 cold, 24 warm, 0 unmarked
+  min 20ms  median 90ms  max 400ms
+  slowest     400 ms  cold     /api/buy/the_collab
+  slowest     317 ms  warm     /api/buy/aura_walk
+  slowest     242 ms  cold     /api/buy/attestation_bundle

@@ -179,7 +179,7 @@ describe("every operation an LLM would call is typed, not described in prose", (
         .find((candidate) => candidate !== undefined);
       // `type` alone is not typing: an operation whose body is a free
       // object has to SAY it is, which the verify-receipt desk does.
-      if (!schema || !schema["type"]) {
+      if (!schema || !resolve(document, schema)["type"]) {
         untyped.push(`${entry.method} ${entry.path}`);
       }
     }

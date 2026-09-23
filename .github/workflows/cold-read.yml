@@ -59,8 +59,7 @@ jobs:
           URL: ${{ github.event.inputs.url || 'https://scvd.store/api/buy/hello' }}
         run: |
           set -o pipefail
-          npm run cold:read -- --url="$URL" --burst ${SINCE:+--since=$SINCE} | tee cold-reading.txt
-          npm run cold:read -- --url="$URL" --burst --warm=0 --json > cold-reading.json || true
+          node scripts/cold-read.mjs --url="$URL" --burst --json-out=cold-reading.json ${SINCE:+--since="$SINCE"} | tee cold-reading.txt
       - name: Keep the reading
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
