@@ -1,0 +1,32 @@
+{
+  "status": "local validation passed; hosted checks and new native experiment pending",
+  "red_before_fix": {
+    "command": "node --test scripts/buyer-host-capability.test.mjs scripts/buyer-recipient-integration.test.mjs",
+    "tests": 65,
+    "passed": 63,
+    "failed": 2,
+    "failures": [
+      "both online qualification prompts require reports from computed results",
+      "offline capability executes the recipient adapter and checks fresh signature vectors"
+    ]
+  },
+  "focused_after_fix": {
+    "command": "npm run buyer:test",
+    "tests": 242,
+    "passed": 242,
+    "failed": 0,
+    "note": "First sandboxed run passed 241/242; one fixture server could not bind localhost (EPERM). Normal-socket rerun passed all checks."
+  },
+  "typecheck": "passed",
+  "build_check": "passed",
+  "documentation_check": "passed",
+  "scorer_unchanged": true,
+  "random_vectors_unchanged": true,
+  "native_qualification": "not launched; requires merged source and a separate freeze",
+  "full_local_suite": {
+    "files": 829,
+    "passed": 15495,
+    "skipped": 1,
+    "failed": 0
+  }
+}

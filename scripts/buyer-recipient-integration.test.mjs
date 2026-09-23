@@ -118,6 +118,10 @@ else{let prompt='';process.stdin.on('data',b=>prompt+=b);process.stdin.on('end',
  assert.match(launch.prompt,/do not.*transcribe.*boolean/i);
  assert.match(launch.prompt,/final.*saved report/i);
  assert.match(launch.prompt,/cannot complete.*report.*incomplete/i);
+ assert.match(launch.prompt,/operational errors.*invalid signatures/i);
+ assert.match(launch.prompt,/nonzero exit.*not.*signature/i);
+ assert.match(launch.prompt,/retain.*stderr.*exit.*exception/i);
+ assert.match(launch.prompt,/leave.*capability\.json.*unwritten.*incomplete/i);
  const score=JSON.parse(fs.readFileSync(path.join(probe,'recipient/capability.json')));assert.deepEqual(score.local_check.reported,score.local_check.expected);
  for(const name of ['recipient','codex'])fs.rmSync(JSON.parse(fs.readFileSync(path.join(probe,name,'launch.json'))).cwd,{recursive:true,force:true});
  }finally{globalThis.fetch=fetchBefore;f.clean();}

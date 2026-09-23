@@ -1,0 +1,70 @@
+{
+  "frozen_at": "2026-09-23T20:18:08.062325+00:00",
+  "source_commit": "d8a5c0ef81d079e49b21a3c8d64f10408bff8eed",
+  "plan_sha256": "650ffbd20ffa39732b2ce15fa66d8f7a08b8bab2c02fdd9d79fcd36b6c0ad599",
+  "public_readback": [
+    {
+      "file": "skill.md",
+      "url": "https://scvd.store/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-23T20:17:23.095915+00:00"
+    },
+    {
+      "file": "entry.md",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-23T20:17:23.224155+00:00"
+    },
+    {
+      "file": "host.json",
+      "url": "https://scvd.store/corpus/host/lionx402.com.json",
+      "status": 200,
+      "bytes": 12738,
+      "sha256": "8cb5173778f7c366cef608e9249b276294718036004b4a6dd6bda1eb887640b3",
+      "read_at": "2026-09-23T20:17:24.747507+00:00"
+    },
+    {
+      "file": "candidate-original.json",
+      "url": "https://scvd.store/corpus/8.json",
+      "status": 200,
+      "bytes": 4012197,
+      "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+      "read_at": "2026-09-23T20:17:25.935740+00:00"
+    },
+    {
+      "file": "candidate-key.json",
+      "url": "https://scvd.store/.well-known/scvd-signing-key",
+      "status": 200,
+      "bytes": 3139,
+      "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+      "read_at": "2026-09-23T20:17:26.076376+00:00"
+    },
+    {
+      "file": "openapi.json",
+      "url": "https://scvd.store/openapi.json",
+      "status": 200,
+      "bytes": 687898,
+      "sha256": "482194c384fdd463a12ad9fd0d02bac94c2d05690400f3bde07ea7811c6d39c2",
+      "read_at": "2026-09-23T20:17:26.578410+00:00"
+    }
+  ],
+  "candidate": [
+    {
+      "pointer": "/round/hosts/52",
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-14T01:30:09.376Z"
+    }
+  ],
+  "openapi": {
+    "bytes": 687898,
+    "budget": 700000,
+    "within_budget": true
+  },
+  "awake_policy": "Keeper-approved external-monitor closed-lid setup; AC verified. Temporary caffeinate -is around each native invocation; serial sessions, power and relevant process samples. No permanent power changes. Existing timing guard stops callback gaps without extending deadlines.",
+  "scope": "Separate directed zero-spend cohort after merged PR #902 computed-result qualification guidance, #899 signed-row guidance, and the integrated #900 release. Same models, budgets, exact subject, qualification gates, recipient scope, verifier hashes and fourteen-day freshness rule. All prior qualification attempts and buyer scores remain unchanged. Tests the combined released surface, not causal attribution, unbranded discovery, paid delivery or organic demand.",
+  "prior_attempt_policy": "All earlier buyer and qualification attempts stay closed and unchanged. This is the first native qualification of the #902 instrument. One probe per host and offline recipient; four planned buyers only after all qualify, and one offline recipient per eligible completed buyer. No retries or budget expansion."
+}

@@ -1,0 +1,58 @@
+{
+  "recorded_at": "2026-09-23T20:23:55.736801+00:00",
+  "source_commit": "d8a5c0ef81d079e49b21a3c8d64f10408bff8eed",
+  "frozen_at": "2026-09-23T20:18:08.062325+00:00",
+  "plan_sha256": "650ffbd20ffa39732b2ce15fa66d8f7a08b8bab2c02fdd9d79fcd36b6c0ad599",
+  "qualification": {
+    "codex": "pass",
+    "claude": "pass",
+    "recipient": "fail"
+  },
+  "buyer_journeys_launched": 0,
+  "prior_results": "unchanged",
+  "expected": {
+    "a": true,
+    "b": false,
+    "c": false,
+    "d": false
+  },
+  "reported": {
+    "a": false,
+    "b": false,
+    "c": false,
+    "d": false
+  },
+  "conditions": {
+    "power_samples": 29,
+    "ac_samples": 29,
+    "max_vitest_processes": 0,
+    "max_workerd_processes": 0,
+    "sample_limit": "Observations at sample times, not proof of absence between samples."
+  },
+  "native_runs": {
+    "codex": {
+      "state": "completed",
+      "elapsed_ms": 43008,
+      "interruption": null,
+      "tool_calls": 1,
+      "trace_sha256": "f4dc78c4fc3328813de2ca2805ed43d5d0e982f20e896c142b6a0db400e22602"
+    },
+    "claude": {
+      "state": "completed",
+      "elapsed_ms": 25184,
+      "interruption": null,
+      "tool_calls": 4,
+      "trace_sha256": "76fda4c28ec1c0b84c637c6eb7553ea3060c8b216ac8d7a5ab310692fbdff467"
+    },
+    "recipient": {
+      "state": "completed",
+      "elapsed_ms": 71814,
+      "interruption": null,
+      "tool_calls": 5,
+      "trace_sha256": "53e0595ddc377a4f01ac8dddbd929b65b4e102386bb146aa3b68b47032914ed1"
+    }
+  },
+  "diagnosis": "Native program used unsupported OpenSSL pkeyutl -inform DER; captured but suppressed stderr, converting every nonzero exit to false. Controller replay confirms all original invocations failed before signature checking. Corrected -keyform DER and independent Node crypto agree with frozen truth.",
+  "diagnosis_scope": "Controller diagnosis only; no native retry, replacement report, acceptance or score change.",
+  "next_hypothesis": "Qualifiers must distinguish operational errors from invalid signatures and retain verifier diagnostics. Evaluate a supported verification path before another separately frozen experiment; do not weaken the gate or retry this attempt."
+}
