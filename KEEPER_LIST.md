@@ -1791,21 +1791,22 @@ what you ruled and what is still yours to look at.
   registration fee; their adoption signals exclude
   captive wallets, so the buys cannot flatter the
   grade. Their grade is still not ours. LOOK your books.
-- **Receipt treaty — live, exchanged, one walk to press (09-11).**
+- **Receipt treaty — exchange complete (09-11 → 09-23).**
   StillOS Notary is the first treaty entry on `/trust-list.json`
   (merged in #635, verified live). Artifacts crossed both ways the
   same day; ours checked by him, his by us with stock crypto
   (`research/treaty-exchange-2026-09-11/`); one binding did not
-  reproduce and is a question on the issue. RULED 09-11: the credit
+  reproduce and was raised on the issue. RULED 09-11: the credit
   key declined — a key skips the 402 and cannot verify the fix.
   WALKED 09-12, your press, ten cents authorised, nothing moved:
   his header speaks v2, his body v1, and his paid path reads only
   the v1 `X-PAYMENT` header, so a v2 buyer following his header
-  cannot pay (`research/field-run-2026-09-12/`). Back to him on the
-  issue with the ledger line. If he fixes it and asks, a second walk
-  is a second press.
-  Not your hand: the §7 read on x402 #3220/#3376 is still owed to
-  him from a session that can reach those PRs.
+  cannot pay (`research/field-run-2026-09-12/`). #622 closed 09-23.
+  Nothing pending on this item.
+- **Archive RPC endpoint.** Base and Arbitrum, with archive data
+  (the public endpoints refuse history). Set it as `BASE_RPC_URL`
+  in the environment, never in the repo. Closes the standing §8
+  item in `docs/JOINT_COVERAGE_READ_2026-09-16.md`.
 - **Key succession.** Gate is physical: a second seed,
   not beside the first. `PROBLEMS.md` #1. We cannot
   check it from here.
