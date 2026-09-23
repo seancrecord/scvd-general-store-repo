@@ -477,6 +477,44 @@ describe("the door it is served through", () => {
     expect(JSON.parse(original).signature).toMatch(/^[0-9a-f]+$/);
   });
 
+  it("points readers past snapshot metadata to exact endpoint rows in the signed original", async () => {
+    const endpoint = "https://a.example/x402?asset=USDC";
+    const observedAt = "2026-01-01T01:00:00.000Z";
+    await chain([round("2026-W01", [
+      { ...host("a.example", "not_ready"), url: "https://a.example/x402?asset=OTHER" },
+      { ...host("a.example", "ready"), url: endpoint, observed_at: observedAt },
+    ])], [new Date("2026-01-03T00:00:00.000Z")]);
+    const history = await (await SELF.fetch(`${BASE}/corpus/host/a.example.json`)).json() as {
+      evidence_scope: { signed: boolean; description: string };
+      timeline: { entry_url: string }[];
+    };
+    const description = history.evidence_scope.description;
+    expect(history.evidence_scope.signed).toBe(false);
+    expect(description).toContain("snapshot.round.hosts");
+    expect(description).toContain("url exactly matches");
+    expect(description).toContain("including the query string");
+    expect(description).toContain("--subject");
+
+    // Exercise the advertised path on a real signed fixture. A shared host
+    // and a different query are not the requested endpoint's observation.
+    const original = await (await SELF.fetch(history.timeline[0]!.entry_url)).json();
+    const path = description.match(/snapshot\.round\.hosts/)![0].split(".");
+    const rows = path.reduce<unknown>((value, key) => (value as Record<string, unknown>)[key], original) as WardHostResult[];
+    expect(rows.filter(row => row.url === endpoint)).toEqual([
+      expect.objectContaining({ url: endpoint, verdict: "ready", observed_at: observedAt }),
+    ]);
+    for (const [url, accept] of [
+      [`${BASE}/corpus/host/a.example.json?view=stable`, "application/json"],
+      [`${BASE}/corpus/host/a.example`, "text/html"],
+      [`${BASE}/corpus/host/a.example`, "text/markdown"],
+      [`${BASE}/corpus/host/a.example.md`, "text/markdown"],
+    ]) {
+      const response = await SELF.fetch(url!, { headers: { Accept: accept! } });
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain(description);
+    }
+  });
+
   it("serves one host at /corpus/host/{host}.json without colliding with the sequence route", async () => {
     await chain([round("2026-W01", [host("a.example", "ready")])]);
 
