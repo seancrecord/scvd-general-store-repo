@@ -111,9 +111,18 @@ curl --fail --output ./evidence/issuer-key.json "https://scvd.store/.well-known/
 ```
 
 Use distinct filenames for additional responses; do not overwrite retained
-originals. Keep source URLs and acquisition times beside these files. Inspect
-bounded fields from the saved original afterward. A response too large to print
-can still fit the caller's declared file allowance; retain its complete bytes.
+originals. Use one shared `./evidence/journal.md` for source URLs, acquisition times,
+request outcomes, key-source observations and verification results. Add one entry
+per retained response, naming its file; keep the verifier's exact result there
+alongside your interpretation. Label these notes as unsigned acquisition context.
+Do not create separate URL, timestamp and note files for each response. Keep
+optional headers or diagnostic excerpts in the same journal unless their original
+bytes are required evidence. Preserve every required original and bound evidence
+file separately and unchanged; a journal cannot replace them. Check the caller's
+file and byte allowance before adding optional captures. If a limit is reached,
+report the gap; do not delete or overwrite earlier evidence to make a run pass.
+Inspect bounded fields from the saved original afterward. A response too large
+to print can still fit the caller's declared file allowance; retain its complete bytes.
 If capture fails or exceeds that allowance, report incomplete evidence rather
 than substituting a summary, shortened payload or placeholder signature.
 A separately fetched issuer key records what that source served; identifying
@@ -137,23 +146,34 @@ Require `valid: true`, `evidence_complete: true` and
 `subject_evidence.status: "present"`; exit 0 alone does not establish a match.
 Read `subject_evidence.observations` and `omitted_observations` before reporting
 what was checked. Each selected row's `value.observed_at` is its observation date;
-`snapshot_taken_at` is publication time. An absent match, omitted row, invalid
-signature or missing bound evidence remains a stated gap. A valid signature
-alone does not establish freshness or payment/delivery.
+`snapshot_taken_at` is publication time. A missing `observed_at` means the row's
+observation date is unknown, even when its signature is valid.
+Do not substitute snapshot publication time, download time or an unsigned timeline
+date. A row with an unknown observation date cannot satisfy an observation-age
+limit; retain it as historical evidence with that gap. A different dated row must
+match the exact endpoint and satisfy the caller's limit on its own.
+An absent match, omitted row, invalid signature or missing bound evidence remains
+a stated gap. A valid signature alone does not establish freshness or
+payment/delivery.
 
 Keep signed observations and unsigned context separate in both the final answer
 and saved verification notes. The host-history lookup's tier, coverage fraction
 and other weeks do not become claims of this snapshot because it verified.
 Describe only the selected signed rows as authenticated; attribute other history
-to the unsigned lookup. Do not guess whether a signature covers a digest or JSON
-bytes: use the existing verifier's format handling.
+to the unsigned lookup. To claim several authenticated weeks, retain and verify
+each cited original and state the result and observation-date gap for each one.
+Count only successful checks actually returned by the verifier; attempting a loop
+or seeing one successful result does not establish that every iteration passed.
+Do not guess whether a signature covers a digest or JSON bytes: use the existing
+verifier's format handling.
 
 If the installed command lacks `--subject`, use the documented bundle API below
 or the published package installation above. For other artifact families, use
 `verify-source` with any bound `--evidence` file; the corpus subject selector is
 not their verification contract. Keep originals, the verifier's result, separate
 key observations and source URLs for a recipient; a short result cannot replace
-the originals. Keep installed packages and caches outside the evidence directory.
+the originals. Use the shared journal for these notes and results. Keep installed
+packages and caches outside the evidence directory.
 
 When using the existing `x402-verify/bundle` API, call `createEvidenceBundle`
 and `verifyEvidenceBundle` with the documented size allowance and an

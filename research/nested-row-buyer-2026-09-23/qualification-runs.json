@@ -1,0 +1,83 @@
+[
+  {
+    "host": "codex",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-23T20:15:01.219Z",
+      "ended_at": "2026-09-23T20:15:51.592Z",
+      "wall_elapsed_ms": 50373,
+      "monotonic_elapsed_ms": 50373.119958999996,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "tool_calls": 3,
+    "trace_sha256": "031ac6fed3fd7435013c127c6c73dbacbc4cff87800b0cf47d84feb438c2cd8a",
+    "run_sha256": "84ee6f670d154aae547457b588fe35068c2a5a2f49677fc89fdb85e87862ecf7"
+  },
+  {
+    "host": "claude",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-23T20:15:51.663Z",
+      "ended_at": "2026-09-23T20:16:22.356Z",
+      "wall_elapsed_ms": 30693,
+      "monotonic_elapsed_ms": 30692.838375,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "tool_calls": 6,
+    "trace_sha256": "305a4fc2ac96f79f1f94f2eddf69035eb731fa054210ffed84d690551e546cdb",
+    "run_sha256": "bf5d60d8ba7a27c66400194f2002f1a6c3b0b06e38718eb0b76faa30e12f9830"
+  },
+  {
+    "host": "recipient",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-23T20:16:22.362Z",
+      "ended_at": "2026-09-23T20:17:35.640Z",
+      "wall_elapsed_ms": 73278,
+      "monotonic_elapsed_ms": 73279.146667,
+      "max_callback_gap_ms": 1002.820749999999,
+      "interruption": null
+    },
+    "tool_calls": 7,
+    "trace_sha256": "72896f282ae4cb99df65da379f825572a387c2239a89fe5accbf6d2b3f1897ac",
+    "run_sha256": "5adddbc93cc6a9df7c5a0083137e2ef5306faad94c97f19d04714cf86474e343"
+  }
+]

@@ -109,7 +109,13 @@ fetches a replacement or labels a file authenticated before the recipient checks
 ## Retain the original and check signed scope
 
 The focused buyer skill supplies separate commands to save the complete cited
-snapshot and issuer-key response before inspecting either. The inventory
+snapshot and issuer-key response before inspecting either. The September 23
+follow-through keeps those commands and puts acquisition notes and verifier
+results in one shared journal, while originals and required bound evidence stay
+separate and unchanged. It explicitly treats missing signed row observation
+dates as unknown and requires each claimed week to be verified independently.
+These are [local guidance repairs](BUYER_DATE_AND_RETENTION_2026-09-23.md),
+not a changed retention ceiling, scorer or native acceptance result. The inventory
 recipient prompt includes a one-call example using the two supplied verifier
 modules, with the size allowance derived from the frozen plan. No new package
 or evidence fetch is required. The example prints only exact-subject rows from

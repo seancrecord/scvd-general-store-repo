@@ -1,0 +1,175 @@
+[
+  {
+    "cell": "codex-directed-r1",
+    "run_sha256": "acde9dcfe51cd24c831ed45e8e1ab3b226da29a4d076404c943981b64bfa714b",
+    "capture_state": "incomplete",
+    "verified": [
+      {
+        "artifact": {
+          "file": "evidence/corpus8.json",
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        "issuer": {
+          "file": "evidence/issuer-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "valid": true,
+        "evidence_complete": true,
+        "published_at": "2026-09-20T11:00:28.668Z",
+        "exact_rows": [
+          {
+            "pointer": "/round/hosts/52",
+            "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-14T01:30:09.376Z",
+            "verdict": "ready"
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Only retained bytes used; no replacement or buyer intervention.",
+      "Controller cryptography is not native buyer or recipient acceptance.",
+      "Published-key consistency does not establish independent issuer identity; no Bitcoin proof check."
+    ]
+  },
+  {
+    "cell": "claude-directed-r1",
+    "run_sha256": "69fc9f3cf3ee08e4ce774b44ede070f21cba70607cc0d8b2239cf8cd7566a337",
+    "capture_state": "complete",
+    "verified": [
+      {
+        "artifact": {
+          "file": "evidence/corpus-8.json",
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        "issuer": {
+          "file": "evidence/scvd-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "valid": true,
+        "evidence_complete": true,
+        "published_at": "2026-09-20T11:00:28.668Z",
+        "exact_rows": [
+          {
+            "pointer": "/round/hosts/52",
+            "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-14T01:30:09.376Z",
+            "verdict": "ready"
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Only retained bytes used; no replacement or buyer intervention.",
+      "Controller cryptography is not native buyer or recipient acceptance.",
+      "Published-key consistency does not establish independent issuer identity; no Bitcoin proof check."
+    ]
+  },
+  {
+    "cell": "codex-directed-r2",
+    "run_sha256": "bc74c7be3b4efa42c17dc483b8968c84cd274284bbfa098d9daeaa0be3654dd7",
+    "capture_state": "complete",
+    "verified": [
+      {
+        "artifact": {
+          "file": "evidence/corpus-8.json",
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        "issuer": {
+          "file": "evidence/scvd-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "valid": true,
+        "evidence_complete": true,
+        "published_at": "2026-09-20T11:00:28.668Z",
+        "exact_rows": [
+          {
+            "pointer": "/round/hosts/52",
+            "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-14T01:30:09.376Z",
+            "verdict": "ready"
+          }
+        ]
+      },
+      {
+        "artifact": {
+          "file": "evidence/corpus-4.json",
+          "sha256": "1c038e05cb7ba4ac0b81da383654a63876b13d6677a433093f508590311eb80a"
+        },
+        "issuer": {
+          "file": "evidence/scvd-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "valid": true,
+        "evidence_complete": true,
+        "published_at": "2026-08-24T14:11:21.865Z",
+        "exact_rows": [
+          {
+            "pointer": "/round/hosts/70",
+            "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": null,
+            "verdict": "ready"
+          }
+        ]
+      },
+      {
+        "artifact": {
+          "file": "evidence/corpus-5.json",
+          "sha256": "207960ae426487e43981b66d4e12f1c883974e2f17dbe18bdc516fd6b3a16f72"
+        },
+        "issuer": {
+          "file": "evidence/scvd-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "valid": true,
+        "evidence_complete": true,
+        "published_at": "2026-09-01T13:27:08.998Z",
+        "exact_rows": [
+          {
+            "pointer": "/round/hosts/53",
+            "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": null,
+            "verdict": "ready"
+          }
+        ]
+      },
+      {
+        "artifact": {
+          "file": "evidence/corpus-7.json",
+          "sha256": "7e4500d7fc6fdaa6a4c5737702bccf39911d7277ee964a3a03207538dad5a85f"
+        },
+        "issuer": {
+          "file": "evidence/scvd-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "valid": true,
+        "evidence_complete": true,
+        "published_at": "2026-09-18T14:22:58.378Z",
+        "exact_rows": [
+          {
+            "pointer": "/round/hosts/50",
+            "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-07T02:30:20.531Z",
+            "verdict": "ready"
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Only retained bytes used; no replacement or buyer intervention.",
+      "Controller cryptography is not native buyer or recipient acceptance.",
+      "Published-key consistency does not establish independent issuer identity; no Bitcoin proof check."
+    ]
+  },
+  {
+    "cell": "claude-directed-r2",
+    "run_sha256": "babd62c58bbe263d72882f96e1410ccc716ddcbfa900a1b1e29247c5aa45ca58",
+    "capture_state": "complete",
+    "verified": [],
+    "limits": [
+      "Only retained bytes used; no replacement or buyer intervention.",
+      "Controller cryptography is not native buyer or recipient acceptance.",
+      "Published-key consistency does not establish independent issuer identity; no Bitcoin proof check."
+    ]
+  }
+]

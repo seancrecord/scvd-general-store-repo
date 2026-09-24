@@ -1,0 +1,65 @@
+{
+  "execution": {
+    "started_at": "2026-09-23T19:34:51.289467+00:00",
+    "completed_at": "2026-09-23T19:40:47.384476+00:00",
+    "exit_code": 1,
+    "outer_timeout": false
+  },
+  "sitemap_room_count": 6485,
+  "request_count": 6498,
+  "header_response_count": 6498,
+  "status_counts": {
+    "200": 6491,
+    "400": 1,
+    "403": 5,
+    "402": 1
+  },
+  "refused_room_urls": [
+    "https://scvd.store/corpus/host/backup-api.orbonomy.xyz",
+    "https://scvd.store/corpus/host/backup-v2api.orbonomy.xyz",
+    "https://scvd.store/corpus/host/backup.ragradar.space",
+    "https://scvd.store/corpus/host/eltociear-secrets-audit.hf.space",
+    "https://scvd.store/corpus/host/ggwp-ten.vercel.app"
+  ],
+  "criteria_tallies": {
+    "met": 26,
+    "partial": 2
+  },
+  "diff": {
+    "regressions": [
+      {
+        "key": "webmcp/origin_trial_unexpired",
+        "was": "met",
+        "now": "partial",
+        "note": "an origin trial ends 2026-10-15, in 21 days (2 tokens, soonest shown)"
+      }
+    ],
+    "improvements": [],
+    "added": [
+      {
+        "key": "raw_api/openapi_fetchable",
+        "now": "partial",
+        "note": "openapi.json is 684 KB, past the 684 KB budget and closing on the 977 KB cap \u2014 move what got inlined into components before it stops being fetched"
+      },
+      {
+        "key": "raw_api/document_and_door_agree",
+        "now": "met",
+        "note": "5 rails, and the document and the door name the same ones"
+      }
+    ],
+    "removed": []
+  },
+  "reviews_due": [],
+  "hashes": {
+    "doors-complete-attempt.json": "c36e38ffab5c482ff0e7463aa286f712b249c344016563202dffcc2acaeebdd0",
+    "doors-complete-attempt.trace": "4965176a1becb357abd8a763401bc5d971300185e21bb6071c5fc941ea654322",
+    "refused-room.response": "a24533d7438be924584da99da6c8dfb26b34c78881f341629aa611dbe0c5db40"
+  },
+  "limits": [
+    "No payment or baseline write.",
+    "Production observation before release of PR #900, not verification of its deployment.",
+    "Five published room URLs returned 403; one sampled body is a Cloudflare block page.",
+    "Checker classified the observed WebMCP declaration coverage as met at 6479/6480 fetched rooms; five refused rooms are excluded from that denominator.",
+    "Earlier 90-second and 300-second attempts remain incomplete."
+  ]
+}

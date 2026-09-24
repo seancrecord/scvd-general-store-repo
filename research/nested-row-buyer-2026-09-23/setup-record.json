@@ -1,0 +1,9 @@
+{
+  "stage": "controller_startup",
+  "agent_launched": false,
+  "qualification_directory_created": false,
+  "cause": "Clean checkout lacked the locked viem dependency; module loading stopped before controller main.",
+  "resolution": "npm ci installed the existing lockfile before the first actual qualification. Source, plan and agent limits stayed unchanged.",
+  "stderr_sha256": "61cf464418cefb030e847d870c593359d5728479921b79dbbced444de9e948f2",
+  "package_lock_sha256": "ae691a6102b6788473246755846a9291e80de9a4a2219c7d5df16c6b78d9b2a6"
+}

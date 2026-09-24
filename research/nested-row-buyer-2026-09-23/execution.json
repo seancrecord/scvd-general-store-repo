@@ -1,0 +1,25 @@
+{
+  "sample_started_at": "2026-09-23T20:13:31.522023+00:00",
+  "sample_ended_at": "2026-09-23T20:32:08.353045+00:00",
+  "sample_count": 112,
+  "all_samples_ac": true,
+  "max_sample_gap_seconds": 10.118650707998313,
+  "test_process_samples": 33,
+  "first_test_process_sample_at": "2026-09-23T20:26:46.180153+00:00",
+  "last_test_process_sample_at": "2026-09-23T20:32:08.353045+00:00",
+  "qualification_sessions": 3,
+  "buyer_attempts": 4,
+  "recipient_attempts": 3,
+  "timing_interruptions": 0,
+  "controller_actions": [
+    "Temporary caffeinate -is -t 3600 started before qualification and stopped after the final recipient. No permanent power changes.",
+    "All native attempts serial; no heavy local tests launched by this controller during them.",
+    "Unrelated vitest/workerd processes were observed during recipients and left untouched. The intended quiet window was not fully achieved.",
+    "Sampler stopped after all native attempts. No attempts retried; no missing buyer files restored or supplied."
+  ],
+  "limits": [
+    "Sampling establishes observed AC/process state only, not uninterrupted idleness or a cause for any failure.",
+    "No timing guard interruption was reported; unrelated test-process overlap limits comparison with other cohorts.",
+    "Budgeted tool events are not origin request counts; token targets are advisory."
+  ]
+}
