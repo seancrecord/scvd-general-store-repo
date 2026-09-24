@@ -1,0 +1,47 @@
+{
+  "series": {
+    "buyers-conditions.jsonl": {
+      "samples": 92,
+      "ac_samples": 92,
+      "max_vitest_processes": 2,
+      "max_workerd_processes": 29,
+      "sha256": "efb674f0f2b03c044c84c014f47321071ea88f4025595f63530c4e98b8e217dc"
+    },
+    "claude-directed-r1-recipient-conditions.jsonl": {
+      "samples": 13,
+      "ac_samples": 13,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 15,
+      "sha256": "d47644be5f53b490ff8bc165d57bb5e532b5b23369ae6f61223012e9ca0409ba"
+    },
+    "claude-directed-r2-recipient-conditions.jsonl": {
+      "samples": 22,
+      "ac_samples": 22,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 21,
+      "sha256": "2c20324f7b2b0233c4df81589ea27a413cb3caa5bbd3f12728592417d8e13578"
+    },
+    "codex-directed-r1-recipient-conditions.jsonl": {
+      "samples": 21,
+      "ac_samples": 21,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 25,
+      "sha256": "627219fddc024292947a5697a70595d180cfb33909a6a0bde65eeb88f791d497"
+    },
+    "codex-directed-r2-recipient-conditions.jsonl": {
+      "samples": 20,
+      "ac_samples": 20,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 20,
+      "sha256": "e6ff75d51e0edfbfbda9430b413154b53253c44b1fe57a86efe749f510bea7b3"
+    },
+    "qualification-conditions.jsonl": {
+      "samples": 52,
+      "ac_samples": 52,
+      "max_vitest_processes": 1,
+      "max_workerd_processes": 15,
+      "sha256": "af3c9b8bbcc4ba964eabe59e64325d1e6301d2d00cccb69dcd5f3e88ed69c3d4"
+    }
+  },
+  "limits": "Sample observations, not continuous proof of host state. Other checkout Worker processes overlapped qualification, acquisition and recipients; no idle-machine or causal load claim. No controller tests ran during native acquisition. No timing interruption, budget increase, replacement evidence or restarted native session."
+}
