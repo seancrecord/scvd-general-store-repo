@@ -186,3 +186,65 @@ Theirs to do: the `workflow` scope, then CI on top of `verify.sh`.
 
 Nothing here needs the keeper's press. When the door serves, it is a
 LOOK.
+
+## Addendum — 2026-09-24
+
+Three days on, read against fresh clones of all three repositories.
+
+**The claim now checks itself.** `de2fca8` added `.github/workflows/ci.yml`
+— foundry-toolchain, `forge fmt --check`, `forge build`, `forge test -vv`
+— and the README carries the badge. The first run, on `de2fca8` itself,
+**failed** at `forge fmt --check` (exit 1, about fourteen seconds);
+`bc51f25` fixed the formatting and every run since is green. The badge
+text reads `passing`; the run on HEAD `b94c689` succeeded in 32 seconds.
+That red first run is the best evidence the pipeline is real. This
+closes the blindness named above — "counted, never executed" — and
+closes it the way the reply argued for: not by this store running the
+suite privately, but by a third party running it in public.
+
+The counts moved with them: `7b1a132` committed `verify.sh` as `100755`
+with an anchored counter (`^[[:space:]]*function[[:space:]]+test`),
+and `test/` holds seven suites and **52** test functions, `L5Finality`
+having gone from four to six.
+
+**Attribution moved.** `5ad0425` corrected the spec's citation from
+`internet-court` to `giskard09/argentum-core` — the same person, a
+renamed repository. The read above names the old one; it was accurate
+on the day.
+
+**They describe us in two places, and both need a correction.**
+`docs/KINDRED.md` carries an entry for this store that says it
+"audited this repo" and that a "referral exchange" was "agreed."
+Neither is so: every note here said *not an audit*, and what was
+agreed is a free preflight when the door serves and the conformance
+desk on their receipts. Their giskard09 entry records consent to be
+cited; ours carries none, because none was asked. A correction was
+requested on 2026-09-24. Unfixed as of this addendum.
+
+`12f36c1` then added an append-only Builder Ledger (`docs/LEDGER.md`,
+`ledger.json`, `tools/ledger.cjs`). This store is `bld-0006`, tier
+`converged`, **`counted: false`, `receipt_ref: null`** — and the
+ledger's own rules say *remembered ≠ counted* and *presence implies no
+endorsement*. That is a citation, not membership, and the line drawn
+above holds. Two things about it went back the same day. The note
+repeats "adversarial audit" into a machine-readable file, and their
+rule 1 makes the fix a superseding entry rather than an edit. And the
+boolean that separates remembered from counted is guarded, at
+`ledger.cjs:62`, only by the presence of a `receipt_ref` string:
+nothing binds that string to an act by the entry's own key, so the
+distance from citation to the Founding 99 is one push by whoever holds
+the repository. The ask was one line in their rules — `counted` flips
+for an external entry only on a receipt signed by that entry's
+published key — which keeps `bld-0006` false by construction, since
+this store will not sign anything into origin-1.
+
+**Unchanged.** No `L5x402` door serves; no URL for one exists in the
+tree. No signing key is published. The treaty bar in
+`RECEIPT_TREATY_ASK.md` is unmet, and nothing was added to
+`trust-list.json`.
+
+**What this addendum could not see.** The workflow-list page did not
+render run statuses to the reader used here; the green claim rests on
+the badge SVG's own text and two individual run pages read separately,
+not on the list. Whether KINDRED and the ledger are corrected is
+theirs, and is not yet known.
