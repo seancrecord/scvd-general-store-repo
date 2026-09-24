@@ -317,6 +317,7 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
  * ⚑ Keeper's pen; the plumbing derives the summaries from this.
  */
 export const CAPABILITY_QUERY: Record<string, string> = {
+  research_comparison: "Compare payment terms, dated host history and shared receiving addresses before an agent buys research from a set of x402 endpoints",
   a2a_repair_kit: "Find reproducible failures in my A2A agent and hand my developer tested repair instructions",
   conformance_watch:
     "Catch a deploy quietly breaking my x402 endpoint's payment challenge during the week",
@@ -399,6 +400,7 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  research_comparison: "one signed comparison of your research endpoints: atomic quotes, dated host history, gaps and shared receivers. Individual preflight and history reads are free; the purchase adds assembly, signature and certificate binding. No research content is evaluated.",
   a2a_repair_kit: "Exact observed failures, suggested fixes and runnable regression tests, followed by a signed recheck and a seven-day card watch; A2A 0.3.0 JSON-RPC only",
   aura_walk:
     "the buyer's side of your door as weaker and stronger models actually experience it — where each stalls, retries, misreads the accepts or pays the wrong rail — counted per entry point and quoted verbatim, by a person's hand. A preflight says the door is well-formed; this says whether a cold agent gets through it.",
@@ -496,6 +498,7 @@ export const NOVELTY_ONLY: readonly string[] = [
 ] as const;
 
 export const SPEC_RETURNS: Record<string, string> = {
+  research_comparison: "One signed comparison: live atomic payment terms, dated host history and gaps, same-endpoint network changes, shared receivers and limits. No research quality or ownership verdict.",
   a2a_repair_kit: "A signed A2A report, suggested repairs, regression runner URL, private one-use recheck token and finite card-watch history",
   conformance_watch:
     "A watch id and a permanent history URL, readable immediately and filling in daily for seven days: one signed pass per day carrying the verdict, every failed check and advisory by name, plus a summary deriving the days the store missed and whether the readout drifted between passes. Bounded and prepaid; ends after seven days, renews only by repurchase.",

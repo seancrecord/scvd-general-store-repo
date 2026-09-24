@@ -1,6 +1,7 @@
 import { postFor, postIntentUrl, sharePost } from "@/store/cards";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { signMessage } from "@/lib/signing";
+import type { SignedResearchComparison } from "@/services/research-comparison";
 import { deliverA2AKit, type PreparedA2AKit } from "@/services/a2a-kit";
 import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { caseFileNote, storeCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
@@ -139,6 +140,7 @@ export interface InstantGoodsInput {
   trustProfile?: SignedTrustProfile;
   /** spot_check only: the signed reading, already made and bound. */
   spotCheck?: SignedSpotCheck;
+  researchComparison?: SignedResearchComparison;
   /** the_case_file only: the assembly, already made and signed, and what was asked. */
   caseFile?: SignedCaseFile;
   caseFileInput?: CaseFileInput;
@@ -543,6 +545,19 @@ async function deliverGoods(
           chip_url: `/badges/passport/${observed.host}.svg`,
           verify_note:
             "ed25519_verify(observation.signed_payload, observation.signature) against observation.public_key, also served at /.well-known/scvd-signing-key. observation.signature_jcs verifies the RFC 8785 canonicalization of observation.observation. SHA-256 of observation.signed_payload equals observation.evidence_hash, bound into this purchase's certificate as attests; /api/verify/{cert_id} verifies the certificate separately.",
+        },
+      };
+    }
+    case "research_comparison": {
+      const comparison = input.researchComparison;
+      if (!comparison) throw new Error("research_comparison reached goods with no record");
+      const counts = comparison.record.counts;
+      return {
+        deliverable: `${counts.requested} research endpoints compared; ${counts.live_reports} live reports, ${counts.live_gaps} live gaps and ${counts.history_gaps} unavailable histories. The signed record carries the observation window, exact atomic quote groups and shared receivers. Missing history is a coverage limit; this does not judge research quality.`,
+        extras: {
+          research_comparison: comparison.record, observation: comparison,
+          evidence_hash: comparison.evidence_hash,
+          how_to_verify: "Verify observation.signed_payload with observation.signature and the store public key. SHA-256 of those exact bytes equals evidence_hash and certificate.attests. observation.signature_jcs verifies the RFC 8785 canonicalization of observation.record. The outer signatures cover the purchase certificate; /api/verify/{cert_id} verifies it separately.",
         },
       };
     }

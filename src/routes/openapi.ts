@@ -5729,7 +5729,7 @@ function paidOp(
       /* The v1 spelling is still accepted; saying so costs one field. */
       legacy_payment_header: "X-PAYMENT",
       settlement:
-        "Delivers first, settles after: the payment is presented only once the goods exist, so a failed delivery takes no money.",
+        "Delivers first, settles after; failed delivery takes no money.",
       discovery: `${env.STORE_BASE_URL}/.well-known/x402.json`,
       documentation: `${env.STORE_BASE_URL}/developers`,
     },
@@ -5740,7 +5740,7 @@ function paidOp(
       },
       "402": {
         description:
-          "Payment required: the offer, not a failure. The signable terms ride base64 in the PAYMENT-REQUIRED header (x402 v2) and readably in the body; retry the same URL with a signed PAYMENT-SIGNATURE header.",
+          "Read x402 v2 terms in PAYMENT-REQUIRED or the body; retry this URL with a signed PAYMENT-SIGNATURE.",
         headers: PAYMENT_CHALLENGE_HEADER_REFS,
         content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
       },

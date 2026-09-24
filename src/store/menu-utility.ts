@@ -1,3 +1,4 @@
+import { COMPARISON_MIN_URLS, COMPARISON_MAX_URLS, COMPARISON_INPUT_DESCRIPTION } from "@/lib/research-comparison-terms";
 import { A2A_PRICE_USDC, A2A_MONEY, A2A_PROPOSITION } from "@/store/a2a-repair";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 import { CLIENT_CAP_READABLE, CLIENT_CAP_USD } from "@/lib/client-spend-cap";
@@ -33,6 +34,23 @@ const GOOD_BUYER_PRICE_USDC = CLIENT_CAP_READABLE
  * human queue.
  */
 export const UTILITY_ITEMS: readonly MenuItem[] = [
+  // Demand tag: keeper-approved reuse for Coinbase agent research, 2026-09-24.
+  // Desk reasoning; production demand has not yet been observed.
+  {
+    id: "research_comparison", listed_week: "2026-W39", name: "Research Comparison",
+    subtitle: "signed payment terms, dated history and shared receivers for research endpoints",
+    price_usdc: 0.01, pricing: "fixed", cadence: "one_off", reads: "subject_comparison", fulfillment: "instant",
+    free_alternative: { path_template: "/api/look/v1", method: "POST", body_template: { url: "{endpoint_url}" }, paid_adds: "One signed, certificate-bound comparison of the supplied endpoints, with matching-asset quote groups and shared receiving addresses. The free Look reads one endpoint per call." },
+    description: `Compare ${COMPARISON_MIN_URLS} to ${COMPARISON_MAX_URLS} paid research endpoints before buying research: one live x402 preflight each, advertised atomic payment terms grouped by network and asset, dated host history with coverage and gaps, and shared receiving addresses within your set. Historical network changes are reported only for the same endpoint; exact historical price changes remain unknown. Delivered in one signed, certificate-bound response. No research is purchased or evaluated; no rankings or ownership claims. The separate preflight, Look and host history are free.`,
+    note_402: "A penny for the doors side by side, dated and signed. The blanks stay visible. You decide where to buy.",
+    constraints: [COMPARISON_INPUT_DESCRIPTION,
+      "Partial observations are delivered at the fixed price with gaps counted; if every live probe is refused or the instrument fails, no settlement is attempted",
+      "An unreachable probe is a reading of our network path, not proof that a provider is down",
+      "Atomic amounts compare only within the same network and asset; no token decimals, dollar conversion, variable final cost or research quality inferred",
+      "Shared receiving addresses do not establish common ownership or common research sources",
+      "Submitted URLs and the signed comparison are retained for purchase recovery, not added to the public corpus or shared with partners",
+      NEVER_A_RANKING_SENTENCE],
+  },
   // Demand tag: keeper request / desk reasoning, 2026-09-07. No paid demand observed.
   {
     id: "a2a_repair_kit", sample_url: "/samples/a2a-repair-kit.json", listed_week: "2026-W37", name: "The A2A Repair Kit",

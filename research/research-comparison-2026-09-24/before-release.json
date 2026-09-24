@@ -1,0 +1,103 @@
+{
+  "stage": "before-release",
+  "at": "2026-09-24T15:17:52.566Z",
+  "paid": false,
+  "urls": [
+    "https://x402stock.xyz/api/v1/research/AAPL",
+    "https://x402financialdata.com/analyst/AAPL"
+  ],
+  "records": [
+    {
+      "url": "https://scvd.store/api/catalog/v1?q=research",
+      "status": 200,
+      "at": "2026-09-24T15:17:51.646Z",
+      "content_type": "application/json",
+      "body": {
+        "query": {
+          "q": "research"
+        },
+        "scope": "active_menu",
+        "publications": [
+          {
+            "index_url": "https://scvd.store/almanac?view=compact",
+            "status": "active"
+          },
+          {
+            "index_url": "https://scvd.store/open-for-business?view=compact",
+            "status": "active"
+          },
+          {
+            "index_url": "https://scvd.store/gazette?view=compact",
+            "status": "archived"
+          },
+          {
+            "index_url": "https://scvd.store/zodiac/archive?view=compact",
+            "status": "archived"
+          }
+        ],
+        "matched": 1,
+        "of": 35,
+        "items": [
+          {
+            "id": "launch_check",
+            "name": "The Launch Check",
+            "subtitle": "a real paid purchase against your endpoint, signed, before you announce it",
+            "price_usdc": 5,
+            "price_tiers_usdc": [
+              5
+            ],
+            "cadence": "one_off",
+            "fulfillment": "instant",
+            "reads": "subject_purchase",
+            "buy_url": "https://scvd.store/api/buy/launch_check",
+            "buy_url_template": "https://scvd.store/api/buy/launch_check?url=<url>",
+            "listing_url": "https://scvd.store/menu/launch_check"
+          }
+        ],
+        "how_this_was_ordered": "The shelf's own order, filtered by the stated rule. Nothing here is ranked, scored or recommended.",
+        "one_item_in_full": "https://scvd.store/api/catalog/v1?item_id={id}",
+        "whole_catalogue": "https://scvd.store/menu.json"
+      }
+    },
+    {
+      "url": "https://scvd.store/api/buy/research_comparison?urls=%5B%22https%3A%2F%2Fx402stock.xyz%2Fapi%2Fv1%2Fresearch%2FAAPL%22%2C%22https%3A%2F%2Fx402financialdata.com%2Fanalyst%2FAAPL%22%5D",
+      "status": 404,
+      "at": "2026-09-24T15:17:52.185Z",
+      "content_type": "application/json",
+      "body": {
+        "error": "Don't have this... yet. Let me talk to the keeper, see what we can do.",
+        "code": "unknown_item",
+        "charged": false,
+        "retry_same_request": false,
+        "next_step": {
+          "method": "GET",
+          "url": "https://scvd.store/api/catalog/v1",
+          "payment_required": false,
+          "mcp": {
+            "url": "https://scvd.store/mcp",
+            "tool": "find_in_catalog",
+            "arguments": {}
+          }
+        },
+        "menu_url": "https://scvd.store/menu.json",
+        "request_url": "https://scvd.store/api/request"
+      }
+    },
+    {
+      "url": "https://x402stock.xyz/api/v1/research/AAPL",
+      "status": 402,
+      "at": "2026-09-24T15:17:52.371Z",
+      "content_type": "application/json",
+      "body": {
+        "preview": ""
+      }
+    },
+    {
+      "url": "https://x402financialdata.com/analyst/AAPL",
+      "status": 402,
+      "at": "2026-09-24T15:17:52.565Z",
+      "content_type": "application/json",
+      "body": {}
+    }
+  ]
+}

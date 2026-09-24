@@ -1138,11 +1138,12 @@ const BASE = "https://scvd.store";
 // this file asks rather than asserted: with routes/llms.ts alone
 // reverted and nothing else touched, both digests below reproduced
 // their previous values exactly.
-// 2026-09-24: calling-card setup replaces the Web Bot Auth paragraph and
-// enters the index. Restoring only llms.ts reproduced both prior fingerprints.
+// 2026-09-24: Research Comparison adds its derived listing and input contract.
+// Calling-card setup also replaces the Web Bot Auth paragraph and enters the index.
+// Both fingerprints below were taken from the integrated guide after reviewing
+// the product additions; the prior pins failed on those added bytes.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5d74bfb7caec01d74fb66e5f6adea5cdf2d77cfb6b0b94d365c37f0d5f7ad6de";
-
+  "b20bbd01b7ff8a1f2e26ccf600f64e15624b4d0d77d7248944e9f80b0f8c9849";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1231,9 +1232,9 @@ describe("nothing was rewritten", () => {
 // both stand and this one says why there is a third. Taken from the
 // merged tree, the way this file asks.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      // Re-pinned 2026-09-22 with the store-month paragraph; see the
+      // Re-pinned 2026-09-24 with the new product; see the
       // note on GUIDE_DIGEST_BEFORE_THE_SPLIT for how it was verified.
-      "5b15673123bba3d5b298eebe72e5656ae2210796b05a191ec0f0b2265b38c7e8",
+      "be9f17fe3fd6e735447051cf93272d3dab15a4e47c68ffd86ea920ee2c52f60b",
     );
   });
 

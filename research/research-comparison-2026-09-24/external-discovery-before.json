@@ -1,0 +1,107 @@
+{
+  "at": "2026-09-24T15:18:21.253Z",
+  "source": "AgentCash external discovery tools; unpaid",
+  "organic_adoption": false,
+  "scvd_origin": {
+    "found": true,
+    "source": "openapi",
+    "trustTier": "ownership_verified",
+    "includes_research_comparison": false
+  },
+  "candidate_searches": [
+    {
+      "query": "stock equities financial research company fundamentals API pay per call",
+      "returned": [
+        {
+          "origin": "https://omnicall.gocreativeai.com",
+          "path": "/v1/finance/stock/fundamentals/{arg}",
+          "method": "GET",
+          "summary": "Returns key annual financial fundamentals (revenue, net income, EBITDA, EPS, dividend, stock split) for a given stock ticker symbol, pay-per-call in USDC.",
+          "price": "0.05 USD"
+        },
+        {
+          "origin": "https://apa.orbonomy.xyz",
+          "path": "/api/data/finance",
+          "method": "POST",
+          "summary": "Retrieve real-time and historical financial market data including stock quotes, prices, and related metrics via a pay-per-call API.",
+          "price": "0.05"
+        },
+        {
+          "origin": "https://api.orbonomy.xyz",
+          "path": "/api/data/finance",
+          "method": "POST",
+          "summary": "Retrieve real-time financial market data including stock prices, quotes, and related financial metrics via a pay-per-call API.",
+          "price": "0.05"
+        },
+        {
+          "origin": "https://orbonomy.xyz",
+          "path": "/api/data/finance",
+          "method": "POST",
+          "summary": "Retrieve real-time financial market data including stock prices, indices, and related finance metrics via a pay-per-call API.",
+          "price": "0.05"
+        }
+      ]
+    },
+    {
+      "query": "GET stock analyst earnings financial research report ticker",
+      "returned": [
+        {
+          "origin": "https://x402stock.xyz",
+          "path": "/api/v1/research/{ticker}",
+          "method": "GET",
+          "summary": "Returns a full AI-synthesized equity research memo for a US stock, covering fundamentals, technicals, insider activity, news, and a bull/bear analysis in a single call.",
+          "price": "0.75 USD"
+        },
+        {
+          "origin": "https://api.meshgateway.co",
+          "path": "/m/bz-www-x402financialdata-com/analyst/:ticker",
+          "method": "GET",
+          "summary": "Returns analyst ratings and recommendations for a given stock ticker via a per-request micropayment API.",
+          "price": "0.005000 USD"
+        },
+        {
+          "origin": "https://x402stock.vercel.app",
+          "path": "/api/v1/research/{ticker}",
+          "method": "GET",
+          "summary": "Returns a full AI-synthesized equity research memo for one US stock, covering bull/bear case, valuation, catalysts, risks, and signal read-out sourced from ~16 data streams.",
+          "price": "0.75 USD"
+        },
+        {
+          "origin": "https://x402financialdata.com",
+          "path": "/analyst/{ticker}",
+          "method": "GET",
+          "summary": "Returns analyst recommendation trends, consensus price targets, recent upgrades/downgrades by firm, and short interest data for a given stock ticker."
+        },
+        {
+          "origin": "https://x402-market-data.vercel.app",
+          "path": "/analyst/%7Bticker%7D",
+          "method": "GET",
+          "summary": "Returns analyst ratings and recommendations for a given stock ticker, paid per call via USDC on Base or Solana.",
+          "price": "0.01"
+        },
+        {
+          "origin": "https://x402-stock-indicators.vercel.app",
+          "path": "/analyst/{ticker}",
+          "method": "GET",
+          "summary": "Returns analyst recommendation trends, consensus price targets, recent firm upgrades/downgrades, and short interest data for a given stock ticker."
+        },
+        {
+          "origin": "https://x402-market-data.vercel.app",
+          "path": "/analyst/{ticker}",
+          "method": "GET",
+          "summary": "Returns analyst recommendation trends, consensus price targets, recent firm upgrades/downgrades, and short interest data for a given stock ticker."
+        },
+        {
+          "origin": "https://api.interzoid.com",
+          "path": "/getstockinfo",
+          "method": "GET",
+          "summary": "Returns AI-powered stock analysis for a ticker symbol, including price metrics, financial health indicators, and analyst sentiment."
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Search results are bounded results, not a market census.",
+    "Provider descriptions and prices are provider/index claims; paid content was not retrieved."
+  ]
+}

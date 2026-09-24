@@ -97,6 +97,7 @@ describe("the storefront", () => {
       // (relisted 2026-09-02) ahead of the confession.
       "daily_fortune",
       "the_confession",
+      "research_comparison",
       "attestation_bundle",
       // A dime: the mandate rides the cheap-door region on purpose —
       // the thing you buy BEFORE anything goes wrong should be among

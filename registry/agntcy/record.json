@@ -215,7 +215,7 @@
           {
             "name": "buy_observation",
             "title": "Third-Party Observation",
-            "description": "A signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, or a Bitcoin timestamp — have a disinterested third party go and look at something, then sign what it saw: whether a URL still answered hours later, or what the chain says about a settlement.",
+            "description": "Independent signed x402 research comparisons, settlement attestations, x402 conformance audits, x402 endpoint monitoring, x402 payment client tests, x402 launch checks and Bitcoin timestamps.",
             "scopes": [
               "external"
             ]

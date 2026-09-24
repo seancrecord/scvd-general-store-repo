@@ -1,5 +1,6 @@
 import type { PreparedPatronage } from "@/services/patronage-recovery";
 import type { OperatorStatementRecord } from "@/services/operator-statement";
+import type { SignedResearchComparison } from "@/services/research-comparison";
 import type { SignedLaunchCheck } from "@/services/launch-check";
 import type { SignedCaseFile } from "@/services/case-file";
 import type { SignedMandate } from "@/services/mandates";
@@ -40,6 +41,7 @@ export interface PreparedObservation {
   onpageAudit?: SignedOnpageAudit;
   a2aKit?: PreparedA2AKit;
   spotCheck?: SignedSpotCheck;
+  researchComparison?: SignedResearchComparison;
   provenanceCheck?: SignedProvenanceCheck;
   walletStatement?: SignedWalletStatement;
   reconciliation?: SignedReconciliation;

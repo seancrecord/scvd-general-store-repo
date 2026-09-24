@@ -48,6 +48,32 @@ issue/comments through the GitHub connector and npm metadata (same 1.7.5 and
 archive integrity), then [posted and verified the factual follow-up](https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384).
 Partner response remains pending; no paid attempt or production change.
 
+## 2026-09-24 — Research comparison from existing instruments
+
+Read Coinbase's [agent equities and x402 launch](https://www.coinbase.com/fr/developer-platform/discover/launches/c4a-equities-x402),
+[Bazaar buyer discovery](https://docs.cdp.coinbase.com/x402/buyer/discover-services)
+and [Bazaar MCP server](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/bazaar-mcp-server).
+These motivate a research-buying use case, not a claim that Coinbase
+installs, endorses or lists this product. No trade or research purchase was made.
+The local product uses the existing x402 catalog and MCP shelf; external indexing
+still requires a deployed resource and an actual directory observation.
+
+Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+Reuse the bounded preflight and public-target guard; do not introduce a second
+fetch parser or payment path. Inspect the installed Workers types and Wrangler
+configuration. There are no new bindings, dependencies or wallet permissions.
+Atomic token amounts remain strings; network and token must match before grouping.
+Existing host history cannot establish exact per-endpoint historical prices.
+Read the [OpenAPI 3.1.1 Components Object](https://spec.openapis.org/oas/v3.1.1.html#components-object).
+Current main already shares payment Header Objects through local references.
+The release retains those components and shortens repeated payment descriptions
+to preserve the existing growth budget without dropping any payment field.
+Re-read [Coinbase's seller discovery guide](https://docs.cdp.coinbase.com/x402/seller/get-discovered):
+free validation checks eligibility; a settled call triggers indexing. External
+AgentCash discovery and unpaid provider reads are retained in
+`research/research-comparison-2026-09-24/` with their observation limits.
+Implementation and remaining limits: `RESEARCH_COMPARISON_2026-09.md`.
+
 ## 2026-09-20 — UCP.tools listing and UCPRegistry intake
 
 Read the rendered [UCP.tools directory](https://ucptools.dev/directory), searched

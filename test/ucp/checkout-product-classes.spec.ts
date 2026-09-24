@@ -46,6 +46,7 @@ const accepts = () => vi.fn(async () => ({ isValid: true, payer: PAYER }));
  * can be walked without a bespoke fixture per item.
  */
 const INPUT_VALUES: Record<string, string> = {
+  urls: JSON.stringify(["https://alpha.example/research", "https://beta.example/research"]),
   url: "https://example.test/door",
   wallet: "0x3333333333333333333333333333333333333333",
   address: "0x3333333333333333333333333333333333333333",
@@ -143,6 +144,7 @@ describe("every product this catalog sells can be prepared through the shared se
    * fixtures, where it already lives.
    */
   const NEEDS_THE_WORLD = new Set([
+    "research_comparison",
     "attestation_bundle",
     "the_case_file",
     "a2a_repair_kit",

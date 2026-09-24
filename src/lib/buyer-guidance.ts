@@ -17,9 +17,10 @@ export function buyerGuidance(item: MenuItem, base: string, query: Record<string
       scope: "The named item and its declared inputs; a tip does not add scope, priority or human time.",
       ...(item.term_days === undefined ? {} : { term_days: item.term_days }),
     },
-    ...(source ? { free_alternative: { url: sourceUrl, method:'GET', payment_required:false, paid_adds:source.paid_adds },
-      freshness: { url:sourceUrl + '?view=stable', method:'GET', payment_required:false, request_header:'If-None-Match', response_header:'ETag', unchanged_status:304,
-        limit:'Unchanged bytes mean this published view is unchanged, not a live probe or proof the subject is unchanged. Read observation dates and gaps before buying another signed copy.' } } : {}),
+    ...(source ? { free_alternative: { url: sourceUrl, method:source.method ?? 'GET', payment_required:false, paid_adds:source.paid_adds,
+      ...(source.body_template ? { body_template:source.body_template } : {}) },
+      ...(source.method === 'POST' ? {} : { freshness: { url:sourceUrl + '?view=stable', method:'GET', payment_required:false, request_header:'If-None-Match', response_header:'ETag', unchanged_status:304,
+        limit:'Unchanged bytes mean this published view is unchanged, not a live probe or proof the subject is unchanged. Read observation dates and gaps before buying another signed copy.' } }) } : {}),
     production: item.production ?? (item.stocked ? {kind:'stocked_good',authorship:'Existing stock; see the delivered unit for its attribution.'} : item.fulfillment === 'human_queue'
       ? { kind:'commissioned_human_work', ...(item.sla_hours === undefined ? {} : {sla_hours:item.sla_hours}), completion:'An accepted order is not completed work. Poll the returned order URL.' }
       : { kind:item.stocked ? 'stocked_good' : 'instant_fulfillment', authorship:'See the artifact; no additional authorship or authoring date is asserted here.' }),

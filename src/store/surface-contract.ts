@@ -646,7 +646,7 @@ function doorFacts(
     required: [...(schema.required ?? [])],
     reads: item.reads,
     fetchesSubject:
-      item.reads === "subject_fetch" || item.reads === "subject_purchase",
+      item.reads === "subject_fetch" || item.reads === "subject_comparison" || item.reads === "subject_purchase",
     humanQueue: item.fulfillment === "human_queue",
     limited: item.weekly_inventory !== undefined || item.stocked === true,
   };
@@ -664,6 +664,8 @@ function doorFacts(
  * the type, established from each fulfillment service's import graph.
  */
 export const READS_SENTENCE: Record<MenuItem["reads"], string> = {
+  subject_comparison:
+    "One unauthenticated outbound GET for preflight per supplied public HTTPS endpoint, plus the observatory history for each host. No target purchase, wallet connection or buyer headers forwarded. The preflight may also read public RPC state; its limits accompany every row.",
   subject_fetch:
     "One unauthenticated outbound GET from our infrastructure to the endpoint you name — no credentials of yours, nothing of yours forwarded to it, and never a private, loopback or link-local address, nor our own hostname.",
   subject_purchase:

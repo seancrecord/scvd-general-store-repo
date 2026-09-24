@@ -85,6 +85,12 @@ export interface ArtifactClass {
 
 export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
   {
+    id: "research_comparison", name: "Research endpoint comparison", trust_model: "third_party_observation",
+    signs: "The supplied endpoint set, observation window, per-endpoint preflight reports, advertised atomic terms, host history with dates and coverage, same-endpoint network comparisons, shared receiving-address matches, gaps and limits. SHA-256 of observation.signed_payload is bound into the purchase certificate as attests; observation.signature_jcs also covers the RFC 8785 canonical record.",
+    does_not_prove: "Research accuracy, freshness, licensing or suitability for a trade; common ownership or common underlying sources; complete market coverage; final variable costs; settlement or delivery success. An advertised address match is not an identity verdict. No ranking, recommendation or Coinbase endorsement.",
+    verify_url: "/api/verify/{cert_id}",
+  },
+  {
     id: "ard_trust_manifest",
     name: "ARD trust manifest",
     trust_model: "self_signed",

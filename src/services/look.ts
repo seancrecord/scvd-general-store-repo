@@ -229,7 +229,7 @@ export async function heldHalfOf(env: Env, host: string, now: Date = new Date())
 }
 
 /** Serve the held fold while it is younger than the hold; otherwise fold, hold, serve. */
-async function heldHalf(env: Env, host: string, now: Date): Promise<HeldHalf> {
+export async function heldHalf(env: Env, host: string, now: Date): Promise<HeldHalf> {
   const key = KV_KEYS.look(host);
   const stored = await kvGetJson<HeldEnvelope>(env.COUNTERS, key, "json").catch(() => null);
   if (stored?.derived_at && stored.held) {
