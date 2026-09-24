@@ -9,6 +9,12 @@ Plugin packaging has its own version in `plugin.json`; host wrappers are held to
 it by tests. A packaging-only release does not require republishing the unchanged
 MCP service identity in `server.json`.
 
+September 24: [portable release preparation and post-merge actions](portable-release-2026-09-24.md)
+refresh the shared skill assets and Tab install pin. Previous submission pins below
+remain the versions actually submitted; this source update does not change them.
+Gemini qualification and submission remain paused; its bundled version metadata
+alone stays synchronized with the portable package.
+
 ## Shared assets and fields
 
 - Repository: https://github.com/seancrecord/scvd-general-store-repo
