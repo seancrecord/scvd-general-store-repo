@@ -362,7 +362,7 @@ const IF_NONE_MATCH_PARAMETER: OpenApiObject = {
   required: false,
   schema: { type: "string" },
   description:
-    "Conditional GET. Send the ETag a previous answer carried (a SHA-256 of the exact bytes served, not a version somebody maintains) and an unchanged document answers 304 with no body. Send it on a schedule instead of re-downloading what you already hold.",
+    "Send a prior ETag (SHA-256 of exact response bytes). Unchanged content returns 304 with no body.",
 };
 
 const NOT_MODIFIED_RESPONSE: OpenApiObject = {
