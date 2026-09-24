@@ -1,6 +1,8 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { MENU_ITEMS, getMenuItem } from "@/store/menu";
+import { getMenuItem } from "@/store/menu";
+import { NOVELTY_ITEMS } from "@/store/menu-novelties";
+import { PENNY_SHELF_ITEMS } from "@/store/menu-penny";
 
 const BASE = "https://scvd.store";
 
@@ -16,10 +18,11 @@ const PAIRED = [
   "standing_watch",
   "service_audit",
   "launch_check",
+  "research_comparison",
 ] as const;
 
 describe("the operator instruments carry a subtitle", () => {
-  it("each of the four, in the buyer's words, naming the endpoint", () => {
+  it("each named instrument, in the buyer's words, naming the endpoint", () => {
     for (const id of PAIRED) {
       const item = getMenuItem(id)!;
       expect(item.subtitle, `${id} has no subtitle`).toBeTruthy();
@@ -29,8 +32,8 @@ describe("the operator instruments carry a subtitle", () => {
   });
 
   it("the novelties do not", () => {
-    for (const item of MENU_ITEMS) {
-      if (item.price_usdc < 1 && item.id !== "spot_check") {
+    for (const item of [...NOVELTY_ITEMS, ...PENNY_SHELF_ITEMS]) {
+      if (item.price_usdc < 1) {
         expect(item.subtitle, `${item.id} grew a subtitle`).toBeUndefined();
       }
     }

@@ -26,11 +26,14 @@ describe("shelf commerce metadata", () => {
     }
   });
 
-  it("holds the 35 items the shelf currently lists", () => {
+  it("holds the shelf including Research Comparison", () => {
     // Not a magic number: a change to this count is a change to the
     // shelf, and it should be visible in the diff that makes it.
-    expect(MENU_ITEMS.length).toBe(35);
-    expect(commerceItemIds().length).toBe(35);
+    expect(MENU_ITEMS.length).toBe(36);
+    expect(commerceItemIds().length).toBe(MENU_ITEMS.length);
+    expect(commerceFor("research_comparison")).toMatchObject({
+      sku: "SCVD-RESEARCH-COMPARISON", license_policy: "artifact", visibility: "core",
+    });
   });
 
   it("gives every item a unique, uppercase, SCVD-prefixed SKU", () => {

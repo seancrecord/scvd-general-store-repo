@@ -116,8 +116,8 @@ describe("/.well-known/ucp", () => {
       await SELF.fetch(`${BASE}/.well-known/ucp`)
     ).json()) as Record<string, any>;
     const catalog = profile["store.scvd"].catalog;
-    expect(catalog.products_total).toBe(35);
-    expect(catalog.products_in_ucp_catalog).toBe(31);
+    expect(catalog.products_total).toBe(36);
+    expect(catalog.products_in_ucp_catalog).toBe(32);
     expect(catalog.excluded.count).toBe(4);
     expect(catalog.excluded.reason).toContain("$0.001");
     expect(catalog.excluded.still_listed_at).toBe(`${BASE}/menu.json`);

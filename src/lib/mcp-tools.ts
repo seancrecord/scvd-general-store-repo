@@ -4,6 +4,7 @@ import { PURCHASE_RECOVERY_TOOL_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } 
 import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
 import { A2A_CHECK_SCHEMA } from "@/lib/a2a-desk-schema";
+import { COMPARISON_EXAMPLE_INPUT } from "@/lib/research-comparison-terms";
 import {
   MCP_REFUSAL_CODES,
   refusalVocabularyUrl,
@@ -220,7 +221,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_observation",
     title: "Third-Party Observation",
     purpose:
-      "Purpose: a signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit, x402 endpoint monitoring, a signed x402 payment client test, an x402 launch check, or a Bitcoin timestamp — have a disinterested third party go and look at something, then sign what it saw: whether a URL still answered hours later, or what the chain says about a settlement. To record what an agent was authorized to do before it spends, which observes nothing and is a different verb, the tool is buy_mandate. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
+      "Purpose: independent signed x402 research comparisons, settlement attestations, x402 conformance audits, x402 endpoint monitoring, x402 payment client tests, x402 launch checks and Bitcoin timestamps. To record prior spending authority, use buy_mandate. Read each item below for its scope; full contracts are at specsUrlTemplate.",
     itemIds: [
       /**
        * THE MANDATE IS NOT ON THIS SHELF ANY MORE (2026-09-22), and
@@ -310,6 +311,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // the routine pre-transaction question this cluster exists to
       // answer.
       "spot_check",
+      "research_comparison",
     ],
   },
   {
@@ -455,6 +457,7 @@ function purchaseOutputSchema(item: MenuItem): Schema {
  * out — the example is the smallest correct call, not the largest.
  */
 const EXAMPLE_STRINGS: Record<string, string> = {
+  urls: COMPARISON_EXAMPLE_INPUT,
   agent_name: "my-agent",
   url: "https://example.com/api/paid-answer",
   callback_url: "https://example.com/hooks/scvd-order",
@@ -636,7 +639,7 @@ function clusterInputSchema(items: MenuItem[]): Schema {
     item_id: {
       type: "string",
       description:
-        "Which item on this shelf to buy. Required. Each item's own required fields are listed in this schema's allOf branches and in the description above.",
+        "Required item; its other required fields are in allOf.",
       enum: items.map((item) => item.id),
     },
   };

@@ -79,6 +79,13 @@ export interface ItemCommerce {
 }
 
 const SHELF_COMMERCE: Record<string, ItemCommerce> = {
+  research_comparison: {
+    sku: "SCVD-RESEARCH-COMPARISON",
+    categories: ["endpoint-audit", "buyer-tooling"],
+    tags: ["research", "comparison", "x402", "payment-terms", "host-history", "signed-report"],
+    license_policy: "artifact",
+    visibility: "core",
+  },
   hello: {
     sku: "SCVD-HELLO",
     categories: ["signed-artifact"],

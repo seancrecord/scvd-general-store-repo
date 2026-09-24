@@ -1,6 +1,7 @@
 import { SUBJECT_ADDRESS_PATTERN, TRANSACTION_ID_PATTERN, SPOT_CHECK_HOST_PATTERN, trimmedInputPattern } from "@/lib/purchase-input-syntax";
 import { MANDATE_TEXT_CAP } from "@/lib/mandate-terms";
 import { NAME_CAP } from "@/lib/sanitize";
+import { COMPARISON_INPUT_DESCRIPTION, COMPARISON_INPUT_CAP, COMPARISON_EXAMPLE_INPUT } from "@/lib/research-comparison-terms";
 import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES, BUNDLE_HASH_CHARACTERS } from "@/lib/attestation-bundle-terms";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
@@ -259,6 +260,10 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
         "Your own x402 endpoint: https, default port, on the public internet. One fresh observation by the weekly census's own probe, folded into your endpoint passport wherever it is newest — the verdict lands whatever it says, and a broken finding turns the chip dark. We refuse our own hostname.",
     };
     required.push("url");
+  }
+  if (item.id === "research_comparison") {
+    properties["urls"] = { type: "string", maxLength: COMPARISON_INPUT_CAP, description: COMPARISON_INPUT_DESCRIPTION };
+    required.push("urls");
   }
   if (item.id === "spot_check") {
     properties["host"] = {
@@ -519,6 +524,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
  */
 export function buyInputExample(item: MenuItem): Record<string, unknown> {
   const example: Record<string, unknown> = { agent_name: "friendly-agent" };
+  if (item.id === "research_comparison") example["urls"] = COMPARISON_EXAMPLE_INPUT;
   if (item.id === "context_anchor") {
     example["summary"] =
       "I am friendly-agent, mid-task on a research project; resume from step 4.";

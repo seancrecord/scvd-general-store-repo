@@ -3,6 +3,8 @@ import { attestLoop, storeLinks } from "@/lib/store-links";
 import { feedbackInvite } from "@/store/agent-feedback";
 import { isHouseWallet } from "@/lib/channel";
 import { humanOrderEvidence } from "@/services/human-order-proof";
+import { performResearchComparison, ResearchComparisonUnavailable, type SignedResearchComparison } from "@/services/research-comparison";
+import { SettlementDeclined } from "@/lib/payments";
 import { creditPickup } from "@/lib/credit-terms";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { prepareOperatorStatement } from "@/services/operator-statement";
@@ -162,6 +164,7 @@ export interface FulfillmentInput {
   passId?: string;
   /** spot_check: the host to read from the books, pre-validated. */
   spotCheckHost?: string;
+  comparisonUrls?: string;
   /** the_confession: the confession itself, pre-validated. */
   confessionText?: string;
   /** Any item: the buyer's stated why, pre-capped. Untrusted. */
@@ -491,6 +494,18 @@ export async function fulfillPurchase(
     provenanceCheck = await performProvenanceCheck(env, input.subjectAddress ?? "");
     mintOptions.attests = provenanceCheck.evidence_hash;
   }
+  let researchComparison: SignedResearchComparison | undefined = retainedObservation?.researchComparison;
+  if (item.id === "research_comparison" && !retainedObservation) {
+    try { researchComparison = await performResearchComparison(env, input.comparisonUrls); }
+    catch (error) {
+      if (error instanceof ResearchComparisonUnavailable) {
+        throw new SettlementDeclined(Response.json({ code: "upstream_unavailable", charged: false,
+          settlement_attempted: false, error: "The comparison instrument could not complete any live probes. Nothing charged. Retry the same request later." }, { status: 503 }));
+      }
+      throw error;
+    }
+    mintOptions.attests = researchComparison.evidence_hash;
+  }
   let spotCheck: SignedSpotCheck | undefined = retainedObservation?.spotCheck;
   if (item.id === "spot_check" && !retainedObservation) {
     spotCheck = await performSpotCheck(env, input.spotCheckHost ?? "");
@@ -587,7 +602,7 @@ export async function fulfillPurchase(
   // publish the purchased observation, even if the target changes or vanishes.
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
-      attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
+      attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, researchComparison, provenanceCheck,
       walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor, caseFile, caseFileReused, launchCheck, patronage, operatorStatement,
       attests: mintOptions.attests!,
     });
@@ -599,6 +614,7 @@ export async function fulfillPurchase(
     onpageAudit = prepared.onpageAudit;
     a2aKit = prepared.a2aKit;
     spotCheck = prepared.spotCheck;
+    researchComparison = prepared.researchComparison;
     provenanceCheck = prepared.provenanceCheck;
     walletStatement = prepared.walletStatement;
     reconciliation = prepared.reconciliation;
@@ -614,6 +630,7 @@ export async function fulfillPurchase(
     if ((item.id === "the_mandate" && !mandate) || (item.id === "bitcoin_anchor" && !patronAnchor) ||
       (item.id === "the_case_file" && !caseFile) ||
       (item.id === "recurring_patronage" && !patronage) || (item.id === "operator_statement" && !operatorStatement) ||
+      (item.id === "research_comparison" && !researchComparison) ||
       (["launch_check", "opening_day"].includes(item.id) && !launchCheck)) {
       const error = new Error("Original purchased record unavailable");
       if (pending.observation.unavailable) await pending.observation.unavailable(error);
@@ -1015,6 +1032,7 @@ export async function fulfillPurchase(
     if (trustProfile) {
       goodsInput.trustProfile = trustProfile;
     }
+    if (researchComparison) goodsInput.researchComparison = researchComparison;
     if (spotCheck) {
       goodsInput.spotCheck = spotCheck;
     }

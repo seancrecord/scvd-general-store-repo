@@ -76,6 +76,7 @@ export const ITEM_ASKED_FOR: Record<string, string> = {
   opening_day: "x402 launch check with a week of signed daily monitoring and a passport page",
   provenance_check: "x402 payTo address history, signed from the public chain",
   spot_check: "what the observatory already knows about an x402 host, signed",
+  research_comparison: "x402 research provider comparison: payment terms, dated history and shared receiving addresses",
   the_statement: "signed on-chain statement of an agent wallet's activity",
   operator_statement: "signed inflow statement for an x402 receiving address, a month of readings",
   passport_refresh: "fresh census observation of an x402 endpoint, on demand",

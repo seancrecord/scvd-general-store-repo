@@ -70,6 +70,7 @@ export function requirements(schema: Schema, id: string): string[] {
 }
 // Independent buyer inputs. These are examples, not a second paid-item roster.
 export const values: Obj = {
+  urls: JSON.stringify(["https://buyer-fixture.example/api/paid", "https://buyer-fixture.example/api/other"]),
   url: "https://buyer-fixture.example/api/paid", host: "buyer-fixture.example",
   address: "0x1111111111111111111111111111111111111111",
   wallet: "0x2222222222222222222222222222222222222222",

@@ -24,8 +24,8 @@ const BASE = "https://scvd.store";
 const INPUT_MISMATCH_CODE = inputMismatchRefusal({}).code;
 const HUMAN_RESOLUTION_CODES = [...HUMAN_RESOLUTION_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map(match => match[1]!);
 
-/** The two classes that knock on an endpoint the buyer named. */
-const FETCHES = new Set(["subject_fetch", "subject_purchase"]);
+/** The classes that knock on endpoints the buyer named. */
+const FETCHES = new Set(["subject_fetch", "subject_comparison", "subject_purchase"]);
 
 /**
  * RULE 57 ON THE PAID SHELF.

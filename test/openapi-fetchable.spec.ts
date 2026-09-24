@@ -46,6 +46,23 @@ async function document(): Promise<{ text: string; json: Record<string, unknown>
 }
 
 describe("the contract is small enough to be read", () => {
+  it("shares payment-header definitions without losing names or wire meanings", async () => {
+    const { json } = await document();
+    const components = json.components as Record<string, Record<string, Record<string, unknown>>>;
+    const headers = components.headers!;
+    expect(headers["PAYMENT-REQUIRED"]).toMatchObject({ schema: { type: "string" } });
+    expect(String(headers["PAYMENT-REQUIRED"]?.description)).toContain("Base64-encoded x402 v2");
+    expect(String(headers["WWW-Authenticate"]?.description)).toContain("oauth-protected-resource");
+    const paths = json.paths as Record<string, { get?: Record<string, unknown> }>;
+    for (const [path, item] of Object.entries(paths)) {
+      if (!path.startsWith("/api/buy/") || !item.get?.["x-payment"]) continue;
+      const responses = item.get.responses as Record<string, { headers?: Record<string, unknown> }>;
+      for (const name of ["PAYMENT-REQUIRED", "WWW-Authenticate"]) {
+        expect(responses["402"]?.headers?.[name], `${path}: ${name}`).toEqual({ $ref: `#/components/headers/${name}` });
+      }
+    }
+  });
+
   it("stays inside the budget, which is inside the fetch cap", async () => {
     const { text } = await document();
     const bytes = new TextEncoder().encode(text).byteLength;

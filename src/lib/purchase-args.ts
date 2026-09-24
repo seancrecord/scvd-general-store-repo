@@ -1,6 +1,7 @@
 import { EVM_TRANSACTION_PATTERN } from "@/lib/purchase-input-syntax";
 import { checkOptionalObservationConstraints } from "@/lib/purchase-constraints";
 import { unicodeLength, hasUnpairedSurrogate } from "@/lib/unicode";
+import { comparisonUrls } from "@/lib/research-comparison-terms";
 import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
 export { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
 import { target as a2aTarget } from "@/lib/a2a-instrument";
@@ -646,6 +647,10 @@ export async function checkPurchaseArgs(
     }
   }
 
+  if (item.id === "research_comparison") {
+    try { comparisonUrls(read("urls"), env.STORE_BASE_URL); }
+    catch (error) { return refuse(400, "bad_request", `${error instanceof Error ? error.message : "Invalid endpoint set."} Nothing charged.`, { input_field: "urls" }); }
+  }
   if (item.id === "spot_check") {
     const { validSpotCheckHost } = await import("@/services/spot-check");
     if (!validSpotCheckHost(read("host"))) {
@@ -870,6 +875,7 @@ export function purchaseInputFrom(
 ): FulfillmentInput {
   const read = (name: string) => args.get(name);
   const input: FulfillmentInput = {};
+  if (item.id === "research_comparison") input.comparisonUrls = read("urls");
 
   /**
    * THE DISCLOSURE BLOCK, read the same way on both doors and never

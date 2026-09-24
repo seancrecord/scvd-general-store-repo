@@ -47,7 +47,7 @@ export function supportsObservationRecovery(item: MenuItem | undefined): boolean
   return !!item && [
     "recurring_patronage", "operator_statement", "launch_check", "opening_day", "settlement_attestation", "attestation_bundle", "service_audit",
     "good_buyer", "signature_agent_card", "onpage_audit", "a2a_repair_kit",
-    "spot_check", "provenance_check", "the_statement", "settlement_reconciliation",
+    "research_comparison", "spot_check", "provenance_check", "the_statement", "settlement_reconciliation",
     "passport_refresh", "trust_profile", "the_mandate", "bitcoin_anchor", "the_case_file",
   ].includes(item.id);
 }
