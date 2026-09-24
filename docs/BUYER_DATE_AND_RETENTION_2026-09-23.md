@@ -83,3 +83,15 @@ remains a post-release gate; native buyer qualification is deferred.
 records the complete passing local suite on refreshed main, offline regressions,
 typecheck, dry-run builds, documentation/skill checks and evidence replays.
 GitHub CI still qualifies the pushed PR head before merge.
+
+## Released guidance — September 24 follow-through
+
+PR #904 merged at 14:30:09 UTC. The later [public readback](../research/buyer-guidance-readback-2026-09-24/REPORT.md)
+returned HTTP 200 and exact merged guidance on the installable skill and all five
+host-history representations. Exact responses, source reference and hashes are
+retained. The release-readback gate is complete.
+
+No new qualification, buyer or recipient ran in this follow-through. The separate
+September 24 cohort froze before #904; its two complete journeys out of four
+remain evidence for that earlier source. Updated-guidance comprehension and
+reduced native file/call use remain unmeasured.
