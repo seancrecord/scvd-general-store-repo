@@ -1,5 +1,5 @@
 {
-  "status": "All local release checks passed; hosted PR gates pending.",
+  "status": "Original-head local suite passed. Current-main local coverage reconciled after a Worker interruption; final hosted PR gates pending.",
   "checked_at": "2026-09-24T14:28:52.003842+00:00",
   "native_experiment_complete": true,
   "source_commit": "9bc3abce46345d3c0bb726fb3a0cc268c52089f3",
@@ -28,5 +28,52 @@
     "report_matches_frozen_results": true
   },
   "privacy_review": "Reviewed summaries and hashes only; no raw native host configuration or credential patterns in the public report.",
-  "limits": "Native outcomes were fixed before software validation. These software checks do not add native buyer evidence. Hosted outcomes are recorded in the release PR and milestone after this commit."
+  "limits": "Native outcomes were fixed before software validation. These software checks do not add native buyer evidence. Hosted outcomes are recorded in the release PR and milestone after this commit.",
+  "integration_validation": {
+    "checked_at": "2026-09-24T17:16:39.563078+00:00",
+    "source_parent": "9d99b79b8b27edfe127f649c491287ce6d593c6d",
+    "scope": "Current-main integration plus reconciled ROADMAP TR3; frozen native experiment unchanged.",
+    "typecheck": "passed",
+    "docs_check": "passed",
+    "report_integrity": "passed",
+    "startup_attempt": "Initial sandbox launch was blocked at the local Worker listener before tests ran; log retained.",
+    "full_local_suite": {
+      "files": 829,
+      "passed": 15495,
+      "skipped": 1,
+      "failed": 0,
+      "coverage_complete": true,
+      "single_uninterrupted_pass": false
+    },
+    "attempts": [
+      {
+        "report": "integrated-full-tests.json",
+        "exit_code": 1,
+        "files": 823,
+        "passed": 15474,
+        "skipped": 1,
+        "failed": 0,
+        "sha256": "236b8ea5b1ee0e19ddc63dd0f240d706d45d9ccaddaa52cf2f060840dbcf0314"
+      },
+      {
+        "report": "integrated-missing-files.json",
+        "exit_code": 0,
+        "files": 5,
+        "passed": 19,
+        "skipped": 0,
+        "failed": 0,
+        "sha256": "36c27d54940074de9b3f077d411a4dbbca26bd803c81a7461647de896cdaeb38"
+      },
+      {
+        "report": "integrated-transport-contract.json",
+        "exit_code": 0,
+        "files": 1,
+        "passed": 2,
+        "skipped": 0,
+        "failed": 0,
+        "sha256": "7a24405a03600aeb281b3fbb2bfbe0d16698f9f7281e6e4e7005b9ff50c74b53"
+      }
+    ],
+    "limits": "The full command exited 1 after a Worker connection error, with no assertion failures and six files absent. A focused rerun passed five; inventory reconciliation located the remaining spec under test/ucp and its exact-path rerun passed. All current spec files are accounted for once. Do not describe this integrated local validation as one uninterrupted green invocation. Final hosted shards must all pass before merge."
+  }
 }
