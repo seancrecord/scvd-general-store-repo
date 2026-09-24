@@ -1,0 +1,13 @@
+{
+  "id": "merit-issue-1014",
+  "requested_url": "https://api.github.com/repos/Merit-Systems/x402scan/issues/1014",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:14:53.887922+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 1048576,
+  "timeout_seconds": 15,
+  "status": null,
+  "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "bix-openapi-network",
+  "requested_url": "https://bix-creator-edge.liara.run/openapi.json",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:15:18.906005+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 1048576,
+  "timeout_seconds": 15,
+  "status": 503,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:15:19 GMT",
+    "Content-Type": "text/html",
+    "ETag": "\"69184cbc-23e\""
+  },
+  "truncated": false,
+  "bytes": 574,
+  "sha256": "09b0d7a2d482b3f3ba86e4428ba8e84c5e25e2ff25eb8231c70596e517b9c925",
+  "body_file": "bix-openapi-network.body"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "merit-main-network",
+  "requested_url": "https://api.github.com/repos/Merit-Systems/x402scan/commits/main",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:15:18.658917+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 1048576,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:15:18 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "public, max-age=60, s-maxage=60",
+    "ETag": "W/\"47e1bbb70e9648c13091bb4cabf4d5315601067d41aeef2f22288810f07dbeff\"",
+    "Last-Modified": "Wed, 16 Sep 2026 17:52:16 GMT",
+    "X-RateLimit-Remaining": "59"
+  },
+  "truncated": false,
+  "bytes": 6478,
+  "sha256": "86946d891798c335398fa0a47e910fb7a470ea01a8c459b7d7500e818b48f2eb",
+  "body_file": "merit-main-network.body"
+}

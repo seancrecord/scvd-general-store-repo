@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browserbase Payment Gateway (x402 + MPP)</title>
+  <meta name="description" content="Pay-per-use browser sessions with crypto. No API keys, no accounts -- just pay and connect via x402 or MPP.">
+  <meta property="og:title" content="Browserbase Payment Gateway (x402 + MPP)">
+  <meta property="og:description" content="Pay-per-use browser sessions with crypto. No API keys, no accounts -- just pay and connect via x402 or MPP.">
+  <meta property="og:image" content="https://x402.browserbase.com/logo.svg">
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 50px auto; padding: 20px; background: #0a0a0a; color: #fafafa; }
+    h1 { color: #fff; display: flex; align-items: center; gap: 12px; }
+    h1 img { width: 40px; height: 40px; }
+    code { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+    a { color: #3b82f6; }
+    .price { color: #22c55e; font-weight: bold; }
+    .protocol { border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 12px 0; }
+    .protocol h3 { margin-top: 0; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+    .badge-live { background: #166534; color: #4ade80; }
+    .badge-test { background: #854d0e; color: #facc15; }
+  </style>
+</head>
+<body>
+  <h1><img src="/logo.svg" alt="Browserbase"> Browserbase Payment Gateway</h1>
+  <p>Pay-per-use browser sessions with crypto. No API keys, no accounts -- just pay and connect via x402 or MPP.</p>
+  <p class="price">$0.12/hour</p>
+
+  <div class="protocol">
+    <h3>x402 Protocol <span class="badge badge-live">LIVE</span></h3>
+    <p>USDC on Base or Solana via HTTP 402 + X-PAYMENT header</p>
+    <code>purl POST https://x402.browserbase.com/browser/session/create -d '{"estimatedMinutes": 30}'</code>
+  </div>
+
+  <div class="protocol">
+    <h3>MPP on Tempo <span class="badge badge-live">MAINNET</span></h3>
+    <p>Stripe Tempo chain via WWW-Authenticate + mppx</p>
+    <code>npx mppx https://mpp.browserbase.com/browser/session/create -d '{"estimatedMinutes": 30}'</code>
+    <p style="font-size: 0.85em; color: #888;">Status: Enabled (mainnet)</p>
+  </div>
+
+  <h2>Endpoints</h2>
+  <h3>Browser Sessions <span class="price">$0.12/hour</span></h3>
+  <ul>
+    <li><code>POST /browser/session/create</code> -- Create a browser session</li>
+    <li><code>GET /browser/session/:id/status</code> -- Check session status (free)</li>
+    <li><code>POST /browser/session/:id/extend</code> -- Add more time</li>
+    <li><code>DELETE /browser/session/:id</code> -- Terminate session (free)</li>
+  </ul>
+  <h3>Search <span class="price">$0.01/request</span></h3>
+  <ul>
+    <li><code>POST /search</code> -- Web search with structured results</li>
+  </ul>
+  <h3>Fetch <span class="price">$0.01/request</span></h3>
+  <ul>
+    <li><code>POST /fetch</code> -- Fetch a page and return content + metadata</li>
+  </ul>
+  <p><a href="https://x402.org">x402 Protocol</a> · <a href="https://mpp.dev">MPP Protocol</a></p>
+</body>
+</html>

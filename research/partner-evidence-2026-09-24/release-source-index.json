@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-09-24T17:12:41.716956+00:00",
+  "git_head": "eedbcb562af079b80c33d365515f808bd73d2d2c",
+  "basis": "Release checkout from current origin/main; source inspection, not live execution.",
+  "files": [
+    {
+      "path": "src/services/launch-check.ts",
+      "sha256": "d934a0ed62c3d65bf031d67e8b718f1f2ca161f15d846c6f061cfd616415cb60"
+    },
+    {
+      "path": "src/services/launch-check-terms.ts",
+      "sha256": "4bd9366de998ec11c71c28b6deae2a5c05be48443e1f7974717f39e485f1b92e"
+    },
+    {
+      "path": "src/lib/probe-method.ts",
+      "sha256": "3dc4d1309238dbbf301310346713d5f9f0d80f798d0ee20acc19f57802f2876d"
+    }
+  ],
+  "correction": "Current main already supports bounded GET-to-POST fallback; empty POST body and current partner terms still need qualification."
+}

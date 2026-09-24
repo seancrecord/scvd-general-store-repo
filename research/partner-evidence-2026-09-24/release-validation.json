@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-09-24T17:14:38.023767+00:00",
+  "typecheck": "passed",
+  "merit_control_cases": 4,
+  "response_hashes_verified": 14,
+  "local_full_suite": "Interrupted during heavy contention after bounded-read-honesty failure; not a passing result. Full CI shards required before merge.",
+  "focused_rerun": "passed: bounded-read-honesty, 19/19 tests in 11.55 seconds",
+  "diff_check": "passed",
+  "application_changes": false
+}

@@ -1,0 +1,35 @@
+{
+  "recorded_at": "2026-09-24T15:22:12.995088+00:00",
+  "git_head": "7059dc8ab6207195776c85e4fd67a621240403d2",
+  "basis": "Working-tree files, not proof of deployment; broader checkout has pre-existing changes.",
+  "files": [
+    {
+      "path": "src/services/launch-check.ts",
+      "sha256": "73c6305b45e0d763dff5ad6ee986e86bbfced98b08c77383b5722c31fdccd550"
+    },
+    {
+      "path": "src/services/launch-check-terms.ts",
+      "sha256": "dd986c07b07c3697e26bfc4a631b838c370c9b53d9c56a84a2254e7e9e8d296f"
+    },
+    {
+      "path": "src/routes/corpus.ts",
+      "sha256": "4fdd6db54721d59285486c1b0b74a63350dc0d751e55ec8d1940d3b7c6e43b10"
+    },
+    {
+      "path": "src/store/becoming.ts",
+      "sha256": "d53262ec22cd4a96b56fbfa05edb255ca61f0f2924049d4ed5fca9bd6022c092"
+    },
+    {
+      "path": "AGENT_UX.md",
+      "sha256": "6c8430f2cd56bd13bf9317826ab37fc9694862176d2fef9dd393f421337e84bb"
+    },
+    {
+      "path": "HOUSE_RULES.md",
+      "sha256": "f0195fe3f7c2cf71432423f824bd8d6a6bc03ac0291d91cc7d5cf9165abab5a8"
+    },
+    {
+      "path": "NOTICE.md",
+      "sha256": "778677029a3ee41a4f6366ee473438adcc441cddb01f1e50e74d8b7897b7d39c"
+    }
+  ]
+}

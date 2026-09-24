@@ -1,0 +1,21 @@
+{
+  "id": "browserbase-gateway-network",
+  "requested_url": "https://x402.browserbase.com/",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:15:18.903536+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 1048576,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Content-Type": "text/html; charset=utf-8",
+    "Date": "Thu, 24 Sep 2026 15:15:19 GMT",
+    "ETag": "W/\"ca6-FZfnSgvqzu8lxRb6bjXP2jVCFqQ\""
+  },
+  "truncated": false,
+  "bytes": 3238,
+  "sha256": "b9e0a7c95a642e7d80bad25c95e5293a7d89cd603d10ce8c3d03cb0d54185e09",
+  "body_file": "browserbase-gateway-network.body"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "merit-discovery-package-network",
+  "requested_url": "https://registry.npmjs.org/@agentcash%2fdiscovery/latest",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:15:18.659175+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 1048576,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:15:18 GMT",
+    "Content-Type": "application/json"
+  },
+  "truncated": false,
+  "bytes": 3087,
+  "sha256": "a3865470bf0ed442b0c6867b0969d0af98ffc67e0de3bdd4e12632987dc77a6f",
+  "body_file": "merit-discovery-package-network.body"
+}
