@@ -1,0 +1,24 @@
+{
+  "id": "merit-issue-1014-network",
+  "requested_url": "https://api.github.com/repos/Merit-Systems/x402scan/issues/1014",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:15:18.652957+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 1048576,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:15:18 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "public, max-age=60, s-maxage=60",
+    "ETag": "W/\"eb2dca03997b0926ea04d55979a8edfc73ed2fe230129f2d0ec1e2e2690b2254\"",
+    "Last-Modified": "Sat, 15 Aug 2026 04:42:10 GMT",
+    "X-RateLimit-Remaining": "58"
+  },
+  "truncated": false,
+  "bytes": 4373,
+  "sha256": "f6d390c0ffe964b059fb5d9995a3e61d8bc2c2596010c7e62081e255c66a8f55",
+  "body_file": "merit-issue-1014-network.body"
+}

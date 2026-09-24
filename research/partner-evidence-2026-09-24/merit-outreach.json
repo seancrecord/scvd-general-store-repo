@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-09-24 15:42:04 UTC",
+  "status": "sent_verified_awaiting_reply",
+  "authorization": "Keeper approved the exact drafted comment in this task.",
+  "repository": "Merit-Systems/x402scan",
+  "issue_number": 1014,
+  "comment_id": 5817308384,
+  "comment_url": "https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384",
+  "posted_by": "seancrecord",
+  "comment_body": "A follow-up from scvd.store: we checked the currently published `@agentcash/discovery@1.7.5` and isolated a narrower cause.\n\nWith the same nested price object:\n\n- `protocols: [\"x402\"]` fails schema validation and resolves to no payment info.\n- `protocols: [{\"x402\": {}}]` passes and preserves the nested price.\n\nFlat pricing also passes; a nested fixed price missing its amount fails as a negative control.\n\nWe evaluated the package’s unchanged resolver with its bundled schemas from the integrity-checked npm archive. This was a local component reproduction—not a live registration test.\n\nNested pricing itself is supported; the hybrid protocol/pricing representation appears to be the mismatch. Is the structured protocol representation the intended documentation contract? We can share the four-case reproduction and independently recheck a correction.",
+  "verification": "Fetched issue comments after posting; exact body and returned ID matched.",
+  "presend": {
+    "issue_state": "open",
+    "existing_comments": 2,
+    "duplicate_found": false,
+    "package_version": "1.7.5",
+    "same_archive_integrity": true,
+    "package_capture": "captures/merit-presend-package.json"
+  },
+  "partner_response": null,
+  "partner_usefulness": "unknown",
+  "payment_sent": false
+}

@@ -1,7 +1,9 @@
 # Research Comparison — September 24, 2026
 
 Release preparation on `codex/research-comparison-release`, integrated with
-main at `eedbcb56` after the keeper authorized release. The original local
+main at `eedbcb56` after the keeper authorized release, then reconciled with
+the documentation-only `dee13f08` update. [Release PR #912](https://github.com/seancrecord/scvd-general-store-repo/pull/912)
+records the final CI and deployment status. The original local
 implementation was based on `7059dc8a`. Production status and live discovery
 readings are recorded in `research/research-comparison-2026-09-24/README.md`.
 The working name is Research Comparison; the shelf price is 0.01 USDC per comparison.

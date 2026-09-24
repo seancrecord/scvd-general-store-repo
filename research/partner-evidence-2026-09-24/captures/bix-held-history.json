@@ -1,0 +1,22 @@
+{
+  "id": "bix-held-history",
+  "requested_url": "https://scvd.store/corpus/host/bix-creator-edge.liara.run.json",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:19:34.517481+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:19:35 GMT",
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache",
+    "ETag": "\"08409d71bad80d6e61bdb4dae94126db\""
+  },
+  "truncated": false,
+  "bytes": 8779,
+  "sha256": "08409d71bad80d6e61bdb4dae94126dba94ada2c3cd8ec9e4bbec6653952285e",
+  "body_file": "bix-held-history.body"
+}

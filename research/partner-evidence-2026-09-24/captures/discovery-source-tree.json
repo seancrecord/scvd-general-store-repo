@@ -1,0 +1,21 @@
+{
+  "id": "discovery-source-tree",
+  "requested_url": "https://api.github.com/repos/Merit-Systems/agentcash-discovery/git/trees/main?recursive=1",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:16:17.706499+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 404,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:16:17 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "X-RateLimit-Remaining": "55"
+  },
+  "truncated": false,
+  "bytes": 110,
+  "sha256": "8c177a38af7c68d455e9554231def022cc2bcf62c1d3dab3626aaf5c319a5e04",
+  "body_file": "discovery-source-tree.body"
+}

@@ -26,6 +26,17 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Partner evidence — Merit note sent 2026-09-24, reply pending.** The keeper
+  approved the exact [issue follow-up](https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384);
+  posting and text were verified. The [local reproduction](research/partner-evidence-2026-09-24/MERIT.md)
+  narrows the reported bug: structured protocols accept nested pricing;
+  the documented hybrid does not. Issue/comments and package were rechecked
+  before sending; no partner response or adoption established. BiX needs current schema/readiness confirmation;
+  Browserbase needs a method-correct scope, not a claim that its service is
+  broken. [Plan and phase gates](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md).
+  Research and any future build stay off this desk; implementation reference
+  is ROADMAP L4. No paid attempt is designated by this entry.
+
 - **Portable package refresh, September 24 — LOOK after merge.** Run the
   [three publication actions in order](registry/portable-release-2026-09-24.md#post-merge-actions-in-order):
   Tab npm, Tab MCP registry, then ClawHub skill. The portable plugin updates from

@@ -1,5 +1,53 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-24 — partner evidence pilot qualification
+
+For the keeper-requested [Partner Evidence Pilot Plan](PARTNER_EVIDENCE_PILOTS_2026-09.md),
+read [Merit issue #1014](https://github.com/Merit-Systems/x402scan/issues/1014)
+and both current comments through GitHub's public API. Read
+[DISCOVERY.md at the captured commit](https://github.com/Merit-Systems/x402scan/blob/131a5d3ca9f71f145b6da4a40334c0b52544194c/docs/DISCOVERY.md)
+and the npm registry's current `@agentcash/discovery` metadata (1.7.5).
+Downloaded its inert archive and checked SHA-512 against that metadata;
+no install, package CLI or registration. The repository named by package
+metadata returned 404, so the distributed artifact is the inspected source.
+
+Locally evaluated its unchanged resolver slice with its bundled schemas:
+nested pricing with string protocols fails; changing only protocols to
+structured objects succeeds; flat pricing succeeds; missing amount fails.
+This narrows the issue's broad nested-price explanation. It establishes
+component behavior, not current hosted-service behavior or lost purchases.
+
+Read [BiX's request](https://github.com/Merit-Systems/x402scan/issues/1197).
+It reports an intentionally disabled settlement gate. Its named OpenAPI URL
+returned HTTP 503 on one direct read; current method/inputs/terms remain
+unknown. No paid-route request or purchase was made.
+
+Read [Browserbase's gateway](https://x402.browserbase.com/) and
+[partner page](https://www.browserbase.com/partner). The gateway documents
+POST session creation; the initial older checkout used GET and the v2 Base
+EIP-3009 shape. **Pre-publication correction:** main at `eedbcb56` already
+has a bounded POST fallback on 405/501, with an empty JSON body reused at
+payment and replay. The dossier withdraws the GET-only description of current
+main. Input defaults, wire compatibility and session usefulness remain untested.
+See the dossier’s release-source record. Documentation mentions X-PAYMENT; current runtime
+wire compatibility and paid delivery were not measured. Hourly pricing alone
+does not establish a minimum accepted duration or quote.
+
+Read the existing SCVD host-history JSON for both candidates. Each explicitly
+declares unsigned summary scope; Browserbase's timeline spans distinct paths
+and GET-shaped observations. Do not reuse it as a signed, method-correct
+purchase baseline. No corpus originals/signatures were verified in this task.
+Initial sandbox DNS failures are preserved separately from network-enabled
+HTTP captures; no target verdict comes from a collector failure.
+
+Exact requests, times, hashes, code controls and limitations:
+[evidence index](../research/partner-evidence-2026-09-24/README.md).
+At initial collection: no contact, publication, wallet access, paid attempt or
+production change. After the keeper approved the exact note, rechecked the
+issue/comments through the GitHub connector and npm metadata (same 1.7.5 and
+archive integrity), then [posted and verified the factual follow-up](https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384).
+Partner response remains pending; no paid attempt or production change.
+
 ## 2026-09-24 — Research comparison from existing instruments
 
 Read Coinbase's [agent equities and x402 launch](https://www.coinbase.com/fr/developer-platform/discover/launches/c4a-equities-x402),

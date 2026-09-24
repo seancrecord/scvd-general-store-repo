@@ -1,0 +1,23 @@
+{
+  "id": "merit-1014-comments",
+  "requested_url": "https://api.github.com/repos/Merit-Systems/x402scan/issues/1014/comments?per_page=100",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:16:16.551212+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:16:16 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "public, max-age=60, s-maxage=60",
+    "ETag": "W/\"6d7c32b7c328d1b7b00181b3e43d257ee37978e183c6a6a5ae707db26fdfc4bc\"",
+    "X-RateLimit-Remaining": "56"
+  },
+  "truncated": false,
+  "bytes": 5275,
+  "sha256": "ba0ff5ea38a1b7cf8d57c357a2235968b78632b01d0fc81985be3a38e8d2a3c0",
+  "body_file": "merit-1014-comments.body"
+}
