@@ -111,6 +111,8 @@ jobs:
         run: npm run buyer:test
       - name: Browser payment bridges
         run: npm run till:test
+      - name: Local calling-card integration
+        run: npm run calling-card:test
       # The preflight Action (roadmap L7): one file, no dependencies,
       # tested against a store that is not the store — the exit code a
       # deploy branches on is the whole product.

@@ -21,6 +21,11 @@
 import { canonicalAddress } from "@/lib/addresses";
 
 export const KV_KEYS = {
+  callingCardKey: (id: string): string => `calling_card:key:${id}`,
+  callingCardRevoked: (id: string): string => `calling_card:revoked:${id}`,
+  callingCardReportPrefix: "calling_card:report:",
+  callingCardReport: (id: string): string => `calling_card:report:${id}`,
+  callingCardBudget: (minute: string): string => `calling_card:budget:${minute}`,
   desvelaRegistryPrefix: "desvela_registry:",
   desvelaRegistry: (digest: string): string => `desvela_registry:${digest}`,
   order: (orderId: string): string => `order:${orderId}`,

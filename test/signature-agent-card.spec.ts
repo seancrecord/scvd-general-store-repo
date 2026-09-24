@@ -3,7 +3,10 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { CLIENT_CAP_USD } from "@/lib/client-spend-cap";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
-import { performSignatureAgentCard } from "@/services/bot-auth-card";
+import {
+  CARD_CRITERIA_VERSION,
+  performSignatureAgentCard,
+} from "@/services/bot-auth-card";
 import { signedDirectory } from "@/lib/web-bot-auth";
 import type { Env } from "@/types";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -185,7 +188,7 @@ describe("the calling card", () => {
     );
     expect(body.card.signature).toBeTruthy();
     expect(body.card.evidence_hash).toBeTruthy();
-    expect(body.card.criteria).toBe("signature-agent-directory-v1");
+    expect(body.card.criteria).toBe(CARD_CRITERIA_VERSION);
     const pop = body.card.checks.find(
       (check: { name: string }) => check.name === "proof-of-possession",
     );
@@ -224,7 +227,7 @@ describe("the free desk at POST /api/bot-auth/check", () => {
     expect(response.status).toBe(200);
     const body = (await response.json()) as Record<string, any>;
     expect(body.verdict).toBe("directory_ready");
-    expect(body.criteria).toBe("signature-agent-directory-v1");
+    expect(body.criteria).toBe(CARD_CRITERIA_VERSION);
     expect(body.signed_version).toContain("/api/buy/signature_agent_card");
     expect(body.what_this_is_not).toContain("Not an endorsement");
     vi.unstubAllGlobals();

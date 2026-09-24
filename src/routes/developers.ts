@@ -552,7 +552,7 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
         title: `${STORE_SERVICE_NAME} developer documentation`,
         description: DESCRIPTION,
         path: "/developers",
-        bodyHtml: `<p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests and signed reports.</p>` + developersHtml(base, c.env),
+        bodyHtml: `<p><a href="/bot-auth">Agent calling-card setup</a>: local public-profile import, a Node fetch integration, and the optional signed directory record.</p><p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests and signed reports.</p>` + developersHtml(base, c.env),
         extraCss: DEV_CSS,
       }),
     );

@@ -135,6 +135,8 @@ export const SINGLE_ITEM_TOOL_BUDGET_BYTES = 10_000;
 export const COMPACT_ITEM_CONTRACT_BUDGET_BYTES = 18_000;
 
 export const MACHINE_SURFACE_CEILINGS: readonly MachineSurfaceCeiling[] = [
+  { path: "/calling-card/calling-card.mjs", budget: 32000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "text" },
+  { path: "/bot-auth", budget: 24000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },
   { path: "/corpus/index.json", budget: COMPACT_CATALOG_BUDGET_BYTES, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },
   { path: "/a2a-desk.json", budget: 32000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },
   {
