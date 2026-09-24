@@ -1,0 +1,195 @@
+{
+  "scope": "Raw originals, host context and native traces retained in the private evidence store. Public relative identifiers/hashes permit later integrity checks by an authorized holder; public hashes alone cannot independently replay private content.",
+  "files": [
+    {
+      "file": "cohort/codex-directed-r1/run.json",
+      "bytes": 11468,
+      "sha256": "acde9dcfe51cd24c831ed45e8e1ab3b226da29a4d076404c943981b64bfa714b"
+    },
+    {
+      "file": "cohort/codex-directed-r1/launch.json",
+      "bytes": 19935,
+      "sha256": "b1c27a784b2e8d28452a9e6a8f03ccf153bd4884271efd2d94fe74773f6a6321"
+    },
+    {
+      "file": "cohort/codex-directed-r1/events.jsonl",
+      "bytes": 1223902,
+      "sha256": "232718134c72bb775c61d0019aaf138f03075cb8104b5212acdbfa192057431c"
+    },
+    {
+      "file": "cohort/codex-directed-r1/review.json",
+      "bytes": 6465,
+      "sha256": "5129246a19b310b74f7de7c7c02363a96fe375098815621ae3f57c941ace2918"
+    },
+    {
+      "file": "cohort/codex-directed-r1/recipient/run.json",
+      "bytes": 4522,
+      "sha256": "52fd7755669b94772017b2482bce62c95cdb7317c1ab5d203d488f20066c1a71"
+    },
+    {
+      "file": "cohort/codex-directed-r1/recipient/launch.json",
+      "bytes": 25674,
+      "sha256": "ea0db479fb64190527e6e5e30fd699205e4ae90178db3d61a17df2b35d3034cc"
+    },
+    {
+      "file": "cohort/codex-directed-r1/recipient/events.jsonl",
+      "bytes": 110774,
+      "sha256": "2123f7727236b1cb1d7d9271409eae993c0a26fe4590c65c98d6e05baa2ca983"
+    },
+    {
+      "file": "cohort/codex-directed-r1/recipient/inputs/input-manifest.json",
+      "bytes": 13556,
+      "sha256": "6131c36a908b49c64ea39b78713a20a174c7af72c3fa397db3d1566a82f4128b"
+    },
+    {
+      "file": "cohort/codex-directed-r1/recipient/inputs/buyer-handoff.md",
+      "bytes": 2199,
+      "sha256": "ab4cfda08578660459ba176975e39a4ed29967140810cc4325f7b1d712ab933a"
+    },
+    {
+      "file": "cohort/claude-directed-r1/run.json",
+      "bytes": 11426,
+      "sha256": "69fc9f3cf3ee08e4ce774b44ede070f21cba70607cc0d8b2239cf8cd7566a337"
+    },
+    {
+      "file": "cohort/claude-directed-r1/launch.json",
+      "bytes": 1033,
+      "sha256": "df87d99fe9de91bc2f6ad5d3858ca4cca030b04e77de18c93c957bb48a195bca"
+    },
+    {
+      "file": "cohort/claude-directed-r1/events.jsonl",
+      "bytes": 173407,
+      "sha256": "55ada486737ef569abec76f84f4a4f73789dccc1e12a86a612d5f445103deed7"
+    },
+    {
+      "file": "cohort/claude-directed-r1/review.json",
+      "bytes": 6583,
+      "sha256": "25c14a2b6ee39520057ab15293cce3f8e740976b6c49fa96d3328a1e755b81d7"
+    },
+    {
+      "file": "cohort/claude-directed-r1/recipient/run.json",
+      "bytes": 4085,
+      "sha256": "4cecc3b8424f58c7ef65485e93ab24f0c358f36880e18c3912a2e9e28e109146"
+    },
+    {
+      "file": "cohort/claude-directed-r1/recipient/launch.json",
+      "bytes": 25675,
+      "sha256": "782905d5db0a15d54708c080f2e2bac00b29bffa3eb36e876c45469956d8244d"
+    },
+    {
+      "file": "cohort/claude-directed-r1/recipient/events.jsonl",
+      "bytes": 76772,
+      "sha256": "bb5e60b049c888c31078d1f71c41eb472557d91c03482e3d53e7c8194b8175d9"
+    },
+    {
+      "file": "cohort/claude-directed-r1/recipient/inputs/input-manifest.json",
+      "bytes": 4127,
+      "sha256": "3d6b786f54a97fbe06ad87388a21eb104ac1f0fffcb576d83811e1a714d4919e"
+    },
+    {
+      "file": "cohort/claude-directed-r1/recipient/inputs/buyer-handoff.md",
+      "bytes": 4184,
+      "sha256": "629be21e5ea07b9f3a7ffcbbfccbd4c32783fb92e5edf6de091afdea825dea1d"
+    },
+    {
+      "file": "cohort/codex-directed-r2/run.json",
+      "bytes": 10251,
+      "sha256": "bc74c7be3b4efa42c17dc483b8968c84cd274284bbfa098d9daeaa0be3654dd7"
+    },
+    {
+      "file": "cohort/codex-directed-r2/launch.json",
+      "bytes": 19935,
+      "sha256": "30f56d8f1ef8561239a439425589174c92c3480ec5ec74e6c9094840319ee199"
+    },
+    {
+      "file": "cohort/codex-directed-r2/events.jsonl",
+      "bytes": 91138,
+      "sha256": "21404f078fe973b56324dbde41365cb956a58a0dc100ce1881bccfeee1399fa9"
+    },
+    {
+      "file": "cohort/codex-directed-r2/review.json",
+      "bytes": 6969,
+      "sha256": "881d02abcc77ae167422944b39b4a0d3cf415851558317a64138e003651b65af"
+    },
+    {
+      "file": "cohort/codex-directed-r2/recipient/run.json",
+      "bytes": 5141,
+      "sha256": "0deda8b1843a4bd730c7586477f05b2c7b9664b52f7f7687306698e3eb93a9a6"
+    },
+    {
+      "file": "cohort/codex-directed-r2/recipient/launch.json",
+      "bytes": 25674,
+      "sha256": "7333e535740ff3511b6e4d197687f9883dca09a69fa857a457da69b0b83fea7e"
+    },
+    {
+      "file": "cohort/codex-directed-r2/recipient/events.jsonl",
+      "bytes": 138556,
+      "sha256": "7ee710cfe19f0e2553c6b1d3275d79ad908e195dae1c265c64de8df5a7c5cb3e"
+    },
+    {
+      "file": "cohort/codex-directed-r2/recipient/inputs/input-manifest.json",
+      "bytes": 12807,
+      "sha256": "0f0306493f82e53e2c6e814a03a3de6de1d71cb823706e9bfc67a0b6dbd7a5f3"
+    },
+    {
+      "file": "cohort/codex-directed-r2/recipient/inputs/buyer-handoff.md",
+      "bytes": 2782,
+      "sha256": "b2744e74912e452c1699d2b1c6b4c5e5082e3b897ae0341db4e23338097c6d9e"
+    },
+    {
+      "file": "cohort/claude-directed-r2/run.json",
+      "bytes": 10769,
+      "sha256": "babd62c58bbe263d72882f96e1410ccc716ddcbfa900a1b1e29247c5aa45ca58"
+    },
+    {
+      "file": "cohort/claude-directed-r2/launch.json",
+      "bytes": 1033,
+      "sha256": "e65ded72d70e7c52d2c471b51d292200dfffab8b7938d6966e2467aa10f3207f"
+    },
+    {
+      "file": "cohort/claude-directed-r2/events.jsonl",
+      "bytes": 118024,
+      "sha256": "e1e6a391157f799722ebf38a4913a3189c422840493e3e67d769c25451b02f04"
+    },
+    {
+      "file": "cohort/claude-directed-r2/review.json",
+      "bytes": 3344,
+      "sha256": "b6383f9f290dec3b7afd91cc5a0663ddd841ac73e1cbb81fd7a18b581bc9585e"
+    },
+    {
+      "file": "execution-samples.jsonl",
+      "bytes": 58682,
+      "sha256": "c940c8a6e0e884fd4f3030c70c91200d53a108358f84d9e5ec4c958e6633f9ac"
+    },
+    {
+      "file": "execution-sampler.py",
+      "bytes": 1004,
+      "sha256": "67f416860e3da3acdab4b91484c9c05644903fa323383583ed7b401593322fbb"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 3011,
+      "sha256": "54703e792f4be56a19585629821b5d1bbfa378c63283aafd714130b98f2925b5"
+    },
+    {
+      "file": "freeze.json",
+      "bytes": 3410,
+      "sha256": "a1f0a503662caf489fb119137ed48eaaad3cf858427ceeb9e8e5c16a9e55e17e"
+    },
+    {
+      "file": "acquisition-score.json",
+      "bytes": 6191,
+      "sha256": "ad90fc89dae8db22f7d094edc37c9f9bfdb17adc1de0d2a05a3677a7349ad2ca"
+    },
+    {
+      "file": "controller/capture-limit-diagnostic.json",
+      "bytes": 491,
+      "sha256": "5ca47ce1fe38f75a4ab313c3b39dcf6ec2d1418fa8e778dc82c371170b332499"
+    },
+    {
+      "file": "check-captures.mjs",
+      "bytes": 2449,
+      "sha256": "df9b5bb763a6c589ef4dc2b5249bc570e1f3d954a6a38b7b5485196e20733998"
+    }
+  ]
+}

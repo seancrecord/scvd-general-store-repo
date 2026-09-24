@@ -1,0 +1,84 @@
+{
+  "source_scope": "September 23 pre-merge PR follow-through; timestamps in each original record. No acquisition repeated by copying.",
+  "files": [
+    {
+      "file": "pr-ci.json",
+      "source": "ci-qualification.json",
+      "bytes": 1298,
+      "sha256": "24e9a9b86bc3d2846e3406e0a385787e6d2fefa023c2654923d905747ab7638e"
+    },
+    {
+      "file": "pr-cold-workflow.json",
+      "source": "cold-workflow-qualification.json",
+      "bytes": 1467,
+      "sha256": "885c6fb999305c28b982c28b66b6ed41f85406da7432afa79834d86e9aa26ce9"
+    },
+    {
+      "file": "guidance-readback.json",
+      "source": "guidance-readback.json",
+      "bytes": 3811,
+      "sha256": "ce2bb68e2ed57379d7a0708c1cf1b9a2c12656d102cf549d225af5e9ab13edf7"
+    },
+    {
+      "file": "doors-before-qualification.json",
+      "source": "doors-qualification.json",
+      "bytes": 2296,
+      "sha256": "94e8f84d74c966561d87c9a140a0b3b5a5095c4d60226c2dfc7f9c6b1c942261"
+    },
+    {
+      "file": "doors-before.json",
+      "source": "doors-complete-attempt.json",
+      "bytes": 12682,
+      "sha256": "c36e38ffab5c482ff0e7463aa286f712b249c344016563202dffcc2acaeebdd0"
+    },
+    {
+      "file": "doors-before-execution.json",
+      "source": "doors-complete-attempt-execution.json",
+      "bytes": 153,
+      "sha256": "6c08dbbf7824db1cf98985c568cd236e362b4d19691391e99df721d690ebdbaf"
+    },
+    {
+      "file": "guidance-html.response.gz",
+      "source": "guidance-html.response",
+      "decoded_bytes": 32072,
+      "decoded_sha256": "62de2c950a07ec6719eee63ce1a0d16063c075564023f2c8df1c790072bd2d20"
+    },
+    {
+      "file": "guidance-markdown.response.gz",
+      "source": "guidance-markdown.response",
+      "decoded_bytes": 8048,
+      "decoded_sha256": "d774d16545f306118bc1f7937bbd2c8050deb8423a73ad36aadcde555b163d18"
+    },
+    {
+      "file": "guidance-markdown_path.response.gz",
+      "source": "guidance-markdown_path.response",
+      "decoded_bytes": 8048,
+      "decoded_sha256": "d774d16545f306118bc1f7937bbd2c8050deb8423a73ad36aadcde555b163d18"
+    },
+    {
+      "file": "guidance-normal.response.gz",
+      "source": "guidance-normal.response",
+      "decoded_bytes": 14615,
+      "decoded_sha256": "7d7619c4b4d9679d04712239267fd76d1463469ea77766ec558bcdb242b85d61"
+    },
+    {
+      "file": "guidance-stable.response.gz",
+      "source": "guidance-stable.response",
+      "decoded_bytes": 14577,
+      "decoded_sha256": "40b98211410252c1076fc01f6f291d5db19068b36b894120ba71d7a81ba20d6c"
+    }
+  ],
+  "excluded_raw_files": [
+    {
+      "source": "refused-room.response",
+      "reason": "Cloudflare block pages can embed caller network metadata. Raw body remains local; only status and page title are reported."
+    },
+    {
+      "file": "doors-before.trace.gz",
+      "source": "doors-complete-attempt.trace",
+      "decoded_bytes": 1635687,
+      "decoded_sha256": "4965176a1becb357abd8a763401bc5d971300185e21bb6071c5fc941ea654322",
+      "reason": "Raw HTTP sweep trace retained privately. Public PR keeps its hash and scoped request/status findings; the raw trace is not needed to replay the public summaries and contains network-address material."
+    }
+  ]
+}

@@ -1,0 +1,770 @@
+[
+  {
+    "cell": {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-23T20:18:11.516Z",
+    "ended_at": "2026-09-23T20:20:23.342Z",
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-23T20:18:11.516Z",
+      "ended_at": "2026-09-23T20:20:23.342Z",
+      "wall_elapsed_ms": 131826,
+      "monotonic_elapsed_ms": 131826.398583,
+      "max_callback_gap_ms": 1002.4784159999981,
+      "interruption": null
+    },
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "trace_sha256": "232718134c72bb775c61d0019aaf138f03075cb8104b5212acdbfa192057431c",
+    "output_bytes": 1223902,
+    "retained_artifacts": {
+      "state": "incomplete",
+      "bytes": 4078680,
+      "files": [
+        {
+          "file": "evidence/history.source.txt",
+          "bytes": 49,
+          "sha256": "bfd1414fe2fdbe5561117e2ffb766aacdf735deaf01593d4843f02609d28a36c"
+        },
+        {
+          "file": "evidence/merchant-get.headers.txt",
+          "bytes": 3193,
+          "sha256": "6f0af96841f48362c6a3ff8903ee51086fe80ebc424459589e676d8bd2ef1481"
+        },
+        {
+          "file": "evidence/issuer-key.source.txt",
+          "bytes": 48,
+          "sha256": "9c1dab151aecc99365d1e61c37b0cb095f7b15b0439418284043570c296e765a"
+        },
+        {
+          "file": "evidence/did.acquired_at.txt",
+          "bytes": 21,
+          "sha256": "1abb72aacf867d96e1a0e1eb77b96e4cf24e5230c5ddd4cf93300aba8baa3046"
+        },
+        {
+          "file": "evidence/issuer-key.headers.txt",
+          "bytes": 976,
+          "sha256": "6733acb906c56de23fd29fd1832039a6068f1edc0131df6b5814610e99f1bc0f"
+        },
+        {
+          "file": "evidence/preflight.source.txt",
+          "bytes": 105,
+          "sha256": "5fb23439d4af4fa20749717e013ee3bc515f8bdbf2a61038c3c9b11f613b69b3"
+        },
+        {
+          "file": "evidence/history.acquired_at.txt",
+          "bytes": 21,
+          "sha256": "d7ca1ee8d37511bf35727b1a644857d00d5cf7b6d5a550f7f9088d4587712d03"
+        },
+        {
+          "file": "evidence/corpus8.headers.txt",
+          "bytes": 1185,
+          "sha256": "a898a142008af8eda84b7eb17a9b4e9ba3fa1a2e64ebbab9bce222f9995001f6"
+        },
+        {
+          "file": "evidence/preflight.acquired_at.txt",
+          "bytes": 21,
+          "sha256": "c306d5846422978659a374d71db6def5919d0cc6c2022ddac4ed8942415845c1"
+        },
+        {
+          "file": "evidence/verification-stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "evidence/history.json",
+          "bytes": 12738,
+          "sha256": "e93776230366ff4c7d59fd04402c40303d12661419951f3ee0343a4edb21d1c1"
+        },
+        {
+          "file": "evidence/merchant-payment-required.source.txt",
+          "bytes": 93,
+          "sha256": "3b24d54f5201dff908f0e6a2b25aa676258505d4f12e33417cd472636e32d337"
+        },
+        {
+          "file": "evidence/merchant-payment-required.json",
+          "bytes": 1766,
+          "sha256": "e541f4ecf0699c796d6486546f4c89434ec57093756c01c06f07b567d4f10c5e"
+        },
+        {
+          "file": "evidence/payto-observation.json",
+          "bytes": 294,
+          "sha256": "84fed8a0f3101b2e034c509b657b72b63177399475498b3592db3b803c4daf0c"
+        },
+        {
+          "file": "evidence/merchant-get.body.bin",
+          "bytes": 2,
+          "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        },
+        {
+          "file": "evidence/history.headers.txt",
+          "bytes": 1135,
+          "sha256": "55e2157e6f7760eb69074e7ce72d3a5c25959dc2d6a5d31d2c0b96079ce15fbc"
+        },
+        {
+          "file": "evidence/run-log.md",
+          "bytes": 1954,
+          "sha256": "67f703b3f1dfe071fa7612cc197fdcab4c81b9a4c2a2f1179c7e49ab8262e53b"
+        },
+        {
+          "file": "evidence/corpus8.source.txt",
+          "bytes": 33,
+          "sha256": "0289d27e46d8cd262e833f8b79943d38a50644c1e11109f64a27ad803085a724"
+        },
+        {
+          "file": "evidence/merchant-get.acquired_at.txt",
+          "bytes": 21,
+          "sha256": "0d51dd7c76eae36d4eadf5137c8c4df2fe3bac7dfc76aca75aa566f0ba7c99c4"
+        },
+        {
+          "file": "evidence/issuer-key-observation.json",
+          "bytes": 3951,
+          "sha256": "0c7d5ae9c3ba80de2b04e34f1b6141db1e2708971fd48ef8317bb9f25a6dd870"
+        },
+        {
+          "file": "evidence/guide.headers.txt",
+          "bytes": 895,
+          "sha256": "46e2718946be8dce71b142a2acc46edca071b5e10791b04baf9ab206a43416fc"
+        },
+        {
+          "file": "evidence/skill.md",
+          "bytes": 11631,
+          "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29"
+        },
+        {
+          "file": "evidence/preflight.headers.txt",
+          "bytes": 1073,
+          "sha256": "f8319092b57862e4bfa692eefbcec81180871c6b0015994603d4d8ec451b6fa4"
+        },
+        {
+          "file": "evidence/corpus8.json",
+          "bytes": 4012197,
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        {
+          "file": "evidence/issuer-key.json",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/verification-result.json",
+          "bytes": 1980,
+          "sha256": "df7bbf77fe3cd4aa1bd910436fd9b58eabfb67552a4d0a22d82d7b27bee70840"
+        },
+        {
+          "file": "evidence/merchant-get.source.txt",
+          "bytes": 49,
+          "sha256": "ed9f3775c48ae14c92ffd3f4d1a75441156bf2c03e2fdced469de54eafeef2d9"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 16926,
+          "sha256": "79dc1b07b45d27eff947b17a88667db8c4fdf6ad5d627b2512ac1783d5981d39"
+        },
+        {
+          "file": "evidence/corpus8.acquired_at.txt",
+          "bytes": 21,
+          "sha256": "35807919e00de9d276725ac425656f8c8613bce7f0b1e567f7983d68fdd6829d"
+        },
+        {
+          "file": "evidence/did.json",
+          "bytes": 2215,
+          "sha256": "efba7f958682d697a6cf0411cb0fe0926d7e06f82f6ed9de3a19335ee86db1cd"
+        },
+        {
+          "file": "evidence/did.headers.txt",
+          "bytes": 927,
+          "sha256": "058c6f83954e61c2115afe38ec436436276b3c8a655f5df9110d72c600d40339"
+        },
+        {
+          "file": "evidence/issuer-key.acquired_at.txt",
+          "bytes": 21,
+          "sha256": "35807919e00de9d276725ac425656f8c8613bce7f0b1e567f7983d68fdd6829d"
+        }
+      ],
+      "issues": [
+        {
+          "file": "key-observation-result.json",
+          "reason": "file_limit"
+        }
+      ]
+    },
+    "counts": {
+      "tool_calls": 11,
+      "usage": {
+        "input_tokens": 367101,
+        "cached_input_tokens": 326400,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6103,
+        "reasoning_output_tokens": 1546
+      },
+      "resolved_models": []
+    },
+    "run_sha256": "acde9dcfe51cd24c831ed45e8e1ab3b226da29a4d076404c943981b64bfa714b",
+    "recipient": {
+      "started_at": "2026-09-23T20:26:33.884Z",
+      "ended_at": "2026-09-23T20:28:07.393Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-23T20:26:33.884Z",
+        "ended_at": "2026-09-23T20:28:07.393Z",
+        "wall_elapsed_ms": 93509,
+        "monotonic_elapsed_ms": 93509.208209,
+        "max_callback_gap_ms": 1005.3984580000015,
+        "interruption": null
+      },
+      "trace_sha256": "2123f7727236b1cb1d7d9271409eae993c0a26fe4590c65c98d6e05baa2ca983",
+      "output_bytes": 110774,
+      "run_sha256": "52fd7755669b94772017b2482bce62c95cdb7317c1ab5d203d488f20066c1a71",
+      "tool_calls": 9,
+      "input_manifest_sha256": "6131c36a908b49c64ea39b78713a20a174c7af72c3fa397db3d1566a82f4128b",
+      "execution_samples": {
+        "samples": 10,
+        "ac_power_samples": 10,
+        "test_process_samples": 9,
+        "limit": "Process presence is not measured CPU utilization. Ten-second samples cannot establish absence between samples."
+      }
+    },
+    "execution_samples": {
+      "samples": 13,
+      "ac_power_samples": 13,
+      "test_process_samples": 0,
+      "limit": "Process presence is not measured CPU utilization. Ten-second samples cannot establish absence between samples."
+    }
+  },
+  {
+    "cell": {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-23T20:20:23.369Z",
+    "ended_at": "2026-09-23T20:22:06.840Z",
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-23T20:20:23.369Z",
+      "ended_at": "2026-09-23T20:22:06.840Z",
+      "wall_elapsed_ms": 103471,
+      "monotonic_elapsed_ms": 103470.95241600001,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "trace_sha256": "55ada486737ef569abec76f84f4a4f73789dccc1e12a86a612d5f445103deed7",
+    "output_bytes": 173407,
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 4045000,
+      "files": [
+        {
+          "file": "evidence/corpus-8.json",
+          "bytes": 4012197,
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        {
+          "file": "evidence/scvd-signing-key.json",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/preflight-scvd-store.json",
+          "bytes": 16926,
+          "sha256": "2bb4173ab35bdc4a737a76a66e95743582c78e97b2d2f587b43803be5285a68a"
+        },
+        {
+          "file": "evidence/host-history-lionx402.json",
+          "bytes": 12738,
+          "sha256": "5b4f8fdf94e79e7db2d5a2eb78456c90e0d4028612e39c7f12df5dcdf834d0ef"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 18,
+      "usage": {
+        "input_tokens": 38,
+        "cache_creation_input_tokens": 24948,
+        "cache_read_input_tokens": 449897,
+        "output_tokens": 9660,
+        "output_tokens_details": {
+          "thinking_tokens": 2869
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 24948,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1625,
+            "cache_read_input_tokens": 34237,
+            "cache_creation_input_tokens": 941,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 941
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ]
+    },
+    "run_sha256": "69fc9f3cf3ee08e4ce774b44ede070f21cba70607cc0d8b2239cf8cd7566a337",
+    "recipient": {
+      "started_at": "2026-09-23T20:28:21.327Z",
+      "ended_at": "2026-09-23T20:29:42.098Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-23T20:28:21.327Z",
+        "ended_at": "2026-09-23T20:29:42.098Z",
+        "wall_elapsed_ms": 80771,
+        "monotonic_elapsed_ms": 80770.678083,
+        "max_callback_gap_ms": 1002,
+        "interruption": null
+      },
+      "trace_sha256": "bb5e60b049c888c31078d1f71c41eb472557d91c03482e3d53e7c8194b8175d9",
+      "output_bytes": 76772,
+      "run_sha256": "4cecc3b8424f58c7ef65485e93ab24f0c358f36880e18c3912a2e9e28e109146",
+      "tool_calls": 7,
+      "input_manifest_sha256": "3d6b786f54a97fbe06ad87388a21eb104ac1f0fffcb576d83811e1a714d4919e",
+      "execution_samples": {
+        "samples": 8,
+        "ac_power_samples": 8,
+        "test_process_samples": 8,
+        "limit": "Process presence is not measured CPU utilization. Ten-second samples cannot establish absence between samples."
+      }
+    },
+    "execution_samples": {
+      "samples": 11,
+      "ac_power_samples": 11,
+      "test_process_samples": 0,
+      "limit": "Process presence is not measured CPU utilization. Ten-second samples cannot establish absence between samples."
+    }
+  },
+  {
+    "cell": {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-23T20:22:06.852Z",
+    "ended_at": "2026-09-23T20:24:09.528Z",
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-23T20:22:06.852Z",
+      "ended_at": "2026-09-23T20:24:09.528Z",
+      "wall_elapsed_ms": 122676,
+      "monotonic_elapsed_ms": 122675.96620899998,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "trace_sha256": "21404f078fe973b56324dbde41365cb956a58a0dc100ce1881bccfeee1399fa9",
+    "output_bytes": 91138,
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 14203165,
+      "files": [
+        {
+          "file": "evidence/corpus-4.source-url",
+          "bytes": 33,
+          "sha256": "f9731179841a63d6ce284f25d8167c6611346c9a6237724dfd4101d395c006d4"
+        },
+        {
+          "file": "evidence/preflight.acquired-at",
+          "bytes": 21,
+          "sha256": "58bbd85484a7b9f97c4bbd5c9c351d265608cbd3942037f50aeaf150d506f9aa"
+        },
+        {
+          "file": "evidence/corpus-5.acquired-at",
+          "bytes": 21,
+          "sha256": "0d4f8c11658066f4381cff0eeb87c9bbbdcdc753fcc20683133d8d2393aafe99"
+        },
+        {
+          "file": "evidence/corpus-5.verify.txt",
+          "bytes": 6773,
+          "sha256": "dde5f284d82e4ec1bda56b3bd5277f702f3043442f70914a9fc02dc8dd686f64"
+        },
+        {
+          "file": "evidence/corpus-8.verify.txt",
+          "bytes": 1980,
+          "sha256": "df7bbf77fe3cd4aa1bd910436fd9b58eabfb67552a4d0a22d82d7b27bee70840"
+        },
+        {
+          "file": "evidence/preflight.target-url",
+          "bytes": 49,
+          "sha256": "ed9f3775c48ae14c92ffd3f4d1a75441156bf2c03e2fdced469de54eafeef2d9"
+        },
+        {
+          "file": "evidence/corpus-8.json",
+          "bytes": 4012197,
+          "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+        },
+        {
+          "file": "evidence/corpus-4.json",
+          "bytes": 332249,
+          "sha256": "1c038e05cb7ba4ac0b81da383654a63876b13d6677a433093f508590311eb80a"
+        },
+        {
+          "file": "evidence/corpus-5.json",
+          "bytes": 6780303,
+          "sha256": "207960ae426487e43981b66d4e12f1c883974e2f17dbe18bdc516fd6b3a16f72"
+        },
+        {
+          "file": "evidence/corpus-7.verify.txt",
+          "bytes": 1980,
+          "sha256": "b484b72f2a0190a527f1cbd44196919b0abb51a11520d611abc8720a6460eef6"
+        },
+        {
+          "file": "evidence/host-history-lionx402.com.json",
+          "bytes": 12738,
+          "sha256": "87913825ca9a7e3fa8e77c9be4bbcbfe465c39105fe2f44adb303ea1ef196cca"
+        },
+        {
+          "file": "evidence/direct-get.http",
+          "bytes": 3195,
+          "sha256": "1f28bb1b447f0a3dd577597b389baf7a177cf7576bac0c7978bf500d6b73ccb6"
+        },
+        {
+          "file": "evidence/preflight.source-url",
+          "bytes": 36,
+          "sha256": "5dd92496927dfa3945b376c57e4edf149e6dbb32374ddc8db1c638be7fad8675"
+        },
+        {
+          "file": "evidence/corpus-4.verify.txt",
+          "bytes": 1627,
+          "sha256": "aeec8104564ff9c386f74bd2b4d2d0ec876bfaa0e145278b052ad84db93ec285"
+        },
+        {
+          "file": "evidence/host-history-lionx402.com.acquired-at",
+          "bytes": 21,
+          "sha256": "0c3e23944fd3f21ad3c0cfb75f4150cd15774cbe3576b6506756ef5ec664b3b9"
+        },
+        {
+          "file": "evidence/corpus-8.acquired-at",
+          "bytes": 21,
+          "sha256": "c73a5e9f198ebcf19d87cdadb42f9edb1ed911cff29b502ec0d3067e241a16c1"
+        },
+        {
+          "file": "evidence/run-log.md",
+          "bytes": 1735,
+          "sha256": "a7ad80bf0159a06dc1da990860e6b0b0fbde3e45f2691c759aead918d0272afa"
+        },
+        {
+          "file": "evidence/corpus-5.source-url",
+          "bytes": 33,
+          "sha256": "bb252bff3cc7ac7b8cc0cdf3344b260c262134910afcda5a6b3cc002f0604ff3"
+        },
+        {
+          "file": "evidence/scvd-signing-key.acquired-at",
+          "bytes": 21,
+          "sha256": "0c3e23944fd3f21ad3c0cfb75f4150cd15774cbe3576b6506756ef5ec664b3b9"
+        },
+        {
+          "file": "evidence/scvd-signing-key.json",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/corpus-7.json",
+          "bytes": 3027792,
+          "sha256": "7e4500d7fc6fdaa6a4c5737702bccf39911d7277ee964a3a03207538dad5a85f"
+        },
+        {
+          "file": "evidence/corpus-8.source-url",
+          "bytes": 33,
+          "sha256": "0289d27e46d8cd262e833f8b79943d38a50644c1e11109f64a27ad803085a724"
+        },
+        {
+          "file": "evidence/corpus-4.acquired-at",
+          "bytes": 21,
+          "sha256": "bc06cac8558bbbfadd51eefe03f1f1758805a8a43a52213e829166d3b2854e97"
+        },
+        {
+          "file": "evidence/corpus-7.acquired-at",
+          "bytes": 21,
+          "sha256": "c73a5e9f198ebcf19d87cdadb42f9edb1ed911cff29b502ec0d3067e241a16c1"
+        },
+        {
+          "file": "evidence/scvd-signing-key.source-url",
+          "bytes": 48,
+          "sha256": "9c1dab151aecc99365d1e61c37b0cb095f7b15b0439418284043570c296e765a"
+        },
+        {
+          "file": "evidence/host-history-lionx402.com.source-url",
+          "bytes": 49,
+          "sha256": "bfd1414fe2fdbe5561117e2ffb766aacdf735deaf01593d4843f02609d28a36c"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 16926,
+          "sha256": "be7dbc949f0d403d13501b350d74772471e929e641627f069f662cfc2d00b8d8"
+        },
+        {
+          "file": "evidence/direct-get.acquired-at",
+          "bytes": 21,
+          "sha256": "aac148482edcfde98ac01607553f9c5d94efd0c6179832d94166cda0a0369e6a"
+        },
+        {
+          "file": "evidence/direct-get.source-url",
+          "bytes": 49,
+          "sha256": "ed9f3775c48ae14c92ffd3f4d1a75441156bf2c03e2fdced469de54eafeef2d9"
+        },
+        {
+          "file": "evidence/corpus-7.source-url",
+          "bytes": 33,
+          "sha256": "d9df77335252a68b0f222b061610b6de85e9bfa37f4b4019d60f4f767b35e181"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 8,
+      "usage": {
+        "input_tokens": 236313,
+        "cached_input_tokens": 204288,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5443,
+        "reasoning_output_tokens": 1508
+      },
+      "resolved_models": []
+    },
+    "run_sha256": "bc74c7be3b4efa42c17dc483b8968c84cd274284bbfa098d9daeaa0be3654dd7",
+    "recipient": {
+      "started_at": "2026-09-23T20:30:33.434Z",
+      "ended_at": "2026-09-23T20:32:07.224Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-23T20:30:33.434Z",
+        "ended_at": "2026-09-23T20:32:07.224Z",
+        "wall_elapsed_ms": 93790,
+        "monotonic_elapsed_ms": 93755.067125,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "trace_sha256": "7ee710cfe19f0e2553c6b1d3275d79ad908e195dae1c265c64de8df5a7c5cb3e",
+      "output_bytes": 138556,
+      "run_sha256": "0deda8b1843a4bd730c7586477f05b2c7b9664b52f7f7687306698e3eb93a9a6",
+      "tool_calls": 12,
+      "input_manifest_sha256": "0f0306493f82e53e2c6e814a03a3de6de1d71cb823706e9bfc67a0b6dbd7a5f3",
+      "execution_samples": {
+        "samples": 9,
+        "ac_power_samples": 9,
+        "test_process_samples": 9,
+        "limit": "Process presence is not measured CPU utilization. Ten-second samples cannot establish absence between samples."
+      }
+    },
+    "execution_samples": {
+      "samples": 12,
+      "ac_power_samples": 12,
+      "test_process_samples": 0,
+      "limit": "Process presence is not measured CPU utilization. Ten-second samples cannot establish absence between samples."
+    }
+  },
+  {
+    "cell": {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "started_at": "2026-09-23T20:24:09.559Z",
+    "ended_at": "2026-09-23T20:24:57.252Z",
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-09-23T20:24:09.559Z",
+      "ended_at": "2026-09-23T20:24:57.252Z",
+      "wall_elapsed_ms": 47693,
+      "monotonic_elapsed_ms": 47693.20220899995,
+      "max_callback_gap_ms": 1001.4019170000101,
+      "interruption": null
+    },
+    "runtime": {
+      "state": "failed",
+      "exit_code": 143,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": "tool_calls",
+      "stop_requested": {
+        "at": "2026-09-23T20:24:56.951Z",
+        "close_observed": false,
+        "signal_requested": true,
+        "wall_elapsed_ms": 47392,
+        "monotonic_elapsed_ms": 47392.37533399998
+      }
+    },
+    "trace_sha256": "e1e6a391157f799722ebf38a4913a3189c422840493e3e67d769c25451b02f04",
+    "output_bytes": 118024,
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 53480,
+      "files": [
+        {
+          "file": "evidence/target_402_decoded.json",
+          "bytes": 1766,
+          "sha256": "e541f4ecf0699c796d6486546f4c89434ec57093756c01c06f07b567d4f10c5e"
+        },
+        {
+          "file": "evidence/hosthistory.json",
+          "bytes": 12738,
+          "sha256": "8455bd3f3098aaa608a0dcbfb5c88d40d9fce3a445a939167a8ea86985aedec4"
+        },
+        {
+          "file": "evidence/SKILL.md",
+          "bytes": 11631,
+          "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29"
+        },
+        {
+          "file": "evidence/preflight_headers.txt",
+          "bytes": 1081,
+          "sha256": "c080fb4c952b13b7337aa3fe9e6fd392cee0e1a962ccbddaac3273b85c9f2818"
+        },
+        {
+          "file": "evidence/target_probe_headers.txt",
+          "bytes": 3185,
+          "sha256": "a70f576ac1a3fa1b8f98ff9a4c50462a31914c19c2654deea6dea7e5d4028f9e"
+        },
+        {
+          "file": "evidence/target_probe.json",
+          "bytes": 2,
+          "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        },
+        {
+          "file": "evidence/skill_headers.txt",
+          "bytes": 895,
+          "sha256": "19803a367be06631f232aada226657c829b5a93cdd853c7438421c4c30e344b8"
+        },
+        {
+          "file": "evidence/issuer-key.json",
+          "bytes": 3139,
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        {
+          "file": "evidence/issuerkey_headers.txt",
+          "bytes": 972,
+          "sha256": "78101035fe462f11090e5036f90b73aff6b944f8dbbfe4c56f75d1ba2ddb83ff"
+        },
+        {
+          "file": "evidence/preflight.json",
+          "bytes": 16926,
+          "sha256": "dd70673a5a410d3a5666c440ce678a1d0a99bf3751dd3cb7e3a38cee31715bf3"
+        },
+        {
+          "file": "evidence/hosthistory_headers.txt",
+          "bytes": 1145,
+          "sha256": "5d32cbbe81fab53c8c6b6e1e90b588f1e59629bd879de26516038226a882e5b2"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 21,
+      "usage": null,
+      "resolved_models": [
+        "claude-sonnet-5"
+      ]
+    },
+    "run_sha256": "babd62c58bbe263d72882f96e1410ccc716ddcbfa900a1b1e29247c5aa45ca58",
+    "execution_samples": {
+      "samples": 5,
+      "ac_power_samples": 5,
+      "test_process_samples": 0,
+      "limit": "Process presence is not measured CPU utilization. Ten-second samples cannot establish absence between samples."
+    }
+  }
+]

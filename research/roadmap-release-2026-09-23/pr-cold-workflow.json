@@ -1,0 +1,60 @@
+{
+  "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/35908940798",
+  "head": "d419f5740355abaf176656d2d8bbc7a392aece8a",
+  "scope": "Hosted artifact integration on PR branch; not a release or causal speed measurement.",
+  "parseable_json": true,
+  "same_acquisition_timestamp": "2026-09-23T19:23:13.200Z",
+  "first_isolate": "cold",
+  "first_ms": 455,
+  "warm_knocks": 6,
+  "coverage": {
+    "attempted": 7,
+    "answered": 7,
+    "failed": 0,
+    "http_errors": 0,
+    "subsequent": 6,
+    "comparable_warm": 6,
+    "excluded_from_warm": 0
+  },
+  "burst": {
+    "base": "https://scvd.store",
+    "doors": 35,
+    "answered": 35,
+    "challenged_402": 35,
+    "cold_isolates": 9,
+    "warm_isolates": 26,
+    "unmarked": 0,
+    "min_ms": 156,
+    "median_ms": 233,
+    "max_ms": 653,
+    "slowest": [
+      {
+        "path": "/api/buy/the_collab",
+        "ms": 653,
+        "isolate": "warm"
+      },
+      {
+        "path": "/api/buy/aura_walk",
+        "ms": 634,
+        "isolate": "warm"
+      },
+      {
+        "path": "/api/buy/passport_refresh",
+        "ms": 563,
+        "isolate": "warm"
+      }
+    ]
+  },
+  "files": [
+    {
+      "name": "cold-reading.json",
+      "bytes": 13253,
+      "sha256": "4c295166e87e8c31a38e597127c9cf5da61a8cf248ba28aa177acaff6d6ffaf2"
+    },
+    {
+      "name": "cold-reading.txt",
+      "bytes": 692,
+      "sha256": "db7cd0ef92bf5e269b52828d0dad5ad5e2d010e18dc9e0a43e31e032f0372747"
+    }
+  ]
+}

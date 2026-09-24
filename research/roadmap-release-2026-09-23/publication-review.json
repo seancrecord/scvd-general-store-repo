@@ -1,0 +1,80 @@
+{
+  "reviewed_at": "2026-09-24T13:42:05.140949+00:00",
+  "scope": "Additional content review after automatic push review rejected uninvestigated compressed captures. The raw HTTP sweep trace is now private and excluded from the unpublished commit before pushing.",
+  "public_response_bodies": [
+    {
+      "file": "guidance-html.response.gz",
+      "decoded_bytes": 32072,
+      "decoded_sha256": "62de2c950a07ec6719eee63ce1a0d16063c075564023f2c8df1c790072bd2d20",
+      "family": "Public host-history view",
+      "review": "Inspected host/timeline/evidence-scope and rendered views for the public merchant. The capture contains dated public census observations and links, not caller metadata; no caller-IP, cookie, credential or private-path fields."
+    },
+    {
+      "file": "guidance-markdown.response.gz",
+      "decoded_bytes": 8048,
+      "decoded_sha256": "d774d16545f306118bc1f7937bbd2c8050deb8423a73ad36aadcde555b163d18",
+      "family": "Public host-history view",
+      "review": "Inspected host/timeline/evidence-scope and rendered views for the public merchant. The capture contains dated public census observations and links, not caller metadata; no caller-IP, cookie, credential or private-path fields."
+    },
+    {
+      "file": "guidance-markdown_path.response.gz",
+      "decoded_bytes": 8048,
+      "decoded_sha256": "d774d16545f306118bc1f7937bbd2c8050deb8423a73ad36aadcde555b163d18",
+      "family": "Public host-history view",
+      "review": "Inspected host/timeline/evidence-scope and rendered views for the public merchant. The capture contains dated public census observations and links, not caller metadata; no caller-IP, cookie, credential or private-path fields."
+    },
+    {
+      "file": "guidance-normal.response.gz",
+      "decoded_bytes": 14615,
+      "decoded_sha256": "7d7619c4b4d9679d04712239267fd76d1463469ea77766ec558bcdb242b85d61",
+      "family": "Public host-history view",
+      "review": "Inspected host/timeline/evidence-scope and rendered views for the public merchant. The capture contains dated public census observations and links, not caller metadata; no caller-IP, cookie, credential or private-path fields."
+    },
+    {
+      "file": "guidance-stable.response.gz",
+      "decoded_bytes": 14577,
+      "decoded_sha256": "40b98211410252c1076fc01f6f291d5db19068b36b894120ba71d7a81ba20d6c",
+      "family": "Public host-history view",
+      "review": "Inspected host/timeline/evidence-scope and rendered views for the public merchant. The capture contains dated public census observations and links, not caller metadata; no caller-IP, cookie, credential or private-path fields."
+    },
+    {
+      "file": "openapi.response.gz",
+      "decoded_bytes": 687898,
+      "decoded_sha256": "482194c384fdd463a12ad9fd0d02bac94c2d05690400f3bde07ea7811c6d39c2",
+      "family": "OpenAPI documentation",
+      "review": "Expanded contract replays identically to the already-retained pre-release public contract; fields are schema definitions and documentation, not caller request data. Authorization/Bearer occurrences are documented schemes and placeholders, not credentials."
+    },
+    {
+      "file": "paywall-json.response.gz",
+      "decoded_bytes": 34657,
+      "decoded_sha256": "f56266b7ff5b12671b0b6361827bb90404ec6d268712a07fa5d72a27a9400296",
+      "family": "Public Paywall guide",
+      "review": "Inspected public guide fields and keyword contexts. Cookie text states the public no-cookie policy; authorization describes a printed card. No request headers or caller identifiers are captured."
+    },
+    {
+      "file": "paywall-markdown.response.gz",
+      "decoded_bytes": 39611,
+      "decoded_sha256": "0b11aa18b6a53562e9cc2d65607ea37ffd778771b9cba16bc0d3d0c8859430fa",
+      "family": "Public Paywall guide",
+      "review": "Inspected public guide fields and keyword contexts. Cookie text states the public no-cookie policy; authorization describes a printed card. No request headers or caller identifiers are captured."
+    }
+  ],
+  "excluded_raw_captures": [
+    {
+      "source": "refused-room.response",
+      "reason": "Cloudflare block pages can embed caller network metadata. Raw body remains local; only status and page title are reported."
+    },
+    {
+      "file": "doors-before.trace.gz",
+      "source": "doors-complete-attempt.trace",
+      "decoded_bytes": 1635687,
+      "decoded_sha256": "4965176a1becb357abd8a763401bc5d971300185e21bb6071c5fc941ea654322",
+      "reason": "Raw HTTP sweep trace retained privately. Public PR keeps its hash and scoped request/status findings; the raw trace is not needed to replay the public summaries and contains network-address material."
+    }
+  ],
+  "limits": [
+    "Public response bodies are retained for exact offline replay; they contain no captured request/response header block.",
+    "The private sweep trace is not published; only its hash and previously scoped findings remain public.",
+    "No native traces, host configuration, buyer raw files or recipient raw files are published."
+  ]
+}

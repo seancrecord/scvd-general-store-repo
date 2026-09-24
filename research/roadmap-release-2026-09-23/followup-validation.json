@@ -1,0 +1,18 @@
+{
+  "recorded_at": "2026-09-23T19:54:29.137344+00:00",
+  "scope": "Documentation, retained release observations and offline replay helpers only; no product behavior change.",
+  "checks": {
+    "typecheck": "passed",
+    "docs_check": "passed",
+    "release_evidence_replay": "passed; repeated output byte-identical",
+    "diff_check": "passed",
+    "draft_buyer_plan_preview": "passed without --run or output-directory creation",
+    "draft_plan_limits": "identical to September 20 except purpose",
+    "native_agents_launched": 0
+  },
+  "limits": [
+    "No new full local application suite; the product merge tree equals the fully passing PR tree.",
+    "Main CI rerun was still in progress at the retained readback snapshot.",
+    "Follow-up changes are local and uncommitted."
+  ]
+}

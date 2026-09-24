@@ -260,3 +260,61 @@ source, assertions or timeouts: the small settlement suite passed all 7 tests,
 and the other 32 named cases passed with 1,103 unselected cases skipped. These
 rechecks do not replace the full hosted gate. The PR is submitted as a draft
 pending that qualification. [Exact validation record](../research/roadmap-review-2026-09-23/pr-validation.json).
+
+
+## Merged release and public qualification — September 23
+
+The keeper authorized merge and continuation. PR #900 merged at 19:42:39 UTC
+as `00aad2937844f0218869d99085385fef371c696d`, after all four PR test shards and
+the required check passed. Both production Worker builds then succeeded.
+[Retained release evidence](../research/roadmap-release-2026-09-23/README.md)
+records the separate post-merge CI follow-through, public responses and hosted
+workflow artifacts; earlier local/draft qualifications above remain historical.
+
+The live OpenAPI is 687,898 bytes, 13,003 below the pre-release capture, with
+12,102 bytes below the unchanged warning limit. All 185 paths and the fully
+expanded contract are unchanged; all 20 frozen schema use sites agree. The
+complete live-door sweep now passes every raw-API criterion, including the
+warning budget and five-rail agreement. Its remaining Edge-token expiry warning
+was already on KEEPER_LIST. VQ5-R moves to DONE at this scoped acceptance.
+
+The Paywall JSON/Markdown guide now matches the implemented wallet-streak rules,
+closing CT1's remaining guide readback. The merged cold-reading workflow passes
+with parseable JSON and text reconstructed from exactly the same acquisition;
+all 35 doors return quotes without a purchase. This is not a causal latency claim.
+
+TR3's #899 guidance readback passed across five views and is retained unchanged.
+At the release readback, TR3 stayed open for a separately frozen buyer/recipient
+cohort; the plan was then a draft. The later authorized result is recorded below.
+VQ4's original-report gaps remain input-blocked and unchanged.
+
+## Fresh buyer follow-through — September 23
+
+The keeper authorized the frozen four-cell experiment. All buyer-host and offline
+recipient capability checks passed. The [reviewed cohort](../research/nested-row-buyer-2026-09-23/README.md)
+records **0 complete / 4: 2 interpretation failures, 2 incomplete**. All three
+eligible recipients finished; no timing interruption was recorded. One buyer
+authenticated only one week while claiming four; another substituted publication
+for missing observation dates in two older signed rows. Correct recipient
+explanations do not repair buyer reports. The incomplete cases hit the evidence
+file ceiling and tool-call ceiling respectively. No retry or budget expansion.
+
+The controller maintained AC power and temporary sleep inhibition, but unrelated
+test processes appeared during handoffs. Execution records preserve that limit
+on the intended quiet window. No old score was changed and no causal comparison
+is claimed. TR3 remains ahead of merchant/platform work, with explicit date/scope
+guidance and evidence-file overhead next; no further queue move is warranted.
+Main post-merge CI also completed green: all four shards and the required check,
+15,495 tests passed and one skipped. This closes the earlier pending CI state;
+the earlier dated validation snapshots remain historical.
+
+## Date/scope and retention repair — local follow-through
+
+The [next TR3 repair](BUYER_DATE_AND_RETENTION_2026-09-23.md) is implemented
+locally: missing signed observation dates remain unknown, each authenticated
+week needs its own verified original, and acquisition notes/results share one
+journal while original evidence stays complete. The served host-history scope
+and installable skill carry the clarification; verifier behavior and experiment
+limits are unchanged. New regressions were witnessed failing on the old wording.
+Release readback and fresh native qualification remain open; no cohort is retried
+or rescored, and no actual reduction in native file/call use is claimed.

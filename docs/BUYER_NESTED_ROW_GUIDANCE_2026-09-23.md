@@ -27,8 +27,12 @@ encountered internal Worker startup errors without completed test results and
 were stopped; neither is counted as passing. Under the current repository
 commit policy, focused checks permit a commit while the full hosted suite
 remains mandatory before merge.
-Release requires the normal full hosted suite; production readback and its
-retained response hashes follow merge.
+The repair shipped separately in PR #899. The September 23 production readback
+returned 200 on normal/stable JSON, HTML and both Markdown paths; all five
+contained the same nested-row, exact-query and subject-selector explanation.
+[Retained responses and hashes](../research/roadmap-release-2026-09-23/guidance-readback.json)
+close this guidance's release readback. They are not a new buyer experiment or
+cryptographic attestation of the answering Worker revision.
 
 This is a navigation hypothesis, not demonstrated buyer improvement. The old
 result remains one complete journey out of four. A separate experiment needs a
@@ -37,3 +41,17 @@ hosts and the offline recipient. Preserve the existing budgets, zero-spend
 limit, exact subject, fourteen-day observation age ceiling, and single attempt
 per cell. Establish an awake execution window for the complete bounded run.
 Merchant and platform qualification remain behind buyer reliability.
+
+## Fresh cohort completed — September 23
+
+The separately authorized [frozen cohort](../research/nested-row-buyer-2026-09-23/README.md)
+completed: zero complete journeys out of four, two interpretation failures and
+two incomplete attempts. The completed Claude buyer found the nested row but
+extended one verified snapshot's signature to other unsigned weeks. A Codex
+buyer verified four originals but presented two publication dates as signed row
+observation dates where those timestamps were absent. The other failures were
+a capture file ceiling and a buyer tool-call cap. All three eligible recipients
+completed, without timing interruptions; unrelated test processes overlapped
+the handoffs. Earlier scores remain unchanged. This does not establish a causal
+wording improvement or regression. TR3 stays open for scope/date clarity and
+bounded retention, ahead of merchant/platform qualification.
