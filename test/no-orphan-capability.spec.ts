@@ -252,6 +252,15 @@ async function discoveryHaystack(): Promise<string> {
   return surfaces.join("\n");
 }
 
+// A listed /bot-auth/keys must not make the unrelated /keys redirect stale.
+// Tighten only the quiet-list check; the broader coverage floor above is unchanged.
+function namesQuietProbe(haystack: string, probe: string): boolean {
+  return haystack.split(/(?=https?:\/\/)|[\s"<>`(]/).some(token => {
+    const path = token.replace(/^https?:\/\/[^/]+/, "");
+    return path.startsWith(probe) && /^(?:$|[/?#\s"<>`)},])/.test(path.slice(probe.length));
+  });
+}
+
 describe("every public door is on a surface an agent reads, or says why not", () => {
   it("leaves no route unfindable without a written reason", async () => {
     const haystack = await discoveryHaystack();
@@ -299,7 +308,7 @@ describe("every public door is on a surface an agent reads, or says why not", ()
     for (const probe of Object.keys(DELIBERATELY_QUIET)) {
       if (!probes.has(probe)) {
         stale.push(`${probe} — no registered route matches; remove the entry`);
-      } else if (haystack.includes(probe)) {
+      } else if (namesQuietProbe(haystack, probe)) {
         stale.push(`${probe} — a discovery surface now names it; remove the entry`);
       }
     }

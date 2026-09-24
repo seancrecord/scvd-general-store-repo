@@ -6,6 +6,7 @@ import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
 import { A2A_STATE_DESCRIPTION } from "@/services/a2a-tasks";
+import { CALLING_CARD_DATA_DESCRIPTION } from "@/store/calling-card";
 
 /**
  * GET /privacy — the privacy policy, as a real room.
@@ -26,8 +27,10 @@ import { A2A_STATE_DESCRIPTION } from "@/services/a2a-tasks";
  * cookies" is checkable in any response.
  */
 export const privacyRoutes = new Hono<HonoEnv>();
+const PRIVACY_UPDATED = "2026-09-24";
 
 const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
+  { head: "Calling-card setup and optional reports", body: [CALLING_CARD_DATA_DESCRIPTION] },
   {
     head: "A2A repair kits",
     body: ["The repair desk stores bounded public test cards, authorization fixtures, requests and responses, signed observations and suggested repairs. Use only public test data. Anyone holding the unguessable report link can read it. The private recheck token is held separately and omitted from report reads. The seven-day watch reads only the card; active tests require the operator authorization file and run at purchase and the buyer-triggered recheck. Reports are retained for later verification."],
@@ -104,7 +107,7 @@ privacyRoutes.get("/privacy", (c) => {
       statements: section.body,
     })),
     machine_twin: `${base}/.well-known/trust.json`,
-    effective: "2026-08-21",
+    effective: PRIVACY_UPDATED,
     contact: `${base}/api/letter`,
   };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
@@ -133,7 +136,7 @@ privacyRoutes.get("/privacy", (c) => {
       path: "/privacy",
       bodyHtml: `<section>
         <p class="menu-desc"><strong>The short version: this store is built not to know who you are.</strong> No accounts, no cookies, no tracking scripts, no kept IP logs — and where a purchase necessarily touches data (your wallet address, the settlement transaction, the inputs you attach), the surface you buy from says exactly what will be recorded and what will be published, before you pay.</p>
-        <p class="menu-meta">Effective 2026-08-21. Machine-readable twin: <a href="/.well-known/trust.json"><code>/.well-known/trust.json</code></a>. Every claim below is a property of the code, which is public.</p>
+        <p class="menu-meta">Updated ${PRIVACY_UPDATED}. Machine-readable twin: <a href="/.well-known/trust.json"><code>/.well-known/trust.json</code></a>. Every claim below is a property of the code, which is public.</p>
       </section>
       ${sections}
       ${jsonLdScript({
@@ -142,6 +145,7 @@ privacyRoutes.get("/privacy", (c) => {
         name: "scvd.store privacy policy",
         url: `${base}/privacy`,
         datePublished: "2026-08-21",
+        dateModified: PRIVACY_UPDATED,
         inLanguage: "en",
         publisher: organizationRef(base),
       })}`,

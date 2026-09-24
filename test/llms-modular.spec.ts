@@ -1139,10 +1139,11 @@ const BASE = "https://scvd.store";
 // reverted and nothing else touched, both digests below reproduced
 // their previous values exactly.
 // 2026-09-24: Research Comparison adds its derived listing and input contract.
+// Calling-card setup also replaces the Web Bot Auth paragraph and enters the index.
 // Both fingerprints below were taken from the integrated guide after reviewing
 // the product additions; the prior pins failed on those added bytes.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "3d5fc48feeb71c2fa1ba314176435f67ddc94df6f2be81f7cebc98c1e34184c8";
+  "b20bbd01b7ff8a1f2e26ccf600f64e15624b4d0d77d7248944e9f80b0f8c9849";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1233,7 +1234,7 @@ describe("nothing was rewritten", () => {
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
       // Re-pinned 2026-09-24 with the new product; see the
       // note on GUIDE_DIGEST_BEFORE_THE_SPLIT for how it was verified.
-      "8f73a04bc14f8d258aa2bc74a9645aeb893f7846e1d66ec3b2efbecd94780268",
+      "be9f17fe3fd6e735447051cf93272d3dab15a4e47c68ffd86ea920ee2c52f60b",
     );
   });
 

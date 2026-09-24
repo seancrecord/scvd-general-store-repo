@@ -80,6 +80,16 @@ const EXEMPT: ReadonlyArray<{ why: string; test: (route: string) => boolean }> =
 
 /** Rooms the porch does not count, by name, each under the reason it is not counted. */
 const UNCOUNTED_TODAY: readonly string[] = [
+  // Calling-card setup assets, key lifecycle and receiver self-checks
+  // continue the visit counted at /bot-auth. Directory fetches may be
+  // automated receiver lookups, not new visitors; reports are opt-in
+  // client assertions reviewed privately, never public demand counts.
+  "GET /calling-card/calling-card.mjs",
+  "GET /calling-card/setup.js",
+  "GET /bot-auth/keys/:id",
+  "POST /bot-auth/keys",
+  "GET /bot-auth/observe",
+  "POST /bot-auth/reports",
   // Private signed monitoring delivery, not visitor demand. Its own
   // receipt ledger is reviewed at /admin/desvela-registry.json.
   "POST /webhooks/desvela-registry",

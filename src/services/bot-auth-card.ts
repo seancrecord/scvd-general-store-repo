@@ -32,7 +32,9 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  * particular request was signed with it.
  */
 
-export const CARD_CRITERIA_VERSION = "signature-agent-directory-v1";
+// v2 also reconstructs the current response profile's request-bound authority
+// component. Existing signed v1 observations keep their original criteria.
+export const CARD_CRITERIA_VERSION = "signature-agent-directory-v2";
 
 const CARD_SCOPE =
   "One GET of one directory document at one moment, against the named criteria. This reports what the directory served then: it is not an endorsement of the agent behind it, not a statement about who operates the key, and not evidence that any particular request was ever signed with it. An unreachable verdict is a fact about the network path between this store and that host at that moment.";
@@ -234,7 +236,9 @@ export async function checkDirectory(
   /**
    * PROOF OF POSSESSION, checked only in the shape this battery can
    * honestly reconstruct: a signature tagged for the directory whose
-   * covered components are exactly ("@authority"). Anything fancier
+   * covered components are exactly ("@authority") or ("@authority";req).
+   * The request-bound form is the current directory response profile;
+   * the older form remains readable for existing observations. Anything fancier
    * is reported as not checked — a checker that guesses at a base
    * and calls a mismatch a forgery would be worse than one that
    * names its own limit.
@@ -250,15 +254,14 @@ export async function checkDirectory(
     });
     return { verdict: "not_ready", checks };
   }
-  const labelMatch = /(?:^|,\s*)([!#$%&'*+\-.^_`|~a-zA-Z0-9]+)=(\("@authority"\);[^,]*tag="http-message-signatures-directory")/.exec(
-    input,
-  );
+  const labelMatch = [...input.matchAll(/(?:^|,\s*)([!#$%&'*+\-.^_`|~a-zA-Z0-9]+)=(\("@authority"(;req)?\);[^,]*)/g)]
+    .find(match => /;tag="http-message-signatures-directory"(?:;|$)/.test(match[2] ?? ""));
   if (!labelMatch?.[1] || !labelMatch[2]) {
     checks.push({
       name: "proof-of-possession",
       ok: false,
       detail:
-        'no signature over exactly ("@authority") with tag "http-message-signatures-directory" was found in Signature-Input. One may exist over components this battery does not reconstruct; this check verified nothing either way and says so.',
+        'no signature over exactly ("@authority") or ("@authority";req) with tag "http-message-signatures-directory" was found in Signature-Input. One may exist over components this battery does not reconstruct; this check verified nothing either way and says so.',
     });
     return { verdict: "not_ready", checks };
   }
@@ -277,7 +280,7 @@ export async function checkDirectory(
     return { verdict: "not_ready", checks };
   }
   const authority = new URL(directoryUrl).host;
-  const base = `"@authority": ${authority}\n"@signature-params": ${params}`;
+  const base = `"@authority"${labelMatch[3] ?? ""}: ${authority}\n"@signature-params": ${params}`;
   let verified = false;
   for (const key of ed25519Keys) {
     if (await verifyMessageSignature(base, signatureHex, base64UrlToHex(key.x))) {

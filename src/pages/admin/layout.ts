@@ -82,6 +82,7 @@ export type AdminTab =
    * market's own census beside it.
    */
   | "protocols"
+  | "calling-card"
   /**
    * OPEN FOR BUSINESS (2026-09-18), the weekly issue for sellers, drafted by
    * the instruments and read here before the keeper publishes it by
@@ -181,6 +182,7 @@ export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string
   disclosure: { title: "What they told us", what: "Who fills the optional block at the door, and who ignores it." },
   signals: { title: "Buyer signals", what: "What the till sees without asking. A trial area, built to be stopped." },
   protocols: { title: "Protocols", what: "What we speak, who used it, and what the market speaks. Four instruments, never added together." },
+  "calling-card": { title: "Calling-card reports", what: "Private, opt-in client diagnostics. Unverified reports, distinct from signed receiver observations." },
   "open-for-business": { title: "Open for Business", what: "This week's issue for sellers, drafted here and published by hand." },
   instruments: { title: "Free instruments", what: "Which free tools agents actually use, and what follows a check." },
   growth: { title: "Growth", what: "Every month since opening, side by side." },
@@ -420,6 +422,8 @@ export const ADMIN_PAGES: readonly { tab: AdminTab; href: string }[] = [
  * then lost again.
  */
 export const EVERY_ROOM: readonly { href: string; label: string }[] = [
+  { href: "/admin/calling-card", label: "Calling-card reports (private client diagnostics)" },
+  { href: "/admin/calling-card.json", label: "Calling-card reports (JSON)" },
   { href: "/admin/ward/index", label: "The index now — free live check" },
   { href: "/admin/recount", label: "The recount (row-level settle audit)" },
   { href: "/admin/take", label: "The take (every certificate, counted)" },

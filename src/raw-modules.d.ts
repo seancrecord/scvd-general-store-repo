@@ -62,3 +62,13 @@ declare module "*.wasm" {
   const module: WebAssembly.Module;
   export default module;
 }
+
+/** Calling-card source is served unchanged, executed locally by its caller. */
+declare module "*/calling-card/calling-card.mjs" {
+  const contents: string;
+  export default contents;
+}
+declare module "*/calling-card/setup.js" {
+  const contents: string;
+  export default contents;
+}

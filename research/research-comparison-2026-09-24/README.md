@@ -1,7 +1,8 @@
 # Research Comparison release and discovery — September 24, 2026
 
 Status: [release PR #912](https://github.com/seancrecord/scvd-general-store-repo/pull/912),
-integrated with main `eedbcb56` and the documentation-only `dee13f08` update;
+integrated with main `eedbcb56`, the documentation-only `dee13f08` update,
+and Calling Card/buyer-cohort main at `553ede01`;
 release checks running. Both September 24 spec-read entries were preserved. No
 production deployment or paid comparison is claimed at this stage.
 
@@ -111,3 +112,10 @@ still run the complete suite before merge, including files the local runner
 could not start.
 
 PR and deployed readback will be recorded here when observed.
+
+Concurrent releases required two main reconciliations. Both spec-read entries
+were retained, and the Calling Card guide additions were preserved. The combined
+guide's two prior fingerprints failed and were re-derived from the reviewed
+content; all 14 guide tests then passed. The other 22 product, purchase and
+OpenAPI checks passed, as did typecheck and both Worker builds. Required CI is
+restarted for the mergeable combined head; earlier partial CI is not substituted.

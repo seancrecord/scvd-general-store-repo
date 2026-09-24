@@ -2478,3 +2478,55 @@ admission claim was made; TR-D remains separate from the D1/V3 evidence closeout
 ### 2026-09-23 — ERC-8004 closeout reading
 
 Read the [current registration example](https://ercs.ethereum.org/ERCS/erc-8004), [AgentRanking public API](https://app.agentranking.io/docs/api), [Agentscan documentation](https://agentscan.info/docs), and [Agent Arena endpoint/registration instructions](https://agentarena.site/). These establish the read routes, not successful SCVD admission. The live AgentRanking API returned 522; Agent Arena’s existing-identity lookup returned 404 with a working control. Canonical chain/HTTP consistency and browser observations are scoped in the [closeout receipt](../research/erc8004-followthrough-2026-09-23/README.md). No payment, second identity or wallet claim.
+
+## 2026-09-24 — portable calling-card integration
+
+Read [Cloudflare Web Bot Auth](https://developers.cloudflare.com/bots/reference/bot-verification/web-bot-auth/)
+(page update dated July 1). Its documented profile uses Ed25519, a structured
+string Signature-Agent reference, and a public HTTP Message Signatures
+directory. The directory response proof covers `"@authority";req`; the local
+checker now accepts that response component as well as its existing form.
+Signature parameters are retained regardless of the position of `tag`.
+New observations name `signature-agent-directory-v2`; existing signed v1
+observations retain their original criteria and bytes.
+Verifier registration and site policy still apply: attaching headers does not
+establish that a site verified or accepted them. Expiry and nonce fields do
+not enforce replay protection without a receiving verifier.
+
+Read the [x402 client/server model](https://docs.x402.org/core-concepts/client-server)
+and facilitator documentation. A 402 challenge, authorization, settlement and
+resource delivery are separate steps. This integration returns the existing
+response unchanged and makes no payment or retry decision. No payment-protocol
+translation or settlement-success inference was added.
+
+The attempted Node 22 online globals-documentation read was unavailable.
+The downloaded ES module was exercised on local Node 22.13.1 with its standard
+fetch and WebCrypto implementations instead; this is runtime evidence, not
+claimed browser-automation support.
+
+Gaps: no destination acceptance or production payment measured for this build;
+no wallet-control, operator-identity, third-party registration, or key-custody
+claim. No general arbitrary-configuration importer or secret scanner. Signed
+request bytes were independently verified and tampered with in local tests;
+those fixtures do not establish acceptance by a live verifier. Scope and local
+integration instructions: `calling-card/README.md`.
+
+Same-day follow-through: re-read those Cloudflare and x402 client/server pages.
+Cloudflare documents an origin-owned well-known directory and separate bot
+registration. The hosted exact-path calling-card directory is recognized by
+our receiver; no Cloudflare registration or general destination acceptance is
+claimed. Directory publication lasts a bounded term from a client-signed proof;
+renewal is explicit and private keys remain on the operator machine. Request
+signatures keep their shorter window. Revocation and report deduplication name
+their KV propagation limits; the receiver is an observation endpoint, never an
+authorization or payment gate.
+
+The local receiver checks the key, signature and time window and signs its
+observation. Separately, opt-in diagnostics are retained as unverified client
+reports behind the existing admin login, with the exact fields and retention
+declared in browser consent, machine instructions and privacy/trust surfaces.
+The x402 reader inspects only a bounded v2 header and reports network overlap;
+it does not infer wallet readiness or read/consume the payment client's body.
+Generated-client verification used an isolated local Worker and temporary keys,
+including independent receipt verification and refusal after revocation. No
+production acceptance, third-party registration or payment was exercised.

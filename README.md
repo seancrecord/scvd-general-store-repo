@@ -79,6 +79,10 @@ index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 
 What people arrive here to do, and where each door is:
 
+- **Introduce an agent consistently** — local public-profile setup and a
+  configured Node fetch download in `/bot-auth`. Build and integration limits:
+  [calling-card/README.md](calling-card/README.md). Site acceptance and payment
+  completion remain separate outcomes.
 - **Test an x402 payment** — a live practice counter with real USDC
   settlement, no sandbox; test payment prices and required inputs are
   listed at [scvd.store/try](https://scvd.store/try).

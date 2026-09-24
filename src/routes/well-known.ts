@@ -207,6 +207,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
     discovery_by_protocol: discoveryProtocolIndex(base),
     external_records_omitted: RECORDS_NOT_LISTED,
     data_handling: DATA_HANDLING,
+    calling_card_data: CALLING_CARD_DATA_DESCRIPTION,
     not_claimed: NOT_CLAIMED,
     /**
      * The two facts on this whole page that are not our word, stated
@@ -1425,3 +1426,4 @@ wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
     "cache-control": "no-store",
   }),
 );
+import { CALLING_CARD_DATA_DESCRIPTION } from "@/store/calling-card";
