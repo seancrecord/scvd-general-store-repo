@@ -84,11 +84,11 @@ Two practical notes, because this is a road still being paved:
 
 `scvd-tab` is a separate MCP server that runs entirely on the
 builder's own machine — on npm since 2026-08-10, one config block to
-install (`"command": "npx", "args": ["-y", "scvd-tab@0.11.1"]`). Pin
+install (`"command": "npx", "args": ["-y", "scvd-tab@0.11.2"]`). Pin
 the version, as written: an unpinned `npx` runs whatever the registry
 serves at launch, and a package that runs on your machine is local
 code execution, ours included. Every release ships with npm
-provenance (`npm view scvd-tab@0.11.1 dist.attestations`), the source
+provenance (`npm view scvd-tab@0.11.2 dist.attestations`), the source
 is the `tab/` directory of the public repo, and the server needs
 nothing but one file, `~/.scvd/tab.jsonl`: run it with no secrets in
 its environment and no filesystem it does not need. MIT, free
