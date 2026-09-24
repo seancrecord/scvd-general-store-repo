@@ -1,0 +1,734 @@
+{
+  "codex-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer and recipient sessions",
+    "reviewed_at": "2026-09-24T14:01:30.397560+00:00",
+    "transcript_sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh working directory, frozen host context and no resumed session. Observed commands use public responses and local computation; no prior private evidence, credential read or paid action observed. This does not establish absence of hidden host context. Codex r2 wrote its own installation log to /tmp; that workspace-location deviation is recorded separately, not hidden.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "ac256aa2522bbdf74a89b2f3d4a8d07e283ac01cb430c4498699763822d2c881"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Reached the supplied public guide and the free corpus/key surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Examined the exact endpoint through an unpaid origin response or free preflight, and retained a relevant dated signed observation inside the frozen age rule. Interpretation is scored separately.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "The final answer and SOURCES.md correctly separate four actually retained and verified snapshots from unsigned history, identify snapshot 8 as the only qualifying recent dated observation, and limit the signature to authenticated claims rather than identity, truth, payment or delivery.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/SOURCES.md",
+            "sha256": "2f57b909ef02b9d44dda08a521b276035640a5f7a7586a84c3163769f52a16b4"
+          },
+          {
+            "file": "evidence/verify-corpus-7.json",
+            "sha256": "b484b72f2a0190a527f1cbd44196919b0abb51a11520d611abc8720a6460eef6"
+          },
+          {
+            "file": "evidence/verify-corpus-8.json",
+            "sha256": "df7bbf77fe3cd4aa1bd910436fd9b58eabfb67552a4d0a22d82d7b27bee70840"
+          },
+          {
+            "file": "evidence/verify-corpus-4.json",
+            "sha256": "aeec8104564ff9c386f74bd2b4d2d0ec876bfaa0e145278b052ad84db93ec285"
+          },
+          {
+            "file": "evidence/verify-corpus-5.json",
+            "sha256": "dde5f284d82e4ec1bda56b3bd5277f702f3043442f70914a9fc02dc8dd686f64"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Captured the original signed snapshot and a separately fetched issuer key record; the complete inventory is supplied unchanged to the recipient. Free evidence obtained, not a paid purchase.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/inputs/input-manifest.json",
+            "sha256": "3e48a787e49ef706c4f63dc0734cc0321e07121b630e7888469dafa0fbc3e29b"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Native local cryptography succeeded on the snapshot, independently reproduced by the controller and offline recipient. Correct mathematical verification does not override a false buyer explanation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/events.jsonl",
+            "sha256": "a6a4ce45cb4c965e3b7e36b45ddab1509db9ed5c166fa921b0b1daa76a7e0bd0"
+          }
+        ]
+      }
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-14T01:30:09.376Z",
+      "stale_after": "2026-09-28T01:30:09.376Z",
+      "basis": "Frozen fourteen-day observation-age limit; not issuer expiry or publication date."
+    },
+    "fulfillment": "delivered",
+    "payment": {
+      "state": "not_needed",
+      "reason": "Free public evidence only; no payment authorized or submitted."
+    },
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus-8.json",
+        "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+      },
+      "issuer": {
+        "file": "evidence/issuer-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "3557601c9143b909e83f522f0714ab99804614c4489dd8cc3f360283a303fcee"
+        },
+        {
+          "file": "evidence/issuer-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        }
+      ],
+      "subject_pointer": "/round/hosts/52/url",
+      "observed_at_pointer": "/round/hosts/52/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Completed offline verification and correctly explained exact subject, signed message, observation/publication dates, lack of declared expiry, key-versus-identity limits and unsigned current/history evidence. No settlement or delivery claim.",
+      "run": {
+        "file": "recipient/run.json",
+        "sha256": "48db08537d71acb5608560647650cd1c1dd7bf8b59603a9510043910046dcbf6"
+      },
+      "evidence": [
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "a6a4ce45cb4c965e3b7e36b45ddab1509db9ed5c166fa921b0b1daa76a7e0bd0"
+        },
+        {
+          "file": "recipient/inputs/input-manifest.json",
+          "sha256": "3e48a787e49ef706c4f63dc0734cc0321e07121b630e7888469dafa0fbc3e29b"
+        }
+      ]
+    }
+  },
+  "claude-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer and recipient sessions",
+    "reviewed_at": "2026-09-24T14:01:30.410473+00:00",
+    "transcript_sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh working directory, frozen host context and no resumed session. Observed commands use public responses and local computation; no prior private evidence, credential read or paid action observed. This does not establish absence of hidden host context. Codex r2 wrote its own installation log to /tmp; that workspace-location deviation is recorded separately, not hidden.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "846c0b854ed810e535c389274f69b089e7c428a88c629e82f76ab7762597f4cf"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Reached the supplied public guide and the free corpus/key surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Examined the exact endpoint through an unpaid origin response or free preflight, and retained a relevant dated signed observation inside the frozen age rule. Interpretation is scored separately.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-signing-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "The final report says the cryptographically verified snapshot recorded the endpoint passing across four consecutive weekly rounds. Only snapshot 8 and its single endpoint observation are retained and verified in this handoff; the other weeks come from the unsigned summary. This is a material signed-scope overstatement, even though the signature check itself succeeded. The offline recipient explicitly identifies the unsupported multi-week claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-signing-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Captured the original signed snapshot and a separately fetched issuer key record; the complete inventory is supplied unchanged to the recipient. Free evidence obtained, not a paid purchase.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-signing-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/inputs/input-manifest.json",
+            "sha256": "c4830d3616b886933d3d6bf1cc207028892bf56a42ce8ec3f369abc30bbca492"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Native local cryptography succeeded on the snapshot, independently reproduced by the controller and offline recipient. Correct mathematical verification does not override a false buyer explanation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+          },
+          {
+            "file": "evidence/corpus-8.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-signing-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/events.jsonl",
+            "sha256": "97b81d9d13f47afbf666a702b911097b9095ed20d1a2947aea3beabd36077717"
+          }
+        ]
+      }
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-14T01:30:09.376Z",
+      "stale_after": "2026-09-28T01:30:09.376Z",
+      "basis": "Frozen fourteen-day observation-age limit; not issuer expiry or publication date."
+    },
+    "fulfillment": "delivered",
+    "payment": {
+      "state": "not_needed",
+      "reason": "Free public evidence only; no payment authorized or submitted."
+    },
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus-8.json",
+        "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+      },
+      "issuer": {
+        "file": "evidence/issuer-signing-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "b68be78d8315420d12f15a09fcc407c611994dbcbb7d78665e70df159ee5eb47"
+        },
+        {
+          "file": "evidence/issuer-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        }
+      ],
+      "subject_pointer": "/round/hosts/52/url",
+      "observed_at_pointer": "/round/hosts/52/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Completed offline verification and correctly explained exact subject, signed message, observation/publication dates, lack of declared expiry, key-versus-identity limits and unsigned current/history evidence. No settlement or delivery claim.",
+      "run": {
+        "file": "recipient/run.json",
+        "sha256": "66b782f9a0adfcededf696e529b4eb3a01acef36aa7a172e0cc66dcec8c8259d"
+      },
+      "evidence": [
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "97b81d9d13f47afbf666a702b911097b9095ed20d1a2947aea3beabd36077717"
+        },
+        {
+          "file": "recipient/inputs/input-manifest.json",
+          "sha256": "c4830d3616b886933d3d6bf1cc207028892bf56a42ce8ec3f369abc30bbca492"
+        }
+      ]
+    }
+  },
+  "codex-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer and recipient sessions",
+    "reviewed_at": "2026-09-24T14:01:30.432018+00:00",
+    "transcript_sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh working directory, frozen host context and no resumed session. Observed commands use public responses and local computation; no prior private evidence, credential read or paid action observed. This does not establish absence of hidden host context. Codex r2 wrote its own installation log to /tmp; that workspace-location deviation is recorded separately, not hidden.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "12bd366f94c3fb97d5d7040117fbef75e79de01b2b72679029cb25763f6d0dba"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Reached the supplied public guide and the free corpus/key surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Examined the exact endpoint through an unpaid origin response or free preflight, and retained a relevant dated signed observation inside the frozen age rule. Interpretation is scored separately.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+          },
+          {
+            "file": "evidence/06-corpus8.body.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/05-issuer-key.body.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "The final answer and retained run log correctly identify one authenticated endpoint observation, separate observation from publication, and keep unsigned current/history readings, issuer identity and untested payment/delivery outside the signature claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+          },
+          {
+            "file": "evidence/06-corpus8.body.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/05-issuer-key.body.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/00-run-log.txt",
+            "sha256": "f283b63a3c62fbfc09ef142495ad2b1d5761c558906500c1b6f6a9dfce93d2a8"
+          },
+          {
+            "file": "evidence/08-verification-result.json",
+            "sha256": "df7bbf77fe3cd4aa1bd910436fd9b58eabfb67552a4d0a22d82d7b27bee70840"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Captured the original signed snapshot and a separately fetched issuer key record; the complete inventory is supplied unchanged to the recipient. Free evidence obtained, not a paid purchase.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+          },
+          {
+            "file": "evidence/06-corpus8.body.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/05-issuer-key.body.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/inputs/input-manifest.json",
+            "sha256": "aca5791b1360e3c9a904d41dd1fce543abeefd2ddc2cb8f69caba753b0fdb4d6"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Native local cryptography succeeded on the snapshot, independently reproduced by the controller and offline recipient. Correct mathematical verification does not override a false buyer explanation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+          },
+          {
+            "file": "evidence/06-corpus8.body.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/05-issuer-key.body.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/events.jsonl",
+            "sha256": "9bbf55ded29bd205626516d495c2ca333c0c5b5778528f247fa6bee69d4ae6d3"
+          }
+        ]
+      }
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-14T01:30:09.376Z",
+      "stale_after": "2026-09-28T01:30:09.376Z",
+      "basis": "Frozen fourteen-day observation-age limit; not issuer expiry or publication date."
+    },
+    "fulfillment": "delivered",
+    "payment": {
+      "state": "not_needed",
+      "reason": "Free public evidence only; no payment authorized or submitted."
+    },
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/06-corpus8.body.json",
+        "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+      },
+      "issuer": {
+        "file": "evidence/05-issuer-key.body.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "ef25c0f1d8b9bb50d237ef65169ee91c76a9a546299380e711e932b83072fe5a"
+        },
+        {
+          "file": "evidence/05-issuer-key.body.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        }
+      ],
+      "subject_pointer": "/round/hosts/52/url",
+      "observed_at_pointer": "/round/hosts/52/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Completed offline verification and correctly explained exact subject, signed message, observation/publication dates, lack of declared expiry, key-versus-identity limits and unsigned current/history evidence. No settlement or delivery claim.",
+      "run": {
+        "file": "recipient/run.json",
+        "sha256": "ca9f4358a70e8b4c848df77c93e1334b567748cb95ac4892b1aad3ea6abfa7a0"
+      },
+      "evidence": [
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "9bbf55ded29bd205626516d495c2ca333c0c5b5778528f247fa6bee69d4ae6d3"
+        },
+        {
+          "file": "recipient/inputs/input-manifest.json",
+          "sha256": "aca5791b1360e3c9a904d41dd1fce543abeefd2ddc2cb8f69caba753b0fdb4d6"
+        }
+      ]
+    }
+  },
+  "claude-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer and recipient sessions",
+    "reviewed_at": "2026-09-24T14:01:30.453336+00:00",
+    "transcript_sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh working directory, frozen host context and no resumed session. Observed commands use public responses and local computation; no prior private evidence, credential read or paid action observed. This does not establish absence of hidden host context. Codex r2 wrote its own installation log to /tmp; that workspace-location deviation is recorded separately, not hidden.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "8820b5c76b59bcff1d853f1d5dc254642cdd3f835507c318b7d2f4f5d68ff6ad"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Reached the supplied public guide and the free corpus/key surfaces.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Examined the exact endpoint through an unpaid origin response or free preflight, and retained a relevant dated signed observation inside the frozen age rule. Interpretation is scored separately.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+          },
+          {
+            "file": "evidence/corpus_8_original.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "The final report says the Ed25519 signature verified against the snapshot digest. Native trace line 68 reports both digest encodings false and the serialized snapshot true; line 72 describes the correct message, but the final report contradicts it. The mathematical verification succeeded; the explanation of what was signed is inaccurate. Its claimed seven tool calls also differs from eighteen recorded events, a separate reporting caveat.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+          },
+          {
+            "file": "evidence/corpus_8_original.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Captured the original signed snapshot and a separately fetched issuer key record; the complete inventory is supplied unchanged to the recipient. Free evidence obtained, not a paid purchase.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+          },
+          {
+            "file": "evidence/corpus_8_original.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/inputs/input-manifest.json",
+            "sha256": "7cd955098dfdc9d6c5efa25ef33f2454df728bd72b5a82c79db93fe7d08ba95b"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Native local cryptography succeeded on the snapshot, independently reproduced by the controller and offline recipient. Correct mathematical verification does not override a false buyer explanation.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+          },
+          {
+            "file": "evidence/corpus_8_original.json",
+            "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "recipient/events.jsonl",
+            "sha256": "dffd89bde1cb181298fc96396ae155885b5ad5eaee14343c4050d87f76da9721"
+          }
+        ]
+      }
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-14T01:30:09.376Z",
+      "stale_after": "2026-09-28T01:30:09.376Z",
+      "basis": "Frozen fourteen-day observation-age limit; not issuer expiry or publication date."
+    },
+    "fulfillment": "delivered",
+    "payment": {
+      "state": "not_needed",
+      "reason": "Free public evidence only; no payment authorized or submitted."
+    },
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus_8_original.json",
+        "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658"
+      },
+      "issuer": {
+        "file": "evidence/issuer-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "2eaa44e8ef8467e801b6ea4f780d0c3080132ace64e1b83087114ef8d964b753"
+        },
+        {
+          "file": "evidence/issuer-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        }
+      ],
+      "subject_pointer": "/round/hosts/52/url",
+      "observed_at_pointer": "/round/hosts/52/observed_at"
+    },
+    "recipient": {
+      "state": "reviewed",
+      "understands": true,
+      "reason": "Completed offline verification and correctly explained exact subject, signed message, observation/publication dates, lack of declared expiry, key-versus-identity limits and unsigned current/history evidence. No settlement or delivery claim.",
+      "run": {
+        "file": "recipient/run.json",
+        "sha256": "bc53096e0bae3b2e981b613c197374b18f501dec0909f2f178efb4a8f4ed903b"
+      },
+      "evidence": [
+        {
+          "file": "recipient/events.jsonl",
+          "sha256": "dffd89bde1cb181298fc96396ae155885b5ad5eaee14343c4050d87f76da9721"
+        },
+        {
+          "file": "recipient/inputs/input-manifest.json",
+          "sha256": "7cd955098dfdc9d6c5efa25ef33f2454df728bd72b5a82c79db93fe7d08ba95b"
+        }
+      ]
+    }
+  }
+}

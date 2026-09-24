@@ -1,0 +1,143 @@
+{
+  "qualification": {
+    "schema_version": 2,
+    "plan_sha256": "37ca4a7ed7a06687ce4d3f04cbc758d7154460061f61717691a48e60b9d10d90",
+    "instrument_sha256": "9bf8f02023beca95c3854c96809927cb185f3324a27487fc6672288899aa1f54",
+    "host_context_sha256": "fdd1c8d45fd43c58f262d28b0b9bda9d3b7c33922e6045cc2e4255e418f4c5b6",
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "probed_at": "2026-09-24T13:41:29.450Z",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh"
+        ]
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [
+          "curl",
+          "cat",
+          "printf",
+          "node",
+          "node"
+        ],
+        "executed": [
+          "pwd",
+          "node",
+          "echo",
+          "curl",
+          "ls",
+          "ls",
+          "test",
+          "printf",
+          "node",
+          "node",
+          "node",
+          "node"
+        ]
+      }
+    },
+    "limits": [
+      "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+    ],
+    "recipient": {
+      "state": "pass",
+      "trace_sha256": "471eb04dcbf95b27d3deaf49e39d19a8a849af8ea1039ff8c87b2064542ce436",
+      "limits": [
+        "Local retention and cryptography under offline adapter settings; not proof of all possible sandbox escapes or a buyer journey."
+      ]
+    }
+  },
+  "buyer_journeys_launched": 0,
+  "power_samples": 52,
+  "ac_samples": 52,
+  "runs": {
+    "codex": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-24T13:41:29.627Z",
+        "ended_at": "2026-09-24T13:42:26.295Z",
+        "wall_elapsed_ms": 56668,
+        "monotonic_elapsed_ms": 56668.041750000004,
+        "max_callback_gap_ms": 1002,
+        "interruption": null
+      },
+      "tool_calls": 2,
+      "trace_sha256": "9573c2290216cf26723d06ea6a57bbd7dcd244024e8f8a75c3df5e478155fe76"
+    },
+    "claude": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-24T13:42:26.355Z",
+        "ended_at": "2026-09-24T13:44:18.811Z",
+        "wall_elapsed_ms": 112456,
+        "monotonic_elapsed_ms": 112454.98712500001,
+        "max_callback_gap_ms": 1002.1239579999819,
+        "interruption": null
+      },
+      "tool_calls": 17,
+      "trace_sha256": "3c77b6871d06b7dc694b64815b7b6e3a19139a0d8f7f87eea6a9e6beafbedfee"
+    },
+    "recipient": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-24T13:44:18.818Z",
+        "ended_at": "2026-09-24T13:45:43.146Z",
+        "wall_elapsed_ms": 84328,
+        "monotonic_elapsed_ms": 84327.66533300001,
+        "max_callback_gap_ms": 1004,
+        "interruption": null
+      },
+      "tool_calls": 5,
+      "trace_sha256": "471eb04dcbf95b27d3deaf49e39d19a8a849af8ea1039ff8c87b2064542ce436"
+    }
+  },
+  "trace_review_limits": [
+    "Claude final calls its curl retry identical, but the successful invocation removed trailing echo from the denied compound command. Two compound node invocations were denied; standalone node then succeeded. No permission changes or controller assistance were applied.",
+    "Claude repeated a denied compound invocation within the one qualification session and attempted a denied out-of-workspace temporary write; its existence check reported no file created. These instruction-following deviations are retained, not counted as proof of perfect compliance. The frozen capability score measures retention and cryptography and remains unchanged.",
+    "Offline recipient verifier completed and serialized correct results and diagnostics before its shell wrapper failed assigning zsh read-only status. Subsequent readback confirmed retained bytes and correct report. No replacement verification or qualification attempt was launched."
+  ]
+}

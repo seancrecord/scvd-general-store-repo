@@ -1,0 +1,32 @@
+{
+  "status": "All local release checks passed; hosted PR gates pending.",
+  "checked_at": "2026-09-24T14:28:52.003842+00:00",
+  "native_experiment_complete": true,
+  "source_commit": "9bc3abce46345d3c0bb726fb3a0cc268c52089f3",
+  "software_behavior_changed": false,
+  "full_local_suite": {
+    "files": 829,
+    "passed": 15495,
+    "skipped": 1,
+    "failed": 0,
+    "report_sha256": "0d3c046ef00ae0754b7b0f01f2ed1e1623eb9e1a1027aeffdf94fe8b38fface4"
+  },
+  "typecheck": "passed",
+  "docs_check": "passed",
+  "report_integrity": {
+    "private_files_verified": 314,
+    "review_references_verified": 107,
+    "all_originals_and_keys_verified": true,
+    "all_recipient_inputs_hash_bound": true,
+    "score": {
+      "attempts": 4,
+      "pass": 2,
+      "fail": 2,
+      "incomplete": 0
+    },
+    "no_timing_interruptions": true,
+    "report_matches_frozen_results": true
+  },
+  "privacy_review": "Reviewed summaries and hashes only; no raw native host configuration or credential patterns in the public report.",
+  "limits": "Native outcomes were fixed before software validation. These software checks do not add native buyer evidence. Hosted outcomes are recorded in the release PR and milestone after this commit."
+}
