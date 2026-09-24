@@ -1,8 +1,8 @@
 {
-  "version": "3.19.0",
+  "version": "3.19.1",
   "bundle_sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
-  "tree_sha256": "2621f9835d0df9ec34ea0f369dc3379ae1a0cd26e84ebf4452cc2fa3057bfcd2",
-  "published_at": "2026-09-24T13:53:40.323Z",
-  "commit": "9bc3abce46345d3c0bb726fb3a0cc268c52089f3",
-  "changelog": "3.19.0: Adds field-study guidance covering enrollment, supported shopping paths, and purchase-backed feedback submissions."
+  "tree_sha256": "95eb861985d00f399f69715ab9ec7395f13264fbcc7c36b18845f272add69cf1",
+  "published_at": "2026-09-24T15:07:19.400Z",
+  "commit": "eedbcb562af079b80c33d365515f808bd73d2d2c",
+  "changelog": "Pins Tab 0.11.2 with corrected installation instructions; retains the disclosure and field-study guidance."
 }
