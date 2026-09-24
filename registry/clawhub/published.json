@@ -1,8 +1,8 @@
 {
-  "version": "3.18.0",
+  "version": "3.19.0",
   "bundle_sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
-  "tree_sha256": "9d057e560a5032e1aa06e609bf3f372522643c27c503d9cb966e27a59bdb89a2",
-  "published_at": "2026-09-18T14:34:22.449Z",
-  "commit": "7f1c13c71da12c8edd05d123f81a929cd332b086",
-  "changelog": "3.18.0: the disclosure block in the purchases reference: six optional fields a buyer may fill (model, client, operator, operator_kind, came_from, prior_cert_id), what telling the store buys, and what it never touches. Nothing else in the bundle changed."
+  "tree_sha256": "2621f9835d0df9ec34ea0f369dc3379ae1a0cd26e84ebf4452cc2fa3057bfcd2",
+  "published_at": "2026-09-24T13:53:40.323Z",
+  "commit": "9bc3abce46345d3c0bb726fb3a0cc268c52089f3",
+  "changelog": "3.19.0: Adds field-study guidance covering enrollment, supported shopping paths, and purchase-backed feedback submissions."
 }

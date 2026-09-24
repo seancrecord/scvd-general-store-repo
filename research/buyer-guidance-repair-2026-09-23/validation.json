@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-09-23T20:48:11.973619+00:00",
+  "status": "local implementation validated; release and native acceptance pending",
+  "checks": {
+    "guide_red": {
+      "exit_code": 1,
+      "log_sha256": "cdff39e13bad85154e9894b6abf65761f744d9bd70a20bcc5090b5a1e9e388a4",
+      "bytes": 54486
+    },
+    "history_red": {
+      "exit_code": 1,
+      "log_sha256": "d7296519179a344114849e004566191ea2552c69befc6c6824fdfd3e3045ebfd",
+      "bytes": 60387
+    },
+    "guide_green": {
+      "exit_code": 0,
+      "log_sha256": "e6a3d299ea12717c5d573e0609d95a23a1b64ea752b6e54f81962f1845b98729",
+      "bytes": 10848,
+      "passed": 59
+    },
+    "history_green": {
+      "exit_code": 0,
+      "log_sha256": "e3dec5722af95df8ee6bc4d85479398d27eb9914e9275dc3865f9c5186177472",
+      "bytes": 58481,
+      "passed": 36,
+      "files_passed": 3
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "log_sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "bytes": 54
+    },
+    "build_check": {
+      "exit_code": 0,
+      "log_sha256": "3d51f612eef376910467c22a36702ac2fd8c4cf9d972e0169be32b9e49cbe9e7",
+      "bytes": 4137
+    },
+    "docs_check": {
+      "exit_code": 0,
+      "log_sha256": "f30d853bcc6bdcdc094a254ac57b4080a5bba6677066b7a24d94c0c9be34a271",
+      "bytes": 5007
+    }
+  },
+  "red_basis": [
+    "Before editing the skill, the two new guide requirements failed; TAP reports the parent failed suite as a third failure.",
+    "The old corpus route was restored from HEAD for the new history assertion, which failed; the fix was then restored automatically.",
+    "Initial localhost sandbox refusals were not counted as regression evidence; approved local fixture runs supply the records above."
+  ],
+  "scope": [
+    "Shared host-history explanation, installable/served skill and verifier documentation changed. Signature verification, source capture commands, scorer and budgets unchanged.",
+    "No full local suite or hosted CI run for this uncommitted patch. Full repository CI remains required before merge.",
+    "No new native attempt, commit, PR, package publication or deployment. Local tests do not establish reduced file/call use or buyer success."
+  ],
+  "readback_pending": [
+    "focused served skill versus reviewed source",
+    "normal and stable host-history JSON",
+    "host-history HTML",
+    "host-history Markdown via Accept and suffix"
+  ],
+  "next": "Release readback, then separately frozen native qualification; never retry or rescore closed cohorts."
+}

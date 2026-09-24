@@ -1,0 +1,211 @@
+{
+  "schema_version": 2,
+  "discovery": {
+    "attempts": 0,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 0
+  },
+  "directed": {
+    "attempts": 4,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 4
+  },
+  "distinct_hosts_completed": 0,
+  "limitation": "Controlled cold usability evidence only; no organic adoption, paid completion or universal readiness claim.",
+  "capability": {
+    "plan_sha256": "54703e792f4be56a19585629821b5d1bbfa378c63283aafd714130b98f2925b5",
+    "source_sha256": "e41feee7ccb883a5aa3c532732b8fb6c0ce81c44c3113a281c0a536c2a05db4a",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      }
+    }
+  },
+  "scorer_sha256": "262c2d5ad6e3b5d4ca3c08ec8c96d709f3b51e2a50d100b08c0057c51a2296aa",
+  "plan_sha256": "54703e792f4be56a19585629821b5d1bbfa378c63283aafd714130b98f2925b5",
+  "runs": [
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Review is absent or not bound to this transcript."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Review is absent or not bound to this transcript."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Review is absent or not bound to this transcript."
+      ]
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "connect": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "check": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No valid independent review."
+        }
+      },
+      "usable": "incomplete",
+      "verification": null,
+      "exclusions": [
+        "Review is absent or not bound to this transcript."
+      ]
+    }
+  ]
+}

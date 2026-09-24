@@ -26,6 +26,14 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Portable package refresh, September 24 — LOOK after merge.** Run the
+  [three publication actions in order](registry/portable-release-2026-09-24.md#post-merge-actions-in-order):
+  Tab npm, Tab MCP registry, then ClawHub skill. The portable plugin updates from
+  the repository; existing immutable submission pins do not update themselves.
+  Claude's missing submission remains on the existing Anthropic report, with no
+  reply as of September 24. Gemini remains paused. Merge the skill publication
+  receipt afterward; a submitted upload is not proof it has cleared public scans.
+
 - **源·ORIGIN (issue #874), read and answered, 2026-09-21/22 — LOOK when their door serves.**
   A cold co-building invite: their own L1, a premined token, a "Founding
   99" gate. The spec under it was real — a three-stage receipt chain

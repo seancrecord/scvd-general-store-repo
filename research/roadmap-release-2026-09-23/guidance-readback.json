@@ -1,0 +1,86 @@
+{
+  "views": [
+    {
+      "name": "normal",
+      "url": "https://scvd.store/corpus/host/weather.parklandarchives.com.json",
+      "accept": "application/json",
+      "sent_at": "2026-09-23T19:19:58.844Z",
+      "received_at": "2026-09-23T19:19:59.489Z",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 14615,
+      "sha256": "7d7619c4b4d9679d04712239267fd76d1463469ea77766ec558bcdb242b85d61",
+      "same_scope": true,
+      "contains_nested_path": true,
+      "contains_exact_query_match": true,
+      "contains_subject_selector": true
+    },
+    {
+      "name": "stable",
+      "url": "https://scvd.store/corpus/host/weather.parklandarchives.com.json?view=stable",
+      "accept": "application/json",
+      "sent_at": "2026-09-23T19:19:59.489Z",
+      "received_at": "2026-09-23T19:19:59.643Z",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 14577,
+      "sha256": "40b98211410252c1076fc01f6f291d5db19068b36b894120ba71d7a81ba20d6c",
+      "same_scope": true,
+      "contains_nested_path": true,
+      "contains_exact_query_match": true,
+      "contains_subject_selector": true
+    },
+    {
+      "name": "html",
+      "url": "https://scvd.store/corpus/host/weather.parklandarchives.com",
+      "accept": "text/html",
+      "sent_at": "2026-09-23T19:19:59.643Z",
+      "received_at": "2026-09-23T19:19:59.828Z",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 32072,
+      "sha256": "62de2c950a07ec6719eee63ce1a0d16063c075564023f2c8df1c790072bd2d20",
+      "same_scope": true,
+      "contains_nested_path": true,
+      "contains_exact_query_match": true,
+      "contains_subject_selector": true
+    },
+    {
+      "name": "markdown",
+      "url": "https://scvd.store/corpus/host/weather.parklandarchives.com",
+      "accept": "text/markdown",
+      "sent_at": "2026-09-23T19:19:59.828Z",
+      "received_at": "2026-09-23T19:19:59.969Z",
+      "status": 200,
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 8048,
+      "sha256": "d774d16545f306118bc1f7937bbd2c8050deb8423a73ad36aadcde555b163d18",
+      "same_scope": true,
+      "contains_nested_path": true,
+      "contains_exact_query_match": true,
+      "contains_subject_selector": true
+    },
+    {
+      "name": "markdown_path",
+      "url": "https://scvd.store/corpus/host/weather.parklandarchives.com.md",
+      "accept": "text/markdown",
+      "sent_at": "2026-09-23T19:19:59.969Z",
+      "received_at": "2026-09-23T19:20:00.390Z",
+      "status": 200,
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 8048,
+      "sha256": "d774d16545f306118bc1f7937bbd2c8050deb8423a73ad36aadcde555b163d18",
+      "same_scope": true,
+      "contains_nested_path": true,
+      "contains_exact_query_match": true,
+      "contains_subject_selector": true
+    }
+  ],
+  "scope": "Unsigned host-history summary. The timeline, tier and gap counts are derived context, not a signed artifact. Each timeline entry links a corpus original: retain it and an independently established issuer key, verify its signature, then inspect snapshot.round.hosts for rows whose url exactly matches the requested endpoint, including the query string. Top-level snapshot metadata alone cannot establish absence of endpoint observations. The existing scvd-evidence verify-source command with --subject selects verified exact-URL rows; read their observation dates separately from snapshot publication time. One verified snapshot does not authenticate other weeks or this summary.",
+  "all_views_match": true,
+  "limits": [
+    "Public response readback only; no new buyer or recipient cohort.",
+    "This does not attest a Worker revision or verify a signed original.",
+    "Earlier cohort outcomes and remaining roadmap gates remain unchanged."
+  ]
+}

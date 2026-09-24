@@ -1,0 +1,86 @@
+{
+  "retained_files_verified": 11,
+  "release_response_replay": true,
+  "successful_production_builds": [
+    "Workers Builds: scvd-doors",
+    "Workers Builds: scvd-general-store-repo"
+  ],
+  "live_doors": {
+    "execution": {
+      "started_at": "2026-09-23T19:45:25.073303+00:00",
+      "completed_at": "2026-09-23T19:51:41.129297+00:00",
+      "exit_code": 1,
+      "outer_timeout": false
+    },
+    "tally": {
+      "met": 27,
+      "partial": 1
+    },
+    "non_met": [
+      {
+        "door": "webmcp",
+        "id": "origin_trial_unexpired",
+        "asks": "Will a shipping Chrome still enable the API on our origin tomorrow?",
+        "how": "read the origin-trial meta on https://scvd.store/ and base64-decode its payload",
+        "verdict": "partial",
+        "note": "an origin trial ends 2026-10-15, in 21 days (2 tokens, soonest shown)"
+      }
+    ],
+    "reviews_due": [],
+    "files": [
+      {
+        "name": "doors-after.json",
+        "sha256": "10bdb2d1d26250b3f922b7bc0b3af744a1cf11b53288c4c7e61d263ec076d89d"
+      },
+      {
+        "name": "doors-after-execution.json",
+        "sha256": "5701536f7a1b7537c13eb59a0f70fb5d1fd506d08baa0a9af6e6bb5977f8057c"
+      }
+    ]
+  },
+  "cold_workflow": {
+    "read_at": "2026-09-23T19:47:51.522Z",
+    "same_acquisition_text": true,
+    "summaries_recomputed": true,
+    "doors": [
+      {
+        "url": "https://scvd.store/api/buy/hello",
+        "first_isolate": "cold",
+        "first_ms": 266,
+        "warm_median_ms": 47,
+        "coverage": {
+          "attempted": 7,
+          "answered": 7,
+          "failed": 0,
+          "http_errors": 0,
+          "subsequent": 6,
+          "comparable_warm": 6,
+          "excluded_from_warm": 0
+        },
+        "deploy": {
+          "known": true,
+          "landed": true,
+          "isolate_age_s": 0,
+          "seconds_since_push": 313
+        }
+      }
+    ],
+    "burst": {
+      "doors": 35,
+      "answered": 35,
+      "challenged_402": 35
+    },
+    "files": [
+      {
+        "name": "cold-reading.json",
+        "bytes": 13356,
+        "sha256": "cba1e38b5e0659008ad3f89f03dbd2bf5f0d7c306ae395a14af60370fa38c99d"
+      },
+      {
+        "name": "cold-reading.txt",
+        "bytes": 755,
+        "sha256": "1e746fa2297dee7c67c292314330d09bde5156a5b229f7b6a52a6ca26d8d4e44"
+      }
+    ]
+  }
+}

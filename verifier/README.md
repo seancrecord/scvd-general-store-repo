@@ -561,6 +561,11 @@ allowance. Queries are part of the subject: a different query or bare host is
 not a match. Unsigned host history and live preflight do not become signed
 evidence because they accompanied a valid snapshot. `snapshot_taken_at` is
 packaging time; use each row's `observed_at` for your freshness policy.
+When that field is missing, the observation date is unknown. Do not substitute
+publication, download or unsigned-history dates; that row cannot establish an
+observation-age limit. A signature can be valid while freshness remains unknown.
+For several authenticated weeks, retain and verify each original separately and
+report each actual result and date gap; one successful check cannot cover the rest.
 
 An invalid signature yields `not_verified` with no selected observations;
 other artifact families yield `unsupported_artifact`. `absent_from_snapshot`
@@ -570,8 +575,11 @@ matching, fresh observation. Read `status` and `omitted_observations` too.
 
 Keep the original response, its source URL, separately established issuer key
 and any attached evidence for the recipient. A result summary alone cannot
-be independently verified. This path avoids retaining duplicate export files;
-the in-memory bundle still has the same explicit `--max-bytes` ceiling.
+be independently verified. Consolidate source URLs, acquisition times, key-source
+notes and exact verifier results in one shared journal, naming the original file
+for each entry. Keep required originals and bound evidence unchanged and separate;
+optional per-response note files needlessly consume a caller's file allowance.
+This path avoids retaining duplicate export files; the in-memory bundle still has the same explicit `--max-bytes` ceiling.
 Missing linked evidence remains exit 3. Malformed or oversized sources refuse
 with exit 2; invalid signatures or absent trusted keys give exit 1.
 

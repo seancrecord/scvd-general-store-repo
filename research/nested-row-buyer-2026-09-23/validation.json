@@ -1,0 +1,26 @@
+{
+  "directed": {
+    "attempts": 4,
+    "pass": 0,
+    "fail": 2,
+    "incomplete": 2
+  },
+  "references_checked": 82,
+  "native_sessions": 10,
+  "timing_interruptions": 0,
+  "private_files_checked": 115,
+  "scope": "Record consistency and optional byte identity. Human interpretations and private trace contents are not proven by public hashes.",
+  "checked_at": "2026-09-23T20:35:40.702278+00:00",
+  "source_checkout_final": {
+    "commit": "00aad2937844f0218869d99085385fef371c696d",
+    "clean": true
+  },
+  "typecheck": "passed",
+  "docs_check": "passed; existing age reminders only",
+  "diff_check": "passed",
+  "release_evidence_replay": "passed",
+  "production_behavior_changed": false,
+  "commit_created": false,
+  "new_pull_request_created": false,
+  "full_suite_basis": "Merged-main CI passed before this documentation/evidence-only follow-through; see ../roadmap-release-2026-09-23/main-ci-qualification.json. No new full local suite run."
+}

@@ -1,0 +1,147 @@
+{
+  "source_revision": "00aad2937844f0218869d99085385fef371c696d",
+  "records": [
+    {
+      "name": "openapi",
+      "path": "/openapi.json",
+      "accept": "application/json",
+      "sent_at": "2026-09-23T19:44:53.310Z",
+      "received_at": "2026-09-23T19:44:54.078Z",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 687898,
+      "sha256": "482194c384fdd463a12ad9fd0d02bac94c2d05690400f3bde07ea7811c6d39c2"
+    },
+    {
+      "name": "paywall-json",
+      "path": "/design",
+      "accept": "application/json",
+      "sent_at": "2026-09-23T19:44:54.089Z",
+      "received_at": "2026-09-23T19:44:56.381Z",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 34657,
+      "sha256": "f56266b7ff5b12671b0b6361827bb90404ec6d268712a07fa5d72a27a9400296"
+    },
+    {
+      "name": "paywall-markdown",
+      "path": "/design",
+      "accept": "text/markdown",
+      "sent_at": "2026-09-23T19:44:56.381Z",
+      "received_at": "2026-09-23T19:44:57.077Z",
+      "status": 200,
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 39611,
+      "sha256": "0b11aa18b6a53562e9cc2d65607ea37ffd778771b9cba16bc0d3d0c8859430fa"
+    }
+  ],
+  "openapi": {
+    "bytes": 687898,
+    "warning_budget_bytes": 700000,
+    "headroom_bytes": 12102,
+    "baseline_bytes": 700901,
+    "baseline_sha256": "bf5625483acde9cdfaacdf6907b0253f046860c332f05854e13d0a4458d04010",
+    "bytes_removed": 13003,
+    "paths": 185,
+    "below_warning_budget": true,
+    "expanded_contract_equal": true,
+    "frozen_schema_checks": [
+      {
+        "pointer": "/paths/~1api~1study~1enrol/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1study~1debrief/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1doors/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1doors.json/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1.well-known~1x402/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1.well-known~1x402.json/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1.well-known~1mcp/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1.well-known~1mcp.json/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1preflight~1v1/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1preflight~1v2/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1bot-auth~1check/post/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1bot-auth-card~1{card_id}/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1.well-known~1ard.json/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1.well-known~1ai-catalog.json/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1bounties/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1bounties/get/responses/200/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1trade~1sandbox~1check/post/requestBody/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1trade~1sandbox~1{item_id}/post/requestBody/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1trade~1{partner}~1check/post/requestBody/content/application~1json/schema",
+        "equal": true
+      },
+      {
+        "pointer": "/paths/~1api~1trade~1{partner}~1{item_id}/post/requestBody/content/application~1json/schema",
+        "equal": true
+      }
+    ]
+  },
+  "paywall": {
+    "streaks": "Send wallet: one pack at full odds every 7 consecutive UTC days; Bellringer II on day 30. A gap resets the run; another ring on the same day earns no second reward.",
+    "checks": {
+      "derived_pack_cadence": true,
+      "derived_milestone": true,
+      "wallet_and_reset": true,
+      "same_day_limit": true,
+      "markdown_matches": true,
+      "stale_claim_absent": true
+    }
+  },
+  "limits": [
+    "Public readback after the recorded build checks, not cryptographic deployment attestation.",
+    "No payment, bell ring, buyer cohort or counter write.",
+    "Existing historical evidence gaps and earlier buyer results remain unchanged."
+  ]
+}

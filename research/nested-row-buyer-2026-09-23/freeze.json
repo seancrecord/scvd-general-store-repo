@@ -1,0 +1,62 @@
+{
+  "frozen_at": "2026-09-23T20:13:31.354967+00:00",
+  "source_commit": "00aad2937844f0218869d99085385fef371c696d",
+  "source_clean": true,
+  "plan_sha256": "54703e792f4be56a19585629821b5d1bbfa378c63283aafd714130b98f2925b5",
+  "public_readback": [
+    {
+      "file": "skill.md",
+      "url": "https://scvd.store/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-23T20:12:20.365Z"
+    },
+    {
+      "file": "entry.md",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 11631,
+      "sha256": "32732be3b83a6d64fccddb227f0a30f34bfed35175ee1980ed45c2ce8aedbf29",
+      "read_at": "2026-09-23T20:12:20.512Z"
+    },
+    {
+      "file": "host.json",
+      "url": "https://scvd.store/corpus/host/lionx402.com.json",
+      "status": 200,
+      "bytes": 12738,
+      "sha256": "a30e8399457101db92eb49dea5644906d599c778e2d1b881eeb1cc80dccb8491",
+      "read_at": "2026-09-23T20:12:22.078Z"
+    },
+    {
+      "file": "candidate-original.json",
+      "url": "https://scvd.store/corpus/8.json",
+      "status": 200,
+      "bytes": 4012197,
+      "sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+      "read_at": "2026-09-23T20:12:22.505Z"
+    },
+    {
+      "file": "candidate-key.json",
+      "url": "https://scvd.store/.well-known/scvd-signing-key",
+      "status": 200,
+      "bytes": 3139,
+      "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+      "read_at": "2026-09-23T20:12:22.581Z"
+    }
+  ],
+  "candidate_signed_observations": [
+    "2026-09-14T01:30:09.376Z"
+  ],
+  "candidate_snapshot_published_at": "2026-09-20T11:00:28.668Z",
+  "candidate_controller_verification_sha256": "fcaffaa5cd8db32e7905b815d0ebe6b582df8491d9cf8e8592035078f59c3f97",
+  "candidate_verification_scope": [
+    "Controller availability check only; none of these bytes are supplied to native buyers.",
+    "Separately fetched published-key consistency does not independently establish issuer identity."
+  ],
+  "freshness_limit_ms": 1209600000,
+  "awake_policy": "Temporary caffeinate -is on observed AC power, at most one hour; serial native sessions, sampled load/power state, no heavy local tests launched by this controller. Forced sleep and timing gaps remain possible and are recorded, not excused.",
+  "native_attempt_policy": "Fresh qualification once per buyer host and offline recipient, then four planned buyers at most and one recipient per eligible buyer. No retries, widened limits or changed previous scores.",
+  "scope": "Separate directed zero-spend cohort after the nested signed-row guidance in PR #899 and its September 23 five-view production readback. Preserve the prior exact subject, models, per-attempt budgets, separate offline recipient, one attempt per cell and fourteen-day observation age limit. Qualify hosts and recipient afresh in an awake execution window. Tests the combined released surface; does not retry or rescore prior attempts, establish causal wording uplift, or measure unbranded discovery, paid delivery or organic demand.",
+  "authorization": "User explicitly authorized the fresh buyer and recipient agents with go after reviewing the pending request."
+}

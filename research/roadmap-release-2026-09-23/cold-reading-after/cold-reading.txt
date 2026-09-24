@@ -1,0 +1,14 @@
+cold read, 2026-09-23T19:47:51.522Z
+https://scvd.store/api/buy/hello
+  first knock      266 ms   cold     isolate, age 0s, req 4ms, status 402
+  warm (6)          47 ms   median, max 51ms
+  coverage      answered 7/7, failed 0, HTTP errors (5xx) 0; 0/6 later requests excluded from warm comparison
+  cold penalty     219 ms   first knock minus warm median
+  deploy        landed   (isolate 0s old, push 313s ago)
+
+https://scvd.store — 35 doors knocked at once, as the directory does
+  answered 35/35, 402 on 35; isolates: 12 cold, 23 warm, 0 unmarked
+  min 44ms  median 239ms  max 761ms
+  slowest     761 ms  warm     /api/buy/the_collab
+  slowest     734 ms  warm     /api/buy/aura_walk
+  slowest     405 ms  cold     /api/buy/certificate_of_patronage

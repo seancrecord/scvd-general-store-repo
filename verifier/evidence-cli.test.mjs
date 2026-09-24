@@ -298,6 +298,27 @@ test("buyer guide command selects signed endpoint evidence without authenticatin
       assert.equal(await readFile(source, "utf8"), before);
       assert.deepEqual((await readdir(dir)).sort(), ["no-network.mjs", "original.json"]);
     });
+    await t.test("a legacy signed row keeps its observation date unknown despite a dated publication", async () => {
+      assert.match(guide, /missing[^\n]*`observed_at`[\s\S]*?unknown/i);
+      assert.match(guide, /Do not substitute[^\n]*publication/i);
+      const legacy = structuredClone(snapshot);
+      delete legacy.round.hosts[0].observed_at;
+      const signed = JSON.stringify(legacy);
+      await writeFile(source, JSON.stringify({ snapshot: legacy,
+        digest: createHash("sha256").update(signed).digest("hex"),
+        signature: sign(null, Buffer.from(signed), privateKey).toString("hex"), public_key: key,
+        context: doc.context }));
+      try {
+        const result = await invoke();
+        assert.equal(result.code, 0, result.stderr);
+        const reading = JSON.parse(result.stdout);
+        assert.equal(reading.valid, true);
+        assert.equal(reading.subject_evidence.status, "present");
+        assert.equal(reading.subject_evidence.snapshot_taken_at, legacy.taken_at);
+        assert.equal(Object.hasOwn(reading.subject_evidence.observations[0].value, "observed_at"), false);
+        assert.equal(result.stdout.includes(doc.context.observed_at), false);
+      } finally { await writeFile(source, JSON.stringify(doc)); }
+    });
     await t.test("exit zero for a valid snapshot does not establish an absent subject", async () => {
       const result = await invoke({ [url]: "https://merchant.example/paid" });
       assert.equal(result.code, 0);

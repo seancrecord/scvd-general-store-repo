@@ -235,7 +235,8 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * Declared ahead of registry/clawhub/published.json until the keeper
  * presses publish (scripts/publish-skill.mjs); the record moves then.
  */
-export const SKILL_VERSION = "3.19.0";
+/** 3.19.1: pin Tab to its corrected-installation patch; field-study guidance is unchanged. */
+export const SKILL_VERSION = "3.19.1";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

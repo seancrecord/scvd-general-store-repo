@@ -68,7 +68,7 @@
             "command": "npx",
             "args": [
               "-y",
-              "scvd-tab@0.11.1"
+              "scvd-tab@0.11.2"
             ]
           }
         ],

@@ -255,6 +255,8 @@ for(const mutation of ['signed tamper','rehash tamper','wrong key','wrong subjec
 test('skill capture commands preserve a large original and separately fetched key byte for byte',async()=>{
  const {createServer}=await import('node:http');const {promisify}=await import('node:util');const {execFile}=await import('node:child_process');
  const skill=fs.readFileSync(new URL('../skills/scvd-x402-verification/SKILL.md',import.meta.url),'utf8');
+ assert.match(skill, /one (?:shared )?`\.\/evidence\/journal\.md`/);
+ assert.match(skill, /source URLs, acquisition times,[\s\S]*?verification results/);
  const commands=[...skill.matchAll(/^curl --fail --output (\.\/evidence\/\S+) "([^"]+)"$/gm)];
  assert.equal(commands.length,2,'whole original and issuer key each need a standalone capture command');
  assert.deepEqual(commands.map(x=>x[2]),['ACTUAL_CITED_SNAPSHOT_URL','https://scvd.store/.well-known/scvd-signing-key']);
@@ -268,6 +270,7 @@ test('skill capture commands preserve a large original and separately fetched ke
    // the documented executable and flags, without an Internet dependency.
    await promisify(execFile)('curl',['--fail','--output',command[1],`http://127.0.0.1:${server.address().port}/${i}`],{cwd:dir});
    assert.deepEqual(fs.readFileSync(path.join(dir,command[1])),bodies[i]);
+   assert.equal(fs.readdirSync(path.join(dir,'evidence')).length,i+1,'capture commands must not create per-response sidecars');
   }
  }finally{await new Promise(resolve=>server.close(resolve));fs.rmSync(dir,{recursive:true,force:true});}
 });

@@ -494,6 +494,8 @@ describe("the door it is served through", () => {
     expect(description).toContain("url exactly matches");
     expect(description).toContain("including the query string");
     expect(description).toContain("--subject");
+    expect(description).toMatch(/missing observed_at.*unknown/i);
+    expect(description).toMatch(/not.*publication time/i);
 
     // Exercise the advertised path on a real signed fixture. A shared host
     // and a different query are not the requested endpoint's observation.

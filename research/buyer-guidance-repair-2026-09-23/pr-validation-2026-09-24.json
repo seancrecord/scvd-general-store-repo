@@ -1,0 +1,111 @@
+{
+  "checked_at": "2026-09-24T13:39:52.163177+00:00",
+  "base_commit": "9bc3abce46345d3c0bb726fb3a0cc268c52089f3",
+  "scope": "Uncommitted PR patch on refreshed main. No new native buyer or recipient qualification; explicitly deferred by the keeper. Historical cohort scores and source freezes are unchanged.",
+  "full_worker_suite": {
+    "command": "npm test -- --maxWorkers=8 --reporter=default --reporter=json",
+    "success": true,
+    "test_files": 829,
+    "passed": 15495,
+    "failed": 0,
+    "pending": 1,
+    "json_report": {
+      "sha256": "3d2e3eb292d971121672e468b314edbebbfffc9236c7ac1056cfaaae8beaf771",
+      "bytes": 4895079
+    },
+    "log": {
+      "sha256": "cce2098fdd6316ae6931903ebac955ba7dd8c8ad4bc132f04a290d16f59aa21c",
+      "bytes": 18972583
+    }
+  },
+  "prior_full_attempt": {
+    "workers": 4,
+    "state": "interrupted",
+    "exit_code": 130,
+    "reason": "Controller changed concurrency after checking available memory. Partial run is not counted as a pass.",
+    "log": {
+      "sha256": "41dd3f32ac67305c9b8e6df703a632d418637163b804d559ac3489e3a1f87029",
+      "bytes": 3657414
+    }
+  },
+  "offline_node_tests": {
+    "passed": 255,
+    "failed": 0,
+    "scope": "Buyer harness and verifier tests with fixture data only; no native model sessions.",
+    "log": {
+      "sha256": "4ebb96c77d9a5c158953ee2e398e777fd35eb1cde188e4f5cb4d71415e707096",
+      "bytes": 50726
+    }
+  },
+  "checks": {
+    "typecheck": {
+      "exit_code": 0,
+      "log": {
+        "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+        "bytes": 54
+      }
+    },
+    "build_check": {
+      "exit_code": 0,
+      "log": {
+        "sha256": "3d29c9c48b9e560b6b82ad4613b5cc453b878bf76808ec14ab50942d2f95b29b",
+        "bytes": 4029
+      }
+    },
+    "docs_check": {
+      "exit_code": 0,
+      "log": {
+        "sha256": "577611f6fd91d74fd0c1bb6ccc5fe12503ddf36cfe4692a068ee16357a41fa42",
+        "bytes": 5485
+      }
+    },
+    "skill_check": {
+      "exit_code": 0,
+      "log": {
+        "sha256": "abd9bffc37f218ea8ad292fcf7f76944ebccfef86fbd33d4d0cff102506d88f4",
+        "bytes": 1111
+      }
+    },
+    "release_evidence_replay": "passed",
+    "cohort_record_consistency": "passed; no rescoring",
+    "diff_check": "passed",
+    "public_evidence_privacy_scan": "Initial pattern scan supplemented by content review after automatic push rejection. Raw HTTP trace removed from the unpublished commit and retained privately; eight public response bodies reviewed for publication. See ../roadmap-release-2026-09-23/publication-review.json."
+  },
+  "changed_source_and_tests": [
+    {
+      "file": "skills/scvd-x402-verification/SKILL.md",
+      "sha256": "983538db2f8c0dd975e3c51a157a7d1e2a458039f36641bb2dc7451da239dae7",
+      "bytes": 13136
+    },
+    {
+      "file": "src/routes/corpus.ts",
+      "sha256": "73de0c7cf6f88ffa249743fc1d7b3a743036e4fbbcf330e0e0853aa224067d80",
+      "bytes": 68452
+    },
+    {
+      "file": "test/subject-history.spec.ts",
+      "sha256": "cc7068fa78b3257987ee1945bd01bda05d8b555d0f65deecfe06589283005369",
+      "bytes": 27380
+    },
+    {
+      "file": "scripts/buyer-handoff.test.mjs",
+      "sha256": "a5d905ae6ff8d54760326b01c5e4304675892067e96c554459cff8f4b7df48c0",
+      "bytes": 23965
+    },
+    {
+      "file": "verifier/evidence-cli.test.mjs",
+      "sha256": "4ea7619d73336eddc3ff1aefd337e8d53e4d156049b0be7ce4cd2503cf9c5076",
+      "bytes": 24219
+    },
+    {
+      "file": "verifier/README.md",
+      "sha256": "c20cf0eac71e2c53c59f7066ab1d40bae375863f1c2f26ffcf21c0b5cd03900b",
+      "bytes": 35396
+    }
+  ],
+  "remaining": [
+    "GitHub PR CI must qualify the pushed head before merge.",
+    "Public release readback follows deployment; not claimed from a local build.",
+    "Native buyer qualification deferred; TR3 acceptance remains open."
+  ]
+}
