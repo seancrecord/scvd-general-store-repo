@@ -1,0 +1,20 @@
+HTTP/2 200 
+date: Thu, 24 Sep 2026 18:11:37 GMT
+content-type: text/markdown; charset=utf-8
+content-length: 8362
+access-control-allow-origin: *
+cache-control: no-cache
+etag: "7dc57de69b717113e14354082c9e5550"
+link: <https://scvd.store/corpus/host/weather.parklandarchives.com>; rel="canonical", <https://scvd.store/corpus/index.json>; rel="index", <https://scvd.store/scorers>; rel="help", <https://creativecommons.org/licenses/by/4.0/>; rel="license"
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Accept, Accept-Encoding, User-Agent
+access-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version
+server-timing: isolate;desc=cold, age;dur=0, req;dur=474
+x-house-rule: Argue properly. --7
+x-store: SCVD General Store (https://scvd.store)
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Vo7kRx3zQu5ELPRKJ6g%2BQd4%2B3toFn%2BlLZP2ZJXQ9XJKbIOYmL9ehFdyx8687A1y72dxtdATAXw9o0E6WJJ2QDhZRV3h1Q%2FkGUgC%2By%2FPeXoc6meO3CVlArspfogewW66mydmRkcgGRBgy"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a403c0a66a8ab336-ATL
+alt-svc: h3=":443"; ma=86400
+

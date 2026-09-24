@@ -1,0 +1,20 @@
+HTTP/2 200 
+date: Thu, 24 Sep 2026 18:11:32 GMT
+content-type: application/json
+content-length: 14929
+access-control-allow-origin: *
+cache-control: no-cache
+etag: "aafe08e468a0c3e8cfaa52bd3b59badd"
+link: <https://scvd.store/corpus/index.json>; rel="index", <https://scvd.store/scorers>; rel="help", <https://creativecommons.org/licenses/by/4.0/>; rel="license"
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Accept, Accept-Encoding, User-Agent
+access-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version
+server-timing: isolate;desc=cold, age;dur=0, req;dur=1170
+x-house-rule: Argue properly. --7
+x-store: SCVD General Store (https://scvd.store)
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=XujGBb6dhukzTvO2Lew3Eh5bhp3Avp2eAwtk52Z28gw9pb3I9ABoOTGZry%2B23vN6QblRWPE7j7Httu7aM5nXZK%2BengTAtAz8S20eKHvdB5fQQexr5roBPWwMfzcdkzSQpsz24gYdd8p7"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a403c0828a6df272-IAD
+alt-svc: h3=":443"; ma=86400
+

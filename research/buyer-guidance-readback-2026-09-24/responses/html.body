@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x402 endpoint readiness: weather.parklandarchives.com — indeterminate — 1 of 4, W35–W38, scvd.store</title>
+  <meta name="description" content="What scvd.store&#39;s weekly ward round observed about weather.parklandarchives.com: indeterminate — 1 of 4, W35–W38, derived from 1 probed round since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking.">
+  <meta property="og:title" content="x402 endpoint readiness: weather.parklandarchives.com — indeterminate — 1 of 4, W35–W38, scvd.store">
+  <meta property="og:description" content="What scvd.store&#39;s weekly ward round observed about weather.parklandarchives.com: indeterminate — 1 of 4, W35–W38, derived from 1 probed round since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://scvd.store/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://scvd.store/og.png">
+  <meta name="talentapp:project_verification" content="2603d9fdb5a400bf88406b3ceb0e0f06bc085da021931ac4d1faf27dece8e1acaf36966e4e0b48444b8ecd87ecae6c2423485134d3214bfb31866725ebd923fb">
+  <meta name="base:app_id" content="6a7a377832200665f69b0f4d">
+  <link rel="canonical" href="https://scvd.store/corpus/host/weather.parklandarchives.com">
+  <link rel="alternate" type="text/plain" href="https://scvd.store/llms.txt" title="Guide for language models">
+  <link rel="alternate" type="application/json" href="https://scvd.store/openapi.json" title="OpenAPI contract">
+  <link rel="alternate" type="application/atom+xml" href="https://scvd.store/feeds/host/weather.parklandarchives.com.xml" title="weather.parklandarchives.com — changes on the record, as Atom">
+  <meta http-equiv="origin-trial" content="AnY9gFUhvYlqmiw6Hxg8e8ZrnXjv32OUI6c4+jD1i1cRhvnw+rUYUGSaGiLFQZgwBbatEz6ZcGm1OL/Qm51ZDgkAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0=">
+  <meta http-equiv="origin-trial" content="A0e2lG+XKqhdeqtHOL7IqB0ohyilsql6Id8blCwWJH5ptWLTQTqt5Dy75GQrQemRMYjUUbv0zt0G44WDSRUns9EAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5MjA2OTkwN30=">
+  <script src="/webmcp.js" defer></script>
+  <link rel="ard" href="https://scvd.store/.well-known/ard.json">
+  <link rel="ai-catalog" href="https://scvd.store/.well-known/ai-catalog.json">
+  <style>
+/**
+ * ONE PALETTE WITH THE STOREFRONT, 2026-07-30 (second pass, same day).
+ *
+ * The first pass took the rooms off the brown template and made them
+ * agree with EACH OTHER, which was half the job and read as the whole
+ * of it. CV shot the real pages and named what was left: the front
+ * door is a plum starfield with neon and teal, and one click inside
+ * that world vanished into a separate brown one. Two sites wearing one
+ * name — which is the store's own separation doctrine broken by the
+ * design before the copy gets a word in.
+ *
+ * So these are the storefront's own variables, not an approximation of
+ * them. Same night, same neon, same teal.
+ *
+ * AND THE BODY COPY MOVED UP A TONE. CV called the old text a
+ * contrast failure; measured, it was 7.14:1 — above AA and above AAA,
+ * so the claim as stated was wrong. What was true underneath it: most
+ * prose was set in the DIM tone rather than the full one, which reads
+ * as weak even when it passes. Body is --night-text now at 11.74:1,
+ * --night-faded is reserved for genuinely secondary lines at 4.87:1,
+ * and the opacity dimming that quietly cut ratios further is gone.
+ * Nothing here relies on a reader having a good screen.
+ */
+:root {
+  --night: #0b0a12;
+  --dusk: #16121f;
+  --horizon: #2a1a33;
+  --card: #1b1526;
+  --neon: #ffb45e;
+  --teal: #5de6c8;
+  --teal-dim: #2e8a77;
+  --night-text: #cfc4d6;
+  --night-faded: #857a91;
+  --line: #372c44;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { overflow-x: clip; }
+body {
+  background:
+    radial-gradient(120% 80% at 50% -12%, var(--horizon) 0%, var(--dusk) 38%, var(--night) 75%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: var(--night-text);
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.6;
+  padding: 1.25rem 1rem 4rem;
+  -webkit-text-size-adjust: 100%;
+}
+.paper {
+  max-width: 760px;
+  margin: 0 auto;
+  background: transparent;
+  padding: 0.5rem 0 0;
+}
+
+/* The head of the room. Left-aligned: a centred heading under a double
+   rule is the single thing that made every page look like the same
+   form with a different title typed into it. */
+header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1.4rem;
+}
+/* SIZE AND TRACKING, NOT COLOUR. Reported as a contrast problem;
+   contrast measures 11.2:1 here, so that was not it. What was true:
+   0.62rem at 0.3em tracking is small type pulled apart until the eye
+   has to reassemble each word letter by letter. Wide tracking is a
+   display-type device and these are body-adjacent labels, so the
+   size goes up and the tracking comes down — legible first, still
+   unmistakably a label. */
+.est {
+  display: block;
+  letter-spacing: 0.16em;
+  font-size: 0.74rem;
+  color: var(--neon);
+  text-transform: uppercase;
+  line-height: 1.7;
+}
+h1 {
+  font-size: clamp(1.9rem, 6vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin-top: 0.55rem;
+  color: var(--night-text);
+  text-wrap: balance;
+}
+h2 {
+  color: var(--neon);
+  font-size: 0.86rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: normal;
+  margin: 2.75rem 0 1.1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+h3 { font-size: 1.05rem; color: var(--night-text); margin-top: 1.5rem; }
+section { margin-top: 1.75rem; }
+p + p { margin-top: 0.85rem; }
+
+.menu-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.menu-item:last-child { border-bottom: 0; }
+.menu-line { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.menu-name { color: var(--night-text); font-size: 1.08rem; }
+.menu-dots {
+  flex: 1;
+  border-bottom: 1px dotted var(--line);
+  min-width: 1.5rem;
+}
+/*
+ * nowrap ONLY WHERE IT FITS (2026-08-27, measured at 390px). The
+ * price slot carries more than prices: tier strings, contract
+ * addresses, whole GET lines — and a nowrap flex child sets the
+ * row's minimum width, so the longest of them laid /menu out 513px
+ * wide and /try 429px, each a strip of blank space a phone could
+ * drag into. On narrow screens the slot wraps and long tokens break;
+ * the dotted-leader look is untouched everywhere the line fits.
+ */
+.menu-price { white-space: nowrap; color: var(--neon); }
+@media (max-width: 600px) {
+  .menu-price { white-space: normal; overflow-wrap: anywhere; min-width: 0; }
+}
+.menu-desc {
+  font-size: 0.98rem;
+  color: var(--night-text);
+  margin-top: 0.4rem;
+  line-height: 1.7;
+}
+/* Secondary lines only. No opacity: dimming a colour that already
+   passed is how a ratio quietly drops below the line it was chosen
+   to clear. */
+.menu-meta {
+  font-size: 0.84rem;
+  color: var(--night-faded);
+  margin-top: 0.35rem;
+}
+.empty {
+  color: var(--night-faded);
+  font-style: italic;
+  padding: 1.25rem 0;
+}
+
+/* Narrow screens scroll the table rather than the page. */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 0;
+  margin-top: 0.5rem;
+  font-size: 0.92rem;
+}
+th, td { border: 0; }
+th {
+  text-align: left;
+  color: var(--neon);
+  font-weight: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--line);
+  padding: 0 1rem 0.55rem 0;
+}
+td {
+  vertical-align: top;
+  padding: 0.9rem 1rem 0.9rem 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--night-text);
+  line-height: 1.6;
+}
+td:first-child { color: var(--night-text); }
+@media (max-width: 640px) {
+  table { display: block; overflow-x: auto; }
+}
+
+/* A LINK SHOULD LOOK LIKE ONE. Several rooms print absolute store
+   URLs mid-sentence — the identity answers on /what especially — and
+   set in prose colour with no underline they were indistinguishable
+   from the words around them, on the pages whose whole job is telling
+   a developer where to go next. */
+a {
+  color: var(--neon);
+  text-decoration: underline;
+  text-decoration-color: var(--teal-dim);
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+a:hover { color: var(--teal); text-decoration-color: var(--teal); }
+a code { color: inherit; }
+strong { color: var(--night-text); font-weight: normal; }
+ul, ol { margin: 0.75rem 0 0 1.15rem; color: var(--night-faded); }
+li { margin-bottom: 0.55rem; line-height: 1.6; }
+code {
+  font-family: ui-monospace, 'SF Mono', Menlo, 'Courier New', monospace;
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 0.05em 0.35em;
+  border-radius: 3px;
+  font-size: 0.86em;
+  color: var(--night-text);
+  overflow-wrap: anywhere;
+}
+pre {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+pre code { background: none; border: 0; padding: 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
+
+/* THE MAP, ON EVERY PAGE. Until now the only way between rooms was a
+   link buried in a paragraph, which is not navigation. Same rule the
+   office learned in July: a room nobody can leave is a room nobody
+   enters twice. Derived from ROOMS, so a new room joins the nav the
+   day it is built. */
+nav.rooms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.05rem;
+  margin: 1.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--night-faded);
+}
+nav.rooms a, nav.rooms strong {
+  font-weight: normal;
+  /* Each label stays whole; the ROW wraps. nowrap without a wrapping
+     container is how a fifteen-room nav ran off the side of the page. */
+  white-space: nowrap;
+}
+nav.rooms a { text-decoration: none; }
+nav.rooms a:hover { text-decoration: underline; }
+nav.rooms strong {
+  color: var(--night-text);
+  border-bottom: 1px solid var(--neon);
+}
+nav.rooms .nav-home { color: var(--teal); }
+
+.fine-print {
+  margin-top: 3.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.25rem;
+  font-size: 0.8rem;
+  color: var(--night-faded);
+}
+.fine-print p + p { margin-top: 0.5rem; }
+
+.decision {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--teal);
+  background: var(--card);
+  padding: 0.9rem 1rem;
+  margin: 1rem 0;
+}
+.decision[data-decision="NOT_READY"],
+.decision[data-decision="EXPIRED"] { border-left-color: var(--neon); }
+.decision[data-decision="INDETERMINATE"] { border-left-color: var(--night-faded); }
+.decision-word {
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.4rem;
+  color: var(--teal);
+}
+.decision[data-decision="NOT_READY"] .decision-word,
+.decision[data-decision="EXPIRED"] .decision-word { color: var(--neon); }
+.decision[data-decision="INDETERMINATE"] .decision-word { color: var(--night-faded); }
+.decision p:last-child { margin-bottom: 0; }
+table.summary td:first-child { white-space: nowrap; font-family: monospace; }
+table.summary .basis-cell { text-align: center; white-space: nowrap; }
+.basis { color: var(--night-faded); font-family: monospace; font-size: 0.9em; }
+.because { margin: 0 0 0.5rem; }
+.because .sep { color: var(--night-faded); }
+.because .not-observed { color: var(--night-faded); }
+.glance { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 1rem; }
+.glance .cell {
+  flex: 1 1 8rem;
+  min-width: 7rem;
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 0.6rem 0.75rem;
+  display: flex; flex-direction: column; gap: 0.15rem;
+}
+.glance .value { font-size: 1.35rem; line-height: 1.2; overflow-wrap: anywhere; }
+.glance [data-glance="decision"] .value { letter-spacing: 0.06em; color: var(--teal); }
+.glance [data-decision="NOT_READY"] .value, .glance [data-decision="EXPIRED"] .value { color: var(--neon); }
+.glance [data-decision="INDETERMINATE"] .value { color: var(--night-faded); }
+.glance .label { color: var(--night-faded); font-size: 0.8rem; }
+.probe-strip { margin: 0.75rem 0 1rem; }
+.probe-strip .ticks { display: flex; flex-wrap: wrap; gap: 3px; padding: 2px 0; }
+.probe-strip .key { white-space: nowrap; margin-left: 0.5rem; }
+.tick {
+  display: inline-block; width: 12px; height: 22px; border-radius: 2px;
+  box-sizing: border-box; vertical-align: middle;
+}
+.probe-strip .ticks .tick { min-width: 12px; }
+.probe-strip .ticks .tick:hover, .probe-strip .ticks .tick:focus { outline: 2px solid var(--night-text); outline-offset: 1px; }
+.tick[data-outcome="ready"] { background: var(--teal); }
+.tick[data-outcome="not_ready"] {
+  background: repeating-linear-gradient(135deg, var(--neon) 0 3px, var(--card) 3px 5px);
+  border: 1px solid var(--neon);
+}
+.tick[data-outcome="unreachable"] { border: 2px solid var(--neon); background: transparent; }
+.tick[data-outcome="gap"] { border: 1px dotted var(--night-faded); background: transparent; }
+.protocol-rule summary { cursor: pointer; color: var(--night-faded); }
+.limits {
+  border: 1px dashed var(--line);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+.limits h3 { margin-top: 0; }
+.limits ul { margin: 0.5rem 0 0; padding-left: 1.2rem; }
+</style>
+</head>
+<body>
+  <main class="paper" data-room="corpus" data-item="host">
+    <header>
+      <p class="est">Sean-Claude Van Damme&#39;s General Store • Oak City</p>
+      <h1>x402 endpoint readiness: weather.parklandarchives.com — indeterminate — 1 of 4, W35–W38</h1>
+      <nav class="rooms"><a class="nav-home" href="/">Front of the store</a><a href="/a2a-desk">A2A checks and repair kits</a><a href="/what">What is scvd.store?</a><a href="/developers">developer documentation</a><a href="/trade">The Trade Counter</a><a href="/try">The Practice Counter</a><a href="/conformance">The conformance desk</a><a href="/corpus">The corpus</a><a href="/corpus/brief">The Week&#39;s Doors</a><a href="/corpus/month">The state of x402, by month</a><a href="/ledger">The Week&#39;s Ledger</a><a href="/doors">Every door we have checked</a><a href="/how-it-works">How this store works</a><a href="/samples">What a purchase hands back</a><a href="/bot-auth">The Web Bot Auth desk</a><a href="/gazette">The Gazette</a><a href="/almanac">The Keeper&#39;s Almanac</a><a href="/open-for-business">Open for Business</a><a href="/directory">Town Directory</a><a href="/train">The train</a><a href="/design">Paywall</a><a href="/zodiac">The Systems Almanac</a><a href="/porch">The Porch</a><a href="/neighbours">What we bought from the neighbours</a><a href="/stack">What this store rests on</a><a href="/corrections">Corrections</a><a href="/disagreements">Disagreements</a><a href="/observatory">The observatory</a><a href="/operators">For operators</a><a href="/feeds">Feeds</a><a href="/scorers">For scorers and marketplaces</a><a href="/coverage">What we observe, and what we do not</a><a href="/store-month">The store&#39;s own month, signed</a><a href="/sources">Where our numbers come from</a><a href="/mcp-ward">The MCP ward</a><a href="/visitors">The visitors&#39; register</a><a href="/pulse">The pulse</a><a href="/registry">State of the registry</a><a href="/inflows">Inflows</a><a href="/fresh-set">The fresh set</a><a href="/trust">The trust panel</a><a href="/passport">Endpoint passports</a><a href="/profiles">Hosted trust profiles</a><a href="/attestation">What we sign</a><a href="/criteria">What &#39;verified&#39; means</a><a href="/pricing">How prices are set</a><a href="/rails">Where the money settles</a><a href="/bounties">The Bounty Board</a><a href="/field-study">The Field Study</a><a href="/credit">Regulars&#39; credit</a><a href="/rights">What&#39;s yours</a><a href="/privacy">Privacy</a><a href="/deprecation">API versioning and deprecation policy</a><a href="/wind-down">If the lights go off</a><a href="/becoming">What this is trying to prove</a></nav>
+    </header>
+    <section>
+        <p class="menu-meta">Unsigned host-history summary. The timeline, tier and gap counts are derived context, not a signed artifact. Each timeline entry links a corpus original: retain it and an independently established issuer key, verify its signature, then inspect snapshot.round.hosts for rows whose url exactly matches the requested endpoint, including the query string. Top-level snapshot metadata alone cannot establish absence of endpoint observations. The existing scvd-evidence verify-source command with --subject selects verified exact-URL rows; read their observation dates separately from snapshot publication time. A missing observed_at means the observation date of the signed row is unknown, not the snapshot publication time or a date supplied by this unsigned timeline; it cannot establish observation-age freshness. To authenticate several weeks, retain and verify each cited original and report its own row dates and gaps. One verified snapshot does not authenticate other weeks or this summary.</p>
+        <p class="menu-desc"><strong>indeterminate — 1 of 4, W35–W38</strong> — fewer rounds than the rule needs, or our coverage of this host was suspect in the window. The rule and every tier are at <a href="/criteria">/criteria</a>; the rows are below. Never a ranking, and never a verdict without its derivation and denominator beside it.</p>
+        <p class="menu-meta">Latest observation: <code>ready</code> on 2026-09-15T16:30:35.575Z. Rounds since first sighting: 6; probed: 1; missed: 5 (our coverage of this host: 16.7%). Our own coverage was suspect somewhere in the window, which the tier already reflects.</p>
+      </section>
+      <section>
+        <h2>Every round, including the ones we missed</h2>
+        <section class="probe-strip" data-host="weather.parklandarchives.com">
+    <div class="ticks" role="img" aria-label="7 rounds 2026-W32 to 2026-W38, 1 probed"><a class="tick" data-outcome="gap" data-week="2026-W32" href="https://scvd.store/corpus/1.json" title="2026-W32: not walked — before_first_sighting" aria-label="2026-W32: not walked — before_first_sighting"></a><a class="tick" data-outcome="gap" data-week="2026-W33" href="https://scvd.store/corpus/2.json" title="2026-W33: not walked — listed_not_walked" aria-label="2026-W33: not walked — listed_not_walked"></a><a class="tick" data-outcome="gap" data-week="2026-W34" href="https://scvd.store/corpus/3.json" title="2026-W34: not walked — listed_not_walked" aria-label="2026-W34: not walked — listed_not_walked"></a><a class="tick" data-outcome="gap" data-week="2026-W35" href="https://scvd.store/corpus/4.json" title="2026-W35: not walked — listed_not_walked" aria-label="2026-W35: not walked — listed_not_walked"></a><a class="tick" data-outcome="gap" data-week="2026-W36" href="https://scvd.store/corpus/5.json" title="2026-W36: not walked — listed_not_walked" aria-label="2026-W36: not walked — listed_not_walked"></a><a class="tick" data-outcome="gap" data-week="2026-W37" href="https://scvd.store/corpus/7.json" title="2026-W37: not walked — listed_not_walked" aria-label="2026-W37: not walked — listed_not_walked"></a><a class="tick" data-outcome="ready" data-week="2026-W38" href="https://scvd.store/corpus/8.json" title="2026-W38: ready" aria-label="2026-W38: ready"></a></div>
+    <p class="menu-meta">Every round on the chain, 2026-W32 → 2026-W38: 1 probed of 7.
+    <span class="key"><span class="tick" data-outcome="ready"></span> ready</span>
+    <span class="key"><span class="tick" data-outcome="not_ready"></span> not ready</span>
+    <span class="key"><span class="tick" data-outcome="unreachable"></span> unreachable</span>
+    <span class="key"><span class="tick" data-outcome="gap"></span> not walked — the reason is on the tick</span>.
+    A gap is a fact about our cadence, not about the door.</p>
+  </section>
+        <table>
+          <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Entry</th></tr></thead>
+          <tbody><tr>
+        <td>2026-W32</td>
+        <td>not listed</td>
+        <td>before_first_sighting</td>
+        <td><code>—</code></td>
+        <td>not measured</td>
+        <td>—</td>
+        <td><a href="https://scvd.store/corpus/1.json"><code>1</code></a></td>
+      </tr><tr>
+        <td>2026-W33</td>
+        <td>listed</td>
+        <td>listed_not_walked</td>
+        <td><code>—</code></td>
+        <td>not measured</td>
+        <td>—</td>
+        <td><a href="https://scvd.store/corpus/2.json"><code>2</code></a></td>
+      </tr><tr>
+        <td>2026-W34</td>
+        <td>listed</td>
+        <td>listed_not_walked</td>
+        <td><code>—</code></td>
+        <td>not measured</td>
+        <td>—</td>
+        <td><a href="https://scvd.store/corpus/3.json"><code>3</code></a></td>
+      </tr><tr>
+        <td>2026-W35</td>
+        <td>listed</td>
+        <td>listed_not_walked</td>
+        <td><code>—</code></td>
+        <td>not measured</td>
+        <td>—</td>
+        <td><a href="https://scvd.store/corpus/4.json"><code>4</code></a></td>
+      </tr><tr>
+        <td>2026-W36</td>
+        <td>listed</td>
+        <td>listed_not_walked</td>
+        <td><code>—</code></td>
+        <td>not measured</td>
+        <td>—</td>
+        <td><a href="https://scvd.store/corpus/5.json"><code>5</code></a></td>
+      </tr><tr>
+        <td>2026-W37</td>
+        <td>listed</td>
+        <td>listed_not_walked</td>
+        <td><code>—</code></td>
+        <td>not measured</td>
+        <td>—</td>
+        <td><a href="https://scvd.store/corpus/7.json"><code>7</code></a></td>
+      </tr><tr>
+        <td>2026-W38</td>
+        <td>not listed</td>
+        <td>probed</td>
+        <td><code>ready</code></td>
+        <td>x402, mpp · <code>mpp-v1</code></td>
+        <td>—</td>
+        <td><a href="https://scvd.store/corpus/8.json"><code>8</code></a></td>
+      </tr></tbody>
+        </table>
+        <p class="menu-meta">Protocols are read from one unpaid response under the named battery. No reading here rests on a payment: the till of this store has spoken MPP since 2026-09-18, and that says nothing about the door read. A missing reading means not measured.</p>
+        <p class="menu-meta">A missed week is a fact about us, not about the door. Gaps by reason: before_first_sighting 1, listed_not_walked 5.</p>
+      </section>
+      <section><h2>Payment address</h2><p class="menu-desc">{&quot;week&quot;:&quot;2026-W38&quot;,&quot;sequence&quot;:8,&quot;digest&quot;:&quot;dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627&quot;,&quot;captured&quot;:true,&quot;also_receives_at_other_doors&quot;:4,&quot;shared_wallet_caveat&quot;:&quot;A shared receiving address is a fact about the address, not a verdict about operators: custodial wallets, platform checkouts and facilitator-managed payTo addresses make unrelated doors share one address. This store publishes the observation; the inference is yours to make, and yours to defend.&quot;}</p><p class="menu-meta">Where it asks to be paid, as digests: one address, unchanged since 2026-W38 (snapshot 8), last observed 2026-W38; captured in 1 of 1 probed rounds; no change on record. The digests and how to match one are in the JSON twin.</p></section>
+      <section>
+        <h2>What this cannot see</h2>
+        <ul class="menu-desc"><li>Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.</li><li>Why a verdict changed. We record what a probe saw, never the cause.</li><li>Whether an absence is the host&#39;s doing or ours. That is what `gap` is for: read the reason, not the blank.</li><li>A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.</li><li>Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.</li><li>Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.</li><li>Whether a host listed on the register&#39;s first day had been listed earlier. `first_seen` is when the register met it, not when the world did.</li></ul>
+      </section>
+      <section>
+        <h2>Cite this row</h2>
+        <p class="menu-meta" data-cite><strong>Cite:</strong> <code>scvd.store, host history weather.parklandarchives.com, observed 2026-09-15T16:30:35.575Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/corpus/host/weather.parklandarchives.com.json; verify at https://scvd.store/corpus/8.json.</code></p>
+        <p class="menu-desc">scvd.store, host row weather.parklandarchives.com, week 2026-W38, snapshot 8, sha256 dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627, observed 2026-09-15T16:30:35.575Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/corpus/8.json.</p>
+        <pre class="menu-meta">{
+  &quot;cites&quot;: &quot;https://scvd.store/corpus/8.json&quot;,
+  &quot;host&quot;: &quot;weather.parklandarchives.com&quot;,
+  &quot;week&quot;: &quot;2026-W38&quot;,
+  &quot;sequence&quot;: 8,
+  &quot;observed_at&quot;: &quot;2026-09-15T16:30:35.575Z&quot;,
+  &quot;digest&quot;: &quot;dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627&quot;,
+  &quot;rows&quot;: &quot;https://scvd.store/corpus/host/weather.parklandarchives.com.json&quot;,
+  &quot;index&quot;: &quot;https://scvd.store/corpus.json&quot;,
+  &quot;license&quot;: &quot;CC-BY-4.0&quot;,
+  &quot;how&quot;: &quot;https://scvd.store/scorers&quot;
+}</pre>
+        <p class="menu-meta">Cite a row by its entry URL and digest, never by restating it. The digest is the one the corpus index commits to; if the row&#39;s bytes ever changed, the chain check at /corpus.json would fail, which is what makes the citation checkable. Any earlier row cites the same way from its entry link above. How a scorer consumes this: <a href="/scorers">/scorers</a>.</p>
+      </section>
+      <section>
+        <h2>If this is your host</h2>
+        <p class="menu-desc">This page exists because the store's weekly walk met <code>weather.parklandarchives.com</code> on 2026-09-15T16:30:35.575Z and has recorded what it saw since, with the weeks it did not look named as gaps. There is no claim step: the record is earned by observation. What an operator can do, free: declare the door so the next walk reads it from your own file — <code>POST https://scvd.store/api/declare-door</code> with <code>{"host": "weather.parklandarchives.com"}</code> (<a href="/api/declare-door">how</a>); attach a standing note in your own words, proved with your wallet key or a file on your host (<a href="/api/standing-note">how</a>); or have the page withdrawn at the <a href="/notice">notice desk</a>.</p>
+        <ul><li class="menu-desc"><a href="https://scvd.store/api/buy/spot_check?host=weather.parklandarchives.com">Spot Check</a> — $0.001 <span class="menu-meta">(weather.parklandarchives.com answers; a spot check is one signed observation of it now, outside the weekly round; derived from the host tier)</span></li><li class="menu-desc"><a href="https://scvd.store/api/buy/passport_refresh?host=weather.parklandarchives.com">The Refresh</a> — $1 <span class="menu-meta">(the newest observation of weather.parklandarchives.com is the weekly round&#39;s; a refresh is a new one now; derived from the host tier)</span></li></ul>
+        <p class="menu-meta">next is derived, never typed: items that share a use_when recipe with this one (menu.json use_when), the deeper rung of the room this path belongs to, the settlement observation for the transaction just settled, and the instrument this host&#39;s own tier picks. In derivation order, then the catalogue&#39;s order; never by price, never by sales, never a ranking. store is the same roster on every envelope this store serves.</p>
+      </section>
+      <section>
+        <h2>Check it yourself</h2>
+        <p class="menu-desc">The free preflight runs the same battery on any door right now: <code>POST https://scvd.store/api/preflight/v1</code> with <code>{"url": "https://weather.parklandarchives.com/…"}</code>. The unsigned history linking the corpus originals is at <a href="/corpus/host/weather.parklandarchives.com.json"><code>/corpus/host/weather.parklandarchives.com.json</code></a>; every entry links the snapshot it came from and the chain at <a href="/corpus.json"><code>/corpus.json</code></a>. To be woken only when this record moves, the host's own Atom feed is <a href="/feeds/host/weather.parklandarchives.com.xml"><code>/feeds/host/weather.parklandarchives.com.xml</code></a>. If you operate this host and want the page withdrawn, the <a href="/notice">notice desk</a> is the door. Corrections: <a href="/corrections">/corrections</a>.</p>
+      </section><script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"x402 endpoint readiness — weather.parklandarchives.com","description":"What scvd.store's weekly ward round observed about weather.parklandarchives.com: indeterminate — 1 of 4, W35–W38, derived from 1 probed round since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking.","url":"https://scvd.store/corpus/host/weather.parklandarchives.com","sameAs":"https://scvd.store/corpus/host/weather.parklandarchives.com.json","about":{"@type":"WebSite","url":"https://weather.parklandarchives.com/"},"isPartOf":{"@type":"Dataset","@id":"https://scvd.store/corpus.json","name":"The scvd corpus — weekly observations of the public x402 ecosystem","identifier":{"@type":"PropertyValue","propertyID":"DOI","value":"10.5281/zenodo.22284887"},"sameAs":["https://doi.org/10.5281/zenodo.22284887","https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness"]},"license":"https://creativecommons.org/licenses/by/4.0/","isAccessibleForFree":true,"creator":{"@type":"Organization","@id":"https://scvd.store/#organization","name":"SCVD General Store","url":"https://scvd.store"},"dateModified":"2026-09-15T16:30:35.575Z","temporalCoverage":"2026-09-15T16:30:35.575Z/2026-09-15T16:30:35.575Z","variableMeasured":["conformance verdict per weekly round: ready, not_ready, unreachable or not_probed","named failing checks per probed round","rounds missed, each with its reason","passport tier under the published rule: indeterminate — 1 of 4, W35–W38"],"distribution":{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://scvd.store/corpus/host/weather.parklandarchives.com.json"}}</script>
+    
+    <div class="fine-print">
+      <p><a href="/">Back to the front of the store</a>. Agents: <a href="/llms.txt"><code>/llms.txt</code></a>, <a href="/skill.md"><code>/skill.md</code></a>, or <a href="/menu.json"><code>/menu.json</code></a>.</p>
+    </div>
+  </main>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","@id":"https://scvd.store/corpus/host/weather.parklandarchives.com","url":"https://scvd.store/corpus/host/weather.parklandarchives.com","name":"x402 endpoint readiness: weather.parklandarchives.com — indeterminate — 1 of 4, W35–W38","description":"What scvd.store's weekly ward round observed about weather.parklandarchives.com: indeterminate — 1 of 4, W35–W38, derived from 1 probed round since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking.","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://scvd.store/#website"},"publisher":{"@type":"Organization","@id":"https://scvd.store/#organization","name":"SCVD General Store","url":"https://scvd.store"}}</script>
+</body>
+</html>

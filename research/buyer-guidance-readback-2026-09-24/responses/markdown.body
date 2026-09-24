@@ -1,0 +1,98 @@
+---
+title: "x402 endpoint readiness: weather.parklandarchives.com — indeterminate — 1 of 4, W35–W38"
+description: "What scvd.store's weekly ward round observed about weather.parklandarchives.com: indeterminate — 1 of 4, W35–W38, derived from 1 probed round since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking."
+canonical: "https://scvd.store/corpus/host/weather.parklandarchives.com"
+url: "https://scvd.store/corpus/host/weather.parklandarchives.com"
+data: "https://scvd.store/corpus/host/weather.parklandarchives.com.json"
+subject: "weather.parklandarchives.com"
+license: "https://creativecommons.org/licenses/by/4.0/"
+last_observed: "2026-09-15T16:30:35.575Z"
+first_observed: "2026-09-15T16:30:35.575Z"
+---
+
+# x402 endpoint readiness: weather.parklandarchives.com — indeterminate — 1 of 4, W35–W38
+
+Unsigned host-history summary. The timeline, tier and gap counts are derived context, not a signed artifact. Each timeline entry links a corpus original: retain it and an independently established issuer key, verify its signature, then inspect snapshot.round.hosts for rows whose url exactly matches the requested endpoint, including the query string. Top-level snapshot metadata alone cannot establish absence of endpoint observations. The existing scvd-evidence verify-source command with --subject selects verified exact-URL rows; read their observation dates separately from snapshot publication time. A missing observed_at means the observation date of the signed row is unknown, not the snapshot publication time or a date supplied by this unsigned timeline; it cannot establish observation-age freshness. To authenticate several weeks, retain and verify each cited original and report its own row dates and gaps. One verified snapshot does not authenticate other weeks or this summary.
+
+**indeterminate — 1 of 4, W35–W38** — fewer rounds than the rule needs, or our coverage of this host was suspect in the window. The rule and every tier are at
+https://scvd.store/criteria. Never a ranking, and never a verdict without its derivation and denominator beside it.
+
+Latest observation: `ready` on 2026-09-15T16:30:35.575Z. Rounds since first sighting: 6; probed: 1; missed: 5 (our coverage of this host: 16.7%). Our own coverage was suspect somewhere in the window, which the tier already reflects.
+
+## Every round, including the ones we missed
+
+| Week | Listed | Probed | x402 verdict | Protocols observed | Failed checks | Entry |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2026-W32 | not listed | before_first_sighting | `—` | not measured | — | https://scvd.store/corpus/1.json |
+| 2026-W33 | listed | listed_not_walked | `—` | not measured | — | https://scvd.store/corpus/2.json |
+| 2026-W34 | listed | listed_not_walked | `—` | not measured | — | https://scvd.store/corpus/3.json |
+| 2026-W35 | listed | listed_not_walked | `—` | not measured | — | https://scvd.store/corpus/4.json |
+| 2026-W36 | listed | listed_not_walked | `—` | not measured | — | https://scvd.store/corpus/5.json |
+| 2026-W37 | listed | listed_not_walked | `—` | not measured | — | https://scvd.store/corpus/7.json |
+| 2026-W38 | not listed | probed | `ready` | x402, mpp · `mpp-v1` | — | https://scvd.store/corpus/8.json |
+
+Protocols are read from one unpaid response under the named battery.
+No reading here rests on a payment: the till of this store has spoken MPP since 2026-09-18, and that says nothing about the door read. A missing reading means not measured.
+
+A missed week is a fact about us, not about the door. Gaps by reason:
+before_first_sighting 1, listed_not_walked 5.
+
+## Payment address
+
+{"week":"2026-W38","sequence":8,"digest":"dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627","captured":true,"also_receives_at_other_doors":4,"shared_wallet_caveat":"A shared receiving address is a fact about the address, not a verdict about operators: custodial wallets, platform checkouts and facilitator-managed payTo addresses make unrelated doors share one address. This store publishes the observation; the inference is yours to make, and yours to defend."}
+
+Where it asks to be paid, as digests: one address, unchanged since 2026-W38 (snapshot 8), last observed 2026-W38; captured in 1 of 1 probed rounds; no change on record. The digests and how to match one are in the JSON twin.
+
+## What this cannot see
+
+- Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.
+- Why a verdict changed. We record what a probe saw, never the cause.
+- Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.
+- A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.
+- Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.
+- Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.
+- Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did.
+
+## Cite this row
+
+scvd.store, host row weather.parklandarchives.com, week 2026-W38, snapshot 8, sha256 dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627, observed 2026-09-15T16:30:35.575Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/corpus/8.json.
+
+```json
+{
+  "cites": "https://scvd.store/corpus/8.json",
+  "host": "weather.parklandarchives.com",
+  "week": "2026-W38",
+  "sequence": 8,
+  "observed_at": "2026-09-15T16:30:35.575Z",
+  "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+  "rows": "https://scvd.store/corpus/host/weather.parklandarchives.com.json",
+  "index": "https://scvd.store/corpus.json",
+  "license": "CC-BY-4.0",
+  "how": "https://scvd.store/scorers"
+}
+```
+
+Cite a row by its entry URL and digest, never by restating it. The digest is the one the corpus index commits to; if the row's bytes ever changed, the chain check at /corpus.json would fail, which is what makes the citation checkable. Any earlier row cites the same way from its entry link in
+the table above. How a scorer consumes this: https://scvd.store/scorers.
+
+## If this is your host
+
+This page exists because the store's weekly walk met weather.parklandarchives.com and has recorded what it saw since, with the weeks it did not look named as gaps. There is no claim step: the record is earned by observation. Free, for an operator: declare the door (POST https://scvd.store/api/declare-door with {"host": "weather.parklandarchives.com"}); attach a standing note in your own words (GET https://scvd.store/api/standing-note); or have the page withdrawn at https://scvd.store/notice.
+
+- [Spot Check](https://scvd.store/api/buy/spot_check?host=weather.parklandarchives.com) — $0.001: weather.parklandarchives.com answers; a spot check is one signed observation of it now, outside the weekly round (derived from the host tier)
+- [The Refresh](https://scvd.store/api/buy/passport_refresh?host=weather.parklandarchives.com) — $1: the newest observation of weather.parklandarchives.com is the weekly round's; a refresh is a new one now (derived from the host tier)
+
+## Check it yourself
+
+The free preflight runs the same battery on any door right now:
+
+```
+POST https://scvd.store/api/preflight/v1
+{"url": "https://weather.parklandarchives.com/…"}
+```
+
+The unsigned history at https://scvd.store/corpus/host/weather.parklandarchives.com.json links the corpus originals;
+every entry links the snapshot it came from, and the chain is at
+https://scvd.store/corpus.json. If you operate this host and want the page
+withdrawn, the notice desk is at https://scvd.store/notice. Corrections:
+https://scvd.store/corrections.

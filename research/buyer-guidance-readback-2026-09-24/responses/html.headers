@@ -1,0 +1,17 @@
+HTTP/2 200 
+date: Thu, 24 Sep 2026 18:11:35 GMT
+content-type: text/html; charset=UTF-8
+content-length: 32386
+link: <https://scvd.store/corpus/index.json>; rel="index", <https://scvd.store/scorers>; rel="help", <https://creativecommons.org/licenses/by/4.0/>; rel="license"
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Accept, Accept-Encoding, User-Agent
+content-security-policy: script-src 'self'; object-src 'none'; base-uri 'none'; connect-src 'self' https://scvd.store; frame-ancestors 'self' https://chatgpt.com https://claude.ai; form-action 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'
+server-timing: isolate;desc=warm, age;dur=437, req;dur=931
+x-house-rule: Argue properly. --7
+x-store: SCVD General Store (https://scvd.store)
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=VOfsy%2BtKeqa%2FDU20%2BGLRxc7k9qP4NS2HZRbxF67L8IvHeuuYDfuof7twMUg1aOyvGX56Ihj%2FJ%2Bj5fwWusZ%2FF3hkySlvGCTdnZQ8Xo0cchknu59kpN4zUlcmk3s9HI0CGGqSxFrD9mmkZ"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a403c098e9bac025-ATL
+alt-svc: h3=":443"; ma=86400
+

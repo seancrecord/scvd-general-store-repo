@@ -1,0 +1,85 @@
+{
+  "source_commit": "553ede019f08574ae65edfe359ce86a5251bc0c2",
+  "scope": "Public readback and documentation only; no product behavior change.",
+  "checks": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "log": "typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "docs:check"
+      ],
+      "exit_code": 0,
+      "log": "docs-check.log",
+      "sha256": "3c5aafb9eb85371640f9a8cb81a0478eb0d381ce0c8cff56526dad78345b20b5"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "initial_full_suite": {
+    "exit_code": 1,
+    "result": "Did not start tests: sandbox denied binding the 127.0.0.1 fixture server (EPERM).",
+    "log_sha256": "537ac0a60b229a4307089d0dcd48fa993e9443215dd896992f640ce0726c414a"
+  },
+  "permitted_full_suite": {
+    "status": "interrupted_after_observed_failures",
+    "exit_code": 130,
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "--maxWorkers=2"
+    ],
+    "failed_files_observed": [
+      "test/buyer-http-validation.spec.ts",
+      "test/mcp-weekly-admission.spec.ts",
+      "test/confession-paid-recovery.spec.ts",
+      "test/standing-watch-paid-recovery.spec.ts",
+      "test/operator-paid-recovery.spec.ts",
+      "test/human-order-paid-recovery.spec.ts"
+    ],
+    "result": "Not a completed full-suite pass. Six affected files passed unchanged in the separately recorded rerun. Full hosted shards remain required before merge.",
+    "log_sha256": "337738dad70224f234eb5a13305e48e037a12e75a0d867971be5318fb89a579d",
+    "commit_policy": "Current AGENTS.md lines 56-61 permit typecheck and focused tests before commit; every full hosted shard and required check must pass before merge."
+  },
+  "capture_retention_check": {
+    "existing_output_refused": true,
+    "exit_code": 1,
+    "all_six_original_body_hashes_unchanged": true,
+    "collector_syntax": "pass"
+  },
+  "affected_file_rerun": {
+    "exit_code": 0,
+    "files": [
+      "test/buyer-http-validation.spec.ts",
+      "test/mcp-weekly-admission.spec.ts",
+      "test/confession-paid-recovery.spec.ts",
+      "test/standing-watch-paid-recovery.spec.ts",
+      "test/operator-paid-recovery.spec.ts",
+      "test/human-order-paid-recovery.spec.ts"
+    ],
+    "file_count": 6,
+    "tests_passed": 965,
+    "failures": 0,
+    "duration_seconds": 215.43,
+    "conditions": "One worker; idle-sleep inhibition bounded to the command; unchanged assertions and timeouts. Full suite still running concurrently.",
+    "log_sha256": "46d97f79df3ed18ef0cae9484b11115ef8210fdf6fd99edaf91195131c34ea61"
+  }
+}
