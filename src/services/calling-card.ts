@@ -1,6 +1,6 @@
 import type { Env } from "@/types";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
 import { jwkThumbprint, type Ed25519Jwk } from "@/lib/web-bot-auth";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
 export const CALLING_CARD_TERM_SECONDS = 30 * 86400;
@@ -136,7 +136,7 @@ export async function receiveCallingCardReport(env: Env, value: unknown, now = D
     return { accepted: true, duplicate: false };
 }
 export async function listCallingCardReports(env: Env, cursor?: string) {
-    const page = await env.ORDERS.list({ prefix: KV_KEYS.callingCardReportPrefix, limit: 50, ...(cursor ? { cursor } : {}) });
+    const page = await kvList(env.ORDERS, { prefix: KV_KEYS.callingCardReportPrefix, limit: 50, ...(cursor ? { cursor } : {}) });
     const rows = await Promise.all(page.keys.map(key => kvGetJson<Record<string, unknown>>(env.ORDERS, key.name)));
     return { evidence: "client_report_unverified", retention_seconds: CALLING_CARD_REPORT_SECONDS, rows: rows.filter(Boolean), unreadable: rows.filter(row => !row).length, complete: page.list_complete, cursor: page.list_complete ? null : page.cursor, limits: "Opt-in sample; neither unique agents nor all traffic. Event deduplication and revocation have KV propagation limits. No success rate or ranking is inferred." };
 }
