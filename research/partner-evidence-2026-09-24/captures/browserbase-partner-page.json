@@ -1,0 +1,21 @@
+{
+  "id": "browserbase-partner-page",
+  "requested_url": "https://www.browserbase.com/partner",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:19:34.258434+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Cache-Control": "public, max-age=0, must-revalidate",
+    "Content-Type": "text/html; charset=utf-8",
+    "Date": "Wed, 23 Sep 2026 20:14:49 GMT"
+  },
+  "truncated": false,
+  "bytes": 151300,
+  "sha256": "bf2087e19a4eb1acd9ce5933b4798cf4ad04403eab86ba01d83833c4a7249891",
+  "body_file": "browserbase-partner-page.body"
+}

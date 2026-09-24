@@ -1,0 +1,88 @@
+{
+  "recorded_at": "2026-09-24T15:22:12.995088+00:00",
+  "publication_status": "merit_comment_sent_repository_merge_authorized",
+  "findings": [
+    {
+      "id": "M-001",
+      "subject": "Merit discovery metadata",
+      "technical_disposition": "locally_reproduced",
+      "observation": "Nested price with string protocol names fails the pinned package resolver; changing only the protocol representation to structured objects resolves it.",
+      "evidence": [
+        "captures/merit-discovery-doc.json",
+        "captures/merit-discovery-package-network.json",
+        "captures/merit-1014-comments.json",
+        "merit-reproduction.json"
+      ],
+      "partner_action": "unknown",
+      "partner_usefulness": "unknown",
+      "partner_response": null,
+      "retest": "not_requested",
+      "repeat": "none",
+      "next_action": "Await intended-contract clarification; independently recheck a correction if agreed.",
+      "signed": false,
+      "payment_sent": false,
+      "outreach_status": "sent_verified_awaiting_reply",
+      "outreach_record": "merit-outreach.json",
+      "comment_url": "https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384"
+    },
+    {
+      "id": "S-001",
+      "subject": "BiX seller eligibility",
+      "technical_disposition": "unresolved",
+      "observation": "The seller requested a buyer test; one current GET to its published schema returned 503. Method, current terms and settlement readiness are not established.",
+      "evidence": [
+        "captures/merit-issue-1197-network.json",
+        "captures/bix-openapi-network.json",
+        "captures/bix-held-history.json"
+      ],
+      "partner_action": "unknown",
+      "partner_usefulness": "unknown",
+      "partner_response": null,
+      "retest": "not_requested",
+      "repeat": "none",
+      "next_action": "Ask whether public schema/route moved and settlement gate is ready; no purchase.",
+      "signed": false,
+      "payment_sent": false
+    },
+    {
+      "id": "B-001",
+      "subject": "Browserbase workflow compatibility",
+      "technical_disposition": "documented_and_source_compared",
+      "observation": "Gateway documents POST session creation with estimatedMinutes; current main has bounded POST fallback using an empty body. Input defaults, current wire terms and usable delivery remain unqualified.",
+      "evidence": [
+        "captures/browserbase-gateway-network.json",
+        "captures/browserbase-held-history.json",
+        "captures/browserbase-partner-page.json",
+        "release-source-index.json"
+      ],
+      "partner_action": "unknown",
+      "partner_usefulness": "unknown",
+      "partner_response": null,
+      "retest": "not_requested",
+      "repeat": "none",
+      "next_action": "Prepare reviewer-scoped method-correct study; no claim of product defect.",
+      "signed": false,
+      "payment_sent": false,
+      "correction": "Initial GET-only statement described an older checkout, not current main; withdrawn before repository publication."
+    },
+    {
+      "id": "I-001",
+      "subject": "Use of SCVD host-history evidence",
+      "technical_disposition": "documented_limitation",
+      "observation": "Saved host histories explicitly declare unsigned scope; Browserbase timeline uses multiple endpoint paths and GET notes. Generic signing citation does not authenticate the summary.",
+      "evidence": [
+        "captures/browserbase-held-history.json",
+        "captures/bix-held-history.json"
+      ],
+      "partner_action": "unknown",
+      "partner_usefulness": "unknown",
+      "partner_response": null,
+      "retest": "not_requested",
+      "repeat": "none",
+      "next_action": "Verify exact-URL originals before signed-history claims; no cross-endpoint repair inference.",
+      "signed": false,
+      "payment_sent": false
+    }
+  ],
+  "outreach_updated_at": "2026-09-24 15:42:04 UTC"
+}

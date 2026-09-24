@@ -1,0 +1,16 @@
+{
+  "validated_at": "2026-09-24T15:22:43.395248+00:00",
+  "capture_metadata_records": 19,
+  "body_hashes_verified": 13,
+  "http_status_counts": {
+    "200": 11,
+    "503": 1,
+    "None": 6,
+    "404": 1
+  },
+  "local_markdown_links_checked": 8,
+  "merit_control_cases": 4,
+  "offline_reproduction_repeat_matches": true,
+  "application_tests": "Not run: no application/config/dependency changes; research artifacts and documentation only.",
+  "limits": "Hash checks do not establish origin authenticity. No npm signature or SCVD corpus signature verification performed."
+}

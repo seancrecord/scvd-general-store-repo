@@ -1,0 +1,22 @@
+{
+  "id": "browserbase-held-history",
+  "requested_url": "https://scvd.store/corpus/host/x402.browserbase.com.json",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:19:35.895695+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:19:36 GMT",
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache",
+    "ETag": "\"982e477a048fd95010490dca704b3042\""
+  },
+  "truncated": false,
+  "bytes": 13663,
+  "sha256": "982e477a048fd95010490dca704b30428d74981ec13c25b6df788c9b84f6c05d",
+  "body_file": "browserbase-held-history.body"
+}

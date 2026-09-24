@@ -1,0 +1,96 @@
+{
+  "observed_at": "2026-09-24T15:19:04.565Z",
+  "package": "@agentcash/discovery",
+  "version": "1.7.5",
+  "node": "v22.13.1",
+  "archive_integrity_matches_registry": true,
+  "archive_sha256": "fcd1ddfa2e3d29f41904f2a0759754a3413d767f42021dab08b8185acca5569a",
+  "resolver_slice_sha256": "204cef3b1c54df1610f0b80a51d3690a5b816c19fedbe0adac641c2bcbd38883",
+  "schema_module_sha256": "d240f62af981c98388b349b81e885d30a0e76dcb5b80c24991be874dcf5b248c",
+  "scope": "Unmodified resolver slice and bundled schema evaluation only; not CLI, live registration, settlement, or a signed SCVD artifact.",
+  "controls_passed": 4,
+  "results": [
+    {
+      "id": "documented-hybrid",
+      "input": {
+        "protocols": [
+          "x402"
+        ],
+        "price": {
+          "mode": "fixed",
+          "currency": "USD",
+          "amount": "0.05"
+        }
+      },
+      "schema_accepts": false,
+      "resolved": null
+    },
+    {
+      "id": "structured-protocol-control",
+      "input": {
+        "protocols": [
+          {
+            "x402": {}
+          }
+        ],
+        "price": {
+          "mode": "fixed",
+          "currency": "USD",
+          "amount": "0.05"
+        }
+      },
+      "schema_accepts": true,
+      "resolved": {
+        "price": {
+          "currency": "USD",
+          "mode": "fixed",
+          "amount": "0.05"
+        },
+        "protocols": [
+          {
+            "x402": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy-flat-control",
+      "input": {
+        "protocols": [
+          "x402"
+        ],
+        "pricingMode": "fixed",
+        "price": "0.05",
+        "currency": "USD"
+      },
+      "schema_accepts": true,
+      "resolved": {
+        "price": {
+          "mode": "fixed",
+          "amount": "0.05"
+        },
+        "protocols": [
+          {
+            "x402": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-amount-negative-control",
+      "input": {
+        "protocols": [
+          {
+            "x402": {}
+          }
+        ],
+        "price": {
+          "mode": "fixed",
+          "currency": "USD"
+        }
+      },
+      "schema_accepts": false,
+      "resolved": null
+    }
+  ]
+}

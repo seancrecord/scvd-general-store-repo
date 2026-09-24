@@ -1,0 +1,23 @@
+{
+  "id": "discovery-tarball",
+  "requested_url": "https://registry.npmjs.org/@agentcash/discovery/-/discovery-1.7.5.tgz",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:16:17.128696+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:16:17 GMT",
+    "Content-Type": "application/octet-stream",
+    "Cache-Control": "public, must-revalidate, max-age=31557600",
+    "ETag": "\"69ae423be58e5405e007af8597dc1ffb\"",
+    "Last-Modified": "Tue, 09 Jun 2026 17:36:30 GMT"
+  },
+  "truncated": false,
+  "bytes": 571140,
+  "sha256": "fcd1ddfa2e3d29f41904f2a0759754a3413d767f42021dab08b8185acca5569a",
+  "body_file": "discovery-tarball.body"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "merit-issue-1197-network",
+  "requested_url": "https://api.github.com/repos/Merit-Systems/x402scan/issues/1197",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:15:18.658606+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 1048576,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Thu, 24 Sep 2026 15:15:18 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "public, max-age=60, s-maxage=60",
+    "ETag": "W/\"dc3ee79494777e1cd58daf24e2bfadce229e43c5775c72d8db50713794e7bd4c\"",
+    "Last-Modified": "Tue, 22 Sep 2026 07:33:19 GMT",
+    "X-RateLimit-Remaining": "57"
+  },
+  "truncated": false,
+  "bytes": 5043,
+  "sha256": "757c64686ccd6f7043c09e4b8d36d57ee0cb241a2d30931bfbab46bd42db2f77",
+  "body_file": "merit-issue-1197-network.body"
+}

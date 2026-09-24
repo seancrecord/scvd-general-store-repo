@@ -1,0 +1,22 @@
+{
+  "id": "merit-discovery-doc",
+  "requested_url": "https://raw.githubusercontent.com/Merit-Systems/x402scan/131a5d3ca9f71f145b6da4a40334c0b52544194c/docs/DISCOVERY.md",
+  "method": "GET",
+  "observed_at": "2026-09-24T15:16:16.909070+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Cache-Control": "max-age=300",
+    "Content-Type": "text/plain; charset=utf-8",
+    "ETag": "\"ea2e0e650983eb530aeb91250dbee9bff1655c30692a2f80d1927db923c6d273\"",
+    "Date": "Thu, 24 Sep 2026 15:16:17 GMT"
+  },
+  "truncated": false,
+  "bytes": 4579,
+  "sha256": "15f522118e702208c91f3dab520f005999ed23aba105afccd378c0fe4101526d",
+  "body_file": "merit-discovery-doc.body"
+}
