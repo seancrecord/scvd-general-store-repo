@@ -1,5 +1,56 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-24 — Four unlisted x402 markets: Indexter, PayAI, Circle, GoPlausible
+
+Prompted by a seller dashboard (tool unidentified; the keeper's paste
+names six markets and reports 29/36 on Coinbase, 34/36 on x402scan, 0/36
+on the other four with "11 resources · market requirements not met" on
+each). Re-read the four intake pages live and probed each catalog.
+
+[Indexter for-providers](https://indexter.cash/for-providers): self-serve
+"Submit a Server" (choose routes to ingest) plus "Claim the Provider";
+the add-server and manage pages sit behind an account. No fee, facilitator
+or network requirement is stated on the page. Not submitted — keeper's hands
+(rule 30).
+
+[PayAI Bazaar discovery](https://docs.payai.network/x402/facilitators/bazaar):
+"Listing is automatic: there is no registration form, account, or manual
+submission." The PayAI facilitator catalogs from the `bazaar` declaration
+echoed into payments it processes on its own `/verify` and `/settle`
+(verify-only cataloging since 2026-07-29; GET resources need an unpaid
+probe to answer 402). There is no re-index endpoint. Live
+`/discovery/listing-status` for `/api/buy/hello` returned 404 "No catalog
+row or recent write outcome exists". Our till verifies and settles through
+CDP only, so nothing can reach PayAI without the store calling PayAI's
+facilitator — a payment-path change under `PAYMENT_RAILS.md`, not a listing.
+
+[Circle get-listed](https://developers.circle.com/agent-stack/agent-marketplace/get-listed):
+manual review via a Google intake form; prerequisites are a live 402, a
+published OpenAPI spec and a payout wallet that is sanctions-screened.
+Live [Discovery API](https://api.circle.com/v2/x402/discovery/resources?query=scvd.store)
+query returned zero items (control `weather` query: 55). The keeper's
+application, pending since at least 09-14, is the only path; nothing to build.
+
+[GoPlausible guide](https://facilitator.goplausible.xyz/guide): Algorand-first
+facilitator (Base also listed); a resource is auto-catalogued on its first
+settled payment through that facilitator when the route carries the
+`bazaar` extension. Its merchants page listed 167 merchants over Algorand
+and Base, none scvd.store. Same shape as PayAI: facilitator-bound, plus a
+rail the store only reads.
+
+Confirmed live: `/api/buy/hello` answers 402 with x402Version 2, a
+`resource` object and `extensions.bazaar` (input, output example) beside
+`offer-receipt`, offering Base, Polygon, Arbitrum, World and Solana. The
+declaration the two facilitator catalogs read already exists; what they
+lack is a payment routed through them.
+
+Unreachable from this sandbox: indexter.cash, docs.payai.network,
+developers.circle.com, api.circle.com and facilitator.goplausible.xyz
+were egress-blocked for direct fetch; each was read through a hosted
+scraper, so the quotes above are secondhand copies of the live pages
+(rule 55). The dashboard's own "11 not met" rule was not readable without
+its URL. No submission, facilitator change or payment was made.
+
 ## 2026-09-20 — UCP.tools listing and UCPRegistry intake
 
 Read the rendered [UCP.tools directory](https://ucptools.dev/directory), searched
