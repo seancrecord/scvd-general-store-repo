@@ -5,6 +5,8 @@ import {
   FIELD_STUDY_FREE_FIRST,
   FIELD_STUDY_OPENED,
 } from "@/store/field-study-copy";
+import { CALLING_CARD_PROPOSITION, CALLING_CARD_MONEY, CALLING_CARD_FREE, CALLING_CARD_MODULE, CALLING_CARD_BROWSER } from "@/store/calling-card";
+import { CALLING_CARD_PATHS } from "@/services/calling-card";
 import { ROOMS } from "@/store/rooms";
 import { CARDS_FOR_MONEY, CARDS_FREE_FIRST, CARDS_OPENED, CARDS_PROPOSITION } from "@/store/cards";
 import {
@@ -157,6 +159,12 @@ export const FEATURES: readonly Feature[] = [
     doors: ["/api/card/{card_id}", "/api/pack/{pack_id}", "/api/paywall/binder/{wallet}", "/api/paywall/burn", "/api/paywall/challenge", "/api/paywall/redeem", "/api/paywall/releases", "/bell", "/api/paywall/seed/{date}", "/api/paywall/set", "/api/paywall/window"],
     named_on: [],
     opened: CARDS_OPENED,
+  },
+  {
+    id: "calling_card", name: "Agent calling-card setup", room: "/bot-auth",
+    proposition: CALLING_CARD_PROPOSITION, for_money: CALLING_CARD_MONEY, free_first: CALLING_CARD_FREE,
+    doors: [CALLING_CARD_MODULE, CALLING_CARD_BROWSER, "/api/bot-auth/check", ...Object.values(CALLING_CARD_PATHS), `${CALLING_CARD_PATHS.keys}/{id}`],
+    named_on: ["/developers"], opened: "2026-09-24",
   },
   { id: "a2a_desk", name: "A2A checks and repair kits", room: "/a2a-desk", proposition: A2A_PROPOSITION, for_money: A2A_MONEY, free_first: A2A_FREE, doors: ["/a2a-desk.json", "/api/a2a/check", "/api/a2a/runner.mjs", "/api/a2a/kits/{kit_id}", "/api/a2a/kits/{kit_id}/recheck"], named_on: ["/operators", "/developers", "/conformance"], opened: "2026-09-07" },
   {

@@ -12,6 +12,8 @@ import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
 import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { beforeYouStartSentence } from "@/lib/before-you-start";
+import { CALLING_CARD_PATHS, CALLING_CARD_TERM_SECONDS, CALLING_CARD_REPORT_SECONDS } from "@/services/calling-card";
+import { CALLING_CARD_ACTION_BODY_SCHEMA, CALLING_CARD_ACTION_SCHEMA, CALLING_CARD_REGISTRATION_SCHEMA, CALLING_CARD_OBSERVATION_SCHEMA, CALLING_CARD_PUBLIC_KEY_SCHEMA, CALLING_CARD_REPORT_RECEIPT_SCHEMA } from "@/lib/calling-card-schema";
 import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
 import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA, A2A_SIGNED_SCHEMA } from "@/lib/a2a-desk-schema";
 import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
@@ -350,6 +352,7 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
 export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
   "/health": "no-store by design: a liveness line that must never be a cached yes",
   "/bell": "an HTML room, not a machine-readable document: lib/conditional-get.ts tags the representations an agent polls, and this GET exists to put a form in front of a person. The bell's machine door is POST /api/bell, which is outside conditional GET by method.",
+  "/bot-auth/observe": "no-store: each observation verifies the current signed request and current key status",
 };
 const NO_STORE_PREFIXES = ["/api/buy/", "/api/order/", "/api/phantom/", "/api/commission/pay/"];
 
@@ -6093,6 +6096,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         McpCard: MCP_CARD_SCHEMA,
         PreflightDocument: PREFLIGHT_DOC_SCHEMA,
         BotAuthCheck: BOT_AUTH_CHECK_SCHEMA,
+        CallingCardPayload: CALLING_CARD_ACTION_SCHEMA.properties.payload,
         ArdManifest: ARD_MANIFEST_SCHEMA,
         Bounties: BOUNTIES_SCHEMA,
         BuyerProof: BUYER_PROOF_SCHEMA,
@@ -7910,6 +7914,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
             { $ref: "#/components/schemas/BotAuthCheck" },
           ),
+      },
+      "/calling-card/calling-card.mjs": {
+        get: { security: [], summary: "Download the local calling-card normalizer and Node fetch integration", description: "Free ES module. Organizes public inputs locally, sends introductions only to configured origins, and accepts a local signing callback. No automatic payments, retries or diagnostics upload. Instructions and scope: /bot-auth with Accept: application/json.", responses: { ...COMMON_RESPONSES, "200": { description: "JavaScript module source", content: { "application/javascript": { schema: { type: "string" } } } } } },
+      },
+      [CALLING_CARD_PATHS.keys]: {
+        post: { ...returns(freeOp("Publish, renew or revoke a proved public calling-card directory",`A signed action envelope binds action, audience, time and public key. Publish includes a client-signed directory response proof valid up to ${CALLING_CARD_TERM_SECONDS} seconds. Revocation uses a separate tombstone with eventual propagation. No private key is accepted. See /bot-auth JSON for local setup.`),CALLING_CARD_REGISTRATION_SCHEMA), requestBody:{required:true,content:{"application/json":{schema:CALLING_CARD_ACTION_BODY_SCHEMA}}} },
+      },
+      [CALLING_CARD_PATHS.keys+"/{id}"]: {
+        get: { ...freeOp("Read one client-signed public directory","A hosted exact-path directory. Expired or revoked keys return 404. Other verifiers may require an origin-owned well-known directory and registration. The response carries the client-signed directory proof headers."),parameters:[pathParam("id","Public JWK thumbprint from registration.")],responses:{...COMMON_RESPONSES,"200":{description:"Public JWK set and directory proof headers",content:{"application/http-message-signatures-directory+json":{schema:{type:"object",required:["keys"],properties:{keys:{type:"array",items:{...CALLING_CARD_PUBLIC_KEY_SCHEMA,additionalProperties:true}}}}}}}} },
+      },
+      [CALLING_CARD_PATHS.observe]: {
+        get: { ...returns(freeOp("Verify one introduction at this receiver","Accepts only this integration profile and hosted directories. Checks signature, key and time window; no replay deduplication or authorization grant. The result is a dated signed observation, not other-site or payment acceptance."),CALLING_CARD_OBSERVATION_SCHEMA),parameters:["Signature","Signature-Input","Signature-Agent"].map(name=>({name,in:"header",required:true,schema:{type:"string"},description:"Produced locally by the configured calling-card integration."})) },
+      },
+      [CALLING_CARD_PATHS.reports]: {
+        post: { ...freeOp("Share one explicitly consented client diagnostic",`Authenticated with a registered local key. Exact allowlist: site origin, event ID, HTTP status and fixed diagnostic labels. Retained privately for ${CALLING_CARD_REPORT_SECONDS} seconds as unverified client evidence. Bounded ingestion; no public publishing, rankings or inferred acceptance. 201 saved; 200 previously retained event, subject to KV propagation.`),requestBody:{required:true,content:{"application/json":{schema:CALLING_CARD_ACTION_BODY_SCHEMA}}},responses:{...COMMON_RESPONSES,"200":{description:"Previously retained",content:{"application/json":{schema:CALLING_CARD_REPORT_RECEIPT_SCHEMA}}},"201":{description:"Retained privately",content:{"application/json":{schema:CALLING_CARD_REPORT_RECEIPT_SCHEMA}}}} },
+      },
+      "/calling-card/setup.js": {
+        get: { security: [], summary: "Browser entry point for local calling-card setup", description: "Loaded by /bot-auth. Public inputs remain in browser memory. An explicit directory-check press sends only its public URL to /api/bot-auth/check.", responses: { ...COMMON_RESPONSES, "200": { description: "Browser JavaScript source", content: { "application/javascript": { schema: { type: "string" } } } } } },
       },
       "/api/bot-auth-card/{card_id}": {
         get: {

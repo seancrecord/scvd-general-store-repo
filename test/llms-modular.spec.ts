@@ -1138,8 +1138,10 @@ const BASE = "https://scvd.store";
 // this file asks rather than asserted: with routes/llms.ts alone
 // reverted and nothing else touched, both digests below reproduced
 // their previous values exactly.
+// 2026-09-24: calling-card setup replaces the Web Bot Auth paragraph and
+// enters the index. Restoring only llms.ts reproduced both prior fingerprints.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a873cb856e5ac67fd0d1a3f0bd4714dcd815a85a30604c315f9ec90a23b8acfa";
+  "5d74bfb7caec01d74fb66e5f6adea5cdf2d77cfb6b0b94d365c37f0d5f7ad6de";
 
 
 /** The llmstxt.org recommendation the index is being held to. */
@@ -1231,7 +1233,7 @@ describe("nothing was rewritten", () => {
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
       // Re-pinned 2026-09-22 with the store-month paragraph; see the
       // note on GUIDE_DIGEST_BEFORE_THE_SPLIT for how it was verified.
-      "3c4fad79393cd163fc62be029b76d9ae067a37e7d238eded01be346251222803",
+      "5b15673123bba3d5b298eebe72e5656ae2210796b05a191ec0f0b2265b38c7e8",
     );
   });
 

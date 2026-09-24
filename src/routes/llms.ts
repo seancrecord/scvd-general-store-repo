@@ -10,6 +10,8 @@ import {
   FIELD_STUDY_FREE_FIRST,
 } from "@/store/field-study-copy";
 import { paymentNetworkNames } from "@/lib/payment-networks";
+import { CALLING_CARD_PROPOSITION, CALLING_CARD_FREE, CALLING_CARD_MONEY, CALLING_CARD_MODULE, CALLING_CARD_BROWSER } from "@/store/calling-card";
+import { CALLING_CARD_PATHS } from "@/services/calling-card";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_FREE_FIRST, TRADE_PROPOSITION } from "@/store/trade-counter";
@@ -184,7 +186,7 @@ find out.
 
 ## Every door, in one list
 
-Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
+Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [calling-card setup](${base}/bot-auth) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
@@ -290,19 +292,14 @@ issued, is free to read at \`${base}/api/discovery/report/{id}\`. The
 SKU that issues one is not priced yet.
 
 AND THE OTHER DIRECTION, if your agent is the one doing the fetching:
-Web Bot Auth is the IETF mechanism for proving a crawler is who it
-says it is — RFC 9421 HTTP Message Signatures over ed25519, public
-keys published in a directory at
-/.well-known/http-message-signatures-directory, verified by origins
-(Cloudflare among them) without a shared secret or an IP allowlist.
-POST {"url": "https://your-agent.example"} to
-${base}/api/bot-auth/check and we fetch your directory once and name
-every check, free — including the proof-of-possession signature
-VERIFIED against the keys you list, not just noticed. The
-plain-language room is ${base}/bot-auth, which also states, derived
-live from config rather than promised here, whether this store's own
-egress is signed the same way. The signed card an origin will believe
-is signature_agent_card on the menu.
+${CALLING_CARD_PROPOSITION}
+${CALLING_CARD_MONEY}
+${CALLING_CARD_FREE}
+Setup and contracts: ${base}/bot-auth (also JSON).
+Files: ${base}${CALLING_CARD_MODULE}, ${base}${CALLING_CARD_BROWSER}.
+Public directory lifecycle: ${base}${CALLING_CARD_PATHS.keys}; read \`${base}${CALLING_CARD_PATHS.keys}/{id}\`.
+Receiver: ${base}${CALLING_CARD_PATHS.observe}. Opt-in reports: ${base}${CALLING_CARD_PATHS.reports}.
+Free directory check: POST ${base}/api/bot-auth/check. signature_agent_card signs that reading.
 
 ## More ways to use the store
 

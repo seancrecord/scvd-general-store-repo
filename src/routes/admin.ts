@@ -441,6 +441,21 @@ adminRoutes.get("/admin/desvela-registry.json", async (c) => {
   return c.json(await listDesvelaRegistry(c.env, c.req.query("cursor")));
 });
 
+adminRoutes.get("/admin/calling-card.json", async c => {
+  const {listCallingCardReports}=await import("@/services/calling-card");
+  c.header("Cache-Control","no-store");
+  return c.json(await listCallingCardReports(c.env,c.req.query("cursor")));
+});
+
+adminRoutes.get("/admin/calling-card", async c => {
+  const {listCallingCardReports}=await import("@/services/calling-card");
+  const {renderSimplePage}=await import("@/pages/simple-page");
+  const result=await listCallingCardReports(c.env,c.req.query("cursor"));
+  const rows=result.rows.map(row=>`<tr><td>${escapeHtml(String(row?.received_at??""))}</td><td>${escapeHtml(String(row?.origin??""))}</td><td>${escapeHtml(String(row?.outcome??""))}</td><td>${escapeHtml(String(row?.payment_diagnosis??row?.identity_acceptance??""))}</td></tr>`).join("");
+  c.header("Cache-Control","no-store");
+  return c.html(renderSimplePage({title:"Calling-card reports",description:"Private, opt-in diagnostics from calling-card integrations. Client reports are unverified and distinct from signed receiver observations.",path:"/admin/calling-card",bodyHtml:`<p>Client reports, not independently verified outcomes. This page contains ${result.rows.length} retained reports; ${result.unreadable} could not be read. Reports expire after ${result.retention_seconds/86400} days.</p><p>${escapeHtml(result.limits)}</p><div style="overflow:auto"><table><thead><tr><th>Received</th><th>Site</th><th>Reported outcome</th><th>Detail</th></tr></thead><tbody>${rows}</tbody></table></div>${result.cursor?`<p><a href="?cursor=${encodeURIComponent(result.cursor)}">Next retained page</a></p>`:""}<p><a href="/admin/calling-card.json">Machine-readable reports</a></p>`}));
+});
+
 adminRoutes.get("/admin/trade.json", async (c) => {
   const { TRADE_PARTNERS } = await import("@/store/trade-counter");
   const { tradeStatement } = await import("@/services/trade-counter");
