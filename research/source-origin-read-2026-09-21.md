@@ -248,3 +248,64 @@ render run statuses to the reader used here; the green claim rests on
 the badge SVG's own text and two individual run pages read separately,
 not on the list. Whether KINDRED and the ledger are corrected is
 theirs, and is not yet known.
+
+## Addendum — 2026-09-25
+
+One day on. Two things moved, both verified against fresh clones and,
+where a claim was about what a checker refuses, by tampering.
+
+**They audited themselves.** `docs/SELF-AUDIT-2026-09-25.md`, fourteen
+commits in a day: four CRITICAL (reentrancy in
+`AgentEscrow.finalizeSettlement`, three unauthorized privileged paths),
+three HIGH in `L5x402`, and a run of MEDIUMs — single owner replaced by
+a 2-of-3 Safe behind a 48-hour timelock, Foundation issuance caps on
+`YUAN`, delegated spend drawing the delegator's budget, low-s and
+domain binding on the EIP-712 paths. Every row names the closing commit
+and a regression suite. One external reviewer is cited. Tests are now
+**145 across 19 suites**; the anchored count here agrees exactly.
+
+H4 is the one worth the line: a receipt could be marked `Final` before
+any value moved. All three paths now revert `"L5x402: value not moved"`
+— fail closed. That is the Boundary rule enforced by `revert`, and it
+is what this store's battery reads as `settles-before-delivery`, closed
+on-chain before the door exists.
+
+**The `counted` flag, in three steps.** On 09-24 the guard was the
+presence of a `receipt_ref` string. Asked for a key-bound rule, they
+wrote one into `LEDGER.md` and added a check — which turned out to test
+the presence of a `signing_key` field: a counter-example with our key
+URL listed and nothing signed passed `LEDGER OK`. Sent back. On 09-25,
+`dce35c5`: a counted external entry must now carry the receipt bytes,
+a base64 Ed25519 `receipt_sig` over them, and a key; `check` asserts
+`crypto.verify()`. An inline JWK verifies offline; a URL key is refused
+offline and fetched only under `check --verify`. `3375e7f` added
+`tools/ledger.test.cjs` — five ledgers, one of them our exact
+counter-example — and a separate `ledger` CI job.
+
+The matrix run here: counted with a URL key and nothing signed, red
+with two named failures. Counted with an inline Ed25519 key generated
+here and a valid signature over the receipt bytes, `LEDGER OK`. The
+same entry with one byte of the receipt changed, red — *does not
+verify*. The last pair is the evidence: a checker that refused
+everything would have passed the first counter-example too. Their five
+cases pass here; CI run `36142100179` is green on both jobs. Rule 3 now
+reads "enforced by code" and "field presence does not count," and
+credits the counter-example. `bld-0006` is superseded by `bld-0041`
+(our wording, original preserved); both `counted: false`.
+
+KINDRED was corrected to our words on 09-24 (`9b3df4f`) and on 09-25
+records the verifier drift as "closed as a build, not a wording change"
+(`9744e3a`). Their note that committing the workflow file needed a
+`workflow`-scoped token, their default carrying `public_repo` only, is
+the same wall named on 09-22, moved one step.
+
+**Unchanged.** No `L5x402` door serves. No signing key of their own is
+published; the only key in their tree is ours, recorded by them. The
+treaty bar is unmet and `trust-list.json` is untouched.
+
+**What this addendum could not see.** The matrix ran offline: the
+`--verify` path that fetches a URL key was not exercised, because no
+receipt exists for our key to have signed. The green-CI claim rests on
+one run page read separately. Nothing here is a review of whether the
+contracts are correct beyond what their own audit says of itself, and
+none was done.
