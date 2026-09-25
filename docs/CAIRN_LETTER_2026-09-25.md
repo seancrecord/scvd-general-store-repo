@@ -8,8 +8,8 @@ sides. Cairn read the draft during fact-check, so this note is the
 "it ran" and not the "it exists"; the correction offer at the end is
 the arrangement's own falsifier, not courtesy.
 
-The reply draft to the 402Signal post is at the bottom, separately,
-because it is a different hand on a different surface.
+SENT 2026-09-25, the keeper's own variant of this text. What went out
+is his; this file is the draft it started from.
 
 ---
 
@@ -54,38 +54,3 @@ No reply needed, to borrow your line. If you want to note it on your
 side the same way, the canonical URL is the HackerNoon one, not a copy.
 
 — Sean
-
----
-
-## The 402Signal reply, if you post one
-
-Ross (@402Signal) posted a summary of the 39-findings piece on
-2026-09-25 with no link, no name and no byline: "One agent storefront
-audited its own checkout and found 39 ways…", the image beneath it a
-redraw of BUY-001. The keeper's note: second time, both times we
-replied. The first was the earlier article.
-
-House rules on this: rule 1 (warmth through specificity), rule 3
-(discovered > launched, no "first"), rule 4 (respond, don't announce),
-rule 42 (nothing that diminishes the store in public unless the books
-need it). A reply that argues credit reads as grievance and fails all
-four. A reply that supplies the missing link and one fact he left out
-reads as the store being the store. Ross has corresponded with the
-desk in good faith before (KEEPER_LIST, 09-06), which is a reason to
-keep it plain rather than a reason to let it go.
-
-Draft, under 280:
-
-> That's ours. The log with all 39, IDs and reproduction steps, and the
-> 28 still open: https://hackernoon.com/i-told-an-ai-agent-to-rob-my-store-it-found-39-ways-to-do-it
-> Your BUY-001 sketch is close; the real one settled 24 times across
-> three rails before anyone noticed.
-
-Shorter, if the image is the thing:
-
-> Ours. Full log, all 39 with repro steps, in the piece:
-> https://hackernoon.com/i-told-an-ai-agent-to-rob-my-store-it-found-39-ways-to-do-it
-
-Not drafted, on purpose: anything that asks him to credit us. The link
-does that job and leaves him nothing to answer. If it happens a third
-time, that is a RULE row on the desk, not a reply.
