@@ -1142,8 +1142,14 @@ const BASE = "https://scvd.store";
 // Calling-card setup also replaces the Web Bot Auth paragraph and enters the index.
 // Both fingerprints below were taken from the integrated guide after reviewing
 // the product additions; the prior pins failed on those added bytes.
+// 2026-09-25: two bylines joined WRITTEN_ABOUT (the Cairn piece and the
+// 39-findings self-audit, both HackerNoon), and "Words people use" prints
+// every title and URL verbatim, so both pins moved and nothing else did.
+// Verified the way this file asks: with only asked-for.ts restored to the
+// prior commit, b20bbd01 here and be9f17fe below reproduced exactly, and
+// this copy reproduces the new ones.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "b20bbd01b7ff8a1f2e26ccf600f64e15624b4d0d77d7248944e9f80b0f8c9849";
+  "c77a1acdc54c341dacbe74963d7c37e05153cefa0396917ab2c8ec62a9dea3a3";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1232,9 +1238,10 @@ describe("nothing was rewritten", () => {
 // both stand and this one says why there is a third. Taken from the
 // merged tree, the way this file asks.
     expect(await digest(normalize(full.replace(addition, "")))).toBe(
-      // Re-pinned 2026-09-24 with the new product; see the
-      // note on GUIDE_DIGEST_BEFORE_THE_SPLIT for how it was verified.
-      "be9f17fe3fd6e735447051cf93272d3dab15a4e47c68ffd86ea920ee2c52f60b",
+      // Re-pinned 2026-09-24 with the new product, and 2026-09-25 with the
+      // two HackerNoon bylines; see the note on GUIDE_DIGEST_BEFORE_THE_SPLIT
+      // for how each was verified.
+      "1ac33b17f13295c73fccae34aa539b802a07fdd93ce1ae624e14eb9b022ee21f",
     );
   });
 

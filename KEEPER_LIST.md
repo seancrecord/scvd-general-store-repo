@@ -26,6 +26,21 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Two bylines live on HackerNoon, 2026-09-24/25 — Cairn told by your
+  hand the same day.** "An Autonomous Agent Cold-Emailed Me a Free
+  Audit at 12:45 AM" (09-24, the Cairn piece) and "I Told an AI Agent
+  to Rob My Store. It Found 39 Ways to Do It" (09-25, the September 5–8
+  self-audit). Three HackerNoon pieces and one on dev.to now ride
+  `WRITTEN_ABOUT`, so the guides, `/agents.md` and the Organization node
+  link them; the two guide-digest pins were re-taken for it and nothing
+  else in the guide moved. The note to Cairn went 09-25 in your own
+  words; the draft it started from is `docs/CAIRN_LETTER_2026-09-25.md`,
+  with the arrangement's standing correction offer. The uncredited
+  402Signal post of the 39-findings piece you handled yourself; nothing
+  on the desk for it. LOOK, a week on: the HackerNoon linkback counts on
+  both pieces, and whether either URL turns up in the Sunday citation
+  sweep (it should not; a byline is our words, listing fact 4).
+
 - **Partner evidence — Merit note sent 2026-09-24, reply pending.** The keeper
   approved the exact [issue follow-up](https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384);
   posting and text were verified. The [local reproduction](research/partner-evidence-2026-09-24/MERIT.md)

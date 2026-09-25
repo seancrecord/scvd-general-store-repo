@@ -136,6 +136,23 @@ export const WRITTEN_ABOUT: readonly { title: string; url: string; where: string
     url: "https://dev.to/seancrecord/35-x402-hosts-served-no-signed-offer-here-is-how-tocheck-yours-in-one-request-ceh",
     where: "dev.to",
   },
+  {
+    // Published 2026-09-24; title and URL read off the page 2026-09-25.
+    // The Cairn piece: two instruments, what each cannot see, and the
+    // X-PAYMENT header settled for half a cent. Cairn read it before it
+    // ran (docs/CAIRN_ARRANGEMENT.md, private-first).
+    title: "An Autonomous Agent Cold-Emailed Me a Free Audit at 12:45 AM",
+    url: "https://hackernoon.com/an-autonomous-agent-cold-emailed-me-a-free-audit-at-1245-am",
+    where: "HackerNoon",
+  },
+  {
+    // Published 2026-09-25; title and URL read off the page the same day.
+    // The self-audit: 39 findings around the payment, none in it; the
+    // four worst by BUY id, the same ids the public log carries.
+    title: "I Told an AI Agent to Rob My Store. It Found 39 Ways to Do It",
+    url: "https://hackernoon.com/i-told-an-ai-agent-to-rob-my-store-it-found-39-ways-to-do-it",
+    where: "HackerNoon",
+  },
 ];
 
 /**
