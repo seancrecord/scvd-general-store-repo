@@ -1,0 +1,39 @@
+{
+  "capability_sha256": "76480108366d992ac186d9bac2da7afa465b6a65e20e9ef8e4468ec31f02fc97",
+  "plan_sha256": "754053fff60272fe9bd2e680b9ab6a6d97f8bb47cecdaf753016143d4bc4c85f",
+  "instrument_sha256": "0ff4e24bfc42d2bbe964d4bb2893936968b1813992735c454cf24cdee44a7cfb",
+  "hosts": {
+    "codex": {
+      "state": "pass",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [],
+      "executed": [
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh"
+      ]
+    },
+    "claude": {
+      "state": "pass",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [],
+      "executed": [
+        "curl",
+        "node",
+        "node"
+      ]
+    }
+  },
+  "recipient": {
+    "state": "pass",
+    "trace_sha256": "7cfd77605ca6cbee15c3924c3e6e298afa100f2c598f305f2fb578fa7fcdb592",
+    "limits": [
+      "Local retention and cryptography under offline adapter settings; not proof of all possible sandbox escapes or a buyer journey."
+    ]
+  },
+  "limits": [
+    "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+  ]
+}

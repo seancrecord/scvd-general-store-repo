@@ -1,0 +1,66 @@
+[
+  {
+    "file": "codex-directed-r1-buyer.md",
+    "role": "buyer",
+    "cell": "codex-directed-r1",
+    "source_trace": "buyers/codex-directed-r1/events.jsonl",
+    "source_sha256": "2e9c55bd1a95d41e0f817a85d68a89785db130abdc87f819df8fc54d78274db6",
+    "final_text_sha256": "dbe4d9e160e6d2bbc5416b828988235b3ce469a65c40ee39bad9f2ebf6632c9a"
+  },
+  {
+    "file": "codex-directed-r1-recipient.md",
+    "role": "recipient",
+    "cell": "codex-directed-r1",
+    "source_trace": "buyers/codex-directed-r1/recipient/events.jsonl",
+    "source_sha256": "5900f91e3ce7daebb068c734193f0accabfdca77f060dc77b7913ec859bab87b",
+    "final_text_sha256": "694ced183f1eb8fd1883bc102299eff58c8efc4dce615cabe010b7819d0da599"
+  },
+  {
+    "file": "claude-directed-r1-buyer.md",
+    "role": "buyer",
+    "cell": "claude-directed-r1",
+    "source_trace": "buyers/claude-directed-r1/events.jsonl",
+    "source_sha256": "5588baf49d1574c2e802051c9c8acae2314cb9c9a7cb4061923f1c2a9111cc4d",
+    "final_text_sha256": "a772eec9e2f3b2064f18df68868974459d0b6bdf3a18ec8ecd8014024997b8ad"
+  },
+  {
+    "file": "claude-directed-r1-recipient.md",
+    "role": "recipient",
+    "cell": "claude-directed-r1",
+    "source_trace": "buyers/claude-directed-r1/recipient/events.jsonl",
+    "source_sha256": "6f4cc538be8d7a1d9ab0f543807da0a263906b3c48c46b68dcd3440150bb6ebe",
+    "final_text_sha256": "e2c8c93d18274b3fc822ad12a36b11dfc5dab02a109c46116217fc020552d590"
+  },
+  {
+    "file": "codex-directed-r2-buyer.md",
+    "role": "buyer",
+    "cell": "codex-directed-r2",
+    "source_trace": "buyers/codex-directed-r2/events.jsonl",
+    "source_sha256": "335e2d192186aba0fc5f395bb3fe123625c0c55984fd5c57787a93ce92534398",
+    "final_text_sha256": "43c9a9541fcb8d1d11b604fa8ea189dda746a07ea180d6ca3615e0e0379afc4d"
+  },
+  {
+    "file": "codex-directed-r2-recipient.md",
+    "role": "recipient",
+    "cell": "codex-directed-r2",
+    "source_trace": "buyers/codex-directed-r2/recipient/events.jsonl",
+    "source_sha256": "8c929500a5fbadb68aabaed7df980a810896e008a2d33fcc08b61cf959d3dde4",
+    "final_text_sha256": "094e0bdb513094efa750735e1349cfb5b0455fc9c4a9175e6624c5c6beb5cab7"
+  },
+  {
+    "file": "claude-directed-r2-buyer.md",
+    "role": "buyer",
+    "cell": "claude-directed-r2",
+    "source_trace": "buyers/claude-directed-r2/events.jsonl",
+    "source_sha256": "27d0dead5f5457a40deff37076657aa815534fa6e604eeb7955bac8bd0c2a3f7",
+    "final_text_sha256": "329ce73170884519fd742708e67ec0e8ee73f8d902e7c38786c59f21ea6a957b"
+  },
+  {
+    "file": "claude-directed-r2-recipient.md",
+    "role": "recipient",
+    "cell": "claude-directed-r2",
+    "source_trace": "buyers/claude-directed-r2/recipient/events.jsonl",
+    "source_sha256": "7ee29feb02550c5d253870cbdd295ad9ac88a1af879daab200084f52c02b07ea",
+    "final_text_sha256": "9706ae583928763f53f9b6119a225d037cac150c323f39a4bada3c2e0b691fa3"
+  }
+]
