@@ -103,7 +103,7 @@ export const ONE_OFF = "one-off";
  * buyer deciding to make it. A term item expires. That is all it does.
  */
 export const NEVER_AUTO_RENEWS =
-  "nothing here charges again by itself, ever — there is no mechanism that could";
+  "nothing here charges again by itself, ever \u2014 there is no mechanism that could";
 
 /** Exported for the same reason and on the same day as priceLine. */
 export function fulfillmentLine(item: MenuItem): string {
