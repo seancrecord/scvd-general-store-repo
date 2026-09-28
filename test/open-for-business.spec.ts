@@ -5,9 +5,10 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
-import { draftOpenForBusiness, publishClosedWeek, renderOpenForBusinessMarkdown } from "@/services/open-for-business";
+import { countedWindow, draftOpenForBusiness, publishClosedWeek, renderOpenForBusinessMarkdown, weekCloseInstant } from "@/services/open-for-business";
 import { readWeekChanges, renderWeekChangesMarkdown, weekChanges, type PullsFetcher } from "@/services/week-changes";
-import { recordInputRefusal, recordSettleSignal } from "@/services/buyer-signals";
+import { recordInputRefusal, recordPageRead, recordSettleSignal } from "@/services/buyer-signals";
+import { metricsMonth } from "@/lib/metrics";
 import { getMenuItem } from "@/store";
 import type { Env } from "@/types";
 
@@ -69,6 +70,19 @@ async function publish(week = "2026-W38", markdown = ISSUE, teaser = ""): Promis
 }
 
 /**
+ * Noon on the 15th of the wall clock's month: the recorders write to
+ * metricsMonth() of the real clock, and a week holding the 15th has
+ * its Thursday in the same month, so the draft's counted window and
+ * the recorders' month agree on every day of the year. A draft laid
+ * at the real "now" would read a different month on a Friday-to-Sunday
+ * after a month boundary and the verdict would move with the clock.
+ */
+function midMonth(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 15, 12));
+}
+
+/**
  * OPEN FOR BUSINESS, the weekly draft: assembled from readers that already
  * serve the desk, every number with its denominator, every section
  * naming what it could not see, and the fix of the week left blank
@@ -88,8 +102,9 @@ describe("the draft", () => {
   it("lays four sections with denominators and gaps, and leaves the fix to the keeper", async () => {
     await recordInputRefusal(testEnv, getMenuItem("spot_check"), "spot_check", { code: "bad_request", input_field: "host" }, "https://x.example/api");
     await recordSettleSignal(testEnv, { door: "http", network: "eip155:8453", item: "hello", purpose: "a test", house: false });
-    const draft = await draftOpenForBusiness(testEnv);
+    const draft = await draftOpenForBusiness(testEnv, midMonth());
     expect(draft.week).toMatch(/^\d{4}-W\d{2}$/);
+    expect(draft.window.month).toBe(metricsMonth());
     expect(draft.sections.map((s) => s.heading)).toEqual([
       "Where they got hung up",
       "What went well",
@@ -102,7 +117,7 @@ describe("the draft", () => {
     }
     const hungUp = draft.sections[0]!;
     expect(hungUp.unread).toBe(false);
-    expect(hungUp.numbers.find((n) => n.label === "pre-payment 400s this month")?.value).toBe(1);
+    expect(hungUp.numbers.find((n) => n.label.startsWith("pre-payment 400s, "))?.value).toBe(1);
     expect(hungUp.rows.some(([k]) => k === "spot_check:host:malformed")).toBe(true);
     // No fetcher and the facilitator mock refuses outbound fetches: the week's changes are NOT READ, never empty.
     expect(draft.changes.read).toBe(false);
@@ -304,5 +319,116 @@ describe("the Monday press", () => {
     expect(page).toContain("It goes on the shelf on its own");
     expect(page).toContain("The fix of the week");
     expect(page).toContain("Not read:");
+  });
+});
+
+/**
+ * THE COUNTED WINDOW AND THE HONEST LEADS (2026-09-28). Every reader
+ * is month-keyed, so a weekly reads a month to date and must say
+ * which days; the press reads the month that holds most of the week,
+ * never the month of the instant it fired. And four sentences that
+ * claimed more than their counters: the sweep printed as repeat
+ * readers, the age printed as a who, the "other" refusals left
+ * unnamed, machinery counted beside clients at the MCP door.
+ */
+describe("the counted window and the honest leads", () => {
+  const METRIC_PREFIXES = ["metric:2026-10:", "metric:2026-11:"];
+  async function clearMetrics(): Promise<void> {
+    const month = metricsMonth(midMonth());
+    for (const prefix of [...METRIC_PREFIXES, `metric:${month}:mcpclient:`, `metric:${month}:src:`, `metric:${month}:src402:`, `metric:${month}:verifyage:`]) {
+      const listed = await testEnv.COUNTERS.list({ prefix });
+      for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
+    }
+  }
+  beforeEach(async () => {
+    await clearShelf();
+    await clearWeekChanges();
+    await clearMetrics();
+  });
+
+  it("names the days it counted: the month that holds most of the week, or the month under way when that one has not begun", () => {
+    // W40 is 2026-09-28 to 2026-10-04. On the desk on the 28th, October has not begun: September to date.
+    expect(countedWindow("2026-W40", new Date("2026-09-28T12:00:00Z"))).toEqual({ month: "2026-09", from: "2026-09-01", to: "2026-09-28", days: 28, reason: "week_month_not_begun" });
+    // Pressed at the week's close, the same issue reads October, which holds four of its seven days.
+    expect(countedWindow("2026-W40", weekCloseInstant("2026-W40"))).toEqual({ month: "2026-10", from: "2026-10-01", to: "2026-10-04", days: 4, reason: "holds_most_of_the_week" });
+    // W44 is 2026-10-26 to 2026-11-01: the press fires in November and reads all of October.
+    expect(countedWindow("2026-W44", weekCloseInstant("2026-W44"))).toEqual({ month: "2026-10", from: "2026-10-01", to: "2026-10-31", days: 31, reason: "holds_most_of_the_week" });
+    // A week inside one month is that month to its last day.
+    expect(countedWindow("2026-W38", weekCloseInstant("2026-W38"))).toEqual({ month: "2026-09", from: "2026-09-01", to: "2026-09-20", days: 20, reason: "holds_most_of_the_week" });
+  });
+
+  it("the press reads the month that holds most of the week, and the issue says which days", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.metric("2026-10", "mcpclient", "census"), JSON.stringify({ "claude-code": 3 }));
+    await testEnv.COUNTERS.put(KV_KEYS.metric("2026-11", "mcpclient", "census"), JSON.stringify({ "claude-code": 1 }));
+    // Monday 2026-11-02 00:30Z: W44 has just closed, one day into November.
+    const pressed = await publishClosedWeek(testEnv, new Date("2026-11-02T00:30:00Z"), pullsOf([]));
+    expect(pressed.outcome).toBe("published");
+    expect(pressed.issue?.week).toBe("2026-W44");
+    const md = pressed.issue?.markdown ?? "";
+    expect(md).toContain("2026-10-01 to 2026-10-31, 31 days");
+    expect(md).toContain("- …claude-code: **3** of 3");
+    expect(md).not.toContain("this month");
+    // The standing line is a quote now, so the free line is a fact of the week, not the same sentence every week.
+    expect(pressed.issue?.teaser).not.toContain("The week in agent buying");
+    expect(md).toContain("> _The week in agent buying");
+  });
+
+  it("calls a walk a walk: every host read twice by an unnamed agent is an index, not a repeat reader", async () => {
+    for (let i = 0; i < 25; i += 1) {
+      for (let read = 0; read < 2; read += 1) {
+        await recordPageRead(testEnv, { page: "corpus_host", format: "json", subject: `host${i}.example`, userAgent: "python-httpx/0.27", accept: "application/json", referrer: undefined, ownHost: "scvd.store", house: false });
+      }
+    }
+    const draft = await draftOpenForBusiness(testEnv, midMonth(), pullsOf([]));
+    const who = draft.sections.find((s) => s.heading === "Who looked at the record")!;
+    expect(who.lead).toContain("none of them referred from the door itself");
+    expect(who.lead).toContain("an index walking, not a seller reading");
+    expect(who.lead).not.toContain("operators checking their own listing");
+    expect(who.numbers.find((n) => n.label === "hosts read five or more times")).toEqual({ label: "hosts read five or more times", value: 0, of: 25 });
+    expect(who.numbers.find((n) => n.label === "reads per host, mean")?.value).toBe(2);
+    expect(who.numbers.some((n) => n.label.includes("read more than once"))).toBe(false);
+  });
+
+  it("the number of the week stops at the age, and the went-well lead says age is when, not who", async () => {
+    const month = metricsMonth(midMonth());
+    await testEnv.COUNTERS.put(KV_KEYS.metric(month, "verifyage", "over_1w"), "12");
+    await testEnv.COUNTERS.put(KV_KEYS.metric(month, "verifyage", "under_1h"), "10");
+    const draft = await draftOpenForBusiness(testEnv, midMonth(), pullsOf([]));
+    expect(draft.number_of_the_week?.sentence).toBe(`12 of 22 receipt re-checks between ${draft.window.from} and ${draft.window.to} came more than a week after minting.`);
+    expect(draft.number_of_the_week?.sentence).not.toContain("someone other than the buyer");
+    const well = draft.sections.find((s) => s.heading === "What went well")!;
+    expect(well.lead).toContain("Age says when, not who");
+    expect(well.lead).not.toContain("somebody the buyer showed the artifact to, checking it without us");
+  });
+
+  it("names the code behind the other refusals and derives the disclosure line from its counter", async () => {
+    await recordInputRefusal(testEnv, getMenuItem("spot_check"), "spot_check", { code: "unsupported_network" }, undefined, { userAgent: "python-httpx/0.27" });
+    await recordInputRefusal(testEnv, getMenuItem("spot_check"), "spot_check", { code: "unsupported_network" }, undefined, { userAgent: "python-httpx/0.27" });
+    await recordInputRefusal(testEnv, getMenuItem("spot_check"), "spot_check", { code: "bad_request", input_field: "host" }, undefined, { userAgent: "python-httpx/0.27" });
+    const draft = await draftOpenForBusiness(testEnv, midMonth(), pullsOf([]));
+    const hungUp = draft.sections[0]!;
+    expect(hungUp.lead).toContain("1 for a field they left out");
+    expect(hungUp.lead).toContain("2 for something other than a field's shape, most often `unsupported_network` (2)");
+    expect(hungUp.rows.some(([k]) => k === "spot_check:unsupported_network:other")).toBe(true);
+    expect(hungUp.not_seen.some((gap) => gap.includes("left blank"))).toBe(false);
+    expect(hungUp.not_seen.some((gap) => /\d+ of \d+ buyers filled it/.test(gap))).toBe(true);
+  });
+
+  it("keeps machinery off the client side of the MCP census and puts the till against the door", async () => {
+    const month = metricsMonth(midMonth());
+    await testEnv.COUNTERS.put(KV_KEYS.metric(month, "mcpclient", "census"), JSON.stringify({ "claude-code": 5, "glimind-probe": 4, other: 2 }));
+    await testEnv.COUNTERS.put(KV_KEYS.metric(month, "src402", "direct"), "400");
+    await testEnv.COUNTERS.put(KV_KEYS.metric(month, "src", "direct"), "2");
+    const draft = await draftOpenForBusiness(testEnv, midMonth(), pullsOf([]));
+    const entry = draft.sections.find((s) => s.heading === "Entry points")!;
+    const byLabel = (label: string) => entry.numbers.find((n) => n.label === label);
+    expect(byLabel("MCP handshakes from clients not in the machinery table")?.value).toBe(5);
+    expect(byLabel("…claude-code")).toEqual({ label: "…claude-code", value: 5, of: 5 });
+    expect(byLabel("MCP handshakes from self-identified machinery")?.value).toBe(4);
+    expect(byLabel("…glimind-probe")).toEqual({ label: "…glimind-probe", value: 4, of: 4 });
+    expect(entry.numbers.find((n) => n.label.startsWith("MCP handshakes from names past the census cap"))?.value).toBe(2);
+    expect(byLabel("…that ended in an organic settle")).toEqual({ label: "…that ended in an organic settle", value: 2, of: 400 });
+    expect(byLabel("…on the direct channel: settles of 402s")).toEqual({ label: "…on the direct channel: settles of 402s", value: 2, of: 400 });
+    expect(entry.lead).toContain("one settle for every 200 challenges, and a 402 is a quote, not an attempt");
   });
 });

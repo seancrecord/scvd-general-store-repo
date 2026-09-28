@@ -95,16 +95,26 @@ function firstHeading(markdown: string): string {
   return match ? (match[1] as string).trim() : "";
 }
 
+const NUMBER_SECTION = /^## The number of the week\s*\n+([\s\S]*?)(?=\n## |$)/m;
+
 /** The bold sentence under "The number of the week", if the issue kept one. */
 function numberOfTheWeek(markdown: string): string {
-  const section = /^## The number of the week\s*\n+([\s\S]*?)(?=\n## |$)/m.exec(markdown);
+  const section = NUMBER_SECTION.exec(markdown);
   if (!section) return "";
   const bold = /\*\*(.+?)\*\*/.exec(section[1] ?? "");
   return bold ? (bold[1] as string).trim() : "";
 }
 
+/**
+ * The free line: the first prose OUTSIDE the number-of-the-week
+ * section (2026-09-28). The number is already free on its own, so a
+ * teaser drawn from under its heading gave the index the same fact
+ * twice; and the drafted issue's standing line, which used to sit
+ * first, is a blockquote now so the free line is a fact of the week
+ * and not the same sentence every week.
+ */
 function firstProseLine(markdown: string): string {
-  for (const raw of markdown.split("\n")) {
+  for (const raw of markdown.replace(NUMBER_SECTION, "").split("\n")) {
     const line = raw.trim();
     if (!line || line.startsWith("#") || line.startsWith(">") || line.startsWith("|") || line.startsWith("-")) continue;
     const bare = line.replace(/^[*_]+|[*_]+$/g, "").trim();

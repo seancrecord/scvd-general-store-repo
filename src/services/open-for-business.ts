@@ -1,11 +1,12 @@
 import { readBuyerSignals, type BuyerSignals } from "@/services/buyer-signals";
 import { readDisclosureCensus, type DisclosureCensus } from "@/services/disclosure-census";
 import { readDeclines } from "@/lib/declines";
+import { isInfrastructureUserAgent } from "@/lib/channel";
 import { readMonthLedger } from "@/lib/metrics";
 import { metricsMonth } from "@/lib/metrics";
 import { computeObservatory } from "@/services/observatory";
 import { computePulse, type LatencyRoute } from "@/services/pulse";
-import { readMcpClients } from "@/services/mcp-clients";
+import { MCP_CLIENT_CAP, readMcpClients } from "@/services/mcp-clients";
 import { latestCorpusEntry } from "@/services/corpus-list";
 import { currentWeekKey, previousWeekKey, weekKeyMonday } from "@/lib/kv-keys";
 import { findOpenForBusinessIssue, saveOpenForBusinessIssue, type OpenForBusinessIssue } from "@/services/open-for-business-store";
@@ -51,6 +52,61 @@ import type { Env } from "@/types";
  * a zero pretending to be a count (rule 52).
  */
 
+/**
+ * THE COUNTED WINDOW (2026-09-28). Every reader behind this issue
+ * keeps one key per month, so a weekly issue cannot read a week: it
+ * reads a month to date and must say so. Until this date the draft
+ * read the month of the drafting instant and printed "this month",
+ * which had two faults. The desk drafted W40 on 2026-09-28 from
+ * September, and the press would have drafted the same week as of
+ * its last second — 2026-10-04 — from October, so the issue sold
+ * was not the issue previewed. And four issues a month re-sold
+ * overlapping numbers under a label that never said which days.
+ *
+ * The rule now: the issue reads the month that holds most of its
+ * week (the month of the week's Thursday, the same day that gives
+ * an ISO week its year), unless that month has not begun at the
+ * drafting instant, in which case the month under way. The window
+ * is carried on the draft and printed in every label and lead, so
+ * "this month" never appears without its dates. Days of the week
+ * outside the chosen month are not counted, and the issue says so.
+ * A week-keyed twin of the counters would be the real fix; this is
+ * the honest one that needs no new counter.
+ */
+export interface CountedWindow {
+  /** The month whose counters the draft reads. */
+  month: string;
+  /** First and last day counted, ISO dates, inclusive. */
+  from: string;
+  to: string;
+  days: number;
+  /** Why this month: it holds most of the week, or the week's own month had not begun when the draft was laid. */
+  reason: "holds_most_of_the_week" | "week_month_not_begun";
+}
+
+function isoDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+export function countedWindow(week: string, now: Date): CountedWindow {
+  const thursday = weekKeyMonday(week);
+  thursday.setUTCDate(thursday.getUTCDate() + 3);
+  const asOf = new Date(Math.min(now.getTime(), weekCloseInstant(week).getTime()));
+  const weekMonth = metricsMonth(thursday);
+  const begun = `${weekMonth}-01` <= isoDay(asOf);
+  const month = begun ? weekMonth : metricsMonth(asOf);
+  const monthEnd = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0));
+  const to = isoDay(asOf) < isoDay(monthEnd) ? isoDay(asOf) : isoDay(monthEnd);
+  const from = `${month}-01`;
+  const days = Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1;
+  return { month, from, to, days, reason: begun ? "holds_most_of_the_week" : "week_month_not_begun" };
+}
+
+/** The window as it reads in a label or a sentence: "2026-10-01 to 2026-10-04". */
+export function windowSpan(window: CountedWindow): string {
+  return `${window.from} to ${window.to}`;
+}
+
 export interface SectionNumber {
   label: string;
   value: number;
@@ -74,6 +130,8 @@ export interface DraftSection {
 export interface OpenForBusinessDraft {
   week: string;
   month: string;
+  /** The days the month-keyed counters cover, printed beside every number. */
+  window: CountedWindow;
   drafted_at: string;
   number_of_the_week: { sentence: string; source: string } | null;
   sections: DraftSection[];
@@ -109,48 +167,74 @@ function rangeText(range: [number, number | null] | null): string {
   return range[1] === null ? `${range[0]}ms or more` : `${range[0]}–${range[1]}ms`;
 }
 
-function hungUp(signals: BuyerSignals | null, declines: Awaited<ReturnType<typeof readDeclines>> | null): DraftSection {
+function hungUp(signals: BuyerSignals | null, declines: Awaited<ReturnType<typeof readDeclines>> | null, paid: DisclosureCensus | null, window: CountedWindow): DraftSection {
+  const span = windowSpan(window);
   const refusals = signals ? sum(signals.refusal) : 0;
   const byReason: Record<string, number> = {};
+  /*
+   * "OTHER" IS TWO THINGS, and until 2026-09-28 the lead named
+   * neither: a value that was present, passed its pattern and was
+   * refused anyway, and — the larger share — a 400 whose body carried
+   * a code and no input field at all, which recordInputRefusal files
+   * with the code in the field slot and "other" as the reason. On the
+   * September draft that bucket was 235 of 501 and the lead said
+   * every one was "refused for a field". The top code is named now,
+   * off the same key.
+   */
+  const otherByField: Record<string, number> = {};
   if (signals) {
     for (const [k, n] of Object.entries(signals.refusal)) {
-      const reason = k.split(":")[2] ?? "other";
-      byReason[reason] = (byReason[reason] ?? 0) + n;
+      const [, field, reason] = k.split(":");
+      byReason[reason ?? "other"] = (byReason[reason ?? "other"] ?? 0) + n;
+      if ((reason ?? "other") === "other") otherByField[field ?? "unnamed"] = (otherByField[field ?? "unnamed"] ?? 0) + n;
     }
   }
   const numbers: SectionNumber[] = [];
   if (signals) {
-    numbers.push({ label: "pre-payment 400s this month", value: refusals });
+    numbers.push({ label: `pre-payment 400s, ${span}`, value: refusals });
     for (const [reason, n] of top(byReason, 4)) numbers.push({ label: `…${reason}`, value: n, of: refusals });
+    const [leadCode, leadCodeCount] = top(otherByField, 1)[0] ?? ["", 0];
+    if (leadCodeCount > 0) numbers.push({ label: `…of the "other" refusals, the code or field that led: ${leadCode}`, value: leadCodeCount, of: byReason["other"] ?? 0 });
     numbers.push({ label: "purchases that bought a worked example as-is", value: sum(signals.examples) });
   }
   if (declines) {
-    numbers.push({ label: "payments presented and declined (outside, all time on the desk)", value: declines.outside_count, note: declines.index_complete ? "index read to its end" : "scan capped; a floor" });
+    numbers.push({ label: `payments presented and declined (outside, ${span})`, value: declines.outside_count, note: declines.index_complete ? "index read to its end" : "scan capped; a floor" });
   }
   const rows = [
     ...(signals ? top(signals.refusal) : []),
     ...(declines ? top(declines.by_reason, 4).map(([k, n]) => [`decline:${k}`, n] as [string, number]) : []),
   ];
+  const other = byReason["other"] ?? 0;
+  const [leadCode, leadCodeCount] = top(otherByField, 1)[0] ?? ["", 0];
+  const otherClause = other === 0
+    ? ""
+    : leadCodeCount > 0
+      ? `, and ${other} for something other than a field's shape, most often \`${leadCode}\` (${leadCodeCount})`
+      : `, and ${other} for something other than a field's shape`;
   return {
     heading: "Where they got hung up",
     lead: refusals === 0 && (!declines || declines.outside_count === 0)
-      ? "Nobody was refused before paying this month, and nobody who paid was declined."
-      : `${refusals} agents were refused before paying this month, ${byReason["missing"] ?? 0} for a field they left out, ${byReason["malformed"] ?? 0} for a field in the wrong shape, ${byReason["example"] ?? 0} for pasting the worked example back. Beside them ${sum(signals?.refusal_machinery ?? {})} refusals went to self-identified machinery — censuses, linters and observatories walking the input contracts — counted here and kept out of the number above, because whether a conformance walker can satisfy a contract is evidence about the challenge and was never a lost sale.`,
+      ? `Nobody was refused before paying between ${window.from} and ${window.to}, and nobody who paid was declined.`
+      : `${refusals} agents were refused before paying between ${window.from} and ${window.to}: ${byReason["missing"] ?? 0} for a field they left out, ${byReason["malformed"] ?? 0} for a field in the wrong shape, ${byReason["example"] ?? 0} for pasting the worked example back${otherClause}. Beside them ${sum(signals?.refusal_machinery ?? {})} refusals went to self-identified machinery — censuses, linters and observatories walking the input contracts — counted here and kept out of the number above, because whether a conformance walker can satisfy a contract is evidence about the challenge and was never a lost sale.`,
     numbers,
     rows,
     not_seen: [
       "A client that throws on its own spend cap, drops a rail its SDK never registered, or times out before the retry never reaches this door; it prints here as a 402 followed by silence.",
-      "The refusal names the field, not the model that sent it; the disclosure block would, and this month it was left blank.",
+      paid
+        ? `The refusal names the field, not the model that sent it; the disclosure block would, and ${paid.disclosed} of ${paid.offered} buyers filled it between ${window.from} and ${window.to}.`
+        : "The refusal names the field, not the model that sent it; the disclosure block would, and the disclosure census was not read for this draft.",
+      "The rows keep no client string, so how many distinct clients sent these refusals is not known here.",
     ],
     unread: !signals && !declines,
   };
 }
 
-function wentWell(signals: BuyerSignals | null, ledger: Awaited<ReturnType<typeof readMonthLedger>> | null, paid: DisclosureCensus | null): DraftSection {
+function wentWell(signals: BuyerSignals | null, ledger: Awaited<ReturnType<typeof readMonthLedger>> | null, paid: DisclosureCensus | null, window: CountedWindow): DraftSection {
+  const span = windowSpan(window);
   const numbers: SectionNumber[] = [];
   if (ledger) {
     const settles = sum(ledger.channels);
-    numbers.push({ label: "organic settles this month", value: settles, note: ledger.truncated ? "ledger scan capped; a floor" : undefined });
+    numbers.push({ label: `organic settles, ${span}`, value: settles, note: ledger.truncated ? "ledger scan capped; a floor" : undefined });
     for (const [channel, n] of top(ledger.channels, 4)) numbers.push({ label: `…via ${channel}`, value: n, of: settles });
   }
   if (signals) {
@@ -164,9 +248,10 @@ function wentWell(signals: BuyerSignals | null, ledger: Awaited<ReturnType<typeo
   const all = signals ? sum(signals.verify_age) : 0;
   return {
     heading: "What went well",
+    // Age says when, not who (the gap line below): the lead stops at the age and says what the age makes likelier, never who read.
     lead: all > 0
-      ? `${over} of ${all} receipt re-checks came more than a week after minting: somebody the buyer showed the artifact to, checking it without us.`
-      : "No receipt has been re-checked yet this month.",
+      ? `${over} of ${all} receipt re-checks between ${window.from} and ${window.to} came more than a week after minting. Age says when, not who: a week on, the reader is more often somebody the buyer showed the artifact to than the buyer, and the store cannot tell which.`
+      : `No receipt was re-checked between ${window.from} and ${window.to}.`,
     numbers,
     rows: signals ? top(signals.rail) : [],
     not_seen: [
@@ -177,34 +262,76 @@ function wentWell(signals: BuyerSignals | null, ledger: Awaited<ReturnType<typeo
   };
 }
 
-function entryPoints(observatory: Awaited<ReturnType<typeof computeObservatory>> | null, clients: Record<string, number> | null, ledger: Awaited<ReturnType<typeof readMonthLedger>> | null, month: string): DraftSection {
+function entryPoints(observatory: Awaited<ReturnType<typeof computeObservatory>> | null, clients: Record<string, number> | null, ledger: Awaited<ReturnType<typeof readMonthLedger>> | null, window: CountedWindow): DraftSection {
+  const span = windowSpan(window);
   const numbers: SectionNumber[] = [];
   const rows: Array<[string, number]> = [];
-  const thisMonth = observatory?.months.find((m) => m.month === month) ?? observatory?.months[0];
+  const thisMonth = observatory?.months.find((m) => m.month === window.month) ?? null;
   if (thisMonth) {
-    numbers.push({ label: "organic surface visits this month", value: thisMonth.organic_visits, note: thisMonth.truncated ? "ledger scan capped; a floor" : undefined });
+    numbers.push({ label: `organic surface visits, ${span}`, value: thisMonth.organic_visits, note: thisMonth.truncated ? "ledger scan capped; a floor" : undefined });
     for (const s of [...thisMonth.surfaces].sort((a, b) => b.organic - a.organic).slice(0, ROW_CAP)) rows.push([s.surface, s.organic]);
   }
+  /*
+   * THE TILL AGAINST THE DOOR (2026-09-28). The 402s issued and the
+   * settles used to sit in different sections and were never put
+   * side by side; the ratio between them is the one number a seller
+   * reading an issue called "how not to turn agents away silently"
+   * actually wants. It is a floor on the turnaway, not a conversion
+   * rate: a 402 is a quote, not an attempt, and the silence after
+   * one is the gap the first section names.
+   */
+  let challenges = 0;
+  let settles = 0;
   if (ledger) {
-    const challenges = sum(ledger.channels402);
-    numbers.push({ label: "402s issued to organic traffic", value: challenges });
-    for (const [channel, n] of top(ledger.channels402, 4)) numbers.push({ label: `…on the ${channel} channel`, value: n, of: challenges });
+    challenges = sum(ledger.channels402);
+    settles = sum(ledger.channels);
+    numbers.push({ label: `402s issued to organic traffic, ${span}`, value: challenges });
+    numbers.push({ label: "…that ended in an organic settle", value: settles, of: challenges });
+    for (const [channel, n] of top(ledger.channels402, 4)) numbers.push({ label: `…on the ${channel} channel: settles of 402s`, value: ledger.channels[channel] ?? 0, of: n });
   }
+  /*
+   * MACHINERY AT THE MCP DOOR (2026-09-28). The refusal desk learned
+   * on 2026-09-21 to keep self-identified machinery on its own map;
+   * the handshake census had not, so a probe walking the tool list
+   * on a loop sat beside a coding agent in the same "handshakes"
+   * number, and the overflow row "other" led the top four, which
+   * tells a seller nothing. The client name goes through the same
+   * machinery table the user-agent does: a name the table does not
+   * hold stays on the client side, and the gap line says so.
+   */
+  const organic: Record<string, number> = {};
+  const machinery: Record<string, number> = {};
+  let overflow = 0;
   if (clients) {
-    const handshakes = sum(clients);
-    numbers.push({ label: "MCP handshakes, by client name", value: handshakes });
-    for (const [client, n] of top(clients, 4)) numbers.push({ label: `…${client}`, value: n, of: handshakes });
+    for (const [name, n] of Object.entries(clients)) {
+      if (name === "other") overflow += n;
+      else if (isInfrastructureUserAgent(name)) machinery[name] = n;
+      else organic[name] = n;
+    }
+    const handshakes = sum(organic);
+    numbers.push({ label: "MCP handshakes from clients not in the machinery table", value: handshakes });
+    for (const [client, n] of top(organic, 4)) numbers.push({ label: `…${client}`, value: n, of: handshakes });
+    numbers.push({ label: "MCP handshakes from self-identified machinery", value: sum(machinery) });
+    for (const [client, n] of top(machinery, 2)) numbers.push({ label: `…${client}`, value: n, of: sum(machinery) });
+    if (overflow > 0) numbers.push({ label: `MCP handshakes from names past the census cap of ${MCP_CLIENT_CAP}`, value: overflow, note: "unnamed; neither side above" });
   }
+  const tillClause = ledger && challenges > 0
+    ? settles > 0
+      ? ` Of ${challenges} 402s issued to organic traffic, ${settles} settled: one settle for every ${Math.round(challenges / settles)} challenges, and a 402 is a quote, not an attempt.`
+      : ` Of ${challenges} 402s issued to organic traffic, none settled; a 402 is a quote, not an attempt.`
+    : "";
   return {
     heading: "Entry points",
-    lead: thisMonth
-      ? `Agents arrived through ${thisMonth.surfaces.length} counted surfaces this month; the top of the list is where a seller's own door should be legible first.`
-      : "The observatory did not read this month.",
+    lead: (thisMonth
+      ? `Agents arrived through ${thisMonth.surfaces.length} counted surfaces between ${window.from} and ${window.to}; the top of the list is where a seller's own door should be legible first.`
+      : `The observatory did not read ${window.month}.`) + tillClause,
     numbers,
     rows,
     not_seen: [
       "Directory attribution is near-unmeasurable by design: a marker on the declared resource URL would corrupt the thing it measures.",
       "Context carryover, artifact citation and skill propagation arrive as fresh requests with no referrer; the counts here are floors on where agents actually learn of a door.",
+      "A 402 followed by silence is not a lost sale the store can see: a client that never meant to pay and one that gave up on the price print the same.",
+      "A client name is machinery only when the machinery table holds it; a directory that pings the door on a loop under a name the table does not know is counted beside the clients.",
     ],
     unread: !observatory && !ledger && !clients,
   };
@@ -215,7 +342,12 @@ function latency(pulse: Awaited<ReturnType<typeof computePulse>> | null, corpus:
   const rows: Array<[string, number]> = [];
   if (pulse) {
     for (const [route, r] of Object.entries(pulse.latency.routes) as Array<[string, LatencyRoute]>) {
-      numbers.push({ label: `${route}: median ${rangeText(r.p50_ms_range)}, p95 ${rangeText(r.p95_ms_range)}`, value: r.samples, note: "samples; a floor" });
+      // The value is the timing, the note is the sample count: the other way round read as a count of nothing.
+      if (r.p95_ms_range) {
+        numbers.push({ label: `${route}: p95, at most (ms)`, value: r.p95_ms_range[1] ?? r.p95_ms_range[0], note: `${r.p95_ms_range[1] === null ? `${r.p95_ms_range[0]}ms or more; ` : ""}median ${rangeText(r.p50_ms_range)}; ${r.samples} samples, a floor` });
+      } else {
+        numbers.push({ label: `${route}: samples`, value: r.samples, note: "no timing range" });
+      }
     }
   }
   let probed = 0;
@@ -230,14 +362,14 @@ function latency(pulse: Awaited<ReturnType<typeof computePulse>> | null, corpus:
         buckets[bucket] = (buckets[bucket] ?? 0) + 1;
       }
     }
-    numbers.push({ label: `doors probed in the signed round ${corpus.snapshot.week}`, value: probed });
+    numbers.push({ label: `doors probed in the latest signed round, ${corpus.snapshot.week}`, value: probed });
     numbers.push({ label: "…that answered with a timing", value: answered, of: probed });
     for (const [bucket, n] of Object.entries(buckets)) rows.push([bucket, n]);
   }
   return {
     heading: "Latency and the silent turnaway",
     lead: corpus && answered > 0
-      ? `${buckets["over_3s"] ?? 0} of ${answered} doors that answered the weekly round took more than three seconds. A stock client gives up on a door before it gives up on a price.`
+      ? `${buckets["over_3s"] ?? 0} of ${answered} doors that answered the latest signed round (${corpus.snapshot.week}) took more than three seconds. A stock client gives up on a door before it gives up on a price.`
       : "No signed round with timings was on file.",
     numbers,
     rows,
@@ -252,17 +384,36 @@ function latency(pulse: Awaited<ReturnType<typeof computePulse>> | null, corpus:
 /**
  * WHO LOOKED AT THE RECORD (2026-09-18). Aggregates only: how many
  * reads the pages about a host drew from browsers and agents, how
- * many came referred from the subject itself, how many subjects were
- * read more than once, and which crawlers walked. Never a host name:
- * that table is the keeper's and stays on the signals page.
+ * many came referred from the subject itself, how concentrated the
+ * reading was, and which crawlers walked. Never a host name: that
+ * table is the keeper's and stays on the signals page.
+ *
+ * THE SWEEP (2026-09-28). The September draft printed 6,774 of
+ * 6,775 hosts "read more than once" off the per-subject totals, at
+ * about fourteen reads a host with none referred from the host
+ * itself: an unnamed fetcher walking every page, classed as an
+ * agent because the machinery table did not know it. The
+ * concentration histogram (lib/signal-histogram.ts) was built on
+ * 2026-09-21 to tell exactly that walk from a return and names this
+ * file as a consumer; this section now reads it. Two reads is not
+ * a repeat when every host has two; five and ten are the thresholds
+ * it publishes, beside the mean, and the lead calls a walk a walk
+ * when the shape is one (SWEEP_SHARE below).
  */
-function whoLooked(signals: BuyerSignals | null): DraftSection {
+/** Share of hosts at two or more reads above which the spread is an index walking, not interest. */
+const SWEEP_SHARE = 0.9;
+const SWEEP_MIN_HOSTS = 20;
+
+function whoLooked(signals: BuyerSignals | null, window: CountedWindow): DraftSection {
   const numbers: SectionNumber[] = [];
   const rows: Array<[string, number]> = [];
   let reads = 0;
   let self = 0;
   const byReader: Record<string, number> = {};
-  if (signals) {
+  const h = signals?.histogram ?? null;
+  const perHost = h && h.subjects > 0 ? Math.round((h.reads / h.subjects) * 10) / 10 : 0;
+  const sweep = h !== null && h.subjects >= SWEEP_MIN_HOSTS && h.repeat.at_least_2 >= h.subjects * SWEEP_SHARE;
+  if (signals && h) {
     for (const [k, n] of Object.entries(signals.pages)) {
       const [page, , reader, relation] = k.split(":");
       if (reader === "crawler") continue;
@@ -270,40 +421,53 @@ function whoLooked(signals: BuyerSignals | null): DraftSection {
       byReader[`${page ?? "page"} by ${reader ?? "unnamed"}`] = (byReader[`${page ?? "page"} by ${reader ?? "unnamed"}`] ?? 0) + n;
       if (relation === "self") self += n;
     }
-    const repeats = Object.entries(signals.subjects).filter(([k, n]) => k !== "other" && n >= 2).length;
-    numbers.push({ label: "reads of a host page or a passport by a browser or an agent", value: reads });
+    numbers.push({ label: `reads of a host page or a passport by a browser or an agent, ${windowSpan(window)}`, value: reads });
     numbers.push({ label: "…referred from the subject host itself", value: self, of: reads });
-    numbers.push({ label: "hosts whose record was read more than once", value: repeats, of: Object.keys(signals.subjects).filter((k) => k !== "other").length });
+    numbers.push({ label: "hosts read five or more times", value: h.repeat.at_least_5, of: h.subjects });
+    numbers.push({ label: "hosts read ten or more times", value: h.repeat.at_least_10, of: h.subjects });
+    numbers.push({ label: "hosts read in more than one format", value: h.by_formats.two + h.by_formats.three, of: h.subjects });
+    numbers.push({ label: "reads per host, mean", value: perHost, note: "an even count on nearly every host is a walk" });
+    if (h.overflow > 0) numbers.push({ label: "reads past the subject map cap", value: h.overflow, note: "hosts uncounted above" });
     for (const [k, n] of top(byReader, 4)) rows.push([k, n]);
     for (const [k, n] of top(signals.crawlers, 4)) rows.push([`crawler ${k}`, n]);
   }
+  const selfClause = self > 0
+    ? `${self} of them referred from the door itself: an operator checking their own listing, the one read the store can name as interest.`
+    : "none of them referred from the door itself, so nothing here can be read as an operator checking their own listing.";
+  const shapeClause = h && h.subjects > 0
+    ? sweep
+      ? ` ${h.repeat.at_least_2} of ${h.subjects} hosts were read at least twice, at about ${perHost} reads a host: reads spread over nearly every host at the same depth are an index walking, not a seller reading. ${h.repeat.at_least_10} hosts were read ten or more times.`
+      : ` ${h.repeat.at_least_5} of ${h.subjects} hosts were read five or more times, ${h.repeat.at_least_10} ten or more, at about ${perHost} reads a host.`
+    : "";
   return {
     heading: "Who looked at the record",
     lead: reads > 0
-      ? `${reads} reads of a page about a door came from a browser or an agent this month, ${self} of them from the door itself: operators checking their own listing, which is the reader a seller should assume.`
-      : "No page about a door has been read by anyone but a crawler this month.",
+      ? `${reads} reads of a page about a door came from a browser or an agent between ${window.from} and ${window.to}, ${selfClause}${shapeClause}`
+      : `No page about a door was read by anyone but a crawler between ${window.from} and ${window.to}.`,
     numbers,
     rows,
     not_seen: [
       "A read is not a reader: with no cookie and no IP kept, two reads of one record may be one person twice or two people once, and the store does not try to tell.",
-      "A crawler that reads every page once at the same count is an index walk, not interest; those are named by crawler and kept out of every number above.",
+      "A crawler that names itself is kept out of every number above; a fetcher that does not name itself and walks every page counts as an agent here, and the mean reads per host is the number that gives it away.",
       "Hosts are never named here. The seller reading this is welcome to ask for its own record at /corpus/host/{host}, which is free.",
     ],
     unread: !signals,
   };
 }
 
-function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnType<typeof latestCorpusEntry>> | null): OpenForBusinessDraft["number_of_the_week"] {
+function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnType<typeof latestCorpusEntry>> | null, window: CountedWindow): OpenForBusinessDraft["number_of_the_week"] {
+  const span = windowSpan(window);
   if (signals) {
     const over = signals.verify_age["over_1w"] ?? 0;
     const all = sum(signals.verify_age);
     if (all >= 20 && over > 0) {
-      return { sentence: `${over} of ${all} receipt re-checks this month came more than a week after minting, from someone other than the buyer.`, source: "verify age counters, organic, this month" };
+      // The one line a stranger reads free stops at the age: who read is not in the data (the went-well gap line).
+      return { sentence: `${over} of ${all} receipt re-checks between ${window.from} and ${window.to} came more than a week after minting.`, source: `verify age counters, organic, ${span}` };
     }
     const refusals = sum(signals.refusal);
     if (refusals >= 10) {
       const [lead, n] = top(signals.refusal, 1)[0] ?? ["", 0];
-      return { sentence: `${refusals} agents were refused before paying this month; the field that led was ${lead.replace(/:/g, " → ")} (${n}).`, source: "buyer signals, refusals" };
+      return { sentence: `${refusals} agents were refused before paying between ${window.from} and ${window.to}; the field that led was ${lead.replace(/:/g, " → ")} (${n}).`, source: `buyer signals, refusals, ${span}` };
     }
   }
   if (corpus) {
@@ -315,13 +479,16 @@ function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnTyp
 }
 
 export async function draftOpenForBusiness(env: Env, now: Date = new Date(), pulls?: PullsFetcher): Promise<OpenForBusinessDraft> {
-  const month = metricsMonth(now);
   const week = currentWeekKey(now);
+  const window = countedWindow(week, now);
+  const month = window.month;
   const unread: string[] = [];
+  // The decline desk is scanned by date, not by month key: the window's days, and no earlier.
+  const dayAfter = new Date(Date.parse(`${window.to}T00:00:00Z`) + 86_400_000).toISOString();
   const [signals, paid, declines, ledger, observatory, pulse, clients, corpus, changes] = await Promise.all([
     attempt("buyer signals", unread, () => readBuyerSignals(env, month)),
     attempt("disclosure census", unread, () => readDisclosureCensus(env, "paid", month)),
-    attempt("decline desk", unread, () => readDeclines(env)),
+    attempt("decline desk", unread, () => readDeclines(env, undefined, { since: `${window.from}T00:00:00.000Z`, before: dayAfter })),
     attempt("month ledger", unread, () => readMonthLedger(env, month)),
     attempt("observatory", unread, () => computeObservatory(env, now)),
     attempt("pulse", unread, () => computePulse(env)),
@@ -334,14 +501,15 @@ export async function draftOpenForBusiness(env: Env, now: Date = new Date(), pul
   return {
     week,
     month,
+    window,
     drafted_at: now.toISOString(),
-    number_of_the_week: numberOfTheWeek(signals, corpus),
+    number_of_the_week: numberOfTheWeek(signals, corpus, window),
     sections: [
-      hungUp(signals, declines),
-      wentWell(signals, ledger, paid),
-      entryPoints(observatory, clients, ledger, month),
+      hungUp(signals, declines, paid, window),
+      wentWell(signals, ledger, paid, window),
+      entryPoints(observatory, clients, ledger, window),
       latency(pulse, corpus),
-      whoLooked(signals),
+      whoLooked(signals, window),
     ],
     fix_of_the_week: renderWeekChangesMarkdown(weekChangeRows),
     changes: weekChangeRows,
@@ -401,11 +569,18 @@ export function renderOpenForBusinessMarkdown(draft: OpenForBusinessDraft): stri
   const lines: string[] = [];
   lines.push(`# Open for Business — ${draft.week}`);
   lines.push("");
-  lines.push(`_The week in agent buying, from the till at scvd.store and the doors it probes. Drafted ${draft.drafted_at.slice(0, 10)}; every number carries the denominator it came from, and every section names what it could not see._`);
-  lines.push("");
   lines.push("## The number of the week");
   lines.push("");
   lines.push(draft.number_of_the_week ? `**${draft.number_of_the_week.sentence}** (${draft.number_of_the_week.source})` : "_The instruments did not produce one this week; the keeper picks it._");
+  lines.push("");
+  /*
+   * The standing line is a blockquote, not prose, so the free line on
+   * the index (the first prose after the number of the week, per
+   * open-for-business-store.ts) is a fact of the week and not the
+   * same sentence every week. It also names the counted window once,
+   * so no reader has to infer why a weekly quotes a month to date.
+   */
+  lines.push(`> _The week in agent buying, from the till at scvd.store and the doors it probes. Drafted ${draft.drafted_at.slice(0, 10)}. The counters are monthly, so this issue reads the month to date that ${draft.window.reason === "holds_most_of_the_week" ? "holds most of its week" : "was under way when it was drafted"}: ${draft.window.from} to ${draft.window.to}, ${draft.window.days} days; days of the week outside that month are not counted here. Every number carries the denominator it came from, and every section names what it could not see._`);
   lines.push("");
   for (const section of draft.sections) {
     lines.push(`## ${section.heading}`);
