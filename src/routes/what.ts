@@ -8,6 +8,7 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { CAPABILITY_QUERY, SPEC_RETURNS } from "@/store/spec";
 import { WHAT_COPY, whatFaq, type FaqPair } from "@/store/copy/what";
+import { buyUrlTemplate } from "@/lib/buyer-contract";
 import type { HonoEnv } from "@/types";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 
@@ -51,9 +52,14 @@ function longTailFaq(base: string, config?: PurchaseCapabilityConfig): FaqPair[]
         ? `$${item.price_usdc}`
         : `$${item.price_usdc} minimum`;
     const returns = SPEC_RETURNS[item.id] ?? item.description;
+    // The URL an answer engine repeats is the one with the door's
+    // inputs already in place; the bare door quotes and then refuses
+    // the purchase on every input-taking item (2026-09-28).
+    const template = buyUrlTemplate(item, base);
+    const slots = template === `${base}/api/buy/${item.id}` ? "" : " (fill the angle-bracketed slot first)";
     return {
       question,
-      answer: `"${item.name}" (${price}, ${checkoutMethod(config)}): ${returns} Buy: GET ${base}/api/buy/${item.id} — machine spec at ${base}/menu/${item.id}, live terms in the 402 itself.`,
+      answer: `"${item.name}" (${price}, ${checkoutMethod(config)}): ${returns} Buy: GET ${template}${slots} — machine spec at ${base}/menu/${item.id}, live terms in the 402 itself.`,
     };
   });
 }

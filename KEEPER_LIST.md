@@ -855,6 +855,28 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### The decline desk's research sweeper (2026-09-28)
+
+- **RULE — is `Mozilla/5.0 (research)` machinery?** Your 09-28 reading
+  of the desk found most of the missing-input volume is one client
+  under that string, sweeping the whole catalog every fifteen to
+  forty-five minutes and missing each door's one required input in
+  turn; no wallet, no payment shape. It sits in the intent-bearing
+  column, so with x402lint or vet402 beside it on the same code it is
+  the one buyer the escalation needs to print OURS. The machinery table
+  takes only a word a machine chose for itself, and `research` is also
+  a shelf here (research_comparison) and the word the Coinbase buyer
+  used, so promoting it is your call, not an agent's: a bare word
+  promoted is misclassified forever. Say yes and it is a dated row in
+  `src/store/exclusions.ts` and a test both ways; say no and the rows
+  stay OURS and the desk keeps counting them. Either way the split you
+  asked about is not a bug: `address`, `urls`, `wallet` and `win` read
+  theirs because one client hit each; `host`, `tx_hash`, `mandate` read
+  OURS because two did, one of them counted as a buyer. The template
+  the desk's reading promised on every document was short six of them
+  (rungs, /how-it-works, /doors, room footers, the markdown twin,
+  /what); that is fixed and in the ledger, no press needed.
+
 ### The contract's read budget (2026-09-19, `docs/OPENAPI_READ_BUDGET_2026-09-19.md`)
 
 **September 23 update:** the fresh public document is over the warning
