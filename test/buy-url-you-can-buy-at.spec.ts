@@ -200,6 +200,19 @@ describe("every document that names a buy door after a free read carries the tem
     expect(md).not.toContain("- **required inputs:**");
   });
 
+  /**
+   * The onboarding documents, which taught the bare door as step one
+   * and never named the template: a buyer arriving from skill.md,
+   * agents.md or the guide learned the URL that refuses the purchase.
+   */
+  it("the buying steps in skill.md, agents.md and the guide", async () => {
+    for (const path of ["/skill.md", "/agents.md", "/llms-full.txt"]) {
+      const text = await (await SELF.fetch(`${BASE}${path}`, { headers: OUTSIDE })).text();
+      expect(text, path).toContain("buy_url_template");
+      expect(text, path).toContain("<slot>");
+    }
+  });
+
   it("the answer-engine copy at /what", async () => {
     const what = (await (await SELF.fetch(`${BASE}/what`, { headers: OUTSIDE })).json()) as { one_question_per_shelf: { answer: string }[] };
     const spot = getMenuItem("spot_check") as MenuItem;

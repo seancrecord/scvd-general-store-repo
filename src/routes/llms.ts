@@ -647,7 +647,8 @@ ${nativeGuide ? `${nativeGuide}\n\n` : ""}We take ${STORE_METADATA.currency} on 
 payment quote over the ${STORE_METADATA.protocol} protocol, version 2.
 The quote is the source of current payment terms. It goes like this:
 
-  1. GET \`${base}/api/buy/{item_id}\`
+  1. GET \`${base}/api/buy/{item_id}\`, or its \`buy_url_template\` with the
+     \`<slot>\`s filled where the door needs inputs; the bare door refuses payment.
   2. We answer 402. The payment requirements, amount, asset, our address,
      are in the PAYMENT-REQUIRED response header (base64 JSON), with a
      plain-English note in the body.

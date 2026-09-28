@@ -56,6 +56,9 @@ build, it is on the roadmap.
   [three publication actions in order](registry/portable-release-2026-09-24.md#post-merge-actions-in-order):
   Tab npm, Tab MCP registry, then ClawHub skill. The portable plugin updates from
   the repository; existing immutable submission pins do not update themselves.
+  The ClawHub press now carries skill 3.19.2 (2026-09-28): the purchases
+  reference buys an input-taking door at its `buy_url_template`, slots
+  filled, never at the bare door — one sentence, same bundle otherwise.
   Claude's missing submission remains on the existing Anthropic report, with no
   reply as of September 24. Gemini remains paused. Merge the skill publication
   receipt afterward; a submitted upload is not proof it has cleared public scans.
