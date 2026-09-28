@@ -86,3 +86,12 @@ npm test
 Release and model activation remain separate follow-through. No PR, commit,
 publication, deployment, live payment or buyer qualification was performed
 for this local implementation record.
+
+
+PR #920 follow-through: CI caught two stale provenance hashes in the generated
+quickstart issuer-key fixture. Regenerated them with `scripts/verifier-start-here.mjs`;
+the public test key and signed artifacts are unchanged. The deterministic
+`verifier:activation:test` package checks then passed with a new offline
+JavaScript/strict TypeScript installation. Despite the script name, it invokes
+no model or buyer. The earlier tarball record remains attributed to its tested
+commit; the CI correction is appended in `verification.json`.

@@ -258,5 +258,16 @@
   "initialEnvironmentFailures": [
     "Temporary-checkout cleanup had removed locked dependencies; restored with npm ci before successful checks.",
     "Initial sandboxed evidence suite could not open local HTTP fixture servers; rerun with local-runtime permissions passed."
-  ]
+  ],
+  "localQualificationCommit": "79e07d7c79cd02e67126e9071b4174f9c0024892",
+  "ciFollowup": {
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36460450764",
+    "failure": "Quickstart issuer-key provenance hashes were not regenerated with the independent matrix. Receipt and key bytes were unchanged.",
+    "correction": "node scripts/verifier-start-here.mjs --write",
+    "validation": "npm run verifier:activation:test",
+    "result": "passed; fresh offline installed JavaScript and strict TypeScript quickstarts; no model or buyer invoked",
+    "logSha256": "7a763ad109399e9b4720a6e97d26db05fbccbccc3b3be3c5df0ff167908be8c0",
+    "updatedFixtureSha256": "bcc3df0b80284fb5f2b0403fab42cc5bde7c1ae6d4a81daad0b8d78913b68dc4",
+    "tarballRecordNote": "The original tarball record above belongs to localQualificationCommit; this follow-up changes its provenance-only issuer-key fixture."
+  }
 }
