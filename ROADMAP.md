@@ -39,6 +39,22 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## September 28 — AEO readability, release approved
+
+- [x] Update the [hand-check protocol](docs/AEO_HAND_CHECK.md) and [run template](docs/AEO_HAND_CHECK_RUN_TEMPLATE.md): preserve legacy prompts; cover the portfolio; freeze modes and eligibility; retain failures, source provenance and repeat waves. Documentation update only; no new observations or automation.
+
+- [x] Expand the portfolio audit: six Perplexity questions, three Google AI Overviews and two completed Gemini answers (one additional Gemini error retained as unmeasured), eight SCVD npm manifests, three language source guides and existing protocol/digest surfaces. [Findings and limits](research/aeo-2026-09-28/PORTFOLIO.md).
+- [x] Reproduce the Hugging Face loader failure; verify all ten mirrored snapshot signatures/digests and chain continuity; prepare explicitly configured unsigned tables. Both card configurations load locally (24,913 host rows / ten rounds). Timestamp proofs were not independently checked in this pass.
+- [x] Replace obsolete SDK/UCP/MPP denials in shared developer/agent copy; index existing libraries and language guides from package metadata. Wire future corpus drops to rebuild the viewer tables.
+- [ ] Publish the reviewed corpus viewer repair through the existing workflow (`hf_only` and `refresh_viewer`), then qualify the public viewer and both public dataset configurations.
+- [x] Run the existing eight-family browser hand check; [bounded results](research/aeo-2026-09-28/README.md), with missing engines/results retained.
+- [x] Reuse the existing item evidence summary in markdown and single-item JSON; move the HTML summary before the long description. Regression demonstrated red, then 35 focused tests, typecheck and bundle checks passed.
+- [x] Validate the combined patch: 837 full-suite files passed, 15,610 tests passed / one skipped; corpus publisher checks, typecheck, bundle and claims checks passed.
+- [ ] Release `codex/aeo-answer-readability` (keeper approved September 28); no production visibility improvement claimed before the next hand check.
+- [ ] Complete ChatGPT with a working searched-answer session; retain the October 15 checkpoint and existing question-page decision gate.
+- [ ] Repeat the expanded job-specific questions across the other engines with fixed modes; separate UCP merchant integration from third-party profile validation. Existing weekly brief and partner evidence remain the distribution work, not new duplicate programs.
+
+
 ## September 23 batch — completed steps and release gates
 
 - [x] **VQ4 archive search:** verified retained hashes and searched seven local

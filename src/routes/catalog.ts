@@ -696,7 +696,6 @@ function renderItemPage(
     bodyHtml: `<section>
         ${item.subtitle ? `<p class="menu-meta"><strong>${escapeHtml(item.subtitle)}</strong></p>` : ""}
         ${noun ? `<p class="menu-meta">${escapeHtml(noun)}.</p>` : ""}
-        <p class="menu-desc">${escapeHtml(item.description)}</p>
       </section>
       <section>
         <h2>At a glance</h2>
@@ -706,6 +705,9 @@ function renderItemPage(
             ? `<p class="menu-meta"><strong>The shutter is down right now.</strong> Purchases needing the keeper's hands are refused at the door until it opens; nothing is taken and nothing is queued.</p>`
             : ""
         }
+      </section>
+      <section>
+        <p class="menu-desc">${escapeHtml(item.description)}</p>
       </section>
       <section>
         <h2>The facts</h2>
@@ -801,7 +803,12 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   const canonical = { Link: `<${base}/menu/${item.id}>; rel="canonical"` };
   varyOnAccept(c);
   if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
-    return c.text(renderItemMarkdown(item, base, c.env), 200, {
+    // Every reader gets the evidence contract already printed on the page.
+    const glance = atAGlance(item, base, artifactClassForItem(item.id));
+    return c.text(renderItemMarkdown(item, base, {
+      title: askedForTitle(item.id),
+      facts: Object.entries(glance).map(([key, value]) => [GLANCE_LABELS[key] ?? key, value]),
+    }, c.env), 200, {
       ...MARKDOWN_HEADERS,
       ...canonical,
     });
@@ -864,6 +871,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   c.header("Link", canonical.Link);
   return c.json({
     ...item,
+    at_a_glance: atAGlance(item, base, artifactClassForItem(item.id)),
     payment_capabilities: purchaseCapabilities(item, c.env),
     purchase_checklist: purchaseChecklist(item, c.env),
     ...buyerLinks(item, base),

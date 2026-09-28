@@ -1,0 +1,100 @@
+[
+  {
+    "name": "x402-verify",
+    "version": "1.7.0",
+    "homepage": "https://scvd.store/api/conformance/v1",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "verifier"
+    },
+    "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: compact JWS (EdDSA/Ed25519), did:web resolution, local revision-1 schema checks, explicit result statuses, and optional anchored key history."
+  },
+  {
+    "name": "x402-sign",
+    "version": "1.0.3",
+    "homepage": "https://scvd.store/api/conformance/v1",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "signer"
+    },
+    "description": "Zero-dependency signer for x402 Signed Offers & Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s, generate your did:web document, refuse partial commitments. The issuing half of x402-verify."
+  },
+  {
+    "name": "scvd-cli",
+    "version": "0.3.0",
+    "homepage": "https://scvd.store/developers",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "cli"
+    },
+    "description": "The official command line for scvd.store: check any x402 door, verify any signed offer or receipt, read the weekly corpus and the fresh set, and verify anything the store ever signed. Zero dependencies, no account, no key."
+  },
+  {
+    "name": "scvd-tab",
+    "version": "0.11.2",
+    "homepage": "https://scvd.store",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "tab"
+    },
+    "description": "The Tab: an MCP server that keeps the running account of every tool a builder signs up for — trial deadlines, burn, price drift, and what each signup demanded of a human. Local JSONL, append-only, zero dependencies; nothing leaves the file without deliber"
+  },
+  {
+    "name": "scvd-preflight",
+    "version": "0.2.0",
+    "homepage": "https://scvd.store/api/preflight/v2",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "x402-preflight"
+    },
+    "description": "Zero-dependency client for scvd.store's free x402 preflight: one probe per door, every check named, the remediation rows, and the deploy gate's exit law. The GitHub Action's file as a library and a command."
+  },
+  {
+    "name": "x402-preflight",
+    "version": "0.1.0",
+    "homepage": "https://github.com/Gareth1953/x402-preflight#readme",
+    "repository": {
+      "url": "git+https://github.com/Gareth1953/x402-preflight.git",
+      "type": "git"
+    },
+    "description": "Catch the silent-fail landmines in your x402 payment config before you deploy — network/CAIP-2 mismatch, the EIP-712 USDC domain-name trap, testnet/mainnet asset mix-ups, facilitator capability, and sub-cent price economics."
+  },
+  {
+    "name": "scvd-corpus-client",
+    "version": "0.1.0",
+    "homepage": "https://scvd.store/corpus",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "corpus-client"
+    },
+    "description": "Zero-dependency reader for scvd.store's signed x402 corpus: the weekly census, the fresh set, one host's readiness history, the month, the feeds and the diff, as the store serves them. The scvd CLI's library half."
+  },
+  {
+    "name": "scvd-defects",
+    "version": "0.20.0",
+    "homepage": "https://scvd.store/defects",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "defects"
+    },
+    "description": "scvd.store's x402 defect vocabulary as data: every class with what it asserts, what falsifies it, whether an unpaid probe can see it, and both halves of the remediation — plus recorded 402 door fixtures to test a client against, and settlement-response fi"
+  },
+  {
+    "name": "scvd-mcp-starter",
+    "version": "0.1.1",
+    "homepage": "https://scvd.store/mcp/verifier",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "mcp-starter"
+    },
+    "description": "A zero-dependency MCP server over stdio that serves scvd.store's five free x402 verifier tools — preflight, receipt verification, readiness lookup, defect definitions, artifact verification — to any MCP client. Copy it, keep it, or point it at your own do"
+  }
+]

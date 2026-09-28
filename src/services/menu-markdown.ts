@@ -115,7 +115,17 @@ export function fulfillmentLine(item: MenuItem): string {
     : `fulfilled by a human within ${item.sla_hours ?? 168} hours`;
 }
 
-export function renderItemMarkdown(item: MenuItem, base: string, config?: PurchaseCapabilityConfig): string {
+export type ItemAnswerSummary = {
+  readonly title: string | undefined;
+  readonly facts: ReadonlyArray<readonly [string, string]>;
+};
+
+export function renderItemMarkdown(
+  item: MenuItem,
+  base: string,
+  answer: ItemAnswerSummary,
+  config?: PurchaseCapabilityConfig,
+): string {
   const constraints = item.constraints?.length
     ? `\nHouse rules: ${item.constraints.join("; ").toLowerCase()}.\n`
     : "";
@@ -142,6 +152,13 @@ export function renderItemMarkdown(item: MenuItem, base: string, config?: Purcha
       : `- **required inputs:** ${required.map((name) => `\`${name}\``).join(", ")} — fill the ${required.map((name) => `\`<${name}>\``).join(", ")} slot${required.length === 1 ? "" : "s"} above before paying. The bare door \`GET ${base}/api/buy/${item.id}\` quotes free and refuses the paid request without ${required.length === 1 ? "it" : "them"}; no money moves.\n`;
   return `# ${item.name}
 ${item.subtitle ? `\n_${item.subtitle}_\n` : ""}
+${answer.title ? `\n${answer.title}.\n` : ""}
+## At a glance
+
+${answer.facts.map(([label, value]) => `- **${label}:** ${value}`).join("\n")}
+
+## About this item
+
 ${item.description}
 
 - **id:** \`${item.id}\`
