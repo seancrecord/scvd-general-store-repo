@@ -102,6 +102,13 @@ export interface BountyCandidate {
    * until the census itself asks again.
    */
   last_refusal?: { at: string; code: string; refusal: string };
+  /**
+   * THE CHECKS OUR OWN KNOCK FAILED, on a door the census called
+   * not_ready and still offers here (2026-09-28). Present only on
+   * those rows, so a reader can tell "the house said ready" from "the
+   * house said no, and a paid walk is how we find out who was right".
+   */
+  house_said?: string[];
 }
 
 /** The latest bounty this store opened at each domain. */
@@ -122,14 +129,29 @@ function historyByDomain(
  * The doors worth pointing a paid walker at, from the week's own
  * round.
  *
- * READY ROWS ONLY, and this is a judgement about the WALKER'S money
- * rather than about the door. The reward pays for a verified
- * settlement: a door that never takes the payment produces no
- * settlement, so a walker sent at one spends their gas, gets nothing
- * back, and learns what our own probe already knew for free. The
- * evidence a bounty buys is the case the probe CANNOT see — a door
- * that answers every check and still refuses a stranger's money — and
- * that door is a "ready" row by definition.
+ * READY ROWS, AND NOT-READY ROWS THE ROUND READ A PRICE AT (amended
+ * 2026-09-28). Until today this list was ready rows only, on the
+ * argument that a door which never takes the payment produces no
+ * settlement and so nothing to pay for. The board's own arithmetic
+ * then said what that bought: 130 settlements, 127 of them at doors
+ * the house had already called ready, and the two cells the board
+ * exists to fill — our knock said no and the money moved, our knock
+ * said yes and the walk failed — holding one row each. The keeper's
+ * words: "paying people to check doors I'm already checking."
+ *
+ * The case a probe cannot see runs BOTH ways. A not_ready verdict is
+ * the house's unpaid reading of a door's terms; whether a real wallet
+ * can pay it is a different fact, and 2,665 doors in the 2026-W39
+ * round carried a verdict nobody had ever tested with money. So a
+ * not_ready door is offered when the round READ A PRICE at it: the
+ * house captured terms, so a press can capture terms, and the walk
+ * either settles (the house was wrong about that door, on the record)
+ * or does not (no settlement, no reward, the walker's gas — the same
+ * risk a ready door already carries, since openBounty has never
+ * promised a settlement). A not_ready door with no readable price is
+ * still left out: there is nothing to post terms from. The failed
+ * checks ride the row as `house_said`, so nobody mistakes the two
+ * kinds of offer for each other.
  */
 export function bountyCandidates(
   round: WardRound,
@@ -156,7 +178,11 @@ export function bountyCandidates(
   const out: BountyCandidate[] = [];
   const nowIso = now.toISOString();
   for (const host of round.hosts ?? []) {
-    if (host.verdict !== "ready" || !host.url) continue;
+    if (!host.url) continue;
+    const priced = host.offer?.min_usdc !== undefined;
+    if (host.verdict !== "ready" && !(host.verdict === "not_ready" && priced)) {
+      continue;
+    }
     let domain: string;
     try {
       domain = new URL(host.url).hostname.toLowerCase();
@@ -187,6 +213,7 @@ export function bountyCandidates(
         ? { min_usdc: host.offer.min_usdc }
         : {}),
       ...(host.observed_at ? { observed_at: host.observed_at } : {}),
+      ...(host.verdict === "not_ready" ? { house_said: [...host.failed] } : {}),
     };
     /*
      * WHAT THE REWARD CAN ACTUALLY CLEAR (2026-09-19, the keeper: the
@@ -278,6 +305,17 @@ export function bountyCandidates(
     if (Boolean(a.blocked) !== Boolean(b.blocked)) return a.blocked ? 1 : -1;
     if (a.history.state === "never" && b.history.state !== "never") return -1;
     if (b.history.state === "never" && a.history.state !== "never") return 1;
+    /*
+     * THE WALK THE PROBE COULD NOT MAKE, BEFORE THE ONE IT ALREADY
+     * DID (2026-09-28). Among doors this store has never walked, a
+     * door the house called not_ready goes ahead of one it called
+     * ready: the second buys a confirmation, the first buys a fact
+     * the corpus has never held for that door, whichever way it
+     * falls. Price still orders the rest.
+     */
+    const aUnsure = a.house_said !== undefined;
+    const bUnsure = b.house_said !== undefined;
+    if (aUnsure !== bUnsure) return aUnsure ? -1 : 1;
     /*
      * CHEAPEST FIRST INSIDE THE GROUP (2026-09-19). The reward is flat
      * and the door's price comes out of the walker's own wallet first,

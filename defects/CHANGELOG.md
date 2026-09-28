@@ -3,6 +3,20 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.21.0 — 2026-09-28
+
+Vocabulary v21: added `receipt-absent-on-paid-response`, a door that
+settles the payment and serves the goods with no PAYMENT-RESPONSE
+header, leaving the buyer with bytes and no proof of what bought them.
+Detectable: paid.
+
+Its signal is the weakest this register carries and the entry says so:
+the bounty board's walker reports at the crowd-walked tier, recorded as
+the walker's claim and never verified by the publisher, which saw
+neither request nor response. Registered anyway, because a class with
+a stated weak signal can be compared and strengthened and a report
+with no class cannot. No other definition changed.
+
 ## 0.20.0 — 2026-09-18
 
 Vocabulary v20: `mpp-core-observable-invalid`'s buyer hint no longer

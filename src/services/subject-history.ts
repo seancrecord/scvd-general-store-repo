@@ -1,3 +1,4 @@
+import { RECEIPT_ABSENT_CLASS } from "@/store/defect-vocabulary";
 import type { CatalogReading } from "@/services/catalog-agreement";
 import type { MppCensusReading } from "@/services/mpp-census";
 import { roundCoverageSuspect } from "@/services/passport-tier";
@@ -196,6 +197,46 @@ export interface PayToHistory {
   how_to_match: string;
 }
 
+/**
+ * A STRANGER PAID THIS DOOR, on the record (2026-09-28, the keeper:
+ * "what are we doing with all our bounty info... doing nothing with
+ * the feedback they give us").
+ *
+ * The crowd-walked rows had ridden every sealed round since 09-04 and
+ * appeared on exactly one surface: the board's own findings block,
+ * as totals. A buyer reading THIS page — the one a buyer actually
+ * opens before paying a door — saw the house's unpaid knocks and
+ * nothing about the week a real wallet paid the door and got a 200
+ * with no receipt. This is that row, in the same three-part shape the
+ * corpus row keeps: the settlement (ours, proven on chain), the house
+ * knock at the moment of the claim (ours, observed), and the walker's
+ * report (theirs, claimed, never verified). A defect class is printed
+ * beside a report only where the report itself asserts the class's
+ * falsifier failed, and it inherits the report's provenance.
+ */
+export interface SubjectCrowdWalk {
+  tier: "crowd-walked";
+  week: string;
+  sequence: number;
+  entry_url: string;
+  url: string;
+  settled_at: string;
+  network: string;
+  tx_hash: string;
+  amount_usd: number;
+  /** Our own unpaid knock when the claim landed, when one was made. */
+  house_probe_verdict?: string;
+  /** The walker's report, or `none` when the claim carried only a settlement. */
+  report: "carried" | "none";
+  walker_status?: number;
+  /** Did the paid response carry a PAYMENT-RESPONSE receipt — the walker's word. */
+  receipt?: boolean;
+  latency_ms?: number;
+  body_sha256?: string;
+  /** Register ids the walker's report asserts; empty when it asserts none. */
+  defect_classes: string[];
+}
+
 export interface SubjectHistory {
   host: string;
   asked_at: string;
@@ -226,6 +267,9 @@ export interface SubjectHistory {
   gaps_by_reason: Record<GapReason, number>;
   verdict_changes: VerdictChange[];
   timeline: SubjectRound[];
+  /** Paid walks by strangers at this host, oldest first. Empty when none is on the chain. */
+  crowd_walks: SubjectCrowdWalk[];
+  crowd_walks_note: string;
   what_this_cannot_see: string[];
 }
 
@@ -515,6 +559,7 @@ export async function subjectHistory(
    */
   const paymentAddress = await sharedWalletFactFor(records, host);
   const payToHistory = await payToHistoryOf(records, host, probed);
+  const crowdWalks = crowdWalksOf(records, host, base);
 
   /**
    * STANDING NOTES (G2 ruling §5) ride here: the host's own note at
@@ -546,6 +591,8 @@ export async function subjectHistory(
     gaps_by_reason: gaps,
     verdict_changes: changes,
     timeline,
+    crowd_walks: crowdWalks,
+    crowd_walks_note: CROWD_WALKS_NOTE,
     what_this_cannot_see: [
       "Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.",
       "Why a verdict changed. We record what a probe saw, never the cause.",
@@ -554,6 +601,44 @@ export async function subjectHistory(
       "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
       "Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.",
       "Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did.",
+      "Whether a walker's report is true. `crowd_walks[].receipt`, `walker_status` and the classes derived from them are the walker's claim about a request this store never saw; only the settlement beside them was verified here.",
     ],
   };
+}
+
+export const CROWD_WALKS_NOTE =
+  "Each row is a bounty claim this store paid after verifying the settlement on chain: the transaction, amount and network are proven; house_probe_verdict is our own unpaid knock at the moment of the claim; everything under the walker's report — status, receipt, latency, body hash — is the walker's claim, recorded as written and never verified. A defect class beside a row is derived from that claim and is exactly as strong. The crowd-walked tier sits below house-walked and is never blended with it.";
+
+/** Every crowd walk at this host across the chain, oldest round first. */
+function crowdWalksOf(records: CorpusRecord[], host: string, base: string): SubjectCrowdWalk[] {
+  const out: SubjectCrowdWalk[] = [];
+  for (const record of records) {
+    const { snapshot } = record;
+    for (const walk of snapshot.round.crowd_walks ?? []) {
+      if (walk.host !== host) continue;
+      const report = walk.walker_report;
+      const classes: string[] = [];
+      if (report?.payment_response === false) classes.push(RECEIPT_ABSENT_CLASS);
+      out.push({
+        tier: "crowd-walked",
+        week: snapshot.week,
+        sequence: snapshot.sequence,
+        entry_url: `${base}/corpus/${snapshot.sequence}.json`,
+        url: walk.url,
+        settled_at: walk.claimed_at,
+        network: walk.network,
+        tx_hash: walk.settlement.tx_hash,
+        amount_usd: walk.settlement.amount_usd,
+        ...(walk.house_probe ? { house_probe_verdict: walk.house_probe.verdict } : {}),
+        report: report ? "carried" : "none",
+        ...(report?.status !== undefined ? { walker_status: report.status } : {}),
+        ...(report?.payment_response !== undefined ? { receipt: report.payment_response } : {}),
+        ...(report?.latency_ms !== undefined ? { latency_ms: report.latency_ms } : {}),
+        ...(report?.body_sha256 ? { body_sha256: report.body_sha256 } : {}),
+        defect_classes: classes,
+      });
+    }
+  }
+  out.sort((a, b) => a.settled_at.localeCompare(b.settled_at));
+  return out;
 }

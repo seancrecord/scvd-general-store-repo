@@ -26,6 +26,22 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Globally Fluent's letter (`letter_3yyqamrq2qpc`, 2026-09-26) — your
+  reply, then the press.** The draft is
+  `docs/GLOBALLY_FLUENT_LETTER_2026-09-28.md`: it declines the 5 USDC
+  pay-first package and offers the board and the second-observer row.
+  Send it from `/admin/counter`; it is signed on send. They left no
+  address, so the answer waits at their pickup URL until they give one
+  on a follow-up — the draft asks for it. Then post the seven bounties
+  listed under the draft on `/admin/market` (three not-ready doors the
+  market pays anyway at $0.25, four re-walks at $0.15; about $2.35 of
+  the $10 week). The market desk now offers not-ready doors the round
+  priced, marked "house said not ready", so they are on the list to
+  tick. LOOK, on your first reply to any letter carrying an address:
+  the counter page prints "mailed to them, you copied" beside the
+  reply, and the copy is in your inbox. If it prints MAIL FAILED, the
+  reply still stands at the pickup URL; tell me and I read the wire.
+
 - **Two bylines live on HackerNoon, 2026-09-24/25 — Cairn told by your
   hand the same day.** "An Autonomous Agent Cold-Emailed Me a Free
   Audit at 12:45 AM" (09-24, the Cairn piece) and "I Told an AI Agent
