@@ -14,12 +14,20 @@ export function prepareHandoff(root,selection,out,frozen=null) {
   if(selection?.schema_version!==1||!['signature_subset','buyer_report'].includes(selection.scope)||!Array.isArray(selection.files))throw Error('Declare a versioned handoff scope and every file selection.');
   // This optional path joins the preparer to the protocol frozen before the
   // buyer ran. Historical standalone preparation keeps its original contract.
+  let observationPolicy=null;
   if(frozen){
     const expected=recipientLaunch(frozen.plan,'<recipient>','<output>',{codex:{disabled_skills:[]}});
     const r=frozen.plan.recipient,p=frozen.protocol;
     if(r.input_scope!=='all-retained-and-buyer-report'||selection.scope!=='buyer_report'||selection.files.some(row=>row.supply!==true))throw Error('Frozen scope requires every retained file supplied for the buyer report.');
     if(run.subject!==frozen.plan.subject)throw Error('Buyer subject differs from the frozen plan.');
     if(!p||p.protocol_sha256!==expected.protocol_sha256||p.prompt_sha256!==hash(expected.prompt)||frozen.prompt!==expected.prompt||JSON.stringify(p.inputs)!==JSON.stringify(expected.inputs)||Object.keys(r).some(key=>JSON.stringify(p[key])!==JSON.stringify(r[key])))throw Error('Recipient protocol or prompt differs from the frozen plan.');
+  }
+  if(frozen?.plan.schema_version===6){
+    if(JSON.stringify(run.freshness)!==JSON.stringify(frozen.plan.freshness))throw Error('Buyer freshness differs from the frozen plan.');
+    if(typeof run.ended_at!=='string'||!Number.isFinite(Date.parse(run.ended_at)))throw Error('Buyer completion time is missing or invalid.');
+    // A plan hash cannot tell the recipient its age ceiling. Use the same
+    // completion time as the scorer, not the later handoff or wall clock.
+    observationPolicy={max_age_ms:frozen.plan.freshness.max_age_ms,evaluated_at:run.ended_at,basis:'buyer_completed_at'};
   }
   const unclassified=selection.citation_policy==='unclassified';
   if(selection.citation_policy!==undefined&&!unclassified)throw Error('Unknown citation policy.');
@@ -43,6 +51,7 @@ export function prepareHandoff(root,selection,out,frozen=null) {
   const pinned=readRecipientVerifier(frozen?.plan);
   const machinery=pinned??['evidence-bundle.js','x402-verify.js'].map(file=>({file,bytes:fs.readFileSync(new URL('../verifier/'+file,import.meta.url))}));
   const manifest={...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),...(pinned?{verifier:frozen.plan.recipient.verifier}:{}),schema_version:1,scope:selection.scope,citation_policy:unclassified?'unclassified':'reviewer_declared',subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
+    ...(observationPolicy?{observation_policy:observationPolicy}:{}),
     selection_sha256:hash(JSON.stringify(selection)),capture_state:run.retained_artifacts.state,capture_issues:run.retained_artifacts.issues??[],
     files:inputs.map(x=>x.row),buyer_report:{file:'buyer-handoff.md',sha256:hash(final),source:'Verbatim final buyer text from the hash-checked host trace.'},
     machinery:machinery.map(x=>({file:x.file,sha256:hash(x.bytes),source:'Public verifier supplied by the reviewer, not a buyer-exported artifact.'})),

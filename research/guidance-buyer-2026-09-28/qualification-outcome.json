@@ -1,0 +1,131 @@
+{
+  "qualification": {
+    "schema_version": 2,
+    "plan_sha256": "c62565a77773f15d8078ec6eea26688dbb9fcc60e9b2163779f6c7ab3b0d5f62",
+    "instrument_sha256": "9bf8f02023beca95c3854c96809927cb185f3324a27487fc6672288899aa1f54",
+    "host_context_sha256": "fdd1c8d45fd43c58f262d28b0b9bda9d3b7c33922e6045cc2e4255e418f4c5b6",
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "probed_at": "2026-09-28T16:32:28.709Z",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [],
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh"
+        ]
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": [
+          "cat"
+        ],
+        "executed": [
+          "curl",
+          "node",
+          "node"
+        ]
+      }
+    },
+    "limits": [
+      "A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service."
+    ],
+    "recipient": {
+      "state": "pass",
+      "trace_sha256": "f8625b2a7b9b40e91ab3559982a79471482b21fb82a9ef276c7cde8f648f030d",
+      "limits": [
+        "Local retention and cryptography under offline adapter settings; not proof of all possible sandbox escapes or a buyer journey."
+      ]
+    }
+  },
+  "buyer_journeys_launched_during_qualification": 0,
+  "power_samples": 44,
+  "ac_samples": 44,
+  "runs": {
+    "codex": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:32:28.839Z",
+        "ended_at": "2026-09-28T16:33:29.097Z",
+        "wall_elapsed_ms": 60258,
+        "monotonic_elapsed_ms": 60257.583042,
+        "max_callback_gap_ms": 1004,
+        "interruption": null
+      },
+      "trace_sha256": "52271e8a8a4fe4675df97483e443bbb0b06c0cff67042cfce1e91fbc98a7af5f",
+      "tool_calls": 3
+    },
+    "claude": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:33:29.162Z",
+        "ended_at": "2026-09-28T16:34:53.965Z",
+        "wall_elapsed_ms": 84803,
+        "monotonic_elapsed_ms": 84802.57845900001,
+        "max_callback_gap_ms": 1007.64904199999,
+        "interruption": null
+      },
+      "trace_sha256": "d8e388e706d08cb4d4a42c15c1825286fe6600f27e3aebcd4b2d24a7b98cbde6",
+      "tool_calls": 5
+    },
+    "recipient": {
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:34:53.972Z",
+        "ended_at": "2026-09-28T16:36:01.835Z",
+        "wall_elapsed_ms": 67863,
+        "monotonic_elapsed_ms": 67862.17583299999,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "trace_sha256": "f8625b2a7b9b40e91ab3559982a79471482b21fb82a9ef276c7cde8f648f030d",
+      "tool_calls": 6
+    }
+  },
+  "trace_review_limits": [
+    "Claude recovered from a denied cat heredoc and a disabled Write tool using its allowed Node tool. Its final claimed evidence/verify.js was written, but that file is absent from the retained inventory; the required report, diagnostics and public bytes are present and correct. The command-denial list covers shell commands, not the disabled Write tool.",
+    "The offline recipient first used an invalid ripgrep option combination, then hit zsh read-only status after running the verifier. It reran its local verification within the same bounded session and checked saved results. No native session retry, permission increase or controller replacement answer occurred.",
+    "Capability pass establishes the frozen retention and cryptography checks, not perfect instruction compliance or buyer comprehension."
+  ]
+}
