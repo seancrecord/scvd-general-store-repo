@@ -26,6 +26,18 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **auth-capture, 2026-09-28 — your "okay do it" and "for r7 we add the
+  scheme".** Both rulings are recorded: R7 is done in
+  `research/protocol-screen/rulings.json` (the trajectory and the
+  weekly brief now count doors per scheme beside doors per chain), and
+  the settlement attestation moved to battery v5 to name contact with
+  the auth-capture escrow set without moving any verdict (roadmap AC1,
+  DONE; the lifecycle observation is AC2, LATER, demand-tagged). The
+  spec on x402 main is byte-identical to the 09-14 pin; the read is in
+  `docs/SPEC_READS.md`. Nothing on this desk for it. LOOK, when a
+  Sunday brief prints a scheme other than `exact`: that is AC2's
+  trigger, and it is the first time the series will have said so.
+
 - **Two bylines live on HackerNoon, 2026-09-24/25 — Cairn told by your
   hand the same day.** "An Autonomous Agent Cold-Emailed Me a Free
   Audit at 12:45 AM" (09-24, the Cairn piece) and "I Told an AI Agent

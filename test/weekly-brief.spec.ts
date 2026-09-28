@@ -92,6 +92,9 @@ describe("The Week's Doors", () => {
     expect(body.digest).toMatch(/^[0-9a-f]{64}$/);
     expect(body.doors).toMatchObject({ listed: 3, probed: 3, payable: 2, not_payable: 1, unreachable: 0, offers_seen: 2 });
     expect(body.networks).toEqual({ "eip155:8453": 1, "eip155:137": 1 });
+    expect(body.schemes).toEqual({ exact: 2 });
+    const page = await (await SELF.fetch(`${BASE}/corpus/brief`, HTML)).text();
+    expect(page).toContain("Doors per scheme, from the offers' own declarations: <code>exact</code> 2.");
     expect(body.defects).toEqual([{ id: "accepts", title: expect.any(String), count: 1 }]);
     expect(body.our_gaps).toEqual({ not_probed: 0, observer_degraded: 0, coverage_suspect: false });
     expect(body.previous).toEqual({ week: "2026-W33", payable: 1, not_payable: 2, probed: 4 });

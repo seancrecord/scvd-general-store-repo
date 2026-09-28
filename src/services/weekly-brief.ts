@@ -51,6 +51,8 @@ export interface WeeklyBrief {
   };
   /** Doors per chain, from each offer's own declared networks. */
   networks: Record<string, number>;
+  /** Doors per scheme, from each offer's own declared accepts (R7). */
+  schemes: Record<string, number>;
   /** Failed checks by their registered name, most frequent first. */
   defects: DefectCount[];
   /** Ours, stated: the gaps counted against the observer. */
@@ -101,6 +103,7 @@ function briefOf(point: WeekPoint, previous: WeekPoint | undefined, base: string
       offers_seen: point.offers_seen,
     },
     networks: point.networks,
+    schemes: point.schemes,
     defects,
     our_gaps: {
       not_probed: point.not_probed,

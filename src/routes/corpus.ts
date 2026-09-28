@@ -928,6 +928,10 @@ function briefHtml(brief: WeeklyBrief): string {
     .sort((a, b) => b[1] - a[1])
     .map(([network, count]) => `<code>${escapeHtml(network)}</code> ${count}`)
     .join(" · ");
+  const schemes = Object.entries(brief.schemes)
+    .sort((a, b) => b[1] - a[1])
+    .map(([scheme, count]) => `<code>${escapeHtml(scheme)}</code> ${count}`)
+    .join(" · ");
   const previous = brief.previous
     ? `<p class="menu-meta">The week before, ${escapeHtml(brief.previous.week)}: ${brief.previous.payable} payable and ${brief.previous.not_payable} not, of ${brief.previous.probed} probed. Two points, not a trend.</p>`
     : "";
@@ -935,6 +939,7 @@ function briefHtml(brief: WeeklyBrief): string {
     <p class="menu-desc"><strong>Week ${escapeHtml(brief.week)}</strong>, read from signed snapshot ${brief.sequence}, taken ${escapeHtml(brief.taken_at.slice(0, 10))}${brief.battery ? `, verdicts under battery <code>${escapeHtml(brief.battery)}</code>` : ""}.</p>
     <p class="menu-desc"><strong>${d.listed} doors named</strong> by the discovery feeds; <strong>${d.probed} knocked on</strong>. Of those, <strong>${d.payable} answered with a challenge a buyer could pay</strong>, ${d.not_payable} answered with one a buyer could not pay as served, and ${d.unreachable} did not answer. ${d.offers_seen} carried a parseable offer.</p>
     ${networks ? `<p class="menu-meta">Doors per chain, from the offers' own declarations: ${networks}.</p>` : ""}
+    ${schemes ? `<p class="menu-meta">Doors per scheme, from the offers' own declarations: ${schemes}.</p>` : ""}
     ${previous}
     ${brief.mpp
       ? `<p class="menu-desc">${escapeHtml(mppCensusLine(brief.mpp))}</p><p class="menu-meta">${escapeHtml(brief.mpp.what_this_is)}</p>`

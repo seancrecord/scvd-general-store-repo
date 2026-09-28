@@ -1,7 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { takeCorpusSnapshot, listCorpus } from "@/services/corpus";
-import { deriveTrajectory, deriveDiff } from "@/services/trajectory";
+import { deriveTrajectory, type WeekPoint, deriveDiff } from "@/services/trajectory";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -117,11 +117,20 @@ describe("M3 — the trajectory is the chain, read as time", () => {
     expect(w2!.observer_degraded).toBe(1);
   });
 
-  it("counts rails per chain and failure classes by their registered names", async () => {
+  it("counts rails per chain, schemes per door, and failure classes by their registered names", async () => {
     const view = deriveTrajectory(await listCorpus(testEnv));
-    const w2 = view.weeks[1]!;
+    const [w1, w2] = view.weeks as [WeekPoint, WeekPoint];
     expect(w2.networks["eip155:8453"]).toBe(2);
     expect(w2.networks["solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"]).toBe(1);
+    /*
+     * R7 (ruled 2026-09-28): the row has kept each offer's scheme
+     * list since the market desk; the series never counted it, so
+     * the fragmentation the nonstandard-scheme advisory records
+     * could not be told from our own reader falling behind the
+     * specification. Counted from the offers' own words, like rails.
+     */
+    expect(w1.schemes).toEqual({ exact: 1 });
+    expect(w2.schemes).toEqual({ exact: 2 });
     expect(w2.failure_classes["x402-version"]).toBe(1);
   });
 
