@@ -1,0 +1,325 @@
+{
+  "read_at": "2026-09-24T15:10:47.797041+00:00",
+  "method": "Read-only GitHub public issues, pull requests and first 100 comments; no messages sent.",
+  "records": [
+    {
+      "html_url": "https://github.com/github/awesome-copilot/issues/3255",
+      "title": "[External Plugin]: scvd-general-store",
+      "state": "closed",
+      "state_reason": "completed",
+      "updated_at": "2026-09-24T03:38:02Z",
+      "closed_at": "2026-09-24T03:38:02Z",
+      "comments": 4,
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/github/awesome-copilot/issues/3255#issuecomment-5719880338",
+          "author": "github-actions[bot]",
+          "updated_at": "2026-09-17T19:16:13Z"
+        },
+        {
+          "url": "https://github.com/github/awesome-copilot/issues/3255#issuecomment-5807092082",
+          "author": "aaronpowell",
+          "updated_at": "2026-09-24T03:37:34Z",
+          "decision": "/reject This is not a fit for the repo."
+        },
+        {
+          "url": "https://github.com/github/awesome-copilot/issues/3255#issuecomment-5807097313",
+          "author": "github-actions[bot]",
+          "updated_at": "2026-09-24T03:38:02Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/github/agentfinder-catalog/pull/34",
+      "title": "Add SCVD General Store (two skills, one MCP server)",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-16T00:52:08Z",
+      "closed_at": null,
+      "comments": 0,
+      "merged_at": null,
+      "head_sha": "9f5fff8216af4d400f623680da6ad715d2e0d0e5",
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/cline/marketplace/pull/122",
+      "title": "Add SCVD x402 verification skill",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-18T18:18:09Z",
+      "closed_at": null,
+      "comments": 0,
+      "merged_at": null,
+      "head_sha": "d9aca8792e7920570c2c78cd0d9d56ef4eadbe33",
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/cline/marketplace/pull/123",
+      "title": "Add SCVD General Store remote MCP entry",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-18T18:18:14Z",
+      "closed_at": null,
+      "comments": 0,
+      "merged_at": null,
+      "head_sha": "a65cb6928ac9a5ead80fa32befc77650b03cfb2a",
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/anomalyco/opencode/pull/49834",
+      "title": "docs: list SCVD integration in ecosystem projects",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-18T18:43:02Z",
+      "closed_at": null,
+      "comments": 2,
+      "merged_at": null,
+      "head_sha": "cbb7af01d330499f010122f883eea65b2589b2d5",
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/anomalyco/opencode/pull/49834#issuecomment-5734508992",
+          "author": "github-actions[bot]",
+          "updated_at": "2026-09-18T18:34:29Z"
+        },
+        {
+          "url": "https://github.com/anomalyco/opencode/pull/49834#issuecomment-5734609107",
+          "author": "github-actions[bot]",
+          "updated_at": "2026-09-18T18:43:02Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/awesome-opencode/awesome-opencode/pull/736",
+      "title": "docs: add SCVD General Store integration",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-18T18:31:37Z",
+      "closed_at": null,
+      "comments": 0,
+      "merged_at": null,
+      "head_sha": "954f145bc5e486125138100f1843886c2b759dca",
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/0xBebis/aifi-directory/pull/13",
+      "title": "Add SCVD General Store to directory",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-18T16:19:15Z",
+      "closed_at": null,
+      "comments": 1,
+      "merged_at": null,
+      "head_sha": "ba2e658d57eeed0b512295def06b672d39fb794e",
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/0xBebis/aifi-directory/pull/13#issuecomment-5732546929",
+          "author": "cloudflare-workers-and-pages[bot]",
+          "updated_at": "2026-09-18T16:19:15Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/Upsonic/awesome-ucp/pull/30",
+      "title": "Add SCVD General Store UCP merchant implementation",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-19T12:51:21Z",
+      "closed_at": null,
+      "comments": 0,
+      "merged_at": null,
+      "head_sha": "5839afc4856ed76ce84c08cb64de98b1d0ab7942",
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/awesomeucp/merchants/pull/1",
+      "title": "Add SCVD General Store UCP merchant",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-20T17:29:54Z",
+      "closed_at": null,
+      "comments": 1,
+      "merged_at": null,
+      "head_sha": "3aa22e1a45691263d5f13e1f5efe8ee8dbcf8dcf",
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/awesomeucp/merchants/pull/1#issuecomment-5743396927",
+          "author": "vercel[bot]",
+          "updated_at": "2026-09-19T16:15:07Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/awesomeucp/merchants/pull/3",
+      "title": "Display declared REST endpoint without invented discovery path",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-19T16:17:05Z",
+      "closed_at": null,
+      "comments": 1,
+      "merged_at": null,
+      "head_sha": "d76c79e91a9f6b99a843032dbe250ff18687b58b",
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/awesomeucp/merchants/pull/3#issuecomment-5743410259",
+          "author": "vercel[bot]",
+          "updated_at": "2026-09-19T16:17:05Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/homototus/ucp-directory/issues/3",
+      "title": "[Register] scvd.store \u2014 SCVD General Store",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-19T12:48:22Z",
+      "closed_at": null,
+      "comments": 0,
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/tempoxyz/mpp/pull/991",
+      "title": "Add SCVD Context Anchor (EVM charge on Base)",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-18T19:58:15Z",
+      "closed_at": null,
+      "comments": 5,
+      "merged_at": null,
+      "head_sha": "300211806a901f55aa2d84107567a3b679563541",
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/tempoxyz/mpp/pull/991#issuecomment-5721509102",
+          "author": "github-actions[bot]",
+          "updated_at": "2026-09-17T21:30:36Z"
+        },
+        {
+          "url": "https://github.com/tempoxyz/mpp/pull/991#issuecomment-5724361443",
+          "author": "seancrecord",
+          "updated_at": "2026-09-18T02:41:30Z"
+        },
+        {
+          "url": "https://github.com/tempoxyz/mpp/pull/991#issuecomment-5734203544",
+          "author": "seancrecord",
+          "updated_at": "2026-09-18T19:58:15Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/chatmcp/mcpso/issues/4325",
+      "title": "Correct SCVD listing: remote MCP endpoint instead of Wrangler KV creation command",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-23T17:01:32Z",
+      "closed_at": null,
+      "comments": 0,
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/BbekShr/MCPpedia/issues/172",
+      "title": "Correct store.scvd/general-store: Tab description and Wrangler stdio config belong to different components",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-23T17:01:42Z",
+      "closed_at": null,
+      "comments": 0,
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/alt-research/8004scan-issue-tracker/issues/51",
+      "title": "[Bug]: Base 86957 cached MCP health reports 405 despite successful protocol initialization",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-23T20:02:55Z",
+      "closed_at": null,
+      "comments": 1,
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/alt-research/8004scan-issue-tracker/issues/51#issuecomment-5802036939",
+          "author": "seancrecord",
+          "updated_at": "2026-09-23T20:02:55Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/trust8004/requests-issues/issues/1",
+      "title": "[Bug]: Base 86957 cached x402/trust/registration fields differ from canonical metadata",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-17T19:21:40Z",
+      "closed_at": null,
+      "comments": 0,
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/prassanna-ravishankar/a2a-registry/issues/184",
+      "title": "Smoke-test greeting cannot exercise JSON-only agents (SCVD reproduction)",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-18T14:12:24Z",
+      "closed_at": null,
+      "comments": 0,
+      "comment_pages_complete": true,
+      "recent_comments": []
+    },
+    {
+      "html_url": "https://github.com/Merit-Systems/x402scan/issues/1209",
+      "title": "Discovery 1.7.5 labels MPP EVM/Base challenges as tempo:8453",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-19T12:43:01Z",
+      "closed_at": null,
+      "comments": 3,
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5724361329",
+          "author": "seancrecord",
+          "updated_at": "2026-09-18T02:41:29Z"
+        },
+        {
+          "url": "https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5734203762",
+          "author": "seancrecord",
+          "updated_at": "2026-09-18T18:09:44Z"
+        },
+        {
+          "url": "https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5741960729",
+          "author": "seancrecord",
+          "updated_at": "2026-09-19T12:43:01Z"
+        }
+      ]
+    },
+    {
+      "html_url": "https://github.com/anthropics/claude-plugins-official/issues/6290",
+      "title": "Submission showed \"Passed review\" but dashboard now shows no submissions; plugin never appeared in the directory",
+      "state": "open",
+      "state_reason": null,
+      "updated_at": "2026-09-23T17:07:03Z",
+      "closed_at": null,
+      "comments": 1,
+      "comment_pages_complete": true,
+      "recent_comments": [
+        {
+          "url": "https://github.com/anthropics/claude-plugins-official/issues/6290#issuecomment-5799240583",
+          "author": "seancrecord",
+          "updated_at": "2026-09-23T17:07:03Z"
+        }
+      ]
+    }
+  ]
+}

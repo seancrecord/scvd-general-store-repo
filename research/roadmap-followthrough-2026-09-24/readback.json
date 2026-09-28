@@ -1,0 +1,106 @@
+{
+  "source_revision": "eedbcb562af079b80c33d365515f808bd73d2d2c",
+  "skill_sha256": "983538db2f8c0dd975e3c51a157a7d1e2a458039f36641bb2dc7451da239dae7",
+  "scope_sha256": "4432f8564d2aced4f855af2b51f02bec680793ea71568c945049baa596a11af3",
+  "scope": "Unsigned host-history summary. The timeline, tier and gap counts are derived context, not a signed artifact. Each timeline entry links a corpus original: retain it and an independently established issuer key, verify its signature, then inspect snapshot.round.hosts for rows whose url exactly matches the requested endpoint, including the query string. Top-level snapshot metadata alone cannot establish absence of endpoint observations. The existing scvd-evidence verify-source command with --subject selects verified exact-URL rows; read their observation dates separately from snapshot publication time. A missing observed_at means the observation date of the signed row is unknown, not the snapshot publication time or a date supplied by this unsigned timeline; it cannot establish observation-age freshness. To authenticate several weeks, retain and verify each cited original and report its own row dates and gaps. One verified snapshot does not authenticate other weeks or this summary.",
+  "records": [
+    {
+      "name": "skill",
+      "path": "/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "accept": "text/markdown",
+      "sent_at": "2026-09-24T15:10:17.437Z",
+      "received_at": "2026-09-24T15:10:17.962Z",
+      "status": 200,
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 13136,
+      "sha256": "983538db2f8c0dd975e3c51a157a7d1e2a458039f36641bb2dc7451da239dae7",
+      "checks": {
+        "source_bytes_equal": true
+      },
+      "passed": true
+    },
+    {
+      "name": "normal",
+      "path": "/corpus/host/weather.parklandarchives.com.json",
+      "accept": "application/json",
+      "sent_at": "2026-09-24T15:10:17.962Z",
+      "received_at": "2026-09-24T15:10:18.878Z",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 14929,
+      "sha256": "4bc1319915d19e8bb984047346ca60801c57344f575e986db8662c06bd4732a1",
+      "checks": {
+        "source_scope_present": true,
+        "source_scope_equal": true
+      },
+      "passed": true
+    },
+    {
+      "name": "stable",
+      "path": "/corpus/host/weather.parklandarchives.com.json?view=stable",
+      "accept": "application/json",
+      "sent_at": "2026-09-24T15:10:18.878Z",
+      "received_at": "2026-09-24T15:10:18.967Z",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 14891,
+      "sha256": "03cc26d84e8b611cab300aaefc9f0e7eed84371860061c096c172732f7e528c3",
+      "checks": {
+        "source_scope_present": true,
+        "source_scope_equal": true
+      },
+      "passed": true
+    },
+    {
+      "name": "html",
+      "path": "/corpus/host/weather.parklandarchives.com",
+      "accept": "text/html",
+      "sent_at": "2026-09-24T15:10:18.967Z",
+      "received_at": "2026-09-24T15:10:19.043Z",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 32386,
+      "sha256": "cedf7fc4cc147b5ca8492aef063b2e6cc451e7f7d4a8787355fd470bb12fea21",
+      "checks": {
+        "source_scope_present": true
+      },
+      "passed": true
+    },
+    {
+      "name": "markdown",
+      "path": "/corpus/host/weather.parklandarchives.com",
+      "accept": "text/markdown",
+      "sent_at": "2026-09-24T15:10:19.043Z",
+      "received_at": "2026-09-24T15:10:19.120Z",
+      "status": 200,
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 8362,
+      "sha256": "7dc57de69b717113e14354082c9e5550a1efc68465ae572e3d882c94987475fb",
+      "checks": {
+        "source_scope_present": true
+      },
+      "passed": true
+    },
+    {
+      "name": "markdown_path",
+      "path": "/corpus/host/weather.parklandarchives.com.md",
+      "accept": "text/markdown",
+      "sent_at": "2026-09-24T15:10:19.120Z",
+      "received_at": "2026-09-24T15:10:19.492Z",
+      "status": 200,
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 8362,
+      "sha256": "7dc57de69b717113e14354082c9e5550a1efc68465ae572e3d882c94987475fb",
+      "checks": {
+        "source_scope_present": true
+      },
+      "passed": true
+    }
+  ],
+  "all_passed": true,
+  "limits": [
+    "Public response observation, not a cryptographic deployment attestation.",
+    "No signed-original verification, buyer qualification, payment or write to the store.",
+    "Only hashes and expected public prose retained; no raw network traces or headers."
+  ]
+}

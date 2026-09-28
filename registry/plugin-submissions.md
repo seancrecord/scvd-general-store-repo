@@ -154,7 +154,9 @@ route supersedes the older mcp-marketplace issue/icon preparation for this pass.
   Keep the verifier's focused MCP dependency; do not upload the broad store skill
   against its smaller tool set without adapting it.
 - **Awesome Copilot:** [#3255](https://github.com/github/awesome-copilot/issues/3255)
-  has passed automated intake; maintainer review pending. No duplicate submission.
+  passed automated intake but was **rejected September 24** as not a fit for
+  the repository. The issue is closed. No repeat submission without materially
+  changed fit; [readback](../research/roadmap-followthrough-2026-09-24/README.md).
 - **Gemini:** CLI 0.60.0 installed public commit `2aba2639c0dc5e6954f6ce0180f6288f43af2702`
   in isolated temporary storage, discovered both skills and connected SCVD MCP.
   [Receipt](../research/distribution-2026-09-17/observations/gemini-host-qualification.json).
@@ -165,7 +167,7 @@ route supersedes the older mcp-marketplace issue/icon preparation for this pass.
 **HOL community catalog:** [PR #349](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349)
 was submitted September 18 for the existing public package under Tools &
 Integrations. Local alphabetical and contribution-discovery checks passed;
-maintainer review and indexing remain pending. The catalog's optional scanner
+[Merged September 19 and both README/plugins.json inclusion confirmed](../research/erc8004-followthrough-2026-09-19/hol-plugin-acceptance.json). This closes that submission; it is separate from HOL's ERC-8004 index. The catalog's optional scanner
 workflow is not installed. This GitHub route avoids a duplicate web submission.
 The required remote contribution gate passed; the advisory scanner reported
 findings. [Reviewed context](https://github.com/hashgraph-online/awesome-ai-plugins/pull/349#issuecomment-5731442078)
