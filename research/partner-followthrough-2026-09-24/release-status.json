@@ -1,0 +1,24 @@
+{
+  "pr_url": "https://github.com/seancrecord/scvd-general-store-repo/pull/911",
+  "head_sha": "b0d72a250d6f86cfdeb8a297ecdba65db456e1f6",
+  "status": "merged",
+  "auto_merge_enabled_at": "2026-09-24T17:25:11Z",
+  "merge_method": "MERGE",
+  "merged_at": "2026-09-24T17:42:16Z",
+  "scope": "Partner evidence package only; unrelated working-tree changes excluded.",
+  "completed_checks": [
+    "quality",
+    "CodeQL",
+    "analyze",
+    "tests (1)",
+    "tests (2)",
+    "tests (3)",
+    "tests (4)",
+    "check",
+    "Worker build: scvd-doors",
+    "Worker build: scvd-general-store-repo"
+  ],
+  "pending_checks": [],
+  "continuation": "Approved BiX readiness comment posted and exact text verified; reply pending. Browserbase study and buyer/competition qualification remain local preparation. No paid request.",
+  "merge_sha": "dee13f084e91fb100bceacc078f55512edb15423"
+}

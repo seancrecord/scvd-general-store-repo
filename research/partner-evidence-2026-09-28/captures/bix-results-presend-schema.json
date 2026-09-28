@@ -1,0 +1,20 @@
+{
+  "id": "bix-results-presend-schema",
+  "requested_url": "https://creator.linkhco.com/openapi.json",
+  "method": "GET",
+  "observed_at": "2026-09-28T16:54:48.777316+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Mon, 28 Sep 2026 16:54:49 GMT",
+    "Content-Type": "application/json"
+  },
+  "truncated": false,
+  "bytes": 1595,
+  "sha256": "9c4482878d12669d56ecdc0160a882a7564fec624e06dfc2015092d723652223",
+  "body_file": "bix-results-presend-schema.body"
+}

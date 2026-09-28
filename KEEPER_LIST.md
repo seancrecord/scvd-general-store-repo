@@ -61,14 +61,17 @@ build, it is on the roadmap.
   both pieces, and whether either URL turns up in the Sunday citation
   sweep (it should not; a byline is our words, listing fact 4).
 
-- **Partner evidence — Merit note sent 2026-09-24, reply pending.** The keeper
+- **Partner evidence — Merit and BiX replies pending, September 28.** The keeper
   approved the exact [issue follow-up](https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384);
   posting and text were verified. The [local reproduction](research/partner-evidence-2026-09-24/MERIT.md)
   narrows the reported bug: structured protocols accept nested pricing;
   the documented hybrid does not. Issue/comments and package were rechecked
-  before sending; no partner response or adoption established. BiX needs current schema/readiness confirmation;
-  Browserbase needs a method-correct scope, not a claim that its service is
-  broken. [Plan and phase gates](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md).
+  before sending; Merit has not replied. BiX accepted the free unpaid check:
+  its exact synthetic POST answered 402, and the [results were sent and verified](research/partner-evidence-2026-09-28/results-outreach.json).
+  LOOK when Salman replies: clarify the paid output enum and identify the
+  decision this evidence helps. No paid attempt or repeat use established.
+  Browserbase remains a prepared, uncontacted prospect.
+  [Plan and phase gates](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md).
   Research and any future build stay off this desk; implementation reference
   is ROADMAP L4. No paid attempt is designated by this entry.
 

@@ -1,5 +1,32 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-28 — Launch Check pilot request inputs
+
+Follow-through source read: Cloudflare's [storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and [storage concurrency guidance](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/)
+were read before extending the existing recovery store. Durable storage survives
+object eviction; external I/O can interleave calls, so the existing per-object
+queue and pre-presentation checkpoint remain necessary. No network operation is
+added inside a storage transaction. Rechecked BiX issue comments: the latest
+comment remains our results/enum question, with no partner clarification yet.
+
+Read the current [x402 v2 core specification](https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md)
+and the locked `@x402/fetch` 2.26.0 distribution's `wrapFetchWithPayment`
+implementation (`dist/esm/index.mjs`): it clones the original Request before
+fetching and adds payment headers to the clone. This supports preserving the
+original request body when presenting payment; it does not bind that body in
+the EIP-3009 authorization. No upstream package or protocol was modified.
+
+The partner input comes from [BiX's explicit pilot request](https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5867404582).
+Earlier today the new origin's OpenAPI and reliability documents were read and
+one unsigned POST with `{"pair":"USDG","tax":1}` answered 402. The
+[posted results](https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5874641977)
+state the observed quote, the output enum question and the missing input support
+in this engine. No paid response was read and settlement remains unverified.
+This implementation makes no new network request to the partner.
+
+[Implementation scope and offline controls](LAUNCH_CHECK_PILOT_INPUTS_2026-09-28.md).
+
 ## 2026-09-24 — partner evidence pilot qualification
 
 For the keeper-requested [Partner Evidence Pilot Plan](PARTNER_EVIDENCE_PILOTS_2026-09.md),

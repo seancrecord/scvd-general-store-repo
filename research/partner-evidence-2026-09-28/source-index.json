@@ -1,0 +1,33 @@
+{
+  "read_at": "2026-09-28T16:31:43.533310+00:00",
+  "commit": "57fea3eb010c91cf7c1c2ded24ffe16f37fdaf35",
+  "basis": "Current origin/main source; not proof of deployed behavior.",
+  "files": [
+    {
+      "path": "src/services/launch-check.ts",
+      "sha256": "d934a0ed62c3d65bf031d67e8b718f1f2ca161f15d846c6f061cfd616415cb60"
+    },
+    {
+      "path": "src/services/launch-check-terms.ts",
+      "sha256": "4bd9366de998ec11c71c28b6deae2a5c05be48443e1f7974717f39e485f1b92e"
+    },
+    {
+      "path": "src/lib/probe-method.ts",
+      "sha256": "3dc4d1309238dbbf301310346713d5f9f0d80f798d0ee20acc19f57802f2876d"
+    },
+    {
+      "path": "src/lib/base-rpc.ts",
+      "sha256": "936e30d264d7944e90ecad777dd52eea88bfe5e3fd56cb480cee8aa905d2dcbb"
+    },
+    {
+      "path": "src/lib/payment-networks.ts",
+      "sha256": "13b0232d632669eff82fe30eec91b6f9e6a75b8c76a0d614c3713dbbc8fd3584"
+    }
+  ],
+  "findings": [
+    "LaunchCheckOptions has no public request-body parameter.",
+    "POST approach, payment and replay use PROBE_POST_BODY, currently empty JSON.",
+    "Base token and network in the captured challenge match the configured Base USDC and network constants.",
+    "Quoted 0.005 USDC is below the current 0.05 field cap; no screening, wallet, chain or settlement qualification performed."
+  ]
+}
