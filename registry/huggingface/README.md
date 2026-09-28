@@ -1,5 +1,16 @@
 # Hugging Face (keeper reviews, keeper presses)
 
+## September 28 — dataset viewer repair prepared
+
+The dataset card's automatic loader fails across the evolving signed snapshot
+schema. [Reproduction, signature checks and repair](../../research/aeo-2026-09-28/PORTFOLIO.md)
+preserve the numbered originals and add explicitly configured unsigned host
+and round tables. Future corpus publishing rebuilds them. After release, the
+existing workflow can repair only this mirror with `hf_only` and
+`refresh_viewer`; then verify the public viewer after Hub processing. A local
+successful load is not a public repair. The earlier Space notes below are
+historical and do not govern this dataset operation.
+
 Prepared 2026-09-11. Rule 30 applies.
 
 ## What is already there

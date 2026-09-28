@@ -11,6 +11,15 @@ name: corpus publish
 
 on:
   workflow_dispatch:
+    inputs:
+      refresh_viewer:
+        description: Rebuild Hugging Face viewer tables even when no signed round is missing
+        type: boolean
+        default: false
+      hf_only:
+        description: Update Hugging Face only; do not publish a Zenodo version
+        type: boolean
+        default: false
   schedule:
     - cron: "0 9 * * *"
 
@@ -29,4 +38,10 @@ jobs:
         env:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: node scripts/corpus-publish.mjs
+          REFRESH_VIEWER: ${{ inputs.refresh_viewer }}
+          HF_ONLY: ${{ inputs.hf_only }}
+        run: |
+          publish_args=()
+          if [ "$REFRESH_VIEWER" = "true" ]; then publish_args+=(--refresh-viewer); fi
+          if [ "$HF_ONLY" = "true" ]; then publish_args+=(--hf-only); fi
+          node scripts/corpus-publish.mjs "${publish_args[@]}"

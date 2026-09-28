@@ -1,3 +1,5 @@
+import { DEVELOPER_PACKAGES, PREFLIGHT_LANGUAGE_GUIDES } from "@/store/developer-packages";
+import { DISCOVERY_PROTOCOLS } from "@/store/discovery-protocols";
 import { webmcpTools } from "@/routes/webmcp";
 import { uiResourceCatalog } from "@/lib/mcp-apps";
 import { CONTENT_SIGNAL } from "@/routes/site-meta";
@@ -52,16 +54,16 @@ export function declinedPositions(base: string): DeclinedPosition[] {
       body: `WebMCP: ${base}/webmcp.js registers ${browserTools.length} free instruments (${browserTools.join(", ")}), plus quote_store_purchase (free) and complete_store_purchase (consequential). The latter submits only a payment already signed by the buyer's wallet/client; it never signs or retries by itself. MCP Apps remain ${uiResourceCatalog().length} display-only cards, with no payment tools attached. Without WebMCP support and a compatible signer, an agent can browse but cannot pay. ${base}/mcp.md describes the doors.`,
     },
     {
-      heading: "x402 is the protocol here; UCP, ACP, AP2 and MPP are not",
-      body: `Scorecards award a point each for the Universal Commerce Protocol, the Agentic Commerce Protocol and its delegate-payment profile, the Agent Payments Protocol and Tempo's MPP. This store scores nought on all five, for the sentence its catalogue rests on: never claim a protocol you do not speak. Declaring one without implementing it produces exactly the "listed but functionally absent" defect this store sells the detection of — five names in a manifest would make us the first entry in our own corpus. What an observatory can honestly do is watch them: AP2- and ACP-class doors enter the corpus as subjects the day their batteries are written.`,
+      heading: "Protocol claims follow implemented scope",
+      body: `Current protocol scope: ${DISCOVERY_PROTOCOLS.filter(p => ["x402", "mpp", "a2a", "ucp"].includes(p.id)).map(p => `${p.label}: ${p.scope}`).join(" ")} Current payment capabilities and each protocol profile describe deployment availability.`,
     },
     {
       heading: "No sandbox, and that is the product",
       body: `Readiness checks look for a test environment and find none, and there is not going to be one. ${base}/try is a live counter: real x402 settlement, real signed artifacts, real chain, from a fraction of a cent. A sandbox is where integrations pass and production is where they fail, and that gap is the single most common thing this store observes in other people's endpoints. A test mode behaving differently from the real door is a second implementation to keep honest, and the first time it drifted, everyone who rehearsed against it rehearsed against fiction. The cheapest door here costs less than the hour it takes to configure a sandbox key. The one sandbox here is the trade counter's, for marketplaces proving an HMAC signer: account \`sandbox\`, secret published, check desk at ${base}/api/trade/sandbox/check.`,
     },
     {
-      heading: "No hand-written SDKs in five languages",
-      body: `Scorecards award points for published client packages across languages. This store ships none. The surface is plain HTTPS with an OpenAPI contract at ${base}/openapi.json and an MCP server at ${base}/mcp; a generated client in any language is one command from that contract, generated from the document that cannot drift from the code. A hand-maintained SDK in a language nobody here writes is a liability with a version number — it goes stale silently, and it becomes the thing a buyer trusts instead of the contract. What we maintain is the contract, and every door in it is walked by test.`,
+      heading: "Maintained packages and language clients",
+      body: `SCVD maintains ${DEVELOPER_PACKAGES.map(p => p.label).join(", ")}, alongside the CLI and tab. Preflight language guides: ${PREFLIGHT_LANGUAGE_GUIDES.map(p => p.label).join(", ")}. Package documentation and installation links are at ${base}/developers. The broader HTTP contract remains at ${base}/openapi.json.`,
     },
     {
       heading: "The MCP card CSP is stricter than the checklist wants",

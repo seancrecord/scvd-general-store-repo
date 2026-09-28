@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { EVIDENCE_TOOLS_SOURCE, EVIDENCE_TOOLS_DESCRIPTION } from "@/store/evidence-tools";
+import { DEVELOPER_PACKAGES, PREFLIGHT_LANGUAGE_GUIDES } from "@/store/developer-packages";
+import { DISCOVERY_PROTOCOLS } from "@/store/discovery-protocols";
 import {
   GLOBAL_PROBES_PER_MINUTE,
   PROBES_PER_MINUTE,
@@ -59,6 +61,15 @@ interface Entry {
 
 function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
   return [
+    {
+      heading: "SCVD libraries and SDKs",
+      entries: [...DEVELOPER_PACKAGES, ...PREFLIGHT_LANGUAGE_GUIDES],
+    },
+    {
+      heading: "Protocols and their scope",
+      entries: DISCOVERY_PROTOCOLS.filter(p => ['x402', 'mpp', 'a2a', 'ucp'].includes(p.id))
+        .map(p => ({ href: `${base}${p.path}`, label: p.label, what: p.scope })),
+    },
     {
       heading: "Start here",
       entries: [
@@ -121,6 +132,11 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
           href: `${base}/corpus.json`,
           label: "GET /corpus.json",
           what: "The weekly signed census of the public x402 web, as a dataset.",
+        },
+        {
+          href: `${base}/corpus/brief`,
+          label: "The Week's Doors",
+          what: "The existing weekly corpus digest: observed coverage, named defects and gaps, with links to the underlying evidence.",
         },
         {
           href: `${base}/corpus/trajectory.json`,

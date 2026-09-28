@@ -1,5 +1,50 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-28 — revised AEO hand-check protocol
+
+Re-read [Google AI features guidance](https://developers.google.com/search/docs/appearance/ai-features).
+AI Overviews and AI Mode are distinct surfaces; overviews need not trigger.
+Ordinary indexing and snippet eligibility apply, with no special AI markup
+requirement and no inclusion guarantee. The revised hand check keeps organic
+results, overview availability, citations and branded recognition separate.
+
+Primary interface observations and limits are retained in the September 28
+[baseline](../research/aeo-2026-09-28/README.md) and
+[portfolio record](../research/aeo-2026-09-28/PORTFOLIO.md): Gemini SDK fallback
+returned an error, ChatGPT searched answers remain unmeasured, citation drawers
+were not exhaustively inspected, and account defaults were retained. No new
+engine run was performed while editing this protocol. Hidden models, ranking
+factors and causal effects of the proposed site repair remain unknown.
+The repeat interval and decision rules are operational choices, not vendor
+prescriptions. Live capability eligibility must be re-read at each checkpoint.
+
+## 2026-09-28 — Hugging Face corpus viewer
+
+Read [data-file configuration](https://huggingface.co/docs/hub/datasets-data-files-configuration)
+and [JSON loading](https://huggingface.co/docs/datasets/loading#json).
+The Hub auto-detects files unless the card declares `configs.data_files`;
+JSON objects of evolving shape are not a stable tabular schema. The live card
+has no explicit data-file configuration. Keep signed originals untouched and
+give the viewer explicit, derived tables with stable scalar columns and source
+references. The tables are unsigned views, not replacement signed artifacts.
+
+## 2026-09-28 — answer-engine readability and bounded discovery read
+
+Read [Google's AI features guidance](https://developers.google.com/search/docs/appearance/ai-features):
+ordinary indexing and snippet eligibility apply; useful visible text and internal
+links matter, and no special AI schema or machine-readable file is required.
+Read [OpenAI's crawler documentation](https://developers.openai.com/api/docs/bots):
+search discovery uses OAI-SearchBot, independently of the training crawler.
+Read [Perplexity's crawler documentation](https://docs.perplexity.ai/docs/resources/perplexity-crawlers):
+robots permission and edge access are separate; genuine crawler checks must
+use the published IP ranges as well as the user agent.
+
+Decision: preserve the existing crawler configuration and reuse the existing
+item evidence summary in markdown and single-item JSON. Put that summary
+before the longer description in HTML and markdown. No new schema, discovery
+file, bot impersonation, or WAF exemption. This improves readable information;
+it does not establish an effect on citations or rankings.
+
 ## 2026-09-24 — partner evidence pilot qualification
 
 For the keeper-requested [Partner Evidence Pilot Plan](PARTNER_EVIDENCE_PILOTS_2026-09.md),

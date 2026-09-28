@@ -6,8 +6,10 @@
  *
  * Reads the live index, asks each mirror what it already holds, and
  * sends only what is missing: the new round file(s), plus the index
- * and the tiers file, which change every round. Zenodo gets a new
- * version under the same concept DOI; Hugging Face gets one commit.
+ * and the tiers file, which change every round. Hugging Face also gets
+ * explicitly configured table views rebuilt from the verified originals.
+ * Zenodo gets a new version under the same concept DOI; Hugging Face
+ * gets one commit.
  *
  * Tokens: ZENODO_TOKEN (a personal access token with deposit:write
  * and deposit:actions) and HF_TOKEN (a write token). Either missing
@@ -15,19 +17,25 @@
  * run: the corpus is published on the site regardless.
  *
  *   --dry-run   read the live index and print the plan; touch nothing
+ *   --hf-only   leave Zenodo untouched
+ *   --refresh-viewer   rebuild the HF tables even without a new round
  */
 import { createHash } from "node:crypto";
+import { buildCorpusViewer, configureCorpusCard } from "./lib/corpus-viewer.mjs";
 import {
   anchorsFrom,
   commitSummary,
   hfCommitBody,
   plan,
+  roundFilesFrom,
   weekOf,
   zenodoMetadataFor,
 } from "./lib/corpus-publish.mjs";
 
 const base = (process.env.STORE_BASE_URL ?? "https://scvd.store").replace(/\/+$/, "");
 const dryRun = process.argv.includes("--dry-run");
+const hfOnly = process.argv.includes("--hf-only");
+const refreshViewer = process.argv.includes("--refresh-viewer");
 const zenodoApi = process.env.ZENODO_API ?? "https://zenodo.org/api";
 const hfApi = process.env.HF_API ?? "https://huggingface.co";
 const zenodoToken = process.env.ZENODO_TOKEN;
@@ -120,12 +128,25 @@ async function publishHuggingFace() {
   const tree = await getJson(`${hfApi}/api/datasets/${hfRepo}/tree/main`, { headers: auth });
   const held = tree.map((e) => e.path);
   const hp = plan(index, held);
-  if (hp.nothingNew) {
+  if (hp.nothingNew && !refreshViewer) {
     console.log(`huggingface: ${hfRepo} already holds ${p.latest.name}; nothing to send.`);
     return;
   }
   for (const r of hp.missingRounds) if (!files.has(r.name)) files.set(r.name, await getBytes(r.url));
-  const names = [...hp.missingRounds.map((r) => r.name), ...hp.always];
+  // The viewer must not infer one schema across raw signed envelopes and indexes.
+  // Build from every original, validating the chain before publishing projections.
+  const documents = [];
+  for (const r of roundFilesFrom(index)) {
+    const bytes = files.get(r.name) ?? await getBytes(r.url);
+    documents.push(JSON.parse(bytes.toString("utf8")));
+  }
+  const key = await getJson(`${base}/.well-known/scvd-signing-key`);
+  const views = await buildCorpusViewer(documents, { base, publicKey: key.public_key });
+  const cardResponse = await fetch(`${hfApi}/datasets/${hfRepo}/raw/main/README.md`, { headers: auth });
+  if (!cardResponse.ok) throw new Error(`huggingface: card read → ${cardResponse.status}`);
+  files.set("README.md", Buffer.from(configureCorpusCard(await cardResponse.text(), hfRepo)));
+  for (const [name, body] of Object.entries(views)) files.set(`viewer/${name}.jsonl`, Buffer.from(body));
+  const names = [...hp.missingRounds.map((r) => r.name), ...hp.always, "README.md", "viewer/observations.jsonl", "viewer/rounds.jsonl"];
   // Ask the Hub how each file must travel (inline or LFS).
   const pre = await getJson(`${hfApi}/api/datasets/${hfRepo}/preupload/main`, {
     method: "POST",
@@ -159,14 +180,14 @@ async function publishHuggingFace() {
   const commit = await fetch(`${hfApi}/api/datasets/${hfRepo}/commit/main`, {
     method: "POST",
     headers: { ...auth, "Content-Type": "application/x-ndjson" },
-    body: hfCommitBody(commitSummary(week, p.latest.sequence), commitFiles),
+    body: hfCommitBody(hp.nothingNew ? "Repair dataset viewer configuration and derived tables; signed originals unchanged" : commitSummary(week, p.latest.sequence), commitFiles),
   });
   if (!commit.ok) throw new Error(`huggingface: commit → ${commit.status} ${(await commit.text()).slice(0, 300)}`);
   console.log(`huggingface: committed ${names.join(", ")} to ${hfRepo}.`);
 }
 
 let failed = false;
-for (const step of [publishZenodo, publishHuggingFace]) {
+for (const step of hfOnly ? [publishHuggingFace] : [publishZenodo, publishHuggingFace]) {
   try {
     await step();
   } catch (error) {

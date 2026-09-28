@@ -1148,8 +1148,10 @@ const BASE = "https://scvd.store";
 // Verified the way this file asks: with only asked-for.ts restored to the
 // prior commit, b20bbd01 here and be9f17fe below reproduced exactly, and
 // this copy reproduces the new ones.
+// 2026-09-28: corrected the obsolete SDK and UCP/MPP denials in declined.ts.
+// Restoring only that file reproduced both prior pins (14/14 tests passed).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c77a1acdc54c341dacbe74963d7c37e05153cefa0396917ab2c8ec62a9dea3a3";
+  "665d6964661dacd458a7eb88c545051a81abbc32e9186142a6dad70fb90c259e";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1241,7 +1243,7 @@ describe("nothing was rewritten", () => {
       // Re-pinned 2026-09-24 with the new product, and 2026-09-25 with the
       // two HackerNoon bylines; see the note on GUIDE_DIGEST_BEFORE_THE_SPLIT
       // for how each was verified.
-      "1ac33b17f13295c73fccae34aa539b802a07fdd93ce1ae624e14eb9b022ee21f",
+      "648c43f55e5d32e2fde1fa6acda40efcbfb3dc7bc04c30c608ba430875d7df60",
     );
   });
 

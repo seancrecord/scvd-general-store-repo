@@ -26,6 +26,14 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **PRESS — AEO and Hugging Face repair prepared, September 28.**
+  [Reviewable scope and observed results](research/aeo-2026-09-28/PORTFOLIO.md):
+  remove obsolete SDK/UCP/MPP denials, index existing developer tools, and
+  repair the dataset viewer with unsigned projections beside unchanged signed
+  originals. After the reviewed branch is released, run the existing corpus
+  publish workflow once with `hf_only` and `refresh_viewer` selected. The
+  implementation and public verification work remain on ROADMAP, not this desk.
+
 - **Two bylines live on HackerNoon, 2026-09-24/25 — Cairn told by your
   hand the same day.** "An Autonomous Agent Cold-Emailed Me a Free
   Audit at 12:45 AM" (09-24, the Cairn piece) and "I Told an AI Agent

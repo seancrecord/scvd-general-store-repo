@@ -66,7 +66,7 @@
     "findability:check": "node scripts/findability-check.mjs",
     "space:test": "python3 -m py_compile spaces/scvd-x402-verifier/app.py spaces/scvd-x402-verifier/verifier.py && (cd spaces/scvd-x402-verifier && python3 -m unittest -q)",
     "corpus:publish": "node scripts/corpus-publish.mjs",
-    "corpus:publish:test": "node --test scripts/corpus-publish.test.mjs",
+    "corpus:publish:test": "node --test scripts/corpus-publish.test.mjs scripts/corpus-viewer.test.mjs",
     "citations:check": "node scripts/citations-check.mjs",
     "citations:test": "node --test scripts/citations-check.test.mjs",
     "outreach:build": "node scripts/build-scorers-outreach.mjs",
