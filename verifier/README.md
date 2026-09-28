@@ -15,7 +15,7 @@ Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.8.0.tgz
+npm install ./x402-verify-1.9.0.tgz
 ```
 
 Structured status fields require 1.4.0 or newer; older versions may not expose
@@ -541,6 +541,51 @@ not a dependency of it.
 
 ## Portable evidence
 
+### Keep exact identifiers in a generated report
+
+Source version 1.9.0 adds `--format markdown`, `--report-out` and
+`--challenge-headers`. Check the installed command's `--help`; source preparation
+is not proof of npm publication. A published installation uses the version in
+this package's `package.json`. Older commands keep their existing JSON workflow.
+
+```sh
+scvd-evidence verify-source ./evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \
+  --subject 'https://merchant.example/paid?kind=one' \
+  --format markdown --report-out ./evidence/verification-report.md
+```
+
+This saves a bounded report and prints a compact receipt. Existing files are
+never overwritten. The report keeps the original-file hash and signed-message
+hash distinct, counts the snapshots verified by this invocation, includes exact
+signed-subject rows and omissions, and labels missing observation dates unknown.
+A snapshot sequence is not a count of observations or authenticated weeks.
+The report is a derived reading; keep the original and separate issuer-key record.
+
+If the buyer also retained the original unpaid HTTP response headers, add
+`--challenge-headers ./evidence/challenge-headers.txt`. The command reads the last
+HTTP response and a single x402 v2 `PAYMENT-REQUIRED` header, preserves every
+offer's exact address/network/asset, and computes its address digest using the
+store's shared normalization. Missing, duplicate, malformed or unsupported
+challenges remain explicit gaps. It does not fetch new evidence.
+
+Headers, resource URLs and payment terms remain unsigned. A match links a
+candidate address only to selected signed historical rows; it does not bind the
+current amount, asset or network, prove response origin, validate an address,
+select a payment rail or authorize spending. A mismatch is conclusive only over
+fully supplied comparable signed rows. Missing or omitted rows remain unknown.
+Input headers are limited to 64 KiB; generated Markdown is limited to 128 KiB.
+These report limits do not increase the caller's evidence-retention allowance.
+
+Cite the generated report in the final explanation instead of retyping addresses,
+digests or counts from memory. Preserve the report even when verification fails;
+its existing exit code still distinguishes invalid signatures, missing evidence
+and command failures. Additional unsigned history must be attributed separately.
+When using the library API or independent local cryptography, save the exact
+computed result from that same program, with the original-file reference and
+scope, and cite it. A model can still contradict a report; native acceptance is
+a separate test, not a property promised by this formatter.
+
 ### Check an original you already saved
 
 The 1.5.0 CLI adds `verify-source`; check your installed
@@ -560,13 +605,14 @@ and bindings in memory. The JSON result includes the exact original file's
 all signed claims. Read the subject, observation date and gaps from the
 original and check them separately. A valid signature is not a freshness test.
 
-Version 1.6.0 adds an exact endpoint reading. Install that version into a
-separate tooling directory, then check its `--help` for `--subject`. If the
-registry has not published it yet, use the source checkout or a locally
-qualified tarball; an older package cannot run this command.
+An exact endpoint reading was introduced in 1.6.0. The example below installs
+the report-capable source version 1.9.0 in a separate tooling directory;
+check its `--help` for the options you intend to use. If this version is not
+on the registry yet, use a locally qualified source checkout or tarball.
+Older published versions retain their documented JSON verification behavior.
 
 ```sh
-npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.6.0
+npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.9.0
 node tooling/node_modules/x402-verify/evidence-cli.mjs --help
 node tooling/node_modules/x402-verify/evidence-cli.mjs verify-source evidence/original.json \
   --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \

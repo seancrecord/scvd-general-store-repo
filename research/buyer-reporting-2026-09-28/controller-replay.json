@@ -1,0 +1,22 @@
+{
+  "kind": "controller-only replay of retained September 28 evidence; no native attempt or rescore",
+  "source_archive_path": "preparation-readback/candidate-original.json",
+  "key_archive_path": "preparation-readback/candidate-key.json",
+  "headers_archive_path": "buyers/claude-directed-r2/evidence/lionx402_headers.txt",
+  "source_sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+  "headers_sha256": "c304adccc8ae0ac36da7436e7783476d38361f9873a91cbce8ff74b280befd25",
+  "report_sha256": "86c1f6774f1356de13e7e4863a3719e5cef54c25f4d7a40cea301660cac93378",
+  "checks": {
+    "original_file_hash": true,
+    "signed_message_hash": true,
+    "one_verified_snapshot": true,
+    "exact_address_and_digest": true,
+    "signed_row_pointer": true
+  },
+  "receipt": {
+    "report_file": "research/buyer-reporting-2026-09-28/controller-replay.md",
+    "source_sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+    "valid": true,
+    "evidence_complete": true
+  }
+}

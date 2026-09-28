@@ -130,6 +130,14 @@ this section is always the queue and nothing else.
 | B-WAVES | **Four-wave buyer acceptance — Wave 1 partially measured September 12.** Public collection and isolated cold-to-quote cohort complete at their bounded scope; buyer-grade shopping evidence collector built and fixture-tested. | Real buyers need correct goods, recoverable money and consistent terms, not just successful endpoint status. | Complete semantic discovery across all surfaces, recursive concrete-link and all-error coverage. September 23 rechecked BUY-040/042/044: none reproduced at the recorded scope; 33 quoted HTTP/MCP pairs agree on x402 rails, two refused pairs are excluded, and one link timeout remains a gap. The comparator now follows local shared schemas, with 239 regression tests; [retained run and limits](research/buyer-public-recheck-2026-09-23/REPORT.md). Then real cheap-rail scenarios, architecture representatives and offered full shelf in that order under the keeper's ceiling. Require chain reconciliation, correct subject, completed fulfillment and fresh-recipient understanding. No mocked or queued result promoted to paid delivery. EW-01–04; evidence and limits in `research/BUYER_RUN_ORDER.md`. |
 
 
+**TR3 generated reporting, September 28 (source prepared):** [The reporting
+repair](docs/BUYER_GENERATED_REPORT_2026-09-28.md) saves exact identifiers,
+authenticated scope and optional retained-header address comparisons through
+`verify-source`. The [controller replay](research/buyer-reporting-2026-09-28/controller-replay.md)
+reproduces the prior original without changing any buyer score. Version 1.9.0
+publication, deployed-guide readback and a newly qualified native cohort remain
+required. Package source preparation is not release or buyer acceptance.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The

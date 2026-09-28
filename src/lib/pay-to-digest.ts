@@ -22,24 +22,5 @@
  * Versioned in the salt string so a future change never silently
  * splits clusters: rows carrying v1 digests compare only against v1.
  */
-export const PAY_TO_DIGEST_SALT = "scvd:payto:v1:";
-
-/**
- * Normalization mirrors the capture law in market.ts (2026-08-20):
- * 0x addresses lowercase (EVM is case-insensitive by nature), base58
- * preserved byte-for-byte (Solana is case-sensitive for life).
- */
-export function normalizePayTo(address: string): string {
-  const trimmed = address.trim();
-  return trimmed.startsWith("0x") ? trimmed.toLowerCase() : trimmed;
-}
-
-export async function payToDigest(address: string): Promise<string> {
-  const bytes = new TextEncoder().encode(
-    `${PAY_TO_DIGEST_SALT}${normalizePayTo(address)}`,
-  );
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
+// Keep the signed store rows and the offline reader on the same contract.
+export { PAY_TO_DIGEST_SALT, normalizePayTo, payToDigest } from "../../verifier/payment-identity.js";

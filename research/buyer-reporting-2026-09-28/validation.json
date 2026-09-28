@@ -1,0 +1,202 @@
+{
+  "recorded_at": "2026-09-28T19:41:51.086239+00:00",
+  "scope": "Source reporting repair and offline controller replay; not npm publication or native acceptance.",
+  "base_commit": "7a9f07f08844215ba1de83c6102e64ab2b2cc235",
+  "checks": {
+    "buyer_control": {
+      "passed": 249,
+      "failed": 0
+    },
+    "verifier": {
+      "passed": 215,
+      "failed": 0
+    },
+    "focused_reporting": {
+      "passed": 21,
+      "failed": 0,
+      "included_in": "verifier"
+    },
+    "worker_digest_consumers": {
+      "files": 2,
+      "passed": 34,
+      "failed": 0
+    },
+    "installed_consumer": "pass",
+    "independent_vectors": "pass",
+    "typecheck": "pass",
+    "bundle": "pass",
+    "docs": "pass",
+    "full_local": {
+      "files": 841,
+      "passed": 15673,
+      "failed": 1,
+      "skipped": 1,
+      "exit_code": 1,
+      "failure": "test/verifier-package.spec.ts exact package file inventory expected the pre-report runtime",
+      "remediation": "Updated the explicit expected inventory with evidence-report.js, payment-identity.js and payment-identity.d.ts; retained the exact-equality guard. No production source change after this run."
+    },
+    "hosted_ci": "not_started",
+    "package_inventory_recheck": {
+      "files": 1,
+      "passed": 12,
+      "failed": 0,
+      "exit_code": 0
+    }
+  },
+  "source_sha256": {
+    "scripts/buyer-handoff.test.mjs": "9dcbb2ca2417e3f9795e2804b5cd42b58f84bc6b8a3d72f6890aebdc6a56dfd2",
+    "scripts/buyer-recipient-integration.test.mjs": "f8cd472e05da3866e7266fb681ca01a013b7fbb45d16e8e5b42731a30412853f",
+    "scripts/lib/buyer-cold.mjs": "644584365be42eea8ff7f0c96b2129e3c79ec095ffadb526e6f59b9414b268b3",
+    "scripts/lib/recipient-verifier.mjs": "6d6859be3d0a36b67f4fe2286c330fee713c13164c9fb6f3620197c94bafa868",
+    "scripts/verifier-activation.test.mjs": "66acf4fec8dd115470848c986205ab481ce5ab98b738dafb50dddd12a003335c",
+    "skills/scvd-x402-verification/SKILL.md": "38229111502b078697adf980ca5a6d74db879c30bb7e5b01b831e57c70b5258b",
+    "src/lib/pay-to-digest.ts": "b4f107009c6e1fabfaaa4a53c85fdf29cb5ab4446d4b0257381f4ad53820b098",
+    "verifier/CHANGELOG.md": "b6b991fb7fa9cfe94c121939d197a113f8f1e21dcd89c443b942db00e049b0c7",
+    "verifier/README.md": "fe72377d8a1b5d2aa7016510d002c7727e2a00569aee93409bded815b87a3b3f",
+    "verifier/evidence-cli.mjs": "6d95f5663de2c04648293e84d56abd2d5377ef752f073124372c50ae4562c624",
+    "verifier/package.json": "90f415847298b7d035ef9d73c52b4eea8de19e5ac604cbcbb62b292e374a7113",
+    "verifier/evidence-report.js": "ec90d8dda960d5d5f897e19ffb7ed33232d2b2ff2504ff7b47ea2153ee997d34",
+    "verifier/evidence-report.test.mjs": "00543679c7944451053427c9bbb53c92dd129487d7bae0fed091cd9ed15e819f",
+    "verifier/payment-identity.d.ts": "96bf9607f27e6e6041933d63ff0098fcdd6893c3e55c2afd4b80000d8732a5b6",
+    "verifier/payment-identity.js": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74",
+    "test/verifier-package.spec.ts": "409d4c935fe69781ca575db36ff3bb7c3db711ba0f3b318ff0deb899e98d3a5e"
+  },
+  "validation_files": [
+    {
+      "file": "scvd-evidence-report-date-red.log",
+      "bytes": 1186,
+      "sha256": "d040fbcbfa32e24a03eea99eefe022f36f3fd6b8c8e4093752518c7ecd4ee88c"
+    },
+    {
+      "file": "scvd-evidence-report-red.log",
+      "bytes": 4438,
+      "sha256": "a44c46459644ff0b38569f49589101f60da4b94ac7c779c3aab5e752c7b0a830"
+    },
+    {
+      "file": "scvd-report-bounds-red.log",
+      "bytes": 1652,
+      "sha256": "112dc90aa80d113a7f864664c5cd5730b71e1aae8951651bb68588c191278a99"
+    },
+    {
+      "file": "scvd-report-final-buyer.log",
+      "bytes": 49390,
+      "sha256": "a97d042c3112b93160c65fbd2363c3fdf89009af3018e0ac9bc3126e94756f5c"
+    },
+    {
+      "file": "scvd-report-final-verifier.log",
+      "bytes": 43029,
+      "sha256": "1d5129908bab770cb4f34e4817c291038819e4d04e6127e8a812e5777be2ffea"
+    },
+    {
+      "file": "scvd-report-focused-final.log",
+      "bytes": 4336,
+      "sha256": "2c148df6f3090d3495fae39bc664b453875f6735e1a8b557665560c64cb4e8b3"
+    },
+    {
+      "file": "scvd-report-handoff-red.log",
+      "bytes": 2428,
+      "sha256": "d9d797b44b5e7b907eb263dc0e246e6c42fe95410c93b1945fde2fe40c7350a3"
+    },
+    {
+      "file": "scvd-report-install-red.log",
+      "bytes": 905,
+      "sha256": "c2483232e709decd45d484c67f902043564fd5339289e0298f906e8d40557663"
+    },
+    {
+      "file": "scvd-report-output-red.log",
+      "bytes": 994,
+      "sha256": "e92ec901cf32d5f198aedfc092eede920b51abf8ae4e0f63e9647768e6ef3eca"
+    },
+    {
+      "file": "scvd-report-pack-red.log",
+      "bytes": 3048,
+      "sha256": "bba0d688b9cea43d94283e6a557a03af5ff210687d0efb4819dbce556d5c7924"
+    },
+    {
+      "file": "scvd-report-stable-activation.log",
+      "bytes": 758,
+      "sha256": "8862c6a5e4b3d656783893ab6925e9d460f6e154af62253f96f5c0160139add0"
+    },
+    {
+      "file": "scvd-report-stable-build.log",
+      "bytes": 4137,
+      "sha256": "47e6de2adfb5fd62c4efb50818dfc47c61b8540716f70554b765cbd53ccb29f7"
+    },
+    {
+      "file": "scvd-report-stable-checks.json",
+      "bytes": 79,
+      "sha256": "9db5eed69fc3e9f081e74a3d2d4ae0985e2d07f33fd22df4c6385fa43a850e64"
+    },
+    {
+      "file": "scvd-report-stable-docs.log",
+      "bytes": 7333,
+      "sha256": "76e143911417b9d3261050122ea2922ebae53844c5af5a569318e545e7369b8c"
+    },
+    {
+      "file": "scvd-report-stable-types.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "scvd-report-stable-vectors.log",
+      "bytes": 693,
+      "sha256": "01346ff5713ed49c84e10a75592a70393d76fa8d48231e22c94b9958111b9128"
+    },
+    {
+      "file": "scvd-report-worker-focused.log",
+      "bytes": 54566,
+      "sha256": "c4f5340e0544f22123eff9e30cfe50f5ad5d7bfa134493bd5cf34aeb14ec62e8"
+    },
+    {
+      "file": "scvd-report-full-final.log",
+      "bytes": 18975986,
+      "sha256": "a543f498f765bc98334f4287072c5ed7a0ef872241bbaa818987190d68577233"
+    },
+    {
+      "file": "scvd-report-full-final.json",
+      "bytes": 4943192,
+      "sha256": "8955a26f0cdb264d7d8de236436bef9f55a006748d36045606e5e329b3c6ebf5"
+    },
+    {
+      "file": "scvd-report-full-final-exit.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "scvd-report-package-recheck.log",
+      "bytes": 706,
+      "sha256": "3bf6d2ca5eba0435f999c2a747150c02072d826ceef87c5f892c972c6d0a324b"
+    },
+    {
+      "file": "scvd-report-package-recheck.json",
+      "bytes": 4899,
+      "sha256": "129f87862e9b5d2b4f8d29a11776e90aa361fa96ce155f52ff05bf08e3e4346a"
+    },
+    {
+      "file": "scvd-report-types-final.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "scvd-report-docs-final.log",
+      "bytes": 7411,
+      "sha256": "06b79b84e4e6e05d95c20a32912c19f3d3bcfcdb3be565d3458b681e19802d34"
+    }
+  ],
+  "prior_attempts": [
+    {
+      "scope": "early full local",
+      "outcome": "interrupted to finish source before final full run; exit 130; not a completed result"
+    },
+    {
+      "scope": "first buyer-control suite",
+      "outcome": "248 pass / 1 frozen-instrument mismatch while controller edited source; stable rerun 249 pass, no assertion change"
+    },
+    {
+      "scope": "first activation suite",
+      "outcome": "stale README tarball version failed package contract; fixed and stable rerun passed"
+    }
+  ],
+  "native_attempts": 0,
+  "historical_scores_changed": false
+}
