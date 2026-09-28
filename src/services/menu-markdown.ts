@@ -1,4 +1,6 @@
 import { artifactClassForItem } from "@/store/attestation-spec";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyUrlTemplate } from "@/lib/buyer-contract";
 import { priceTiersUsdc } from "@/lib/payments";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { STORE_METADATA } from "@/store/metadata";
@@ -101,7 +103,7 @@ export const ONE_OFF = "one-off";
  * buyer deciding to make it. A term item expires. That is all it does.
  */
 export const NEVER_AUTO_RENEWS =
-  "nothing here charges again by itself, ever \u2014 there is no mechanism that could";
+  "nothing here charges again by itself, ever — there is no mechanism that could";
 
 /** Exported for the same reason and on the same day as priceLine. */
 export function fulfillmentLine(item: MenuItem): string {
@@ -121,6 +123,23 @@ export function renderItemMarkdown(item: MenuItem, base: string, config?: Purcha
     item.weekly_inventory !== undefined
       ? `\nStock: ${item.weekly_inventory} per week; a waitlist opens when the shelf empties.\n`
       : "";
+  /*
+   * THE BUY LINE IS THE TEMPLATE, NOT THE BARE DOOR (2026-09-28, off
+   * the decline desk). This twin printed `GET /api/buy/spot_check` as
+   * the thing to do and left "give the host in the host query
+   * parameter" to the house-rules prose four lines down — the sibling
+   * the 2026-09-21 correction already said a reader does not
+   * cross-reference. A markdown reader acts on the line marked buy,
+   * so that line is buy_url_template: the same door with its inputs
+   * as <slots>, the identical string the catalog, the compact contract
+   * and the 402's retry_url_template carry. Where nothing is required
+   * the template IS the bare door and the line reads as it always did.
+   */
+  const required = (buyInputSchema(item).required ?? []).filter((name) => name !== "agent_name");
+  const requiredLine =
+    required.length === 0
+      ? ""
+      : `- **required inputs:** ${required.map((name) => `\`${name}\``).join(", ")} — fill the ${required.map((name) => `\`<${name}>\``).join(", ")} slot${required.length === 1 ? "" : "s"} above before paying. The bare door \`GET ${base}/api/buy/${item.id}\` quotes free and refuses the paid request without ${required.length === 1 ? "it" : "them"}; no money moves.\n`;
   return `# ${item.name}
 ${item.subtitle ? `\n_${item.subtitle}_\n` : ""}
 ${item.description}
@@ -128,8 +147,8 @@ ${item.description}
 - **id:** \`${item.id}\`
 - **price:** ${priceLine(item)}
 - **fulfillment:** ${fulfillmentLine(item)}
-- **buy:** \`GET ${base}/api/buy/${item.id}\` (${checkoutMethod(config)})
-${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${
+- **buy:** \`GET ${buyUrlTemplate(item, base)}\` (${checkoutMethod(config)})
+${requiredLine}${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${
     artifactClassForItem(item.id)
       ? `- **does not prove:** ${artifactClassForItem(item.id)!.does_not_prove}\n`
       : ""
@@ -185,5 +204,15 @@ export function ladderRung(
     cadence: item.cadence,
     ...(item.term_days !== undefined ? { term_days: item.term_days } : {}),
     buy_url: `${base}/api/buy/${item.id}`,
+    /*
+     * Every rung this function prices takes a required input — the
+     * preflight's four, the look's two, the operator's statement —
+     * so the bare buy_url above is the URL that refuses the purchase
+     * it advertises (the 2026-09-21 correction). A buyer reaches these
+     * rungs one hop after a free read with the subject already in
+     * hand; the template is the door with the slot for it. buy_url
+     * stays bare beside it, per the probe rule.
+     */
+    buy_url_template: buyUrlTemplate(item, base),
   };
 }

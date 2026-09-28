@@ -6,6 +6,7 @@ import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { getMenuItem } from "@/store/menu";
+import { buyUrlTemplate } from "@/lib/buyer-contract";
 import { priceLine } from "@/services/menu-markdown";
 import { derivedFromCorpus } from "@/services/corpus-list";
 import { deriveDoorIndex, type DoorIndex, type DoorIndexEntry } from "@/services/door-index";
@@ -258,6 +259,10 @@ function bodyJson(base: string, index: DoorIndex, hosts: DoorIndexEntry[]) {
         cadence: item.cadence,
         ...(item.term_days !== undefined ? { term_days: item.term_days } : {}),
         buy_url: `${base}/api/buy/${item.id}`,
+        // All five deeper reads take a required input, so the bare door
+        // above quotes and then refuses the purchase; this is the door
+        // with its slot in place (2026-09-28, off the decline desk).
+        buy_url_template: buyUrlTemplate(item, base),
       })),
     },
     how_to_call: howToCall(base),
