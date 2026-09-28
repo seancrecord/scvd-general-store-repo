@@ -202,12 +202,14 @@ export async function readMppSaleEvidence(env: Env, now: Date = new Date()): Pro
     listing.months_unreadable = [...months];
     return listing;
   }
-  for (const month of months) {
-    let raw: string[];
-    try {
-      raw = await env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${month}/mpp-sales`)).listMppSales();
-    } catch {
-      listing.months_unreadable.push(month);
+  // One ledger per month, asked together — the same shape as
+  // readMppSales above, and a month that throws answers null here.
+  const ledger = env.COUNTER_LEDGER;
+  const answers = await Promise.all(months.map((month) =>
+    ledger.get(ledger.idFromName(`${month}/mpp-sales`)).listMppSales().catch(() => null)));
+  for (const [index, raw] of answers.entries()) {
+    if (raw === null) {
+      listing.months_unreadable.push(months[index]!);
       continue;
     }
     for (const text of raw) {
