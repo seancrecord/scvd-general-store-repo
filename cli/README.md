@@ -19,8 +19,8 @@ Zero dependencies. Node 18.17+. MIT.
 > Published from CI with `npm publish --provenance`, so the tarball
 > carries a signed attestation binding it to this repo and the commit
 > it was built from — the same bar this store holds everybody else's
-> artifacts to. No install needed either way: the whole tool is this
-> one file, and `node cli/scvd.mjs preflight <url>` works from a clone.
+> artifacts to. No install needed from a clone:
+> `node cli/scvd.mjs preflight <url>` also works with the adjacent files.
 
 <!--
   THE FIRST TARBALL COULD NOT TELL THE TRUTH, and it is worth knowing
@@ -47,6 +47,7 @@ Zero dependencies. Node 18.17+. MIT.
 | Command | What it asks the store |
 | --- | --- |
 | `scvd preflight <url>` | Does that x402 door answer a well-formed 402? One probe, every check named, testnet traps flagged. |
+| `scvd inspect <url>` | Observed protocols, unverified advertised terms, structural findings, observation time and gaps. No signature verification or payment. Added in 0.4.0. |
 | `scvd conformance <file\|->` | Is that compact-JWS signed offer or receipt well-formed, correctly signed and unexpired? Any issuer's, including ones the store competes with. |
 | `scvd receipt <file\|->` | Verify any issuer's receipt JSON and get back a signed verdict. |
 | `scvd verify <id>` | Verify anything this store ever signed. Free, forever, including artifacts you did not buy. |
@@ -103,6 +104,16 @@ do next prints that too.
 | `1` | The instrument ran and the answer was no — a `not_ready` verdict, an invalid artifact, an id that does not verify. |
 | `2` | You asked for something the store refused as malformed. |
 | `3` | The store, or the network between you and it, did not answer. Also the probe-budget refusal. |
+
+`inspect` has a separate exit policy, in both text and `--json` modes:
+`0` means a response was inspected, including MPP-only, unknown protocols
+and partial readings with explicit gaps; `2` means a refused request;
+`3` means no usable observation (unreachable, unresolved method, budget or
+store failure, or missing/unsupported inspection data). Zero is not a
+readiness verdict. `--json` preserves the server's whole response. Terms
+are selected advertised fields with shown/total/omitted counts, not complete
+payment instructions. Empty protocol sets never prove endpoint-wide absence.
+No artifact signature, payment, settlement or delivery check is performed.
 
 A `preflight` verdict of `unreachable` exits `0`, deliberately: it is a
 statement about the network path at one moment and not a finding about

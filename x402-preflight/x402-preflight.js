@@ -16,6 +16,9 @@
  * key and cannot spend money.
  */
 
+import { inspectionOf, inspectionExitCodeFor } from "./inspection.js";
+export { INSPECTION_VERSION, INSPECTION_TERM_LIMIT, inspectionOf, inspectionExitCodeFor, renderInspectionLines } from "./inspection.js";
+
 export const DEFAULT_BASE = "https://scvd.store";
 export const BATTERY = "v2";
 export const EXIT = Object.freeze({ ok: 0, verdictNegative: 1, usage: 2, unreachable: 3 });
@@ -65,6 +68,12 @@ export async function preflightOne(url, { base = DEFAULT_BASE, fetch: fetchImpl 
     return { url, outcome: "refused", detail, status: response.status, body, next_action: body && typeof body === "object" ? body.next_action ?? null : null };
   }
   return { url, outcome: body.verdict, detail: null, status: 200, body };
+}
+
+/** Same hosted observation, with an exit policy separate from the x402 deploy gate. */
+export async function inspectOne(url, options = {}) {
+  const result = await preflightOne(url, options);
+  return { ...result, inspection: inspectionOf(result.body), inspectionExitCode: inspectionExitCodeFor(result) };
 }
 
 /** Every door, in order, one probe each. */

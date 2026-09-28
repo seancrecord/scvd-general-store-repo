@@ -1,4 +1,5 @@
 import { Hono, type Context } from "hono";
+import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import { readDisclosure } from "@/lib/disclosure";
 import { recordDisclosure } from "@/services/disclosure-census";
@@ -67,6 +68,7 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
     summary:
       "Send a URL; we GET it once and report whether it answers a well-formed x402 v2 payment challenge: a 402 status, a parseable base64 PAYMENT-REQUIRED header, accepts entries a client can actually sign against, and structurally valid signed offers if declared. Free, no account. One probe, one moment — a shape check, never an uptime claim.",
     method: "POST",
+    inspection: ENDPOINT_INSPECTION_SCHEMA,
     url: `${base}/api/preflight/${battery}`,
     request: {
       url: "REQUIRED. The https URL a buyer would GET expecting your 402 — your buy endpoint, not your homepage.",

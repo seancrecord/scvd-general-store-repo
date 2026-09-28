@@ -1,0 +1,179 @@
+{
+  "date": "2026-09-28",
+  "scope": "PS6 completion: tolerate additive structural fields without rendering unvalidated data; enforce x402 string-or-null term declarations.",
+  "status": "Built and checked locally; uncommitted, unmerged, unpublished. No buyer/model qualification.",
+  "priorEvidence": "verification.json",
+  "validation": {
+    "red": {
+      "command": "node --test x402-preflight/inspection.test.mjs",
+      "passed": 10,
+      "failed": 2
+    },
+    "node": {
+      "command": "node --test x402-preflight/*.test.mjs cli/*.test.mjs action/preflight/*.test.mjs",
+      "passed": 64
+    },
+    "worker": {
+      "command": "npm test -- test/endpoint-inspection.spec.ts test/packages.spec.ts",
+      "files": 2,
+      "passed": 32
+    },
+    "typecheck": "npm run typecheck passed",
+    "build": "npm run build:check passed",
+    "installedConsumers": "Fresh offline local tarball JavaScript, strict TypeScript and CLI consumers passed."
+  },
+  "packages": [
+    {
+      "name": "scvd-preflight",
+      "version": "0.3.0",
+      "tarballSha256": "b674303b82a8191499e29cbe919267b95da00233b23c52f73caacb2d1f031005",
+      "installedSourceMatches": [
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "c65f016220baaa35b15140908d2f93d40d8905ea67b9a063f82278b6e794d694"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+        },
+        {
+          "path": "README.md",
+          "sha256": "defa4e76d77753ef0a8d08f47a573808ff3cbcfe1fa5447e211fe68820053d3d"
+        },
+        {
+          "path": "bin.mjs",
+          "sha256": "ff92d61a65f6abcd4d0f9e950da127324e4dbfdcebd1ac22fee27b45a1eab5cd"
+        },
+        {
+          "path": "example.mjs",
+          "sha256": "997aae0b2f8104cb42257c054f6f027fb7a728d15f2b1b8f2cda4fe8291f5c47"
+        },
+        {
+          "path": "fixtures/accepts-empty.json",
+          "sha256": "aa518ae230051033c30464164ffe56f4ed53807a9911124ac0fb690254750625"
+        },
+        {
+          "path": "fixtures/exit-law.json",
+          "sha256": "890b8e86226eced2303fc90c78c29c937eee84c1a2c0345cb4bcae5ee8861622"
+        },
+        {
+          "path": "fixtures/inspection-inputs.json",
+          "sha256": "f98ed3e95134a258335ad3eb2d20c3fb1802096d7ed8122b310054377769b45a"
+        },
+        {
+          "path": "fixtures/inspection/method-unresolved.json",
+          "sha256": "9ff9cd660190bf626235a54722e6c796bcff6989e1945c84a3ccb429b0fbdcf1"
+        },
+        {
+          "path": "fixtures/inspection/mixed.json",
+          "sha256": "23cd28f0f435da39f05c1006f3be70bbdb09210714ab2ea7c768aeb0671a7e1b"
+        },
+        {
+          "path": "fixtures/inspection/mpp-only.json",
+          "sha256": "fd8b7d1411682ca52b8d05c737c0b4be5dce1b1d8f37642da83e41ac5c3aa9a7"
+        },
+        {
+          "path": "fixtures/inspection/over-limit.json",
+          "sha256": "fa25fb4c67cb7566a198e81bbfffdc03ed15513f271704440c2bc98593b35ca0"
+        },
+        {
+          "path": "fixtures/inspection/unknown.json",
+          "sha256": "6f4875b8fc8e837a2b6547cf825400879820b24aa9a03606357cd3b49a087ab9"
+        },
+        {
+          "path": "fixtures/inspection/unreachable.json",
+          "sha256": "42ec603ab83adce688f92043a06aee5bd2fddcf243f809b44781bb455754bdb8"
+        },
+        {
+          "path": "fixtures/inspection/x402-only.json",
+          "sha256": "379d9d9d2c44077d7445118625fe35cee9090f22a0cc5d041bbcb727d38b2f4a"
+        },
+        {
+          "path": "fixtures/ready-would-sign.json",
+          "sha256": "02a9ab094d76a67c38060d3942a451bfbff6847b67521a7c20204a0ea3454df9"
+        },
+        {
+          "path": "fixtures/unreachable.json",
+          "sha256": "88553f4d3767b897f07cc2e2ff3c08433f6c38758f8dfc588f82e6b25701c2c5"
+        },
+        {
+          "path": "inspection.d.ts",
+          "sha256": "64b3d98b1aed4ac13bd164429bbfb27bb67f2ad33f0b229138ec842c3392cb25"
+        },
+        {
+          "path": "inspection.js",
+          "sha256": "a60e84eb5fc5e9d4a591e15cab17301dcf69d9c0c8338af1c6d1a685aa8f327c"
+        },
+        {
+          "path": "package.json",
+          "sha256": "de2ab2215f220bebd194fb52b3b321399d8f680538acbe7a2667efcaba960c78"
+        },
+        {
+          "path": "x402-preflight.d.ts",
+          "sha256": "0ef997af1936a5b0217c712d05390d9732566c2bb3f8b0aeece3b35de77fa49b"
+        },
+        {
+          "path": "x402-preflight.js",
+          "sha256": "e384a13b761f35b8fe39447cd0d05722ec127e3c48a4792a88e3aa936bab215d"
+        }
+      ]
+    },
+    {
+      "name": "scvd-cli",
+      "version": "0.4.0",
+      "tarballSha256": "e4561875773e468e59df112c39103e97632006ec23acd599c8986b60f09f8f28",
+      "installedSourceMatches": [
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "8f6f56e0717525b8e7a7acfa3d215b57ade3bdcbbaa585aa06e5e33beec341d9"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+        },
+        {
+          "path": "README.md",
+          "sha256": "72a5173f8e73510126e3870d01940a1c3d985bf6a147f714ce113d121df185bc"
+        },
+        {
+          "path": "inspection.js",
+          "sha256": "a60e84eb5fc5e9d4a591e15cab17301dcf69d9c0c8338af1c6d1a685aa8f327c"
+        },
+        {
+          "path": "package.json",
+          "sha256": "371097c12bde17e3eb7d6341c891d33e29e978cda7d9f4e0fa5843f3d112f2e6"
+        },
+        {
+          "path": "scvd.mjs",
+          "sha256": "b283efe8bfaf88f84e8200d93dfa0836f036378ece420e8a2e9f43aa33d758a6"
+        }
+      ]
+    }
+  ],
+  "preCommitFullSuite": {
+    "command": "npm run typecheck && npm test",
+    "typecheck": "passed",
+    "files": 839,
+    "passed": 15670,
+    "failed": 4,
+    "skipped": 1,
+    "durationSeconds": 1248.38,
+    "failures": {
+      "test/asked-for.spec.ts": "Restore the established x402 endpoint preflight discovery phrase.",
+      "test/oasf-record.spec.ts": "Two assertions: regenerate the OASF record from the updated canonical tool summary.",
+      "test/examples.spec.ts": "Treat the additive inspection block as optional in historical fixtures; fresh-probe tests require it."
+    },
+    "resolution": "All four failures resolved: 38 tests passed across the three affected files and endpoint-inspection.spec.ts. Typecheck and build:check passed again."
+  },
+  "ciClockRepair": {
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36469682194",
+    "job": 109088501098,
+    "failure": "Existing global-budget test seeded the real wall-clock minute; its request completed across 19:09:00 UTC and read a fresh bucket.",
+    "change": "Freeze the seed and route clocks together, derive the ceiling from the exported constant, and always clean up the seeded key. Production rate limiting unchanged.",
+    "validation": {
+      "command": "npm run typecheck && npm test -- test/preflight.spec.ts",
+      "typecheck": "passed",
+      "passed": 28
+    }
+  }
+}

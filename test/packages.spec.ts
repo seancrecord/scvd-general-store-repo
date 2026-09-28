@@ -95,7 +95,7 @@ describe("scvd-defects ships the tree's fixtures, byte for byte", () => {
  */
 const shipped: Record<string, string> = {
   ...(import.meta.glob("../x402-preflight/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
-  ...(import.meta.glob("../x402-preflight/fixtures/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+  ...(import.meta.glob("../x402-preflight/fixtures/**/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("../corpus-client/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("../defects/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("../defects/fixtures/doors/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),

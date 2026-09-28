@@ -1,0 +1,109 @@
+import { inspectOne, inspectionOf, inspectionExitCodeFor, renderInspectionLines, type EndpointInspection } from "scvd-preflight";
+const report = {
+  "version": "v2",
+  "verdict": "not_ready",
+  "inspection": {
+    "version": "inspection-v1",
+    "subject_url": "https://door.example/api/paid",
+    "observed_at": "2026-09-28T12:01:00.000Z",
+    "reachability": {
+      "state": "responded",
+      "http_status": 402,
+      "method": "GET"
+    },
+    "protocols": {
+      "state": "read",
+      "observed": [
+        "mpp"
+      ],
+      "scope": "Only this response: x402 header presence and parsed MPP challenges. Unknown protocols are outside this reader; an empty set does not prove endpoint-wide absence."
+    },
+    "terms": {
+      "trust": "unverified_advertisement",
+      "scope": "Selected advertised fields only, not complete payment instructions. Extension fields are omitted; no choice, signature binding or payment authorization is implied.",
+      "limit_per_protocol": 32,
+      "x402": {
+        "state": "unobserved",
+        "entries": [],
+        "total": 0,
+        "omitted": 0
+      },
+      "mpp": {
+        "state": "read",
+        "entries": [
+          {
+            "index": 0,
+            "id": "ch_01",
+            "realm": "door.example",
+            "method": "evm",
+            "intent": "charge",
+            "amount": "1000",
+            "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "recipient": "0x1111111111111111111111111111111111111111",
+            "chain_id": 8453,
+            "expires": "2099-01-01T00:00:00Z"
+          }
+        ],
+        "total": 1,
+        "omitted": 0
+      }
+    },
+    "structure": {
+      "x402": {
+        "battery": "v2",
+        "verdict": "not_ready",
+        "checked": 2,
+        "failed": [
+          "payment-required-header"
+        ]
+      },
+      "mpp": {
+        "battery": "mpp-v1",
+        "checked": 12,
+        "failed": []
+      },
+      "mpp_core": {
+        "battery": "mpp-core-v1",
+        "state": "read",
+        "checked": 19,
+        "failed": [
+          "challenge-no-store"
+        ],
+        "unmeasured": [
+          "method-registration",
+          "intent-registration",
+          "challenge-binding"
+        ]
+      }
+    },
+    "coverage": {
+      "body": "read",
+      "mpp_core": "read"
+    },
+    "signatures": {
+      "state": "not_checked",
+      "reason": "Offer shape checks are structural only. No issuer key was resolved and no artifact signature was verified."
+    },
+    "unperformed": [
+      "artifact_signature_verification",
+      "payment_signing",
+      "payment_submission",
+      "settlement",
+      "delivery"
+    ],
+    "gaps": [
+      "One response at one moment; no uptime or future freshness guarantee.",
+      "This is the observable core subset under the cited draft, not general MPP conformance or payment readiness. The frozen mpp-v1/draft-00 reading, x402 verdict, census history and passport qualification retain their meaning.",
+      "Method and intent registration, their request schemas, amounts, currencies and recipients are not verified by this core reader. The core draft's proposed registry is initially empty; a repository directory is not an IANA registration.",
+      "Challenge binding, request-body digest binding, credential routing, replay protection, concurrency, settlement, delivery and payment preferences are unmeasured. No credential was submitted. No reading here rests on a payment: the till of this store has spoken MPP since 2026-09-18, and that says nothing about the door read.",
+      "HTTPS is observable; the negotiated TLS version is not measured here. Expiry evaluation does not resolve leap seconds or the RFC 3339 unknown local offset. Deep JSON beyond this reader's validation limit remains unmeasured.",
+      "No Payment version is carried on the wire. The cited draft identifies this reader's rules, not a version claimed by the endpoint. Problem Details are a SHOULD recommendation, reported separately from failed checks."
+    ]
+  }
+}
+;
+const result = await inspectOne(report.inspection.subject_url, { fetch: async () => new Response(JSON.stringify(report)) });
+const reading: EndpointInspection | null = result.inspection;
+if (!reading || reading.protocols.observed[0] !== "mpp" || result.inspectionExitCode !== 0 || inspectionExitCodeFor(result) !== 0 || inspectionOf(result.body)?.signatures.state !== "not_checked") throw new Error("installed consumer disagrees");
+if (!renderInspectionLines(result).some(line => line.includes("unverified"))) throw new Error("missing scope");
+console.log("strict TypeScript installed consumer passed");

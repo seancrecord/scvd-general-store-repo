@@ -132,7 +132,7 @@
           {
             "name": "preflight_endpoint",
             "title": "Preflight an x402 Endpoint",
-            "description": "Is this door's x402 challenge well-formed right now? One unpaid probe returns the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. Shape at one moment: not uptime, not delivery, and not this store's record of the host, which look_at_door holds. Free and rate limited; the ceiling travels with the result.",
+            "description": "Inspect this endpoint without payment: observed x402/MPP protocols, unverified advertised terms, structural findings and gaps. The verdict remains x402-specific; an MPP-only door is not globally broken. One moment, no signature verification or delivery claim. Free and rate limited.",
             "scopes": [
               "external"
             ]

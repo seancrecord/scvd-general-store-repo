@@ -1,0 +1,85 @@
+{
+  "source": "Synthetic regression inputs; x402 and MPP headers reuse test/fixtures/mpp. No live observation.",
+  "observed_at": "2026-09-28T12:00:00.000Z",
+  "cases": [
+    {
+      "name": "x402-only",
+      "url": "https://door.example/api/paid",
+      "status": 402,
+      "headers": {
+        "content-type": "application/problem+json",
+        "payment-required": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW3sic2NoZW1lIjogImV4YWN0IiwgIm5ldHdvcmsiOiAiZWlwMTU1Ojg0NTMiLCAiYXNzZXQiOiAiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwgImFtb3VudCI6ICIxMDAwIiwgInBheVRvIjogIjB4MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMSJ9XX0="
+      },
+      "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}",
+      "protocols": [
+        "x402"
+      ]
+    },
+    {
+      "name": "mpp-only",
+      "url": "https://door.example/api/paid",
+      "status": 402,
+      "headers": {
+        "content-type": "application/problem+json",
+        "www-authenticate": "Payment id=\"ch_01\", realm=\"door.example\", method=\"evm\", intent=\"charge\", request=\"eyJhbW91bnQiOiIxMDAwIiwiY3VycmVuY3kiOiIweDgzMzU4OWZDRDZlRGI2RTA4ZjRjN0MzMkQ0ZjcxYjU0YmRBMDI5MTMiLCJtZXRob2REZXRhaWxzIjp7ImNoYWluSWQiOjg0NTMsImNyZWRlbnRpYWxUeXBlcyI6WyJhdXRob3JpemF0aW9uIl19LCJyZWNpcGllbnQiOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEifQ\", expires=\"2099-01-01T00:00:00Z\""
+      },
+      "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}",
+      "protocols": [
+        "mpp"
+      ]
+    },
+    {
+      "name": "mixed",
+      "url": "https://door.example/api/paid",
+      "status": 402,
+      "headers": {
+        "content-type": "application/problem+json",
+        "www-authenticate": "Payment id=\"ch_06\", realm=\"door.example\", method=\"evm\", intent=\"charge\", request=\"eyJhbW91bnQiOiIxMDAwIiwiY3VycmVuY3kiOiIweDgzMzU4OWZDRDZlRGI2RTA4ZjRjN0MzMkQ0ZjcxYjU0YmRBMDI5MTMiLCJtZXRob2REZXRhaWxzIjp7ImNoYWluSWQiOjg0NTMsImNyZWRlbnRpYWxUeXBlcyI6WyJhdXRob3JpemF0aW9uIl19LCJyZWNpcGllbnQiOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEifQ\"",
+        "payment-required": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW3sic2NoZW1lIjogImV4YWN0IiwgIm5ldHdvcmsiOiAiZWlwMTU1Ojg0NTMiLCAiYXNzZXQiOiAiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwgImFtb3VudCI6ICIxMDAwIiwgInBheVRvIjogIjB4MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMSJ9XX0="
+      },
+      "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}",
+      "protocols": [
+        "x402",
+        "mpp"
+      ]
+    },
+    {
+      "name": "unknown",
+      "url": "https://door.example/api/paid",
+      "status": 200,
+      "headers": {},
+      "body": "{}",
+      "protocols": []
+    },
+    {
+      "name": "unreachable",
+      "url": "https://door.example/api/paid",
+      "status": null,
+      "headers": {},
+      "body": "",
+      "protocols": []
+    },
+    {
+      "name": "over-limit",
+      "url": "https://door.example/api/paid",
+      "status": 402,
+      "headers": {
+        "content-type": "application/problem+json",
+        "payment-required": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW3sic2NoZW1lIjogImV4YWN0IiwgIm5ldHdvcmsiOiAiZWlwMTU1Ojg0NTMiLCAiYXNzZXQiOiAiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwgImFtb3VudCI6ICIxMDAwIiwgInBheVRvIjogIjB4MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMSJ9XX0="
+      },
+      "body": "{}",
+      "protocols": [
+        "x402"
+      ],
+      "over_limit": true
+    },
+    {
+      "name": "method-unresolved",
+      "url": "https://door.example/api/paid",
+      "status": 405,
+      "headers": {},
+      "body": "",
+      "protocols": []
+    }
+  ]
+}

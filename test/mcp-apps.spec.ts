@@ -200,6 +200,11 @@ describe("the templates hold the properties the render test proved load-bearing"
     // No expiry line in v1: "one probe, one moment" is the freshness
     // claim; the stored-reading label is the keeper's open copy call.
     expect(html).not.toContain("expires in");
+    expect(html).toContain('"x402: "');
+    expect(html).toContain("inspection.observed_at");
+    expect(html).toContain("inspection.protocols.observed");
+    expect(html).toContain("observation time unavailable");
+    expect(html).not.toContain("observed just now");
   });
 
   it("the verify card refuses to inflate a signature into an endorsement", () => {

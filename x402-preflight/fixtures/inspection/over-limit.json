@@ -1,0 +1,90 @@
+{
+  "version": "v2",
+  "verdict": "ready",
+  "inspection": {
+    "version": "inspection-v1",
+    "subject_url": "https://door.example/api/paid",
+    "observed_at": "2026-09-28T12:05:00.000Z",
+    "reachability": {
+      "state": "responded",
+      "http_status": 402,
+      "method": "GET"
+    },
+    "protocols": {
+      "state": "partial",
+      "observed": [
+        "x402"
+      ],
+      "scope": "Only this response: x402 header presence and parsed MPP challenges. Unknown protocols are outside this reader; an empty set does not prove endpoint-wide absence."
+    },
+    "terms": {
+      "trust": "unverified_advertisement",
+      "scope": "Selected advertised fields only, not complete payment instructions. Extension fields are omitted; no choice, signature binding or payment authorization is implied.",
+      "limit_per_protocol": 32,
+      "x402": {
+        "state": "read",
+        "entries": [
+          {
+            "scheme": "exact",
+            "network": "eip155:8453",
+            "amount": "1000",
+            "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "payTo": "0x1111111111111111111111111111111111111111"
+          }
+        ],
+        "total": 1,
+        "omitted": 0
+      },
+      "mpp": {
+        "state": "unobserved",
+        "entries": [],
+        "total": 0,
+        "omitted": 0
+      }
+    },
+    "structure": {
+      "x402": {
+        "battery": "v2",
+        "verdict": "ready",
+        "checked": 8,
+        "failed": []
+      },
+      "mpp": {
+        "battery": "mpp-v1",
+        "checked": 0,
+        "failed": []
+      },
+      "mpp_core": {
+        "battery": "mpp-core-v1",
+        "state": "absent",
+        "checked": 0,
+        "failed": [],
+        "unmeasured": []
+      }
+    },
+    "coverage": {
+      "body": "over_limit",
+      "mpp_core": "absent"
+    },
+    "signatures": {
+      "state": "not_checked",
+      "reason": "Offer shape checks are structural only. No issuer key was resolved and no artifact signature was verified."
+    },
+    "unperformed": [
+      "artifact_signature_verification",
+      "payment_signing",
+      "payment_submission",
+      "settlement",
+      "delivery"
+    ],
+    "gaps": [
+      "One response at one moment; no uptime or future freshness guarantee.",
+      "This is the observable core subset under the cited draft, not general MPP conformance or payment readiness. The frozen mpp-v1/draft-00 reading, x402 verdict, census history and passport qualification retain their meaning.",
+      "Method and intent registration, their request schemas, amounts, currencies and recipients are not verified by this core reader. The core draft's proposed registry is initially empty; a repository directory is not an IANA registration.",
+      "Challenge binding, request-body digest binding, credential routing, replay protection, concurrency, settlement, delivery and payment preferences are unmeasured. No credential was submitted. No reading here rests on a payment: the till of this store has spoken MPP since 2026-09-18, and that says nothing about the door read.",
+      "HTTPS is observable; the negotiated TLS version is not measured here. Expiry evaluation does not resolve leap seconds or the RFC 3339 unknown local offset. Deep JSON beyond this reader's validation limit remains unmeasured.",
+      "No Payment version is carried on the wire. The cited draft identifies this reader's rules, not a version claimed by the endpoint. Problem Details are a SHOULD recommendation, reported separately from failed checks.",
+      "The response body exceeded the existing parser limit; body-dependent findings have gaps."
+    ]
+  }
+}

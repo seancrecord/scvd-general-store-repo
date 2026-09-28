@@ -1,3 +1,6 @@
+import type { EndpointInspection } from "./inspection.js";
+export { INSPECTION_VERSION, INSPECTION_TERM_LIMIT, inspectionOf, inspectionExitCodeFor, renderInspectionLines } from "./inspection.js";
+export type { EndpointInspection, InspectionResponse, InspectionTerms } from "./inspection.js";
 export const DEFAULT_BASE: string;
 export const BATTERY: string;
 export const EXIT: Readonly<{ ok: 0; verdictNegative: 1; usage: 2; unreachable: 3 }>;
@@ -18,7 +21,8 @@ export interface RemediationRow {
 }
 export interface PreflightReport {
   version: string;
-  verdict: "ready" | "not_ready" | "unreachable";
+  verdict: "ready" | "not_ready" | "unreachable" | "method_unresolved";
+  inspection?: EndpointInspection;
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
   remediation?: RemediationRow[];
@@ -26,7 +30,7 @@ export interface PreflightReport {
   what_this_cannot_tell_you?: string[];
   [key: string]: unknown;
 }
-export type Outcome = "ready" | "not_ready" | "unreachable" | "refused" | "store_unreachable";
+export type Outcome = "ready" | "not_ready" | "unreachable" | "method_unresolved" | "refused" | "store_unreachable";
 export interface PreflightResult {
   url: string;
   outcome: Outcome;
@@ -38,6 +42,7 @@ export interface PreflightResult {
 export interface PreflightOptions { base?: string; fetch?: typeof fetch; timeoutMs?: number }
 
 export function preflightOne(url: string, options?: PreflightOptions): Promise<PreflightResult>;
+export function inspectOne(url: string, options?: PreflightOptions): Promise<PreflightResult & { inspection: EndpointInspection | null; inspectionExitCode: 0 | 2 | 3 }>;
 export function preflightMany(urls: readonly string[], options?: PreflightOptions): Promise<PreflightResult[]>;
 export function failedChecks(report: PreflightReport | null | undefined): string[];
 export function remediation(report: PreflightReport | null | undefined): RemediationRow[];

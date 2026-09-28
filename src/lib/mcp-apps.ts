@@ -331,9 +331,10 @@ function preflightCardHtml(): string {
         <span class="qual" id="qual"></span>
       </div>
       <div class="age">
-        <span>observed just now</span><span>one door, one moment</span>
+        <span id="observed">observation time unavailable</span><span>one door, one moment</span>
         <span><b>this card does not re-probe</b></span>
       </div>
+      <p id="protocols"></p>
     </div>
     <div class="block">
       <div class="label">The ladder — what this battery measured</div>
@@ -388,7 +389,10 @@ ${COLOPHON_HTML}
     }
     function render(r) {
       text("battery", "preflight " + (r.version || ""));
-      text("verdict", (r.verdict || "unknown") + " at " + (r.reached_level || "?"));
+      text("verdict", "x402: " + (r.verdict || "unknown") + " at " + (r.reached_level || "?"));
+      var inspection = r.inspection;
+      text("observed", inspection && inspection.observed_at ? "observed " + inspection.observed_at : "observation time unavailable");
+      text("protocols", inspection && inspection.protocols ? "Observed protocols (" + inspection.protocols.state + "): " + (inspection.protocols.observed.join(", ") || "none observed") + ". This x402 verdict is not a global readiness verdict." : "Protocol observation unavailable.");
       text("qual", QUAL[r.verdict] || "");
       text("conflict", r.our_conflict_of_interest || "");
       text("note", r.single_probe_note || "");

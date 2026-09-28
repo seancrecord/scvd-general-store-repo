@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync, readdirSync } from "node:fs";
 
 /**
  * THE CLI, TESTED AGAINST A STORE THAT IS NOT THE STORE.
@@ -22,6 +23,38 @@ import test from "node:test";
  */
 
 const CLI = fileURLToPath(new URL("./scvd.mjs", import.meta.url));
+
+for (const file of readdirSync(new URL("../x402-preflight/fixtures/inspection/", import.meta.url))) {
+  const report = JSON.parse(readFileSync(new URL(`../x402-preflight/fixtures/inspection/${file}`, import.meta.url), "utf8"));
+  test(`inspect preserves hosted ${file} evidence and its own exit policy`, async () => {
+    const handler = ({ method, url, body, headers }) => {
+      assert.equal(method, "POST"); assert.equal(url, "/api/preflight/v2");
+      assert.deepEqual(body, { url: report.inspection.subject_url });
+      assert.equal(headers["payment-signature"], undefined);
+      return { json: report };
+    };
+    const result = await run(["inspect", report.inspection.subject_url, "--json"], handler);
+    assert.deepEqual(JSON.parse(result.stdout), report);
+    assert.equal(result.code, report.inspection.reachability.state === "responded" ? 0 : 3);
+    const text = await run(["inspect", report.inspection.subject_url], handler);
+    assert.equal(text.code, result.code);
+    assert.match(text.stdout, /x402 verdict/);
+    assert.match(text.stdout, /signatures: not_checked/);
+    if (file === "mpp-only.json") {
+      const gate = await run(["preflight", report.inspection.subject_url], handler);
+      assert.equal(gate.code, 1);
+      assert.equal(result.code, 0);
+    }
+  });
+}
+
+test("inspect refuses missing observations and pre-probe failures without endpoint conclusions", async () => {
+  for (const [status, json, exit] of [[200, { verdict: "ready" }, 3], [400, { error: "refused" }, 2], [429, { error: "budget" }, 3], [500, { error: "unavailable" }, 3]]) {
+    const result = await run(["inspect", "https://door.example/paid"], () => ({ status, json }));
+    assert.equal(result.code, exit);
+    assert.match(result.stdout, /No endpoint conclusion/);
+  }
+});
 
 /** Run the tool against a one-request server and collect everything. */
 async function run(args, handler) {

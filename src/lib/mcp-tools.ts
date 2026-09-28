@@ -1,3 +1,4 @@
+import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { isVerificationTool, METERED_TOOL_EFFECTS, VERIFICATION_TOOL_WORLD } from "@/lib/mcp-tool-effects";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
 import { PURCHASE_RECOVERY_TOOL_GUIDANCE, PURCHASE_STATUS_GUIDANCE_PROPERTIES } from "@/lib/purchase-status-contract";
@@ -1056,10 +1057,10 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "preflight_endpoint",
     summary:
-      "Is this door's x402 challenge well-formed right now? One unpaid probe returns the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. Shape at one moment: not uptime, not delivery, and not this store's record of the host, which look_at_door holds. Free and rate limited; the ceiling travels with the result.",
+      "Inspect this endpoint without payment: observed x402/MPP protocols, unverified advertised terms, structural findings and gaps. The verdict remains x402-specific; an MPP-only door is not globally broken. One moment, no signature verification or delivery claim. Free and rate limited.",
     reads: "subject_fetch",
     description:
-      "x402 endpoint preflight, free. For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
+      "Endpoint inspection and x402 endpoint preflight, free. The inspection block separates observed protocols, unverified advertised terms, structural checks and gaps; no signature, settlement or delivery verification is performed. The top-level verdict remains x402-specific. For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1078,7 +1079,8 @@ const FREE_TOOLS: McpTool[] = [
     outputSchema: {
       type: "object",
       properties: {
-        verdict: str("ready | not_ready | unreachable."),
+        inspection: ENDPOINT_INSPECTION_SCHEMA,
+        verdict: str("x402-specific: ready | not_ready | unreachable | method_unresolved."),
         reached_level: str(
           "How far the probe got on the evidence ladder: none | L1 | L2 | L3a.",
         ),

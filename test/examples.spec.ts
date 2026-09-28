@@ -56,12 +56,15 @@ describe("the recorded readings are the live battery's shape", () => {
       expect(Object.keys(body).sort(), `${name}: reading keys`).toEqual(liveKeys);
       expect(body.version, `${name}: before-you-pay version`).toBe(BEFORE_YOU_PAY_VERSION);
       expect(body.the_door.version, `${name}: preflight version`).toBe(PREFLIGHT_VERSION);
-      // The served key set, with its two optional keys: network_failure
+      // The served key set, with its optional keys: network_failure
       // rides only on an unreachable probe; also_under only where a
-      // second battery scored the same bytes. Everything else is present
+      // second battery scored the same bytes. inspection was added after
+      // these historical readings; do not invent an observation by recutting
+      // them. endpoint-inspection.spec.ts requires it on fresh probes.
+      // Everything else is present
       // on every reading, and no reading carries a key the live report
       // does not.
-      const optional = new Set(["network_failure", "also_under"]);
+      const optional = new Set(["network_failure", "also_under", "inspection"]);
       const doorKeys = Object.keys(body.the_door).sort();
       for (const key of doorKeys) expect([...liveDoorKeys, ...optional], `${name}: report carries ${key}, which the live report does not`).toContain(key);
       for (const key of liveDoorKeys) if (!optional.has(key)) expect(doorKeys, `${name}: report lacks ${key}`).toContain(key);

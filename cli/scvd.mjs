@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { createHmac, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { inspectionExitCodeFor, renderInspectionLines } from "./inspection.js";
 
 /**
  * scvd — THE OFFICIAL COMMAND LINE FOR scvd.store, zero dependencies.
@@ -57,6 +58,8 @@ const VERSION = JSON.parse(
 function usage() {
   return `scvd ${VERSION} — the command line for ${BASE}
 
+  scvd inspect <url>            Observed protocols, advertised terms and
+                                gaps; no payment or signature verification.
   scvd preflight <url>          Does that x402 door answer a well-formed
                                 402? One probe, every check named.
   scvd conformance <file|->     Read a signed offer or receipt (compact
@@ -292,6 +295,15 @@ async function signedTradeRequest(itemId, bodyArgument, door) {
 }
 
 const COMMANDS = {
+  async inspect(args, options) {
+    const url = args[0];
+    if (!url || args.length !== 1) fail("scvd inspect <url> — one endpoint to observe without payment.");
+    const result = await call("/api/preflight/v2", { method: "POST", body: { url } });
+    const reading = { status: result.status, body: result.json };
+    process.stdout.write(options.json ? `${JSON.stringify(result.json, null, 2)}\n` : `${renderInspectionLines(reading).join("\n")}\n`);
+    return inspectionExitCodeFor(reading);
+  },
+
   async trade(args, options) {
     const [door, itemId, bodyArgument] = args;
     if (door !== "check" && door !== "order") {
