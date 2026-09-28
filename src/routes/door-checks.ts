@@ -24,7 +24,8 @@ import { signedRecoveryResponse } from "@/lib/payment-gate";
  */
 import type { MiddlewareHandler } from "hono";
 import { gateSignals, paymentGate } from "@/lib/payment-gate";
-import { buyerInputRepair, missingRequiredInputs, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { buyInputSchema, buyerInputRepair, missingRequiredInputs, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { resolveInputRecord } from "@/lib/input-aliases";
 import { catalogRecovery } from "@/lib/catalog-recovery";
 import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
 import { waitlistHowToJoin } from "@/routes/requests";
@@ -429,7 +430,11 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.
     if (refusal.status === 400) {
       const field = typeof refusal.body["input_field"] === "string" ? refusal.body["input_field"] : "";
-      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? c.req.query(field) : undefined,
+      // The value under the canonical name, or under the sibling's name
+      // it was read from (lib/input-aliases) — the refusal names the
+      // canonical field either way.
+      const sent = resolveInputRecord(Object.keys(buyInputSchema(item).properties), c.req.query());
+      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? sent[field] : undefined,
         { userAgent: c.req.header("User-Agent"), accept: c.req.header("Accept") }));
     }
     c.set("inputRefusal", refusal.body);
@@ -454,7 +459,10 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // quotes its required inputs; a supplied target must be available
     // before new terms or settlement.
     // A blank url is a missing one — a probe, not a target to check.
-    if (item && c.req.query("url")?.trim()) {
+    // Read across the sibling's name too (lib/input-aliases), or a
+    // target sent as ?urls= to a one-URL door would skip this gate.
+    const target = item ? resolveInputRecord(Object.keys(buyInputSchema(item).properties), c.req.query())["url"] : undefined;
+    if (item && typeof target === "string" && target.trim()) {
       const refusal = await checkPurchaseAvailability(c.env, item, queryArgs(name => c.req.query(name)));
       if (refusal) return c.json(refusal.body, refusal.status);
     }
