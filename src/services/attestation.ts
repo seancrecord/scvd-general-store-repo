@@ -12,6 +12,7 @@ import {
 } from "@/lib/base-rpc";
 import type { EvmChain, RpcReceipt } from "@/lib/base-rpc";
 import { readAuthorizationReceipt, readAuthorizationTransfer, type AuthorizationTransferRead, type AuthorizationReceiptRead, type AuthorizationTerms } from "@/lib/authorization-receipt";
+import { authCaptureContact, type AuthCaptureContact } from "@/lib/auth-capture-escrow";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
 import {
@@ -127,9 +128,14 @@ export const SOLANA_FINALITY_SLOTS = 32;
  * readBinding() applies that rule so no reader has to reconstruct it.
  * v3 pairs authorizer/nonce and Transfer instead of independent matches;
  * v4 also establishes receipt identity, chain and block/head context.
+ * v5 (2026-09-28) names contact with the x402 auth-capture escrow set
+ * in a signed `auth_capture` field: under v5 its absence means every
+ * USDC transfer in the receipt was looked at and none touched the
+ * set, never that the desk did not look. The status and binding do
+ * not move for it; see lib/auth-capture-escrow.ts for what it is.
  * Older signed observations keep their bytes and their original battery.
  */
-export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v4";
+export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v5";
 
 /**
  * WHAT TIES THE OBSERVED TRANSACTION TO ONE PAYMENT (2026-09-11).
@@ -356,6 +362,13 @@ export interface SettlementObservation {
   /** What, if anything, ties this transaction to one payment. */
   binding: SettlementBinding;
   /**
+   * Present only when a USDC transfer in the receipt touched the x402
+   * auth-capture escrow set (battery v5): the legs, named, with the
+   * words a reader needs to look for the capture rather than conclude
+   * the seller was paid the wrong party. Never moves the status.
+   */
+  auth_capture?: AuthCaptureContact;
+  /**
    * Present only when a settlement response was given: a digest of
    * its bytes and, per field, whether it agrees with the chain.
    */
@@ -528,7 +541,8 @@ export async function readTransferClaim(
       blockHeight: null, confirmations: null, authorization: exact };
   }
   assertReportedChain(reportedChain, chain);
-  const { authorization: _pair, ...verdict } = classify(receipt, { ...query, txHash }, head, chain);
+  // The walk's row keeps its own shape: the escrow contact is the paid desk's field.
+  const { authorization: _pair, authCapture: _contact, ...verdict } = classify(receipt, { ...query, txHash }, head, chain);
   return { ...verdict,
     ...(exact ? { authorization: exact } : {}) };
 }
@@ -547,6 +561,8 @@ function classify(
   confirmations: number | null;
   /** The same paired evidence drives both status and the signed binding. */
   authorization: AuthorizationTransferRead | null;
+  /** Contact with the auth-capture escrow set, when any transfer touched it. */
+  authCapture: AuthCaptureContact | null;
 } {
   assertReceiptContext(receipt, head, query.txHash);
   if (!receipt) {
@@ -558,6 +574,7 @@ function classify(
       blockHeight: null,
       confirmations: null,
       authorization: null,
+      authCapture: null,
     };
   }
   const blockHeight = Number.parseInt(receipt.blockNumber, 16);
@@ -575,10 +592,14 @@ function classify(
       blockHeight,
       confirmations,
       authorization: null,
+      authCapture: null,
     };
   }
 
   const transfers = usdcTransfers(receipt, chain);
+  // Named whichever way the match goes: the point is to say what the
+  // transfer touched when the status alone cannot.
+  const authCapture = authCaptureContact(transfers);
   const authorization = query.nonce ? readAuthorizationTransfer(receipt, {
     nonce: query.nonce, payer: query.payer, recipient: query.recipient,
     ...(query.amountUsdc !== undefined ? { amount_atomic: BigInt(Math.round(query.amountUsdc * 1_000_000)).toString() } : {}),
@@ -622,6 +643,7 @@ function classify(
       blockHeight,
       confirmations,
       authorization,
+      authCapture,
     };
   }
 
@@ -636,6 +658,7 @@ function classify(
     blockHeight,
     confirmations,
     authorization,
+    authCapture,
   };
 }
 
@@ -933,6 +956,7 @@ export async function observeWithFacts(
     chain_head: head,
     confirmations: verdict.confirmations,
     binding: evmBinding(query, receipt, verdict.status, verdict.authorization),
+    ...(verdict.authCapture ? { auth_capture: verdict.authCapture } : {}),
     ...(claims ? { input_claims: claims } : {}),
     query: echoedQuery(query),
   };

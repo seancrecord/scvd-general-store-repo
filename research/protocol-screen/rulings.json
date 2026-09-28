@@ -48,9 +48,9 @@
     },
     {
       "id": "R7-corpus-scheme-retention",
-      "state": "proposed",
-      "reason": "The corpus keeps an advisory's name and not its detail, so the fragmentation time series cannot tell a real fork from our own blind spot. Retaining the scheme value changes what the corpus stores, so it is the keeper's call.",
-      "ruled_on": "2026-09-14",
+      "state": "done",
+      "reason": "APPROVED 2026-09-28 by the keeper (\"i think for r7 we add the scheme\"), on the day the scout reported auth-capture merged as a fourth core scheme. Read before building: the ward-round row has kept each offer's scheme list in offer.schemes since the market desk (2026-08-19) and the corpus seals it, so the value this ruling asked to retain was already retained; what was missing was the count. The trajectory point and the weekly brief now carry `schemes` (doors per scheme, from the offers' own declarations, counted like rails) beside `networks`, and the brief page prints the line. The scheme series can now tell a real fork from our reader falling behind the specification, which is the 2026-09-14 mistake this ruling exists to catch. Absent on points derived before the field; never a ranking.",
+      "ruled_on": "2026-09-28",
       "rows": []
     },
     {

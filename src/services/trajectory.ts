@@ -64,6 +64,17 @@ export interface WeekPoint {
   offers_seen: number;
   /** Doors per chain, from each offer's own declared networks. */
   networks: Record<string, number>;
+  /**
+   * Doors per scheme, from each offer's own declared accepts (R7,
+   * ruled 2026-09-28). The row has carried `offer.schemes` since the
+   * market desk (2026-08-19); the series never counted it, so the
+   * fragmentation the nonstandard-scheme advisory records could not be
+   * told from our own reader falling behind the specification — the
+   * 2026-09-14 mistake, where three of four spec families read as
+   * drift. Counted like rails: a door advertising two schemes counts
+   * under both. Absent on points derived before this field.
+   */
+  schemes: Record<string, number>;
   /** Failed-check names, counted by their registered check IDs. */
   failure_classes: Record<string, number>;
   /** The round said its own coverage was suspect; carried, not hidden. */
@@ -161,6 +172,7 @@ export function deriveTrajectory(chain: CorpusRecord[]): Trajectory {
       observer_degraded: 0,
       offers_seen: 0,
       networks: {},
+      schemes: {},
       failure_classes: {},
       coverage_suspect: record.snapshot.round.coverage_suspect === true,
     };
@@ -185,6 +197,9 @@ export function deriveTrajectory(chain: CorpusRecord[]): Trajectory {
         point.offers_seen += 1;
         for (const network of host.offer.networks ?? []) {
           point.networks[network] = (point.networks[network] ?? 0) + 1;
+        }
+        for (const scheme of host.offer.schemes ?? []) {
+          point.schemes[scheme] = (point.schemes[scheme] ?? 0) + 1;
         }
       }
       for (const name of host.failed ?? []) {

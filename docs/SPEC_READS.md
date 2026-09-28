@@ -1,5 +1,34 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-28 — x402 `auth-capture` on main, re-read against the desk
+
+The scout reported `auth-capture` merged into x402-foundation/x402 main as a
+fourth core payment scheme. Fetched `specs/schemes/auth-capture/scheme_auth_capture.md`
+and `scheme_auth_capture_evm.md` from main and hashed them as git blobs:
+`0bd9649218de0a01d981e382d538f7602f6dd153` and
+`2739f01b8002075b9d3369b324c7bc2d6ebfd45f`, byte-identical to the protocol
+screen's 2026-09-14 pin (`research/protocol-screen/spec-pins.lock.json`).
+The spec's own version table dates the six-op lifecycle (authorize, charge,
+capture, void, refund, reclaim) to v1.1 on 2026-08-18. Whatever moved
+upstream this pass, the text this store reads did not.
+
+Read the EVM binding's commerce-payments deployment table and checked the
+v1.1 `AuthCaptureEscrow` address on Base mainnet over public RPC:
+`eth_getCode` returned contract bytecode. The escrow is deployed; "zero live
+implementations" is a statement about x402-relayed traffic, not about the
+chain. The other seven addresses in the table were not read and are carried
+on the spec's word, which the artifact says.
+
+Position: the free preflight already lists the family (R1, 09-14) and every
+verdict-moving check was already shown correct against it (R4). The paid
+settlement attestation could not say when a transfer landed in the escrow;
+battery v5 names that contact in a signed `auth_capture` field and moves no
+verdict (`src/lib/auth-capture-escrow.ts`). A lifecycle observation — the
+escrow's `paymentState` and op events at one moment — is a different product
+and sits on the roadmap as AC2 until a door advertises the scheme; R7's
+per-scheme count on the trajectory is the sensor. Not read: the Solidity of
+the escrow, the facilitator implementations, or any live payment.
+
 ## 2026-09-24 — partner evidence pilot qualification
 
 For the keeper-requested [Partner Evidence Pilot Plan](PARTNER_EVIDENCE_PILOTS_2026-09.md),
