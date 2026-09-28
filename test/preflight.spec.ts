@@ -1,6 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { ADVISORY_NAMES, PRE_HANDLER_PAYMENT_FLOWS, SPEC_SCHEMES, runChecks } from "@/services/preflight";
+import { ADVISORY_NAMES, GLOBAL_PROBES_PER_MINUTE, PRE_HANDLER_PAYMENT_FLOWS, SPEC_SCHEMES, runChecks } from "@/services/preflight";
 import { RECEIVABLE_CHECK, checkRailReceivable, solanaPayTos } from "@/services/rail-receivable";
 import { solanaPayTo } from "@/lib/payment-networks";
 import { MENU_ITEMS } from "@/store";
@@ -467,29 +467,36 @@ describe("scheme drift is named before anyone pays into it", () => {
 });
 
 describe("the global budget backstops the per-isolate one (CV's finding)", () => {
+  afterEach(() => vi.useRealTimers());
+
   it("a spent global bucket 429s even when this isolate's bucket is fresh", async () => {
     // CV fired 40 concurrent probes and got zero 429s: Cloudflare
     // spread them across isolates and every isolate held a fresh
     // bucket. The KV bucket is the answer; this test spends it
     // directly and expects the refusal regardless of isolate state.
-    const { env } = await import("cloudflare:test");
+    // Freeze both the seed and the route's clock. CI crossed a minute
+    // between them and correctly read a fresh bucket instead of this one.
+    vi.setSystemTime(new Date("2026-09-28T12:34:00.000Z"));
     const minute = new Date().toISOString().slice(0, 16);
     await (env as { COUNTERS: KVNamespace }).COUNTERS.put(
       `preflight_budget:${minute}`,
-      "60",
+      String(GLOBAL_PROBES_PER_MINUTE),
       { expirationTtl: 120 },
     );
-    const response = await SELF.fetch(`${BASE}/api/preflight/v1`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: "https://someone-else.example/api/buy/x" }),
-    });
-    expect(response.status).toBe(429);
-    const body = (await response.json()) as { error: string };
-    expect(body.error).toContain("cost bound on our side");
-    await (env as { COUNTERS: KVNamespace }).COUNTERS.delete(
-      `preflight_budget:${minute}`,
-    );
+    try {
+      const response = await SELF.fetch(`${BASE}/api/preflight/v1`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: "https://someone-else.example/api/buy/x" }),
+      });
+      expect(response.status).toBe(429);
+      const body = (await response.json()) as { error: string };
+      expect(body.error).toContain("cost bound on our side");
+    } finally {
+      await (env as { COUNTERS: KVNamespace }).COUNTERS.delete(
+        `preflight_budget:${minute}`,
+      );
+    }
   });
 
   it("the GET doc discloses both ceilings and why the cap exists", async () => {

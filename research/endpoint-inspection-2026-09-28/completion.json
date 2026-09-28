@@ -164,5 +164,16 @@
       "test/examples.spec.ts": "Treat the additive inspection block as optional in historical fixtures; fresh-probe tests require it."
     },
     "resolution": "All four failures resolved: 38 tests passed across the three affected files and endpoint-inspection.spec.ts. Typecheck and build:check passed again."
+  },
+  "ciClockRepair": {
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36469682194",
+    "job": 109088501098,
+    "failure": "Existing global-budget test seeded the real wall-clock minute; its request completed across 19:09:00 UTC and read a fresh bucket.",
+    "change": "Freeze the seed and route clocks together, derive the ceiling from the exported constant, and always clean up the seeded key. Production rate limiting unchanged.",
+    "validation": {
+      "command": "npm run typecheck && npm test -- test/preflight.spec.ts",
+      "typecheck": "passed",
+      "passed": 28
+    }
   }
 }
