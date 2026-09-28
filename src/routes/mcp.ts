@@ -51,6 +51,7 @@ import {
   recordVerifyCall,
 } from "@/lib/metrics";
 import { buyInputSchema, missingRequiredInputs, buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { resolveInputRecord } from "@/lib/input-aliases";
 import { catalogRecovery, CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
 /**
@@ -936,7 +937,9 @@ async function callPurchaseTool(
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.
     if (refusal.status === 400) {
       const field = typeof refusal.body["input_field"] === "string" ? refusal.body["input_field"] : "";
-      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? args[field] : undefined,
+      // Under the canonical name, or the sibling's it was read from.
+      const sent = resolveInputRecord(Object.keys(buyInputSchema(item).properties), args);
+      deferBookkeeping(c, recordInputRefusal(c.env, item, item.id, refusal.body, field ? sent[field] : undefined,
         { userAgent: c.req.header("User-Agent"), accept: c.req.header("Accept") }));
     }
     return rpcRefusal(

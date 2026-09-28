@@ -1,0 +1,15 @@
+[
+  {
+    "id": "x402-jws-envelope-2026-09-28",
+    "url": "https://raw.githubusercontent.com/x402-foundation/x402/a9955ae5538e5531557405091910136a2a2864c8/specs/extensions/extension-offer-and-receipt.md",
+    "revision": "a9955ae5538e5531557405091910136a2a2864c8",
+    "sha256": "51151bd2b7dd174bc4a44b712234c074e45ca6c752c44ce077a94a4d97596ae9",
+    "readDate": "2026-09-28",
+    "sections": [
+      "2",
+      "3.1",
+      "3.1.1",
+      "4.1.1"
+    ]
+  }
+]

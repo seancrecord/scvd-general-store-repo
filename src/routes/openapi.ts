@@ -1334,6 +1334,18 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     },
     rate_limit: { type: "object" },
     store_identity: { type: "object" },
+    paid_walks_on_record: {
+      type: "object",
+      description:
+        "What a real wallet saw at this host, read off the latest sealed census round's crowd-walked rows (bounty claims this store paid after verifying the settlement on chain). The settlement is proven; house_probe_verdict is our own unpaid knock at the claim; walker_status, receipt and defect_classes are the walker's claim, never verified here. Its own tier, never folded into the verdict. Absent only when no round could be read.",
+      properties: {
+        tier: { type: "string", enum: ["crowd-walked"] },
+        round_week: { type: "string" },
+        walks: { type: "array", items: { type: "object" } },
+        history_url: { type: "string" },
+        scope: { type: "string" },
+      },
+    },
     the_rest_of_the_ladder: {
       type: "object",
       description:
@@ -8822,6 +8834,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
                     "Line breaks are kept as written. Longer than the cap is refused whole (413) rather than stored short.",
                 },
                 from_name: { type: "string", maxLength: 80 },
+                reply_to: {
+                  type: "string",
+                  format: "email",
+                  maxLength: 254,
+                  description:
+                    "Optional. An email address: each signed reply is mailed there as well as served at the pickup URL, with the keeper copied so the exchange can continue in mail. Never shown on any surface. Given on a follow-up, it is added to the letter or replaces the one it had. The response says whether it was kept.",
+                },
                 in_reply_to: {
                   type: "string",
                   description:

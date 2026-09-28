@@ -1148,10 +1148,17 @@ const BASE = "https://scvd.store";
 // Verified the way this file asks: with only asked-for.ts restored to the
 // prior commit, b20bbd01 here and be9f17fe below reproduced exactly, and
 // this copy reproduces the new ones.
-// 2026-09-28: corrected the obsolete SDK and UCP/MPP denials in declined.ts.
-// Restoring only that file reproduced both prior pins (14/14 tests passed).
+// 2026-09-28: re-taken for the one clause in "How paying works here"
+// naming buy_url_template (the decline desk's follow-through: the guide
+// taught the bare door as step one and never named the template). With
+// that clause alone reverted, c77a1acd reproduced; this copy reproduces
+// the new one. The developers area file sits 6 characters under its
+// 30,000 budget after it — the next sentence filed there is a cut.
+// Integrated with the AEO SDK/protocol corrections on 2026-09-28. Restoring
+// only declined.ts to origin/main reproduced both main pins (14/14 passed);
+// these pins preserve both that correction and main's purchase-template clause.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "665d6964661dacd458a7eb88c545051a81abbc32e9186142a6dad70fb90c259e";
+  "f4cd06837967f5bc7d8c69c97fdc575be9bb0484dff5660a26d68b51572ce241";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1243,7 +1250,12 @@ describe("nothing was rewritten", () => {
       // Re-pinned 2026-09-24 with the new product, and 2026-09-25 with the
       // two HackerNoon bylines; see the note on GUIDE_DIGEST_BEFORE_THE_SPLIT
       // for how each was verified.
-      "648c43f55e5d32e2fde1fa6acda40efcbfb3dc7bc04c30c608ba430875d7df60",
+      // 2026-09-28: re-taken for one clause in "How paying works here",
+      // step 1 — a door with required inputs is bought at its
+      // buy_url_template with the slots filled, never at the bare door.
+      // Verified the way this file asks: with that clause alone reverted,
+      // 1ac33b17 reproduced, and this copy reproduces the new one.
+      "bb11e5d52d458e2389190a3bd3553c6267588c3190726ab7f56a5baa9d8e3177",
     );
   });
 

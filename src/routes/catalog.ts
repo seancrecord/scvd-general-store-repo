@@ -808,7 +808,6 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     return c.text(renderItemMarkdown(item, base, {
       title: askedForTitle(item.id),
       facts: Object.entries(glance).map(([key, value]) => [GLANCE_LABELS[key] ?? key, value]),
-      buyUrlTemplate: buyUrlTemplate(item, base),
     }, c.env), 200, {
       ...MARKDOWN_HEADERS,
       ...canonical,

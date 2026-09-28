@@ -43,6 +43,14 @@ export interface CertificatesAgainstSettles {
   certificates_truncated: boolean;
   /** The payer-row walk hit its cap: wallets_without_row may name wallets whose row was never read (2026-09-19). */
   payer_rows_truncated: boolean;
+  /** The settle-key list hit its cap: an x402 certificate past it reads as undetermined, never as missing (2026-09-28). */
+  settle_records_truncated: boolean;
+  /**
+   * Always false on this shelf: the per-settlement retained record is
+   * one Durable Object each and this page is a reading, not a repair.
+   * Certificates only that record could place are in protocol_unavailable.
+   */
+  retained_records_consulted: false;
   payer_rows: number;
   payer_rows_purchases: number;
   /** Wallets where the row and the certificates do not agree. */
@@ -56,9 +64,10 @@ export async function certificatesAgainstSettles(
   env: Env,
   settles: SettleReconciliation | null,
 ): Promise<CertificatesAgainstSettles> {
-  const [certKeys, payerKeys] = await Promise.all([
+  const [certKeys, payerKeys, settleKeys] = await Promise.all([
     listKeys(env.PATRONS, { prefix: KV_KEYS.certPrefix, cap: CERT_SCAN_CAP }),
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_SCAN_CAP }),
+    listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: PAYER_SCAN_CAP }),
   ]);
   const [certs, rows] = await Promise.all([
     bulkGetJson<CertificateRecord>(env.PATRONS, certKeys.names),
@@ -70,7 +79,24 @@ export async function certificatesAgainstSettles(
   let withPayer = 0;
   let native = 0;
   let unavailable = 0;
-  const context = await accountingContextFor(env, [...certs.values()].map((record) => record?.certificate));
+  /*
+   * A READING STAYS A HANDFUL OF READS (2026-09-28). This shelf sits on
+   * the books check, which the keeper opens in a browser; from 09-19 to
+   * 09-28 it classified every certificate through one Durable Object
+   * round trip plus one KV point read each, and ~500 certificates later
+   * the Worker was over its CPU budget (Cloudflare error 1102) before a
+   * byte rendered. The whole walk now costs the three lists above, the
+   * two bulk reads, and one native-index call per month: the legacy set
+   * is the settle-key list, and the retained per-settlement record is
+   * NOT consulted here. A certificate neither ledger holds is counted
+   * as undetermined below and named as such in the reading; the books
+   * sweep and the repairs, which act rather than count, still ask the
+   * retained record about that residue.
+   */
+  const recorded = new Set(settleKeys.names);
+  const context = await accountingContextFor(env, [...certs.values()].map((record) => record?.certificate),
+    (payer, transaction) => recorded.has(KV_KEYS.payerSettle(payer, transaction)));
+  context.consultRetained = false;
   for (const record of certs.values()) {
     const cert = record?.certificate;
     if (!cert) continue;
@@ -113,12 +139,14 @@ export async function certificatesAgainstSettles(
     protocol_unavailable: unavailable,
     certificates_truncated: certKeys.truncated,
     payer_rows_truncated: payerKeys.truncated,
+    settle_records_truncated: settleKeys.truncated,
+    retained_records_consulted: false,
     payer_rows: rowsByWallet.size,
     payer_rows_purchases: rowPurchases,
     wallets_disagreeing: disagreeing,
     wallets_without_row: withoutRow,
     reading: readCertificates(settles, withPayer, rowPurchases, disagreeing) +
-      ` Native MPP certificates excluded from this legacy comparison: ${native}. Protocol unavailable: ${unavailable}; these are not established legacy sales.`,
+      ` Native MPP certificates excluded from this legacy comparison: ${native}. Protocol undetermined: ${unavailable}; these are not established legacy sales. This reading consults the two ledgers only, never the per-settlement retained record${settleKeys.truncated ? ", and the settle-key list hit its cap" : ""}; the books sweep asks the retained record about the residue.`,
   };
 }
 

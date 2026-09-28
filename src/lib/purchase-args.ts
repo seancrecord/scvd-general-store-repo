@@ -23,6 +23,7 @@ import { ANCHOR_CHECKLIST } from "@/store/copy/anchor-writing";
 import type { fulfillPurchase } from "@/services/fulfillment";
 import type { Env, MenuItem } from "@/types";
 import { disclosedAnything, readDisclosure } from "@/lib/disclosure";
+import { resolvePurchaseArgs } from "@/lib/input-aliases";
 
 /** The counter takes a win of up to this many characters. */
 export const COFFEE_WIN_CAP = 200;
@@ -140,7 +141,20 @@ function refuse(
   return { status, body: { charged: false, code, error, ...extra } };
 }
 
-export function checkPurchaseEncoding(item: MenuItem, args: PurchaseArgs): PurchaseRefusal | undefined {
+/**
+ * THE SIBLING'S NAME, READ AS THIS DOOR'S (lib/input-aliases). Every
+ * entry point below wraps the reader once, so a value sent as `url` to
+ * the door that says `urls` — or as `wallet` to the one that says
+ * `address`, or `tx_hash` to the sheaf — meets the canonical field's
+ * own validation and reaches fulfillment under the canonical name.
+ * Wrapping twice is harmless: the canonical name is always tried first.
+ */
+function readerFor(item: MenuItem, args: PurchaseArgs): PurchaseArgs {
+  return resolvePurchaseArgs(Object.keys(buyInputSchema(item).properties), args);
+}
+
+export function checkPurchaseEncoding(item: MenuItem, rawArgs: PurchaseArgs): PurchaseRefusal | undefined {
+  const args = readerFor(item, rawArgs);
   // Fulfillment used to remove NUL after validation, including the entire
   // value of a required field. Refuse it before quoting instead of selling
   // either an empty good or silently changed text. Derive the buyer fields.
@@ -155,7 +169,8 @@ export function checkPurchaseEncoding(item: MenuItem, args: PurchaseArgs): Purch
   return undefined;
 }
 
-export async function checkPurchaseInputSafety(env: Env, item: MenuItem, args: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+export async function checkPurchaseInputSafety(env: Env, item: MenuItem, rawArgs: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+  const args = readerFor(item, rawArgs);
   // Preserve JSON types until the schema has judged them. Turning a
   // boolean into text can create a valid, signed good the buyer never asked for.
   if (args.raw) for (const [field, schema] of Object.entries(buyInputSchema(item).properties)) {
@@ -276,7 +291,8 @@ function a2aSetupRefusal(error: string): PurchaseRefusal {
 }
 
 /** Live permission and capacity apply to a new sale, not retrieval of owed work. */
-export async function checkPurchaseAvailability(env: Env, item: MenuItem, args: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+export async function checkPurchaseAvailability(env: Env, item: MenuItem, rawArgs: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+  const args = readerFor(item, rawArgs);
   if (item.id === "trust_profile") {
     const raw = args.get("url");
     if (!isValidHttpUrl(raw)) return undefined; // Argument validation owns malformed targets.
@@ -317,9 +333,10 @@ export async function checkPurchaseAvailability(env: Env, item: MenuItem, args: 
 export async function checkPurchaseArgs(
   env: Env,
   item: MenuItem,
-  args: PurchaseArgs,
+  rawArgs: PurchaseArgs,
   options: { deferAvailability?: boolean } = {},
 ): Promise<PurchaseRefusal | undefined> {
+  const args = readerFor(item, rawArgs);
   const read = (name: string) => args.get(name);
 
   const safety = await checkPurchaseInputSafety(env, item, args);
@@ -871,8 +888,12 @@ type FulfillmentInput = Parameters<typeof fulfillPurchase>[3];
  */
 export function purchaseInputFrom(
   item: MenuItem,
-  args: PurchaseArgs,
+  rawArgs: PurchaseArgs,
 ): FulfillmentInput {
+  // Canonical fields only leave here: a value that arrived under the
+  // sibling's name is read across, so the certificate never learns
+  // which spelling the buyer used.
+  const args = readerFor(item, rawArgs);
   const read = (name: string) => args.get(name);
   const input: FulfillmentInput = {};
   if (item.id === "research_comparison") input.comparisonUrls = read("urls");

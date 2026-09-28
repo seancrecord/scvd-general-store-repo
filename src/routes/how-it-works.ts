@@ -7,6 +7,7 @@ import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { MENU_ITEMS } from "@/store/menu";
+import { buyUrlTemplate } from "@/lib/buyer-contract";
 import { priceLine } from "@/services/menu-markdown";
 import type { HonoEnv, MenuItem } from "@/types";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
@@ -318,6 +319,10 @@ function bodyJson(base: string, config?: PurchaseCapabilityConfig) {
         cadence: item.cadence,
         ...(item.term_days !== undefined ? { term_days: item.term_days } : {}),
         buy_url: `${base}/api/buy/${item.id}`,
+        // Every paid example takes a required input, so the bare door
+        // above quotes and then refuses the purchase; this is the door
+        // with its slot in place (2026-09-28, off the decline desk).
+        buy_url_template: buyUrlTemplate(item, base),
       })),
     },
     how_to_call: howToCall(base),

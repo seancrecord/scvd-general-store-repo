@@ -1,3 +1,4 @@
+import { RECEIPT_ABSENT_CLASS } from "@/store/defect-vocabulary";
 import type { BountyRecord } from "@/services/bounty-board";
 
 /**
@@ -61,6 +62,13 @@ export interface ReportTally {
   receipt_seen: number;
   /** Paid responses the walker says carried none. */
   receipt_absent: number;
+  /**
+   * THE NAME FOR THAT (2026-09-28). A count on this page for three
+   * weeks with no class behind it; now the register's id, so the
+   * count joins the vocabulary a reader can compare across
+   * instruments. Provenance unchanged: the walker's claim.
+   */
+  receipt_absent_class: string;
   /** HTTP statuses the walkers report on the PAID request. */
   statuses: Record<string, number>;
   /** Median reported latency in ms, or null when nobody reported one. */
@@ -253,6 +261,7 @@ export function crowdFindings(bounties: readonly BountyRecord[]): CrowdFindings 
     not_reported: paid.length - reported,
     receipt_seen: receiptSeen,
     receipt_absent: receiptAbsent,
+    receipt_absent_class: RECEIPT_ABSENT_CLASS,
     statuses,
     median_latency_ms: median(latencies),
   };

@@ -177,6 +177,55 @@ export interface MppSalesTotals extends MppItemSummary {
   by_item: Record<string, MppItemSummary>;
 }
 
+export interface MppSaleEvidenceListing {
+  rows: MppSaleEvidence[];
+  /** Months asked, oldest first: one ledger round trip each. */
+  months: string[];
+  /** Months whose ledger could not be read; their sales are not in rows and nothing here says how many. */
+  months_unreadable: string[];
+  /** Rows the ledger holds that did not validate; kept counted, never rendered as sales. */
+  malformed: number;
+}
+
+/**
+ * THE ROWS BEHIND THE COUNT (2026-09-28). readMppSales above folds the
+ * monthly mirrors into totals; this reads the individual evidence rows
+ * from every monthly ledger, so the desk can show a sale as who paid,
+ * on which transaction, for what, and whether it was the house. One
+ * Durable Object round trip per month since opening, never a scan over
+ * purchases. A month that cannot answer is named, not skipped silently.
+ */
+export async function readMppSaleEvidence(env: Env, now: Date = new Date()): Promise<MppSaleEvidenceListing> {
+  const months = monthsSinceOpening(now);
+  const listing: MppSaleEvidenceListing = { rows: [], months, months_unreadable: [], malformed: 0 };
+  if (!env.COUNTER_LEDGER) {
+    listing.months_unreadable = [...months];
+    return listing;
+  }
+  // One ledger per month, asked together — the same shape as
+  // readMppSales above, and a month that throws answers null here.
+  const ledger = env.COUNTER_LEDGER;
+  const answers = await Promise.all(months.map((month) =>
+    ledger.get(ledger.idFromName(`${month}/mpp-sales`)).listMppSales().catch(() => null)));
+  for (const [index, raw] of answers.entries()) {
+    if (raw === null) {
+      listing.months_unreadable.push(months[index]!);
+      continue;
+    }
+    for (const text of raw) {
+      try {
+        const row = JSON.parse(text) as MppSaleEvidence;
+        if (typeof row.id !== "string" || typeof row.payer !== "string" || typeof row.transaction !== "string" ||
+          typeof row.amount !== "string" || typeof row.house !== "boolean" || typeof row.month !== "string") throw new Error("shape");
+        listing.rows.push(row);
+      } catch {
+        listing.malformed += 1;
+      }
+    }
+  }
+  return listing;
+}
+
 /** Calendar-bounded mirrors, like the legacy till; no scan over all purchases. */
 export async function readMppSales(env: Env): Promise<MppSalesTotals> {
   const rows = await Promise.all(monthsSinceOpening().map(month => kvGet(env.COUNTERS, `${MPP_SALES_PREFIX}${month}`)));
