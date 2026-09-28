@@ -25,6 +25,7 @@ const lock = JSON.parse(readFileSync(new URL('./package-lock.json', import.meta.
 const dependencies = Object.fromEntries(Object.entries(JSON.parse(readFileSync(new URL('./package.json', import.meta.url))).dependencies)
   .map(([name, version]) => [name, { version, integrity: lock.packages[`node_modules/${name}`].integrity, license: lock.packages[`node_modules/${name}`].license }]));
 const sources = [...sourceRecords,
+  ...JSON.parse(readFileSync(new URL('../../research/verifier-ps5-2026-09-28/sources.json', import.meta.url))),
   { id: 'rfc8037', revision: 'RFC 8037, January 2017', url: 'https://www.rfc-editor.org/rfc/rfc8037' },
   { id: 'rfc7518', revision: 'RFC 7518, May 2015', url: 'https://www.rfc-editor.org/rfc/rfc7518' },
   { id: 'rfc8812', revision: 'RFC 8812, June 2020', url: 'https://www.rfc-editor.org/rfc/rfc8812' },
@@ -38,11 +39,11 @@ const matrix = {
     lockSha256: bytesHash(readFileSync(new URL('./package-lock.json', import.meta.url))),
     dependencies, sources,
     independentVerification: { jws: 'Node node:crypto / OpenSSL', eip712: 'ethers 5.8.0 / elliptic 6.6.1' },
-    runtimeQualification: 'See research/verifier-ps2-2026-09-16/verification.json; versions are observations, not generator inputs.' },
+    runtimeQualification: 'See research/verifier-ps2-2026-09-16/verification.json and research/verifier-ps5-2026-09-28/verification.json; versions are observations, not generator inputs.' },
   families: [
-    { id: 'EdDSA', curve: 'Ed25519', specification: ['x402', 'rfc8037'], independentVectors: true, implemented: 'compact JWS signature and local revision-1 profile', expectedUnsupported: 'format-labelled object envelope', runtimeTargets: ['node', 'workerd'] },
-    { id: 'ES256', curve: 'P-256', specification: ['x402', 'rfc7518'], independentVectors: true, implemented: false, expectedUnsupported: 'unsupported_algorithm for well-formed compact JWS', runtimeTargets: ['node', 'workerd'] },
-    { id: 'ES256K', curve: 'secp256k1', specification: ['x402', 'rfc8812'], independentVectors: true, implemented: false, expectedUnsupported: 'unsupported_algorithm for well-formed compact JWS', runtimeTargets: ['node', 'workerd'] },
+    { id: 'EdDSA', curve: 'Ed25519', specification: ['x402', 'x402-jws-envelope-2026-09-28', 'rfc8037'], independentVectors: true, implemented: 'compact JWS or x402 JWS envelope signature and local revision-1 profile', expectedUnsupported: null, runtimeTargets: ['node', 'workerd'] },
+    { id: 'ES256', curve: 'P-256', specification: ['x402', 'rfc7518'], independentVectors: true, implemented: false, expectedUnsupported: 'unsupported_algorithm for well-formed compact JWS or JWS envelope', runtimeTargets: ['node', 'workerd'] },
+    { id: 'ES256K', curve: 'secp256k1', specification: ['x402', 'rfc8812'], independentVectors: true, implemented: false, expectedUnsupported: 'unsupported_algorithm for well-formed compact JWS or JWS envelope', runtimeTargets: ['node', 'workerd'] },
     { id: 'eip712', curve: 'secp256k1', specification: ['x402', 'eip712'], independentVectors: true, implemented: false, expectedUnsupported: 'unsupported_format for EIP-712 envelope', runtimeTargets: ['node', 'workerd'] },
   ],
   issuerCases: ['receipt-valid.json', 'offer-expired-but-wellformed.json'].map((name) => ({
@@ -58,7 +59,8 @@ function payloadFor(kind) {
     : { version: 1, resourceUrl: `${origin}/resource`, network: 'eip155:8453', payer: '0x0000000000000000000000000000000000000002', issuedAt: clock - 60, transaction: `0x${'ab'.repeat(32)}` };
 }
 function packageExpectation(family, control) {
-  if (control === 'labelled-envelope' || family === 'eip712') return { status: 'unsupported', reasons: ['unsupported_format'] };
+  if (family === 'eip712' && control === 'cross-format') return { status: 'invalid', reasons: ['malformed_input'] };
+  if (family === 'eip712') return { status: 'unsupported', reasons: ['unsupported_format'] };
   if (control === 'malformed') return { status: 'invalid', reasons: ['malformed_input'] };
   if (control === 'missing-expiry') return { status: 'invalid', reasons: ['schema_invalid'], signature: family === 'EdDSA' ? 'valid' : 'unobserved' };
   if (family !== 'EdDSA') return { status: 'unsupported', reasons: ['unsupported_algorithm'], signature: 'unobserved' };

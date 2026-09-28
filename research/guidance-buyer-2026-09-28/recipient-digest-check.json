@@ -1,0 +1,10 @@
+{
+  "cell": "codex-directed-r1",
+  "recipient_trace_sha256": "cf759892a6fe3a9accc63e54fbc1610339e59180feda1cea056652916c1a4fe2",
+  "final_trace_line": 26,
+  "actual_digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+  "reported_digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9b08370df4e2eb",
+  "reported_hex_characters": 62,
+  "matches": false,
+  "limits": "Compared against retained original digest independently reproduced by controller signature verification and recipient local output. No re-execution or correction supplied to recipient."
+}

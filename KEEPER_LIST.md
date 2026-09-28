@@ -26,6 +26,38 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **auth-capture, 2026-09-28 — your "okay do it" and "for r7 we add the
+  scheme".** Both rulings are recorded: R7 is done in
+  `research/protocol-screen/rulings.json` (the trajectory and the
+  weekly brief now count doors per scheme beside doors per chain), and
+  the settlement attestation moved to battery v5 to name contact with
+  the auth-capture escrow set without moving any verdict (roadmap AC1,
+  DONE; the lifecycle observation is AC2, LATER, demand-tagged). The
+  spec on x402 main is byte-identical to the 09-14 pin; the read is in
+  `docs/SPEC_READS.md`. Nothing on this desk for it. LOOK, when a
+  Sunday brief prints a scheme other than `exact`: that is AC2's
+  trigger, and it is the first time the series will have said so.
+
+- **Seven bounties beside your Globally Fluent reply (sent 2026-09-28).**
+  Three doors the house calls not ready that the market pays anyway, at
+  $0.25 — a paid 200 at any of them is the finding the probe cannot
+  make: `https://api.strale.io/x402/image-to-text`,
+  `https://api.nansen.ai/api/v1/profiler/address/current-balance`,
+  `https://pay.edge-agents.ai/v1/services/perp-funding-rates`. Four
+  re-walks at $0.15 — the walkers said the paid response carried no
+  receipt, or two wallets disagreed on the body:
+  `https://rubric-protocol.com/v1/x402/hedera-facts/supply`,
+  `https://hypernatt.com/api/m2m/liq-radar`,
+  `https://agentpay.tools/tools/pre_trade_check/call`,
+  `https://agent402.tools/api/bestsellers`. About $2.35 of the $10
+  week. Post from `/admin/market` (tick the rows; the not-ready ones
+  now read "house said not ready") or one JSON press each to
+  `/admin/bounties/batch`. Globally Fluent's ten, once named, at the
+  $0.10 default. LOOK, on your first reply to any letter carrying an
+  address: the counter page prints "mailed to them, you copied" beside
+  the reply and the copy is in your inbox; MAIL FAILED means the reply
+  still stands at the pickup URL — tell me and I read the wire.
+
 - **Two bylines live on HackerNoon, 2026-09-24/25 — Cairn told by your
   hand the same day.** "An Autonomous Agent Cold-Emailed Me a Free
   Audit at 12:45 AM" (09-24, the Cairn piece) and "I Told an AI Agent
@@ -57,6 +89,9 @@ build, it is on the roadmap.
   succeeded; npm and the official MCP Registry expose Tab 0.11.2. Do not rerun
   publication. The portable plugin updates from
   the repository; existing immutable submission pins do not update themselves.
+  The ClawHub press now carries skill 3.19.2 (2026-09-28): the purchases
+  reference buys an input-taking door at its `buy_url_template`, slots
+  filled, never at the bare door — one sentence, same bundle otherwise.
   Claude's missing submission remains on the existing Anthropic report, with no
   reply as of September 24. Gemini remains paused. The skill publication receipt
   merged in #909; public scan clearance remains separate from that upload receipt.
@@ -855,6 +890,28 @@ Do not relitigate without you.
 ---
 
 ## NEXT — your hands
+
+### The decline desk's research sweeper (2026-09-28)
+
+- **RULE — is `Mozilla/5.0 (research)` machinery?** Your 09-28 reading
+  of the desk found most of the missing-input volume is one client
+  under that string, sweeping the whole catalog every fifteen to
+  forty-five minutes and missing each door's one required input in
+  turn; no wallet, no payment shape. It sits in the intent-bearing
+  column, so with x402lint or vet402 beside it on the same code it is
+  the one buyer the escalation needs to print OURS. The machinery table
+  takes only a word a machine chose for itself, and `research` is also
+  a shelf here (research_comparison) and the word the Coinbase buyer
+  used, so promoting it is your call, not an agent's: a bare word
+  promoted is misclassified forever. Say yes and it is a dated row in
+  `src/store/exclusions.ts` and a test both ways; say no and the rows
+  stay OURS and the desk keeps counting them. Either way the split you
+  asked about is not a bug: `address`, `urls`, `wallet` and `win` read
+  theirs because one client hit each; `host`, `tx_hash`, `mandate` read
+  OURS because two did, one of them counted as a buyer. The template
+  the desk's reading promised on every document was short six of them
+  (rungs, /how-it-works, /doors, room footers, the markdown twin,
+  /what); that is fixed and in the ledger, no press needed.
 
 ### The contract's read budget (2026-09-19, `docs/OPENAPI_READ_BUDGET_2026-09-19.md`)
 

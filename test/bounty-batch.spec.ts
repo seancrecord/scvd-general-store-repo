@@ -130,7 +130,7 @@ afterEach(async () => {
 });
 
 describe("the posting list carries what we have already done", () => {
-  it("offers ready doors only, never-walked first, with our own history beside each", () => {
+  it("offers ready doors, never-walked first, with our own history beside each — and never a not-ready door without a price", () => {
     const candidates = bountyCandidates(
       round([
         host("paid.example", "ready"),
@@ -148,7 +148,8 @@ describe("the posting list carries what we have already done", () => {
       NOW,
     );
     const domains = candidates.map((entry) => entry.domain);
-    // Ready only, and never our own door.
+    // A not_ready door the round read no price at has nothing to post
+    // terms from; unreachable doors and our own door never appear.
     expect(domains).not.toContain("broken.example");
     expect(domains).not.toContain("gone.example");
     expect(domains).not.toContain("scvd.store");
@@ -165,6 +166,36 @@ describe("the posting list carries what we have already done", () => {
     const stale = candidates.find((entry) => entry.domain === "expired.example");
     expect(stale?.history.state).toBe("expired");
     expect(stale?.blocked).toBeUndefined();
+  });
+
+  /**
+   * THE WALK THE PROBE COULD NOT MAKE (2026-09-28). 127 of the board's
+   * first 130 settlements were at doors the house had already called
+   * ready, because this list never offered anything else. A not_ready
+   * door the round read a price at is now offered, ahead of the
+   * ready never-walked doors, with the checks our own knock failed
+   * printed on the row — and a not_ready door with no price stays out.
+   */
+  it("offers a not-ready door the round priced, first among the never-walked, naming what the house said", () => {
+    const candidates = bountyCandidates(
+      round([
+        host("cheap-ready.example", "ready", { offer: { networks: [], schemes: [], min_usdc: 0.001 } }),
+        {
+          ...host("unsigned.example", "not_ready", { offer: { networks: [], schemes: [], min_usdc: 0.01 } }),
+          failed: ["signed-offers"],
+        },
+        { ...host("silent.example", "not_ready"), failed: ["status-402"] },
+      ]),
+      [],
+      "scvd.store",
+      NOW,
+    );
+    const domains = candidates.map((entry) => entry.domain);
+    expect(domains).toEqual(["unsigned.example", "cheap-ready.example"]);
+    expect(candidates[0]?.house_said).toEqual(["signed-offers"]);
+    expect(candidates[0]?.verdict).toBe("not_ready");
+    expect(candidates[0]?.blocked).toBeUndefined();
+    expect(candidates[1]?.house_said).toBeUndefined();
   });
 
   /**

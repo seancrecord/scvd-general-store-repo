@@ -70,6 +70,19 @@ describe("one reader classifier", () => {
     expect(readerClass("Mozilla/5.0 (Macintosh) Safari/605.1.15", "text/html,*/*")).toBe("browser");
   });
 
+  /**
+   * THE WAYBACK MACHINE (2026-09-28). 6,470 requests in a day from a
+   * crawler on neither table, every one booked as organic, on the buy
+   * doors as organic 402s. Its real string, not the fixture's shape.
+   */
+  it("files the Internet Archive's crawler as machinery, never as a buyer", () => {
+    const wayback = "Mozilla/5.0 (compatible; archive.org_bot +http://archive.org/details/archive.org_bot)";
+    expect(isInfrastructureUserAgent(wayback)).toBe(true);
+    expect(inferChannel({ userAgent: wayback })).toBe("infrastructure");
+    expect(readerClass(wayback, "text/html")).toBe("crawler");
+    expect(readerClass(wayback, "*/*")).toBe("crawler");
+  });
+
   it("agrees with itself on the observatory's own two tables", () => {
     // The self-describing machinery table still classes as before.
     expect(inferChannel({ userAgent: "uptimerobot/2.0" })).toBe("infrastructure");

@@ -2050,6 +2050,49 @@ answer with one payment sent, a different credential against an
 in-flight quote is refused with nothing sent, and the page's memory
 bound still holds against distinct purchases.
 
+### 28. The books check died of the Worker's CPU budget, and one MPP sale had no row — FIXED 2026-09-28
+
+The keeper opened /admin/reconciliation to read a bank-walk alarm and
+got Cloudflare's error 1102, "Worker exceeded resource limits", after a
+long spin. The Worker's CPU cap is one second (wrangler.jsonc). Since
+#845 (2026-09-19) the page's third witness — the certificates read
+against the settles — had classified every certificate's protocol by
+asking the settlement's own retained Durable Object FIRST, then a KV
+point read for the legacy row, one certificate at a time. Roughly five
+hundred certificates later the budget was gone before a byte rendered.
+The same call sat under the books sweep, the legacy repairs and the
+hourly counter raise; only the page died loudly, because the cron runs
+swallow their errors by design.
+
+The ledgers already answered for a whole walk in one batch each — the
+native index is one call per month, the legacy set is one key list —
+and they place every certificate whose sale was booked. So the order
+is now ledgers first, retained record last, for the residue neither
+ledger holds (the lost-booking case the sweep exists to find). The
+page itself never asks the retained record at all: it is a reading,
+and it says so in the reading, with a count of the certificates it
+left undetermined. One shape moves: a certificate with a legacy row
+and a retained MPP receipt but no native evidence reads x402 now,
+which needs a legacy repair to have imported a native sale whose
+evidence was then lost; the sweep's legacy_overlap still catches the
+import while the evidence stands.
+
+Found beside it: the take said "1 MPP sale" and no page held the row.
+The evidence — who paid, on which transaction, for what, house or
+not — sat in the monthly ledger behind a count. /admin/mpp-sales lists
+it now, one row per retained sale, and /admin/settlement/<tx> reads
+every record the store holds for one settlement hash (the certificate
+index, the delivered-settlement row, the delivery intent and its
+resolution, the legacy till rows, the native sale ids) and keeps
+"could not see" apart from "none". That is where a bank-walk alarm's
+hash goes, which until now was nowhere.
+
+*Proven, not asserted:* test/certificate-protocol-walk-reads.spec.ts
+counts the retained-store opens through a wrapper on the binding and
+holds a twelve-certificate walk to zero; it fails on the previous
+order with twelve. test/admin-mpp-sales-desk.spec.ts and
+test/admin-settlement-lookup.spec.ts cover the two desks.
+
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
 Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare

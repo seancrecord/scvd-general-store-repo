@@ -236,7 +236,8 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * presses publish (scripts/publish-skill.mjs); the record moves then.
  */
 /** 3.19.1: pin Tab to its corrected-installation patch; field-study guidance is unchanged. */
-export const SKILL_VERSION = "3.19.1";
+/** 3.19.2 (2026-09-28): the purchases reference buys an input-taking door at its buy_url_template, slots filled, never at the bare door. */
+export const SKILL_VERSION = "3.19.2";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

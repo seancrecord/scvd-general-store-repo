@@ -5,7 +5,8 @@
  * WHAT THIS IS FOR. The x402 Signed Offers & Receipts extension lets a
  * seller commit to its terms before money moves and sign its claim of
  * delivery after. This package checks the compact JWS EdDSA/Ed25519
- * profile; other extension formats remain unsupported. Checking one means doing
+ * profile, directly or in the extension's JWS envelope; other signature
+ * families remain unsupported. Checking one means doing
  * FOUR separate things, and the whole point of this file is that they
  * are separate:
  *
@@ -354,15 +355,37 @@ export async function verifyArtifact(jws, options = {}) {
   return (await verifyArtifactReport(jws, options)).report;
 }
 
+// The wrapper is transport, not signed evidence or a source of verification keys.
+const JWS_ENVELOPE_SCOPE = "Verification covers only the compact JWS; acceptIndex is unsigned and is not matched to payment terms.";
+const JWS_ENVELOPE_LIMIT = "unsigned wrapper metadata, including acceptIndex, or agreement with payment terms";
+
 async function verifyArtifactReport(jws, options, issuerKeyUrl) {
   const checks = [];
-  if (isRecord(jws) && typeof jws.format === "string" && jws.format.length > 0) {
-    checks.push(finding("parse", "unsupported", "this entry point accepts compact JWS strings only", "unsupported_format"));
+  const envelope = isRecord(jws) && jws.format === "jws" ? jws : null;
+  if (envelope) {
+    if ("payload" in envelope || typeof envelope.signature !== "string" || !envelope.signature ||
+        ("acceptIndex" in envelope && (!Number.isSafeInteger(envelope.acceptIndex) || envelope.acceptIndex < 0))) {
+      checks.push(finding("parse", "invalid", "JWS envelope requires a compact signature, no separate payload and an optional nonnegative integer acceptIndex", "malformed_input"));
+      return { report: reportFrom(checks) };
+    }
+    // Unknown extensions may change interpretation; do not silently discard them.
+    if (Object.keys(envelope).some(key => !["format", "signature", "acceptIndex"].includes(key))) {
+      checks.push(finding("parse", "unsupported", "JWS envelope contains unsupported fields", "unsupported_format"));
+      return { report: reportFrom(checks) };
+    }
+    jws = envelope.signature;
+  } else if (isRecord(jws) && typeof jws.format === "string" && jws.format.length > 0) {
+    checks.push(finding("parse", "unsupported", "unsupported artifact envelope", "unsupported_format"));
     return { report: reportFrom(checks) };
   }
   const parsed = parseJws(jws);
   if (!parsed.ok) {
     checks.push(finding("parse", "invalid", parsed.problem, "malformed_input"));
+    return { report: reportFrom(checks) };
+  }
+  const kind = options.kind ?? ("payer" in parsed.payload ? "receipt" : "offer");
+  if (envelope && "acceptIndex" in envelope && kind !== "offer") {
+    checks.push(finding("parse", "invalid", "acceptIndex is only defined for offer envelopes", "malformed_input"));
     return { report: reportFrom(checks) };
   }
   checks.push(finding("parse", "valid", "three base64url segments, header and payload are JSON"));
@@ -375,7 +398,6 @@ async function verifyArtifactReport(jws, options, issuerKeyUrl) {
   checks.push(typeof kid === "string" && kid.length > 0
     ? finding("kid", "valid", kid)
     : finding("kid", "invalid", "no kid in header", "malformed_kid"));
-  const kind = options.kind ?? ("payer" in parsed.payload ? "receipt" : "offer");
   const futureSchema = Number.isInteger(parsed.payload.version) && parsed.payload.version > 1;
   const problems = kind === "receipt" ? validateReceiptPayload(parsed.payload) : validateOfferPayload(parsed.payload);
   checks.push(futureSchema
@@ -404,7 +426,9 @@ async function verifyArtifactReport(jws, options, issuerKeyUrl) {
       checks.push(finding("expiry", live.live ? "valid" : "invalid", live.reason, live.live ? undefined : "offer_expired", true));
     }
   }
-  return { report: reportFrom(checks, { header: parsed.header, payload: parsed.payload, kind }), resolution };
+  const report = reportFrom(checks, { header: parsed.header, payload: parsed.payload, kind });
+  if (envelope) report.scope += ` ${JWS_ENVELOPE_SCOPE}`;
+  return { report, resolution };
 }
 
 /**
@@ -482,7 +506,7 @@ export const VERIFICATION_URL = "https://scvd.store/api/conformance/v1";
  */
 export const CAPABILITIES = Object.freeze({
   scope: "signature and shape of x402 signed offers and receipts; no payment rail, chain or settlement capability",
-  artifact_formats: Object.freeze(["compact-jws"]),
+  artifact_formats: Object.freeze(["compact-jws", "x402-jws-envelope"]),
   artifact_kinds: Object.freeze(["offer", "receipt"]),
   algorithms: Object.freeze(["EdDSA"]),
   key_types: Object.freeze(["Ed25519"]),
@@ -538,6 +562,7 @@ export async function runtimeCapabilities(options = {}) {
 }
 
 async function verifyBounded(kind, jws, input, options) {
+  const envelope = isRecord(jws) && jws.format === "jws";
   const publicKey = input?.publicKey ?? options.publicKey;
   const keyUrl = input?.issuerKeyUrl ?? null;
   const { report, resolution } = await verifyArtifactReport(jws, { ...options, kind, publicKey }, keyUrl);
@@ -547,9 +572,9 @@ async function verifyBounded(kind, jws, input, options) {
   return {
     kind, valid: report.ok, status: report.status, reasonCodes: report.reasonCodes,
     scope: report.ok
-      ? `Signature valid over the ${kind}'s bytes against ${checkedAgainst}; the ${kind}'s fields pass this package's local offer-receipt schema checks (rev 1).${kind === "offer" ? " Expiry is reported, not folded in." : ""}`
-      : `Not verified: ${jws === undefined ? `input.${kind} must be the compact JWS string. ` : ""}${failed.join("; ")}.`,
-    doesNotEstablish: [...DOES_NOT_ESTABLISH[kind]],
+      ? `Signature valid over the ${kind}'s bytes against ${checkedAgainst}; the ${kind}'s fields pass this package's local offer-receipt schema checks (rev 1).${kind === "offer" ? " Expiry is reported, not folded in." : ""}${envelope ? ` ${JWS_ENVELOPE_SCOPE}` : ""}`
+      : `Not verified: ${jws === undefined ? `input.${kind} must be a compact JWS string or JWS extension envelope. ` : ""}${failed.join("; ")}.`,
+    doesNotEstablish: [...DOES_NOT_ESTABLISH[kind], ...(envelope ? [JWS_ENVELOPE_LIMIT] : [])],
     verificationUrl: VERIFICATION_URL,
     checks: report.checks,
     issuer: { kid: typeof report.header?.kid === "string" ? report.header.kid : null, keyUrl: keyUrl ?? resolution?.url ?? null },

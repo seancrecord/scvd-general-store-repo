@@ -7,13 +7,14 @@ import {generateKeyPairSync,sign} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {hash} from './lib/buyer-cold.mjs';
 import {prepareHandoff} from './buyer-recipient-handoff.mjs';
+const fixtureFreshness={max_age_ms:1209600000};
 function fixture(){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-handoff-test-'));fs.mkdirSync(path.join(root,'evidence'));
  const files=['snapshot.json','key.json','preflight.json','history.json'].map((name,i)=>{
   const bytes=JSON.stringify({fixture:i});const file=`evidence/${name}`;fs.writeFileSync(path.join(root,file),bytes);return {file,bytes:Buffer.byteLength(bytes),sha256:hash(bytes)};
  });
  const trace=JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'The buyer report.\nCurrent and historical claims.'}})+'\n'+JSON.stringify({type:'turn.completed'})+'\n';fs.writeFileSync(path.join(root,'events.jsonl'),trace);
- const run={runtime:{state:'completed',exit_code:0,budget_stop:null},cell:{host:'codex'},subject:'https://merchant.example/paid',trace_sha256:hash(trace),retained_artifacts:{state:'complete',files}};fs.writeFileSync(path.join(root,'run.json'),JSON.stringify(run));
+ const run={freshness:fixtureFreshness,ended_at:'2026-09-18T12:00:00.000Z',runtime:{state:'completed',exit_code:0,budget_stop:null},cell:{host:'codex'},subject:'https://merchant.example/paid',trace_sha256:hash(trace),retained_artifacts:{state:'complete',files}};fs.writeFileSync(path.join(root,'run.json'),JSON.stringify(run));
  const selection={schema_version:1,scope:'signature_subset',files:files.map((f,i)=>({file:f.file,supply:i<2,cited:true,role:i===0?'signature_candidate':i===1?'issuer_key':'unsigned_context'}))};
  return {root,run,selection,out:path.join(root,'recipient'),clean:()=>fs.rmSync(root,{recursive:true,force:true})};
 }
@@ -87,7 +88,7 @@ test('automatic whole-capture handoffs leave citation status unknown and cannot 
 
 const fullPlan={schema_version:5,subject:'https://merchant.example/paid',spend_usdc:0,
  budgets:{wall_ms:240000,tool_calls:20,output_bytes:4000000,output_tokens:2500,artifact_bytes:33554432,artifact_files:32},
- freshness:{max_age_ms:1209600000},capability:{public_url:'https://example.org/capability'},
+ freshness:fixtureFreshness,capability:{public_url:'https://example.org/capability'},
  cells:[{id:'buyer',host:'codex',model:'gpt-5.6-luna',lane:'directed',verification:'prompted',entry:'https://scvd.store/skill.md'}],
  recipient:{host:'codex',model:'gpt-5.6-luna',network:'disabled',attempts_per_eligible_cell:1,input_scope:'all-retained-and-buyer-report',budgets:{wall_ms:180000,tool_calls:12,output_bytes:4194304,output_tokens:1800}}};
 async function frozenFixture(){

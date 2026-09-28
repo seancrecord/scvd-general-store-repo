@@ -6,6 +6,7 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {hash,recipientLaunch,validatePlan,recipientCompletion} from './lib/buyer-cold.mjs';
 import {freezeInstrument,hostContext,childEnvironment,TIMING_POLICY,prepareRecipient,runRecipient,runCapabilityProbe,runCohort} from './buyer-cold-isolated.mjs';
+import {prepareHandoff} from './buyer-recipient-handoff.mjs';
 const json=(p,v)=>fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n');
 function fixture(verifier=null){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'recipient-integration-test-'));
@@ -25,9 +26,33 @@ function fixture(verifier=null){
  const source=path.join(cohort,'fixture');fs.mkdirSync(source);fs.mkdirSync(path.join(source,'evidence'));
  const bytes=Buffer.from([0,255,195,169]);fs.writeFileSync(path.join(source,'evidence/original.bin'),bytes);
  const trace=JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Verbatim buyer report'}})+'\n'+JSON.stringify({type:'turn.completed'})+'\n';fs.writeFileSync(path.join(source,'events.jsonl'),trace);
- const run={schema_version:6,cell:plan.cells[0],subject:plan.subject,freshness:plan.freshness,runtime:{state:'completed',exit_code:0,budget_stop:null},trace_sha256:hash(trace),retained_artifacts:{state:'complete',files:[{file:'evidence/original.bin',sha256:hash(bytes),bytes:bytes.length}]}};json(path.join(source,'run.json'),run);
+ const run={schema_version:6,cell:plan.cells[0],subject:plan.subject,freshness:plan.freshness,ended_at:'2026-09-28T12:34:56.789Z',runtime:{state:'completed',exit_code:0,budget_stop:null},trace_sha256:hash(trace),retained_artifacts:{state:'complete',files:[{file:'evidence/original.bin',sha256:hash(bytes),bytes:bytes.length}]}};json(path.join(source,'run.json'),run);
  return {root,cohort,source,plan,run,protocol,context,bytes,clean(){for(const [key,value] of Object.entries(saved)){if(value===undefined)delete process.env[key];else process.env[key]=value;}fs.rmSync(root,{recursive:true,force:true});}};
 }
+test('the recipient receives the actual frozen age policy and buyer completion time',()=>{
+ const f=fixture();try{
+  const prepared=prepareRecipient(f.cohort,'fixture');
+  const out=path.join(f.root,'policy-handoff');
+  const manifest=prepareHandoff(f.source,prepared.selection,out,prepared.frozen);
+  assert.deepEqual(manifest.observation_policy,{max_age_ms:f.plan.freshness.max_age_ms,evaluated_at:f.run.ended_at,basis:'buyer_completed_at'});
+  assert.match(prepared.launch.prompt,/observation_policy/);
+  assert.match(prepared.launch.prompt,/missing.*unknown/i);
+  assert.equal(manifest.plan_content_sha256,hash(JSON.stringify(f.plan)));
+  assert.equal(manifest.run_sha256,hash(fs.readFileSync(path.join(f.source,'run.json'))));
+ }finally{f.clean();}
+});
+for(const change of ['missing completion time','invalid completion time','changed age policy'])test(`handoff refuses ${change} before creating inputs`,()=>{
+ const f=fixture();try{
+  const prepared=prepareRecipient(f.cohort,'fixture');
+  if(change==='missing completion time')delete f.run.ended_at;
+  if(change==='invalid completion time')f.run.ended_at='not a date';
+  if(change==='changed age policy')f.run.freshness={max_age_ms:1};
+  json(path.join(f.source,'run.json'),f.run);
+  const out=path.join(f.root,'refused-policy-handoff');
+  assert.throws(()=>prepareHandoff(f.source,prepared.selection,out,prepared.frozen),/freshness|completion/i);
+  assert.equal(fs.existsSync(out),false);
+ }finally{f.clean();}
+});
 test('schema 6 freezes all retained inputs and cannot silently use the old subset',()=>{
  const f=fixture();try{assert.equal(validatePlan(f.plan).schema_version,6);assert.throws(()=>validatePlan({...f.plan,recipient:{...f.plan.recipient,input_scope:'signed-pair-and-buyer-report'}}));
  const p=prepareRecipient(f.cohort,'fixture');assert.equal(p.selection.files[0].supply,true);assert.equal(p.selection.files[0].role,'other');assert.match(p.launch.prompt,/Every retained buyer file/);assert.ok(p.launch.args.includes('sandbox_workspace_write.network_access=false'));assert.ok(p.launch.args.includes('web_search="disabled"'));assert.ok(!p.launch.args.includes('--search'));

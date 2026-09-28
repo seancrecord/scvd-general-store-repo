@@ -46,6 +46,15 @@ async function nativeSaleIds(env: Env, transaction: string, index?: NativeSaleIn
 export interface AccountingContext {
   index?: NativeSaleIndex;
   legacyRecorded?: (payer: string, transaction: string) => boolean;
+  /**
+   * Whether a certificate neither ledger can place may go on to the
+   * retained purchase record (one Durable Object per settlement).
+   * Default true: the sweeps and the repairs ACT on the answer and
+   * want the last witness. A reading that only counts passes false
+   * and reports those certificates as undetermined instead — see
+   * services/settle-sources.ts for why the books check must.
+   */
+  consultRetained?: boolean;
 }
 
 /**
@@ -77,16 +86,18 @@ export function couldBeNative(cert: Pick<Certificate, "network" | "payer" | "set
  * identifies the rail; the individual native sale and purchase prove accounting.
  * No status/recovery call, aggregate-count inference, or repair occurs here.
  *
- * THREE WITNESSES, IN ORDER (2026-09-17). The retained settle headers name
- * the protocol outright for every purchase that kept them. They are absent
- * on a rescued x402 settle — the ambiguous-settle rescue relays no
- * facilitator header, by design (lib/payment-gate.ts) — and on any purchase
- * whose coordinator record was never written. Without them, the ledgers
- * themselves answer: a native sale naming this transaction makes it MPP; a
- * legacy per-settle record with no native sale makes it x402. Only a settle
- * neither ledger holds stays undetermined, which is exactly the case the
- * books sweep should keep paging on. A native ledger that cannot be read
- * is never allowed to fall through to the legacy answer.
+ * THREE WITNESSES (2026-09-17; reordered 2026-09-28, see the function
+ * body). The ledgers answer first, because they answer for a whole walk
+ * in one batch each: a native sale naming this transaction makes it MPP;
+ * a legacy per-settle record with no native sale makes it x402. The
+ * retained settle headers, one Durable Object per settlement, name the
+ * protocol outright for the residue neither ledger holds — absent on a
+ * rescued x402 settle (the ambiguous-settle rescue relays no facilitator
+ * header, by design; lib/payment-gate.ts) and on any purchase whose
+ * coordinator record was never written. Only a settle no witness holds
+ * stays undetermined, which is exactly the case the books sweep should
+ * keep paging on. A native ledger that cannot be read is never allowed
+ * to fall through to the legacy answer.
  *
  * SINCE THE WHOLE STORE (2026-09-18) any Base certificate may be native,
  * not only the pilot's one product; certificates on the other rails
@@ -94,22 +105,57 @@ export function couldBeNative(cert: Pick<Certificate, "network" | "payer" | "set
 export async function certificateProtocol(env: Env, cert: Certificate, context: AccountingContext = {}): Promise<"x402" | "mpp" | "unavailable"> {
   if (cert.network !== BASE_NETWORK) return "x402";
   if (!cert.payer || !cert.settlement_tx) return "unavailable";
-  let retained: "x402" | "mpp" | null = null;
+  /*
+   * THE LEDGERS FIRST, THE RETAINED RECORD LAST (2026-09-28). Until
+   * this date every call opened the settlement's own Durable Object
+   * before touching either ledger, so a walk over the shelf paid one
+   * cold DO round trip per certificate — the books check did ~500 of
+   * them serially and died of the Worker's CPU budget (Cloudflare
+   * 1102) every time the keeper opened it. The native index and the
+   * legacy set are one batch read each for a whole walk, and they
+   * answer every certificate whose sale was booked. The retained
+   * record is kept for the residue: a certificate neither ledger
+   * holds is exactly the lost-booking case the sweeps exist to find,
+   * and the retained facilitator headers are the last witness to it.
+   *
+   * One edge changes shape: a certificate with a legacy record AND a
+   * retained MPP receipt but NO native evidence now reads x402 rather
+   * than mpp. The native checkout never writes the legacy till, so that
+   * shape needs a legacy repair to have imported a native sale whose
+   * evidence was then lost; the sweep's legacy_overlap state still
+   * catches the import while the evidence stands.
+   */
+  let native: boolean | "unreadable";
+  try {
+    native = (await nativeSaleIds(env, cert.settlement_tx, context.index)).length > 0;
+  } catch {
+    native = "unreadable";
+  }
+  if (native === true) return "mpp";
+  if (native === false) {
+    try {
+      const legacy = context.legacyRecorded
+        ? context.legacyRecorded(cert.payer, cert.settlement_tx)
+        : !!(await kvGet(env.COUNTERS, KV_KEYS.payerSettle(cert.payer, cert.settlement_tx)));
+      if (legacy) return "x402";
+    } catch {
+      return "unavailable";
+    }
+  }
+  // An unreadable native ledger never lets a legacy record decide; the
+  // retained record may still speak, as it always could.
+  if (context.consultRetained === false) return "unavailable";
   try {
     if (env.PAID_RECOVERIES) {
       const store = env.PAID_RECOVERIES.get(env.PAID_RECOVERIES.idFromName(`${cert.network}:${cert.settlement_tx}`));
-      retained = await store.readSettlementProtocol({ path: `/api/buy/${cert.item}`, payer: cert.payer,
+      const retained = await store.readSettlementProtocol({ path: `/api/buy/${cert.item}`, payer: cert.payer,
         network: cert.network, transaction: cert.settlement_tx });
+      if (retained) return retained;
     }
-  } catch { retained = null; }
-  if (retained) return retained;
-  try {
-    if ((await nativeSaleIds(env, cert.settlement_tx, context.index)).length) return "mpp";
-    const legacy = context.legacyRecorded
-      ? context.legacyRecorded(cert.payer, cert.settlement_tx)
-      : !!(await kvGet(env.COUNTERS, KV_KEYS.payerSettle(cert.payer, cert.settlement_tx)));
-    return legacy ? "x402" : "unavailable";
-  } catch { return "unavailable"; }
+  } catch {
+    // Unreadable retained evidence is undetermined, never a protocol.
+  }
+  return "unavailable";
 }
 
 export async function inspectNativeCertificate(env: Env, cert: Certificate, context: AccountingContext = {}): Promise<"matched" | "missing" | "mismatch" | "unavailable"> {

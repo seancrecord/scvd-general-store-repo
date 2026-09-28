@@ -24,7 +24,7 @@ import {
 import { batteryDeltaSeries } from "@/services/battery-delta";
 import { PREFLIGHT_VERSION } from "@/services/preflight";
 import { deriveWalletFacts } from "@/services/operator-facts";
-import { subjectHistory } from "@/services/subject-history";
+import { subjectHistory, type SubjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -408,6 +408,54 @@ type HostMarkdownInput = {
   gone: ReturnType<typeof delisting>;
 };
 
+/**
+ * PAID WALKS BY STRANGERS, on the page a buyer opens (2026-09-28).
+ * Its own section and its own tier line, never a row in the probe
+ * table above: a settlement is a stronger fact than a conformant 402
+ * and a walker's report is a weaker one, and a table that mixed the
+ * three would let a reader add them up.
+ */
+function crowdWalksSection(history: SubjectHistory): string {
+  if (history.crowd_walks.length === 0) {
+    return `<section>
+        <h2>Paid walks by strangers</h2>
+        <p class="menu-meta">None on the chain for this host. The bounty board at <a href="/bounties">/bounties</a> is where one would come from; a row here means a real wallet paid this door and this store verified the settlement.</p>
+      </section>`;
+  }
+  const rows = history.crowd_walks
+    .map(
+      (walk) => `<tr>
+        <td>${escapeHtml(walk.week)}</td>
+        <td>${escapeHtml(walk.settled_at.slice(0, 10))}</td>
+        <td><code>${escapeHtml(walk.network)}</code> · $${escapeHtml(walk.amount_usd.toFixed(4))}<br><small><code>${escapeHtml(walk.tx_hash.slice(0, 18))}…</code></small></td>
+        <td><code>${escapeHtml(walk.house_probe_verdict ?? "not knocked")}</code></td>
+        <td>${
+          walk.report === "none"
+            ? "<small>settlement only, no report</small>"
+            : `${walk.walker_status !== undefined ? `<code>${escapeHtml(String(walk.walker_status))}</code>` : "status not reported"} · receipt ${
+                walk.receipt === undefined ? "not reported" : walk.receipt ? "seen" : "<strong>absent</strong>"
+              }${walk.latency_ms !== undefined ? ` · ${escapeHtml(String(walk.latency_ms))} ms` : ""}`
+        }</td>
+        <td>${
+          walk.defect_classes.length === 0
+            ? "—"
+            : walk.defect_classes.map((id) => `<a href="/defects#${escapeHtml(id)}"><code>${escapeHtml(id)}</code></a>`).join(", ")
+        }</td>
+        <td><a href="${escapeHtml(walk.entry_url)}"><code>${escapeHtml(String(walk.sequence))}</code></a></td>
+      </tr>`,
+    )
+    .join("");
+  return `<section>
+        <h2>Paid walks by strangers</h2>
+        <p class="menu-desc">${history.crowd_walks.length} settlement${history.crowd_walks.length === 1 ? "" : "s"} at this host, each verified on chain by this store before a reward was paid. Tier: <code>crowd-walked</code>.</p>
+        <table>
+          <thead><tr><th>Week</th><th>Settled</th><th>Rail · amount · tx</th><th>Our knock at claim</th><th>Walker's report (their claim)</th><th>Class the report asserts</th><th>Entry</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <p class="menu-meta">${escapeHtml(history.crowd_walks_note)}</p>
+      </section>`;
+}
+
 function hostMarkdown({ base, host, title, description, tier, history, gone }: HostMarkdownInput): string {
   const front = [
     "---",
@@ -460,6 +508,26 @@ ${HOST_HISTORY_SCOPE.description}
       .filter(([, count]) => count > 0)
       .map(([reason, count]) => `${reason} ${count}`)
       .join(", ") || "none";
+
+  const crowdWalks =
+    history.crowd_walks.length === 0
+      ? `None on the chain for this host. A row here means a real wallet paid this door and this store verified the settlement; the board is ${base}/bounties.`
+      : `${history.crowd_walks.length} settlement${history.crowd_walks.length === 1 ? "" : "s"}, tier \`crowd-walked\`.
+
+| Week | Settled | Rail | Amount | Our knock at claim | Walker status | Receipt | Class the report asserts | Entry |
+|---|---|---|---|---|---|---|---|---|
+${history.crowd_walks
+  .map(
+    (walk) =>
+      `| ${markdownCell(walk.week)} | ${markdownCell(walk.settled_at.slice(0, 10))} | \`${markdownCell(walk.network)}\` | $${walk.amount_usd.toFixed(4)} | \`${markdownCell(walk.house_probe_verdict ?? "not knocked")}\` | ${
+        walk.report === "none" ? "no report" : walk.walker_status !== undefined ? `\`${walk.walker_status}\`` : "not reported"
+      } | ${walk.report === "none" ? "no report" : walk.receipt === undefined ? "not reported" : walk.receipt ? "seen" : "**absent**"} | ${
+        walk.defect_classes.length === 0 ? "—" : walk.defect_classes.map((id) => `\`${markdownCell(id)}\``).join(", ")
+      } | ${markdownCell(walk.entry_url)} |`,
+  )
+  .join("\n")}
+
+${history.crowd_walks_note}`;
 
   const latestProbed = [...history.timeline].reverse().find((round) => round.probed);
   const citeSection = latestProbed
@@ -533,6 +601,10 @@ ${UNPAID_READ_NOTE} A missing reading means not measured.
 A missed week is a fact about us, not about the door. Gaps by reason:
 ${gaps}.
 ${paymentSection}
+## Paid walks by strangers
+
+${crowdWalks}
+
 ## What this cannot see
 
 ${history.what_this_cannot_see.map((line) => `- ${line}`).join("\n")}
@@ -712,6 +784,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
             .join(", ") || "none",
         )}.</p>
       </section>
+      ${crowdWalksSection(history)}
       ${
         history.payment_address
           ? `<section><h2>Payment address</h2><p class="menu-desc">${escapeHtml(JSON.stringify(history.payment_address))}</p>${
@@ -928,6 +1001,10 @@ function briefHtml(brief: WeeklyBrief): string {
     .sort((a, b) => b[1] - a[1])
     .map(([network, count]) => `<code>${escapeHtml(network)}</code> ${count}`)
     .join(" · ");
+  const schemes = Object.entries(brief.schemes)
+    .sort((a, b) => b[1] - a[1])
+    .map(([scheme, count]) => `<code>${escapeHtml(scheme)}</code> ${count}`)
+    .join(" · ");
   const previous = brief.previous
     ? `<p class="menu-meta">The week before, ${escapeHtml(brief.previous.week)}: ${brief.previous.payable} payable and ${brief.previous.not_payable} not, of ${brief.previous.probed} probed. Two points, not a trend.</p>`
     : "";
@@ -935,6 +1012,7 @@ function briefHtml(brief: WeeklyBrief): string {
     <p class="menu-desc"><strong>Week ${escapeHtml(brief.week)}</strong>, read from signed snapshot ${brief.sequence}, taken ${escapeHtml(brief.taken_at.slice(0, 10))}${brief.battery ? `, verdicts under battery <code>${escapeHtml(brief.battery)}</code>` : ""}.</p>
     <p class="menu-desc"><strong>${d.listed} doors named</strong> by the discovery feeds; <strong>${d.probed} knocked on</strong>. Of those, <strong>${d.payable} answered with a challenge a buyer could pay</strong>, ${d.not_payable} answered with one a buyer could not pay as served, and ${d.unreachable} did not answer. ${d.offers_seen} carried a parseable offer.</p>
     ${networks ? `<p class="menu-meta">Doors per chain, from the offers' own declarations: ${networks}.</p>` : ""}
+    ${schemes ? `<p class="menu-meta">Doors per scheme, from the offers' own declarations: ${schemes}.</p>` : ""}
     ${previous}
     ${brief.mpp
       ? `<p class="menu-desc">${escapeHtml(mppCensusLine(brief.mpp))}</p><p class="menu-meta">${escapeHtml(brief.mpp.what_this_is)}</p>`

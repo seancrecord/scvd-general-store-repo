@@ -63,8 +63,8 @@ test("missing wrapper input is a malformed-input report", async () => {
   outcome(await verifyOffer({}), "invalid", "malformed_input");
 });
 
-test("an explicitly identified external signature family is unsupported, without expanding accepted inputs", async () => {
-  for (const artifact of [{ format: "eip712", payload: {}, signature: "0x00" }, { format: "future", signature: "abc" }, { format: "jws", signature: receipt.receipt }]) {
+test("unimplemented explicitly identified signature formats remain unsupported", async () => {
+  for (const artifact of [{ format: "eip712", payload: {}, signature: "0x00" }, { format: "future", signature: "abc" }]) {
     outcome(await verifyArtifact(artifact), "unsupported", "unsupported_format");
     outcome(await verifyReceipt({ receipt: artifact }), "unsupported", "unsupported_format");
   }

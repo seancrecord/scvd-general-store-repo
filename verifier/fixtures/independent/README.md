@@ -8,9 +8,9 @@ generator's reproducible private scalars for real signatures.
 
 | Family | Independent signing / verification | Package capability | Expected unsupported result |
 | --- | --- | --- | --- |
-| JWS EdDSA / Ed25519 | noble / Node OpenSSL | Compact JWS; local revision-1 profile | Format-labelled object envelope: `unsupported_format` |
-| JWS ES256 / P-256 | noble / Node OpenSSL | Unimplemented | Well-formed compact JWS: `unsupported_algorithm` |
-| JWS ES256K / secp256k1 | noble / Node OpenSSL | Unimplemented | Well-formed compact JWS: `unsupported_algorithm` |
+| JWS EdDSA / Ed25519 | noble / Node OpenSSL | Compact JWS or x402 JWS envelope; local revision-1 profile | None for these Ed25519 forms |
+| JWS ES256 / P-256 | noble / Node OpenSSL | Unimplemented | Well-formed compact JWS or JWS envelope: `unsupported_algorithm` |
+| JWS ES256K / secp256k1 | noble / Node OpenSSL | Unimplemented | Well-formed compact JWS or JWS envelope: `unsupported_algorithm` |
 | EIP-712 / secp256k1 | viem / ethers 5 with elliptic | Unimplemented | Extension envelope: `unsupported_format` |
 
 All rows have a specification reference and independent vectors. Package
@@ -21,12 +21,15 @@ Bun, Deno, Node's minimum advertised version, and deployed Workers were
 not qualified by this matrix. Local workerd is not a production observation.
 The dated qualification record is
 `research/verifier-ps2-2026-09-16/verification.json` in the source repository.
+The later JWS-envelope increment is recorded separately in
+`research/verifier-ps5-2026-09-28/README.md`; earlier observations are unchanged.
 
 Each family has offer and receipt positives plus payload, signature, key,
 authority and unavailable-authority controls. JWS adds header tampering,
 malformed transport, labelled envelopes and signed field-type controls.
 EIP-712 adds domain name/version/chain changes, primary-type separation,
-cross-format confusion and zero/empty optional-field defaults. The domain
+cross-format confusion (an EIP-712 payload mislabelled as JWS is malformed)
+and zero/empty optional-field defaults. The domain
 is the extension's fixed domain, independent of the payment network.
 
 ## What each result means

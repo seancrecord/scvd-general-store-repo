@@ -11,6 +11,7 @@ import {
   letterThread,
   submitLetter,
 } from "@/services/letters";
+import { readEmailAddress } from "@/lib/keeper-mail";
 import { isRecord, type HonoEnv } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 
@@ -39,13 +40,43 @@ function nextUtcMidnight(now: Date): Date {
   return next;
 }
 
+/**
+ * WHAT HAPPENED TO THE ADDRESS, said in the response (2026-09-28).
+ * A field silently dropped is a field the sender thinks was kept.
+ * Three answers: kept (and what it buys), refused (and why), or not
+ * offered, in which case the line says the pickup URL is the only
+ * place the answer will be — the honest default, since a person who
+ * wrote once rarely polls.
+ */
+function replyToNote(
+  offered: unknown,
+  kept: string | undefined,
+): Record<string, string> {
+  if (kept && readEmailAddress(offered) === kept) {
+    return {
+      reply_to:
+        "Kept, and never shown anywhere. Each signed reply is mailed there as well as served at the pickup URL, with the keeper copied so you can answer him in mail.",
+    };
+  }
+  if (offered !== undefined && offered !== null && offered !== "") {
+    return {
+      reply_to:
+        "That did not read as an email address, so nothing was kept. Send one on a follow-up once the keeper has replied, or watch the pickup URL.",
+    };
+  }
+  return {
+    reply_to:
+      "No address given. The reply appears only at the pickup URL, so poll it; add \"reply_to\" to have each signed reply mailed to you as well.",
+  };
+}
+
 letterRoutes.post("/api/letter", async (c) => {
   const body: unknown = await c.req.json().catch(() => null);
   if (!isRecord(body)) {
     return c.json(
       {
         error:
-          'Send JSON: { "letter": "...", "from_name": "(optional)", "verified_identity": "(optional)" }. Paper and ink are on us.',
+          'Send JSON: { "letter": "...", "from_name": "(optional)", "reply_to": "(optional email — each signed reply is mailed there too)", "verified_identity": "(optional)" }. Paper and ink are on us.',
       },
       400,
     );
@@ -58,7 +89,12 @@ letterRoutes.post("/api/letter", async (c) => {
    */
   const inReplyTo = sanitizeText(body["in_reply_to"], 80);
   if (inReplyTo) {
-    const added = await addFollowUp(c.env, inReplyTo, body["letter"]);
+    const added = await addFollowUp(
+      c.env,
+      inReplyTo,
+      body["letter"],
+      body["reply_to"],
+    );
     if (!added.ok) {
       const refusal: Record<"reason" | "error", string> & {
         status: 400 | 404 | 409 | 413;
@@ -105,6 +141,7 @@ letterRoutes.post("/api/letter", async (c) => {
       follow_ups_sent: added.record.follow_ups?.length ?? 0,
       follow_ups_left:
         LETTER_FOLLOW_UP_CAP - (added.record.follow_ups?.length ?? 0),
+      ...replyToNote(body["reply_to"], added.record.reply_to),
     });
   }
 
@@ -144,6 +181,7 @@ letterRoutes.post("/api/letter", async (c) => {
     letter: body["letter"],
     fromName: body["from_name"],
     verifiedIdentity: sanitizeText(body["verified_identity"], 300) || undefined,
+    replyTo: body["reply_to"],
   });
   if (!submitted.ok) {
     /*
@@ -182,6 +220,7 @@ letterRoutes.post("/api/letter", async (c) => {
       pickup_url: submitted.pickupUrl,
       privacy:
         "Letters are private. Nothing you wrote appears on any public surface, ever, the storefront counts letters; it doesn't quote them.",
+      ...replyToNote(body["reply_to"], submitted.record.reply_to),
       ...(cadenceFor("letter") ? { cadence: cadenceFor("letter") } : {}),
       ...(submitted.record.verified_identity
         ? {
