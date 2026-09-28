@@ -156,6 +156,34 @@ An absent match, omitted row, invalid signature or missing bound evidence remain
 a stated gap. A valid signature alone does not establish freshness or
 payment/delivery.
 
+If the installed `--help` lists `--format` and `--report-out` (added in 1.9.0),
+save its generated report directly. Source and registry versions can differ;
+use the existing JSON result when these options are unavailable.
+
+```sh
+scvd-evidence verify-source ./evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes CALLER_MAX_BYTES \
+  --subject 'EXACT_ENDPOINT_URL' --format markdown \
+  --report-out ./evidence/verification-report.md
+```
+
+The command refuses an existing output file. Use a new filename for each
+original and keep it within the caller's retention allowance. If original unpaid
+HTTP headers were retained, optionally add
+`--challenge-headers ./evidence/challenge-headers.txt`; never fetch replacements
+for an ended run. This preserves every offer's exact address and compares its
+digest to selected signed rows. Headers and their resource URL remain unsigned;
+a digest match does not establish current terms, a payable address or permission
+to spend. Missing or ambiguous inputs remain gaps.
+
+Cite the saved generated report in your final answer; do not retype payment
+addresses, hashes or observation counts from memory. If using the library API or
+independent local cryptography, save the exact computed result from that same
+program and cite it, keeping original-file hashes distinct from signed-message
+hashes. One verified snapshot, whatever its sequence number, does not verify an
+unsigned timeline. A generated report supplements the originals; it cannot
+replace them or turn unsigned history into authenticated observations.
+
 Keep signed observations and unsigned context separate in both the final answer
 and saved verification notes. The host-history lookup's tier, coverage fraction
 and other weeks do not become claims of this snapshot because it verified.

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash, generateKeyPairSync, randomBytes, sign} from 'node:crypto';
 import {validEnvelope} from './buyer-run-evidence.mjs';
-import {validateRecipientVerifier,RECIPIENT_VERIFIER_FILES} from './recipient-verifier.mjs';
+import {validateRecipientVerifier,recipientVerifierFiles} from './recipient-verifier.mjs';
 import {createEvidenceBundle, verifyEvidenceBundle} from '../../verifier/evidence-bundle.js';
 
 export const CAPTURE_MAX_BYTES = 32 * 1024 * 1024;
@@ -149,8 +149,8 @@ export function recipientLaunch(plan,cwd,output,context) {
   launch.args.splice(launch.args.length-1,0,'-c','web_search="disabled"');
   launch.args[launch.args.indexOf('sandbox_workspace_write.network_access=true')]='sandbox_workspace_write.network_access=false';
   if(r.input_scope==='all-retained-and-buyer-report'){
-    const inputs=['input-manifest.json','artifacts/','buyer-handoff.md',...(r.verifier?RECIPIENT_VERIFIER_FILES:['x402-verify.js','evidence-bundle.js','package.json'])];
-    const cli=r.verifier?`The supplied evidence-cli.mjs and package.json are pinned verifier tooling, not buyer evidence or proof of registry publication. You can run node evidence-cli.mjs verify-source artifacts/ORIGINAL_FILE --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes ${plan.budgets.artifact_bytes} --subject EXACT_SUBJECT_URL. Choose the original file and evaluate the key basis from the supplied inventory; replace the placeholders and quote shell arguments as needed. This example does not select a file or establish its result. Read status, signed pointers, observation dates, omissions and scope limits; exit 0 alone does not establish a matching fresh observation. You may also use the library API or independent local cryptography.\n`:'';
+    const inputs=['input-manifest.json','artifacts/','buyer-handoff.md',...(r.verifier?recipientVerifierFiles(r.verifier):['x402-verify.js','evidence-bundle.js','package.json'])];
+    const cli=r.verifier?`The supplied evidence-cli.mjs and package.json are pinned verifier tooling, not buyer evidence or proof of registry publication. You can run node evidence-cli.mjs verify-source artifacts/ORIGINAL_FILE --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes ${plan.budgets.artifact_bytes} --subject EXACT_SUBJECT_URL. Choose the original file and evaluate the key basis from the supplied inventory; replace the placeholders and quote shell arguments as needed. This example does not select a file or establish its result. Read status, signed pointers, observation dates, omissions and scope limits; exit 0 alone does not establish a matching fresh observation. ${r.verifier.files['evidence-report.js']?'This pinned CLI supports --format markdown for a generated report and --challenge-headers SAVED_HTTP_HEADERS for unsigned payment-identifier comparisons. Derive exact identifiers and authenticated scope from its computed output; cite the generated report instead of retyping addresses or hashes. These options do not authenticate unsigned headers, establish issuer identity or apply the caller freshness policy. ':''}You may also use the library API or independent local cryptography.\n`:'';
     const prompt=inventoryRecipientPrompt(plan.subject,'buyer_report',{unclassified:plan.schema_version===6,maxBytes:plan.budgets.artifact_bytes})+cli+`All retained files are supplied under artifacts/; input-manifest.json records their exact names and hashes, including any capture gaps. package.json declares the public verifier modules. Stop within ${r.budgets.tool_calls} tool calls and ${Math.ceil(r.budgets.wall_ms/1000)} seconds; aim for ${r.budgets.output_tokens} output tokens. Output tokens are advisory; the byte cap is ${r.budgets.output_bytes}. No delegation.\n`;
     return {...launch,budgets:{...r.budgets},protocol_sha256:hash(JSON.stringify(r)),inputs,prompt};
   }

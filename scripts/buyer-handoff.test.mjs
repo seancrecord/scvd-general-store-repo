@@ -144,7 +144,7 @@ for(const mutation of [null,'plan after qualification','different cell'])test(`f
 function cliPlan(){
  const plan=structuredClone(fullPlan);plan.schema_version=6;
  const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
- plan.recipient.verifier={name:pkg.name,version:pkg.version,files:Object.fromEntries(['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json'].map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]))};
+ plan.recipient.verifier={name:pkg.name,version:pkg.version,files:Object.fromEntries(['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json','evidence-report.js','payment-identity.js'].map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]))};
  return plan;
 }
 async function cliFrozen(plan=cliPlan()){
@@ -161,11 +161,11 @@ test('a new frozen CLI handoff supplies executable pinned package bytes without 
   assert.match(frozen.prompt,/--subject EXACT_SUBJECT_URL/);
   const m=prepareHandoff(f.root,f.selection,f.out,frozen);
   assert.deepEqual(m.verifier,frozen.plan.recipient.verifier);
-  assert.equal(m.machinery.length,4);
+  assert.ok(m.machinery.some(row=>row.file==='evidence-report.js'));assert.ok(m.machinery.some(row=>row.file==='payment-identity.js'));
   for(const [file,digest] of Object.entries(frozen.plan.recipient.verifier.files))assert.equal(hash(fs.readFileSync(path.join(f.out,file))),digest);
   assert.ok(m.files.every(row=>row.supplied&&row.cited_in_report===null));
   const result=spawnSync(process.execPath,['evidence-cli.mjs','--help'],{cwd:f.out,encoding:'utf8'});
-  assert.equal(result.status,0,result.stderr);assert.match(result.stdout,/--subject/);
+  assert.equal(result.status,0,result.stderr);assert.match(result.stdout,/--subject/);assert.match(result.stdout,/--format/);
   const old=await frozenFixture();assert.ok(!old.protocol.inputs.includes('evidence-cli.mjs'));assert.doesNotMatch(old.prompt,/node evidence-cli/);
  }finally{f.clean();}
 });
@@ -274,4 +274,10 @@ test('skill capture commands preserve a large original and separately fetched ke
    assert.equal(fs.readdirSync(path.join(dir,'evidence')).length,i+1,'capture commands must not create per-response sidecars');
   }
  }finally{await new Promise(resolve=>server.close(resolve));fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('a reporting CLI cannot be prepared with its old incomplete runtime inventory',async()=>{
+ const f=fixture();try{const plan=cliPlan();delete plan.recipient.verifier.files['evidence-report.js'];delete plan.recipient.verifier.files['payment-identity.js'];const frozen=await cliFrozen(plan);f.selection.scope='buyer_report';for(const row of f.selection.files)row.supply=true;assert.throws(()=>prepareHandoff(f.root,f.selection,f.out,frozen),/runtime files/);assert.equal(fs.existsSync(f.out),false);}finally{f.clean();}
+});
+for(const file of ['evidence-report.js','payment-identity.js'])test(`reporting handoff refuses a changed ${file}`,async()=>{
+ const f=fixture();try{const plan=cliPlan();plan.recipient.verifier.files[file]='0'.repeat(64);const frozen=await cliFrozen(plan);f.selection.scope='buyer_report';for(const row of f.selection.files)row.supply=true;assert.throws(()=>prepareHandoff(f.root,f.selection,f.out,frozen),/verifier bytes/);assert.equal(fs.existsSync(f.out),false);}finally{f.clean();}
 });

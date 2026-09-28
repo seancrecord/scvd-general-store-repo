@@ -4,6 +4,19 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## 1.9.0 — source prepared 2026-09-28
+
+**Added.** `verify-source --format markdown --report-out NEW_FILE` saves a
+bounded report without overwriting any file. Computed original-file and signed-
+message hashes, one-source scope, signed-subject rows and unknown dates remain
+explicit. Optional saved HTTP challenge headers supply exact unsigned payment
+offers and historical address-digest comparisons; no rail is selected and no
+payment is authorized. The store and reader share the same address-digest code.
+
+The default JSON output remains available, with additive digest, snapshot-count
+and observation-date fields. Existing signature/binding exit meanings remain.
+Source preparation does not establish publication or native buyer reliability.
+
 ## 1.8.0 — source prepared 2026-09-28
 
 **Added.** Artifact, offer and receipt APIs accept the x402 JWS extension

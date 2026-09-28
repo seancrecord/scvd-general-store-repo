@@ -3,6 +3,7 @@ import { open, mkdir, access, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { webcrypto } from "node:crypto";
 import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit } from "./evidence-bundle.js";
+import { EVIDENCE_REPORT_FORMAT, CHALLENGE_HEADERS_MAX_BYTES, readPaymentChallenge, renderEvidenceReport } from "./evidence-report.js";
 import { CAPABILITIES, runtimeCapabilities } from "./x402-verify.js";
 
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
@@ -14,6 +15,8 @@ const HELP = `scvd-evidence — free export and offline verification
   verify <bundle.json> --public-key <independently-trusted-public-key-hex>
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
     [--evidence <local-file> ...] [--subject <exact-endpoint-url>]
+    [--format json|markdown] [--report-out <new-report.md>]
+    [--challenge-headers <saved-HTTP-headers.txt>]
   capabilities
   All commands but capabilities: [--max-bytes <integer>]
 
@@ -27,13 +30,19 @@ Export reads only the URL you name and its origin's public key document.
 No credentials, payments or private keys. Evidence files must match a hash
 inside the signed payload. Existing directories are never overwritten.
 Verify and verify-source make no network requests. verify-source checks a saved
-original response using the same bundle verifier in memory, writes no files,
+original response using the same bundle verifier in memory,
 and prints findings plus the original file SHA-256 without repeating claims.
+With --format markdown --report-out, save a new report without overwriting any
+file and print a compact JSON receipt; otherwise verify-source writes no files.
 With --subject, it also selects exact-URL observations from verified corpus-v1
 claims only. Unsigned history and preflight are never included. Whole rows fit
 within a ${SUBJECT_OBSERVATIONS_MAX_BYTES}-byte compact JSON allowance; omitted rows are counted explicitly.
 Pointers address signed_claims, not the unsigned response wrapper. Snapshot
 packaging time is separate from each row's observed_at; no freshness verdict.
+Markdown prints a generated report with exact identifiers and one-source scope.
+--challenge-headers requires --subject and reads the final saved HTTP 402 headers:
+its x402 v2 PAYMENT-REQUIRED offers remain unsigned; digest matches are historical
+address links only. No rail selection, address validation or payment authority.
 Keep that original, its source URL, any linked evidence and the independently
 established key. The embedded key cannot establish identity.
 Exit: 0 signature/bindings valid; 1 invalid or missing trusted key;
@@ -127,12 +136,15 @@ async function main(args) {
   const flags = {}; const evidence = [];
   for (let i = 0; i < rest.length; i += 2) {
     const [key, value] = [rest[i], rest[i + 1]];
-    if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
+    if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject", "--format", "--challenge-headers", "--report-out"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
     if (key === "--evidence") evidence.push(value); else flags[key] = value;
   }
   if (flags["--max-bytes"] && !/^\d+$/.test(flags["--max-bytes"])) throw new Error("invalid_byte_limit");
   const maxBytes = evidenceByteLimit(flags["--max-bytes"] === undefined ? undefined : Number(flags["--max-bytes"]));
   if (!input) throw new Error("missing_input");
+  if (flags["--format"] && (command !== "verify-source" || !["json", "markdown"].includes(flags["--format"]))) throw new Error("invalid_format");
+  if (flags["--report-out"] && (command !== "verify-source" || flags["--format"] !== "markdown")) throw new Error("report_requires_markdown");
+  if (flags["--challenge-headers"] && (command !== "verify-source" || !flags["--subject"])) throw new Error("challenge_requires_subject");
   if (flags["--subject"]) {
     const subject = new URL(flags["--subject"]);
     if (command !== "verify-source" || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
@@ -150,7 +162,20 @@ async function main(args) {
     const subject = flags["--subject"] ? { subject_evidence: subjectEvidence(result, flags["--subject"]) } : {};
     // Compact subject output prevents indentation of a nested signed row from
     // expanding past the allowance that was measured in its compact encoding.
-    console.log(JSON.stringify({ ...findings, source_sha256: await evidenceDigest(bytes), ...subject }, null, flags["--subject"] ? undefined : 2));
+    const reading = { report_format: EVIDENCE_REPORT_FORMAT, ...findings, source_sha256: await evidenceDigest(bytes),
+      signed_message_sha256: result.valid ? await evidenceDigest(new TextEncoder().encode(bundle.artifact.signed_payload)) : null,
+      corpus_snapshots_verified: result.valid && signed_claims?.version === 1 && signed_claims?.source === "ward_round" && Array.isArray(signed_claims.round?.hosts) ? 1 : 0,
+      ...subject,
+      observation_dates: (subject.subject_evidence?.observations ?? []).map(observation => {
+        const date = observation.value.observed_at;
+        const known = typeof date === "string" && Number.isFinite(Date.parse(date));
+        return { signed_claims_pointer: observation.signed_claims_pointer, observed_at: known ? date : null, status: known ? "recorded" : "unknown" };
+      }) };
+    if (flags["--challenge-headers"]) reading.payment_challenge = await readPaymentChallenge(await localBytes(flags["--challenge-headers"], Math.min(maxBytes, CHALLENGE_HEADERS_MAX_BYTES)), subject.subject_evidence);
+    if (flags["--report-out"]) {
+      await writeFile(flags["--report-out"], renderEvidenceReport(reading, maxBytes), { flag: "wx", mode: 0o600 });
+      console.log(JSON.stringify({ report_file: flags["--report-out"], source_sha256: reading.source_sha256, valid: reading.valid, evidence_complete: reading.evidence_complete }));
+    } else console.log(flags["--format"] === "markdown" ? renderEvidenceReport(reading, maxBytes) : JSON.stringify(reading, null, flags["--subject"] ? undefined : 2));
     process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
     return;
   }

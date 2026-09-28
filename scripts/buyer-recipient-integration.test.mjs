@@ -163,7 +163,7 @@ test('a completed recipient cannot be transplanted onto a changed buyer record',
 });
 
 test('the integrated recipient supplies pinned CLI machinery and freezes its exact bytes',async()=>{
- const names=['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json'];
+ const names=['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json','evidence-report.js','payment-identity.js'];
  const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
  const verifier={name:pkg.name,version:pkg.version,files:Object.fromEntries(names.map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]))};
  const f=fixture(verifier);try{
@@ -178,7 +178,7 @@ test('the integrated recipient supplies pinned CLI machinery and freezes its exa
 });
 
 test('incorrect frozen CLI bytes stop qualification before any native child or output directory',async()=>{
- const names=['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json'];
+ const names=['evidence-cli.mjs','evidence-bundle.js','x402-verify.js','package.json','evidence-report.js','payment-identity.js'];
  const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
  const verifier={name:pkg.name,version:pkg.version,files:Object.fromEntries(names.map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]))};
  const f=fixture(verifier);try{

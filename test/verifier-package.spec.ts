@@ -38,7 +38,7 @@ describe("the npm package tells the truth about itself", () => {
   it("ships its verifier, evidence tools, types, fixtures and documentation", () => {
     const files = manifest["files"] as string[];
     expect([...files].sort()).toEqual(
-      ["CHANGELOG.md", "LICENSE", "README.md", "fixtures/", "examples/", "x402-verify.d.ts", "x402-verify.js", "evidence-bundle.js", "evidence-bundle.d.ts", "evidence-cli.mjs"].sort(),
+      ["CHANGELOG.md", "LICENSE", "README.md", "fixtures/", "examples/", "x402-verify.d.ts", "x402-verify.js", "evidence-bundle.js", "evidence-bundle.d.ts", "evidence-cli.mjs", "evidence-report.js", "payment-identity.js", "payment-identity.d.ts"].sort(),
     );
     expect(changelog).toContain(`## ${manifest["version"]} — `);
     // The imports at the top of this file are the existence check:
@@ -94,7 +94,7 @@ describe("the npm package tells the truth about itself", () => {
     // public repo describes key handling to strangers for no reader's
     // benefit. The publish record lives in the TASKS archive; the
     // versioning policy is the CHANGELOG's own first paragraph since
-    // 1.1.0. The files array staying exactly six is the guard.
+    // 1.1.0. The explicit file inventory above is the guard.
     const files = manifest["files"] as string[];
     expect(files.some((file) => /test|PLAN/.test(file))).toBe(false);
     expect(files.some((file) => /publish/i.test(file))).toBe(false);

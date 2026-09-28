@@ -34,6 +34,9 @@ test('the README example works from the actual package in a clean offline projec
     if (scenario === 'valid') assert.deepEqual(result, expected);
   }
   assert.throws(() => run(process.execPath, ['verify.mjs', 'unknown'], dir), /Unknown scenario/);
+  const help = run(process.execPath, ['node_modules/x402-verify/evidence-cli.mjs', '--help'], dir);
+  assert.match(help, /--format json\|markdown/);
+  assert.match(help, /--report-out/);
   const installed = JSON.parse(readFileSync(join(dir, 'node_modules/x402-verify/package.json')));
   assert.equal(installed.dependencies, undefined);
   assert.equal(installed.version, manifest.version);
