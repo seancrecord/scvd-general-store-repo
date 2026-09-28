@@ -5,9 +5,8 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
-import { draftOpenForBusiness, publishClosedWeek, renderOpenForBusinessMarkdown } from "@/services/open-for-business";
+import { countedWindow, draftOpenForBusiness, publishClosedWeek, renderOpenForBusinessMarkdown, weekCloseInstant } from "@/services/open-for-business";
 import { readWeekChanges, renderWeekChangesMarkdown, weekChanges, type PullsFetcher } from "@/services/week-changes";
-import { recordInputRefusal, recordSettleSignal } from "@/services/buyer-signals";
 import { getMenuItem } from "@/store";
 import type { Env } from "@/types";
 
@@ -69,6 +68,28 @@ async function publish(week = "2026-W38", markdown = ISSUE, teaser = ""): Promis
 }
 
 /**
+ * A FIXED WEEK, SEEDED UNDER ITS OWN KEY. The issue reads the week
+ * twin of every counter (lib/kv-keys.ts, 2026-09-28), and the
+ * recorders write the wall clock's week, so a draft-level test that
+ * went through them would move with the clock. These tests seed
+ * 2026-W44 (2026-10-26 to 2026-11-01) directly and draft at a fixed
+ * instant inside it; the recorders' own week twins are proven in
+ * test/week-twins.spec.ts.
+ */
+const WEEK = "2026-W44";
+const MIDWEEK = new Date("2026-10-28T12:00:00Z");
+const store = () => signalStore(testEnv)!;
+async function seedSignal(kind: string, entry: string, times = 1): Promise<void> {
+  for (let i = 0; i < times; i += 1) await store().bump({ month: WEEK, kind, entry });
+}
+async function clearWeekMetrics(): Promise<void> {
+  for (const prefix of ["metricw:", "metric:2026-10:", "metric:2026-11:"]) {
+    const listed = await testEnv.COUNTERS.list({ prefix });
+    for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
+  }
+}
+
+/**
  * OPEN FOR BUSINESS, the weekly draft: assembled from readers that already
  * serve the desk, every number with its denominator, every section
  * naming what it could not see, and the fix of the week left blank
@@ -82,14 +103,17 @@ beforeEach(async () => {
   for (const key of listed.keys) {
     if (key.name.includes(":signals:")) await testEnv.COUNTERS.delete(key.name);
   }
+  await clearWeekMetrics();
 });
 
 describe("the draft", () => {
   it("lays four sections with denominators and gaps, and leaves the fix to the keeper", async () => {
-    await recordInputRefusal(testEnv, getMenuItem("spot_check"), "spot_check", { code: "bad_request", input_field: "host" }, "https://x.example/api");
-    await recordSettleSignal(testEnv, { door: "http", network: "eip155:8453", item: "hello", purpose: "a test", house: false });
-    const draft = await draftOpenForBusiness(testEnv);
-    expect(draft.week).toMatch(/^\d{4}-W\d{2}$/);
+    await seedSignal("refusal_organic", "spot_check:host:malformed");
+    await seedSignal("rail", "http:eip155_8453");
+    const draft = await draftOpenForBusiness(testEnv, MIDWEEK);
+    expect(draft.week).toBe(WEEK);
+    // An open week counts to the drafting day.
+    expect(draft.window).toEqual({ week: WEEK, from: "2026-10-26", to: "2026-10-28", days: 3, whole: false });
     expect(draft.sections.map((s) => s.heading)).toEqual([
       "Where they got hung up",
       "What went well",
@@ -102,7 +126,7 @@ describe("the draft", () => {
     }
     const hungUp = draft.sections[0]!;
     expect(hungUp.unread).toBe(false);
-    expect(hungUp.numbers.find((n) => n.label === "pre-payment 400s this month")?.value).toBe(1);
+    expect(hungUp.numbers.find((n) => n.label.startsWith("pre-payment 400s, "))?.value).toBe(1);
     expect(hungUp.rows.some(([k]) => k === "spot_check:host:malformed")).toBe(true);
     // No fetcher and the facilitator mock refuses outbound fetches: the week's changes are NOT READ, never empty.
     expect(draft.changes.read).toBe(false);
@@ -111,7 +135,7 @@ describe("the draft", () => {
   });
 
   it("renders Markdown a keeper can paste, with the number of the week first", async () => {
-    const draft = await draftOpenForBusiness(testEnv, new Date(), pullsOf([]));
+    const draft = await draftOpenForBusiness(testEnv, MIDWEEK, pullsOf([]));
     const md = renderOpenForBusinessMarkdown(draft);
     expect(md.startsWith(`# Open for Business — ${draft.week}`)).toBe(true);
     expect(md.indexOf("## The number of the week")).toBeLessThan(md.indexOf("## Where they got hung up"));
@@ -274,29 +298,33 @@ describe("the Monday press", () => {
     await clearWeekChanges();
   });
 
-  it("puts the closed week on the shelf once, never over the keeper's own, and skips weeks before the shelf opened", async () => {
-    const pulls = pullsOf([{ number: 808, title: "A change at our door", merged_at: "2026-09-18T17:30:00Z" }]);
-    // Monday 2026-09-21 00:30Z: W38 has just closed.
-    const monday = new Date("2026-09-21T00:30:00Z");
+  it("puts the closed week on the shelf once, never over the keeper's own, and skips weeks before the shelf opened or before the counters", async () => {
+    const pulls = pullsOf([{ number: 808, title: "A change at our door", merged_at: "2026-10-29T17:30:00Z" }]);
+    // Monday 2026-11-02 00:30Z: W44 has just closed.
+    const monday = new Date("2026-11-02T00:30:00Z");
     const first = await publishClosedWeek(testEnv, monday, pulls);
     expect(first.outcome).toBe("published");
-    expect(first.issue?.week).toBe("2026-W38");
-    expect(first.issue?.date).toBe("2026-09-21");
-    expect(first.issue?.markdown).toContain("- 2026-09-18 — A change at our door");
+    expect(first.issue?.week).toBe("2026-W44");
+    expect(first.issue?.date).toBe("2026-11-02");
+    expect(first.issue?.markdown).toContain("- 2026-10-29 — A change at our door");
     const index = (await (await SELF.fetch(`${BASE}/open-for-business`, { headers: { Accept: "application/json" } })).json()) as { issues: Array<{ week: string }> };
-    expect(index.issues.map((issue) => issue.week)).toEqual(["2026-W38"]);
+    expect(index.issues.map((issue) => issue.week)).toEqual(["2026-W44"]);
     // The next hourly firing finds it there and leaves it alone.
-    const again = await publishClosedWeek(testEnv, new Date("2026-09-21T01:30:00Z"), pulls);
+    const again = await publishClosedWeek(testEnv, new Date("2026-11-02T01:30:00Z"), pulls);
     expect(again.outcome).toBe("already_on_shelf");
     // The keeper's own version of a week stands: the press never overwrites it.
-    expect((await publish("2026-W39", "# The keeper's own W39\n\nHis words.")).status).toBe(302);
-    const keeperWins = await publishClosedWeek(testEnv, new Date("2026-09-28T00:30:00Z"), pulls);
+    expect((await publish("2026-W45", "# The keeper's own W45\n\nHis words.")).status).toBe(302);
+    const keeperWins = await publishClosedWeek(testEnv, new Date("2026-11-09T00:30:00Z"), pulls);
     expect(keeperWins.outcome).toBe("already_on_shelf");
-    expect(keeperWins.issue?.title).toBe("The keeper's own W39");
+    expect(keeperWins.issue?.title).toBe("The keeper's own W45");
     // A week that closed before the shelf opened is never sold.
     const early = await publishClosedWeek(testEnv, new Date("2026-09-14T00:30:00Z"), pulls);
     expect(early.outcome).toBe("before_opening");
     expect((await SELF.fetch(`${BASE}/open-for-business/2026-W37`)).status).toBe(404);
+    // Nor is a week the week counters never saw: W38 closed on 2026-09-20, before they went live.
+    const uncounted = await publishClosedWeek(testEnv, new Date("2026-09-21T00:30:00Z"), pulls);
+    expect(uncounted.outcome).toBe("nothing_counted");
+    expect((await SELF.fetch(`${BASE}/open-for-business/2026-W38`)).status).toBe(404);
   });
 
   it("the desk says when the press fires next and shows the week's changes", async () => {
@@ -304,5 +332,117 @@ describe("the Monday press", () => {
     expect(page).toContain("It goes on the shelf on its own");
     expect(page).toContain("The fix of the week");
     expect(page).toContain("Not read:");
+  });
+});
+
+/**
+ * THE COUNTED WINDOW AND THE HONEST LEADS (2026-09-28). The issue
+ * reads its own week off the week twins, and prints which days of it
+ * were counted. And four sentences that claimed more than their
+ * counters: the sweep printed as repeat readers, the age printed as a
+ * who, the "other" refusals left unnamed, machinery counted beside
+ * clients at the MCP door.
+ */
+describe("the counted window and the honest leads", () => {
+  beforeEach(async () => {
+    await clearShelf();
+    await clearWeekChanges();
+  });
+
+  it("names the days it counted: the week to the drafting day, from the day the counters went live", () => {
+    // W40 is 2026-09-28 to 2026-10-04; the twins went live on the 29th. On the desk on the 28th nothing is counted yet.
+    expect(countedWindow("2026-W40", new Date("2026-09-28T12:00:00Z"))).toEqual({ week: "2026-W40", from: "2026-09-29", to: "2026-09-28", days: 0, whole: false });
+    // Pressed at its close, the same issue counts six of its seven days and says so.
+    expect(countedWindow("2026-W40", weekCloseInstant("2026-W40"))).toEqual({ week: "2026-W40", from: "2026-09-29", to: "2026-10-04", days: 6, whole: false });
+    // A later week, open on the desk, counts to the drafting day.
+    expect(countedWindow(WEEK, MIDWEEK)).toEqual({ week: WEEK, from: "2026-10-26", to: "2026-10-28", days: 3, whole: false });
+    // Closed, it is the whole week.
+    expect(countedWindow(WEEK, weekCloseInstant(WEEK))).toEqual({ week: WEEK, from: "2026-10-26", to: "2026-11-01", days: 7, whole: true });
+    // A week that closed before the counters has nothing.
+    expect(countedWindow("2026-W38", weekCloseInstant("2026-W38")).days).toBe(0);
+  });
+
+  it("the press reads the week's own counters, not the month's, and the issue says which days", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.metric(WEEK, "mcpclient", "census"), JSON.stringify({ "claude-code": 3 }));
+    await testEnv.COUNTERS.put(KV_KEYS.metric("2026-10", "mcpclient", "census"), JSON.stringify({ "claude-code": 40 }));
+    await testEnv.COUNTERS.put(KV_KEYS.metric("2026-11", "mcpclient", "census"), JSON.stringify({ "claude-code": 1 }));
+    // Monday 2026-11-02 00:30Z: W44 has just closed, one day into November.
+    const pressed = await publishClosedWeek(testEnv, new Date("2026-11-02T00:30:00Z"), pullsOf([]));
+    expect(pressed.outcome).toBe("published");
+    expect(pressed.issue?.week).toBe(WEEK);
+    const md = pressed.issue?.markdown ?? "";
+    expect(md).toContain("Counted 2026-10-26 to 2026-11-01, 7 days, the whole week");
+    expect(md).toContain("- …claude-code: **3** of 3");
+    expect(md).not.toContain("this month");
+    // The standing line is a quote now, so the free line is a fact of the week, not the same sentence every week.
+    expect(pressed.issue?.teaser).not.toContain("The week in agent buying");
+    expect(md).toContain("> _The week in agent buying");
+  });
+
+  it("calls a walk a walk: every host read twice by an unnamed agent is an index, not a repeat reader", async () => {
+    for (let i = 0; i < 25; i += 1) {
+      await seedSignal("subjects", `host${i}.example:json`, 2);
+    }
+    await seedSignal("pages", "corpus_host:json:agent:none", 50);
+    const draft = await draftOpenForBusiness(testEnv, MIDWEEK, pullsOf([]));
+    const who = draft.sections.find((s) => s.heading === "Who looked at the record")!;
+    expect(who.lead).toContain("none of them referred from the door itself");
+    expect(who.lead).toContain("an index walking, not a seller reading");
+    expect(who.lead).not.toContain("operators checking their own listing");
+    expect(who.numbers.find((n) => n.label === "hosts read five or more times")).toEqual({ label: "hosts read five or more times", value: 0, of: 25 });
+    expect(who.numbers.find((n) => n.label === "reads per host, mean")?.value).toBe(2);
+    expect(who.numbers.some((n) => n.label.includes("read more than once"))).toBe(false);
+  });
+
+  it("the number of the week stops at the age, and the went-well lead says age is when, not who", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.metric(WEEK, "verifyage", "over_1w"), "12");
+    await testEnv.COUNTERS.put(KV_KEYS.metric(WEEK, "verifyage", "under_1h"), "10");
+    const draft = await draftOpenForBusiness(testEnv, MIDWEEK, pullsOf([]));
+    expect(draft.number_of_the_week?.sentence).toBe("12 of 22 receipt re-checks between 2026-10-26 and 2026-10-28 came more than a week after minting.");
+    expect(draft.number_of_the_week?.sentence).not.toContain("someone other than the buyer");
+    const well = draft.sections.find((s) => s.heading === "What went well")!;
+    expect(well.lead).toContain("Age says when, not who");
+    expect(well.lead).not.toContain("somebody the buyer showed the artifact to, checking it without us");
+  });
+
+  it("names the code behind the other refusals and derives the disclosure line from its counter", async () => {
+    await seedSignal("refusal_organic", "spot_check:unsupported_network:other", 2);
+    await seedSignal("refusal_organic", "spot_check:host:missing");
+    const draft = await draftOpenForBusiness(testEnv, MIDWEEK, pullsOf([]));
+    const hungUp = draft.sections[0]!;
+    expect(hungUp.lead).toContain("1 for a field they left out");
+    expect(hungUp.lead).toContain("2 for something other than a field's shape, most often `unsupported_network` (2)");
+    expect(hungUp.rows.some(([k]) => k === "spot_check:unsupported_network:other")).toBe(true);
+    expect(hungUp.not_seen.some((gap) => gap.includes("left blank"))).toBe(false);
+    expect(hungUp.not_seen.some((gap) => /\d+ of \d+ buyers filled it/.test(gap))).toBe(true);
+  });
+
+  it("keeps machinery off the client side of the MCP census and puts the till against the door", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.metric(WEEK, "mcpclient", "census"), JSON.stringify({ "claude-code": 5, "glimind-probe": 4, other: 2 }));
+    await testEnv.COUNTERS.put(KV_KEYS.metric(WEEK, "src402", "direct"), "400");
+    await testEnv.COUNTERS.put(KV_KEYS.metric(WEEK, "src", "direct"), "2");
+    await testEnv.COUNTERS.put(KV_KEYS.metric(WEEK, "porch", "/llms.txt:direct"), "9");
+    const draft = await draftOpenForBusiness(testEnv, MIDWEEK, pullsOf([]));
+    const entry = draft.sections.find((s) => s.heading === "Entry points")!;
+    const byLabel = (label: string) => entry.numbers.find((n) => n.label === label);
+    expect(byLabel("MCP handshakes from clients not in the machinery table")?.value).toBe(5);
+    expect(byLabel("…claude-code")).toEqual({ label: "…claude-code", value: 5, of: 5 });
+    expect(byLabel("MCP handshakes from self-identified machinery")?.value).toBe(4);
+    expect(byLabel("…glimind-probe")).toEqual({ label: "…glimind-probe", value: 4, of: 4 });
+    expect(entry.numbers.find((n) => n.label.startsWith("MCP handshakes from names past the census cap"))?.value).toBe(2);
+    expect(byLabel("…that ended in an organic settle")).toEqual({ label: "…that ended in an organic settle", value: 2, of: 400 });
+    expect(byLabel("…on the direct channel: settles of 402s")).toEqual({ label: "…on the direct channel: settles of 402s", value: 2, of: 400 });
+    expect(entry.lead).toContain("one settle for every 200 challenges, and a 402 is a quote, not an attempt");
+    // The porch surfaces are the week's too.
+    expect(entry.numbers.find((n) => n.label.startsWith("organic surface visits"))?.value).toBe(9);
+    expect(entry.rows).toEqual([["/llms.txt", 9]]);
+  });
+
+  it("a week the counters never saw is laid as not read, never as zeros", async () => {
+    const draft = await draftOpenForBusiness(testEnv, new Date("2026-09-28T12:00:00Z"), pullsOf([]));
+    expect(draft.window.days).toBe(0);
+    expect(draft.number_of_the_week).toBeNull();
+    for (const section of draft.sections) expect(section.unread, section.heading).toBe(true);
+    expect(renderOpenForBusinessMarkdown(draft)).toContain("Counted nothing: the week counters went live on");
   });
 });

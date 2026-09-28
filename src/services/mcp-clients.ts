@@ -1,5 +1,5 @@
 import { kvGet, kvPut } from "@/lib/kv-retry";
-import { KV_KEYS } from "@/lib/kv-keys";
+import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { metricsMonth } from "@/lib/metrics";
 import type { Env } from "@/types";
 
@@ -37,9 +37,9 @@ import type { Env } from "@/types";
  */
 export const MCP_CLIENT_CAP = 40;
 
-/** One key per month. The map inside it is what is capped. */
-function censusKey(month = metricsMonth()): string {
-  return KV_KEYS.metric(month, "mcpclient", "census");
+/** One key per period — a month, or the week twin. The map inside it is what is capped. */
+function censusKey(period = metricsMonth()): string {
+  return KV_KEYS.metric(period, "mcpclient", "census");
 }
 
 /**
@@ -88,11 +88,17 @@ export async function recordMcpClient(
   _version?: string,
 ): Promise<void> {
   const key = normaliseClientName(name);
-  const census = await readMcpClients(env);
+  const now = new Date();
+  // The month's census and the week twin (lib/kv-keys.ts): the weekly issue reads by week.
+  await Promise.all([metricsMonth(now), currentWeekKey(now)].map((period) => bumpCensus(env, period, key)));
+}
+
+async function bumpCensus(env: Env, period: string, key: string): Promise<void> {
+  const census = await readMcpClients(env, period);
   if (census[key] === undefined && Object.keys(census).length >= MCP_CLIENT_CAP) {
     census["other"] = (census["other"] ?? 0) + 1;
   } else {
     census[key] = (census[key] ?? 0) + 1;
   }
-  await kvPut(env.COUNTERS, censusKey(), JSON.stringify(census));
+  await kvPut(env.COUNTERS, censusKey(period), JSON.stringify(census));
 }
