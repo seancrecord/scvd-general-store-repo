@@ -1,0 +1,2508 @@
+{
+  "codex-directed-r1": {
+    "cell": {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "buyer": {
+      "started_at": "2026-09-28T16:37:01.086Z",
+      "ended_at": "2026-09-28T16:39:27.452Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:37:01.086Z",
+        "ended_at": "2026-09-28T16:39:27.452Z",
+        "wall_elapsed_ms": 146366,
+        "monotonic_elapsed_ms": 146364.529417,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "thread.started"
+          },
+          {
+            "line": 2,
+            "type": "item.completed"
+          },
+          {
+            "line": 3,
+            "type": "turn.started"
+          },
+          {
+            "line": 4,
+            "type": "item.completed"
+          },
+          {
+            "line": 5,
+            "type": "item.started"
+          },
+          {
+            "line": 6,
+            "type": "item.completed"
+          },
+          {
+            "line": 7,
+            "type": "item.completed"
+          },
+          {
+            "line": 8,
+            "type": "item.started"
+          },
+          {
+            "line": 9,
+            "type": "item.completed"
+          },
+          {
+            "line": 10,
+            "type": "item.started"
+          },
+          {
+            "line": 11,
+            "type": "item.completed"
+          },
+          {
+            "line": 12,
+            "type": "item.completed"
+          },
+          {
+            "line": 13,
+            "type": "item.started"
+          },
+          {
+            "line": 14,
+            "type": "item.completed"
+          },
+          {
+            "line": 15,
+            "type": "item.started"
+          },
+          {
+            "line": 16,
+            "type": "item.completed"
+          },
+          {
+            "line": 17,
+            "type": "item.started"
+          },
+          {
+            "line": 18,
+            "type": "item.completed"
+          },
+          {
+            "line": 19,
+            "type": "item.completed"
+          },
+          {
+            "line": 20,
+            "type": "item.started"
+          },
+          {
+            "line": 21,
+            "type": "item.completed"
+          },
+          {
+            "line": 22,
+            "type": "item.started"
+          },
+          {
+            "line": 23,
+            "type": "item.completed"
+          },
+          {
+            "line": 24,
+            "type": "item.completed"
+          },
+          {
+            "line": 25,
+            "type": "item.started"
+          },
+          {
+            "line": 26,
+            "type": "item.completed"
+          },
+          {
+            "line": 27,
+            "type": "item.started"
+          },
+          {
+            "line": 28,
+            "type": "item.completed"
+          },
+          {
+            "line": 29,
+            "type": "item.started"
+          },
+          {
+            "line": 30,
+            "type": "item.completed"
+          },
+          {
+            "line": 31,
+            "type": "item.completed"
+          },
+          {
+            "line": 32,
+            "type": "item.started"
+          },
+          {
+            "line": 33,
+            "type": "item.completed"
+          },
+          {
+            "line": 34,
+            "type": "item.started"
+          },
+          {
+            "line": 35,
+            "type": "item.completed"
+          },
+          {
+            "line": 36,
+            "type": "item.started"
+          },
+          {
+            "line": 37,
+            "type": "item.completed"
+          },
+          {
+            "line": 38,
+            "type": "item.started"
+          },
+          {
+            "line": 39,
+            "type": "item.completed"
+          },
+          {
+            "line": 40,
+            "type": "item.started"
+          },
+          {
+            "line": 41,
+            "type": "item.completed"
+          },
+          {
+            "line": 42,
+            "type": "item.started"
+          },
+          {
+            "line": 43,
+            "type": "item.completed"
+          },
+          {
+            "line": 44,
+            "type": "item.completed"
+          },
+          {
+            "line": 45,
+            "type": "item.started"
+          },
+          {
+            "line": 46,
+            "type": "item.completed"
+          },
+          {
+            "line": 47,
+            "type": "item.started"
+          },
+          {
+            "line": 48,
+            "type": "item.completed"
+          },
+          {
+            "line": 49,
+            "type": "item.completed"
+          },
+          {
+            "line": 50,
+            "type": "turn.completed"
+          }
+        ],
+        "tools": [
+          {
+            "line": 6,
+            "type": "web_search"
+          },
+          {
+            "line": 9,
+            "type": "command_execution"
+          },
+          {
+            "line": 11,
+            "type": "command_execution"
+          },
+          {
+            "line": 14,
+            "type": "command_execution"
+          },
+          {
+            "line": 16,
+            "type": "command_execution"
+          },
+          {
+            "line": 18,
+            "type": "command_execution"
+          },
+          {
+            "line": 21,
+            "type": "command_execution"
+          },
+          {
+            "line": 23,
+            "type": "command_execution"
+          },
+          {
+            "line": 26,
+            "type": "command_execution"
+          },
+          {
+            "line": 28,
+            "type": "command_execution"
+          },
+          {
+            "line": 30,
+            "type": "command_execution"
+          },
+          {
+            "line": 33,
+            "type": "command_execution"
+          },
+          {
+            "line": 35,
+            "type": "command_execution"
+          },
+          {
+            "line": 37,
+            "type": "command_execution"
+          },
+          {
+            "line": 39,
+            "type": "command_execution"
+          },
+          {
+            "line": 41,
+            "type": "command_execution"
+          },
+          {
+            "line": 43,
+            "type": "command_execution"
+          },
+          {
+            "line": 48,
+            "type": "command_execution"
+          }
+        ],
+        "tool_calls": 18,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 482350,
+          "cached_input_tokens": 417792,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6218,
+          "reasoning_output_tokens": 1104
+        },
+        "resolved_models": [],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "932ffb10fcaec40ad2997a3e21453d878af417cb70c1e2a51230e8752daa5745",
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 9398518,
+        "files": [
+          {
+            "file": "evidence/06-corpus-10.headers.txt",
+            "bytes": 1194,
+            "sha256": "7799ca627fbf6462b2d5f7f96e4b86d13922dba90a07fe5c94f73c30aa3cfc79"
+          },
+          {
+            "file": "evidence/01-skill.headers.txt",
+            "bytes": 895,
+            "sha256": "3aeb2450eceeb67b31d9d43656b7e9fd3ce058319b331d8d970546e1552d73fe"
+          },
+          {
+            "file": "evidence/03-endpoint-get.body.bin",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/04-history.url.txt",
+            "bytes": 49,
+            "sha256": "bfd1414fe2fdbe5561117e2ffb766aacdf735deaf01593d4843f02609d28a36c"
+          },
+          {
+            "file": "evidence/02-preflight.headers.txt",
+            "bytes": 1079,
+            "sha256": "014f7a4f769e7d496cc4fc5ab4f24f73a964b7dc74a1d904fd8909d6eb527f51"
+          },
+          {
+            "file": "evidence/06-corpus-10.verify.json",
+            "bytes": 3171,
+            "sha256": "09ab00043110575ce9052a308399210ea16f886edaf387eb2a98611024d04d51"
+          },
+          {
+            "file": "evidence/02-preflight.url.txt",
+            "bytes": 100,
+            "sha256": "21e354f0f8a3495051322e4bc2f3778694543b0804a514c77ff058d8c48a188a"
+          },
+          {
+            "file": "evidence/04-history.headers.txt",
+            "bytes": 1149,
+            "sha256": "7e18a8ae16828186ac453ad72f1a53080707c28c1b9aa1cac82fa2f3f624e841"
+          },
+          {
+            "file": "evidence/02-preflight.json",
+            "bytes": 16926,
+            "sha256": "cb2c16aa8793fa48dbed6786a9272f46fe7b3bed0c298b7ccc42479b29492ccd"
+          },
+          {
+            "file": "evidence/06-corpus-10.json",
+            "bytes": 9333858,
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/01-skill.url.txt",
+            "bytes": 114,
+            "sha256": "d58ce3946d6ae3558e70b69fefee21c06b4e310c4dda7819d60c4372f0a401ca"
+          },
+          {
+            "file": "evidence/journal.md",
+            "bytes": 4438,
+            "sha256": "6565abc36a9b01c2d0f69623b11ed307f07c70721dce821f8d5d73ac5aebc615"
+          },
+          {
+            "file": "evidence/04-history.json",
+            "bytes": 15007,
+            "sha256": "b93b2bf7e0c38199e59ceccea8ae1d8d12743bf8f42d00412a8b275840933559"
+          },
+          {
+            "file": "evidence/01-skill.body.md",
+            "bytes": 13136,
+            "sha256": "983538db2f8c0dd975e3c51a157a7d1e2a458039f36641bb2dc7451da239dae7"
+          },
+          {
+            "file": "evidence/05-issuer-key.url.txt",
+            "bytes": 48,
+            "sha256": "9c1dab151aecc99365d1e61c37b0cb095f7b15b0439418284043570c296e765a"
+          },
+          {
+            "file": "evidence/03-endpoint-get.headers.txt",
+            "bytes": 3197,
+            "sha256": "fac1a074c7259ee5f434a10decaa4618aa659e703888ab2c3611ce5c718a9f4f"
+          },
+          {
+            "file": "evidence/05-issuer-key.headers.txt",
+            "bytes": 982,
+            "sha256": "1d5c3617d514915039472a1ae75494b9d91b845ef35d24832aa427d663fd3643"
+          },
+          {
+            "file": "evidence/06-corpus-10.url.txt",
+            "bytes": 34,
+            "sha256": "c4a202eba78ed039d88fd6801f602c5037b3756fb276c48f5ceb955a57b87517"
+          },
+          {
+            "file": "evidence/05-issuer-key.json",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "recipient": {
+      "started_at": "2026-09-28T16:45:14.331Z",
+      "ended_at": "2026-09-28T16:46:49.871Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:45:14.331Z",
+        "ended_at": "2026-09-28T16:46:49.871Z",
+        "wall_elapsed_ms": 95540,
+        "monotonic_elapsed_ms": 95538.892792,
+        "max_callback_gap_ms": 1020.729124999998,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "thread.started"
+          },
+          {
+            "line": 2,
+            "type": "item.completed"
+          },
+          {
+            "line": 3,
+            "type": "turn.started"
+          },
+          {
+            "line": 4,
+            "type": "item.completed"
+          },
+          {
+            "line": 5,
+            "type": "item.started"
+          },
+          {
+            "line": 6,
+            "type": "item.completed"
+          },
+          {
+            "line": 7,
+            "type": "item.started"
+          },
+          {
+            "line": 8,
+            "type": "item.completed"
+          },
+          {
+            "line": 9,
+            "type": "item.started"
+          },
+          {
+            "line": 10,
+            "type": "item.completed"
+          },
+          {
+            "line": 11,
+            "type": "item.started"
+          },
+          {
+            "line": 12,
+            "type": "item.completed"
+          },
+          {
+            "line": 13,
+            "type": "item.completed"
+          },
+          {
+            "line": 14,
+            "type": "item.started"
+          },
+          {
+            "line": 15,
+            "type": "item.completed"
+          },
+          {
+            "line": 16,
+            "type": "item.started"
+          },
+          {
+            "line": 17,
+            "type": "item.completed"
+          },
+          {
+            "line": 18,
+            "type": "item.started"
+          },
+          {
+            "line": 19,
+            "type": "item.completed"
+          },
+          {
+            "line": 20,
+            "type": "item.started"
+          },
+          {
+            "line": 21,
+            "type": "item.completed"
+          },
+          {
+            "line": 22,
+            "type": "item.started"
+          },
+          {
+            "line": 23,
+            "type": "item.completed"
+          },
+          {
+            "line": 24,
+            "type": "item.started"
+          },
+          {
+            "line": 25,
+            "type": "item.completed"
+          },
+          {
+            "line": 26,
+            "type": "item.completed"
+          },
+          {
+            "line": 27,
+            "type": "turn.completed"
+          }
+        ],
+        "tools": [
+          {
+            "line": 6,
+            "type": "command_execution"
+          },
+          {
+            "line": 8,
+            "type": "command_execution"
+          },
+          {
+            "line": 10,
+            "type": "command_execution"
+          },
+          {
+            "line": 12,
+            "type": "command_execution"
+          },
+          {
+            "line": 15,
+            "type": "command_execution"
+          },
+          {
+            "line": 17,
+            "type": "command_execution"
+          },
+          {
+            "line": 19,
+            "type": "command_execution"
+          },
+          {
+            "line": 21,
+            "type": "command_execution"
+          },
+          {
+            "line": 23,
+            "type": "command_execution"
+          },
+          {
+            "line": 25,
+            "type": "command_execution"
+          }
+        ],
+        "tool_calls": 10,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 232600,
+          "cached_input_tokens": 174336,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 4293,
+          "reasoning_output_tokens": 1211
+        },
+        "resolved_models": [],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "cf759892a6fe3a9accc63e54fbc1610339e59180feda1cea056652916c1a4fe2"
+    },
+    "supplied_buyer_files": 19,
+    "input_manifest_sha256": "fb20533fa093e905b8d08e8b534b96c52b6d4411fdaf309465f4ad31779164a9"
+  },
+  "claude-directed-r1": {
+    "cell": {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "buyer": {
+      "started_at": "2026-09-28T16:39:27.485Z",
+      "ended_at": "2026-09-28T16:40:56.987Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:39:27.485Z",
+        "ended_at": "2026-09-28T16:40:56.987Z",
+        "wall_elapsed_ms": 89502,
+        "monotonic_elapsed_ms": 89501.02549999999,
+        "max_callback_gap_ms": 1011.036666,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "system"
+          },
+          {
+            "line": 2,
+            "type": "rate_limit_event"
+          },
+          {
+            "line": 3,
+            "type": "system"
+          },
+          {
+            "line": 4,
+            "type": "system"
+          },
+          {
+            "line": 5,
+            "type": "system"
+          },
+          {
+            "line": 6,
+            "type": "assistant"
+          },
+          {
+            "line": 7,
+            "type": "assistant"
+          },
+          {
+            "line": 8,
+            "type": "assistant"
+          },
+          {
+            "line": 9,
+            "type": "user"
+          },
+          {
+            "line": 10,
+            "type": "assistant"
+          },
+          {
+            "line": 11,
+            "type": "user"
+          },
+          {
+            "line": 12,
+            "type": "assistant"
+          },
+          {
+            "line": 13,
+            "type": "assistant"
+          },
+          {
+            "line": 14,
+            "type": "user"
+          },
+          {
+            "line": 15,
+            "type": "assistant"
+          },
+          {
+            "line": 16,
+            "type": "assistant"
+          },
+          {
+            "line": 17,
+            "type": "assistant"
+          },
+          {
+            "line": 18,
+            "type": "assistant"
+          },
+          {
+            "line": 19,
+            "type": "user"
+          },
+          {
+            "line": 20,
+            "type": "user"
+          },
+          {
+            "line": 21,
+            "type": "assistant"
+          },
+          {
+            "line": 22,
+            "type": "user"
+          },
+          {
+            "line": 23,
+            "type": "assistant"
+          },
+          {
+            "line": 24,
+            "type": "user"
+          },
+          {
+            "line": 25,
+            "type": "system"
+          },
+          {
+            "line": 26,
+            "type": "system"
+          },
+          {
+            "line": 27,
+            "type": "system"
+          },
+          {
+            "line": 28,
+            "type": "system"
+          },
+          {
+            "line": 29,
+            "type": "system"
+          },
+          {
+            "line": 30,
+            "type": "system"
+          },
+          {
+            "line": 31,
+            "type": "assistant"
+          },
+          {
+            "line": 32,
+            "type": "assistant"
+          },
+          {
+            "line": 33,
+            "type": "assistant"
+          },
+          {
+            "line": 34,
+            "type": "user"
+          },
+          {
+            "line": 35,
+            "type": "system"
+          },
+          {
+            "line": 36,
+            "type": "system"
+          },
+          {
+            "line": 37,
+            "type": "assistant"
+          },
+          {
+            "line": 38,
+            "type": "assistant"
+          },
+          {
+            "line": 39,
+            "type": "user"
+          },
+          {
+            "line": 40,
+            "type": "system"
+          },
+          {
+            "line": 41,
+            "type": "system"
+          },
+          {
+            "line": 42,
+            "type": "system"
+          },
+          {
+            "line": 43,
+            "type": "system"
+          },
+          {
+            "line": 44,
+            "type": "system"
+          },
+          {
+            "line": 45,
+            "type": "system"
+          },
+          {
+            "line": 46,
+            "type": "assistant"
+          },
+          {
+            "line": 47,
+            "type": "assistant"
+          },
+          {
+            "line": 48,
+            "type": "user"
+          },
+          {
+            "line": 49,
+            "type": "system"
+          },
+          {
+            "line": 50,
+            "type": "system"
+          },
+          {
+            "line": 51,
+            "type": "system"
+          },
+          {
+            "line": 52,
+            "type": "system"
+          },
+          {
+            "line": 53,
+            "type": "system"
+          },
+          {
+            "line": 54,
+            "type": "assistant"
+          },
+          {
+            "line": 55,
+            "type": "assistant"
+          },
+          {
+            "line": 56,
+            "type": "user"
+          },
+          {
+            "line": 57,
+            "type": "system"
+          },
+          {
+            "line": 58,
+            "type": "system"
+          },
+          {
+            "line": 59,
+            "type": "system"
+          },
+          {
+            "line": 60,
+            "type": "system"
+          },
+          {
+            "line": 61,
+            "type": "assistant"
+          },
+          {
+            "line": 62,
+            "type": "assistant"
+          },
+          {
+            "line": 63,
+            "type": "assistant"
+          },
+          {
+            "line": 64,
+            "type": "user"
+          },
+          {
+            "line": 65,
+            "type": "system"
+          },
+          {
+            "line": 66,
+            "type": "system"
+          },
+          {
+            "line": 67,
+            "type": "system"
+          },
+          {
+            "line": 68,
+            "type": "system"
+          },
+          {
+            "line": 69,
+            "type": "system"
+          },
+          {
+            "line": 70,
+            "type": "system"
+          },
+          {
+            "line": 71,
+            "type": "system"
+          },
+          {
+            "line": 72,
+            "type": "system"
+          },
+          {
+            "line": 73,
+            "type": "assistant"
+          },
+          {
+            "line": 74,
+            "type": "assistant"
+          },
+          {
+            "line": 75,
+            "type": "assistant"
+          },
+          {
+            "line": 76,
+            "type": "user"
+          },
+          {
+            "line": 77,
+            "type": "system"
+          },
+          {
+            "line": 78,
+            "type": "system"
+          },
+          {
+            "line": 79,
+            "type": "system"
+          },
+          {
+            "line": 80,
+            "type": "system"
+          },
+          {
+            "line": 81,
+            "type": "assistant"
+          },
+          {
+            "line": 82,
+            "type": "assistant"
+          },
+          {
+            "line": 83,
+            "type": "user"
+          },
+          {
+            "line": 84,
+            "type": "assistant"
+          },
+          {
+            "line": 85,
+            "type": "result"
+          }
+        ],
+        "tools": [
+          {
+            "line": 8,
+            "type": "Bash"
+          },
+          {
+            "line": 10,
+            "type": "Bash"
+          },
+          {
+            "line": 13,
+            "type": "Bash"
+          },
+          {
+            "line": 17,
+            "type": "Bash"
+          },
+          {
+            "line": 18,
+            "type": "Bash"
+          },
+          {
+            "line": 21,
+            "type": "Bash"
+          },
+          {
+            "line": 23,
+            "type": "Bash"
+          },
+          {
+            "line": 33,
+            "type": "Bash"
+          },
+          {
+            "line": 38,
+            "type": "Bash"
+          },
+          {
+            "line": 47,
+            "type": "Bash"
+          },
+          {
+            "line": 55,
+            "type": "Bash"
+          },
+          {
+            "line": 63,
+            "type": "Bash"
+          },
+          {
+            "line": 75,
+            "type": "Bash"
+          },
+          {
+            "line": 82,
+            "type": "Bash"
+          }
+        ],
+        "tool_calls": 14,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 24,
+          "cache_creation_input_tokens": 32595,
+          "cache_read_input_tokens": 317339,
+          "output_tokens": 8953,
+          "output_tokens_details": {
+            "thinking_tokens": 3796
+          },
+          "server_tool_use": {
+            "web_search_requests": 0,
+            "web_fetch_requests": 0
+          },
+          "service_tier": "standard",
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 32595,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "inference_geo": "not_available",
+          "iterations": [
+            {
+              "input_tokens": 2,
+              "output_tokens": 1531,
+              "cache_read_input_tokens": 41804,
+              "cache_creation_input_tokens": 1021,
+              "cache_creation": {
+                "ephemeral_5m_input_tokens": 0,
+                "ephemeral_1h_input_tokens": 1021
+              },
+              "type": "message"
+            }
+          ],
+          "speed": "standard"
+        },
+        "resolved_models": [
+          "claude-sonnet-5"
+        ],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "68acf2ad3f8e6a511524d28d3a9dd0a15b9e485ba84e0390d49fd5826425f6b4",
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 9390528,
+        "files": [
+          {
+            "file": "evidence/corpus_10_headers.txt",
+            "bytes": 1182,
+            "sha256": "01623993d9d146fc91d4f45d113568a17f8af2c287419b9a91e6e47bdea7c6a0"
+          },
+          {
+            "file": "evidence/skill_md_headers.txt",
+            "bytes": 896,
+            "sha256": "83a35742e7dba7e8bae785a0bb5b2d728fd9dbeca65ddeed8ec48f46ac7fff4c"
+          },
+          {
+            "file": "evidence/corpus_host_headers.txt",
+            "bytes": 1135,
+            "sha256": "aa4d21083d53aa4a4ba87469d7d27ef131e215dfb52e342b587c3047a8d39368"
+          },
+          {
+            "file": "evidence/skill_md.txt",
+            "bytes": 13136,
+            "sha256": "983538db2f8c0dd975e3c51a157a7d1e2a458039f36641bb2dc7451da239dae7"
+          },
+          {
+            "file": "evidence/issuer_key_headers.txt",
+            "bytes": 969,
+            "sha256": "a131995849fb2b1edad67fe044f89b30a5cb60a3e58bef3fbd40c7860597c00c"
+          },
+          {
+            "file": "evidence/corpus_host_lionx402.json",
+            "bytes": 15007,
+            "sha256": "412be32ff403c71bb4e64055bfdb2ff2fe005f1ce30da0186dca6663b32f9a1a"
+          },
+          {
+            "file": "evidence/preflight_headers.txt",
+            "bytes": 1085,
+            "sha256": "9ab7f5a3797c3acdc6a30ab735405926d19fbe34393569520e0fb74d0264514a"
+          },
+          {
+            "file": "evidence/lionx402_direct_body.json",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/preflight.json",
+            "bytes": 16926,
+            "sha256": "8c3f79d644a56000dd8bfe1ad5f1ab53c985a4847d24317bdaee55fee056f735"
+          },
+          {
+            "file": "evidence/corpus_10.json",
+            "bytes": 9333858,
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/lionx402_direct_headers.txt",
+            "bytes": 3193,
+            "sha256": "d6cc034e5025766a1c6fbabecec3428d15c4238d841036b6df259e467aaab11f"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "recipient": {
+      "started_at": "2026-09-28T16:46:50.572Z",
+      "ended_at": "2026-09-28T16:48:13.345Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:46:50.572Z",
+        "ended_at": "2026-09-28T16:48:13.345Z",
+        "wall_elapsed_ms": 82773,
+        "monotonic_elapsed_ms": 82771.957166,
+        "max_callback_gap_ms": 1003,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "thread.started"
+          },
+          {
+            "line": 2,
+            "type": "item.completed"
+          },
+          {
+            "line": 3,
+            "type": "turn.started"
+          },
+          {
+            "line": 4,
+            "type": "item.completed"
+          },
+          {
+            "line": 5,
+            "type": "item.started"
+          },
+          {
+            "line": 6,
+            "type": "item.completed"
+          },
+          {
+            "line": 7,
+            "type": "item.completed"
+          },
+          {
+            "line": 8,
+            "type": "item.started"
+          },
+          {
+            "line": 9,
+            "type": "item.completed"
+          },
+          {
+            "line": 10,
+            "type": "item.started"
+          },
+          {
+            "line": 11,
+            "type": "item.completed"
+          },
+          {
+            "line": 12,
+            "type": "item.started"
+          },
+          {
+            "line": 13,
+            "type": "item.completed"
+          },
+          {
+            "line": 14,
+            "type": "item.started"
+          },
+          {
+            "line": 15,
+            "type": "item.completed"
+          },
+          {
+            "line": 16,
+            "type": "item.completed"
+          },
+          {
+            "line": 17,
+            "type": "item.started"
+          },
+          {
+            "line": 18,
+            "type": "item.completed"
+          },
+          {
+            "line": 19,
+            "type": "item.completed"
+          },
+          {
+            "line": 20,
+            "type": "turn.completed"
+          }
+        ],
+        "tools": [
+          {
+            "line": 6,
+            "type": "command_execution"
+          },
+          {
+            "line": 9,
+            "type": "command_execution"
+          },
+          {
+            "line": 11,
+            "type": "command_execution"
+          },
+          {
+            "line": 13,
+            "type": "command_execution"
+          },
+          {
+            "line": 15,
+            "type": "command_execution"
+          },
+          {
+            "line": 18,
+            "type": "command_execution"
+          }
+        ],
+        "tool_calls": 6,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 181139,
+          "cached_input_tokens": 139776,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3935,
+          "reasoning_output_tokens": 927
+        },
+        "resolved_models": [],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "c824f0d5ff5a15f9cd982fbc5c7ed0febb330f5888bc214d9309137df2ca1f9e"
+    },
+    "supplied_buyer_files": 12,
+    "input_manifest_sha256": "b40a7805f984fea0cbdd5f255ab327b250e173ec7d4ce150f0dc451c16980322"
+  },
+  "codex-directed-r2": {
+    "cell": {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "buyer": {
+      "started_at": "2026-09-28T16:40:57.007Z",
+      "ended_at": "2026-09-28T16:43:22.143Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:40:57.007Z",
+        "ended_at": "2026-09-28T16:43:22.143Z",
+        "wall_elapsed_ms": 145136,
+        "monotonic_elapsed_ms": 145135.281375,
+        "max_callback_gap_ms": 1004,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "thread.started"
+          },
+          {
+            "line": 2,
+            "type": "item.completed"
+          },
+          {
+            "line": 3,
+            "type": "turn.started"
+          },
+          {
+            "line": 4,
+            "type": "item.completed"
+          },
+          {
+            "line": 5,
+            "type": "item.started"
+          },
+          {
+            "line": 6,
+            "type": "item.completed"
+          },
+          {
+            "line": 7,
+            "type": "item.completed"
+          },
+          {
+            "line": 8,
+            "type": "item.started"
+          },
+          {
+            "line": 9,
+            "type": "item.completed"
+          },
+          {
+            "line": 10,
+            "type": "item.started"
+          },
+          {
+            "line": 11,
+            "type": "item.completed"
+          },
+          {
+            "line": 12,
+            "type": "item.started"
+          },
+          {
+            "line": 13,
+            "type": "item.completed"
+          },
+          {
+            "line": 14,
+            "type": "item.completed"
+          },
+          {
+            "line": 15,
+            "type": "item.started"
+          },
+          {
+            "line": 16,
+            "type": "item.completed"
+          },
+          {
+            "line": 17,
+            "type": "item.started"
+          },
+          {
+            "line": 18,
+            "type": "item.completed"
+          },
+          {
+            "line": 19,
+            "type": "item.completed"
+          },
+          {
+            "line": 20,
+            "type": "item.started"
+          },
+          {
+            "line": 21,
+            "type": "item.completed"
+          },
+          {
+            "line": 22,
+            "type": "item.started"
+          },
+          {
+            "line": 23,
+            "type": "item.completed"
+          },
+          {
+            "line": 24,
+            "type": "item.started"
+          },
+          {
+            "line": 25,
+            "type": "item.completed"
+          },
+          {
+            "line": 26,
+            "type": "item.started"
+          },
+          {
+            "line": 27,
+            "type": "item.completed"
+          },
+          {
+            "line": 28,
+            "type": "item.completed"
+          },
+          {
+            "line": 29,
+            "type": "item.started"
+          },
+          {
+            "line": 30,
+            "type": "item.completed"
+          },
+          {
+            "line": 31,
+            "type": "item.completed"
+          },
+          {
+            "line": 32,
+            "type": "item.started"
+          },
+          {
+            "line": 33,
+            "type": "item.completed"
+          },
+          {
+            "line": 34,
+            "type": "item.started"
+          },
+          {
+            "line": 35,
+            "type": "item.completed"
+          },
+          {
+            "line": 36,
+            "type": "item.completed"
+          },
+          {
+            "line": 37,
+            "type": "item.started"
+          },
+          {
+            "line": 38,
+            "type": "item.completed"
+          },
+          {
+            "line": 39,
+            "type": "item.completed"
+          },
+          {
+            "line": 40,
+            "type": "turn.completed"
+          }
+        ],
+        "tools": [
+          {
+            "line": 6,
+            "type": "web_search"
+          },
+          {
+            "line": 9,
+            "type": "command_execution"
+          },
+          {
+            "line": 11,
+            "type": "command_execution"
+          },
+          {
+            "line": 13,
+            "type": "command_execution"
+          },
+          {
+            "line": 16,
+            "type": "command_execution"
+          },
+          {
+            "line": 18,
+            "type": "command_execution"
+          },
+          {
+            "line": 21,
+            "type": "command_execution"
+          },
+          {
+            "line": 23,
+            "type": "command_execution"
+          },
+          {
+            "line": 25,
+            "type": "command_execution"
+          },
+          {
+            "line": 27,
+            "type": "command_execution"
+          },
+          {
+            "line": 30,
+            "type": "command_execution"
+          },
+          {
+            "line": 33,
+            "type": "command_execution"
+          },
+          {
+            "line": 35,
+            "type": "command_execution"
+          }
+        ],
+        "tool_calls": 13,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 398695,
+          "cached_input_tokens": 357632,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6414,
+          "reasoning_output_tokens": 1503
+        },
+        "resolved_models": [],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "edf397fef128e6e51d6ff84d2530f123fe7f29f5a2966c19f717ba0808c09bd5",
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 9401805,
+        "files": [
+          {
+            "file": "evidence/08-did.json",
+            "bytes": 2215,
+            "sha256": "efba7f958682d697a6cf0411cb0fe0926d7e06f82f6ed9de3a19335ee86db1cd"
+          },
+          {
+            "file": "evidence/07-direct-endpoint.url",
+            "bytes": 69,
+            "sha256": "ba73407a42453d593f9762b126529662482aaf7b184acf69a0467abae4668c23"
+          },
+          {
+            "file": "evidence/08-did.headers",
+            "bytes": 936,
+            "sha256": "a986645a5a010dfc075fecf560ff84376c42969f657930323342f8f81ac1e2c9"
+          },
+          {
+            "file": "evidence/05-corpus10.headers",
+            "bytes": 1179,
+            "sha256": "5f5b68e812d6700301b485096a3148e070ae5c7858fd64ad921e10574b5e20fb"
+          },
+          {
+            "file": "evidence/01-skill.url",
+            "bytes": 114,
+            "sha256": "d58ce3946d6ae3558e70b69fefee21c06b4e310c4dda7819d60c4372f0a401ca"
+          },
+          {
+            "file": "evidence/03-history.headers",
+            "bytes": 1138,
+            "sha256": "883b4b57730e9b9e0340b923b1000e0b09e2b62d881e561742e02430f4579bb8"
+          },
+          {
+            "file": "evidence/02-preflight.headers",
+            "bytes": 1082,
+            "sha256": "26a466248636360043eda86ee02afcf599eea116f4c905a3c3eaa42cd5b1ca20"
+          },
+          {
+            "file": "evidence/07-direct-endpoint.body",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/04-issuer-key.headers",
+            "bytes": 984,
+            "sha256": "5346b467dee421319986c96de590d5f333f1b8d5ac3289ff80aed4e554956207"
+          },
+          {
+            "file": "evidence/08-did.url",
+            "bytes": 40,
+            "sha256": "56395ffab5c262f4e064daa4abd9fc79ffd4675f88c35ba3ba8093aa57cd968b"
+          },
+          {
+            "file": "evidence/02-preflight.json",
+            "bytes": 16926,
+            "sha256": "5492c078006174122e4281fcbacb2fc6a166493eb661d5066440bdf2ff314d08"
+          },
+          {
+            "file": "evidence/06-verification.json",
+            "bytes": 3171,
+            "sha256": "09ab00043110575ce9052a308399210ea16f886edaf387eb2a98611024d04d51"
+          },
+          {
+            "file": "evidence/journal.md",
+            "bytes": 4528,
+            "sha256": "b9608608196d511af4500f9d4217b28fffeb14788069cb765621473de5cfcf4c"
+          },
+          {
+            "file": "evidence/05-corpus10.url",
+            "bytes": 34,
+            "sha256": "c4a202eba78ed039d88fd6801f602c5037b3756fb276c48f5ceb955a57b87517"
+          },
+          {
+            "file": "evidence/04-issuer-key.json",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/02-preflight.url",
+            "bytes": 63,
+            "sha256": "e85c0bce9df10c94f2542762621edc12687e48c5cddcfc440c88ed2572e832bc"
+          },
+          {
+            "file": "evidence/03-history.json",
+            "bytes": 15007,
+            "sha256": "5a88f97c6ebdf49d294c7eb28af917e8ea0ca4b337f1c7b619df1f41b1f91dc9"
+          },
+          {
+            "file": "evidence/05-corpus10.json",
+            "bytes": 9333858,
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/07-direct-endpoint.headers",
+            "bytes": 3191,
+            "sha256": "0962fb64120489ca4d4f3a6263269aa0180c8dfb95acf0724ce515124b946988"
+          },
+          {
+            "file": "evidence/01-skill.headers",
+            "bytes": 896,
+            "sha256": "d5945cabc49b6c537bdb2e6c93b761368ae8388992e56b73a5f8b587e3284bc2"
+          },
+          {
+            "file": "evidence/03-history.url",
+            "bytes": 49,
+            "sha256": "bfd1414fe2fdbe5561117e2ffb766aacdf735deaf01593d4843f02609d28a36c"
+          },
+          {
+            "file": "evidence/01-skill.md",
+            "bytes": 13136,
+            "sha256": "983538db2f8c0dd975e3c51a157a7d1e2a458039f36641bb2dc7451da239dae7"
+          },
+          {
+            "file": "evidence/04-issuer-key.url",
+            "bytes": 48,
+            "sha256": "9c1dab151aecc99365d1e61c37b0cb095f7b15b0439418284043570c296e765a"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "recipient": {
+      "started_at": "2026-09-28T16:48:16.705Z",
+      "ended_at": "2026-09-28T16:49:51.573Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:48:16.705Z",
+        "ended_at": "2026-09-28T16:49:51.573Z",
+        "wall_elapsed_ms": 94868,
+        "monotonic_elapsed_ms": 94866.990083,
+        "max_callback_gap_ms": 1004.0260419999977,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "thread.started"
+          },
+          {
+            "line": 2,
+            "type": "item.completed"
+          },
+          {
+            "line": 3,
+            "type": "turn.started"
+          },
+          {
+            "line": 4,
+            "type": "item.completed"
+          },
+          {
+            "line": 5,
+            "type": "item.started"
+          },
+          {
+            "line": 6,
+            "type": "item.completed"
+          },
+          {
+            "line": 7,
+            "type": "item.started"
+          },
+          {
+            "line": 8,
+            "type": "item.completed"
+          },
+          {
+            "line": 9,
+            "type": "item.completed"
+          },
+          {
+            "line": 10,
+            "type": "item.started"
+          },
+          {
+            "line": 11,
+            "type": "item.completed"
+          },
+          {
+            "line": 12,
+            "type": "item.started"
+          },
+          {
+            "line": 13,
+            "type": "item.completed"
+          },
+          {
+            "line": 14,
+            "type": "item.started"
+          },
+          {
+            "line": 15,
+            "type": "item.completed"
+          },
+          {
+            "line": 16,
+            "type": "item.started"
+          },
+          {
+            "line": 17,
+            "type": "item.completed"
+          },
+          {
+            "line": 18,
+            "type": "item.started"
+          },
+          {
+            "line": 19,
+            "type": "item.completed"
+          },
+          {
+            "line": 20,
+            "type": "item.completed"
+          },
+          {
+            "line": 21,
+            "type": "item.started"
+          },
+          {
+            "line": 22,
+            "type": "item.completed"
+          },
+          {
+            "line": 23,
+            "type": "item.started"
+          },
+          {
+            "line": 24,
+            "type": "item.completed"
+          },
+          {
+            "line": 25,
+            "type": "item.started"
+          },
+          {
+            "line": 26,
+            "type": "item.completed"
+          },
+          {
+            "line": 27,
+            "type": "item.started"
+          },
+          {
+            "line": 28,
+            "type": "item.completed"
+          },
+          {
+            "line": 29,
+            "type": "item.completed"
+          },
+          {
+            "line": 30,
+            "type": "turn.completed"
+          }
+        ],
+        "tools": [
+          {
+            "line": 6,
+            "type": "command_execution"
+          },
+          {
+            "line": 8,
+            "type": "command_execution"
+          },
+          {
+            "line": 11,
+            "type": "command_execution"
+          },
+          {
+            "line": 13,
+            "type": "command_execution"
+          },
+          {
+            "line": 15,
+            "type": "command_execution"
+          },
+          {
+            "line": 17,
+            "type": "command_execution"
+          },
+          {
+            "line": 19,
+            "type": "command_execution"
+          },
+          {
+            "line": 22,
+            "type": "command_execution"
+          },
+          {
+            "line": 24,
+            "type": "command_execution"
+          },
+          {
+            "line": 26,
+            "type": "command_execution"
+          },
+          {
+            "line": 28,
+            "type": "command_execution"
+          }
+        ],
+        "tool_calls": 11,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 315534,
+          "cached_input_tokens": 273408,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 4483,
+          "reasoning_output_tokens": 1128
+        },
+        "resolved_models": [],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "251b2290b870966007794a4ed1b09ce41c88ccb78e31407d01206e7bf628f6ed"
+    },
+    "supplied_buyer_files": 23,
+    "input_manifest_sha256": "adef8995f217de37f7fddcef71abe257451a894fe7b1be99b5a3f785af037a10"
+  },
+  "claude-directed-r2": {
+    "cell": {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    "buyer": {
+      "started_at": "2026-09-28T16:43:22.165Z",
+      "ended_at": "2026-09-28T16:44:37.276Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:43:22.165Z",
+        "ended_at": "2026-09-28T16:44:37.276Z",
+        "wall_elapsed_ms": 75111,
+        "monotonic_elapsed_ms": 75110.54941700003,
+        "max_callback_gap_ms": 1004,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "system"
+          },
+          {
+            "line": 2,
+            "type": "rate_limit_event"
+          },
+          {
+            "line": 3,
+            "type": "assistant"
+          },
+          {
+            "line": 4,
+            "type": "assistant"
+          },
+          {
+            "line": 5,
+            "type": "assistant"
+          },
+          {
+            "line": 6,
+            "type": "user"
+          },
+          {
+            "line": 7,
+            "type": "system"
+          },
+          {
+            "line": 8,
+            "type": "system"
+          },
+          {
+            "line": 9,
+            "type": "assistant"
+          },
+          {
+            "line": 10,
+            "type": "assistant"
+          },
+          {
+            "line": 11,
+            "type": "assistant"
+          },
+          {
+            "line": 12,
+            "type": "user"
+          },
+          {
+            "line": 13,
+            "type": "user"
+          },
+          {
+            "line": 14,
+            "type": "system"
+          },
+          {
+            "line": 15,
+            "type": "system"
+          },
+          {
+            "line": 16,
+            "type": "assistant"
+          },
+          {
+            "line": 17,
+            "type": "assistant"
+          },
+          {
+            "line": 18,
+            "type": "assistant"
+          },
+          {
+            "line": 19,
+            "type": "user"
+          },
+          {
+            "line": 20,
+            "type": "assistant"
+          },
+          {
+            "line": 21,
+            "type": "user"
+          },
+          {
+            "line": 22,
+            "type": "system"
+          },
+          {
+            "line": 23,
+            "type": "system"
+          },
+          {
+            "line": 24,
+            "type": "assistant"
+          },
+          {
+            "line": 25,
+            "type": "assistant"
+          },
+          {
+            "line": 26,
+            "type": "assistant"
+          },
+          {
+            "line": 27,
+            "type": "user"
+          },
+          {
+            "line": 28,
+            "type": "assistant"
+          },
+          {
+            "line": 29,
+            "type": "user"
+          },
+          {
+            "line": 30,
+            "type": "system"
+          },
+          {
+            "line": 31,
+            "type": "system"
+          },
+          {
+            "line": 32,
+            "type": "assistant"
+          },
+          {
+            "line": 33,
+            "type": "assistant"
+          },
+          {
+            "line": 34,
+            "type": "user"
+          },
+          {
+            "line": 35,
+            "type": "system"
+          },
+          {
+            "line": 36,
+            "type": "system"
+          },
+          {
+            "line": 37,
+            "type": "assistant"
+          },
+          {
+            "line": 38,
+            "type": "assistant"
+          },
+          {
+            "line": 39,
+            "type": "user"
+          },
+          {
+            "line": 40,
+            "type": "assistant"
+          },
+          {
+            "line": 41,
+            "type": "user"
+          },
+          {
+            "line": 42,
+            "type": "assistant"
+          },
+          {
+            "line": 43,
+            "type": "assistant"
+          },
+          {
+            "line": 44,
+            "type": "user"
+          },
+          {
+            "line": 45,
+            "type": "system"
+          },
+          {
+            "line": 46,
+            "type": "system"
+          },
+          {
+            "line": 47,
+            "type": "assistant"
+          },
+          {
+            "line": 48,
+            "type": "assistant"
+          },
+          {
+            "line": 49,
+            "type": "user"
+          },
+          {
+            "line": 50,
+            "type": "system"
+          },
+          {
+            "line": 51,
+            "type": "system"
+          },
+          {
+            "line": 52,
+            "type": "assistant"
+          },
+          {
+            "line": 53,
+            "type": "assistant"
+          },
+          {
+            "line": 54,
+            "type": "user"
+          },
+          {
+            "line": 55,
+            "type": "system"
+          },
+          {
+            "line": 56,
+            "type": "system"
+          },
+          {
+            "line": 57,
+            "type": "assistant"
+          },
+          {
+            "line": 58,
+            "type": "assistant"
+          },
+          {
+            "line": 59,
+            "type": "assistant"
+          },
+          {
+            "line": 60,
+            "type": "rate_limit_event"
+          },
+          {
+            "line": 61,
+            "type": "user"
+          },
+          {
+            "line": 62,
+            "type": "assistant"
+          },
+          {
+            "line": 63,
+            "type": "result"
+          }
+        ],
+        "tools": [
+          {
+            "line": 5,
+            "type": "WebFetch"
+          },
+          {
+            "line": 10,
+            "type": "WebFetch"
+          },
+          {
+            "line": 11,
+            "type": "Bash"
+          },
+          {
+            "line": 18,
+            "type": "Bash"
+          },
+          {
+            "line": 20,
+            "type": "Bash"
+          },
+          {
+            "line": 26,
+            "type": "Bash"
+          },
+          {
+            "line": 28,
+            "type": "Bash"
+          },
+          {
+            "line": 33,
+            "type": "Bash"
+          },
+          {
+            "line": 38,
+            "type": "Bash"
+          },
+          {
+            "line": 40,
+            "type": "Bash"
+          },
+          {
+            "line": 43,
+            "type": "Bash"
+          },
+          {
+            "line": 48,
+            "type": "Bash"
+          },
+          {
+            "line": 53,
+            "type": "Bash"
+          },
+          {
+            "line": 59,
+            "type": "Bash"
+          }
+        ],
+        "tool_calls": 14,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 22,
+          "cache_creation_input_tokens": 22348,
+          "cache_read_input_tokens": 225489,
+          "output_tokens": 6425,
+          "output_tokens_details": {
+            "thinking_tokens": 896
+          },
+          "server_tool_use": {
+            "web_search_requests": 0,
+            "web_fetch_requests": 0
+          },
+          "service_tier": "standard",
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 22348,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "inference_geo": "not_available",
+          "iterations": [
+            {
+              "input_tokens": 2,
+              "output_tokens": 1742,
+              "cache_read_input_tokens": 31259,
+              "cache_creation_input_tokens": 1319,
+              "cache_creation": {
+                "ephemeral_5m_input_tokens": 0,
+                "ephemeral_1h_input_tokens": 1319
+              },
+              "type": "message"
+            }
+          ],
+          "speed": "standard"
+        },
+        "resolved_models": [
+          "claude-sonnet-5"
+        ],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "519a8182fb8ce262623cca55857584c3de9cb88870d8acf64e1ad702d9f380fb",
+      "retained_artifacts": {
+        "state": "complete",
+        "bytes": 9359298,
+        "files": [
+          {
+            "file": "evidence/host_record_headers.txt",
+            "bytes": 1138,
+            "sha256": "e946614fc77fb60ca9cc49cb9bed440b715f497f39814eccbe9373592e6bddff"
+          },
+          {
+            "file": "evidence/payment_required_decoded.json",
+            "bytes": 1766,
+            "sha256": "e541f4ecf0699c796d6486546f4c89434ec57093756c01c06f07b567d4f10c5e"
+          },
+          {
+            "file": "evidence/lionx402_headers.txt",
+            "bytes": 3199,
+            "sha256": "c304adccc8ae0ac36da7436e7783476d38361f9873a91cbce8ff74b280befd25"
+          },
+          {
+            "file": "evidence/scvd_signing_key.txt",
+            "bytes": 3139,
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          },
+          {
+            "file": "evidence/host_record_lionx402.json",
+            "bytes": 15007,
+            "sha256": "450080dd050c3b87e6db23e71922c0fba05cf8a12a22126d20588fc5c5139031"
+          },
+          {
+            "file": "evidence/lionx402_body.json",
+            "bytes": 2,
+            "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "file": "evidence/round10.json",
+            "bytes": 9333858,
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/round10_headers.txt",
+            "bytes": 1189,
+            "sha256": "404f14c519519469e157d3002aa254442c2b41ed5711b9389985dfa8e730a96d"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "recipient": {
+      "started_at": "2026-09-28T16:49:53.016Z",
+      "ended_at": "2026-09-28T16:51:13.738Z",
+      "runtime": {
+        "state": "completed",
+        "exit_code": 0,
+        "signal": null,
+        "spawn_error": null,
+        "budget_stop": null,
+        "stop_requested": null
+      },
+      "timing": {
+        "policy": {
+          "sample_interval_ms": 1000,
+          "max_callback_gap_ms": 5000,
+          "max_clock_divergence_ms": 5000
+        },
+        "started_at": "2026-09-28T16:49:53.016Z",
+        "ended_at": "2026-09-28T16:51:13.738Z",
+        "wall_elapsed_ms": 80722,
+        "monotonic_elapsed_ms": 80721.80737499999,
+        "max_callback_gap_ms": 1002,
+        "interruption": null
+      },
+      "counts": {
+        "events": [
+          {
+            "line": 1,
+            "type": "thread.started"
+          },
+          {
+            "line": 2,
+            "type": "item.completed"
+          },
+          {
+            "line": 3,
+            "type": "turn.started"
+          },
+          {
+            "line": 4,
+            "type": "item.completed"
+          },
+          {
+            "line": 5,
+            "type": "item.started"
+          },
+          {
+            "line": 6,
+            "type": "item.completed"
+          },
+          {
+            "line": 7,
+            "type": "item.started"
+          },
+          {
+            "line": 8,
+            "type": "item.completed"
+          },
+          {
+            "line": 9,
+            "type": "item.completed"
+          },
+          {
+            "line": 10,
+            "type": "item.started"
+          },
+          {
+            "line": 11,
+            "type": "item.completed"
+          },
+          {
+            "line": 12,
+            "type": "item.started"
+          },
+          {
+            "line": 13,
+            "type": "item.completed"
+          },
+          {
+            "line": 14,
+            "type": "item.started"
+          },
+          {
+            "line": 15,
+            "type": "item.completed"
+          },
+          {
+            "line": 16,
+            "type": "item.started"
+          },
+          {
+            "line": 17,
+            "type": "item.completed"
+          },
+          {
+            "line": 18,
+            "type": "item.completed"
+          },
+          {
+            "line": 19,
+            "type": "item.started"
+          },
+          {
+            "line": 20,
+            "type": "item.completed"
+          },
+          {
+            "line": 21,
+            "type": "item.completed"
+          },
+          {
+            "line": 22,
+            "type": "turn.completed"
+          }
+        ],
+        "tools": [
+          {
+            "line": 6,
+            "type": "command_execution"
+          },
+          {
+            "line": 8,
+            "type": "command_execution"
+          },
+          {
+            "line": 11,
+            "type": "command_execution"
+          },
+          {
+            "line": 13,
+            "type": "command_execution"
+          },
+          {
+            "line": 15,
+            "type": "command_execution"
+          },
+          {
+            "line": 17,
+            "type": "command_execution"
+          },
+          {
+            "line": 20,
+            "type": "command_execution"
+          }
+        ],
+        "tool_calls": 7,
+        "malformed_lines": 0,
+        "usage": {
+          "input_tokens": 170036,
+          "cached_input_tokens": 110080,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3714,
+          "reasoning_output_tokens": 1027
+        },
+        "resolved_models": [],
+        "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+      },
+      "trace_sha256": "0f7bcb7c1c070e113bb39d4a1657db3808eba5358dd5bfb2b4433f7a1062ccd3"
+    },
+    "supplied_buyer_files": 8,
+    "input_manifest_sha256": "a8ace763f06712a0ad75f84e9c4547820cbcbd2a00405fa237e6a2c1ffbdb8a7"
+  }
+}
