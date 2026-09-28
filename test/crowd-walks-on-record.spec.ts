@@ -34,7 +34,7 @@ function host(name: string, verdict: WardHostResult["verdict"]): WardHostResult 
   return { host: name, url: `https://${name}/x402`, verdict, failed: [], advisories: [], source: "discovery" };
 }
 
-function walk(name: string, claimedAt: string, report?: CrowdWalk["walker_report"], houseVerdict?: "ready" | "not_ready"): CrowdWalk {
+function walk(name: string, claimedAt: string, report?: CrowdWalk["walker_report"], houseVerdict?: NonNullable<CrowdWalk["house_probe"]>["verdict"]): CrowdWalk {
   return {
     tier: "crowd-walked",
     bounty_id: `bty_${name.replace(/\W/g, "")}_${claimedAt.slice(8, 10)}`,
