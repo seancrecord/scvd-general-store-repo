@@ -26,6 +26,26 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Seven bounties beside your Globally Fluent reply (sent 2026-09-28).**
+  Three doors the house calls not ready that the market pays anyway, at
+  $0.25 — a paid 200 at any of them is the finding the probe cannot
+  make: `https://api.strale.io/x402/image-to-text`,
+  `https://api.nansen.ai/api/v1/profiler/address/current-balance`,
+  `https://pay.edge-agents.ai/v1/services/perp-funding-rates`. Four
+  re-walks at $0.15 — the walkers said the paid response carried no
+  receipt, or two wallets disagreed on the body:
+  `https://rubric-protocol.com/v1/x402/hedera-facts/supply`,
+  `https://hypernatt.com/api/m2m/liq-radar`,
+  `https://agentpay.tools/tools/pre_trade_check/call`,
+  `https://agent402.tools/api/bestsellers`. About $2.35 of the $10
+  week. Post from `/admin/market` (tick the rows; the not-ready ones
+  now read "house said not ready") or one JSON press each to
+  `/admin/bounties/batch`. Globally Fluent's ten, once named, at the
+  $0.10 default. LOOK, on your first reply to any letter carrying an
+  address: the counter page prints "mailed to them, you copied" beside
+  the reply and the copy is in your inbox; MAIL FAILED means the reply
+  still stands at the pickup URL — tell me and I read the wire.
+
 - **Two bylines live on HackerNoon, 2026-09-24/25 — Cairn told by your
   hand the same day.** "An Autonomous Agent Cold-Emailed Me a Free
   Audit at 12:45 AM" (09-24, the Cairn piece) and "I Told an AI Agent

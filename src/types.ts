@@ -1394,11 +1394,21 @@ export type LetterStatus = "received" | "read" | "replied" | "archived";
  * signed, so these signatures prove each answer is the keeper's, not
  * that no answer is missing from the list.
  */
+/** What the mail wire came back with. Defined here so lib and services read one word. */
+export type MailOutcome = "sent" | "failed" | "unconfigured";
+
 export interface LetterReply {
   reply: string;
   signature: string;
   public_key: string;
   replied_at: string;
+  /**
+   * WHETHER THIS ANSWER WENT OUT BY MAIL (2026-09-28). Absent when the
+   * letter carries no address; otherwise the word the wire came back
+   * with. The signed reply stands at the pickup URL either way — mail
+   * is the courtesy copy, never the record.
+   */
+  mailed?: MailOutcome;
 }
 
 /**
@@ -1431,6 +1441,14 @@ export interface LetterRecord {
   from_name?: string;
   verified_identity?: string;
   identity_verified?: boolean;
+  /**
+   * WHERE A REPLY SHOULD ALSO GO (2026-09-28). A correspondent who
+   * leaves an address gets each signed reply by mail as well as at
+   * the pickup URL, the keeper copied. Stored as given, shown only in
+   * the keeper's box, never on any served surface: the pickup door
+   * does not echo it, and neither does anything else.
+   */
+  reply_to?: string;
   /**
    * Every answer, oldest first (2026-09-08). Absent on letters
    * answered before the thread existed — read it through

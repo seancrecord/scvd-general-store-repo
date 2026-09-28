@@ -47,8 +47,16 @@
 
 export const MPP_CORE_DEFECT = "mpp-core-observable-invalid";
 
+/**
+ * THE CLASS THE CROWD REPORTS (2026-09-28). Exported by name because
+ * two derivations outside this file print it — the board's findings
+ * and the host history's crowd rows — and a class id typed twice is
+ * a class id that drifts (AT_SCALE rule 1).
+ */
+export const RECEIPT_ABSENT_CLASS = "receipt-absent-on-paid-response";
+
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "20";
+export const DEFECT_VOCABULARY_VERSION = "21";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -227,6 +235,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "this store, the wording audit docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md left open, on the day the native till opened on every HTTP door, the MCP door and the WebMCP bridge",
     what_changed:
       "mpp-core-observable-invalid's buyer_hint no longer says this store's till does not speak MPP; it says the finding comes from an unpaid read, never a payment. No assertion, falsifier, cost, boundary, signal or source changes. The same sentence was reconciled on every MPP reading surface (battery, census, core, surface reads, passport rule, corpus, datasets) to one spelled-once note: no reading rests on a payment, and the till speaking MPP says nothing about the door read.",
+  },
+  {
+    version: "21",
+    date: "2026-09-28",
+    at_the_instigation_of:
+      "the keeper, asking what the store does with the bounty board's reports beyond listing them: 'it feels I'm paying people to check doors I'm already checking and doing nothing with the feedback'",
+    what_changed:
+      "Added receipt-absent-on-paid-response: a door that settles the payment and serves the goods with no PAYMENT-RESPONSE header, so the buyer holds bytes and no proof of what bought them. Seven walker reports on four doors had said exactly this on the bounty board since 2026-09-08 — the one observation on the board that a free probe structurally cannot make — and the register had no word for it, so the reports were counted on one page and named nowhere. THE PROVENANCE IS STATED ON THE CLASS AND IT IS THE WEAKEST THIS REGISTER CARRIES: the signal is the walker's own report at the crowd-walked tier, recorded verbatim as their claim and never verified by this store, which saw neither the request nor the response. It is registered anyway because a class with a stated weak signal can be compared and strengthened, and a report with no class cannot; the launch check's settle stage is the paid instrument of ours that could carry it next, and the entry says so rather than claiming it. Detectable: paid. No operator, host or wallet is named. The host history now prints each crowd walk with this class beside a report that says the receipt was absent, and the board's findings name the class beside the count.",
   },
 ];
 
@@ -640,6 +656,23 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "Produce the goods before presenting the settlement, and treat an empty body as a failed delivery that aborts the charge — deliver-first ordering makes this class impossible by construction.",
     buyer_hint:
       "Treat an empty 2xx after settlement as a failed delivery and keep the settlement reference: it is the only evidence that you paid. Ask for a paid retry against that settlement before paying a second time.",
+  },
+  {
+    id: RECEIPT_ABSENT_CLASS,
+    title: "Serves the goods with no settlement receipt",
+    asserts:
+      "A paid 2xx carries a PAYMENT-RESPONSE header — or the settlement receipt its protocol version names in its place — identifying the settlement that paid for it.",
+    costs:
+      "The buyer holds goods and no proof of what bought them. A lost response cannot be re-presented against a settlement the door never named, a dispute has the buyer's wallet history on one side and nothing on the other, and a paid-retry lane has no reference to honour. The money moved once and the door kept the only record of what it was for.",
+    detectable: "paid",
+    our_signal:
+      "bounty board: what_the_walks_show.reports.receipt_absent on /api/bounties, and crowd_walks[].defect_classes on /corpus/host/{host}.json — a walker's report at the crowd-walked tier, recorded as their claim and never verified by this store, which saw neither request nor response. No paid instrument of ours reports it yet; the launch check's settle stage is where it would go.",
+    falsified_by:
+      "The paid 2xx carrying a PAYMENT-RESPONSE header, or its version's named equivalent, at the stated moment.",
+    repair_hint:
+      "Return the facilitator's settlement response on the paid reply as PAYMENT-RESPONSE (base64 JSON: success, transaction, network, payer); the reference x402 middleware sets it by default, and a proxy, CDN or framework layer stripping headers it does not know is the usual cause. Check the header survives to the client, not only that the middleware emits it.",
+    buyer_hint:
+      "Record the settlement transaction hash from your own wallet or the facilitator's response before you need it, and keep the response bytes and their hash beside it: this door will not give you a reference, so your record is the only one. If you lose the response, look up the settlement on chain first rather than paying again.",
   },
   {
     id: "payto-moved",

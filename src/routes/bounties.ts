@@ -339,7 +339,7 @@ function boardHtml(
         <tr><td>distinct paying wallets</td><td><strong>${findings.walks.distinct_payers}</strong></td><td>ours, proven</td></tr>
         <tr><td>distinct doors walked</td><td><strong>${findings.walks.distinct_doors}</strong></td><td>ours, proven</td></tr>
         <tr><td>walks carrying a report</td><td>${findings.reports.reported} <small>of ${findings.walks.settlements}</small></td><td>theirs, claimed</td></tr>
-        <tr><td>paid responses said to carry a PAYMENT-RESPONSE receipt</td><td>${findings.reports.receipt_seen} <small>· said to carry none: ${findings.reports.receipt_absent} · not reported: ${findings.walks.settlements - findings.reports.receipt_seen - findings.reports.receipt_absent}</small></td><td>theirs, claimed</td></tr>
+        <tr><td>paid responses said to carry a PAYMENT-RESPONSE receipt</td><td>${findings.reports.receipt_seen} <small>· said to carry none: ${findings.reports.receipt_absent} (<a href="/defects#${escapeHtml(findings.reports.receipt_absent_class)}"><code>${escapeHtml(findings.reports.receipt_absent_class)}</code></a>, their claim) · not reported: ${findings.walks.settlements - findings.reports.receipt_seen - findings.reports.receipt_absent}</small></td><td>theirs, claimed</td></tr>
         <tr><td>our own knock said ready and the walk returned 2xx</td><td>${findings.house_vs_walker.both_good}</td><td>ours observed, theirs claimed</td></tr>
         <tr><td>our knock said ready and the walk did not</td><td>${findings.house_vs_walker.house_ready_walk_failed}</td><td>ours observed, theirs claimed</td></tr>
         <tr><td>our knock said NOT ready and the walk worked anyway</td><td>${findings.house_vs_walker.house_unready_walk_worked}</td><td>ours observed, theirs claimed</td></tr>

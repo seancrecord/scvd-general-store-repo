@@ -657,6 +657,16 @@ export interface PreflightReport {
   the_rest_of_the_ladder: ReturnType<typeof theRestOfTheLadder>;
   this_is_not_advice: string;
   /**
+   * WHAT A REAL WALLET SAW HERE (2026-09-28). The one fact this unpaid
+   * probe cannot make — a stranger paid this host and what came back —
+   * read off the latest sealed round's crowd-walked rows, at their own
+   * tier, never folded into the verdict above. Present on every report
+   * that names a host, including an unreachable one: "we could not
+   * reach it, and a wallet paid it last week" is the case worth
+   * printing. Absent only when no round could be read.
+   */
+  paid_walks_on_record?: PaidWalksOnRecord;
+  /**
    * WHAT THIS ENDPOINT WILL AND WILL NOT KEEP DOING FOR YOU (0.13).
    * Both ceilings have been enforced since 2026-08-03; publishing
    * them means a caller learns the limit while designing rather than
@@ -762,6 +772,67 @@ function report(
     the_rest_of_the_ladder: theRestOfTheLadder(PREFLIGHT_BATTERY, base),
     this_is_not_advice:
       "This is an observation, not advice. It says what was seen and what was not; whether that is enough to spend on is yours to decide, and you know your own risk appetite better than we ever will.",
+  };
+}
+
+export interface PaidWalksOnRecord {
+  tier: "crowd-walked";
+  /** The sealed round these rows were read from. */
+  round_week: string;
+  walks: {
+    settled_at: string;
+    network: string;
+    tx_hash: string;
+    amount_usd: number;
+    house_probe_verdict?: string;
+    walker_status?: number;
+    /** The walker's word on whether the paid response carried PAYMENT-RESPONSE. */
+    receipt?: boolean;
+    defect_classes: string[];
+  }[];
+  history_url: string;
+  scope: string;
+}
+
+/**
+ * Read off the latest sealed round, fail-soft: a round that cannot be
+ * read leaves the field absent rather than the probe unanswered. The
+ * round module is imported at call time because it imports this one.
+ */
+export async function paidWalksOnRecord(env: Env, host: string, base: string): Promise<PaidWalksOnRecord | null> {
+  const round = await import("@/services/ward-round")
+    .then(({ latestWardRound }) => latestWardRound(env))
+    .catch(() => null);
+  if (!round) return null;
+  const { RECEIPT_ABSENT_CLASS } = await import("@/store/defect-vocabulary");
+  const wanted = host.toLowerCase();
+  const walks = (round.crowd_walks ?? [])
+    .filter((walk) => walk.host === wanted)
+    .map((walk) => {
+      const report = walk.walker_report;
+      const classes: string[] = [];
+      if (report?.payment_response === false) classes.push(RECEIPT_ABSENT_CLASS);
+      return {
+        settled_at: walk.claimed_at,
+        network: walk.network,
+        tx_hash: walk.settlement.tx_hash,
+        amount_usd: walk.settlement.amount_usd,
+        ...(walk.house_probe ? { house_probe_verdict: walk.house_probe.verdict } : {}),
+        ...(report?.status !== undefined ? { walker_status: report.status } : {}),
+        ...(report?.payment_response !== undefined ? { receipt: report.payment_response } : {}),
+        defect_classes: classes,
+      };
+    })
+    .sort((a, b) => a.settled_at.localeCompare(b.settled_at));
+  return {
+    tier: "crowd-walked",
+    round_week: round.week,
+    walks,
+    history_url: `${base}/corpus/host/${wanted}.json`,
+    scope:
+      walks.length === 0
+        ? "No stranger's settlement at this host is on the latest sealed round. That is an absence of rows, not a finding about the door. Earlier weeks, if any, are in the host history."
+        : "Bounty claims this store paid after verifying each settlement on chain. The transaction, amount and rail are proven; house_probe_verdict is our own unpaid knock at the moment of the claim; walker_status, receipt and any class derived from them are the walker's claim, recorded as written and never verified here. A tier below house-walked, never blended into the verdict above.",
   };
 }
 
@@ -2121,7 +2192,32 @@ export function refusal(base: string, code: string, error: string, battery: Pref
   };
 }
 
+/**
+ * The probe, then the record beside it. The inner function has one
+ * job and several exits; the crowd rows are attached here, once, to
+ * every exit that produced a report, so an unreachable reading
+ * carries them too.
+ */
 export async function preflightUrl(
+  rawUrl: unknown,
+  env: Env,
+  battery: PreflightBattery = PREFLIGHT_VERSION,
+): ReturnType<typeof preflightUrlInner> {
+  const outcome = await preflightUrlInner(rawUrl, env, battery);
+  if (!("verdict" in outcome.body)) return outcome;
+  let host: string | null = null;
+  try {
+    host = typeof rawUrl === "string" ? new URL(rawUrl.trim()).host.toLowerCase() : null;
+  } catch {
+    host = null;
+  }
+  if (!host) return outcome;
+  const walks = await paidWalksOnRecord(env, host, env.STORE_BASE_URL);
+  if (!walks) return outcome;
+  return { ...outcome, body: { ...outcome.body, paid_walks_on_record: walks } };
+}
+
+async function preflightUrlInner(
   rawUrl: unknown,
   env: Env,
   /** Which battery renders the headline verdict. Both are computed. */

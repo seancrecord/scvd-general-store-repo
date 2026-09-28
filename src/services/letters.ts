@@ -3,6 +3,8 @@ import { newLetterId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { readProse, sanitizeText } from "@/lib/sanitize";
+import { readEmailAddress, sendMail } from "@/lib/keeper-mail";
+import { STORE_CONTACT_EMAIL } from "@/store/metadata";
 import { signMessage } from "@/lib/signing";
 import type {
   Env,
@@ -10,6 +12,7 @@ import type {
   LetterRecord,
   LetterReply,
   LetterStatus,
+  MailOutcome,
 } from "@/types";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
@@ -41,6 +44,8 @@ export interface SubmitLetterInput {
   letter: unknown;
   fromName?: unknown;
   verifiedIdentity?: string;
+  /** An address to mail each signed reply to. Optional; shape-checked, never echoed. */
+  replyTo?: unknown;
 }
 
 export interface SubmittedLetter {
@@ -91,11 +96,16 @@ export async function submitLetter(
     record.verified_identity = input.verifiedIdentity;
     record.identity_verified = false;
   }
+  const replyTo = readEmailAddress(input.replyTo);
+  if (replyTo) {
+    record.reply_to = replyTo;
+  }
   const queueKey = KV_KEYS.letter(invertedTimestamp(Date.now()), record.letter_id);
   await kvPut(env.ORDERS, queueKey, JSON.stringify(record));
   // Direct-id pointer so pickup doesn't scan the queue.
   await kvPut(env.ORDERS, KV_KEYS.letterById(record.letter_id), queueKey);
   await bumpCounter(env, KV_KEYS.lettersReceived);
+  await notifyKeeperOfMail(env, record, "letter", letter);
   return {
     ok: true,
     record,
@@ -131,6 +141,8 @@ export async function addFollowUp(
   env: Env,
   letterId: string,
   letter: unknown,
+  /** An address given on the follow-up: added to the letter, or replacing the one it had. */
+  replyTo?: unknown,
 ): Promise<FollowUpResult> {
   const record = await getLetter(env, letterId);
   if (!record) {
@@ -160,7 +172,12 @@ export async function addFollowUp(
     date: new Date().toISOString(),
   };
   record.follow_ups = [...existing, entry];
+  const address = readEmailAddress(replyTo);
+  if (address) {
+    record.reply_to = address;
+  }
   await saveLetter(env, letterId, record);
+  await notifyKeeperOfMail(env, record, "follow_up", entry.letter);
   return {
     ok: true,
     record,
@@ -298,7 +315,89 @@ export async function replyToLetter(
   if (existing.length === 0) {
     await bumpCounter(env, KV_KEYS.lettersAnswered);
   }
+  /*
+   * THE COURTESY COPY (2026-09-28, the keeper: "how does the
+   * individual get it?"). Until today, nobody was told. A reply sat
+   * signed at a pickup URL that a polling agent reads and a person
+   * who wrote once never returns to; the mailbox's first human
+   * correspondent would have waited on an answer that was already
+   * written. So a letter that carries an address gets the answer by
+   * mail as well, the keeper copied so the thread can continue in
+   * his own inbox where a person can be answered at length.
+   *
+   * SAVED FIRST, MAILED SECOND. The signed reply is the record and it
+   * is already on the pickup URL before the wire is touched; the
+   * outcome is written beside the reply afterwards, so the box can
+   * say whether the copy went, and a failed send is a failed courtesy
+   * and nothing more.
+   */
+  if (record.reply_to) {
+    const outcome = await sendMail(env, {
+      to: record.reply_to,
+      cc: [STORE_CONTACT_EMAIL],
+      replyTo: STORE_CONTACT_EMAIL,
+      subject: `The keeper wrote back on your letter ${letterId}`,
+      text: replyMailText(env, letterId, reply),
+    });
+    const last = record.replies[record.replies.length - 1];
+    if (last) {
+      last.mailed = outcome;
+      await saveLetter(env, letterId, record);
+    }
+  }
   return record;
+}
+
+/** The body of a mailed reply: the answer, then where the signed copy lives. */
+export function replyMailText(env: Env, letterId: string, reply: string): string {
+  const base = env.STORE_BASE_URL;
+  return [
+    reply,
+    "",
+    "---",
+    `This is a courtesy copy. The signed reply, with its signature and public key, is at ${base}/api/letter/${letterId} — verify it against ${base}/.well-known/scvd-signing-key.`,
+    `To add to this exchange on the record, POST to ${base}/api/letter with in_reply_to "${letterId}". Replying to this mail reaches the keeper directly instead.`,
+  ].join("\n");
+}
+
+/**
+ * THE KEEPER HEARS A LETTER LAND (2026-09-28). The Sunday digest
+ * counted unread letters and nothing else did, so a letter posted on
+ * a Friday waited two days for a reader who had no idea it was
+ * there. One mail per arrival, to the alarm address, with the words
+ * in it — this is his own private box forwarded to his own private
+ * inbox, nothing new is disclosed — and a line saying whether the
+ * sender can be mailed back. Fails open: no key, no address, or a
+ * dead wire, and the letter is still in the box exactly as before.
+ */
+export async function notifyKeeperOfMail(
+  env: Env,
+  record: LetterRecord,
+  kind: "letter" | "follow_up",
+  text: string,
+): Promise<void> {
+  if (!env.ALERT_EMAIL) {
+    return;
+  }
+  const who = record.from_name ? `from ${record.from_name}` : "unsigned";
+  const subject =
+    kind === "letter"
+      ? `A letter landed at the store: ${record.letter_id} (${who})`
+      : `A follow-up landed on ${record.letter_id} (${who})`;
+  await sendMail(env, {
+    to: env.ALERT_EMAIL,
+    subject,
+    text: [
+      new Date().toISOString(),
+      record.reply_to
+        ? `They left an address: ${record.reply_to}. Your signed reply from the back room goes there too, with you copied.`
+        : "No address left. Your reply waits at their pickup URL for them to collect.",
+      "",
+      text,
+      "",
+      `Answer it in the back room: ${env.STORE_BASE_URL}/admin`,
+    ].join("\n"),
+  });
 }
 
 async function bumpCounter(env: Env, key: string): Promise<void> {
@@ -355,7 +454,7 @@ export function letterNeedsReply(record: LetterRecord): boolean {
 /** One side's turn in a letter, for the keeper's box. */
 export type LetterEvent =
   | { at: string; who: "them"; text: string }
-  | { at: string; who: "keeper"; text: string };
+  | { at: string; who: "keeper"; text: string; mailed?: MailOutcome };
 
 /**
  * THE WHOLE EXCHANGE IN ORDER, both sides — what the admin box shows.
@@ -378,6 +477,7 @@ export function letterEvents(record: LetterRecord): LetterEvent[] {
         at: entry.replied_at,
         who: "keeper",
         text: entry.reply,
+        ...(entry.mailed ? { mailed: entry.mailed } : {}),
       }),
     ),
   ];
