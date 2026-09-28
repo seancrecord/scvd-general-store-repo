@@ -1,6 +1,10 @@
 # Portable package refresh — September 24, 2026
 
-Prepared for merge. Registry publication remains the keeper's post-merge action.
+Merged in #907 September 24. The keeper subsequently ran the three publication
+workflows. [Public registry readback](../research/roadmap-followthrough-2026-09-24/package-readback.json)
+confirms npm and the official MCP Registry expose Tab 0.11.2; MCP marks it
+active/latest. ClawHub workflow completion does not by itself prove scan
+clearance or public availability. No publication was repeated by this readback.
 
 ## Release contents
 
@@ -26,9 +30,11 @@ assets; they need no duplicate skill copies. The separate OpenAI verifier ZIP an
 remote MCP service identity are unchanged. The other seven npm packages matched
 their published files in the September 24 audit and need no republish.
 
-## Post-merge actions, in order
+## Publication sequence, retained for reference
 
-Use the **main** branch for each workflow and uncheck **dry_run** for publication.
+The September 24 runs completed: [npm](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36017501410), [MCP](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36017551822), and [ClawHub](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36017602310). Do not repeat them. The ClawHub receipt merged in #909; public scan clearance remains unverified in this pass.
+
+For future releases, use the **main** branch and uncheck **dry_run** for publication.
 Wait for the npm run to succeed before publishing a skill or listing that installs
 the new pinned Tab version.
 
@@ -39,8 +45,8 @@ the new pinned Tab version.
 3. [Publish ClawHub skill](https://github.com/seancrecord/scvd-general-store-repo/actions/workflows/publish-skill.yml):
    version `3.19.1`, changelog:
    **Pins Tab 0.11.2 with corrected installation instructions; retains the disclosure and field-study guidance.**
-   Merge the receipt PR created by this workflow afterward. Its upload receipt is
-   not confirmation that ClawHub's security scans have made the version public.
+   The receipt PR merged as #909. Its upload receipt is not confirmation that
+   ClawHub's security scans have made the version public.
 
 The portable plugin itself is repository content, not an npm package. Existing
 installs need their host's update/reinstall action after npm publication. Existing

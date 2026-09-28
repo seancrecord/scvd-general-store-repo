@@ -1,0 +1,45 @@
+
+> scvd-general-store@0.1.0 findability:check
+> node scripts/findability-check.mjs
+
+present      repo  server.json                                     official MCP registry (mcp-publisher), GitHub MCP feed, PulseMCP and every mirror of the registry
+present      repo  package.json                                    the registry's npm ownership check reads the mcpName field
+present      repo  plugin.json                                     Agent Plugins Directory, Awesome Copilot, Cursor and Kiro (Agent Plugins 1.0); admission is separate
+present      repo  mcp.json                                        Agent Plugins 1.0 hosts (the servers the plugin bundles)
+present      repo  .claude-plugin/plugin.json                      Claude Code plugins, GitHub Agent Finder (application/vnd.github.copilot-plugin entries point at this file)
+present      repo  .claude-plugin/marketplace.json                 Claude Code: /plugin marketplace add <owner>/<repo>
+present      repo  gemini-extension.json                           Gemini CLI: gemini extensions install <repo url>
+present      repo  skills/scvd-general-store/SKILL.md              Agent Finder skill scan, ClawHub, Codex/Claude Code/Cursor skill installers (agentskills.io format)
+present      repo  glama.json                                      Glama MCP directory ownership
+present      repo  AGENTS.md                                       coding agents working in this repository; not extension consumer context
+present      repo  CITATION.cff                                    GitHub 'Cite this repository', Zenodo, Zotero, Google Scholar's repository readers
+present      repo  SECURITY.md                                     GitHub security tab, OpenSSF Scorecard
+present      site  /robots.txt                                     every crawler; Content-Signal, Agentmap and Schemamap ride here
+present      site  /sitemap.xml                                    search and answer engines
+present      site  /llms.txt                                       LLM readers and the llms.txt directories
+present      site  /llms-full.txt                                  LLM readers wanting the whole store in one file
+present      site  /agents.md                                      agent-mode readers; the operational manual
+present      site  /openapi.json                                   function-calling toolchains, ChatGPT plugins, the ai-plugin manifest
+present      site  /.well-known/api-catalog                        RFC 9727 API catalog consumers
+present      site  /.well-known/mcp                                MCP server-card discovery (also /.well-known/mcp.json and /.well-known/mcp/server-card.json)
+present      site  /.well-known/agent-registration.json            ERC-8004 indexers and endpoint-domain acknowledgment consumers
+present      site  /agents/general-store                           OASF capability consumers; public bytes do not establish federation publication
+present      site  /.well-known/jwks.json                          AGNTCY domain-name verification
+present      site  /.well-known/agent-skills/index.json            Agent Skills Discovery clients
+present      site  /trust                                          people and machines reading dated discovery records by protocol
+present      site  /.well-known/agent-card.json                    A2A clients and registries (also the older /.well-known/agent.json)
+present      site  /.well-known/ard.json                           Agentic Resource Discovery: GitHub Agent Finder, ardregistry.org, Neuronto, WellKnown
+present      site  /.well-known/ai-catalog.json                    ARD's predecessor catalog shape
+present      site  /.well-known/x402                               x402 discovery: x402scan, x402-list, the Bazaar
+present      site  /.well-known/did.json                           did:web resolvers verifying the signing key
+present      site  /.well-known/http-message-signatures-directory  Web Bot Auth verifiers (Cloudflare and others) checking our outbound agent's key
+present      site  /.well-known/oauth-protected-resource           MCP clients probing the auth spec (this door needs none, and says so)
+present      site  /.well-known/security.txt                       RFC 9116 security researchers and scanners
+present      site  /.well-known/trust.json                         trust-manifest readers (Vouch and others)
+present      site  /.well-known/ai-plugin.json                     the retired ChatGPT plugin manifest, still fetched by crawlers (served 2026-09-10)
+present      site  /.well-known/tdmrep.json                        W3C TDM Reservation Protocol: European text-and-data-mining crawlers read the training reservation here
+present      site  /ai.txt                                         Spawning's ai.txt convention for AI training permissions by media type
+present      site  /webmcp.js                                      browser agents reading document.modelContext
+present      site  /og.png                                         unfurlers: Slack, X, LinkedIn, Facebook previews
+
+39 present, 0 missing, 0 unreachable, of 39 signals. A missing row is a decision, not a defect.

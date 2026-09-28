@@ -30,8 +30,9 @@ store's own [ARD document](https://scvd.store/.well-known/ard.json) does not pro
 that somebody else's index ingested it.
 
 Awesome Copilot [#3255](https://github.com/github/awesome-copilot/issues/3255) is
-a separate plugin submission. It passed automated intake and awaits maintainer
-review. [Current channel map](../../DISTRIBUTION.md).
+a separate plugin submission. It passed automated intake but was rejected
+September 24 as not a fit for the repository; the issue is closed. This does
+not change the separate Agent Finder PR's open status. [Current channel map](../../DISTRIBUTION.md).
 
 Hugging Face has its own [drawer](../huggingface/README.md) and keeper item;
 Agent Finder review does not publish the verifier Space.

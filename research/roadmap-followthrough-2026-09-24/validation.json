@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-09-28T16:30:00.354434+00:00",
+  "production_behavior_changed": false,
+  "docs_check": "passed; existing age reminders",
+  "listings_tests": {
+    "passed": 38,
+    "failed": 0
+  },
+  "receipt_consistency": "passed",
+  "local_links": "passed",
+  "script_syntax": "passed",
+  "diff_check": "passed",
+  "full_application_suite": {
+    "success": true,
+    "passed": 15605,
+    "failed": 0,
+    "skipped": 1,
+    "test_files": 835,
+    "report_sha256": "6b9bcdc00c2f693dff4808df1d748a7dbbcf0d61a2c1be3c234e15f7f43e0658"
+  },
+  "buyer_qualification": "not run",
+  "commit_push_pr": "Requested September 24; resumed September 28. GitHub CI gates merge.",
+  "source_base": "b9e2a06c",
+  "typecheck": "passed",
+  "resume": "Temporary cleanup removed tracked worktree files; missing files restored from the index. Production source/tests have no diff from the tested base. Documentation/listing checks rerun September 28."
+}

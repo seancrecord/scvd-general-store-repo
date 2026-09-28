@@ -1,0 +1,26 @@
+[
+  {
+    "name": "npm",
+    "url": "https://registry.npmjs.org/scvd-tab/latest",
+    "read_at": "2026-09-24T15:11:30.439Z",
+    "status": 200,
+    "version": "0.11.2"
+  },
+  {
+    "name": "mcp",
+    "url": "https://registry.modelcontextprotocol.io/v0.1/servers/store.scvd%2Ftab/versions/latest",
+    "read_at": "2026-09-24T15:11:30.732Z",
+    "status": 200,
+    "version": "0.11.2",
+    "package_version": "0.11.2",
+    "registry_metadata": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-09-24T15:08:49.422816Z",
+        "publishedAt": "2026-09-24T15:08:49.422816Z",
+        "updatedAt": "2026-09-24T15:08:49.422816Z",
+        "isLatest": true
+      }
+    }
+  }
+]
