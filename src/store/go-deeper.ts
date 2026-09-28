@@ -1,5 +1,6 @@
 import { ROOMS } from "@/store/rooms";
 import { getMenuItem } from "@/store";
+import { buyUrlTemplate } from "@/lib/buyer-contract";
 import { priceLine } from "@/services/menu-markdown";
 import { escapeHtml } from "@/lib/sanitize";
 
@@ -45,6 +46,14 @@ export interface DeeperRung {
   price_usdc: number;
   listing_url: string;
   buy_url: string;
+  /**
+   * The door with its required inputs as <slots> — the URL the agent
+   * line hands over, because every rung a room names today takes one
+   * (spot_check wants ?host=, the watches and the repair kit ?url=)
+   * and the bare buy_url refuses the paid request without it. Equal to
+   * buy_url where nothing is required (2026-09-28, off the decline desk).
+   */
+  buy_url_template: string;
 }
 
 /** The rungs a room names, priced from the menu, broken ones dropped. */
@@ -64,6 +73,7 @@ export function deeperRungs(path: string): DeeperRung[] {
         price_usdc: item.price_usdc,
         listing_url: `${SITE_ORIGIN}/menu/${item.id}`,
         buy_url: `${SITE_ORIGIN}/api/buy/${item.id}`,
+        buy_url_template: buyUrlTemplate(item, SITE_ORIGIN),
       },
     ];
   });
@@ -104,7 +114,7 @@ export function goDeeperSection(path: string | undefined): string {
   const agentLine =
     rungs.length === 0
       ? `<em>&ldquo;Fetch ${escapeHtml(machine)} with the header <code>Accept: application/json</code>. That is this page as data &mdash; free, no key, and the same numbers a person reads.&rdquo;</em>`
-      : `<em>&ldquo;Fetch ${escapeHtml(machine)} with the header <code>Accept: application/json</code>, then if I need the signed version, buy ${escapeHtml(rungs[0]!.name)} at ${escapeHtml(rungs[0]!.buy_url)} over x402.&rdquo;</em>`;
+      : `<em>&ldquo;Fetch ${escapeHtml(machine)} with the header <code>Accept: application/json</code>, then if I need the signed version, buy ${escapeHtml(rungs[0]!.name)} at ${escapeHtml(rungs[0]!.buy_url_template)} over x402${rungs[0]!.buy_url_template === rungs[0]!.buy_url ? "" : ", filling in the angle-bracketed slot first"}.&rdquo;</em>`;
 
   return `<section>
       <h2>What you can do with this</h2>
