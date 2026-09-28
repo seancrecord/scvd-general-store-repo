@@ -28,3 +28,33 @@ describe('independent verifier fixtures in workerd', () => {
     });
   }
 });
+
+// Transport support must preserve the native runtime's verdict on hostile bytes.
+describe('JWS envelopes in workerd', () => {
+  for (const vector of matrix.vectors.filter(v => v.family === 'EdDSA' && v.oracle.encoding === 'jws')) {
+    it(`wrapped ${vector.id}`, async () => {
+      const jwk = 'publicJwk' in vector ? vector.publicJwk : undefined;
+      const publicKey = Uint8Array.from(atob(jwk!.x.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+      const kind = vector.kind as 'offer' | 'receipt';
+      const options = { kind, publicKey, nowSeconds: matrix.clock,
+        fetch: async () => { throw new Error('no live issuer'); } };
+      const envelope = { format: 'jws', signature: vector.artifact };
+      const plain = await verifyArtifact(vector.artifact, options);
+      const wrapped = await verifyArtifact(envelope, options);
+      expect({ ...wrapped, scope: plain.scope }).toEqual(plain);
+      expect(wrapped.scope).toContain('acceptIndex is unsigned');
+    });
+  }
+  it('refuses ambiguous payloads and wrapper-selected keys before resolution', async () => {
+    const vector = matrix.vectors.find(v => v.family === 'EdDSA' && v.kind === 'receipt' && v.case === 'positive')!;
+    let calls = 0;
+    for (const extra of [{ payload: {} }, { issuerKeyUrl: 'https://attacker.invalid/key' }, { acceptIndex: 0 }]) {
+      const result = await verifyReceipt({ receipt: { format: 'jws', signature: vector.artifact, ...extra } }, {
+        fetch: async () => { calls++; throw new Error('must not fetch'); },
+      });
+      expect(result.valid).toBe(false);
+      expect(['invalid', 'unsupported']).toContain(result.status);
+    }
+    expect(calls).toBe(0);
+  });
+});
