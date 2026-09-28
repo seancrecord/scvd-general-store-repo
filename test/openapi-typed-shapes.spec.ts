@@ -254,6 +254,7 @@ const REPORT_FIELDS: Record<keyof PreflightReport, true> = {
   also_under: true,
   the_rest_of_the_ladder: true,
   this_is_not_advice: true,
+  paid_walks_on_record: true,
 };
 
 describe("the preflight verdict schema cannot drift from its type", () => {

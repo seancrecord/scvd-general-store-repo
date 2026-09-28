@@ -239,7 +239,15 @@ function lettersHtml(letters: LetterRecord[]): string {
       const said = letterEvents(letter)
         .map((event, index) =>
           event.who === "keeper"
-            ? `<p><em>Replied ${escapeHtml(event.at)}:</em> <span style="white-space:pre-wrap">${escapeHtml(event.text)}</span></p>`
+            ? `<p><em>Replied ${escapeHtml(event.at)}${
+                event.mailed
+                  ? event.mailed === "sent"
+                    ? " · mailed to them, you copied"
+                    : event.mailed === "failed"
+                      ? " · MAIL FAILED — the signed reply stands at their pickup URL; write to them by hand"
+                      : " · not mailed: RESEND_API_KEY is unset"
+                  : ""
+              }:</em> <span style="white-space:pre-wrap">${escapeHtml(event.text)}</span></p>`
             : `<p><em>${
                 index === 0
                   ? "Letter (visitor-written, private)"
@@ -266,6 +274,7 @@ function lettersHtml(letters: LetterRecord[]): string {
       <strong>${escapeHtml(letter.letter_id)}</strong> [${letter.status}]
       ${letter.from_name ? `\u00B7 from ${escapeHtml(letter.from_name)}` : "\u00B7 unsigned"}
       ${letter.verified_identity ? `\u00B7 claimed identity (unverified): ${escapeHtml(letter.verified_identity)}` : ""}
+      ${letter.reply_to ? `\u00B7 mails to <a href="mailto:${escapeHtml(letter.reply_to)}">${escapeHtml(letter.reply_to)}</a> (your reply below goes there too, you copied)` : "\u00B7 no address: your reply waits at their pickup URL"}
       \u00B7 ${escapeHtml(letter.date)}
       ${actions}
       <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/archive" style="display:inline"><button type="submit">Archive</button></form>

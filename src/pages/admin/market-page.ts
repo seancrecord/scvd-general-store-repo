@@ -56,7 +56,7 @@ function candidatesHtml(
     .join("\n");
   if (candidates.length === 0) {
     return `<h3>Post a round of bounties</h3>
-    <p class="menu-desc">No ready doors on the latest round to offer — the list is built from the round's own rows, never from anything a seller nominated.</p>`;
+    <p class="menu-desc">No doors on the latest round to offer — the list is built from the round's own rows (ready, or not ready with a price the round could read), never from anything a seller nominated.</p>`;
   }
   const rows = candidates
     .map((candidate) => {
@@ -88,9 +88,18 @@ function candidatesHtml(
                   ? `<br><small>needs $${candidate.min_reward_usd.toFixed(2)}</small>`
                   : ""
             }`;
+      /*
+       * WHICH KIND OF OFFER THIS IS (2026-09-28). A not_ready door on
+       * this desk is here because the round read a price at it and
+       * nobody has tested the verdict with money; the failed checks
+       * are printed so the keeper knows what a walk here would settle.
+       */
+      const houseSaid = candidate.house_said
+        ? `<br><small><strong>house said not ready</strong> (${escapeHtml(candidate.house_said.join(", ") || "no check named")}) — a paid walk tests that</small>`
+        : "";
       return `<tr>
       <td><input type="checkbox" name="url" value="${escapeHtml(candidate.url)}"${candidate.blocked ? " disabled" : ""}></td>
-      <td>${escapeHtml(candidate.domain)}<br><small>${escapeHtml(candidate.url.slice(0, 70))}</small></td>
+      <td>${escapeHtml(candidate.domain)}<br><small>${escapeHtml(candidate.url.slice(0, 70))}</small>${houseSaid}</td>
       <td>${price}</td>
       <td>${history}</td>
       <td><small>${escapeHtml(candidate.blocked ?? "")}</small></td>
