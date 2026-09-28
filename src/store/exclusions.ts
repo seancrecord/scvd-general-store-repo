@@ -145,6 +145,15 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 12,
     crawler_names: 74,
   },
+  {
+    date: "2026-09-28",
+    what_changed:
+      "The Internet Archive's crawler joined the named search-crawler list in lib/crawlers.ts, the second table this classifier reads since the 2026-09-22 row. archive.org_bot (+http://archive.org/details/archive.org_bot) put 6,470 requests through in one day, the keeper's biggest traffic day, and was on neither table — so every one of them booked as organic, and its knocks on the buy doors as organic 402s, the column the store reasons about demand from. It is the Wayback Machine, an archive index by its operator's own published description: it wants the page, it can never pay, and a copy of this store in the archive is distribution the store wants. The table printed here (the self-describing hints) did not change size, which is why the pin let this land without a row; the row is written the same day, per the 2026-09-22 lesson.",
+    effect:
+      "The organic 402 count and every per-surface organic count stop taking this crawler's requests from the deploy on. Today's rows keep their write-time bucket in the counters, but the raw rows carry the user-agent, so the recount page re-reads them under this table and names archive.org_bot among its movers — that recount is the honest figure for 2026-09-28, not the day counter. No settle moved: it never paid and cannot.",
+    house_wallets: 12,
+    crawler_names: 74,
+  },
 ];
 
 export interface NamedExclusions {
