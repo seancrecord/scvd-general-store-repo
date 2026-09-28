@@ -1,6 +1,6 @@
 # SCVD distribution: channels and records
 
-Reconciled September 23, 2026. Start here to find the record; human actions
+Reconciled September 24, 2026. Start here to find the record; human actions
 stay in [KEEPER_LIST](KEEPER_LIST.md#directory-and-listings-press-is-yours-rule-30),
 builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
 
@@ -18,11 +18,21 @@ builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
 | Who have we contacted about citations? | [Scorers register](registry/scorers-outreach.json); its [table](registry/scorers-outreach.md) is generated. `note_sent` refers to the scorers note, not any issue or submission. |
 | What evidence supports this pass? | [September 17 findings and receipts](research/distribution-2026-09-17/README.md), [prior admission reconciliation](research/distribution-admission-2026-09-16/README.md), and [spec readings](docs/SPEC_READS.md). |
 
+## September 24 readback
+
+[Release and distribution evidence](research/roadmap-followthrough-2026-09-24/README.md):
+#904 is merged; the focused guide and five host-history views match source.
+All 39 discovery signals are present. Awesome Copilot rejected #3255 as outside
+the repository's fit; the other 18 checked requests remain open. Tab 0.11.2 is
+visible on npm and active/latest in the official MCP Registry. ClawHub's
+publication workflow succeeded; public scan/admission status was not checked.
+
 ## September 23 follow-through
 
 September 24 packaging follow-up: [portable plugin, skill and Tab release preparation](registry/portable-release-2026-09-24.md).
-The post-merge publication sequence and the unresolved Claude submission are
-recorded there; prepared versions are not claimed as registry publications.
+The publication sequence and unresolved Claude submission are recorded there;
+the September 24 readback above distinguishes confirmed registry versions from
+workflow completion and unverified public admission.
 
 [AgentERC](https://agenterc.com/explore/base/86957) and [WithAI.Top](https://withai.top/tool/scvd-store) are confirmed public listings. x402-list now contains all 35 current paid product URLs; official MCP Registry versions agree on direct retry. [MCP.so #4325](https://github.com/chatmcp/mcpso/issues/4325) and [MCPpedia #172](https://github.com/BbekShr/MCPpedia/issues/172) request correction of their Wrangler connection instructions; changes are not yet confirmed. Own acceptance and publication gaps remain in [#803](https://github.com/seancrecord/scvd-general-store-repo/issues/803) and [#805](https://github.com/seancrecord/scvd-general-store-repo/issues/805). [Dated evidence and limits](research/distribution-2026-09-23/README.md).
 
@@ -47,7 +57,7 @@ ERC-8004 follow-through: [September 23 closeout and resume triggers](research/er
 | Destination | Existing asset / observed status | Admission route or remaining gate |
 | --- | --- | --- |
 | OpenAI / ChatGPT | [Verifier plugin published](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212); keeper reports the skill update completed September 17 | Upload/update task closed; review and publication status of that update have not been independently checked; [packet](registry/openai-plugin-verifier-submission.md). GitHub changes do not update uploaded skills. |
-| Awesome Copilot | Root Agent Plugins package submitted as [#3255](https://github.com/github/awesome-copilot/issues/3255); 0.2.4 automated skill/manifest/install gates passed at immutable pin `e7f6c068` | Maintainer review pending. Continue this issue. |
+| Awesome Copilot | Root Agent Plugins package submitted as [#3255](https://github.com/github/awesome-copilot/issues/3255); 0.2.4 automated skill/manifest/install gates passed at immutable pin `e7f6c068` | Rejected September 24 as not a fit for the repository; issue closed. Automated gates did not establish admission. No resubmission planned without materially changed fit. |
 | GitHub Agent Finder | [PR #34](https://github.com/github/agentfinder-catalog/pull/34) already includes both skills plus MCP/plugin entries | Existing review; [drawer](registry/agentfinder/README.md). Tab's previous registry-version blocker is cleared; it is not thereby in this PR. |
 | Cursor | [Cursor Directory listing](https://cursor.directory/plugins/scvd-general-store-repo) was updated September 18: current name/description/keywords, both skills, and pinned Tab configuration. [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md). Official publisher application **submitted September 17; review pending**. [Receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json). | Both MCP servers loaded and free preflight passed in Cursor CLI. Both skills remained absent in normal Agent mode and a portable-only control; [recheck](research/distribution-2026-09-17/observations/cursor-agent-mode-recheck.json). Native desktop qualification remains. Marketplace acceptance is unverified. |
 | Claude community marketplace | **Submitted September 17 for Claude Code; current status unresolved.** September 23 portal shows “No submissions yet” in the submitting account; [evidence added to the existing dashboard report](https://github.com/anthropics/claude-plugins-official/issues/6290#issuecomment-5799240583). No duplicate submission. [Receipt](research/distribution-2026-09-17/observations/claude-publisher-submission.json). | Follow-up Claude Code 2.1.274 test loaded both skills and completed a plugin-scoped free preflight; [receipt](research/distribution-2026-09-17/observations/claude-host-qualified-followup.json). Marketplace install and Cowork remain untested. Contributor Chrome DevTools moved to an explicit development config. Official curated marketplace has no application route. |

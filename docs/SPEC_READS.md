@@ -2530,3 +2530,17 @@ it does not infer wallet readiness or read/consume the payment client's body.
 Generated-client verification used an isolated local Worker and temporary keys,
 including independent receipt verification and refusal after revocation. No
 production acceptance, third-party registration or payment was exercised.
+
+### 2026-09-24 — release and distribution status readback
+
+Read the [Awesome Copilot decision](https://github.com/github/awesome-copilot/issues/3255#issuecomment-5807092082)
+and the existing submission/correction records through GitHub's public API:
+[19-request receipt](../research/roadmap-followthrough-2026-09-24/admissions.json).
+Awesome Copilot is rejected/closed; the other 18 checked records are open. No
+private review portals, inboxes or complete PR review-thread audit were read.
+The public [npm Tab record](https://registry.npmjs.org/scvd-tab/latest) and
+[official MCP Tab record](https://registry.modelcontextprotocol.io/v0.1/servers/store.scvd%2Ftab/versions/latest)
+expose 0.11.2; this is version/metadata readback, not tarball or native-host
+qualification. The [release receipt](../research/roadmap-followthrough-2026-09-24/README.md)
+records the guide/history comparison and discovery availability. No protocol
+change, new admission, external message or buyer qualification is claimed.

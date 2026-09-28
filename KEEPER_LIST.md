@@ -37,13 +37,14 @@ build, it is on the roadmap.
   Research and any future build stay off this desk; implementation reference
   is ROADMAP L4. No paid attempt is designated by this entry.
 
-- **Portable package refresh, September 24 — LOOK after merge.** Run the
-  [three publication actions in order](registry/portable-release-2026-09-24.md#post-merge-actions-in-order):
-  Tab npm, Tab MCP registry, then ClawHub skill. The portable plugin updates from
+- **Portable package refresh, September 24 — publication runs completed.** The
+  [three publication workflows](registry/portable-release-2026-09-24.md#publication-sequence-retained-for-reference)
+  succeeded; npm and the official MCP Registry expose Tab 0.11.2. Do not rerun
+  publication. The portable plugin updates from
   the repository; existing immutable submission pins do not update themselves.
   Claude's missing submission remains on the existing Anthropic report, with no
-  reply as of September 24. Gemini remains paused. Merge the skill publication
-  receipt afterward; a submitted upload is not proof it has cleared public scans.
+  reply as of September 24. Gemini remains paused. The skill publication receipt
+  merged in #909; public scan clearance remains separate from that upload receipt.
 
 - **源·ORIGIN (issue #874), read and answered, 2026-09-21/22 — LOOK when their door serves.**
   A cold co-building invite: their own L1, a premined token, a "Founding
@@ -1237,7 +1238,9 @@ what you ruled and what is still yours to look at.
   On the keeper's authorization, Awesome Copilot
   [#3255](https://github.com/github/awesome-copilot/issues/3255) was submitted;
   automated validation, both skills and install checks passed again for 0.2.4
-  at immutable pin `e7f6c068`; maintainer review pending.
+  at immutable pin `e7f6c068`. **Closed / rejected September 24:** the maintainer
+  said it is not a fit for the repository. [Dated readback](research/roadmap-followthrough-2026-09-24/README.md).
+  No outstanding review or repeat-submission press for this request.
   8004scan [#51](https://github.com/alt-research/8004scan-issue-tracker/issues/51)
   was filed after fresh reproduction. [trust8004 #1](https://github.com/trust8004/requests-issues/issues/1)
   now records its freshly reproduced source/cached-field mismatch. No duplicate requests needed. Other operator
@@ -1416,7 +1419,7 @@ what you ruled and what is still yours to look at.
   confirms both skills and MCP/plugin descriptors are already in the request,
   superseding the September 11 missing-entry instructions. Continue that PR;
   do not submit duplicate entries. Awesome Copilot is a separate issue-form
-  channel, submitted as #3255 above. Hugging Face: CV reports a submission; paste the link so
+  channel; #3255 was rejected September 24, as recorded above. Hugging Face: CV reports a submission; paste the link so
   it gets a row (nothing on file says where). The tab still has no
   entry in that PR; its registry-version blocker is now cleared.
 
