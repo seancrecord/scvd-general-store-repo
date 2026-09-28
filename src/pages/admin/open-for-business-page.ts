@@ -2,7 +2,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { OpenForBusinessDraft } from "@/services/open-for-business";
 import type { OpenForBusinessIssue } from "@/services/open-for-business-store";
-import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
+import { OPEN_FOR_BUSINESS_USDC, OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE } from "@/store/copy/open-for-business";
 
 /**
  * THE DRAFT, ON THE DESK. The instruments lay the tables and derive
@@ -45,7 +45,7 @@ export function renderOpenForBusinessPage(data: OpenForBusinessPageData): string
     ${data.notice ? `<p><strong>${escapeHtml(data.notice)}</strong></p>` : ""}
     <p><small>The weekly issue for sellers, drafted by the instruments from the same readers the desk uses. <strong>It goes on the shelf on its own</strong> on the first hourly firing after the week closes (${escapeHtml(data.nextAutomatic.week)}, about ${escapeHtml(data.nextAutomatic.at.slice(0, 16).replace("T", " "))} UTC), as it stands then. Publish it early from the box below and the press leaves your version alone; take any issue down from the shelf list.
     ${d.unread.length > 0 ? `<strong>Readers that did not answer:</strong> ${d.unread.map(escapeHtml).join(", ")}.` : "Every reader answered."}</small></p>
-    <p><small><strong>Counted window:</strong> ${escapeHtml(d.window.from)} to ${escapeHtml(d.window.to)} (${d.window.days} days of ${escapeHtml(d.window.month)}, ${d.window.reason === "holds_most_of_the_week" ? "the month that holds most of the week" : "the month under way; the week's own month has not begun"}). The counters are monthly; days of the week outside that month are not counted.</small></p>
+    <p><small><strong>Counted window:</strong> ${d.window.days === 0 ? `nothing yet: the week counters went live on ${escapeHtml(OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE)}` : `${escapeHtml(d.window.from)} to ${escapeHtml(d.window.to)}, ${d.window.days} days of ${escapeHtml(d.window.week)}${d.window.whole ? ", the whole week" : ""}`}. The counters are the week's own since ${escapeHtml(OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE)}.</small></p>
     <p><strong>The number of the week:</strong> ${d.number_of_the_week ? `${escapeHtml(d.number_of_the_week.sentence)} <small>(${escapeHtml(d.number_of_the_week.source)})</small>` : "<em>the instruments did not produce one; yours to pick</em>"}</p>
   </section>
   ${sections}

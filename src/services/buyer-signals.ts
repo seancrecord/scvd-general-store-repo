@@ -1,4 +1,4 @@
-import { KV_KEYS } from "@/lib/kv-keys";
+import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import { metricsMonth, verifyAgeBucket } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
@@ -201,8 +201,9 @@ export interface BuyerSignals {
   verify_age: Record<string, number>;
 }
 
-function key(kind: string, month: string): string {
-  return KV_KEYS.metric(month, "signals", kind);
+/** One key per kind per period: a month, or the week twin. */
+function key(kind: string, period: string): string {
+  return KV_KEYS.metric(period, "signals", kind);
 }
 
 async function readMap(env: Env, kind: SignalKind, month: string): Promise<Record<string, number>> {
@@ -222,21 +223,32 @@ async function readMap(env: Env, kind: SignalKind, month: string): Promise<Recor
  * read-modify-write, a floor under contention with every cap it had,
  * stated on the page.
  */
+/**
+ * THE WEEK TWIN (2026-09-28). Every map is bumped twice, once under
+ * the month and once under the ISO week, so Open for Business — a
+ * weekly — reads its week and not a month to date. Same store, same
+ * caps, same "other"; the period key is the only difference
+ * (lib/kv-keys.ts routes a week to its own prefix on the KV path).
+ */
 async function bumpMap(env: Env, kind: SignalKind, entry: string, cap = SIGNAL_MAP_CAP): Promise<void> {
   if (!BUYER_SIGNALS_ENABLED) return;
-  const month = metricsMonth();
+  const now = new Date();
+  await Promise.all([metricsMonth(now), currentWeekKey(now)].map((period) => bumpPeriod(env, period, kind, entry, cap)));
+}
+
+async function bumpPeriod(env: Env, period: string, kind: SignalKind, entry: string, cap: number): Promise<void> {
   const store = signalStore(env);
   if (store) {
-    await store.bump({ month, kind, entry, cap: STRANGER_KEYED[kind] });
+    await store.bump({ month: period, kind, entry, cap: STRANGER_KEYED[kind] });
     return;
   }
-  const map = await readMap(env, kind, month);
+  const map = await readMap(env, kind, period);
   if (map[entry] === undefined && Object.keys(map).length >= cap) {
     map["other"] = (map["other"] ?? 0) + 1;
   } else {
     map[entry] = (map[entry] ?? 0) + 1;
   }
-  await kvPut(env.COUNTERS, key(kind, month), JSON.stringify(map));
+  await kvPut(env.COUNTERS, key(kind, period), JSON.stringify(map));
 }
 
 /** A stranger's string becomes part of a key: same scrub as the client census. */
@@ -272,8 +284,13 @@ export async function recordSettleSignal(env: Env, signal: SettleSignal): Promis
   }
   const purpose = sanitizeText(signal.purpose, 280);
   if (!purpose) return;
-  const month = metricsMonth();
-  const raw = await kvGet(env.COUNTERS, key("purposes", month));
+  const now = new Date();
+  // The month's list and the week's, the same row on each (the week twin, bumpMap above).
+  await Promise.all([metricsMonth(now), currentWeekKey(now)].map((period) => appendPurpose(env, period, { item: signal.item, day: now.toISOString().slice(0, 10), purpose })));
+}
+
+async function appendPurpose(env: Env, period: string, row: PurposeRow): Promise<void> {
+  const raw = await kvGet(env.COUNTERS, key("purposes", period));
   let rows: PurposeRow[] = [];
   try {
     rows = raw ? (JSON.parse(raw) as PurposeRow[]) : [];
@@ -282,8 +299,8 @@ export async function recordSettleSignal(env: Env, signal: SettleSignal): Promis
   }
   if (!Array.isArray(rows)) rows = [];
   if (rows.length >= PURPOSES_CAP) return; // the cap is stated on the page; nothing is evicted
-  rows.push({ item: signal.item, day: new Date().toISOString().slice(0, 10), purpose });
-  await kvPut(env.COUNTERS, key("purposes", month), JSON.stringify(rows));
+  rows.push(row);
+  await kvPut(env.COUNTERS, key("purposes", period), JSON.stringify(rows));
 }
 
 /**
@@ -481,6 +498,7 @@ export async function recordPostPurchaseRead(env: Env, kind: ReadKind, mintedIso
   await bumpMap(env, "reads", `${kind}:${age}`);
 }
 
+/** The month's reading, or with an ISO week key (lib/kv-keys.ts isWeekKey) the week twin's. */
 export async function readBuyerSignals(env: Env, month = metricsMonth()): Promise<BuyerSignals> {
   const store = signalStore(env);
   // One call for the whole month on the store; the KV maps one key each otherwise.

@@ -3,15 +3,14 @@ import { readDisclosureCensus, type DisclosureCensus } from "@/services/disclosu
 import { readDeclines } from "@/lib/declines";
 import { isInfrastructureUserAgent } from "@/lib/channel";
 import { readMonthLedger } from "@/lib/metrics";
-import { metricsMonth } from "@/lib/metrics";
-import { computeObservatory } from "@/services/observatory";
+import { observeSurfaces } from "@/services/observatory";
 import { computePulse, type LatencyRoute } from "@/services/pulse";
 import { MCP_CLIENT_CAP, readMcpClients } from "@/services/mcp-clients";
 import { latestCorpusEntry } from "@/services/corpus-list";
 import { currentWeekKey, previousWeekKey, weekKeyMonday } from "@/lib/kv-keys";
 import { findOpenForBusinessIssue, saveOpenForBusinessIssue, type OpenForBusinessIssue } from "@/services/open-for-business-store";
 import { renderWeekChangesMarkdown, weekBounds, weekChanges, type PullsFetcher, type WeekChanges } from "@/services/week-changes";
-import { OPEN_FOR_BUSINESS_OPENED } from "@/store/copy/open-for-business";
+import { OPEN_FOR_BUSINESS_OPENED, OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE } from "@/store/copy/open-for-business";
 import type { Env } from "@/types";
 
 /**
@@ -46,42 +45,40 @@ import type { Env } from "@/types";
  *
  * WHAT IT READS. Only readers that already exist and already serve
  * the admin desk — buyer signals, the disclosure census, the decline
- * desk, the month ledger, the observatory, the pulse, the MCP client
- * census, the latest signed corpus round. Each is read on its own
- * and a reader that fails leaves its section marked "not read", never
- * a zero pretending to be a count (rule 52).
+ * desk, the ledger, the porch surfaces, the pulse, the MCP client
+ * census, the latest signed corpus round — each under the ISO week's
+ * key (the week twin, since 2026-09-28; lib/kv-keys.ts) rather than
+ * the month's. Each is read on its own and a reader that fails leaves
+ * its section marked "not read", never a zero pretending to be a
+ * count (rule 52).
  */
 
 /**
- * THE COUNTED WINDOW (2026-09-28). Every reader behind this issue
- * keeps one key per month, so a weekly issue cannot read a week: it
- * reads a month to date and must say so. Until this date the draft
- * read the month of the drafting instant and printed "this month",
- * which had two faults. The desk drafted W40 on 2026-09-28 from
- * September, and the press would have drafted the same week as of
- * its last second — 2026-10-04 — from October, so the issue sold
- * was not the issue previewed. And four issues a month re-sold
- * overlapping numbers under a label that never said which days.
+ * THE COUNTED WINDOW (2026-09-28, twice in one day). Every reader
+ * behind this issue kept one key per month, so a weekly could not
+ * read a week: the first cut of this window read the month to date
+ * that held most of the week and printed its dates. The keeper
+ * wanted the full fix, so every writer the issue reads now bumps a
+ * week twin beside the month (lib/kv-keys.ts: a period is a month
+ * or an ISO week, and a week gets its own prefix), and the issue
+ * reads its own week and nothing else.
  *
- * The rule now: the issue reads the month that holds most of its
- * week (the month of the week's Thursday, the same day that gives
- * an ISO week its year), unless that month has not begun at the
- * drafting instant, in which case the month under way. The window
- * is carried on the draft and printed in every label and lead, so
- * "this month" never appears without its dates. Days of the week
- * outside the chosen month are not counted, and the issue says so.
- * A week-keyed twin of the counters would be the real fix; this is
- * the honest one that needs no new counter.
+ * The window is still carried and printed, because it is not always
+ * the whole week: on the desk the week is open and the counters run
+ * to the drafting day, and the twins began on a date
+ * (OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE), so the first issue counts
+ * from that day. A week with no counted days marks every section
+ * unread rather than printing zeros (rule 52).
  */
 export interface CountedWindow {
-  /** The month whose counters the draft reads. */
-  month: string;
-  /** First and last day counted, ISO dates, inclusive. */
+  /** The period the counters are read under: the ISO week. */
+  week: string;
+  /** First and last day counted, ISO dates, inclusive; `to` is before `from` when nothing was counted. */
   from: string;
   to: string;
   days: number;
-  /** Why this month: it holds most of the week, or the week's own month had not begun when the draft was laid. */
-  reason: "holds_most_of_the_week" | "week_month_not_begun";
+  /** True when the window is the whole week: the week closed, and the twins were live for all of it. */
+  whole: boolean;
 }
 
 function isoDay(date: Date): string {
@@ -89,17 +86,13 @@ function isoDay(date: Date): string {
 }
 
 export function countedWindow(week: string, now: Date): CountedWindow {
-  const thursday = weekKeyMonday(week);
-  thursday.setUTCDate(thursday.getUTCDate() + 3);
-  const asOf = new Date(Math.min(now.getTime(), weekCloseInstant(week).getTime()));
-  const weekMonth = metricsMonth(thursday);
-  const begun = `${weekMonth}-01` <= isoDay(asOf);
-  const month = begun ? weekMonth : metricsMonth(asOf);
-  const monthEnd = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0));
-  const to = isoDay(asOf) < isoDay(monthEnd) ? isoDay(asOf) : isoDay(monthEnd);
-  const from = `${month}-01`;
-  const days = Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1;
-  return { month, from, to, days, reason: begun ? "holds_most_of_the_week" : "week_month_not_begun" };
+  const monday = isoDay(weekKeyMonday(week));
+  const sunday = isoDay(weekCloseInstant(week));
+  const asOf = isoDay(new Date(Math.min(now.getTime(), weekCloseInstant(week).getTime())));
+  const from = monday < OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE ? OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE : monday;
+  const to = asOf < sunday ? asOf : sunday;
+  const days = to < from ? 0 : Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1;
+  return { week, from, to, days, whole: from === monday && to === sunday };
 }
 
 /** The window as it reads in a label or a sentence: "2026-10-01 to 2026-10-04". */
@@ -129,8 +122,7 @@ export interface DraftSection {
 
 export interface OpenForBusinessDraft {
   week: string;
-  month: string;
-  /** The days the month-keyed counters cover, printed beside every number. */
+  /** The days the week's counters cover, printed beside every number. */
   window: CountedWindow;
   drafted_at: string;
   number_of_the_week: { sentence: string; source: string } | null;
@@ -262,14 +254,13 @@ function wentWell(signals: BuyerSignals | null, ledger: Awaited<ReturnType<typeo
   };
 }
 
-function entryPoints(observatory: Awaited<ReturnType<typeof computeObservatory>> | null, clients: Record<string, number> | null, ledger: Awaited<ReturnType<typeof readMonthLedger>> | null, window: CountedWindow): DraftSection {
+function entryPoints(surfaces: Awaited<ReturnType<typeof observeSurfaces>> | null, clients: Record<string, number> | null, ledger: Awaited<ReturnType<typeof readMonthLedger>> | null, window: CountedWindow): DraftSection {
   const span = windowSpan(window);
   const numbers: SectionNumber[] = [];
   const rows: Array<[string, number]> = [];
-  const thisMonth = observatory?.months.find((m) => m.month === window.month) ?? null;
-  if (thisMonth) {
-    numbers.push({ label: `organic surface visits, ${span}`, value: thisMonth.organic_visits, note: thisMonth.truncated ? "ledger scan capped; a floor" : undefined });
-    for (const s of [...thisMonth.surfaces].sort((a, b) => b.organic - a.organic).slice(0, ROW_CAP)) rows.push([s.surface, s.organic]);
+  if (surfaces) {
+    numbers.push({ label: `organic surface visits, ${span}`, value: surfaces.organic_visits, note: surfaces.truncated ? "ledger scan capped; a floor" : undefined });
+    for (const s of [...surfaces.surfaces].sort((a, b) => b.organic - a.organic).slice(0, ROW_CAP)) rows.push([s.surface, s.organic]);
   }
   /*
    * THE TILL AGAINST THE DOOR (2026-09-28). The 402s issued and the
@@ -322,9 +313,9 @@ function entryPoints(observatory: Awaited<ReturnType<typeof computeObservatory>>
     : "";
   return {
     heading: "Entry points",
-    lead: (thisMonth
-      ? `Agents arrived through ${thisMonth.surfaces.length} counted surfaces between ${window.from} and ${window.to}; the top of the list is where a seller's own door should be legible first.`
-      : `The observatory did not read ${window.month}.`) + tillClause,
+    lead: (surfaces
+      ? `Agents arrived through ${surfaces.surfaces.length} counted surfaces between ${window.from} and ${window.to}; the top of the list is where a seller's own door should be legible first.`
+      : `The porch did not read ${window.week}.`) + tillClause,
     numbers,
     rows,
     not_seen: [
@@ -333,7 +324,7 @@ function entryPoints(observatory: Awaited<ReturnType<typeof computeObservatory>>
       "A 402 followed by silence is not a lost sale the store can see: a client that never meant to pay and one that gave up on the price print the same.",
       "A client name is machinery only when the machinery table holds it; a directory that pings the door on a loop under a name the table does not know is counted beside the clients.",
     ],
-    unread: !observatory && !ledger && !clients,
+    unread: !surfaces && !ledger && !clients,
   };
 }
 
@@ -481,18 +472,22 @@ function numberOfTheWeek(signals: BuyerSignals | null, corpus: Awaited<ReturnTyp
 export async function draftOpenForBusiness(env: Env, now: Date = new Date(), pulls?: PullsFetcher): Promise<OpenForBusinessDraft> {
   const week = currentWeekKey(now);
   const window = countedWindow(week, now);
-  const month = window.month;
   const unread: string[] = [];
-  // The decline desk is scanned by date, not by month key: the window's days, and no earlier.
+  if (window.days === 0) {
+    // Nothing counted: the week closed before the twins were live. Every reader is "not read", never zero (rule 52).
+    const changes = await attempt("the week's changes", unread, () => weekChanges(env, week, now, pulls));
+    return emptyDraft(week, window, now, changes, unread);
+  }
+  // The decline desk is scanned by date, not by period key: the window's days, and no earlier.
   const dayAfter = new Date(Date.parse(`${window.to}T00:00:00Z`) + 86_400_000).toISOString();
-  const [signals, paid, declines, ledger, observatory, pulse, clients, corpus, changes] = await Promise.all([
-    attempt("buyer signals", unread, () => readBuyerSignals(env, month)),
-    attempt("disclosure census", unread, () => readDisclosureCensus(env, "paid", month)),
+  const [signals, paid, declines, ledger, surfaces, pulse, clients, corpus, changes] = await Promise.all([
+    attempt("buyer signals", unread, () => readBuyerSignals(env, week)),
+    attempt("disclosure census", unread, () => readDisclosureCensus(env, "paid", week)),
     attempt("decline desk", unread, () => readDeclines(env, undefined, { since: `${window.from}T00:00:00.000Z`, before: dayAfter })),
-    attempt("month ledger", unread, () => readMonthLedger(env, month)),
-    attempt("observatory", unread, () => computeObservatory(env, now)),
+    attempt("week ledger", unread, () => readMonthLedger(env, week)),
+    attempt("porch surfaces", unread, () => observeSurfaces(env, week)),
     attempt("pulse", unread, () => computePulse(env)),
-    attempt("mcp client census", unread, () => readMcpClients(env, month)),
+    attempt("mcp client census", unread, () => readMcpClients(env, week)),
     attempt("corpus", unread, () => latestCorpusEntry(env)),
     attempt("the week's changes", unread, () => weekChanges(env, week, now, pulls)),
   ]);
@@ -500,17 +495,34 @@ export async function draftOpenForBusiness(env: Env, now: Date = new Date(), pul
   if (changes && !changes.read) unread.push("the week's changes");
   return {
     week,
-    month,
     window,
     drafted_at: now.toISOString(),
     number_of_the_week: numberOfTheWeek(signals, corpus, window),
     sections: [
       hungUp(signals, declines, paid, window),
       wentWell(signals, ledger, paid, window),
-      entryPoints(observatory, clients, ledger, window),
+      entryPoints(surfaces, clients, ledger, window),
       latency(pulse, corpus),
       whoLooked(signals, window),
     ],
+    fix_of_the_week: renderWeekChangesMarkdown(weekChangeRows),
+    changes: weekChangeRows,
+    unread,
+  };
+}
+
+/** A week with no counted days: every section unread, the fix of the week still derived. */
+function emptyDraft(week: string, window: CountedWindow, now: Date, changes: WeekChanges | null, unread: string[]): OpenForBusinessDraft {
+  const weekChangeRows: WeekChanges = changes ?? { week, read: false, read_at: now.toISOString(), rows: [], truncated: false };
+  if (changes && !changes.read) unread.push("the week's changes");
+  const gone = `The week counters went live on ${OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE}; this week closed before that, and nothing was counted for it.`;
+  const section = (heading: string): DraftSection => ({ heading, lead: gone, numbers: [], rows: [], not_seen: [gone], unread: true });
+  return {
+    week,
+    window,
+    drafted_at: now.toISOString(),
+    number_of_the_week: null,
+    sections: ["Where they got hung up", "What went well", "Entry points", "Latency and the silent turnaway", "Who looked at the record"].map(section),
     fix_of_the_week: renderWeekChangesMarkdown(weekChangeRows),
     changes: weekChangeRows,
     unread,
@@ -531,7 +543,7 @@ export function nextAutomaticIssue(now: Date = new Date()): { week: string; at: 
 
 export interface ClosedWeekPress {
   week: string;
-  outcome: "published" | "already_on_shelf" | "before_opening" | "refused";
+  outcome: "published" | "already_on_shelf" | "before_opening" | "nothing_counted" | "refused";
   issue?: OpenForBusinessIssue;
   refused?: string;
 }
@@ -541,7 +553,8 @@ export interface ClosedWeekPress {
  * closed goes on the shelf if it is not there already. Idempotent per
  * week: a keeper-published issue, or one an earlier firing put up,
  * is never overwritten. Weeks that closed before the shelf opened are
- * skipped, so the first deploy does not sell a week nobody drafted.
+ * skipped, so the first deploy does not sell a week nobody drafted;
+ * so are weeks the week counters never saw (2026-09-28).
  */
 export async function publishClosedWeek(env: Env, now: Date = new Date(), pulls?: PullsFetcher): Promise<ClosedWeekPress> {
   const week = previousWeekKey(currentWeekKey(now));
@@ -549,6 +562,8 @@ export async function publishClosedWeek(env: Env, now: Date = new Date(), pulls?
   if (closedOn < OPEN_FOR_BUSINESS_OPENED) return { week, outcome: "before_opening" };
   const held = await findOpenForBusinessIssue(env, week);
   if (held) return { week, outcome: "already_on_shelf", issue: held };
+  // A week the twins never counted is not sold: an issue of "not read" five times over is not an issue.
+  if (countedWindow(week, weekCloseInstant(week)).days === 0) return { week, outcome: "nothing_counted" };
   const draft = await draftOpenForBusiness(env, weekCloseInstant(week), pulls);
   const result = await saveOpenForBusinessIssue(env, {
     week,
@@ -578,9 +593,9 @@ export function renderOpenForBusinessMarkdown(draft: OpenForBusinessDraft): stri
    * the index (the first prose after the number of the week, per
    * open-for-business-store.ts) is a fact of the week and not the
    * same sentence every week. It also names the counted window once,
-   * so no reader has to infer why a weekly quotes a month to date.
+   * because the first issue and an open week count fewer than seven days.
    */
-  lines.push(`> _The week in agent buying, from the till at scvd.store and the doors it probes. Drafted ${draft.drafted_at.slice(0, 10)}. The counters are monthly, so this issue reads the month to date that ${draft.window.reason === "holds_most_of_the_week" ? "holds most of its week" : "was under way when it was drafted"}: ${draft.window.from} to ${draft.window.to}, ${draft.window.days} days; days of the week outside that month are not counted here. Every number carries the denominator it came from, and every section names what it could not see._`);
+  lines.push(`> _The week in agent buying, from the till at scvd.store and the doors it probes. Drafted ${draft.drafted_at.slice(0, 10)}. Counted ${draft.window.days === 0 ? `nothing: the week counters went live on ${OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE}` : `${draft.window.from} to ${draft.window.to}, ${draft.window.days} days${draft.window.whole ? ", the whole week" : ""}`}. Every number carries the denominator it came from, and every section names what it could not see._`);
   lines.push("");
   for (const section of draft.sections) {
     lines.push(`## ${section.heading}`);

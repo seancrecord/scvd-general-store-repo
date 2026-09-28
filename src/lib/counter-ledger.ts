@@ -18,7 +18,8 @@ import type { Env } from "@/types";
 export function ledgerShardName(key: string, env?: Pick<Env, "COUNTER_LEDGER_FOLLOW_KV">): string {
   if (env?.COUNTER_LEDGER_FOLLOW_KV) return "single";
   const parts = key.split(":");
-  if (parts[0] === "metric" && parts.length >= 3) return `${parts[1]}/${parts[2]}`;
+  // metricw:<week>:<kind> is the week twin of metric:<month>:<kind> (lib/kv-keys.ts); it shards the same way.
+  if ((parts[0] === "metric" || parts[0] === "metricw") && parts.length >= 3) return `${parts[1]}/${parts[2]}`;
   if (parts[0] === "payer" && parts[1]) {
     const address = parts[1];
     return `payer/${address.startsWith("0x") ? address.slice(2, 3) : address.slice(0, 1)}`;

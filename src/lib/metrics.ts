@@ -13,7 +13,7 @@ import { houseWallets, inferChannel, isHouseTraffic } from "@/lib/channel";
 import { counterLedger } from "@/lib/counter-ledger";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
-import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
+import { invertedTimestamp, KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { kvGet, kvGetJson, kvList, kvPut, withKvRetry } from "@/lib/kv-retry";
 /**
  * The venue register is the allowlist for this file's ?src= counters.
@@ -539,6 +539,10 @@ export async function recordChallengeIssued(
     pending.push(
       bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, sharded(event.channel))),
     );
+    if (suffix === "") {
+      // The organic week twin (lib/kv-keys.ts), one more leg of the same wave; the weekly issue reads it.
+      pending.push(bump(env, KV_KEYS.metric(currentWeekKey(), "src402", sharded(event.channel))));
+    }
   }
   if (suffix === "") {
     // Organic day counter for the trend table.
@@ -744,14 +748,19 @@ export async function recordPorchVisit(
   // Aggregate counter alongside the event row, so the porch table
   // reads from a handful of keys instead of scanning event rows.
   const suffix = bucketSuffix(event, true);
-  await bump(
-    env,
-    KV_KEYS.metric(
-      metricsMonth(),
-      `porch${suffix}`,
-      suffix === "" ? `${surface}:${event.channel}` : surface,
+  await Promise.all([
+    bump(
+      env,
+      KV_KEYS.metric(
+        metricsMonth(),
+        `porch${suffix}`,
+        suffix === "" ? `${surface}:${event.channel}` : surface,
+      ),
     ),
-  );
+    // The organic week twin (lib/kv-keys.ts), house and machinery left out: the
+    // weekly issue reads organic surfaces by week and nothing else from here.
+    ...(suffix === "" ? [bump(env, KV_KEYS.metric(currentWeekKey(), "porch", `${surface}:${event.channel}`))] : []),
+  ]);
   if (event.declared_source && !event.house) {
     await bump(
       env,
@@ -844,14 +853,12 @@ export async function recordVerifyCall(
    * voice in a signal this quiet.
    */
   if (mintedIso && !event.house) {
-    await bump(
-      env,
-      KV_KEYS.metric(
-        metricsMonth(),
-        "verifyage",
-        verifyAgeBucket(mintedIso, Date.now()),
-      ),
-    );
+    // The month and its week twin (lib/kv-keys.ts): the weekly issue reads the latter.
+    const bucket = verifyAgeBucket(mintedIso, Date.now());
+    await Promise.all([
+      bump(env, KV_KEYS.metric(metricsMonth(), "verifyage", bucket)),
+      bump(env, KV_KEYS.metric(currentWeekKey(), "verifyage", bucket)),
+    ]);
   }
   await writeEvent(env, event);
 }
@@ -1024,6 +1031,10 @@ async function recordSettlementKeyed(
       KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel),
     ),
   );
+  if (bucketSuffix(event, false) === "") {
+    // The organic week twin (lib/kv-keys.ts): the weekly issue reads settles by week.
+    pending.push(bump(env, KV_KEYS.metric(currentWeekKey(), "src", event.channel)));
+  }
   /**
    * The rail, counted beside the sale rather than inferred from an
    * artifact the sale may not mint. The meter's start instant is

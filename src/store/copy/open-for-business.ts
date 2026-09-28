@@ -18,6 +18,14 @@ export const OPEN_FOR_BUSINESS_NAME = "Open for Business";
 
 export const OPEN_FOR_BUSINESS_OPENED = "2026-09-18";
 
+/**
+ * The first day the week twins of the counters were live (lib/kv-keys.ts,
+ * 2026-09-28): an issue counts its week from this day at the earliest,
+ * and a week that closed before it has no counted days. The keeper's
+ * pen: set it to the deploy day if the release lands later.
+ */
+export const OPEN_FOR_BUSINESS_WEEK_COUNTERS_SINCE = "2026-09-29";
+
 /** The price of one issue, in USDC. The first tier of the quote; the two above it are tips. */
 export const OPEN_FOR_BUSINESS_USDC = 25;
 
