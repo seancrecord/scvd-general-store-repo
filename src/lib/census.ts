@@ -3,6 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Channel, Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
+import { DEFAULT_SCAN_CAP } from "@/lib/scan-cap";
 import { WALK_MIN_ITEMS, WALK_WINDOW_MS, widestWalk } from "@/lib/walkers";
 
 /**
@@ -37,7 +38,6 @@ import { WALK_MIN_ITEMS, WALK_WINDOW_MS, widestWalk } from "@/lib/walkers";
  * column is the settle column, which has an outside witness on chain.
  */
 
-const SCAN_CAP = 3000;
 const LIST_PAGE = 1000;
 
 /** A walk is N distinct items inside this window from one user-agent. */
@@ -45,6 +45,8 @@ const LIST_PAGE = 1000;
 // reclassification walk and the funnel, so the three cannot disagree.
 
 const NO_UA = "(no user-agent)";
+/** The loudest table shows this many; the count above it is the whole set. */
+export const LOUDEST_SHOWN = 10;
 
 export interface CensusClient {
   user_agent: string;
@@ -90,6 +92,18 @@ export interface CensusResult {
   /** …restricted to the ones today's table does not call machinery. */
   looked_and_left_organic: number;
 
+  /**
+   * THE LOUDEST KNOCKERS (2026-09-28). The walk detector catches a
+   * client that reads many price tags in a minute; it cannot see one
+   * that reads the same tag two thousand times. On 2026-09-28 the
+   * recount showed 2,456 organic 402s in 52 minutes while the walk
+   * detector named one client with 94 — the rest came from clients
+   * touching too few doors to be a walk, and no page named them.
+   * Outside clients today's table still calls organic, that never
+   * presented a signature, loudest first: the same set the headline
+   * counts, ordered by how much of it each one is.
+   */
+  loudest: CensusClient[];
   /** Every client whose behaviour is a catalog walk, widest first. */
   walkers: CensusClient[];
   /**
@@ -115,7 +129,7 @@ interface Tally {
  */
 export async function takeCensus(
   env: Env,
-  scanCap = SCAN_CAP,
+  scanCap = DEFAULT_SCAN_CAP,
 ): Promise<CensusResult> {
   const result: CensusResult = {
     rows_scanned: 0,
@@ -125,6 +139,7 @@ export async function takeCensus(
     presented_signature: [],
     looked_and_left: 0,
     looked_and_left_organic: 0,
+    loudest: [],
     walkers: [],
     undeclared_walkers: [],
   };
@@ -250,6 +265,7 @@ export async function takeCensus(
       result.looked_and_left += 1;
       if (client.channel !== "infrastructure") {
         result.looked_and_left_organic += 1;
+        result.loudest.push(client);
       }
     }
     if (client.widest_walk >= WALK_MIN_ITEMS) {
@@ -263,6 +279,8 @@ export async function takeCensus(
   const byWalk = (a: CensusClient, b: CensusClient): number =>
     b.widest_walk - a.widest_walk || b.challenges - a.challenges;
   result.presented_signature.sort((a, b) => b.settles - a.settles);
+  result.loudest.sort((a, b) => b.challenges - a.challenges);
+  result.loudest = result.loudest.slice(0, LOUDEST_SHOWN);
   result.walkers.sort(byWalk);
   result.undeclared_walkers.sort(byWalk);
 

@@ -31,6 +31,7 @@ import type {
 } from "@/services/outreach";
 import { renderTakePage } from "@/pages/admin/take-page";
 import { recountFromRows } from "@/lib/recount";
+import { scanCapFrom } from "@/lib/scan-cap";
 import { computeStats } from "@/services/stats";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { wantsHtml } from "@/pages/simple-page";
@@ -2154,7 +2155,7 @@ adminRoutes.post("/admin/commission/:id/decline", async (c) => {
  */
 adminRoutes.get("/admin/recount", async (c) => {
   const [recount, ledger] = await Promise.all([
-    recountFromRows(c.env),
+    recountFromRows(c.env, scanCapFrom(c.req.query("rows"))),
     readMonthLedger(c.env),
   ]);
   const counterChallenges = Object.values(ledger.items).reduce(
@@ -2464,7 +2465,7 @@ adminRoutes.get("/admin/growth.json", async (c) => {
 });
 
 adminRoutes.get("/admin/census", async (c) => {
-  const census = await takeCensus(c.env);
+  const census = await takeCensus(c.env, scanCapFrom(c.req.query("rows")));
   return c.html(renderCensusPage({ census, catalog_size: MENU_ITEMS.length }));
 });
 

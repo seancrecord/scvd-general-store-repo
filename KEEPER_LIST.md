@@ -891,6 +891,28 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### The day of 14,569 (2026-09-28)
+
+- **READ — `/admin/census?rows=20000`, the loudest knockers.** The day
+  counter went from 3,514 to 14,569 organic 402s between 16:52 and
+  18:37 UTC, three sales. The census and the recount both stopped at
+  3,000 rows, which on that day reached back 46 minutes, past the
+  burst; and the walk detector named one client (`node`, 94 knocks)
+  while the recount read 2,456 organic 402s in the same 52 minutes.
+  The rest came from clients touching too few doors to be a walk. Two
+  things shipped for it: `?rows=N` on the census and the recount, up
+  to 30,000, and a loudest-knockers table on the census listing the
+  outside, still-organic, never-signed clients by 402 count. Open the
+  deep census once and read the top row. A word the machine chose for
+  itself is a dated row in `src/store/exclusions.ts`; a buyer's SDK
+  string is a rate-limit rule on unsigned `/api/buy/*` at Cloudflare,
+  which is your dashboard, not the repo. The rows live 90 days, so
+  this keeps. Cloudflare analytics is off, so the census is the only
+  witness; the recount's counter column also ran far under its rows
+  in that window (about 4 a minute against 47), which is the counters
+  losing increments under concurrent knocks, the expected direction,
+  and means the true day figure is above 14,569, not below.
+
 ### The decline desk's research sweeper (2026-09-28)
 
 - **RULE — is `Mozilla/5.0 (research)` machinery?** Your 09-28 reading
