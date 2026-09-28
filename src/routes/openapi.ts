@@ -1,3 +1,4 @@
+import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { getAddress } from "viem";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
@@ -1249,6 +1250,7 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
         difference: { type: "string" },
       },
     },
+    inspection: ENDPOINT_INSPECTION_SCHEMA,
     protocols_spoken: {
       type: "array",
       items: { type: "string", enum: ["x402", "mpp"] },

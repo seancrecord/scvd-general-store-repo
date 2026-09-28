@@ -29,6 +29,36 @@ process.exit(exitCodeFor([result]));
 npx scvd-preflight https://door.example/api/paid https://door.example/api/other --fail-on not_ready
 ```
 
+## Inspect an endpoint (0.3.0)
+
+```js
+import { inspectOne, renderInspectionLines } from "scvd-preflight";
+
+const result = await inspectOne("https://door.example/api/paid");
+console.log(renderInspectionLines(result).join("\n"));
+process.exit(result.inspectionExitCode);
+```
+
+This uses the same hosted preflight once and preserves its full response.
+`result.inspection` separates reachability, the set of observed protocols,
+advertised term summaries, structural findings, observation time and gaps.
+Terms are unverified advertisements, not complete payment instructions.
+Omitted terms have explicit counts; no artifact signature is verified and
+no payment is signed or submitted. Settlement and delivery remain unchecked.
+
+Inspection exits `0` when a response was inspected, including MPP-only,
+unknown-protocol and partial readings with gaps. It exits `2` for a refused
+request, and `3` for an unavailable observation: unreachable endpoint,
+unresolved method, exhausted probe budget, store failure, or a missing,
+malformed or unsupported inspection block. Zero does not mean payment-ready.
+An empty protocol set describes only that response, never endpoint-wide absence.
+Older stored reports keep `inspection: null`; their verdict is not converted
+into evidence the old instrument did not record.
+
+`preflightOne`, `exitCodeFor` and the `scvd-preflight` command retain their
+existing x402 deploy-gate behavior. For a dedicated inspection command,
+use `scvd inspect <url>` from `scvd-cli` 0.4.0.
+
 ## The exit law
 
 | code | meaning |

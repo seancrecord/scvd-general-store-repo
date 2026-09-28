@@ -4,6 +4,7 @@ import { buyerLinks } from "@/lib/buyer-contract";
 import { VERIFICATION_SKILL } from "@/store/verification-skill";
 import { readMppCore, type MppCoreBlock } from "@/services/mpp-core";
 import { parseJws } from "../../verifier/x402-verify.js";
+import { INSPECTION_VERSION, INSPECTION_TERM_LIMIT, type EndpointInspection } from "../../x402-preflight/inspection.js";
 import { CONFLICT } from "@/services/conformance";
 import { type RemediationRow, remediationRows } from "@/services/remediation";
 import { type MppBlock, runMppChecks } from "@/services/mpp-battery";
@@ -708,6 +709,8 @@ export interface PreflightReport {
   mpp: MppBlock;
   /** Additive observable draft-01 core reading; absent in older stored reports. */
   mpp_core?: MppCoreBlock;
+  /** Unpaid observation view; absent in historical reports. The x402 verdict is unchanged. */
+  inspection?: EndpointInspection;
 }
 
 function report(
@@ -728,12 +731,13 @@ function report(
     /** What the probe did about the method. Absent only where no probe ran. */
     method?: ProbeMethodReading;
     mppCore?: MppCoreBlock;
+    observation?: { url: string; at: Date; outcome?: ProbeOutcome; accepts?: Record<string, unknown>[] };
   } = {},
 ): PreflightReport {
   const battery = options.battery ?? PREFLIGHT_VERSION;
   const vector = triStateVector(checks, verdict === "method_unresolved" ? options.method : undefined);
   const level = reachedLevel(vector, verdict === "unreachable");
-  return {
+  const result: PreflightReport = {
     version: battery,
     verdict,
     reached_level: level,
@@ -756,7 +760,7 @@ function report(
         ? methodNote(options.method)
         : "Probed with GET.",
     },
-    mpp_core: options.mppCore ?? readMppCore({ status: null, headers: { get: () => null }, url: "", now: new Date() }),
+    mpp_core: options.mppCore ?? readMppCore({ status: null, headers: { get: () => null }, url: "", now: options.observation?.at ?? new Date() }),
     single_probe_note:
       options.method && options.method.attempted.length > 1
         ? `One moment, two requests: the first ${options.method.attempted[0]} was refused as a method, so this reading is of the ${options.method.used} that followed. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.`
@@ -773,6 +777,62 @@ function report(
     this_is_not_advice:
       "This is an observation, not advice. It says what was seen and what was not; whether that is enough to spend on is yours to decide, and you know your own risk appetite better than we ever will.",
   };
+  if (options.observation) {
+    const { url, at, outcome, accepts } = options.observation;
+    const observed = verdict !== "unreachable" && verdict !== "method_unresolved";
+    const core = result.mpp_core!;
+    const incompleteHeader = core.state === "unmeasured"
+      || core.checks.some((check) => check.name === "challenge-syntax" && check.state !== "pass");
+    const terms = <T, U>(entries: T[] | undefined, project: (entry: T) => U) => ({
+      state: entries ? "read" as const : "unobserved" as const,
+      // BOUNDED-READ-SAFE: omitted terms carry their own denominator; never payment instructions.
+      entries: (entries ?? []).slice(0, INSPECTION_TERM_LIMIT).map(project),
+      total: entries?.length ?? 0,
+      omitted: Math.max(0, (entries?.length ?? 0) - INSPECTION_TERM_LIMIT),
+    });
+    const x402Terms = terms(observed ? accepts : undefined, (entry) => Object.fromEntries(
+      ACCEPT_REQUIRED_FIELDS.map((field) => [field, typeof entry?.[field] === "string" ? entry[field] as string : null]),
+    ));
+    const mppTerms = terms(observed && result.mpp.spoken
+      ? result.mpp.challenges : undefined, (entry) => ({ ...entry }));
+    const gaps = [
+      "One response at one moment; no uptime or future freshness guarantee.",
+      ...core.gaps,
+      ...(!observed ? ["The intended endpoint response was not observed; protocol absence and payment readiness are unknown."] : []),
+      ...(outcome?.bodyOverLimit ? ["The response body exceeded the existing parser limit; body-dependent findings have gaps."] : []),
+      ...(x402Terms.omitted || mppTerms.omitted ? ["Advertised terms exceed the summary limit; omitted counts are published per protocol."] : []),
+      ...(observed && incompleteHeader ? ["MPP core could not completely read the challenge header; an empty protocol set is not proof of absence."] : []),
+    ];
+    result.inspection = {
+      version: INSPECTION_VERSION,
+      subject_url: url,
+      observed_at: at.toISOString(),
+      reachability: { state: observed ? "responded" : verdict as "unreachable" | "method_unresolved",
+        http_status: outcome?.response.status ?? null, method: outcome?.method.used ?? null },
+      protocols: {
+        state: !observed ? "unobserved" : incompleteHeader || outcome?.bodyOverLimit ? "partial" : "read",
+        observed: result.protocols_spoken,
+        scope: "Only this response: x402 header presence and parsed MPP challenges. Unknown protocols are outside this reader; an empty set does not prove endpoint-wide absence.",
+      },
+      terms: {
+        trust: "unverified_advertisement",
+        scope: "Selected advertised fields only, not complete payment instructions. Extension fields are omitted; no choice, signature binding or payment authorization is implied.",
+        limit_per_protocol: INSPECTION_TERM_LIMIT, x402: x402Terms, mpp: mppTerms,
+      },
+      structure: {
+        x402: { battery, verdict, checked: checks.length, failed: checks.filter((c) => !c.ok).map((c) => c.name) },
+        mpp: { battery: result.mpp.battery, checked: result.mpp.checks.length, failed: result.mpp.checks.filter((c) => !c.ok).map((c) => c.name) },
+        mpp_core: { battery: core.battery, state: core.state, checked: core.checks.length,
+          failed: core.checks.filter((c) => c.state === "fail").map((c) => c.name),
+          unmeasured: core.checks.filter((c) => c.state === "unmeasured").map((c) => c.name) },
+      },
+      coverage: { body: !observed ? "unobserved" : outcome?.bodyOverLimit ? "over_limit" : "read", mpp_core: core.state },
+      signatures: { state: "not_checked", reason: "Offer shape checks are structural only. No issuer key was resolved and no artifact signature was verified." },
+      unperformed: ["artifact_signature_verification", "payment_signing", "payment_submission", "settlement", "delivery"],
+      gaps,
+    };
+  }
+  return result;
 }
 
 export interface PaidWalksOnRecord {
@@ -2233,8 +2293,9 @@ async function preflightUrlInner(
    */
   headers?: Record<string, string>;
   /**
-   * THE ACCEPTS THIS PROBE PARSED, handed back to the caller and NOT
-   * added to the served body (#96, 2026-08-28). The payment dry run
+   * THE FULL ACCEPTS THIS PROBE PARSED, handed back to the caller
+   * (#96, 2026-08-28). The served inspection contains only a bounded
+   * summary of selected fields, never these complete entries. The payment dry run
    * needs the same accepts the battery just read, and the one thing
    * it must not do is knock a second time: two probes are two
    * moments, and a door that changed between them would have the
@@ -2372,10 +2433,11 @@ async function preflightUrlInner(
           ok: false,
           detail: `the probe could not complete: ${String(error)}. This is a fact about the network path between us and that host at this moment — it does not prove the endpoint is down, and a buyer elsewhere may reach it fine.`,
         },
-      ], [], { battery }),
+      ], [], { battery, observation: { url: url.toString(), at: new Date() } }),
     };
   }
 
+  const observedAt = new Date();
   const ran = runChecks(
     outcome.response,
     outcome.bodyOverLimit,
@@ -2405,7 +2467,7 @@ async function preflightUrlInner(
             detail: ran.method_note ?? methodNote(outcome.method),
           },
         ],
-        { battery, method: outcome.method },
+        { battery, method: outcome.method, observation: { url: url.toString(), at: observedAt, outcome } },
       ),
     };
   }
@@ -2417,7 +2479,7 @@ async function preflightUrlInner(
    */
   const mpp = runMppChecks({ headers: outcome.response.headers, url: url.toString(), bodyText: outcome.body });
   const mppCore = readMppCore({ status: outcome.response.status, headers: outcome.response.headers,
-    url: url.toString(), bodyText: outcome.body, bodyOverLimit: outcome.bodyOverLimit, now: new Date() });
+    url: url.toString(), bodyText: outcome.body, bodyOverLimit: outcome.bodyOverLimit, now: observedAt });
   /*
    * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
    *
@@ -2527,6 +2589,7 @@ async function preflightUrlInner(
       mpp,
       method: outcome.method,
       mppCore,
+      observation: { url: url.toString(), at: observedAt, outcome, accepts },
       alsoUnder: {
         version: otherVersion,
         verdict: otherVerdict,

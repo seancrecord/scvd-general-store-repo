@@ -2558,3 +2558,17 @@ issuer authorization, or implement another algorithm. The source bytes and
 selection rationale are retained in [the PS5 record](../research/verifier-ps5-2026-09-28/README.md).
 This is local implementation work; publication and model activation are not
 established by reading a specification or passing offline tests.
+
+### 2026-09-28 — PS6 observation contract
+
+Re-read the pinned [x402 v2 specification](https://github.com/x402-foundation/x402/blob/a9955ae5538e5531557405091910136a2a2864c8/specs/x402-specification-v2.md)
+and [MPP core draft-01](https://github.com/tempoxyz/mpp-specs/blob/2e3de24c07a9218456bd8814d6746a0dad941d06/specs/core/draft-httpauth-payment-01.md).
+The inspection view keeps challenge observation separate from authorization,
+signature verification, settlement and delivery. It projects the existing
+readers and their limitations; no protocol interpretation or payment mechanism
+is added. The frozen MPP draft-00 summary and additive draft-01 core remain
+separate, and the x402 verdict keeps its prior meaning.
+
+Source hashes, validation and release limits: [PS6 record](../research/endpoint-inspection-2026-09-28/verification.json)
+and [implementation](ENDPOINT_INSPECTION_2026-09-28.md). Buyer/model qualification
+was excluded by keeper direction.

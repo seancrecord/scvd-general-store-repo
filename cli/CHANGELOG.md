@@ -5,6 +5,13 @@ version forever (0.1.1 exists because of that). Minor versions add
 commands and never change an existing command's output shape or exit
 code; a change to either is a major.
 
+## 0.4.0 — 2026-09-28
+
+Add `scvd inspect <url>` using the existing unpaid preflight endpoint and
+the same inspection reader as `scvd-preflight`. Separate observation exits
+from the existing commands; preserve whole JSON and label terms unverified.
+No new payment, key-resolution or signature-verification path.
+
 ## 0.3.0 — 2026-09-10
 
 - Add `corpus-index [--limit <n>] [--cursor <cursor>]`: one metadata page,

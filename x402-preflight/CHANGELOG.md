@@ -4,6 +4,13 @@ Versions are immutable once published. Minor versions add functions and
 never change an existing function's result shape or an exit code; a
 change to either is a major.
 
+## 0.3.0 — 2026-09-28
+
+Add `inspectOne`, the versioned inspection reader, a dedicated inspection
+exit policy and a safe text renderer. Preserve the hosted observation whole;
+old reports remain unavailable instead of gaining invented measurements.
+Ship replay fixtures and declarations. Existing deploy-gate behavior is unchanged.
+
 ## 0.2.0 — 2026-09-19
 
 Ships `fixtures/exit-law.json`: the deploy gate's exit law as data —

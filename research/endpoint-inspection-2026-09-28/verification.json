@@ -1,0 +1,216 @@
+{
+  "date": "2026-09-28",
+  "baseMerge": {
+    "pr": 920,
+    "commit": "aed49b8841018b97f08cc893a84c70fce3a69fbf",
+    "mergedAt": "2026-09-28T18:17:33Z",
+    "checks": "All four CI shards and check passed."
+  },
+  "status": "PS6 local implementation; unmerged, unpublished; buyer/model qualification excluded.",
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/x402-foundation/x402/a9955ae5538e5531557405091910136a2a2864c8/specs/x402-specification-v2.md",
+      "sha256": "cb66bdef710298233316b02d48fce4a9417ec5449ed9cab7f5d9fe6a454920cd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tempoxyz/mpp-specs/2e3de24c07a9218456bd8814d6746a0dad941d06/specs/core/draft-httpauth-payment-01.md",
+      "sha256": "30dd795d27e3b0df832daffdcf2441975d10099a01a6e8f74aece19d9500d54c"
+    }
+  ],
+  "validation": {
+    "redBeforeImplementation": {
+      "hosted": {
+        "failed": 7,
+        "reason": "inspection block absent"
+      },
+      "library": {
+        "failed": 1,
+        "reason": "new exports absent"
+      },
+      "cliSourceStashed": {
+        "failed": 8,
+        "passed": 30
+      },
+      "cardSourceStashed": {
+        "failed": 1,
+        "passed": 20
+      }
+    },
+    "hostedRegression": {
+      "files": 8,
+      "passed": 136,
+      "command": "npm test -- test/endpoint-inspection.spec.ts test/openapi-typed-shapes.spec.ts test/mcp-apps.spec.ts test/preflight.spec.ts test/preflight-batteries.spec.ts test/mpp-battery.spec.ts test/mpp-core.spec.ts test/mcp-tool-catalog-budget.spec.ts"
+    },
+    "finalHostedIntegration": {
+      "files": 8,
+      "passed": 90,
+      "command": "npm test -- test/endpoint-inspection.spec.ts test/openapi-typed-shapes.spec.ts test/mcp-apps.spec.ts test/mcp-tool-catalog-budget.spec.ts test/packages.spec.ts test/bounded-read-honesty.spec.ts test/preflight-stated-limits.spec.ts test/self-row-blocker.spec.ts"
+    },
+    "node": {
+      "passed": 62,
+      "command": "node --test x402-preflight/*.test.mjs cli/*.test.mjs action/preflight/*.test.mjs"
+    },
+    "typecheck": "npm run typecheck passed",
+    "build": "npm run build:check passed",
+    "installedConsumers": {
+      "javascript": "passed",
+      "strictTypeScript": "compiled and ran",
+      "cli": "passed",
+      "network": "local HTTP mock only"
+    },
+    "countNote": "Focused suites overlap; do not sum their counts as distinct tests.",
+    "retainedFixtureReplay": {
+      "command": "npm test -- test/endpoint-inspection.spec.ts",
+      "passed": 10,
+      "note": "Explicit comparison with retained JSON projections; missing records fail instead of creating snapshots."
+    }
+  },
+  "packages": [
+    {
+      "name": "scvd-preflight",
+      "version": "0.3.0",
+      "tarballSha256": "cbc2ac1f9cfe139253a3cb4bda94a6228efe2504a068d63bcc8e0aa8a1895d63",
+      "installedSourceMatches": [
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "c65f016220baaa35b15140908d2f93d40d8905ea67b9a063f82278b6e794d694"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+        },
+        {
+          "path": "README.md",
+          "sha256": "defa4e76d77753ef0a8d08f47a573808ff3cbcfe1fa5447e211fe68820053d3d"
+        },
+        {
+          "path": "bin.mjs",
+          "sha256": "ff92d61a65f6abcd4d0f9e950da127324e4dbfdcebd1ac22fee27b45a1eab5cd"
+        },
+        {
+          "path": "example.mjs",
+          "sha256": "997aae0b2f8104cb42257c054f6f027fb7a728d15f2b1b8f2cda4fe8291f5c47"
+        },
+        {
+          "path": "fixtures/accepts-empty.json",
+          "sha256": "aa518ae230051033c30464164ffe56f4ed53807a9911124ac0fb690254750625"
+        },
+        {
+          "path": "fixtures/exit-law.json",
+          "sha256": "890b8e86226eced2303fc90c78c29c937eee84c1a2c0345cb4bcae5ee8861622"
+        },
+        {
+          "path": "fixtures/inspection-inputs.json",
+          "sha256": "f98ed3e95134a258335ad3eb2d20c3fb1802096d7ed8122b310054377769b45a"
+        },
+        {
+          "path": "fixtures/inspection/method-unresolved.json",
+          "sha256": "9ff9cd660190bf626235a54722e6c796bcff6989e1945c84a3ccb429b0fbdcf1"
+        },
+        {
+          "path": "fixtures/inspection/mixed.json",
+          "sha256": "23cd28f0f435da39f05c1006f3be70bbdb09210714ab2ea7c768aeb0671a7e1b"
+        },
+        {
+          "path": "fixtures/inspection/mpp-only.json",
+          "sha256": "fd8b7d1411682ca52b8d05c737c0b4be5dce1b1d8f37642da83e41ac5c3aa9a7"
+        },
+        {
+          "path": "fixtures/inspection/over-limit.json",
+          "sha256": "fa25fb4c67cb7566a198e81bbfffdc03ed15513f271704440c2bc98593b35ca0"
+        },
+        {
+          "path": "fixtures/inspection/unknown.json",
+          "sha256": "6f4875b8fc8e837a2b6547cf825400879820b24aa9a03606357cd3b49a087ab9"
+        },
+        {
+          "path": "fixtures/inspection/unreachable.json",
+          "sha256": "42ec603ab83adce688f92043a06aee5bd2fddcf243f809b44781bb455754bdb8"
+        },
+        {
+          "path": "fixtures/inspection/x402-only.json",
+          "sha256": "379d9d9d2c44077d7445118625fe35cee9090f22a0cc5d041bbcb727d38b2f4a"
+        },
+        {
+          "path": "fixtures/ready-would-sign.json",
+          "sha256": "02a9ab094d76a67c38060d3942a451bfbff6847b67521a7c20204a0ea3454df9"
+        },
+        {
+          "path": "fixtures/unreachable.json",
+          "sha256": "88553f4d3767b897f07cc2e2ff3c08433f6c38758f8dfc588f82e6b25701c2c5"
+        },
+        {
+          "path": "inspection.d.ts",
+          "sha256": "64b3d98b1aed4ac13bd164429bbfb27bb67f2ad33f0b229138ec842c3392cb25"
+        },
+        {
+          "path": "inspection.js",
+          "sha256": "53983fded377f38cec0222d6d9dc457d4c09979784a55a3f47e6dcba59aee84d"
+        },
+        {
+          "path": "package.json",
+          "sha256": "de2ab2215f220bebd194fb52b3b321399d8f680538acbe7a2667efcaba960c78"
+        },
+        {
+          "path": "x402-preflight.d.ts",
+          "sha256": "0ef997af1936a5b0217c712d05390d9732566c2bb3f8b0aeece3b35de77fa49b"
+        },
+        {
+          "path": "x402-preflight.js",
+          "sha256": "e384a13b761f35b8fe39447cd0d05722ec127e3c48a4792a88e3aa936bab215d"
+        }
+      ],
+      "installation": "Fresh offline local tarball; no registry publication or registry-install claim."
+    },
+    {
+      "name": "scvd-cli",
+      "version": "0.4.0",
+      "tarballSha256": "7d313a5c7751e9a171affb5e92c819413b75c5d957a475021b695dd79d0c8125",
+      "installedSourceMatches": [
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "8f6f56e0717525b8e7a7acfa3d215b57ade3bdcbbaa585aa06e5e33beec341d9"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+        },
+        {
+          "path": "README.md",
+          "sha256": "72a5173f8e73510126e3870d01940a1c3d985bf6a147f714ce113d121df185bc"
+        },
+        {
+          "path": "inspection.js",
+          "sha256": "53983fded377f38cec0222d6d9dc457d4c09979784a55a3f47e6dcba59aee84d"
+        },
+        {
+          "path": "package.json",
+          "sha256": "371097c12bde17e3eb7d6341c891d33e29e978cda7d9f4e0fa5843f3d112f2e6"
+        },
+        {
+          "path": "scvd.mjs",
+          "sha256": "b283efe8bfaf88f84e8200d93dfa0836f036378ece420e8a2e9f43aa33d758a6"
+        }
+      ],
+      "installation": "Fresh offline local tarball; no registry publication or registry-install claim."
+    }
+  ],
+  "remaining": [
+    "Full merge CI",
+    "Deployment readback",
+    "Package publication and registry installs",
+    "Buyer/model explanation qualification deferred by keeper",
+    "Live WebMCP browser registration not exercised"
+  ],
+  "sourceHashes": {
+    "src/services/preflight.ts": "dd3f6cc1e59e12fcfdcfbdc1b4e1da0c483138f007ac6f90392db89b25f0863d",
+    "src/lib/endpoint-inspection-schema.ts": "3ecb707c9004f603e45ab4d466a034d7ebc4fe9b6df91ee51c900f0051e1e50e",
+    "src/lib/mcp-apps.ts": "3da84757a4be748e0ab8c6d1e3fb376fc9d9291a5d15f9202c324733763e71a2",
+    "src/lib/mcp-tools.ts": "e08b758f55a44aad5bda8b88bf29be107ce3c17a7a7165e1a6803e5edfd8435a",
+    "src/routes/openapi.ts": "75b3d0bb73feb56adfa7f084e783090857143134131272e4b95042231980c6a0",
+    "src/routes/preflight.ts": "d372fb9694096b5d12a464c9dad64fe747fe4c4cd0d7a8c082b0d0b61129b3eb",
+    "test/endpoint-inspection.spec.ts": "ed7f1dff98e7e8fcd35a74b0b0b3b7a6af82622afacaed2a9f7686e1712cc80c",
+    "test/fixtures/mpp/x402-and-mpp.json": "876e0dffd925a615c04ac48749a108d1f28532c361944989ad12a7e7b049d4a8",
+    "test/fixtures/mpp/evm-clean.json": "69f6fa654fa5c08dd133af0888cc36ed8e209f102b51cc23f027331140b1f071"
+  }
+}
