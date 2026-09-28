@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/sanitize";
+import { deeperScanNote } from "@/lib/scan-cap";
 import type { RecountResult } from "@/lib/recount";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { cannotSeeHtml } from "@/pages/admin/reading-limits";
@@ -104,7 +105,7 @@ export function renderRecountPage(data: RecountPageData): string {
     <p>The counters are read-modify-write against KV; they lose increments under
     concurrent traffic and can read stale. The rows don't: one row per event,
     unique key, no contention. This page asks the rows.</p>
-    <p><strong>${r.rows_scanned}</strong> rows read${r.capped ? " (scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.
+    <p><strong>${r.rows_scanned}</strong> rows read${r.capped ? " (scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.${deeperScanNote(r.capped)}
     Window: ${escapeHtml(r.oldest_row ?? "—")} → ${escapeHtml(r.newest_row ?? "—")}.</p>
     <p>By kind: ${Object.entries(r.by_kind)
       .map(([kind, count]) => `${escapeHtml(kind)} ${count}`)

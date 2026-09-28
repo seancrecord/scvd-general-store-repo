@@ -1,6 +1,7 @@
 import type { CensusClient, CensusResult } from "@/lib/census";
-import { CENSUS_WALK_RULE } from "@/lib/census";
+import { CENSUS_WALK_RULE, LOUDEST_SHOWN } from "@/lib/census";
 import { escapeHtml } from "@/lib/sanitize";
+import { deeperScanNote } from "@/lib/scan-cap";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { cannotSeeHtml } from "@/pages/admin/reading-limits";
 
@@ -96,7 +97,7 @@ export function renderCensusPage(data: CensusPageData): string {
   const body = `
   <section>
     <h2>The census</h2>
-    <p><strong>${c.rows_scanned}</strong> rows read${c.capped ? " (scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.
+    <p><strong>${c.rows_scanned}</strong> rows read${c.capped ? " (scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.${deeperScanNote(c.capped)}
     Window: ${escapeHtml(c.oldest_row ?? "—")} → ${escapeHtml(c.newest_row ?? "—")}.</p>
     <p>We keep no cookies and no IPs, so a <em>client</em> here is a distinct
     user-agent string. Two agents behind one default SDK string count once; one
@@ -112,6 +113,19 @@ export function renderCensusPage(data: CensusPageData): string {
     </table>
     ${censusVerdict}
     ${presentedTable}
+  </section>
+
+  <section>
+    <h2>The loudest knockers</h2>
+    <p>The walk detector below catches a client that reads many price tags in a
+    minute. It cannot see one that reads the same tag two thousand times, and on
+    a loud day that is where the organic 402 column comes from. These are the
+    outside clients today's table still calls organic that never presented a
+    signature — the <strong>${c.looked_and_left_organic}</strong> counted above —
+    loudest first, the top ${LOUDEST_SHOWN}. A client here that is not also a
+    walker is polling a few doors, not shopping: a monitor, a scanner, or a
+    buyer's retry loop that never signs.</p>
+    ${clientTable(c.loudest, data.catalog_size, "No outside client saw a 402 in this window.")}
   </section>
 
   <section>
