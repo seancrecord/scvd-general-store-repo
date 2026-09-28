@@ -183,13 +183,22 @@ export interface BoundedVerification {
   doesNotEstablish: string[];
   checks: VerifyCheck[];
   issuer: { kid: string | null; keyUrl: string | null };
-  /** The free hosted desk that reproduces this check. */
+  /** Free hosted verification desk; its input contract is separate from package envelope support. */
   verificationUrl: string;
   payload?: Record<string, unknown>;
 }
 
+/** Unsigned x402 transport wrapper. Verification inputs remain unknown and are validated. */
+export interface JwsExtensionArtifact {
+  format: "jws";
+  signature: string;
+  /** Offers only; unsigned and never matched to payment terms by this API. */
+  acceptIndex?: number;
+  payload?: never;
+}
+
 export interface VerifyReceiptInput {
-  /** The compact JWS from the receipt. */
+  /** A compact JWS or x402 JWS extension envelope. */
   receipt: unknown;
   /** Where the issuer publishes its key: a DID document URL or a bare JWK / { publicKeyHex } document. Never taken from the artifact. */
   issuerKeyUrl?: string;
@@ -198,6 +207,7 @@ export interface VerifyReceiptInput {
 }
 
 export interface VerifyOfferInput {
+  /** A compact JWS or x402 JWS extension envelope; acceptIndex remains unsigned. */
   offer: unknown;
   issuerKeyUrl?: string;
   publicKey?: string | Uint8Array;

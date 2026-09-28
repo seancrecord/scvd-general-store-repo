@@ -5,7 +5,7 @@
   "provenance": {
     "license": "MIT",
     "generatedBy": "verifier/vector-tools/generate.mjs",
-    "generatorSha256": "21d6fd396946477d1f6b8610802e0fe546385c57fc80482b8cb01f01f25e157b",
+    "generatorSha256": "396ab1973ba8f66c5c43fcf381aa72277478bdc8f875d6be68f6c805efb29154",
     "helperSha256": "a1b5f85cd7a05f20e5ba8cceac241729a45a6ea981f9064f580ec4b9736bd5a3",
     "lockSha256": "c386cab744fe3732f77bf53e7ec1d7c3780db7bb085c737c044bfee5555dd7e3",
     "dependencies": {
@@ -50,6 +50,19 @@
         "readDate": "2026-09-16"
       },
       {
+        "id": "x402-jws-envelope-2026-09-28",
+        "url": "https://raw.githubusercontent.com/x402-foundation/x402/a9955ae5538e5531557405091910136a2a2864c8/specs/extensions/extension-offer-and-receipt.md",
+        "revision": "a9955ae5538e5531557405091910136a2a2864c8",
+        "sha256": "51151bd2b7dd174bc4a44b712234c074e45ca6c752c44ce077a94a4d97596ae9",
+        "readDate": "2026-09-28",
+        "sections": [
+          "2",
+          "3.1",
+          "3.1.1",
+          "4.1.1"
+        ]
+      },
+      {
         "id": "rfc8037",
         "revision": "RFC 8037, January 2017",
         "url": "https://www.rfc-editor.org/rfc/rfc8037"
@@ -69,7 +82,7 @@
       "jws": "Node node:crypto / OpenSSL",
       "eip712": "ethers 5.8.0 / elliptic 6.6.1"
     },
-    "runtimeQualification": "See research/verifier-ps2-2026-09-16/verification.json; versions are observations, not generator inputs."
+    "runtimeQualification": "See research/verifier-ps2-2026-09-16/verification.json and research/verifier-ps5-2026-09-28/verification.json; versions are observations, not generator inputs."
   },
   "families": [
     {
@@ -77,11 +90,12 @@
       "curve": "Ed25519",
       "specification": [
         "x402",
+        "x402-jws-envelope-2026-09-28",
         "rfc8037"
       ],
       "independentVectors": true,
-      "implemented": "compact JWS signature and local revision-1 profile",
-      "expectedUnsupported": "format-labelled object envelope",
+      "implemented": "compact JWS or x402 JWS envelope signature and local revision-1 profile",
+      "expectedUnsupported": null,
       "runtimeTargets": [
         "node",
         "workerd"
@@ -96,7 +110,7 @@
       ],
       "independentVectors": true,
       "implemented": false,
-      "expectedUnsupported": "unsupported_algorithm for well-formed compact JWS",
+      "expectedUnsupported": "unsupported_algorithm for well-formed compact JWS or JWS envelope",
       "runtimeTargets": [
         "node",
         "workerd"
@@ -111,7 +125,7 @@
       ],
       "independentVectors": true,
       "implemented": false,
-      "expectedUnsupported": "unsupported_algorithm for well-formed compact JWS",
+      "expectedUnsupported": "unsupported_algorithm for well-formed compact JWS or JWS envelope",
       "runtimeTargets": [
         "node",
         "workerd"
@@ -182,11 +196,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "c0374655854dbb74272107cee1a58be14d506aa9423a0e2bf5f2c24e2ce9a2ac"
+      "sha256": "bdf487bd48050b25d5c3ba4c0c3e7cacbef18ffbfe148820e22e1b8df78c6d8b"
     },
     {
       "family": "EdDSA",
@@ -222,11 +237,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "8af89f02490bde0b793ab62f9eeefd4905de4996a304102ae0041b8e46cfb71e"
+      "sha256": "545231e97fa8d71269cd325d8a576831f14df059b941d3820d291c5a4fcaf960"
     },
     {
       "family": "EdDSA",
@@ -262,11 +278,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "3fabcb082d4fbc92e1e771d12988b2338a52a268a2714f78028dd59b77f5e7b1"
+      "sha256": "5d16c54a252ad31b6811f0eeb9f981872592d067190a8f3b6b1626d8fc331197"
     },
     {
       "family": "EdDSA",
@@ -302,11 +319,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "dc88911dc76a5d34722f7f56170fa0573fde0a5bcc5328ba60ca468cca36ee06"
+      "sha256": "24254cb39c07aeb4caca05a2d745e584e23e6a47170680f90a1a4e85152e108a"
     },
     {
       "family": "EdDSA",
@@ -340,11 +358,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "f0ce1a85e31ad06ff04220d8357ddf5210a8f97a3add1e2e61592df5963242fd"
+      "sha256": "536c994e70faba9d263f0d87821eca144e48f1851e4e8def3f38da09e2391a3a"
     },
     {
       "family": "EdDSA",
@@ -374,11 +393,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "a36b501fb293834a33a98c01f0dffb25b4144f1bb456f4e2f499056b083b20fc"
+      "sha256": "1c5b1f8fa2ffa81ce7dcd49bc119cf8bb60d8cb0ccc6c426070c39acb29852f2"
     },
     {
       "family": "EdDSA",
@@ -414,11 +434,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "d27637e8f7af45ea2159cc79499aa7f12793c5886d7d45a4a827cbeeb5c92812"
+      "sha256": "1fd60be5b32b846917e2878aadc9b08010f6df1bb17850c27d8627176c3fa538"
     },
     {
       "family": "EdDSA",
@@ -452,11 +473,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "8b7083bbe71edd819a470d05d9b2a33d798677bd9fb9d33265cd215bbe8a2c9b"
+      "sha256": "5eb37b6eccb0985ddafdf86fa1b2cdc8e61b8f07ffc9eb217ab19187618cb6d5"
     },
     {
       "family": "EdDSA",
@@ -492,11 +514,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "52ea49f12da4727b5994140cd765e18b4f6dbb5d9d984ceedd8d1b0bfaf3a0ce"
+      "sha256": "401a0c472f61b20bf15e1159e41a8715f3ad43fe6906d41af41db0e47862b936"
     },
     {
       "family": "EdDSA",
@@ -530,11 +553,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "d8a2721848d4fd6636346f64d311bbdce284f554982380041505f8ba01174580"
+      "sha256": "4f6cbd4130da032cf2c52ba79a43af2aa12f94b18ad66c843b9b411c29bab4da"
     },
     {
       "family": "EdDSA",
@@ -559,20 +583,20 @@
       "case": "labelled-envelope",
       "id": "EdDSA/offer/labelled-envelope",
       "expectedPackage": {
-        "status": "unsupported",
-        "reasons": [
-          "unsupported_format"
-        ]
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
       },
       "provenance": {
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "b590af6a7b8f45942dfcb7e01c2fc064181ab4c92f3f99223f0a80d567324f77"
+      "sha256": "02697d1dba84bdfeb3e8425c2d8feb6a77b69c703dddd3a73947722ae6f5c225"
     },
     {
       "family": "EdDSA",
@@ -603,11 +627,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "c8b3ddd28ab2d7dcaf91684b3625bd16987f2117bf1813c4f39f55b03db51f00"
+      "sha256": "a9bc7809eca4c6dc6eecc64bfb629c649bddd887f15eacd2bd54fd035b7e4a16"
     },
     {
       "family": "EdDSA",
@@ -641,11 +666,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "4f1efba0f53f7be8ab173cb10a7418ee1e8ecad24165770bf47ddb0a475939cf"
+      "sha256": "b1a6fe2aad8f11492ec9a9cd289e8d7739a0c598a8be5c7e47c08d6d1c91ab4e"
     },
     {
       "family": "EdDSA",
@@ -681,11 +707,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "0c5b07f0696943a485983f07c78bdf64381064dbf2de55d1377822ba28f568bc"
+      "sha256": "8c48cc33ea70bf24a5c1b1fc90ba34d5741dff84a9bfa918fde9a8a622dc019f"
     },
     {
       "family": "EdDSA",
@@ -721,11 +748,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "8cd1e1cbfef3bf9202683bf99def4d1dd035a776cd4dcb5071cbc56a7b28608c"
+      "sha256": "2b7f7a894e5044e17c304abb51e392aa4d5b8d990eeb612e13053468bde65a42"
     },
     {
       "family": "EdDSA",
@@ -761,11 +789,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "847e5200a4ecffdd09dc841cf9f87c56873664c46c31c26367c6260eed29f76f"
+      "sha256": "5da68924f38c73128e7630b52be9ec69483b24b5aeec0a25a12a1efa397b4485"
     },
     {
       "family": "EdDSA",
@@ -799,11 +828,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "f3f7c68e8ef6b51eee3f7c300bf9b400b673916d0f166789d0ec25f3355ebecc"
+      "sha256": "2677e9d726450cf22b8422fd2e49e874d26989ae3e3e6c2354112ba347bb5f4c"
     },
     {
       "family": "EdDSA",
@@ -833,11 +863,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "8bf27333b626dc29810ec72cc0358a4c3506c337744d90269ad7eafab40d655c"
+      "sha256": "f75bd13d0ee74d397d12a983994571e8c2a4aea483f1900aa16a40a9302920d6"
     },
     {
       "family": "EdDSA",
@@ -873,11 +904,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "6b5443cf1eef99d2c4996fb0c6863ff92edc7b361d9d00657cad40e96f0710fa"
+      "sha256": "990b5f0ac8d49596577bec8479586cdc75e3fa184107f230f1082c949724860f"
     },
     {
       "family": "EdDSA",
@@ -911,11 +943,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "60928ccb4e8c5c3d725fc26d62ba7955cf413f6d08377948612c15d76e132870"
+      "sha256": "acbb4b90428190b9bb58e2e0a8d48b04a5108f2ab7cf57e899bfc1ff8b24595b"
     },
     {
       "family": "EdDSA",
@@ -940,20 +973,20 @@
       "case": "labelled-envelope",
       "id": "EdDSA/receipt/labelled-envelope",
       "expectedPackage": {
-        "status": "unsupported",
-        "reasons": [
-          "unsupported_format"
-        ]
+        "status": "valid",
+        "reasons": [],
+        "signature": "valid"
       },
       "provenance": {
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "537b0a81eb83e17972624322af6f25e9128858df7f1ee6f072b9b59db98a8bb3"
+      "sha256": "dc98b83ebf33e6a34ef60a66fe6a3da9415e989192cf5faa38d273b4c1a21b1c"
     },
     {
       "family": "EdDSA",
@@ -984,11 +1017,12 @@
         "license": "MIT",
         "sources": [
           "x402",
+          "x402-jws-envelope-2026-09-28",
           "rfc8037"
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "edc595c4eef934de978a2921a7712fb3ff2b75f7f8872413558f1082e2ac4134"
+      "sha256": "fbd0fc0f70620062f6f9c6144fba3f10a7617aa42f0ab2d736aa693ae52221ca"
     },
     {
       "family": "ES256",
@@ -1422,8 +1456,9 @@
       "expectedPackage": {
         "status": "unsupported",
         "reasons": [
-          "unsupported_format"
-        ]
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
       },
       "provenance": {
         "license": "MIT",
@@ -1433,7 +1468,7 @@
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "5c45930fe9608792cc5216c4bbf4d632b2972a320cdd626361e48aba33029cf8"
+      "sha256": "b93c5651c4c6b8a4f72ff8d1bdb67c1700ae4170cc4cd4936b836aad4ea432c4"
     },
     {
       "family": "ES256",
@@ -1821,8 +1856,9 @@
       "expectedPackage": {
         "status": "unsupported",
         "reasons": [
-          "unsupported_format"
-        ]
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
       },
       "provenance": {
         "license": "MIT",
@@ -1832,7 +1868,7 @@
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "7d8a664686a4ca89d049b38c30375232cdb96bb0904eef0f3e3443ed8c05ea5f"
+      "sha256": "51f1f1d2bea1814b5092438ccc01b6c299c13424e68420bf3f38519547d59b82"
     },
     {
       "family": "ES256",
@@ -2302,8 +2338,9 @@
       "expectedPackage": {
         "status": "unsupported",
         "reasons": [
-          "unsupported_format"
-        ]
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
       },
       "provenance": {
         "license": "MIT",
@@ -2313,7 +2350,7 @@
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "ea1aea997d34de42094d61d9a57832bc19e65f73538b4adfdf64975b6f070105"
+      "sha256": "469a2cd653d5e152549451f63e40a9a40b80093a12bf4e1b637500e0973417c9"
     },
     {
       "family": "ES256K",
@@ -2701,8 +2738,9 @@
       "expectedPackage": {
         "status": "unsupported",
         "reasons": [
-          "unsupported_format"
-        ]
+          "unsupported_algorithm"
+        ],
+        "signature": "unobserved"
       },
       "provenance": {
         "license": "MIT",
@@ -2712,7 +2750,7 @@
         ],
         "generator": "@noble/curves@1.9.1"
       },
-      "sha256": "c39c3954deb501a8e14511ba9c1293ded0c977e4cdd8a0071a048d1bc24ec19e"
+      "sha256": "a5ca9afdf123e8711fdba50aa31544bdddc8a27f2ffea064a34d0ea5eed3a16e"
     },
     {
       "family": "ES256K",
@@ -3750,9 +3788,9 @@
       "case": "cross-format",
       "id": "eip712/offer/cross-format",
       "expectedPackage": {
-        "status": "unsupported",
+        "status": "invalid",
         "reasons": [
-          "unsupported_format"
+          "malformed_input"
         ]
       },
       "provenance": {
@@ -3763,7 +3801,7 @@
         ],
         "generator": "viem@2.56.3"
       },
-      "sha256": "6229c849e684aa300a9b0eb083f00b79096cb515cff9ff30c6637c2683e0d1d1"
+      "sha256": "5ebf13e385c4ff35dcc2ecec39db2584d3dbc38c412973af8f0199257f215b4c"
     },
     {
       "family": "eip712",
@@ -4748,9 +4786,9 @@
       "case": "cross-format",
       "id": "eip712/receipt/cross-format",
       "expectedPackage": {
-        "status": "unsupported",
+        "status": "invalid",
         "reasons": [
-          "unsupported_format"
+          "malformed_input"
         ]
       },
       "provenance": {
@@ -4761,7 +4799,7 @@
         ],
         "generator": "viem@2.56.3"
       },
-      "sha256": "a3b4e7b6fdd7059ec9515db257c585a9d1ed51c7c025777df4c47d6cb897ac1b"
+      "sha256": "f56810f04972eab43187babaf18d8fc1424ffce57ff761ae356ceb2b5e5e044d"
     },
     {
       "family": "eip712",

@@ -2544,3 +2544,17 @@ expose 0.11.2; this is version/metadata readback, not tarball or native-host
 qualification. The [release receipt](../research/roadmap-followthrough-2026-09-24/README.md)
 records the guide/history comparison and discovery availability. No protocol
 change, new admission, external message or buyer qualification is claimed.
+
+
+### 2026-09-28 — PS5 x402 JWS envelope interoperability
+
+Read the official [Signed Offers & Receipts extension at a pinned revision](https://github.com/x402-foundation/x402/blob/a9955ae5538e5531557405091910136a2a2864c8/specs/extensions/extension-offer-and-receipt.md),
+sections 2, 3.1, 3.1.1 and 4.1.1. JWS envelopes carry a compact `signature`
+and omit a separate `payload`; offer `acceptIndex` is unsigned convenience
+metadata, not binding evidence. Unknown extension fields should be unsupported.
+The package now accepts that transport around its existing Ed25519 local
+revision-1 profile. It does not match `acceptIndex` to payment terms, establish
+issuer authorization, or implement another algorithm. The source bytes and
+selection rationale are retained in [the PS5 record](../research/verifier-ps5-2026-09-28/README.md).
+This is local implementation work; publication and model activation are not
+established by reading a specification or passing offline tests.

@@ -1,6 +1,7 @@
 # x402-verify
 
-Verify an x402 compact JWS receipt or offer against a public key you supply.
+Verify an x402 receipt or offer as compact JWS or a JWS extension envelope
+against a public key you supply.
 Get a structured result that separates a failed check from unsupported
 capabilities and missing evidence. Zero runtime dependencies. MIT.
 
@@ -14,7 +15,7 @@ Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.7.0.tgz
+npm install ./x402-verify-1.8.0.tgz
 ```
 
 Structured status fields require 1.4.0 or newer; older versions may not expose
@@ -114,8 +115,9 @@ The script also ships at `examples/verify-receipt.mjs` inside the package.
 | Input or check | Current capability |
 | --- | --- |
 | Compact JWS, EdDSA / Ed25519 | Signature plus local revision-1 payload profile |
-| ES256 / P-256 or ES256K / secp256k1 compact JWS | `unsupported_algorithm` |
-| Labelled JWS object or EIP-712 envelope | `unsupported_format` |
+| x402 `{ format: "jws", signature }` envelope, EdDSA / Ed25519 | Same signed bytes and local profile; wrapper metadata is unsigned |
+| ES256 / P-256 or ES256K / secp256k1 compact JWS or JWS envelope | `unsupported_algorithm` |
+| EIP-712 or other envelope formats | `unsupported_format` |
 | Key supplied by caller | 32-byte Ed25519 key as hex or bytes |
 | `did:web` lookup | Selected Ed25519 JWK in a DID document |
 | Caller-selected `issuerKeyUrl` | DID document, bare Ed25519 JWK, or `{ publicKeyHex }` |
@@ -127,6 +129,31 @@ The local schema still requires offer `validUntil` and does not check every
 field type in the current extension. See the [independent fixture matrix](fixtures/independent/README.md)
 for signed counterexamples, provenance and unsupported-family controls.
 No SCVD key or issuer receives special treatment; there is no call home.
+
+### JWS extension envelopes
+
+`verifyArtifact`, `verifyOffer` and `verifyReceipt` also accept the x402
+extension wrapper directly. Supply the verification key separately:
+
+```js
+const result = await verifyReceipt({
+  receipt: { format: "jws", signature: compactJws },
+  publicKey: independentlyEstablishedKey,
+});
+```
+
+An offer may include a nonnegative safe-integer `acceptIndex`. It is unsigned:
+changing it does not invalidate the signature, and this API does not match the
+artifact to payment terms. Keep the returned scope and exclusions with the
+result. A separate `payload` is malformed for this envelope; unknown wrapper
+fields are unsupported, including embedded keys or key URLs. Key resolution
+uses only caller inputs or the signed JWS `kid`. Receipt envelopes cannot
+carry `acceptIndex`. Nested wrappers are malformed; detached JWS is unsupported.
+
+This adds package artifact-API support, not a new CLI `verify-source` input
+format or hosted-service contract. The local revision-1 checks and algorithm
+limits above still apply. Version 1.8.0 is source-prepared; this checkout alone
+does not establish npm publication.
 
 ## Capability inventory
 
@@ -142,7 +169,7 @@ console.log(CAPABILITIES.algorithms);            // ["EdDSA"]
 console.log(await runtimeCapabilities());        // { ed25519: "verified", … } on this runtime
 ```
 
-`CAPABILITIES` is the **package**: `artifact_formats` `compact-jws`;
+`CAPABILITIES` is the **package**: `artifact_formats` `compact-jws`, `x402-jws-envelope`;
 `artifact_kinds` `offer`, `receipt`; `algorithms` `EdDSA`; `key_types`
 `Ed25519`; `key_sources` `publicKey`, `issuerKeyUrl`, `did:web`;
 `did_methods` `web`; `payload_schema_versions` `1`; `checks` `parse`,

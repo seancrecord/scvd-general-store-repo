@@ -4,6 +4,20 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## 1.8.0 — source prepared 2026-09-28
+
+**Added.** Artifact, offer and receipt APIs accept the x402 JWS extension
+wrapper (`format: "jws"`, compact `signature`) with the existing Ed25519
+verification and local revision-1 checks. Offer `acceptIndex` is unsigned and
+never establishes agreement with payment terms. Separate payloads, malformed
+indices, receipt indices and unknown wrapper fields are refused before key
+lookup. Wrapper keys never become verification inputs.
+
+Compact-string behavior, algorithms and CLI source formats are unchanged.
+Capability inventory and independent matrix describe the additional transport.
+No runtime dependency added. Local qualification is recorded separately from
+publication and adoption; a version in package.json is not a release receipt.
+
 ## 1.7.0 — source prepared 2026-09-19
 
 **Added.** `CAPABILITIES`, the package's machine-readable inventory of what

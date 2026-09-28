@@ -1,0 +1,273 @@
+{
+  "date": "2026-09-28",
+  "scope": "Local source and synthetic offline qualification; no publication, deployment or buyer/model activation.",
+  "baselineCommit": "06953547620442e11a85cbe53cb34b675d9e3ac4",
+  "runtime": {
+    "node": "v22.13.1",
+    "openssl": "3.0.15+quic",
+    "workerd": "1.20260815.1",
+    "typescript": "5.9.3"
+  },
+  "redGreen": {
+    "command": "node --test verifier/jws-envelope.test.mjs",
+    "baselineSourceSha256": "d516f8d5fed4b2cf330bde7562ef957b88b9884ea3602f069e279f8a59070b9f",
+    "before": {
+      "tests": 23,
+      "passed": 0,
+      "failed": 23,
+      "logSha256": "e937bb18381296a3b76fd13fa93ebdad22ad2d630d7bab304f48707cbf8e3f40"
+    },
+    "after": {
+      "tests": 23,
+      "passed": 23,
+      "failed": 0,
+      "logSha256": "e749578fa97166bc6a77756dcbbd34e17349d436541117a0a13eba526efe1695"
+    }
+  },
+  "checks": [
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logSha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "summary": []
+    },
+    {
+      "command": "npm run evidence:test",
+      "exitCode": 0,
+      "logSha256": "a65998cc924ef342ede5742bb365f655327a016d2392d5994d084837d418afb1",
+      "summary": [
+        "# tests 210",
+        "# pass 210",
+        "# fail 0",
+        "# tests 16",
+        "# pass 16",
+        "# fail 0",
+        "# tests 5",
+        "# pass 5",
+        "# fail 0"
+      ]
+    },
+    {
+      "command": "npm test -- test/verifier-independent-vectors.spec.ts",
+      "exitCode": 0,
+      "logSha256": "0ffde69265d4e33cca31785c04c70f3d78a06b7c7ef85b96d35a91c89d33d070",
+      "summary": [
+        "Test Files  1 passed (1)",
+        "Tests  109 passed (109)"
+      ]
+    },
+    {
+      "command": "npm run build:check",
+      "exitCode": 0,
+      "logSha256": "17dc7b19badc9e45411036da0171d60ea7c78656b41ee58b838b3f21cdac125f",
+      "summary": []
+    },
+    {
+      "command": "npm run verifier:vectors:check",
+      "exitCode": 0,
+      "logSha256": "ed1a82be70c1a6160760c82f7a8474edc50c4b73d9763557493f2c477b5f14a4",
+      "summary": [
+        "90 independent vectors reproduced and checked; domain/signature harness mutants rejected.",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0"
+      ]
+    },
+    {
+      "command": "npm run check --prefix verifier/vector-tools",
+      "exitCode": 0,
+      "logSha256": "8c30418ca806bcae9c8e0ee0287b445e7d3b9f5566dd20d17c408cc60a0c8cdf",
+      "summary": [
+        "90 independent vectors reproduced and checked; domain/signature harness mutants rejected."
+      ]
+    },
+    {
+      "command": "node --test verifier/independent-vectors.test.mjs verifier/jws-envelope.test.mjs verifier/capabilities.test.mjs",
+      "exitCode": 0,
+      "logSha256": "2ed3794934766bcc939f3955b6f3973f2ca38f988bb2700007741c9f8fa4eea7",
+      "summary": [
+        "# tests 124",
+        "# pass 124",
+        "# fail 0"
+      ]
+    }
+  ],
+  "fullRegression": {
+    "status": "passed",
+    "sourceSha256AtStart": "959609527249ec557f2584f7434f3ce7d94dd2b60af473db1b18bbcc18990acd",
+    "finalClarification": "During the full run, scope wording changed from \"Only the compact JWS is authenticated\" to \"Verification covers only the compact JWS\" so an invalid result cannot imply successful authentication. Final focused tests and installed JS/TS consumers passed again; verification logic is unchanged.",
+    "command": "npm test",
+    "exitCode": 0,
+    "logSha256": "efb5bc756e1f82cd301a1cb4bec08d0fc8493c30e60aae779a322ae5f51dcb19",
+    "summary": [
+      "Test Files  835 passed (835)",
+      "Tests  15624 passed | 1 skipped (15625)",
+      "Start at  13:10:27",
+      "Duration  1912.04s (transform 213.25s, setup 23.74s, import 15871.92s, tests 7615.53s, environment 41ms)"
+    ]
+  },
+  "tarball": {
+    "name": "x402-verify",
+    "version": "1.8.0",
+    "filename": "x402-verify-1.8.0.tgz",
+    "integrity": "sha512-+jrbgc2vm+QV7mLIpehgepRPjVqCU4HZmimTxPaXl5/uCBLGTGe2ke4AaNRxYC/kaFj+ijnLnLEzWj0RnnaEQw==",
+    "sha256": "03995ea31573db56177da15b6990f3ff2260f37694580ac47450db382726333e",
+    "install": "npm install --offline --ignore-scripts --no-audit --no-fund ./x402-verify-1.8.0.tgz",
+    "matchedFiles": [
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "e31ba8abc3a530aef6d3b5206ebf3efa59d22042ddd273affd3edaaed4d65bd9"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+      },
+      {
+        "path": "README.md",
+        "sha256": "87cb6a2f168b8ff516751ec1602be180003f29474d16594db364fa2d1f12f451"
+      },
+      {
+        "path": "evidence-bundle.d.ts",
+        "sha256": "62590511eb4438cffaf06fe7032f5f10214729a142cca3348b4ca39c0a85562a"
+      },
+      {
+        "path": "evidence-bundle.js",
+        "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+      },
+      {
+        "path": "evidence-cli.mjs",
+        "sha256": "46b8081af27aa120469256e7caf09aeb5d61f346e1299e7040d1d32b1715b3ec"
+      },
+      {
+        "path": "examples/verify-receipt.mjs",
+        "sha256": "c6824592b1cf2c5025f6994041fc17667eaca6a0e4ee6da18a93204f35cc20d8"
+      },
+      {
+        "path": "fixtures/independent/matrix.json",
+        "sha256": "16f4dc13878f9665f739a8bd06c4861fb9e89289449b9865c68f0ef8c22e501b"
+      },
+      {
+        "path": "fixtures/independent/README.md",
+        "sha256": "179048157b8f75d5c56c68848bc5b49888a29c1e8f3fb4274f4a474b10727b54"
+      },
+      {
+        "path": "fixtures/issuer-key-document.json",
+        "sha256": "09fa3404fca2f70fbdc3ea761421c651d914ab22056aed3d7b0fb3bd17d70756"
+      },
+      {
+        "path": "fixtures/offer-expired-but-wellformed.json",
+        "sha256": "8bd00bc6e0669f729de267744fd590f6dd25b1e77d37374e0e9f240e7279ee9b"
+      },
+      {
+        "path": "fixtures/offer-tampered-payload.json",
+        "sha256": "30a0c7955220d7fa2e38e376ae432e593516ccca821c2c5829bba3d43d3d16f2"
+      },
+      {
+        "path": "fixtures/offer-valid.json",
+        "sha256": "509906bef539a7df8eb9d555281966d1766a6e6a38c7a0457073c4cefeeabda9"
+      },
+      {
+        "path": "fixtures/receipt-missing-payer.json",
+        "sha256": "a071e8bd9a7b18966e31aa9170b57f766032674c210ba6634f77c931f34f6977"
+      },
+      {
+        "path": "fixtures/receipt-valid.json",
+        "sha256": "666bb748b58daa4b7473db2f1b68a0b6b5e97566bc12f902fe0534eaddd4c518"
+      },
+      {
+        "path": "fixtures/receipt-wrong-key.json",
+        "sha256": "8b161596280b9943f1b00a6814cdce0c698b4dafeb9b95c07fd9e5c0aae26586"
+      },
+      {
+        "path": "fixtures/start-here/issuer-key.json",
+        "sha256": "019399acc8a3b59e69f7f29204e86461314ba68549bd38580f5672c5dd7882a6"
+      },
+      {
+        "path": "fixtures/start-here/README.md",
+        "sha256": "6c027dc167ff9523928c37fa74ef151b764a633a44be7a71d49ec39529563bc3"
+      },
+      {
+        "path": "fixtures/start-here/receipt-es256.json",
+        "sha256": "45bdfcae94d63dcc18c05fe6f81388f5819890a196a1e8c44e0e3297352f1092"
+      },
+      {
+        "path": "fixtures/start-here/receipt-tampered.json",
+        "sha256": "07409ebf6846fa09fed38b607b8b227b02c1df71579ec0a6506ea03f1617d1b2"
+      },
+      {
+        "path": "fixtures/start-here/receipt.json",
+        "sha256": "34a6a41737b0e8b86a76c6f923da232be26cf60768a9fc11156c6080df36e3cf"
+      },
+      {
+        "path": "package.json",
+        "sha256": "4bbd7154f7c1e311bb9f738e22c125b7eb25bb91fe1d5e6b5df983c95388e4e3"
+      },
+      {
+        "path": "x402-verify.d.ts",
+        "sha256": "3782ee0d47442c374739db2f41d127ee64d7b215a140f482f86994e72c4947d9"
+      },
+      {
+        "path": "x402-verify.js",
+        "sha256": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017"
+      }
+    ]
+  },
+  "consumers": {
+    "consumer.mjs": {
+      "result": {
+        "checks": 11,
+        "statuses": [
+          "valid",
+          "invalid",
+          "unsupported",
+          "inconclusive"
+        ],
+        "offline": true
+      },
+      "sha256": "42ca3c9fd4a6de3c81e6cd3b7a6ab888eba88ce58c74a371a6773f8099c82cd6"
+    },
+    "consumer.ts": {
+      "result": {
+        "checks": 11,
+        "statuses": [
+          "valid",
+          "invalid",
+          "unsupported",
+          "inconclusive"
+        ],
+        "offline": true
+      },
+      "sha256": "d0bb0e0c86578ac75dcf293170b3c5702580949e59301eb2079142c92acec37f"
+    }
+  },
+  "sourceSha256": {
+    "verifier/x402-verify.js": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017",
+    "verifier/x402-verify.d.ts": "3782ee0d47442c374739db2f41d127ee64d7b215a140f482f86994e72c4947d9",
+    "verifier/fixtures/independent/matrix.json": "16f4dc13878f9665f739a8bd06c4861fb9e89289449b9865c68f0ef8c22e501b",
+    "verifier/vector-tools/generate.mjs": "396ab1973ba8f66c5c43fcf381aa72277478bdc8f875d6be68f6c805efb29154",
+    "verifier/jws-envelope.test.mjs": "d5792e1cb1e593017e3fcb9403670353993b9980fa3b22f25713a41e205a4131",
+    "test/verifier-independent-vectors.spec.ts": "132e0ac607c432c77d5a46b70db29eaf94109625fdbd198896779657f16219a9"
+  },
+  "limits": [
+    "Node 22.13.1 and local workerd only; not a browser, Bun, Deno, minimum-Node or production observation.",
+    "Fixture keys and artifacts are synthetic; no outside issuer adoption or actual payment observed.",
+    "Legacy local revision-1 profile limitations remain; no general conformance claim.",
+    "npm registry latest readback before work was 1.7.0; 1.8.0 is a local source version only.",
+    "Model activation and buyer qualification deferred; PS5 completion gate remains open."
+  ],
+  "initialEnvironmentFailures": [
+    "Temporary-checkout cleanup had removed locked dependencies; restored with npm ci before successful checks.",
+    "Initial sandboxed evidence suite could not open local HTTP fixture servers; rerun with local-runtime permissions passed."
+  ],
+  "localQualificationCommit": "79e07d7c79cd02e67126e9071b4174f9c0024892",
+  "ciFollowup": {
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36460450764",
+    "failure": "Quickstart issuer-key provenance hashes were not regenerated with the independent matrix. Receipt and key bytes were unchanged.",
+    "correction": "node scripts/verifier-start-here.mjs --write",
+    "validation": "npm run verifier:activation:test",
+    "result": "passed; fresh offline installed JavaScript and strict TypeScript quickstarts; no model or buyer invoked",
+    "logSha256": "7a763ad109399e9b4720a6e97d26db05fbccbccc3b3be3c5df0ff167908be8c0",
+    "updatedFixtureSha256": "bcc3df0b80284fb5f2b0403fab42cc5bde7c1ae6d4a81daad0b8d78913b68dc4",
+    "tarballRecordNote": "The original tarball record above belongs to localQualificationCommit; this follow-up changes its provenance-only issuer-key fixture."
+  }
+}
