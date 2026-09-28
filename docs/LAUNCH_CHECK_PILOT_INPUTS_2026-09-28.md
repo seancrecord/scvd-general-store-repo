@@ -171,3 +171,12 @@ completed with exit 0: **15,719 passed, zero failed, one existing skipped test,
 in `test/key-continuity.spec.ts`; this work introduced no skip. The full run
 includes both new pilot suites and supersedes the earlier focused-run caveat
 for this combined tree. Required CI checks still gate any merge.
+
+PR [#930](https://github.com/seancrecord/scvd-general-store-repo/pull/930)
+opened after that run. Main advanced during validation, so `7f0ef9f3` was
+merged into the isolated branch. The only conflict was two additions to
+`docs/SPEC_READS.md`; both dated entries are preserved. The pilot source and
+tests were unchanged. Type checking and build dry runs passed again, followed
+by the full combined-tree suite: **15,743 passed, zero failed, the same one
+existing skip, and all 847 files passed**, exit 0. No partner request or paid
+pilot was run as part of this integration.

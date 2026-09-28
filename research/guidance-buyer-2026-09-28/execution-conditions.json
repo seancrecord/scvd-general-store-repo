@@ -1,0 +1,47 @@
+{
+  "series": {
+    "buyers-conditions.jsonl": {
+      "samples": 92,
+      "ac_samples": 92,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "2e7d43a399c47b0ed9028959ce0936698d66b2b29e3e283ce4eacbf219d3ebf8"
+    },
+    "claude-directed-r1-recipient-conditions.jsonl": {
+      "samples": 18,
+      "ac_samples": 18,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "6a144fda0353311ef8895a5a1416eb327ebcde74723aec83a1d3e22c502ff642"
+    },
+    "claude-directed-r2-recipient-conditions.jsonl": {
+      "samples": 18,
+      "ac_samples": 18,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "476d4cd1648d8bb930b8af360eeb2ea47db9a364f8a5cea0352a837fafac4eb8"
+    },
+    "codex-directed-r1-recipient-conditions.jsonl": {
+      "samples": 20,
+      "ac_samples": 20,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "c4e358173e58e89c75bd4fd9ea63ccdb14faba1dafc74affc3b9b87006caa856"
+    },
+    "codex-directed-r2-recipient-conditions.jsonl": {
+      "samples": 20,
+      "ac_samples": 20,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "5c1f24ee3647f4595df2c04f8d9d3445929856bfb48f2e81b6023a86cdc5226c"
+    },
+    "qualification-conditions.jsonl": {
+      "samples": 44,
+      "ac_samples": 44,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "ae04c45bf7d7b0cedba67f04d771444728e2412ff3f7337328bfcd327e7f92d2"
+    }
+  },
+  "limits": "Sample observations, not continuous proof of host state. No controller tests ran during native acquisition. Runtime timing gaps and stops are recorded individually in runs.json; no native attempt was restarted or granted a larger budget."
+}

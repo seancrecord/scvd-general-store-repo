@@ -1,0 +1,36 @@
+[
+  {
+    "cell": "codex-directed-r1",
+    "challenge": {
+      "file": "evidence/03-endpoint-get.headers.txt",
+      "sha256": "fac1a074c7259ee5f434a10decaa4618aa659e703888ab2c3611ce5c718a9f4f"
+    },
+    "report": {
+      "file": "evidence/journal.md",
+      "sha256": "6565abc36a9b01c2d0f69623b11ed307f07c70721dce821f8d5d73ac5aebc615"
+    },
+    "actual_pay_to": "0x68e3E7822cf83C824cF9606EC999b5e8a93c85B5",
+    "reported_pay_to": "0x68e3E7822cF83C824cF9606EC999b15e8a93c85B",
+    "equal_ignoring_case": false,
+    "actual_address_digest": "78fcd0520cf601a78100dd1307c9016c621246c62f9f0bfb1fa069566038d85e",
+    "reported_address_digest": "e72f2110878d22e533963b337b3eda2ae9baffc199731e4ef5ab12dd121f8b44",
+    "limits": "Public receiving addresses only. Controller comparison of retained original challenge and buyer-authored prose, not a payment or native verification."
+  },
+  {
+    "cell": "claude-directed-r1",
+    "challenge": {
+      "file": "evidence/lionx402_direct_headers.txt",
+      "sha256": "d6cc034e5025766a1c6fbabecec3428d15c4238d841036b6df259e467aaab11f"
+    },
+    "report": {
+      "file": "events.jsonl",
+      "sha256": "68acf2ad3f8e6a511524d28d3a9dd0a15b9e485ba84e0390d49fd5826425f6b4"
+    },
+    "actual_pay_to": "0x68e3E7822cf83C824cF9606EC999b5e8a93c85B5",
+    "reported_pay_to": "0x68e3E7822cf83C824cF9606EC999b5e8a93c85B",
+    "equal_ignoring_case": false,
+    "actual_address_digest": "78fcd0520cf601a78100dd1307c9016c621246c62f9f0bfb1fa069566038d85e",
+    "reported_address_digest": "3d7b56be80b764d238561d5d0440aad47ac7fbf655b2bbede215fed0f5e7ac3c",
+    "limits": "Public receiving addresses only. Controller comparison of retained original challenge and buyer-authored prose, not a payment or native verification."
+  }
+]

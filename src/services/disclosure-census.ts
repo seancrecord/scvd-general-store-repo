@@ -1,4 +1,4 @@
-import { KV_KEYS } from "@/lib/kv-keys";
+import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import { metricsMonth } from "@/lib/metrics";
 import {
@@ -115,8 +115,13 @@ export async function recordDisclosure(
   disclosure: Disclosure,
   returning?: ReturningVerdict,
 ): Promise<void> {
-  const month = metricsMonth();
-  const census = await readDisclosureCensus(env, door, month);
+  const now = new Date();
+  // The month's census and the week twin (lib/kv-keys.ts): the weekly issue reads by week.
+  await Promise.all([metricsMonth(now), currentWeekKey(now)].map((period) => bumpCensus(env, door, period, disclosure, returning)));
+}
+
+async function bumpCensus(env: Env, door: DisclosureDoor, period: string, disclosure: Disclosure, returning?: ReturningVerdict): Promise<void> {
+  const census = await readDisclosureCensus(env, door, period);
   census.offered += 1;
   if (disclosedAnything(disclosure)) census.disclosed += 1;
   else census.ignored += 1;
@@ -133,5 +138,5 @@ export async function recordDisclosure(
   if (returning) {
     census.returning[returning] = (census.returning[returning] ?? 0) + 1;
   }
-  await kvPut(env.COUNTERS, censusKey(door, month), JSON.stringify(census));
+  await kvPut(env.COUNTERS, censusKey(door, period), JSON.stringify(census));
 }

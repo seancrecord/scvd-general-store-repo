@@ -634,9 +634,20 @@ export const KV_KEYS = {
   /** The week's merged pull requests, read from GitHub for Open for Business. COUNTERS. */
   weekChanges: (week: string): string => `week_changes:${week}`,
   peerShelfPrefix: "peer_shelf:",
-  metric: (month: string, kind: string, rest: string): string =>
-    `metric:${month}:${kind}:${rest}`,
-  metricMonthPrefix: (month: string): string => `metric:${month}:`,
+  /**
+   * A PERIOD IS A MONTH OR A WEEK (2026-09-28). Every counter on the
+   * shelf keeps one key per month; Open for Business is a weekly and
+   * read a month to date under the label "this month" until that day.
+   * The writers that feed the issue now bump a week twin beside the
+   * month, under `metricw:<week>:` rather than `metric:<week>:`, so
+   * the scans that walk the whole `metric:` prefix under a key cap
+   * (reconcileSettles) never see them and the month readers stay
+   * exactly as they were. The period's shape picks the prefix here,
+   * so every reader that takes a month takes a week unchanged.
+   */
+  metric: (period: string, kind: string, rest: string): string =>
+    `${isWeekKey(period) ? "metricw" : "metric"}:${period}:${kind}:${rest}`,
+  metricMonthPrefix: (period: string): string => `${isWeekKey(period) ? "metricw" : "metric"}:${period}:`,
   // Canonical, not lowercased: base58 Solana addresses are
   // case-sensitive and a lowercased key orphans the true address.
   // See lib/addresses.ts; legacy lowercased rows are merged by
@@ -852,6 +863,13 @@ export function previousWeekKey(weekKey: string): string {
   const monday = weekKeyMonday(weekKey);
   monday.setUTCDate(monday.getUTCDate() - 7);
   return currentWeekKey(monday);
+}
+
+/** The shape of an ISO week key, "2026-W29": what tells a week period from a month period on the counters. */
+export const WEEK_KEY_SHAPE = /^\d{4}-W\d{2}$/;
+
+export function isWeekKey(period: string): boolean {
+  return WEEK_KEY_SHAPE.test(period);
 }
 
 /** ISO week key like "2026-W29" so inventory resets weekly on its own. */

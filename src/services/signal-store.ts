@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import { currentWeekKey } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 
 /**
@@ -48,6 +49,7 @@ import type { Env } from "@/types";
 export const SIGNAL_KEEP_MONTHS = 6;
 
 export interface SignalBump {
+  /** The period: a month key, or since 2026-09-28 an ISO week key for the week twin the weekly issue reads. The column keeps its name. */
   month: string;
   kind: string;
   entry: string;
@@ -113,13 +115,22 @@ export class SignalStore extends DurableObject<Env> {
     return out;
   }
 
-  /** Drop months older than the keep window. Called by the writer now and then; cheap when there is nothing to drop. */
+  /**
+   * Drop months older than the keep window, and the week twins older
+   * than the same window. Called by the writer now and then; cheap
+   * when there is nothing to drop. Week keys sort after every month
+   * key of their year ("2026-W" > "2026-1"), so the month cutoff
+   * alone would keep a whole year of weeks; they get their own.
+   */
   async reap(now: Date = new Date()): Promise<number> {
     const floor = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - SIGNAL_KEEP_MONTHS, 1));
     const cutoff = `${floor.getUTCFullYear()}-${String(floor.getUTCMonth() + 1).padStart(2, "0")}`;
+    const weekCutoff = currentWeekKey(floor);
     const sql = this.schema();
-    const before = sql.exec<{ n: number }>("SELECT COUNT(*) AS n FROM signals WHERE month < ?", cutoff).one().n;
-    sql.exec("DELETE FROM signals WHERE month < ?", cutoff);
+    const before = sql
+      .exec<{ n: number }>("SELECT COUNT(*) AS n FROM signals WHERE (month NOT LIKE '____-W__' AND month < ?) OR (month LIKE '____-W__' AND month < ?)", cutoff, weekCutoff)
+      .one().n;
+    sql.exec("DELETE FROM signals WHERE (month NOT LIKE '____-W__' AND month < ?) OR (month LIKE '____-W__' AND month < ?)", cutoff, weekCutoff);
     return before;
   }
 

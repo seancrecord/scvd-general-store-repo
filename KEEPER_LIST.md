@@ -26,6 +26,18 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **auth-capture, 2026-09-28 — your "okay do it" and "for r7 we add the
+  scheme".** Both rulings are recorded: R7 is done in
+  `research/protocol-screen/rulings.json` (the trajectory and the
+  weekly brief now count doors per scheme beside doors per chain), and
+  the settlement attestation moved to battery v5 to name contact with
+  the auth-capture escrow set without moving any verdict (roadmap AC1,
+  DONE; the lifecycle observation is AC2, LATER, demand-tagged). The
+  spec on x402 main is byte-identical to the 09-14 pin; the read is in
+  `docs/SPEC_READS.md`. Nothing on this desk for it. LOOK, when a
+  Sunday brief prints a scheme other than `exact`: that is AC2's
+  trigger, and it is the first time the series will have said so.
+
 - **Seven bounties beside your Globally Fluent reply (sent 2026-09-28).**
   Three doors the house calls not ready that the market pays anyway, at
   $0.25 — a paid 200 at any of them is the finding the probe cannot
@@ -881,6 +893,28 @@ Do not relitigate without you.
 ---
 
 ## NEXT — your hands
+
+### The day of 14,569 (2026-09-28)
+
+- **READ — `/admin/census?rows=20000`, the loudest knockers.** The day
+  counter went from 3,514 to 14,569 organic 402s between 16:52 and
+  18:37 UTC, three sales. The census and the recount both stopped at
+  3,000 rows, which on that day reached back 46 minutes, past the
+  burst; and the walk detector named one client (`node`, 94 knocks)
+  while the recount read 2,456 organic 402s in the same 52 minutes.
+  The rest came from clients touching too few doors to be a walk. Two
+  things shipped for it: `?rows=N` on the census and the recount, up
+  to 30,000, and a loudest-knockers table on the census listing the
+  outside, still-organic, never-signed clients by 402 count. Open the
+  deep census once and read the top row. A word the machine chose for
+  itself is a dated row in `src/store/exclusions.ts`; a buyer's SDK
+  string is a rate-limit rule on unsigned `/api/buy/*` at Cloudflare,
+  which is your dashboard, not the repo. The rows live 90 days, so
+  this keeps. Cloudflare analytics is off, so the census is the only
+  witness; the recount's counter column also ran far under its rows
+  in that window (about 4 a minute against 47), which is the counters
+  losing increments under concurrent knocks, the expected direction,
+  and means the true day figure is above 14,569, not below.
 
 ### The decline desk's research sweeper (2026-09-28)
 

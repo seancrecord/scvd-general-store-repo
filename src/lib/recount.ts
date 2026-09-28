@@ -3,6 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent, MetricEventKind } from "@/lib/metrics";
 import type { Channel, Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
+import { DEFAULT_SCAN_CAP } from "@/lib/scan-cap";
 
 /**
  * THE RECOUNT: the books, audited against themselves.
@@ -32,7 +33,6 @@ import { kvList } from "@/lib/kv-retry";
  * out.
  */
 
-const SCAN_CAP = 3000;
 const LIST_PAGE = 1000;
 
 export interface RecountBucket {
@@ -86,7 +86,7 @@ function emptyBucket(): RecountBucket {
  */
 export async function recountFromRows(
   env: Env,
-  scanCap = SCAN_CAP,
+  scanCap = DEFAULT_SCAN_CAP,
 ): Promise<RecountResult> {
   const result: RecountResult = {
     rows_scanned: 0,

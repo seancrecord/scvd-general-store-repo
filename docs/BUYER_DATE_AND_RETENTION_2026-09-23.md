@@ -95,3 +95,7 @@ No new qualification, buyer or recipient ran in this follow-through. The separat
 September 24 cohort froze before #904; its two complete journeys out of four
 remain evidence for that earlier source. Updated-guidance comprehension and
 reduced native file/call use remain unmeasured.
+
+## Separate qualification — September 28
+
+The [new frozen cohort](../research/guidance-buyer-2026-09-28/REPORT.md) completed after fresh release readback and host qualification: **1 complete journey / 4, 3 reporting failures, no incomplete journeys**. All four retained originals verify. One buyer still expands one signed snapshot to four weeks; two others mistype receiving addresses in prose. The recipient handoff also omits the frozen numeric age policy, and one recipient mistypes its computed digest. The [recipient-policy follow-through](BUYER_RECIPIENT_POLICY_2026-09-28.md) now supplies that missing metadata for new handoffs; literal-field reporting remains open. This result does not prove a causal wording effect or reduce previous denominators. Prior reports above retain their dates and scope.

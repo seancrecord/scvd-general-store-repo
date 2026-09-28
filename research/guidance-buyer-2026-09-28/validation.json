@@ -1,0 +1,85 @@
+{
+  "recorded_at": "2026-09-28T18:01:22.944638+00:00",
+  "native_source_commit": "57fea3eb010c91cf7c1c2ded24ffe16f37fdaf35",
+  "repair_applied_after_native_cohort": true,
+  "local_full_suite": {
+    "command": "npm test -- --maxWorkers=2 --reporter=json --outputFile=LOCAL_REPORT",
+    "files": 835,
+    "passed": 15605,
+    "failed": 0,
+    "pending": 1,
+    "success": true,
+    "scope": "Worker sources and tests unchanged during this run. Main advanced by documentation-only PR #917, integrated before commit. The separately executed buyer Node suite validates the handoff repair."
+  },
+  "regression_before_fix": {
+    "tests": 4,
+    "pass": 0,
+    "fail": 4
+  },
+  "buyer_controls_after_fix": {
+    "tests": 246,
+    "pass": 246,
+    "fail": 0
+  },
+  "typecheck": "pass",
+  "build_check": "pass: Worker and SDK dry-run bundles",
+  "docs_check": "pass; dated-document reminders remain advisory",
+  "diff_check": "pass",
+  "frozen_archive_replay": "Full score and provenance hashes match exactly using the retained instrument and locked dependencies; no archive files changed.",
+  "initial_focused_run": "Five synthetic CLI fixture failures because completion metadata was absent, plus one sandbox fixture-server refusal. Updated fixtures to actual runner shape and ran the complete buyer suite with local fixture binding permitted. No assertions or budgets weakened.",
+  "native_record": "Four buyers and four recipients each completed once. Score 1 pass / 4, 3 failures, 0 incomplete. No post-repair native qualification, payment or prior-score revision.",
+  "ci_gate": "All four hosted test shards and aggregate check required before merge; the PR checks retain the final-head result.",
+  "local_validation_archive": "buyer-guidance-policy-validation-2026-09-28",
+  "files": [
+    {
+      "file": "full-tests.json",
+      "bytes": 4919123,
+      "sha256": "0eb4e985cde3ed77f82395b30ccef9e5624cd7087eba110c27ad3f8faa342ca5"
+    },
+    {
+      "file": "full-tests.log",
+      "bytes": 350243,
+      "sha256": "e67aa15e12309aae9b33376c4737290fa42d48a41571956e6116368d9e1ee213"
+    },
+    {
+      "file": "local-check-exits.txt",
+      "bytes": 25,
+      "sha256": "621a305c1dd0f95b3cb07d787be7104b357fda49890f23c272843c012f08f4b7"
+    },
+    {
+      "file": "red.log",
+      "bytes": 4069,
+      "sha256": "d40ada077e037110362adef35b7ad50ccb1c874bc34d583d8cc186f734e059f1"
+    },
+    {
+      "file": "initial-focused.log",
+      "bytes": 17487,
+      "sha256": "630a7c82bfbf511ae1507c9a841a6ed6b7240d6aa0a497b6bc64d5499086768b"
+    },
+    {
+      "file": "buyer-tests.log",
+      "bytes": 48859,
+      "sha256": "c8da644685fda902006468af00f96f496530027f2c1bf544c2721bfaafc8e5c6"
+    },
+    {
+      "file": "build.log",
+      "bytes": 4029,
+      "sha256": "935200e3577feb8b4dcba2d42f8bb9c0a1713d687f95f2b13325665a02c5a561"
+    },
+    {
+      "file": "typecheck.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "docs.log",
+      "bytes": 7333,
+      "sha256": "c0a6340b3389d4ab031d17d817c61590898fc1cc1c51909ff620743f59b07baf"
+    },
+    {
+      "file": "frozen-score-replay.json",
+      "bytes": 16435,
+      "sha256": "b437983e478fa698a694aa457dfca45c733f6d0e335c293fbd5be36a62db80ec"
+    }
+  ]
+}

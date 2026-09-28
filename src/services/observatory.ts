@@ -144,6 +144,16 @@ function surfaceRows(ledger: Awaited<ReturnType<typeof readPorchLedger>>): Surfa
     .sort((a, b) => a.surface.localeCompare(b.surface));
 }
 
+/**
+ * One period's organic surfaces — a month, or an ISO week's twin
+ * (lib/kv-keys.ts) — the same rows the month table shows, for the
+ * weekly issue. The host-page reading stays on the month table.
+ */
+export async function observeSurfaces(env: Env, period: string): Promise<Pick<ObservatoryMonth, "month" | "organic_visits" | "surfaces" | "truncated">> {
+  const ledger = await readPorchLedger(env, period);
+  return { month: period, organic_visits: ledger.organicVisits, surfaces: surfaceRows(ledger), truncated: ledger.truncated };
+}
+
 export async function computeObservatory(env: Env, now: Date = new Date()): Promise<Observatory> {
   const months = monthsSinceOpening(now).slice(-PULSE_MONTHS).reverse();
   const current = metricsMonth(now);
