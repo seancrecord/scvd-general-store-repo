@@ -2260,6 +2260,42 @@ adminRoutes.get("/admin/buyers", async (c) => {
   return c.html(renderBuyersPage(await readBuyers(c.env)));
 });
 
+/**
+ * THE MPP SALES DESK (2026-09-28). The take counted one MPP sale and no
+ * page held the row: who paid, on which transaction, for what. JSON by
+ * Accept, like the purchase inspection it links to.
+ */
+adminRoutes.get("/admin/mpp-sales", async (c) => {
+  const { readMppSaleEvidence } = await import("@/services/mpp-sales");
+  const listing = await readMppSaleEvidence(c.env);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({
+      what_this_is: "Every native-protocol (MPP) sale the monthly ledgers retain, as rows. x402 sales are not here.",
+      ...listing,
+    });
+  }
+  const { renderMppSalesPage } = await import("@/pages/admin/mpp-sales-page");
+  return c.html(renderMppSalesPage(listing));
+});
+
+/**
+ * WHAT THE BOOKS HOLD FOR ONE SETTLEMENT (2026-09-28). The bank walk
+ * pages a hash; this is where the hash goes. Reads our records only —
+ * never the chain — and says which record could not be fully read.
+ */
+adminRoutes.get("/admin/settlement/:tx", async (c) => {
+  const tx = c.req.param("tx").trim();
+  if (!tx || tx.length > 128 || !/^[0-9A-Za-z]+$/.test(tx)) {
+    return c.json({ refusal: "A settlement id is a hex hash (0x…) or a base58 signature; nothing else is looked up." }, 400);
+  }
+  const { lookupSettlement } = await import("@/services/settlement-lookup");
+  const lookup = await lookupSettlement(c.env, tx);
+  return c.json({
+    what_this_is: "Every record this store holds for one settlement, read from our own books and never from the chain. Each field names the record it came from.",
+    ...lookup,
+  });
+});
+
 adminRoutes.get("/admin/disclosure", async (c) => {
   const { readDisclosureCensus } = await import("@/services/disclosure-census");
   const { renderDisclosurePage } = await import("@/pages/admin/disclosure-page");

@@ -119,6 +119,19 @@ export class CounterLedger extends DurableObject<Env> {
     return found;
   }
 
+  /**
+   * EVERY RETAINED SALE, FOR THE DESK (2026-09-28). The keeper could see
+   * "1 MPP sale" on the take and nowhere the row behind it: no page
+   * listed who paid, on which transaction, for what. Same read-only
+   * discipline as the lookups above — no schema, no alarm, no mirror —
+   * and the evidence is returned as stored, for the caller to validate.
+   */
+  async listMppSales(): Promise<string[]> {
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return [];
+    return sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales ORDER BY id").toArray().map(row => row.evidence);
+  }
+
   /** One monthly source, disjoint from every legacy x402 counter. */
   async recordMppSale(sale: MppSaleEvidence): Promise<void> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||
