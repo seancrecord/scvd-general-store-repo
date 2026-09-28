@@ -11,6 +11,7 @@ import { MENU_ITEMS } from "@/store";
 import { catalogRecovery } from "@/lib/catalog-recovery";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 import { DISCLOSURE_PROPERTIES } from "@/lib/disclosure";
+import { inputAliasTable, resolveInputRecord } from "@/lib/input-aliases";
 
 /**
  * Bazaar discovery declarations (x402 v2 extensions.bazaar) for every
@@ -725,9 +726,15 @@ export function missingRequiredInputs(
   item: MenuItem,
   present: Record<string, unknown>,
 ): string[] {
-  const required = buyInputSchema(item).required ?? [];
+  const schema = buyInputSchema(item);
+  const required = schema.required ?? [];
+  // A sibling door's name for the same input counts as supplied
+  // (lib/input-aliases): a buyer who sent ?url= to the door that says
+  // ?urls= brought the input, and is validated on it rather than
+  // refused for its absence.
+  const supplied = resolveInputRecord(Object.keys(schema.properties), present);
   return required.filter((name) => {
-    const value = present[name];
+    const value = supplied[name];
     return value === undefined || value === null || String(value).trim() === "";
   });
 }
@@ -785,13 +792,20 @@ export function requiredParamsNote(item: MenuItem, base?: string): {
   required_params?: string[];
   required_params_note?: string;
   input_contract_url?: string;
+  input_aliases?: Record<string, string[]>;
 } {
-  const required = buyInputSchema(item).required ?? [];
+  const schema = buyInputSchema(item);
+  const required = schema.required ?? [];
   if (required.length === 0) {
     return {};
   }
+  // The sibling doors' names this door also reads (lib/input-aliases),
+  // stated beside the canonical ones so the schema above stays the one
+  // truth and the courtesy is still discoverable.
+  const aliases = inputAliasTable(Object.keys(schema.properties), required);
   return {
     required_params: [...required],
+    ...(Object.keys(aliases).length > 0 ? { input_aliases: aliases } : {}),
     // The full contract, one hop away from the envelope a stock client
     // already holds: the same free page the 400 refusal points at.
     ...(base ? { input_contract_url: `${base}/menu/${item.id}?view=compact` } : {}),

@@ -282,7 +282,11 @@ the door, identifying this skill file, never you. Leave it on.
 1. \`GET ${base}/api/buy/{item_id}?src=skill\` (worked example: \`GET ${base}/api/buy/hello?src=skill\`).
    A bare request answers 402 with \`required_params\` in the body naming
    any input the door needs; a supplied invalid input gets a field refusal
-   instead of terms. Prices and input contracts are also free at
+   instead of terms. A door with required inputs is bought at its
+   \`buy_url_template\` — the same door with each input as a \`<slot>\` to
+   fill, carried by \`${base}/menu.json\`, \`${base}/api/catalog/v1\` and
+   every compact contract — never at the bare door, which quotes but
+   refuses the paid request. Prices and input contracts are also free at
    \`${base}/menu/{item_id}?view=compact\` and \`${base}/api/catalog/v1\`.
 2. We answer \`402 Payment Required\`. Machine-readable terms ride the
    \`PAYMENT-REQUIRED\` response header (base64 JSON): scheme \`exact\`,

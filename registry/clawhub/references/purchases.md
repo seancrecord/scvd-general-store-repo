@@ -9,7 +9,11 @@ wallet signs locally. If the result is lost, recover before buying again.
 
 ### Buying, any shelf (x402 v2)
 
-1. `GET https://scvd.store/api/buy/{item_id}?src=clawhub-skill`
+1. `GET https://scvd.store/api/buy/{item_id}?src=clawhub-skill`. A door
+   with required inputs is bought at its `buy_url_template` — the same
+   door with each input as a `<slot>` to fill, on its row in
+   `https://scvd.store/menu.json` and its compact contract — never at
+   the bare door, which quotes but refuses the paid request.
 2. The store answers `402 Payment Required`; machine-readable terms
    ride the `PAYMENT-REQUIRED` response header (base64 JSON) — scheme
    `exact`, with the enabled checkout networks listed in `accepts`.

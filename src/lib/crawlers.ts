@@ -193,6 +193,17 @@ export const SEARCH_CRAWLERS: readonly string[] = [
   // Brave's index (search.brave.com/help/brave-search-crawler), which
   // also feeds the Search API that agents and RAG pipelines read.
   "Bravebot",
+  /*
+   * THE WAYBACK MACHINE (2026-09-28, off the keeper's traffic panel).
+   * The Internet Archive's crawler (archive.org/details/archive.org_bot)
+   * put 6,470 requests through in a day and was on neither table, so
+   * every one of them booked as organic — on the buy doors as organic
+   * 402s, the column the store reasons about demand from. It is an
+   * archive index by its operator's own description: it wants the page,
+   * it can never pay, and a copy of this store in the Wayback Machine
+   * is distribution the store wants. Machinery, welcome, and named.
+   */
+  "archive.org_bot",
 ];
 
 /**

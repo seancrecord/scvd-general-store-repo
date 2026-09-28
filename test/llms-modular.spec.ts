@@ -1148,8 +1148,14 @@ const BASE = "https://scvd.store";
 // Verified the way this file asks: with only asked-for.ts restored to the
 // prior commit, b20bbd01 here and be9f17fe below reproduced exactly, and
 // this copy reproduces the new ones.
+// 2026-09-28: re-taken for the one clause in "How paying works here"
+// naming buy_url_template (the decline desk's follow-through: the guide
+// taught the bare door as step one and never named the template). With
+// that clause alone reverted, c77a1acd reproduced; this copy reproduces
+// the new one. The developers area file sits 6 characters under its
+// 30,000 budget after it — the next sentence filed there is a cut.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c77a1acdc54c341dacbe74963d7c37e05153cefa0396917ab2c8ec62a9dea3a3";
+  "8c8e85c2777b56ca58349500fdad2c1c17ccf6b18c71188eac9c0ae968791ac3";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1241,7 +1247,12 @@ describe("nothing was rewritten", () => {
       // Re-pinned 2026-09-24 with the new product, and 2026-09-25 with the
       // two HackerNoon bylines; see the note on GUIDE_DIGEST_BEFORE_THE_SPLIT
       // for how each was verified.
-      "1ac33b17f13295c73fccae34aa539b802a07fdd93ce1ae624e14eb9b022ee21f",
+      // 2026-09-28: re-taken for one clause in "How paying works here",
+      // step 1 — a door with required inputs is bought at its
+      // buy_url_template with the slots filled, never at the bare door.
+      // Verified the way this file asks: with that clause alone reverted,
+      // 1ac33b17 reproduced, and this copy reproduces the new one.
+      "7d9220cafd82b0c36f3d49ba84799c2509668d3dc4fc61df61bcb3739fab899b",
     );
   });
 
