@@ -1157,8 +1157,11 @@ const BASE = "https://scvd.store";
 // Integrated with the AEO SDK/protocol corrections on 2026-09-28. Restoring
 // only declined.ts to origin/main reproduced both main pins (14/14 passed);
 // these pins preserve both that correction and main's purchase-template clause.
+// 2026-09-28, PS7: clarify mixed MPP/x402 responses and add the shared
+// inspection guidance. Reversing only those two edits reproduced both
+// prior pins (14/14 tests); these pins retain the reviewed new wording.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "f4cd06837967f5bc7d8c69c97fdc575be9bb0484dff5660a26d68b51572ce241";
+  "e4488cc0be53471ad190ce6f93c0072e5a1146cfee55aa3ca8af2064e88823f5";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1255,7 +1258,7 @@ describe("nothing was rewritten", () => {
       // buy_url_template with the slots filled, never at the bare door.
       // Verified the way this file asks: with that clause alone reverted,
       // 1ac33b17 reproduced, and this copy reproduces the new one.
-      "bb11e5d52d458e2389190a3bd3553c6267588c3190726ab7f56a5baa9d8e3177",
+      "21a941eff7085a4a089d1ee351969a0f5a9df2a7187597a3a25e260376f6ae26",
     );
   });
 

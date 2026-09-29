@@ -1,0 +1,129 @@
+{
+  "mergeCommit": {
+    "oid": "4365135593193f8f01d4769f724e32aac8c2430b"
+  },
+  "mergedAt": "2026-09-28T19:45:11Z",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:15:28Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109091823671",
+      "name": "quality",
+      "startedAt": "2026-09-28T19:13:01Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:13:22Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508663/job/109091286458",
+      "name": "analyze",
+      "startedAt": "2026-09-28T19:11:38Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:38:16Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109091823795",
+      "name": "tests (1)",
+      "startedAt": "2026-09-28T19:13:00Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:44:48Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109091824277",
+      "name": "tests (2)",
+      "startedAt": "2026-09-28T19:13:24Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:37:10Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109091823401",
+      "name": "tests (3)",
+      "startedAt": "2026-09-28T19:13:00Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:38:34Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109091823756",
+      "name": "tests (4)",
+      "startedAt": "2026-09-28T19:13:00Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:44:54Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109104206088",
+      "name": "check",
+      "startedAt": "2026-09-28T19:44:50Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:44:54Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109104244699",
+      "name": "red-main",
+      "startedAt": "2026-09-28T19:44:54Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:44:54Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36470508639/job/109104244800",
+      "name": "green-main",
+      "startedAt": "2026-09-28T19:44:54Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:13:16Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/seancrecord/scvd-general-store-repo/runs/109091916073",
+      "name": "CodeQL",
+      "startedAt": "2026-09-28T19:13:13Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:12:34Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-doors/production/builds/97a2bdca-698b-4ba5-805e-dd33caa9b529",
+      "name": "Workers Builds: scvd-doors",
+      "startedAt": "2026-09-28T19:12:34Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-28T19:12:41Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-general-store-repo/production/builds/2d05293d-5ba7-4668-a559-4a03c3e1623e",
+      "name": "Workers Builds: scvd-general-store-repo",
+      "startedAt": "2026-09-28T19:12:41Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ],
+  "pullRequest": "https://github.com/seancrecord/scvd-general-store-repo/pull/928"
+}
