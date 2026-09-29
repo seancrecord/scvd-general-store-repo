@@ -94,7 +94,15 @@ What people arrive here to do, and where each door is:
   [`x402-verify`](https://www.npmjs.com/package/x402-verify) (MIT,
   zero deps), and [`x402-sign`](https://www.npmjs.com/package/x402-sign)
   mints offers and receipts that pass it.
-- **Fail your deploy when your door breaks** — the free preflight as a
+- **Inspect an endpoint before deciding what to do** — the free preflight
+  separates observed x402/MPP protocols, unverified advertised terms,
+  structural findings, observation time and coverage gaps. Its top-level
+  verdict remains x402-specific. The [CLI](cli/README.md) and
+  [JavaScript library](x402-preflight/README.md) provide `scvd inspect` and
+  `inspectOne`; check installed help/exports, since source preparation and
+  registry publication are separate. Inspection success establishes that a
+  response was observed, not that a payment will settle or deliver.
+- **Fail your deploy on an x402 readiness failure** — the free preflight as a
   GitHub Action, one probe per door after the deploy step, `not_ready`
   fails the job and `unreachable` does not:
   [`action/preflight`](action/preflight/README.md). The terminal form
@@ -113,6 +121,8 @@ What people arrive here to do, and where each door is:
   discovery, use the [CLI](cli/README.md) or the published
   [corpus client](corpus-client/README.md); both preserve gaps and leave
   signature and timestamp verification explicit.
+  Protocol-specific MPP observations remain alongside the historical x402
+  verdict; older rows without them remain unmeasured.
 - **Score, rank or list x402 doors?** Take the evidence and leave the
   opinion: [scvd.store/scorers](https://scvd.store/scorers) is the
   room for systems that consume this corpus. Pull it, verify it
@@ -251,7 +261,7 @@ descriptions and input schemas are what the server sends.
 | Tool | What it does |
 | --- | --- |
 | `read_store_guide` | The store's front door as text: the menu with prices, how x402 payment works here, the free shelf. |
-| `preflight_endpoint` | x402 endpoint preflight, free: checks any x402 door's 402 shape before anyone pays it. |
+| `preflight_endpoint` | Free endpoint inspection: observed x402/MPP protocols, advertised terms, structure and gaps; the readiness verdict remains x402-specific. |
 | `check_a2a_card` | Free A2A 0.3.0 card checks, bounded evidence and suggested repairs. Runtime testing and signed rechecks are available in the repair kit. |
 | `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
 | `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |

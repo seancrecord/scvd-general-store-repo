@@ -6,6 +6,13 @@ snapshot. It is public and free to read, and so is every view derived
 from it. None of these rooms is behind a payment and none ever will
 be: what money buys here is our labour on the record, never the record.
 
+Each historical `verdict` retains its x402 meaning. Where a row carries
+`protocols_spoken` and `mpp`, preserve both protocol readings and their named
+batteries, observation dates and gaps. An MPP-only row can be `not_ready` for
+x402 without establishing that the endpoint was globally broken. Older or
+unanswered rows without MPP measurements remain unmeasured. Preserve the
+signed original unchanged; a fresh inspection cannot fill its missing fields.
+
 - `https://scvd.store/corpus.json` — the chain of snapshots.
 - `https://scvd.store/corpus/host/{host}.json` — **everything this
   store has ever observed about one host, over time.** Derived at read

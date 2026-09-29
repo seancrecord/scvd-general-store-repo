@@ -8,6 +8,8 @@ import { FREE_DOORS } from "@/store/atlas";
 import { API_VERSIONS } from "@/store/api-lifecycle";
 import type { Env } from "@/types";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import mppOnly from "./fixtures/mpp/evm-clean.json";
+import mixed from "./fixtures/mpp/x402-and-mpp.json";
 
 /**
  * THE LOOK (roadmap L6, 2026-09-02): "what do you hold about this
@@ -172,6 +174,31 @@ describe("a host the chain never met", () => {
     expect(body.held.tier.line).toBeTruthy();
     expect(body.held.tier.rows).toEqual([]);
   });
+});
+
+describe("protocol-specific live and historical readings", () => {
+  for (const sample of [mppOnly, mixed]) {
+    it(`keeps ${sample.name} readings while scoping the summary to x402`, async () => {
+      await seedRound([{ host: "looked.example", verdict: "not_ready" }]);
+      const door = stubDoor(() => new Response(sample.body, { status: sample.status, headers: sample.headers }));
+      const { status, body } = await post(DOOR);
+      expect(status).toBe(200);
+      expect(door.probes()).toBe(1);
+      expect(body.headline).toContain("x402");
+      expect(body.now_against_held.detail).toContain("x402");
+      expect(body.now.the_door.protocols_spoken).toEqual(sample.expect_spoken);
+      expect(body.now.the_door.inspection.protocols.observed).toEqual(sample.expect_spoken);
+      expect(body.now.the_door.inspection.structure.x402.verdict).toBe(body.now.verdict);
+      expect(body.now.the_door.inspection.signatures.state).toBe("not_checked");
+      expect(body.now.the_door.inspection.unperformed).toContain("settlement");
+      expect(body.now.the_door.mpp.spoken).toBe(true);
+      expect(body.held.last_probed_round.verdict).toBe("not_ready");
+      // The old signed row remains unmeasured for MPP; the live response
+      // cannot retroactively supply a protocol reading for that round.
+      expect(body.held.last_probed_round.mpp).toBeUndefined();
+      if (sample === mppOnly) expect(body.now.verdict).toBe("not_ready");
+    });
+  }
 });
 
 describe("a host the chain has met", () => {

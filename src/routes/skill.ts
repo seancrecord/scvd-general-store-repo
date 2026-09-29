@@ -1,4 +1,5 @@
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
+import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
 import { paymentNetworkNames, paymentNetworkGuide } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { beforeYouStartSection } from "@/lib/before-you-start";
@@ -408,7 +409,8 @@ you sign about yourself is worth what your reputation is worth.
 
 - Free: \`POST ${base}/api/preflight\` — also the \`preflight_endpoint\` MCP tool — runs the published, versioned
   conformance battery against any x402 endpoint and names the checks
-  that passed and failed. The paid audit runs these and no others.
+  that passed and failed. The paid audit reuses the readiness battery;
+  its additional discovery-surface observations carry their own scope and gaps.
 - Paid: \`service_audit\` (a dated point-in-time verdict, failing
   checks named rather than scored), \`conformance_watch\` (the same
   battery on a schedule, with drift as recomputable set arithmetic),
@@ -418,6 +420,8 @@ you sign about yourself is worth what your reputation is worth.
   shows it and DECLARED otherwise), and \`bitcoin_anchor\`.
 - What each signature does NOT prove, per class:
   \`${base}/attestation\`.
+
+${ENDPOINT_INSPECTION_GUIDANCE}
 
 ### The corpus, and asking about one host
 

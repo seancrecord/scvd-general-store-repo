@@ -257,20 +257,20 @@ export function nowAgainstHeld(now: PreflightReport["verdict"], held: HeldHalf):
   if (now === "unreachable") {
     return {
       line: "not_comparable",
-      detail: `the live probe did not reach the door (a fact about the path from here, not about the door), so it cannot be set against the last signed round's ${last.verdict} in ${last.week}`,
+      detail: `the live probe did not reach the door (a fact about the path from here, not about the door), so it cannot be set against the last signed round's x402 verdict ${last.verdict} in ${last.week}`,
     };
   }
   const same = now === last.verdict;
   return {
     line: same ? "same" : "changed",
     detail: same
-      ? `the door answered ${now} now, as the last signed round saw it in ${last.week}`
-      : `the door answered ${now} now; the last signed round saw ${last.verdict} in ${last.week}. One probe each side, so this is two moments and not a trend`,
+      ? `the x402 probe answered ${now} now, as the last signed round saw it in ${last.week}`
+      : `the x402 probe answered ${now} now; the last signed round saw ${last.verdict} in ${last.week}. One probe each side, so this is two moments and not a trend`,
   };
 }
 
 function headlineOf(url: string, now: LookReport["now"], held: HeldHalf): string {
-  const door = `The door at ${url} answered ${now.verdict} to one probe at ${now.observed_at}${now.failed.length > 0 ? ` (failed: ${now.failed.join(", ")})` : ""}.`;
+  const door = `The x402 probe of ${url} returned ${now.verdict} at ${now.observed_at}${now.failed.length > 0 ? ` (failed: ${now.failed.join(", ")})` : ""}.`;
   if (held.never_met) {
     return `${door} The signed chain has never met ${held.host}: no round has probed it, so there is no history to weigh and no tier to read.`;
   }

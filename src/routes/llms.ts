@@ -1,4 +1,5 @@
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
+import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
 import { nativeCheckoutGuide, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { ucpGuideParagraph } from "@/lib/ucp/launch";
 import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
@@ -1397,14 +1398,16 @@ said so: ${base}/fixtures.json, then \`${base}/fixtures/{set}/{name}.json\`.
 
 The second wire, read only (since 2026-09-04): a door that speaks the
 Machine Payments Protocol answers 402 with WWW-Authenticate: Payment
-and no PAYMENT-REQUIRED header. The free preflight reads that from the
-same one GET: protocols_spoken says which wires the door speaks (x402,
+alongside or without a PAYMENT-REQUIRED header. The free preflight reads the
+same captured response: protocols_spoken says which wires the door speaks (x402,
 mpp, both, neither), and the mpp block carries the MPP battery's own
 named checks and advisories. The verdict keeps meaning x402-ready,
 permanently — a door on the other wire reads not_ready there and that
 is a fact about the wire, never a defect. ${UNPAID_READ_NOTE}
 Rehearse the shape at ${base}/api/practice/mpp-shape, and a tipping
 door's challenge list at ${base}/api/practice/mpp-tiers.
+
+${ENDPOINT_INSPECTION_GUIDANCE}
 
 Every class also carries both halves of the remediation: what the
 operator does to clear it and what the buyer does when a door shows
