@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-09-28T23:51:27.407922+00:00",
+  "checks": {
+    "permission_prompt_red": {
+      "log": "scvd-package-red.log",
+      "sha256": "44931d40e5476e1f9c4ddc86be953ccf45db120252f9e7975c372fc3cf88f4c9"
+    },
+    "generic_capability_red": {
+      "log": "scvd-package-capability-red.log",
+      "sha256": "b3c690bf27d46aedd285b96f414346639e350b981bb8637dedc98919d300116d"
+    },
+    "buyer_controls": {
+      "log": "scvd-package-buyer-final.log",
+      "sha256": "5b730f0d7d953dc464abb4af9598fbe2c7ebccbfdda31ec0f898820238a1dc63"
+    },
+    "typecheck": {
+      "log": "scvd-package-typecheck-final.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "build": {
+      "log": "scvd-package-build.log",
+      "sha256": "d887145e66d01766e805bd0c25091781686b8b20a7e913f2a7823020744087bd"
+    },
+    "docs": {
+      "log": "scvd-package-docs.log",
+      "sha256": "a54193af153f48447f878c758721de86232c39a55618185fffbbd6afdba20f36"
+    }
+  },
+  "buyer_controls": {
+    "tests": 265,
+    "passed": 265,
+    "failed": 0
+  },
+  "red_controls": "Three permission/plan/prompt controls failed before implementation. The generic capability substitution control fails with the original scorer restored and passes after restoration.",
+  "limits": "Initial suite exposed a replacement-script error, corrected before final run. One sandboxed recheck could not listen on localhost; the authorized final suite passed with its local test server. Native qualification has not yet run. Full hosted CI remains required before merge."
+}

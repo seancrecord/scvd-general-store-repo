@@ -140,6 +140,12 @@ hash-checked files. Recipient freshness policy works in all four reviewed
 handoffs; buyer acquisition and final interpretation remain the open gate.
 No causal improvement or native challenge-header-option adoption is claimed.
 
+**TR3 package access, September 28 (source prepared):**
+[The directed-only repair](docs/BUYER_PACKAGE_ACCESS_2026-09-28.md) adds one
+pinned, script-disabled installation and requires an actual installed report
+in host qualification. No wildcard npm permission or unbranded package hint.
+Native qualification remains outstanding; the prior 2/4 result is unchanged.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The

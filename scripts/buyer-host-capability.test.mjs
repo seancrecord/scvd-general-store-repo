@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {packageReportFixture,scorePackageReport,packageInstallCommand,packageReportCommand} from './lib/buyer-package-access.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -365,4 +366,64 @@ test('the full-inventory recipient prompt is frozen before acquisition and remai
   assert.ok(launch.args.includes('sandbox_workspace_write.network_access=false'));assert.ok(launch.args.includes('web_search="disabled"'));assert.ok(!launch.args.includes('--search'));
   assert.deepEqual(launch.budgets,recipientProtocol.budgets);
  }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+function packagePlan(){
+ const p=JSON.parse(fs.readFileSync(new URL('../research/generated-report-buyer-2026-09-28/plan.json',import.meta.url)));
+ p.package_access=true;return p;
+}
+test('directed package access declares one script-disabled pinned installation in prompt and Claude allowlist',()=>{
+ const p=packagePlan();const c=p.cells.find(c=>c.host==='claude');
+ const command=`npm install --ignore-scripts --no-audit --no-fund --prefix ./work/tooling --cache ./work/npm-cache --registry https://registry.npmjs.org ${p.recipient.verifier.name}@${p.recipient.verifier.version}`;
+ assert.ok(buildPrompt(p,c).includes(command));
+ const args=adapter(c,'/tmp/neutral','/tmp/out',p.budgets,undefined,p).args;
+ assert.ok(args[args.indexOf('--allowedTools')+1].includes(`Bash(${command})`));
+ assert.ok(!args[args.indexOf('--allowedTools')+1].includes('Bash(npm *)'));
+});
+test('package access refuses unbranded lanes, missing report runtime and nonboolean opt-ins',()=>{
+ for(const mutate of [p=>p.cells[0].lane='catalogue',p=>delete p.recipient.verifier,p=>p.package_access='yes']){
+  const p=packagePlan();mutate(p);assert.throws(()=>validatePlan(p),/package|directed|report/i);
+ }
+});
+test('package-qualified capability asks for an actual installed report and original runtime bytes',()=>{
+ const p=packagePlan();const text=buildCapabilityPrompt(p,'claude',capabilityVectors(),packageReportFixture());
+ assert.match(text,/installed-report\.md/);assert.match(text,/evidence\/installed/);
+});
+
+function installedReportFixture(){
+ const p=packagePlan(),d=root(),fixture=packageReportFixture();
+ const install=path.join(d,'evidence/installed');fs.mkdirSync(install,{recursive:true});
+ for(const file of Object.keys(p.recipient.verifier.files))fs.copyFileSync(new URL('../verifier/'+file,import.meta.url),path.join(install,file));
+ fs.writeFileSync(path.join(d,'evidence/report-original.json'),JSON.stringify(fixture.original));
+ const result=spawnSync(process.execPath,[path.join(install,'evidence-cli.mjs'),'verify-source',path.join(d,'evidence/report-original.json'),'--public-key',fixture.original.public_key,'--subject',fixture.subject,'--format','markdown','--report-out',path.join(d,'evidence/installed-report.md')],{encoding:'utf8'});
+ assert.equal(result.status,0,result.stderr);
+ const files=[];const walk=dir=>{for(const f of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,f.name);if(f.isDirectory())walk(full);else files.push({file:path.relative(d,full),sha256:hash(fs.readFileSync(full))});}};walk(path.join(d,'evidence'));
+ return {p,d,fixture,run:{retained_artifacts:{state:'complete',files}},commands:[{command:packageInstallCommand(p),outcome:'completed'},{command:packageReportCommand(p,fixture),outcome:'completed'}],cleanup:()=>fs.rmSync(d,{recursive:true,force:true})};
+}
+test('installed report qualification independently reproduces the fixture and every pinned module',()=>{
+ const f=installedReportFixture();try{
+  const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);assert.equal(result.state,'pass',result.reason);
+  assert.equal(result.version,f.p.recipient.verifier.version);
+ }finally{f.cleanup();}
+});
+for(const [name,mutate] of [
+ ['missing installation event',f=>f.commands=[]],
+ ['incomplete capture',f=>f.run.retained_artifacts.state='incomplete'],
+ ['refused installation',f=>f.commands[0].outcome='denied'],
+ ['missing CLI execution',f=>f.commands.pop()],
+ ['echoed installation text',f=>f.commands[0].command='echo '+f.commands[0].command],
+ ['compound installation',f=>f.commands[0].command+=' && echo done'],
+ ['missing report',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(x=>!x.file.endsWith('installed-report.md'))],
+ ['missing runtime module',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(x=>!x.file.endsWith('payment-identity.js'))],
+ ['rehashed forged report',f=>{const row=f.run.retained_artifacts.files.find(x=>x.file.endsWith('installed-report.md'));fs.writeFileSync(path.join(f.d,row.file),'valid: true');row.sha256=hash(Buffer.from('valid: true'));}],
+ ['rehashed changed runtime',f=>{const row=f.run.retained_artifacts.files.find(x=>x.file.endsWith('evidence-report.js'));fs.appendFileSync(path.join(f.d,row.file),'\n// changed');row.sha256=hash(fs.readFileSync(path.join(f.d,row.file)));}],
+ ['another fixture',f=>f.fixture=packageReportFixture()],
+])test(`installed report qualification refuses ${name}`,()=>{
+ const f=installedReportFixture();try{mutate(f);assert.notEqual(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');}finally{f.cleanup();}
+});
+test('generic capability success cannot substitute for required installed-report qualification',()=>{
+ const f=probeFixture();try{
+  const score=scoreCapability('claude',f.run,f.d,f.vectors,f.reference,packagePlan(),packageReportFixture());
+  assert.equal(score.local_check.state,'pass');assert.equal(score.package_report.state,'incomplete');assert.equal(score.state,'incomplete');
+ }finally{f.cleanup();}
 });
