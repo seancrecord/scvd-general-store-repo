@@ -1,0 +1,10 @@
+{
+  "scope": "controller-only sampler; no native attempt",
+  "old_comm_method_misses_node_runner": true,
+  "intermediate_regex_counts_shell_source_mention": true,
+  "final_method_requires_process_executable": true,
+  "real_node_runner_detected": true,
+  "workerd_detected": true,
+  "shell_mention_and_buyer_controller_excluded": true,
+  "historical_logs_changed": false
+}

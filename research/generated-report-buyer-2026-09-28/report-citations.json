@@ -1,0 +1,22 @@
+{
+  "codex-directed-r1": {
+    "trace_sha256": "2e9c55bd1a95d41e0f817a85d68a89785db130abdc87f819df8fc54d78274db6",
+    "final_line": 25,
+    "final_text_sha256": "dbe4d9e160e6d2bbc5416b828988235b3ce469a65c40ee39bad9f2ebf6632c9a"
+  },
+  "claude-directed-r1": {
+    "trace_sha256": "5588baf49d1574c2e802051c9c8acae2314cb9c9a7cb4061923f1c2a9111cc4d",
+    "final_line": 63,
+    "final_text_sha256": "a772eec9e2f3b2064f18df68868974459d0b6bdf3a18ec8ecd8014024997b8ad"
+  },
+  "codex-directed-r2": {
+    "trace_sha256": "335e2d192186aba0fc5f395bb3fe123625c0c55984fd5c57787a93ce92534398",
+    "final_line": 33,
+    "final_text_sha256": "43c9a9541fcb8d1d11b604fa8ea189dda746a07ea180d6ca3615e0e0379afc4d"
+  },
+  "claude-directed-r2": {
+    "trace_sha256": "27d0dead5f5457a40deff37076657aa815534fa6e604eeb7955bac8bd0c2a3f7",
+    "final_line": 104,
+    "final_text_sha256": "329ce73170884519fd742708e67ec0e8ee73f8d902e7c38786c59f21ea6a957b"
+  }
+}

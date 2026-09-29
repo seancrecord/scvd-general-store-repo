@@ -1,6 +1,6 @@
 {
   "name": "x402-verify",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: compact JWS or x402 JWS envelopes (EdDSA/Ed25519), did:web resolution, local revision-1 schema checks, explicit result statuses, and optional anchored key history.",
   "type": "module",
   "main": "./x402-verify.js",
@@ -25,7 +25,10 @@
     "LICENSE",
     "evidence-bundle.js",
     "evidence-bundle.d.ts",
-    "evidence-cli.mjs"
+    "evidence-cli.mjs",
+    "evidence-report.js",
+    "payment-identity.js",
+    "payment-identity.d.ts"
   ],
   "engines": {
     "node": ">=18.17.0"

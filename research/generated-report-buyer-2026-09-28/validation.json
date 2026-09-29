@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-09-28T20:39:24.265313+00:00",
+  "change_scope": "Documentation and experiment records only; no runtime, buyer instrument, verifier or tests changed.",
+  "checks": {
+    "typecheck": {
+      "exit_code": 0,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    "docs_check": {
+      "exit_code": 0,
+      "sha256": "7bd1a955d0c3c57d07079c3bebfb5b9021e4eb09d15a6e9ad3f87868669121cf"
+    }
+  },
+  "record_integrity": {
+    "archived_file_hashes": 404,
+    "verbatim_native_report_exports": 8,
+    "all_review_references_verified": true,
+    "public_report_links_exist": true
+  },
+  "full_suite": "The preceding implementation full-local run and corrective package recheck are disclosed in release.json and REPORT.md. Full hosted CI remains required on this documentation PR before merge; no fresh full-local pass claimed."
+}
