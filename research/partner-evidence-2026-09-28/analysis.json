@@ -1,0 +1,50 @@
+{
+  "scope": "Offline request/discovery schema checks and saved unsigned responses; not full x402 conformance or paid delivery.",
+  "capture_hashes_verified": 3,
+  "statuses": {
+    "bix-current-schema": 200,
+    "bix-reliability": 200,
+    "bix-unpaid-challenge": 402
+  },
+  "request_schema_accepts_synthetic_input": true,
+  "missing_tax_and_wrong_type_controls_rejected": true,
+  "header_equals_body": true,
+  "resource_url_matches": true,
+  "bazaar_info_validates_against_own_schema": true,
+  "published_example_validates_against_output_schema": true,
+  "schema_fixed_price": "0.005",
+  "x402_version": 2,
+  "offers": [
+    {
+      "scheme": "exact",
+      "network": "eip155:8453",
+      "amount": "5000",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913",
+      "payTo": "0xe36C50532eDcd21A54F58A9908f16254a45ad441",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+        "name": "USD Coin",
+        "version": "2",
+        "assetTransferMethod": "eip3009"
+      },
+      "amount_usdc_at_six_decimals": "0.005000"
+    }
+  ],
+  "reliability_is_seller_claim": {
+    "payment_ready": true,
+    "profile_count": 3,
+    "profile_updated_at": "2026-09-28T13:05:08+00:00",
+    "settlement_enabled": true,
+    "status": "PASS"
+  },
+  "output_recommendation_enum": [
+    "PROMOTE",
+    "HOLD",
+    "OBSERVE"
+  ],
+  "reported_hold_paper_allowed_by_enum": false,
+  "note": "HOLD_PAPER was reported by the operator; it was not observed in a paid response. The PROMOTE example is illustrative, not a current product result.",
+  "payment_sent": false,
+  "settlement_observed": false,
+  "paid_delivery_observed": false
+}

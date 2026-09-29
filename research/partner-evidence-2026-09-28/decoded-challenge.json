@@ -1,0 +1,112 @@
+{
+  "x402Version": 2,
+  "error": "payment_required",
+  "resource": {
+    "url": "https://creator.linkhco.com/paid/v1/creator-edge",
+    "description": "Forward-tested Robinhood Chain creator-fee profile decision support.",
+    "mimeType": "application/json",
+    "serviceName": "BiX Creator Edge",
+    "tags": [
+      "robinhood",
+      "creator",
+      "crypto",
+      "decision",
+      "x402"
+    ]
+  },
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "eip155:8453",
+      "amount": "5000",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913",
+      "payTo": "0xe36C50532eDcd21A54F58A9908f16254a45ad441",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+        "name": "USD Coin",
+        "version": "2",
+        "assetTransferMethod": "eip3009"
+      }
+    }
+  ],
+  "extensions": {
+    "bazaar": {
+      "info": {
+        "input": {
+          "type": "http",
+          "method": "POST",
+          "bodyType": "json",
+          "body": {
+            "pair": "USDG",
+            "tax": 1
+          }
+        },
+        "output": {
+          "type": "json",
+          "example": {
+            "status": "OK",
+            "pair": "USDG",
+            "tax_pct": 1,
+            "recommendation": "PROMOTE",
+            "profile_updated_at": "2026-09-28T13:05:08+00:00",
+            "disclaimer": "Decision support only; not a guarantee of profit."
+          }
+        }
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "http"
+              },
+              "method": {
+                "const": "POST"
+              },
+              "bodyType": {
+                "const": "json"
+              },
+              "body": {
+                "type": "object",
+                "properties": {
+                  "pair": {
+                    "type": "string",
+                    "description": "Creator-fee profile pair such as USDG or SPY."
+                  },
+                  "tax": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Creator tax percentage."
+                  }
+                },
+                "required": [
+                  "pair",
+                  "tax"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "method",
+              "bodyType",
+              "body"
+            ],
+            "additionalProperties": false
+          },
+          "output": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "additionalProperties": true
+      }
+    }
+  }
+}

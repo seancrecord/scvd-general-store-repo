@@ -1,0 +1,20 @@
+{
+  "id": "bix-reliability",
+  "requested_url": "https://creator.linkhco.com/api/reliability",
+  "method": "GET",
+  "observed_at": "2026-09-28T16:29:38.462732+00:00",
+  "user_agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)",
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "status": 200,
+  "headers": {
+    "Date": "Mon, 28 Sep 2026 16:29:39 GMT",
+    "Content-Type": "application/json"
+  },
+  "truncated": false,
+  "bytes": 132,
+  "sha256": "3000af6af57d12895b4d29562dcb476aeb2596677b9be2a850b5a40b28a09312",
+  "body_file": "bix-reliability.body"
+}
