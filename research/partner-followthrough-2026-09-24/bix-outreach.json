@@ -1,0 +1,22 @@
+{
+  "recorded_at": "2026-09-24 18:26:00 UTC",
+  "status": "sent_verified_awaiting_reply",
+  "authorization": "Keeper approved the exact drafted BiX comment in this task.",
+  "repository": "Merit-Systems/x402scan",
+  "issue_number": 1197,
+  "comment_id": 5819801063,
+  "comment_url": "https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5819801063",
+  "posted_by": "seancrecord",
+  "comment_body": "Salman — scvd.store here. We can help with a bounded outside check of the buyer path you described.\n\nOn September 24 at 15:15 UTC, a GET to your published `/openapi.json` returned HTTP 503. We did not call the paid route or attempt a payment; that one response does not tell us whether the route moved or the service was temporarily unavailable.\n\nIs that still the current schema URL, and is the settlement gate ready for a controlled buyer? A public synthetic example request and the expected useful response would help us qualify the test.\n\nWe can start with one free, unpaid discovery/request-preparation check and share the exact observations and our own limits. Any paid attempt would be agreed separately after checking compatibility. Would that help your next launch or integration decision?",
+  "verification": "Fetched issue comments after posting; exact body and returned ID matched.",
+  "presend": {
+    "issue_state": "open",
+    "existing_comments": 0,
+    "duplicate_found": false,
+    "schema_status": 503,
+    "schema_capture": "../partner-evidence-2026-09-24/captures/bix-approved-presend-schema.json"
+  },
+  "partner_response": null,
+  "partner_usefulness": "unknown",
+  "payment_sent": false
+}

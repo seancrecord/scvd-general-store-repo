@@ -1,6 +1,7 @@
 // Fresh public-only processes, never a conversation fork. Live execution is
 // explicit; deterministic tests and rescoring do not launch an agent.
 import fs from 'node:fs';
+import {packageReportFixture} from './lib/buyer-package-access.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawn, spawnSync} from 'node:child_process';
@@ -113,7 +114,7 @@ export async function scoreCohort(root) {
   return {...cohortSummary(rows),...(capability?{capability}:{}),scorer_sha256:hash(fs.readFileSync(new URL('lib/buyer-cold.mjs',import.meta.url))),plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),runs:rows};
 }
 // The exact collector bytes, frozen beside every acquisition and probe.
-const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','buyer-recipient-handoff.mjs','lib/buyer-cold.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','lib/recipient-verifier.mjs',...RECIPIENT_VERIFIER_FILES.map(file=>'../verifier/'+file)];
+const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','buyer-recipient-handoff.mjs','lib/buyer-cold.mjs','lib/buyer-package-access.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','lib/recipient-verifier.mjs',...RECIPIENT_VERIFIER_FILES.map(file=>'../verifier/'+file)];
 export function freezeInstrument(root) {
   const files = {};
   for (const name of INSTRUMENT_FILES) {
@@ -172,13 +173,15 @@ export async function runCapabilityProbe(plan, root) {
   writeJson(path.join(root,'hosts.json'),Object.fromEntries(hosts));
   const context=hostContext(hosts,environment);writeJson(path.join(root,'host-context.json'),context);
   const summary={schema_version:2,plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),instrument_sha256:hash(fs.readFileSync(path.join(root,'instrument.json'))),host_context_sha256:hash(fs.readFileSync(path.join(root,'host-context.json'))),public_url:plan.capability.public_url,probed_at:new Date().toISOString(),hosts:{},
-    limits:['A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service.']};
+    limits:[plan.package_access?'Directed package qualification includes a pinned installed report; not unbranded discovery or a buyer journey.':'A probe qualifies a host and adapter for retention and a local signature check; it is not a buyer journey and names no service.']};
   for(const [host,cli] of hosts){
     const cell=plan.cells.find(c=>c.host===host);
     if(!cell)continue; // Recipient-only hosts are recorded, not online buyer probes.
     const dir=path.join(root,host);fs.mkdirSync(dir,{mode:0o700});
     const vectors=capabilityVectors();writeJson(path.join(dir,'vectors.json'),vectors);
-    fs.writeFileSync(path.join(dir,'prompt.txt'),buildCapabilityPrompt(plan,host,vectors),{flag:'wx',mode:0o600});
+    const reportFixture=plan.package_access?packageReportFixture():undefined;
+    if(reportFixture)writeJson(path.join(dir,'report-fixture.json'),reportFixture);
+    fs.writeFileSync(path.join(dir,'prompt.txt'),buildCapabilityPrompt(plan,host,vectors,reportFixture),{flag:'wx',mode:0o600});
     const skip=(state,reason)=>{writeJson(path.join(dir,'run.json'),{schema_version:plan.schema_version,host,runtime:{state,reason},cli});summary.hosts[host]={state,reason};process.stdout.write(JSON.stringify({host,state,reason})+'\n');};
     if(!cli.available){skip('unavailable',cli.reason);continue;}
     let reference;
@@ -191,14 +194,14 @@ export async function runCapabilityProbe(plan, root) {
       reference={sha256:hash(bytes),bytes:bytes.length,fetched_at:new Date().toISOString()};
     }catch(error){skip('unavailable',`Runner could not capture reference bytes (${error.message}); host not launched.`);continue;}
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-capability-'));fs.mkdirSync(path.join(cwd,'evidence'),{mode:0o700});
-    const launch=adapter(cell,cwd,dir,plan.budgets,context);
+    const launch=adapter(cell,cwd,dir,plan.budgets,context,plan);
     writeJson(path.join(dir,'launch.json'),{...launch,cwd,cli,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({host,state:'started'})+'\n');
     const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host,budgets:plan.budgets,env:environment});
     const run={schema_version:plan.schema_version,host,model:cell.model,...result,cli,reference,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)};
     writeJson(path.join(dir,'run.json'),run);
-    const score=scoreCapability(host,run,dir,vectors,reference);writeJson(path.join(dir,'capability.json'),score);
-    summary.hosts[host]={state:score.state,retention:score.retention.state,local_check:score.local_check.state,denied:score.commands.denied,executed:score.commands.executed};
+    const score=scoreCapability(host,run,dir,vectors,reference,plan,reportFixture);writeJson(path.join(dir,'capability.json'),score);
+    summary.hosts[host]={state:score.state,retention:score.retention.state,local_check:score.local_check.state,denied:score.commands.denied,executed:score.commands.executed,...(score.package_report?{package_report:score.package_report}: {})};
     process.stdout.write(JSON.stringify({host,state:score.state,retention:score.retention.state,local_check:score.local_check.state,denied:score.commands.denied})+'\n');
   }
   if(plan.schema_version===6) {
@@ -272,7 +275,7 @@ export async function runCohort(plan,root,options={}) {
     }
     const cwd=fs.mkdtempSync(path.join(os.tmpdir(),'buyer-session-'));
     if(plan.schema_version>=3)fs.mkdirSync(path.join(cwd,'evidence'),{mode:0o700});
-    const launch=adapter(cell,cwd,dir,plan.budgets,context);
+    const launch=adapter(cell,cwd,dir,plan.budgets,context,plan);
     writeJson(path.join(dir,'launch.json'),{...launch,cwd,host,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({cell:cell.id,state:'started'})+'\n');
     const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host:cell.host,budgets:plan.budgets,env:environment});

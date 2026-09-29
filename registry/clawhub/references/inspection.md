@@ -2,11 +2,19 @@
 
 For an unpaid check, call `preflight_endpoint` or `POST https://scvd.store/api/preflight/v1`
 with `{"url":"https://merchant.example/paid"}`. Preserve named failures,
-observation time and coverage. Include the returned `observed_at` timestamp
+observation time and coverage. Include the returned `inspection.observed_at` timestamp
 in the final answer alongside the verdict; if it is missing, explicitly say
 the observation time was not supplied. A passing probe establishes neither settlement
 nor delivery and grants no permission to spend. Read [MPP](mpp.md) when present.
 The paid options below require the [purchase rules](purchases.md).
+
+Read the returned `inspection` block for reachability, the observed protocol
+set, unverified advertised terms, structural findings and gaps. Its signature
+state is `not_checked`. The top-level `verdict` remains x402-specific; a
+successful inspection is not a payment-readiness verdict. Older reports may
+lack this block: keep their actual fields and report missing coverage, without
+inventing a protocol result or substituting download time for observation time.
+For a package client, use the [installed capability checks](packages.md).
 
 ## The verification tier — what the store observes about OTHER people
 
@@ -26,8 +34,9 @@ prove.
 - **Free preflight.** `POST https://scvd.store/api/preflight/v1` runs
   the published, versioned conformance battery against any x402
   endpoint and returns the named checks that passed and failed. No
-  wallet, no charge, no signature. The paid audit runs these checks
-  and no others.
+  wallet, no charge, no signature. The paid audit reuses the readiness
+  battery; additional discovery-surface observations have their own scope
+  and gaps.
 - **`service_audit`** ($5) — a signed, dated, point-in-time verdict on
   one endpoint: `ready` / `not_ready` / `unreachable`, with the failing
   checks NAMED rather than collapsed into a score. Carries an

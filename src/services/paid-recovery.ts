@@ -1,6 +1,7 @@
 import { LaborCapacityStore, laborCapacity } from "@/services/labor-reservations";
 import { PatronageRecoveryStore, type PatronageGrantInput } from "@/services/patronage-recovery";
 import { LaunchCheckStore } from "@/services/launch-check-recovery";
+import { snapshotLaunchPilot, type LaunchPilotInput } from "@/services/launch-pilot";
 import { WatchRecoveryStore, type RecoverableWatch } from "@/services/watch-recovery";
 import { PersonalGoodsStore, type PersonalRecord, type PersonalMutation } from "@/services/personal-goods";
 import { CaseFilePublicationStore } from "@/services/case-file-publication";
@@ -124,6 +125,10 @@ export class PaidRecoveryStore extends DurableObject<Env> {
 
   private readonly launch = new LaunchCheckStore(this.ctx.storage, this.env);
   prepareLaunchCheck(path: string, digest: string, url: string) { return this.launch.run(path, digest, url); }
+  prepareLaunchPilot(input: LaunchPilotInput) {
+    const pilot = snapshotLaunchPilot(this.env, input);
+    return this.launch.run("launch-pilot", pilot.id, pilot.url, pilot.request);
+  }
 
   private readonly watches = new WatchRecoveryStore(this.ctx.storage, this.env);
   publishWatch(value: RecoverableWatch) { return this.watches.publish(value); }
