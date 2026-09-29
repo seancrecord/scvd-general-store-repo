@@ -46,13 +46,24 @@ already produce. Do not grow by becoming a score.
 - [x] Expand the portfolio audit: six Perplexity questions, three Google AI Overviews and two completed Gemini answers (one additional Gemini error retained as unmeasured), eight SCVD npm manifests, three language source guides and existing protocol/digest surfaces. [Findings and limits](research/aeo-2026-09-28/PORTFOLIO.md).
 - [x] Reproduce the Hugging Face loader failure; verify all ten mirrored snapshot signatures/digests and chain continuity; prepare explicitly configured unsigned tables. Both card configurations load locally (24,913 host rows / ten rounds). Timestamp proofs were not independently checked in this pass.
 - [x] Replace obsolete SDK/UCP/MPP denials in shared developer/agent copy; index existing libraries and language guides from package metadata. Wire future corpus drops to rebuild the viewer tables.
-- [ ] Publish the reviewed corpus viewer repair through the existing workflow (`hf_only` and `refresh_viewer`), then qualify the public viewer and both public dataset configurations.
+- [x] Publish the reviewed corpus viewer repair through the existing workflow (`hf_only` and `refresh_viewer`); run 36474411847 completed and both public configurations loaded. The separate per-host observation-date correction discovered below remains local.
 - [x] Run the existing eight-family browser hand check; [bounded results](research/aeo-2026-09-28/README.md), with missing engines/results retained.
 - [x] Reuse the existing item evidence summary in markdown and single-item JSON; move the HTML summary before the long description. Regression demonstrated red, then 35 focused tests, typecheck and bundle checks passed.
 - [x] Validate the combined patch: 837 full-suite files passed, 15,610 tests passed / one skipped; corpus publisher checks, typecheck, bundle and claims checks passed.
-- [ ] Release `codex/aeo-answer-readability` (keeper approved September 28); no production visibility improvement claimed before the next hand check.
+- [x] Release `codex/aeo-answer-readability` (keeper approved September 28): PR #926 merged. No production visibility improvement claimed before the next hand check.
 - [ ] Complete ChatGPT with a working searched-answer session; retain the October 15 checkpoint and existing question-page decision gate.
 - [ ] Repeat the expanded job-specific questions across the other engines with fixed modes; separate UCP merchant integration from third-party profile validation. Existing weekly brief and partner evidence remain the distribution work, not new duplicate programs.
+
+## September 28 — competitive choice and corpus reuse
+
+Keeper requested the comparison and corpus analysis first, then partner and
+asset reuse. [Working record](research/competitive-corpus-2026-09-28/README.md).
+
+- [x] Prepare the job-specific competitive comparison from pinned primary sources; distinguish native SDK/TCK coverage from SCVD's supported evidence workflow.
+- [x] Authenticate the existing corpus and derive catalog agreement, freshness and strictly comparable changes. Repaired notebook executes against the public chain.
+- [x] Prepare one historical listing record, a local authenticated adapter and a follow-on packet for the existing Merit workstream. Not sent; partner use remains unmeasured.
+- [x] Connect existing SDKs, corpus, notebook, verifier and brief in root/examples documentation; inspect the three article link paths and prepare the HF card correction and reproduction links.
+- [ ] Release this local patch through normal PR/CI. Then refresh and read back the HF projection: actual host dates, unknown dates, method/battery and unchanged signed originals. No new duplicate publication or outreach campaign.
 
 
 ## September 23 batch — completed steps and release gates

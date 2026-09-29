@@ -37,7 +37,49 @@ x402 client and your wallet; these examples say whether to reach it.
 | `claude-code/SKILL.md`, `claude-code/x402-before-you-pay.mdc` | A Claude Code skill and the same rule for Cursor. |
 | `copilot/copilot-instructions.md` | Repository instructions for GitHub Copilot. |
 | `x402-preflight-on-deploy.yml` | The preflight as a CI step after every deploy (older; see the README). |
-| `corpus-recompute.ipynb` | A notebook that fetches the signed corpus, recomputes every digest and the chain, checks the signatures, and counts doors per week with their denominators. Runnable top to bottom. |
+| `corpus-recompute.ipynb` | Python 3 + Node 22 notebook, run from this checkout. Fetches and authenticates the signed chain using the existing verifier; derives catalog agreement, freshness and comparable changes with their denominators. |
+| `corpus-listing-evidence.mjs` | Local, read-only Node 22 adapter. Authenticates one supplied snapshot and selects exactly one URL/method observation for reuse with its date, source pointer and limits. |
+
+## Choose the job
+
+| Your next decision | Existing tool or guide | Evidence to retain |
+| --- | --- | --- |
+| Inspect an x402 endpoint before deciding to pay | Preflight clients: [JavaScript](../x402-preflight/README.md), [Python](../x402-preflight-py/README.md), [Go](../x402-preflight-go/README.md); framework examples below | Exact URL, method, reading date, named checks and gaps; readiness is not delivery |
+| Verify a signed artifact locally | [x402-verify](../verifier/README.md), including supported formats and evidence bundles | Original artifact, public-key source, verification result and unsupported checks |
+| Read or compare historical observations | [Corpus client](../corpus-client/README.md), [reproduction notebook](corpus-recompute.ipynb), [public corpus](https://scvd.store/corpus) | Signed originals and denominators; distinguish host observation time from snapshot time |
+| Attach evidence to a listing or support decision | [Local listing adapter](corpus-listing-evidence.mjs), instructions below | Exact endpoint/method, original snapshot digest and row pointer; projection remains unsigned |
+| Cite an aggregate finding | [Existing weekly brief](https://scvd.store/corpus/brief), [dated reproducible analysis](../research/competitive-corpus-2026-09-28/FINDINGS.md) | Dated source, comparable population, exclusions and scope |
+
+These are source guides. A prepared source version can be newer than the
+published package; check the registry version before using a new API.
+
+## Reuse corpus evidence
+
+Open [the notebook](corpus-recompute.ipynb) from a repository checkout with
+Python 3 and Node 22. It downloads the public originals within explicit size
+and pagination bounds, then uses the repository's JavaScript verifier so
+Python serialization differences cannot change the signed bytes. It needs no
+Python package installation. It checks digest, signature and chain linkage;
+it does not independently establish key identity or verify Bitcoin timestamps.
+
+For one listing, save an original snapshot from the [corpus index](https://scvd.store/corpus/index.json)
+and the [public verification key](https://scvd.store/.well-known/scvd-signing-key).
+Pass their local paths and the exact recorded endpoint and method:
+
+```sh
+node examples/corpus-listing-evidence.mjs SNAPSHOT_JSON PUBLIC_KEY_JSON EXACT_URL METHOD
+```
+
+The uppercase arguments are placeholders. The adapter makes no network request
+and no payment. It refuses an invalid signature/digest, an absent exact match
+or duplicate matches. Its single-snapshot check does not verify the chain or
+Bitcoin proof. The public key must come from a source you trust.
+
+A [filled historical example](../research/competitive-corpus-2026-09-28/partner-listing-evidence.json)
+shows catalog disagreement alongside a ready x402 reading. Preserve
+`observed_at`, `snapshot_captured_at`, `source.digest`, `source.row_pointer`
+and the gaps when reusing it. Unknown dates remain unknown. A newer snapshot
+must not make an older observation appear current.
 
 ## Run one
 

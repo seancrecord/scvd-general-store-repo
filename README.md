@@ -56,6 +56,10 @@ ed25519-signed, dated, and verifiable offline without asking us,
 including the gaps we count against ourselves. Operated by Record
 Creative Co. LLC.
 
+For working examples, use the [SDK and evidence paths](examples/README.md#choose-the-job):
+check an endpoint, verify an artifact, reproduce the corpus findings, or attach
+one dated observation to a listing.
+
 Not an escrow, a guarantor, or a dispute court. Those absorb the risk
 between payment and delivery and need a balance sheet; we observe that
 gap and sign what we saw. If you are building escrow or adjudication,
