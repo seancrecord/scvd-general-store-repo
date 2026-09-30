@@ -1,0 +1,56 @@
+{
+  "recorded_at": "2026-09-29T00:08:38.951093+00:00",
+  "scope": "Local validation; no commit, merge, publish or external message",
+  "focused_checks": {
+    "passed": 20,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "bundle_check": "all three dry-run bundles passed; initial log-file writes outside the sandbox were refused (exit 0)",
+  "live_notebook": "all code cells passed against 10 public signed snapshots",
+  "negative_controls": [
+    "Per-host date regression failed before source fix",
+    "Card reproduction link assertion failed before card change",
+    "Listing adapter rejects altered claims, forged signature, wrong supplied key, wrong URL, wrong method and duplicate matches"
+  ],
+  "full_merge_ci": "not run for this uncommitted branch",
+  "logs": {
+    "focused_checks": {
+      "sha256": "42fa2fce5ab3537fc3341b3ed2d50b5ec3cecc565cdafce85df4ab6d86d41b77",
+      "local_path": "/private/tmp/scvd-final-quality.log"
+    },
+    "typecheck": {
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75",
+      "local_path": "/private/tmp/scvd-final-typecheck.log"
+    },
+    "bundle_check": {
+      "sha256": "09659d9bfe0077b8400d6355b34f635d0ef74300f39247a630cea0be86dd2051",
+      "local_path": "/private/tmp/scvd-final-build.log"
+    },
+    "live_notebook": {
+      "sha256": "0075b206e0f4a23f2fe3bb7ab6b4853c485ce6a3142cc0cf1a9b2970eb520259",
+      "local_path": "/private/tmp/scvd-notebook-live.log"
+    },
+    "date_regression_before_fix": {
+      "sha256": "d4bd5db8404c6b7cf8cc74f223490456a492b4280c0d81d5a8a745397d4f8356",
+      "local_path": "/private/tmp/scvd-findings-red.log"
+    },
+    "card_path_before_fix": {
+      "sha256": "62226b505def11e010b66f76d72aa77504d59c8289f44d2efbed1eefa1ea8582",
+      "local_path": "/private/tmp/scvd-card-red.log"
+    }
+  },
+  "pre_commit_validation": {
+    "date": "2026-09-29T13:12:55.102203+00:00",
+    "base_commit": "b8a87513",
+    "full_suite": {
+      "files_passed": 850,
+      "tests_passed": 15760,
+      "tests_skipped": 1,
+      "log_sha256": "44667cd20254728d9a924bbca66576ea28eeee4f1caee22ba410ce76e775cccc"
+    },
+    "focused_checks_passed": 20,
+    "typecheck": "passed",
+    "bundle_check": "all three dry-run bundles passed; log path placed in writable temporary directory"
+  }
+}

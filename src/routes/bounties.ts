@@ -11,6 +11,7 @@ import {
   BOUNTY_REPORT_FIELDS,
   BOUNTY_REPORT_TEMPLATE,
   BOUNTY_AUTH_VALID_SECONDS,
+  BOUNTY_REISSUE_LINE,
   BOUNTY_MAX_REWARD_USD,
   BOUNTY_OPEN_DAYS,
   BOUNTY_REFUSALS,
@@ -130,7 +131,7 @@ function workedWalk(base: string) {
           `  $FROM $TO $VALUE $VALID_AFTER $VALID_BEFORE $NONCE $SIGNATURE \\`,
           `  --rpc-url https://mainnet.base.org --private-key $YOUR_KEY`,
         ].join("\n"),
-        note: `Every argument comes back in the claim's payout.authorization, and the signature beside it. transferWithAuthorization is submittable by anyone, so any relayer can carry it instead of you. It expires ${BOUNTY_AUTH_VALID_SECONDS / 86_400} days after it is signed; unredeemed, the money returns to the week's budget and costs the store nothing.`,
+        note: `Every argument comes back in the claim's payout.authorization, and the signature beside it. transferWithAuthorization is submittable by anyone, so any relayer can carry it instead of you. It expires ${BOUNTY_AUTH_VALID_SECONDS / 86_400} days after it is signed; unredeemed, the money returns to the week's budget and costs the store nothing. ${BOUNTY_REISSUE_LINE}`,
       },
     ],
     redeeming_without_gas: REDEEMING_WITHOUT_GAS,
@@ -583,7 +584,7 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
    */
   const book = (
     bountyId: string,
-    outcome: "paid" | "refused" | "error",
+    outcome: "paid" | "reissued" | "refused" | "error",
     reason: string,
   ): Promise<void> =>
     recordBountyClaim(c.env, bountyId, outcome, reason, claimSignals(c)).catch(
@@ -621,6 +622,20 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
         : {}),
       ...(claimedReport(body) ? { report: claimedReport(body) } : {}),
     });
+    /*
+     * A REISSUE IS BOOKED AS ONE, NOT AS A PAYOUT (2026-09-29): the
+     * ledger's paid column counts money signed away, and a reprint
+     * signed none. The pressing and the binder burn happened the
+     * first time; the same answer again earns neither again.
+     */
+    if (result.reissued) {
+      await book(
+        bountyId,
+        "reissued",
+        `$${result.reward_usd} to ${result.payout.authorization.to}, first paid ${result.reissued.first_claimed_at}`,
+      );
+      return c.json({ ...result, spend_it_here: walkerOffer(c.env.STORE_BASE_URL) }, 200);
+    }
     await book(
       bountyId,
       "paid",

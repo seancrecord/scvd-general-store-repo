@@ -2044,7 +2044,12 @@ export async function listRecentPorchEvents(
  * and a monthly counter per outcome (house-suffixed like every other
  * counter, so the keeper's own test claims never read as demand).
  */
-export type BountyClaimOutcome = "paid" | "refused" | "error";
+/**
+ * `reissued` (2026-09-29) is a paid claim resent identically and answered
+ * with its original signature again; it is booked so the row exists and
+ * counted apart, so the ledger's paid column stays the money signed away.
+ */
+export type BountyClaimOutcome = "paid" | "reissued" | "refused" | "error";
 
 export async function recordBountyClaim(
   env: Env,

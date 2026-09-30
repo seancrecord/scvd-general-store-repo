@@ -1,0 +1,4795 @@
+{
+  "version": 1,
+  "scope": "Unsigned derivation over host rows in a pinned signed snapshot chain; no live seller probes or paid transactions.",
+  "limits": [
+    "Host rows are sampled endpoints, not every route or independent purchases.",
+    "New snapshot time is not a new probe time. Missing row observation times and methods stay unknown.",
+    "Same recorded battery is a comparability filter, not proof that every implementation detail remained identical.",
+    "Failed checks are x402 battery outcomes; MPP-only endpoints can be x402 not_ready without an MPP defect.",
+    "Repeated failure at two moments does not establish continuous failure, repair time, repair causation, or current state.",
+    "Catalog comparison is the signed row’s recorded comparison, not a new comparison with a live directory.",
+    "No payment, delivery, buyer behavior, market share, or Bitcoin timestamp verification is established."
+  ],
+  "snapshot_count": 10,
+  "host_rows_across_snapshots": 24913,
+  "latest": {
+    "sequence": 10,
+    "snapshot_time": "2026-09-27T11:02:17.930Z",
+    "round_time": "2026-09-27T11:01:50.274Z",
+    "host_rows": 5029,
+    "verdicts": {
+      "not_probed": 2,
+      "not_ready": 2665,
+      "ready": 2213,
+      "unreachable": 149
+    },
+    "methods": {
+      "GET": 4485,
+      "POST": 393,
+      "missing": 151
+    },
+    "observation_time_missing_or_invalid": 2,
+    "observation_time_range": [
+      "2026-09-21T02:30:36.271Z",
+      "2026-09-27T09:30:43.668Z"
+    ],
+    "catalog_states": {
+      "agrees": 1411,
+      "differs": 80,
+      "missing": 2,
+      "not_comparable": 3535,
+      "not_listed": 1
+    },
+    "catalog_comparable": 1491,
+    "catalog_differs": 80,
+    "catalog_differs_while_x402_ready": 73,
+    "mpp_spoken_rows": 250,
+    "mpp_spoken_and_x402_not_ready": 28
+  },
+  "pairs": [
+    {
+      "from_sequence": 1,
+      "to_sequence": 2,
+      "shared_exact_host_url": 38,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "missing_or_invalid_observation_time": 38
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    },
+    {
+      "from_sequence": 2,
+      "to_sequence": 3,
+      "shared_exact_host_url": 55,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "missing_or_invalid_observation_time": 55
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    },
+    {
+      "from_sequence": 3,
+      "to_sequence": 4,
+      "shared_exact_host_url": 42,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "missing_or_invalid_observation_time": 42
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    },
+    {
+      "from_sequence": 4,
+      "to_sequence": 5,
+      "shared_exact_host_url": 714,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "missing_or_invalid_observation_time": 714
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    },
+    {
+      "from_sequence": 5,
+      "to_sequence": 6,
+      "shared_exact_host_url": 930,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "missing_or_invalid_observation_time": 930
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    },
+    {
+      "from_sequence": 6,
+      "to_sequence": 7,
+      "shared_exact_host_url": 2767,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "same_observation_time": 2767
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    },
+    {
+      "from_sequence": 7,
+      "to_sequence": 8,
+      "shared_exact_host_url": 3445,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "method_not_recorded": 3445
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    },
+    {
+      "from_sequence": 8,
+      "to_sequence": 9,
+      "shared_exact_host_url": 4178,
+      "eligible_fresh_pairs": 127,
+      "exclusions": {
+        "method_not_recorded": 4051
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 74,
+      "repeated_failed_check_pairs": 21,
+      "failed_checks_repeated": {
+        "bazaar-extension": 3,
+        "solana-rail-receivable": 1,
+        "status-402": 13,
+        "network-mainnet": 2,
+        "payment-required-header": 1,
+        "signed-offers": 1
+      },
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {
+        "status-402": 73,
+        "solana-rail-receivable": 1
+      }
+    },
+    {
+      "from_sequence": 9,
+      "to_sequence": 10,
+      "shared_exact_host_url": 4948,
+      "eligible_fresh_pairs": 0,
+      "exclusions": {
+        "missing_or_invalid_observation_time": 2,
+        "same_observation_time": 4946
+      },
+      "not_ready_to_ready": 0,
+      "ready_to_not_ready": 0,
+      "repeated_failed_check_pairs": 0,
+      "failed_checks_repeated": {},
+      "failed_checks_no_longer_reported": {},
+      "failed_checks_newly_reported": {}
+    }
+  ],
+  "comparable_events": [
+    {
+      "host": "agenttrust.uk",
+      "url": "https://agenttrust.uk/v1/scan",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4960",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/1920",
+        "observed_at": "2026-09-21T20:30:19.474Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "89.106.83.95.sslip.io",
+      "url": "https://89.106.83.95.sslip.io/token/solana/So11111111111111111111111111111111111111112",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4892",
+        "observed_at": "2026-09-16T14:30:24.110Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2005",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "91-200-102-159.nip.io",
+      "url": "https://91-200-102-159.nip.io/api/security-header-audit",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4893",
+        "observed_at": "2026-09-16T14:30:24.110Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2006",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "acp-gateway.hergertsynthora.com",
+      "url": "https://acp-gateway.hergertsynthora.com/service",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4895",
+        "observed_at": "2026-09-16T15:30:24.057Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2008",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "address-intel.3ainewzealand.workers.dev",
+      "url": "https://address-intel.3ainewzealand.workers.dev/v1/dossier/%7Baddress%7D",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4896",
+        "observed_at": "2026-09-16T15:30:24.057Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2009",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "bazaar-extension"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "address-risk.hergertsynthora.com",
+      "url": "https://address-risk.hergertsynthora.com/service",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4897",
+        "observed_at": "2026-09-16T15:30:24.057Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2010",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "address.x4api.com",
+      "url": "https://address.x4api.com/v1/parse",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4898",
+        "observed_at": "2026-09-16T15:30:24.057Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2011",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "bazaar-extension"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "adzjj-159-89-4-32.free.pinggy.net",
+      "url": "https://adzjj-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4905",
+        "observed_at": "2026-09-16T20:30:21.553Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2012",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "aesou-159-89-4-32.run.pinggy-free.link",
+      "url": "https://aesou-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4900",
+        "observed_at": "2026-09-16T15:30:24.057Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2013",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "afjeb-159-89-4-32.run.pinggy-free.link",
+      "url": "https://afjeb-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4906",
+        "observed_at": "2026-09-16T21:31:28.633Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2015",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "agdata.shveik.dev",
+      "url": "https://agdata.shveik.dev/x402/instagram",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4899",
+        "observed_at": "2026-09-16T15:30:24.057Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2016",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "solana-rail-receivable"
+      ]
+    },
+    {
+      "host": "agent-exec.45.67.221.128.sslip.io",
+      "url": "https://agent-exec.45.67.221.128.sslip.io/execute",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4929",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2017",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "agent-guard.annushka1190.workers.dev",
+      "url": "https://agent-guard.annushka1190.workers.dev/v1/address/format-check",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4930",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2018",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "solana-rail-receivable"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agent-image-compress-production.up.railway.app",
+      "url": "https://agent-image-compress-production.up.railway.app/api/compress",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4931",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2019",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agent-json-utility.pablovph.chatgpt.site",
+      "url": "https://agent-json-utility.pablovph.chatgpt.site/v1/audit",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4932",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2020",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agent-memory-api-bix5.onrender.com",
+      "url": "https://agent-memory-api-bix5.onrender.com/api/memory/store",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4933",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2021",
+        "observed_at": "2026-09-21T21:30:35.563Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agent-testnet.weatherxm.com",
+      "url": "https://agent-testnet.weatherxm.com/api/current",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4934",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2022",
+        "observed_at": "2026-09-21T21:30:36.141Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "network-mainnet"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agent.weatherxm.com",
+      "url": "https://agent.weatherxm.com/api/current",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4935",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2023",
+        "observed_at": "2026-09-21T21:30:36.141Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agent402.dev",
+      "url": "https://agent402.dev/site-release-audit",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4936",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2024",
+        "observed_at": "2026-09-21T21:30:36.241Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentattest.hergertsynthora.com",
+      "url": "https://agentattest.hergertsynthora.com/service",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4937",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2025",
+        "observed_at": "2026-09-21T21:30:36.896Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentcard.hergertsynthora.com",
+      "url": "https://agentcard.hergertsynthora.com/service",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4938",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2026",
+        "observed_at": "2026-09-21T21:30:36.989Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentcash.dev",
+      "url": "https://agentcash.dev/api/send",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4939",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2027",
+        "observed_at": "2026-09-21T21:30:36.989Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentcash.honcho.dev",
+      "url": "https://agentcash.honcho.dev/api/honcho/chat",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4940",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2028",
+        "observed_at": "2026-09-21T21:30:37.005Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentcash.minerva.io",
+      "url": "https://agentcash.minerva.io/api/minerva/resolve",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4941",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2029",
+        "observed_at": "2026-09-21T21:30:37.177Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentclear-worker.agentclear.workers.dev",
+      "url": "https://agentclear-worker.agentclear.workers.dev/task",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4942",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2030",
+        "observed_at": "2026-09-21T21:30:37.301Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "network-mainnet"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentdata-api.com",
+      "url": "https://agentdata-api.com/api/diff",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4943",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2031",
+        "observed_at": "2026-09-21T21:30:37.301Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agenthealthmonitor.xyz",
+      "url": "https://agenthealthmonitor.xyz/health/*",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4944",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2032",
+        "observed_at": "2026-09-21T21:30:37.316Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentkit-x402-buy.vercel.app",
+      "url": "https://agentkit-x402-buy.vercel.app/api/eth-price",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4945",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2033",
+        "observed_at": "2026-09-21T21:30:37.572Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentlair.dev",
+      "url": "https://agentlair.dev/v1/audit/aat_demo1234567890ab",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4946",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2034",
+        "observed_at": "2026-09-21T21:30:37.634Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "payment-required-header"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentmerch.xyz",
+      "url": "https://agentmerch.xyz/order/tshirt",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4947",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2035",
+        "observed_at": "2026-09-21T21:30:37.634Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentpass-protocol.rmalka06.chatgpt.site",
+      "url": "https://agentpass-protocol.rmalka06.chatgpt.site/api/preflight/verified",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4948",
+        "observed_at": "2026-09-17T21:31:26.476Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2036",
+        "observed_at": "2026-09-21T21:30:37.911Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentpay.help",
+      "url": "https://agentpay.help/v1/summarize",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4949",
+        "observed_at": "2026-09-17T21:31:27.109Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2037",
+        "observed_at": "2026-09-21T21:30:38.578Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentprobe.pythonanywhere.com",
+      "url": "https://agentprobe.pythonanywhere.com/v1/cases",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4950",
+        "observed_at": "2026-09-17T21:31:27.198Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2038",
+        "observed_at": "2026-09-21T21:30:38.899Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentprovisions.com",
+      "url": "https://agentprovisions.com/v1/model-provider-delta",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4951",
+        "observed_at": "2026-09-17T21:31:27.524Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2039",
+        "observed_at": "2026-09-21T21:30:38.899Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentready-audit.seshiccse023.chatgpt.site",
+      "url": "https://agentready-audit.seshiccse023.chatgpt.site/api/audit",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4952",
+        "observed_at": "2026-09-17T21:31:27.524Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2040",
+        "observed_at": "2026-09-21T21:30:38.899Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agents.daedalusdevelopmentgroup.com",
+      "url": "https://agents.daedalusdevelopmentgroup.com/v1/tx-smoke-test",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4953",
+        "observed_at": "2026-09-17T21:31:27.544Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2041",
+        "observed_at": "2026-09-21T21:30:38.974Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agents.gedx402.com",
+      "url": "https://agents.gedx402.com/v1/agents/sessions",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4955",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2042",
+        "observed_at": "2026-09-21T21:30:39.125Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agents.jojapi.net",
+      "url": "https://agents.jojapi.net/topup?amount_usd=1",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4956",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2043",
+        "observed_at": "2026-09-21T21:30:39.125Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agents.krumpybot.com",
+      "url": "https://agents.krumpybot.com/sec/company",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4957",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2044",
+        "observed_at": "2026-09-21T21:30:39.125Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agents.oromi.co.uk",
+      "url": "https://agents.oromi.co.uk/api/uk-business/search",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4958",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2045",
+        "observed_at": "2026-09-21T21:30:39.160Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "agentshare.dev",
+      "url": "https://agentshare.dev/api/v1/search",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4959",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2046",
+        "observed_at": "2026-09-21T21:30:39.251Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "aggregator-beta.vercel.app",
+      "url": "https://aggregator-beta.vercel.app/api/search",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4961",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2047",
+        "observed_at": "2026-09-21T21:30:39.413Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "ai.gpuops.io",
+      "url": "https://ai.gpuops.io/v1/chat/completions",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4962",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2048",
+        "observed_at": "2026-09-21T21:30:39.427Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "ai.rjhsignaltech.workers.dev",
+      "url": "https://ai.rjhsignaltech.workers.dev/api/ai-readability",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4963",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2049",
+        "observed_at": "2026-09-21T21:30:39.469Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "aisecurityguard.io",
+      "url": "https://aisecurityguard.io/v1/advisory",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4964",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2051",
+        "observed_at": "2026-09-21T21:30:40.003Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "akkok-159-89-4-32.free.pinggy.net",
+      "url": "https://akkok-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5010",
+        "observed_at": "2026-09-20T00:30:04.751Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2052",
+        "observed_at": "2026-09-21T21:30:40.003Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "alpha.snipersearch.fun",
+      "url": "https://alpha.snipersearch.fun/alpha/filter",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4965",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2053",
+        "observed_at": "2026-09-21T21:30:40.426Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "amalgix.io",
+      "url": "https://amalgix.io/mcp",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4966",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2054",
+        "observed_at": "2026-09-21T21:30:41.046Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "amlscreen.hergertsynthora.com",
+      "url": "https://amlscreen.hergertsynthora.com/service",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4967",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2055",
+        "observed_at": "2026-09-21T21:30:41.048Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "apex.numetal.xyz",
+      "url": "https://apex.numetal.xyz/api/race/feature",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4990",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2056",
+        "observed_at": "2026-09-21T21:30:41.262Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "bazaar-extension"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "apexscout.ai",
+      "url": "https://apexscout.ai/api/bellwether/resident-market-pulse",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4991",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2057",
+        "observed_at": "2026-09-21T21:30:41.407Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "signed-offers"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "api-algo.stelardigital.com",
+      "url": "https://api-algo.stelardigital.com/telemetry",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4992",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2058",
+        "observed_at": "2026-09-21T21:30:41.473Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "api.100levelup.com",
+      "url": "https://api.100levelup.com/x402/verify-audit",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4993",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2059",
+        "observed_at": "2026-09-21T21:30:41.558Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "api.402.coffee",
+      "url": "https://api.402.coffee/test/basic",
+      "method": "POST",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4994",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2060",
+        "observed_at": "2026-09-21T21:30:41.558Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "api.402pixels.com",
+      "url": "https://api.402pixels.com/block",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4995",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2061",
+        "observed_at": "2026-09-21T21:30:41.714Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "api.affinebox.today",
+      "url": "https://api.affinebox.today/api/v1/researchers",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4996",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2062",
+        "observed_at": "2026-09-21T21:30:41.714Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "api.agenticdata.host",
+      "url": "https://api.agenticdata.host/v1/enrich/person",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4997",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2063",
+        "observed_at": "2026-09-21T21:30:41.825Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "api.agentline.cloud",
+      "url": "https://api.agentline.cloud/v1/x402/numbers/buy",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4998",
+        "observed_at": "2026-09-18T22:30:43.589Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2064",
+        "observed_at": "2026-09-21T21:30:41.839Z",
+        "verdict": "ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "apjhv-159-89-4-32.run.pinggy-free.link",
+      "url": "https://apjhv-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4928",
+        "observed_at": "2026-09-17T19:30:43.887Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2123",
+        "observed_at": "2026-09-21T22:30:34.646Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "assex-159-89-4-32.run.pinggy-free.link",
+      "url": "https://assex-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4920",
+        "observed_at": "2026-09-17T11:31:41.150Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2125",
+        "observed_at": "2026-09-21T22:30:34.942Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "avlvv-159-89-4-32.free.pinggy.net",
+      "url": "https://avlvv-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4904",
+        "observed_at": "2026-09-16T19:30:22.438Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2127",
+        "observed_at": "2026-09-21T22:30:35.394Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "awbfo-159-89-4-32.run.pinggy-free.link",
+      "url": "https://awbfo-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4924",
+        "observed_at": "2026-09-17T15:30:51.162Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2128",
+        "observed_at": "2026-09-21T22:30:35.486Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "azava-159-89-4-32.free.pinggy.net",
+      "url": "https://azava-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4979",
+        "observed_at": "2026-09-18T10:30:32.387Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2130",
+        "observed_at": "2026-09-21T22:30:36.369Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "bgvmw-159-89-4-32.free.pinggy.net",
+      "url": "https://bgvmw-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4910",
+        "observed_at": "2026-09-17T01:31:23.754Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2134",
+        "observed_at": "2026-09-21T22:30:37.126Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "bjcpw-159-89-4-32.run.pinggy-free.link",
+      "url": "https://bjcpw-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5011",
+        "observed_at": "2026-09-20T01:30:03.860Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2135",
+        "observed_at": "2026-09-21T22:30:37.409Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "bkmen-159-89-4-32.free.pinggy.net",
+      "url": "https://bkmen-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4968",
+        "observed_at": "2026-09-17T23:31:25.064Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2136",
+        "observed_at": "2026-09-21T22:30:37.438Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "bpqri-159-89-4-32.free.pinggy.net",
+      "url": "https://bpqri-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4988",
+        "observed_at": "2026-09-18T19:30:22.364Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2150",
+        "observed_at": "2026-09-21T22:30:38.694Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "bwljg-159-89-4-32.run.pinggy-free.link",
+      "url": "https://bwljg-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4917",
+        "observed_at": "2026-09-17T08:31:52.821Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2184",
+        "observed_at": "2026-09-21T22:30:42.970Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "cbkgh-159-89-4-32.free.pinggy.net",
+      "url": "https://cbkgh-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4985",
+        "observed_at": "2026-09-18T16:30:23.363Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2250",
+        "observed_at": "2026-09-21T23:30:39.098Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "chgfk-159-89-4-32.free.pinggy.net",
+      "url": "https://chgfk-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5015",
+        "observed_at": "2026-09-20T05:30:05.789Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2292",
+        "observed_at": "2026-09-21T23:30:42.780Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "cisms-159-89-4-32.free.pinggy.net",
+      "url": "https://cisms-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4975",
+        "observed_at": "2026-09-18T06:31:25.798Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2298",
+        "observed_at": "2026-09-21T23:30:43.452Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "curnd-159-89-4-32.free.pinggy.net",
+      "url": "https://curnd-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4969",
+        "observed_at": "2026-09-18T00:31:30.345Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2442",
+        "observed_at": "2026-09-22T01:30:37.581Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "cvpkj-159-89-4-32.free.pinggy.net",
+      "url": "https://cvpkj-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5017",
+        "observed_at": "2026-09-20T07:30:03.933Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2447",
+        "observed_at": "2026-09-22T01:30:38.232Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "dcozk-159-89-4-32.run.pinggy-free.link",
+      "url": "https://dcozk-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4908",
+        "observed_at": "2026-09-16T23:31:21.554Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2511",
+        "observed_at": "2026-09-22T02:30:33.598Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "dkjae-159-89-4-32.run.pinggy-free.link",
+      "url": "https://dkjae-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4977",
+        "observed_at": "2026-09-18T08:30:32.589Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2585",
+        "observed_at": "2026-09-22T02:30:43.472Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "dkonq-159-89-4-32.run.pinggy-free.link",
+      "url": "https://dkonq-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5003",
+        "observed_at": "2026-09-19T17:30:24.353Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2586",
+        "observed_at": "2026-09-22T02:30:43.529Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "duzhx-159-89-4-32.free.pinggy.net",
+      "url": "https://duzhx-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4954",
+        "observed_at": "2026-09-17T21:31:27.548Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2628",
+        "observed_at": "2026-09-22T03:30:35.456Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "ecgdg-159-89-4-32.run.pinggy-free.link",
+      "url": "https://ecgdg-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4973",
+        "observed_at": "2026-09-18T04:31:29.911Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2669",
+        "observed_at": "2026-09-22T03:30:42.333Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "efnov-159-89-4-32.free.pinggy.net",
+      "url": "https://efnov-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4915",
+        "observed_at": "2026-09-17T06:31:33.988Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2685",
+        "observed_at": "2026-09-22T03:30:44.798Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "ehnio-159-89-4-32.run.pinggy-free.link",
+      "url": "https://ehnio-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4923",
+        "observed_at": "2026-09-17T14:30:50.374Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2687",
+        "observed_at": "2026-09-22T03:30:45.143Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "eymqg-159-89-4-32.run.pinggy-free.link",
+      "url": "https://eymqg-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4972",
+        "observed_at": "2026-09-18T03:31:27.076Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2757",
+        "observed_at": "2026-09-22T04:30:38.625Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "fcbaw-159-89-4-32.run.pinggy-free.link",
+      "url": "https://fcbaw-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4986",
+        "observed_at": "2026-09-18T17:30:23.991Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2804",
+        "observed_at": "2026-09-22T05:30:34.239Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "fdrdl-159-89-4-32.run.pinggy-free.link",
+      "url": "https://fdrdl-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4978",
+        "observed_at": "2026-09-18T09:30:32.598Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2811",
+        "observed_at": "2026-09-22T05:30:34.239Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "fqomr-159-89-4-32.run.pinggy-free.link",
+      "url": "https://fqomr-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4918",
+        "observed_at": "2026-09-17T09:31:50.440Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2870",
+        "observed_at": "2026-09-22T05:30:40.970Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "frgja-159-89-4-32.run.pinggy-free.link",
+      "url": "https://frgja-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5020",
+        "observed_at": "2026-09-20T10:30:04.193Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2881",
+        "observed_at": "2026-09-22T05:30:42.322Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "gbtlf-159-89-4-32.run.pinggy-free.link",
+      "url": "https://gbtlf-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4914",
+        "observed_at": "2026-09-17T05:31:21.300Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2927",
+        "observed_at": "2026-09-22T06:30:57.100Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "gphac-159-89-4-32.free.pinggy.net",
+      "url": "https://gphac-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4984",
+        "observed_at": "2026-09-18T15:30:22.621Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/2996",
+        "observed_at": "2026-09-22T06:31:06.132Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "haaxv-159-89-4-32.run.pinggy-free.link",
+      "url": "https://haaxv-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4916",
+        "observed_at": "2026-09-17T07:31:34.974Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3022",
+        "observed_at": "2026-09-22T07:30:57.657Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hahnr-159-89-4-32.free.pinggy.net",
+      "url": "https://hahnr-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4919",
+        "observed_at": "2026-09-17T10:31:46.709Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3024",
+        "observed_at": "2026-09-22T07:30:57.944Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hbfwh-159-89-4-32.run.pinggy-free.link",
+      "url": "https://hbfwh-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4971",
+        "observed_at": "2026-09-18T02:31:29.771Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3037",
+        "observed_at": "2026-09-22T07:30:59.350Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hfeqg-159-89-4-32.free.pinggy.net",
+      "url": "https://hfeqg-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4913",
+        "observed_at": "2026-09-17T04:31:17.936Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3047",
+        "observed_at": "2026-09-22T07:31:01.528Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hfhcj-159-89-4-32.run.pinggy-free.link",
+      "url": "https://hfhcj-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4902",
+        "observed_at": "2026-09-16T17:30:25.841Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3048",
+        "observed_at": "2026-09-22T07:31:02.176Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hhsdc-159-89-4-32.free.pinggy.net",
+      "url": "https://hhsdc-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5019",
+        "observed_at": "2026-09-20T09:30:05.956Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3049",
+        "observed_at": "2026-09-22T07:31:03.209Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hibtb-159-89-4-32.run.pinggy-free.link",
+      "url": "https://hibtb-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4987",
+        "observed_at": "2026-09-18T18:30:23.051Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3050",
+        "observed_at": "2026-09-22T07:31:03.453Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hjwwu-159-89-4-32.run.pinggy-free.link",
+      "url": "https://hjwwu-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5012",
+        "observed_at": "2026-09-20T02:30:03.555Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3054",
+        "observed_at": "2026-09-22T07:31:04.759Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hrbdd-159-89-4-32.free.pinggy.net",
+      "url": "https://hrbdd-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4976",
+        "observed_at": "2026-09-18T07:31:33.826Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3066",
+        "observed_at": "2026-09-22T07:31:06.738Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "hspos-159-89-4-32.run.pinggy-free.link",
+      "url": "https://hspos-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4927",
+        "observed_at": "2026-09-17T18:30:47.606Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3067",
+        "observed_at": "2026-09-22T07:31:06.745Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "iivpj-159-89-4-32.free.pinggy.net",
+      "url": "https://iivpj-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5008",
+        "observed_at": "2026-09-19T22:30:04.080Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3098",
+        "observed_at": "2026-09-22T07:31:15.720Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "jltww-159-89-4-32.free.pinggy.net",
+      "url": "https://jltww-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5007",
+        "observed_at": "2026-09-19T21:30:05.849Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3180",
+        "observed_at": "2026-09-22T08:31:05.952Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "jnalh-159-89-4-32.run.pinggy-free.link",
+      "url": "https://jnalh-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4921",
+        "observed_at": "2026-09-17T12:31:43.567Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3181",
+        "observed_at": "2026-09-22T08:31:05.960Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "jsehm-159-89-4-32.run.pinggy-free.link",
+      "url": "https://jsehm-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4970",
+        "observed_at": "2026-09-18T01:31:29.372Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3198",
+        "observed_at": "2026-09-22T08:31:08.108Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "jwwvb-159-89-4-32.run.pinggy-free.link",
+      "url": "https://jwwvb-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4912",
+        "observed_at": "2026-09-17T03:31:23.392Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3206",
+        "observed_at": "2026-09-22T09:30:56.080Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "khiho-159-89-4-32.run.pinggy-free.link",
+      "url": "https://khiho-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4980",
+        "observed_at": "2026-09-18T11:30:32.402Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3223",
+        "observed_at": "2026-09-22T09:30:56.332Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "kyfvq-159-89-4-32.run.pinggy-free.link",
+      "url": "https://kyfvq-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5005",
+        "observed_at": "2026-09-19T18:37:36.012Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3247",
+        "observed_at": "2026-09-22T09:30:59.307Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "lipcj-159-89-4-32.run.pinggy-free.link",
+      "url": "https://lipcj-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4894",
+        "observed_at": "2026-09-16T14:30:24.110Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3302",
+        "observed_at": "2026-09-22T10:30:56.499Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "lxgvd-159-89-4-32.run.pinggy-free.link",
+      "url": "https://lxgvd-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5014",
+        "observed_at": "2026-09-20T04:30:03.793Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3330",
+        "observed_at": "2026-09-22T10:30:57.990Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "lygsh-159-89-4-32.run.pinggy-free.link",
+      "url": "https://lygsh-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4907",
+        "observed_at": "2026-09-16T22:31:31.013Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3331",
+        "observed_at": "2026-09-22T10:30:58.073Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "mgiar-159-89-4-32.run.pinggy-free.link",
+      "url": "https://mgiar-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4901",
+        "observed_at": "2026-09-16T16:30:23.294Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3446",
+        "observed_at": "2026-09-22T11:30:59.202Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "mpuxx-159-89-4-32.free.pinggy.net",
+      "url": "https://mpuxx-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5009",
+        "observed_at": "2026-09-19T23:30:04.018Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3515",
+        "observed_at": "2026-09-22T12:30:56.654Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "mvcrv-159-89-4-32.free.pinggy.net",
+      "url": "https://mvcrv-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4926",
+        "observed_at": "2026-09-17T17:30:51.234Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3525",
+        "observed_at": "2026-09-22T12:30:57.306Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "nfsbl-159-89-4-32.free.pinggy.net",
+      "url": "https://nfsbl-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5013",
+        "observed_at": "2026-09-20T03:30:03.998Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3593",
+        "observed_at": "2026-09-22T12:31:04.654Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "nkeal-159-89-4-32.free.pinggy.net",
+      "url": "https://nkeal-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4922",
+        "observed_at": "2026-09-17T13:31:46.513Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3607",
+        "observed_at": "2026-09-22T13:30:56.140Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "ojwag-159-89-4-32.run.pinggy-free.link",
+      "url": "https://ojwag-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4983",
+        "observed_at": "2026-09-18T14:30:23.979Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3666",
+        "observed_at": "2026-09-22T13:31:03.050Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "opbop-159-89-4-32.run.pinggy-free.link",
+      "url": "https://opbop-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5016",
+        "observed_at": "2026-09-20T06:30:04.008Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3690",
+        "observed_at": "2026-09-22T13:31:06.619Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "orbvw-159-89-4-32.free.pinggy.net",
+      "url": "https://orbvw-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5001",
+        "observed_at": "2026-09-19T15:30:24.462Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3728",
+        "observed_at": "2026-09-22T14:30:58.931Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "osbbm-159-89-4-32.run.pinggy-free.link",
+      "url": "https://osbbm-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5004",
+        "observed_at": "2026-09-19T18:30:25.176Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3739",
+        "observed_at": "2026-09-22T14:30:59.752Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "prwws-159-89-4-32.run.pinggy-free.link",
+      "url": "https://prwws-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4925",
+        "observed_at": "2026-09-17T16:30:48.920Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3891",
+        "observed_at": "2026-09-22T15:31:08.187Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "qaprz-159-89-4-32.free.pinggy.net",
+      "url": "https://qaprz-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4911",
+        "observed_at": "2026-09-17T02:31:19.740Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3898",
+        "observed_at": "2026-09-22T15:31:09.598Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "qaxez-159-89-4-32.run.pinggy-free.link",
+      "url": "https://qaxez-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4989",
+        "observed_at": "2026-09-18T20:30:21.849Z",
+        "verdict": "not_ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3899",
+        "observed_at": "2026-09-22T15:31:09.616Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [
+        "status-402"
+      ],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": []
+    },
+    {
+      "host": "qoqtm-159-89-4-32.free.pinggy.net",
+      "url": "https://qoqtm-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5006",
+        "observed_at": "2026-09-19T20:30:24.576Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3900",
+        "observed_at": "2026-09-22T15:31:09.737Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "rgmwy-159-89-4-32.run.pinggy-free.link",
+      "url": "https://rgmwy-159-89-4-32.run.pinggy-free.link/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4982",
+        "observed_at": "2026-09-18T13:30:24.538Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3922",
+        "observed_at": "2026-09-22T16:30:48.136Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "rmrcd-159-89-4-32.free.pinggy.net",
+      "url": "https://rmrcd-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5002",
+        "observed_at": "2026-09-19T16:30:23.712Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3928",
+        "observed_at": "2026-09-22T16:30:49.013Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "rpsvq-159-89-4-32.free.pinggy.net",
+      "url": "https://rpsvq-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4974",
+        "observed_at": "2026-09-18T05:31:28.617Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3934",
+        "observed_at": "2026-09-22T16:30:49.990Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "rsvom-159-89-4-32.free.pinggy.net",
+      "url": "https://rsvom-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5018",
+        "observed_at": "2026-09-20T08:30:03.613Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/3935",
+        "observed_at": "2026-09-22T16:30:50.748Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "tshyz-159-89-4-32.free.pinggy.net",
+      "url": "https://tshyz-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4909",
+        "observed_at": "2026-09-17T00:31:18.078Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/4043",
+        "observed_at": "2026-09-22T17:30:54.597Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "ulkoz-159-89-4-32.free.pinggy.net",
+      "url": "https://ulkoz-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/4981",
+        "observed_at": "2026-09-18T12:30:33.247Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/4046",
+        "observed_at": "2026-09-22T17:30:54.652Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    },
+    {
+      "host": "xwecs-159-89-4-32.free.pinggy.net",
+      "url": "https://xwecs-159-89-4-32.free.pinggy.net/evidence",
+      "method": "GET",
+      "battery": "preflight-v2",
+      "from": {
+        "sequence": 8,
+        "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+        "snapshot_url": "https://scvd.store/corpus/8.json",
+        "row_pointer": "/round/hosts/5000",
+        "observed_at": "2026-09-19T05:30:43.695Z",
+        "verdict": "ready"
+      },
+      "to": {
+        "sequence": 9,
+        "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+        "snapshot_url": "https://scvd.store/corpus/9.json",
+        "row_pointer": "/round/hosts/4763",
+        "observed_at": "2026-09-22T23:30:55.099Z",
+        "verdict": "not_ready"
+      },
+      "repeated_failed_checks": [],
+      "no_longer_reported_failed_checks": [],
+      "newly_reported_failed_checks": [
+        "status-402"
+      ]
+    }
+  ],
+  "catalog_difference_rows": [
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/8",
+      "host": "stableupload.dev",
+      "url": "https://stableupload.dev/api/upload",
+      "method": "POST",
+      "observed_at": "2026-09-21T02:30:36.271Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-20T23:34:14.611Z",
+      "fields": [
+        "amount on eip155:8453: catalog 5000, door 2000000",
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 5000, door 2000000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/70",
+      "host": "x402.aispace.bot",
+      "url": "https://x402.aispace.bot/api/v1/image/generate",
+      "method": "POST",
+      "observed_at": "2026-09-21T02:30:42.573Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-16T17:33:23.689Z",
+      "fields": [
+        "amount on eip155:8453: catalog 15000, door 10000",
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 15000, door 10000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/122",
+      "host": "stabletube.dev",
+      "url": "https://stabletube.dev/api/download",
+      "method": "POST",
+      "observed_at": "2026-09-21T03:30:37.638Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T18:27:07.901Z",
+      "fields": [
+        "amount on eip155:8453: catalog 100000, door 200000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/166",
+      "host": "gate402.app",
+      "url": "https://gate402.app/v1/proxy",
+      "method": "GET",
+      "observed_at": "2026-09-21T03:30:41.915Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T06:38:03.954Z",
+      "fields": [
+        "rail solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/178",
+      "host": "www.tereno.xyz",
+      "url": "https://www.tereno.xyz/api/v1/capabilities/chain.snapshot/invoke",
+      "method": "GET",
+      "observed_at": "2026-09-21T03:30:43.120Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-15T19:52:19.677Z",
+      "fields": [
+        "amount on eip155:8453: catalog 2000, door 5000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/192",
+      "host": "animica.dev",
+      "url": "https://animica.dev/x402/qrng/draw",
+      "method": "GET",
+      "observed_at": "2026-09-21T03:30:44.986Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-15T07:21:37.546Z",
+      "fields": [
+        "amount on eip155:8453: catalog 1786, door 1920",
+        "amount on animica:1: catalog 31583913197, door 30077700726"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/229",
+      "host": "x402-mcp.onrender.com",
+      "url": "https://x402-mcp.onrender.com/base/tx-decision",
+      "method": "GET",
+      "observed_at": "2026-09-21T04:30:37.719Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-14T19:47:20.318Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x8a897d546c22d726b45fa25f0ebb56207e63ff4e, door 0x05e1720bb82f86b5bc7940a99fdc702e32256357"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/270",
+      "host": "api.babyblueviper.com",
+      "url": "https://api.babyblueviper.com/regime",
+      "method": "GET",
+      "observed_at": "2026-09-21T04:30:41.898Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T05:41:01.657Z",
+      "fields": [
+        "amount on eip155:8453: catalog 22908, door 24385",
+        "amount on xrpl:0: catalog 17678, door 17225"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/402",
+      "host": "twitr.sh",
+      "url": "https://twitr.sh/api/tools/x_search",
+      "method": "GET",
+      "observed_at": "2026-09-21T06:30:36.254Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-15T13:18:48.566Z",
+      "fields": [
+        "amount on eip155:8453: catalog 60000, door 24000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/419",
+      "host": "www.x402financialdata.com",
+      "url": "https://www.x402financialdata.com/crypto-prices",
+      "method": "GET",
+      "observed_at": "2026-09-21T06:30:36.254Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T03:36:36.61Z",
+      "fields": [
+        "payTo on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog ftwh34f9ybgdd2ydjquqhnzgrtqshmharm8w2hpcb79l, door gj1fu5pi1wamhwy9nr1fh67fetrwxkry2ud6fdgbq33b"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/486",
+      "host": "api.lastlookdata.com",
+      "url": "https://api.lastlookdata.com/api/treasury/current",
+      "method": "GET",
+      "observed_at": "2026-09-21T06:30:43.455Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T03:53:38.773Z",
+      "fields": [
+        "amount on eip155:8453: catalog 100170, door 88944"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/552",
+      "host": "zerostart-agent.jack-labs.workers.dev",
+      "url": "https://zerostart-agent.jack-labs.workers.dev/paid/brief-audit",
+      "method": "GET",
+      "observed_at": "2026-09-21T07:30:42.852Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-14T19:50:44.061Z",
+      "fields": [
+        "amount on eip155:8453: catalog 10000, door 10000000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/626",
+      "host": "api.xfuel.app",
+      "url": "https://api.xfuel.app/task-request",
+      "method": "GET",
+      "observed_at": "2026-09-21T08:30:37.905Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-24T13:41:30.581Z",
+      "fields": [
+        "amount on eip155:8453: catalog 10000, door 2000",
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 10000, door 2000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/627",
+      "host": "tenjin.blog",
+      "url": "https://tenjin.blog/api/read/:handle/:slug",
+      "method": "GET",
+      "observed_at": "2026-09-21T08:30:38.022Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-23T23:11:27.572Z",
+      "fields": [
+        "payTo and amount on eip155:8453: catalog 0x7a0fb3e2107f95c25a0b56dff9c710f3e86ddc0b at 50000, door 0x578c640e2d53023066026381b8cc362539741063 at 100000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/630",
+      "host": "gpt55.558686.xyz",
+      "url": "https://gpt55.558686.xyz/v1/tools/evm-wallet-balance",
+      "method": "GET",
+      "observed_at": "2026-09-21T08:30:38.107Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-12T15:49:00.141Z",
+      "fields": [
+        "rail solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/673",
+      "host": "agentdata-api.sander-van-aard.workers.dev",
+      "url": "https://agentdata-api.sander-van-aard.workers.dev/web/places",
+      "method": "GET",
+      "observed_at": "2026-09-21T08:30:46.296Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-06T20:10:57.693Z",
+      "fields": [
+        "amount on eip155:8453: catalog 4000, door 10000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/676",
+      "host": "api.melvea.com",
+      "url": "https://api.melvea.com/v1/catalog",
+      "method": "GET",
+      "observed_at": "2026-09-21T08:30:47.040Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T06:18:42.005Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0xf4efe76fe83e7e2e865cdf4ccf35ba71f91426c6, door 0xcf87aee366414f95ca6f5d4125fa0cdc6abd90a1"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/689",
+      "host": "x402-stock-indicators.vercel.app",
+      "url": "https://x402-stock-indicators.vercel.app/fear-greed",
+      "method": "GET",
+      "observed_at": "2026-09-21T08:30:48.399Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-13T09:51:29.803Z",
+      "fields": [
+        "payTo on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog ftwh34f9ybgdd2ydjquqhnzgrtqshmharm8w2hpcb79l, door gj1fu5pi1wamhwy9nr1fh67fetrwxkry2ud6fdgbq33b"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/709",
+      "host": "datastand.dev",
+      "url": "https://datastand.dev/api/llm/route",
+      "method": "GET",
+      "observed_at": "2026-09-21T09:30:37.753Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-10T20:35:16.149Z",
+      "fields": [
+        "amount on eip155:8453: catalog 5000, door 50000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/812",
+      "host": "x402orcle.vercel.app",
+      "url": "https://x402orcle.vercel.app/api/consult/oracle_ask",
+      "method": "GET",
+      "observed_at": "2026-09-21T10:30:35.957Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-19T16:01:02.357Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0xab745e5f576667037696e78ba7da28e193e4423d, door 0x05e1720bb82f86b5bc7940a99fdc702e32256357"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/835",
+      "host": "tenjin.sh",
+      "url": "https://tenjin.sh/api/read/:handle/:slug",
+      "method": "GET",
+      "observed_at": "2026-09-21T10:30:40.487Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-19T01:01:55.714Z",
+      "fields": [
+        "payTo and amount on eip155:8453: catalog 0x1f64b0e6b0132bae77f886ec57352549b18af4e5 at 10000, door 0x578c640e2d53023066026381b8cc362539741063 at 100000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/865",
+      "host": "holdsup.app",
+      "url": "https://holdsup.app/api/v1/episodes",
+      "method": "GET",
+      "observed_at": "2026-09-21T10:30:46.219Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T06:48:08.067Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x14ddf179048b7e7bf1b80baf3b2b4d18ba42b38b, door 0x3b0b371ae3cb08f272b87319684f6518b3b313a0"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/895",
+      "host": "toolrail.dev",
+      "url": "https://toolrail.dev/latam/dolar-argentina",
+      "method": "GET",
+      "observed_at": "2026-09-21T10:30:51.308Z",
+      "verdict": "not_ready",
+      "catalog_updated_at": "2026-09-17T04:01:20.827Z",
+      "fields": [
+        "amount on eip155:8453: catalog 7000, door 5000",
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 7000, door 5000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/938",
+      "host": "digital-myto.onrender.com",
+      "url": "https://digital-myto.onrender.com/api/whales/latest",
+      "method": "GET",
+      "observed_at": "2026-09-21T11:30:43.900Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-17T01:02:06.749Z",
+      "fields": [
+        "amount on eip155:8453: catalog 9000, door 5000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/953",
+      "host": "locationlists.com",
+      "url": "https://locationlists.com/api/x402/query",
+      "method": "POST",
+      "observed_at": "2026-09-21T11:30:47.537Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-15T19:44:52.233Z",
+      "fields": [
+        "amount on eip155:8453: catalog 310000, door 40000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/955",
+      "host": "api.romny.dpdns.org",
+      "url": "https://api.romny.dpdns.org/v1/rh/spreads",
+      "method": "GET",
+      "observed_at": "2026-09-21T11:30:47.537Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-15T16:20:37.327Z",
+      "fields": [
+        "amount on eip155:8453: catalog 10000, door 100000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1036",
+      "host": "api.webacy.com",
+      "url": "https://api.webacy.com/addresses/:address",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:40.116Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-07T17:33:59.653Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x41e61bcfdeb8a26776b7c9cfb35d255fdf77e64d, door 0xdabdc91f828eab9226d66b34b917d9c8e710266c"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1040",
+      "host": "modelwars.lol",
+      "url": "https://modelwars.lol/api/paint",
+      "method": "POST",
+      "observed_at": "2026-09-21T12:30:40.549Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-06T21:43:15.161Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0xd92ce50344184f228595fc211ff9f19ead8387e8, door 0x1e854490285fa52238713e0fdc59962a1e1feab2"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1041",
+      "host": "handsignd.com",
+      "url": "https://handsignd.com/api/v1/ask",
+      "method": "POST",
+      "observed_at": "2026-09-21T12:30:40.713Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-06T17:01:50.623Z",
+      "fields": [
+        "amount on eip155:8453: catalog 2000000, door 25000000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1043",
+      "host": "parquetharmonize-v01-x402-262046248169.northamerica-northeast2.run.app",
+      "url": "https://parquetharmonize-v01-x402-262046248169.northamerica-northeast2.run.app/v1/harmonize",
+      "method": "POST",
+      "observed_at": "2026-09-21T12:30:40.802Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-06T06:16:36.859Z",
+      "fields": [
+        "rail eip155:84532: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1046",
+      "host": "dev-5090-box.tailfb4c1f.ts.net",
+      "url": "https://dev-5090-box.tailfb4c1f.ts.net/v1/coder/refactor",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:41.724Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-06T01:50:12.332Z",
+      "fields": [
+        "rail eip155:84532: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1050",
+      "host": "kino402.com",
+      "url": "https://kino402.com/v1/audio/tts",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:42.395Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-05T08:49:56.304Z",
+      "fields": [
+        "amount on eip155:8453: catalog 7000, door 120000",
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 7000, door 120000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1051",
+      "host": "godlaws.com",
+      "url": "https://godlaws.com/script/api/x402/script",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:42.894Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-05T00:29:39.678Z",
+      "fields": [
+        "payTo and amount on eip155:8453: catalog 0x195158e4f440852cf816ec040550be654eba109f at 1500000, door 0xf2e7d8377271e9f982b61d99a167ae6c68d05fa4 at 4500000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1060",
+      "host": "api.sourcey.com",
+      "url": "https://api.sourcey.com/v1/startup-credits/reviews",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:44.768Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-02T16:04:20.168Z",
+      "fields": [
+        "amount on eip155:8453: catalog 25000000, door 49000000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1061",
+      "host": "app.r3p.xyz",
+      "url": "https://app.r3p.xyz/mcp/x402",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:44.768Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-02T13:43:41.084Z",
+      "fields": [
+        "amount on eip155:8453: catalog 30000, door 2000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1082",
+      "host": "cryptoops.friczero.com",
+      "url": "https://cryptoops.friczero.com/mcp",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:47.988Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-28T16:39:29.204Z",
+      "fields": [
+        "amount on eip155:8453: catalog 100000, door 500000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1086",
+      "host": "csno.cc",
+      "url": "https://csno.cc/api/csno/chips",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:48.436Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-26T23:09:45.026Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x267c2b764064a90cf779b2e645a144ab12e82ee5, door 0x905cc76a095e129f83c71a0adbe4e37e21a60b2c"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1101",
+      "host": "www.watchevelive.com",
+      "url": "https://www.watchevelive.com/stamp",
+      "method": "GET",
+      "observed_at": "2026-09-21T12:30:50.138Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-18T00:01:02.432Z",
+      "fields": [
+        "amount on eip155:8453: catalog 50000, door 50000000",
+        "amount on eip155:137: catalog 50000, door 50000000",
+        "amount on eip155:42161: catalog 50000, door 50000000",
+        "amount on eip155:1: catalog 50000, door 50000000",
+        "amount on eip155:8453: catalog 50000, door 50000000",
+        "amount on eip155:43114: catalog 50000, door 50000000",
+        "amount on eip155:42161: catalog 50000, door 50000000",
+        "amount on eip155:10: catalog 50000, door 50000000",
+        "amount on eip155:137: catalog 50000, door 50000000",
+        "amount on eip155:130: catalog 50000, door 50000000",
+        "amount on eip155:146: catalog 50000, door 50000000",
+        "amount on eip155:480: catalog 50000, door 50000000",
+        "amount on eip155:1329: catalog 50000, door 50000000",
+        "amount on eip155:999: catalog 50000, door 50000000",
+        "amount on eip155:5042: catalog 50000, door 50000000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1117",
+      "host": "error404.life",
+      "url": "https://error404.life/toll/402/",
+      "method": "GET",
+      "observed_at": "2026-09-21T13:30:36.328Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-25T12:53:13.034Z",
+      "fields": [
+        "rail base: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1118",
+      "host": "wouldpayagain.com",
+      "url": "https://wouldpayagain.com/api/bounty/submit",
+      "method": "POST",
+      "observed_at": "2026-09-21T13:30:36.328Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-05T17:56:01.717Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x228440f8d5df8b2e29c37255b291599060894bfb, door 0x0828d14c01e5429fb72e751f3a754331a26ce998"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1120",
+      "host": "amanchain-relay.gitajhd.workers.dev",
+      "url": "https://amanchain-relay.gitajhd.workers.dev/api/x402/aman-crypto-price",
+      "method": "GET",
+      "observed_at": "2026-09-21T13:30:36.328Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-10T23:01:17.331Z",
+      "fields": [
+        "amount on eip155:8453: catalog 1244, door 1246"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1199",
+      "host": "intel.rallylive.ca",
+      "url": "https://intel.rallylive.ca/dev/docker-tags",
+      "method": "GET",
+      "observed_at": "2026-09-21T13:30:48.308Z",
+      "verdict": "not_ready",
+      "catalog_updated_at": "2026-09-13T10:26:08.865Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x91d568599fb802cb3f03f067d2063785dbaf0abd, door 0xfc24fd34da9e49a0110dcaee3ad30ec54175ebb3",
+        "payTo and amount on eip155:84532: catalog 0x91d568599fb802cb3f03f067d2063785dbaf0abd at 10000, door 0xfc24fd34da9e49a0110dcaee3ad30ec54175ebb3 at 1000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1214",
+      "host": "spawnxchange.com",
+      "url": "https://spawnxchange.com/api/v1/items/:uuid/acquire",
+      "method": "POST",
+      "observed_at": "2026-09-21T14:30:20.442Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-01T06:30:45.319Z",
+      "fields": [
+        "payTo and amount on eip155:8453: catalog 0x91aaa2d70f1845586b331a0e28762eefba65cde1 at 1000000, door 0x15fc1c760dd0dfa6159ab08756c656c7198a428b at 1000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1225",
+      "host": "spoolis.com",
+      "url": "https://spoolis.com/api/v1/verify/x402",
+      "method": "POST",
+      "observed_at": "2026-09-21T14:30:22.838Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-31T14:08:10.652Z",
+      "fields": [
+        "payTo and amount on eip155:8453: catalog 0x58ea54cbae90c99270d93de1caca9465667fa752 at 6000, door 0x493fa342f18bfd5d1a906f3c538d3675d54c11e9 at 10100"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1390",
+      "host": "x402-retire-git-feat-paid-indexing-gate-and-openapi-carbonmark.vercel.app",
+      "url": "https://x402-retire-git-feat-paid-indexing-gate-and-openapi-carbonmark.vercel.app/api/catalog",
+      "method": "GET",
+      "observed_at": "2026-09-21T15:30:38.522Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-15T17:12:28.43Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x6ada131794388b83c2b3e5b8a24a4677b3ad2e39, door 0xf624f9fe1d3165c5ca32c7fbdbf82f4a5b1d2d0e"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1407",
+      "host": "api-pricing-engine.johntaylor1online.workers.dev",
+      "url": "https://api-pricing-engine.johntaylor1online.workers.dev/calculate",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:20.417Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-14T13:36:30.612Z",
+      "fields": [
+        "rail eip155:137: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1422",
+      "host": "url-intel.bowling-anthony.workers.dev",
+      "url": "https://url-intel.bowling-anthony.workers.dev/sitemap",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:20.860Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-31T02:28:15.579Z",
+      "fields": [
+        "amount on eip155:8453: catalog 2000, door 8000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1427",
+      "host": "api.prismnetwork.tech",
+      "url": "https://api.prismnetwork.tech/inference/v1/inference",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:21.972Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-11T12:58:09.829Z",
+      "fields": [
+        "amount on eip155:8453: catalog 3192, door 12144",
+        "amount on eip155:4663: catalog 3192, door 12144"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1452",
+      "host": "prompt-orchestration-api.johntaylor1online.workers.dev",
+      "url": "https://prompt-orchestration-api.johntaylor1online.workers.dev/orchestrate",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:28.715Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-09T04:14:16.671Z",
+      "fields": [
+        "amount on eip155:8453: catalog 100000, door 500000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1461",
+      "host": "crypto-sentiment-x402.onrender.com",
+      "url": "https://crypto-sentiment-x402.onrender.com/sentiment/:symbol",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:30.417Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-18T10:23:44.512Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x1265a8cc7b75d5d6e99440b1d66d4507082f9cb9, door 0xa6e10884a70d00de8b8c5dff0a2a9b1a821ce074"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1477",
+      "host": "www.thelatentlounge.com",
+      "url": "https://www.thelatentlounge.com/api/play/constraint",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:34.890Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-20T21:25:39.596Z",
+      "fields": [
+        "rail base: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1484",
+      "host": "mcp.agenteconomy.cloud",
+      "url": "https://mcp.agenteconomy.cloud/api/v1/verify",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:36.359Z",
+      "verdict": "not_ready",
+      "catalog_updated_at": "2026-09-06T11:51:00.427Z",
+      "fields": [
+        "rail eip155:8453: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1490",
+      "host": "x402-data-api.sigrunner.workers.dev",
+      "url": "https://x402-data-api.sigrunner.workers.dev/crypto/prices",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:37.603Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-12T11:15:13.707Z",
+      "fields": [
+        "amount on eip155:8453: catalog 1000, door 4000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1493",
+      "host": "api.influship.com",
+      "url": "https://api.influship.com/v1/raw/youtube/:var1",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:30:38.240Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-07-18T05:30:35.077Z",
+      "fields": [
+        "amount on eip155:8453: catalog 60000, door 10000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1528",
+      "host": "scribe.vimabrosta.com",
+      "url": "https://scribe.vimabrosta.com/v1/render",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:31:38.439Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-18T09:03:14.272Z",
+      "fields": [
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 191266, door 172495"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1561",
+      "host": "api.k8s-dev.blockscout.com",
+      "url": "https://api.k8s-dev.blockscout.com/services/bens/api/v1/protocols",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:31:46.958Z",
+      "verdict": "not_ready",
+      "catalog_updated_at": "2026-09-12T16:56:57.493Z",
+      "fields": [
+        "rail eip155:8453: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1577",
+      "host": "umpire.vimabrosta.com",
+      "url": "https://umpire.vimabrosta.com/v1/verdicts/sworn",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:31:50.668Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-03T07:55:01.325Z",
+      "fields": [
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 50572995, door 43076009"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1578",
+      "host": "stumble.vimabrosta.com",
+      "url": "https://stumble.vimabrosta.com/v1/inbox",
+      "method": "GET",
+      "observed_at": "2026-09-21T16:31:50.795Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-03T06:03:23.516Z",
+      "fields": [
+        "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 1008195, door 861923"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1583",
+      "host": "energybilltoolkit.co.uk",
+      "url": "https://energybilltoolkit.co.uk/places/api/tools/place-lookup",
+      "method": "POST",
+      "observed_at": "2026-09-21T16:31:51.666Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-30T15:36:46.809Z",
+      "fields": [
+        "amount on eip155:8453: catalog 10000, door 1000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1644",
+      "host": "api.willowbirdie.com",
+      "url": "https://api.willowbirdie.com/v1/apk/triage",
+      "method": "POST",
+      "observed_at": "2026-09-21T17:30:28.297Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-31T05:02:24.532Z",
+      "fields": [
+        "rail eip155:84532: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1712",
+      "host": "emc2ai.io",
+      "url": "https://emc2ai.io/x402/bitquery/bagcheck/raw",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:19.623Z",
+      "verdict": "not_ready",
+      "catalog_updated_at": "2026-05-20T14:21:20.927Z",
+      "fields": [
+        "rail base: the catalog lists it, the door does not offer it",
+        "rail solana: the catalog lists it, the door does not offer it",
+        "amount on lightning:mainnet: catalog 518, door 236"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1717",
+      "host": "strategic-divergence-engine.johntaylor1online.workers.dev",
+      "url": "https://strategic-divergence-engine.johntaylor1online.workers.dev/calculate",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:19.623Z",
+      "verdict": "not_ready",
+      "catalog_updated_at": "2026-09-09T06:15:25.594Z",
+      "fields": [
+        "amount on eip155:8453: catalog 2000000, door ",
+        "rail eip155:137: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1720",
+      "host": "exp-100k-001-v2.vercel.app",
+      "url": "https://exp-100k-001-v2.vercel.app/v1/verticals/medical-equipment/buyer-map",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:19.623Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-19T16:13:57.039Z",
+      "fields": [
+        "amount on eip155:8453: catalog 100000, door 10000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1737",
+      "host": "attention-allocation-api.johntaylor1online.workers.dev",
+      "url": "https://attention-allocation-api.johntaylor1online.workers.dev/calculate",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:23.851Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-09T04:13:20.991Z",
+      "fields": [
+        "amount on eip155:8453: catalog 50000, door 20000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1746",
+      "host": "sentiment-adaptive-response-api.johntaylor1online.workers.dev",
+      "url": "https://sentiment-adaptive-response-api.johntaylor1online.workers.dev/calculate",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:25.587Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-09T04:13:21.073Z",
+      "fields": [
+        "amount on eip155:8453: catalog 50000, door 20000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1747",
+      "host": "temporal-knowledge-decay-api.johntaylor1online.workers.dev",
+      "url": "https://temporal-knowledge-decay-api.johntaylor1online.workers.dev/calculate",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:26.093Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-09T04:13:20.959Z",
+      "fields": [
+        "amount on eip155:8453: catalog 50000, door 20000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1748",
+      "host": "workflow-automation-api.johntaylor1online.workers.dev",
+      "url": "https://workflow-automation-api.johntaylor1online.workers.dev/calculate",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:26.226Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-09T04:13:20.659Z",
+      "fields": [
+        "amount on eip155:8453: catalog 70000, door 20000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1749",
+      "host": "decision-verifier-api.johntaylor1online.workers.dev",
+      "url": "https://decision-verifier-api.johntaylor1online.workers.dev/verify",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:26.270Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-09T04:12:18.242Z",
+      "fields": [
+        "amount on eip155:8453: catalog 70000, door 500000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1759",
+      "host": "stable-domains-git-ben-upgrade-agentcash-r-bb6a65-merit-systems.vercel.app",
+      "url": "https://stable-domains-git-ben-upgrade-agentcash-r-bb6a65-merit-systems.vercel.app/api/check",
+      "method": "POST",
+      "observed_at": "2026-09-21T18:30:27.582Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-14T20:02:20.584Z",
+      "fields": [
+        "amount on eip155:8453: catalog 10000, door 100000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1770",
+      "host": "agent-memory-api.johntaylor1online.workers.dev",
+      "url": "https://agent-memory-api.johntaylor1online.workers.dev/memory/add",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:29.045Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-09T04:14:17.623Z",
+      "fields": [
+        "amount on eip155:8453: catalog 20000, door 50000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1788",
+      "host": "serp-tracker.johntaylor1online.workers.dev",
+      "url": "https://serp-tracker.johntaylor1online.workers.dev/track",
+      "method": "GET",
+      "observed_at": "2026-09-21T18:30:32.276Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-14T06:26:52.257Z",
+      "fields": [
+        "amount on eip155:8453: catalog 10000, door 50000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1841",
+      "host": "validate.cyberwarex.com",
+      "url": "https://validate.cyberwarex.com/validate",
+      "method": "GET",
+      "observed_at": "2026-09-21T19:30:24.031Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-23T16:23:50.693Z",
+      "fields": [
+        "amount on eip155:8453: catalog 50000, door 5000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1846",
+      "host": "desanatization-production.up.railway.app",
+      "url": "https://desanatization-production.up.railway.app/api/resource",
+      "method": "GET",
+      "observed_at": "2026-09-21T19:30:25.184Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-16T22:57:54.503Z",
+      "fields": [
+        "payTo and amount on eip155:8453: catalog 0x8d9372cdf4cef4eba4ba63d3552755aa476edb92 at 1000, door 0x62a4b60aaa057ffcbdf544c2c7aa4cea37f59ba5 at 10000"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1848",
+      "host": "canary-production-f6b6.up.railway.app",
+      "url": "https://canary-production-f6b6.up.railway.app/v1/base/head",
+      "method": "GET",
+      "observed_at": "2026-09-21T19:30:25.735Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-15T14:57:05.54Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0x202bab22a1117acba00738e2a6e7d8837dab311c, door 0xa0f3c29f25778ddf46fce2cab5f7e7c25e6a1451"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1849",
+      "host": "flipr-x402.fly.dev",
+      "url": "https://flipr-x402.fly.dev/x402/flip",
+      "method": "GET",
+      "observed_at": "2026-09-21T19:30:25.796Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-14T02:12:38.763Z",
+      "fields": [
+        "amount on eip155:8453: catalog 1314700, door 1456400",
+        "rail solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: the catalog lists it, the door does not offer it"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1857",
+      "host": "backend-production-716d3.up.railway.app",
+      "url": "https://backend-production-716d3.up.railway.app/x402/@stbclaudeprod/proof/",
+      "method": "GET",
+      "observed_at": "2026-09-21T19:30:27.804Z",
+      "verdict": "not_ready",
+      "catalog_updated_at": "2026-09-02T17:18:00.746Z",
+      "fields": [
+        "payTo on eip155:8453: catalog 0xbe5cb96d1bd2b4d5d5c0a1f16266cc0ba2849d30, door 0x59d7c809e709e1b64a26536ecb0757cf8c964618",
+        "payTo on eip155:137: catalog 0xbe5cb96d1bd2b4d5d5c0a1f16266cc0ba2849d30, door 0x59d7c809e709e1b64a26536ecb0757cf8c964618",
+        "payTo on eip155:42161: catalog 0xbe5cb96d1bd2b4d5d5c0a1f16266cc0ba2849d30, door 0x59d7c809e709e1b64a26536ecb0757cf8c964618"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1928",
+      "host": "preview-chat-c6089071-758a-449d-b4a7-6fa19ebc955c.space-z.ai",
+      "url": "https://preview-chat-c6089071-758a-449d-b4a7-6fa19ebc955c.space-z.ai/api/x402/aman-market-report",
+      "method": "GET",
+      "observed_at": "2026-09-21T20:30:21.559Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-04T22:27:07.909Z",
+      "fields": [
+        "payTo and amount on eip155:8453: catalog 0x215200bd7e6973ad2d2927bdd3e04a61531f5629 at 311035, door 0xfb5625d44be488414606773244f0de35410b2f39 at 31145"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1929",
+      "host": "recallscout.scalpstream.com",
+      "url": "https://recallscout.scalpstream.com/recalls",
+      "method": "GET",
+      "observed_at": "2026-09-21T20:30:21.814Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-01T19:12:55.234Z",
+      "fields": [
+        "amount on xrpl:0: catalog 7384, door 6585"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1930",
+      "host": "airscout.scalpstream.com",
+      "url": "https://airscout.scalpstream.com/air",
+      "method": "GET",
+      "observed_at": "2026-09-21T20:30:21.848Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-09-01T18:53:17.582Z",
+      "fields": [
+        "amount on xrpl:0: catalog 7430, door 6576"
+      ]
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "snapshot_url": "https://scvd.store/corpus/10.json",
+      "row_pointer": "/round/hosts/1932",
+      "host": "signals.gitdealflow.com",
+      "url": "https://signals.gitdealflow.com/api/agent/deep-signal/x402",
+      "method": "POST",
+      "observed_at": "2026-09-21T20:30:22.165Z",
+      "verdict": "ready",
+      "catalog_updated_at": "2026-08-31T13:12:19.045Z",
+      "fields": [
+        "rail base: the catalog lists it, the door does not offer it"
+      ]
+    }
+  ]
+}

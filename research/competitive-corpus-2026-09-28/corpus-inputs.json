@@ -1,0 +1,76 @@
+{
+  "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+  "authentication": "Canonical digest, Ed25519 signature and contiguous previous-digest linkage passed. Bitcoin timestamps not checked.",
+  "inputs": [
+    {
+      "sequence": 1,
+      "digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+      "file_sha256": "0c75d8f24c220086e0af3a584899306f8da867c503d2650c71feae0d5b45d7c4",
+      "source_url": "https://scvd.store/corpus/1.json",
+      "bytes": 13790
+    },
+    {
+      "sequence": 2,
+      "digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+      "file_sha256": "ac368594e7644c486f382eb0ceca4876c0d82ef7ea0d2d87016efd47a7ab2df2",
+      "source_url": "https://scvd.store/corpus/2.json",
+      "bytes": 23754
+    },
+    {
+      "sequence": 3,
+      "digest": "75dcedd2252ef3d893d5f874dcf44992d1a791fc9bec41eda57491cfc26cc64d",
+      "file_sha256": "77392aa33cf12539bf0bddcef9cc1b92bbf2aea2a5dc94ba0d8881fc4ecc303a",
+      "source_url": "https://scvd.store/corpus/3.json",
+      "bytes": 15416
+    },
+    {
+      "sequence": 4,
+      "digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+      "file_sha256": "fe7c7f495c956291237eb2ac678bc3cd3bc5e6ae788f5cfab05dc0476b37bd65",
+      "source_url": "https://scvd.store/corpus/4.json",
+      "bytes": 330310
+    },
+    {
+      "sequence": 5,
+      "digest": "a69a2144fb5b0feee0da1003d6356dca331ccf58917e6f136ff369706d9f3722",
+      "file_sha256": "db04a16ab517ab0847093dbb1f72b3937a96db4c0e19ef6ea0a7629b9231c701",
+      "source_url": "https://scvd.store/corpus/5.json",
+      "bytes": 6778364
+    },
+    {
+      "sequence": 6,
+      "digest": "779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c",
+      "file_sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0",
+      "source_url": "https://scvd.store/corpus/6.json",
+      "bytes": 11485079
+    },
+    {
+      "sequence": 7,
+      "digest": "da260da1faab87a748e2f9e7685f3be15b0f06f9426ff75cc270632a5f730263",
+      "file_sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00",
+      "source_url": "https://scvd.store/corpus/7.json",
+      "bytes": 3026210
+    },
+    {
+      "sequence": 8,
+      "digest": "dd18c0fd7408d4ab32e47b016a9641a1adf88aaba2cd69b143d239ac1a30f627",
+      "file_sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+      "source_url": "https://scvd.store/corpus/8.json",
+      "bytes": 4012197
+    },
+    {
+      "sequence": 9,
+      "digest": "83083545f9c8c291fd0425a3045f5f4308021079baa2be6b42b4e379915315db",
+      "file_sha256": "351bea325a828b6f81823e9cc015d13bb0937b9f24131855da9ee584fdb483b9",
+      "source_url": "https://scvd.store/corpus/9.json",
+      "bytes": 9168137
+    },
+    {
+      "sequence": 10,
+      "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+      "file_sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+      "source_url": "https://scvd.store/corpus/10.json",
+      "bytes": 9333858
+    }
+  ]
+}

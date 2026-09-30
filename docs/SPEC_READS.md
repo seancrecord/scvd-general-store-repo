@@ -1,5 +1,9 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-30 — literal native-shell command recognition
+
+Read the primary [zsh quoting source](https://raw.githubusercontent.com/zsh-users/zsh/master/Doc/Zsh/grammar.yo), Quoting section, while reproducing a retained Codex command whose shell concatenates quoted fragments. A bounded matcher recognizes literal words only; it does not implement or execute general shell grammar. Captured-command and actual `/bin/sh` controls cover the supported subset; substitutions, operators and nested wrappers are refused. Non-default shell quoting options remain unsupported. POSIX's online chapter returned 403 through the web reader and GNU web manual reads timed out; no claim of having read those documents. The retrieved zsh source is retained with its hash in the source-review validation archive. See [implementation and native limits](BUYER_PACKAGE_SOURCE_REVIEW_2026-09-30.md).
+
 ## 2026-09-28 — revised AEO hand-check protocol
 
 Re-read [Google AI features guidance](https://developers.google.com/search/docs/appearance/ai-features).
