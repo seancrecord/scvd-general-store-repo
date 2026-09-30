@@ -47,6 +47,12 @@ JavaScript, data requests, storage writes or polling. Each page retains its
 own sources, limits and actions; this is a shared navigation/readability
 change rather than a rewrite of every specialized report.
 
+PR #947 security follow-through: section-label extraction now uses the existing
+bounded tag stripper and encodes any remaining angle brackets while preserving
+already escaped entities. A malformed-heading regression failed before the fix.
+The discovery test uses the runtime HTML parser to exclude script blocks rather
+than treating a regular expression as an HTML parser.
+
 ## Less work per read
 
 - Growth shares monthly ledger reads with pulse. Previously both requested

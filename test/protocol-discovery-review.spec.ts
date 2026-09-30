@@ -80,7 +80,9 @@ it("keeps authentication guidance and metadata aligned with enabled native check
 
 it("shows the homepage inspection description in the visible page as well as its schema", async () => {
   const html = await (await SELF.fetch(`${base}/`, { headers: { Accept: "text/html" } })).text();
-  const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, "");
+  const visible = await new HTMLRewriter().on("script", {
+    element(element) { element.remove(); },
+  }).transform(new Response(html)).text();
   expect(visible).toContain("observed x402/MPP protocols");
 });
 

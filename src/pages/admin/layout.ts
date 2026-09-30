@@ -1,4 +1,4 @@
-import { escapeHtml } from "@/lib/sanitize";
+import { escapeHtml, stripTags } from "@/lib/sanitize";
 import { OFFICE_CSS } from "@/pages/admin/office-css";
 
 /**
@@ -369,9 +369,9 @@ function pageSections(body: string): { body: string; links: string } {
       do { id = `admin-section-${++index}`; } while (used.has(id));
       used.add(id);
     }
-    // The body is already escaped HTML. Strip presentation tags, retaining
-    // escaped text as text; never decode agent-authored entities into markup.
-    const label = title.replace(/<[^>]*>/g, "").trim();
+    // The body is already escaped HTML. Preserve its entities, but encode
+    // dangling brackets left by incomplete tags before copying a label.
+    const label = stripTags(title).replaceAll("<", "&lt;").replaceAll(">", "&gt;").trim();
     if (label) links.push(`<a href="#${escapeHtml(id)}">${label}</a>`);
     return `<h2${attrs ?? ""}${existing ? "" : ` id="${id}"`}>${title}</h2>`;
   });

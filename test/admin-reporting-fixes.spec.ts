@@ -95,6 +95,16 @@ it("shows corrupt corrections as unavailable and never leaks arbitrary stored fi
   expect(JSON.stringify(listing)).not.toContain("must-not-escape");
 });
 
+it("does not turn nested heading markup into executable section links", async () => {
+  const { renderAdminShell } = await import("@/pages/admin/layout");
+  const page = renderAdminShell("growth", '<h2>First</h2><h2><scr<script>ipt>Title</h2><h2>Unclosed <img</h2>');
+  const navigation = page.match(/<nav class="page-sections"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  expect(navigation).toBeDefined();
+  expect(navigation).not.toContain("<script>");
+  expect(navigation).not.toContain("<img");
+  expect(navigation).toContain("Title</a>");
+});
+
 it("does not call unreadable months read or claim no retained sales anywhere", async () => {
   const listing = await readMppSaleEvidence({ ...bindings, COUNTER_LEDGER: undefined }, now);
   const html = renderMppSalesPage(listing);
@@ -150,6 +160,7 @@ it("keeps existing anchors and escaped heading text in page navigation", async (
   expect(html).toContain('href="#admin-section-1"');
   expect(html).toContain('href="#admin-section-2"');
   expect(html).not.toContain('<img');
+  expect(html).toContain('>&lt;img src=x onerror=bad&gt;</a>');
   expect((html.match(/id="admin-section-1"/g) ?? []).length).toBe(1);
 });
 
