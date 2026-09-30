@@ -11,3 +11,10 @@ This condition supplies no verification program, signature answers, package deci
 Omitting the condition retains the old qualification prompt. Buyer and offline-recipient prompts are unchanged; this experiment tests qualification setup rather than a new buyer-facing guide. Unsupported condition values or pre-capability schemas are rejected. The full plan remains bound to its qualification record, so a qualification from another setup condition cannot silently authorize a cohort.
 
 Two new controls failed before implementation (invalid conditions accepted and guidance absent); the unchanged buyer/permission control already passed. Focused controls pass after implementation. A separate freeze and native qualification are required to measure the change. Earlier refusals, failures, scores and verbatim reports remain intact. Every online host and the offline recipient must qualify before buyers launch. No retry of a closed attempt is authorized by this change.
+
+
+## Separate native follow-through
+
+The [frozen qualification and cohort](../research/setup-guidance-buyer-2026-09-30/REPORT.md) is closed. Both online package gates and the offline capability passed. Three buyers completed; the fourth reached the call cap. Both Codex buyers retained verified originals and generated reports, including one use of saved-challenge comparison. Claude r1 made unsupported universal absence claims and missed linked signed observations. No offline recipient launched: the host guard observed a newer Codex CLI and changed environment fingerprint before the recipient phase. The integrated result is 0 complete, 1 failed interpretation and 3 incomplete journeys. No attempt was retried or score repaired after the fact.
+
+Qualification-only setup guidance does not remove buyer setup friction: the stopped buyer still spent calls on compound-command refusals, absent directories and separate source fetches. Source display remains partial. The next experiment needs a stated buyer-facing change and a stable qualified host context; a controller replay cannot substitute for missing native recipient understanding.
