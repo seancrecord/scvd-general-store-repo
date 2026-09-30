@@ -1,13 +1,13 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "store.scvd/general-store",
-  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
+  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
   "title": "SCVD General Store",
   "repository": {
     "url": "https://github.com/seancrecord/scvd-general-store-repo",
     "source": "github"
   },
-  "version": "0.2.3",
+  "version": "0.2.4",
   "websiteUrl": "https://scvd.store",
   "remotes": [
     {

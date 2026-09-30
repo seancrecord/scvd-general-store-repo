@@ -66,7 +66,7 @@ function mcpDescription(config?: PurchaseCapabilityConfig): string {
 function surfaces(base: string, config?: PurchaseCapabilityConfig): Array<{ heading: string; entries: Entry[] }> {
   return [
     {
-      heading: "SCVD libraries and SDKs",
+      heading: "SCVD libraries and SDKs — source versions; check npm before installing",
       entries: [...DEVELOPER_PACKAGES, ...PREFLIGHT_LANGUAGE_GUIDES],
     },
     {

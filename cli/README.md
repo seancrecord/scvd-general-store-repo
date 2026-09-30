@@ -42,6 +42,11 @@ Zero dependencies. Node 18.17+. MIT.
   edited after the fact.
 -->
 
+**Version requirements:** `inspect` requires scvd-cli 0.4.0 or later.
+Check the version available on npm with `npm view scvd-cli version`.
+If your installed release predates that command, run
+`node cli/scvd.mjs inspect <url>` from this checkout.
+
 ## What it does
 
 | Command | What it asks the store |

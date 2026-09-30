@@ -1,6 +1,6 @@
 # SCVD distribution: channels and records
 
-Reconciled September 24, 2026. Start here to find the record; human actions
+Content review added September 30, 2026; prior dated admission records retained. Start here to find the record; human actions
 stay in [KEEPER_LIST](KEEPER_LIST.md#directory-and-listings-press-is-yours-rule-30),
 builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
 
@@ -17,6 +17,22 @@ builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
 | Are existing listings stale or disappearing? | `npm run listings:check`; [weekly workflow](.github/workflows/listings-check.yml); [recorded baselines](docs/listings/). Baselines already exist, dated September 12. |
 | Who have we contacted about citations? | [Scorers register](registry/scorers-outreach.json); its [table](registry/scorers-outreach.md) is generated. `note_sent` refers to the scorers note, not any issue or submission. |
 | What evidence supports this pass? | [September 17 findings and receipts](research/distribution-2026-09-17/README.md), [prior admission reconciliation](research/distribution-admission-2026-09-16/README.md), and [spec readings](docs/SPEC_READS.md). |
+
+## September 30 content review
+
+[Audit and every claimed record](research/listing-review-2026-09-30/README.md):
+82 listing URLs read, 74 returned pages, with accuracy and unreadable states
+recorded separately. All 26 checked GitHub submission states retain the known
+outcomes: 23 open, A2A display repair closed, Awesome Copilot rejected, HOL
+plugin entry merged. MCPpedia and mcp.so still show the reported wrong install
+configuration; their existing issues remain open. No duplicate requests sent.
+
+Store MCP 0.2.3 and Tab 0.11.2 are active/latest in the official registry.
+Three npm releases lag prepared source: CLI 0.4.0/0.3.0, preflight 0.3.0/0.2.0,
+defects 0.21.0/0.20.0 (source/published). New local store metadata 0.2.4 and
+portable wrapper 0.2.6 are **prepared only**. The [correction packet](research/listing-review-2026-09-30/CORRECTIONS.md)
+contains exact targets, replacement copy and publication dependencies.
+No confirmation dates, registry publications or external settings were changed.
 
 ## September 24 readback
 

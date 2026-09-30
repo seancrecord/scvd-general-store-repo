@@ -121,3 +121,13 @@ records the existing-surface inventory, reproduced description and schema
 defects, and local checks. PR4 external-content review is next. Release and
 post-release public readback remain outstanding; the earlier AEO study has
 not been replaced with a claim about new search visibility.
+
+## PR4 content/source follow-through — September 30
+
+The [listing review](../research/listing-review-2026-09-30/README.md) records
+all 82 attempted listing reads, eight npm packages, 26 existing submission
+states, canonical capability comparisons and prepared local corrections.
+Wrong install instructions, mixed store/Tab tools, false free labels and stale
+copy remain external findings. Their exact targets and publication order are
+prepared; no remote write or duplicate request was sent. Local source repair
+also covers the MCP discovery aliases that still omitted enabled native MPP.

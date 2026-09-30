@@ -1,6 +1,7 @@
 import { env, SELF } from "cloudflare:test";
 import { expect, it } from "vitest";
 import { developerRoutes } from "@/routes/developers";
+import { wellKnownRoutes } from "@/routes/well-known";
 import { agentAuthRoutes } from "@/routes/agent-auth";
 import { agentsMd } from "@/routes/agents-md";
 import { checkoutNetworks } from "@/lib/payment-networks";
@@ -81,4 +82,23 @@ it("shows the homepage inspection description in the visible page as well as its
   const html = await (await SELF.fetch(`${base}/`, { headers: { Accept: "text/html" } })).text();
   const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, "");
   expect(visible).toContain("observed x402/MPP protocols");
+});
+
+it("includes configured native payment instructions in every MCP discovery alias", async () => {
+  const paths = ["/.well-known/mcp", "/.well-known/mcp.json", "/.well-known/mcp/server-card.json"];
+  for (const config of [bindings, { ...bindings, MPP_CHECKOUT_ENABLED: "false" }]) {
+    for (const path of paths) {
+      const response = await wellKnownRoutes.request(`${base}${path}`, {}, config);
+      expect(response.status).toBe(200);
+      const body = await response.json() as { description: string; authentication: { note: string }; native_mpp?: unknown };
+      if (config.MPP_CHECKOUT_ENABLED === "true") {
+        expect.soft(body.description).toContain("MPP (evm/charge)");
+        expect.soft(body.authentication.note).toContain(nativeMcpInstruction(config));
+        expect.soft(body.native_mpp).toBeDefined();
+      } else {
+        expect(body.description).not.toContain("MPP (evm/charge)");
+        expect(body.native_mpp).toBeUndefined();
+      }
+    }
+  }
 });

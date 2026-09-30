@@ -1,7 +1,7 @@
 {
   "name": "scvd-preflight",
   "version": "0.3.0",
-  "description": "Zero-dependency client for scvd.store's free x402 preflight: one probe per door, every check named, the remediation rows, and the deploy gate's exit law. The GitHub Action's file as a library and a command.",
+  "description": "Zero-dependency client for scvd.store: inspect observed x402/MPP protocols, advertised terms and gaps, or run the x402 preflight deploy gate. No payment or signature verification during endpoint inspection.",
   "type": "module",
   "main": "./x402-preflight.js",
   "types": "./x402-preflight.d.ts",
@@ -9,7 +9,7 @@
   "exports": { ".": { "types": "./x402-preflight.d.ts", "default": "./x402-preflight.js" } },
   "files": ["inspection.js", "inspection.d.ts", "x402-preflight.js", "x402-preflight.d.ts", "bin.mjs", "fixtures/", "example.mjs", "CHANGELOG.md", "README.md", "LICENSE"],
   "engines": { "node": ">=18.17.0" },
-  "keywords": ["x402", "preflight", "402", "payment-required", "agent-payments", "deploy-gate", "usdc", "evidence"],
+  "keywords": ["x402", "preflight", "402", "payment-required", "agent-payments", "deploy-gate", "usdc", "evidence", "mpp"],
   "license": "MIT",
   "author": "scvd.store",
   "homepage": "https://scvd.store/api/preflight/v2",

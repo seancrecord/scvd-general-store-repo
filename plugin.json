@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scvd-general-store",
-  "version": "0.2.5",
-  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
+  "version": "0.2.6",
+  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
   "author": {
     "name": "Record Creative Co. LLC",
     "url": "https://scvd.store"
@@ -18,6 +18,10 @@
     "conformance",
     "mcp",
     "usdc",
-    "payments"
+    "payments",
+    "mpp",
+    "webmcp",
+    "a2a",
+    "ucp"
   ]
 }
