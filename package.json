@@ -81,7 +81,7 @@
     "walkabout:test": "node --test scripts/walkabout.test.mjs scripts/field-reconciliation.test.mjs scripts/walk-budget.test.mjs",
     "tab:pager": "node tab/pager.mjs",
     "docs:check": "node scripts/docs-check.mjs",
-    "packages:test": "for d in x402-preflight corpus-client defects mcp-starter; do (cd \"$d\" && node --test) || exit 1; done",
+    "packages:test": "for d in x402-preflight corpus-client defects mcp-starter; do (cd \"$d\" && node --test) || exit 1; done && node --test scripts/mcp-starter-client.test.mjs",
     "defects:cut": "node scripts/cut-defects.mjs",
     "oasf:cut": "node scripts/cut-oasf.mjs",
     "jwks:cut": "node scripts/cut-jwks.mjs",

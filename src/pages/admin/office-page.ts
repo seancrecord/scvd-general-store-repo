@@ -1,3 +1,4 @@
+import { commerceMonthTotals } from "@/services/commerce-month";
 import { renderIndexReading } from "@/pages/admin/index-reading";
 import type { OurDoors } from "@/services/ward-round";
 import type {
@@ -604,16 +605,10 @@ function noCertificateHtml(
 function glanceHtml(data: OfficePageData): string {
   const ledger = data.monthLedger;
   const reclass = data.monthReclass;
-  const rawSettles = Object.values(ledger.items).reduce(
-    (sum, row) => sum + row.settled,
-    0,
-  );
-  // The reclassification ledger, applied at read — the same correction
-  // /stats carries, sliced to this month. Raw counters stay as
-  // written; the note under the line shows the move in the open.
-  const organicSettles = Math.max(0, rawSettles - (reclass?.settles ?? 0));
-  const revenueUsdc = Math.max(0, ledger.revenueUsdc - (reclass?.usdc ?? 0));
-  const revenueHouseUsdc = ledger.revenueHouseUsdc + (reclass?.usdc ?? 0);
+  const totals = commerceMonthTotals(ledger, reclass);
+  const organicSettles = totals?.organic;
+  const revenueUsdc = totals?.revenue_usdc;
+  const revenueHouseUsdc = totals?.house_revenue_usdc;
   const organic402s = Object.values(ledger.items).reduce(
     (sum, row) => sum + row.challenges,
     0,
@@ -625,14 +620,15 @@ function glanceHtml(data: OfficePageData): string {
   return `
     <p style="font-size:1.15em">
       <strong>${escapeHtml(ledger.month)} so far:</strong>
-      <strong>$${revenueUsdc.toFixed(2)}</strong> organic revenue
-      <small>(+$${revenueHouseUsdc.toFixed(2)} house)</small> \u00B7
-      <strong>${organicSettles}</strong> organic sale${organicSettles === 1 ? "" : "s"} <small>this month${data.allTime ? `, of ${data.allTime.organic} all-time` : ""}</small> \u00B7
+      <strong>${revenueUsdc === undefined ? "unavailable" : `$${revenueUsdc.toFixed(2)}`}</strong> organic revenue
+      <small>(${revenueHouseUsdc === undefined ? "unavailable" : `+$${revenueHouseUsdc.toFixed(2)}`} house)</small> \u00B7
+      <strong>${organicSettles ?? "unavailable"}</strong> organic sale${organicSettles === 1 ? "" : "s"} <small>this month${data.allTime ? `, of ${data.allTime.organic} all-time` : ""}</small> \u00B7
       <strong>${organic402s}</strong> organic 402s \u00B7
       <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
       ${data.porchLedger.porchToPurchase !== null ? `\u00B7 porch-to-purchase <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
+    <p><small>Monthly sales and revenue include x402 and MPP. The asks, daily trend, sources and conversion tables below cover x402 only.</small></p>
     ${reclassNote}
     ${
       data.allTime

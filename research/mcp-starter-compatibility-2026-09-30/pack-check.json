@@ -1,0 +1,17 @@
+{
+  "package": "scvd-mcp-starter",
+  "version": "0.2.0",
+  "tarball_sha256": "03d7b4b04d657f603c363e1ef75b43b48bfc127ea9708edf17297f5f4e7d3b88",
+  "files": [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "example.mjs",
+    "package.json",
+    "server.mjs"
+  ],
+  "dependencies": {},
+  "isolated_legacy_initialize": "passed",
+  "isolated_modern_discovery": "passed",
+  "published": false
+}

@@ -57,10 +57,10 @@ export const REGISTER = [
   {
     id: "limits.preflight.rate",
     file: "src/routes/developers.ts",
-    match: "One family of paths is limited and the rest are not",
+    match: "Free preflight allows ${PROBES_PER_MINUTE} probes per isolate per minute",
     resolution: "derived",
     from: "PROBES_PER_MINUTE / GLOBAL_PROBES_PER_MINUTE",
-    why: "Said the opposite for a day after 0.13 shipped a limiter. Now reads the limiter's own constants.",
+    why: "Said the opposite for a day after 0.13 shipped a limiter. Reads the limiter's own constants. September 30: the reporting review removed the false claim that every other route is unlimited; this guard follows the corrected preflight-specific sentence.",
   },
   {
     id: "limits.openapi.rate",

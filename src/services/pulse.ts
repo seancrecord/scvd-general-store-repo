@@ -1,7 +1,8 @@
+import { readCommerceMonthLedger } from "@/services/commerce-month";
 import {
   LATENCY_BUCKET_EDGES_MS,
   readLatencyHistograms,
-  readMonthLedger,
+  type MonthLedger,
 } from "@/lib/metrics";
 import { HOUSE_FLAG_POLICY, monthsSinceOpening } from "@/services/stats";
 import type { Env } from "@/types";
@@ -88,6 +89,9 @@ export interface PulseWindow {
    * why it had to be the one we went and fixed.
    */
   organic_settled: number;
+  /** Combined sales only. Legacy funnel fields and conversion rates remain x402. */
+  total_organic_settled?: number;
+  mpp_organic_settled?: number;
   /**
    * Settles this month that were later reclassified from organic to
    * house, already removed from organic_settled above. Published so
@@ -303,7 +307,7 @@ async function computeLatency(env: Env): Promise<Latency> {
 }
 
 const NOTE =
-  "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us — and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges, declines and re-checks those same wallets generated are still counted organic here. organic_challenges, organic_declines and organic_rechecks are therefore ceilings, and the conversion rate computed from them is a floor. THE FUNNEL'S MIDDLE IS DERIVED, NOT SEPARATELY METERED: the till books every payment actually presented as exactly one of settled or declined, so organic_payments_presented is their sum and cannot drift from the two numbers published beside it. And a naming correction, dated 2026-08-27: the field once called organic_verifies is now organic_rechecks, because it counts free re-checks of already-issued artifacts at /api/verify — NOT the x402 verify step — and the old name kept being read as the protocol step it never was.";
+  "The x402 funnel. Legacy organic_settled and conversion fields cover x402; total_organic_settled adds corrected native MPP sales and has no shared conversion denominator. The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us — and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges, declines and re-checks those same wallets generated are still counted organic here. organic_challenges, organic_declines and organic_rechecks are therefore ceilings, and the conversion rate computed from them is a floor. THE FUNNEL'S MIDDLE IS DERIVED, NOT SEPARATELY METERED: the till books every payment actually presented as exactly one of settled or declined, so organic_payments_presented is their sum and cannot drift from the two numbers published beside it. And a naming correction, dated 2026-08-27: the field once called organic_verifies is now organic_rechecks, because it counts free re-checks of already-issued artifacts at /api/verify — NOT the x402 verify step — and the old name kept being read as the protocol step it never was.";
 
 /**
  * NEVER ROUND A REAL RATE TO ZERO.
@@ -338,8 +342,14 @@ function rate(settled: number, challenges: number): number | null {
   return Number((settled / challenges).toPrecision(3));
 }
 
-export async function computePulse(env: Env): Promise<Pulse> {
-  const months = monthsSinceOpening().slice(-PULSE_MONTHS).reverse();
+export async function computePulse(env: Env, options: {
+  now?: Date;
+  /** A caller already reading these months can share those reads, not scan twice. */
+  readMonth?: (month: string) => Promise<MonthLedger>;
+} = {}): Promise<Pulse> {
+  const now = options.now ?? new Date();
+  // All-time includes every retained month; only the displayed window is capped.
+  const months = monthsSinceOpening(now).reverse();
   const windows: PulseWindow[] = [];
   /*
    * ONE WAVE, NOT A QUEUE — rule 50's pattern, applied to the reading
@@ -368,7 +378,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
       monthReclassAdjustments(env).catch(() => null),
       totalReclassified(env).catch(() => null),
       computeLatency(env),
-      Promise.all(months.map((month) => readMonthLedger(env, month))),
+      Promise.all(months.map((month) => options.readMonth ? options.readMonth(month) : readCommerceMonthLedger(env, month))),
     ]);
 
   for (let index = 0; index < months.length; index += 1) {
@@ -415,6 +425,8 @@ export async function computePulse(env: Env): Promise<Pulse> {
       // Derived from the two published beside it, never metered apart.
       organic_payments_presented: settled + declines,
       organic_settled: settled,
+      total_organic_settled: settled + (ledger.native_mpp?.organic ?? 0),
+      mpp_organic_settled: ledger.native_mpp?.organic ?? 0,
       organic_declines: declines,
       organic_rechecks: verifies,
       conversion_rate: rate(settled, challenges),
@@ -475,7 +487,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
 
   const base = env.STORE_BASE_URL;
   return {
-    computed_at: new Date().toISOString(),
+    computed_at: now.toISOString(),
     crawler_correction_computed_at: corrections?.computed_at ?? null,
     house_flag_policy: HOUSE_FLAG_POLICY,
     all_time: {
@@ -485,6 +497,8 @@ export async function computePulse(env: Env): Promise<Pulse> {
       // a reader actually has in hand.
       organic_payments_presented: allTimeSettled + total.declines,
       organic_settled: allTimeSettled,
+      total_organic_settled: allTimeSettled + windows.reduce((sum, row) => sum + (row.mpp_organic_settled ?? 0), 0),
+      mpp_organic_settled: windows.reduce((sum, row) => sum + (row.mpp_organic_settled ?? 0), 0),
       organic_declines: total.declines,
       organic_rechecks: total.verifies,
       conversion_rate: rate(allTimeSettled, total.challenges),
@@ -514,7 +528,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
           }
         : {}),
     },
-    months: windows,
+    months: windows.slice(0, PULSE_MONTHS),
     latency,
     note: NOTE,
     verify_url: `${base}/api/verify/{id}`,

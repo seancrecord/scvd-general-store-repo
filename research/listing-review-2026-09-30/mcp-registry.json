@@ -1,0 +1,9 @@
+{
+  "reading": {
+    "read_at": "2026-09-30T13:41:21.316524+00:00",
+    "url": "https://registry.modelcontextprotocol.io/v0/servers?search=scvd",
+    "status": null,
+    "error": "The read operation timed out"
+  },
+  "body": null
+}

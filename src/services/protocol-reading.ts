@@ -1,3 +1,6 @@
+import { DISCOVERY_PROTOCOLS } from "@/store/discovery-protocols";
+import { MENU_ITEMS } from "@/store";
+import { purchaseCapabilities, nativeCheckoutLane } from "@/lib/purchase-capabilities";
 import { readPorchLedger } from "@/lib/metrics";
 import { readPaymentOperations, type PaymentOperations } from "@/lib/payment-operations";
 import { readBuyerSignals } from "@/services/buyer-signals";
@@ -50,20 +53,22 @@ export interface ProtocolReading {
   read_at: string;
   /** Who arrived, by the channel the porch inferred. */
   arrivals: DoorArrivals[];
-  arrivals_total: number;
+  arrivals_total: number | null;
   arrivals_truncated: boolean;
   /** Who paid, by the door the till recorded. */
   till: TillDoor[];
-  till_total: number;
+  till_total: number | null;
   /** How they paid: the two rails, at the HTTP payment gate. */
   operations: PaymentOperations | null;
   /** What the market speaks, off the last ward round. Never a ranking. */
   market: { week: string; census: MppCensus } | null;
+  market_available?: boolean;
   /** The declared surfaces, with the note each carries for a buyer. */
   surfaces: { surface: BuyerSurface; note: string }[];
   /** Named so the page can say what it did not read, not just what it did. */
   unreadable: string[];
   notes: string[];
+  capabilities?: { label: string; path: string; scope: string; checkout: string }[];
 }
 
 /**
@@ -76,13 +81,14 @@ export async function readProtocols(env: Env): Promise<ProtocolReading> {
   const read_at = new Date().toISOString();
   const month = read_at.slice(0, 7);
   const unreadable: string[] = [];
+  let marketAvailable = true;
 
   const [porch, signals, operations, round] = await Promise.all([
     readPorchLedger(env, month).catch(() => {
       unreadable.push("the porch (who arrived)");
       return null;
     }),
-    readBuyerSignals(env).catch(() => {
+    readBuyerSignals(env, month).catch(() => {
       unreadable.push("buyer signals (who paid, by door)");
       return null;
     }),
@@ -91,6 +97,7 @@ export async function readProtocols(env: Env): Promise<ProtocolReading> {
       return null;
     }),
     latestWardRound(env).catch(() => {
+      marketAvailable = false;
       unreadable.push("the ward round (what the market speaks)");
       return null;
     }),
@@ -125,15 +132,30 @@ export async function readProtocols(env: Env): Promise<ProtocolReading> {
     return { door, settles, networks };
   });
 
+  const itemCapabilities = MENU_ITEMS.map(item => purchaseCapabilities(item, env));
+  const nativeLane = nativeCheckoutLane(env);
+  const capabilities = DISCOVERY_PROTOCOLS.filter(protocol =>
+    ["x402", "mpp", "mcp", "webmcp", "a2a", "ucp"].includes(protocol.id)).map(protocol => {
+      const count = itemCapabilities.filter(rows => rows.some(row => row.protocol === protocol.id)).length;
+      const checkout = protocol.id === "mpp" ? nativeLane || "Native checkout disabled on this deployment."
+        : protocol.id === "ucp" ? `${count} shelf items enabled; read the business profile for current rails and terms.`
+        : protocol.id === "x402" ? `${count} shelf items advertise x402; current quotes name the available rails.`
+        : protocol.id === "mcp" ? "buy_* tools carry checkout terms; calls and completed sales are counted separately."
+        : protocol.id === "webmcp" ? "Browser quote/completion tools; compatible browser and payment client required."
+        : "Agent tasks and card discovery; no separate A2A payment rail.";
+      return { label: protocol.label, path: protocol.path, scope: protocol.scope, checkout };
+    });
   return {
+    capabilities,
     month,
     read_at,
     arrivals,
-    arrivals_total: arrivals.reduce((sum, row) => sum + row.organic, 0),
+    arrivals_total: porch ? arrivals.reduce((sum, row) => sum + row.organic, 0) : null,
     arrivals_truncated: porch?.truncated ?? false,
-    till,
-    till_total: till.reduce((sum, row) => sum + row.settles, 0),
+    till: signals ? till : [],
+    till_total: signals ? till.reduce((sum, row) => sum + row.settles, 0) : null,
     operations,
+    market_available: marketAvailable,
     market: round ? { week: round.week, census: mppCensusOf(round.hosts ?? []) } : null,
     surfaces: BUYER_SURFACES.map((surface) => ({
       surface,

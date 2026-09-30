@@ -1,0 +1,230 @@
+TAP version 13
+# Subtest: modern discovery needs no initialization and names the local server
+not ok 1 - modern discovery needs no initialization and names the local server
+  ---
+  duration_ms: 0.646875
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:16:1'
+  failureType: 'testCodeFailure'
+  error: '{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not served here: server/discover. This starter serves initialize, ping, tools/list and tools/call."}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:18:10)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: unsupported versions and malformed modern metadata are refused before forwarding
+not ok 2 - unsupported versions and malformed modern metadata are refused before forwarding
+  ---
+  duration_ms: 0.238792
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:31:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not served here: server/discover. This starter serves initialize, ping, tools/list and tools/call."}}
+    
+    -32601 !== -32022
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: -32022
+  actual: -32601
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:34:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: legacy clients get their requested supported revision, with the existing fallback
+not ok 3 - legacy clients get their requested supported revision, with the existing fallback
+  ---
+  duration_ms: 0.14275
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:45:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '2025-11-25'
+    - '2025-06-18'
+            ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '2025-06-18'
+  actual: '2025-11-25'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:48:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: modern forwarding mirrors HTTP routing metadata, preserving arguments and upstream evidence
+not ok 4 - modern forwarding mirrors HTTP routing metadata, preserving arguments and upstream evidence
+  ---
+  duration_ms: 8.31975
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:53:1'
+  failureType: 'testCodeFailure'
+  error: `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"the upstream door did not answer: Expected values to be strictly equal:\\n+ actual - expected\\n\\n+ null\\n- '2026-07-28'\\n"}}`
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:65:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: upstream errors remain errors and modern list hints do not make legacy lists modern
+not ok 5 - upstream errors remain errors and modern list hints do not make legacy lists modern
+  ---
+  duration_ms: 1.221
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:73:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'public'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:78:10)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: all notifications stay silent; malformed request IDs never start upstream work
+not ok 6 - all notifications stay silent; malformed request IDs never start upstream work
+  ---
+  duration_ms: 0.302917
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:83:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + {
+    +   error: {
+    +     code: -32601,
+    +     message: 'Method not served here: custom/notice. This starter serves initialize, ping, tools/list and tools/call.'
+    +   },
+    +   id: undefined,
+    +   jsonrpc: '2.0'
+    + }
+    - null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual:
+    jsonrpc: '2.0'
+    error:
+      code: -32601
+      message: 'Method not served here: custom/notice. This starter serves initialize, ping, tools/list and tools/call.'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:84:10)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: malformed params and modern initialization are refused locally
+not ok 7 - malformed params and modern initialization are refused locally
+  ---
+  duration_ms: 0.086
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:90:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    -32000 !== -32602
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: -32602
+  actual: -32000
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:92:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: stdio cancellation aborts upstream work and suppresses a late response
+not ok 8 - stdio cancellation aborts upstream work and suppresses a late response
+  ---
+  duration_ms: 3.870416
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:97:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:116:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: closing stdin aborts unfinished upstream work without a late reply
+not ok 9 - closing stdin aborts unfinished upstream work without a late reply
+  ---
+  duration_ms: 1.642041
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:121:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:140:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+# Subtest: official MCP Client discovers and calls the starter through a real subprocess
+ok 10 - official MCP Client discovers and calls the starter through a real subprocess
+  ---
+  duration_ms: 67.424917
+  ...
+# Subtest: official stdio transport carries discovery-first modern calls and version refusal
+not ok 11 - official stdio transport carries discovery-first modern calls and version refusal
+  ---
+  duration_ms: 40.001333
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/scripts/mcp-starter-client.test.mjs:47:1'
+  failureType: 'testCodeFailure'
+  error: '{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not served here: server/discover. This starter serves initialize, ping, tools/list and tools/call."}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    file:///private/tmp/scvd-protocol-reporting-2026-09-29/scripts/mcp-starter-client.test.mjs:62:12
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async withTransport (file:///private/tmp/scvd-protocol-reporting-2026-09-29/scripts/mcp-starter-client.test.mjs:30:9)
+    async TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/scripts/mcp-starter-client.test.mjs:48:3)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 1
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 226.02875

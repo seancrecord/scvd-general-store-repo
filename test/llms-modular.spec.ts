@@ -1160,8 +1160,13 @@ const BASE = "https://scvd.store";
 // 2026-09-28, PS7: clarify mixed MPP/x402 responses and add the shared
 // inspection guidance. Reversing only those two edits reproduced both
 // prior pins (14/14 tests); these pins retain the reviewed new wording.
+// 2026-09-30: MPP checkout scope and source package versions now flow
+// through the shared discovery copy. Main source reproduces both old pins
+// (14/14 tests); reversing only that scope and those labels in the captured
+// guide also reproduces both exactly. Shorten the package-link sentence
+// to retain the existing reader budget. No other guide wording changed.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e4488cc0be53471ad190ce6f93c0072e5a1146cfee55aa3ca8af2064e88823f5";
+  "c62925d7da01275b30357b23a74be2c031e5952715d656350efb9ca3aa2c17c6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1258,7 +1263,7 @@ describe("nothing was rewritten", () => {
       // buy_url_template with the slots filled, never at the bare door.
       // Verified the way this file asks: with that clause alone reverted,
       // 1ac33b17 reproduced, and this copy reproduces the new one.
-      "21a941eff7085a4a089d1ee351969a0f5a9df2a7187597a3a25e260376f6ae26",
+      "9a58296bb2293a8e5ffa1eb47abc52849112fc6144e0447ab7019a54c8d44490",
     );
   });
 

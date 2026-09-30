@@ -65,7 +65,7 @@ function rateText(window: PulseWindow): string {
   if (window.organic_settled === 0) {
     return "0%";
   }
-  const denom = window.corrected_challenges ?? window.organic_challenges;
+  const denom = window.organic_challenges;
   const oneIn = Math.round(denom / window.organic_settled);
   const pct = window.conversion_rate * 100;
   const shown = pct >= 1 ? pct.toFixed(1) : pct.toPrecision(2);
@@ -138,12 +138,13 @@ pulseRoutes.get("/pulse", async (c) => {
         "The whole funnel for this x402 store, organic only: how many times a price was quoted (402s answered, not distinct agents), how many purchases settled, and how many artifacts were re-verified afterwards.",
       path: "/pulse",
       bodyHtml: `<section>
+        <p class="menu-desc"><strong>${pulse.all_time.total_organic_settled ?? pulse.all_time.organic_settled} organic sales across x402 and MPP</strong>, including ${pulse.all_time.mpp_organic_settled ?? 0} native MPP sales. The funnel below covers x402 only; its conversion rate uses x402 asks and settles.</p>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>
         <p class="menu-desc"><strong>${escapeHtml(sentence(pulse.all_time))}</strong> All time, since the meter went in.</p>
       </section>
       <section>
         <table border="1" cellpadding="6">
-          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>payments presented</th><th>settled</th><th>re-verifies</th><th>rate</th></tr>
+          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>payments presented</th><th>settled</th><th>re-verifies</th><th>rate against recorded offers</th></tr>
           ${row(pulse.all_time, "all time")}
           ${pulse.months.map((window) => row(window, window.month ?? "")).join("\n")}
         </table>

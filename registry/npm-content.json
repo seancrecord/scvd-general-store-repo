@@ -4,11 +4,11 @@
   "packages": {
     "scvd-preflight": {
       "directory": "x402-preflight",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "files": {
-        "CHANGELOG.md": "c65f016220baaa35b15140908d2f93d40d8905ea67b9a063f82278b6e794d694",
+        "CHANGELOG.md": "70512d76251b4b954ec06d95d29c8feb1d1dfb0ac13bbfc69c3573edd3dd6252",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
-        "README.md": "defa4e76d77753ef0a8d08f47a573808ff3cbcfe1fa5447e211fe68820053d3d",
+        "README.md": "50205e2a283df5382a256684cfa0444d1cc6d749c0bd88c32a05dc4f72b6d3dc",
         "bin.mjs": "ff92d61a65f6abcd4d0f9e950da127324e4dbfdcebd1ac22fee27b45a1eab5cd",
         "example.mjs": "997aae0b2f8104cb42257c054f6f027fb7a728d15f2b1b8f2cda4fe8291f5c47",
         "fixtures/accepts-empty.json": "aa518ae230051033c30464164ffe56f4ed53807a9911124ac0fb690254750625",
@@ -25,7 +25,7 @@
         "fixtures/unreachable.json": "88553f4d3767b897f07cc2e2ff3c08433f6c38758f8dfc588f82e6b25701c2c5",
         "inspection.d.ts": "64b3d98b1aed4ac13bd164429bbfb27bb67f2ad33f0b229138ec842c3392cb25",
         "inspection.js": "a60e84eb5fc5e9d4a591e15cab17301dcf69d9c0c8338af1c6d1a685aa8f327c",
-        "package.json": "de2ab2215f220bebd194fb52b3b321399d8f680538acbe7a2667efcaba960c78",
+        "package.json": "814692055dc3188325d9747184e792a38579c48431b76849a119c002845c2993",
         "x402-preflight.d.ts": "0ef997af1936a5b0217c712d05390d9732566c2bb3f8b0aeece3b35de77fa49b",
         "x402-preflight.js": "e384a13b761f35b8fe39447cd0d05722ec127e3c48a4792a88e3aa936bab215d"
       }
@@ -82,14 +82,14 @@
     },
     "scvd-mcp-starter": {
       "directory": "mcp-starter",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "files": {
-        "CHANGELOG.md": "293c5644215e43b14903078de7f9abac17989a37e7196aaab41a31f5c2bd3be1",
+        "CHANGELOG.md": "34266b0c3b9bb43c117e402d691232d9849d150cdecbd5d318d8fd21e6c28cb6",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
-        "README.md": "6f1e56197d661eee9436c37922890f3395f71486defb49507ab12409e7b19e52",
+        "README.md": "63a5c104e4c14ea3de9e8f73b29f5398e5b475151d3761d5da50f4f990f19d64",
         "example.mjs": "a5df1f770c3abff570eeb18b196410eed112b4b76473f4d94acdcabc1a99cf41",
-        "package.json": "6b0b2d122652723e5e8296802976a5637481f5ee7060180ea71045fee4603def",
-        "server.mjs": "07917f85890e5057ba18d35fe5f170e829385a24ad8d7f6ffc0b8aabb4367d5d"
+        "package.json": "48c79fe4d88f521204e28fb1fed283f98f652ebb6d0ae5cb5d96301566727845",
+        "server.mjs": "9da0309924d46053bb3f8368b2723fc3bd2145c5801018a793d0f53c09f4f6fb"
       }
     }
   }

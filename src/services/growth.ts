@@ -1,3 +1,5 @@
+import { readCommerceMonthLedger } from "@/services/commerce-month";
+import { atomicToUsdc } from "@/lib/payments";
 import { bulkGetText } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -6,7 +8,6 @@ import {
   metricsMonth,
   monthsSinceOpening,
   readBountyLedger,
-  readMonthLedger,
   readPorchLedger,
   type MonthLedger,
   type PorchLedger,
@@ -315,6 +316,12 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
       itemsAskedFor.push({ item, organic_402s: row.challenges, organic_settles: row.settled });
     }
   }
+  for (const [item, row] of Object.entries(ledger.native_mpp?.by_item ?? {})) {
+    if (!row.organic) continue;
+    const found = itemsAskedFor.find(entry => entry.item === item);
+    if (found) found.organic_settles += row.organic;
+    else itemsAskedFor.push({ item, organic_402s: 0, organic_settles: row.organic });
+  }
   itemsAskedFor.sort((a, b) => b.organic_402s - a.organic_402s || b.organic_settles - a.organic_settles || a.item.localeCompare(b.item));
 
   let settlesByRail: Record<string, number> | null = null;
@@ -329,8 +336,8 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
     organic_visits: porch.organicVisits,
     visits_by_kind: visitsByKind,
     organic_402s: organic402s,
-    organic_settles: organicSettles,
-    revenue_usdc: Math.round(ledger.revenueUsdc * 1_000_000) / 1_000_000,
+    organic_settles: organicSettles + (ledger.native_mpp?.organic ?? 0),
+    revenue_usdc: Math.round((ledger.revenueUsdc + atomicToUsdc(ledger.native_mpp?.organic_amount_atomic ?? "0")) * 1_000_000) / 1_000_000,
     settles_by_rail: settlesByRail,
     organic_declines: organicDeclines,
     organic_rechecks: organicRechecks,
@@ -414,9 +421,9 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
     funnel: {
       free_argument_uses: argumentUses,
       organic_402s: organic402s,
-      organic_settles: organicSettles,
+      organic_settles: organicSettles + (ledger.native_mpp?.organic ?? 0),
       asks_per_hundred_checks: perHundred(organic402s, argumentUses),
-      settles_per_hundred_checks: perHundred(organicSettles, argumentUses),
+      settles_per_hundred_checks: perHundred(organicSettles + (ledger.native_mpp?.organic ?? 0), argumentUses),
     },
   };
 
@@ -558,9 +565,10 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
   if (!all.includes(current)) all.push(current);
   const wanted = options.months ? all.filter((month) => options.months!.includes(month)) : all;
 
+  const monthLedgers = new Map(all.map(month => [month, readCommerceMonthLedger(env, month)]));
   const [rails, pulse, states, newFaces, reads] = await Promise.all([
     readRailCountersByMonth(env).catch(() => [] as RailMonth[]),
-    computePulse(env).catch(() => null),
+    computePulse(env, { now, readMonth: month => monthLedgers.get(month) ?? readCommerceMonthLedger(env, month) }).catch(() => null),
     monthlyStates(env),
     // One payer scan for every month, not one per month.
     readNewFaces(env).catch(() => new Map<string, NewFaces>()),
@@ -568,7 +576,7 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
       all.map(async (month) => {
         const [porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged, instrumentClients] = await Promise.all([
           readPorchLedger(env, month),
-          readMonthLedger(env, month),
+          monthLedgers.get(month)!,
           readMcpClients(env, month),
           readBountyLedger(env, month),
           readVerifyAge(env, month),

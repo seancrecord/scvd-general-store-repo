@@ -258,3 +258,16 @@ describe("the press", () => {
     expect(await logClosedMonth(testEnv, new Date("2026-07-02T00:00:00.000Z"))).toBeNull();
   });
 });
+
+it("uses the same all-protocol sale count beside free checks without mixing the x402 conversion rate", async () => {
+  const { emptyMonthLedger } = await import("@/lib/metrics");
+  const ledger = emptyMonthLedger(MONTH);
+  ledger.native_mpp = { organic: 2, house: 0, organic_amount_atomic: "1000000", house_amount_atomic: "0", by_item: {} };
+  const reading = deriveGrowthMonth(inputs({
+    porch: porch({ "mcp:tool:preflight_endpoint": { organic: 10, "organic:mcp": 10 } }),
+  }, ledger));
+  expect(reading.store.organic_settles).toBe(2);
+  expect(reading.store.settles_per_hundred_402s).toBeNull();
+  expect(reading.free_instruments.funnel.organic_settles).toBe(2);
+  expect(reading.free_instruments.funnel.settles_per_hundred_checks).toBe(20);
+});

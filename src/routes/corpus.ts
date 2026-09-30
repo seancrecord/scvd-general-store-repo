@@ -733,7 +733,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   const jsonLd = jsonLdScript({
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: `x402 endpoint readiness — ${host}`,
+    name: title,
     description,
     url: `${base}/corpus/host/${host}`,
     sameAs: `${base}/corpus/host/${host}.json`,
