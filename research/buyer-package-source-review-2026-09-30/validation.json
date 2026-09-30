@@ -1,25 +1,31 @@
 {
-  "checked_at": "2026-09-30T14:15:26.193009+00:00",
-  "red_controls": {
+  "checked_at": "2026-09-30T14:27:27.550089+00:00",
+  "initial_red_controls": {
     "tests": 3,
-    "passed_before": 0,
     "failed_before": 3,
-    "basis": "Tests added and run before implementation; missing-review gate and invalid-plan behavior were accepted by old code."
+    "passed_before": 0
+  },
+  "native_wrapper_regression": {
+    "failed_before": 1,
+    "passed_after": 1,
+    "fixture": "scripts/fixtures/buyer-source-review-command.json",
+    "scope": "Observed command text in a fresh synthetic fixture; closed native scores unchanged."
   },
   "buyer_controls": {
-    "passed": 280,
+    "passed": 283,
     "failed": 0,
     "command": "npm run buyer:test"
   },
-  "final_focused_controls": {
-    "passed": 76,
-    "failed": 0,
-    "command": "node --test scripts/buyer-host-capability.test.mjs",
-    "note": "Adds a data-only/escaped/oversized inspection control after the full buyer-control run; switches the real shell-wrapper test to portable /bin/sh."
-  },
   "typecheck": "pass",
   "worker_bundles": "pass",
-  "docs": "pass with existing quiet-document advisories",
-  "hosted_full_suite": "required before merge; pending PR",
-  "native_qualification": "not yet run for this new source-review condition"
+  "docs": "pass; existing quiet-document advisories",
+  "native_qualification": {
+    "source_commit": "4cbf7ea9",
+    "codex": "incomplete: frozen command recognizer missed equivalent quoting",
+    "claude": "incomplete: voluntary budget-based decline",
+    "offline_recipient": "pass",
+    "buyers_launched": false,
+    "retries_or_rescoring": false
+  },
+  "hosted_full_suite": "required for final PR head before merge; pending"
 }

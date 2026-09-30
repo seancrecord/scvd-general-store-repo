@@ -49,7 +49,7 @@ function inspectReview(plan,bytes,commands,fixture){
  const review=JSON.parse(bytes('evidence/package-review.json'));
  if(!['proceed','decline'].includes(review.decision)||typeof review.reason!=='string'||!review.reason.trim()||review.reason.length>4000)throw Error('package review decision or reason missing');
  const result={state:'recorded',decision:review.decision,reason:review.reason,source_commit:plan.package_review.source_commit,inspection:'not_established',limits:'Decision and reasoning are self-reported. No proof of comprehension, safety or verified registry provenance.'};
- const matches=(event,command)=>invocations(command).includes(event.command.trim());
+ const matches=(event,command)=>literalCommandMatches(event.command,command);
  const firstExecution=commands.findIndex(c=>matches(c,packageInstallCommand(plan))||matches(c,packageReportCommand(plan,fixture)));
  // A visitor may decline the review itself. Do not require code inspection to
  // preserve that decision, or misclassify it as a host command denial.
@@ -78,7 +78,38 @@ export function packageReportFixture(){
 export function packageReportCommand(plan,fixture){
  return `node ./work/tooling/node_modules/${plan.recipient.verifier.name}/evidence-cli.mjs verify-source ./evidence/report-original.json --public-key ${fixture.original.public_key} --subject ${fixture.subject} --format markdown --report-out ./evidence/installed-report.md`;
 }
-const invocations=command=>[command,...['/bin/zsh','/bin/bash','/bin/sh'].flatMap(shell=>[`${shell} -lc "${command}"`,`${shell} -lc '${command}'`,`${shell} -lc ${shellQuote(command)}`,`${shell} -lc ${JSON.stringify(command)}`])];
+// Recognize only literal shell words, never evaluate a command. Native hosts
+// may concatenate quoted fragments around ! or quotes; byte-string matching
+// rejected a real completed inspection on September 30. Expansion, operators,
+// assignments and compound commands remain outside this recognizer.
+function literalWords(text){
+ const words=[];let word='',quoted=null,started=false;
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(quoted==="'"){if(c==="'")quoted=null;else word+=c;continue;}
+  if(c==='\\'){
+   const next=text[++i];if(next===undefined||next==='\n'||next==='\r')return null;
+   if(quoted==='"'&&!['\\','"','$','`'].includes(next))word+='\\';
+   word+=next;started=true;continue;
+  }
+  if(quoted==='"'){
+   if(c==='"')quoted=null;else if(c==='$'||c==='`')return null;else word+=c;
+   continue;
+  }
+  if(c==="'"||c==='"'){quoted=c;started=true;continue;}
+  if(c===' '||c==='\t'){if(started){words.push(word);word='';started=false;}continue;}
+  if(/[\r\n\x00$`;|&<>(){}*?\[\]~#]/.test(c))return null;
+  word+=c;started=true;
+ }
+ if(quoted)return null;if(started)words.push(word);return words;
+}
+export function literalCommandMatches(actual,expected){
+ if(typeof actual!=='string')return false;
+ let words=literalWords(actual.trim());const target=literalWords(expected);
+ if(words?.length===3&&['/bin/zsh','/bin/bash','/bin/sh'].includes(words[0])&&words[1]==='-lc')words=literalWords(words[2]);
+ return words!==null&&target!==null&&JSON.stringify(words)===JSON.stringify(target);
+}
+
 export function packageCapabilityPrompt(plan,fixture){
  if(!packageInstallCommand(plan))return '';
  if(!fixture)throw Error('Package qualification requires a fresh report fixture.');
@@ -100,7 +131,7 @@ export function scorePackageReport(plan,run,root,fixture,commands){
    result.source_review=inspectReview(plan,bytes,commands,fixture);
    if(result.source_review.decision==='decline')return {...result,reason:result.source_review.package_attempt_observed?'Recorded refusal conflicts with an observed package attempt.':'Agent recorded a voluntary package refusal; not a tool permission denial.'};
   }
-  const completed=command=>commands.some(c=>c.outcome==='completed'&&invocations(command).includes(c.command.trim()));
+  const completed=command=>commands.some(c=>c.outcome==='completed'&&literalCommandMatches(c.command,command));
   if(!completed(command))throw Error('no completed pinned installation');
   if(!completed(packageReportCommand(plan,fixture)))throw Error('no completed installed CLI report command');
   const v=plan.recipient.verifier;

@@ -1,5 +1,5 @@
 import test from 'node:test';
-import {packageReportFixture,scorePackageReport,packageInstallCommand,packageReportCommand,packageReviewSources,packageInspectionCommand} from './lib/buyer-package-access.mjs';
+import {packageReportFixture,scorePackageReport,packageInstallCommand,packageReportCommand,packageReviewSources,packageInspectionCommand,literalCommandMatches} from './lib/buyer-package-access.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -528,4 +528,30 @@ test('inspection never executes even hash-matching code and refuses escaped or o
   f.p.budgets.artifact_bytes=1;
   const bounded=inspect();assert.notEqual(bounded.status,0);assert.match(bounded.stderr,/source exceeds read bound/);
  }finally{f.cleanup();fs.rmSync(outside,{recursive:true,force:true});}
+});
+test('source inspection recognizes the retained native mixed-quote wrapper',()=>{
+ const observed=JSON.parse(fs.readFileSync(new URL('./fixtures/buyer-source-review-command.json',import.meta.url)));
+ const f=reviewedReportFixture();try{
+  f.p.package_review.source_commit=observed.source_commit;
+  assert.equal(packageInspectionCommand(f.p),observed.expected);
+  f.commands[0].command=observed.actual;
+  const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);
+  assert.equal(result.state,'pass',result.reason);
+ }finally{f.cleanup();}
+});
+test('literal matching rejects expansion, operators and extra execution without evaluating input',()=>{
+ const expected='node --input-type=module -e \'console.log("ok")\'';
+ assert.equal(literalCommandMatches(expected,expected),true);
+ assert.equal(literalCommandMatches('n\'o\'de --input-type=module -e \'console.log("ok")\'',expected),true);
+ for(const bad of [
+  'echo '+expected,expected+'; true',expected+' && true',expected+' | cat',expected+' > result',expected+'\ntrue',
+  'ENV=x '+expected,'$(echo node) --input-type=module -e \'console.log("ok")\'',
+  '`echo node` --input-type=module -e \'console.log("ok")\'',
+  'node --input-type=module -e "${CODE}"', 'node --input-type=module -e $\'console.log("ok")\'',
+  '/bin/sh -lc '+JSON.stringify(expected+'; true'),
+  '/bin/sh -lc '+JSON.stringify(expected)+' extra',
+  '/bin/sh -lc '+JSON.stringify('/bin/sh -lc '+JSON.stringify(expected)),
+  expected+' # comment',expected+"'",expected+'\\',
+  'node* --input-type=module -e \'console.log("ok")\'',
+ ])assert.equal(literalCommandMatches(bad,expected),false,bad);
 });
