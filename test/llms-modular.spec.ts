@@ -1182,7 +1182,7 @@ const BASE = "https://scvd.store";
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
   "6f75657e33b3c179cb7c6349bcd1148f680b0f40562cee86c94910f48b4e96ba";
 
-/** The llmstxt.org recommendation the index is being held to. */
+/** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
 
 function normalize(text: string): string {
@@ -1303,7 +1303,7 @@ describe("nothing was rewritten", () => {
 });
 
 describe("the index is an index", () => {
-  it("fits the convention's recommendation, with room", async () => {
+  it("fits the existing reader budget, with room", async () => {
     const index = await body("/llms.txt");
     expect(index.length).toBeLessThan(INDEX_CHARACTER_BUDGET);
     // And is genuinely smaller than what it replaced, not trimmed to

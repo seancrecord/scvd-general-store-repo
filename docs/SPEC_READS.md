@@ -1,5 +1,16 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-30 — production guide size and alternate URLs
+
+Read the [llms.txt v2 proposal](https://llmstxt.org/) (page modified August 10,
+2026). It describes concise background and links to detailed Markdown, including
+files under subpaths. This cleanup preserves the existing full guide and moves
+one intact section between existing area guides. The 30,000-character ceiling
+and the smaller root-index alarm are SCVD's existing engineering budgets, not
+promises about every host's context limit. No ranking, indexing or buyer
+comprehension result is inferred. Live guide bodies and the local production
+fixture identify the size and configuration mismatch independently of the proposal.
+
 ## 2026-09-30 — literal native-shell command recognition
 
 Read the primary [zsh quoting source](https://raw.githubusercontent.com/zsh-users/zsh/master/Doc/Zsh/grammar.yo), Quoting section, while reproducing a retained Codex command whose shell concatenates quoted fragments. A bounded matcher recognizes literal words only; it does not implement or execute general shell grammar. Captured-command and actual `/bin/sh` controls cover the supported subset; substitutions, operators and nested wrappers are refused. Non-default shell quoting options remain unsupported. POSIX's online chapter returned 403 through the web reader and GNU web manual reads timed out; no claim of having read those documents. The retrieved zsh source is retained with its hash in the source-review validation archive. See [implementation and native limits](BUYER_PACKAGE_SOURCE_REVIEW_2026-09-30.md).

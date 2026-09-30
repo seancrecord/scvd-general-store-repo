@@ -1961,7 +1961,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     page: "/developers",
     title: "Building against this store",
     blurb:
-      "The x402 purchase flow end to end, practising against a live till, what breaks a first client, the retry-safety mechanisms, the CLI, and the standards this store implements so you can check it without asking us.",
+      "Payment instructions, practice, recovery, the CLI and supported standards. Capability limits and deliberate refusals are in the linked accountability guide.",
   },
   {
     slug: "conformance",
@@ -1991,9 +1991,9 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     slug: "trust",
     path: "/trust",
     page: "/trust",
-    title: "Accountability: corrections, keys, wind-down",
+    title: "Capabilities, limits and accountability",
     blurb:
-      "What happens when we get it wrong, what a lost or stolen key costs and the succession protocol for it, who owns what you bought, what we rest on, our own wallets, and what happens if the lights go off.",
+      "Capability boundaries and deliberate refusals; corrections, keys and succession; ownership, dependencies, our wallets and winding down.",
   },
 ];
 
@@ -2010,8 +2010,9 @@ const SECTION_AREAS: Record<string, string> = {
   "Practicing on us": "developers",
   "How paying works here": "developers",
   "Standards, so you can check us without asking us": "developers",
-  // P12: the declined positions file where a scorecard reader looks.
-  "What we don't do, on purpose": "developers",
+  // Capability boundaries belong with accountability. Keeping this section
+  // whole there leaves payment instructions readable with every rail enabled.
+  "What we don't do, on purpose": "trust",
   "The obstacle course — rehearse failure before it costs you": "developers",
   "Visiting properly": "developers",
   "Privacy, structurally": "developers",
@@ -2272,7 +2273,7 @@ for (const area of LLMS_AREAS) {
 for (const alias of ["/docs", "/api"] as const) {
   llmsRoutes.get(`${alias}/llms.txt`, (c) => {
     const base = c.env.STORE_BASE_URL;
-    const body = llmsForArea(base, "developers");
+    const body = llmsForArea(base, "developers", c.env);
     return c.text(body ?? "", body ? 200 : 404, {
       Link: `<${base}/developers/llms.txt>; rel="canonical"`,
     });

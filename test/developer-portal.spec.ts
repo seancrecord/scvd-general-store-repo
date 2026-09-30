@@ -472,11 +472,16 @@ describe("what we don't do, on purpose", () => {
     }
   });
 
-  it("files the same section under the developers llms area", async () => {
+  it("links from the developer guide to the intact capability limits", async () => {
     const area = await (
       await SELF.fetch("https://scvd.store/developers/llms.txt")
     ).text();
-    expect(area).toContain("What we don't do, on purpose");
-    expect(area).toContain("Training is distribution here, not leakage");
+    expect(area).toContain("https://scvd.store/trust/llms.txt");
+    expect(area).toContain("Capability limits");
+    const limits = await (
+      await SELF.fetch("https://scvd.store/trust/llms.txt")
+    ).text();
+    expect(limits).toContain("What we don't do, on purpose");
+    expect(limits).toContain("Training is distribution here, not leakage");
   });
 });
