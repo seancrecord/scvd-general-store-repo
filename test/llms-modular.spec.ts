@@ -1160,8 +1160,15 @@ const BASE = "https://scvd.store";
 // 2026-09-28, PS7: clarify mixed MPP/x402 responses and add the shared
 // inspection guidance. Reversing only those two edits reproduced both
 // prior pins (14/14 tests); these pins retain the reviewed new wording.
+// 2026-09-30: re-taken for one clause in spot_check's first house rule —
+// "(a url is read for its hostname)" — the guide prints each listing's
+// constraints on its shelf line, so the decline desk's host-from-url
+// alias moved both pins and nothing else did. Verified the way this file
+// asks: with src/store/menu-utility.ts alone restored to main, e4488cc0
+// here and 21a941ef below reproduced (14/14), and this copy reproduces
+// the new ones.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e4488cc0be53471ad190ce6f93c0072e5a1146cfee55aa3ca8af2064e88823f5";
+  "d6351fc6fa10b023675bd10d5043e804c35eecd3ea43236f0d76dcb0bc204305";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1258,7 +1265,10 @@ describe("nothing was rewritten", () => {
       // buy_url_template with the slots filled, never at the bare door.
       // Verified the way this file asks: with that clause alone reverted,
       // 1ac33b17 reproduced, and this copy reproduces the new one.
-      "21a941eff7085a4a089d1ee351969a0f5a9df2a7187597a3a25e260376f6ae26",
+      // 2026-09-30: re-taken for spot_check's house-rule clause (see the
+      // note on GUIDE_DIGEST_BEFORE_THE_SPLIT); with menu-utility.ts alone
+      // restored to main, 21a941ef reproduced.
+      "d1f60bc8f855347d144c5c40221ec210e5354959843260535e61587084b9608b",
     );
   });
 
