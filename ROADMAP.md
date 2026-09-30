@@ -163,6 +163,17 @@ the prior 2/4 buyer result is unchanged. Next investigate existing package
 inspectability/provenance and distinguish voluntary refusal from tool denial;
 a future qualification requires a separate frozen plan and stated change.
 
+**TR3 source review, September 30 (implementation and separate qualification):**
+[The opt-in source-review step](docs/BUYER_PACKAGE_SOURCE_REVIEW_2026-09-30.md)
+provides immutable source URLs and a proceed/decline receipt. The [closed native
+qualification](research/source-review-qualification-2026-09-30/REPORT.md) records
+both online package checks incomplete and offline capability pass; no buyers
+launched. Codex's completed workflow hit a command-recognition defect, repaired
+after closure with the retained command as a failing regression. Claude declined
+on its estimated remaining call budget after source inspection. Original scores,
+budgets and host gates remain unchanged. The repair is not a native pass; setup
+friction and a new separately frozen qualification remain before buyers.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The

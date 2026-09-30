@@ -1,5 +1,5 @@
 import test from 'node:test';
-import {packageReportFixture,scorePackageReport,packageInstallCommand,packageReportCommand} from './lib/buyer-package-access.mjs';
+import {packageReportFixture,scorePackageReport,packageInstallCommand,packageReportCommand,packageReviewSources,packageInspectionCommand,literalCommandMatches} from './lib/buyer-package-access.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -426,4 +426,132 @@ test('generic capability success cannot substitute for required installed-report
   const score=scoreCapability('claude',f.run,f.d,f.vectors,f.reference,packagePlan(),packageReportFixture());
   assert.equal(score.local_check.state,'pass');assert.equal(score.package_report.state,'incomplete');assert.equal(score.state,'incomplete');
  }finally{f.cleanup();}
+});
+
+test('source review requires an explicit package plan and immutable source commit',()=>{
+ for(const review of [true,{}, {source_commit:'main'}, {source_commit:'a'.repeat(40),extra:true}]){
+  assert.throws(()=>validatePlan({...packagePlan(),package_review:review}),/review|commit/i);
+ }
+ const p=packagePlan();delete p.package_access;p.package_review={source_commit:'a'.repeat(40)};
+ assert.throws(()=>validatePlan(p),/review|package/i);
+});
+test('source-review opt-in cannot pass on installation and a generated report alone',()=>{
+ const f=installedReportFixture();try{
+  f.p.package_review={source_commit:'a'.repeat(40)};
+  assert.notEqual(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+ }finally{f.cleanup();}
+});
+test('source-review prompt offers inspection and an explicit decision before installation',()=>{
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};
+ const text=buildCapabilityPrompt(p,'claude',capabilityVectors(),packageReportFixture());
+ assert.match(text,/package-review\.json/);assert.match(text,/decline/);assert.match(text,/before.*install/i);
+ assert.match(text,/raw\.githubusercontent\.com.*a{40}/);
+ assert.doesNotMatch(buildPrompt(packagePlan(),p.cells[0]),/package-review\.json/);
+});
+
+function reviewedReportFixture(){
+ const f=installedReportFixture();f.p.package_review={source_commit:'a'.repeat(40)};
+ f.retain=(file,data)=>{
+  const p=path.join(f.d,file);fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,data);
+  f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>r.file!==file);
+  f.run.retained_artifacts.files.push({file,sha256:hash(fs.readFileSync(p))});
+ };
+ for(const row of packageReviewSources(f.p))f.retain(row.file,fs.readFileSync(new URL('../verifier/'+path.basename(row.file),import.meta.url)));
+ f.retain('evidence/package-review.json',JSON.stringify({decision:'proceed',reason:'Reviewed source as text; remaining trust in the runtime and controller pin is explicit.'}));
+ f.commands.unshift({command:packageInspectionCommand(f.p),outcome:'completed'});return f;
+}
+test('source inspection runs as data only and preserves complete pinned bytes',()=>{
+ const f=reviewedReportFixture();try{
+  const result=spawnSync('/bin/sh',['-c',packageInspectionCommand(f.p)],{cwd:f.d,encoding:'utf8',maxBuffer:f.p.budgets.output_bytes});
+  assert.equal(result.status,0,result.stderr);
+  for(const row of packageReviewSources(f.p))assert.ok(result.stdout.includes(fs.readFileSync(path.join(f.d,row.file),'utf8')));
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+  fs.appendFileSync(path.join(f.d,'evidence/source/evidence-cli.mjs'),'\nthrow Error("must never execute");');
+  const bad=spawnSync('/bin/sh',['-c',packageInspectionCommand(f.p)],{cwd:f.d,encoding:'utf8'});
+  assert.notEqual(bad.status,0);assert.match(bad.stderr,/source hash mismatch/);assert.equal(bad.stdout,'');
+ }finally{f.cleanup();}
+});
+for(const [name,mutate] of [
+ ['missing source',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>!r.file.endsWith('source/payment-identity.js'))],
+ ['rehashed changed source',f=>f.retain('evidence/source/evidence-report.js','different bytes')],
+ ['missing decision',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>!r.file.endsWith('package-review.json'))],
+ ['empty reason',f=>f.retain('evidence/package-review.json','{"decision":"proceed","reason":""}')],
+ ['missing inspection',f=>f.commands.shift()],
+ ['denied inspection',f=>f.commands[0].outcome='denied'],
+ ['inspection after install',f=>f.commands.push(f.commands.shift())],
+ ['echoed inspection',f=>f.commands[0].command='echo '+f.commands[0].command],
+])test(`source-review gate refuses ${name}`,()=>{
+ const f=reviewedReportFixture();try{mutate(f);assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'incomplete');}finally{f.cleanup();}
+});
+test('a declined source review is retained without inventing a command denial or qualification pass',()=>{
+ const f=reviewedReportFixture();try{
+  f.retain('evidence/package-review.json','{"decision":"decline","reason":"I do not want to inspect or execute this package."}');f.commands=[];
+  f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>r.file==='evidence/package-review.json');
+  const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);
+  assert.equal(result.state,'incomplete');assert.equal(result.source_review.decision,'decline');
+  assert.equal(result.source_review.inspection,'not_established');assert.equal(result.source_review.package_attempt_observed,false);
+  assert.match(result.reason,/voluntary.*not a tool permission denial/);
+  f.commands=[{command:packageInstallCommand(f.p),outcome:'completed'}];
+  assert.match(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).reason,/conflicts/);
+ }finally{f.cleanup();}
+});
+test('source review preserves the same narrow permissions and offline recipient',()=>{
+ const p=packagePlan(),c=p.cells.find(c=>c.host==='claude');
+ const old=adapter(c,'/tmp/neutral','/tmp/out',p.budgets,undefined,p);
+ p.package_review={source_commit:'a'.repeat(40)};
+ assert.deepEqual(adapter(c,'/tmp/neutral','/tmp/out',p.budgets,undefined,p),old);
+ const prompt=buildPrompt(p,c);assert.match(prompt,/untrusted text/);assert.match(prompt,/not a safety audit/);
+ for(const row of packageReviewSources(p)){assert.ok(prompt.includes(row.url));assert.equal(row.sha256,p.recipient.verifier.files[path.basename(row.file)]);}
+});
+test('source inspection accepts real quoted shell wrappers but not a compound command',()=>{
+ const f=reviewedReportFixture();try{
+  const cmd=packageInspectionCommand(f.p);
+  for(const quote of [s=>JSON.stringify(s),s=>"'"+s.replaceAll("'","'\"'\"'")+"'"]){
+   const wrapped='/bin/sh -lc '+quote(cmd);
+   const run=spawnSync('/bin/sh',['-c',wrapped],{cwd:f.d,encoding:'utf8',maxBuffer:f.p.budgets.output_bytes});
+   assert.equal(run.status,0,run.stderr);
+   f.commands[0].command=wrapped;
+   assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+  }
+  f.commands[0].command=cmd+' && echo inspected';
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'incomplete');
+ }finally{f.cleanup();}
+});
+test('inspection never executes even hash-matching code and refuses escaped or oversized files',()=>{
+ const f=reviewedReportFixture(),outside=root();try{
+  const file='evidence/source/payment-identity.js';const malicious='require("node:fs").writeFileSync("executed-marker", "unexpected")';
+  f.retain(file,malicious);f.p.recipient.verifier.files['payment-identity.js']=hash(Buffer.from(malicious));
+  const inspect=()=>spawnSync('/bin/sh',['-c',packageInspectionCommand(f.p)],{cwd:f.d,encoding:'utf8',maxBuffer:f.p.budgets.output_bytes});
+  assert.equal(inspect().status,0);assert.equal(fs.existsSync(path.join(f.d,'executed-marker')),false);
+  fs.writeFileSync(path.join(outside,'source'),malicious);fs.unlinkSync(path.join(f.d,file));fs.symlinkSync(path.join(outside,'source'),path.join(f.d,file));
+  const escaped=inspect();assert.notEqual(escaped.status,0);assert.match(escaped.stderr,/source escaped workspace/);
+  f.p.budgets.artifact_bytes=1;
+  const bounded=inspect();assert.notEqual(bounded.status,0);assert.match(bounded.stderr,/source exceeds read bound/);
+ }finally{f.cleanup();fs.rmSync(outside,{recursive:true,force:true});}
+});
+test('source inspection recognizes the retained native mixed-quote wrapper',()=>{
+ const observed=JSON.parse(fs.readFileSync(new URL('./fixtures/buyer-source-review-command.json',import.meta.url)));
+ const f=reviewedReportFixture();try{
+  f.p.package_review.source_commit=observed.source_commit;
+  assert.equal(packageInspectionCommand(f.p),observed.expected);
+  f.commands[0].command=observed.actual;
+  const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);
+  assert.equal(result.state,'pass',result.reason);
+ }finally{f.cleanup();}
+});
+test('literal matching rejects expansion, operators and extra execution without evaluating input',()=>{
+ const expected='node --input-type=module -e \'console.log("ok")\'';
+ assert.equal(literalCommandMatches(expected,expected),true);
+ assert.equal(literalCommandMatches('n\'o\'de --input-type=module -e \'console.log("ok")\'',expected),true);
+ for(const bad of [
+  'echo '+expected,expected+'; true',expected+' && true',expected+' | cat',expected+' > result',expected+'\ntrue',
+  'ENV=x '+expected,'$(echo node) --input-type=module -e \'console.log("ok")\'',
+  '`echo node` --input-type=module -e \'console.log("ok")\'',
+  'node --input-type=module -e "${CODE}"', 'node --input-type=module -e $\'console.log("ok")\'',
+  '/bin/sh -lc '+JSON.stringify(expected+'; true'),
+  '/bin/sh -lc '+JSON.stringify(expected)+' extra',
+  '/bin/sh -lc '+JSON.stringify('/bin/sh -lc '+JSON.stringify(expected)),
+  expected+' # comment',expected+"'",expected+'\\',
+  'node* --input-type=module -e \'console.log("ok")\'',
+ ])assert.equal(literalCommandMatches(bad,expected),false,bad);
 });

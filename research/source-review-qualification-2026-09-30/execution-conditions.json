@@ -1,0 +1,9 @@
+{
+  "samples": 88,
+  "battery_samples": 88,
+  "ac_samples": 0,
+  "max_vitest_processes": 1,
+  "max_workerd_processes": 2,
+  "sha256": "cdda61537524964e7e92c094fd350f84c950b3672c8681e13aa0a11ee309006c",
+  "limits": "Sample observations, not continuous proof of host state. Battery operation explicitly permitted by keeper. No controller tests during native qualification. Existing timing guards unchanged."
+}
