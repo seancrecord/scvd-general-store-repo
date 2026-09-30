@@ -163,6 +163,14 @@ the prior 2/4 buyer result is unchanged. Next investigate existing package
 inspectability/provenance and distinguish voluntary refusal from tool denial;
 a future qualification requires a separate frozen plan and stated change.
 
+**TR3 source review, September 30 (implementation; native outcome pending):**
+[The opt-in source-review step](docs/BUYER_PACKAGE_SOURCE_REVIEW_2026-09-30.md)
+provides immutable source URLs and hash-checked text inspection before package
+execution, with an explicit proceed/decline receipt. A voluntary refusal stays
+incomplete; it is never converted into a command denial or forced acceptance.
+No earlier attempt changes. A separate frozen qualification is required before
+new buyer cells; original budgets and the all-host gate remain.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The

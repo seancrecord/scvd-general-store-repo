@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-09-30T14:15:26.193009+00:00",
+  "red_controls": {
+    "tests": 3,
+    "passed_before": 0,
+    "failed_before": 3,
+    "basis": "Tests added and run before implementation; missing-review gate and invalid-plan behavior were accepted by old code."
+  },
+  "buyer_controls": {
+    "passed": 280,
+    "failed": 0,
+    "command": "npm run buyer:test"
+  },
+  "final_focused_controls": {
+    "passed": 76,
+    "failed": 0,
+    "command": "node --test scripts/buyer-host-capability.test.mjs",
+    "note": "Adds a data-only/escaped/oversized inspection control after the full buyer-control run; switches the real shell-wrapper test to portable /bin/sh."
+  },
+  "typecheck": "pass",
+  "worker_bundles": "pass",
+  "docs": "pass with existing quiet-document advisories",
+  "hosted_full_suite": "required before merge; pending PR",
+  "native_qualification": "not yet run for this new source-review condition"
+}
