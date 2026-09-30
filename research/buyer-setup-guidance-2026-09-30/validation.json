@@ -1,0 +1,24 @@
+{
+  "checked_at": "2026-09-30T21:19:35.406002+00:00",
+  "condition": {
+    "capability.setup_guidance": "standalone-node-v1",
+    "buyer_setup_guidance": true
+  },
+  "red_before_implementation": {
+    "failed": 3,
+    "existing_binding_control_passed": 1
+  },
+  "focused_controls": {
+    "passed": 85,
+    "failed": 0
+  },
+  "buyer_controls": {
+    "passed": 290,
+    "failed": 0
+  },
+  "typecheck": "pass",
+  "worker_bundles": "pass",
+  "archived_prompts_reproduced_byte_for_byte": 7,
+  "native_acquisition": "not launched; draft plan only",
+  "hosted_ci": "all four shards and aggregate required before merge; pending"
+}

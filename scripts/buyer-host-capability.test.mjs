@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createPublicKey, verify} from 'node:crypto';
-import {validatePlan, buildPrompt, adapter, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
+import {validatePlan, buildPrompt, adapter, recipientLaunch, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
 import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment} from './buyer-cold-isolated.mjs';
 import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
 
@@ -599,4 +599,54 @@ test('setup guidance changes neither buyer prompts nor execution permissions',()
  }
  assert.deepEqual(guided.budgets,p.budgets);
  assert.deepEqual(guided.recipient,p.recipient);
+});
+
+
+test('buyer setup guidance requires explicit true and the qualified setup condition',()=>{
+ for(const value of [false,null,'standalone-node-v1',{},1]){
+  const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';p.buyer_setup_guidance=value;
+  assert.throws(()=>validatePlan(p),/buyer setup/i);
+ }
+ const missing=structuredClone(plan);missing.buyer_setup_guidance=true;
+ assert.throws(()=>validatePlan(missing),/buyer setup/i);
+});
+
+test('buyer setup guidance shares qualified instructions while preserving task and permissions',()=>{
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};p.capability.setup_guidance='standalone-node-v1';
+ const guided=structuredClone(p);guided.buyer_setup_guidance=true;validatePlan(guided);
+ const vectors=capabilityVectors(),fixture=packageReportFixture();
+ const recipientContext={codex:{disabled_skills:[]}};
+ assert.deepEqual(recipientLaunch(guided,'/tmp/offline','/tmp/out',recipientContext),recipientLaunch(p,'/tmp/offline','/tmp/out',recipientContext));
+ for(const cell of p.cells){
+  const before=buildPrompt(p,cell),after=buildPrompt(guided,cell);
+  assert.notEqual(after,before);
+  assert.ok(after.endsWith(before),'buyer question, constraints, source review and budgets are unchanged');
+  const prefix=after.slice(0,-before.length);
+  const bare=structuredClone(p);delete bare.capability.setup_guidance;
+  const qualification=buildCapabilityPrompt(p,cell.host,vectors,fixture),oldQualification=buildCapabilityPrompt(bare,cell.host,vectors,fixture);
+  assert.equal(prefix,qualification.slice(0,-oldQualification.length));
+  assert.match(prefix,/mkdirSync/);assert.match(prefix,/multiple permitted operations within one Node program/);
+  assert.equal(buildCapabilityPrompt(guided,cell.host,vectors,fixture),qualification,'no second qualification hint');
+  const context={codex:{disabled_skills:[]}};
+  assert.deepEqual(adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,guided),adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,p));
+ }
+});
+
+test('buyer setup guidance does not give unbranded lanes a service identity or a verdict',()=>{
+ const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';p.buyer_setup_guidance=true;
+ for(const cell of [p.cells[0],{...p.cells[0],lane:'intent_search',entry:null}]){
+  const text=buildPrompt(p,cell);assert.match(text,/standalone-node-v1/);
+  assert.doesNotMatch(text,/scvd|preflight_endpoint|check_conformance|302a3005|signature.*true/i);
+ }
+});
+
+test('buyer setup guidance cannot reuse a qualification from the old buyer condition',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';
+  const probe=path.join(d,'probe');await runCapabilityProbe(p,probe);
+  p.buyer_setup_guidance=true;
+  await assert.rejects(runCohort(p,path.join(d,'buyers'),{capability:probe}),/different plan/);
+  assert.equal(fs.existsSync(path.join(d,'buyers')),false);
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
 });
