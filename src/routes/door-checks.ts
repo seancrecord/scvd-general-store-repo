@@ -24,7 +24,7 @@ import { signedRecoveryResponse } from "@/lib/payment-gate";
  */
 import type { MiddlewareHandler } from "hono";
 import { gateSignals, paymentGate } from "@/lib/payment-gate";
-import { buyInputSchema, buyerInputRepair, missingRequiredInputs, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { buyInputSchema, buyerInputRepair, missingRequiredInputs, presentInputNames, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { resolveInputRecord } from "@/lib/input-aliases";
 import { catalogRecovery } from "@/lib/catalog-recovery";
 import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
@@ -384,9 +384,13 @@ export const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next)
     return;
   }
   const reason = purchaseInputDeclineReason(item, c.req.query(), c.get("inputRefusal"));
-  await recordPaymentDecline(c.env, c.req.path, reason, gateSignals(c)).catch(
-    () => undefined,
-  );
+  // With the names of what DID arrive (never the values), so the desk
+  // can tell the bare door from the sibling's spelling. See
+  // MetricEvent.inputs_present.
+  await recordPaymentDecline(c.env, c.req.path, reason, {
+    ...gateSignals(c),
+    inputsPresent: presentInputNames(c.req.query()),
+  }).catch(() => undefined);
 };
 /**
  * EVERY REFUSAL THAT DEPENDS ON WHAT THE BUYER SENT, in one gate,

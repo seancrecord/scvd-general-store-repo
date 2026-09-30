@@ -576,7 +576,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     note_402:
       "A tenth of a cent for whatever's already on the card. We don't go and look — this is what the shop already saw, dated, with the blanks left blank.",
     constraints: [
-      "Give the host in the host query parameter: a bare hostname, e.g. example.com",
+      "Give the host in the host query parameter: a bare hostname, e.g. example.com (a url is read for its hostname)",
       "Reads what we already recorded — no request is made to the subject",
       "A host we've never met returns not_observed, which is an answer",
       NEVER_A_RANKING_SENTENCE,
