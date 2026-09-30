@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-09-30T20:18:17.823572+00:00",
+  "condition": "capability.setup_guidance=standalone-node-v1",
+  "red_before_implementation": {
+    "failed": 2,
+    "unchanged_control_passed": 1
+  },
+  "focused_controls": 81,
+  "buyer_controls": {
+    "passed": 286,
+    "failed": 0,
+    "initial_sandbox_run": "285 passed; one localhost fixture blocked with listen EPERM; full suite rerun with listener permission passed"
+  },
+  "typecheck": "pass",
+  "worker_bundles": "pass",
+  "docs": "pass",
+  "hosted_full_suite": "required before merge; not yet run",
+  "native_qualification": "not yet launched; no acceptance claim"
+}

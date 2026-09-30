@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-09-30T20:44:02.854761+00:00",
+  "frozen_source": "fc00e713dd3dd2580867ab5094aadb44e45e36fb",
+  "code_unchanged_since_qualification": true,
+  "buyer_controls": 286,
+  "typecheck": "pass",
+  "docs": "pass",
+  "qualification_gates": {
+    "codex": "pass",
+    "claude": "pass",
+    "offline_capability": "pass"
+  },
+  "integrated_journeys": {
+    "complete": 0,
+    "failed": 1,
+    "incomplete": 3
+  },
+  "recipient_sessions": 0,
+  "recipient_prelaunch": "blocked by CLI/environment drift before attempt reservation",
+  "native_exports": {
+    "completed_finals": 6,
+    "last_messages": 1
+  },
+  "archive": {
+    "files": 330,
+    "bytes": 46198883,
+    "markdown_files": 28,
+    "destination_hashes_checked": true
+  },
+  "hosted_ci": "required for final head before merge; pending"
+}
