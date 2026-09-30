@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-30T13:29:54.827376+00:00",
+  "change_scope": "Research record and roadmap only; instrument unchanged from merged main during all native sessions.",
+  "typecheck": "pass",
+  "focused_existing_tests": {
+    "command": "node --test scripts/buyer-host-capability.test.mjs",
+    "passed": 60,
+    "failed": 0
+  },
+  "docs_check": "pass; reports existing quiet-document advisories",
+  "native_acquisition_complete_before_software_tests": true,
+  "full_suite": "Required hosted CI pending; not rerun locally for a record-only change."
+}
