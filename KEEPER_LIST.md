@@ -1314,6 +1314,13 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **Package follow-up, September 30 — release only after PR/CI.** The
+  [starter compatibility repair](research/mcp-starter-compatibility-2026-09-30/README.md)
+  prepares `scvd-mcp-starter` 0.2.0; the preflight listing-copy correction
+  prepares `scvd-preflight` 0.3.1. Both are local, unpublished candidates.
+  These join the existing package publication press; do not infer npm
+  availability from local tests. No press is requested before review.
+
 - **September 30 review — prepared, not sent.** [Dated content audit](research/listing-review-2026-09-30/README.md) covers all 82 claimed URLs, eight npm packages and 26 existing GitHub requests. [Exact corrections and release order](research/listing-review-2026-09-30/CORRECTIONS.md): fix wrong connection instructions/component confusion before refreshing copy. Existing MCPpedia #172 and mcp.so #4325 remain open; no duplicate requests. Store registry 0.2.4 and portable wrappers 0.2.6 are prepared only; publish/read back before forwarding their new version URLs. Existing package publication and form-review entries below remain the owners of those actions.
 
 

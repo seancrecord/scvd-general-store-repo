@@ -53,8 +53,14 @@ performs all those jobs. The prepared short MCP/plugin description is in
 ## Release boundaries
 
 Prepared locally: store MCP manifest **0.2.4**, portable plugin wrappers
-**0.2.6**, CLI **0.4.0**, preflight SDK **0.3.0**. Defects **0.21.0** was already
-prepared. The five other audited npm package versions match publication.
+**0.2.6**, CLI **0.4.0**, preflight SDK **0.3.1**. Defects **0.21.0** was already
+prepared. Follow-up correction: preflight's changed packaged copy needs its
+own patch version; the earlier 0.3.0 target omitted that bump.
+
+The subsequent [starter compatibility repair](../mcp-starter-compatibility-2026-09-30/README.md)
+also prepares **scvd-mcp-starter 0.2.0**. The audit's earlier 0.1.1 equality
+was true at readback; it no longer describes this local release candidate.
+Neither follow-up was published. Other readback evidence remains dated as read.
 
 The source OASF JSON was regenerated, not signed, pushed or admitted. The
 local Agent Finder draft now targets the prepared MCP version; **publish and

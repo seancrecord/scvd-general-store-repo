@@ -1,6 +1,6 @@
 {
   "name": "scvd-preflight",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Zero-dependency client for scvd.store: inspect observed x402/MPP protocols, advertised terms and gaps, or run the x402 preflight deploy gate. No payment or signature verification during endpoint inspection.",
   "type": "module",
   "main": "./x402-preflight.js",

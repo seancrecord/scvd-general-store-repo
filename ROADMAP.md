@@ -290,6 +290,14 @@ MCP is not rebuilt. Tab, corpus client and defects expand only for a
 demonstrated workflow or necessary conformance/vocabulary maintenance.
 Keeper copy/publication actions are filed when the release is concrete.
 
+**MCP-starter maintenance — implemented locally September 30.** The old
+starter rejected modern discovery and omitted required forwarding headers.
+Prepared 0.2.0 restores modern/legacy compatibility, explicit version refusal
+and cancellation; independent SDK subprocess checks preserve the legacy path.
+[Evidence and limits](research/mcp-starter-compatibility-2026-09-30/README.md).
+Hosted MCP was not changed. PR, CI, package publication and native-host
+qualification remain outstanding; buyer qualification stays deferred.
+
 ---
 
 ## PROTOCOL REPORTING AND DISCOVERY REVIEW — September 29, serial

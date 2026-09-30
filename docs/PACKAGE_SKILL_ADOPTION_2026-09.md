@@ -339,6 +339,9 @@ repair when a reproduced client failure or claimed-support mismatch calls
 for it. Reuse the hosted contract and test a real independent client, plus
 legacy behavior and unsupported-version refusal. It may take a serial
 maintenance slot without waiting for PS8–PS10; it does not reopen hosted MCP.
+Implemented locally September 30 as starter 0.2.0 after reproducing discovery
+and forwarding failures. [Repair, independent-client checks and release limits](../research/mcp-starter-compatibility-2026-09-30/README.md).
+Publication and native-host qualification are not implied by local completion.
 Tab, corpus client and defects retain their current jobs; update them only
 for demonstrated defects or required new fixture/vocabulary coverage.
 

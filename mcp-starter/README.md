@@ -2,9 +2,9 @@
 
 A zero-dependency MCP server over stdio that serves
 [scvd.store](https://scvd.store)'s five free x402 verifier tools
-to any MCP client: `preflight_x402_endpoint`, `verify_x402_receipt`,
+to stdio MCP clients: `preflight_x402_endpoint`, `verify_x402_receipt`,
 `lookup_endpoint_readiness`, `get_defect_definition`,
-`verify_scvd_artifact`. It answers the handshake itself and forwards
+`verify_scvd_artifact`. It answers discovery or the legacy handshake locally and forwards
 `tools/list` and `tools/call` to `POST https://scvd.store/mcp/verifier`
 over HTTPS. Nothing here can pay: the upstream door has no paid
 tool to reach, and this file holds no key and asks for nothing.
@@ -23,11 +23,32 @@ Claude Desktop, Cursor, or any stdio MCP client:
 
 ## Why a starter
 
-The whole server is one file. Copy it into your project, keep the
-handshake, and change `SCVD_MCP_UPSTREAM` (or the constant) to your own
-MCP door when you have one: the framing, the error shapes and the
-forwarding are the parts every stdio server needs and nobody wants to
-write twice.
+The whole server is one file. Copy it into your project or change
+`SCVD_MCP_UPSTREAM` to a compatible, stateless JSON verifier endpoint.
+Its discovery describes the default free verifier. If you adapt it to a
+different service, update that description and check the upstream contract.
+
+## Compatibility
+
+- Modern clients can start with `server/discover`, then call tools without
+  an initialization handshake. Each request needs protocol version and
+  client capabilities in `params._meta`.
+- Legacy clients keep using `initialize`, `notifications/initialized`,
+  `tools/list` and `tools/call`. Initialization returns the requested
+  supported legacy revision, or the existing default when unsupported.
+- Unsupported modern versions return an explicit error with supported
+  versions. Discovery reports the version list from the implementation.
+- Cancellation stops the upstream request and suppresses late replies.
+
+The upstream adapter expects single JSON responses, as served by the default
+verifier. It is not a general Streamable HTTP client: SSE, upstream sessions,
+authentication and custom tool-parameter headers are not implemented.
+The runtime still has no dependencies. Repository checks use the official
+MCP SDK's legacy client and its stdio transport for explicit modern probes;
+those checks do not establish support in every desktop host.
+
+The `0.2.0` compatibility update is prepared locally, not published. Until
+release, `npx scvd-mcp-starter` installs the existing published version.
 
 ## What it is not
 

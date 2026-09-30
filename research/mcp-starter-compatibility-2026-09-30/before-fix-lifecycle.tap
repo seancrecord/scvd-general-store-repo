@@ -1,0 +1,66 @@
+TAP version 13
+# Subtest: stdio keeps the negotiated legacy version separate from modern requests
+not ok 1 - stdio keeps the negotiated legacy version separate from modern requests
+  ---
+  duration_ms: 11.145667
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:145:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+    +   null,
+    +   null,
+    +   null
+    -   '2025-06-18',
+    -   '2026-07-28',
+    -   '2025-06-18'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: '2025-06-18'
+    1: '2026-07-28'
+    2: '2025-06-18'
+  actual:
+    0: ~
+    1: ~
+    2: ~
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:160:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: duplicate in-flight IDs do not replace the request cancellation target
+not ok 2 - duplicate in-flight IDs do not replace the request cancellation target
+  ---
+  duration_ms: 1.321833
+  location: '/private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:164:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/scvd-protocol-reporting-2026-09-29/mcp-starter/compatibility.test.mjs:178:12)
+    async Test.run (node:internal/test_runner/test:932:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:629:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 54.974041

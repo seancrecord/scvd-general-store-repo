@@ -2691,3 +2691,24 @@ on a particular browser, or paid execution. This pass changes discovery copy,
 not the browser adapter or protocol implementation. A2A/UCP version and
 checkout declarations remain derived from their existing source constants;
 no new conformance or interoperability qualification is inferred.
+
+### 2026-09-30 — standalone MCP starter compatibility
+
+Read the official [modern lifecycle/versioning](https://modelcontextprotocol.io/specification/2026-07-28/basic/lifecycle),
+[base metadata](https://modelcontextprotocol.io/specification/2026-07-28/basic),
+[stdio binding](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio),
+[HTTP binding](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http)
+and [legacy lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle).
+Modern requests declare version and capabilities per request; discovery and
+unsupported-version errors replace the handshake. Stdio cancellation suppresses
+later replies. HTTP forwarding must mirror version, method and tool name.
+Legacy initialization negotiates a supported legacy revision separately.
+The direct modern `/basic/versioning` and `/server/discovery` URLs failed on
+follow-up; lifecycle, base metadata and transport pages were readable.
+
+The bounded repair covers the starter's existing verifier tools and JSON
+upstream. It does not turn this into a general HTTP MCP client (SSE, sessions,
+authentication and custom tool-header annotations are outside this adapter).
+The installed official TypeScript SDK 1.30.0 remains handshake-based; its
+client can independently check legacy behavior, while its stdio transport can
+carry explicit modern probes. Neither establishes modern native-host adoption.
