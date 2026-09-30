@@ -38,6 +38,20 @@ const FAULT_LABEL: Record<string, string> = {
   unknown: "unknown",
 };
 
+/**
+ * WHAT THE REQUEST BROUGHT (2026-09-30). A missing-input row kept the
+ * code and nothing else, so `node` refused three times at spot_check
+ * could not be told apart as "sent nothing" or "sent ?url= to the one
+ * door that says ?host=". Names only, never values; an older row says
+ * not recorded rather than nothing.
+ */
+function arrivedHtml(row: DeclineRow): string {
+  if (row.stage !== "input") return "&mdash;";
+  if (!row.inputs_present) return "<em>not recorded</em>";
+  if (row.inputs_present.length === 0) return "<em>nothing</em>";
+  return row.inputs_present.map((name) => `<code>${escapeHtml(name)}</code>`).join(", ");
+}
+
 function declineRowHtml(row: DeclineRow): string {
   const colour = row.fault === "ours" ? ' style="color:#8c2f1b"' : "";
   return `<tr>
@@ -47,13 +61,16 @@ function declineRowHtml(row: DeclineRow): string {
     <td>${escapeHtml(row.stage)}</td>
     <td${colour}><strong>${escapeHtml(FAULT_LABEL[row.fault] ?? row.fault)}</strong></td>
     <td>${escapeHtml(row.channel)}${isNoiseFloor(row) && !row.house ? " <em>(noise floor)</em>" : ""}</td>
-    <td>${escapeHtml(row.user_agent ?? "(no user-agent)")}${row.house ? " <em>(house)</em>" : ""}</td>
+    <td>${escapeHtml(row.user_agent ?? "(no user-agent)")}${row.house ? " <em>(house)</em>" : ""}${
+      row.walk !== undefined ? ` <em>(walker: ${row.walk} doors inside a minute)</em>` : ""
+    }</td>
     <td>${row.payer ? `<code>${escapeHtml(row.payer)}</code>` : "<em>not recorded</em>"}</td>
     <td>${
       row.mismatch
         ? `<code>${escapeHtml(row.mismatch.field)}</code>: we offered <code>${escapeHtml(row.mismatch.we_offered)}</code>, they sent <code>${escapeHtml(row.mismatch.you_sent)}</code>`
         : "&mdash;"
     }</td>
+    <td>${arrivedHtml(row)}</td>
   </tr>`;
 }
 
@@ -142,18 +159,29 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
   const machines = r.declines.filter((row) => isNoiseFloor(row) && !row.house);
   const ours = outside.filter((row) => row.fault === "ours");
 
+  const walkers = Object.entries(r.walkers);
+  const walkerNote =
+    walkers.length === 0
+      ? ""
+      : ` <strong>${walkers.length} of ${walkers.length === 1 ? "them is" : "those are"} machinery by BEHAVIOUR, not by name</strong>
+        (${walkers.map(([ua, width]) => `<code>${escapeHtml(ua)}</code>, ${width} doors`).join("; ")}):
+        refused at four or more distinct doors inside a minute, which is the walk rule the census,
+        the funnel and the reclassification already share, read off decline rows since 2026-09-30.
+        A signature carried down the whole shelf is a walk with a wallet, not a buyer; its rows still
+        count toward whether an input is discoverable and never toward money turned away. A client
+        refused at ONE door is read as a buyer, deliberately.`;
   const noiseNote =
     machines.length === 0
       ? ""
       : `<p><small><strong>${machines.length} further decline${machines.length === 1 ? "" : "s"}</strong>
         came from ${r.infrastructure_clients.length} client${r.infrastructure_clients.length === 1 ? "" : "s"}
-        the store's own user-agent table already calls machinery
+        the store's own user-agent table already calls machinery, or that the walk rule caught
         (${r.infrastructure_clients.map((ua) => `<code>${escapeHtml(ua)}</code>`).join(", ")}).
         They are listed in the table below and counted nowhere above it. A crawler refused
         at a door it was never going to pay is the noise floor, not a lost sale — the same
         line the funnel draws. If one of these is in fact a buyer, the fix is to take its
         name OFF the table in <code>lib/channel.ts</code>, not to read this page as though
-        it were already off.</small></p>`;
+        it were already off.${walkerNote}</small></p>`;
 
   const verdict =
     outside.length === 0
@@ -196,7 +224,8 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     &mdash; a conformance crawler that read our challenge and could not find a required
     input is evidence about the challenge whatever it intended to spend.</p>
     <p><small><strong>Two crawlers is not a lost sale.</strong> Where every client behind a
-    reason is machinery the store's own table already names, the row reads
+    reason is machinery &mdash; named by the store's own table, or refused at four or more
+    doors inside a minute, which is the walk rule &mdash; the row reads
     <em>discoverability only</em> and the fault is left where it was. The finding is real
     &mdash; two independent implementations read the challenge and could not find the input
     &mdash; but none of them was ever going to pay, and <code>ours</code> on this desk means
@@ -341,12 +370,15 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
     field <code>describeMismatch</code> found, with BOTH values — the 402 always carried
     it to the buyer while the books kept only the field's name, which is why fifteen
     <code>requirement_mismatch:amount</code> rows from one client could not be told from a
-    client that was one unit conversion away.</small></p>
+    client that was one unit conversion away. <strong>arrived with</strong> is booked since
+    2026-09-30 on input-stage rows: the NAMES of the query parameters or arguments the refused
+    request carried, never their values, so a request that sent nothing can be told from one
+    that sent the sibling door's name. Older rows read <em>not recorded</em>.</small></p>
     ${
       r.declines.length === 0
         ? "<p>Nothing in the window.</p>"
         : `<table>
-      <tr><th>when</th><th>item</th><th>reason (verbatim)</th><th>stage</th><th>fault</th><th>channel</th><th>client</th><th>payer</th><th>the disagreement</th></tr>
+      <tr><th>when</th><th>item</th><th>reason (verbatim)</th><th>stage</th><th>fault</th><th>channel</th><th>client</th><th>payer</th><th>the disagreement</th><th>arrived with</th></tr>
       ${r.declines.map(declineRowHtml).join("\n")}
     </table>`
     }

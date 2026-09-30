@@ -50,7 +50,7 @@ import {
   recordPorchVisit,
   recordVerifyCall,
 } from "@/lib/metrics";
-import { buyInputSchema, missingRequiredInputs, buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { buyInputSchema, missingRequiredInputs, buyerInputRepair, presentInputNames, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { resolveInputRecord } from "@/lib/input-aliases";
 import { catalogRecovery, CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
@@ -927,11 +927,13 @@ async function callPurchaseTool(
     // exactly as there.
     if (refusal.status === 400 && paying) {
       const reason = purchaseInputDeclineReason(item, args, refusal.body);
+      // Same annotation as the HTTP door: the names of the arguments
+      // that arrived, never their values.
       await recordPaymentDecline(
         c.env,
         `/api/buy/${item.id}`,
         reason,
-        mcpSignals(c),
+        { ...mcpSignals(c), inputsPresent: presentInputNames(args) },
       ).catch(() => undefined);
     }
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.

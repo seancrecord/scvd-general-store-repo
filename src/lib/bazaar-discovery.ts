@@ -740,6 +740,28 @@ export function missingRequiredInputs(
 }
 
 /**
+ * Plumbing a request carries that is not an input: the house secret,
+ * the attribution markers and the MCP shelf selector, each booked
+ * elsewhere or not at all.
+ * Left out of the arrived-input names so the books never hint at
+ * where the house secret travels.
+ */
+const NOT_AN_INPUT: ReadonlySet<string> = new Set(["house", "src", "source", "ref", "item_id"]);
+
+/**
+ * THE NAMES OF THE INPUTS A REQUEST BROUGHT (2026-09-30), for the
+ * books: every query parameter or tool argument with a non-blank
+ * value, by name, sorted so two rows with the same shape read the
+ * same. Never a value. See MetricEvent.inputs_present.
+ */
+export function presentInputNames(present: Record<string, unknown>): string[] {
+  return Object.entries(present)
+    .filter(([name, value]) => !NOT_AN_INPUT.has(name) && value !== undefined && value !== null && String(value).trim() !== "")
+    .map(([name]) => name)
+    .sort();
+}
+
+/**
  * THE REQUIRED INPUTS, WHERE A CLIENT WILL ACTUALLY REACH THEM
  * (2026-09-06).
  *

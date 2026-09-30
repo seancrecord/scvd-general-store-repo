@@ -916,27 +916,34 @@ Do not relitigate without you.
   losing increments under concurrent knocks, the expected direction,
   and means the true day figure is above 14,569, not below.
 
-### The decline desk's research sweeper (2026-09-28)
+### The decline desk's research sweeper (2026-09-28) — RULED 2026-09-30, no press needed
 
-- **RULE — is `Mozilla/5.0 (research)` machinery?** Your 09-28 reading
-  of the desk found most of the missing-input volume is one client
-  under that string, sweeping the whole catalog every fifteen to
-  forty-five minutes and missing each door's one required input in
-  turn; no wallet, no payment shape. It sits in the intent-bearing
-  column, so with x402lint or vet402 beside it on the same code it is
-  the one buyer the escalation needs to print OURS. The machinery table
-  takes only a word a machine chose for itself, and `research` is also
-  a shelf here (research_comparison) and the word the Coinbase buyer
-  used, so promoting it is your call, not an agent's: a bare word
-  promoted is misclassified forever. Say yes and it is a dated row in
-  `src/store/exclusions.ts` and a test both ways; say no and the rows
-  stay OURS and the desk keeps counting them. Either way the split you
-  asked about is not a bug: `address`, `urls`, `wallet` and `win` read
-  theirs because one client hit each; `host`, `tx_hash`, `mandate` read
-  OURS because two did, one of them counted as a buyer. The template
-  the desk's reading promised on every document was short six of them
-  (rungs, /how-it-works, /doors, room footers, the markdown twin,
-  /what); that is fixed and in the ledger, no press needed.
+- **You ruled: change the rule, not the table.** Asked on 09-30 whether
+  `Mozilla/5.0 (research)` was machinery, you asked back whether the
+  rule should change and what happens when walkers are handed wallets,
+  and the answer shipped as the rule rather than as a promoted word:
+  a client REFUSED at four or more distinct doors inside a minute is a
+  walker on the decline desk, by behaviour, whatever it calls itself
+  (`src/lib/walkers.ts`, the 09-30 amendment; ledger entry the same
+  day). Its rows stay on the desk and still count toward whether an
+  input is discoverable; they leave the column that means money turned
+  away, so OURS now needs a client refused at fewer doors. On wallets:
+  a walker that pays and settles is a customer, unchanged; one whose
+  wallet is refused at four doors in a minute is a walker with a
+  wallet; one refused at ONE door reads as a buyer, deliberately. The
+  sweeper did have a wallet — 0x430F…fc54, four signed payments of one
+  unit against offers of 10000 to 990000 on 09-28, each after a
+  malformed value — and the amount gate held all four times. Nothing
+  was promoted: `research` stays off the table for the reason the old
+  entry gave. Two small builds went with it: a missing-input row now
+  books the NAMES of the inputs that arrived (never values), so the
+  `node` client refused three times at spot_check on 09-30 can be read
+  next time; and spot_check takes the hostname out of a `url` sent in
+  place of `host`, the one input-taking door that had no sibling.
+  LOOK, next time you open the desk: the walker column should name the
+  sweeper with its width, the OURS rows should be the ones a client
+  refused at one door is actually behind, and `node` on spot_check
+  should show what it brought if it comes back.
 
 ### The contract's read budget (2026-09-19, `docs/OPENAPI_READ_BUDGET_2026-09-19.md`)
 
