@@ -514,7 +514,8 @@ export async function computeStatsDiagnosed(
     stats.house_settlements += mpp.house;
     stats.settled_purchases_total += mpp.organic + mpp.house;
     if (stats.organic_by_rail) stats.organic_by_rail.base += mpp.organic;
-    else stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0,
+    // Native evidence cannot repair contradictory legacy network counters.
+    else if (!overshoot) stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0,
       rail_not_recorded: organicSettlements, computed_at: new Date().toISOString() };
     // Per item, corrections applied; the pilot's unsplit rows arrive under LEGACY_NATIVE_ITEM.
     for (const [item, counts] of Object.entries(mpp.by_item)) {

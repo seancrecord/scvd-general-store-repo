@@ -65,7 +65,7 @@ function rateText(window: PulseWindow): string {
   if (window.organic_settled === 0) {
     return "0%";
   }
-  const denom = window.corrected_challenges ?? window.organic_challenges;
+  const denom = window.organic_challenges;
   const oneIn = Math.round(denom / window.organic_settled);
   const pct = window.conversion_rate * 100;
   const shown = pct >= 1 ? pct.toFixed(1) : pct.toPrecision(2);
@@ -144,7 +144,7 @@ pulseRoutes.get("/pulse", async (c) => {
       </section>
       <section>
         <table border="1" cellpadding="6">
-          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>payments presented</th><th>settled</th><th>re-verifies</th><th>rate</th></tr>
+          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>payments presented</th><th>settled</th><th>re-verifies</th><th>rate against recorded offers</th></tr>
           ${row(pulse.all_time, "all time")}
           ${pulse.months.map((window) => row(window, window.month ?? "")).join("\n")}
         </table>

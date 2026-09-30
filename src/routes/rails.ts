@@ -46,6 +46,11 @@ const RAIL_SERIES = [
   { key: "world" as const, label: "World", color: "#c484a4" },
   { key: "solana" as const, label: "Solana", color: "#2ea892" },
 ];
+const MONTH_SERIES = [...RAIL_SERIES,
+  { key: "other" as const, label: "Other recorded network", color: "#aaa2b5" },
+];
+const monthTotal = (month: RailMonth): number => MONTH_SERIES.reduce((sum, series) => sum + (month[series.key] ?? 0), 0);
+const RAIL_METHOD = "The monthly series covers x402 only: the till's per-network counters, before later house reclassification, excluding native MPP. The all-time split adds corrected native MPP sales and certificate-era x402 sales from before the till kept rails. A network not established by those records remains rail_not_recorded; that label does not establish when the sale happened. These are our books, not an independent chain reading.";
 
 const CHART_W = 640;
 const CHART_H = 220;
@@ -64,7 +69,7 @@ const PAD_TOP = 10;
 function railChartSvg(months: RailMonth[]): string {
   const max = Math.max(
     1,
-    ...months.map((m) => m.base + m.polygon + m.solana + m.other + (m.arbitrum ?? 0) + (m.world ?? 0)),
+    ...months.map(monthTotal),
   );
   const plotH = CHART_H - PAD_BOTTOM - PAD_TOP;
   const slot = (CHART_W - PAD_LEFT) / months.length;
@@ -73,8 +78,8 @@ function railChartSvg(months: RailMonth[]): string {
   months.forEach((m, i) => {
     const x = PAD_LEFT + slot * i + (slot - barW) / 2;
     let yCursor = CHART_H - PAD_BOTTOM;
-    const total = m.base + m.polygon + m.solana + m.other + (m.arbitrum ?? 0) + (m.world ?? 0);
-    for (const series of RAIL_SERIES) {
+    const total = monthTotal(m);
+    for (const series of MONTH_SERIES) {
       const value = m[series.key] ?? 0;
       if (value === 0) continue;
       const h = Math.max(2, (value / max) * plotH);
@@ -104,7 +109,7 @@ function railChartSvg(months: RailMonth[]): string {
 }
 
 function legendHtml(): string {
-  return `<p class="menu-meta">${RAIL_SERIES.map(
+  return `<p class="menu-meta">${MONTH_SERIES.map(
     (series) =>
       `<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${series.color};margin-right:4px"></span>${series.label}&nbsp;&nbsp;`,
   ).join("")}</p>`;
@@ -144,8 +149,7 @@ railsRoutes.get("/rails", async (c) => {
     rails_accepted: acceptedNetworks(c.env),
     all_time: rail ?? null,
     by_month_from_the_till: months,
-    method:
-      "The monthly series is the till's own rail counters (recorded in the same call that produces the organic count). The all-time split additionally counts certificate-era sales from before the till kept rails, and names what neither record placed as rail_not_recorded rather than guessing.",
+    method: RAIL_METHOD,
     the_books: `${base}/stats`,
     trade_counter: tradeCounter,
     // Rule 43 for the numbers: every count, with what it is out of (store/published-counts.ts).
@@ -156,7 +160,7 @@ railsRoutes.get("/rails", async (c) => {
       base,
       path: "/rails",
       title: "Where the money settles",
-      description: "Organic x402 settlements at this store by chain — by recorded settlement network — month by month, drawn from the same live books as /stats. House traffic excluded at the till. With the method and the honest gaps named.",
+      description: "Purchases by protocol, network and currency, with the x402 monthly network history and its limits. From the same books as /stats.",
       document: payload as unknown as Record<string, unknown>,
     });
   }
@@ -166,7 +170,7 @@ railsRoutes.get("/rails", async (c) => {
 
   const tableRows = months
     .map(
-      (m) => `<tr><td>${escapeHtml(m.month)}${m.truncated ? " *" : ""}</td>${RAIL_SERIES.map(series => `<td>${m[series.key] ?? 0}</td>`).join("")}<td>${m.base + m.polygon + m.solana + m.other + (m.arbitrum ?? 0) + (m.world ?? 0)}</td></tr>`,
+      (m) => `<tr><td>${escapeHtml(m.month)}${m.truncated ? " *" : ""}</td>${MONTH_SERIES.map(series => `<td>${m[series.key] ?? 0}</td>`).join("")}<td>${monthTotal(m)}</td></tr>`,
     )
     .join("\n");
   // Truncation is visible or it is lying-by-cap: a month whose key
@@ -177,7 +181,7 @@ railsRoutes.get("/rails", async (c) => {
 
   const tiles = rail
     ? `<table border="1" cellpadding="6">
-        <tr><th>all-time</th>${RAIL_SERIES.map((series) => `<th>${series.label}</th>`).join("")}<th>before the till kept rails</th></tr>
+        <tr><th>all-time</th>${RAIL_SERIES.map((series) => `<th>${series.label}</th>`).join("")}<th>network not established</th></tr>
         <tr><td>${stats.organic_settlements} organic</td>${RAIL_SERIES.map(series => `<td>${rail[series.key] ?? 0}</td>`).join("")}<td>${rail.rail_not_recorded}</td></tr>
       </table>`
     : `<p class="menu-desc">The split is withheld right now rather than shown wrong — the books refuse to print a split that doesn't sum to the organic count.</p>`;
@@ -193,7 +197,8 @@ railsRoutes.get("/rails", async (c) => {
         <p class="menu-meta">Organic settlements only — the proprietors' own test traffic is excluded at the till, structurally, not filtered afterwards. The count is small and shown at its true size; it grows on its own or not at all.</p>
       </section>
       <section>
-        <h2>Settlements by month, by rail</h2>
+        <h2>x402 settlements by month, by rail</h2>
+        <p class="menu-meta">${escapeHtml(RAIL_METHOD)}</p>
         ${months.length > 0 ? `${railChartSvg(months)}\n${legendHtml()}` : `<p class="menu-desc">The till has not recorded a rail-tagged month yet; the numbers below carry the certificate-era history.</p>`}
       </section>
       <section>
@@ -201,7 +206,7 @@ railsRoutes.get("/rails", async (c) => {
         ${
           months.length > 0
             ? `<table border="1" cellpadding="6">
-          <tr><th>month</th>${RAIL_SERIES.map(series => `<th>${series.label}</th>`).join("")}<th>total</th></tr>
+          <tr><th>month</th>${MONTH_SERIES.map(series => `<th>${series.label}</th>`).join("")}<th>total</th></tr>
           ${tableRows}
         </table>
         <p class="menu-meta">Till-era months only — sales settled before the till kept rails are in the all-time row below, where the method note explains their placement.</p>${truncationNote}`
@@ -220,7 +225,7 @@ railsRoutes.get("/rails", async (c) => {
       </section>
       <section>
         <h2>Method, and what this cannot say</h2>
-        <p class="menu-desc">The monthly series is the till's own per-rail counters, written in the same call that produces the organic count — a sale that has one has the other. The all-time split adds certificate-era sales from before the till kept rails, and anything neither record placed is printed as "before the till kept rails" rather than guessed. These are OUR BOOKS, not the chain: the independent check is the hourly bank walk, whose per-chain statement is on <a href="/stats">/stats</a>.</p>
+        <p class="menu-desc">${escapeHtml(RAIL_METHOD)} The hourly bank walk's per-chain statement is on <a href="/stats">/stats</a>.</p>
       </section>
       ${denominatorsSectionHtml("/rails", escapeHtml)}
       ${jsonLdScript({

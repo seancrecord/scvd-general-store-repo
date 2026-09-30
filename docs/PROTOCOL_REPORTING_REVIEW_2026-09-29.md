@@ -105,3 +105,11 @@ The keeper authorized repairs and a shared speed/readability pass.
 [Implementation and validation](ADMIN_REPORTING_FIXES_2026-09-29.md) records
 the local fixes, shared navigation changes and reduced duplicate reads.
 Release and authenticated production readback remain outstanding.
+
+## PR2 implementation follow-through — September 30
+
+The [public reporting review](../research/public-reporting-2026-09-30/README.md)
+records the source inventory, baseline public responses, reproduced scope
+and rendering defects, and local repairs. New monthly records add combined
+sales without rewriting old signatures; the public twins name their
+populations. PR3 metadata/discovery and PR4 external listings remain next.
