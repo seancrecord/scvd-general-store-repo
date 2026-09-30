@@ -132,6 +132,16 @@ export class CounterLedger extends DurableObject<Env> {
     return sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales ORDER BY id").toArray().map(row => row.evidence);
   }
 
+  /** One RPC and one joined snapshot per month, including later house corrections. */
+  async listMppSalesWithCorrections(): Promise<{ sale: string; correction: string | null }[]> {
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return [];
+    const corrections = sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_house_corrections'").toArray().length;
+    return corrections
+      ? sql.exec<{ sale: string; correction: string | null }>("SELECT s.evidence AS sale, c.evidence AS correction FROM mpp_sales s LEFT JOIN mpp_house_corrections c ON s.id = c.id ORDER BY s.id").toArray()
+      : sql.exec<{ sale: string; correction: null }>("SELECT evidence AS sale, NULL AS correction FROM mpp_sales ORDER BY id").toArray();
+  }
+
   /** One monthly source, disjoint from every legacy x402 counter. */
   async recordMppSale(sale: MppSaleEvidence): Promise<void> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||

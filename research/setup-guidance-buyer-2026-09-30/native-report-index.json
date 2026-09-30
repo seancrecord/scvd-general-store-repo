@@ -1,0 +1,66 @@
+[
+  {
+    "file": "codex-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/codex/events.jsonl",
+    "source_sha256": "9b6b58e2733b4b4f881b45b97282a093aaaf268d0dfe5947ec8b01025305ad9d",
+    "final_line": 28,
+    "final_text_sha256": "f203e7091ff94008a9d859f6de2a402ccd05c2698b6d4a34e4353705979fb788"
+  },
+  {
+    "file": "claude-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/claude/events.jsonl",
+    "source_sha256": "0a58296d1e922c78647e380789dbe4f84b4db8f8f572b652b0dea16dfa28b60f",
+    "final_line": 99,
+    "final_text_sha256": "7f51489150fc380c64853c82ad8fe4a31a25ddcafb3bf49d6acfbaf925c8e7d3"
+  },
+  {
+    "file": "recipient-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/recipient/events.jsonl",
+    "source_sha256": "cfec61288f34f9a651118872e219e79becba2e0494f5820df5afb27b19f104da",
+    "final_line": 31,
+    "final_text_sha256": "7ec28e7f5f4e0c5decebd8f05b6413085a476c879b940222b382c8f152a238e7"
+  },
+  {
+    "file": "codex-directed-r1-buyer.md",
+    "role": "buyer",
+    "cell": "codex-directed-r1",
+    "completed_final": true,
+    "source_trace": "buyers/codex-directed-r1/events.jsonl",
+    "source_sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f",
+    "final_line": 31,
+    "final_text_sha256": "aae62d4858b456a644643c7dca30d2d70bc94996fcb425daa5b803f4bac320e2"
+  },
+  {
+    "file": "claude-directed-r1-buyer.md",
+    "role": "buyer",
+    "cell": "claude-directed-r1",
+    "completed_final": true,
+    "source_trace": "buyers/claude-directed-r1/events.jsonl",
+    "source_sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc",
+    "final_line": 90,
+    "final_text_sha256": "88eecd8cd85b82c65591a0af5eed4a09103354f40edddb9b74f10725566c022f"
+  },
+  {
+    "file": "codex-directed-r2-buyer.md",
+    "role": "buyer",
+    "cell": "codex-directed-r2",
+    "completed_final": true,
+    "source_trace": "buyers/codex-directed-r2/events.jsonl",
+    "source_sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87",
+    "final_line": 31,
+    "final_text_sha256": "928ab02e8f7adedbed50a962f1e5989f030a173420cb2ef4b10661914f68211c"
+  },
+  {
+    "file": "claude-directed-r2-buyer.md",
+    "role": "buyer",
+    "cell": "claude-directed-r2",
+    "completed_final": false,
+    "source_trace": "buyers/claude-directed-r2/events.jsonl",
+    "source_sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50",
+    "final_line": 93,
+    "final_text_sha256": "b074feea5d326946a68e0e5a3f39ef9b2abb341e4d151a96b0ebac2688bb3b02"
+  }
+]

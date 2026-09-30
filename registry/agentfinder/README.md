@@ -36,3 +36,10 @@ not change the separate Agent Finder PR's open status. [Current channel map](../
 
 Hugging Face has its own [drawer](../huggingface/README.md) and keeper item;
 Agent Finder review does not publish the verifier Space.
+
+## September 30 local draft refresh
+
+The local MCP descriptor now follows prepared `server.json` version 0.2.4 and
+its x402/MPP inspection description. The official registry still serves 0.2.3.
+Do not forward this draft to existing PR #34 until 0.2.4 is published and its
+version URL is read back. [Evidence and exact sequence](../../research/listing-review-2026-09-30/CORRECTIONS.md).

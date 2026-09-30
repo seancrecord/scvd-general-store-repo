@@ -1,4 +1,4 @@
-import { escapeHtml } from "@/lib/sanitize";
+import { escapeHtml, stripTags } from "@/lib/sanitize";
 import { OFFICE_CSS } from "@/pages/admin/office-css";
 
 /**
@@ -357,19 +357,42 @@ function headHtml(tab: AdminTab, asOf?: PageAsOf): string {
   <p class="page-what">${escapeHtml(head.what)}${line ? ` <span class="page-asof">${line}</span>` : ""}</p>`;
 }
 
+/** Derive local navigation from rendered headings; no second section list to maintain. */
+function pageSections(body: string): { body: string; links: string } {
+  const used = new Set([...body.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]));
+  const links: string[] = [];
+  let index = 0;
+  const sectionBody = body.replace(/<h2(\s[^>]*)?>([\s\S]*?)<\/h2>/g, (_heading, attrs: string | undefined, title: string) => {
+    const existing = attrs?.match(/\bid="([^"]+)"/)?.[1];
+    let id = existing;
+    if (!id) {
+      do { id = `admin-section-${++index}`; } while (used.has(id));
+      used.add(id);
+    }
+    // The body is already escaped HTML. Preserve its entities, but encode
+    // dangling brackets left by incomplete tags before copying a label.
+    const label = stripTags(title).replaceAll("<", "&lt;").replaceAll(">", "&gt;").trim();
+    if (label) links.push(`<a href="#${escapeHtml(id)}">${label}</a>`);
+    return `<h2${attrs ?? ""}${existing ? "" : ` id="${id}"`}>${title}</h2>`;
+  });
+  return { body: sectionBody, links: links.length > 1
+    ? `<nav class="page-sections" aria-label="On this page"><strong>On this page</strong>${links.join(" ")}</nav>` : "" };
+}
+
 export function renderAdminShell(
   tab: AdminTab,
   bodyHtml: string,
   loadNotes: string[] = [],
   asOf?: PageAsOf,
 ): string {
+  const sections = pageSections(bodyHtml);
   const link = (entry: {
     tab: AdminTab;
     href: string;
     label: string;
   }): string =>
     tab === entry.tab
-      ? `<strong>${entry.label}</strong>`
+      ? `<strong aria-current="page">${entry.label}</strong>`
       : `<a href="${entry.href}">${entry.label}</a>`;
   const notes =
     loadNotes.length === 0
@@ -382,17 +405,22 @@ export function renderAdminShell(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Keep's Office</title>
+  <title>${escapeHtml(PAGE_HEADS[tab].title)} · Keep's Office</title>
   <style>${OFFICE_CSS}</style>
 </head>
 <body>
   <div class="room">
   <p class="office-eyebrow">Keep<span class="lamp">'</span>s Office &middot; Sean-Claude Van Damme's General Store</p>
-  <nav>
+  <a class="skip-link" href="#admin-content">Skip to report</a>
+  <nav aria-label="Office rooms">
     ${ROOMS.map(link).join("\n    ")}
     <a href="/">Front of house</a>
   </nav>
-  <nav class="readings">
+  ${headHtml(tab, asOf)}
+  ${notes}
+  <details class="report-directory">
+  <summary>Browse reports</summary>
+  <nav class="readings" aria-label="All reports">
     ${READING_SHELVES.map(
       (shelf) =>
         `<span class="shelf"><span class="shelf-name">${shelf.shelf}</span>${shelf.entries
@@ -401,9 +429,9 @@ export function renderAdminShell(
     ).join("\n    ")}
     ${PARTNER.map(link).join("\n    ")}
   </nav>
-  ${headHtml(tab, asOf)}
-  ${notes}
-  ${bodyHtml}
+  </details>
+  ${sections.links}
+  <main id="admin-content" tabindex="-1">${sections.body}</main>
   </div>
 </body>
 </html>`;

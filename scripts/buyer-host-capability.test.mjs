@@ -555,3 +555,48 @@ test('literal matching rejects expansion, operators and extra execution without 
   'node* --input-type=module -e \'console.log("ok")\'',
  ])assert.equal(literalCommandMatches(bad,expected),false,bad);
 });
+
+
+test('setup guidance rejects unknown conditions and pre-capability schemas',()=>{
+ for(const value of [true, null, 'standalone-node', {}, ['standalone-node-v1']]){
+  const p=structuredClone(plan);p.capability.setup_guidance=value;
+  assert.throws(()=>validatePlan(p),/setup guidance/i);
+ }
+ assert.throws(()=>validatePlan({...plan,schema_version:3,capability:{...plan.capability,setup_guidance:'standalone-node-v1'}}),/setup guidance/i);
+});
+
+test('setup guidance names available native tools and standalone file operations only when opted in',()=>{
+ const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';
+ validatePlan(p);
+ const vectors=capabilityVectors();
+ for(const host of ['claude','codex']){
+  const old=buildCapabilityPrompt(plan,host,vectors),guided=buildCapabilityPrompt(p,host,vectors);
+  assert.ok(guided.endsWith(old),'qualification task, vectors and budgets remain byte-identical');
+  const prefix=guided.slice(0,-old.length);
+  assert.match(prefix,/standalone-node-v1/);
+  assert.match(prefix,/node -e/);
+  assert.match(prefix,/writeFileSync/);
+  assert.match(prefix,/mkdirSync/);
+  assert.match(prefix,/heredocs/);
+  assert.match(prefix,/truncated/);
+  assert.doesNotMatch(prefix,/crypto\.verify|SPKI|302a3005|signature.*true|decision.*proceed/i);
+  if(host==='claude'){
+   assert.match(prefix,/WebSearch, WebFetch, Bash/);
+   assert.match(prefix,/No separate Write or Edit tool/);
+   const launch=adapter(plan.cells[1],'/tmp/neutral','/tmp/out',budgets).args;
+   assert.equal(launch[launch.indexOf('--tools')+1],HOST_TOOLS.claude.tools.join(','));
+  }
+ }
+});
+
+test('setup guidance changes neither buyer prompts nor execution permissions',()=>{
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};
+ const guided=structuredClone(p);guided.capability.setup_guidance='standalone-node-v1';
+ for(const cell of p.cells){
+  assert.equal(buildPrompt(guided,cell),buildPrompt(p,cell));
+  const context={codex:{disabled_skills:[]}};
+  assert.deepEqual(adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,guided),adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,p));
+ }
+ assert.deepEqual(guided.budgets,p.budgets);
+ assert.deepEqual(guided.recipient,p.recipient);
+});

@@ -1,4 +1,4 @@
-import { mppSaleItemKey } from "@/services/mpp-sales";
+import { parseMppHouseCorrection, mppSaleItemKey } from "@/services/mpp-sales";
 import { purchaseIntentStore, purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
 import { settlementAssetMetadata } from "@/lib/payments";
 import { isRecord, type Env } from "@/types";
@@ -104,14 +104,8 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
     }
     const correctionRaw = await ledger.readMppHouseCorrection(id);
     if (correctionRaw !== null) {
-      const correction: unknown = JSON.parse(correctionRaw);
-      if (!isRecord(correction) || correction.id !== id || correction.month !== month || correction.payer !== record.payer ||
-        correction.amount !== record.terms.amount || record.mpp!.house || purchase.ledger.state !== "matched" ||
-        typeof correction.reason !== "string" || !correction.reason.trim() || correction.reason.length > 500 ||
-        typeof correction.at !== "string" || !Number.isFinite(Date.parse(correction.at))) throw new Error("Invalid correction evidence");
-      // Project fields explicitly; never let extra persisted fields escape.
-      purchase.house_correction = { id, month, payer: correction.payer, amount: correction.amount,
-        at: correction.at, reason: correction.reason };
+      if (purchase.ledger.state !== "matched") throw new Error("Invalid correction evidence");
+      purchase.house_correction = parseMppHouseCorrection(correctionRaw, mppSaleEvidence(record));
     }
     purchase.effective_house = record.mpp!.house || correctionRaw !== null;
   } catch {

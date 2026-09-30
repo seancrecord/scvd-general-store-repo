@@ -1321,6 +1321,16 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **Package follow-up, September 30 — release only after PR/CI.** The
+  [starter compatibility repair](research/mcp-starter-compatibility-2026-09-30/README.md)
+  prepares `scvd-mcp-starter` 0.2.0; the preflight listing-copy correction
+  prepares `scvd-preflight` 0.3.1. Both are local, unpublished candidates.
+  These join the existing package publication press; do not infer npm
+  availability from local tests. No press is requested before review.
+
+- **September 30 review — prepared, not sent.** [Dated content audit](research/listing-review-2026-09-30/README.md) covers all 82 claimed URLs, eight npm packages and 26 existing GitHub requests. [Exact corrections and release order](research/listing-review-2026-09-30/CORRECTIONS.md): fix wrong connection instructions/component confusion before refreshing copy. Existing MCPpedia #172 and mcp.so #4325 remain open; no duplicate requests. Store registry 0.2.4 and portable wrappers 0.2.6 are prepared only; publish/read back before forwarding their new version URLs. Existing package publication and form-review entries below remain the owners of those actions.
+
+
 - **UCP LIVE — distribution started September 19.** Keeper confirmed launch; live profile read back with catalog, checkout and order. [UCP Checker report](https://ucpchecker.com/check/scvd.store) now published with a Verified discovery label and a root signing-key warning to inspect against the actual spec. Paid evidence currently read covers hello/Base; broader advertised scope is not whole-shelf paid qualification. Submitted [community UCP directory #3](https://github.com/homototus/ucp-directory/issues/3), the free UCPList merchant form, [Awesome UCP #30](https://github.com/Upsonic/awesome-ucp/pull/30) and [UCP Merchant Directory #1](https://github.com/awesomeucp/merchants/pull/1); all await review. Directory display repair also submitted as [#3](https://github.com/awesomeucp/merchants/pull/3). [UCP.tools listing](https://ucptools.dev/directory/scvd.store) is live September 20; the free UCPRegistry merchant form confirmed receipt, review pending. No new press needed for either. [Receipts and next routes](research/ucp-distribution-2026-09-19/README.md). [Muse submission](research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press) completed by the keeper September 19; browser confirmed receipt for SCVD x402 Verifier. Review pending; the agent could not read the linked Connector Terms. Existing Google merchant-intake status remains separate. Recurring/monthly fees declined.
 
 - **WAIT — OpenCode ecosystem submissions (September 18).** Native skill load and free preflight passed via keeper-authorized ChatGPT OAuth. [Official PR #49834](https://github.com/anomalyco/opencode/pull/49834), linked to the required [issue #49833](https://github.com/anomalyco/opencode/issues/49833), and [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) are submitted. Community schema validation passed; neither listing is accepted yet. [Native receipt](research/distribution-2026-09-18/opencode-native-execution.json).

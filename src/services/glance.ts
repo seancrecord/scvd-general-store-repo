@@ -1,3 +1,4 @@
+import { commerceMonthTotals, readCommerceMonthLedger } from "@/services/commerce-month";
 import { listAlerts } from "@/lib/alerts";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import type { TakeSummary } from "@/services/books-summary";
@@ -85,9 +86,9 @@ export interface Glance {
    * 2026-09-12 this field held the ALL-TIME certificate count under a
    * monthly label, which is how the keeper read 94 as a month.
    */
-  organic_settlements: number;
+  organic_settlements: number | null;
   /** The month's organic revenue in USDC, off the till, after the reclassification ledger. */
-  take_usdc: number;
+  take_usdc: number | null;
   /** Organic sales all-time as the storefront counts them (the till), beside the certificates the take counts. */
   organic_sales_all_time: number;
   /** Of those, how many carry a certificate: the take's row count. */
@@ -130,7 +131,12 @@ export async function readGlance(env: Env): Promise<Glance | null> {
   const raw = await kvGet(env.COUNTERS, GLANCE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as Glance;
+    const glance = JSON.parse(raw) as Glance;
+    if (!glance.desk?.month_ledger.native_mpp) {
+      glance.organic_settlements = null;
+      glance.take_usdc = null;
+    }
+    return glance;
   } catch {
     /*
      * A blob that will not parse is treated as absent rather than as
@@ -166,12 +172,7 @@ export async function writeGlance(env: Env): Promise<Glance> {
 
   const month = desk.month_ledger.month;
   const reclass = desk.month_reclass?.months[month];
-  const monthSettles = Math.max(
-    0,
-    Object.values(desk.month_ledger.items).reduce((sum, row) => sum + row.settled, 0) -
-      (reclass?.settles ?? 0),
-  );
-  const monthUsdc = Math.max(0, desk.month_ledger.revenueUsdc - (reclass?.usdc ?? 0));
+  const totals = commerceMonthTotals(desk.month_ledger, reclass);
   const glance: Glance = {
     computed_at: new Date().toISOString(),
     pending_orders: orders.filter((order) => order.status === "queued").length,
@@ -181,8 +182,8 @@ export async function writeGlance(env: Env): Promise<Glance> {
         .length +
       refunds.filter((refund) => refund.status === "refund_pending").length,
     open_alerts: alerts.length,
-    organic_settlements: monthSettles,
-    take_usdc: monthUsdc,
+    organic_settlements: totals?.organic ?? null,
+    take_usdc: totals?.revenue_usdc ?? null,
     organic_sales_all_time: stats.organic_settlements,
     with_certificate_all_time: take.total.organic_sales,
     take,
@@ -222,7 +223,7 @@ async function readDesk(env: Env): Promise<DeskGlance> {
     fieldWallet,
     bounty,
   ] = await Promise.allSettled([
-    metrics.readMonthLedger(env),
+    readCommerceMonthLedger(env),
     metrics.readPorchLedger(env),
     metrics.listPayers(env),
     metrics.listRecentPricedEvents(env),
@@ -271,6 +272,6 @@ async function readDesk(env: Env): Promise<DeskGlance> {
  */
 export async function ensureGlance(env: Env): Promise<Glance | null> {
   const existing = await readGlance(env);
-  if (existing) return existing;
+  if (existing?.desk?.month_ledger.native_mpp) return existing;
   return writeGlance(env).catch(() => null);
 }

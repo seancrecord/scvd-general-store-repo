@@ -1,0 +1,29 @@
+{
+  "frozen_source": "fc00e713dd3dd2580867ab5094aadb44e45e36fb",
+  "hosts": {
+    "codex": {
+      "state": "pass",
+      "wall_ms": 128193,
+      "tool_calls": 10,
+      "output_tokens": 5650,
+      "trace_sha256": "9b6b58e2733b4b4f881b45b97282a093aaaf268d0dfe5947ec8b01025305ad9d"
+    },
+    "claude": {
+      "state": "pass",
+      "wall_ms": 187334,
+      "tool_calls": 16,
+      "output_tokens": 15284,
+      "trace_sha256": "0a58296d1e922c78647e380789dbe4f84b4db8f8f572b652b0dea16dfa28b60f"
+    },
+    "recipient": {
+      "state": "pass",
+      "wall_ms": 80924,
+      "tool_calls": 8,
+      "output_tokens": 3637,
+      "trace_sha256": "cfec61288f34f9a651118872e219e79becba2e0494f5820df5afb27b19f104da"
+    }
+  },
+  "buyers_launched": true,
+  "recipient_sessions_launched": 0,
+  "limits": "All qualification gates passed before buyers. Later CLI/environment drift blocked recipient prelaunch; no cohort completion inferred from qualification."
+}

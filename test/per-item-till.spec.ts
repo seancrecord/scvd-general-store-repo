@@ -8,8 +8,8 @@ const BASE = "https://scvd.store";
 
 /**
  * THE TILL, BY ITEM, PUBLIC (ruling R3, 2026-09-21): /stats serves the
- * per-item settle counts raw, with the reclassification caveat and a
- * register row beside them, never ordered.
+ * x402 item counts in their original classification and native MPP item
+ * counts with house corrections, with a register row beside them, never ordered.
  */
 
 beforeAll(() => {
@@ -27,9 +27,12 @@ describe("the per-item till on the public books", () => {
       till_by_item_note: string;
     };
     expect(stats.till_by_item["hello"]?.organic).toBeGreaterThanOrEqual(1);
-    expect(stats.till_by_item_note).toContain("reclassification");
+    expect(stats.till_by_item_note).toContain("Legacy x402 rows are raw");
+    expect(stats.till_by_item_note).toContain("native MPP rows include their per-item house corrections");
     expect(stats.till_by_item_note).toContain("Never a ranking");
-    expect(registeredCount("/stats", "till_by_item.hello.organic")?.population).toContain("before reclassification");
+    const population = registeredCount("/stats", "till_by_item.hello.organic")?.population;
+    expect(population).toContain("raw x402 item settles");
+    expect(population).toContain("corrected native MPP item settles");
     expect(registeredCount("/stats", "till_by_item.hello.house")).toBeDefined();
   });
 });

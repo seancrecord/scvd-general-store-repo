@@ -62,3 +62,15 @@ receipt is not advanced by a local build.
 retains the actual schema excerpts and response hashes. PS7 release requires
 its own merge CI and deployment readback; ClawHub publication and outside
 qualification remain separate.
+
+## Release closeout — September 29 UTC
+
+[PR #933](https://github.com/seancrecord/scvd-general-store-repo/pull/933)
+merged at `c0d419b4e1a9b79c3c214fcb8244afe4a5033972` after all four test
+shards and `check` passed. Both merged-commit Cloudflare builds passed.
+The unsigned public guide readback at 00:37 UTC confirmed `/skill.md`
+version 3.19.3 and the PS7 inspection guidance on it and `/llms-full.txt`.
+The focused verification skill matched merged source exactly and retained
+the newer report instructions from main. The PR records the release closeout.
+These guide reads were not endpoint probes, buyer qualification or registry
+publication. Earlier local-validation statements above retain their dated scope.

@@ -1,3 +1,4 @@
+import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
@@ -606,9 +607,8 @@ function freeServicesJsonLd(base: string): string {
    */
   const services = [
       service({
-        name: "x402 endpoint preflight",
-        description:
-          "Send any x402 door's URL and get back what its 402 actually serves: whether it answers a well-formed challenge, whether its payTo can be credited on the rail it named, and what was not checked. One probe, one moment — a shape check, never an uptime claim.",
+        name: "x402 and MPP endpoint inspection",
+        description: ENDPOINT_INSPECTION_DESCRIPTION,
         path: "/api/preflight",
         type: "API endpoint verification",
       }),
@@ -1168,6 +1168,8 @@ ${webmcpOriginTrialTags()}
       ${cheapest ? `<a class="door-cta" href="/menu/${escapeHtml(cheapest.id)}">Try ${escapeHtml(cheapest.name)} · ${escapeHtml(priceLabel(cheapest))}</a>` : ''}
       <a class="door-cta" href="/mcp.md">Connect through MCP</a>
     </nav>
+
+    <p class="menu-meta">${escapeHtml(ENDPOINT_INSPECTION_DESCRIPTION)}</p>
 
     <div class="gauges">
       ${patronsGaugeHtml(data.patronCount)}

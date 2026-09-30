@@ -38,6 +38,7 @@ function row(label: string, months: GrowthMonth[], cell: (m: GrowthMonth) => str
 function storeHtml(months: GrowthMonth[]): string {
   return `<section>
     <h2>The store, by month</h2>
+    <p><small>Sales and revenue include x402 and native MPP. Asks, declines, conversion rates and the recorded rail split below cover x402. Logged months retain the figures recorded at close.</small></p>
     <table border="1" cellpadding="4">
       ${monthHead(months)}
       ${row("organic visits", months, (m) => n(m.store.organic_visits))}
@@ -47,7 +48,7 @@ function storeHtml(months: GrowthMonth[]): string {
       })}
       ${row("organic 402s", months, (m) => n(m.store.organic_402s))}
       ${row("organic settles", months, (m) => `<strong>${n(m.store.organic_settles)}</strong>`)}
-      ${row("settles per 100 asks", months, (m) => n(m.store.settles_per_hundred_402s))}
+      ${row("x402 settles per 100 x402 asks", months, (m) => n(m.store.settles_per_hundred_402s))}
       ${row("revenue USDC (organic)", months, (m) => n(m.store.revenue_usdc))}
       ${row("settles by rail", months, (m) => `<small>${m.store.settles_by_rail ? record(m.store.settles_by_rail) : "none"}</small>`)}
       ${row("payments refused", months, (m) => n(m.store.organic_declines))}
@@ -116,7 +117,7 @@ function instrumentsHtml(months: GrowthMonth[]): string {
       ${row("asks per 100 argument-carrying checks", months, (m) => n(m.free_instruments.funnel.asks_per_hundred_checks))}
       ${row("settles per 100 argument-carrying checks", months, (m) => n(m.free_instruments.funnel.settles_per_hundred_checks))}
     </table>
-    <p><small>Three counts in a row, not a journey: nothing here ties one caller's check to that caller's purchase. <a href="/admin/instruments">The instruments desk</a> does the nearest thing by user-agent inside a window. A dash means the line did not exist that month; the roster's logged-since date is beside each name. Per-day divides by the days the line existed in that month.</small></p>
+    <p><small>Sales include x402 and MPP; price asks cover x402. Three counts in a row, not a journey: nothing here ties one caller's check to that caller's purchase. <a href="/admin/instruments">The instruments desk</a> does the nearest thing by user-agent inside a window. A dash means the line did not exist that month; the roster's logged-since date is beside each name. Per-day divides by the days the line existed in that month.</small></p>
     <table border="1" cellpadding="4">
       ${monthHead(months)}
       ${lines || `<tr><td colspan="${months.length + 1}">no free instrument has been used yet</td></tr>`}

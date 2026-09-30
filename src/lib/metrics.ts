@@ -1330,6 +1330,8 @@ export interface LedgerRow {
 }
 
 export interface MonthLedger {
+  /** Present only on combined commerce reads. Legacy funnel fields remain x402-only. */
+  native_mpp?: import("@/services/mpp-sales").MppSalesTotals;
   month: string;
   items: Record<string, LedgerRow>;
   /** channel -> organic settled count */

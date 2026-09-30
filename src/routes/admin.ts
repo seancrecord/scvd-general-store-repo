@@ -1,3 +1,4 @@
+import { readCommerceMonthLedger } from "@/services/commerce-month";
 import { Hono } from "hono";
 import { adminPurchaseRoutes } from "@/routes/admin-purchases";
 import { basicAuth } from "hono/basic-auth";
@@ -716,8 +717,8 @@ adminRoutes.get("/admin/glance", async (c) => {
     ["Orders waiting", String(glance.pending_orders)],
     ["Needs your review", String(glance.pending_reviews)],
     ["Open alarms", String(glance.open_alerts)],
-    ["Sales this month", String(glance.organic_settlements)],
-    ["Take this month", `$${glance.take_usdc.toFixed(2)}`],
+    ["Sales this month", glance.organic_settlements === null ? "Unavailable" : String(glance.organic_settlements)],
+    ["Take this month", glance.take_usdc === null ? "Unavailable" : `$${glance.take_usdc.toFixed(2)}`],
     ["Sales all-time (the storefront's number)", String(glance.organic_sales_all_time ?? "—")],
     ["…of which carry a certificate", String(glance.with_certificate_all_time ?? "—")],
   ];
@@ -866,7 +867,7 @@ adminRoutes.get("/admin", async (c) => {
     bountyState,
     wardLatest,
   ] = await Promise.allSettled([
-    cached(desk?.month_ledger, () => readMonthLedger(c.env)),
+    cached(desk?.month_ledger.native_mpp ? desk.month_ledger : undefined, () => readCommerceMonthLedger(c.env)),
     cached(desk?.porch_ledger, () => readPorchLedger(c.env)),
     cached(desk?.payers, () => listPayers(c.env)),
     cached(desk?.recent_challenges, () => listRecentPricedEvents(c.env)),
@@ -2414,7 +2415,7 @@ adminRoutes.get("/admin/instruments", async (c) => {
   const declines: Record<string, number> = {};
   for (const window of pulse?.months ?? []) {
     if (!window.month) continue;
-    settled[window.month] = window.organic_settled;
+    settled[window.month] = window.total_organic_settled ?? window.organic_settled;
     rechecks[window.month] = window.organic_rechecks;
     declines[window.month] = window.organic_declines;
   }
