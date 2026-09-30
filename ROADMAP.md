@@ -174,6 +174,15 @@ on its estimated remaining call budget after source inspection. Original scores,
 budgets and host gates remain unchanged. The repair is not a native pass; setup
 friction and a new separately frozen qualification remain before buyers.
 
+**TR3 qualification setup, September 30 (separate condition prepared):**
+[Qualification-only setup guidance](docs/BUYER_QUALIFICATION_SETUP_2026-09-30.md)
+addresses the observed unavailable-Write and compound-command waste. Opt-in
+plans name the actual tools and standalone Node file operations; buyer prompts,
+permissions, budgets and scoring stay unchanged. Source-review repair #946 is
+merged after all required CI shards passed. A new frozen qualification must
+establish native completion before any buyer cohort; earlier attempts remain
+closed and preserved.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The

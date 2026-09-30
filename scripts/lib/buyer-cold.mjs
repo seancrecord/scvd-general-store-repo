@@ -24,7 +24,7 @@ const dated = x => typeof x === 'string' && Number.isFinite(Date.parse(x));
 // refuse an invocation; the declaration never widens the allowlist.
 export const HOST_TOOLS = {
   codex: {statement: 'Local tools in this session: web search and a shell with network access inside a workspace-write sandbox.'},
-  claude: {commands: ['curl', 'node']},
+  claude: {tools: ['WebSearch', 'WebFetch', 'Bash'], commands: ['curl', 'node']},
 };
 export function localToolsStatement(host) {
   if (host === 'codex') return HOST_TOOLS.codex.statement;
@@ -42,6 +42,7 @@ function publicUrl(value) {
 export function validatePlan(plan) {
   validateRecipientVerifier(plan);
   packageInstallCommand(plan);
+  capabilitySetupGuidance(plan);
   if (![2,3,4,5,6].includes(plan?.schema_version) || plan.spend_usdc !== 0 || !publicUrl(plan.subject)) throw new Error('Cold plan requires version 2, 3, 4, 5 or 6, a public HTTPS subject and zero spend.');
   for (const k of ['wall_ms', 'tool_calls', 'output_bytes', 'output_tokens']) {
     if (!Number.isSafeInteger(plan.budgets?.[k]) || plan.budgets[k] <= 0) throw new Error(`Invalid budget: ${k}`);
@@ -103,7 +104,7 @@ export function adapter(cell, cwd, output, budgets, context, plan) {
   if (cell.host === 'claude') return {command: 'claude', args: [
     '--print', '--safe-mode', '--restricted', '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
     '--no-session-persistence', '--disable-slash-commands', '--no-chrome', '--permission-mode', 'dontAsk',
-    '--tools', 'WebSearch,WebFetch,Bash', '--allowedTools', ['WebSearch', 'WebFetch', ...HOST_TOOLS.claude.commands.map(c => `Bash(${c} *)`), ...(install?[`Bash(${install})`]:[])].join(','),
+    '--tools', HOST_TOOLS.claude.tools.join(','), '--allowedTools', ['WebSearch', 'WebFetch', ...HOST_TOOLS.claude.commands.map(c => `Bash(${c} *)`), ...(install?[`Bash(${install})`]:[])].join(','),
     '--output-format', 'stream-json', '--verbose', '--model', cell.model
   ]};
   throw new Error('Unknown cold host.');
@@ -195,8 +196,19 @@ export function capabilityVectors(random = randomBytes) {
 // Another recipient serialized correctly but converted a verifier usage error
 // into false. Tool completion alone is not a cryptographic decision.
 export const CAPABILITY_REPORT_GUIDANCE = 'Serialize the computed hash and signature results into evidence/capability.json in the same local program that runs verification. Do not manually transcribe or hard-code boolean results from terminal output. Read the saved report and derive your final answer from that saved report. Distinguish operational errors from invalid signatures: a nonzero exit status alone is not a signature verdict. Retain verifier stderr, exit status and any exception text in evidence/verification-diagnostics.txt; do not suppress them or turn tool errors into boolean results. Only record true or false after the verifier actually checks the signature. If any check cannot run, leave evidence/capability.json unwritten and explain the incomplete check using the retained diagnostics. If you cannot complete verification or write the report, report the check as incomplete rather than guessing results.';
+// Qualification-only opt-in: closed prompts remain byte-identical. This
+// explains the adapter rather than supplying cryptographic answers or a
+// controller-authored program that could pass in place of the native agent.
+function capabilitySetupGuidance(plan,host) {
+  const condition=plan?.capability?.setup_guidance;
+  if(condition===undefined)return '';
+  if(plan.schema_version<4||condition!=='standalone-node-v1')throw new Error('Unsupported capability setup guidance.');
+  if(host===undefined)return '';
+  const tools=host==='claude'?`Available native tools: ${HOST_TOOLS.claude.tools.join(', ')}. No separate Write or Edit tool is available. Use Bash for the permitted standalone commands. `:'';
+  return `Setup guidance condition: ${condition}. ${tools}The evidence and work directories already exist. Use a standalone node -e '<your JavaScript>' call for local file operations: require("node:fs") provides mkdirSync, writeFileSync, readFileSync and copyFileSync. Create needed subdirectories with mkdirSync and recursive:true inside that call. Keep temporary scripts under ./work and retained evidence under ./evidence. You can perform multiple permitted operations within one Node program, including public fetches, your own verification logic and writing its computed results; this is not a grant to spawn other programs or execute downloaded source. Avoid shell heredocs, redirection, pipes, compound commands and trailing echo/status commands. Read the tool's returned status instead. A rejected invocation is not proof that a whole program is unavailable; report the exact refusal and use only the existing permitted tools. Use the declared tool list rather than spending calls probing for an absent file-writing tool. If source display is truncated, read bounded slices from the retained local files using Node and state remaining review gaps. The supplied inspection still checks hashes and order; it does not establish complete reading. Any package installation and installed-CLI command must remain separate standalone calls under their exact permission. Your source-review decision remains your own; declining is allowed. No extra time, calls, permissions or evidence are supplied by this guidance.\n\n`;
+}
 export function buildCapabilityPrompt(plan, host, vectors, reportFixture) {
-  return `This is a check of this session's local tools, not a task about any service. Nothing here is to be purchased, registered, signed for or sent anywhere. ${localToolsStatement(host)}
+  return capabilitySetupGuidance(plan,host)+`This is a check of this session's local tools, not a task about any service. Nothing here is to be purchased, registered, signed for or sent anywhere. ${localToolsStatement(host)}
 1. Fetch the exact bytes of ${plan.capability.public_url} and save them unchanged as ./evidence/public.bin (the ./evidence directory already exists). Report the SHA-256 hex digest of the saved file, computed locally.
 2. Using local tools only, verify these ${vectors.algorithm} signatures, each over its own UTF-8 message, and report which are valid. Public key (hex): ${vectors.public_key}. ${vectors.signatures.map(s => `Vector ${s.id}: message ${JSON.stringify(s.message)}, signature (hex) ${s.signature}.`).join(' ')}
 3. Write ./evidence/capability.json containing exactly {"fetched_sha256": "<hex>", "signatures": {${vectors.signatures.map(s => `"${s.id}": true|false`).join(', ')}}, "commands_denied": ["<first word of each refused command>"]}.
