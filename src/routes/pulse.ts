@@ -138,6 +138,7 @@ pulseRoutes.get("/pulse", async (c) => {
         "The whole funnel for this x402 store, organic only: how many times a price was quoted (402s answered, not distinct agents), how many purchases settled, and how many artifacts were re-verified afterwards.",
       path: "/pulse",
       bodyHtml: `<section>
+        <p class="menu-desc"><strong>${pulse.all_time.total_organic_settled ?? pulse.all_time.organic_settled} organic sales across x402 and MPP</strong>, including ${pulse.all_time.mpp_organic_settled ?? 0} native MPP sales. The funnel below covers x402 only; its conversion rate uses x402 asks and settles.</p>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>
         <p class="menu-desc"><strong>${escapeHtml(sentence(pulse.all_time))}</strong> All time, since the meter went in.</p>
       </section>

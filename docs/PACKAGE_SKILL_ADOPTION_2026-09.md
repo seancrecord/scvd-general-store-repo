@@ -294,6 +294,14 @@ unchanged and the named issuer can complete its task. Otherwise defer.
 
 ## PS9 — bounded UCP experiment
 
+**Closed September 29, keeper decision:** superseded by the shipped UCP
+business profile, catalog, checkout and order capabilities and the retained
+[September 19 qualification](../research/ucp-launch-2026-09-19/). The original
+proposal below remains historical scope, not an open build. The requested
+follow-through is to audit admin reporting, public reporting, site AEO/SEO
+and GitHub/external listings for accurate coverage of existing protocols.
+It does not establish third-party UCP inspection support.
+
 **Entry trigger:** PS6/PS7 are usable and a concrete UCP merchant/profile
 scenario with retrievable evidence is selected. First re-read current
 primary specifications. Limit the experiment to one profile/capability
