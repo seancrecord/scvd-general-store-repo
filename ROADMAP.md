@@ -187,6 +187,15 @@ last message. Next address buyer setup overhead and signed-original acquisition,
 then freeze a changed experiment with a stable qualified host context. Earlier
 attempts remain closed and preserved.
 
+**TR3 buyer setup, September 30 (new condition prepared):**
+[The explicit buyer setup condition](docs/BUYER_SETUP_GUIDANCE_2026-09-30.md)
+reuses qualification's tool instructions in buyer sessions without changing
+permissions, budgets, tasks or old prompts. All 290 buyer controls pass; seven
+archived prompts reproduce exactly. No new native qualification or cohort is
+claimed. Signed-original selection remains a distinct observed gap, despite
+existing guidance being present in the retained response. Freeze changed
+conditions under a stable qualified host context before further acquisition.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The
