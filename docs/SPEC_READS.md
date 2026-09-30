@@ -2673,3 +2673,21 @@ separate, and the x402 verdict keeps its prior meaning.
 Source hashes, validation and release limits: [PS6 record](../research/endpoint-inspection-2026-09-28/verification.json)
 and [implementation](ENDPOINT_INSPECTION_2026-09-28.md). Buyer/model qualification
 was excluded by keeper direction.
+
+### 2026-09-30 — reporting discovery and structured-data review
+
+Read Google's [structured-data introduction](https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data),
+[AI features guidance](https://developers.google.com/search/docs/appearance/ai-features)
+and [canonical URL guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls).
+Structured data should describe the visible page; AI Search uses ordinary
+Search eligibility rather than a special new schema or AI text file. This
+review checks existing text, links and schema parity, not indexing or ranking.
+Canonical aliases retain the established `/developers` destination.
+
+Read the [WebMCP draft's ModelContext interface](https://webmachinelearning.github.io/webmcp/#modelcontext-interface):
+it describes tool registration and invocation. Reading that draft does not
+establish current browser support, a payment wallet, successful registration
+on a particular browser, or paid execution. This pass changes discovery copy,
+not the browser adapter or protocol implementation. A2A/UCP version and
+checkout declarations remain derived from their existing source constants;
+no new conformance or interoperability qualification is inferred.

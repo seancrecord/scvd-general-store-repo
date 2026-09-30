@@ -15,3 +15,6 @@ export const DISCOVERY_PROTOCOLS = [
 ] as const;
 
 export type DiscoveryProtocol = (typeof DISCOVERY_PROTOCOLS)[number]["id"];
+
+/** The hosted inspection, described identically at its human and agent entry points. */
+export const ENDPOINT_INSPECTION_DESCRIPTION = "Free endpoint inspection: observed x402/MPP protocols, unverified advertised terms, structural findings and coverage gaps. The readiness verdict remains x402-specific. One unpaid response; no payment, settlement, delivery or artifact-signature verification.";

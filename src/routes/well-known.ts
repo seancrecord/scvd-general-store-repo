@@ -152,7 +152,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * /.well-known/oauth-protected-resource than either can disagree
      * with /auth.md.
      */
-    agent_auth: agentAuthBlock(base),
+    agent_auth: agentAuthBlock(base, c.env),
     /*
      * THE SEATS (2026-09-04): record and reproducible dispute
      * artifact, and never interpretation. Stated where diligence

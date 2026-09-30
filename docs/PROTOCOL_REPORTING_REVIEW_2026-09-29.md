@@ -113,3 +113,11 @@ records the source inventory, baseline public responses, reproduced scope
 and rendering defects, and local repairs. New monthly records add combined
 sales without rewriting old signatures; the public twins name their
 populations. PR3 metadata/discovery and PR4 external listings remain next.
+
+## PR3 implementation follow-through — September 30
+
+The [site discovery review](../research/protocol-discovery-2026-09-30/README.md)
+records the existing-surface inventory, reproduced description and schema
+defects, and local checks. PR4 external-content review is next. Release and
+post-release public readback remain outstanding; the earlier AEO study has
+not been replaced with a claim about new search visibility.

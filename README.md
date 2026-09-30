@@ -254,7 +254,7 @@ not for connecting to it.)
 ### Tools
 
 Tools are listed free by `tools/list`; the `buy_*` tools
-are x402-paid in-band. Names and one-line summaries below are held
+accept x402 in-band and native MPP when enabled for the item. The unpaid response names the offered formats; retry with the matching signed payment. Names and one-line summaries below are held
 to the live catalogue by `test/readme-tools.spec.ts`; the full
 descriptions and input schemas are what the server sends.
 
@@ -509,7 +509,7 @@ facilitator and all current client libraries speak v2.
 | `/conformance` | The conformance desk's own room: what it checks, worked examples |
 | `/corpus` | The corpus in plain language: the census finding, how to verify a round |
 | `/trade` | The trade counter: marketplaces resell the shelf on account by signed webhook, billed on a statement — `TRADE_COUNTER.md` |
-| `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools x402-paid in-band |
+| `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools accept x402 and configured native MPP |
 | `/skill.md` | Agent onboarding in the agentskills.io SKILL.md format |
 | `/menu.json` | Machine-readable catalog |
 | `/api/buy/:item_id` | x402-gated purchases |

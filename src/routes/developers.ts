@@ -1,14 +1,14 @@
 import { Hono } from "hono";
 import { EVIDENCE_TOOLS_SOURCE, EVIDENCE_TOOLS_DESCRIPTION } from "@/store/evidence-tools";
 import { DEVELOPER_PACKAGES, PREFLIGHT_LANGUAGE_GUIDES } from "@/store/developer-packages";
-import { DISCOVERY_PROTOCOLS } from "@/store/discovery-protocols";
+import { DISCOVERY_PROTOCOLS, ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
 import {
   GLOBAL_PROBES_PER_MINUTE,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
 import { MARKDOWN_MEDIA_TYPE, negotiate, VARY_ACCEPT } from "@/lib/accept";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
-import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
+import { checkoutMethod, nativeMcpInstruction, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { escapeHtml } from "@/lib/sanitize";
 import { declinedPositions } from "@/store/copy/declined";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
@@ -59,7 +59,11 @@ interface Entry {
   what: string;
 }
 
-function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
+function mcpDescription(config?: PurchaseCapabilityConfig): string {
+  return `Streamable HTTP MCP. tools/list and endpoint inspection are free; buy_* tools accept the offered x402 terms. ${nativeMcpInstruction(config)} ${mcpResourceCatalog().length} resources are readable without payment. The two free evidence instruments carry _meta.ui.resourceUri, so a host with the MCP Apps extension renders the reading as a card — gaps at the same weight as findings. Nothing paid carries one, by construction and by test.`;
+}
+
+function surfaces(base: string, config?: PurchaseCapabilityConfig): Array<{ heading: string; entries: Entry[] }> {
   return [
     {
       heading: "SCVD libraries and SDKs",
@@ -67,8 +71,8 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
     },
     {
       heading: "Protocols and their scope",
-      entries: DISCOVERY_PROTOCOLS.filter(p => ['x402', 'mpp', 'a2a', 'ucp'].includes(p.id))
-        .map(p => ({ href: `${base}${p.path}`, label: p.label, what: p.scope })),
+      entries: DISCOVERY_PROTOCOLS.filter(p => ['x402', 'mpp', 'mcp', 'webmcp', 'a2a', 'ucp'].includes(p.id))
+        .map(p => ({ href: `${base}${p.id === "mcp" ? "/mcp.md" : p.path}`, label: p.label, what: p.scope })),
     },
     {
       heading: "Start here",
@@ -101,7 +105,7 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
         {
           href: `${base}/api/preflight/${PREFLIGHT_VERSION}`,
           label: `POST /api/preflight/${PREFLIGHT_VERSION}`,
-          what: "Check whether any x402 endpoint answers a well-formed payment challenge. Send {\"url\": \"...\"}; get back a named-check verdict. The published criteria are at the same path over GET.",
+          what: ENDPOINT_INSPECTION_DESCRIPTION,
         },
         {
           href: `${base}/api/conformance/v1`,
@@ -206,7 +210,7 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
         {
           href: `${base}/mcp`,
           label: "POST /mcp",
-          what: `Streamable HTTP MCP. tools/list is free; buy_* tools are x402-paid. ${mcpResourceCatalog().length} resources are readable without payment. The two free evidence instruments carry _meta.ui.resourceUri, so a host with the MCP Apps extension renders the reading as a card — gaps at the same weight as findings. Nothing paid carries one, by construction and by test.`,
+          what: mcpDescription(config),
         },
         {
           href: `${base}/webmcp.js`,
@@ -266,11 +270,11 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
 }
 
 /** The three questions a developer portal exists to answer. */
-function conventions(base: string): Array<{ q: string; a: string }> {
+function conventions(base: string, config?: PurchaseCapabilityConfig): Array<{ q: string; a: string }> {
   return [
     {
       q: "Authentication",
-      a: `There is none, and there is nothing to sign up for. Free shelves are open to anyone. Paid endpoints answer HTTP 402 with x402 v2 terms in the PAYMENT-REQUIRED header (base64 JSON); you sign one of the offered accepts and retry with the payment. Payment is per request and settles wallet-to-wallet — this store never holds your funds, issues a key, or keeps an account. Written out with the worked procedure at ${base}/auth.md; the machine-readable form is ${base}/.well-known/oauth-protected-resource (RFC 9728), which every 402 from this store points at in its WWW-Authenticate header. That document names no authorization server because there is none, which is the honest shape of "no OAuth here" rather than an omission.`,
+      a: `No account or API key is issued. Free tools need no payment. Paid requests use ${checkoutMethod(config)}. Read the current quote and payment_capabilities before signing; payment is per request. Native MPP challenges and x402 terms have different retry formats. The operational instructions are at ${base}/auth.md and ${base}/agents.md; the service's authorization description is at ${base}/.well-known/oauth-protected-resource.`,
     },
     {
       q: "Errors",
@@ -278,7 +282,7 @@ function conventions(base: string): Array<{ q: string; a: string }> {
     },
     {
       q: "Rate limits",
-      a: `One family of paths is limited and the rest are not. The free preflight spends outbound requests to a host you choose, so it carries ${PROBES_PER_MINUTE} probes per isolate per minute and a global backstop of ${GLOBAL_PROBES_PER_MINUTE} per minute. Every answer the limiter METERED carries the IETF RateLimit fields — the 200 and the 429 — so you can pace against the live number instead of discovering the ceiling by being refused: RateLimit-Limit / -Remaining / -Reset report whichever bucket is closer to binding, and RateLimit / RateLimit-Policy name both ("isolate" and "global"). A validation refusal (400) returns before either bucket is touched and carries none, because a malformed request never spent a probe. The global backstop is a read-modify-write on eventually consistent storage, so its remaining count reads slightly high under load and never low. Past either ceiling you get a 429 with Retry-After, and the body says plainly that the budget is our cost bound and not a fact about your endpoint. Nothing else here has an application-level ceiling, and so returns no RateLimit headers — a ceiling nothing enforces is worse than no ceiling, because you would throttle against a fiction. A 429 can also arrive from the edge under abuse conditions. A refused request is never charged for. THESE TWO NUMBERS ARE READ FROM THE LIMITER ITSELF: this sentence said "there is no application-level rate limit" for a day after one shipped, which is exactly what a hand-typed claim does.`,
+      a: `Free preflight allows ${PROBES_PER_MINUTE} probes per isolate per minute, with a global backstop of ${GLOBAL_PROBES_PER_MINUTE} per minute. Metered answers (200 and 429) carry RateLimit-Limit, RateLimit-Remaining and RateLimit-Reset for the nearer ceiling; RateLimit and RateLimit-Policy name both buckets. Validation refusals (400) spend no probe and carry no limiter fields. The global counter uses eventually consistent storage, so its remaining count can read high under load. A limit refusal returns 429 with Retry-After; it describes our probe budget, not the target endpoint. Other routes enforce their own limits, including the mailbox's daily allowance, and the edge can also refuse abusive traffic. Read the affected route's response before retrying.`,
     },
     {
       q: "Versioning and deprecation",
@@ -286,13 +290,13 @@ function conventions(base: string): Array<{ q: string; a: string }> {
     },
     {
       q: "Content negotiation",
-      a: `Send Accept: text/markdown and the agent-facing surfaces answer in markdown, including ${base}/ itself. Responses carry Vary: Accept so a cache keeps the variants apart. Accept is parsed by q-value, not substring-matched. For callers that would rather guess a path than send a header, ${base}/index.md and ${base}/pricing.md serve the same bytes their negotiated originals do, with a canonical link back. What this store does NOT do is decide the dialect from your user-agent — see the declined positions below.`,
+      a: `Send Accept: text/markdown and the agent-facing surfaces answer in markdown, including ${base}/ itself. Responses carry Vary: Accept, Accept-Encoding, User-Agent so a cache keeps the variants apart. Accept is parsed by q-value, not substring-matched. For callers that would rather guess a path than send a header, ${base}/index.md and ${base}/pricing.md serve the same bytes their negotiated originals do, with a canonical link back. An explicit supported Accept preference takes precedence. Without a format preference, recognized agent readers may receive Markdown; ordinary search crawlers receive HTML.`,
     },
   ];
 }
 
 function developersMarkdown(base: string, config?: PurchaseCapabilityConfig): string {
-  const sections = surfaces(base)
+  const sections = surfaces(base, config)
     .map(
       (section) =>
         `## ${section.heading}\n\n${section.entries
@@ -300,7 +304,7 @@ function developersMarkdown(base: string, config?: PurchaseCapabilityConfig): st
           .join("\n")}`,
     )
     .join("\n\n");
-  const rules = conventions(base)
+  const rules = conventions(base, config)
     .map((row) => `### ${row.q}\n\n${row.a}`)
     .join("\n\n");
   return `# ${STORE_SERVICE_NAME} — developer documentation
@@ -328,7 +332,7 @@ A person reads this address: ${STORE_CONTACT_EMAIL}
 }
 
 function developersHtml(base: string, config?: PurchaseCapabilityConfig): string {
-  const sections = surfaces(base)
+  const sections = surfaces(base, config)
     .map(
       (section) => `
       <h2>${escapeHtml(section.heading)}</h2>
@@ -344,7 +348,7 @@ function developersHtml(base: string, config?: PurchaseCapabilityConfig): string
       </ul>`,
     )
     .join("");
-  const rules = conventions(base)
+  const rules = conventions(base, config)
     .map(
       (row) =>
         `<h3>${escapeHtml(row.q)}</h3><p>${escapeHtml(row.a)}</p>`,
@@ -381,8 +385,7 @@ function developersHtml(base: string, config?: PurchaseCapabilityConfig): string
       "@type": "TechArticle",
       name: `${STORE_SERVICE_NAME} — developer documentation`,
       headline: `${STORE_SERVICE_NAME} — developer documentation`,
-      description:
-        "API documentation for scvd.store: OpenAPI contract, free conformance and preflight endpoints, the MCP server, x402 payment flow, error model, rate limits and versioning policy.",
+      description: DESCRIPTION,
       url: `${base}/developers`,
       author: organizationRef(base),
     })}
@@ -402,8 +405,7 @@ function developersHtml(base: string, config?: PurchaseCapabilityConfig): string
           applicationCategory: "DeveloperApplication",
           operatingSystem: "Any",
           url: `${base}/mcp`,
-          description:
-            "A Model Context Protocol server with free x402 instruments (preflight any endpoint, check any issuer's signed offer or receipt, verify anything this store signed) and paid signed observations settled over x402.",
+          description: mcpDescription(config),
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
           author: organizationRef(base),
         },
@@ -455,7 +457,7 @@ const DEV_CSS = `
 `;
 
 const DESCRIPTION =
-  "Developer documentation for scvd.store: the OpenAPI 3.1 contract, the free preflight and conformance endpoints, the MCP server, the x402 payment flow, the typed error model, rate-limit headers and the versioning policy. No account or API key exists to obtain.";
+  "Developer documentation for scvd.store: free x402/MPP inspection, signed-artifact verification, checkout capabilities, MCP and WebMCP tools, A2A and UCP profiles, errors and rate limits. No account or API key required.";
 
 /**
  * THREE PATHS, ONE PAGE. /developers is the canonical one; /docs and
@@ -514,8 +516,7 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
       return c.json({
         name: `${STORE_SERVICE_NAME} — developer documentation`,
         description: DESCRIPTION,
-        authentication:
-          "None. No account or API key exists. Paid endpoints take a signed x402 v2 payment per request.",
+        authentication: conventions(base, c.env)[0]!.a,
         openapi: `${base}/openapi.json`,
         guide: `${base}/llms.txt`,
         manual: `${base}/agents.md`,
@@ -554,8 +555,8 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
             note: "The tab: a local ledger of what your agent spent. Works against any x402 store, not only this one.",
           },
         },
-        sections: surfaces(base),
-        conventions: conventions(base),
+        sections: surfaces(base, c.env),
+        conventions: conventions(base, c.env),
         // The gaps beside the findings, same as /corrections: a
         // scanner recommendation declined is a decision, and
         // decisions publish with their reasons (P12).

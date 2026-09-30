@@ -1,5 +1,7 @@
-import { paymentMethod, paymentNetworkGuide, type PaymentNetworkConfig } from "@/lib/payment-networks";
-import { ucpCheckoutOpen, type UcpLaunchConfig } from "@/lib/ucp/launch";
+import { paymentMethod, paymentNetworkGuide } from "@/lib/payment-networks";
+import { ucpCheckoutOpen } from "@/lib/ucp/launch";
+import { nativeMcpInstruction, nativeCheckoutLane, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
+import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
 import { beforeYouStartSection, spendCapCounts } from "@/lib/before-you-start";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { Hono } from "hono";
@@ -112,7 +114,8 @@ function spendCapParagraph(): string {
    repeats this in its own body.`;
 }
 
-export function agentsMd(base: string, paymentConfig?: UcpLaunchConfig): string {
+export function agentsMd(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
+  const nativeLane = nativeCheckoutLane(paymentConfig);
   const ucpOpen = paymentConfig ? ucpCheckoutOpen(paymentConfig) : false;
   /**
    * FRONTMATTER, ADDED 2026-08-30, AND WHY IT GOES ABOVE THE HEADING.
@@ -132,7 +135,7 @@ export function agentsMd(base: string, paymentConfig?: UcpLaunchConfig): string 
    */
   return `---
 title: "${STORE_METADATA.name}"
-description: "The operational manual for autonomous agents transacting with this store: the x402 purchase flow over HTTP and MCP, the doors, the prices, and an honest account of what this place cannot do."
+description: "The operational manual for autonomous agents transacting with this store: the supported purchase flows over HTTP and MCP, the doors, the prices, and an honest account of what this place cannot do."
 canonical: "${base}/agents.md"
 url: "${base}/agents.md"
 site: "${base}"
@@ -163,7 +166,7 @@ ${paymentConfig ? paymentNetworkGuide(paymentConfig) : paymentMethod()}
 ${STORE_METADATA.name} is a human-run general store for AI agents,
 live at ${base}, in ${STORE_METADATA.location}. Commerce protocol:
 **x402** over HTTP, settling ${STORE_METADATA.currency} on
-a network offered in the current payment quote. ${ucpOpen ? `Two doors and a
+a network offered in the current payment quote. ${nativeLane ? `Native checkout also accepts ${nativeLane}. ` : ""}${ucpOpen ? `Two doors and a
 UCP checkout, same catalog: an HTTP door, an MCP door, and a UCP business
 profile at ${base}/.well-known/ucp whose checkout settles the same x402
 terms.` : `Two doors, same catalog: an
@@ -199,7 +202,7 @@ ${spendCapParagraph()}
 4. The store delivers first and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money. Instant items arrive in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
 5. Verify anything you were given, free and forever: GET ${base}/api/verify/{id}.
 6. Check ANY issuer's x402 offer or receipt, free: the check_conformance MCP tool, or POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Same function behind both doors. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
-7. Check ANY x402 endpoint's shape, free: the preflight_endpoint MCP tool, or POST ${base}/api/preflight/v1 with {"url": "..."}. One probe: 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet-network catch. A shape check, never an uptime claim.
+7. ${ENDPOINT_INSPECTION_DESCRIPTION} Use the preflight_endpoint MCP tool, or POST ${base}/api/preflight/v1 with {"url": "..."}. A shape check, never an uptime claim.
 
 ## Usage: purchasing flow (MCP)
 
@@ -210,6 +213,8 @@ ${spendCapParagraph()}
 - Free tools need no payment. Evidence instruments, whose output is written to be handed to your human: \`preflight_endpoint\`, \`check_conformance\`, \`verify_artifact\`. Store errands, for you the visiting agent: \`read_store_guide\`, \`ring_bell\`, \`sign_guestbook\`.
 
 ## Checkout rules & rate limits
+
+${nativeMcpInstruction(paymentConfig)}
 
 - Payment: x402 v2, ${STORE_METADATA.currency} on a network offered in the current quote. Terms ride the PAYMENT-REQUIRED header. The store DELIVERS FIRST and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money.
 - Retries are safe: send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16–128 chars, and a repeat of the same key for the same item and payer within 24h returns the original result with no second charge.
@@ -266,7 +271,7 @@ Both maps render from the same list, so neither can drift from the other: [sitem
 
 - Nothing it hands you can act without your decision; never asks for credentials, keys, or key material.
 - Not custodial: x402 settles wallet-to-wallet; the store never holds your funds.
-- Never claims a protocol it does not speak: ${ucpOpen ? "x402, MCP and UCP checkout, each advertised only where it settles." : "this is x402 + MCP; the UCP profile advertises no checkout while checkout is switched off here."}
+- Checkout availability is stated by each item’s payment_capabilities and current quote. ${nativeLane ? `Native checkout accepts ${nativeLane}. ` : ""}${ucpOpen ? "The UCP profile advertises enabled checkout." : "The UCP profile advertises no checkout while checkout is switched off here."}
 `;
 }
 

@@ -212,7 +212,7 @@ describe("the questions a developer portal exists to answer", () => {
      * This one exists to say there is nothing to issue, which a
      * developer otherwise spends twenty minutes failing to find.
      */
-    expect(json.authentication.toLowerCase()).toContain("none");
+    expect(json.authentication).toContain("No account or API key is issued");
     const topics = json.conventions.map((row) => row.q.toLowerCase());
     for (const required of ["errors", "rate limits", "versioning and deprecation"]) {
       expect(topics).toContain(required);
