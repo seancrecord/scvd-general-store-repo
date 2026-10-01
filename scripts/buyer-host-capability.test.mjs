@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {sourceCheckCommand} from './lib/buyer-evidence-workflow.mjs';
 import {packageReportFixture,scorePackageReport,packageInstallCommand,packageReportCommand,packageReviewSources,packageInspectionCommand,literalCommandMatches} from './lib/buyer-package-access.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -781,4 +782,20 @@ test('bounded source review preserves hostile Unicode source as data and enforce
  const limited=boundedReviewFixture();try{
   limited.p.budgets.artifact_bytes=50000;const result=limited.inspect();assert.notEqual(result.status,0);assert.match(result.stderr,/read bound/);assert.equal(result.stdout,'');
  }finally{limited.cleanup();}
+});
+
+test('assisted online qualification cannot pass on the old installed report alone',()=>{
+ const f=installedReportFixture();try{
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+  f.p.evidence_workflow='sources-and-draft-v1';
+  const command=sourceCheckCommand(f.p,f.fixture);
+  assert.ok(buildCapabilityPrompt(f.p,'claude',capabilityVectors(),f.fixture).includes(command));
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'incomplete');
+  const install=path.join(f.d,'work/tooling/node_modules/x402-verify');fs.mkdirSync(install,{recursive:true});
+  for(const file of Object.keys(f.p.recipient.verifier.files))fs.copyFileSync(path.join(f.d,'evidence/installed',file),path.join(install,file));
+  const result=spawnSync('/bin/sh',['-c',command],{cwd:f.d,encoding:'utf8'});assert.equal(result.status,0,result.stderr);
+  for(const file of ['evidence/source-index.json','evidence/source-candidates.json'])f.run.retained_artifacts.files.push({file,sha256:hash(fs.readFileSync(path.join(f.d,file)))});
+  f.commands.push({command,outcome:'completed'});
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+ }finally{f.cleanup();}
 });

@@ -1,6 +1,7 @@
 // Directed experiments may qualify one public package, without granting npm
 // generally or teaching unbranded discovery which product to choose.
 import fs from 'node:fs';
+import {sourceQualificationPrompt,checkSourceQualification} from './buyer-evidence-workflow.mjs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash,generateKeyPairSync,randomBytes,sign} from 'node:crypto';
@@ -164,7 +165,7 @@ export function literalCommandMatches(actual,expected){
 export function packageCapabilityPrompt(plan,fixture){
  if(!packageInstallCommand(plan))return '';
  if(!fixture)throw Error('Package qualification requires a fresh report fixture.');
- return `\n4. This directed qualification also tests the installed reporting tool, not a real merchant. ${packageToolsStatement(plan)} Save this synthetic signed original as evidence/report-original.json: ${JSON.stringify(fixture.original)}. The supplied test key is ${fixture.original.public_key}; it is not a real issuer identity. ${reviewCondition(plan)?"Only if your recorded decision is proceed, run":"Run"} this exact standalone installed-CLI command: ${packageReportCommand(plan,fixture)}. Do not hand-author that report. Using node filesystem calls, copy each of these installed runtime files unchanged from ./work/tooling/node_modules/${plan.recipient.verifier.name}/ to ./evidence/installed/: ${recipientVerifierFiles(plan.recipient.verifier).join(', ')}. Keep installation/CLI errors in your report; a missing module, failed installation or missing generated report leaves this capability incomplete. Retain the original, generated report and runtime copies within the existing evidence budget. The controller compares those bytes and the generated output independently; a help screen or self-reported success alone does not qualify the package.\n`;
+ return `\n4. This directed qualification also tests the installed reporting tool, not a real merchant. ${packageToolsStatement(plan)} Save this synthetic signed original as evidence/report-original.json: ${JSON.stringify(fixture.original)}. The supplied test key is ${fixture.original.public_key}; it is not a real issuer identity. ${reviewCondition(plan)?"Only if your recorded decision is proceed, run":"Run"} this exact standalone installed-CLI command: ${packageReportCommand(plan,fixture)}. Do not hand-author that report. Using node filesystem calls, copy each of these installed runtime files unchanged from ./work/tooling/node_modules/${plan.recipient.verifier.name}/ to ./evidence/installed/: ${recipientVerifierFiles(plan.recipient.verifier).join(', ')}. Keep installation/CLI errors in your report; a missing module, failed installation or missing generated report leaves this capability incomplete. Retain the original, generated report and runtime copies within the existing evidence budget. The controller compares those bytes and the generated output independently; a help screen or self-reported success alone does not qualify the package.\n`+sourceQualificationPrompt(plan,fixture);
 }
 export function scorePackageReport(plan,run,root,fixture,commands){
  const command=packageInstallCommand(plan);if(!command)return null;
@@ -197,6 +198,7 @@ export function scorePackageReport(plan,run,root,fixture,commands){
   const expected=spawnSync(process.execPath,args,{encoding:'utf8',timeout:10000,maxBuffer:262144});
   if(expected.status!==0)throw Error('controller report could not run');
   if(report.toString()+'\n'!==expected.stdout)throw Error('generated report differs');
+  checkSourceQualification(plan,fixture,bytes,completed,root);
   return {...result,state:'pass',reason:'Pinned public installation completed; retained runtime matches every frozen module and the generated report reproduces independently.',report_sha256:hash(report),original_sha256:hash(original),version:v.version};
  }catch(error){return {...result,reason:error.message};}
 }
