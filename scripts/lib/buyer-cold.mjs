@@ -1,7 +1,7 @@
 // Shared by the isolated runner and buyer-wave scorer. Reviews are evidence
 // indexes, not executable instructions or a substitute for signature checking.
 import fs from 'node:fs';
-import {packageInstallCommand,packageToolsStatement,packageCapabilityPrompt,scorePackageReport} from './buyer-package-access.mjs';
+import {packageSourceDirectories,packageInstallCommand,packageToolsStatement,packageCapabilityPrompt,scorePackageReport} from './buyer-package-access.mjs';
 import path from 'node:path';
 import {createHash, generateKeyPairSync, randomBytes, sign} from 'node:crypto';
 import {validEnvelope} from './buyer-run-evidence.mjs';
@@ -42,6 +42,7 @@ function publicUrl(value) {
 export function validatePlan(plan) {
   validateRecipientVerifier(plan);
   packageInstallCommand(plan);
+  packageSourceDirectories(plan);
   capabilitySetupGuidance(plan);
   buyerSetupGuidance(plan);
   if (![2,3,4,5,6].includes(plan?.schema_version) || plan.spend_usdc !== 0 || !publicUrl(plan.subject)) throw new Error('Cold plan requires version 2, 3, 4, 5 or 6, a public HTTPS subject and zero spend.');
