@@ -4,6 +4,20 @@ Content review added September 30, 2026; prior dated admission records retained.
 stay in [KEEPER_LIST](KEEPER_LIST.md#directory-and-listings-press-is-yours-rule-30),
 builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
 
+## October 1 listing additions
+
+[Primary-source read and limits](docs/SPEC_READS.md#2026-10-01--external-directory-and-package-records).
+AllthingsPM, Enterprise DNA and AI Agent Board now join the canonical MCP
+records; APIs.io has separate provider and A2A records. UCP.tools was
+reconfirmed, retaining its original listing date. Public trust and discovery
+surfaces derive these store records from `EXTERNAL_RECORDS`.
+
+[piwheels](https://www.piwheels.org/project/scvd-preflight/) indexes the Python
+preflight package, so its link lives with the [package documentation](x402-preflight-py/README.md)
+and the README's discovery section. It identifies a package rather than the
+store itself and is not added to the store's `sameAs` identity links.
+No submission or runtime qualification was performed in this pass.
+
 ## Where each fact lives
 
 | Question | Authoritative place |
