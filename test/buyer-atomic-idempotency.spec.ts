@@ -12,7 +12,7 @@ for (const [door, retryDoor] of [["http", "http"], ["mcp", "mcp"], ["mcp-standar
     for (const itemId of door === retryDoor && network === laborNetworks()[0] ? MENU_ITEMS.map(item => item.id) : ["context_anchor"]) {
     it(`${door} → ${retryDoor} ${network} ${itemId}: fresh concurrent authorizations share one payment and recovery`, async () => {
       const item = items.find(i => i.id === itemId)!;
-      const args = { ...baseline(item), purpose: `SCVD-E2E-atomic-${crypto.randomUUID()}` }, key = crypto.randomUUID();
+      const args = { ...await baseline(item), purpose: `SCVD-E2E-atomic-${crypto.randomUUID()}` }, key = crypto.randomUUID();
       const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(o => o.network === network)!;
       const firstPayment = await signLabor(offer), secondPayment = await signLabor(offer);
       const stack = getPaymentStack(testEnv), settle = stack.httpServer.processSettlement.bind(stack.httpServer);

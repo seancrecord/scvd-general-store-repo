@@ -1179,8 +1179,11 @@ const BASE = "https://scvd.store";
 // merged tree: with menu-utility.ts alone restored to main, main's c62925d7
 // here and 9a58296b below reproduced (14/14); these copies reproduce the
 // merged document.
+// 2026-10-01: the Spot Check additions, their free alternatives and refusal
+// vocabulary change the derived guide. Stashing this release reproduced
+// both main pins (14/14); restoring it reproduced the new pins below.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6f75657e33b3c179cb7c6349bcd1148f680b0f40562cee86c94910f48b4e96ba";
+  "12644a0666e972a387aee2a532f332d66e2dd4d7071ae10d658640c1d438c0e1";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1282,7 +1285,7 @@ describe("nothing was rewritten", () => {
       // restored to main, 21a941ef reproduced. Then across the merge with
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
-      "5c1e7b1526a9319ddc10b174f8c17445a0eded7051f123809180987e5d26680b",
+      "8e7ab1475ff68d6e5078d7a90d2825bc094b2d93252e5876e43715fbb297a0ff",
     );
   });
 

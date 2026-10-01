@@ -39,6 +39,18 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## September 30 — Spot Check product and handoff experiment
+
+Keeper-directed: build both proposed additions now and learn from demand,
+rather than waiting to select one. Change Check and Batch Spot Check reuse
+the existing books, signing, checkout and recovery. Research Comparison and
+The Good Buyer remain the existing products and are surfaced conditionally.
+Optional counter notes support a human conversation or a later agent session;
+no automatic messages, scheduled purchases or new payment authority.
+Implementation, starting prices, evidence boundaries and validation:
+[experiment record](docs/SPOT_CHECK_FOLLOW_THROUGH_2026-09.md).
+Release through the protected PR after CI; production demand remains unmeasured.
+
 ## September 28 — AEO readability, release approved
 
 - [x] Update the [hand-check protocol](docs/AEO_HAND_CHECK.md) and [run template](docs/AEO_HAND_CHECK_RUN_TEMPLATE.md): preserve legacy prompts; cover the portfolio; freeze modes and eligibility; retain failures, source provenance and repeat waves. Documentation update only; no new observations or automation.

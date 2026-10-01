@@ -10,7 +10,7 @@ for (const catalogItem of MENU_ITEMS) {
     const limit = Number(item.spec.inputs.properties.purpose!.maxLength);
     expect(Number.isInteger(limit)).toBe(true);
     for (const door of ["http", "mcp"] as const) {
-      const reading = await call(item, door, { ...baseline(item), purpose: "x".repeat(limit + 1) }, shelves(item)[0]);
+      const reading = await call(item, door, { ...await baseline(item), purpose: "x".repeat(limit + 1) }, shelves(item)[0]);
       expect(reading.body).toMatchObject({ code: "bad_request", charged: false, input_field: "purpose", max_length: limit });
       expect(reading.quote).toBe(false);
       expect(reading.verifies).toBe(0);

@@ -1,3 +1,4 @@
+import { SPOT_HOSTS_DESCRIPTION, SPOT_HOSTS_INPUT_CAP, BASELINE_CERT_PATTERN } from "@/lib/spot-check-terms";
 import { SUBJECT_ADDRESS_PATTERN, TRANSACTION_ID_PATTERN, SPOT_CHECK_HOST_PATTERN, trimmedInputPattern } from "@/lib/purchase-input-syntax";
 import { MANDATE_TEXT_CAP } from "@/lib/mandate-terms";
 import { NAME_CAP } from "@/lib/sanitize";
@@ -262,11 +263,19 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "change_check") {
+    properties["baseline_cert_id"] = { type: "string", pattern: BASELINE_CERT_PATTERN, description: "Certificate ID of an earlier Spot Check for the same host with a retained signed original. Missing originals refuse without charge." };
+    required.push("baseline_cert_id");
+  }
+  if (item.id === "batch_spot_check") {
+    properties["hosts"] = { type: "string", maxLength: SPOT_HOSTS_INPUT_CAP, description: SPOT_HOSTS_DESCRIPTION };
+    required.push("hosts");
+  }
   if (item.id === "research_comparison") {
     properties["urls"] = { type: "string", maxLength: COMPARISON_INPUT_CAP, description: COMPARISON_INPUT_DESCRIPTION };
     required.push("urls");
   }
-  if (item.id === "spot_check") {
+  if (item.id === "spot_check" || item.id === "change_check") {
     properties["host"] = {
       type: "string",
       pattern: trimmedInputPattern(SPOT_CHECK_HOST_PATTERN),
@@ -525,6 +534,8 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
  */
 export function buyInputExample(item: MenuItem): Record<string, unknown> {
   const example: Record<string, unknown> = { agent_name: "friendly-agent" };
+  if (item.id === "change_check") { example["host"] = "your-door.example"; example["baseline_cert_id"] = "cert_your_retained_spot_check"; }
+  if (item.id === "batch_spot_check") example["hosts"] = JSON.stringify(["one.example", "two.example"]);
   if (item.id === "research_comparison") example["urls"] = COMPARISON_EXAMPLE_INPUT;
   if (item.id === "context_anchor") {
     example["summary"] =

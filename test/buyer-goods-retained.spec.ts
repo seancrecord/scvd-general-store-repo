@@ -7,7 +7,7 @@ installLaborAdmissionHarness();
 afterEach(() => vi.restoreAllMocks());
 for (const door of ["http", "mcp", "mcp-standard"] as const) for (const network of laborNetworks()) for (const oldInput of ["name", "constraint"] as const) {
   it(`${door} ${network} ${oldInput}: tighter inputs preserve authenticated original paid goods`, async () => {
-    const item = items.find(i => i.id === (oldInput === "name" ? "hello" : "settlement_attestation"))!, valid = baseline(item);
+    const item = items.find(i => i.id === (oldInput === "name" ? "hello" : "settlement_attestation"))!, valid = await baseline(item);
     const args = { ...valid, ...(oldInput === "name" ? { agent_name: "n".repeat(NAME_CAP + 1) } : { payer: "old-invalid-optional-payer" }) };
     const quote = await call(item, "mcp", valid, shelves(item)[0]!);
     const payment = await signLabor(quote.offers.find(o => o.network === network)!);

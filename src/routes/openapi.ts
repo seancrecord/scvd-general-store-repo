@@ -392,7 +392,9 @@ function declareHeaderInputs(paths: Record<string, Record<string, unknown>>): vo
     const paid = Boolean(op["x-payment"]);
     const noStore = NO_STORE_PREFIXES.some((prefix) => path.startsWith(prefix));
     if (!paid && !noStore && !(path in CONDITIONAL_GET_EXEMPT) && !has("If-None-Match")) {
-      parameters.push({ ...IF_NONE_MATCH_PARAMETER });
+      // Free conditional reads share this unchanged header contract; the paid
+      // idempotency header stays inline for shallow payment scanners.
+      parameters.push({ $ref: "#/components/parameters/IfNoneMatch" });
       const responses = (op["responses"] ?? {}) as OpenApiObject;
       if (!responses["304"]) responses["304"] = { $ref: "#/components/responses/NotModified" };
       op["responses"] = responses;
@@ -6102,7 +6104,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       schemas: {
         ...A2A_OPENAPI_SCHEMAS,
         // Repeated request/response schemas, expanded unchanged (2026-09-23).
-        // Keep parameters and the paid 402 inline for shallow discovery readers.
+        // Keep purchase parameters and the paid 402 inline for shallow discovery readers.
         TradeOrder: TRADE_ORDER_BODY,
         StudyDoorShape: STUDY_DOOR_SHAPE_SCHEMA,
         DoorIndex: DOOR_INDEX_SCHEMA,
@@ -6136,7 +6138,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       responses: SHARED_RESPONSES,
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
-      parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER },
+      parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER },
     },
     /**
      * THE VERSIONING PROMISE, STATED (2026-08-21). The store already
@@ -6378,6 +6380,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * contract. The purchase responses carry them; the spec now
        * does too.
        */
+      "/api/spot-checks/{cert_id}": {
+        get: {
+          ...returns(freeOp("A retained Spot Check, change comparison or batch", "Returns the original signed observation and a separate optional counter note and follow-up options. HTML for a browser; JSON for a machine. Unavailable or invalid originals are refused; no observation is recreated."), {type:"object", properties:{kind:{type:"string"}, observation:{type:"object"}, counter_note:{type:"object"}, follow_up:{type:"object"}}}),
+          parameters: [pathParam("cert_id", "Certificate ID from the purchase response.")],
+        },
+      },
       "/api/good-buyer/{reading_id}": {
         get: {
           ...returns(

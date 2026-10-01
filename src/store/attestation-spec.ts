@@ -84,6 +84,12 @@ export interface ArtifactClass {
 }
 
 export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
+  ...["change_check", "batch_spot_check"].map(id => ({
+    id, name: id === "change_check" ? "Recorded-evidence comparison" : "Batch of recorded host evidence", trust_model: "third_party_observation" as const,
+    signs: "The complete observation.record, including its signed source readings, dates, gaps and comparison or manifest. SHA-256 of observation.signed_payload is bound into certificate.attests. observation.signature_jcs covers the RFC 8785 canonical record.",
+    does_not_prove: "Live endpoint state, continuous coverage, successful future payment or delivery, or provider safety. No new observations does not mean no endpoint changes. Missing dates, different endpoints and different batteries cannot establish a comparable change.",
+    verify_url: "/api/verify/{cert_id}",
+  })),
   {
     id: "research_comparison", name: "Research endpoint comparison", trust_model: "third_party_observation",
     signs: "The supplied endpoint set, observation window, per-endpoint preflight reports, advertised atomic terms, host history with dates and coverage, same-endpoint network comparisons, shared receiving-address matches, gaps and limits. SHA-256 of observation.signed_payload is bound into the purchase certificate as attests; observation.signature_jcs also covers the RFC 8785 canonical record.",

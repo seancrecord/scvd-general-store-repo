@@ -105,7 +105,7 @@ const examples = [
 ];
 async function purchase(id: string, args: Obj, network = BASE_NETWORK) {
   const item = items.find(i => i.id === id)!, tool = shelves(item)[0]!;
-  args = { ...baseline(item), ...args };
+  args = { ...await baseline(item), ...args };
   const quote = await call(item, "mcp", args, tool);
   const offer = quote.offers.find(o => o.network === network)!;
   expect(offer).toBeTruthy();

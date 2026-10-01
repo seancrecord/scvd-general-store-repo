@@ -22,7 +22,7 @@ installLaborAdmissionHarness();
 afterEach(() => { fault.truncated = false; vi.restoreAllMocks(); });
 async function input() {
   const menu = MENU_ITEMS.find(row => row.id === "the_collab")!, item = items.find(row => row.id === menu.id)!;
-  const args = { item_id: item.id, ...baseline(item), detail: `SCVD-E2E storage ${crypto.randomUUID()}` };
+  const args = { item_id: item.id, ...await baseline(item), detail: `SCVD-E2E storage ${crypto.randomUUID()}` };
   const quote = await call(item, "mcp", args, shelves(item)[0]!);
   const terms = quote.offers.find(offer => offer.network === laborNetworks()[0])! as PaymentRequirements;
   expect(terms).toBeDefined();

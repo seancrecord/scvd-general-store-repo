@@ -990,6 +990,9 @@ const TILL_STYLE = `
 .till-wallet[data-connected=wrong-chain]{color:#d9480f}
 .till-detail summary{cursor:pointer;font-size:.85em;opacity:.75}
 .till-note{font-size:.85em;opacity:.8}
+[data-counter-note]{margin:1.25rem 0;padding:1rem;border:1px solid currentColor;overflow-wrap:anywhere}
+[data-counter-note] textarea{display:block;box-sizing:border-box;width:100%;padding:.75rem;font:inherit;line-height:1.5;background:transparent;color:inherit;border:1px solid currentColor;resize:vertical}
+[data-counter-note] summary{cursor:pointer}
 .till-out{max-height:26rem;overflow:auto;white-space:pre-wrap;word-break:break-word}
 `;
 
@@ -1195,12 +1198,12 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
       input.type = "text";
       input.placeholder = field.name;
       input.setAttribute("aria-label", `${item.name}: ${field.name}`);
-      // Carry the card-check target to its item page, visibly editable.
+      // Carry declared required inputs to their item page, visibly editable.
       // This fills a field only; the buyer still explicitly starts the quote.
       const location = doc.defaultView?.location;
-      if (field.name === "url" && location?.pathname === `/menu/${item.id}`) {
-        const target = new URLSearchParams(location.search).get("url");
-        if (target && target.length <= 2048) input.value = target;
+      if (location?.pathname === `/menu/${item.id}`) {
+        const target = new URLSearchParams(location.search).get(field.name);
+        if (target && target.length <= 4096) input.value = target;
       }
       inputs.set(field.name, input);
       row.appendChild(input);
@@ -1211,6 +1214,8 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
     button.addEventListener("click", () => {
       const missing = [];
       const params = new URLSearchParams();
+      const source = new URLSearchParams(doc.defaultView?.location?.search || "").get("source");
+      if (source && source.length <= 40) params.set("source", source);
       for (const [name, input] of inputs) {
         const value = (input.value || "").trim();
         if (!value) {
@@ -1312,6 +1317,7 @@ export function renderViewButton({ doc, output, url, item, origin }) {
 
 /** One outcome, one sentence, and the goods when there are goods. */
 export function renderResult({ result, say, output, item }) {
+  output.ownerDocument?.querySelector?.("[data-counter-note]")?.remove?.();
   if (result.outcome === "delivered") {
     const parts = [`${item.name}: delivered.`];
     if (result.certId) {
@@ -1331,6 +1337,7 @@ export function renderResult({ result, say, output, item }) {
       if (doc) renderViewButton({ doc, output, url: result.viewUrl, item });
     }
     output.hidden = false;
+    renderCounterNote({doc: output.ownerDocument, output, body: result.body});
     output.textContent = JSON.stringify(result.body, null, 2);
     return;
   }
@@ -1407,4 +1414,40 @@ if (typeof document !== "undefined") {
   } else {
     start();
   }
+}
+
+/** Optional, inert handoff. No connector, wallet or automatic sharing call. */
+export function renderCounterNote({ doc, output, body }) {
+  if (!doc || !output || !body?.counter_note || body.counter_note.optional !== true || typeof body.counter_note.text !== "string") return null;
+  const origin = doc.location?.origin || doc.defaultView?.location?.origin;
+  const safe = value => {
+    try { const url = new URL(value, origin); return origin && url.origin === origin && ["https:", "http:"].includes(url.protocol) ? url.href : null; }
+    catch { return null; }
+  };
+  const old = doc.querySelector?.("[data-counter-note]");
+  old?.remove?.();
+  const section = doc.createElement("section");
+  section.setAttribute("data-counter-note", "");
+  const title = doc.createElement("h3"); title.textContent = "A note for your human"; section.appendChild(title);
+  const note = doc.createElement("textarea"); note.readOnly = true; note.rows = 6;
+  note.setAttribute("aria-label", "Optional counter note to keep or copy");
+  note.value = body.counter_note.text.slice(0, 8000); section.appendChild(note);
+  const choice = doc.createElement("p"); choice.textContent = "Keep it, copy it into your conversation, or leave it here. Nothing is sent."; section.appendChild(choice);
+  const more = doc.createElement("details"), moreTitle = doc.createElement("summary");
+  moreTitle.textContent = "Other tasks this evidence can help with"; more.appendChild(moreTitle);
+  const paid = Array.isArray(body.follow_up?.options) ? body.follow_up.options : [];
+  const links = [...(Array.isArray(body.follow_up?.free_alternatives) ? body.follow_up.free_alternatives : []), ...(Array.isArray(body.follow_up?.options) ? body.follow_up.options : [])];
+  for (const option of links.slice(0, 14)) {
+    if (!option || typeof option !== "object") continue;
+    const url = safe(option.listing_url || option.url);
+    if (!url || typeof option.name !== "string" || !Number.isFinite(option.price_usdc) || option.price_usdc < 0) continue;
+    const line = doc.createElement("p"), link = doc.createElement("a");
+    link.href = url; link.textContent = `${option.name} — ${option.price_usdc === 0 ? "free" : `$${option.price_usdc} USDC, separate purchase`}`;
+    line.appendChild(link);
+    if (typeof option.why === "string") { const reason = doc.createElement("span"); reason.textContent = ` ${option.why}`; line.appendChild(reason); }
+    (option.price_usdc > 0 && option !== paid[0] ? more : section).appendChild(line);
+  }
+  if (more.children.length > 1) section.appendChild(more);
+  output.insertAdjacentElement ? output.insertAdjacentElement("beforebegin", section) : output.parentNode.insertBefore(section, output);
+  return section;
 }
