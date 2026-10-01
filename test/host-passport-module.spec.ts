@@ -75,6 +75,7 @@ async function seedReady(host: string): Promise<void> {
         {
           host,
           url: `https://${host}/api/x`,
+          observed_at: "2026-08-19T17:00:00.000Z",
           verdict: "ready",
           failed: [],
           advisories: [],

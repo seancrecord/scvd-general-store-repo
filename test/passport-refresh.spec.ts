@@ -12,6 +12,7 @@ vi.mock("@/services/ward-round", async (importOriginal) => {
     ...original,
     probeHost: vi.fn(async () => ({
       verdict: "ready" as const,
+      probe_method: "POST" as const,
       failed: [],
       advisories: [],
     })),
@@ -38,7 +39,7 @@ async function seedCensus(host: string, verdict: string, at: string) {
           capped: false,
           our_search_presence: true,
           hosts: [
-            { host, url: `https://${host}/api/x`, verdict, failed: [], advisories: [] },
+            { host, url: `https://${host}/api/x`, observed_at: at, verdict, failed: [], advisories: [] },
           ],
         },
       },
@@ -75,6 +76,7 @@ describe("the paid refresh folds in, newest wins, no favor", () => {
       "https://stale.example/api/x",
     );
     expect(record.observation.verdict).toBe("ready");
+    expect(record.observation.probe_method).toBe("POST");
     expect(record.signature).toMatch(/^[0-9a-f]{128}$/);
 
     const after = (await (

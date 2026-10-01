@@ -49,6 +49,7 @@ async function seedCorpusRound(
         host: h.host,
         url: `https://${h.host}/api/x`,
         verdict: h.verdict,
+        observed_at: "2026-08-19T17:00:00.000Z",
         failed: [],
         advisories: [],
       })),

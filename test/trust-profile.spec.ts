@@ -41,6 +41,7 @@ async function seedReadyHost(host: string, takenAt: string) {
         {
           host,
           url: `https://${host}/api/x`,
+          observed_at: takenAt,
           verdict: "ready",
           failed: [],
           advisories: [],

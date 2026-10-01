@@ -282,9 +282,9 @@ describe("the cite box is one shape on every row surface", () => {
     expect(out.cite?.text).toContain(`observed ${observed}`);
   });
 
-  it("keeps publication dates for snapshot citations and legacy rows without an observation date", () => {
+  it("keeps publication dates for snapshots and unknown dates for legacy host rows", () => {
     const row = round("2026-W34", 1);
-    expect(citeRow(BASE, { host: "looked.example", ...row }).json.observed_at).toBe(row.taken_at);
+    expect(citeRow(BASE, { host: "looked.example", ...row }).json.observed_at).toBeNull();
     expect(citeRow(BASE, { ...row, observed_at: "2026-08-17T12:00:00.000Z" }).json.observed_at).toBe(row.taken_at);
   });
 
