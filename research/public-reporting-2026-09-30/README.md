@@ -57,3 +57,12 @@ batch. CI remains required before a later merge.
 
 No PR, push or deployment was performed. PR3 discovery/AEO/SEO and PR4
 GitHub/package/external listing review follow in that order.
+
+## October 1 release status
+
+Source merged in [PR #947](https://github.com/seancrecord/scvd-general-store-repo/pull/947)
+after all required CI passed. The [public reporting/discovery readback](../protocol-reporting-release-2026-10-01/README.md)
+passed; earlier local-only statements above describe their dated checkpoint.
+Package publication, external corrections, authenticated admin and native-host
+qualification remain separate. The [guide cleanup](../guide-readability-2026-09-30/README.md)
+is a later local follow-up, not part of the live readback.
