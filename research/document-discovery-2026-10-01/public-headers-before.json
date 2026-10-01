@@ -1,0 +1,58 @@
+[
+  {
+    "path": "/what",
+    "method": "GET",
+    "accept": "text/html",
+    "headers": "HTTP/2 200 \ndate: Thu, 01 Oct 2026 16:02:42 GMT\ncontent-type: text/html; charset=UTF-8\ncontent-length: 160482\nstrict-transport-security: max-age=31536000; includeSubDomains\nvary: Accept, Accept-Encoding, User-Agent\ncontent-security-policy: script-src 'self'; object-src 'none'; base-uri 'none'; connect-src 'self' https://scvd.store; frame-ancestors 'self' https://chatgpt.com https://claude.ai; form-action 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'\nserver-timing: isolate;desc=warm, age;dur=443, req;dur=0\nx-house-rule: Argue properly. --7\nx-store: SCVD General Store (https://scvd.store)\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=w8SYxEZbCRNCt%2BBtdW%2FNA4N4KxQkZmSMblLcIAdpOSaO1lv7A02td26vBb4EW4doeOYCh1ieKHqORB3J%2BjEN%2F1FUNLvATrWuFNeHWKI%2FQO%2Fq%2Ber2YIIHlx30N%2FXhqgEyRU%2FCrpDHI7vt\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nserver: cloudflare\ncf-ray: a43cb179deff67e1-MIA\nalt-svc: h3=\":443\"; ma=86400",
+    "error": ""
+  },
+  {
+    "path": "/what",
+    "method": "GET",
+    "accept": "text/markdown",
+    "headers": "HTTP/2 200 \ndate: Thu, 01 Oct 2026 16:02:43 GMT\ncontent-type: text/markdown; charset=utf-8\ncontent-length: 62589\naccess-control-allow-origin: *\ncache-control: no-cache\netag: \"50cbb7c4a577acfbb961781233f64cf5\"\nstrict-transport-security: max-age=31536000; includeSubDomains\nvary: Accept, Accept-Encoding, User-Agent\naccess-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version\nserver-timing: isolate;desc=warm, age;dur=206, req;dur=0\nx-house-rule: Argue properly. --7\nx-store: SCVD General Store (https://scvd.store)\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=3AplbPa4gt%2FY0tfAI8d%2FVKUVnqsL%2B7D7QFGS8%2FXREOPCJtzEPLl0%2FMsTZsDDeKnUZNbO36QzCjiPTnMG5fTnnZqSTjgL24hiarEHc%2Frwz4kEVwGbCKOdIm%2FF9Q6jWcLztifacysKIkzp\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nserver: cloudflare\ncf-ray: a43cb17ab990befa-LHR\nalt-svc: h3=\":443\"; ma=86400",
+    "error": ""
+  },
+  {
+    "path": "/developers",
+    "method": "HEAD",
+    "accept": "text/html",
+    "headers": "HTTP/2 200 \nHTTP/2 200 \ndate: Thu, 01 Oct 2026 16:02:43 GMT\ndate: Thu, 01 Oct 2026 16:02:43 GMT\ncontent-type: text/html; charset=UTF-8\ncontent-type: text/html; charset=UTF-8\nlink: <https://scvd.store/developers>; rel=\"canonical\", <https://scvd.store/.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\"\nlink: <https://scvd.store/developers>; rel=\"canonical\", <https://scvd.store/.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\"\nstrict-transport-security: max-age=31536000; includeSubDomains\nstrict-transport-security: max-age=31536000; includeSubDomains\nvary: Accept, Accept-Encoding, User-Agent\nvary: Accept, Accept-Encoding, User-Agent\ncontent-security-policy: script-src 'self'; object-src 'none'; base-uri 'none'; connect-src 'self' https://scvd.store; frame-ancestors 'self' https://chatgpt.com https://claude.ai; form-action 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'\ncontent-security-policy: script-src 'self'; object-src 'none'; base-uri 'none'; connect-src 'self' https://scvd.store; frame-ancestors 'self' https://chatgpt.com https://claude.ai; form-action 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'\nserver-timing: isolate;desc=cold, age;dur=0, req;dur=0\nserver-timing: isolate;desc=cold, age;dur=0, req;dur=0\nx-house-rule: Argue properly. --7\nx-house-rule: Argue properly. --7\nx-store: SCVD General Store (https://scvd.store)\nx-store: SCVD General Store (https://scvd.store)\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=WGr0m0Iruj10lyRE1p83H8oRBFVe9T%2BOJjMLScAC824fmMTY0tXjUGeKX5qJv16algaFXRkAWVfxchgq4gASZg1j6X7mslcH99rLhA4MrKEMwh1fb2pYTRr6sAz8G6EvD8gDAaLfUQw5\"}]}\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=WGr0m0Iruj10lyRE1p83H8oRBFVe9T%2BOJjMLScAC824fmMTY0tXjUGeKX5qJv16algaFXRkAWVfxchgq4gASZg1j6X7mslcH99rLhA4MrKEMwh1fb2pYTRr6sAz8G6EvD8gDAaLfUQw5\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nserver: cloudflare\nserver: cloudflare\ncf-ray: a43cb1797ae1c952-IAD\ncf-ray: a43cb1797ae1c952-IAD\nalt-svc: h3=\":443\"; ma=86400\nalt-svc: h3=\":443\"; ma=86400",
+    "error": ""
+  },
+  {
+    "path": "/.well-known/api-catalog",
+    "method": "HEAD",
+    "accept": "application/linkset+json",
+    "headers": "HTTP/2 200 \nHTTP/2 200 \ndate: Thu, 01 Oct 2026 16:02:43 GMT\ndate: Thu, 01 Oct 2026 16:02:43 GMT\ncontent-type: application/linkset+json; profile=\"https://www.rfc-editor.org/info/rfc9727\"; charset=utf-8\ncontent-type: application/linkset+json; profile=\"https://www.rfc-editor.org/info/rfc9727\"; charset=utf-8\naccess-control-allow-origin: *\naccess-control-allow-origin: *\nstrict-transport-security: max-age=31536000; includeSubDomains\nstrict-transport-security: max-age=31536000; includeSubDomains\naccess-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version\naccess-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version\nserver-timing: isolate;desc=warm, age;dur=318, req;dur=0\nserver-timing: isolate;desc=warm, age;dur=318, req;dur=0\nx-house-rule: Argue properly. --7\nx-house-rule: Argue properly. --7\nx-store: SCVD General Store (https://scvd.store)\nx-store: SCVD General Store (https://scvd.store)\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=5uR8SAm5U1PMsGX2iEuYZO8mSJPLJ%2BLrtf%2FGEwUfbbGQbi%2FIDA06utGt%2Bwu%2Fs%2Bam%2Bk6L08qmkcZLzYoplOGgkq%2FauH51bVm1PHxJkC0aWvkoBBgZ8wfNRcj6tKzY1d%2Fhe3s2oA%2B5Hj%2Fk\"}]}\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=5uR8SAm5U1PMsGX2iEuYZO8mSJPLJ%2BLrtf%2FGEwUfbbGQbi%2FIDA06utGt%2Bwu%2Fs%2Bam%2Bk6L08qmkcZLzYoplOGgkq%2FauH51bVm1PHxJkC0aWvkoBBgZ8wfNRcj6tKzY1d%2Fhe3s2oA%2B5Hj%2Fk\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nserver: cloudflare\nserver: cloudflare\ncf-ray: a43cb17b4db5b06b-ATL\ncf-ray: a43cb17b4db5b06b-ATL\nalt-svc: h3=\":443\"; ma=86400\nalt-svc: h3=\":443\"; ma=86400",
+    "error": ""
+  },
+  {
+    "path": "/",
+    "method": "GET",
+    "accept": "application/json",
+    "headers": "HTTP/2 200 \ndate: Thu, 01 Oct 2026 16:02:43 GMT\ncontent-type: application/json\ncontent-length: 89393\naccess-control-allow-origin: *\ncache-control: no-cache\netag: \"06ecbdea3beef258d4f545816dda5586\"\nlink: <https://scvd.store/>; rel=\"canonical\"\nstrict-transport-security: max-age=31536000; includeSubDomains\nvary: Accept, Accept-Encoding, User-Agent\naccess-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version\nserver-timing: isolate;desc=cold, age;dur=0, req;dur=0\nx-house-rule: Argue properly. --7\nx-store: SCVD General Store (https://scvd.store)\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=%2B4b0CLxAt%2FpBSZKz5e7IXFx0pUVGmOX%2BkF1D3HVMihh7w4uzz2krEBNXf3jOCRRSByQ78S0GE47B3eTGQXN5fDlGmt3lTWsO4WYCLXE0Av3XXH9GlwzHq%2BwCEaTX8Bz7OwaNHC0fcoQd\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nserver: cloudflare\ncf-ray: a43cb17be91badd9-IAD\nalt-svc: h3=\":443\"; ma=86400",
+    "error": ""
+  },
+  {
+    "path": "/",
+    "method": "GET",
+    "accept": "text/markdown",
+    "headers": "HTTP/2 200 \ndate: Thu, 01 Oct 2026 16:02:43 GMT\ncontent-type: text/markdown; charset=utf-8\ncontent-length: 22012\naccess-control-allow-origin: *\ncache-control: no-cache\netag: \"eaba806abf000607d6a9221edc41079b\"\nlink: <https://scvd.store/>; rel=\"canonical\"\nstrict-transport-security: max-age=31536000; includeSubDomains\nvary: Accept, Accept-Encoding, User-Agent\naccess-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version\nserver-timing: isolate;desc=cold, age;dur=0, req;dur=0\nx-house-rule: Argue properly. --7\nx-store: SCVD General Store (https://scvd.store)\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=hfYFxApPzHLgV6ThVran1DJalBd7Xc5mGIikfCX%2B%2BJG7iqWFOCinJPmNclCOGiWjVnBVPTKdWmXY%2BFQte4p9sRLfYhEdZ%2FNmYlcUytPo5izeji%2BnltpH%2BhfhYfoRDe9D%2B1Psd%2FI1Khih\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nserver: cloudflare\ncf-ray: a43cb17c4ef921db-IAD\nalt-svc: h3=\":443\"; ma=86400",
+    "error": ""
+  },
+  {
+    "path": "/.well-known/agent-card.json",
+    "method": "GET",
+    "accept": "application/json",
+    "headers": "HTTP/2 200 \ndate: Thu, 01 Oct 2026 16:02:43 GMT\ncontent-type: application/json\ncontent-length: 3818\naccess-control-allow-origin: *\ncache-control: no-cache\netag: \"da19c16c4fa16323b88d485ed00072ac\"\nstrict-transport-security: max-age=31536000; includeSubDomains\nvary: A2A-Version, Accept, Accept-Encoding, User-Agent\na2a-version: 0.3\naccess-control-expose-headers: Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version, A2A-Version\nserver-timing: isolate;desc=warm, age;dur=443, req;dur=0\nx-house-rule: Argue properly. --7\nx-store: SCVD General Store (https://scvd.store)\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=CGTtPZL61I8v5MODfA0Km5UnGoiOeJT00Vleiq6JHVRbA7Lhh4Xj55rS0kqsqbmhV%2FxMG4gAP6H46ejgV635Z4YYLYlFSgxz7Hgel44LPgT%2Bsudxyt%2FzMGUruqGXt%2FEiqDpfPmryLawb\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nserver: cloudflare\ncf-ray: a43cb17ebe60650a-MIA\nalt-svc: h3=\":443\"; ma=86400",
+    "error": "",
+    "card": {
+      "protocolVersion": "0.3.0",
+      "supportedInterfaces": null,
+      "supportedTransports": null,
+      "url": "https://scvd.store/a2a",
+      "preferredTransport": "JSONRPC"
+    }
+  }
+]

@@ -1,4 +1,5 @@
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
+import { documentDiscovery } from "@/lib/document-discovery";
 import { whereToLookNext } from "@/lib/store-links";
 import { signalStore } from "@/services/signal-store";
 import { watchSweepGaps, type WatchSweepReport } from "@/services/watch-sweep";
@@ -184,6 +185,8 @@ const app = new Hono<HonoEnv>();
 for (const middleware of edgeMiddleware) {
   app.use("*", middleware);
 }
+// Discovery does not enter the paid-door chain shared with the doors Worker.
+app.use("/:document{(?!api/buy(?:/|$)).*}", documentDiscovery);
 
 app.route("/", storefrontRoutes);
 app.route("/", developerRoutes);

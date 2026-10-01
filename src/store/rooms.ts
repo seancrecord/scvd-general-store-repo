@@ -26,6 +26,8 @@ export interface Room {
   path: string;
   /** The page's own title. Not a description — the pages write those. */
   name: string;
+  /** JSON where Markdown is unavailable (including an empty archive). */
+  machineFormat?: "json";
   /**
    * False when the keeper has held a room OFF the front of the store.
    * It still gets the sitemap, llms.txt, the x402 document and the
@@ -142,6 +144,7 @@ export const ROOMS: readonly Room[] = [
   {
     path: "/corpus/month",
     name: "The state of x402, by month",
+    machineFormat: "json",
     deeper: ["conformance_watch"],
   },
   /**
@@ -221,7 +224,7 @@ export const ROOMS: readonly Room[] = [
    */
   // Retired (the keeper, 2026-09-03: "the gazette is retired so that
   // shouldnt be in there"). The founding edition stays a signed document.
-  { path: "/gazette", name: "The Gazette", on_storefront: false, in_sitemap: false },
+  { path: "/gazette", name: "The Gazette", machineFormat: "json", on_storefront: false, in_sitemap: false },
   { path: "/almanac", name: "The Keeper's Almanac" },
   /**
    * Open for Business (2026-09-18): the weekly issue for sellers, on
@@ -236,10 +239,10 @@ export const ROOMS: readonly Room[] = [
   { path: "/design", name: "Paywall", deeper: ["pack", "window_pick"] },
   // "idc either way" (2026-09-03): off, because a page nobody asked to
   // index is one less thin page in the report.
-  { path: "/zodiac", name: "The Systems Almanac", in_sitemap: false },
+  { path: "/zodiac", name: "The Systems Almanac", machineFormat: "json", in_sitemap: false },
   // "not really for humans" (2026-09-03): the porch is where agents
   // sit and ring; they find it through the guide, not a search box.
-  { path: "/porch", name: "The Porch", in_sitemap: false },
+  { path: "/porch", name: "The Porch", machineFormat: "json", in_sitemap: false },
   { path: "/neighbours", name: "What we bought from the neighbours" },
   { path: "/stack", name: "What this store rests on" },
   { path: "/corrections", name: "Corrections" },
