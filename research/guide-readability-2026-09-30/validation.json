@@ -41,5 +41,13 @@
     "Guide cleanup is local; full CI and publication belong to its next release.",
     "Public baseline predates PR #947; fixture before/after uses its release candidate and identical production-shape configuration.",
     "No buyer, wallet, browser or AEO qualification."
-  ]
+  ],
+  "october_1_integration": {
+    "base": "9028b994",
+    "focused_tests_passed": 123,
+    "files": 7,
+    "typecheck": "passed",
+    "build_check": "passed",
+    "full_guide_pins": "unchanged from integrated main; passed"
+  }
 }

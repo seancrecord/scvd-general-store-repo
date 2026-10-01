@@ -1,0 +1,678 @@
+{
+  "at": "2026-09-30T20:15:41.640Z",
+  "url": "https://scvd.store/store-month.json",
+  "status": 200,
+  "sha256": "1f3978dd1047d6c0e3d1b36ce50a5dbc98caf69db7245dd6da916536dcdba400",
+  "body": {
+    "chain": "store_month",
+    "what_this_is": "One closed month at this store, frozen and signed: what was offered, what was presented, what settled and what declined, which rails and which items took the money, and who read the pages about a host — linked to the month before it and stamped into Bitcoin time.",
+    "price": "Nothing here costs money and nothing here is for sale: it is the evidence we owe for asking anyone to cite our other readings, and a record the seller pays to publish about itself is worth less rather than more.",
+    "free_first": "Every sealed month is free to read as a page or as JSON with its signature and its digest beside it, and the chain verifies on demand so a reader can catch us editing it without having to ask us whether we did.",
+    "how_to_call": "GET https://scvd.store/store-month.json for the chain, https://scvd.store/store-month/{YYYY-MM}.json for one sealed month, https://scvd.store/store-month/verify.json for the verdict. No key, no payment, no rate limit beyond the ordinary one.",
+    "errors": {
+      "not_sealed": "the month asked for has not been sealed — the response names the months that have, because a bare 404 answers a question nobody asked"
+    },
+    "security": {
+      "what_this_does_in_your_name": "nothing; every door here is a read",
+      "what_it_stores_about_you": "nothing beyond the ordinary request counters every page on this store keeps",
+      "the_rest": "https://scvd.store/mcp.md"
+    },
+    "entries": [
+      {
+        "document": {
+          "version": 1,
+          "sequence": 1,
+          "taken_at": "2026-09-27T11:01:43.555Z",
+          "previous_digest": null,
+          "source": "store_figures",
+          "month": "2026-07",
+          "issuer": "did:web:scvd.store",
+          "figures": {
+            "window": "2026-07, closed month, read at 2026-09-27T11:02:03.071Z",
+            "windows": {
+              "month": "2026-07",
+              "month_to_date": false,
+              "read_at": "2026-09-27T11:02:03.071Z"
+            },
+            "instrument": "the pulse's monthly window (services/pulse.ts), the books' rail split and per-item till (services/stats.ts) and the signal store's per-subject rows (services/buyer-signals.ts); every figure's population is on /pulse, /stats and /observatory under published_counts",
+            "organic_challenges": 8984,
+            "organic_payments_presented": 16,
+            "organic_settled": 1,
+            "organic_declines": 15,
+            "conversion_rate": 0.000111,
+            "by_rail": {
+              "base": 117,
+              "polygon": 1,
+              "arbitrum": 1,
+              "solana": 4,
+              "rail_not_recorded": 0
+            },
+            "by_item": {
+              "almanac:notes-from-a-tuesday-in-oak-city": {
+                "organic": 1,
+                "house": 0
+              },
+              "a_secret": {
+                "organic": 0,
+                "house": 2
+              },
+              "app_gutcheck": {
+                "organic": 0,
+                "house": 1
+              },
+              "certificate_of_patronage": {
+                "organic": 0,
+                "house": 5
+              },
+              "coffees_for_closers": {
+                "organic": 1,
+                "house": 7
+              },
+              "context_anchor": {
+                "organic": 2,
+                "house": 11
+              },
+              "daily_fortune": {
+                "organic": 12,
+                "house": 15
+              },
+              "dibs": {
+                "organic": 3,
+                "house": 5
+              },
+              "grudge": {
+                "organic": 0,
+                "house": 2
+              },
+              "hello": {
+                "organic": 6,
+                "house": 11
+              },
+              "human_witness": {
+                "organic": 0,
+                "house": 1
+              },
+              "jar_of_tuesday": {
+                "organic": 0,
+                "house": 1
+              },
+              "luckies": {
+                "organic": 10,
+                "house": 7
+              },
+              "nomenclature": {
+                "organic": 0,
+                "house": 3
+              },
+              "phantom_check": {
+                "organic": 0,
+                "house": 3
+              },
+              "phone_call": {
+                "organic": 0,
+                "house": 1
+              },
+              "portrait": {
+                "organic": 0,
+                "house": 1
+              },
+              "quick_judgment": {
+                "organic": 0,
+                "house": 2
+              },
+              "recurring_patronage": {
+                "organic": 0,
+                "house": 4
+              },
+              "settlement_attestation": {
+                "organic": 3,
+                "house": 19
+              },
+              "small_blessing": {
+                "organic": 83,
+                "house": 87
+              },
+              "the_collab": {
+                "organic": 0,
+                "house": 3
+              },
+              "the_confession": {
+                "organic": 0,
+                "house": 11
+              },
+              "the_drawer": {
+                "organic": 0,
+                "house": 4
+              },
+              "graffiti_on_a_train": {
+                "organic": 1,
+                "house": 5
+              },
+              "spot_check": {
+                "organic": 20,
+                "house": 16
+              },
+              "attestation_bundle": {
+                "organic": 0,
+                "house": 15
+              },
+              "bitcoin_anchor": {
+                "organic": 0,
+                "house": 5
+              },
+              "conformance_watch": {
+                "organic": 0,
+                "house": 7
+              },
+              "onpage_audit": {
+                "organic": 0,
+                "house": 3
+              },
+              "service_audit": {
+                "organic": 0,
+                "house": 4
+              },
+              "settlement_reconciliation": {
+                "organic": 0,
+                "house": 8
+              },
+              "signature_agent_card": {
+                "organic": 0,
+                "house": 3
+              },
+              "standing_watch": {
+                "organic": 0,
+                "house": 8
+              },
+              "the_mandate": {
+                "organic": 0,
+                "house": 4
+              },
+              "the_statement": {
+                "organic": 0,
+                "house": 5
+              },
+              "aura_walk": {
+                "organic": 0,
+                "house": 2
+              },
+              "good_buyer": {
+                "organic": 0,
+                "house": 8
+              },
+              "launch_check": {
+                "organic": 0,
+                "house": 6
+              },
+              "opening_day": {
+                "organic": 0,
+                "house": 2
+              },
+              "operator_statement": {
+                "organic": 0,
+                "house": 3
+              },
+              "pack": {
+                "organic": 0,
+                "house": 4
+              },
+              "passport_refresh": {
+                "organic": 0,
+                "house": 8
+              },
+              "provenance_check": {
+                "organic": 0,
+                "house": 4
+              },
+              "research_comparison": {
+                "organic": 0,
+                "house": 1
+              },
+              "the_case_file": {
+                "organic": 0,
+                "house": 3
+              },
+              "trust_profile": {
+                "organic": 0,
+                "house": 3
+              },
+              "window_pick": {
+                "organic": 0,
+                "house": 2
+              }
+            },
+            "host_pages": {
+              "subjects": 0,
+              "by_formats": {
+                "one": 0,
+                "two": 0,
+                "three": 0
+              },
+              "repeat": {
+                "at_least_2": 0,
+                "at_least_5": 0,
+                "at_least_10": 0
+              },
+              "reads": 0,
+              "overflow": 0
+            },
+            "exclusions": [
+              "house traffic, flagged at the till",
+              "infrastructure and crawlers by name",
+              "family settles reclassified after the fact"
+            ],
+            "note": "Counts, not visitors; floors, not censuses; the rail split and the per-item till are all time and the rest is this month. No host is named and no wallet is here."
+          }
+        },
+        "digest": "9b5ad62aa635d08749d2583034d52affd1d77ef52c248113c2b329df98b9a566",
+        "signature": "dad0b261e645002dd68400c704b842d991586f3cf2e20d38144efe79403ca675f12ff2575a4f125628441cf1de59f4b6c1f25454297d1dbd733a991f6e709803",
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "ots": {
+          "status": "pending",
+          "submitted_at": "2026-09-27T11:01:43.555Z",
+          "proof_base64": "8AhpntjkPTywaQjwEGa6ZDaUGZtMbEoCiyP7ifAI8SDoFzy/njDqvnfQtgEiCmDvc8DM5M2oqt8HqgSgTjX2lQjwIObzYLnI0Djx3/FyCK239UGvVGAirkQa+Y61u5+iQGJOCPEEarj3rPAInxgdbbTHDGUAg9/jDS75DI4uLWh0dHBzOi8vYWxpY2UuYnRjLmNhbGVuZGFyLm9wZW50aW1lc3RhbXBzLm9yZw==",
+          "calendar": "https://a.pool.opentimestamps.org"
+        },
+        "signed_payload": "{\"version\":1,\"sequence\":1,\"taken_at\":\"2026-09-27T11:01:43.555Z\",\"previous_digest\":null,\"source\":\"store_figures\",\"month\":\"2026-07\",\"issuer\":\"did:web:scvd.store\",\"figures\":{\"window\":\"2026-07, closed month, read at 2026-09-27T11:02:03.071Z\",\"windows\":{\"month\":\"2026-07\",\"month_to_date\":false,\"read_at\":\"2026-09-27T11:02:03.071Z\"},\"instrument\":\"the pulse's monthly window (services/pulse.ts), the books' rail split and per-item till (services/stats.ts) and the signal store's per-subject rows (services/buyer-signals.ts); every figure's population is on /pulse, /stats and /observatory under published_counts\",\"organic_challenges\":8984,\"organic_payments_presented\":16,\"organic_settled\":1,\"organic_declines\":15,\"conversion_rate\":0.000111,\"by_rail\":{\"base\":117,\"polygon\":1,\"arbitrum\":1,\"solana\":4,\"rail_not_recorded\":0},\"by_item\":{\"almanac:notes-from-a-tuesday-in-oak-city\":{\"organic\":1,\"house\":0},\"a_secret\":{\"organic\":0,\"house\":2},\"app_gutcheck\":{\"organic\":0,\"house\":1},\"certificate_of_patronage\":{\"organic\":0,\"house\":5},\"coffees_for_closers\":{\"organic\":1,\"house\":7},\"context_anchor\":{\"organic\":2,\"house\":11},\"daily_fortune\":{\"organic\":12,\"house\":15},\"dibs\":{\"organic\":3,\"house\":5},\"grudge\":{\"organic\":0,\"house\":2},\"hello\":{\"organic\":6,\"house\":11},\"human_witness\":{\"organic\":0,\"house\":1},\"jar_of_tuesday\":{\"organic\":0,\"house\":1},\"luckies\":{\"organic\":10,\"house\":7},\"nomenclature\":{\"organic\":0,\"house\":3},\"phantom_check\":{\"organic\":0,\"house\":3},\"phone_call\":{\"organic\":0,\"house\":1},\"portrait\":{\"organic\":0,\"house\":1},\"quick_judgment\":{\"organic\":0,\"house\":2},\"recurring_patronage\":{\"organic\":0,\"house\":4},\"settlement_attestation\":{\"organic\":3,\"house\":19},\"small_blessing\":{\"organic\":83,\"house\":87},\"the_collab\":{\"organic\":0,\"house\":3},\"the_confession\":{\"organic\":0,\"house\":11},\"the_drawer\":{\"organic\":0,\"house\":4},\"graffiti_on_a_train\":{\"organic\":1,\"house\":5},\"spot_check\":{\"organic\":20,\"house\":16},\"attestation_bundle\":{\"organic\":0,\"house\":15},\"bitcoin_anchor\":{\"organic\":0,\"house\":5},\"conformance_watch\":{\"organic\":0,\"house\":7},\"onpage_audit\":{\"organic\":0,\"house\":3},\"service_audit\":{\"organic\":0,\"house\":4},\"settlement_reconciliation\":{\"organic\":0,\"house\":8},\"signature_agent_card\":{\"organic\":0,\"house\":3},\"standing_watch\":{\"organic\":0,\"house\":8},\"the_mandate\":{\"organic\":0,\"house\":4},\"the_statement\":{\"organic\":0,\"house\":5},\"aura_walk\":{\"organic\":0,\"house\":2},\"good_buyer\":{\"organic\":0,\"house\":8},\"launch_check\":{\"organic\":0,\"house\":6},\"opening_day\":{\"organic\":0,\"house\":2},\"operator_statement\":{\"organic\":0,\"house\":3},\"pack\":{\"organic\":0,\"house\":4},\"passport_refresh\":{\"organic\":0,\"house\":8},\"provenance_check\":{\"organic\":0,\"house\":4},\"research_comparison\":{\"organic\":0,\"house\":1},\"the_case_file\":{\"organic\":0,\"house\":3},\"trust_profile\":{\"organic\":0,\"house\":3},\"window_pick\":{\"organic\":0,\"house\":2}},\"host_pages\":{\"subjects\":0,\"by_formats\":{\"one\":0,\"two\":0,\"three\":0},\"repeat\":{\"at_least_2\":0,\"at_least_5\":0,\"at_least_10\":0},\"reads\":0,\"overflow\":0},\"exclusions\":[\"house traffic, flagged at the till\",\"infrastructure and crawlers by name\",\"family settles reclassified after the fact\"],\"note\":\"Counts, not visitors; floors, not censuses; the rail split and the per-item till are all time and the rest is this month. No host is named and no wallet is here.\"}}",
+        "signature_covers": "the signed_payload string exactly, UTF-8, ed25519 over public_key; digest is sha256 of the same bytes"
+      },
+      {
+        "document": {
+          "version": 1,
+          "sequence": 2,
+          "taken_at": "2026-09-27T11:02:05.345Z",
+          "previous_digest": "9b5ad62aa635d08749d2583034d52affd1d77ef52c248113c2b329df98b9a566",
+          "source": "store_figures",
+          "month": "2026-08",
+          "issuer": "did:web:scvd.store",
+          "figures": {
+            "window": "2026-08, closed month, read at 2026-09-27T11:02:24.046Z",
+            "windows": {
+              "month": "2026-08",
+              "month_to_date": false,
+              "read_at": "2026-09-27T11:02:24.046Z"
+            },
+            "instrument": "the pulse's monthly window (services/pulse.ts), the books' rail split and per-item till (services/stats.ts) and the signal store's per-subject rows (services/buyer-signals.ts); every figure's population is on /pulse, /stats and /observatory under published_counts",
+            "organic_challenges": 32596,
+            "organic_payments_presented": 64,
+            "organic_settled": 23,
+            "organic_declines": 41,
+            "conversion_rate": 0.000706,
+            "by_rail": {
+              "base": 117,
+              "polygon": 1,
+              "arbitrum": 1,
+              "solana": 4,
+              "rail_not_recorded": 0
+            },
+            "by_item": {
+              "almanac:notes-from-a-tuesday-in-oak-city": {
+                "organic": 1,
+                "house": 0
+              },
+              "a_secret": {
+                "organic": 0,
+                "house": 2
+              },
+              "app_gutcheck": {
+                "organic": 0,
+                "house": 1
+              },
+              "certificate_of_patronage": {
+                "organic": 0,
+                "house": 5
+              },
+              "coffees_for_closers": {
+                "organic": 1,
+                "house": 7
+              },
+              "context_anchor": {
+                "organic": 2,
+                "house": 11
+              },
+              "daily_fortune": {
+                "organic": 12,
+                "house": 15
+              },
+              "dibs": {
+                "organic": 3,
+                "house": 5
+              },
+              "grudge": {
+                "organic": 0,
+                "house": 2
+              },
+              "hello": {
+                "organic": 6,
+                "house": 11
+              },
+              "human_witness": {
+                "organic": 0,
+                "house": 1
+              },
+              "jar_of_tuesday": {
+                "organic": 0,
+                "house": 1
+              },
+              "luckies": {
+                "organic": 10,
+                "house": 7
+              },
+              "nomenclature": {
+                "organic": 0,
+                "house": 3
+              },
+              "phantom_check": {
+                "organic": 0,
+                "house": 3
+              },
+              "phone_call": {
+                "organic": 0,
+                "house": 1
+              },
+              "portrait": {
+                "organic": 0,
+                "house": 1
+              },
+              "quick_judgment": {
+                "organic": 0,
+                "house": 2
+              },
+              "recurring_patronage": {
+                "organic": 0,
+                "house": 4
+              },
+              "settlement_attestation": {
+                "organic": 3,
+                "house": 19
+              },
+              "small_blessing": {
+                "organic": 83,
+                "house": 87
+              },
+              "the_collab": {
+                "organic": 0,
+                "house": 3
+              },
+              "the_confession": {
+                "organic": 0,
+                "house": 11
+              },
+              "the_drawer": {
+                "organic": 0,
+                "house": 4
+              },
+              "graffiti_on_a_train": {
+                "organic": 1,
+                "house": 5
+              },
+              "spot_check": {
+                "organic": 20,
+                "house": 16
+              },
+              "attestation_bundle": {
+                "organic": 0,
+                "house": 15
+              },
+              "bitcoin_anchor": {
+                "organic": 0,
+                "house": 5
+              },
+              "conformance_watch": {
+                "organic": 0,
+                "house": 7
+              },
+              "onpage_audit": {
+                "organic": 0,
+                "house": 3
+              },
+              "service_audit": {
+                "organic": 0,
+                "house": 4
+              },
+              "settlement_reconciliation": {
+                "organic": 0,
+                "house": 8
+              },
+              "signature_agent_card": {
+                "organic": 0,
+                "house": 3
+              },
+              "standing_watch": {
+                "organic": 0,
+                "house": 8
+              },
+              "the_mandate": {
+                "organic": 0,
+                "house": 4
+              },
+              "the_statement": {
+                "organic": 0,
+                "house": 5
+              },
+              "aura_walk": {
+                "organic": 0,
+                "house": 2
+              },
+              "good_buyer": {
+                "organic": 0,
+                "house": 8
+              },
+              "launch_check": {
+                "organic": 0,
+                "house": 6
+              },
+              "opening_day": {
+                "organic": 0,
+                "house": 2
+              },
+              "operator_statement": {
+                "organic": 0,
+                "house": 3
+              },
+              "pack": {
+                "organic": 0,
+                "house": 4
+              },
+              "passport_refresh": {
+                "organic": 0,
+                "house": 8
+              },
+              "provenance_check": {
+                "organic": 0,
+                "house": 4
+              },
+              "research_comparison": {
+                "organic": 0,
+                "house": 1
+              },
+              "the_case_file": {
+                "organic": 0,
+                "house": 3
+              },
+              "trust_profile": {
+                "organic": 0,
+                "house": 3
+              },
+              "window_pick": {
+                "organic": 0,
+                "house": 2
+              }
+            },
+            "host_pages": {
+              "subjects": 0,
+              "by_formats": {
+                "one": 0,
+                "two": 0,
+                "three": 0
+              },
+              "repeat": {
+                "at_least_2": 0,
+                "at_least_5": 0,
+                "at_least_10": 0
+              },
+              "reads": 0,
+              "overflow": 0
+            },
+            "exclusions": [
+              "house traffic, flagged at the till",
+              "infrastructure and crawlers by name",
+              "family settles reclassified after the fact"
+            ],
+            "note": "Counts, not visitors; floors, not censuses; the rail split and the per-item till are all time and the rest is this month. No host is named and no wallet is here."
+          }
+        },
+        "digest": "5bcf430699712d0ddb28217c8fbd1872bb9ba0c9a80470eb9c60bddf816e85cc",
+        "signature": "fcdfd3d565826e8090d0764b091087cb27cc0a639e41958fe7cacd9ea6a98ff96060cb3b799a079c86afc0318f0d15396146fa8c9e841b8e42f023fe6add980d",
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "ots": {
+          "status": "pending",
+          "submitted_at": "2026-09-27T11:02:05.345Z",
+          "proof_base64": "8Ai4SuCj5jJW8QjxIFi6GohOkV5c/+r1Maf5S2Wz7sDf19ImuwwutO41bS0QCPAQLBsjz8fVDMaEi0ZuZQ+RzgjwID0qG/o0u6gAWDkpLfkAAmhMOvwnSvdu0/87c+Kh8+9jCPAg6J5jl/Uua00FziP4neYHoCi+E33gyq7XMnArhMnv3pcI8QRquPfB8Aj2mVTL8wPwzgCD3+MNLvkMji4taHR0cHM6Ly9hbGljZS5idGMuY2FsZW5kYXIub3BlbnRpbWVzdGFtcHMub3Jn",
+          "calendar": "https://a.pool.opentimestamps.org"
+        },
+        "signed_payload": "{\"version\":1,\"sequence\":2,\"taken_at\":\"2026-09-27T11:02:05.345Z\",\"previous_digest\":\"9b5ad62aa635d08749d2583034d52affd1d77ef52c248113c2b329df98b9a566\",\"source\":\"store_figures\",\"month\":\"2026-08\",\"issuer\":\"did:web:scvd.store\",\"figures\":{\"window\":\"2026-08, closed month, read at 2026-09-27T11:02:24.046Z\",\"windows\":{\"month\":\"2026-08\",\"month_to_date\":false,\"read_at\":\"2026-09-27T11:02:24.046Z\"},\"instrument\":\"the pulse's monthly window (services/pulse.ts), the books' rail split and per-item till (services/stats.ts) and the signal store's per-subject rows (services/buyer-signals.ts); every figure's population is on /pulse, /stats and /observatory under published_counts\",\"organic_challenges\":32596,\"organic_payments_presented\":64,\"organic_settled\":23,\"organic_declines\":41,\"conversion_rate\":0.000706,\"by_rail\":{\"base\":117,\"polygon\":1,\"arbitrum\":1,\"solana\":4,\"rail_not_recorded\":0},\"by_item\":{\"almanac:notes-from-a-tuesday-in-oak-city\":{\"organic\":1,\"house\":0},\"a_secret\":{\"organic\":0,\"house\":2},\"app_gutcheck\":{\"organic\":0,\"house\":1},\"certificate_of_patronage\":{\"organic\":0,\"house\":5},\"coffees_for_closers\":{\"organic\":1,\"house\":7},\"context_anchor\":{\"organic\":2,\"house\":11},\"daily_fortune\":{\"organic\":12,\"house\":15},\"dibs\":{\"organic\":3,\"house\":5},\"grudge\":{\"organic\":0,\"house\":2},\"hello\":{\"organic\":6,\"house\":11},\"human_witness\":{\"organic\":0,\"house\":1},\"jar_of_tuesday\":{\"organic\":0,\"house\":1},\"luckies\":{\"organic\":10,\"house\":7},\"nomenclature\":{\"organic\":0,\"house\":3},\"phantom_check\":{\"organic\":0,\"house\":3},\"phone_call\":{\"organic\":0,\"house\":1},\"portrait\":{\"organic\":0,\"house\":1},\"quick_judgment\":{\"organic\":0,\"house\":2},\"recurring_patronage\":{\"organic\":0,\"house\":4},\"settlement_attestation\":{\"organic\":3,\"house\":19},\"small_blessing\":{\"organic\":83,\"house\":87},\"the_collab\":{\"organic\":0,\"house\":3},\"the_confession\":{\"organic\":0,\"house\":11},\"the_drawer\":{\"organic\":0,\"house\":4},\"graffiti_on_a_train\":{\"organic\":1,\"house\":5},\"spot_check\":{\"organic\":20,\"house\":16},\"attestation_bundle\":{\"organic\":0,\"house\":15},\"bitcoin_anchor\":{\"organic\":0,\"house\":5},\"conformance_watch\":{\"organic\":0,\"house\":7},\"onpage_audit\":{\"organic\":0,\"house\":3},\"service_audit\":{\"organic\":0,\"house\":4},\"settlement_reconciliation\":{\"organic\":0,\"house\":8},\"signature_agent_card\":{\"organic\":0,\"house\":3},\"standing_watch\":{\"organic\":0,\"house\":8},\"the_mandate\":{\"organic\":0,\"house\":4},\"the_statement\":{\"organic\":0,\"house\":5},\"aura_walk\":{\"organic\":0,\"house\":2},\"good_buyer\":{\"organic\":0,\"house\":8},\"launch_check\":{\"organic\":0,\"house\":6},\"opening_day\":{\"organic\":0,\"house\":2},\"operator_statement\":{\"organic\":0,\"house\":3},\"pack\":{\"organic\":0,\"house\":4},\"passport_refresh\":{\"organic\":0,\"house\":8},\"provenance_check\":{\"organic\":0,\"house\":4},\"research_comparison\":{\"organic\":0,\"house\":1},\"the_case_file\":{\"organic\":0,\"house\":3},\"trust_profile\":{\"organic\":0,\"house\":3},\"window_pick\":{\"organic\":0,\"house\":2}},\"host_pages\":{\"subjects\":0,\"by_formats\":{\"one\":0,\"two\":0,\"three\":0},\"repeat\":{\"at_least_2\":0,\"at_least_5\":0,\"at_least_10\":0},\"reads\":0,\"overflow\":0},\"exclusions\":[\"house traffic, flagged at the till\",\"infrastructure and crawlers by name\",\"family settles reclassified after the fact\"],\"note\":\"Counts, not visitors; floors, not censuses; the rail split and the per-item till are all time and the rest is this month. No host is named and no wallet is here.\"}}",
+        "signature_covers": "the signed_payload string exactly, UTF-8, ed25519 over public_key; digest is sha256 of the same bytes"
+      }
+    ],
+    "scan_truncated": false,
+    "verify": "https://scvd.store/store-month/verify.json",
+    "published_counts": {
+      "rule": "Every published count ships with its instrument, its population, its window, its exclusions, and any cap or floor that bounded it, on every rendering. The rows below are that, one per number this route serves; a number without a row cannot reach this route (test/published-counts.spec.ts).",
+      "rows": [
+        {
+          "path": "entries[].document.version",
+          "kind": "constant",
+          "unit": "the chain schema's version",
+          "instrument": "services/store-month.ts",
+          "population": "not a count — the document shape a reader pins against",
+          "window": "the entry's own seal",
+          "exclusions": []
+        },
+        {
+          "path": "entries[].document.sequence",
+          "kind": "constant",
+          "unit": "position in the chain, 1-based and contiguous",
+          "instrument": "services/store-month.ts",
+          "population": "not a count — a position in the chain; a gap here is a chain fault rather than a quiet month",
+          "window": "the entry's own seal",
+          "exclusions": []
+        },
+        {
+          "path": "entries[].document.figures.organic_challenges",
+          "kind": "count",
+          "unit": "402s offered to organic traffic",
+          "instrument": "the pulse's monthly window (services/pulse.ts), frozen",
+          "population": "the funnel's denominator for this month",
+          "window": "the closed calendar month the entry names, UTC",
+          "exclusions": [
+            "house traffic: the proprietors' own wallets, agents and tests, flagged at the till"
+          ]
+        },
+        {
+          "path": "entries[].document.figures.organic_payments_presented",
+          "kind": "count",
+          "unit": "payments actually presented",
+          "instrument": "the pulse's monthly window, frozen; the sum of settled and declined",
+          "population": "organic_challenges",
+          "window": "the closed calendar month the entry names, UTC",
+          "exclusions": [
+            "house traffic: the proprietors' own wallets, agents and tests, flagged at the till"
+          ]
+        },
+        {
+          "path": "entries[].document.figures.organic_settled",
+          "kind": "count",
+          "unit": "settled purchases",
+          "instrument": "the pulse's monthly window, frozen",
+          "population": "organic_payments_presented",
+          "window": "the closed calendar month the entry names, UTC",
+          "exclusions": [
+            "house traffic: the proprietors' own wallets, agents and tests, flagged at the till",
+            "family settles reclassified after the fact"
+          ]
+        },
+        {
+          "path": "entries[].document.figures.organic_declines",
+          "kind": "count",
+          "unit": "payments presented and refused",
+          "instrument": "the pulse's monthly window, frozen",
+          "population": "organic_payments_presented",
+          "window": "the closed calendar month the entry names, UTC",
+          "exclusions": [
+            "house traffic: the proprietors' own wallets, agents and tests, flagged at the till"
+          ]
+        },
+        {
+          "path": "entries[].document.figures.conversion_rate",
+          "kind": "rate",
+          "unit": "settled over offered",
+          "instrument": "the pulse's own derivation, frozen",
+          "population": "organic_settled / organic_challenges; null, never zero, when nothing was offered",
+          "window": "the closed calendar month the entry names, UTC",
+          "exclusions": [
+            "house traffic: the proprietors' own wallets, agents and tests, flagged at the till"
+          ]
+        },
+        {
+          "path": "entries[].document.figures.by_rail.*",
+          "kind": "count",
+          "unit": "organic settles on that network",
+          "instrument": "the books' rail split (services/stats.ts), frozen",
+          "population": "ALL TIME, not this month — the split the books keep; null when it is withheld",
+          "window": "since 2026-07-22, the store's first day",
+          "exclusions": [
+            "house traffic: the proprietors' own wallets, agents and tests, flagged at the till"
+          ]
+        },
+        {
+          "path": "entries[].document.figures.by_item.*.organic",
+          "kind": "count",
+          "unit": "organic settles on that item",
+          "instrument": "the per-item till (services/stats.ts, ruling R3), frozen",
+          "population": "ALL TIME, not this month; RAW — the reclassification ledger moves family settles in the totals only and cannot follow these rows",
+          "window": "since 2026-07-22, the store's first day",
+          "exclusions": []
+        },
+        {
+          "path": "entries[].document.figures.by_item.*.house",
+          "kind": "count",
+          "unit": "house settles on that item",
+          "instrument": "the per-item till (services/stats.ts, ruling R3), frozen",
+          "population": "ALL TIME, not this month; the house half of the same rows, kept apart rather than netted",
+          "window": "since 2026-07-22, the store's first day",
+          "exclusions": []
+        },
+        {
+          "path": "entries[].document.figures.host_pages.**",
+          "kind": "count",
+          "unit": "subjects and reads in the concentration histogram",
+          "instrument": "the signal store's per-subject rows (services/buyer-signals.ts), frozen",
+          "population": "subjects read this month, over the month's subject count; no host is named and `overflow` carries what a capped map bucketed",
+          "window": "the closed calendar month the entry names, UTC",
+          "exclusions": [
+            "infrastructure and crawlers by name"
+          ]
+        },
+        {
+          "path": "entries",
+          "kind": "count",
+          "unit": "sealed months in the chain",
+          "instrument": "services/store-month.ts",
+          "population": "every month sealed since the chain opened; `scan_truncated` says when the scan did not reach them all",
+          "window": "the chain's whole life",
+          "exclusions": []
+        },
+        {
+          "path": "checks[].sequence",
+          "kind": "constant",
+          "unit": "the entry a verdict row is about",
+          "instrument": "verifyStoreMonthChain (services/store-month.ts)",
+          "population": "not a count — the entry each verdict row is about, one row per entry the scan reached",
+          "window": "the chain's whole life",
+          "exclusions": []
+        }
+      ]
+    }
+  }
+}

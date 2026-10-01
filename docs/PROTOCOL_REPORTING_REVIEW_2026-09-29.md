@@ -104,7 +104,7 @@ was freshly read in this stage.
 The keeper authorized repairs and a shared speed/readability pass.
 [Implementation and validation](ADMIN_REPORTING_FIXES_2026-09-29.md) records
 the local fixes, shared navigation changes and reduced duplicate reads.
-Release and authenticated production readback remain outstanding.
+Release completed in #947; authenticated production readback remains outstanding.
 
 ## PR2 implementation follow-through — September 30
 
@@ -118,8 +118,8 @@ populations. PR3 metadata/discovery and PR4 external listings remain next.
 
 The [site discovery review](../research/protocol-discovery-2026-09-30/README.md)
 records the existing-surface inventory, reproduced description and schema
-defects, and local checks. PR4 external-content review is next. Release and
-post-release public readback remain outstanding; the earlier AEO study has
+defects, and local checks. PR4 content/source review is recorded below. Release and public readback
+completed in #947 and the October 1 closeout; the earlier AEO study has
 not been replaced with a claim about new search visibility.
 
 ## PR4 content/source follow-through — September 30
@@ -131,3 +131,17 @@ Wrong install instructions, mixed store/Tab tools, false free labels and stale
 copy remain external findings. Their exact targets and publication order are
 prepared; no remote write or duplicate request was sent. Local source repair
 also covers the MCP discovery aliases that still omitted enabled native MPP.
+
+## Release closeout — October 1, 2026
+
+[PR #947](https://github.com/seancrecord/scvd-general-store-repo/pull/947)
+merged September 30 after all four test shards and the required gate passed.
+Both merged-commit Worker builds passed. The [public readback](../research/protocol-reporting-release-2026-10-01/README.md)
+passed all retained checks, including independent verification that the older
+monthly signed records are unchanged. Authenticated production admin screens
+remain unverified; no package publication, external correction or buyer
+qualification was performed.
+
+The separate [guide cleanup](../research/guide-readability-2026-09-30/README.md)
+is committed locally with production-shaped size and alias regression checks.
+It remains subject to its own release and live guide readback.

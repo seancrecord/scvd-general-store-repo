@@ -38,3 +38,12 @@ Primary source and scope: [September 30 spec read](../../docs/SPEC_READS.md).
 The limits are local engineering targets, not universal client requirements.
 This is not a deployment, new AEO result or buyer qualification. Full CI and
 live guide readback remain release gates for this separate follow-up.
+
+## October 1 integration
+
+Rebased onto main `9028b994` after #947, #949 and #950 merged. All 123
+focused tests, typecheck and all three bundle dry runs passed again, including
+main's updated full-guide byte pins. September 30 sizes above retain their
+dated fixture scope; the existing production-shaped budgets still pass.
+The guide cleanup is still local, separate from the successful reporting
+[release readback](../protocol-reporting-release-2026-10-01/README.md).

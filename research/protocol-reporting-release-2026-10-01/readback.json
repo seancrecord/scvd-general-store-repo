@@ -1,0 +1,304 @@
+{
+  "at": "2026-10-01T12:47:19.898Z",
+  "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/947",
+  "reads": [
+    {
+      "path": "/rails",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:01.344Z",
+      "sha256": "474d08dc9f0659c1db49d45ee2d78991669ee608c2f00487af47b01eadd7ae5f",
+      "file": "01-rails.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/rails",
+      "accept": "text/html",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:01.581Z",
+      "sha256": "106825967442ecbe8144c81d7621aa9a65a46e0a4d84389283f79a3ed78d880b",
+      "file": "02-rails.html.gz",
+      "content_type": "text/html; charset=UTF-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/stats",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:02.056Z",
+      "sha256": "82fac7ef389ec27bbe7838596aa78628a6f7f1179c573466f635da16a5e0956f",
+      "file": "03-stats.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/pulse.json",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:10.434Z",
+      "sha256": "e0af29d68d48d91bc66168179126159b8e34fe905028e351bf6fcf4c6bc1cc2e",
+      "file": "04-pulse-json.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/pulse",
+      "accept": "text/html",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:15.750Z",
+      "sha256": "79f41c5b54f350fab77d3219dbe73fc20c7cc983e876b85e3bb3053fda9896a7",
+      "file": "05-pulse.html.gz",
+      "content_type": "text/html; charset=UTF-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/store-month.json",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.084Z",
+      "sha256": "8bbab5d8d8f769b3ba60a57e6e4928208962d1a6d44051d67cfff5c3dfb96d14",
+      "file": "06-store-month-json.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/store-month/2026-07.json",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.121Z",
+      "sha256": "7af3a4423f986c2959d8abc6a45658b4ed54d976676785b142276277c82e6876",
+      "file": "07-store-month-2026-07-json.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/store-month/2026-08.json",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.154Z",
+      "sha256": "00cd4bf6242a02d22d517d0177791faec0b860dad6caac3dfa33605634c2cf59",
+      "file": "08-store-month-2026-08-json.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/store-month",
+      "accept": "text/html",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.195Z",
+      "sha256": "f68f7b65b7459e2a165a6cec505a532c91e050b5ab6a4ebe888a8d35618ca01e",
+      "file": "09-store-month.html.gz",
+      "content_type": "text/html; charset=UTF-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/.well-known/mcp",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.248Z",
+      "sha256": "09ac38bfbbaba30b94217a1734470cf47479ed814ff69e738ca25f4a87e43a4a",
+      "file": "10-well-known-mcp.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/.well-known/mcp.json",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.285Z",
+      "sha256": "09ac38bfbbaba30b94217a1734470cf47479ed814ff69e738ca25f4a87e43a4a",
+      "file": "11-well-known-mcp-json.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/.well-known/mcp/server-card.json",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.323Z",
+      "sha256": "09ac38bfbbaba30b94217a1734470cf47479ed814ff69e738ca25f4a87e43a4a",
+      "file": "12-well-known-mcp-server-card-json.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/developers",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.353Z",
+      "sha256": "d79d94c0d57306297b611744b91bc38e882a12fc26fb99d40b9245f1c9909a54",
+      "file": "13-developers.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/developers",
+      "accept": "text/html",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.384Z",
+      "sha256": "ff9c9b134cbba5b4c93fa843d4c6968dc077599fd054a4565da8b2173fe3c80b",
+      "file": "14-developers.html.gz",
+      "content_type": "text/html; charset=UTF-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/developers",
+      "accept": "text/markdown",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.415Z",
+      "sha256": "d99e4f0eccc220f7e2d1740d3e9749db48705f82c98fc7d8b8cdba0d85132d60",
+      "file": "15-developers.md.gz",
+      "content_type": "text/markdown; charset=utf-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/agents.md",
+      "accept": "text/markdown",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.444Z",
+      "sha256": "92bfd480a6e8837711e8617e137e01837abddd23603cb84c34d2a2f25929d886",
+      "file": "16-agents-md.md.gz",
+      "content_type": "text/markdown; charset=utf-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/auth.md",
+      "accept": "text/markdown",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.468Z",
+      "sha256": "43065242e65e75357438cd287bebb4f70143b9472b67c719d76dabd10d193b5a",
+      "file": "17-auth-md.md.gz",
+      "content_type": "text/markdown; charset=utf-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/.well-known/oauth-protected-resource",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:16.490Z",
+      "sha256": "f4faba6bd1be782e5759a8c7badf9f5f58b831781c9d0ada98b86a5368acf5eb",
+      "file": "18-well-known-oauth-protected-resource.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/trust",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:19.117Z",
+      "sha256": "b122a8a2f61d56143afe2fd298d8e348e42da4651440bfc0a3ba99faef0bac92",
+      "file": "19-trust.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/",
+      "accept": "text/html",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:19.870Z",
+      "sha256": "5801c96b10ab6c4f4d063f80728e48716be51a096890c4473447ef7e0b6fa894",
+      "file": "20-.html.gz",
+      "content_type": "text/html; charset=UTF-8",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    },
+    {
+      "path": "/fixtures.json?release-readback=1790858839870",
+      "accept": "application/json",
+      "status": 200,
+      "read_at": "2026-10-01T12:47:19.897Z",
+      "sha256": "c2f84147a179b4ba655b7e563e09509034b134497c291beb4f0574cd52ca7afd",
+      "file": "21-fixtures-json.json.gz",
+      "content_type": "application/json",
+      "age": null,
+      "cf_cache_status": null,
+      "encoding": "gzip"
+    }
+  ],
+  "checks": [
+    {
+      "name": "monthly rail scope is explicit in JSON and HTML",
+      "state": "passed"
+    },
+    {
+      "name": "stats describes native corrections and all supported recorded networks",
+      "state": "passed"
+    },
+    {
+      "name": "pulse combined count preserves the x402 denominator",
+      "state": "passed"
+    },
+    {
+      "name": "old monthly records retain signed bytes, digest and independently valid signatures",
+      "state": "passed"
+    },
+    {
+      "name": "developer representations and discovery aliases agree with enabled native checkout",
+      "state": "passed"
+    },
+    {
+      "name": "trust describes enabled native checkout and homepage visibly describes inspection",
+      "state": "passed"
+    },
+    {
+      "name": "served deployment identity is available",
+      "state": "passed"
+    }
+  ],
+  "limits": [
+    "Read-only public requests; no paid or buyer qualification.",
+    "No authenticated admin readback.",
+    "New signed months are not forced or rewritten.",
+    "Package publication and external listing changes were not performed.",
+    "No newly sealed month with additive totals was present; those fields are covered by source tests, not this live observation."
+  ],
+  "release": {
+    "merge_commit": "15c7af8e7ae20df1f66f6673d81215c296f4859d",
+    "merged_at": "2026-09-30T21:45:38Z",
+    "required_ci_run": 36778500189,
+    "four_test_shards": "passed",
+    "check": "passed",
+    "merged_commit_worker_builds": "passed"
+  },
+  "deployment_scope": "Read after PR #947 and subsequent main releases; verifies the retained reporting/discovery behavior, not sole attribution to one deployed commit."
+}
