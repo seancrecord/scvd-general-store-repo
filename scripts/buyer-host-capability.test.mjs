@@ -370,6 +370,11 @@ test('the full-inventory recipient prompt is frozen before acquisition and remai
 
 function packagePlan(){
  const p=JSON.parse(fs.readFileSync(new URL('../research/generated-report-buyer-2026-09-28/plan.json',import.meta.url)));
+ // These synthetic installations copy today's source, so pin those bytes in
+ // memory. The historical acquisition plan and its release pins stay untouched.
+ const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
+ p.recipient.verifier.name=pkg.name;p.recipient.verifier.version=pkg.version;
+ for(const file of Object.keys(p.recipient.verifier.files))p.recipient.verifier.files[file]=hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)));
  p.package_access=true;return p;
 }
 test('directed package access declares one script-disabled pinned installation in prompt and Claude allowlist',()=>{
@@ -533,8 +538,13 @@ test('source inspection recognizes the retained native mixed-quote wrapper',()=>
  const observed=JSON.parse(fs.readFileSync(new URL('./fixtures/buyer-source-review-command.json',import.meta.url)));
  const f=reviewedReportFixture();try{
   f.p.package_review.source_commit=observed.source_commit;
-  assert.equal(packageInspectionCommand(f.p),observed.expected);
-  f.commands[0].command=observed.actual;
+  // Keep the historical command pair verbatim as a parser regression. For
+  // today's synthetic installation, replace only its now-different byte pins.
+  assert.equal(literalCommandMatches(observed.actual,observed.expected),true);
+  const historical=JSON.parse(fs.readFileSync(new URL('../research/generated-report-buyer-2026-09-28/plan.json',import.meta.url)));
+  const currentPins=text=>Object.entries(historical.recipient.verifier.files).reduce((value,[file,digest])=>value.replaceAll(digest,f.p.recipient.verifier.files[file]),text);
+  assert.equal(packageInspectionCommand(f.p),currentPins(observed.expected));
+  f.commands[0].command=currentPins(observed.actual);
   const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);
   assert.equal(result.state,'pass',result.reason);
  }finally{f.cleanup();}

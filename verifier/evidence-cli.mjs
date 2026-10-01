@@ -9,8 +9,10 @@ import { CAPABILITIES, runtimeCapabilities } from "./x402-verify.js";
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
 globalThis.crypto ??= webcrypto;
 const SUBJECT_OBSERVATIONS_MAX_BYTES = 32768;
+const SOURCE_LINKS_MAX_BYTES = 32768;
 
 const HELP = `scvd-evidence — free export and offline verification
+  sources <saved-corpus-index-or-host-history.json> [--subject <exact-endpoint-url>]
   export <verify-response-or-corpus-snapshot-url> --out <new-directory> [--evidence <local-file> ...]
   verify <bundle.json> --public-key <independently-trusted-public-key-hex>
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
@@ -25,6 +27,14 @@ ${EVIDENCE_BUNDLE_HARD_MAX_BYTES} bytes. Bundles include unsigned context and ca
 be several times larger than the source. Large corpus example: --max-bytes 33554432.
 Start with /corpus/index.json, follow next, then export each snapshot URL.
 This command checks one snapshot's signature, not continuity of the corpus.
+
+sources reads a saved discovery response offline and writes no files. Index
+entries name snapshots, not merchants; a missing merchant name is not evidence
+of absence. Host history requires --subject and selects only exact URL hints.
+Candidate links are untrusted and unverified: decide which original to retain,
+then verify-source with a separately established key and the exact --subject.
+No linked URL is fetched automatically. Invalid, duplicate and omitted links
+and pagination gaps are counted; an empty list does not establish absence.
 
 Export reads only the URL you name and its origin's public key document.
 No credentials, payments or private keys. Evidence files must match a hash
@@ -95,6 +105,53 @@ async function localAttachments(evidence, maxBytes) {
   }
   return attachments;
 }
+function sourceLinks(doc, subject, maxBytes, sourceHash) {
+  const index = doc?.format === "scvd-corpus-index/v1" && Array.isArray(doc.entries);
+  const history = typeof doc?.host === "string" && doc.host.length > 0 && doc.host.length <= 253 && doc.evidence_scope?.signed === false && Array.isArray(doc.timeline);
+  if ((!index && !history) || (!index && !subject)) throw new Error("unsupported_discovery_input");
+  const publicLink = value => {
+    if (typeof value !== "string" || value.length > 8192 || !/^https:\/\//i.test(value) || value.includes("#") || /[\s\x00-\x1f\x7f\\]/u.test(value)) return null;
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" && !url.username && !url.password && !url.hash ? value : null;
+    } catch { return null; }
+  };
+  const next = index ? publicLink(doc.next) : null;
+  const more = index && typeof doc.has_more === "boolean" ? doc.has_more : null;
+  const reading = {
+    format: "scvd-evidence-sources/v1", input_kind: index ? "corpus_index" : "host_history",
+    authenticated: false, source_sha256: sourceHash, subject: subject ?? null, subject_presence: "not_checked",
+    candidates: [], candidate_links: 0, invalid_links: 0, duplicate_links: 0,
+    unselected_rows: 0, omitted_candidates: 0,
+    pagination: index ? { has_more: more, next_url: next,
+      state: more === true && next ? "next_page_available" : more === false && doc.next === null ? "page_end_claimed" : "incomplete" } : null,
+    scope: "Unsigned discovery hints from this saved response only, not verified observations or evidence of subject absence. Index entries name snapshots, not merchants. Exact host-history URL hints can be missing, stale or false. Pagination claims do not establish archive completeness. Inspect candidate URLs before fetching; retain each chosen original and separately establish its issuer key, then verify its exact subject and observation date. No links were fetched and no signature, truth, freshness, continuity, identity, settlement or delivery was checked.",
+  };
+  const links = [], seen = new Set();
+  for (const row of index ? doc.entries : doc.timeline) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) { reading.invalid_links++; continue; }
+    if (!index && row.url !== subject) { reading.unselected_rows++; continue; }
+    const url = publicLink(index ? row.url : row.entry_url);
+    if (!url) { reading.invalid_links++; continue; }
+    if (seen.has(url)) { reading.duplicate_links++; continue; }
+    seen.add(url);
+    links.push({ url, sequence: Number.isSafeInteger(row.sequence) && row.sequence > 0 ? row.sequence : null,
+      metadata_status: index && typeof row.status === "string" && row.status.length <= 128 ? row.status : null });
+  }
+  reading.candidate_links = links.length;
+  reading.omitted_candidates = links.length;
+  // Reserve the newline written by the caller. Count whole links;
+  // do not cut a URL or let a large index become an unbounded tool display.
+  let size = Buffer.byteLength(JSON.stringify(reading)) + 1;
+  const limit = Math.min(maxBytes, SOURCE_LINKS_MAX_BYTES);
+  if (size > limit) throw new Error("source_links_too_large");
+  for (const row of links) {
+    const bytes = Buffer.byteLength(JSON.stringify(row)) + (reading.candidates.length ? 1 : 0);
+    if (size + bytes > limit) continue;
+    reading.candidates.push(row); size += bytes; reading.omitted_candidates--;
+  }
+  return reading;
+}
 function subjectEvidence(result, url) {
   const reading = {
     url, status: "not_verified", matched_observations: null,
@@ -147,8 +204,15 @@ async function main(args) {
   if (flags["--challenge-headers"] && (command !== "verify-source" || !flags["--subject"])) throw new Error("challenge_requires_subject");
   if (flags["--subject"]) {
     const subject = new URL(flags["--subject"]);
-    if (command !== "verify-source" || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
+    if (!["verify-source", "sources"].includes(command) || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
     // Validate syntax without normalizing the exact requested evidence subject.
+  }
+  if (command === "sources") {
+    if (flags["--out"] || flags["--public-key"] || evidence.length) throw new Error("invalid_arguments");
+    const bytes = await localBytes(input, maxBytes);
+    const reading = sourceLinks(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)), flags["--subject"], maxBytes, await evidenceDigest(bytes));
+    console.log(JSON.stringify(reading));
+    return;
   }
   if (command === "verify-source") {
     if (flags["--out"]) throw new Error("invalid_arguments");
