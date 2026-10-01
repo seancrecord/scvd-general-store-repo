@@ -47,3 +47,11 @@ main's updated full-guide byte pins. September 30 sizes above retain their
 dated fixture scope; the existing production-shaped budgets still pass.
 The guide cleanup is still local, separate from the successful reporting
 [release readback](../protocol-reporting-release-2026-10-01/README.md).
+
+## October 1 release closeout
+
+Released in [#951](https://github.com/seancrecord/scvd-general-store-repo/pull/951).
+All required CI groups and merged-commit deployments passed. The [live readback](../guide-release-2026-10-01/README.md)
+confirms 24,499 characters, identical developer aliases, all 52 sections intact
+and complete-guide byte preservation against the preceding deployment. The
+earlier local-only statements above retain their dated scope. PR3 is closed.

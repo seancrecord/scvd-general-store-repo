@@ -253,7 +253,7 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
     <p><small>Rows predating the register keep their own names — old keys are read as
     written, so a historical one-off like <code>workcheck-persona-test</code> still shows
     itself. Only new writes are bucketed, and the exact string always survives per-event
-    under <a href="/admin/item-events">item events</a>.</small></p>
+    in each item's events — <a href="#item-ledger">choose an item in the ledger below</a>.</small></p>
     <details><summary>What each source means</summary><ul>${legend}</ul></details>`;
 }
 
@@ -626,7 +626,7 @@ function glanceHtml(data: OfficePageData): string {
       <strong>${organic402s}</strong> organic 402s \u00B7
       <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
-      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 porch-to-purchase <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
+      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 organic 402s per porch visit <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
     <p><small>Monthly sales and revenue include x402 and MPP. The asks, daily trend, sources and conversion tables below cover x402 only.</small></p>
     ${reclassNote}
@@ -648,16 +648,16 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
             const conversion =
               row.challenges > 0
                 ? `${Math.round((row.settled / row.challenges) * 100)}%`
-                : ", ";
+                : "—";
             const tiers = Object.entries(row.tiers)
               .map(([tier, count]) => `${tier}:${count}`)
               .join(" ");
-            return `<tr><td>${escapeHtml(item)}</td>
+            return `<tr><td><a href="/admin/events?item=${encodeURIComponent(item)}">${escapeHtml(item)}</a></td>
               <td>${row.challenges}${row.challengesHouse ? ` <small>(+${row.challengesHouse}h)</small>` : ""}${row.challengesInfra ? ` <small>(+${row.challengesInfra}i)</small>` : ""}</td>
               <td>${row.settled}${row.settledHouse ? ` <small>(+${row.settledHouse}h)</small>` : ""}</td>
               <td>${conversion}</td>
               <td>${row.verifies}${row.verifiesHouse ? ` <small>(+${row.verifiesHouse}h)</small>` : ""}${row.verifiesInfra ? ` <small>(+${row.verifiesInfra}i)</small>` : ""}</td>
-              <td>${escapeHtml(tiers || ", ")}</td></tr>`;
+              <td>${escapeHtml(tiers || "—")}</td></tr>`;
           })
           .join("\n");
   const payerLines =
@@ -804,7 +804,7 @@ function porchHtml(porch: PorchLedger): string {
       <tr><th>surface</th><th>kind</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
-    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;
+    <p><strong>Organic 402s per organic porch visit: ${porch.porchToPurchase === null ? "not available" : porch.porchToPurchase}</strong>. This is a ratio of requests, not a purchase conversion rate. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;
 }
 
 /**
@@ -1017,8 +1017,8 @@ export function renderOfficePage(data: OfficePageData): string {
   </section>
 
   <section>
-    <h2>The ledger's answers, per item</h2>
-    <p>402s issued vs settled per item, tier picks, wallets. The ledger outranks research.</p>
+    <h2 id="item-ledger">The ledger's answers, per item</h2>
+    <p>402s issued vs settled per item, tier picks, wallets. Choose an item to read its retained events. The ledger outranks research.</p>
     ${ledgerAnswersHtml(data.monthLedger, data.payers)}
   </section>
 

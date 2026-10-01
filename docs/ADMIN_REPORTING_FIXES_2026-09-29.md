@@ -110,10 +110,12 @@ production readback was performed in this implementation pass.
 merged September 30 after all four test shards and the required gate passed.
 Both merged-commit Worker builds passed. The [public readback](../research/protocol-reporting-release-2026-10-01/README.md)
 passed all retained checks, including independent verification that the older
-monthly signed records are unchanged. Authenticated production admin screens
-remain unverified; no package publication, external correction or buyer
+monthly signed records are unchanged. A [partial authenticated admin readback](../research/admin-reporting-live-2026-10-01/README.md)
+now covers the desk, protocols, MPP sales and growth, plus buyer-page reachability;
+the remaining live checks are still open. No package publication, external correction or buyer
 qualification was performed.
 
 The separate [guide cleanup](../research/guide-readability-2026-09-30/README.md)
-is committed locally with production-shaped size and alias regression checks.
-It remains subject to its own release and live guide readback.
+released in #951 after the required checks passed. Its [live readback](../research/guide-release-2026-10-01/README.md)
+verified the smaller developer guide, configured alias parity, complete sections
+and unchanged full-guide bytes.
