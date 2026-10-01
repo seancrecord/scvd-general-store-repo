@@ -101,7 +101,7 @@ describe("the third witness on the books check", () => {
     expect(c.reading).toContain(B);
   });
 
-  it("reads a row above its certificates as the penny pages, never as a wallet to chase", async () => {
+  it("does not infer the cause of a row above its certificates from totals alone", async () => {
     // 2026-09-05: the only disagreements on the live page were rows
     // ABOVE their certificates — the shape every penny-page buyer has
     // — and the reading told the keeper to trust none of three
@@ -114,7 +114,8 @@ describe("the third witness on the books check", () => {
     } as never);
     expect(c.wallets_disagreeing).toEqual([{ address: B, payer_row_purchases: 7, certificates: 1 }]);
     expect(c.reading).toContain("penny pages");
-    expect(c.reading).toContain("nothing here is missing a booking");
+    expect(c.reading).not.toContain("nothing here is missing a booking");
+    expect(c.reading).toContain("/admin/deliveries");
     expect(c.reading).not.toContain("to look at");
     expect(c.reading).not.toContain("before trusting");
   });

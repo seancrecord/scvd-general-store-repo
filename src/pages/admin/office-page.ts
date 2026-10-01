@@ -318,21 +318,21 @@ export function howToReadTheMoneyHtml(
   lastRaise: { at: string; raised: number } | null,
 ): string {
   const tallyState = serialized
-    ? `Since 2026-09-11 every bump goes through one serialized writer (the counter ledger), so a burst of a thousand sales lands as a thousand.`
+    ? `Since 2026-09-11 every bump goes through one serialized writer (the counter ledger), which prevents concurrent increments from overwriting one another.`
     : `<strong style="color:#8c2f1b">This deployment has no counter ledger binding, so bumps are back on KV read-add-write and a burst can lose counts.</strong>`;
   const raiseState = lastRaise
-    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "nothing was short" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.${
+    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "no increases reported; check the log for scan coverage" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.${
         takeReadAt && lastRaise.at > takeReadAt
           ? ` <strong>That raise ran after the reading below was taken; the numbers here predate it.</strong> Press the button above to take them again.`
           : ""
       }`
     : `No raise has run on this deployment yet.`;
   return `<div style="border:1px solid currentColor;padding:0.6em 0.9em;margin:0.5em 0 1em;background:var(--card)">
-    <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. They are supposed to agree, and when they do not, the certificates and the per-settle records are right.</strong></p>
+    <p style="margin:0 0 0.4em"><strong>These readings cover different records. Compare the payment system, time window and scan coverage before treating a difference as a missing sale.</strong></p>
     <ol style="margin:0;padding-left:1.4em">
-      <li><strong>Certificates and per-settle records</strong> — one per sale, written when it settled; neither can lose one. <em>The take</em> on the desk and <a href="/admin/buyers">the buyers page</a> count certificates. <strong>This is the true number.</strong></li>
-      <li><strong>Till counters</strong> — the storefront's settle count, the month line above, and the "row says N" on the buyers page. ${tallyState} Every hour the raise lifts any counter still short of its records (organic only, never lowered), so these go up to where they belong on their own. ${raiseState} Detail at <a href="/admin/raise-log">/admin/raise-log</a>.
-        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0 0"><button type="submit">Raise every short counter to its records now</button></form></li>
+      <li><strong>Certificates and per-settle records</strong> — <em>The take</em> and <a href="/admin/buyers">the buyers page</a> count retained certificates. Some paid goods issue no certificate; a delivery can also be missing one. Certificates include native MPP purchases, which have a separate payment ledger from legacy x402 settlements.</li>
+      <li><strong>Till counters</strong> — payment tallies, including the legacy x402 wallet rows shown on the buyers page. ${tallyState} Every hour the raise lifts eligible organic x402 tallies to recorded settlements. It never lowers a tally, adds native MPP sales to legacy rows, or creates missing settlement records. ${raiseState} Detail at <a href="/admin/raise-log">/admin/raise-log</a>.
+        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0 0"><button type="submit">Raise eligible legacy tallies to recorded settlements</button></form></li>
       <li><strong>The take on the desk</strong> — the certificates, counted once an hour and cached (last read ${takeReadAt ? escapeHtml(takeReadAt) : "on the last hourly round"}). Up to an hour behind the shelf; catches up by itself. Counted this second at <a href="/admin/take">/admin/take</a>.</li>
     </ol>
   </div>`;

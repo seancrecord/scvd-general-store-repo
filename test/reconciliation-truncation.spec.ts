@@ -51,6 +51,9 @@ describe("the books say which walk hit its cap", () => {
     const capped = await reconcileSettles(testEnv);
     expect(capped.truncated).toEqual(["metric counters", "per-settle records"]);
     expect(capped.reading).toContain("metric counters and per-settle records");
+    const witness = await certificatesAgainstSettles(testEnv, capped);
+    expect(witness.reading).toMatch(/^INCOMPLETE:/);
+    expect(witness.reading).not.toContain("Nothing to explain");
   });
 
   it("the buyers desk and the third witness report the payer side's cap beside the certificate side's", async () => {
