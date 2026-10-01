@@ -843,7 +843,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
     alternateName: ALTERNATE_NAMES,
     /**
      * THE CATEGORY, IN THE FIELD FOR IT (2026-09-02). alternateName
-     * carries the phrases people type; knowsAbout carries them as
+     * carries the store's names; knowsAbout carries category phrases as
      * topics; subjectOf links what has been written about the store
      * under a byline. The storefront prose does not change: the
      * identity noun stays on every sentence a person reads, and these
@@ -1152,7 +1152,7 @@ ${webmcpOriginTrialTags()}
   <main class="road" data-room="storefront">
 
     <header class="signfront">
-      <p class="tube-line">${COPY.tubeLine}</p>
+      <p class="tube-line">${escapeHtml(STORE_SERVICE_NAME)}<br>${COPY.tubeLine}</p>
       <h1 class="neon"><span class="neon-name">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></span><span class="sr-only"> (${escapeHtml(STORE_SERVICE_NAME)}) — ${escapeHtml(COPY.h1Summary)}</span></h1>
       <div class="light-pool"></div>
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>

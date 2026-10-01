@@ -56,11 +56,12 @@ describe("the asked-for vocabulary", () => {
     for (const id of Object.keys(CAPABILITY_QUERY)) expect(ITEM_ASKED_FOR[id], id).toBeTruthy();
   });
 
-  it("keeps the naming law's first entry first", () => {
+  it("keeps actual store names apart from category topics", () => {
     expect(ALTERNATE_NAMES[0]).toBe(STORE_NAMES[0]);
     expect(ALTERNATE_NAMES).toContain("scvd.store");
     expect(ALTERNATE_NAMES).toContain("SCVD General Store");
-    for (const noun of ASKED_FOR_NOUNS) expect(ALTERNATE_NAMES).toContain(noun);
+    expect(ALTERNATE_NAMES).toEqual(STORE_NAMES);
+    for (const noun of ASKED_FOR_NOUNS) expect(ALTERNATE_NAMES).not.toContain(noun);
   });
 
   it("rides in the storefront's Organization and WebSite nodes", async () => {
