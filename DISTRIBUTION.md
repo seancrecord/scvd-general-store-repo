@@ -41,11 +41,11 @@ outcomes: 23 open, A2A display repair closed, Awesome Copilot rejected, HOL
 plugin entry merged. MCPpedia and mcp.so still show the reported wrong install
 configuration; their existing issues remain open. No duplicate requests sent.
 
-Store MCP 0.2.3 and Tab 0.11.2 are active/latest in the official registry.
+The September 30 reading found Store MCP 0.2.3 and Tab 0.11.2 active/latest.
 October 1 follow-through: the reviewed CLI 0.4.0, preflight 0.3.1,
-MCP starter 0.2.0 and defects 0.21.0 publication workflows succeeded.
-Registry processing and independent tarball readback are recorded separately
-from those successful dispatches. Store MCP 0.2.4 is independently verified
+MCP starter 0.2.0 and defects 0.21.0 are now public/latest. The later
+20:32–20:33 UTC readback verifies tarball integrity and every packed file
+against the publication source; the initial processing-delay reads are retained. Store MCP 0.2.4 is independently verified
 active/latest and matches every source manifest field. Portable wrappers 0.2.6
 are released repository content; external immutable pins do not update
 themselves. GitHub About/topics are corrected and verified. Existing Agent

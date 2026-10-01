@@ -1472,13 +1472,19 @@ const RECONCILIATION_BLIND_SPOT =
 /**
  * Reads its own payer rows rather than taking the desk's list, which
  * is truncated for display: a reconciliation that silently compares
- * against the first fifty wallets is worse than none.
+ * against the first fifty wallets is worse than none. Counter reads
+ * cover each month since opening, but only the three settlement kinds:
+ * unrelated traffic metrics must not consume the sales scan's cap.
  */
 export async function reconcileSettles(
   env: Env,
 ): Promise<SettleReconciliation> {
-  const [metrics, payerKeys, settleKeys] = await Promise.all([
-    listKeys(env.COUNTERS, { prefix: "metric:", cap: METRIC_KEY_CAP }),
+  const [metricLists, payerKeys, settleKeys] = await Promise.all([
+    Promise.all(monthsSinceOpening().flatMap((month) =>
+      ["paid", "paidh", "nopayer"].map((kind) =>
+        listKeys(env.COUNTERS, { prefix: KV_KEYS.metric(month, kind, ""), cap: METRIC_KEY_CAP }),
+      ),
+    )),
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_KEY_CAP }),
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: PAYER_KEY_CAP }),
   ]);
@@ -1492,11 +1498,7 @@ export async function reconcileSettles(
   const [metricValues, payerValues] = await Promise.all([
     bulkGetText(
       env.COUNTERS,
-      metrics.names
-        .filter((name) => {
-          const kind = name.split(":")[2] ?? "";
-          return kind === "paid" || kind === "paidh" || kind === "nopayer";
-        }),
+      metricLists.flatMap((listed) => listed.names),
     ),
     bulkGetJson<PayerRecord>(
       env.COUNTERS,
@@ -1531,7 +1533,7 @@ export async function reconcileSettles(
   }
   const settleRecords = [...settlesByWallet.values()].reduce((sum, n) => sum + n, 0);
   const truncated = [
-    ...(metrics.truncated ? ["metric counters"] : []),
+    ...(metricLists.some((listed) => listed.truncated) ? ["metric counters"] : []),
     ...(payerKeys.truncated ? ["payer rows"] : []),
     ...(settleKeys.truncated ? ["per-settle records"] : []),
   ];
