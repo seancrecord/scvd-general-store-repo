@@ -352,6 +352,27 @@ export async function verifyMessageSignature(
 }
 
 /**
+ * The same check over BYTES rather than a UTF-8 string, for envelopes
+ * whose signed message is not text we produced: a DSSE envelope signs
+ * its pre-authentication encoding, which carries the raw payload
+ * bytes, and re-decoding those as a string and back would be a second
+ * canonical form nobody signed. Same primitive, same fail-closed
+ * catch; the caller does the decoding and hands over exactly what the
+ * signer saw.
+ */
+export async function verifyBytesSignature(
+  message: Uint8Array,
+  signature: Uint8Array,
+  publicKey: Uint8Array,
+): Promise<boolean> {
+  try {
+    return await ed25519.verifyAsync(signature, message, publicKey);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Genuine or not. Accepts the legacy form too — a certificate minted
  * before the canonicalization was fixed is still one of ours, and
  * telling its holder otherwise would be a lie in the other direction.
