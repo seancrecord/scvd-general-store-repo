@@ -210,13 +210,19 @@ explicitly prepare empty source-review parent directories, derived from existing
 paths, as a separately frozen condition. Not implemented here. Signed-original
 acquisition/interpretation stays separate; TR3 acceptance remains open.
 
-**TR3 empty source directories, October 1 (implementation prepared):**
+**TR3 empty source directories, October 1 (implemented; qualification closed):**
 [The explicit condition](docs/BUYER_SOURCE_DIRECTORIES_2026-10-01.md)
 creates only empty parents derived from the pinned review-source paths before
 online qualification and buyers. Agents still fetch, review and decide; no
 source bytes, answers, permissions or budgets are added. Old prompts remain
 byte-identical, offline recipients unchanged, and new qualification is required.
-The draft plan is unlaunched; native benefit is not claimed.
+The [separate qualification](research/source-directories-qualification-2026-10-01/REPORT.md)
+passes Codex and offline capability, but Claude reaches 21 observed calls / 20 cap
+after compound-command refusals and source inspection. Source downloads succeeded;
+no installed CLI report or buyer launch. Same-session host output was read outside
+the neutral workspace; its exact bytes are captured, and the boundary breach is
+disclosed. Review inspection output and host isolation before another changed
+experiment; no retry, relaxed gate or native buyer benefit claimed.
 
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
