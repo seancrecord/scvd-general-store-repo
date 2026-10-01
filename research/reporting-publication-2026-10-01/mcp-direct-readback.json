@@ -1,0 +1,70 @@
+[
+  {
+    "url": "https://registry.modelcontextprotocol.io/v0/servers/store.scvd%2Fgeneral-store/versions/0.2.4",
+    "read_at": "2026-10-01T16:24:43.184041+00:00",
+    "exit": 0,
+    "response": {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "store.scvd/general-store",
+        "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
+        "title": "SCVD General Store",
+        "repository": {
+          "url": "https://github.com/seancrecord/scvd-general-store-repo",
+          "source": "github"
+        },
+        "version": "0.2.4",
+        "websiteUrl": "https://scvd.store",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://scvd.store/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-10-01T16:23:32.556649Z",
+          "publishedAt": "2026-10-01T16:23:32.556649Z",
+          "updatedAt": "2026-10-01T16:23:32.556649Z",
+          "isLatest": true
+        }
+      }
+    }
+  },
+  {
+    "url": "https://registry.modelcontextprotocol.io/v0.1/servers/store.scvd%2Fgeneral-store/versions/latest",
+    "read_at": "2026-10-01T16:24:43.367981+00:00",
+    "exit": 0,
+    "response": {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "store.scvd/general-store",
+        "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
+        "title": "SCVD General Store",
+        "repository": {
+          "url": "https://github.com/seancrecord/scvd-general-store-repo",
+          "source": "github"
+        },
+        "version": "0.2.4",
+        "websiteUrl": "https://scvd.store",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://scvd.store/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-10-01T16:23:32.556649Z",
+          "publishedAt": "2026-10-01T16:23:32.556649Z",
+          "updatedAt": "2026-10-01T16:23:32.556649Z",
+          "isLatest": true
+        }
+      }
+    }
+  }
+]

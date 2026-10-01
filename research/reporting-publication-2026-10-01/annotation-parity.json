@@ -1,0 +1,35 @@
+[
+  {
+    "alias": "preflight_x402_endpoint",
+    "base": "preflight_endpoint",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    },
+    "equal": true
+  },
+  {
+    "alias": "verify_x402_receipt",
+    "base": "check_conformance",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    },
+    "equal": true
+  },
+  {
+    "alias": "verify_scvd_artifact",
+    "base": "verify_artifact",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "equal": true
+  }
+]

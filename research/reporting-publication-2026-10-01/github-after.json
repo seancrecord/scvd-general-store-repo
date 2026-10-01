@@ -1,0 +1,28 @@
+{
+  "read_at": "2026-10-01T16:20:44.480655+00:00",
+  "verified": true,
+  "description": "An evidence observatory for agentic commerce. Free x402/MPP endpoint inspection, signed-offer and receipt checks, endpoint watches and settlement attestations. Bitcoin-anchored observation corpus. Scoped findings and explicit gaps; current checkout methods at scvd.store/menu.json.",
+  "homepage": "https://scvd.store",
+  "topics": [
+    "a2a",
+    "agentic-commerce",
+    "ai-agents",
+    "api-monitoring",
+    "attestation",
+    "cloudflare-workers",
+    "conformance",
+    "ed25519",
+    "gemini-cli-extension",
+    "mcp",
+    "mcp-server",
+    "micropayments",
+    "mpp",
+    "observability-data",
+    "observatory",
+    "ucp",
+    "usdc",
+    "verification",
+    "webmcp",
+    "x402"
+  ]
+}

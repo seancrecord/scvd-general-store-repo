@@ -223,7 +223,7 @@ export function deriveHeartbeat(
     newest_wrote: wrote,
     weeks_missing,
     weeks_held: weeksHeld.length,
-    detail: `Round ${newest.week} wrote ${wrote.hosts} probed host${wrote.hosts === 1 ? "" : "s"} against a known population of ${wrote.population_known}, with ${wrote.sources_answered} of ${wrote.sources_asked} sources answering.`,
+    detail: `Round ${newest.week} wrote ${wrote.hosts} host row${wrote.hosts === 1 ? "" : "s"} (including any not-probed listings) against a known population of ${wrote.population_known}, with ${wrote.sources_answered} of ${wrote.sources_asked} sources answering.`,
   };
 }
 

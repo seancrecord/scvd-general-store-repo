@@ -1321,15 +1321,22 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
-- **Package follow-up, September 30 — release only after PR/CI.** The
-  [starter compatibility repair](research/mcp-starter-compatibility-2026-09-30/README.md)
-  prepares `scvd-mcp-starter` 0.2.0; the preflight listing-copy correction
-  prepares `scvd-preflight` 0.3.1. Both are local, unpublished candidates.
-  These join the existing package publication press; do not infer npm
-  availability from local tests. No press is requested before review.
+- **October 1 publication follow-through — no repeat publication press.**
+  CLI 0.4.0, preflight 0.3.1, MCP starter 0.2.0 and defects 0.21.0
+  publication workflows succeeded after the reviewed source release. The store
+  MCP registry 0.2.4 is independently verified active/latest. npm processing
+  and public tarball readback are distinct from a green publisher;
+  [dated status and evidence](research/reporting-publication-2026-10-01/README.md).
+  GitHub About/topics were corrected and read back. No buyer qualification.
 
-- **September 30 review — prepared, not sent.** [Dated content audit](research/listing-review-2026-09-30/README.md) covers all 82 claimed URLs, eight npm packages and 26 existing GitHub requests. [Exact corrections and release order](research/listing-review-2026-09-30/CORRECTIONS.md): fix wrong connection instructions/component confusion before refreshing copy. Existing MCPpedia #172 and mcp.so #4325 remain open; no duplicate requests. Store registry 0.2.4 and portable wrappers 0.2.6 are prepared only; publish/read back before forwarding their new version URLs. Existing package publication and form-review entries below remain the owners of those actions.
-
+- **Agent Finder #34 — owning account needed.** The existing fork is owned by
+  `cv-scvd`; the connected `seancrecord` account has no push access. The validated
+  [refresh patch and PR body](research/reporting-publication-2026-10-01/README.md#listing-corrections-and-remaining-hands)
+  are ready for that existing branch. MCP 0.2.4's URL is now verified. Do not
+  open a duplicate PR. MCPpedia #172 and mcp.so #4325 already contain the
+  required connection corrections and remain open. Other exact drafts and
+  unreadable venues remain in the [correction packet](research/listing-review-2026-09-30/CORRECTIONS.md);
+  no new outreach round was sent.
 
 - **UCP LIVE — distribution started September 19.** Keeper confirmed launch; live profile read back with catalog, checkout and order. [UCP Checker report](https://ucpchecker.com/check/scvd.store) now published with a Verified discovery label and a root signing-key warning to inspect against the actual spec. Paid evidence currently read covers hello/Base; broader advertised scope is not whole-shelf paid qualification. Submitted [community UCP directory #3](https://github.com/homototus/ucp-directory/issues/3), the free UCPList merchant form, [Awesome UCP #30](https://github.com/Upsonic/awesome-ucp/pull/30) and [UCP Merchant Directory #1](https://github.com/awesomeucp/merchants/pull/1); all await review. Directory display repair also submitted as [#3](https://github.com/awesomeucp/merchants/pull/3). [UCP.tools listing](https://ucptools.dev/directory/scvd.store) is live September 20; the free UCPRegistry merchant form confirmed receipt, review pending. No new press needed for either. [Receipts and next routes](research/ucp-distribution-2026-09-19/README.md). [Muse submission](research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press) completed by the keeper September 19; browser confirmed receipt for SCVD x402 Verifier. Review pending; the agent could not read the linked Connector Terms. Existing Google merchant-intake status remains separate. Recurring/monthly fees declined.
 
