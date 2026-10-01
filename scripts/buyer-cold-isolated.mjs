@@ -1,7 +1,7 @@
 // Fresh public-only processes, never a conversation fork. Live execution is
 // explicit; deterministic tests and rescoring do not launch an agent.
 import fs from 'node:fs';
-import {packageReportFixture} from './lib/buyer-package-access.mjs';
+import {packageReportFixture,preparePackageSourceDirectories} from './lib/buyer-package-access.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawn, spawnSync} from 'node:child_process';
@@ -51,7 +51,8 @@ export function runTiming(wallBudget,clock=systemClock) {
   };
   return {started_at:new Date(start.wall_ms).toISOString(),sample};
 }
-export async function runChild(command, args, {cwd, output, prompt, host, budgets, env=childEnvironment(), clock=systemClock}) {
+export async function runChild(command, args, {cwd, output, prompt, host, budgets, env=childEnvironment(), clock=systemClock, plan}) {
+  const sourceDirectories=preparePackageSourceDirectories(cwd,plan);
   fs.mkdirSync(path.join(cwd,SESSION_WORKSPACE.scratch),{recursive:true,mode:0o700});
   const monitor=runTiming(budgets.wall_ms,clock);
   const started_at = monitor.started_at;
@@ -95,7 +96,7 @@ export async function runChild(command, args, {cwd, output, prompt, host, budget
   fs.closeSync(events);fs.closeSync(logs);
   const counts=normalizeTrace(host,stdout);
   const terminalFailure=stdout.split('\n').some(line=>{try{const r=JSON.parse(line);return r.type==='turn.failed'||(r.type==='result'&&r.is_error===true);}catch{return false;}});
-  return {started_at,ended_at:timing.ended_at,timing,local_workspace:SESSION_WORKSPACE,runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure&&!budget_stop?'completed':'failed',...result,spawn_error,budget_stop,stop_requested},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
+  return {started_at,ended_at:timing.ended_at,timing,local_workspace:SESSION_WORKSPACE,...(sourceDirectories.length?{prepared_source_directories:sourceDirectories}:{}),runtime:{state:spawn_error?'unavailable':result.exit_code===0&&!terminalFailure&&!budget_stop?'completed':'failed',...result,spawn_error,budget_stop,stop_requested},counts,trace_sha256:hash(fs.readFileSync(path.join(output,'events.jsonl'))),
     output_bytes:bytes,limits:['Token target is advisory; retained bytes are bounded. Deadlines are checked when the runner executes; enforcement during host suspension is impossible. Callback/clock gaps stop the run as timing_interrupted, without diagnosing their cause. Tool budget stops after an over-budget event is observed; batched calls can exceed it.','Host tool events do not establish origin-request count or absence of hidden context.']};
 }
 export async function scoreCohort(root) {
@@ -197,7 +198,7 @@ export async function runCapabilityProbe(plan, root) {
     const launch=adapter(cell,cwd,dir,plan.budgets,context,plan);
     writeJson(path.join(dir,'launch.json'),{...launch,cwd,cli,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({host,state:'started'})+'\n');
-    const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host,budgets:plan.budgets,env:environment});
+    const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host,budgets:plan.budgets,env:environment,plan});
     const run={schema_version:plan.schema_version,host,model:cell.model,...result,cli,reference,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)};
     writeJson(path.join(dir,'run.json'),run);
     const score=scoreCapability(host,run,dir,vectors,reference,plan,reportFixture);writeJson(path.join(dir,'capability.json'),score);
@@ -278,7 +279,7 @@ export async function runCohort(plan,root,options={}) {
     const launch=adapter(cell,cwd,dir,plan.budgets,context,plan);
     writeJson(path.join(dir,'launch.json'),{...launch,cwd,host,local_workspace:SESSION_WORKSPACE,environment_keys:Object.keys(sessionEnvironment(cwd,environment)),prompt_sha256:hash(fs.readFileSync(path.join(dir,'prompt.txt')))});
     process.stdout.write(JSON.stringify({cell:cell.id,state:'started'})+'\n');
-    const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host:cell.host,budgets:plan.budgets,env:environment});
+    const result=await runChild(launch.command,launch.args,{cwd,output:dir,prompt:fs.readFileSync(path.join(dir,'prompt.txt'),'utf8'),host:cell.host,budgets:plan.budgets,env:environment,plan});
     writeJson(path.join(dir,'run.json'),{schema_version:plan.schema_version,cell,subject:plan.subject,...result,host,...(plan.schema_version>=3?{freshness:plan.freshness,retained_artifacts:retainArtifacts(cwd,dir,plan.budgets)}:{}),isolation:{fresh_directory:true,config_isolated:true,no_session_resume:true,review_required:true}});
     process.stdout.write(JSON.stringify({cell:cell.id,state:result.runtime.state,budget_stop:result.runtime.budget_stop,tool_calls:result.counts.tool_calls})+'\n');
   }
