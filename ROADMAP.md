@@ -210,6 +210,14 @@ explicitly prepare empty source-review parent directories, derived from existing
 paths, as a separately frozen condition. Not implemented here. Signed-original
 acquisition/interpretation stays separate; TR3 acceptance remains open.
 
+**TR3 empty source directories, October 1 (implementation prepared):**
+[The explicit condition](docs/BUYER_SOURCE_DIRECTORIES_2026-10-01.md)
+creates only empty parents derived from the pinned review-source paths before
+online qualification and buyers. Agents still fetch, review and decide; no
+source bytes, answers, permissions or budgets are added. Old prompts remain
+byte-identical, offline recipients unchanged, and new qualification is required.
+The draft plan is unlaunched; native benefit is not claimed.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The

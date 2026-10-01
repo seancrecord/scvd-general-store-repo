@@ -7,7 +7,7 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createPublicKey, verify} from 'node:crypto';
 import {validatePlan, buildPrompt, adapter, recipientLaunch, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
-import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment} from './buyer-cold-isolated.mjs';
+import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment, runChild} from './buyer-cold-isolated.mjs';
 import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
 
 test('a proxied launch context passes its route and CA bundle, never an API key or token',()=>{
@@ -646,6 +646,71 @@ test('buyer setup guidance cannot reuse a qualification from the old buyer condi
   process.env.PATH='';const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';
   const probe=path.join(d,'probe');await runCapabilityProbe(p,probe);
   p.buyer_setup_guidance=true;
+  await assert.rejects(runCohort(p,path.join(d,'buyers'),{capability:probe}),/different plan/);
+  assert.equal(fs.existsSync(path.join(d,'buyers')),false);
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+
+function directoryPlan(){
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};p.package_source_directories=true;return p;
+}
+test('source directory setup requires explicit true and reviewed package access',()=>{
+ for(const value of [false,null,'true',{},1]){
+  const p=directoryPlan();p.package_source_directories=value;
+  assert.throws(()=>validatePlan(p),/source director/i);
+ }
+ const p=directoryPlan();delete p.package_review;
+ assert.throws(()=>validatePlan(p),/source director/i);
+});
+test('source directory setup declares only derived empty parents without changing permissions or offline prompts',()=>{
+ const p=directoryPlan(),old=structuredClone(p);delete old.package_source_directories;
+ const dirs=[...new Set(packageReviewSources(p).map(r=>path.posix.dirname(r.file)))].sort();
+ const statement=` The runner prepared empty source-review directories: ${JSON.stringify(dirs)}. No source files or verification results are preloaded.`;
+ const vectors=capabilityVectors(),fixture=packageReportFixture(),context={codex:{disabled_skills:[]}};
+ for(const cell of p.cells){
+  const buyer=buildPrompt(p,cell),capability=buildCapabilityPrompt(p,cell.host,vectors,fixture);
+  assert.ok(buyer.includes(statement));assert.ok(capability.includes(statement));
+  assert.equal(buyer.replace(statement,''),buildPrompt(old,cell));
+  assert.equal(capability.replace(statement,''),buildCapabilityPrompt(old,cell.host,vectors,fixture));
+  assert.deepEqual(adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,p),adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,old));
+ }
+ assert.deepEqual(recipientLaunch(p,'/tmp/w','/tmp/o',context),recipientLaunch(old,'/tmp/w','/tmp/o',context));
+});
+test('source directory setup reaches the child as empty folders and records them only for the opted-in run',async()=>{
+ const d=root();try{
+  for(const enabled of [true,false]){
+   const cwd=path.join(d,String(enabled)),output=path.join(d,String(enabled)+'-out');fs.mkdirSync(cwd);fs.mkdirSync(output);
+   const p=directoryPlan();if(!enabled)delete p.package_source_directories;
+   const dirs=[...new Set(packageReviewSources(p).map(r=>path.posix.dirname(r.file)))].sort();
+   const script=`const fs=require('node:fs');console.log(JSON.stringify(${JSON.stringify(dirs)}.map(p=>({path:p,exists:fs.existsSync(p),files:fs.existsSync(p)?fs.readdirSync(p):null}))));`;
+   const result=await runChild(process.execPath,['-e',script],{cwd,output,prompt:'',host:'codex',budgets:p.budgets,plan:p});
+   assert.equal(result.runtime.state,'completed');
+   const observed=JSON.parse(fs.readFileSync(path.join(output,'events.jsonl'),'utf8'));
+   assert.deepEqual(observed,dirs.map(p=>({path:p,exists:enabled,files:enabled?[]:null})));
+   assert.deepEqual(result.prepared_source_directories,enabled?dirs:undefined);
+  }
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+test('source directory setup refuses symlinked or populated destinations before launching a child',async()=>{
+ const d=root();try{
+  for(const kind of ['symlink','populated']){
+   const cwd=path.join(d,kind),output=path.join(d,kind+'-out');fs.mkdirSync(cwd);fs.mkdirSync(output);fs.mkdirSync(path.join(cwd,'evidence'));
+   const dest=path.join(cwd,'evidence/source');
+   if(kind==='symlink'){const elsewhere=path.join(d,'elsewhere');fs.mkdirSync(elsewhere);fs.symlinkSync(elsewhere,dest,'dir');}
+   else{fs.mkdirSync(dest);fs.writeFileSync(path.join(dest,'existing.txt'),'keep');}
+   const p=directoryPlan();
+   await assert.rejects(runChild(process.execPath,['-e','process.stdout.write("launched")'],{cwd,output,prompt:'',host:'codex',budgets:p.budgets,plan:p}),/source director/i);
+   assert.equal(fs.existsSync(path.join(output,'events.jsonl')),false);
+   if(kind==='populated')assert.equal(fs.readFileSync(path.join(dest,'existing.txt'),'utf8'),'keep');
+  }
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+test('source directory setup cannot reuse qualification from an unprepared workspace',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const p=directoryPlan();delete p.package_source_directories;
+  const probe=path.join(d,'probe');await runCapabilityProbe(p,probe);p.package_source_directories=true;
   await assert.rejects(runCohort(p,path.join(d,'buyers'),{capability:probe}),/different plan/);
   assert.equal(fs.existsSync(path.join(d,'buyers')),false);
  }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
