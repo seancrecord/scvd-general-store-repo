@@ -117,7 +117,7 @@ function certsHtml(c: CertificatesAgainstSettles | null | undefined, settles: Se
     <p>${escapeHtml(c.reading)}</p>
     <table border="1" cellpadding="4">
       <tr><td>certificates on the shelf</td><td>${c.certificates_total}${c.certificates_truncated ? " (scan capped)" : ""}</td></tr>
-      <tr><td>…carrying a paying wallet</td><td>${c.certificates_with_payer}</td></tr>
+      <tr><td>…classified as legacy x402 with a paying wallet</td><td>${c.certificates_with_payer}</td></tr>
       <tr><td>payer rows / purchases on them</td><td>${c.payer_rows} / ${c.payer_rows_purchases}${c.payer_rows_truncated ? " (scan capped)" : ""}</td></tr>
       <tr><td>wallets whose row and certificates disagree</td><td>${c.wallets_disagreeing.length}</td></tr>
     </table>
@@ -128,42 +128,26 @@ function certsHtml(c: CertificatesAgainstSettles | null | undefined, settles: Se
 
 function settlesHtml(r: SettleReconciliation | null): string {
   if (!r) return `<p>${ATTENTION} — the recount didn't load. Reload to retry.</p>`;
-  /*
-   * A READING, NOT AN ALARM (2026-09-05), AND THEN THE RULING MOVED
-   * (2026-09-11). Until 2026-09-05 a nonzero difference here paged
-   * hourly; it paged twice in a week over lost read-modify-writes on
-   * shared KV keys, and the keeper ruled a lost increment was not a
-   * books defect. Then one wallet bought 66 times in an afternoon and
-   * the storefront lost thirteen of them, and the keeper ruled the
-   * other way: the public tally has to be right. So the counters now
-   * have one serialized writer (services/counter-ledger.ts) and the
-   * hourly raise (services/counter-raise.ts) lifts any counter still
-   * short of the per-settle records and certificates. The three
-   * figures are expected to AGREE. A difference is read the same way
-   * either direction: the raise clears it within the hour, and one
-   * that outlives the next raise is real.
-   */
-  const verdict =
-    r.unexplained === 0
-      ? `<p>${PASS} — the counters and the derived payer purchases agree, allowing for the founding settle and any settle that arrived without a wallet address. Since 2026-09-11 that is the expected state, not a good sign: every counter has one writer, and the hourly raise lifts anything short of its records.</p>`
-      : `<p>${PASS} — the ${r.unexplained > 0 ? "counters" : "derived payer purchases"} read ${Math.abs(r.unexplained)} settle${Math.abs(r.unexplained) === 1 ? "" : "s"} more than the ${r.unexplained > 0 ? "derived payer purchases" : "counters"}. Until 2026-09-11 that was a lost increment under a burst and read as a floor. It no longer is: the hourly raise lifts whichever side is short to the per-settle records, so this should read zero after the next raise (or now, with the button below). If it is still nonzero an hour from now, that is real, and a certificate without its record shows below.</p>
-        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0"><button type="submit">Raise every short counter and payer row to its records now</button></form>`;
-  return `${verdict}${r.truncated.length ? `<p><strong>${r.reading}</strong></p>` : ""}
+  // Coverage decides whether the arithmetic can support a verdict.
+  const verdict = r.truncated.length
+    ? `<p><strong style="color:#8c2f1b">INCOMPLETE</strong> — ${escapeHtml(r.reading)} No agreement or missing-sale conclusion can be drawn from this partial comparison.</p>`
+    : r.unexplained === 0
+      ? `<p>${PASS} — the legacy x402 counters and derived payer purchases agree after allowing for the founding settle and payments without a wallet address. This comparison does not establish delivery or reconcile native MPP sales.</p>`
+      : `<p>${ATTENTION} — the ${r.unexplained > 0 ? "counters" : "derived payer purchases"} read ${Math.abs(r.unexplained)} settlement${Math.abs(r.unexplained) === 1 ? "" : "s"} more than the ${r.unexplained > 0 ? "derived payer purchases" : "counters"}. The cause is not established by these totals. Check the settlement records and <a href="/admin/raise-log">last raise</a> before changing a count. The raise only lifts eligible legacy tallies to records already present; it cannot resolve every difference.</p>`;
+  return `${verdict}
     <details><summary>The arithmetic</summary>
     <table border="1" cellpadding="4">
       <tr><td>settles on the counters</td><td>${r.counter_settles}</td></tr>
       <tr><td>purchases on the payer rows</td><td>${r.payer_purchases}</td></tr>
       <tr><td>the founding settle (predates the instrument)</td><td>${r.founding}</td></tr>
       <tr><td>settles with no payer address returned</td><td>${r.unattributed}</td></tr>
-      <tr><td><strong>unexplained</strong></td><td><strong>${r.unexplained}</strong></td></tr>
+      <tr><td><strong>${r.truncated.length ? "partial difference (inconclusive)" : "unexplained"}</strong></td><td><strong>${r.unexplained}</strong></td></tr>
     </table>
     <p><small>All-time on both sides: payer rows carry no month, so a
     month-window compare would manufacture a discrepancy every time the
     calendar turned. "Purchases on the payer rows" is the larger of each
-    wallet's row and its per-settle records. A certificate whose settle
-    has no record is the defect this page pages on; the repair is
-    <code>POST /admin/repair/payer-settles</code>, which books it from
-    the certificate. Row-level detail lives at <a href="/admin/recount">the recount</a>;
+    wallet's row and its per-settle records. A certificate without a matching legacy record needs its payment protocol and settlement checked first.
+    The certificate backfill at <code>POST /admin/repair/payer-settles</code> only imports evidence it can classify as x402. Row-level detail lives at <a href="/admin/recount">the recount</a>;
     the last raise, and what it lifted, at <a href="/admin/raise-log">/admin/raise-log</a>.</small></p>
     </details>`;
 }
@@ -530,7 +514,7 @@ export function renderReconciliationPage(
   const body = `
   <section>
     <p>Every way this store audits its own money, one page, verdicts
-    first. A quiet page and a quiet phone mean the same thing here.</p>
+    first. An incomplete reading cannot establish that the books agree.</p>
   </section>
 
   ${howToReadTheMoneyHtml(null, data.countersSerialized ?? false, data.lastRaise ?? null)}

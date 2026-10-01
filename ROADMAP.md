@@ -39,6 +39,15 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 1 — admin accounting clarity
+
+Keeper-requested wording correction: distinguish certificate purchases from
+legacy x402 payer tallies, explain the raise's scope, and label a capped
+reconciliation INCOMPLETE rather than PASS. Counter and repair logic unchanged.
+Follow-up remains: make the metric-counter comparison complete with a narrowly
+scoped or paged read, then investigate any remaining transaction-level difference.
+The wording correction alone does not close that coverage gap.
+
 ## September 30 — Spot Check product and handoff experiment
 
 Keeper-directed: build both proposed additions now and learn from demand,
