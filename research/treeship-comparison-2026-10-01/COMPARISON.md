@@ -197,3 +197,36 @@ says so.
   src/store/attestation-spec.ts, src/routes/receipt-verify.ts,
   src/routes/conformance-landing.ts, src/routes/scorers.ts, verifier/README.md,
   docs/FEDERATION_2026-09.md, research/competitive-corpus-2026-09-28/COMPETITION.md
+
+## Status, 2026-10-01 — the keeper's "okay lets do those"
+
+The four builds landed on `claude/eager-cori-6bmzmb`, one commit each,
+every spec shown red with the source stashed and green with it:
+
+1. **DSSE at the free desk.** `/api/verify-receipt` reads a DSSE envelope
+   with a caller-supplied Ed25519 key (hex, `ed25519:<base64url>`, or
+   base64), verifies over the pre-authentication encoding of the bytes as
+   served, and states what a DSSE signature does not say. Withheld key is
+   `insufficient_evidence`, never `invalid`. Not done: the `x402-verify`
+   npm package stays x402-JWS only; the conformance desk stays x402-only.
+2. **`cited_artifact` on the certificate.** `<format>:<reference>`, signed
+   under purpose's law, shape-checked before quoting, never resolved.
+   Receipt page, replay kit, `receipt_for_your_human`, `/attestation`'s
+   signed-field sentence and the served skill guide carry it. Not done:
+   the trade counter's own body schema (a golden fixture) and `/llms.txt`
+   (25 characters from its budget). openapi.json needed room: the field
+   rides as one component reference per door, and two more inlined blocks
+   moved into components by the headroom spec's own instruction (the
+   negotiated Accept parameter, the paid doors' 200). 688,687 → 681,292
+   bytes with every rail. Still inlined, still rulings: the Idempotency-Key
+   parameter (41 × 518 B, deliberate since 2026-09-05) and the paid doors'
+   402 response (35 × ~330 B).
+3. **`scvd init`.** Detects Claude Code, Cursor and Codex, shows the exact
+   change, asks, writes only inside the project; Codex gets a TOML snippet,
+   never a write. 0.5.0 in source, prepared only; publication is a press.
+4. **Whose eyes.** `WHOSE_EYES` on `/attestation` and one line on every
+   receipt page, derived from `TRUST_MODELS`, vendor-free by test.
+
+Still on the keeper's hands, not built: the row in their integrations
+table (a skill that runs an SCVD evidence call under `treeship wrap`), and
+the letter offering the composition point. Neither is a build.
