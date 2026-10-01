@@ -1185,8 +1185,11 @@ const BASE = "https://scvd.store";
 // 2026-10-01: verifier source 1.10.0 changes only its derived package label.
 // Restoring only package.json version 1.9.0 reproduced both prior pins
 // (14/14); source 1.10.0 produces these two digests. No prose was edited.
+// Same-day draft-check source 1.11.0 changes that label once more.
+// The 1.9.0 reversal reproduced the old pins (14/14); 1.10.0 reproduced
+// the intermediate digests above, and these pins cover 1.11.0 only.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "757bb009ea489fe3e4d10c69cf4b46137e0c3a4de0a93629d4ae11f815bddd8c";
+  "80e13fa33bae523f62871e4ba1c78fb8163c0f4dcfe9908441180b4f58eb3f4b";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1288,7 +1291,7 @@ describe("nothing was rewritten", () => {
       // restored to main, 21a941ef reproduced. Then across the merge with
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
-      "80c2fb7a07041a3dd5cbf6a031bd1df92134266d821a689044e4a1ac441067bf",
+      "ac6fbc5e731c73fb61c4ff5beeb0d4c895f5a11430c6b5ea5aca36e5d9697d73",
     );
   });
 

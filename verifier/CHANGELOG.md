@@ -4,6 +4,22 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## 1.11.0 — source prepared 2026-10-01
+
+**Added.** Optional `verify-source --check-identifiers SAVED_DRAFT` compares
+long hexadecimal tokens in a saved UTF-8 draft against identifiers from a
+fresh local verification. The draft hash, counts, bounded token readings and
+coverage limits travel with the result. No text is corrected or rewritten.
+Exit 4 indicates an unrecognized token or no candidates; existing signature,
+incomplete-evidence and command-error exits retain precedence. The option
+cannot be combined with `--report-out`.
+
+This checks lexical values only, not their labels or the truth of the prose.
+Short, split and non-hex identifiers are outside coverage; later final text is
+not covered by a check of earlier draft bytes. Existing generated reports and
+commands without the option are unchanged. Publication and native adoption
+remain separate gates.
+
 ## 1.10.0 — source prepared 2026-10-01
 
 **Added.** `sources SAVED_JSON [--subject EXACT_URL]` extracts candidate

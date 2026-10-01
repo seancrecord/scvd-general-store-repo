@@ -91,3 +91,53 @@ test('generated Markdown respects a caller limit below the report ceiling',async
 test('a blank payment address is an explicit gap, not a usable comparison',async()=>{
  const f=await fixture();try{f.challenge.accepts[0].payTo='  ';await f.saveHeaders();const out=f.run(['--challenge-headers',f.headers]);assert.equal(out.status,0,out.stderr);const p=JSON.parse(out.stdout).payment_challenge;assert.equal(p.status,'read_with_gaps');assert.equal(p.offers[0].address_digest,null);assert.equal(p.offers[0].comparison,'unavailable');}finally{await f.clean();}
 });
+
+test('draft identifier check catches a shortened digest without changing the draft or original',async()=>{
+ const f=await fixture();try{
+  const draft=join(f.dir,'draft.md'),original=await readFile(f.original),digest=sha(f.payload);
+  const text=`Signed-message SHA-256: ${digest.slice(0,31)+digest.slice(33)}\nOriginal SHA-256: ${sha(original)}\n`;
+  await writeFile(draft,text);
+  const out=f.run(['--check-identifiers',draft]);assert.equal(out.status,4,out.stderr);
+  const check=JSON.parse(out.stdout).identifier_check;
+  assert.equal(check.status,'needs_review');assert.equal(check.matched,1);assert.equal(check.unrecognized,1);
+  assert.equal(check.draft_sha256,sha(text));assert.equal(check.candidates,2);
+  assert.equal(check.readings[0].length,62);assert.equal(check.readings[0].status,'unrecognized');
+  assert.equal(await readFile(draft,'utf8'),text);assert.deepEqual(await readFile(f.original),original);
+ }finally{await f.clean();}
+});
+
+test('draft matching is a scoped lexical check, with empty and unverified drafts never passing',async()=>{
+ const f=await fixture();try{
+  const draft=join(f.dir,'draft.md');await writeFile(draft,`Not a correctness claim: ${sha(f.payload).toUpperCase()} ${f.key}`);
+  let out=f.run(['--check-identifiers',draft]);assert.equal(out.status,0,out.stderr);
+  let check=JSON.parse(out.stdout).identifier_check;assert.equal(check.status,'all_candidates_recognized');assert.equal(check.matched,2);
+  assert.equal(check.prose_verified,false);assert.match(check.scope,/labels|roles/);assert.match(check.scope,/short|split/);
+  await writeFile(draft,'No hexadecimal identifier here.');out=f.run(['--check-identifiers',draft]);assert.equal(out.status,4);
+  assert.equal(JSON.parse(out.stdout).identifier_check.status,'no_candidates');
+  f.doc.signature='0'.repeat(128);await writeFile(f.original,JSON.stringify(f.doc));await writeFile(draft,f.key);
+  out=f.run(['--check-identifiers',draft]);assert.equal(out.status,1);check=JSON.parse(out.stdout).identifier_check;
+  assert.equal(check.status,'verification_failed');assert.equal(check.matched,0);assert.equal(check.readings[0].status,'unchecked');
+ }finally{await f.clean();}
+});
+
+test('draft scan bounds output, checks omitted candidates and refuses malformed or oversized text',async()=>{
+ const f=await fixture();try{
+  const draft=join(f.dir,'draft.md');await writeFile(draft,Array(60).fill(sha(f.payload)).join('\n')+'\n'+'b'.repeat(200));
+  let out=f.run(['--check-identifiers',draft]);assert.equal(out.status,4,out.stderr);
+  let check=JSON.parse(out.stdout).identifier_check;assert.equal(check.candidates,61);assert.equal(check.matched,60);assert.equal(check.unrecognized,1);assert.ok(check.omitted>0);assert.equal(check.readings.length+check.omitted,61);assert.ok(Buffer.byteLength(JSON.stringify(check))<16384);
+  await writeFile(draft,Buffer.from([0xff]));out=f.run(['--check-identifiers',draft]);assert.equal(out.status,2);assert.equal(out.stdout,'');
+  await writeFile(draft,'x'.repeat(131073));assert.equal(f.run(['--check-identifiers',draft]).status,2);
+  await writeFile(draft,sha(f.payload));assert.equal(f.run(['--check-identifiers',draft,'--format','markdown','--report-out',join(f.dir,'report.md')]).status,2);
+  const wrong=spawnSync(process.execPath,[cli,'sources',f.original,'--check-identifiers',draft],{encoding:'utf8'});assert.equal(wrong.status,2);
+ }finally{await f.clean();}
+});
+
+test('draft lexical coverage keeps token boundaries and bounds repeated reference names',async()=>{
+ const {checkDraftIdentifiers}=await import('./evidence-report.js');
+ const value='a'.repeat(64),references=Object.fromEntries(Array.from({length:20},(_,i)=>[`field_${i}`,value]));
+ const text=`0x${value.toUpperCase()} ${'b'.repeat(129)} g${value} _${value} ${value}_ ${'c'.repeat(47)}`;
+ const check=await checkDraftIdentifiers(Buffer.from(text),references,true);
+ assert.equal(check.candidates,2);assert.equal(check.matched,1);assert.equal(check.unrecognized,1);
+ assert.equal(check.readings[0].reference_fields.length,4);assert.equal(check.readings[0].omitted_reference_fields,16);
+ assert.equal(check.readings[1].value,null);assert.equal(check.readings[1].length,129);
+});
