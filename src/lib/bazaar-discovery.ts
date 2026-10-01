@@ -33,6 +33,7 @@ export const PURCHASE_PURPOSE_MAX_LENGTH = 280;
  * whitespace so a line is a line. The pattern is the whole validation:
  * the store never fetches or verifies what it names.
  */
+export const CITED_ARTIFACT_FIELD = "cited_artifact";
 export const CITED_ARTIFACT_MAX_LENGTH = 160;
 export const CITED_ARTIFACT_PATTERN = /^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$/;
 /**
@@ -119,7 +120,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
      * One short line, inlined into every paid door's contract like
      * purpose: the budget is per byte times thirty-five.
      */
-    cited_artifact: { ...CITED_ARTIFACT_SCHEMA },
+    [CITED_ARTIFACT_FIELD]: { ...CITED_ARTIFACT_SCHEMA },
     /**
      * THE DISCLOSURE BLOCK (2026-09-18, lib/disclosure). Six flat
      * optional strings a buyer may fill — model, client, operator,

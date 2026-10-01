@@ -95,6 +95,18 @@ describe("the buy door checks the shape before money moves, and nothing else", (
     }
   });
 
+  it("is left off the compact item contract like the disclosure block, and stays on the full schema", async () => {
+    // The compact view lives under a byte guard the one inlined copy
+    // tripped on the largest item; a reader of that view learns the
+    // field at the quote, the shelf and the contract, where it is filled.
+    const compact = (await (await SELF.fetch(`${BASE}/menu/hello?view=compact`)).json()) as {
+      input_schema: { properties: Record<string, unknown> };
+    };
+    expect(compact.input_schema.properties["cited_artifact"]).toBeUndefined();
+    expect(compact.input_schema.properties["purpose"]).toBeTruthy();
+    expect(buyInputSchema(MENU_ITEMS.find((item) => item.id === "hello")!).properties["cited_artifact"]).toBeTruthy();
+  });
+
   it("refuses a malformed citation with 400 and names the field, before any 402 is issued", async () => {
     for (const bad of ["no-colon", "has space:art_1", ":art_1", "DSSE:art_1", "dsse:", "dsse:art 1", "dsse:art\u0000", "x".repeat(CITED_ARTIFACT_MAX_LENGTH + 1)]) {
       const response = await SELF.fetch(

@@ -41,7 +41,7 @@ import {
   PREFLIGHT_VERSIONS,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
-import { buyInputSchema, buyInputExample, itemsRequiring, CITED_ARTIFACT_SCHEMA } from "@/lib/bazaar-discovery";
+import { buyInputSchema, buyInputExample, itemsRequiring, CITED_ARTIFACT_FIELD, CITED_ARTIFACT_SCHEMA } from "@/lib/bazaar-discovery";
 import { DISCLOSURE_FIELDS, DISCLOSURE_LINE, DISCLOSURE_PROPERTIES, type DisclosureField } from "@/lib/disclosure";
 import {
   openForBusinessTiersUsdc,
@@ -4677,7 +4677,6 @@ const DISCLOSURE_BLOCK_REF: OpenApiObject = { $ref: "#/components/schemas/Disclo
  * the headroom spec's $ref expansion reads the same object either way.
  */
 const CITED_ARTIFACT_REF: OpenApiObject = { $ref: "#/components/schemas/CitedArtifact" };
-const CITED_ARTIFACT_FIELD = "cited_artifact";
 
 const IDEMPOTENCY_PARAMETER: OpenApiObject = {
   name: "Idempotency-Key",
