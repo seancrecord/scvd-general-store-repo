@@ -143,5 +143,8 @@ remain unverified; no package publication, external correction or buyer
 qualification was performed.
 
 The separate [guide cleanup](../research/guide-readability-2026-09-30/README.md)
-is committed locally with production-shaped size and alias regression checks.
-It remains subject to its own release and live guide readback.
+released in #951 after every required CI group passed. The [live guide readback](../research/guide-release-2026-10-01/README.md)
+verifies the smaller developer guide, identical configured aliases, all complete
+sections and unchanged full-guide bytes against the immediately preceding
+deployment. PR3 is complete; authenticated admin review and external follow-through
+remain open.
