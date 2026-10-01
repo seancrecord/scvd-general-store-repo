@@ -2,7 +2,7 @@
   "kind": "software regression validation only; zero native attempts",
   "checks": {
     "buyer_tests": {
-      "passed": 322,
+      "passed": 323,
       "failed": 0
     },
     "typecheck": "pass",
@@ -57,6 +57,18 @@
     {
       "file": "scvd-assisted-docs.log",
       "sha256": "5ac3eced962e8d735977ef85423b47ebc1dadb326cbaaa9162f7a9bfc03494ad"
+    },
+    {
+      "file": "scvd-assisted-online-gate-red.log",
+      "sha256": "f076cc43c1f2ea7feb045d733dbe3c2e46c4ab893ac3f3dd505893720fd05a8d"
+    },
+    {
+      "file": "scvd-assisted-buyer-complete.log",
+      "sha256": "19b66975e245fc2146ff9d5775c170f85544a5271c678435579b740adafd2c7d"
+    },
+    {
+      "file": "scvd-assisted-typecheck-final.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
     }
   ],
   "limits": "Full hosted four-shard CI and aggregate check are required before merge. No native qualification or buyer acceptance is claimed."
