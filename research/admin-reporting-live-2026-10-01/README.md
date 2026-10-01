@@ -50,11 +50,50 @@ CI suite remains required before merge.
 ## Still open
 
 Production readback is incomplete. Repeated native-browser focus changes
-interrupted further navigation. `/admin/glance`, `/admin/take`, instruments,
-signals, funnel, ward and the remaining inventoried reports still need their
-live pass. Production phone-width layout and meaningful warm/cold timings
+interrupted further navigation. The continuation below completes more of the named live pages; ward and
+MCP-ward remain unread in this pass. Production phone-width layout and meaningful warm/cold timings
 remain unmeasured. The source/local tests from the original review do not
 stand in for these checks.
 
 The repairs in this note still need release and live verification. Do not
 mark PR1's production readback complete on the strength of this partial pass.
+
+
+## Continued live pass and additional fixes
+
+The continued Brave pass loaded `/admin/glance`, `/admin/take`,
+`/admin/instruments`, `/admin/signals` and `/admin/funnel`. The glance showed
+its cached-read timestamp. The take separated protocol, network and currency
+counts from MPP money and certificate money. Instruments showed scan caps,
+measurement start dates and request-versus-sale caveats. Signals separated
+purchase doors from reader activity. The funnel exposed its capped retained
+window and separated price asks from recorded refusals. Instruments normally
+writes the comparison baseline when opened; no operational button was pressed.
+
+Two findings required repairs:
+
+- Growth omitted x402 house reclassification while the instruments/Pulse
+  figures included it. Growth now applies the same monthly certificate-derived
+  adjustment to its organic count, revenue, ratios and hypothesis. It shares
+  the correction walk with Pulse, avoiding a second certificate scan. The
+  applied adjustment is visible; original item/rail counters and previously
+  frozen month records retain their original values. A failed or truncated
+  correction read fails the Growth read rather than claiming raw counts are
+  corrected organic totals.
+- The funnel inferred that inputs could not explain two groups with zero
+  settlements. It now states the observational limit and points to recorded
+  input refusals. Different clients/items are not a controlled experiment.
+
+The instruments report's month headings now participate in the shared section
+navigation, so a reader can jump directly to a month.
+
+The two Growth regressions and the updated funnel regression were witnessed
+failing against the preceding source. Growth/Pulse/instruments/desk validation
+passed 70 tests across five files; the separate full funnel file passed all
+23 tests. Type checking and all three bundles passed after the Growth
+change. Final validation and release evidence belong to the follow-up PR.
+
+The remaining ward/MCP-ward reads and broader optional live coverage are still
+unverified: Brave repeatedly changed to other tabs during navigation, despite
+retries. This is not evidence that those routes fail. No production phone-width
+or latency benchmark claim is made, and PR1 remains open for release/readback.

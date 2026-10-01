@@ -182,21 +182,19 @@ describe("readings bounded by retained evidence", () => {
   });
 
   /**
-   * THE CONTROL GROUP, PINNED (2026-09-21). Every locked row invites
+   * THE COMPARISON, PINNED (2026-09-21). Every locked row invites
    * the conclusion that required inputs are where the shelf loses
-   * people. The doors requiring NO input are the control for that
-   * claim, and when both sides sit at zero the report has to say so in
-   * as many words — otherwise the page keeps arguing for an input fix
-   * the data does not support.
+   * people. Doors requiring NO input provide context; two zeros cannot
+   * tell us why either group stopped.
    */
-  it("prints the gated-versus-open comparison, and refuses the input story when both are zero", async () => {
+  it("prints the gated-versus-open comparison without inferring a cause from two zeros", async () => {
     for (let i = 0; i < 4; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
         ...organic,
         missingRequired: ["tx_hash"],
       });
     }
-    // hello needs no input at all: the control group, same window.
+    // hello needs no input at all: a comparison in the same window.
     for (let i = 0; i < 3; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/hello", organic);
     }
@@ -205,8 +203,8 @@ describe("readings bounded by retained evidence", () => {
     expect(report.input_gate_reading).toContain("require NONE");
     expect(
       report.input_gate_reading,
-      "neither side settled, so the input cannot be the cause and the page must say it",
-    ).toContain("not the input");
+      "neither side settled; this observation cannot rule input friction in or out",
+    ).toContain("cannot tell whether required inputs contributed");
   });
 
   it("separates missing input evidence from unannotated requests", async () => {
