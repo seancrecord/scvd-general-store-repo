@@ -1,0 +1,96 @@
+[
+  {
+    "file": "codex-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/codex/events.jsonl",
+    "source_sha256": "7698245616e6c338927e0d1237f8551439052f7044054694491c3b6dc0cd755b",
+    "final_line": 34,
+    "final_text_sha256": "9e75c75595c1d889db1c363b95f15aa42e35109d36f033752e01563efac90b5d"
+  },
+  {
+    "file": "claude-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/claude/events.jsonl",
+    "source_sha256": "9a8bf1157e7a2731658ee9e8cdeb072483dea976ba7533d2cc0c5e363b926e3a",
+    "final_line": 88,
+    "final_text_sha256": "94af7cc332fc23dc831f5664f857576b8f53aff7532e2067b9ab5e800bfed712"
+  },
+  {
+    "file": "recipient-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/recipient/events.jsonl",
+    "source_sha256": "c4576b3f8b84b8a9e4268d35e98d0c8eac4b56b0a69bf34f547a2edb5341452b",
+    "final_line": 19,
+    "final_text_sha256": "56364e2cf6a5f7e7127412ad730aee68c8e87e0ebe553b378a8234a5e3f41b9c"
+  },
+  {
+    "file": "codex-directed-r1-buyer.md",
+    "role": "buyer",
+    "cell": "codex-directed-r1",
+    "completed_final": false,
+    "source_trace": "buyers/codex-directed-r1/events.jsonl",
+    "source_sha256": "236594e2223d88141b059e029a6fb6e5794cbba8b800fc5cf1258ae5cb6be530",
+    "final_line": 49,
+    "final_text_sha256": "ad93d26222fe5f18420047ece58f391756f6e950af7aae424a2e95a70a9d8970"
+  },
+  {
+    "file": "claude-directed-r1-buyer.md",
+    "role": "buyer",
+    "cell": "claude-directed-r1",
+    "completed_final": true,
+    "source_trace": "buyers/claude-directed-r1/events.jsonl",
+    "source_sha256": "6081f59ce1659988b1a04881dbea344cd9969ec35c524f46650b5feecc2ac1b1",
+    "final_line": 103,
+    "final_text_sha256": "0fc6ac5dc926b9eade4e1cdb2f05f2a3defc8c5af50151dfb101b1f32a7e8213"
+  },
+  {
+    "file": "claude-directed-r1-recipient.md",
+    "role": "recipient",
+    "cell": "claude-directed-r1",
+    "completed_final": true,
+    "source_trace": "buyers/claude-directed-r1/recipient/events.jsonl",
+    "source_sha256": "7173060ccb72698f49621db5af391a9fa949855a917b15d7f08abdcbfb91cce7",
+    "final_line": 18,
+    "final_text_sha256": "771234baa1dcfdeefd59864539df1f6fb716c2d7489bd718acdbb17bad72b8d7"
+  },
+  {
+    "file": "codex-directed-r2-buyer.md",
+    "role": "buyer",
+    "cell": "codex-directed-r2",
+    "completed_final": true,
+    "source_trace": "buyers/codex-directed-r2/events.jsonl",
+    "source_sha256": "74ce0529596648cba94e047fb441404ea532d32d66ed6cb9e1bcf557ffa7f236",
+    "final_line": 38,
+    "final_text_sha256": "5fee1101d54d720358ff7f25f22d6a9813c871424012574c87f61fd251d80821"
+  },
+  {
+    "file": "codex-directed-r2-recipient.md",
+    "role": "recipient",
+    "cell": "codex-directed-r2",
+    "completed_final": true,
+    "source_trace": "buyers/codex-directed-r2/recipient/events.jsonl",
+    "source_sha256": "71ac8a1b7c9c660d939d305645b5aa621e395c4b64b0bfbc522bab46987d43d2",
+    "final_line": 23,
+    "final_text_sha256": "f8da4cc64b215285419fcc04a1ec0c96d3d0f926948835631bb32b801aa5d985"
+  },
+  {
+    "file": "claude-directed-r2-buyer.md",
+    "role": "buyer",
+    "cell": "claude-directed-r2",
+    "completed_final": true,
+    "source_trace": "buyers/claude-directed-r2/events.jsonl",
+    "source_sha256": "2b99520796cbb8fd43ea37828513bb7e9133cc20c2c856996a3435ed1eb29f72",
+    "final_line": 85,
+    "final_text_sha256": "868e3c0757de74dafc26bd94f4a0e66ef2f0432c199698379f53f586704e6c6d"
+  },
+  {
+    "file": "claude-directed-r2-recipient.md",
+    "role": "recipient",
+    "cell": "claude-directed-r2",
+    "completed_final": true,
+    "source_trace": "buyers/claude-directed-r2/recipient/events.jsonl",
+    "source_sha256": "1eee5c766e8158b43becc0296f0d6ca6da41d484f9316044dd3c1061ec139f95",
+    "final_line": 19,
+    "final_text_sha256": "2ec1f213842baa2fbe7acc32ec5b24ec0d192407adf5b724fd67b6d95cdf73e5"
+  }
+]
